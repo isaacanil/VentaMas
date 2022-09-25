@@ -1,0 +1,61 @@
+:root{
+   /*white to black*/
+
+   /* colors*/
+   --White: rgb(255, 255, 255);
+   --White1: rgb(240, 240, 240);
+   --White2: rgb(230, 230, 230);
+   --White3: rgb(220, 220, 220);
+   --White4: rgb( 210, 210, 210);
+   --White5: rgb( 200, 200, 200);
+
+   --Gray: rgb(180, 180, 180);
+   --Gray1: rgb(160, 160, 160);
+   --Gray2: rgb(140, 140, 140);
+   --Gray3: rgb(120, 120, 120);
+   --Gray4: rgb(100, 100, 100);
+   --Gray5: rgb( 80, 80, 80);
+   --Black4: rgb(60, 60, 60);
+   --Black3: rgb( 40, 40, 40);
+   --Black2: rgb( 20, 20, 20);
+   --Black1: rgb( 10, 10, 10);
+   --Black: rgb( 0, 0, 0);
+   --BlackOp: rgba(0, 0, 0, 0.200);
+   --BlackOp1: rgba(0, 0, 0, 0.300);
+   --BlackOp2: rgba(0, 0, 0, 0.400);
+   /*color primarios*/
+   --icolor: rgb(66, 165, 245);
+   /*color secundario*/
+   --icolor1: #67B8DE;
+   /*color terciario*/
+   --icolor2: #91C9E8;
+   /*color cuaternario*/
+   --icolor3: #B4DCED;
+
+
+   /*border*/
+   --border-radius1: 10px;
+   --border-radiusTotal: 100px;
+
+   /*padding*/
+
+   --padding: 0.5em;
+   --padding1: 1em;
+   --padding2: 1.5em;
+   --padding3: 2em;
+
+   /*gap*/
+   --gap: 0.5em;
+   --gap1: 1em;
+   --gap2: 1.5em;
+   --gap3: 2em;
+
+   /*blur*/
+   --blur: 5px;
+
+   /*Media Querys*/
+   --WdMedium: 800px;
+
+
+
+}

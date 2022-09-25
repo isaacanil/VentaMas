@@ -1,0 +1,173 @@
+@import url(../../../styles/variables.css);
+:root {
+   --menu-items: rgb(246, 246, 246);
+
+
+   //btnMenuItem
+   --btnMenuItem-bg-color: var(--menu-items);
+   --btnMenuItem-width: 1.6em;
+   --btnMenuItem-height: 2px;
+
+}
+
+.Container {
+   position: relative;
+   user-select: none;
+   background-color: var(--icolor);
+   width: 100%;
+   height: 4em;
+   display: grid;
+   grid-template-columns: auto auto auto;
+   justify-content: space-between;
+   align-items: center;
+   
+
+   padding: 0 1.5em;
+
+   .MenuBtn {
+      justify-self: flex-start;
+      width: 2.6em;
+      height: 2.6em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 100px;
+      background-color: rgba(0, 0, 0, 0.21);
+      cursor: pointer;
+
+      &:hover {
+
+         border-radius: 100px;
+         transition: all 1s ease-in-out;
+      }
+
+      .MenuBtn_icon {
+         position: relative;
+         z-index: 10;
+         width: 1.6em;
+         height: 2px;
+         background-color: var(--menu-items);
+         transition: all 1s ease-in-out;
+
+         &::after {
+            content: '';
+            position: absolute;
+            z-index: 10;
+            width: 1.6em;
+            height: 2px;
+            background-color: var(--menu-items);
+            margin-top: 8px;
+            transition: all 0.4s ease-in-out;
+         }
+
+         &::before {
+            content: '';
+            position: absolute;
+            z-index: 10;
+            width: 1.6em;
+            height: 2px;
+            background-color: var(--menu-items);
+            margin-top: -8px;
+            transition: all 0.4s ease-in-out;
+         }
+      }
+
+      .MenuBtn_icon_closed {
+         position: relative;
+         width: 1.6em;
+         height: 2px;
+         background-color: transparent;
+         transition: all 0.2s ease-in-out;
+
+
+
+         &::after {
+            content: '';
+            position: absolute;
+            width: 1.6em;
+            height: 2px;
+            background-color: var(--menu-items);
+            margin-top: 0;
+            transform: rotate(-45deg);
+            transition: all 0.4s ease-in-out;
+
+
+         }
+
+         &::before {
+            content: '';
+            position: absolute;
+            width: 1.6em;
+            height: 2px;
+            background-color: var(--menu-items);
+            margin-top: 0;
+            transform: rotate(45deg);
+            transition: all 0.4s ease-in-out;
+         }
+      }
+
+   }
+
+   
+
+
+   .Menu {
+      position: absolute;
+      z-index: 999;
+      max-width: 500px;
+      width: 100%;
+      height: calc(100vh - 4em);
+      top: 4em;
+      left: 0;
+      background-color: rgb(88, 88, 88);
+      transform: translateX(0px);
+      transition: transform 0.4s ease-in-out;
+
+
+      .Menu_links_group {
+         margin-top: 2em;
+         display: grid;
+         padding: 0;
+         gap: 1.2em;
+
+
+         .Menu_link_container {
+            list-style: none;
+
+            padding: 0 2em;
+            display: grid;
+            align-items: center;
+
+            .Menu_link {
+
+               text-decoration: none;
+               color: white;
+               display: grid;
+               align-items: center;
+               padding: 0.5em 1em;
+               font-weight: 400;
+             
+            }
+
+            .Menu_link.Active {
+               background-color: rgba(0, 0, 0, 0.400);
+               border-radius: 100px;
+            }
+         }
+      }
+   }
+
+   .Menu.Disabled {
+
+      position: absolute;
+      transform: translateX(-900px);
+      
+      transition: transform 0.4s ease-in-out;
+ 
+
+   }
+
+}
+@media (max-width: 800px){
+
+}

@@ -1,0 +1,95 @@
+@import url('../../../styles/variables.css');
+.Container {
+  background-color: rgb(70, 70, 70);
+  overflow: hidden;
+  width: 3.4em;
+  .Items {
+    margin-top: 0.5em;
+    width: 100%;
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+
+    .Item {
+      width: 1.8em;
+      height: 1.8em;
+      background-color: rgb(133, 133, 133);
+      border-radius: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.5em;
+      color: #fff;
+      
+      cursor: pointer;
+    }
+
+    .Item.AddBtn {
+      display: flex;
+      align-items: center;
+      background-color: rgb(214, 214, 214);
+      
+      border: none;
+      
+      
+    }
+  }
+}
+@media(max-width: 800px){
+  .Container {
+    background-color: rgb(70, 70, 70);
+    overflow: hidden;
+    position: absolute;
+    width: 100%;
+    height: calc(100vh - 4em);
+    display: none;
+    .Items {
+      width: 100%;
+      height: 100vh;
+      list-style: none;
+      padding: 1em;
+      margin: 0;
+      display: grid;
+      overflow-y: auto;
+      grid-template-columns: repeat(3, minmax(100px, 150px));
+      grid-template-rows: repeat(5, minmax(100px, 150px));
+      
+      align-content: center;
+      align-items: center;
+      justify-content: center;
+      justify-items: center;
+      gap: 1em;
+ 
+  
+      .Item {
+        
+        height: 100px;
+        width: 100px;
+        background-color: rgb(133, 133, 133);
+        border-radius: 6px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        font-size: 3em;
+        color: #fff;
+        transition: none;
+        cursor: pointer;
+      }
+  
+      .Item.AddBtn {
+  
+        background-color: rgb(252, 65, 65);
+        border: none;
+        
+      }
+    }
+  }
+  .Container.Open{
+    display: block;
+  }
+}

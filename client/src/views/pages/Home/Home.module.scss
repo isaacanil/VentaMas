@@ -1,0 +1,70 @@
+.App_container{
+  
+    min-height: 100vh;
+    background-color: var(--White2);
+  }
+  .welcomeSection_container{
+    display: grid;
+    justify-content: center;
+    
+    
+    
+    .welcomeSection_inner{
+      margin-top: 1em;
+      max-width: 768px;
+      width: 100vw;
+      
+      padding: var(--padding1);
+      border-radius: var(--border-radius1);
+     .welcomeSection_title{
+      color: rgb(26, 26, 26);
+     }
+     .WelcomeSection_items{
+        text-decoration: none;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1em;
+        list-style: none;
+        padding: 0;
+      
+      .card{
+        border-radius: var(--border-radius1);
+        overflow: hidden;
+        
+        .card_inner{
+          background-color: var(--White4);
+          width: 100%;
+          padding: var(--padding);
+          display: block;
+          text-decoration: none;
+          .card_img_container{
+            border-radius: var(--border-radius1);
+            background-color: var(--White1);
+            display: grid;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5em;
+            min-height: 128px;
+            
+  
+            
+            .card_img{
+              max-width: 80px;
+              
+              display: block;
+              
+            }
+          }
+          .card_title{
+            color: rgb(32, 32, 32);
+            text-align: center;
+            font-weight: 500;
+          }
+        }
+      }
+        
+       
+     }
+   }
+  
+  }

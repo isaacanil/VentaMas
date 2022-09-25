@@ -1,0 +1,16 @@
+.Container{
+    
+    .Item_inner{
+        width: 100%;
+        height: 100%;
+        display: grid;
+        justify-content: center;
+        justify-items: center;
+        align-content: center;
+        align-items: center;
+        .Icon{
+            fill: rgb(87, 87, 87);
+            width: 1em;
+        }
+    }
+}

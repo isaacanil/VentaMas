@@ -1,0 +1,59 @@
+@import url('../../../../styles/variables.css');
+
+
+
+.Form {
+   width: 100%;
+   background-color: var(--White2);
+   display: grid;
+   gap: 0.6em;
+   padding: 0.5em;
+   user-select: none;
+   overflow: auto;
+   height: 100%;
+
+   .Group {
+      background-color: var(--White1);
+      padding: 1em;
+      gap: 2em;
+      display: flex;
+      
+      align-items: center;
+      justify-content: center;
+      justify-content: space-between;
+
+      &:first-child {
+         border-top-left-radius: 10px;
+         border-top-right-radius: 10px;
+      }
+
+      &:last-child {
+
+         border-bottom-left-radius: 10px;
+         border-bottom-right-radius: 10px;
+      }
+
+      label {
+         font-weight: 500;
+         white-space: nowrap;
+         color: rgb(54, 54, 54);
+      }
+
+      input[type="text"],
+      input[type="number"] {
+         width: 100%;
+         margin: 0;
+         padding: 0.4em 1em;
+         border: 1px solid rgba(0, 0, 0, 0.155);
+         border-radius: 100px;
+         &:focus{
+            outline: none;
+         }
+
+      }
+
+      input[type="file"] {
+         display: none;
+      }
+   }
+}

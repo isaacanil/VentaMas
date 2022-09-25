@@ -1,0 +1,57 @@
+@import url('../../../styles/variables.css');
+.Component_container{
+    height: 2em;
+    display: flex;
+    width: auto;
+    align-items: center;
+    gap: 0.5em;
+    background-color: rgb(56, 56, 56);
+    padding: 0.2em 0.8em 0.2em 0.3em;
+    margin: 0;
+    border-radius: 100px;
+    color: white;
+    position: relative;
+    cursor: pointer;
+}
+
+.AccountMenu{
+    display: none;
+    position: absolute;
+    top: 3.2em;
+    right: 0;
+    background-color: rgb(214, 214, 214);
+    border-radius: var(--border-radius1);
+    min-width: 12em;
+    border: 1px solid rgba(0, 0, 0, 0.100);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
+    z-index: 99;
+    .Items{
+        padding: 1em;
+        margin: 0;
+        list-style: none;
+        display: grid;
+        gap: 1em;
+        .Item{
+            display: flex;
+            justify-content: space-between;
+            .Item_Link{
+                color: rgb(70, 70, 70);
+                text-decoration: none;
+                font-weight: 500;
+            }
+            .Icon_wrapper{
+                width: 1em;
+                
+                .Icon{
+                    width: 100%;
+                    display: block;
+                    fill: rgb(80, 80, 80);
+                }
+            }
+        }
+    }
+}
+
+.AccountMenu.Open{
+    display: block;
+}

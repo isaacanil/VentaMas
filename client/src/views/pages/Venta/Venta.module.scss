@@ -1,0 +1,49 @@
+@import url('../../../styles/variables.css');
+* {
+  box-sizing: border-box;
+  margin: 0;
+
+}
+.AppContainer {
+  width: 100%;
+  height: calc(100vh - 4em);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 100%;
+  background-color: var(--White1);
+ .ProductsContainer{
+  position: relative;
+   max-height: calc(100vh - 4em - 2em);
+   overflow-y: auto;
+   background-color: rgb(255, 255, 255);
+   display: grid;
+   grid-template-rows: 3em auto;
+  overflow: hidden;
+   
+  
+ }
+  
+
+  
+}
+@media(max-width: 800px){
+  .AppContainer {
+    width: 100%;
+    height: calc(100vh - 4em);
+    display: flex;
+    grid-template-columns: 0 100% 0;
+    grid-template-rows: 100%;
+    background-color: var(--White1);
+    .ProductsContainer{
+      position: relative;
+       max-height: calc(100vh - 4em - 2em);
+       overflow-y: auto;
+       background-color: rgb(255, 255, 255);
+       display: grid;
+       grid-template-rows: 3em auto 3em;
+      overflow: hidden;
+       
+      
+     }
+  }
+}

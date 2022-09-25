@@ -1,0 +1,27 @@
+@import url('../../../styles/variables.css');
+.Item_container{
+     
+    //padding: var(--padding);
+    
+    //background-color: var(--Gray5);
+    color: white;
+    fill: white;
+   
+    .Item_inner{
+        display: flex;
+        text-decoration: none;
+        align-items: center;
+        gap: 0.5em;
+        .Icon_container{
+            width: 1.6em;
+            margin: 0;
+            .Icon_item{
+                fill: var(--Black2);
+                margin: 0;
+                padding: 0;
+            }
+        }
+       
+
+    }
+}

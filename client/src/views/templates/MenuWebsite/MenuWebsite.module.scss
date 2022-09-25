@@ -1,0 +1,18 @@
+@import url(../../../styles/variables.css);
+
+.AppContainer{
+    grid-column: 12 span;
+    min-height: 4em;
+    color: white;
+    background-color: var(--icolor);
+    margin: 0;
+    display: grid;
+    align-items: center;
+    grid-template-columns: 1fr auto;
+    padding: 0 2em;
+    .UserSection{
+        display: flex;
+        align-items: center;
+        gap: 2em;
+    }
+}
