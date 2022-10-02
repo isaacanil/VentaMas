@@ -15,29 +15,29 @@
    user-select: none;
    background-color: var(--icolor);
    width: 100%;
-   height: 4em;
+   height: 2.75em;
    display: grid;
    grid-template-columns: auto auto auto;
    justify-content: space-between;
    align-items: center;
    
 
-   padding: 0 1.5em;
+   padding: 0 1.5em 0 0;
 
    .MenuBtn {
       justify-self: flex-start;
-      width: 2.6em;
-      height: 2.6em;
+      width: 3.375em;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      border-radius: 100px;
       background-color: rgba(0, 0, 0, 0.21);
       cursor: pointer;
-
+      
       &:hover {
-
-         border-radius: 100px;
+         
+         
+         background-color: rgba(0, 0, 0, 0.21);
          transition: all 1s ease-in-out;
       }
 
@@ -108,16 +108,13 @@
 
    }
 
-   
-
-
    .Menu {
       position: absolute;
       z-index: 999;
       max-width: 500px;
       width: 100%;
-      height: calc(100vh - 4em);
-      top: 4em;
+      height: calc(100vh - 2.75em);
+      top: 2.75em;
       left: 0;
       background-color: rgb(88, 88, 88);
       transform: translateX(0px);

@@ -9,6 +9,7 @@ import { Account } from '../Account/Account'
 export const MenuApp = () => {
   const MenuData = Data
   const [clickBtnMenu, setClickBtnMenu] = useState(false)
+
   const handledClickMenuBtn = (e) => {
     e.preventDefault();
     setClickBtnMenu(!clickBtnMenu)

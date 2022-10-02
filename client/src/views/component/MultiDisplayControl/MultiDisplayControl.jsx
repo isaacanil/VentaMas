@@ -13,12 +13,12 @@ export const MultiDisplayControl = () => {
     //Ultimo elemento 
     const lastItem = list.at(-1);
     //condicion para dejar de añadir siempre y cuando este por debajo de 5
-    if (lastItem < 5) {
+    if (lastItem < 7) {
       const newItem = lastItem + 1;
 
       setList([...list, newItem])
     }
-    if(lastItem > 4){
+    if(lastItem > 6){
       alert('ya excediste el numero de pantallas')
     }
     
@@ -32,6 +32,9 @@ export const MultiDisplayControl = () => {
     <div className={ isOpen ? `${Style.Container} ${Style.Open}` : `${Style.Container}`}>
 
       <ul className={Style.Items}>
+      <button onClick={upgradeList} className={`${Style.Item} ${Style.AddBtn}`}>
+          <PlusIcon></PlusIcon>
+        </button>
         {
 
           list.map((item, index) =>
@@ -45,9 +48,7 @@ export const MultiDisplayControl = () => {
 
           )
         }
-        <button onClick={upgradeList} className={`${Style.Item} ${Style.AddBtn}`}>
-          <PlusIcon></PlusIcon>
-        </button>
+        
       </ul>
 
 

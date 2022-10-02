@@ -1,0 +1,1 @@
+import{i as l}from"./is-arrayish.e606b633.js";var n={exports:{}},c=l,p=Array.prototype.concat,u=Array.prototype.slice,o=n.exports=function(a){for(var r=[],e=0,i=a.length;e<i;e++){var t=a[e];c(t)?r=p.call(r,u.call(t)):r.push(t)}return r};o.wrap=function(s){return function(){return s(o(arguments))}};export{n as s};

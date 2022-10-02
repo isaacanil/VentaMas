@@ -22,7 +22,7 @@ export const Home = () => {
 
 
               <li className={Style.card}>
-                <Link className={Style.card_inner} to='/app/venta'>
+                <Link className={Style.card_inner} to='/app/venta/1'>
                   <div className={Style.card_img_container}>
                     <img className={Style.card_img} src={VentaImg} alt="" />
                   </div>

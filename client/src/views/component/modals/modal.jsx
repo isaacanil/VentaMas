@@ -17,9 +17,9 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName })
     const done = () => {
         new Promise(function (resolve) {
 
-            resolve(handleSubmit());
+        handleSubmit()
 
-        }).then(function (result) {
+        }).then(function () {
 
             close();
 

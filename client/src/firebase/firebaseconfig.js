@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { nanoid } from "nanoid";
 //TODO ***STORAGE***********************************
 import {
@@ -14,19 +14,7 @@ import {
 import { useState } from "react";
 
 //TODO ***FIRESTORE***********************************
-export {
-  collection,
-  addDoc,
-  getDocs,
-  documentId,
-  where,
-  deleteDoc,
-  doc,
-  setDoc,
-  getFirestore,
-  query,
 
-} from "firebase/firestore"
 
 //TODO ***AUTH**************************************
 export {
@@ -89,12 +77,12 @@ export const UploadProdData = (
   url, 
   productName,
   cost,
-  taxe,
+  taxRef,
   stock,
   category,
   netContent,) => {
+  const tax = JSON.parse(taxRef)
   const taxValue = () => {
-   let tax = JSON.parse(taxe)
      return {
       ref: tax.ref,
       value: tax.value,
@@ -126,10 +114,7 @@ export const UploadProdData = (
     
 
  }
-
-
   new Promise((resolve, reject) => {
-    
     try {
       const productRef = doc(db, "products", product.id)
       setDoc(productRef, { 
@@ -140,9 +125,6 @@ export const UploadProdData = (
     } catch (error) {
       console.error("Error adding document: ", error)
     }
-   
-    
-
   })
 
 }
@@ -176,6 +158,17 @@ export const Firestore = async (path, data, id) => {
     data
   });
 }
+export const getCat = async (setCategorys) => {
+  // const clientRef = collection(db, "client")
+  const { docs } = await getDocs(collection(db, "categorys"));
+  const categorysArray = docs.map(item => item.data())
+  setCategorys(categorysArray)
+}
+export const UploadCat = async (path, category, id) => {
+  await setDoc(doc(db, `${path}`, id), {
+    category
+  });
+}
 export const deleteProduct = (id) => {
   deleteDoc(doc(db, `products`, id))
 }
@@ -184,4 +177,17 @@ export const getItems = async (setBills) => {
   const { docs } = await getDocs(Ref);
   const DataArray = docs.map(item => item.data());
   setBills(DataArray);
+}
+
+export const QueryByCategory = async (setProductArray, categoryArrayData, categoryStatus) => {
+
+  const productsRef = collection(db, "products")
+  const q = query(productsRef, where("product.category", "in", categoryArrayData));
+  const {docs} = await getDocs(q);
+  const array = docs.map((doc) => doc.data());
+
+  if(categoryStatus){
+    setProductArray(array);
+  }
+
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Modal } from '../modal'
-import { InputText } from '../../../'
+import { InputText } from '../../..'
 import { db } from '../../../../firebase/firebaseconfig'
 import { setDoc, doc } from 'firebase/firestore'
 import { nanoid } from 'nanoid'

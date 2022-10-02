@@ -11,6 +11,7 @@
     align-items: center;
     .clientControl{
        position: absolute;
+       z-index: 1;
        top: 3em;
        left: 0;
        width: 100%;

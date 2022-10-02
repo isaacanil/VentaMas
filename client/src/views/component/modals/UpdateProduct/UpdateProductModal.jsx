@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { closeModalUpdateProd, SelectUpdateProdModal } from '../../../../features/modals/modalSlice'
 export const UpdateProductModal = () => {
   const [taxesList, setTaxesList] = useState()
-  const [taxe, setTaxe] = useState('')
+  const [taxData, setTaxData] = useState('')
   const [productName, setProductName] = useState('')
   const [cost, setCost] = useState(null)
   const [productImage, setProductImage] = useState(null)
@@ -17,7 +17,6 @@ export const UpdateProductModal = () => {
   const [netContent, setNetContent] = useState('')
   const [cantidad, setCantidad] = useState('')
   const [errorMassage, setErrorMassage] = useState('')
-  console.log(taxe)
 
   useEffect(() => {
     getTaxes(setTaxesList)
@@ -28,7 +27,7 @@ export const UpdateProductModal = () => {
       // id: nanoid(6),
       name: String(productName),
       // cost: Number(cost),
-      tax: taxe !== '' ? (JSON.parse(taxe)) : null,
+      tax: taxData !== '' ? (JSON.parse(taxData)) : null,
       //prodImageURL: productImageURL,
       // ProdStock: Number(stock),
       //toma el valor sin inpuesto y le agrega el impuesto seleccionado y redondeado
@@ -80,8 +79,8 @@ export const UpdateProductModal = () => {
                 <option value="">Select</option>
                 {
                   taxesList.length >= 1 ? (
-                    taxesList.map(({ taxe }, index) => (
-                      <option key={index} value={JSON.stringify(taxe)}>{taxe.ref}</option>
+                    taxesList.map(({ tax }, index) => (
+                      <option key={index} value={JSON.stringify(tax)}>{tax.ref}</option>
                     ))
                   ) : null
                 }

@@ -14,14 +14,13 @@ import { getTaxes } from '../../../../firebase/firebaseconfig';
 
 export const AddProductModal = () => {
    const [taxesList, setTaxesList] = useState()
-   const [taxe, setTaxe] = useState('')
+   const [taxRef, setTaxRef] = useState('')
  
 
    useEffect(()=>{
       getTaxes(setTaxesList)
    },[])
    
-   console.log(taxe)
    const dispatch = useDispatch()
    //declarando las variables
    const isOpen = useSelector(SelectAddProdModal)
@@ -29,6 +28,7 @@ export const AddProductModal = () => {
    const [productName, setProductName] = useState('')
    const [cost, setCost] = useState(null)
    const [productImage, setProductImage] = useState(null)
+   console.log(productImage)
    const [category, setCategory] = useState(null)  
    const [stock, setStock] = useState(null)
    const [netContent, setNetContent] = useState('')
@@ -44,12 +44,10 @@ export const AddProductModal = () => {
 
 
    const handleSubmit = async () => {
-    
-
       /****************************************************************** */
-      const extentionsFile = /.jpg|.jpeg|.png| .gif/i;
+      const extentionsFile = /.jpg|.jpeg|.png| .webp| .gif/i;
       if (!extentionsFile.exec(productImage.name)) {
-         console.log(product.productImage.name)
+         console.log(productImage.name)
          setErrorMassage(<ErrorMessage text='Error de archivo (no es una imagen)'></ErrorMessage>)
       } else {
          setErrorMassage('')
@@ -58,15 +56,14 @@ export const AddProductModal = () => {
             url, 
             productName,
             cost,
-            taxe,
+            taxRef,
             stock,
             category,
             netContent,
             ))
         
          try {
-            
-            
+
             return <Navigate to={'/app/'}></Navigate>
          }
          catch (e) {
@@ -116,7 +113,7 @@ export const AddProductModal = () => {
                   </div>
                   <div className={Style.Group}>
                      <label htmlFor="">Impuesto:</label>
-                     <select  id="" onChange={(e) => setTaxe( e.target.value )}>
+                     <select  id="" onChange={(e) => setTaxRef( e.target.value )}>
                         <option value="">Select</option>
                         {
                            taxesList.length >= 1 ? (

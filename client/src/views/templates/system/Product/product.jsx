@@ -5,32 +5,29 @@ import { Button } from '../../../index';
 import { useDispatch, useSelector } from 'react-redux';
 import { addProduct } from '../../../../features/cart/cartSlice';
 import { SelectProduct } from '../../../../features/cart/cartSlice';
-
+import { separator } from '../../../../hooks/separator';
 const ProductContainer = styled.div`
-
-border: 1px solid #00000028;
-padding: 0.8em;
-border-radius: 6px;
-background-color: rgb(255, 255, 255);
-overflow: hidden;
-
-
+    border: 1px solid rgba(0, 0, 0, 0.300);
+   
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.220);
+    border-radius: 6px;
+    background-color: rgb(255, 255, 255);
+    overflow: hidden;
+    display: grid;
+    gap: 1em;
+    align-items: center;
+    align-content: center;
+    
 ${(props) => {
         switch (props.container) {
             case "row":
                 return `
-                grid-template-columns:  1fr;
+                grid-template-columns: min-content 1fr;
                 height: 100px;
-                overlow: hidden;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-
+                overflow: hidden;
+                
                 `;
-            case "normal":
-                return `
-
-                `;
+           
             default:
                 return `
             
@@ -39,14 +36,16 @@ ${(props) => {
     }}
 `;
 const ProductImgWrapper = styled.div`
-    border-radius: 6px;
+ 
     overflow: hidden;
+;
     ${(props) => {
         switch (props.type) {
             case "row":
                 return `
-              position: relative;
-                height: 100%;
+                
+                height: 100px;
+                width: 100px;
            
 
                 `;
@@ -65,7 +64,10 @@ const ProductImgWrapper = styled.div`
 const ProductImg = styled.img`
     src: url(${props => props.src});
     width: 100%;
+    height: 100%;
+  
     overflow: hidden;
+    object-fit: cover;
 
     ${(props) => {
         switch (props.type) {
@@ -89,27 +91,31 @@ const ProductImg = styled.img`
     }}
 `
 const Body = styled.div`
-     ${(props) => {
-        switch (props.type) {
-            case "row":
-                return `
-             display: flex;
-             gap: 1em;
-
-                `;
-            case "normal":
-                return `
-
-                `;
-            default:
-                return `
-            
-          `
-        }
-    }}
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    grid-template-columns: min-content;
+    grid-template-rows: min-content min-content;
+    
+    
+    
+    `
+const Main = styled.div`
+    padding: 0.6em 0.4em 0;
+    
 `
 const Title = styled.h5`
-    color: black;
+    color: rgb(66, 66, 66);
+    width: 165px;
+    line-height: 1pc;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    //white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 `
 const ProductStock = styled.div`
     height: 50px;
@@ -120,9 +126,20 @@ const ProductStock = styled.div`
     align-items: center;
   
 `
+const Footer = styled.footer`
+
+`
 const couter = styled.div`
 `
 const ProductPrice = styled.div`
+    height: auto;
+    background-color: #d8d8d8;
+    font-weight: 500;
+    padding: 0.2em 0.8em;
+    border-top-left-radius: 10px;
+    color: #424242;
+    //border-radius: 50px;
+    
     
 `
 export const Product = ({ title, image, view, price, product }) => {
@@ -132,60 +149,46 @@ export const Product = ({ title, image, view, price, product }) => {
     //console.log()
     //ProductSelected.map(productLocal => productLocal.productName)
     //const ProductFromFirebase = product;
-    
+
     const handleGetThisProduct = (product) => {
-            dispatch(
-                addProduct(
-                   product
-                )
-
+        dispatch(
+            addProduct(
+                product
             )
-            
-        
+
+        )
+
+
         //console.log(ProductSelected)
-        
-    }
-    
-  
-    if (view === 'row') {
-        return (
 
-            <ProductContainer container='row' onClick={() => handleGetThisProduct(product)}>
-                <ProductImgWrapper type='row'>
-                    <ProductImg type='row' src={image} row></ProductImg>
-                </ProductImgWrapper>
-                <Body type='row'>
+    }
+
+
+
+    return (
+
+        <ProductContainer container='row' onClick={() => handleGetThisProduct(product)}>
+            <ProductImgWrapper type='row'>
+                <ProductImg type='row' src={image} row></ProductImg>
+            </ProductImgWrapper>
+            <Body type='row'>
+                <Main>
                     <Title>{title}</Title>
-                    <ProductPrice>RD${price}</ProductPrice>
-                
-                </Body>
-             
-                
-            </ProductContainer>
 
-        )
-    }
-    if (view === 'normal') {
+                </Main>
+                <Footer>
+                    <ProductPrice>
+                        <span>
+                            RD${separator(price)}
+                        </span>
+                    </ProductPrice>
 
-        return (
+                </Footer>
+            </Body>
+        </ProductContainer>
 
-            <ProductContainer onClick={() => handleGetThisProduct(product)}>
+    )
 
-                <ProductImgWrapper>
-                    <ProductImg src={image}></ProductImg>
-                </ProductImgWrapper>
-                <Body>
-                    <Title>{title}</Title>
-                   
-                    <ProductPrice>RD${price}</ProductPrice>
-                 
-                </Body>
-               
-                
-                
-            </ProductContainer>
 
-        )
-    }
 
 }

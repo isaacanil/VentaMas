@@ -56,7 +56,7 @@ const openModal = (id) => {
       <Menu></Menu>
       {/*Interfaz de inventario*/}
       <div className={Style.AppContainer}>
-        <MultiDisplayControl></MultiDisplayControl>
+      
         <div>
           <SearchBar searchData={searchData} setSearchData={setSearchData}></SearchBar>
           <AddProductButton></AddProductButton>

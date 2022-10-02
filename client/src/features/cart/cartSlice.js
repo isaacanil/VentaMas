@@ -122,7 +122,7 @@ const cartSlice = createSlice({
             if (productFound) {
                 productFound.amountToBuy = Number(value)
                 productFound.price.total = productFound.amountToBuy * productFound.price.unit + productFound.price.unit;
-                productFound.taxes.total = productFound.amountToBuy * productFound.taxes.unit + productFound.taxes.unit;
+                productFound.tax.total = productFound.amountToBuy * productFound.tax.unit + productFound.tax.unit;
                 productFound.cost.total = productFound.amountToBuy * productFound.cost.unit + productFound.cost.unit;
             }
          

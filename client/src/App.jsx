@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { login, logout, selectUser } from './features/auth/userSlice'
 import { SelectProduct } from './features/cart/cartSlice'
 import { auth, onAuthStateChanged } from './firebase/firebaseconfig'
-
+import { Category } from './views/pages/category/Category';
 //páginas y componentes
 import {
   Welcome,
@@ -25,7 +25,9 @@ import {
   RequireAuth,
   Contact,
   ModalManager,
-  Receipt
+  Receipt,
+  AddCategory,
+  Orders
 
 
 } from './views/index'
@@ -37,9 +39,9 @@ function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
   const products = useSelector(SelectProduct)
-  const cart = useSelector((state)=> state.cart)
- 
- 
+  const cart = useSelector((state) => state.cart)
+
+
   //Todo ******detectando si hay usuarios logueados******
   useEffect(() => {
     onAuthStateChanged(auth, (userAuth) => {
@@ -79,15 +81,22 @@ function App() {
           </Route>
           <Route exact path='/app/checkout/receipt' element={
             <RequireAuth>
-              <PDFViewer style={{width: "100%", height: "99vh"}}>
+              <PDFViewer style={{ width: "100%", height: "99vh" }}>
                 <Receipt data={cart}></Receipt>
               </PDFViewer>
             </RequireAuth>
           }>
           </Route>
+          <Route exact path='/app/' element={
+            <RequireAuth>
+              <Home></Home>
+            </RequireAuth>
+          }>
+          </Route>
 
-
-
+          <Route path='/app/order/*'>
+            <Route path='orders' element={<Orders/>}></Route>
+          </Route>
 
           <Route path='/app/contact/*' element={<Contact></Contact>} >
             <Route path='cliente' element={
@@ -95,15 +104,28 @@ function App() {
             }></Route>
             <Route path='proveedor' element={<h2>Proveedor</h2>}></Route>
           </Route>
-          <Route exact path='/app/venta' element={
+
+          <Route exact path='/app/venta' >
+            
+              <Route path=':displayID' element={
+                <RequireAuth>
+                  <VentaPage></VentaPage>
+                </RequireAuth>
+              } ></Route>
+          
+          </Route>
+
+        
+
+          <Route exact path='/app/category' element={
             <RequireAuth>
-              <VentaPage></VentaPage>
+              <Category></Category>
             </RequireAuth>
           }>
           </Route>
-          <Route exact path='/app/' element={
+          <Route exact path='/app/category/add' element={
             <RequireAuth>
-              <Home></Home>
+              <AddCategory></AddCategory>
             </RequireAuth>
           }>
           </Route>

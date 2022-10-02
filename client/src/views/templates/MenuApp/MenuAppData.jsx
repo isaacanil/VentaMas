@@ -7,11 +7,26 @@ export const MenuData = [
     },
     {
         title: 'Venta',
-        path: '/app/venta'
+        path: '/app/venta/1'
     },
     {
         title: 'Compra',
-        path: '/app/compra'
+        path: '/app/compra',
+        subMenu: [
+            {
+                title: 'Pedido',
+                path: '/app/Compra/Pedido'
+            },
+            {
+                title: 'Clientes',
+                path: '/app/contact/clientes'
+            }
+        ]
+    },
+    {
+        title: 'Categoría',
+        path: '/app/category',
+        
     },
     {
         title: 'Registro',
@@ -35,7 +50,18 @@ export const MenuData = [
     },
     {
         title: 'Inventario',
-        path: '/app/inventario'
+        path: '/app/inventario',
+        submenu: [
+            {
+                title: 'Clientes',
+                path: '/app/contact/clientes'
+            },
+            {
+                title: 'Proveedores',
+                path: '/app/contact/proveedores'
+            },
+
+        ]
     },
     {
         title: 'Configuración',

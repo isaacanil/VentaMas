@@ -5,18 +5,17 @@ import { Product, Grid } from '../../'
 
 export const SearchList = ({dataSearch}) => {
   
-  const [products, setProduct] = useState([])
+  const [products, setProduct] = useState()
   const [filteredProducts, setFilteredProducts] = useState([])
-  
+
+
   console.log(dataSearch)
   
-  useEffect(() => {
-    getProducts(setProduct)
-  }, [dataSearch])
+ 
   //console.log(auth.currentUser)
     useEffect(()=>{
 
-        const filtered = products.filter((e)=>  e.product.productName.toLowerCase().includes(dataSearch.toLowerCase()));
+        const filtered = products.filter((e) => e.product.productName.toLowerCase().includes(dataSearch.toLowerCase()));
         setFilteredProducts(filtered)
       
     }, [dataSearch, products])
@@ -27,10 +26,10 @@ export const SearchList = ({dataSearch}) => {
 
   return (
     <div className={style.container}>
-      <Grid columns='2'>
+      <Grid columns='4'>
       {
         !dataSearch == '' ? (
-          products.length > 0 ? filteredProducts.map(({product}, index)=> (
+          products.length > 0 ? filteredProducts.map(({product}, index) => (
 
            <Product 
            key={index} 
@@ -42,7 +41,7 @@ export const SearchList = ({dataSearch}) => {
            ></Product>
               
            
-          ))  : <h2>no hay Productos</h2>
+          ))  : <h2>No hay Productos!</h2>
       ) : (
       null
       )
