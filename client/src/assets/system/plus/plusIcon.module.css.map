@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAEI,UAFM,CAEN,WAAW,CAAA;EACP,KAAK,EAAE,IAAI;EACX,MAAM,EAAE,IAAI;EACZ,OAAO,EAAE,IAAI;EACb,eAAe,EAAE,MAAM;EACvB,aAAa,EAAE,MAAM;EACrB,aAAa,EAAE,MAAM;EACrB,WAAW,EAAE,MAAM;CAKtB;;AAdL,AAUQ,UAVE,CAEN,WAAW,CAQP,KAAK,CAAA;EACD,IAAI,EAAE,OAAe;EACrB,KAAK,EAAE,GAAG;CACb",
+    "sources": [
+        "plusIcon.module.scss"
+    ],
+    "names": [],
+    "file": "plusIcon.module.css"
+}

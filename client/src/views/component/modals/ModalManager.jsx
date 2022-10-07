@@ -1,18 +1,126 @@
 import { Fragment } from "react"
 import { AddClientModal } from "./AddClient/AddClientModal"
-import { AddProductModal } from "./AddProduct/AddProductModal"
+import { ProductModal } from "./Product/ProductModal"
 import { BillingModal } from "../../component/modals/Billing/BillingModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { useModal } from "../../../hooks/useModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
+import { AddProvider } from "./AddProvider/AddProvider"
+import { useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
+import {
+  SelectAddClientModal,
+  SelectAddOrderModal,
+  SelectAddProdModal,
+  SelectBillingModal,
+  SelectUpdateProdModal,
+
+  closeModalAddProd,
+  closeModalUpdateProd
+} from "../../../features/modals/modalSlice"
 export const ModalManager = () => {
-  return(
+  const dispatch = useDispatch()
+  const AddClientModalSelected = useSelector(SelectAddClientModal)
+  const AddOrderModalSelected = useSelector(SelectAddOrderModal)
+  const AddProdModalSelected = useSelector(SelectAddProdModal)
+  const BillingModalSelected = useSelector(SelectBillingModal)
+  const UpdateProdModalSelected = useSelector(SelectUpdateProdModal)
+
+  const handleSubmitAddProducts = async () => {
+    /****************************************************************** */
+    const extentionsFile = /.jpg|.jpeg|.png| .webp| .gif/i;
+    if (!extentionsFile.exec(productImage.name)) {
+      console.log(productImage.name)
+      setErrorMassage(<ErrorMessage text='Error de archivo (no es una imagen valida)'></ErrorMessage>)
+    } else {
+      setErrorMassage('')
+      //referencia
+      UploadProdImg(productImage).then((url) => UploadProdData(
+        url,
+        productName,
+        cost,
+        taxRef,
+        stock,
+        category,
+        netContent,
+      ))
+
+      try {
+
+        return <Navigate to={'/app/'}></Navigate>
+      }
+      catch (e) {
+        console.error("Error adding document: ", e)
+      }
+    }
+    /******************************************************************************** */
+
+
+  }
+  const closeModalAddProducts = () => {
+    dispatch(
+      closeModalAddProd()
+    )
+  }
+  const handleSubmitUpdateProducts = async () => {
+    /****************************************************************** */
+    const extentionsFile = /.jpg|.jpeg|.png| .webp| .gif/i;
+    if (!extentionsFile.exec(productImage.name)) {
+      console.log(productImage.name)
+      setErrorMassage(<ErrorMessage text='Error de archivo (no es una imagen valida)'></ErrorMessage>)
+    } else {
+      setErrorMassage('')
+      //referencia
+      UploadProdImg(productImage).then((url) => UploadProdData(
+        url,
+        productName,
+        cost,
+        taxRef,
+        stock,
+        category,
+        netContent,
+      ))
+
+      try {
+
+        return <Navigate to={'/app/'}></Navigate>
+      }
+      catch (e) {
+        console.error("Error adding document: ", e)
+      }
+    }
+    /******************************************************************************** */
+
+
+  }
+  const closeModalUpdateProducts = () => {
+    dispatch(
+      closeModalUpdateProd()
+    )
+  }
+  return (
     <Fragment>
-      <AddClientModal /> 
-      <AddProductModal />
-      <BillingModal />
-      <UpdateProductModal />
-      <AddOrderModal></AddOrderModal>
+      <AddClientModal
+        isOpen={AddClientModalSelected} 
+        />
+      <ProductModal
+        btnSubmitName='Guardar'
+        title='Agregar Producto'
+        isOpen={AddProdModalSelected}
+        closeModal={closeModalAddProducts}
+        handleSubmit={handleSubmitAddProducts}
+      />
+      <ProductModal 
+        btnSubmitName='Actualizar'
+        title='Actualizar Producto'
+        isOpen={UpdateProdModalSelected}
+        closeModal={closeModalUpdateProducts}
+        handleSubmit={handleSubmitUpdateProducts}
+      />
+      <BillingModal isOpen={BillingModalSelected} />
+      
+      {/* <AddOrderModal />
+      <AddProvider /> */}
     </Fragment>
   )
 

@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,OAAO,CAAC,oCAAI;AACZ,AAAA,eAAe,CAAA;EACX,KAAK,EAAE,KAAK;EACZ,OAAO,EAAE,KAAK;EACd,aAAa,EAAE,KAAK;EACpB,gBAAgB,EAAE,OAAe;EACjC,OAAO,EAAE,IAAI;EACb,WAAW,EAAE,MAAM;CAOtB;;AAbD,AAUI,eAVW,CAUX,KAAK,CAAA;EACD,IAAI,EAAE,KAAK;CACd",
+    "sources": [
+        "UserIcon.module.scss"
+    ],
+    "names": [],
+    "file": "UserIcon.module.css"
+}

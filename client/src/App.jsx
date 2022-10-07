@@ -35,13 +35,10 @@ import { Fragment } from 'react';
 import { useModal } from './hooks/useModal'
 import { PDFViewer } from '@react-pdf/renderer'
 function App() {
-
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
   const products = useSelector(SelectProduct)
   const cart = useSelector((state) => state.cart)
-
-
   //Todo ******detectando si hay usuarios logueados******
   useEffect(() => {
     onAuthStateChanged(auth, (userAuth) => {

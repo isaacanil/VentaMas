@@ -1,7 +1,7 @@
 import React, {Fragment} from 'react'
 import styled from 'styled-components'
 import { useDispatch } from 'react-redux'
-import { SelectCategoryModal, openModalCategory, closeModalCategory } from '../../../../features/modals/modalSlice'
+import { openModalCategory, closeModalCategory } from '../../../../features/modals/modalSlice'
 
 export const CloseButton = () => {
     const dispatch = useDispatch()

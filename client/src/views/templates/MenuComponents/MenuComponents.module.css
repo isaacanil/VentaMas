@@ -1,0 +1,55 @@
+.ComponentContainer {
+  height: 3em;
+  width: 100%;
+  background-color: #b9b9b9;
+  overflow: hidden;
+  display: -ms-grid;
+  display: grid;
+  z-index: 11;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 0 2em;
+  display: none;
+}
+
+.ComponentContainer .Items {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  list-style: none;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 800px) {
+  .ComponentContainer {
+    height: 3em;
+    width: 100%;
+    background-color: #b9b9b9;
+    overflow: hidden;
+    display: -ms-grid;
+    display: grid;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    padding: 0 2em;
+  }
+  .ComponentContainer .Items {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    width: 100%;
+    list-style: none;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
+    margin: 0;
+    padding: 0;
+  }
+}
+/*# sourceMappingURL=MenuComponents.module.css.map */

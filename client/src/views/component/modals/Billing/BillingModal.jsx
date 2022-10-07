@@ -1,13 +1,17 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { SelectProduct, SelectFacturaData, getDate  } from '../../../../features/cart/cartSlice'
+import { SelectProduct, SelectTotalShoppingItems, SelectFacturaData, getDate, CancelShipping  } from '../../../../features/cart/cartSlice'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
-import { SelectBillingModal } from '../../../../features/modals/modalSlice'
 import { closeModalBilling } from '../../../../features/modals/modalSlice'
 import { ClientBar } from './component/ClientSection'
 import { DeliveryOption } from './component/DeliveryOption'
 import { PaymentMethod } from './component/Payment'
+import ReactToPrint from 'react-to-print'
+import { Firestore } from '../../../../firebase/firebaseconfig'
+import { useDispatch, useSelector } from 'react-redux'
+import { separator } from '../../../../hooks/separator'
+import { Receipt } from '../../../pages/checkout/Receipt'
+import styled from 'styled-components'
 import {
   Container,
   BillingWrapper,
@@ -15,8 +19,6 @@ import {
   Body,
   Main,
   Row,
-  Grid,
-  GridTitle,
   Precio_Col,
   ITBIS_Col,
   Product_Col,
@@ -27,39 +29,42 @@ import {
   ProductItbis,
   ProductView,
   ProductAmount,
-
-  InputText,
-  InputNumber,
-  InputGroup,
   Footer
 } from './Style'
-import { Firestore } from '../../../../firebase/firebaseconfig'
-import { useDispatch } from 'react-redux'
-import { separator } from '../../../../hooks/separator'
-export const BillingModal = () => {
-  const navigate = useNavigate()
+
+export const BillingModal = ({isOpen}) => {
   const dispatch = useDispatch()
   const data = useSelector(SelectFacturaData)
+  const totalShoppingItems = useSelector(SelectTotalShoppingItems)
   const id = data.id
   const path = "bills"
-
+  let ComponentRef = useRef(); // <= referencia para el documento que e va a imprimir
   const productSelected = useSelector(SelectProduct)
-
   //Todo *****Modal******************
-  const modalBillingSelected = useSelector(SelectBillingModal)
+  const bill = useSelector(state => state.cart)
   const closeModal = () => {
     dispatch(
       closeModalBilling()
     )
+    dispatch(
+      closeModalBilling()
+    )
   }
+  
   const handleSubmit = () => {
     dispatch(
       getDate()
     )
+    dispatch(
+      getDate()
+    )
     Firestore(path, data, id)
-    navigate('/app/checkout/receipt')
+    //navigate('/app/checkout/receipt')
     dispatch(
       closeModalBilling()
+    )
+    dispatch(
+      CancelShipping()
     )
   }
   return (
@@ -67,7 +72,7 @@ export const BillingModal = () => {
       
   
        {
-        modalBillingSelected ? (
+        isOpen ? (
           <Container>
             <BillingWrapper>
               <Head>
@@ -97,7 +102,7 @@ export const BillingModal = () => {
                           productSelected.map((item, index) => (
                             <Product key={index}>
                               <Row columns='product-list'>
-                                <div>{item.amountToBuy} UND</div>
+                                <div>{item.amountToBuy.total} UND</div>
 
                               </Row>
                               <Row columns='product-list'>
@@ -110,7 +115,6 @@ export const BillingModal = () => {
                                 <ProductPrecio>
                                   {separator(item.price.total)}
                                 </ProductPrecio>
-
                               </Row>
                             </Product>
                           ))
@@ -119,7 +123,7 @@ export const BillingModal = () => {
                     </ProductList>
                     <Row columns='product-list' bgColor='black'>
                     <ProductAmount>
-                      Total de artículos: {productSelected.length}
+                      Total de artículos: {totalShoppingItems}
                     </ProductAmount>
                     </Row>
                   </ProductView>
@@ -129,8 +133,17 @@ export const BillingModal = () => {
                 </Main>
                 <Footer>
                   <ButtonGroup>
-              
-                    <Button color='primary' onClick={handleSubmit}>Imprimir</Button>
+                      <ReactToPrint 
+                      trigger={()=>( <Button color='primary' onClick={handleSubmit}>Imprimir</Button>)}
+                      content={() => ComponentRef.current}
+                      />
+                      <DocumentContainer>
+                        <Receipt  ref={ComponentRef} data={bill}/>
+                      </DocumentContainer>
+                      
+                      <Button color='gray' onClick={handleSubmit}>Cerrar</Button>
+                      
+                   
                   </ButtonGroup>
                 </Footer>
               </Body>
@@ -145,3 +158,7 @@ export const BillingModal = () => {
 
   )
 }
+const DocumentContainer = styled.div`
+  position: absolute;
+  left: 100em;
+`

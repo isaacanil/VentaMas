@@ -30,15 +30,26 @@ import { v4 } from 'uuid'
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+//Todo Hi Pizza **************************************************
 const firebaseConfig = {
-  apiKey: "AIzaSyAJd82BkS5bp3lI5MbTJohU8rhZth3_AL4",
-  authDomain: "ventamax-75bec.firebaseapp.com",
-  projectId: "ventamax-75bec",
-  storageBucket: "ventamax-75bec.appspot.com",
-  messagingSenderId: "653993214585",
-  appId: "1:653993214585:web:f2e6674640557a28220aa8",
-  measurementId: "G-9RTQMM0JW2"
+  apiKey: "AIzaSyAIG5W8rtGwTQ2hxVK7XpSxU3iQBRvHaT4",
+  authDomain: "hipizza-1b9cc.firebaseapp.com",
+  projectId: "hipizza-1b9cc",
+  storageBucket: "hipizza-1b9cc.appspot.com",
+  messagingSenderId: "626612970714",
+  appId: "1:626612970714:web:8747469a390b7bb63271e3",
+  measurementId: "G-21YPCHBYHV"
 };
+//Todo Original**************************************************
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAJd82BkS5bp3lI5MbTJohU8rhZth3_AL4",
+//   authDomain: "ventamax-75bec.firebaseapp.com",
+//   projectId: "ventamax-75bec",
+//   storageBucket: "ventamax-75bec.appspot.com",
+//   messagingSenderId: "653993214585",
+//   appId: "1:653993214585:web:f2e6674640557a28220aa8",
+//   measurementId: "G-9RTQMM0JW2"
+// };
 
 
 // Initialize Firebase
@@ -99,7 +110,7 @@ export const UploadProdData = (
   console.log(taxValue())
   let product = {
     id: nanoid(6),
-    amountToBuy: 1,
+    amountToBuy: {unit: 1, total: 1},
     productName: String(productName),
     cost: {
       unit: Number(cost),
@@ -136,10 +147,8 @@ export const getProducts = async (setProduct) => {
   setProduct(productsArray)
 
 }
-export const getProduct = async (id, product) => {
-  await updateDoc(doc(db, "products", id), {
-    product
-  }).then()
+export const getProduct = async (id) => {
+  getDoc(doc(db, 'products', id))
 }
 export const getTaxes = async (setTaxe) => {
   const taxeRef = collection(db, "taxes")

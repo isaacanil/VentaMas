@@ -11,5 +11,5 @@ export const ButtonGroup = ({children}) => {
 
 const Container = styled.div`
     display: flex;
-    gap: 1em;
+    gap: 0.4em;
 `

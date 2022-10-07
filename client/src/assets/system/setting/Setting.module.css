@@ -1,0 +1,28 @@
+@import url("../../../styles/variables.css");
+.Item_container {
+  color: white;
+  fill: white;
+}
+
+.Item_container .Item_inner {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  text-decoration: none;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 0.5em;
+}
+
+.Item_container .Item_inner .Icon_container {
+  width: 1.6em;
+  margin: 0;
+}
+
+.Item_container .Item_inner .Icon_container .Icon_item {
+  fill: var(--Black2);
+  margin: 0;
+  padding: 0;
+}
+/*# sourceMappingURL=Setting.module.css.map */

@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,OAAO,CAAA;EACJ,gBAAgB,EAAE,OAAgB;EAClC,OAAO,EAAE,IAAI;EACb,KAAK,EAAE,IAAI;EACX,aAAa,EAAE,KAAK;EACpB,KAAK,EAAE,KAAK;EACZ,WAAW,EAAE,GAAG;EAChB,UAAU,EAAE,MAAM;EAClB,cAAc,EAAE,KAAK;CACvB",
+    "sources": [
+        "ErrorMassage.module.scss"
+    ],
+    "names": [],
+    "file": "ErrorMassage.module.css"
+}

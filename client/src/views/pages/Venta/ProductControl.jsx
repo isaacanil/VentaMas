@@ -41,7 +41,7 @@ export const ProductControl = () => {
     }, [searchData, products])
     
 
-    console.log(products)
+   // console.log(products)
     
 
 

@@ -1,0 +1,126 @@
+.Container {
+    display: grid;
+    gap: 1em;
+    grid-template-columns: 1fr;
+    width: 100%;
+
+    .Btn {
+        display: none;
+
+    }
+
+    .Items {
+        display: grid;
+        grid-template-columns: min-content 1fr;
+        padding: 0 1em;
+        height: 3em;
+        align-items: center;
+        gap: 1em;
+
+        width: 100%;
+
+        .MoreInfo {
+            display: grid;
+            align-items: center;
+            gap: 1em;
+            grid-template-columns: min-content min-content min-content 0.5fr 0.5fr 1fr min-content;
+        }
+        
+
+        .LimitText {
+            width: 100px;
+            height: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            //white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .Group {
+            display: grid;
+            grid-template-columns: 1fr;
+
+            label {
+                display: none;
+                font-weight: 600;
+            }
+
+        }
+    }
+
+}
+
+@media (max-width: 800px) {
+
+    .Container {
+        display: grid;
+       align-items: flex-start;
+        justify-content: center;
+        gap: 0;
+        grid-template-columns: min-content 1fr;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.200);
+        &:last-child{
+            border-bottom: 0;
+        }
+
+        .Btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.5em;
+            height: 3.5em;
+
+        
+            
+        
+        }
+        
+        .Items {
+            display: grid;
+            grid-template-columns: 1fr;
+            height: auto;
+            position: relative;
+            background-color: rgb(235,235,235);
+            padding: 1em;
+            
+            
+
+            .MoreInfo{
+                display: none;
+                align-items: center;
+                gap: 1em;
+                grid-template-columns: 1fr;
+        
+                width: 100%;
+       
+         
+                z-index: 1;
+            }
+            .MoreInfo.Visible{
+                display: grid;
+            }
+            .LimitText {
+                width: auto;
+                height: auto;
+                display: block;
+               
+           
+               
+                overflow: hidden;
+            }
+
+            .Group {
+                display: grid;
+                grid-template-columns: 0.4fr 1fr;
+                align-items: center;
+                label {
+                    display: block;
+                }
+
+            }
+        }
+    }
+
+}

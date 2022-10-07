@@ -3,7 +3,7 @@ import { Modal } from '../modal'
 import styled from 'styled-components'
 import { getTaxes, getProduct } from '../../../../firebase/firebaseconfig'
 import { useDispatch, useSelector } from 'react-redux'
-import { closeModalUpdateProd, SelectUpdateProdModal } from '../../../../features/modals/modalSlice'
+import { closeModalUpdateProd, SelectUpdateProdModal} from '../../../../features/modals/modalSlice'
 export const UpdateProductModal = () => {
   const [taxesList, setTaxesList] = useState()
   const [taxData, setTaxData] = useState('')
@@ -17,35 +17,36 @@ export const UpdateProductModal = () => {
   const [netContent, setNetContent] = useState('')
   const [cantidad, setCantidad] = useState('')
   const [errorMassage, setErrorMassage] = useState('')
-
+  
   useEffect(() => {
     getTaxes(setTaxesList)
   }, [])
- 
 
-    let product = {
-      // id: nanoid(6),
-      name: String(productName),
-      // cost: Number(cost),
-      tax: taxData !== '' ? (JSON.parse(taxData)) : null,
-      //prodImageURL: productImageURL,
-      // ProdStock: Number(stock),
-      //toma el valor sin inpuesto y le agrega el impuesto seleccionado y redondeado
-      // ProdNetContent: netContent,
-      // SalePrice: () => {
-      //   const result = product.cost + product.totalTaxes()
-      //   return result.toFixed(2)
-      // }
-    }
-    console.log(product)
-    const {id, isOpen} = useSelector(SelectUpdateProdModal)
-    
-    const dispatch = useDispatch()
-   const handleSubmit = () => {
-     const result = getProduct(id, product)
+
+  let product = {
+    // id: nanoid(6),
+    name: String(productName),
+    // cost: Number(cost),
+    tax: taxData !== '' ? (JSON.parse(taxData)) : null,
+    //prodImageURL: productImageURL,
+    // ProdStock: Number(stock),
+    //toma el valor sin inpuesto y le agrega el impuesto seleccionado y redondeado
+    // ProdNetContent: netContent,
+    // SalePrice: () => {
+    //   const result = product.cost + product.totalTaxes()
+    //   return result.toFixed(2)
+    // }
+  }
+  console.log(product)
+  
+  
+
+  const dispatch = useDispatch()
+  const handleSubmit = () => {
+    const result = getProduct(id, product)
     console.log(result)
-   }
-   
+  }
+
   const closeModal = () => {
     dispatch(
       closeModalUpdateProd()
@@ -53,12 +54,12 @@ export const UpdateProductModal = () => {
   }
   return (
     <Fragment>
-      {isOpen ? (
-        <Modal nameRef={'Actualizar Producto'} close={closeModal} handleSubmit={handleSubmit}>
+      {SelectUpdateProdModal ? (
+        <Modal nameRef={'Actualizar Producto'} close={closeModal} handleSubmit={handleSubmit} btnSubmitName='Actualizar'>
           <Container>
             <Group>
-            <label htmlFor="">Nombre del producto:</label>
-                     <input  type="text" required onChange={(e) => setProductName(e.target.value)} />
+              <label htmlFor="">Nombre del producto:</label>
+              <input type="text" required onChange={(e) => setProductName(e.target.value)} />
             </Group>
             <Group>
               <label htmlFor="">Costo: </label>
@@ -77,13 +78,13 @@ export const UpdateProductModal = () => {
               <label htmlFor="">Impuesto:</label>
               <select id="" onChange={(e) => setTaxe(e.target.value)}>
                 <option value="">Select</option>
-                {
+                {/* {
                   taxesList.length >= 1 ? (
                     taxesList.map(({ tax }, index) => (
                       <option key={index} value={JSON.stringify(tax)}>{tax.ref}</option>
                     ))
                   ) : null
-                }
+                } */}
 
 
               </select>

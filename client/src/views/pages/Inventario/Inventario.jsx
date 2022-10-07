@@ -26,22 +26,22 @@ export const Inventario = () => {
   const [products, setProducts] = useState('')
   const [searchData, setSearchData] = useState('')
   const [product, setProduct] = useState('')
+
   useEffect(() => {
-    
     //getProducts(setProducts);
     getProducts(setProducts)
   }, []);
- 
- 
 const handleDeleteProduct = (e) => {
+
   const data = e.target.dataset.id;
   deleteProduct(data)
 }
+
 const handleUpdateProduct = async (id) => {
   const doc = await getProduct(id)
   console.log(doc.data())
-
 }
+
 const openModal = (id) => {
   dispatch(
     openModalUpdateProd(id)
@@ -67,7 +67,6 @@ const openModal = (id) => {
                 products.length !== 0 ?
                   (
                     products.map(({product, id}, index) => (
-
 
                       <li key={index} className={Style.product} >
                         <div className={Style.product_header}>

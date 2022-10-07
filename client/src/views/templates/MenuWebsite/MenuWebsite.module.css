@@ -1,0 +1,27 @@
+@import url(../../../styles/variables.css);
+.AppContainer {
+  grid-column: 12 span;
+  min-height: 4em;
+  color: white;
+  background-color: var(--icolor);
+  margin: 0;
+  display: -ms-grid;
+  display: grid;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -ms-grid-columns: 1fr auto;
+      grid-template-columns: 1fr auto;
+  padding: 0 2em;
+}
+
+.AppContainer .UserSection {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 2em;
+}
+/*# sourceMappingURL=MenuWebsite.module.css.map */

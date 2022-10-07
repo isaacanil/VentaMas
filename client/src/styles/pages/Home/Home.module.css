@@ -1,0 +1,81 @@
+@import url("../../variables.css");
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.App_container {
+  min-height: 100vh;
+  background-color: var(--White2);
+}
+
+.welcomeSection_container {
+  display: -ms-grid;
+  display: grid;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.welcomeSection_container .welcomeSection_inner {
+  margin-top: 1em;
+  max-width: 768px;
+  width: 100vw;
+  padding: var(--padding1);
+  border-radius: var(--border-radius1);
+}
+
+.welcomeSection_container .welcomeSection_inner .welcomeSection_title {
+  color: #1f1f1f;
+}
+
+.welcomeSection_container .welcomeSection_inner .WelcomeSection_items {
+  text-decoration: none;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: (1fr)[2];
+      grid-template-columns: repeat(2, 1fr);
+  gap: 1em;
+  list-style: none;
+  padding: 0;
+}
+
+.welcomeSection_container .welcomeSection_inner .WelcomeSection_items .card {
+  border-radius: var(--border-radius1);
+  overflow: hidden;
+}
+
+.welcomeSection_container .welcomeSection_inner .WelcomeSection_items .card .card_inner {
+  background-color: var(--White4);
+  width: 100%;
+  padding: var(--padding);
+  display: block;
+  text-decoration: none;
+}
+
+.welcomeSection_container .welcomeSection_inner .WelcomeSection_items .card .card_inner .card_img_container {
+  border-radius: var(--border-radius1);
+  background-color: var(--White1);
+  display: -ms-grid;
+  display: grid;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 1.5em;
+  min-height: 128px;
+}
+
+.welcomeSection_container .welcomeSection_inner .WelcomeSection_items .card .card_inner .card_img_container .card_img {
+  max-width: 80px;
+  display: block;
+}
+
+.welcomeSection_container .welcomeSection_inner .WelcomeSection_items .card .card_inner .card_title {
+  color: #202020;
+  text-align: center;
+  font-weight: 500;
+}
+/*# sourceMappingURL=Home.module.css.map */

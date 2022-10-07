@@ -41,11 +41,13 @@ export const Registro = () => {
               bills.map(({data}, index) => (
                 <Bills key={index}>
                   <ITEMS>
-                    {Date(data.date)}
+                
+                    {new Date(data.date.seconds * 1000).toLocaleString()}
+              
                   </ITEMS>
                  
                   <ITEMS>
-                      {`${data.client.name} ${data.client.lastName}`}
+                      {`${data.client.name}`}
                   </ITEMS>
                   <ITEMS>
                      RD$ {data.cashPaymentMethod.value}

@@ -1,0 +1,72 @@
+@import url("../../../styles/variables.css");
+.Component_container {
+  height: 2em;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: auto;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 0.5em;
+  background-color: #383838;
+  padding: 0.2em 0.8em 0.2em 0.3em;
+  margin: 0;
+  border-radius: 100px;
+  color: white;
+  position: relative;
+  cursor: pointer;
+}
+
+.AccountMenu {
+  display: none;
+  position: absolute;
+  top: 3.2em;
+  right: 0;
+  background-color: #d6d6d6;
+  border-radius: var(--border-radius1);
+  min-width: 12em;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
+  z-index: 99;
+}
+
+.AccountMenu .Items {
+  padding: 1em;
+  margin: 0;
+  list-style: none;
+  display: -ms-grid;
+  display: grid;
+  gap: 1em;
+}
+
+.AccountMenu .Items .Item {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.AccountMenu .Items .Item .Item_Link {
+  color: #464646;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.AccountMenu .Items .Item .Icon_wrapper {
+  width: 1em;
+}
+
+.AccountMenu .Items .Item .Icon_wrapper .Icon {
+  width: 100%;
+  display: block;
+  fill: #505050;
+}
+
+.AccountMenu.Open {
+  display: block;
+}
+/*# sourceMappingURL=Account.module.css.map */

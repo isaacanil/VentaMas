@@ -106,7 +106,18 @@ export const Precio_Col = styled.div`
     font-weight: 600;
 `
 export const ProductName = styled.div`
-    font-weight: 600;
+   text-transform: uppercase;
+   font-weight: 600;
+    width: 180px;
+    font-size: 0.8em;
+    line-height: 1pc;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    //white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    
 `
 export const ProductItbis = styled.div`
 
@@ -242,7 +253,7 @@ export const Row = styled.div`
             case 'product-list':
                 return `
             grid-template-columns:  2fr 1fr 1fr;
-            padding: 1em
+            padding: 0 1em;
             `
             case '2':
                 return `

@@ -9,6 +9,7 @@ import {
   Cart, BillingModal
 } from '../../'
 import { ProductControl } from './ProductControl.jsx'
+import { ShoppingItemsCounter } from './ShoppingItemsCounter'
 //import { useBilling } from '../../../hooks/useBilling'
 
 //import style
@@ -29,6 +30,7 @@ export const Ventas = () => {
         <div className={Style.ProductsContainer}>  
           <ProductControl></ProductControl>
           <MenuComponents></MenuComponents>
+          <ShoppingItemsCounter></ShoppingItemsCounter>
         </div>
         <Cart></Cart>
       </main>

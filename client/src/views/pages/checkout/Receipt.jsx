@@ -1,214 +1,131 @@
-import React from 'react'
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
-import styled from 'styled-components';
-import { separator } from '../../../hooks/separator';
+import React, { Fragment } from 'react'
 
+import style from './ReceiptStyle.module.scss'
+import { separator } from '../../../hooks/separator'
 
-const styles = StyleSheet.create({
-    page: {
-        backgroundColor: '#E4E4E4',
-    },
-    section: {
-        fontSize: 11,
-        marginBottom: 2,
-        padding: 10,
-        paddingTop: 30,
-        paddingHorizontal: 30,
-    },
-    TimeANDHour: {
-        width: 120,
-        flexDirection: 'row',
-        justifyContent: 'space-between'
-    },
-    ProductList: {
-        fontSize: 12,
-
-
-    },
-    Title: {
-        fontWeight: 'bold'
-    },
-    ProductListHead: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 10,
-        marginBottom: 10,
-        paddingHorizontal: 30,
-        flexGrow: 1,
-
-
-    },
-    ProductListBody: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 30,
-        flexGrow: 1,
-
-
-    },
-    PaymentInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 14,
-        paddingHorizontal: 30,
-        flexGrow: 1,
-
-    },
-    ColumnDescr: {
-
-        flexGrow: 1.2,
-        flexShrink: 1,
-        flexBasis: 0,
-        justifyContent: 'flex-end',
-
-    },
-    ColumnIva: {
-
-        flexGrow: 1,
-        flexShrink: 1,
-        flexBasis: 0,
-        justifyContent: 'flex-end',
-
-        textAlign: "right",
-
-    },
-    ColumnValue: {
-
-        flexGrow: 1,
-        flexShrink: 1,
-        flexBasis: 0,
-        textAlign: "right",
-
-
-    }
-});
-export const Receipt = ({ data }) => {
-
-
-    const { products, totalTaxes, totalPurchase, delivery } = data
-    console.log(products)
-    const today = new Date()
-    const [month, day, year] = [today.getMonth() + 1, today.getDate(), today.getFullYear()]
-    const [hour, minute, second] = [today.getHours(), today.getMinutes(), today.getSeconds()]
-    // const product = [
-    //     {
-    //         name: 'pan lumijor',
-    //         itbis: '0.00',
-    //         price: 98.95,
-    //     },
-    //     {
-    //         name: 'pan lumijor',
-    //         itbis: '0.00',
-    //         price: 98.95,
-    //     },
-    //     {
-    //         name: 'pan lumijor',
-    //         itbis: '0.00',
-    //         price: 98.95,
-    //     },
-    //     {
-    //         name: 'pan lumijor',
-    //         itbis: '0.00',
-    //         price: 98.95,
-    //     },
-    //     {
-    //         name: 'pan lumijor',
-    //         itbis: '0.00',
-    //         price: 98.95,
-    //     },
-    //     {
-    //         name: 'pan lumijor',
-    //         itbis: '0.00',
-    //         price: 98.95,
-    //     },
-    //     {
-    //         name: 'pan lumijor',
-    //         itbis: '0.00',
-    //         price: 98.95,
-    //     },
-    // ]
-    return (
-
-
-        <Document>
-            <Page size="EXECUTIVE" style={styles.page} >
-                <View style={styles.section} >
-                    <Text>[NOMBRE NEGOCIO]</Text>
-                    <Text>Tel: [TELEFONO]</Text>
-                    <Text>[DIRECCION]</Text>
-                    <View style={styles.TimeANDHour}>
-                        <Text>{`${day}/${month}/${year}`}</Text>
-                        <Text>{`${hour}:${minute}:${second}`}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.ProductList} >
-                    <View style={styles.ProductListHead}>
-                        <View style={styles.ColumnDescr}>
-                            <Text>DESCRIPCION</Text>
-                        </View>
-                        <View style={styles.ColumnIva}>
-                            <Text>ITBIS</Text>
-                        </View>
-                        <View style={styles.ColumnValue}>
-                            <Text>VALOR</Text>
-                        </View>
-                    </View>
-                    {
-                        products.length !== 0 ? (
-                            products.map((product, index) => (
-                                <div key={index}>
-                                    <View style={styles.ProductListBody} >
-                                        <View style={styles.ColumnDescr}>
-                                            <Text>{product.productName}</Text>
-                                        </View>
-                                        <View style={styles.ColumnIva}>
-                                            <Text>{product.tax.total}</Text>
-                                        </View>
-                                        <View style={styles.ColumnValue}>
-                                            <Text>{separator(product.price.total)}</Text>
-                                        </View>
-                                    </View>
-                                </div>
-                            ))
-                        ) : null
-                    }
-
-                    <View style={styles.PaymentInfo} >
-                        <View style={styles.ColumnDescr}>
-                            <Text>Envio:</Text>
-                        </View>
-                        <View style={styles.ColumnIva}>
-                            <Text></Text>
-                        </View>
-                        <View style={styles.ColumnValue}>
-                            <Text>{separator(delivery.value)}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.PaymentInfo}>
-                        <View style={styles.ColumnDescr}>
-                            <Text style={styles.Title}>TOTAL A PAGAR</Text>
-                        </View>
-                        <View style={styles.ColumnIva}>
-                            <Text>{totalTaxes.value}</Text>
-                        </View>
-                        <View style={styles.ColumnValue}>
-                            <Text>{totalPurchase.value.toFixed(2)}</Text>
-                        </View>
-                    </View>
+let today = new Date()
+let [month, day, year] = [today.getMonth() + 1, today.getDate(), today.getFullYear()]
+let [hour, minute, second] = [today.getHours(), today.getMinutes(), today.getSeconds()]
+export const Receipt = React.forwardRef(({ data }, ref) => (
 
 
 
+    <div className={style.Container} ref={ref}>
+        <h3 style={{ margin: 0, }} className={style.center}>Hi Pizza</h3>
+        <h5>Tel 809-761-9082</h5>
+        <h5>Dirección : Plaza Ana Rocio 1er nivel</h5>
+        <div className={style.timeSection}>
+            <h5>{`${day}/${month}/${year}`}</h5>
+            <h5>{`${hour}:${minute}:${second}`}</h5>
+        </div>
+        <hr />
+        <h5 className={style.center}>FACTURA PARA CONSUMIDOR FINAL</h5>
+        <hr />
+        <table>
+            <thead>
+
+                <td className={style.left}>DESCRIPCION</td>
+                <td className={style.right}>ITBIS</td>
+                <td className={style.right}>VALOR</td>
+            </thead>
+            <hr />
+            <tbody >
+
+                {
+                    data.products.length > 0 ? (
+                        data.products.map((product, index) => (
+                            <Fragment key={index}>
+                                <tr key={index}>
+                                    <td>{product.amountToBuy.total} x {separator(product.price.unit)}</td>
+                                </tr>
+                                <tr key={index}>
+                                    <td className={`${style.productName}`}>{product.productName}</td>
+                                    <td className={style.right}>{separator(product.tax.total)}</td>
+                                    <td className={style.right}>{separator(product.price.total)}</td>
+
+                                </tr>
+                            </Fragment>
+                        ))
+                    ) : null
+                }
+                <br />
+                {
+                    data.delivery.status ? (
+                        <tr>
+                            <td className={style.title}>ENVIO :</td>
+                            <td></td>
+                            <td className={style.right}>{separator(data.delivery.value)}</td>
+                        </tr>
+                    ) : null
+                }
+
+                <br />
+                <hr />
+                <tr>
+                    <td className={style.title}>TOTAL ITBIS</td>
+                    <td className={style.right}></td>
+                    <td className={style.right}>{separator(data.totalTaxes.value)}</td>
+                </tr>
+                <tr>
+                    <td className={style.title}>TOTAL A PAGAR</td>
+                    <td className={style.right}>{separator(data.totalTaxes.value)}</td>
+                    <td className={style.right}>{separator(data.totalPurchase.value)}</td>
+                </tr>
+                {
+                    data.cashPaymentMethod.status ? (
+                        <Fragment>
+                            <tr>
+                                <td className={style.title}>EFECTIVO</td>
+                                <td></td>
+                                <td className={style.right}>{separator(data.cashPaymentMethod.value)}</td>
+                            </tr>
+
+                        </Fragment>
+
+                    ) : null
+                }
+                {
+                    data.cardPaymentMethod.status ? (
+                        <Fragment>
+                            <tr>
+                                <td className={style.title}>TARJETA</td>
+                                <td></td>
+                                <td className={style.right}>{separator(data.cardPaymentMethod.value)}</td>
+                            </tr>
+                        </Fragment>
+
+                    ) : null
+                }
+                {
+                    data.transferPaymentMethod.status ? (
+                        <Fragment>
+                            <tr>
+                                <td className={style.title}>TRANSFERENCIA</td>
+                                <td></td>
+                                <td className={style.right}>{separator(data.transferPaymentMethod.value)}</td>
+                            </tr>
+                        </Fragment>
+
+                    ) : null
+                }
+                {
+                    data.cashPaymentMethod.status || data.cardPaymentMethod.status || data.transferPaymentMethod.status ? (
+                        <Fragment>
+                            <tr>
+                                <td className={style.title}>CAMBIO</td>
+                                <td></td>
+                                <td className={style.right}>{separator(data.change.value)}</td>
+                            </tr>
+                        </Fragment>
+
+                    ) : null
+                }
+                
+               
+
+            </tbody>
+        </table>
+    </div>
+));
 
 
-                </View>
-
-            </Page>
-        </Document>
-
-    )
-}
-const Box = styled.div`
-    background-color: red;
-    padding: 100px;
-`

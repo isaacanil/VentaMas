@@ -9,12 +9,11 @@ import { async } from '@firebase/util'
 import { closeModalAddClient, SelectAddClientModal } from '../../../../features/modals/modalSlice'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
-export const AddClientModal = () => {
+export const AddClientModal = ({ isOpen }) => {
     const dispatch = useDispatch()
-    const isOpen = useSelector(SelectAddClientModal)
+
     const [client, setClient] = useState({
         name: '',
-        lastName: '',
         address: '',
         tel: '',
         email: '',
@@ -35,7 +34,7 @@ export const AddClientModal = () => {
             }
         )
     }
-    /*console.log(client)*/
+    //console.log(client)
     const HandleSubmit = async () => {
         try {
             const clientRef = doc(db, 'client', client.id)
@@ -53,18 +52,18 @@ export const AddClientModal = () => {
     return (
 
         isOpen ? (
-            <Modal 
-            nameRef='Agregar Cliente' 
-            btnSubmitName='Guardar'
-            close={closeModal} 
-            handleSubmit={HandleSubmit}  >
+            <Modal
+                nameRef='Agregar Cliente'
+                btnSubmitName='Guardar'
+                close={closeModal}
+                handleSubmit={HandleSubmit}  >
                 <Container>
                     <FormControl>
                         <Group>
                             <Label id='nombre' >Nombre Completo:</Label>
                             <InputText id='name' name={'name'} onChange={HandleChange} placeholder='Nombre'></InputText>
                         </Group>
-                        
+
                         <Group>
                             <Label>Identificación</Label>
                             <InputText id="DocumentType" name={'personalID'} onChange={(e) => SetPersonalIDInfo(e.target.value)} placeholder='RNC / Cédula'></InputText>
@@ -75,8 +74,14 @@ export const AddClientModal = () => {
                         </Group>
                         <Group>
                             <Label>Teléfono:</Label>
-                            <InputText name={'tel'} onChange={HandleChange} placeholder='Teléfono'></InputText>
+                            <InputText
+                                name={'tel'}
+                                placeholder='Teléfono'
+                                pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                                onChange={(e) => setClient({ ...client, tel: e.target.value })}
+                            ></InputText>
                         </Group>
+
                         <Group>
                             <Label>Correo:</Label>
                             <InputText name={'email'} onChange={HandleChange} placeholder='ejemplo@ejemplo.com'></InputText>

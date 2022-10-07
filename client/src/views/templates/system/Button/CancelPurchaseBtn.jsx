@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { CancelShipping } from '../../../../features/cart/cartSlice'
+import { CancelShipping,  } from '../../../../features/cart/cartSlice'
 import { useDispatch } from 'react-redux'
 export const CancelPurchaseBtn = () => {
     const dispatch = useDispatch()
@@ -8,6 +8,7 @@ export const CancelPurchaseBtn = () => {
         dispatch(
           CancelShipping()
         )
+        
       }
     return (
         <Fragment>

@@ -9,23 +9,23 @@ import {
     addAmountToProduct, 
     diminishAmountToProduct, 
     onChangeValueAmountToProduct, 
+    totalShoppingItems
+       
     
 } from '../../../../features/cart/cartSlice'
 import Style from './Counter.module.scss'
 
-export const Counter = ({ amountToBuy, stock, id }) => {
+export const Counter = ({ amountToBuyTotal, stock, id }) => {
 
 
     const dispatch = useDispatch()
     const [counter, setCounter] = useState(
-        {
-            id,
-            value: 1
+        {   
+            id
         }
     )
-    
         useEffect(()=>{
-           
+           if(stock >= counter.value){
             dispatch(
                 onChangeValueAmountToProduct(counter)
             )
@@ -36,23 +36,31 @@ export const Counter = ({ amountToBuy, stock, id }) => {
                 totalPurchase()
               )
               dispatch(
+                totalShoppingItems()
+               ) 
+              dispatch(
                 setChange()
               )
-        },[counter])
+           }
 
+        },[counter])
+        console.log(counter)
     if(counter){
 
     }
     const handleIncreaseCounter = () => {
         setCounter(
             {
-                id,
-                value: Number(counter.value + 1)
+                id
+               
             }
         )
         dispatch(
             addAmountToProduct(counter)
         )
+        dispatch(
+            totalShoppingItems()
+           ) 
         dispatch(
             totalTaxes()
           )
@@ -70,21 +78,22 @@ export const Counter = ({ amountToBuy, stock, id }) => {
     const handleDiminishCounter = () => {
         setCounter(
             {
-                id,
-                value: Number(counter.value - 1)
+                id
             }
         )
         dispatch(
             diminishAmountToProduct(counter)
         )
+        dispatch(
+            totalShoppingItems()
+           ) 
         if(counter.value === 1){
             dispatch(
                 deleteProduct(id)
             )
             setCounter(
                 {
-                    id, 
-                    value: 1
+                    id
                 }
             )
             dispatch(
@@ -102,7 +111,7 @@ export const Counter = ({ amountToBuy, stock, id }) => {
     return (
         <div className={`${Style.Counter_container}`}>
             <button className={Style.Couter_button} onClick={handleDiminishCounter}>-</button>
-            <input className={Style.CounterDisplay} type="number" name="" id="" value={counter.value.toFixed()} onChange={e => setCounter({id, value: Number(e.target.value) })} />
+            <input className={Style.CounterDisplay} type="number" name="" id="" value={amountToBuyTotal} onChange={e => setCounter({...counter, value: Number(e.target.value) })} />
             <button className={Style.Couter_button} onClick={handleIncreaseCounter}>+</button>
         </div>
     )

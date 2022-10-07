@@ -1,0 +1,21 @@
+.Container .Item_inner {
+  width: 100%;
+  height: 100%;
+  display: -ms-grid;
+  display: grid;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  justify-items: center;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.Container .Item_inner .Icon {
+  fill: #575757;
+  width: 1em;
+}
+/*# sourceMappingURL=plusIcon.module.css.map */

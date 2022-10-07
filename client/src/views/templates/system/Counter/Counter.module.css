@@ -1,0 +1,44 @@
+.Counter_container {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background-color: #ffffff;
+  padding: 0.2em;
+  -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 100px;
+}
+
+.Counter_container .Couter_button {
+  border-radius: 100px;
+  width: 25px;
+  height: 25px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  font-weight: 900;
+  color: rgba(29, 29, 29, 0.842);
+}
+
+.Counter_container .CounterDisplay {
+  border: 1px solid rgba(0, 0, 0, 0);
+  width: 2.5em;
+  text-align: center;
+  outline: none;
+}
+
+.Counter_container .CounterDisplay::-webkit-inner-spin-button, .Counter_container .CounterDisplay::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/*# sourceMappingURL=Counter.module.css.map */

@@ -5,12 +5,17 @@ import { provider } from './Selects/Provider'
 import { useDispatch } from 'react-redux'
 import { openModalAddOrder } from '../../../features/modals/modalSlice'
 import { separator } from '../../../hooks/separator'
+import { ListItem } from './ListItem/ListItem'
+
+
 import {
   MenuApp,
   ButtonGroup,
   Button,
+  PurchaseButton,
   EditButton,
   DeleteButton,
+  ArrowRightButton,
   StatusIndicatorDot
 } from '../../'
 import { Data } from './Data'
@@ -39,20 +44,24 @@ export const Orders = () => {
 
           </Head>
           <Body>
-              <TitleContainer>
-                <h3>Lista de Pedidos Pendientes</h3>
-              </TitleContainer>
+            <TitleContainer>
+              <h3>Lista de Pedidos Pendientes</h3>
+            </TitleContainer>
             <Table>
               <TableHead>
-                <Row column='orderList' >
-                  <Col>#</Col>
-                  <Col>Est</Col>
-                  <Col>Proveedor</Col>
-                  <Col>Nota</Col>
-                  <Col>F. Pedido</Col>
-                  <Col>F. Entrega</Col>
-                  <Col>Total</Col>
-                  <Col>Acción</Col>
+                <Row  >
+                  <Group column='order-list'>
+
+                    <Col>#</Col>
+                    <Col>Est</Col>
+                    <Col>Proveedor</Col>
+                    <Col>Nota</Col>
+                    <Col>F. Pedido</Col>
+                    <Col>F. Entrega</Col>
+                    <Col>Total</Col>
+                    <Col>Acción</Col>
+
+                  </Group>
 
                 </Row>
               </TableHead>
@@ -60,29 +69,11 @@ export const Orders = () => {
                 {
                   Data.length > 0 ? (
                     Data.map((e, index) => (
-                      <Row column='orderList' key={index} color='item' border='border-bottom'>
-                        
-                        <Col>{index + 1}</Col>
-                        <Col>
-                          <StatusIndicatorDot color={e.estado}></StatusIndicatorDot>
-                        </Col>
-                        <Col size='limit'>{e.Proveedor}</Col>
-                        <Col>
-                        <Button height='small'>Ver</Button>
-                        </Col>
-                        <Col>{e.orderDate}</Col>
-                        <Col>{e.deliveryDate}</Col>
-                        <Col>${separator(e.total)}</Col>
-                        <ButtonGroup>
-                          <EditButton></EditButton>
-                          <DeleteButton></DeleteButton>
-
-                        </ButtonGroup>
-                      </Row>
+                      <ListItem key={index} e={e} index={index}></ListItem>
                     ))
                   ) : null
                 }
-                
+
               </TableBody>
             </Table>
 
@@ -95,8 +86,7 @@ export const Orders = () => {
   )
 }
 const Container = styled.div`
-    display: grid;
-    
+    display: grid; 
     width: 100%;
     height: 100vh - 2.75em;
     justify-content: center;
@@ -104,8 +94,6 @@ const Container = styled.div`
 `
 const Head = styled.header`
     display: grid;
-    
-    
     gap: 10px;
 `
 const Wrapper = styled.div`
@@ -115,19 +103,21 @@ const Wrapper = styled.div`
   gap: 1em;
   max-width: 800px;
   width: 800px;
+  @media (max-width: 800px){
+    width: 100%
+  }
 `
 const Body = styled.header`
-  border: 1px solid black;
+  border: 1px solid #00000067;
   border-radius: 10px;
   position: relative;
   height: 400px;
   overflow: hidden;
   max-height: 400px;
   display: grid;
-  grid-template-rows: min-content 1fr;
+  grid-template-rows: min-content 1fr; 
+  background-color: rgb(235,235,235);
 
-
-    
 `
 const FilterBar = styled.div`
   display: flex;
@@ -139,14 +129,20 @@ const Table = styled.div`
   overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr;
-
+  @media (max-width: 811px){
+    grid-template-rows: 1fr;
+  }
  
 
 `
 const TableHead = styled.div`
   background-color: #c9c9c9;
   font-weight: 600;
-  padding: 0 17px 0 0;
+  padding: 0 16px 0 0;
+  @media (max-width: 811px){
+    display:none;
+  
+  }
   
 `
 const TableBody = styled.div`
@@ -154,15 +150,16 @@ const TableBody = styled.div`
   align-items: flex-start;
   align-content: flex-start;
   overflow-y: scroll;
+  @media (max-width: 800px){
+    
+  }
 
 `
-
-
 const TitleContainer = styled.div`
   display: grid;
   align-items: center;
   justify-content: center;
-  background: black;
+  background: #3f3f3f;
   height: 2em;
   h3{
     margin: 0;
@@ -174,26 +171,33 @@ const TitleContainer = styled.div`
 `
 const Row = styled.div`
   display: grid;
- 
   align-items: center;
-  
+  span{
+    display: none;
+    
+  }
   gap: 1em;
-  ${(props)=>{
-    switch (props.column) {
-      case 'orderList':
+  ${(props) => {
+    switch (props.container) {
+      case 'first':
         return `
-        grid-template-columns: min-content min-content 1fr 0.6fr 1fr 1fr 1.5fr 1fr;
-        align-items: center;
-        height: 3em;
-        padding: 0 1em;
-      
+        display: grid;
+        @media (max-width: 800px){
+          grid-template-columns: min-content 1fr;
+          span{
+            display: block;
+            transform: rotate(90deg);
+            width: 
+          }
+        }
+        
         `
 
       default:
-        
+
     }
   }}
-    ${(props)=>{
+    ${(props) => {
     switch (props.border) {
       case 'border-bottom':
         return `
@@ -207,10 +211,10 @@ const Row = styled.div`
         `
 
       default:
-        
+
     }
   }}
-  ${(props)=>{
+  ${(props) => {
     switch (props.color) {
       case 'header':
         return `
@@ -222,18 +226,18 @@ const Row = styled.div`
         background-color: #ebebeb;
       
         `
-     
-    
+
+
       default:
-        
+
     }
   }}
 `
 const Col = styled.div`
-  ${(props)=>{
-      switch (props.size) {
-        case 'limit':
-          return`
+  ${(props) => {
+    switch (props.size) {
+      case 'limit':
+        return `
           width: 100px;
           display: -webkit-box;
           -webkit-line-clamp: 1;
@@ -242,9 +246,68 @@ const Col = styled.div`
           text-overflow: ellipsis;
           overflow: hidden;
           `
-      
-        default:
-          break;
-      }
+
+      default:
+        break;
+    }
   }}
+`
+const Group = styled.div`
+  display: grid;
+  gap: 1em;
+  label{
+    display: none;
+  }
+  ${(props) => {
+    switch (props.column) {
+      case "order-list":
+        return `
+
+          grid-template-columns: min-content min-content 100px 3.6em 86px 86px 1fr 100px ;
+          align-items: center;
+          height: 3em;
+          padding: 0 1em;
+          @media (max-width: 811px ){
+            grid-template-columns: 1fr;
+            height: auto;
+            padding: 1em;
+          
+        }
+      
+        
+        `
+
+      default:
+        break;
+    }
+  }}
+  ${(props) => {
+    switch (props.name) {
+      case 'number':
+        return `
+        
+        `
+      case 'items':
+        return `
+        grid-template-columns: min-content;
+        @media (max-width: 811px ){
+          display: grid;
+          grid-template-columns: 0.3fr 1fr;
+          label{
+            display: block;
+          }
+          display: none;
+          &:nth-child(1){
+            display: grid;
+          }
+         
+  
+        }
+        
+        `
+      default:
+        return ``
+    }
+  }}
+  align-items: center;
 `

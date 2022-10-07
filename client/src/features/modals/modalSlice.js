@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 const initialState = {
     modalBilling: {
@@ -13,7 +14,7 @@ const initialState = {
     },
     modalUpdateProd: {
         isOpen: false,
-        prodId: '',
+        id: '',
         data: {}
     },
     modalCategory: {
@@ -21,6 +22,9 @@ const initialState = {
     },
     modalAddOrder: {
         isOpen: false,
+    },
+    modalAddProvider: {
+        isOpen: false
     }
 }
 const modalSlice = createSlice({
@@ -51,7 +55,12 @@ const modalSlice = createSlice({
         },
         closeModalAddOrder: (state) => {
             state.modalAddOrder.isOpen = false;
-        }
+        },
+        openModalAddProvider: (state) => {
+            let isOpen = state.modalAddOrder.isOpen;
+            state.modalAddProvider.isOpen = !isOpen;
+        },
+
         
     }
 })
@@ -66,13 +75,14 @@ export const {
     openModalUpdateProd,
     closeModalUpdateProd,
     openModalCategory,
-    closeModalCategory
+    closeModalCategory,
+    openModalAddProvider
 } = modalSlice.actions
 
 export const SelectBillingModal = state => state.modal.modalBilling.isOpen
 export const SelectAddProdModal = state => state.modal.modalAddProd.isOpen
 export const SelectAddClientModal = state => state.modal.modalAddClient.isOpen
-export const SelectUpdateProdModal = state => state.modal.modalUpdateProd
+export const SelectUpdateProdModal = state => state.modal.modalUpdateProd.isOpen
 export const SelectCategoryModal = state => state.modal.modalCategory.isOpen
 export const SelectAddOrderModal = state => state.modal.modalAddOrder.isOpen
 

@@ -1,0 +1,52 @@
+.Container {
+   
+    .timeSection {
+        display: flex;
+        gap: 0.5em;
+    }
+    table {
+
+
+        thead {
+            display: grid;
+            grid-template-columns:  1fr 0.5fr 0.8fr;
+
+            
+        }
+
+        tbody {
+            width: 100%;
+
+            .productName {
+                text-transform: lowercase;
+                width: 150px;
+                line-height: 1.4pc;
+                display: -webkit-box;
+                -webkit-line-clamp: 1;
+                -webkit-box-orient: vertical;
+                //white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+
+            }
+            
+
+            tr {
+                display: grid;
+                grid-template-columns:  1fr 0.5fr 0.8fr;
+            }
+        }
+    }
+}
+.title{
+    font-weight: bold;
+}
+.center{
+    text-align: center;
+}
+.right{
+    text-align: right;
+}
+.left{
+    text-align: left;
+}

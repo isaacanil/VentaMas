@@ -56,6 +56,7 @@ export const Select = ({ title, data }) => {
 }
 const Container = styled.div`
     position: relative;
+    max-width: min-content;
 `
 
 const Head = styled.div`

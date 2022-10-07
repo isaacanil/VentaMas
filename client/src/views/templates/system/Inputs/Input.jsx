@@ -23,6 +23,11 @@ export const Textarea = styled.textarea`
     border: 1px solid rgba(0, 0, 0, 0.300);
   }
 `
+export const InputTel = styled(Input).attrs({
+  type: 'tel'
+})`
+
+`
 export const InputText = styled(Input).attrs({
   type: 'text'
 

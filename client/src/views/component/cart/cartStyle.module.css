@@ -1,0 +1,201 @@
+@import url("../../../styles/variables.css");
+.FacturaControlContainer {
+  position: relative;
+  height: 100%;
+  background-color: var(--White);
+  border-left: 1px solid rgba(0, 0, 0, 0.247);
+  width: 22em;
+  overflow: hidden;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 1fr;
+      grid-template-columns: 1fr;
+  -ms-grid-rows: 3em auto 3em;
+      grid-template-rows: 3em auto 3em;
+}
+
+.FacturaControlContainer .listItem {
+  background-color: rgba(0, 0, 0, 0);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.FacturaControlContainer .listItem .group {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 3fr 2fr min-content;
+      grid-template-columns: 3fr 2fr -webkit-min-content;
+      grid-template-columns: 3fr 2fr min-content;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  height: auto;
+  padding: 0.3em 0.5em;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 0.5em;
+  border-radius: 6px;
+  -webkit-column-gap: 0.8em;
+          column-gap: 0.8em;
+  row-gap: 0;
+}
+
+.FacturaControlContainer .listItem .group .Item1 {
+  font-weight: 700;
+  color: rgba(24, 24, 24, 0.849);
+  line-height: 1pc;
+  font-weight: 700;
+  font-size: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.FacturaControlContainer .listItem .group .CrossContainer {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  height: -webkit-min-content;
+  height: -moz-min-content;
+  height: min-content;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  padding: 0.4em;
+  -webkit-clip-path: circle();
+          clip-path: circle();
+  background-color: #ae423f;
+}
+
+.FacturaControlContainer .listItem .group .CrossContainer .Cross {
+  fill: white;
+  width: 0.8em;
+}
+
+.FacturaControlContainer .resultBar {
+  background-color: var(--Gray5);
+  color: white;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 0 1em;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+@media (max-width: 800px) {
+  .FacturaControlContainer {
+    height: calc(100vh - 4em);
+    width: 100%;
+    background-color: var(--White2);
+    border: 1px solid rgba(0, 0, 0, 0.121);
+    border-top: 0;
+    border-bottom: 0;
+    position: absolute;
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 1fr;
+        grid-template-columns: 1fr;
+    -ms-grid-rows: 3em auto 3em;
+        grid-template-rows: 3em auto 3em;
+    display: none;
+  }
+  .FacturaControlContainer .ClientBar {
+    background-color: var(--White2);
+    padding: 0 1em;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+  }
+  .FacturaControlContainer .ClientBar .IconContainer {
+    width: 2em;
+    height: 2em;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    border-radius: 100px;
+    background-color: var(--White2);
+    border: 1px solid rgba(0, 0, 0, 0.307);
+  }
+  .FacturaControlContainer .ClientBar .IconContainer .Icon {
+    width: 1.5em;
+    fill: rgba(31, 31, 31, 0.72);
+  }
+  .FacturaControlContainer .listItem {
+    background-color: rgba(0, 0, 0, 0.08);
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+  }
+  .FacturaControlContainer .listItem .group {
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 3fr 2fr min-content;
+        grid-template-columns: 3fr 2fr -webkit-min-content;
+        grid-template-columns: 3fr 2fr min-content;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    height: auto;
+    background-color: #ededed;
+    padding: 0.5em;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    margin: 0.5em;
+    border-radius: 6px;
+    gap: 1em;
+  }
+  .FacturaControlContainer .listItem .group .CrossContainer {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    height: -webkit-min-content;
+    height: -moz-min-content;
+    height: min-content;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    padding: 0.4em;
+    -webkit-clip-path: circle();
+            clip-path: circle();
+    background-color: #ae423f;
+  }
+  .FacturaControlContainer .listItem .group .CrossContainer .Cross {
+    fill: white;
+    width: 0.8em;
+  }
+}
+/*# sourceMappingURL=cartStyle.module.css.map */
