@@ -13,12 +13,12 @@ export const MultiDisplayControl = () => {
     //Ultimo elemento 
     const lastItem = list.at(-1);
     //condicion para dejar de añadir siempre y cuando este por debajo de 5
-    if (lastItem < 7) {
+    if (lastItem < 8) {
       const newItem = lastItem + 1;
 
       setList([...list, newItem])
     }
-    if(lastItem > 6){
+    if(lastItem === 8){
       alert('ya excediste el numero de pantallas')
     }
     

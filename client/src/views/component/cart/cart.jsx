@@ -13,6 +13,7 @@ import {
 import { 
   SelectProduct, 
   totalPurchaseWithoutTaxes,
+  CancelShipping,
   totalTaxes,
   totalPurchase, 
   setChange, 
@@ -44,10 +45,11 @@ export const Cart = () => {
       totalShoppingItems()
      ) 
   }
+ 
   const handleInvoice = () => {
     /*navigate('/app/venta/checkout/Billing', {replace: true})*/
     if (ProductSelected.length === 0) {
-      console.log('todavia no has agregado nada')
+      console.log('todavía no has agregado nada')
     } else {
       dispatch(
         openModalBilling()

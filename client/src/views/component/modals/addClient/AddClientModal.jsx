@@ -35,20 +35,21 @@ export const AddClientModal = ({ isOpen }) => {
         )
     }
     //console.log(client)
-    const HandleSubmit = async () => {
-        try {
-            const clientRef = doc(db, 'client', client.id)
-            await setDoc(clientRef, { client })
-            closeModal
-        } catch (error) {
-            console.error("Error adding document: ", error)
-        }
-    }
     const closeModal = () => {
         dispatch(
             closeModalAddClient()
         )
     }
+    const HandleSubmit = async () => {
+        try {
+            const clientRef = doc(db, 'client', client.id)
+            await setDoc(clientRef, { client })
+            closeModal()
+        } catch (error) {
+            console.error("Error adding document: ", error)
+        }
+    }
+    
     return (
 
         isOpen ? (

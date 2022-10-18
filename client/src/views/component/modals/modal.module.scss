@@ -18,8 +18,8 @@
     .Modal_container {
         width: 100vw;
         max-width: 720px;
-        height: auto;
-        max-height: 500px;
+        height: 100%;
+        max-height: 600px;
         background-color: var(--White3);
         display: grid;
         grid-template-rows: 3em auto 3em;
@@ -53,7 +53,7 @@
             }
         }
         .modal_body{
-            height: 350px;
+            display: grid;
             overflow: auto;
         }
         .modal_footer{

@@ -9,6 +9,7 @@ import {
 //style
 
 import LoginStyle from './Login.module.scss'
+
 //redux
 import { useDispatch } from 'react-redux'
 import { login } from '../../../features/auth/userSlice';
@@ -16,8 +17,8 @@ import { login } from '../../../features/auth/userSlice';
 //firebase
 import {
    auth,
-   signInWithEmailAndPassword
  }from '../../../firebase/firebaseconfig'
+import { signInWithEmailAndPassword } from 'firebase/auth'
 
 //APP
 export const Login = () => {
@@ -28,11 +29,6 @@ export const Login = () => {
 
    const [email, setEmail] = useState('')
    const [password, setPassword] = useState('')
-
-   
-
-  
-
    const loginToApp = (e) => {
       e.preventDefault();
   
@@ -73,7 +69,7 @@ export const Login = () => {
             </div>
             <div className={LoginStyle.LoginControl_Container}>
 
-               <form onSubmit={loginToApp} className={LoginStyle.FormControl}>
+               <form className={LoginStyle.FormControl}>
                   <div className={LoginStyle.FormItemGroup}>
                      <label htmlFor="" className={LoginStyle.FormLabel}>Usuario:</label>
 
@@ -105,7 +101,7 @@ export const Login = () => {
                   </div >
 
                   <div>
-                     <Button >Entrar</Button>
+                     <Button onClick={loginToApp} >Entrar</Button>
                   </div>
 
 

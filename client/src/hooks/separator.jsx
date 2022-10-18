@@ -1,5 +1,5 @@
 
-export function separator(numb) {
+export const separator = (numb) => {
     var toNumber = Number(numb)
     var n = toNumber.toFixed(2)
     var str = n.toString().split(".");

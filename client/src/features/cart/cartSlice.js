@@ -4,8 +4,9 @@ import { useSelector } from "react-redux";
 import { separator } from "../../hooks/separator";
 import { Product } from "../../views";
 import { v4 } from "uuid";
+import { nanoid } from "nanoid";
 const initialState = {
-    id: v4(),
+    id: null,
     date: null,
     client: null,
     products: [],
@@ -45,6 +46,9 @@ const cartSlice = createSlice({
     name: 'factura',
     initialState,
     reducers: {
+        getId: (state) => {
+            state.id = nanoid()
+        },
         getDate: (state) => {
             // const now = new Date()
             // const day = now.getDate()
@@ -93,7 +97,6 @@ const cartSlice = createSlice({
                 state.products.splice(state.products.indexOf(productFound), 1)
 
             }
-
         },
         onChangeValueAmountToProduct: (state, action) => {
             const { id, value } = action.payload
@@ -200,10 +203,12 @@ const cartSlice = createSlice({
 
         },
         totalPurchase: (state) => {
-            const totalTaxes = state.totalTaxes.value;
+            const productSelected = state.products
+            const total = productSelected.reduce((total, product) => total + product.price.total, 0)
+           // const totalTaxes = state.totalTaxes.value;
+           // const ProductsCost = state.products.reduce((total, product) => total + product.cost.total, 0)
             const Delivery = state.delivery.value;
-            const ProductsCost = state.products.reduce((total, product) => total + product.cost.total, 0)
-            state.totalPurchase.value = (totalTaxes + Number(Delivery) + ProductsCost)
+            state.totalPurchase.value = ( Number(Delivery) + Number(total))
         },
         totalShoppingItems: (state) => {
             const Items = state.products.reduce((total, product) => total + product.amountToBuy.total, 0) 
@@ -215,6 +220,7 @@ const cartSlice = createSlice({
 
 export const {
     getDate,
+    getId,
     addClient,
     addProduct,
     addDelivery,

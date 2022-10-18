@@ -19,10 +19,11 @@
 
             .productName {
                 text-transform: lowercase;
-                width: 150px;
+                width: 100%;
+                grid-column: 1 / 4;
                 line-height: 1.4pc;
                 display: -webkit-box;
-                -webkit-line-clamp: 1;
+                -webkit-line-clamp: 3;
                 -webkit-box-orient: vertical;
                 //white-space: nowrap;
                 text-overflow: ellipsis;

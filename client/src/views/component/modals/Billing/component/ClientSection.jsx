@@ -11,44 +11,57 @@ export const ClientBar = () => {
     const dispatch = useDispatch()
     const ClientSelected = useSelector(SelectClient)
     const [searchData, setSearchData] = useState('')
-    const [clients, setClient] = useState('')
+    const [isOpen, setIsOpen] = useState(false)
+    const [clients, setClients] = useState()
     const [filteredClients, setFilterClients] = useState('')
     const client = useSelector(state => state.cart)
     const [taxReceipt, setTaxReceipt] = useState()
     useEffect(() => {
-        getClients(setClient)
+        getClients(setClients)
     }, [])
-
+    console.log(clients)
     const handleSearchClients = (search) => {
         setSearchData(search)
         const filtered = clients.filter((e) => e.client.name.toLowerCase().includes(searchData.toLowerCase()) || e.client.address.toLowerCase().includes(searchData.toLowerCase()))
         setFilterClients(filtered)
+       
+       
     }
-    //console.log('cliente' + ClientSelected)
-    //console.log(clients)
-   
-    return (
-        <ClientSection>
-            <ClientGroup>
-                <ClientActionBar>
+    const handleOpenMenu = () => {
+        setIsOpen(true)
+        (
+            setFilterClients(clients)
+        )
 
-                    <InputText 
-                    type="text" 
-                    border='circle' 
-                    value={searchData} 
-                    placeholder='Buscar Cliente' 
-                    onChange={(e) => handleSearchClients(e.target.value)} />
+    }
+    
 
-                   
-                    <AddClientButton></AddClientButton>
-                    {
-                    searchData !== '' ? (
+//console.log('cliente' + ClientSelected)
+//console.log(clients)
+
+return (
+    <ClientSection>
+        <ClientGroup>
+            <ClientActionBar>
+                <InputText
+                    type="text"
+                    border='circle'
+                    value={searchData}
+                    placeholder='Buscar Cliente'
+                    onChange={(e) => handleSearchClients(e.target.value)}
+                    onFocus={handleOpenMenu}
+                    
+                />
+                <AddClientButton></AddClientButton>
+                {
+                    isOpen ? (
                         <ClientList>
-                            <ClientListWrapper>                           
+                            <ClientListWrapper>
                                 {
                                     clients.length > 0 ? (
                                         filteredClients.map(({ client }, index) => (
                                             <Client
+                                                setIsOpen={setIsOpen}
                                                 key={index}
                                                 name={client.name}
                                                 lastName={client.lastName}
@@ -66,32 +79,31 @@ export const ClientBar = () => {
                         </ClientList>
                     ) : null
                 }
-                </ClientActionBar>
-                
+            </ClientActionBar>
 
-            </ClientGroup>
-            <ClientGroup>
-                {ClientSelected ? (
-                    <ClientInfo>
-                        <ClientItem>{ClientSelected.name} {ClientSelected.lastName} </ClientItem>
-                        <ClientItem>Teléfono: {ClientSelected.tel} </ClientItem>
-                    </ClientInfo>
-                ) : null}
-            </ClientGroup>
-            <TaxReceipts>
-                <input type="checkbox" name="" id="" onChange={e => setTaxReceipt(e.target.checked)} />
-                <label htmlFor="">Comprobante Fiscal:</label>
-                {
-                    taxReceipt ? (
-                        ClientSelected ? (
-                            <span>{ClientSelected.taxReceipts}</span>
 
-                        ) : <InputText type="text" placeholder='RNC/Cédula' />
-                    ) : null
-                }
-            </TaxReceipts>
-        </ClientSection>
-    )
+        </ClientGroup>
+        <ClientGroup>
+            {ClientSelected ? (
+                <ClientInfo>
+                    <ClientItem>{ClientSelected.name} {ClientSelected.lastName} </ClientItem>
+                    <ClientItem>Teléfono: {ClientSelected.tel} </ClientItem>
+                </ClientInfo>
+            ) : null}
+        </ClientGroup>
+        <TaxReceipts>
+            <input type="checkbox" name="" id="TaxReceipt" onChange={e => setTaxReceipt(e.target.checked)} />
+            <label htmlFor="TaxReceipt">Comprobante Fiscal:</label>
+            {
+                taxReceipt ? (
+                    ClientSelected ? (
+                        <span>{ClientSelected.taxReceipts}</span>
+                    ) : <InputText type="text" placeholder='RNC/Cédula' />
+                ) : null
+            }
+        </TaxReceipts>
+    </ClientSection>
+)
 }
 
 
@@ -144,6 +156,7 @@ const ClientList = styled.ul`
     z-index: 3;
     overflow: hidden;
     padding: 0;
+   
 `
 const ClientListWrapper = styled.ul`
     display: grid;

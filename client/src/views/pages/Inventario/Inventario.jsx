@@ -33,7 +33,7 @@ export const Inventario = () => {
   }, []);
 const handleDeleteProduct = (e) => {
 
-  const data = e.target.dataset.id;
+  const data = e;
   deleteProduct(data)
 }
 
@@ -71,7 +71,7 @@ const openModal = (id) => {
                       <li key={index} className={Style.product} >
                         <div className={Style.product_header}>
                           <Button color='editar' onClick={() => openModal(product.id)}>Editar</Button>
-                          <Button color='error' onClick={handleDeleteProduct} data-id={id}>X</Button>
+                          <Button color='error' onClick={() => handleDeleteProduct(product.id)} >X</Button>
                         </div>
                         <div className={Style.product_img_container}>
                           <img className={Style.product_img} src={product.productImageURL} alt="" />

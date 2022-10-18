@@ -13,13 +13,14 @@ const Container = styled.li`
     background-color: white;
    
 `
- export const Client = ({name, lastName, tel, address, client, searchData}) => {
+ export const Client = ({setIsOpen, name, lastName, tel, address, client, searchData}) => {
     const dispatch = useDispatch()
     const BillingData = useSelector(SelectFacturaData)
     
     const handleSubmit = (client) => {
         //console.log(client)
         searchData.setSearchData('')
+        setIsOpen(false)
         dispatch(
             addClient(
                 client

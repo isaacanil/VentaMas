@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SelectProduct, SelectTotalShoppingItems, SelectFacturaData, getDate, CancelShipping  } from '../../../../features/cart/cartSlice'
+import { SelectProduct, SelectTotalShoppingItems, SelectFacturaData, getDate, CancelShipping, getId  } from '../../../../features/cart/cartSlice'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
 import { closeModalBilling } from '../../../../features/modals/modalSlice'
 import { ClientBar } from './component/ClientSection'
@@ -53,7 +53,7 @@ export const BillingModal = ({isOpen}) => {
   
   const handleSubmit = () => {
     dispatch(
-      getDate()
+      getId()
     )
     dispatch(
       getDate()

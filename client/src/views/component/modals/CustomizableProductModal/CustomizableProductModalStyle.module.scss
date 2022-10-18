@@ -1,0 +1,78 @@
+.Backdrop{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, 0.288);
+    .Modal{
+        height: 90vh;
+        width: 700px;
+        background-color: rgb(235, 235, 235);
+        border-radius: 10px;
+        .Head{
+            padding: 0.4em 1em;
+            display: grid;
+            gap: 1.2em;
+            .row{
+                display: flex;
+                gap: 1em;
+                flex-grow: 1;
+                
+
+            }
+        }
+        .Body{
+            padding: 0.4em 1em;
+            display: grid;
+            gap: 1em;
+            .ExtraIngredientList{
+                height: 20em;
+                width: 100%;
+                background-color: rgb(194, 194, 194);
+                border-radius: 8px;
+                overflow: hidden;
+                
+                .Wrapper{
+                    height: 100%;
+                    display: grid;
+                    grid-template-rows: repeat(10, min-content);
+                    grid-template-columns: repeat(3, 1fr);
+                    align-items: flex-start;
+                    gap: 0.4em;
+                    overflow-y: scroll;
+                    padding: 0.4em;
+                    
+                    .Item{
+                        height: 2.5em;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.4em;
+                        padding: 0;
+                        margin: 0;
+                        background-color: rgb(216, 216, 216);
+                        padding: 0 0.4em;
+                        border-radius: 8px;
+                        
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+select{
+    height: 2em;
+    padding: 0 0.4em;
+    background-color: rgb(245, 245, 245);
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.664);
+    //appearance: none;
+}
+.Group{
+    flex-grow: 1;
+    select{
+        width: 100%;
+    }
+}

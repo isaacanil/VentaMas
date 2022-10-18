@@ -1,0 +1,68 @@
+@import url("../../../../styles/variables.css");
+.Form {
+  width: 100%;
+  background-color: var(--White2);
+  display: -ms-grid;
+  display: grid;
+  gap: 0.6em;
+  padding: 0.5em;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  overflow: auto;
+  height: 100%;
+}
+
+.Form .Group {
+  background-color: var(--White1);
+  padding: 1em;
+  gap: 2em;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.Form .Group:first-child {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.Form .Group:last-child {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.Form .Group label {
+  font-weight: 500;
+  white-space: nowrap;
+  color: #363636;
+}
+
+.Form .Group input[type="text"],
+.Form .Group input[type="number"] {
+  width: 100%;
+  margin: 0;
+  padding: 0.4em 1em;
+  border: 1px solid rgba(0, 0, 0, 0.155);
+  border-radius: 100px;
+}
+
+.Form .Group input[type="text"]:focus,
+.Form .Group input[type="number"]:focus {
+  outline: none;
+}
+
+.Form .Group input[type="file"] {
+  display: none;
+}
+/*# sourceMappingURL=Products.module.css.map */

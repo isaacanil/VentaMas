@@ -14,7 +14,7 @@ const ProductContainer = styled.div`
     overflow: hidden;
     display: grid;
     gap: 1em;
-   grid-template-columns: min-content 1fr;
+    grid-template-columns: min-content 1fr;
     align-items: center;
     align-content: center;
    
@@ -27,7 +27,7 @@ ${(props) => {
                 overflow: hidden;
                 
                 `;
-           
+
             default:
                 return `
             
@@ -36,18 +36,14 @@ ${(props) => {
     }}
 `;
 const ProductImgWrapper = styled.div`
- 
     overflow: hidden;
 ;
     ${(props) => {
         switch (props.type) {
             case "row":
                 return `
-                
                 height: 100px;
                 width: 100px;
-           
-
                 `;
             case "normal":
                 return `
@@ -65,7 +61,6 @@ const ProductImg = styled.img`
     src: url(${props => props.src});
     width: 100%;
     height: 100%;
-  
     overflow: hidden;
     object-fit: cover;
 
@@ -73,11 +68,7 @@ const ProductImg = styled.img`
         switch (props.type) {
             case "row":
                 return `
-             
                 height: 100%;
-
-           
-
                 `;
             case "normal":
                 return `
@@ -85,7 +76,6 @@ const ProductImg = styled.img`
                 `;
             default:
                 return `
-            
           `
         }
     }}
@@ -99,12 +89,9 @@ const Body = styled.div`
     grid-template-columns: min-content;
     grid-template-rows: 1fr 1fr;
     position: relative;
-    
-    
     `
 const Main = styled.div`
     padding: 0.6em 0.4em 0;
-    
 `
 const Title = styled.h5`
     color: rgb(66, 66, 66);
@@ -114,24 +101,21 @@ const Title = styled.h5`
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  
     //white-space: nowrap;
+    text-transform: uppercase;
     text-overflow: ellipsis;
     overflow: hidden;
     @media (max-width: 1300px){
-      
         width: 120px;
     }
     @media (max-width: 1200px){
-      
-      width: 170px;
-  }
-  @media (max-width: 1050px){
-      
-      width: 140px;
-  }
-  @media (max-width: 1050px){
-      
+        width: 170px;
+    }
+    @media (max-width: 1050px){
+        width: 140px;
+    }
+    @media (max-width: 1050px){
       width: 120px;
-  }
+    }
 `
 const ProductStock = styled.div`
     height: 50px;
@@ -182,10 +166,10 @@ export const Product = ({ title, image, view, price, product }) => {
         )
         dispatch(
             totalShoppingItems()
-          )
+        )
 
 
-        //console.log(ProductSelected)
+        console.log(product)
 
     }
 
@@ -195,20 +179,18 @@ export const Product = ({ title, image, view, price, product }) => {
 
         <ProductContainer container='row' onClick={() => handleGetThisProduct(product)}>
             <ProductImgWrapper type='row'>
-                <ProductImg type='row' src={image} row></ProductImg>
+                <ProductImg type='row' src={product.productImageURL} row></ProductImg>
             </ProductImgWrapper>
             <Body>
                 <Main>
-                    <Title>{title}</Title>
-
+                    <Title>{product.productName}</Title>
                 </Main>
                 <Footer>
                     <ProductPrice>
                         <span>
-                            RD${separator(price)}
+                            RD${separator(product.price.total)}
                         </span>
                     </ProductPrice>
-
                 </Footer>
             </Body>
         </ProductContainer>

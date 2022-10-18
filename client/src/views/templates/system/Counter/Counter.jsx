@@ -44,7 +44,7 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
            }
 
         },[counter])
-        console.log(counter)
+        //console.log(counter)
     if(counter){
 
     }

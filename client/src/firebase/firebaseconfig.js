@@ -1,35 +1,19 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, updateDoc, where } from "firebase/firestore";
-import { nanoid } from "nanoid";
-//TODO ***STORAGE***********************************
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytes,
-  uploadBytesResumable
-} from "firebase/storage"
-import { useState } from "react";
-
-//TODO ***FIRESTORE***********************************
-
-
 //TODO ***AUTH**************************************
-export {
-  getAuth,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut
-} from "firebase/auth"
+import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+//TODO ***FIRESTORE***********************************
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove } from "firebase/firestore";
+//TODO ***STORAGE***********************************
+import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"
 
+import { useState } from "react";
+import { nanoid } from "nanoid";
 import { v4 } from 'uuid'
+import { useDispatch } from "react-redux";
+import { login, logout } from "../features/auth/userSlice";
+import { useNavigate } from "react-router-dom";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 //Todo Hi Pizza **************************************************
 const firebaseConfig = {
   apiKey: "AIzaSyAIG5W8rtGwTQ2hxVK7XpSxU3iQBRvHaT4",
@@ -50,23 +34,85 @@ const firebaseConfig = {
 //   appId: "1:653993214585:web:f2e6674640557a28220aa8",
 //   measurementId: "G-9RTQMM0JW2"
 // };
-
-
-// Initialize Firebase
+//Todo Initialize Firebase *******************************************************************
 const app = initializeApp(firebaseConfig);
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
 
-
-//Todo Auth **********************************************************************************
-
-
-
-
+// enableIndexedDbPersistence(db)
+//   .catch((err) => {
+//     if (err.code == 'failed-precondition') {
+//       // Multiple tabs open, persistence can only be enabled
+//       // in one tab at a a time.
+//       // ...
+//     } else if (err.code == 'unimplemented') {
+//       // The current browser does not support all of the
+//       // features required to enable persistence
+//       // ...
+//     }
+//   });
 //Todo Product **************************************************************************
+export const AuthStateChanged = (dispatch) => {
 
+  onAuthStateChanged(auth, (userAuth) => {
+    if (userAuth) {
+      const { email, uid, displayName } = userAuth
+      dispatch(
+        login({
+          email,
+          uid,
+          displayName,
+        })
 
+      );
+    } else { dispatch(logout()) }
+  })
+}
+export const HandleRegister = (name, email, pass, confirmPass) => {
+  const Navigate = useNavigate();
+  if (pass === confirmPass) {
+    createUserWithEmailAndPassword(auth, email, pass)
+      .then(userAuth => {
+        updateProfile(userAuth.user, {
+          displayName: name,
+        }).catch(error => console.log('user not updated'));
+      }).catch(err => alert(err));
+    Navigate('/login');
+  }
+
+}
+export const loginToApp = (email, password) => {
+  // Sign in an existing user with Firebase
+  const Navigate = useNavigate()
+  const dispatch = useDispatch()
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredencial) => {
+      const user = userCredencial.user
+      dispatch(login({
+        email: user.email,
+        uid: user.uid,
+        displayName: user.displayName
+      }))
+      Navigate('/app/')
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage)
+    })
+  // returns  an auth object after a successful authentication
+  // userAuth.user contains all our user details
+
+};
+export const watchingUserState = (setUserDisplayName) => {
+  onAuthStateChanged(auth, (userAuth) => {
+    if (userAuth) {
+      userAuth
+      setUserDisplayName(userAuth)
+    }
+  })
+}
 /****************** **********************/
 export const UploadProdImg = (file) => {
 
@@ -85,7 +131,7 @@ export const UploadProdImg = (file) => {
   })
 }
 export const UploadProdData = (
-  url, 
+  url,
   productName,
   cost,
   taxRef,
@@ -94,7 +140,7 @@ export const UploadProdData = (
   netContent,) => {
   const tax = JSON.parse(taxRef)
   const taxValue = () => {
-     return {
+    return {
       ref: tax.ref,
       value: tax.value,
       total: cost * tax.value,
@@ -107,10 +153,10 @@ export const UploadProdData = (
       total: Number(cost) + Number(taxValue().unit)
     }
   }
-  console.log(taxValue())
+  //console.log(taxValue())
   let product = {
     id: nanoid(6),
-    amountToBuy: {unit: 1, total: 1},
+    amountToBuy: { unit: 1, total: 1 },
     productName: String(productName),
     cost: {
       unit: Number(cost),
@@ -122,13 +168,13 @@ export const UploadProdData = (
     //toma el valor sin inpuesto y le agrega el impuesto seleccionado y redondeado
     netContent: netContent,
     price: priceValue()
-    
 
- }
+
+  }
   new Promise((resolve, reject) => {
     try {
       const productRef = doc(db, "products", product.id)
-      setDoc(productRef, { 
+      setDoc(productRef, {
         product
       }
       )
@@ -142,10 +188,17 @@ export const UploadProdData = (
 /****************** **********************/
 export const getProducts = async (setProduct) => {
   const productRef = collection(db, "products")
-  const { docs } = await getDocs(collection(db, "products"));
-  const productsArray = docs.map(item => item.data())
-  setProduct(productsArray)
-
+  onSnapshot(productRef, (snapshot) => {
+    let productsArray = snapshot.docs.map(item => item.data())
+    setProduct(productsArray)
+  })
+}
+export const getCat = async (setCategories) => {
+  const categoriesRef = collection(db, "categorys")
+  onSnapshot(categoriesRef, (snapshot) => {
+    let categoriesArray = snapshot.docs.map(item => item.data())
+    setCategories(categoriesArray)
+  })
 }
 export const getProduct = async (id) => {
   getDoc(doc(db, 'products', id))
@@ -156,23 +209,56 @@ export const getTaxes = async (setTaxe) => {
   const taxeArray = docs.map(item => item.data())
   setTaxe(taxeArray)
 }
-export const getClients = async (setClient) => {
-  // const clientRef = collection(db, "client")
-  const { docs } = await getDocs(collection(db, "client"));
-  const clientArray = docs.map(item => item.data())
-  setClient(clientArray)
+export const getClients = async (setClients) => {
+  const clientRef = collection(db, "client")
+  onSnapshot(clientRef, (snapshot) => {
+    let clientArray = snapshot.docs.map(item => item.data())
+    setClients(clientArray)
+  })
+}
+export const addIngredientTypePizza = async (ingredient) => {
+  const IngredientRef = doc(db, "products", "6dssod");
+
+  // Atomically add a new region to the "regions" array field.
+  try {
+    await updateDoc(IngredientRef, {
+      ingredientList: arrayUnion(ingredient) 
+    });
+  } catch (error) {
+    console.log("Lo sentimos Ocurrió un error:", error)
+  }
+  
+}
+export const deleteIngredientTypePizza = async (ingredient) => {
+  const IngredientRef = doc(db, "products", "6dssod");
+  try {
+    await updateDoc(IngredientRef, {
+      ingredientList: arrayRemove(ingredient)
+  });
+  } catch (error) {
+    console.log("Lo sentimos Ocurrió un error: ", error)
+  }
+}
+export const getCustomProduct = async (setProduct) => {
+  const customProductRef = doc(db, "products", "6dssod")
+  onSnapshot(customProductRef, (snapshot) => {
+    const data = snapshot.data()
+    setProduct(data)
+  })
+
 }
 export const Firestore = async (path, data, id) => {
   await setDoc(doc(db, `${path}`, id), {
     data
   });
 }
-export const getCat = async (setCategorys) => {
-  // const clientRef = collection(db, "client")
-  const { docs } = await getDocs(collection(db, "categorys"));
-  const categorysArray = docs.map(item => item.data())
-  setCategorys(categorysArray)
+export const getNumbers = async (setNumber) => {
+  // const clientRef = collection(db, "numbers")
+  const { docs } = await getDocs(collection(db, "numbers"));
+  const array = docs.map(item => item.data())
+  setNumber(array)
 }
+
 export const UploadCat = async (path, category, id) => {
   await setDoc(doc(db, `${path}`, id), {
     category
@@ -181,22 +267,30 @@ export const UploadCat = async (path, category, id) => {
 export const deleteProduct = (id) => {
   deleteDoc(doc(db, `products`, id))
 }
-export const getItems = async (setBills) => {
+export const getBills = async (setBills) => {
+
   const Ref = collection(db, `bills`);
-  const { docs } = await getDocs(Ref);
+  const q = query(Ref, orderBy("data.date"), limit(3));
+  const { docs } = await getDocs(q);
   const DataArray = docs.map(item => item.data());
   setBills(DataArray);
 }
-
 export const QueryByCategory = async (setProductArray, categoryArrayData, categoryStatus) => {
 
   const productsRef = collection(db, "products")
   const q = query(productsRef, where("product.category", "in", categoryArrayData));
-  const {docs} = await getDocs(q);
+  const { docs } = await getDocs(q);
   const array = docs.map((doc) => doc.data());
 
-  if(categoryStatus){
+  if (categoryStatus) {
     setProductArray(array);
   }
 
+}
+export const QueryByType = async (setProducts, type, size) => {
+  const productsRef = collection(db, "products")
+  const q = query(productsRef, where("product.category", "==", type), where("product.size", "==", size))
+  const { docs } = await getDocs(q);
+  const array = docs.map((doc) => doc.data());
+  setProducts(array)
 }

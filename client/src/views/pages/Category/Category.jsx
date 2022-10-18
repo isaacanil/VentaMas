@@ -8,11 +8,11 @@ import { getCat } from '../../../firebase/firebaseconfig'
 import { useState } from 'react'
 import { useEffect } from 'react'
 export const Category = () => {
-    const [categorys, setCategorys] = useState([])
+    const [categories, setCategories] = useState([])
     useEffect(() => {
-        getCat(setCategorys)
+        getCat(setCategories)
     }, [])
-    console.log(categorys)
+    console.log(categories)
     return (
         <Fragment>
             <MenuApp />
@@ -42,8 +42,8 @@ export const Category = () => {
                             </CategoryListHead>
 
                             <CategoryListBody>
-                                {categorys.length > 0 ? (
-                                    categorys.map(({category}, index) => (
+                                {categories.length > 0 ? (
+                                    categories.map(({category}, index) => (
 
                                         <Row col='3' key={index}>
                                             <Col>

@@ -29,8 +29,8 @@ export const DeliveryOption = () => {
     return (
         <Container>
             <DeliveryInner>
-                <input type="checkbox" name="" id="" onChange={e => setDeliveryState(e.target.checked)} />
-                <label htmlFor="">Delivery</label>
+                <input type="checkbox" name="" id="delivery" onChange={e => setDeliveryState(e.target.checked)} />
+                <label htmlFor="delivery">Delivery</label>
             </DeliveryInner>
             {
                 deliveryState ? (

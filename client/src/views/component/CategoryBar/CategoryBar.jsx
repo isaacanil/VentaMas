@@ -13,12 +13,12 @@ export const CategoryBar = () => {
     const CategoryModalSelected = useSelector(SelectCategoryModal)
     const CategoryItemsSelected = useSelector(SelectCategoryList)
     CategoryItemsSelected.length > 0 ? console.log(CategoryItemsSelected) : null
-    const [categorys, setCategorys] = useState('')
-   
+    const [categories, setCategories] = useState('')
+
 
     const dispatch = useDispatch()
     useEffect(() => {
-        getCat(setCategorys)
+        getCat(setCategories)
     }, [])
     const handleOpenMenu = () => {
         dispatch(
@@ -57,7 +57,16 @@ export const CategoryBar = () => {
                                     {
                                         CategoryItemsSelected.length > 0 ? (
                                             CategoryItemsSelected.map((name, index) => (
-                                                <li key={index}>{name}</li>
+                                                <li key={index}>
+                                                    <p>
+                                                        {name}
+                                                    </p>
+                                                    <CloseCategorySelectedButton>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M310.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L160 210.7 54.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L114.7 256 9.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 301.3 265.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L205.3 256 310.6 150.6z" />
+                                                        </svg>
+                                                    </CloseCategorySelectedButton>
+                                                </li>
+
                                             ))
                                         ) : null
                                     }
@@ -69,8 +78,8 @@ export const CategoryBar = () => {
                                 <CategoryList>
 
                                     {
-                                        categorys.length > 0 ? (
-                                            categorys.map(({ category }, index) => (
+                                        categories.length > 0 ? (
+                                            categories.map(({ category }, index) => (
                                                 <li key={index} onClick={(e) => handleLocalSaveCategory(category)}>
                                                     {category.name}
                                                 </li>
@@ -178,18 +187,35 @@ display: grid;
     gap: 0.4em;
     padding: 1em 0;
     li{
-        list-style: none;
-        padding: 0.2em 1em;
+        height: 2.2em;
+        padding: 0 0.2em 0 1em;
+        overflow: hidden;
         background-color: rgba(255, 255, 255, 0.767);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(0, 0, 0, 0.050);
         color: #292929;
-        text-align: center;
-        border-radius: 50px;
-        box-shadow: 0 0 10px rgba(5, 5, 5, 0.238);
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(5, 5, 5, 0.100);
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+       
 
     }`
+const CloseCategorySelectedButton = styled.div`
+    height: 1.6em;
+    width: 1.6em;
+    background-color: #c53030;
+    display: flex;
+    border-radius: 50px;
+    align-items: center;
+    justify-content: center;
+    svg{
+        fill: white;
+        width: 0.8em;
+    }
+`
 const CategoryListWrapper = styled.div`
 background-color: #94949486;
 backdrop-filter: blur(2000px);
@@ -220,8 +246,8 @@ const CategoryList = styled.ul`
         border: 1px solid rgba(0, 0, 0, 0.050);
         color: #292929;
         text-align: center;
-        border-radius: 50px;
-        box-shadow: 0 0 10px rgba(5, 5, 5, 0.238);
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(5, 5, 5, 0.100);
         font-weight: 500;
 
     }

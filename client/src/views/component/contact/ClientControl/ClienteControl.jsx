@@ -24,6 +24,11 @@ export const ClientControl = () => {
     const filtered = clients.filter((e) => e.client.name.toLowerCase().includes(searchData.toLowerCase()));
     setFilteredClients(filtered)
   }
+  const handleCancelShipping = () => {
+    dispatch(
+      CancelShipping()
+    )
+  }
   const handleSaveClient = (client) => {
     console.log(client)
   }

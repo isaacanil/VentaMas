@@ -11,43 +11,40 @@ import { Button } from '../../index'
 
 
 
-export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName }) => {
-
+export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, isOpen }) => {
 
     const done = () => {
-        new Promise(function (resolve) {
-
-        handleSubmit()
-
-        }).then(function () {
-
+        new Promise((resolve) => {
+            resolve(
+                handleSubmit()
+            )
+        }).then(() => {
             close();
-
         })
-
-
         console.log('click')
 
     }
     return (
-        <article
-            className={`${Style.Modal} ${Style.Open}`} >
-            <div className={Style.Modal_container}>
-                <div className={Style.modal_header}>
+        isOpen ? (
+            <article
+                className={`${Style.Modal} ${Style.Open}`} >
+                <div className={Style.Modal_container}>
+                    <div className={Style.modal_header}>
 
-                    <h3>{nameRef}</h3>
-                    <button className={Style.CrossBtn} onClick={close}>X</button>
+                        <h3>{nameRef}</h3>
+                        <button className={Style.CrossBtn} onClick={close}>X</button>
 
-                </div>
-                <div className={Style.modal_body}>
-                    {children}
-                </div>
-                <div className={Style.modal_footer}>
-                    <div className={Style.Group}>
-                        <Button onClick={done}>{btnSubmitName}</Button>
+                    </div>
+                    <div className={Style.modal_body}>
+                        {children}
+                    </div>
+                    <div className={Style.modal_footer}>
+                        <div className={Style.Group}>
+                            <Button onClick={done}>{btnSubmitName}</Button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </article>
+            </article>
+        ) : null
     )
 }

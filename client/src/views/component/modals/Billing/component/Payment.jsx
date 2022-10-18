@@ -31,7 +31,6 @@ export const PaymentMethod = () => {
     const TotalTaxesRef = useSelector(SelectTotalTaxes)
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
     const ChangeRef = useSelector(SelectChange)
-
     const [cashChecked, setCashChecked] = useState(false)
     const [cardChecked, setCardChecked] = useState(false)
     const [transferChecked, setTransferChecked] = useState(false)
@@ -81,30 +80,26 @@ export const PaymentMethod = () => {
             setChange()
         )
     }
-
     return (
         <Container>
-
             <Group gap='normal'>
-
                 <GridTitle>
-
-                    <h4>Metodo de pago</h4>
+                    <h4>Método de pago</h4>
                 </GridTitle>
                 <Row columns='payment'>
-                    <input type="checkbox" name="" id="" onChange={(e) => setCashChecked(e.target.checked)} />
-                    <label htmlFor="">Efectivo</label>
+                    <input type="checkbox" name="" id="cash" onChange={(e) => setCashChecked(e.target.checked)} />
+                    <label htmlFor="cash">Efectivo</label>
                     <InputNumber border='circle' type="number" name="" id="" placeholder='RD$' onChange={e => setCashPaymentMethod(e.target.value)} />
                 </Row>
                 <Row columns='payment'>
-                    <input type="checkbox" name="" id="" onChange={(e) => setCardChecked(e.target.checked)} />
-                    <label htmlFor="">Tarjeta</label>
+                    <input type="checkbox" name="" id="card" onChange={(e) => setCardChecked(e.target.checked)} />
+                    <label htmlFor="card">Tarjeta</label>
                     <InputNumber border='circle' type="number" name="" id="" placeholder='RD$' onChange={e => setCardPaymentMethod(e.target.value)} />
                     <InputText border='circle' type="text" name="" id="" placeholder='no. tarjeta' />
                 </Row>
                 <Row columns='payment'>
-                    <input type="checkbox" name="" id="" onChange={(e) => setTransferChecked(e.target.checked)} />
-                    <label htmlFor="">Transferencia</label>
+                    <input type="checkbox" name="" id="transfer" onChange={(e) => setTransferChecked(e.target.checked)} />
+                    <label htmlFor="transfer">Transferencia</label>
                     <InputNumber border='circle' type="number" name="" id="" placeholder='RD$' onChange={e => setTransferPaymentMethod(e.target.value)} />
                     <InputText border='circle' type="text" name="" id="" placeholder='no. transf' />
                 </Row>
@@ -131,8 +126,6 @@ export const PaymentMethod = () => {
                     <span style={{ display: 'flex', justifyContent: 'flex-end' }}>RD${separator(ChangeRef)}</span>
                 </Row>
             </Group>
-
-
         </Container>
     )
 }

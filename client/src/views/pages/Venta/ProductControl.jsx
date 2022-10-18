@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import style from './ProductControlStyle.module.scss'
-import { getProducts, auth, onAuthStateChanged, QueryByCategory } from '../../../firebase/firebaseconfig'
+import { getProducts, QueryByCategory, watchingUserState } from '../../../firebase/firebaseconfig'
 import { Button, Product, Grid, ControlSearchProduct } from '../../'
 
 import { selectUser } from '../../../features/auth/userSlice'
@@ -8,6 +8,7 @@ import { v4 } from 'uuid'
 import { SearchList } from '../../component/ControlSearchProduct/SearchList'
 import { SelectCategoryList, SelectCategoryStatus } from '../../../features/category/categorySlicer';
 import { useSelector } from "react-redux";
+import { CustomProduct } from '../../templates/system/Product/CustomProduct'
 
 export const ProductControl = () => {
     const [queryByCategoryList, setQueryByCategory] = useState([])
@@ -21,39 +22,33 @@ export const ProductControl = () => {
     useEffect(() => {
         if (categoryStatus) {
             QueryByCategory(setProducts, categoryArrayData, categoryStatus)
-         
+
         }
         if (categoryStatus === false) {
             getProducts(setProducts)
-          
+
         }
 
     }, [categoryArrayData, categoryStatus])
 
-    
 
 
-    useEffect(()=>{
+
+    useEffect(() => {
 
         const filtered = products.filter((e) => e.product.productName.toLowerCase().includes(searchData.toLowerCase()));
         setFilteredProducts(filtered)
-      
-    }, [searchData, products])
-    
 
-   // console.log(products)
-    
+    }, [searchData, products])
+
+
+    // console.log(products)
+
 
 
     const [userDisplayName, setUserDisplayName] = useState('')
     useEffect(() => {
-        onAuthStateChanged(auth, (userAuth) => {
-            if (userAuth) {
-                userAuth
-                setUserDisplayName(userAuth)
-
-            }
-        })
+        watchingUserState(setUserDisplayName)
     }, [])
 
 
@@ -66,29 +61,34 @@ export const ProductControl = () => {
                         (
                             <Grid columns='4'>
                                 {products.map(({ product }, index) => (
-                                    <Product
-                                        key={index}
-                                        title={product.productName}
-                                        image={product.productImageURL}
-                                        price={product.price.unit}
-                                        view='row'
-                                        product={product}>
-                                    </Product>
-                                ))
-                                }
+
+                                    product.custom ?
+                                        (
+                                            <CustomProduct key={index} product={product}></CustomProduct>
+                                        ) : !product.custom ? (
+                                        <Product
+                                            key={index}
+                                            view='row'
+                                            product={product}>
+                                        </Product>
+                                    ) : null
+
+                                ))}
                             </Grid>
 
                         ) : (
                             <Grid columns='4'>
                                 {filteredProducts.map(({ product }, index) => (
-                                    <Product
-                                        key={index}
-                                        title={product.productName}
-                                        image={product.productImageURL}
-                                        price={product.price.unit}
-                                        view='row'
-                                        product={product}>
-                                    </Product>
+                                   product.custom === true ?
+                                   (
+                                       <CustomProduct key={index} product={product}></CustomProduct>
+                                   ) : !product.custom  ? (
+                                   <Product
+                                       key={index}
+                                       view='row'
+                                       product={product}>
+                                   </Product>
+                               ) : null
                                 ))
                                 }
                             </Grid>

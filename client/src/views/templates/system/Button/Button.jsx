@@ -10,6 +10,7 @@ export const Button = styled.button`
   height: 2em;
   display: flex;
   align-items: center;
+  white-space: nowrap;
   //container
   //background-color: #2a2b2b;
   background-color: ${props => props.delete ? "#d13737" : "black"};

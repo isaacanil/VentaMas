@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,UAAU,CAAA;EACN,MAAM,EAAE,eAAe;EACvB,KAAK,EAAE,UAAU;EACjB,MAAM,EAAE,IAAI;EACZ,QAAQ,EAAE,IAAI;CAEjB",
+    "sources": [
+        "ControlSearchProductStyle.module.scss"
+    ],
+    "names": [],
+    "file": "ControlSearchProductStyle.module.css"
+}

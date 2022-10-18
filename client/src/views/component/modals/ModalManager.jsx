@@ -5,6 +5,7 @@ import { BillingModal } from "../../component/modals/Billing/BillingModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { useModal } from "../../../hooks/useModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
+import { SetCustomProduct } from "./CustomProduct/SetCustomProduct"
 import { AddProvider } from "./AddProvider/AddProvider"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
@@ -14,7 +15,8 @@ import {
   SelectAddProdModal,
   SelectBillingModal,
   SelectUpdateProdModal,
-
+  SelectSetCustomPizzaModal,
+  handleModalSetCustomPizza,
   closeModalAddProd,
   closeModalUpdateProd
 } from "../../../features/modals/modalSlice"
@@ -25,6 +27,8 @@ export const ModalManager = () => {
   const AddProdModalSelected = useSelector(SelectAddProdModal)
   const BillingModalSelected = useSelector(SelectBillingModal)
   const UpdateProdModalSelected = useSelector(SelectUpdateProdModal)
+  const SetCustomPizzaSelected = useSelector(SelectSetCustomPizzaModal)
+
 
   const handleSubmitAddProducts = async () => {
     /****************************************************************** */
@@ -101,16 +105,16 @@ export const ModalManager = () => {
   return (
     <Fragment>
       <AddClientModal
-        isOpen={AddClientModalSelected} 
-        />
+        isOpen={AddClientModalSelected}
+      />
       <ProductModal
         btnSubmitName='Guardar'
         title='Agregar Producto'
         isOpen={AddProdModalSelected}
         closeModal={closeModalAddProducts}
-        handleSubmit={handleSubmitAddProducts}
+
       />
-      <ProductModal 
+      <ProductModal
         btnSubmitName='Actualizar'
         title='Actualizar Producto'
         isOpen={UpdateProdModalSelected}
@@ -118,7 +122,11 @@ export const ModalManager = () => {
         handleSubmit={handleSubmitUpdateProducts}
       />
       <BillingModal isOpen={BillingModalSelected} />
-      
+      <SetCustomProduct
+        isOpen={SetCustomPizzaSelected}
+        handleOpen={handleModalSetCustomPizza}
+      />
+
       {/* <AddOrderModal />
       <AddProvider /> */}
     </Fragment>

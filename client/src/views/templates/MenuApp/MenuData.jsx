@@ -1,4 +1,5 @@
 import {IoIosArrowForward} from 'react-icons/io'
+import { ChevronRight, ChevronLeft } from '../system/Icons/Chevron/Chevron'
 export const MenuData = [
     {
         title: 'Inicio',
@@ -11,15 +12,18 @@ export const MenuData = [
     },
     {
         title: 'Compra',
-        path: '/app/compra',
-        subMenu: [
+        path: false,
+        submenuIconOpen: <ChevronLeft/>,
+        submenuIconClose: <ChevronRight/>,
+        //<ChevronLeft/> <ChevronRight/>
+        submenu: [
             {
                 title: 'Pedido',
-                path: '/app/Compra/Pedido'
+                path: '/app/compra/pedido'
             },
             {
-                title: 'Clientes',
-                path: '/app/contact/clientes'
+                title: 'Compra',
+                path: '/app/compra'
             }
         ]
     },
@@ -34,32 +38,32 @@ export const MenuData = [
     },
     {
         title: 'Contacto',
-        path: '/app/contact',
-        subMenu_icon: <IoIosArrowForward></IoIosArrowForward>,
+        submenuIconOpen: <ChevronLeft/>,
+        submenuIconClose: <ChevronRight/>,
+        path: false,
         submenu: [
             {
                 title: 'Clientes',
-                path: '/app/contact/clientes'
+                path: '/app/contact/client'
             },
             {
                 title: 'Proveedores',
-                path: '/app/contact/proveedores'
+                path: '/app/contact/provider'
             },
 
         ]
     },
     {
         title: 'Inventario',
-        path: '/app/inventario',
+        path: false,
+        submenuIconOpen: <ChevronLeft/>,
+        submenuIconClose: <ChevronRight/>,
         submenu: [
             {
-                title: 'Clientes',
-                path: '/app/contact/clientes'
+                title: 'Articulos',
+                path: '/app/inventario'
             },
-            {
-                title: 'Proveedores',
-                path: '/app/contact/proveedores'
-            },
+           
 
         ]
     },

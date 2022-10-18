@@ -1,67 +1,77 @@
 import React, { useState } from 'react'
 import { MenuApp, InputText } from '../../'
 import styled from 'styled-components'
-import { getItems } from '../../../firebase/firebaseconfig'
+import { getBills } from '../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
 import { separator } from '../../../hooks/separator'
-
+import { getNumbers } from '../../../firebase/firebaseconfig'
 export const Registro = () => {
+  const [numbers, setNumbers] = useState([])
   const [bills, setBills] = useState('')
   const path = 'bills'
- 
+  useEffect(()=>{
+    getNumbers(setNumbers)
+  },[])
   useEffect(() => {
-    getItems(setBills, path)
+    
+    getBills(setBills, path)
   }, [])
-  console.log(bills)
+  console.log(numbers)
+   
+  // const lastNumber = Math.max(...numbers)
+  // console.log('the last is:', lastNumber)
   return (
     <div>
       <MenuApp></MenuApp>
-      <Facturas>
-        <Head>
-          <ITEMS>
-            <h3>Fecha</h3>
-          </ITEMS>
-          
+      <FilterBar></FilterBar>
+      <BillsContainer>
+        <BillsHead>
           <ITEMS>
             <h3>Clientes</h3>
           </ITEMS>
           <ITEMS>
-            <h3>Pagado</h3>
-          </ITEMS>
-          <ITEMS>
-            <h3>Cambio</h3>
+            <h3>Fecha</h3>
           </ITEMS>
           <ITEMS>
             <h3>TOTAL</h3>
           </ITEMS>
-        </Head>
-        <Body>
+          <ITEMS>
+            <h3>ITBIS</h3>
+          </ITEMS>
+          <ITEMS>
+            <h3>Pago con</h3>
+          </ITEMS>
+          <ITEMS>
+            <h3>Cambio</h3>
+          </ITEMS>
+        </BillsHead>
+        <BillsBody>
           {
             bills.length > 0 ? (
-              bills.map(({data}, index) => (
+              bills.map(({ data }, index) => (
                 <Bills key={index}>
                   <ITEMS>
-                
+                    {`${data.client.name}`}
+                  </ITEMS>
+                  <ITEMS>
                     {new Date(data.date.seconds * 1000).toLocaleString()}
-              
-                  </ITEMS>
-                 
-                  <ITEMS>
-                      {`${data.client.name}`}
                   </ITEMS>
                   <ITEMS>
-                     RD$ {data.cashPaymentMethod.value}
+                    RD${separator(data.totalPurchase.value)}
                   </ITEMS>
                   <ITEMS>
-                     RD$ {separator(data.change.value)}
+                    {data.totalTaxes.value}
                   </ITEMS>
                   <ITEMS>
-                      RD${separator(data.totalPurchase.value)}
+                    RD$ {data.cashPaymentMethod.value}
+                  </ITEMS>
+                  <ITEMS>
+                    RD$ {separator(data.change.value)}
                   </ITEMS>
                 </Bills>
               ))
             ) : null
-            
+
           }
           <ITEMS></ITEMS>
           <ITEMS></ITEMS>
@@ -69,16 +79,9 @@ export const Registro = () => {
           <ITEMS></ITEMS>
           <ITEMS></ITEMS>
 
-        </Body>
-        <Footer>
-          <ITEMS>TOTAL</ITEMS>
-          <ITEMS></ITEMS>
-          <ITEMS></ITEMS>
-          <ITEMS></ITEMS>
-          <ITEMS></ITEMS>
-        </Footer>
-
-      </Facturas>
+        </BillsBody>
+       
+      </BillsContainer>
 
 
 
@@ -90,26 +93,30 @@ export const Registro = () => {
     </div>
   )
 }
-const Facturas = styled.div`
+const FilterBar = styled.div`
   
+`
+const BillsContainer = styled.div`
 `
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   justify-content: center;
-  justify-items: center;
+  gap: 0 1em;
  
 `
-const Head = styled(Grid)`
+const BillsHead = styled(Grid)`
 
 `
 const ITEMS = styled.div`
-
+  width: 100%;
+  text-align: center;
 `
 const Bills = styled(Grid)`
-  
+ 
+ 
 `
-const Body = styled.div`
+const BillsBody = styled.div`
 
 `
 const Footer = styled(Grid)`

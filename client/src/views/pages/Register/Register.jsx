@@ -1,36 +1,23 @@
 import React, { useState } from 'react'
 import {InputText, InputPassword, Button} from '../../index'
-import { auth, createUserWithEmailAndPassword, updateProfile } from '../../../firebase/firebaseconfig'
+import {HandleRegister} from '../../../firebase/firebaseconfig'
 
 
 import { useNavigate } from 'react-router-dom';
+import { confirmPasswordReset } from 'firebase/auth';
 
 export const Register = () => {
  
-  const Navigate = useNavigate();
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
-  
-
-  const handleSubmit = (e) =>{
-    e.preventDefault()
-    if( pass === confirmPass ){
-      createUserWithEmailAndPassword(auth, email, pass)
-      .then(userAuth => {
-        updateProfile(userAuth.user, {
-          displayName: name,
-        }).catch(error => console.log('user not updated'));
-      }).catch(err => alert(err));
-      Navigate('/login');
-    }
-    
-  }
+  HandleRegister(name, email, pass, confirmPass)
   return (
     <div>
       <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={HandleRegister}>
       <div>
           <label htmlFor="">Name:  </label>
           <InputText

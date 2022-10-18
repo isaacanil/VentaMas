@@ -14,6 +14,7 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
         <h3 style={{ margin: 0, }} className={style.center}>Hi Pizza</h3>
         <h5>Tel 809-761-9082</h5>
         <h5>Dirección : Plaza Ana Rocio 1er nivel</h5>
+        <h5>Cliente : {data.client ? data.client.name : 'Cliente Genérico'}</h5>
         <div className={style.timeSection}>
             <h5>{`${day}/${month}/${year}`}</h5>
             <h5>{`${hour}:${minute}:${second}`}</h5>
@@ -23,7 +24,6 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
         <hr />
         <table>
             <thead>
-
                 <td className={style.left}>DESCRIPCION</td>
                 <td className={style.right}>ITBIS</td>
                 <td className={style.right}>VALOR</td>
@@ -35,13 +35,14 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
                     data.products.length > 0 ? (
                         data.products.map((product, index) => (
                             <Fragment key={index}>
-                                <tr key={index}>
+                                <tr key={index} >
                                     <td>{product.amountToBuy.total} x {separator(product.price.unit)}</td>
+                                    <td className={style.right}>{separator(product.tax.total)}</td>
+                                    <td className={style.right}>{separator(product.price.total)}</td>
                                 </tr>
                                 <tr key={index}>
                                     <td className={`${style.productName}`}>{product.productName}</td>
-                                    <td className={style.right}>{separator(product.tax.total)}</td>
-                                    <td className={style.right}>{separator(product.price.total)}</td>
+                                    
 
                                 </tr>
                             </Fragment>

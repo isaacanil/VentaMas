@@ -7,13 +7,29 @@ import {
   //template
   MenuApp as Menu,
 } from '../../index'
+import { nanoid } from 'nanoid'
 export const Compras = () => {
-  const bill = useSelector(state => state.cart)
+  const [product, setProduct] = useState({
+    status: false,
+    id: '',
+    name: ''
+  })
+ const change = () => {
+  setProduct({
+    status: true,
+    id: nanoid(6),
+    name: 'Jonathan'
+  })
+ }
   return (
     <div>
       <Menu></Menu>
       <h2>compra</h2>
-      {/* <Receipt data={bill}></Receipt> */}
+      {product.status ? (
+        <span>{product.name && product.id} </span>
+
+      ) : null}
+     <button onClick={change}>click pls</button>
     </div>
   )
 }
