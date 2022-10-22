@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getClients } from '../../../../firebase/firebaseconfig'
+import { getClients } from '../../../../firebase/firebaseconfig.js'
 import { CancelShipping } from '../../../../features/cart/cartSlice'
 import style from './ClientControlStyle.module.scss'
 import {

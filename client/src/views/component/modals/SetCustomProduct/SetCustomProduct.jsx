@@ -2,7 +2,7 @@ import { isEmpty } from '@firebase/util'
 import React, { useState } from 'react'
 import { useEffect } from 'react'
 import styled from 'styled-components'
-import { getCustomProduct, QueryByType } from '../../../../firebase/firebaseconfig'
+import { getCustomProduct, QueryByType } from '../../../../firebase/firebaseconfig.js'
 import { separator } from '../../../../hooks/separator'
 import { Modal } from '../modal'
 import { IngredientCard } from '../../../templates/system/customProduct/typePizza/ingredientCard'
@@ -64,56 +64,63 @@ export const SetCustomProduct = ({ isOpen }) => {
         data === 'true' ? setIsComplete(true) : null;
         // console.log(isComplete)
     }
-    const closeModal = () => {
-        dispatch(
-            handleModalSetCustomPizza()
-        )
-    }
-    let type = 'Pizza';
+   
+    let type = 'pizza';
     useEffect(() => {
         if (size === '') {
             console.log('esperando')
         } else {
             QueryByType(setProducts, type, size)
+            setProductSelected({
+                a: '',
+                b: ''
+            })
+            setTimeout(() => {
+                setNewProduct({
+                    productName: '',
+                    cost: { unit: 0, total: 0 },
+                    id: '',
+                    price: { unit: 0, total: 0 },
+                    amountToBuy: { unit: 1, total: 1 },
+                    tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
+                    size: '',
+                })
+                setProduct({
+                    id: '',
+                    type: '',
+                    productName: '',
+                    amountToBuy: { unit: 1, total: 1 },
+                    price: { unit: 0, total: 0 },
+                    mitad: {
+                        first: '',
+                        second: ''
+                    }
+                })
+            }, 500)
         }
     }, [size])
     useEffect(() => {
-        
-        if (isComplete && productSelected.a !== '') {
+        if (isComplete && productSelected.a !== '' && productSelected.b == '') {
             const a = JSON.parse(productSelected.a)
             const firstProductPrice = a.price.total
             const firstProductName = a.mainIngredient
+            setProduct({
+                ...product,
+                price: {
+                    unit: firstProductPrice,
+                    total: firstProductPrice 
+                }, size: size
+            })
             setNewProduct({
                 ...newProduct,
                 productName: `pizza de ${firstProductName}. ingrediente extras: ${IngredientListNameSelected}`,
                 price: {
                     unit: firstProductPrice + totalIngredientPrice,
                     total: firstProductPrice + totalIngredientPrice
-                }, size: size
-            })
-
-            setProduct({
-                price: { total: firstProductPrice }
+                }
             })
         }
-        // if (isComplete && productSelected.b !== '') {
-        //     const b = JSON.parse(productSelected.b)
-        //     const firstProductPrice = b.price.total
-        //     const firstProductName = b.mainIngredient
-        //     setNewProduct({
-        //         ...newProduct,
-        //         productName: `pizza de ${firstProductName}. ingrediente extras: ${IngredientListNameSelected}`,
-        //         price: {
-        //             unit: firstProductPrice + totalIngredientPrice,
-        //             total: firstProductPrice + totalIngredientPrice
-        //         }, size: size
-        //     })
-
-        //     setProduct({
-        //         price: { total: firstProductPrice }
-        //     })
-        // }
-        if (!isComplete && productSelected.a !== '' > 0 && productSelected.b !== '') {
+        if (!isComplete && productSelected.a !== '' && productSelected.b !== '') {
             const a = JSON.parse(productSelected.a)
             const b = JSON.parse(productSelected.b)
             const firstProductPrice = a.price.total;
@@ -125,88 +132,100 @@ export const SetCustomProduct = ({ isOpen }) => {
 
             if (firstProductPrice > secondProductPrice) {
                 setProduct({
-
                     price: { unit: firstProductPrice, total: firstProductPrice }
                 })
             } else if (firstProductPrice < secondProductPrice) {
                 setProduct({
                     price: { unit: secondProductPrice, total: secondProductPrice }
                 })
+            
             } else if (firstProductPrice == secondProductPrice) {
                 setProduct({
                     ...product,
                     price: { unit: firstProductPrice, total: firstProductPrice }
                 })
             }
-            setNewProduct({
-                
-                productName: `pizza mitad ${firstProductName}, mitad ${secondProductName}. Ingrediente extras: ${IngredientListNameSelected}`,
-                price: {
-                    unit: product.price.total + totalIngredientPrice,
-                    total: product.price.total + totalIngredientPrice
-                }, 
-                size: size,
-                id: v4()
-            })
-            //console.log(productSelected.a)  
+            setTimeout(() => {
+                setNewProduct({
+                    ...newProduct,
+                    productName: `pizza mitad ${firstProductName}, mitad ${secondProductName}. Ingrediente extras: ${IngredientListNameSelected}`,
+                    amountToBuy: { unit: 1, total: 1 },
+                    id: nanoid(6),
+                    price: {
+                        unit: product.price.unit + totalIngredientPrice,
+                        total: product.price.total + totalIngredientPrice
+                    },
+                    size: size,
+                })
+
+            }, 500)
         }
-    }, [productSelected.a, productSelected.b, IngredientListNameSelected])
+    }, [productSelected.a, productSelected.b, IngredientListNameSelected, isComplete, size])
 
-    
-    console.log(newProduct)
-    const HandleSubmit = () => {
-            setNewProduct({
-                ...newProduct,
-                id: nanoid(6)
-            })
-
-            dispatch(
-                addProduct(newProduct)
-            )
-            dispatch(
-                formatData()
-            )
-            // setNewProduct(
-            //     {
-            //         productName: '',
-            //         cost: { unit: 0, total: 0 },
-            //         id: '',
-            //         price: { unit: 0, total: 0 },
-            //         amountToBuy: { unit: 1, total: 1 },
-            //         tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
-            //         size: '',
-
-            //     }
-            // )
-            setProductSelected(
+    console.log(productSelected.b)
+    const cleanData = () => {
+        dispatch(
+            formatData()
+        )
+        setProductSelected(
+            {
+                a: '',
+                b: ''
+            }
+        ),
+            setIsComplete(true),
+            setProduct(
                 {
-                    a: '',
-                    b: ''
-                }
-            ),
-                setIsComplete(true),
-                setProduct(
-                    {
-                        id: '',
-                        type: '',
-                        productName: '',
-                        amountToBuy: {
-                            unit: 1,
-                            total: 1,
-                        },
-                        price: {
-                            unit: 0,
-                            total: 0
-                        },
-                        mitad: {
-                            first: '',
-                            second: ''
-                        }
+                    id: '',
+                    type: '',
+                    productName: '',
+                    amountToBuy: {
+                        unit: 1,
+                        total: 1,
+                    },
+                    price: {
+                        unit: 0,
+                        total: 0
+                    },
+                    mitad: {
+                        first: '',
+                        second: ''
                     }
-                )
-
-
+                }
+            )
+            setNewProduct(
+                {
+                    productName: '',
+                    cost: { unit: 0, total: 0 },
+                    id: '',
+                    price: { unit: 0, total: 0 },
+                    amountToBuy: { unit: 1, total: 1 },
+                    tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
+                    size: '',
+                },
+            )
+    }
+    const closeModal = () => {
+        cleanData()
+        dispatch(
+            handleModalSetCustomPizza()
+        )
+    }
+    console.log(product)
+    const HandleSubmit = () => {
         
+        setNewProduct({
+            ...newProduct,
+            id: nanoid(6),
+            size,
+           
+        })
+
+        dispatch(
+            addProduct(newProduct)
+        )
+        cleanData()
+       
 
     }
     return (
@@ -270,40 +289,34 @@ export const SetCustomProduct = ({ isOpen }) => {
                     ) : null}
                 </Row>
                 <ProductPriceBar>
-                    <span>Total: RD$ {product.price.total}</span>
+                    <span>Total: RD$ {separator(product.price.total)}</span>
                 </ProductPriceBar>
-                <IngredientList>
-                    <IngredientListWrapper>
-                        {
-                            !isEmpty(customProduct) ? (
-                                customProduct.ingredientList.length > 0 ? (
-                                    customProduct.ingredientList.map((item, index) => (
-                                        <IngredientCard
-                                            key={index}
-                                            item={item}
-                                        />
-                                    ))
+                <IngredientListContainer>
+                    <IngredientList>
+                        <IngredientListWrapper>
+                            {
+                                !isEmpty(customProduct) ? (
+                                    customProduct.ingredientList.length > 0 ? (
+                                        customProduct.ingredientList.map((item, index) => (
+                                            <IngredientCard
+                                                key={index}
+                                                item={item}
+                                            />
+                                        ))
+                                    ) : null
                                 ) : null
-                            ) : null
-                        }
-                    </IngredientListWrapper>
-                </IngredientList>
-                <Footer>
-
-                    <IngredientPriceBar>
-                        <span>Cantidad Artículos</span>
-                        <span>Total: RD$ {totalIngredientPrice}</span>
-                    </IngredientPriceBar>
-
-                </Footer>
-                <Footer>
-
-                    <IngredientPriceBar>
-                        <span></span>
-                        <span>Total: RD$ {newProduct.price.total}</span>
-                    </IngredientPriceBar>
-
-                </Footer>
+                            }
+                        </IngredientListWrapper>
+                        <IngredientPriceBar>
+                            <span>Cantidad Artículos</span>
+                            <span>Total: RD$ {separator(totalIngredientPrice)}</span>
+                        </IngredientPriceBar>
+                    </IngredientList>
+                </IngredientListContainer>
+                <IngredientPriceBar>
+                    <span></span>
+                    <span>Total: RD$ {separator(newProduct.price.total)}</span>
+                </IngredientPriceBar>
             </Body>
 
         </Modal>
@@ -323,12 +336,12 @@ const Body = styled.div`
  padding: 1em;
  display: grid;
  grid-template-rows: min-content min-content min-content 1fr min-content;
- gap: 0.8em;
+ gap: 0.2em 0.4em;
 `
 const Row = styled.div`
     display: flex;
     gap: 1em;
-    margin-bottom: 0.8em;
+    margin-bottom: 0.4em;
 `
 const Group = styled.div`
     flex-grow: 1;
@@ -358,14 +371,17 @@ width: 100%;
         
     }
 `
-const IngredientList = styled.div`
+const IngredientListContainer = styled.div`
     height: 100%;
-    max-height: 260px;
+    max-height: 270px;
+    height: auto;
     overflow: hidden;
-    background-color: red;
+    background-color: #cecbcb;
     margin-bottom: 10px;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: hidden;`
+const IngredientList = styled.div`
+    
     
     `
 const IngredientListWrapper = styled.ul`
@@ -388,5 +404,7 @@ const Footer = styled.div`
 const IngredientPriceBar = styled.div`
     width: 100%;
     display: flex;
+    
+    padding: 0.4em 1em;
     justify-content: space-between;
 `

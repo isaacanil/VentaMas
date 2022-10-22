@@ -96,6 +96,7 @@ const Main = styled.div`
 const Title = styled.h5`
     color: rgb(66, 66, 66);
     width: 150px;
+    font-size: 12px;
     line-height: 1pc;
     display: -webkit-box;
     -webkit-line-clamp: 2;

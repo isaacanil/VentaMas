@@ -19,7 +19,7 @@ export const MenuData = [
         submenu: [
             {
                 title: 'Pedido',
-                path: '/app/compra/pedido'
+                path: '/app/pedido'
             },
             {
                 title: 'Compra',

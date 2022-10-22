@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from 'react'
 import { AddClientButton, Client } from '../../../../'
 import styled from 'styled-components'
-import { getClients } from '../../../../../firebase/firebaseconfig'
+import { getClients } from '../../../../../firebase/firebaseconfig.js'
 import { InputText } from '../Style'
 import { useEffect } from 'react'
 import { SelectClient, CancelShipping } from '../../../../../features/cart/cartSlice'

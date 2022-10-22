@@ -1,53 +1,81 @@
 .Container {
-   
+    padding: 1em;
+    font-size: 0.9em;
+
     .timeSection {
         display: flex;
         gap: 0.5em;
     }
+
     table {
 
+        .productName {
+            text-transform: lowercase;
+            width: 100%;
+            grid-column: 1 / 4;
+            line-height: 1.4pc;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            //white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
 
-        thead {
-            display: grid;
-            grid-template-columns:  1fr 0.5fr 0.8fr;
-
-            
         }
 
-        tbody {
+        tr {
             width: 100%;
-
-            .productName {
-                text-transform: lowercase;
-                width: 100%;
-                grid-column: 1 / 4;
-                line-height: 1.4pc;
-                display: -webkit-box;
-                -webkit-line-clamp: 3;
-                -webkit-box-orient: vertical;
-                //white-space: nowrap;
-                text-overflow: ellipsis;
-                overflow: hidden;
-
-            }
-            
-
-            tr {
-                display: grid;
-                grid-template-columns:  1fr 0.5fr 0.8fr;
-            }
+            display: grid;
+            grid-template-columns: 1fr 0.5fr 0.8fr;
         }
     }
 }
-.title{
+
+.title {
     font-weight: bold;
 }
-.center{
+
+.center {
     text-align: center;
 }
-.right{
+
+.right {
     text-align: right;
 }
-.left{
+
+.left {
     text-align: left;
+}
+
+// .border_bottom {
+
+//     border: 1px solid black;
+// }
+
+
+.row3 {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr 0.8fr;
+    
+}
+.row1 {
+    display: grid;
+    grid-template-columns: 1fr;
+    
+}
+.product_list {
+    display: block;
+    border: none;
+    padding: 0;
+    list-style: none;
+    .product{
+        width: 100%;
+        &:nth-child(1n) {
+            border-bottom: 1px dashed black;
+        }
+        &:last-child{
+            border-bottom: none;
+        }
+    
+    }
 }

@@ -1,25 +1,27 @@
 import React, { useState } from 'react'
 import { MenuApp, InputText } from '../../'
 import styled from 'styled-components'
-import { getBills } from '../../../firebase/firebaseconfig'
+import { getBills } from '../../../firebase/firebaseconfig.js'
 import { useEffect } from 'react'
 import { separator } from '../../../hooks/separator'
-import { getNumbers } from '../../../firebase/firebaseconfig'
+
 export const Registro = () => {
-  const [numbers, setNumbers] = useState([])
-  const [bills, setBills] = useState('')
-  const path = 'bills'
-  useEffect(()=>{
-    getNumbers(setNumbers)
-  },[])
+
+  const [bills, setBills] = useState([])
+  const [client, setClient] = useState('')
+ 
   useEffect(() => {
-    
-    getBills(setBills, path)
+    getBills(setBills, setClient)
   }, [])
-  console.log(numbers)
+
+    console.log(client)
+  
+
+
+  
+  
    
-  // const lastNumber = Math.max(...numbers)
-  // console.log('the last is:', lastNumber)
+
   return (
     <div>
       <MenuApp></MenuApp>
@@ -44,6 +46,7 @@ export const Registro = () => {
           <ITEMS>
             <h3>Cambio</h3>
           </ITEMS>
+          
         </BillsHead>
         <BillsBody>
           {
@@ -51,7 +54,7 @@ export const Registro = () => {
               bills.map(({ data }, index) => (
                 <Bills key={index}>
                   <ITEMS>
-                    {`${data.client.name}`}
+                    {client !== '' ? data.client.name : null}
                   </ITEMS>
                   <ITEMS>
                     {new Date(data.date.seconds * 1000).toLocaleString()}

@@ -19,7 +19,7 @@ export { Receipt } from './pages/checkout/Receipt'
 export { AddCategory } from './pages/Category/AddCategory'
 export { Orders } from './pages/Order/Orders'
 export { AddCustomProductModal } from './component/modals/AddCustomProductModal/AddCustomProductModal'
-export { SetCustomProduct } from './component/modals/CustomProduct/SetCustomProduct'
+export { SetCustomProduct } from './component/modals/SetCustomProduct/SetCustomProduct'
 
 
 //Todo ***********Components*************************************************

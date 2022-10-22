@@ -11,33 +11,36 @@ const categorySlice = createSlice({
     reducers: {
         addCategory: (state, action) => {
             const { id, name } = action.payload
-           
             const checkingNameIsDifferent = state.categoryList.every((cat) => cat !== name)
             console.log(checkingNameIsDifferent)
-           
-
             if (checkingNameIsDifferent && state.categoryList.length < 8) {
                 console.log('entrando')
-             
-
                     state.status = true
                     state.categoryList.push(name)
-                
             }
-
-
-            
         },
-        delecteProductSelected: (state) => {
+        deleteAllCategoriesSelected: (state) => {
             state.categoryList = []
             state.status = false
+        },
+        deleteCategorySelected: (state, action) => {
+            const name = action.payload
+            const checkingNameIsDifferent = state.categoryList.find((cat) => cat === name)
+            if (checkingNameIsDifferent) {
+                state.categoryList.splice(state.categoryList.indexOf(checkingNameIsDifferent), 1)
+            }
+            
+            if (state.categoryList.length == 0) {
+                state.status = false
+            }
         }
 
     }
 })
 export const {
     addCategory,
-    delecteProductSelected
+    deleteAllCategoriesSelected,
+    deleteCategorySelected
 } = categorySlice.actions
 
 export const SelectCategoryList = state => state.category.categoryList

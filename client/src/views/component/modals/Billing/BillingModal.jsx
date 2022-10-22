@@ -1,13 +1,13 @@
 import React, { Fragment, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SelectProduct, SelectTotalShoppingItems, SelectFacturaData, getDate, CancelShipping, getId  } from '../../../../features/cart/cartSlice'
+import { SelectProduct, SelectTotalShoppingItems, SelectFacturaData, getId, CancelShipping } from '../../../../features/cart/cartSlice'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
 import { closeModalBilling } from '../../../../features/modals/modalSlice'
 import { ClientBar } from './component/ClientSection'
 import { DeliveryOption } from './component/DeliveryOption'
 import { PaymentMethod } from './component/Payment'
 import ReactToPrint from 'react-to-print'
-import { Firestore } from '../../../../firebase/firebaseconfig'
+import { AddBills } from '../../../../firebase/firebaseconfig.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { separator } from '../../../../hooks/separator'
 import { Receipt } from '../../../pages/checkout/Receipt'
@@ -51,15 +51,11 @@ export const BillingModal = ({isOpen}) => {
     )
   }
   
-  const handleSubmit = () => {
+  const HandleSubmit = () => {
     dispatch(
       getId()
     )
-    dispatch(
-      getDate()
-    )
-    Firestore(path, data, id)
-    //navigate('/app/checkout/receipt')
+    AddBills(data)
     dispatch(
       closeModalBilling()
     )
@@ -134,14 +130,14 @@ export const BillingModal = ({isOpen}) => {
                 <Footer>
                   <ButtonGroup>
                       <ReactToPrint 
-                      trigger={()=>( <Button color='primary' onClick={handleSubmit}>Imprimir</Button>)}
+                      trigger={()=>( <Button color='primary' onClick={HandleSubmit}>Imprimir</Button>)}
                       content={() => ComponentRef.current}
                       />
                       <DocumentContainer>
                         <Receipt  ref={ComponentRef} data={bill}/>
                       </DocumentContainer>
                       
-                      <Button color='gray' onClick={handleSubmit}>Cerrar</Button>
+                      <Button color='gray' onClick={HandleSubmit}>Cerrar</Button>
                       
                    
                   </ButtonGroup>

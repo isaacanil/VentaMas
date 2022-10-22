@@ -3,16 +3,17 @@ import { initializeApp } from "firebase/app";
 //TODO ***AUTH**************************************
 import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 //TODO ***FIRESTORE***********************************
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp } from "firebase/firestore";
 //TODO ***STORAGE***********************************
 import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
 import { v4 } from 'uuid'
 import { useDispatch } from "react-redux";
 import { login, logout } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
+
 
 //Todo Hi Pizza **************************************************
 const firebaseConfig = {
@@ -222,19 +223,19 @@ export const addIngredientTypePizza = async (ingredient) => {
   // Atomically add a new region to the "regions" array field.
   try {
     await updateDoc(IngredientRef, {
-      ingredientList: arrayUnion(ingredient) 
+      ingredientList: arrayUnion(ingredient)
     });
   } catch (error) {
     console.log("Lo sentimos Ocurrió un error:", error)
   }
-  
+
 }
 export const deleteIngredientTypePizza = async (ingredient) => {
   const IngredientRef = doc(db, "products", "6dssod");
   try {
     await updateDoc(IngredientRef, {
       ingredientList: arrayRemove(ingredient)
-  });
+    });
   } catch (error) {
     console.log("Lo sentimos Ocurrió un error: ", error)
   }
@@ -245,20 +246,19 @@ export const getCustomProduct = async (setProduct) => {
     const data = snapshot.data()
     setProduct(data)
   })
+}
+// export const Firestore = async (path, data, id) => {
+//   await setDoc(doc(db, `${path}`, id), {
+//     data
+//   });
+// }
 
-}
-export const Firestore = async (path, data, id) => {
-  await setDoc(doc(db, `${path}`, id), {
-    data
-  });
-}
-export const getNumbers = async (setNumber) => {
-  // const clientRef = collection(db, "numbers")
-  const { docs } = await getDocs(collection(db, "numbers"));
-  const array = docs.map(item => item.data())
-  setNumber(array)
-}
-
+  // const client = docs.map(async (item) => {
+  //   const clientRef = item.data()
+  //   const clientData = clientRef.data['client']
+  //   const clientDoc = await getDoc((clientData))
+  //   return clientDoc.exists() ? clientDoc.data() : null
+  // })
 export const UploadCat = async (path, category, id) => {
   await setDoc(doc(db, `${path}`, id), {
     category
@@ -267,13 +267,54 @@ export const UploadCat = async (path, category, id) => {
 export const deleteProduct = (id) => {
   deleteDoc(doc(db, `products`, id))
 }
-export const getBills = async (setBills) => {
-
+export const getBills = async (setBills, setClient) => {
   const Ref = collection(db, `bills`);
-  const q = query(Ref, orderBy("data.date"), limit(3));
+  const q = query(Ref, orderBy("data.date"));
   const { docs } = await getDocs(q);
-  const DataArray = docs.map(item => item.data());
-  setBills(DataArray);
+  const arrayBills = docs.map(item => item.data())
+  const clientData = () => {
+    arrayBills.map(async (item) => {
+      const clientid = item.data['client']
+      const clientRef = doc(db, `clients`, clientid)
+      const clientDoc = await getDoc(clientRef)
+      return clientDoc.exists() ? clientDoc : null
+
+      //const clientDoc = await getDoc(clientRef)
+    })
+  }
+
+  setClient(clientData())
+  setBills(arrayBills)
+
+  //setBills(DataArray);
+}
+export const AddBills = (data) => {
+  // const [bills, setBills] = useState([])
+  // const [lastNumber, setLastNumber] = useState(0)
+  // useEffect(() => {
+  //   getBills(setBills)
+  // }, [bills])
+  // if(bills.length > 0){
+  //   console.log(Math.max(bills.map((n) => n.ref))) 
+
+  // }
+  // if(bills.length == 0){
+  //   setLastNumber(0)
+  // }
+  const clientRef = doc(db, "client", "4O-0")
+  const billsRef = doc(db, "bills", data.id)
+  try {
+    setDoc((billsRef), {
+      data: {
+        ...data,
+        date: new Date(),
+        
+      }
+    });
+  } catch (error) {
+    console.log(error)
+  }
+
 }
 export const QueryByCategory = async (setProductArray, categoryArrayData, categoryStatus) => {
 
@@ -289,8 +330,9 @@ export const QueryByCategory = async (setProductArray, categoryArrayData, catego
 }
 export const QueryByType = async (setProducts, type, size) => {
   const productsRef = collection(db, "products")
-  const q = query(productsRef, where("product.category", "==", type), where("product.size", "==", size))
+  const q = query(productsRef, where("product.size", "==", size), where("product.type", "==", type));
   const { docs } = await getDocs(q);
   const array = docs.map((doc) => doc.data());
+  console.log(size)
   setProducts(array)
 }

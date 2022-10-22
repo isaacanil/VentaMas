@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Modal } from '../modal'
 import { InputText } from '../../..'
-import { db } from '../../../../firebase/firebaseconfig'
+import { db } from '../../../../firebase/firebaseconfig.js'
 import { setDoc, doc } from 'firebase/firestore'
 import { nanoid } from 'nanoid'
 import { async } from '@firebase/util'
@@ -21,8 +21,7 @@ export const AddClientModal = ({ isOpen }) => {
         personalID: ''
 
     })
-    const [personalID, SetPersonalID] = useState('')
-    const [personalIDInfo, SetPersonalIDInfo] = useState('')
+ 
 
 
 
@@ -51,9 +50,8 @@ export const AddClientModal = ({ isOpen }) => {
     }
     
     return (
-
-        isOpen ? (
             <Modal
+                isOpen={isOpen}
                 nameRef='Agregar Cliente'
                 btnSubmitName='Guardar'
                 close={closeModal}
@@ -64,10 +62,9 @@ export const AddClientModal = ({ isOpen }) => {
                             <Label id='nombre' >Nombre Completo:</Label>
                             <InputText id='name' name={'name'} onChange={HandleChange} placeholder='Nombre'></InputText>
                         </Group>
-
                         <Group>
                             <Label>Identificación</Label>
-                            <InputText id="DocumentType" name={'personalID'} onChange={(e) => SetPersonalIDInfo(e.target.value)} placeholder='RNC / Cédula'></InputText>
+                            <InputText id="DocumentType" name={'personalID'} onChange={(e) => setClient({...client, personalID: e.target.value})} placeholder='RNC / Cédula'></InputText>
                         </Group>
                         <Group span='2'>
                             <Label >Dirección: </Label>
@@ -91,7 +88,7 @@ export const AddClientModal = ({ isOpen }) => {
                     </FormControl>
                 </Container>
             </Modal >
-        ) : null
+      
     )
 }
 

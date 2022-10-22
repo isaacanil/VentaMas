@@ -76,8 +76,8 @@ function App() {
             </RequireAuth>
           }>
           </Route>
-          <Route path='/app/order/*'>
-            <Route path='orders' element={<Orders />}></Route>
+          <Route exact path='/app/pedido/' element={<Orders />}>
+        
           </Route>
           <Route path='/app/contact/client' element={<CompraPage></CompraPage>} />
           <Route path='/app/contact/provider' element={<h2>Proveedor</h2>} />

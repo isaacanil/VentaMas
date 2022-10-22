@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import style from './ControlSearchProductStyle.module.scss'
-import { getProducts} from '../../../firebase/firebaseconfig'
+import { getProducts} from '../../../firebase/firebaseconfig.js'
 import { Product, Grid } from '../../'
 
 export const SearchList = ({dataSearch}) => {

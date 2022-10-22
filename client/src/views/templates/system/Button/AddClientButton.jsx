@@ -3,7 +3,7 @@ import styled from "styled-components"
 import { useDispatch } from "react-redux"
 import { openModalAddClient } from "../../../../features/modals/modalSlice"
 //import { useModal } from '../../../../hooks/useModal'
-export const AddClientButton = (onClick) => {
+export const AddClientButton = () => {
     //const { isOpen, closeModal, openModal } = useModal(false)
     const dispatch = useDispatch()
     const Open = () => {

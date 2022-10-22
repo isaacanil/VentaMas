@@ -3,7 +3,7 @@ import { UserIcon } from '../../../assets'
 import Style from './Account.module.scss'
 import { Link } from 'react-router-dom'
 import { Button } from '../../'
-import { auth } from '../../../firebase/firebaseconfig'
+import { auth } from '../../../firebase/firebaseconfig.js'
 import { logout , selectUser} from '../../../features/auth/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
 export const Account = () => {

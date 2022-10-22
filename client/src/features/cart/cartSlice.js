@@ -7,7 +7,6 @@ import { v4 } from "uuid";
 import { nanoid } from "nanoid";
 const initialState = {
     id: null,
-    date: null,
     client: null,
     products: [],
     delivery: {
@@ -47,16 +46,8 @@ const cartSlice = createSlice({
     initialState,
     reducers: {
         getId: (state) => {
-            state.id = nanoid()
-        },
-        getDate: (state) => {
-            // const now = new Date()
-            // const day = now.getDate()
-            // const year = now.getFullYear()
-            // const month = now.getMonth()
-            // state.date.readWay = day + month + year;
-            // state.date.timeStamp = new Date();
-            state.date = new Date()
+          
+            state.id = nanoid(8)
         },
         addClient: (state, action) => {
             state.client = action.payload
@@ -146,6 +137,8 @@ const cartSlice = createSlice({
             }
         },
         CancelShipping: (state) => {
+           
+            state.id = ""
             state.client = null
             state.products = []
             state.change.value = 0
@@ -219,7 +212,6 @@ const cartSlice = createSlice({
 })
 
 export const {
-    getDate,
     getId,
     addClient,
     addProduct,

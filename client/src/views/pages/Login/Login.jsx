@@ -17,7 +17,7 @@ import { login } from '../../../features/auth/userSlice';
 //firebase
 import {
    auth,
- }from '../../../firebase/firebaseconfig'
+ }from '../../../firebase/firebaseconfig.js'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 
 //APP

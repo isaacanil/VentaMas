@@ -90,6 +90,7 @@ const Title = styled.h5`
     color: rgb(66, 66, 66);
     width: 150px;
     line-height: 1pc;
+    font-size: 12px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {InputText, InputPassword, Button} from '../../index'
-import {HandleRegister} from '../../../firebase/firebaseconfig'
+import {HandleRegister} from '../../../firebase/firebaseconfig.js'
 
 
 import { useNavigate } from 'react-router-dom';

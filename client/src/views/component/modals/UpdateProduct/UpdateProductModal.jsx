@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import { Modal } from '../modal'
 import styled from 'styled-components'
-import { getTaxes, getProduct } from '../../../../firebase/firebaseconfig'
+import { getTaxes, getProduct } from '../../../../firebase/firebaseconfig.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { closeModalUpdateProd, SelectUpdateProdModal} from '../../../../features/modals/modalSlice'
 export const UpdateProductModal = () => {

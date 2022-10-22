@@ -5,7 +5,7 @@ import Style from './Inventario.module.scss'
 import { Navigate } from 'react-router-dom'
 import { PlusIcon } from '../../../assets/system/plus/plusIcon'
 
-import { getProducts, deleteProduct, getProduct } from '../../../firebase/firebaseconfig'
+import { getProducts, deleteProduct, getProduct } from '../../../firebase/firebaseconfig.js'
 import { useDispatch } from 'react-redux'
 import {
   MenuApp as Menu,

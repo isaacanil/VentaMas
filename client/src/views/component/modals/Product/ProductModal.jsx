@@ -8,7 +8,7 @@ import { Navigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 //template
 import { useSelector, useDispatch } from 'react-redux';
-import { getTaxes } from '../../../../firebase/firebaseconfig';
+import { getTaxes } from '../../../../firebase/firebaseconfig.js';
 import styled from 'styled-components';
 export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    const [taxesList, setTaxesList] = useState([])

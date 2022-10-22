@@ -5,7 +5,7 @@ import { BillingModal } from "../../component/modals/Billing/BillingModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { useModal } from "../../../hooks/useModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
-import { SetCustomProduct } from "./CustomProduct/SetCustomProduct"
+import { SetCustomProduct } from "./SetCustomProduct/SetCustomProduct"
 import { AddProvider } from "./AddProvider/AddProvider"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
@@ -28,7 +28,7 @@ export const ModalManager = () => {
   const BillingModalSelected = useSelector(SelectBillingModal)
   const UpdateProdModalSelected = useSelector(SelectUpdateProdModal)
   const SetCustomPizzaSelected = useSelector(SelectSetCustomPizzaModal)
-
+  console.log(AddClientModalSelected)
 
   const handleSubmitAddProducts = async () => {
     /****************************************************************** */

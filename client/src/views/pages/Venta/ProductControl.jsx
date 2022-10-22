@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import style from './ProductControlStyle.module.scss'
-import { getProducts, QueryByCategory, watchingUserState } from '../../../firebase/firebaseconfig'
+import { getProducts, QueryByCategory, watchingUserState } from '../../../firebase/firebaseconfig.js'
 import { Button, Product, Grid, ControlSearchProduct } from '../../'
 
 import { selectUser } from '../../../features/auth/userSlice'

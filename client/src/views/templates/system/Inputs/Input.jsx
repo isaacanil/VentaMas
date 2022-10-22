@@ -60,9 +60,6 @@ export const InputText = styled(Input).attrs({
   type: 'text'
 
   })`
-
-
-
 `
 export const InputPassword = styled(Input).attrs({
   type: 'password'
@@ -86,4 +83,8 @@ export const InputPassword = styled(Input).attrs({
   }
 
 `
+export const InputSearch = styled(Input).attrs({
+  type: 'search'
+})`
 
+`
