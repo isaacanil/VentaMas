@@ -7,13 +7,13 @@ import { addProduct, totalShoppingItems } from '../../../../features/cart/cartSl
 import { SelectProduct } from '../../../../features/cart/cartSlice';
 import { separator } from '../../../../hooks/separator';
 const ProductContainer = styled.div`
-    border: 1px solid rgba(0, 0, 0, 0.200);
+    //border: 3px solid rgba(0, 0, 0, 0.200);
     //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.100);
     border-radius: 6px;
     background-color: rgb(255, 255, 255);
     overflow: hidden;
     display: grid;
-    gap: 1em;
+    gap: 0.5em;
     grid-template-columns: min-content 1fr;
     align-items: center;
     align-content: center;

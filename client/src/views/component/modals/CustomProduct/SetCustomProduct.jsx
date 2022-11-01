@@ -64,62 +64,40 @@ export const SetCustomProduct = ({ isOpen }) => {
         data === 'true' ? setIsComplete(true) : null;
         // console.log(isComplete)
     }
-   
+    const closeModal = () => {
+        dispatch(
+            handleModalSetCustomPizza()
+        )
+    }
     let type = 'pizza';
     useEffect(() => {
         if (size === '') {
-            console.log('esperando')
+            // console.log('esperando')
         } else {
             QueryByType(setProducts, type, size)
-            setProductSelected({
-                a: '',
-                b: ''
-            })
-            setTimeout(() => {
-                setNewProduct({
-                    productName: '',
-                    cost: { unit: 0, total: 0 },
-                    id: '',
-                    price: { unit: 0, total: 0 },
-                    amountToBuy: { unit: 1, total: 1 },
-                    tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
-                    size: '',
-                })
-                setProduct({
-                    id: '',
-                    type: '',
-                    productName: '',
-                    amountToBuy: { unit: 1, total: 1 },
-                    price: { unit: 0, total: 0 },
-                    mitad: {
-                        first: '',
-                        second: ''
-                    }
-                })
-            }, 500)
         }
     }, [size])
     useEffect(() => {
-        if (isComplete && productSelected.a !== '' && productSelected.b == '') {
+
+        if (isComplete && productSelected.a !== '') {
             const a = JSON.parse(productSelected.a)
             const firstProductPrice = a.price.total
             const firstProductName = a.mainIngredient
-            setProduct({
-                ...product,
-                price: {
-                    unit: firstProductPrice,
-                    total: firstProductPrice 
-                }, size: size
-            })
+            
             setNewProduct({
                 ...newProduct,
                 productName: `pizza de ${firstProductName}. ingrediente extras: ${IngredientListNameSelected}`,
                 price: {
                     unit: firstProductPrice + totalIngredientPrice,
                     total: firstProductPrice + totalIngredientPrice
-                }
+                }, size: size
+            })
+
+            setProduct({
+                price: { total: firstProductPrice }
             })
         }
+ 
         if (!isComplete && productSelected.a !== '' && productSelected.b !== '') {
             const a = JSON.parse(productSelected.a)
             const b = JSON.parse(productSelected.b)
@@ -129,41 +107,61 @@ export const SetCustomProduct = ({ isOpen }) => {
             const secondProductName = b.mainIngredient;
             // console.log(`${firstProductName} => ${firstProductPrice}, ${secondProductName} => ${secondProductPrice}`)
             //Todo ************price****************************************************************
-
-            if (firstProductPrice > secondProductPrice) {
-                setProduct({
-                    price: { unit: firstProductPrice, total: firstProductPrice }
-                })
-            } else if (firstProductPrice < secondProductPrice) {
-                setProduct({
-                    price: { unit: secondProductPrice, total: secondProductPrice }
-                })
-            
-            } else if (firstProductPrice == secondProductPrice) {
-                setProduct({
-                    ...product,
-                    price: { unit: firstProductPrice, total: firstProductPrice }
+            const price = () => {
+                return new Promise((resolve, reject) => {
+                    if (firstProductPrice > secondProductPrice) {
+                        setProduct({
+                            price: {unit:firstProductPrice, total: firstProductPrice }
+                        })
+                        resolve(product.price.total)
+                    } 
+                    if (firstProductPrice < secondProductPrice) {
+                        setProduct({
+                            price: {unit: secondProductPrice, total: secondProductPrice }
+                        })
+                        resolve(secondProductPrice)
+                    }  
+                    if (firstProductPrice === secondProductPrice) {
+                        setProduct({
+                            price: {unit:firstProductPrice, total: firstProductPrice }
+                        })
+                        resolve(firstProductPrice)
+                    }
                 })
             }
-            setTimeout(() => {
-                setNewProduct({
-                    ...newProduct,
-                    productName: `pizza mitad ${firstProductName}, mitad ${secondProductName}. Ingrediente extras: ${IngredientListNameSelected}`,
-                    amountToBuy: { unit: 1, total: 1 },
-                    id: nanoid(6),
-                    price: {
-                        unit: product.price.unit + totalIngredientPrice,
-                        total: product.price.total + totalIngredientPrice
-                    },
-                    size: size,
+            try {
+                price().then((price) => {
+                    setNewProduct({
+                        ...newProduct,
+                        productName: `pizza de ${firstProductName} y ${secondProductName}. ingrediente extras: ${IngredientListNameSelected}`,
+                        price: {
+                            unit: price + totalIngredientPrice,
+                            total: price + totalIngredientPrice
+                        }, 
+                        size: size,
+                        id: nanoid(6)
+                    })
                 })
-
-            }, 500)
+            } catch (error) {
+                console.log(error)
+            }
+         
         }
-    }, [productSelected.a, productSelected.b, IngredientListNameSelected, isComplete, size])
+    }, [productSelected.a, productSelected.b, IngredientListNameSelected])
+
 
     console.log(productSelected.b)
-    const cleanData = () => {
+    const HandleSubmit = () => {
+        setNewProduct({
+            ...newProduct,
+            id: nanoid(6),
+            size,
+            amountToBuy: { unit: 1, total: 1 },
+            
+        })
+        dispatch(
+            addProduct(newProduct)
+        )
         dispatch(
             formatData()
         )
@@ -193,40 +191,16 @@ export const SetCustomProduct = ({ isOpen }) => {
                     }
                 }
             )
-            setNewProduct(
-                {
-                    productName: '',
-                    cost: { unit: 0, total: 0 },
-                    id: '',
-                    price: { unit: 0, total: 0 },
-                    amountToBuy: { unit: 1, total: 1 },
-                    tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
-                    size: '',
-                },
-            )
-    }
-    const closeModal = () => {
-        cleanData()
-        dispatch(
-            handleModalSetCustomPizza()
-        )
-    }
-    console.log(product)
-    const HandleSubmit = () => {
-        
-        setNewProduct({
-            ...newProduct,
-            id: nanoid(6),
-            size,
-           
-        })
-
-        dispatch(
-            addProduct(newProduct)
-        )
-        cleanData()
-       
-
+            setNewProduct({
+                ...newProduct,
+                productName: '',
+                cost: { unit: 0, total: 0 },
+                id: '',
+                price: { unit: 0, total: 0 },
+                amountToBuy: { unit: 1, total: 1 },
+                tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
+                size: ''
+            })
     }
     return (
         <Modal

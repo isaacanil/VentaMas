@@ -30,8 +30,6 @@ export const ListItem = ({ e, index }) => {
           <div>
             {index + 1}
           </div>
-
-
         </div>
         <div className={openMoreInfo ? `${style.MoreInfo} ${style.Visible}` : `${style.MoreInfo}`}>
           <div className={style.Group}>
@@ -44,11 +42,9 @@ export const ListItem = ({ e, index }) => {
             <label>Proveedor :</label>
             <div>{e.Proveedor}</div>
           </div>
-          <div className={style.Group}>
+          <div className={`${style.Group} ${style.center}`} >
             <label>Nota :</label>
-            <div>
-              <Button height='small'>Ver</Button>
-            </div>
+            <Button height='small' >Ver</Button>
           </div>
           <div className={style.Group}>
             <label>F. Pedido :</label>

@@ -1,5 +1,8 @@
 *{
   box-sizing: border-box;
+  scrollbar-width: 6px;
+  scrollbar-color: rebeccapurple 
+
 }
 :root {
 
@@ -43,6 +46,7 @@ input{
   background-color: white;
   color: black;
 }
+
 
 
 

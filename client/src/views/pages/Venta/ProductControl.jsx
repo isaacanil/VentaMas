@@ -55,7 +55,9 @@ export const ProductControl = () => {
     return (
         <Fragment>
             <ControlSearchProduct searchData={searchData} setSearchData={setSearchData}></ControlSearchProduct>
-            <div className={style.component_container}>
+            <div className={[style.container]}>
+
+            <div className={style.wrapper}>
                 {
                     searchData === '' && products.length > 0 ?
                         (
@@ -95,6 +97,7 @@ export const ProductControl = () => {
                         )
                 }
 
+            </div>
             </div>
         </Fragment>
     )

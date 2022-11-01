@@ -10,21 +10,21 @@ export const StatusIndicatorDot = ({color}) => {
 }
 const Container = styled.div`
     height: 0.6em;
-    width: 1.1em;
-    border-radius: 100px;
+    width: 1.2em;
+    border-radius: 10px;
     ${(props)=>{
         switch (props.colorRef) {
             case 'red':
                 return`
-                    background-color: #dd2222;
+                    background-color: #e64747;
                 `
             case 'yellow':
                 return`
-                    background-color: #ffe600;
+                    background-color: #f7e43c;
                 `
             case 'green':
                 return`
-                    background-color: #20bd35;
+                    background-color: #45db59;
                 `
             case 'gray':
                 return`

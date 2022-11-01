@@ -50,7 +50,6 @@ export const BillingModal = ({isOpen}) => {
       closeModalBilling()
     )
   }
-  
   const HandleSubmit = () => {
     dispatch(
       getId()
@@ -65,8 +64,6 @@ export const BillingModal = ({isOpen}) => {
   }
   return (
     <Fragment>
-      
-  
        {
         isOpen ? (
           <Container>
@@ -99,7 +96,6 @@ export const BillingModal = ({isOpen}) => {
                             <Product key={index}>
                               <Row columns='product-list'>
                                 <div>{item.amountToBuy.total} UND</div>
-
                               </Row>
                               <Row columns='product-list'>
                                 <ProductName>
@@ -131,7 +127,7 @@ export const BillingModal = ({isOpen}) => {
                   <ButtonGroup>
                       <ReactToPrint 
                       trigger={()=>( <Button color='primary' onClick={HandleSubmit}>Imprimir</Button>)}
-                      content={() => ComponentRef.current}
+                      content={()=> ComponentRef.current}
                       />
                       <DocumentContainer>
                         <Receipt  ref={ComponentRef} data={bill}/>

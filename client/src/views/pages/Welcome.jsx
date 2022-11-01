@@ -1,7 +1,17 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { Link, useMatch, useNavigate } from 'react-router-dom'
 import { Button } from '../'
+import { selectUser } from '../../features/auth/userSlice'
 export const Welcome = () => {
+  const user = useSelector(selectUser)
+  const Navigate = useNavigate()
+  useEffect(() => {
+    if(user){
+      Navigate('/app/')
+    }
+  }, [user])
+ 
   return (
     <div>
         <h2>VentaMax</h2>

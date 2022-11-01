@@ -5,6 +5,8 @@ import cartReducer from '../features/cart/cartSlice'
 import modalReducer from '../features/modals/modalSlice'
 import categoryReducer from '../features/category/categorySlicer'
 import customProductReducer from '../features/customProducts/customProductSlice'
+import addProductReducer from "../features/Firestore/products/addProductSlice";
+import addOrderReducer from "../features/addOrder/addOrderModalSlice";
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -12,6 +14,9 @@ export const store = configureStore({
         cart: cartReducer,
         modal: modalReducer,
         category: categoryReducer,
-        customProduct: customProductReducer
+        customProduct: customProductReducer,
+        addProduct: addProductReducer,
+        addOrder: addOrderReducer
+
     }
 })

@@ -50,7 +50,7 @@ const customProductSlice = createSlice({
         totalPurchase: (state, action) => {
             const n = state.ingredient.reduce((total, ingredient) => total + Number(ingredient.cost), 0)
             state.totalIngredients.value = n
-            console.log('esta ess', n)
+            console.log('esta es', n)
         },
         formatData: (state) => {
            
@@ -76,5 +76,5 @@ export const {
 export default customProductSlice.reducer
 
 export const selectTotalIngredientPrice = (state) => state.customProduct.totalIngredients.value
-//export const SelectIngredients = (state) => state.customProduct.ingredient
+
 export const SelectIngredientsListName = (state) => state.customProduct.ingredientList

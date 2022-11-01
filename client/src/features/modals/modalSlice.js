@@ -78,6 +78,7 @@ export const {
     openModalAddProd,
     closeModalAddProd,
     openModalAddOrder,
+    closeModalAddOrder,
     openModalBilling,
     closeModalBilling,
     openModalUpdateProd,

@@ -189,7 +189,8 @@ export const UploadProdData = (
 /****************** **********************/
 export const getProducts = async (setProduct) => {
   const productRef = collection(db, "products")
-  onSnapshot(productRef, (snapshot) => {
+  const q = query(productRef, orderBy("product.productName", "desc"), limit(25))
+  onSnapshot(q, (snapshot) => {
     let productsArray = snapshot.docs.map(item => item.data())
     setProduct(productsArray)
   })
@@ -330,9 +331,12 @@ export const QueryByCategory = async (setProductArray, categoryArrayData, catego
 }
 export const QueryByType = async (setProducts, type, size) => {
   const productsRef = collection(db, "products")
-  const q = query(productsRef, where("product.size", "==", size), where("product.type", "==", type));
-  const { docs } = await getDocs(q);
-  const array = docs.map((doc) => doc.data());
-  console.log(size)
-  setProducts(array)
+
+  const q = query(productsRef,where("product.type", "==", type), where("product.size", "==", size))
+ 
+    const { docs } = await getDocs(q);
+    const array = docs.map((item) => item.data());
+    console.log(array)
+    setProducts(array)
+
 }

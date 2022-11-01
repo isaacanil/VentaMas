@@ -54,7 +54,7 @@ export const Registro = () => {
               bills.map(({ data }, index) => (
                 <Bills key={index}>
                   <ITEMS>
-                    {client !== '' ? data.client.name : null}
+                    {client !== '' ? 'generic client' : null}
                   </ITEMS>
                   <ITEMS>
                     {new Date(data.date.seconds * 1000).toLocaleString()}

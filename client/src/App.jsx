@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 //importando componentes de react-router-dom
-import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, HashRouter } from 'react-router-dom';
 
 //redux config
 import { useDispatch, useSelector } from 'react-redux'
@@ -32,7 +32,7 @@ import {
   SetCustomProduct
 
 } from './views/index'
-import { Collection} from './views/pages/Collection'
+import { Collection } from './views/pages/Collection'
 import { Fragment } from 'react';
 import { useModal } from './hooks/useModal'
 
@@ -46,21 +46,26 @@ function App() {
   //Todo ******detectando si hay usuarios logueados******
   useEffect(() => {
     AuthStateChanged(dispatch)
-  }, [])
 
+
+  }, [])
   if (user === false) {
     return <h2>Loading</h2>
   }
+
+
+
+  // 
   return (
     <Fragment>
       <Router>
         <ModalManager></ModalManager>
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
-          <Route  path='/app/create-custom-product-modal/' element={<AddCustomProductModal />}/>
+          <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
           <Route exact path='/register' element={<Register />}></Route>
           <Route exact path='/login' element={<Login />}></Route>
-          <Route exact path='/' element={<Welcome />}></Route>
+          <Route exact path='/'  element={<Welcome />} ></Route>
           <Route exact path='/collection' element={<Collection />}></Route>
           <Route exact path='*' element={<NotFound />}></Route>
           <Route exact path='/app/compra' element={
@@ -69,7 +74,7 @@ function App() {
             </RequireAuth>
           }>
           </Route>
-          
+
           <Route exact path='/app/' element={
             <RequireAuth>
               <Home></Home>
@@ -77,7 +82,7 @@ function App() {
           }>
           </Route>
           <Route exact path='/app/pedido/' element={<Orders />}>
-        
+
           </Route>
           <Route path='/app/contact/client' element={<CompraPage></CompraPage>} />
           <Route path='/app/contact/provider' element={<h2>Proveedor</h2>} />

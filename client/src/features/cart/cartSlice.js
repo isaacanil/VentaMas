@@ -54,7 +54,10 @@ const cartSlice = createSlice({
             //console.log(action.payload)
         },
         addDelivery: (state, action) => {
-            state.delivery.value = action.payload
+            const {cash, status } = action.payload
+            state.delivery.value = cash
+            state.delivery.status = status
+        
 
         },
         addCashPaymentMethod: (state, action) => {

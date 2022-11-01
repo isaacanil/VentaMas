@@ -1,0 +1,47 @@
+.group {
+    display: grid;
+    grid-template-columns: 3fr 2fr min-content;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    background-color: rgb(255, 255, 255);
+    padding: 0.3em 0.5em;
+    border: 1px solid rgba(0, 0, 0, 0.100);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.100);
+    color: rgb(70, 70, 70);
+    margin: 0.5em;
+    border-radius: 6px;
+    column-gap: 0.8em;
+    row-gap: 0;
+
+    .Item1 {
+       font-weight: 700;
+       color: rgba(59, 59, 59, 0.849);
+       line-height: 1pc;
+       font-weight: 650;
+       font-size: 13.5px;
+       display: -webkit-box;
+       -webkit-line-clamp: 2;
+       -webkit-box-orient: vertical;
+       //white-space: nowrap;
+       text-overflow: ellipsis;
+       overflow: hidden;
+    }
+
+    .CrossContainer {
+       display: flex;
+       height: min-content;
+       align-items: center;
+       justify-content: center;
+       padding: 0.2em;
+       clip-path: circle();
+       background-color: #af3935;
+
+       .Cross {
+          fill: rgb(238, 238, 238);
+         
+          font-size: 1.3em;
+       }
+    }
+
+ }

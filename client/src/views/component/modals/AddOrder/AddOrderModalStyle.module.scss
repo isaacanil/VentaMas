@@ -17,6 +17,8 @@
         border-radius: 10px;
         border: 1px solid rgba(0, 0, 0, 0.300);
         overflow: hidden;
+        display: grid;
+        grid-template-rows: min-content 1fr 2.75em;
 
         .ModalHeader {
             display: flex;
@@ -25,25 +27,81 @@
             padding: 0 1em;
             background-color: #494949;
             color: white;
-          
+
+
 
         }
 
         .ModalBody {
-            border: 1px solid rgba(0, 0, 0, 0.300);
-            header{
+             
+            overflow-y: scroll;
+            padding: 0.6em;
+            display: grid;
+            gap: 0.4em;
+            header {
                 display: flex;
                 gap: 1em;
             }
-            .ProviderInfo{
+
+            .ProviderInfo {
                 display: grid;
-             
+                grid-template-columns: 1fr 1fr;
+
             }
+
+            .AddProductToListSection {
+                background-color: rgb(220, 233, 245);
+                margin: 0.2em;
+                border-radius: 8px;
+                display: grid;
+                gap: 0.2em;
+                padding: 0.4em 1em;
+                border: 1px solid rgba(0, 0, 0, 0.300);
+
+                .Group {
+                    color: rgb(37, 37, 37);
+                    display: grid;
+                    grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr min-content;
+                    position: relative;
+                    gap: 1em;
+                    
+                    .col {
+                        display: flex;
+                        font-weight: 700;
+
+                        .ProductName {
+                            display: flex;
+                            align-items: center;
+                            gap: 1em;
+                        }
+                    }
+                }
+            }
+
 
         }
 
         .ModalFooter {
-          
+            height: 100%;
+            display: flex;
+            align-items: center;
         }
     }
+}
+
+.addBtn {
+    $num : 1.2em;
+
+    height: $num;
+    width: $num;
+    border: 2px solid rgb(255, 255, 255);
+    color: rgb(20, 20, 20);
+    font-size: 1.1em;
+    background-color: transparent;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
 }

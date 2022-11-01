@@ -5,7 +5,7 @@ import { BillingModal } from "../../component/modals/Billing/BillingModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { useModal } from "../../../hooks/useModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
-import { SetCustomProduct } from "./SetCustomProduct/SetCustomProduct"
+import { SetCustomProduct } from "./CustomProduct/SetCustomProduct"
 import { AddProvider } from "./AddProvider/AddProvider"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
@@ -112,7 +112,6 @@ export const ModalManager = () => {
         title='Agregar Producto'
         isOpen={AddProdModalSelected}
         closeModal={closeModalAddProducts}
-
       />
       <ProductModal
         btnSubmitName='Actualizar'
@@ -126,9 +125,8 @@ export const ModalManager = () => {
         isOpen={SetCustomPizzaSelected}
         handleOpen={handleModalSetCustomPizza}
       />
-
-      {/* <AddOrderModal />
-      <AddProvider /> */}
+      <AddOrderModal isOpen={AddOrderModalSelected}/>
+      <AddProvider />
     </Fragment>
   )
 

@@ -4,13 +4,13 @@
    position: relative;
    height: 100%;
    background-color: var(--White);
-   border-left: 1px solid rgba(0, 0, 0, 0.247);
+   //border-left: 1px solid rgba(0, 0, 0, 0.247);
    width: 22em;
    overflow: hidden;
 
    display: grid;
    grid-template-columns: 1fr;
-   grid-template-rows: 3em auto 3em;
+   grid-template-rows: 3em auto min-content;
 
 
    .listItem {
@@ -25,10 +25,10 @@
          align-items: center;
          justify-content: center;
          height: auto;
-
+         background-color: rgb(242,248,249);
          padding: 0.3em 0.5em;
-         border: 1px solid rgba(0, 0, 0, 0.200);
-         box-shadow: 0 0 10px rgba(0, 0, 0, 0.100);
+         //border: 1px solid rgba(0, 0, 0, 0.1);
+         //box-shadow: 0 0 10px rgba(0, 0, 0, 0.100);
          margin: 0.5em;
          border-radius: 6px;
          column-gap: 0.8em;
@@ -36,10 +36,10 @@
 
          .Item1 {
             font-weight: 700;
-            color: rgba(24, 24, 24, 0.849);
+            color: rgba(46, 46, 46, 0.849);
             line-height: 1pc;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 13px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -68,11 +68,13 @@
 
    .resultBar {
       background-color: var(--Gray5);
+      border-radius: 100px;
       color: white;
       display: flex;
-      padding: 0 1em;
+      padding: 0 0.4em 0 0.2em;
       align-items: center;
       justify-content: space-between;
+      margin: 0.2em;
    }
 
 }

@@ -70,9 +70,9 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
                 <div className={style.right}>{separator(data.totalTaxes.value)}</div>
             </Row>
             <Row>
-                <div className={style.title}>TOTAL A PAGAR</div>
-                <div className={style.right}>{separator(data.totalTaxes.value)}</div>
-                <div className={style.right}>{separator(data.totalPurchase.value)}</div>
+                <td className={style.title}>TOTAL A PAGAR</td>
+                <td className={style.right}>{separator(data.totalTaxes.value)}</td>
+                <td className={style.right}>{separator(data.totalPurchase.value)}</td>
             </Row>
             {
                 data.cashPaymentMethod.status ? (
@@ -84,7 +84,6 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
                         </Row>
 
                     </Fragment>
-
                 ) : null
             }
             {

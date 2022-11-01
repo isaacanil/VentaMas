@@ -1,5 +1,5 @@
 import React, {Fragment} from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useMatch } from 'react-router-dom'
 import Style from './Home.module.scss'
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
 
@@ -8,6 +8,8 @@ import { useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
 export const Home = () => {
   const user = useSelector(selectUser)
+  const match = useMatch('/app/')
+ match ? console.log('match') : console.log('no match')
   return (
     <Fragment>
       

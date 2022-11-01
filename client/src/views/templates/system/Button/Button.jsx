@@ -13,7 +13,7 @@ export const Button = styled.button`
   white-space: nowrap;
   //container
   //background-color: #2a2b2b;
-  background-color: ${props => props.delete ? "#d13737" : "black"};
+  background-color: ${props => props.delete ? "#d13737" : "transparent"};
   //padding
   padding: 0 1em;
   //contain

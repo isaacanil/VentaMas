@@ -26,6 +26,7 @@ import { deleteProduct } from '../../../features/cart/cartSlice'
 
 import { useNavigate } from 'react-router-dom'
 import { openModalBilling } from '../../../features/modals/modalSlice'
+import { ProductCardForCart } from '../../templates/system/Product/Cart/ProductCardForCart'
 
 
 
@@ -37,14 +38,7 @@ export const Cart = () => {
   const dispatch = useDispatch()
   const [costoTotal, setCostoTotal] = useState('')
   const ProductSelected = useSelector(SelectProduct)
-  const deleteProductFromCart = (id) => {
-    dispatch(
-      deleteProduct(id)
-    )
-    dispatch(
-      totalShoppingItems()
-     ) 
-  }
+ 
  
   const handleInvoice = () => {
     /*navigate('/app/venta/checkout/Billing', {replace: true})*/
@@ -85,16 +79,7 @@ export const Cart = () => {
             ProductSelected.length >= 1 ?
               (
                 ProductSelected.map((item, Index) => (
-                  <li key={Index} className={style.group}>
-                    <div className={`${style.Item} ${style.Item1}`}>{item.productName}</div>
-                    <Counter className={`${style.Item}`} amountToBuyTotal={item.amountToBuy.total} stock={item.stock} id={item.id} product={item}/>
-
-                    <div className={style.CrossContainer} onClick={() => deleteProductFromCart(item.id)}>
-                      <svg className={style.Cross} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" ><path d="M23.707.293a1 1 0 00-1.414 0L12 10.586 1.707.293a1 1 0 00-1.414 0 1 1 0 000 1.414L10.586 12 .293 22.293a1 1 0 000 1.414 1 1 0 001.414 0L12 13.414l10.293 10.293a1 1 0 001.414 0 1 1 0 000-1.414L13.414 12 23.707 1.707a1 1 0 000-1.414z" /></svg>
-                    </div>
-                    <div className={`${style.Item} ${style.Item3}`}>RD${separator(item.price.total)}</div>
-                    <br />
-                  </li>
+                  <ProductCardForCart item={item} key={Index}/>
                 ))
               )
               :
@@ -103,7 +88,7 @@ export const Cart = () => {
         </ul>
         <div className={style.resultBar}>
           <div>
-            <h3>Total : RD$  {total}</h3>
+            <h3>Total : RD${total}</h3>
           </div>
           <Button onClick={handleInvoice}>Facturar</Button>
         </div>

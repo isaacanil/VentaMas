@@ -4,7 +4,7 @@ export const Grid = styled('div')`
     position: relative;
     display: grid; 
     
-    gap: 0.6em;
+    gap: 0.7em;
   
 
     ${(props) => {

@@ -8,12 +8,14 @@ import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 export const DeliveryOption = () => {
     const dispatch = useDispatch()
-    const [deliveryState, setDeliveryState] = useState()
     const ClientSelected = useSelector(SelectClient)
-    const handleDelivery = (cash) => {
-        
+    const [deliveryData, setDeliveryData] = useState({
+        cash: 0.00,
+        status: false
+    })
+    useEffect(() => {
         dispatch(
-            addDelivery(cash)
+            addDelivery(deliveryData)
         )
         dispatch(
             totalPurchase()
@@ -21,22 +23,19 @@ export const DeliveryOption = () => {
         dispatch(
             setChange()
         )
-       
-        
-
-    }
-    
+    }, [deliveryData]) 
+            
     return (
         <Container>
             <DeliveryInner>
-                <input type="checkbox" name="" id="delivery" onChange={e => setDeliveryState(e.target.checked)} />
+                <input type="checkbox" name="" id="delivery" onChange={e => setDeliveryData({...deliveryData, status: e.target.checked})} />
                 <label htmlFor="delivery">Delivery</label>
             </DeliveryInner>
             {
-                deliveryState ? (
+                deliveryData.status ? (
                     ClientSelected ? (
                         <Fragment>
-                            <InputNumber border='circle' size='small' type="number" name="" id="" onChange={e => handleDelivery(e.target.value)} placeholder='RD$' />
+                            <InputNumber border='circle' size='small' type="number" name="" id="" onChange={e => setDeliveryData({...deliveryData, cash: e.target.value})} placeholder='RD$' />
                             <span>Dirección: {ClientSelected.address}</span>
                         </Fragment>
                     ) : null
