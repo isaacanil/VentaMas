@@ -39,11 +39,13 @@ export const Orders = () => {
               <Select data={provider} title='Estado'></Select>
               <Select data={provider} title='Condición'></Select>
             </div>
-          
-              <Button onClick={openModal}>
-                <TbPlus /><span>Agregar Pedido</span>
-              </Button>
-           
+
+            <Button
+              startIcon={<TbPlus />}
+              title='Agregar pedido'
+              onClick={openModal}
+            />
+
           </div>
         </div>
         <OrderListTable />

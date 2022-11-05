@@ -16,25 +16,25 @@ import { useNavigate } from "react-router-dom";
 
 
 //Todo Hi Pizza **************************************************
-const firebaseConfig = {
-  apiKey: "AIzaSyAIG5W8rtGwTQ2hxVK7XpSxU3iQBRvHaT4",
-  authDomain: "hipizza-1b9cc.firebaseapp.com",
-  projectId: "hipizza-1b9cc",
-  storageBucket: "hipizza-1b9cc.appspot.com",
-  messagingSenderId: "626612970714",
-  appId: "1:626612970714:web:8747469a390b7bb63271e3",
-  measurementId: "G-21YPCHBYHV"
-};
-//Todo Original**************************************************
 // const firebaseConfig = {
-//   apiKey: "AIzaSyAJd82BkS5bp3lI5MbTJohU8rhZth3_AL4",
-//   authDomain: "ventamax-75bec.firebaseapp.com",
-//   projectId: "ventamax-75bec",
-//   storageBucket: "ventamax-75bec.appspot.com",
-//   messagingSenderId: "653993214585",
-//   appId: "1:653993214585:web:f2e6674640557a28220aa8",
-//   measurementId: "G-9RTQMM0JW2"
+//   apiKey: "AIzaSyAIG5W8rtGwTQ2hxVK7XpSxU3iQBRvHaT4",
+//   authDomain: "hipizza-1b9cc.firebaseapp.com",
+//   projectId: "hipizza-1b9cc",
+//   storageBucket: "hipizza-1b9cc.appspot.com",
+//   messagingSenderId: "626612970714",
+//   appId: "1:626612970714:web:8747469a390b7bb63271e3",
+//   measurementId: "G-21YPCHBYHV"
 // };
+//Todo Original**************************************************
+const firebaseConfig = {
+  apiKey: "AIzaSyAJd82BkS5bp3lI5MbTJohU8rhZth3_AL4",
+  authDomain: "ventamax-75bec.firebaseapp.com",
+  projectId: "ventamax-75bec",
+  storageBucket: "ventamax-75bec.appspot.com",
+  messagingSenderId: "653993214585",
+  appId: "1:653993214585:web:f2e6674640557a28220aa8",
+  measurementId: "G-9RTQMM0JW2"
+};
 //Todo Initialize Firebase *******************************************************************
 const app = initializeApp(firebaseConfig);
 export const storage = getStorage(app);
@@ -116,75 +116,31 @@ export const watchingUserState = (setUserDisplayName) => {
 }
 /****************** **********************/
 export const UploadProdImg = (file) => {
+  const today = new Date();
+  const hour = `${today.getHours()}:${today.getMinutes()}`
+  const storageRef = ref(storage, `products/${v4()}.jpg`)
 
   return new Promise((resolve, reject) => {
-    const today = new Date();
-    const hour = `${today.getHours()}:${today.getMinutes()}`
-    const storageRef = ref(storage, `products/${v4()}.jpg`)
     uploadBytes(storageRef, file)
       .then((snapshot) => {
         getDownloadURL(storageRef)
           .then((url) => {
-            //console.log('File available at', url);  
+            console.log('File available at', url);  
             resolve(url);
           });
       })
   })
 }
-export const UploadProdData = (
-  url,
-  productName,
-  cost,
-  taxRef,
-  stock,
-  category,
-  netContent,) => {
-  const tax = JSON.parse(taxRef)
-  const taxValue = () => {
-    return {
-      ref: tax.ref,
-      value: tax.value,
-      total: cost * tax.value,
-      unit: cost * tax.value,
-    }
-  }
-  let priceValue = () => {
-    return {
-      unit: Number(cost) + Number(taxValue().unit),
-      total: Number(cost) + Number(taxValue().unit)
-    }
-  }
-  //console.log(taxValue())
-  let product = {
-    id: nanoid(6),
-    amountToBuy: { unit: 1, total: 1 },
-    productName: String(productName),
-    cost: {
-      unit: Number(cost),
-      total: Number(cost)
-    },
-    tax: taxValue(),
-    productImageURL: url,
-    stock: Number(stock),
-    //toma el valor sin inpuesto y le agrega el impuesto seleccionado y redondeado
-    netContent: netContent,
-    price: priceValue()
-
-
-  }
-  new Promise((resolve, reject) => {
+export const UploadProdData = async (product) => {
+    console.log(product) 
+  const productRef = doc(db, "products", product.id)
     try {
-      const productRef = doc(db, "products", product.id)
-      setDoc(productRef, {
-        product
-      }
-      )
-      console.log('Document written with ID')
+      await setDoc(productRef, {product})
+      const s = 'impedimentos'
+      console.log('Document written ', product)
     } catch (error) {
       console.error("Error adding document: ", error)
     }
-  })
-
 }
 /****************** **********************/
 export const getProducts = async (setProduct) => {
@@ -194,6 +150,11 @@ export const getProducts = async (setProduct) => {
     let productsArray = snapshot.docs.map(item => item.data())
     setProduct(productsArray)
   })
+}
+export const updateProduct = async (product) => {
+  console.log('product from firebase', product)
+  const productRef = doc(db, "products", product.id)
+  await updateDoc(productRef, {product})
 }
 export const getCat = async (setCategories) => {
   const categoriesRef = collection(db, "categorys")
@@ -220,7 +181,6 @@ export const getClients = async (setClients) => {
 }
 export const addIngredientTypePizza = async (ingredient) => {
   const IngredientRef = doc(db, "products", "6dssod");
-
   // Atomically add a new region to the "regions" array field.
   try {
     await updateDoc(IngredientRef, {
@@ -248,18 +208,6 @@ export const getCustomProduct = async (setProduct) => {
     setProduct(data)
   })
 }
-// export const Firestore = async (path, data, id) => {
-//   await setDoc(doc(db, `${path}`, id), {
-//     data
-//   });
-// }
-
-  // const client = docs.map(async (item) => {
-  //   const clientRef = item.data()
-  //   const clientData = clientRef.data['client']
-  //   const clientDoc = await getDoc((clientData))
-  //   return clientDoc.exists() ? clientDoc.data() : null
-  // })
 export const UploadCat = async (path, category, id) => {
   await setDoc(doc(db, `${path}`, id), {
     category
@@ -290,18 +238,7 @@ export const getBills = async (setBills, setClient) => {
   //setBills(DataArray);
 }
 export const AddBills = (data) => {
-  // const [bills, setBills] = useState([])
-  // const [lastNumber, setLastNumber] = useState(0)
-  // useEffect(() => {
-  //   getBills(setBills)
-  // }, [bills])
-  // if(bills.length > 0){
-  //   console.log(Math.max(bills.map((n) => n.ref))) 
 
-  // }
-  // if(bills.length == 0){
-  //   setLastNumber(0)
-  // }
   const clientRef = doc(db, "client", "4O-0")
   const billsRef = doc(db, "bills", data.id)
   try {
@@ -309,7 +246,7 @@ export const AddBills = (data) => {
       data: {
         ...data,
         date: new Date(),
-        
+
       }
     });
   } catch (error) {
@@ -332,11 +269,11 @@ export const QueryByCategory = async (setProductArray, categoryArrayData, catego
 export const QueryByType = async (setProducts, type, size) => {
   const productsRef = collection(db, "products")
 
-  const q = query(productsRef,where("product.type", "==", type), where("product.size", "==", size))
- 
-    const { docs } = await getDocs(q);
-    const array = docs.map((item) => item.data());
-    console.log(array)
-    setProducts(array)
+  const q = query(productsRef, where("product.type", "==", type), where("product.size", "==", size))
+
+  const { docs } = await getDocs(q);
+  const array = docs.map((item) => item.data());
+  console.log(array)
+  setProducts(array)
 
 }

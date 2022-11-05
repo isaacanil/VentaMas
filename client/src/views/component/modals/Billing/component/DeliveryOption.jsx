@@ -1,4 +1,4 @@
-import React, {useState, Fragment} from 'react'
+import React, { useState, Fragment, useRef } from 'react'
 import styled from 'styled-components'
 import { SelectClient } from '../../../../../features/cart/cartSlice'
 import { InputNumber } from '../Style'
@@ -13,7 +13,14 @@ export const DeliveryOption = () => {
         cash: 0.00,
         status: false
     })
+    const deliveryStatusInput = useRef(null)
+    const focusOnDeliveryInput = () => {
+       deliveryStatusInput.current.focus()
+
+    }
     useEffect(() => {
+        deliveryData.status ? focusOnDeliveryInput() : null
+ 
         dispatch(
             addDelivery(deliveryData)
         )
@@ -23,19 +30,21 @@ export const DeliveryOption = () => {
         dispatch(
             setChange()
         )
-    }, [deliveryData]) 
-            
+    }, [deliveryData])
     return (
         <Container>
             <DeliveryInner>
-                <input type="checkbox" name="" id="delivery" onChange={e => setDeliveryData({...deliveryData, status: e.target.checked})} />
+                <input type="checkbox" name="" id="delivery"  onChange={e => {
+                    setDeliveryData({ ...deliveryData, status: e.target.checked })
+
+                }} />
                 <label htmlFor="delivery">Delivery</label>
             </DeliveryInner>
             {
                 deliveryData.status ? (
                     ClientSelected ? (
                         <Fragment>
-                            <InputNumber border='circle' size='small' type="number" name="" id="" onChange={e => setDeliveryData({...deliveryData, cash: e.target.value})} placeholder='RD$' />
+                            <InputNumber border='circle' size='small' type="number" name="" id="" ref={deliveryStatusInput} onChange={e => setDeliveryData({ ...deliveryData, cash: e.target.value })} placeholder='RD$' />
                             <span>Dirección: {ClientSelected.address}</span>
                         </Fragment>
                     ) : null

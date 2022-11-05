@@ -34,7 +34,12 @@ export const AddOrderModal = ({ isOpen }) => {
                 <div className={style.Modal}>
                     <div className={style.ModalHeader}>
                         <h3>Creación Pedidos</h3>
-                        <Button color='error' onClick={handleModal}>x</Button>
+                        <Button 
+                            width='icon32' 
+                            bgcolor='error' 
+                            title='x' 
+                            onClick={handleModal}
+                        />
                     </div>
                     <div className={style.ModalBody}>
                         <header >

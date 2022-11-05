@@ -7,25 +7,37 @@ import Style from './ProductControl.module.scss'
 //components and pages
 import {
   InputText,
-  CategoryBar
+  CategoryBar,
+  AddProductButton
 
 } from '../../index'
 import styled from 'styled-components'
 import { InputSearch } from '../../templates/system/Inputs/Input'
+import { useMatch } from 'react-router-dom'
+import { Input } from '../../templates/system/Inputs/InputV2'
 
 
-export const ControlSearchProduct = ({searchData, setSearchData}) => {
-  
-  
-  
-  
+export const ControlSearchProduct = ({ searchData, setSearchData }) => {
+
+
+  const matchWithInventory = useMatch('/app/inventario')
+  const matchWithVenta = useMatch('/app/venta/:id')
+
+
+
+
   return (
     <Fragment>
-      
+
       <div className={Style.Container}>
-        <InputSearch placeholder='Buscar Producto' type='text' onChange={(e) => (
-          setSearchData(e.target.value)
-          )}/>
+        <Input
+          title='Buscar Producto'
+          type='search'
+          size='small'
+          onChange={(e) => (
+            setSearchData(e.target.value)
+          )} 
+          />
 
         {/* <div className={Style.icons_container}>
 
@@ -33,10 +45,20 @@ export const ControlSearchProduct = ({searchData, setSearchData}) => {
         </div> */}
         {/* <Button btnName='Filtro'>Filtrar</Button> */}
 
-        <CategoryBar></CategoryBar>
+        {
+          matchWithVenta ? <CategoryBar></CategoryBar> : null
+        }
+        {
+          matchWithInventory ? (
+            <AddProductButton
+              title='Agregar Producto'
+            />
+          ) : null
+        }
+
       </div>
-     
-      
+
+
     </Fragment>
 
   )

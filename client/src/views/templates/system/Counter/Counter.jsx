@@ -1,58 +1,54 @@
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 
 import { useDispatch } from 'react-redux';
-import { 
+import {
     setChange,
-    totalTaxes, 
-    totalPurchase,  
-    deleteProduct, 
-    addAmountToProduct, 
-    diminishAmountToProduct, 
-    onChangeValueAmountToProduct, 
+    totalTaxes,
+    totalPurchase,
+    deleteProduct,
+    addAmountToProduct,
+    diminishAmountToProduct,
+    onChangeValueAmountToProduct,
     totalShoppingItems
-       
-    
 } from '../../../../features/cart/cartSlice'
+import { Alert } from '../Product/Cart/Alert';
 import Style from './Counter.module.scss'
 
-export const Counter = ({ amountToBuyTotal, stock, id }) => {
-
-
+export const Counter = ({ amountToBuyTotal, stock, id, HandleMenuDelete, MenuDelete }) => {
     const dispatch = useDispatch()
+    const [DeletePrevent, setDeletePrevent] = useState(false)
     const [counter, setCounter] = useState(
-        {   
+        {
             id
         }
     )
-        useEffect(()=>{
-           if(stock >= counter.value){
+    useEffect(() => {
+        if (stock >= counter.value) {
             dispatch(
                 onChangeValueAmountToProduct(counter)
             )
+
             dispatch(
                 totalTaxes()
-              )
-              dispatch(
+            )
+            dispatch(
                 totalPurchase()
-              )
-              dispatch(
+            )
+            dispatch(
                 totalShoppingItems()
-               ) 
-              dispatch(
+            )
+            dispatch(
                 setChange()
-              )
-           }
-
-        },[counter])
-        //console.log(counter)
-    if(counter){
-
+            )
+        }
+    }, [counter])
+    if (counter) {
     }
     const handleIncreaseCounter = () => {
         setCounter(
             {
                 id
-               
+
             }
         )
         dispatch(
@@ -60,22 +56,20 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
         )
         dispatch(
             totalShoppingItems()
-           ) 
+        )
         dispatch(
             totalTaxes()
-          )
-          dispatch(
+        )
+        dispatch(
             totalPurchase()
-          )
-          dispatch(
+        )
+        dispatch(
             setChange()
-          )
-       
-
-
+        )
     }
     //console.log(amountToBuy)
     const handleDiminishCounter = () => {
+        if(amountToBuyTotal > 1){
         setCounter(
             {
                 id
@@ -86,33 +80,46 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
         )
         dispatch(
             totalShoppingItems()
-           ) 
-        if(counter.value === 1){
-            dispatch(
-                deleteProduct(id)
-            )
-            setCounter(
-                {
-                    id
-                }
-            )
-            dispatch(
-                totalTaxes()
-              )
-              dispatch(
-                totalPurchase()
-              )
-              dispatch(
-                setChange()
-              )
-        }  
+        )
+        }
+        if (amountToBuyTotal === 1) {
+       
+            setDeletePrevent(true)
+            // if (MenuDelete.execute === true) {
+            //     dispatch(
+            //         deleteProduct(id, MenuDelete)
+            //     )
+            //     setCounter(
+            //         {
+            //             id
+            //         }
+            //     )
+            //     dispatch(
+            //         totalTaxes()
+            //     )
+            //     dispatch(
+            //         totalPurchase()
+            //     )
+            //     dispatch(
+            //         setChange()
+            //     )
+            // }
+
+        }
     }
-    
+
     return (
-        <div className={`${Style.Counter_container}`}>
-            <button className={Style.Couter_button} onClick={handleDiminishCounter}>-</button>
-            <input className={Style.CounterDisplay} type="number" name="" id="" value={amountToBuyTotal} onChange={e => setCounter({...counter, value: Number(e.target.value) })} />
-            <button className={Style.Couter_button} onClick={handleIncreaseCounter}>+</button>
-        </div>
+        <Fragment>
+            <div className={`${Style.Counter_container}`}>
+                <button className={Style.Couter_button} onClick={handleDiminishCounter}>-</button>
+                <input className={Style.CounterDisplay} type="number" name="" id="" value={amountToBuyTotal} onChange={e => setCounter({ ...counter, value: Number(e.target.value) })} />
+                <button className={Style.Couter_button} onClick={handleIncreaseCounter}>+</button>
+            </div>
+            <Alert
+                id={id}
+                isOpen={DeletePrevent}
+                handleIsOpen={setDeletePrevent}
+            />
+        </Fragment>
     )
 }

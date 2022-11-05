@@ -9,8 +9,10 @@ export const AddProductButton = () => {
         )
     }
     return(
-        <Button onClick={Open}>
-            Crear Producto
+        <Button
+            title="Agregar Producto"
+            onClick={Open}>
+           
         </Button>
     )
 }

@@ -26,7 +26,7 @@ export const Ventas = () => {
     <Fragment>
       <Menu></Menu>
       <main className={Style.AppContainer}>
-        <MultiDisplayControl></MultiDisplayControl>
+        {/* <MultiDisplayControl></MultiDisplayControl> */}
         <div className={Style.ProductsContainer}>  
           <ProductControl></ProductControl>
           <MenuComponents></MenuComponents>

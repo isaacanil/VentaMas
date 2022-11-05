@@ -44,7 +44,10 @@ export const ListItem = ({ e, index }) => {
           </div>
           <div className={`${style.Group} ${style.center}`} >
             <label>Nota :</label>
-            <Button height='small' >Ver</Button>
+            <Button
+              title='Ver'
+              height='small'
+            />
           </div>
           <div className={style.Group}>
             <label>F. Pedido :</label>

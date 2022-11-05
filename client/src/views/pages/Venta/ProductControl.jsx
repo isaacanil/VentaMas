@@ -32,7 +32,7 @@ export const ProductControl = () => {
     }, [categoryArrayData, categoryStatus])
 
 
-
+   
 
     useEffect(() => {
 
@@ -57,7 +57,7 @@ export const ProductControl = () => {
             <ControlSearchProduct searchData={searchData} setSearchData={setSearchData}></ControlSearchProduct>
             <div className={[style.container]}>
 
-            <div className={style.wrapper}>
+            <div className={style.wrapper} >
                 {
                     searchData === '' && products.length > 0 ?
                         (

@@ -1,9 +1,24 @@
 
 import styled from 'styled-components'
 
+export const Button = ({type, bgcolor, color, title, startIcon, endIcon, onClick, width, variant }) => {
+  
+    return (
+      <Container 
+        bgcolor={bgcolor}
+        color={color}
+        onClick={onClick}
+        width={width}
+        variant={variant}
+        >
+          {startIcon ? startIcon : null}
+          {title}
+          {endIcon ? endIcon : null}
+      </Container>
+    )
+}
 
-
-export const Button = styled.button`
+export const Container = styled.button`
   //border
   border-radius: 100px;
   border: 1px solid #00000030;
@@ -11,9 +26,13 @@ export const Button = styled.button`
   display: flex;
   align-items: center;
   white-space: nowrap;
+  gap: 0.4em;
   //container
   //background-color: #2a2b2b;
-  background-color: ${props => props.delete ? "#d13737" : "transparent"};
+ 
+  svg{
+    font-size: 1.2em;
+  }
   //padding
   padding: 0 1em;
   //contain
@@ -36,16 +55,25 @@ export const Button = styled.button`
     outline: 4px auto -webkit-focus-ring-color;
     
   }
+  ${props => {
+    switch (props.type) {
+      case "delete": 
+      return `
+        background-color: #d13737;
+      ` 
+      default:
+        break;
+    }
+  }}
  ${(props) => {
-    switch (props.color) {
+    switch (props.bgcolor) {
       case "error":
         return `
             background-color: #d34343;
             color: white;
             Justify-content: center;
-            min-height: 1.8em;
-            min-width: 1.8em;
-            padding: 0;
+          
+           
             &:hover{
               background-color: #b10505;
               color: white
@@ -77,7 +105,7 @@ export const Button = styled.button`
           `
       case "primary":
         return `
-        background-color: #409ae4;
+        background-color: #42a5f5;
         color: white;
         &:hover{
                 background-color: #4589d8;
@@ -102,6 +130,28 @@ export const Button = styled.button`
         return `
               width: auto;
             `
+      case "icon32":
+        return`
+          min-width: 32px;
+          max-width: 32px;
+          min-height: 32px;
+          max-height: 32px;
+          display: grid;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          margin: 0;
+          font-size: 18px;
+        `
+        case "icon24":
+        return`
+          min-width: 24px;
+          min-height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+        `
       default:
         return `
             width: auto;
@@ -125,7 +175,41 @@ export const Button = styled.button`
           `
     }
   }}
-  
+   ${(props) => {
+    switch (props.variant) {
+      case "contained":
+        return `
+           outline: none;
+            border: none;
+
+          `;
+      case "auto":
+        return `
+              width: auto;
+            `
+      default:
+        return `
+            width: auto;
+          `
+    }
+  }}
+   ${(props) => {
+    switch (props.color) {
+      case "gray-dark":
+        return `
+           color: #4b4b4b;
+
+          `;
+      case "auto":
+        return `
+              width: auto;
+            `
+      default:
+        return `
+            width: auto;
+          `
+    }
+  }}
   
 `
 export const ButtonGroup = styled.div`

@@ -18,7 +18,8 @@ import {
   SelectSetCustomPizzaModal,
   handleModalSetCustomPizza,
   closeModalAddProd,
-  closeModalUpdateProd
+  closeModalUpdateProd,
+
 } from "../../../features/modals/modalSlice"
 export const ModalManager = () => {
   const dispatch = useDispatch()
@@ -86,7 +87,6 @@ export const ModalManager = () => {
       ))
 
       try {
-
         return <Navigate to={'/app/'}></Navigate>
       }
       catch (e) {
@@ -113,19 +113,22 @@ export const ModalManager = () => {
         isOpen={AddProdModalSelected}
         closeModal={closeModalAddProducts}
       />
-      <ProductModal
+      {/* <ProductModal
         btnSubmitName='Actualizar'
         title='Actualizar Producto'
         isOpen={UpdateProdModalSelected}
         closeModal={closeModalUpdateProducts}
         handleSubmit={handleSubmitUpdateProducts}
+      /> */}
+      <UpdateProductModal
+        isOpen={UpdateProdModalSelected}
       />
       <BillingModal isOpen={BillingModalSelected} />
       <SetCustomProduct
         isOpen={SetCustomPizzaSelected}
         handleOpen={handleModalSetCustomPizza}
       />
-      <AddOrderModal isOpen={AddOrderModalSelected}/>
+      <AddOrderModal isOpen={AddOrderModalSelected} />
       <AddProvider />
     </Fragment>
   )

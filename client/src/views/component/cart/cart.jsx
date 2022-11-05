@@ -10,13 +10,13 @@ import {
 
 } from '../../index'
 
-import { 
-  SelectProduct, 
+import {
+  SelectProduct,
   totalPurchaseWithoutTaxes,
   CancelShipping,
   totalTaxes,
-  totalPurchase, 
-  setChange, 
+  totalPurchase,
+  setChange,
   totalShoppingItems
 } from '../../../features/cart/cartSlice'
 
@@ -33,13 +33,13 @@ import { ProductCardForCart } from '../../templates/system/Product/Cart/ProductC
 
 
 export const Cart = () => {
-  
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [costoTotal, setCostoTotal] = useState('')
   const ProductSelected = useSelector(SelectProduct)
- 
- 
+
+
   const handleInvoice = () => {
     /*navigate('/app/venta/checkout/Billing', {replace: true})*/
     if (ProductSelected.length === 0) {
@@ -52,8 +52,8 @@ export const Cart = () => {
         totalPurchaseWithoutTaxes()
       )
       dispatch(
-       totalShoppingItems()
-      ) 
+        totalShoppingItems()
+      )
       dispatch(
         totalTaxes()
       )
@@ -66,7 +66,7 @@ export const Cart = () => {
     }
     console.log('click')
   }
-  
+
   const numb = ProductSelected.reduce((total, product) => total + product.price.total, 0);
   const total = separator(numb)
   return (
@@ -79,7 +79,7 @@ export const Cart = () => {
             ProductSelected.length >= 1 ?
               (
                 ProductSelected.map((item, Index) => (
-                  <ProductCardForCart item={item} key={Index}/>
+                  <ProductCardForCart item={item} key={Index} />
                 ))
               )
               :
@@ -90,7 +90,10 @@ export const Cart = () => {
           <div>
             <h3>Total : RD${total}</h3>
           </div>
-          <Button onClick={handleInvoice}>Facturar</Button>
+          <Button
+            title='Facturar'
+            onClick={handleInvoice}
+          />
         </div>
       </section>
     </Fragment>

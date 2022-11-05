@@ -40,12 +40,12 @@ export const Account = () => {
             </div>
           </li>
           <li className={Style.Item}>
-            <Button width="100"
-              color="primary"
-              className={Style.Item_Link}
+            <Button 
+              title='Cerrar sesión'
+              bgcolor="primary"
+              width="100"
               onClick={logoutOfApp}
-            >Cerrar sesión
-            </Button>
+            />
 
           </li>
         </ul>

@@ -13,6 +13,8 @@
     border-radius: 6px;
     column-gap: 0.8em;
     row-gap: 0;
+    position: relative;
+    overflow: hidden;
 
     .Item1 {
        font-weight: 700;

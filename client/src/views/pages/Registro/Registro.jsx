@@ -5,6 +5,7 @@ import { getBills } from '../../../firebase/firebaseconfig.js'
 import { useEffect } from 'react'
 import { separator } from '../../../hooks/separator'
 
+
 export const Registro = () => {
 
   const [bills, setBills] = useState([])
@@ -86,7 +87,7 @@ export const Registro = () => {
        
       </BillsContainer>
 
-
+ 
 
 
 

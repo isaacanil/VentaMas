@@ -3,12 +3,14 @@ import { getClients } from '../../../../firebase/firebaseconfig.js'
 import { CancelShipping } from '../../../../features/cart/cartSlice'
 import style from './ClientControlStyle.module.scss'
 import {
-  InputText, 
+  InputText,
   Client,
   CancelPurchaseBtn,
   AddClientButton
 } from '../../../'
 import { useDispatch } from 'react-redux'
+import { Input } from '../../../templates/system/Inputs/InputV2.jsx'
+import { ButtonGroup } from '../../../templates/system/Button/Button.jsx'
 export const ClientControl = () => {
   const dispatch = useDispatch()
   const [clients, setClients] = useState('')
@@ -32,10 +34,15 @@ export const ClientControl = () => {
   const handleSaveClient = (client) => {
     console.log(client)
   }
-  
+
   return (
     <div className={style.ClientBar}>
-      <InputText size='medium' type="text" placeholder='Buscar cliente' onChange={(e) => handleSearchClient(e.target.value)} />
+      <Input
+        size='medium'
+        type="search"
+        title='Buscar Cliente'
+        placeholder='Buscar cliente'
+        onChange={(e) => handleSearchClient(e.target.value)} />
       {
         searchData !== '' ? (
           <div className={style.clientControl}>
@@ -64,10 +71,12 @@ export const ClientControl = () => {
           )
 
       }
+      <ButtonGroup>
+        <AddClientButton></AddClientButton>
+        <CancelPurchaseBtn></CancelPurchaseBtn>
 
-      <AddClientButton></AddClientButton>
-      <CancelPurchaseBtn></CancelPurchaseBtn>
-      
+      </ButtonGroup>
+
     </div>
   )
 }

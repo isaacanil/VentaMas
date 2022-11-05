@@ -135,8 +135,11 @@ const cartSlice = createSlice({
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total - productFound.amountToBuy.unit
                 productFound.price.total = productFound.amountToBuy.total * productFound.price.unit ;
-
-                productFound.amountToBuy.total == 0 ? state.products.splice(state.products.indexOf(productFound), 1) : null
+                if(productFound.amountToBuy.total === 0){
+                        state.products.splice(state.products.indexOf(productFound), 1)
+                }
+               // productFound.amountToBuy.total == 0 ? state.products.splice(state.products.indexOf(productFound), 1) : null
+                
             }
         },
         CancelShipping: (state) => {

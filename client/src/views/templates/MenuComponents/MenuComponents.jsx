@@ -5,20 +5,17 @@ export const MenuComponents = () => {
     return (
         <div className={Style.ComponentContainer}>
             <ul className={Style.Items}>
-                <li className={Style.Item}>
-                    <Button>
+                {/* <li className={Style.Item}>
+                    <Button 
+                    title='Display'>
                         Displays
                     </Button>
+                </li> */}
+                <li className={Style.Item}>
+                    <Button title='Productos'/>        
                 </li>
                 <li className={Style.Item}>
-                    <Button>
-                        Productos
-                    </Button>
-                </li>
-                <li className={Style.Item}>
-                    <Button>
-                        Factura
-                    </Button>
+                    <Button title='Factura'/>
                 </li>
 
             </ul>

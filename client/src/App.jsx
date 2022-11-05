@@ -29,12 +29,14 @@ import {
   AddCategory,
   Orders,
   AddCustomProductModal,
-  SetCustomProduct
+  SetCustomProduct,
+  AlertHandler
 
 } from './views/index'
 import { Collection } from './views/pages/Collection'
 import { Fragment } from 'react';
 import { useModal } from './hooks/useModal'
+import { DeleteProductAlert } from './views/templates/system/Alerts/DeleteProductAlert'
 
 
 function App() {
@@ -52,13 +54,10 @@ function App() {
   if (user === false) {
     return <h2>Loading</h2>
   }
-
-
-
   // 
   return (
     <Fragment>
-      <Router>
+      <Router> 
         <ModalManager></ModalManager>
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
@@ -74,7 +73,6 @@ function App() {
             </RequireAuth>
           }>
           </Route>
-
           <Route exact path='/app/' element={
             <RequireAuth>
               <Home></Home>
@@ -119,6 +117,8 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      <AlertHandler></AlertHandler>
+
     </Fragment>
   );
 }

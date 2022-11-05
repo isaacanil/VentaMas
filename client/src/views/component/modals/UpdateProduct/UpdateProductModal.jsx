@@ -1,145 +1,249 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import { Modal } from '../modal'
-import styled from 'styled-components'
-import { getTaxes, getProduct } from '../../../../firebase/firebaseconfig.js'
-import { useDispatch, useSelector } from 'react-redux'
-import { closeModalUpdateProd, SelectUpdateProdModal} from '../../../../features/modals/modalSlice'
-export const UpdateProductModal = () => {
-  const [taxesList, setTaxesList] = useState()
-  const [taxData, setTaxData] = useState('')
-  const [productName, setProductName] = useState('')
-  const [cost, setCost] = useState(null)
-  const [productImage, setProductImage] = useState(null)
-  const [productImageURL, setProductImagenUrl] = useState(null)
-  const [category, setCategory] = useState(null)
-  //const [enlaceImg, setEnlaceImg] = useState('')
-  const [stock, setStock] = useState(null)
-  const [netContent, setNetContent] = useState('')
-  const [cantidad, setCantidad] = useState('')
-  const [errorMassage, setErrorMassage] = useState('')
-  
+/* eslint-disable no-undef */
+import React, { Fragment, useState, useEffect } from 'react'
+import Style from '../Product/Products.module.scss'
+import { Button} from '../../../index'
+import { UploadProdImg, UploadProdData, getCat, updateProduct } from '../../../../firebase/firebaseconfig.js'
+import { Modal } from '../../../index';
+//template
+import { selectUpdateProductData, clearUpdateProductData } from '../../../../features/updateProduct/updateProductSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { getTaxes } from '../../../../firebase/firebaseconfig.js';
+import styled from 'styled-components';
+import { closeModalUpdateProd } from '../../../../features/modals/modalSlice';
+import { Input } from '../../../templates/system/Inputs/InputV2';
+import { quitarCeros } from '../../../../hooks/quitarCeros';
+export const UpdateProductModal = ({ title, btnSubmitName, isOpen }) => {
+  const { status, lastProduct } = useSelector(selectUpdateProductData)
+  const [taxesList, setTaxesList] = useState([])
+  const [taxRef, setTaxRef] = useState('')
+  const [catList, setCatList] = useState([])
+  const [product, setProduct] = useState({
+    productName: undefined,
+    cost: {
+      unit: undefined,
+      total: undefined
+    },
+    amountToBuy: undefined,
+    productImageURL: undefined,
+    category: undefined,
+    stock: "",
+    type: "",
+    size: "",
+    netContent: undefined,
+    tax: undefined,
+    id: undefined,
+    price: {
+      unit: undefined,
+      total: undefined
+    }
+  })
+  useEffect(() => {
+    setProduct(
+      {
+        ...product,
+        id: lastProduct.id,
+        productName: lastProduct.productName,
+        cost: lastProduct.cost,
+        productImageURL: lastProduct.productImageURL,
+        category: lastProduct.category,
+        stock: lastProduct.stock,
+        netContent: lastProduct.netContent,
+        tax: lastProduct.tax,
+        price: lastProduct.price,
+        size: lastProduct.size,
+        type: lastProduct.type,
+        amountToBuy: { unit: 1, total: 1 }
+      }
+    )
+  }, [lastProduct])
   useEffect(() => {
     getTaxes(setTaxesList)
+    getCat(setCatList)
   }, [])
-
-
-  let product = {
-    // id: nanoid(6),
-    name: String(productName),
-    // cost: Number(cost),
-    tax: taxData !== '' ? (JSON.parse(taxData)) : null,
-    //prodImageURL: productImageURL,
-    // ProdStock: Number(stock),
-    //toma el valor sin inpuesto y le agrega el impuesto seleccionado y redondeado
-    // ProdNetContent: netContent,
-    // SalePrice: () => {
-    //   const result = product.cost + product.totalTaxes()
-    //   return result.toFixed(2)
-    // }
-  }
-  console.log(product)
-  
-  
-
   const dispatch = useDispatch()
-  const handleSubmit = () => {
-    const result = getProduct(id, product)
-    console.log(result)
+  const [errorMassage, setErrorMassage] = useState('')
+  const BtnFiles = (e) => {
+    e.preventDefault()
+    document.getElementById('file').click()
   }
-
+  const handleSubmitAddProducts = () => {
+    updateProduct(product),
+    closeModal()
+    dispatch(clearUpdateProductData())
+  }
   const closeModal = () => {
     dispatch(
       closeModalUpdateProd()
     )
+    dispatch(clearUpdateProductData())
   }
+  useEffect(() => {
+    if (product.cost.unit !== undefined && product.tax.value !== undefined) {
+      setProduct({
+        ...product,
+        price: {
+          unit: product.cost.unit * product.tax.value + product.cost.unit,
+          total: product.cost.unit * product.tax.value + product.cost.unit,
+        }
+      })
+    }
+  }, [product.cost, product.tax])
+  console.log(product)
   return (
     <Fragment>
-      {SelectUpdateProdModal ? (
-        <Modal nameRef={'Actualizar Producto'} close={closeModal} handleSubmit={handleSubmit} btnSubmitName='Actualizar'>
-          <Container>
-            <Group>
-              <label htmlFor="">Nombre del producto:</label>
-              <input type="text" required onChange={(e) => setProductName(e.target.value)} />
-            </Group>
-            <Group>
-              <label htmlFor="">Costo: </label>
-              <input type="text" />
-            </Group>
-            <Group>
-              <label htmlFor="">Categoria:</label>
-              <select name="select" id="" onChange={(e) => setCategory(e.target.value)}>
-                <option value="">Select</option>
-                <option value={'Bebida'}>Bebida</option>
-                <option value={'Alimento'}>Alimento</option>
-                <option value={'Hogar'}>Hogar</option>
-              </select>
-            </Group>
-            <Group>
-              <label htmlFor="">Impuesto:</label>
-              <select id="" onChange={(e) => setTaxe(e.target.value)}>
-                <option value="">Select</option>
-                {/* {
-                  taxesList.length >= 1 ? (
-                    taxesList.map(({ tax }, index) => (
-                      <option key={index} value={JSON.stringify(tax)}>{tax.ref}</option>
+      <Modal nameRef={'Actualizar Producto ' + `(${lastProduct.id})`} btnSubmitName='Actualizar' isOpen={isOpen} close={closeModal} handleSubmit={handleSubmitAddProducts}>
+        <div className={Style.Container} >
+          <form className={Style.Form}>
+            <div className={Style.Group}>
+              <Input
+                required
+                title={'Nombre del producto'}
+                type="text"
+                value={status ? product.productName : undefined}
+                placeholder='Nombre del Producto:'
+                onChange={(e) => setProduct({
+                  ...product,
+                  productName: e.target.value
+                })} />
+              <input
+                className={Style.Input}
+                type="file"
+                id='file'
+                onChange={(e) => setProduct({
+                  ...product,
+                  productImageURL: e.target.files[0]
+                })} />
+              <Button
+                title='Agregar Imagen'
+                onClick={BtnFiles}
+              />
+            </div>
+            <div className={Style.Group}>
+              <Input
+                title={'Tipo de Producto'}
+                type="text"
+                value={status ? product.type : undefined}
+                onChange={(e) => setProduct({
+                  ...product,
+                  type: e.target.value
+                })}
+
+              />
+              <Input
+                title={'Stock'}
+                type="number"
+                placeholder='stock'
+                value={status ? product.stock : undefined}
+                onChange={(e) => setProduct({
+                  ...product,
+                  stock: e.target.value
+                })} />
+
+              <select name="select" id="" onChange={(e) => setProduct({
+                ...product,
+                category: e.target.value
+              })}>
+                <option value="">Categoría</option>
+                {
+                  catList.length > 0 ? (
+                    catList.map((item, index) => (
+                      <option
+                        key={index}
+                        value={item.category.name}
+                        selected={item.category.name === product.category}
+                      >
+                        {item.category.name}
+                      </option>
                     ))
                   ) : null
-                } */}
-
-
+                }
               </select>
-            </Group>
-          </Container>
-        </Modal>
-      ) : null}
+
+            </div>
+            <div className={Style.Group}>
+              <Input
+                title={'Contenido neto'}
+                type="text"
+                placeholder='Contenido Neto:'
+                value={status ? product.netContent : undefined}
+                onChange={(e) => setProduct({
+                  ...product,
+                  netContent: e.target.value
+                })} />
+              <Input
+                title={'Tamaño'}
+                type="text"
+                placeholder='Contenido Neto:'
+                value={status ? product.size : undefined}
+                onChange={(e) => setProduct({
+                  ...product,
+                  size: e.target.value
+                })}
+              />
+              <Input
+                title={'Costo'}
+                type="number"
+                value={status ? quitarCeros(product.cost.unit ): undefined}
+                onChange={(e) => setProduct({
+                  ...product,
+                  cost: {
+                    unit: Number(e.target.value),
+                    total: Number(e.target.value)
+                  }
+                })} />
+
+            </div>
+            <div className={Style.Group}>
+              <select id="" onChange={(e) => setProduct({
+                ...product,
+                tax: JSON.parse(e.target.value)
+              })}>
+                <option value="">Impuesto</option>
+                {
+                  taxesList.length > 0 ? (
+                    taxesList.map(({ tax }, index) => (
+                      <option 
+                      selected={ tax.value === product.tax.value } 
+                      value={JSON.stringify(tax)} 
+                      key={index}
+                      >ITBIS {tax.ref}</option>
+                    ))
+                  ) : null
+                }
+              </select>
+              <Input
+                type="number"
+                title={'Precio + ITBIS'}
+                value={status ? product.price.unit : undefined}
+                readOnly
+                placeholder='Precio de Venta' />
+            </div>
+            {errorMassage}
+          </form>
+        </div>
+      </Modal>
     </Fragment>
   )
 }
-
-const Container = styled.form`
-  
+const Characteristic = styled.div`
+   padding: 1em;
+   display: grid;
+   gap: 1em;
 `
-const Group = styled.div`
-  background-color: var(--White1);
-  padding: 1em;
-  gap: 2em;
-    display: flex;
-      
-    align-items: center;
-    justify-content: center;
-    justify-content: space-between;
-
-    &:first-child {
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-    }
-
-    &:last-child {
-
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-    }
-
-    label {
-      font-weight: 500;
-      white-space: nowrap;
-      color: rgb(54, 54, 54);
-    }
-
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      margin: 0;
-      padding: 0.4em 1em;
-      border: 1px solid rgba(0, 0, 0, 0.155);
-      border-radius: 100px;
-      &:focus{
-          outline: none;
-      }
-    }
-
-    input[type="file"] {
-      display: none;
-    }
+const CharacteristicHead = styled.div`
+   h2{
+      margin: 0.6em 0;
+   }
+`
+const Bar = styled.div`
+   display: flex;
+   gap: 1em;
+`
+const CharacteristicBody = styled.div`
    
+   max-height: 10em;
+   height: 10em;
+   width: 100%;
+   background-color: #e9e9e9;
+   overflow-y: scroll;
 `

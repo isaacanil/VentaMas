@@ -31,6 +31,7 @@ import {
   ProductAmount,
   Footer
 } from './Style'
+import { MdClose } from 'react-icons/md'
 
 export const BillingModal = ({isOpen}) => {
   const dispatch = useDispatch()
@@ -70,7 +71,11 @@ export const BillingModal = ({isOpen}) => {
             <BillingWrapper>
               <Head>
                 <h3>Factura #: 123232345</h3>
-                <Button color='error' onClick={closeModal}>X</Button>
+                <Button 
+                  title={<MdClose/>} 
+                  width='icon32' 
+                  bgcolor='error' 
+                  onClick={closeModal}/>
               </Head>
               <Body>
                 <ClientBar/>
@@ -126,14 +131,18 @@ export const BillingModal = ({isOpen}) => {
                 <Footer>
                   <ButtonGroup>
                       <ReactToPrint 
-                      trigger={()=>( <Button color='primary' onClick={HandleSubmit}>Imprimir</Button>)}
+                      trigger={()=>( <Button bgcolor='primary' title='Imprimir' onClick={HandleSubmit}/>)}
                       content={()=> ComponentRef.current}
                       />
                       <DocumentContainer>
                         <Receipt  ref={ComponentRef} data={bill}/>
                       </DocumentContainer>
                       
-                      <Button color='gray' onClick={HandleSubmit}>Cerrar</Button>
+                      <Button 
+                      bgcolor='gray'
+                      title='Guardar' 
+                      onClick={HandleSubmit}
+                      />
                       
                    
                   </ButtonGroup>
