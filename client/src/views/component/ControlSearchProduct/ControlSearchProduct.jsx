@@ -15,12 +15,13 @@ import styled from 'styled-components'
 import { InputSearch } from '../../templates/system/Inputs/Input'
 import { useMatch } from 'react-router-dom'
 import { Input } from '../../templates/system/Inputs/InputV2'
+import { Carrucel } from '../../pages/Compra/Carrucel'
 
 
 export const ControlSearchProduct = ({ searchData, setSearchData }) => {
 
 
-  const matchWithInventory = useMatch('/app/inventario')
+  const matchWithInventory = useMatch('/app/inventario/items')
   const matchWithVenta = useMatch('/app/venta/:id')
 
 
@@ -46,7 +47,7 @@ export const ControlSearchProduct = ({ searchData, setSearchData }) => {
         {/* <Button btnName='Filtro'>Filtrar</Button> */}
 
         {
-          matchWithVenta ? <CategoryBar></CategoryBar> : null
+          matchWithVenta ? <Carrucel></Carrucel> : null
         }
         {
           matchWithInventory ? (

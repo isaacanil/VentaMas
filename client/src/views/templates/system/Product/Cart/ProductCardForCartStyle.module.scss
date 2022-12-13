@@ -1,7 +1,6 @@
 .group {
     display: grid;
     grid-template-columns: 3fr 2fr min-content;
-    align-items: center;
     justify-content: center;
     height: auto;
     background-color: rgb(255, 255, 255);
@@ -14,8 +13,7 @@
     column-gap: 0.8em;
     row-gap: 0;
     position: relative;
-    overflow: hidden;
-
+ 
     .Item1 {
        font-weight: 700;
        color: rgba(59, 59, 59, 0.849);
@@ -28,8 +26,8 @@
        //white-space: nowrap;
        text-overflow: ellipsis;
        overflow: hidden;
+       text-transform: capitalize;
     }
-
     .CrossContainer {
        display: flex;
        height: min-content;
@@ -38,7 +36,7 @@
        padding: 0.2em;
        clip-path: circle();
        background-color: #af3935;
-
+     
        .Cross {
           fill: rgb(238, 238, 238);
          

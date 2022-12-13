@@ -1,6 +1,6 @@
 import { nanoid } from "@reduxjs/toolkit";
 
-export const provider = [
+export const providers = [
     {
         id: nanoid(),
         name: 'Jose Marcos Perez'

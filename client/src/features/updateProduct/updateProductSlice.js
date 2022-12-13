@@ -22,6 +22,7 @@ const initialState = {
         },
         stock: 0,
         netContent: 0,
+        order: 1,
         amountToBuy: {
             unit: 1,
             total: 1
@@ -47,12 +48,16 @@ export const updateProductSlice = createSlice({
             state.lastProduct.netContent = action.payload.netContent
             state.lastProduct.amountToBuy = action.payload.amountToBuy
             state.lastProduct.id = action.payload.id
+            state.lastProduct.order = action.payload.order
             state.lastProduct.size = action.payload.size
             state.lastProduct.type = action.payload.type
 
             if( state.lastProduct.size === null){
 
             }
+        },
+        ChangeProductImage: (state, action) => {
+            state.lastProduct.productImageURL = action.payload
         },
         clearUpdateProductData: (state) => {
             state.status = false
@@ -84,7 +89,7 @@ export const updateProductSlice = createSlice({
     }
 })
 
-export const { ChangeProductData, clearUpdateProductData } = updateProductSlice.actions;
+export const { ChangeProductData, clearUpdateProductData, ChangeProductImage } = updateProductSlice.actions;
 
 //selectors
 export const selectUpdateProductData = (state) => state.updateProduct;

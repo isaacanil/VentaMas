@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useRef } from 'react'
 import Style from './Products.module.scss'
 import { Button, ErrorMessage, PlusIconButton } from '../../../index'
 import { UploadProdImg, UploadProdData, getCat } from '../../../../firebase/firebaseconfig.js'
@@ -7,30 +7,32 @@ import { Modal } from '../../../index';
 import { Navigate } from 'react-router-dom'
 import { Input, InputGroup } from '../../../templates/system/Inputs/InputV2';
 import { nanoid } from 'nanoid'
+import noimg from '../../../../assets/producto/noimg.png'
 //template
 import { useSelector, useDispatch } from 'react-redux';
 import { getTaxes } from '../../../../firebase/firebaseconfig.js';
 import styled from 'styled-components';
 import { separator } from '../../../../hooks/separator';
-import { addProductData } from '../../../../features/Firestore/products/addProductSlice';
 import { selectProduct, priceTotal } from '../../../../features/Firestore/products/addProductSlice';
-
+import { UploadImg } from '../../UploadImg';
+import { clearImg, SaveImg } from '../../../../features/uploadImg/uploadImageSlice';
+import { selectImg } from '../../../../features/uploadImg/uploadImageSlice';
+import { firstLetter } from '../../../../hooks/firstLetter';
+import { parseToString } from '../../../../hooks/parseToString';
 export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
-
+   const dispatch = useDispatch();
+   const ImgSelected = useSelector(selectImg);
+   const [imgController, setImgController] = useState(false)
    const [taxesList, setTaxesList] = useState([])
    const [catList, setCatList] = useState([])
-
    useEffect(() => {
       getTaxes(setTaxesList)
       getCat(setCatList)
    }, [])
-
-   //declarando las variables
    const [productImage, setProductImage] = useState(null)
    const [product, setProduct] = useState({
       productName: '',
       price: {
-
       },
       cost: {
          unit: undefined,
@@ -38,12 +40,14 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
       },
       amountToBuy: {
          unit: 1,
-         amount: 1,
+         total: 1,
       },
       type: '',
-      productImageURL: '',
+      productImageURL: 'NoImage/NoImage.png',
       netContent: '',
       category: '',
+      size: '',
+      order: 1,
       tax: {
          ref: '',
          value: undefined,
@@ -52,37 +56,55 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
       },
       stock: '',
       id: '',
-
    })
    const [errorMassage, setErrorMassage] = useState('')
-   const BtnFiles = (e) => {
+   //img
+   const handleImgController = (e) => {
       e.preventDefault()
-      document.getElementById('file').click()
+      setImgController(!imgController)
    }
+   const HandleSaveImg = (img) => {
+      dispatch(SaveImg(img))
+   }
+   useEffect(() => {
+      setProduct({
+         ...product,
+         productImageURL: ImgSelected
+      })
+   }, [ImgSelected])
    const handleSubmit = async () => {
-      if (productImage !== null) {
-         console.log('img')
-         const extentionsFile = /.jpg| .jpeg| .webp| .git|/i;
-         if (!extentionsFile.exec(productImage.name)) {
-            setErrorMassage('Solo se permiten imagenes')
-         }
-         else {
-            UploadProdImg(productImage)
-               .then(async (url) => {
-                  setProduct({
-                     ...product,
-                     productImageURL: url,
-                  })         
-               })   
-         }
-      }
-      else {
-         UploadProdData(product)
-      }
+      UploadProdData(product)
+      setProduct({
+         productName: '',
+         price: {
+            unit: undefined,
+            total: undefined,
+         },
+         cost: {
+            unit: undefined,
+            total: undefined,
+         },
+         amountToBuy: {
+            unit: 1,
+            amount: 1,
+         },
+         type: '',
+         productImageURL: '',
+         netContent: '',
+         category: '',
+         size: '',
+         tax: {
+            ref: '',
+            value: undefined,
+            unit: '',
+            total: ''
+         },
+         stock: '',
+         id: '',
+
+      })
+      dispatch(clearImg())
    }
-   useEffect(()=>{
-      product.productImageURL !== '' ? UploadProdData(product) : null
-   }, [product.productImageURL])
    useEffect(() => {
       if (product.cost.unit !== undefined && product.tax.value !== undefined) {
          setProduct({
@@ -95,173 +117,218 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
          })
       }
    }, [product.cost, product.tax])
-
-   console.log(product)
-
+   //console.log(product)
    return (
-      <Modal nameRef={title} btnSubmitName={btnSubmitName} isOpen={isOpen} close={closeModal} handleSubmit={handleSubmit} >
-         <div className={Style.Container} >
-            <form className={Style.Form}>
-               <div className={Style.Group}>
-                  <Input
-                     title='Nombre del producto'
-                     required
-                     type="text"
-                     onChange={(e) => setProduct({
-                        ...product,
-                        productName: e.target.value
-                     })}
-                  />
-                  <input
-                     className={Style.Input}
-                     type="file" id='file'
-                     onChange={(e) => setProductImage(e.target.files[0])}
-                  />
-                  <Button
-                     title='Agregar Imagen'
-                     onClick={BtnFiles}
-                  />
-               </div>
-               <div className={Style.Group}>
-                  <Input
-                     title={'Tipo de Producto'}
-                     type="text"
-                     onChange={(e) => setProduct({
-                        ...product,
-                        type: e.target.value
-                     })}
-
-                  />
-                  <Input
-                     title={'Cantidad'}
-                     type="number"
-                     placeholder='stock'
-                     onChange={(e) => setProduct({
-                        ...product,
-                        stock: e.target.value
-                     })}
-                  />
-                  <select
-                     name="select"
-                     id=""
-                     onChange={(e) => setProduct({
-                        ...product,
-                        category: e.target.value
-                     })}>
-                     <option value="">Categoría</option>
-                     {
-                        catList.length > 0 ? (
-                           catList.map((item, index) => (
-                              <option value={item.name} key={index}>{item.category.name}</option>
-                           ))
-                        ) : null
+      <Modal
+         nameRef={title}
+         isOpen={isOpen}
+         close={closeModal}
+         btnSubmitName={btnSubmitName}
+         handleSubmit={handleSubmit}
+         subModal={<UploadImg isOpen={imgController} setIsOpen={setImgController} fnAddImg={HandleSaveImg} />}
+      >
+         <Container>
+            <Group column='2'>
+               <Input
+                  required
+                  title={'Nombre del producto'}
+                  type="text"
+                  onChange={(e) => setProduct({
+                     ...product,
+                     productName: e.target.value
+                  })} />
+            </Group>
+            <Group orientation='vertical'>
+               <Input
+                  title={'Tipo de Producto'}
+                  type="text"
+                  
+                  onChange={(e) => setProduct({
+                     ...product,
+                     type: firstLetter(e.target.value)
+                  })}
+               />
+               <Input
+                  title={'Stock'}
+                  type="number"
+                  placeholder='stock'
+                  onChange={(e) => setProduct({
+                     ...product,
+                     stock: e.target.value
+                  })} />
+            </Group>
+            <Group orientation='vertical'>
+               <Input
+                  title={'Contenido neto'}
+                  type="text"
+                  placeholder='Contenido Neto:'
+                  onChange={(e) => setProduct({
+                     ...product,
+                     netContent: e.target.value
+                  })} />
+               <select
+                  name="select"
+                  id=""
+                  onChange={(e) => setProduct({
+                     ...product,
+                     category: e.target.value
+                  })}>
+                  <option value="">Categoría</option>
+                  {
+                     catList.length > 0 ? (
+                        catList.map((item, index) => (
+                           <option
+                              key={index}
+                              value={item.category.name}
+                           >
+                              {item.category.name}
+                           </option>
+                        ))
+                     ) : null
+                  }
+               </select>
+            </Group>
+            <Group>
+               <img src={product.productImageURL} alt="" onError={({ currentTarget }) => {
+                          currentTarget.onerror = null;
+                          currentTarget.src = noimg;
+                          currentTarget.style.objectFit = 'contain'
+                        }}/>
+               <Button
+                  title='Agregar Imagen'
+                  onClick={handleImgController}
+               />
+            </Group>
+            <Group orientation='vertical'>
+               <Input
+                  title={'Tamaño'}
+                  type="text"
+                  placeholder='Contenido Neto:'
+                  text="capitalize"
+                  onChange={(e) => setProduct({
+                     ...product,
+                     size: parseToString(firstLetter(e.target.value))
+                  })}
+               />
+               <Input
+                  title={'Costo'}
+                  type="number"
+                  onChange={(e) => setProduct({
+                     ...product,
+                     cost: {
+                        unit: Number(e.target.value),
+                        total: Number(e.target.value)
                      }
-                  </select>
-
-               </div>
-               <div className={Style.Group}>
-
-                  <Input
-                     title={'Contenido Neto'}
-                     type="text"
-                     placeholder='Contenido Neto:'
-                     onChange={(e) => setProduct({
-                        ...product,
-                        netContent: e.target.value
-                     })}
-                  />
-                  <Input
-                     title={'Tamaño'}
-                     type="text"
-                     placeholder='Contenido Neto:'
-                     onChange={(e) => setProduct({
-                        ...product,
-                        netContent: e.target.value
-                     })}
-                  />
-                  <Input
-                     type="number"
-                     title={'Costo'}
-                     placeholder='Costo:'
-                     onChange={(e) => setProduct({
-                        ...product,
-                        cost: {
-                           unit: Number(e.target.value),
-                           total: Number(e.target.value)
-                        }
-                     })}
-                  />
+                  })} />
+            </Group>
+            <Group orientation='vertical'>
+               <Input
+                  size='small'
+                  title={'Order'}
+               />
+               <select id="" onChange={(e) => setProduct({
+                  ...product,
+                  tax: JSON.parse(e.target.value)
+               })}>
+                  <option value="">Impuesto</option>
+                  {
+                     taxesList.length > 0 ? (
+                        taxesList.map(({ tax }, index) => (
+                           <option
+                              value={JSON.stringify(tax)}
+                              key={index}
+                           >
+                              ITBIS {tax.ref}
+                           </option>
+                        ))
+                     ) : null
+                  }
+               </select>
+               <Input
+                  type="number"
+                  title={'Precio + ITBIS'}
+                  value={product.price.total !== undefined ? product.price.total : ''}
+                  readOnly
+                  placeholder='Precio de Venta' />
+            </Group>
 
 
-               </div>
-               <div className={Style.Group}>
-                  <select id="" onChange={(e) => {
-                     const { ref, unit, value, total } = JSON.parse(e.target.value)
-                     setProduct({
-                        ...product,
-                        tax: {
-                           ref: ref,
-                           unit: unit,
-                           value: Number(value),
-                           total: total
-                        }
-                     })
-                  }}>
-                     <option value="">Impuesto</option>
-                     {
-                        taxesList.length > 0 ? (
-                           taxesList.map(({ tax }, index) => (
-                              <option
-                                 value={JSON.stringify(tax)}
-                                 key={index}
-                              >
-                                 ITBIS {tax.ref}
-                              </option>
-                           ))
-                        ) : null
-                     }
-                  </select>
-
-                  <Input
-                     title={'Costo + Impuesto'}
-                     type="text"
-
-                     value={
-                        product.price.total !== undefined ? product.price.total : ''
-                     }
-                     readOnly
-
-                  />
-               </div>
-               {errorMassage}
-            </form>
-
-
-         </div>
+         </Container>
       </Modal>
    )
 }
 
 
-const Characteristic = styled.div`
-   padding: 1em;
-   display: grid;
-   gap: 1em;
+const Container = styled.div`
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 2em 1em 1em;
+    background-color: #fff;
+    height: 100%;
+    width: 100%;
+    gap: 1.7em;
+    align-content: flex-start;
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }    
 `
-const CharacteristicHead = styled.div`
-   h2{
-      margin: 0.6em 0;
+const Group = styled.div`
+
+    select{
+         padding: 0.4em;
+         border-radius: 8px;
+         border: none;
+         outline: 1px solid rgb(145, 145, 145);
+      }
+    &:nth-child(1){
+        grid-column: 2 span;
+    }
+    &:nth-child(2){
+        grid-column: 1 / 3;
+    }
+    &:nth-child(3){ 
+        grid-column: 1 / 3;
+    }
+    &:nth-child(4){
+        background-color: #cce1e9;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(2, 2, 2, 0.100);
+        img{
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
+        }
+        grid-column: 3 / 4;
+        grid-row: 1 / 4;
+        display: grid;
+        gap: 1em;
+       // justify-content: center;
+        justify-items: center;
+    }
+    &:nth-child(5){
+        grid-column: 1 / 4;
+    }
+    &:nth-child(6){
+       grid-column: 1 / 4;
    }
-`
-const Bar = styled.div`
-   display: flex;
-   gap: 1em;
-`
-const CharacteristicBody = styled.div`
-   
-   max-height: 10em;
-   height: 10em;
-   width: 100%;
-   background-color: #e9e9e9;
-   overflow-y: scroll;
+    ${(props) => {
+      switch (props.orientation) {
+         case 'vertical':
+            return `
+                    display: flex;
+                    gap: 1em;
+                `
+
+         case 'horizontal':
+            return `
+                    display: grid
+                `
+         default:
+            break;
+      }
+   }}
+  
 `

@@ -21,6 +21,8 @@ import {
   Ventas as VentaPage,
   Compras as CompraPage,
   Inventario as InventarioPage,
+  Setting,
+  MultimediaManager,
   Registro as RegistroPage,
   RequireAuth,
   Contact,
@@ -30,17 +32,16 @@ import {
   Orders,
   AddCustomProductModal,
   SetCustomProduct,
-  AlertHandler
+  AlertHandler,
 
 } from './views/index'
 import { Collection } from './views/pages/Collection'
 import { Fragment } from 'react';
 import { useModal } from './hooks/useModal'
 import { DeleteProductAlert } from './views/templates/system/Alerts/DeleteProductAlert'
-
+import { GenericLoader } from './views/templates/system/loader/GenericLoader';
 
 function App() {
-
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
   const products = useSelector(SelectProduct)
@@ -48,68 +49,73 @@ function App() {
   //Todo ******detectando si hay usuarios logueados******
   useEffect(() => {
     AuthStateChanged(dispatch)
-
-
   }, [])
   if (user === false) {
-    return <h2>Loading</h2>
+    return <GenericLoader></GenericLoader>
+
   }
   // 
+
+
   return (
     <Fragment>
-      <Router> 
+      <Router>
         <ModalManager></ModalManager>
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
+          <Route path='/app/setting/' element={<Setting />} />
           <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
-          <Route exact path='/register' element={<Register />}></Route>
-          <Route exact path='/login' element={<Login />}></Route>
-          <Route exact path='/'  element={<Welcome />} ></Route>
-          <Route exact path='/collection' element={<Collection />}></Route>
-          <Route exact path='*' element={<NotFound />}></Route>
-          <Route exact path='/app/compra' element={
+          <Route path='/register' element={<Register />}></Route>
+          <Route path='/login' element={<Login />}></Route>
+          <Route path='/' element={<Welcome />} ></Route>
+          <Route path='/collection' element={<Collection />}></Route>
+          <Route path='*' element={<NotFound />}></Route>
+          <Route path='/app/compra' element={
             <RequireAuth>
               <CompraPage></CompraPage>
             </RequireAuth>
           }>
           </Route>
-          <Route exact path='/app/' element={
+          <Route path='/app/' element={
             <RequireAuth>
               <Home></Home>
             </RequireAuth>
           }>
           </Route>
-          <Route exact path='/app/pedido/' element={<Orders />}>
-
+          <Route path='/app/pedido/' element={<Orders />}>
           </Route>
           <Route path='/app/contact/client' element={<CompraPage></CompraPage>} />
           <Route path='/app/contact/provider' element={<h2>Proveedor</h2>} />
-          <Route exact path='/app/venta' >
+          <Route path='/app/venta' >
             <Route path=':displayID' element={
               <RequireAuth>
                 <VentaPage></VentaPage>
               </RequireAuth>
             } ></Route>
           </Route>
-          <Route exact path='/app/category' element={
+          <Route path='/app/category' element={
             <RequireAuth>
               <Category></Category>
             </RequireAuth>
           }>
           </Route>
-          <Route exact path='/app/category/add' element={
+          <Route path='/app/category/add' element={
             <RequireAuth>
               <AddCategory></AddCategory>
             </RequireAuth>
           }>
           </Route>
-          <Route exact path='/app/inventario' element={
+          <Route path='/app/inventario/items' element={
             <RequireAuth>
               <InventarioPage></InventarioPage>
             </RequireAuth>
           }>
           </Route>
-          <Route exact path='/app/registro' element={
+          <Route path='/app/inventario/multimedia_manager' element={<MultimediaManager />}>
+
+          </Route>
+          <Route e></Route>
+          <Route path='/app/registro' element={
             <RequireAuth>
               <RegistroPage></RegistroPage>
             </RequireAuth>

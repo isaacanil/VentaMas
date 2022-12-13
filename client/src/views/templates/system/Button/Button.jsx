@@ -1,7 +1,7 @@
 
 import styled from 'styled-components'
 
-export const Button = ({type, bgcolor, color, title, startIcon, endIcon, onClick, width, variant }) => {
+export const Button = ({type, bgcolor, color, title, startIcon, endIcon, onClick, width, variant, disabled, borderRadius }) => {
   
     return (
       <Container 
@@ -10,9 +10,11 @@ export const Button = ({type, bgcolor, color, title, startIcon, endIcon, onClick
         onClick={onClick}
         width={width}
         variant={variant}
+        disabled={disabled}
+        borderRadius={borderRadius}
         >
           {startIcon ? startIcon : null}
-          {title}
+          {title ? title : null}
           {endIcon ? endIcon : null}
       </Container>
     )
@@ -27,14 +29,15 @@ export const Container = styled.button`
   align-items: center;
   white-space: nowrap;
   gap: 0.4em;
+  padding: 0 0.6em;
   //container
   //background-color: #2a2b2b;
- 
   svg{
     font-size: 1.2em;
+    margin: 0;
   }
   //padding
-  padding: 0 1em;
+  
   //contain
 
   /*font */
@@ -48,23 +51,22 @@ export const Container = styled.button`
   
   &:hover{
     background-color: #d6d6d6;
-    
+    backdrop-filter: opacity(10);
     color: black;
   }
   &:focus, &:focus-visible{
     outline: 4px auto -webkit-focus-ring-color;
-    
   }
-  ${props => {
-    switch (props.type) {
-      case "delete": 
-      return `
-        background-color: #d13737;
-      ` 
-      default:
-        break;
-    }
-  }}
+ ${(props) => {
+  switch (props.borderRadius) {
+    case 'normal':
+      return`
+        border-radius: 10px;
+      `
+    default:
+      break;
+  }
+ }}
  ${(props) => {
     switch (props.bgcolor) {
       case "error":
@@ -72,8 +74,6 @@ export const Container = styled.button`
             background-color: #d34343;
             color: white;
             Justify-content: center;
-          
-           
             &:hover{
               background-color: #b10505;
               color: white
@@ -82,19 +82,23 @@ export const Container = styled.button`
       case "black":
         return `
         background-color: #020202;
-            color: white;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            border-radius: 0;
-            min-height: 100%;
-            min-width: 2em;
+            color: white;      
             &:hover{
               background-color: #1f1f1f;
               color: white
             }
           
         `
+        case "dark":
+          return `
+          background-color: #2a2b2b;
+          color: white;
+          &:hover{
+            background-color: #1f1f1f;
+            color: white
+          }
+          `
+
       case "gray":
         return `
             background-color: #8d8d8d;
@@ -113,13 +117,24 @@ export const Container = styled.button`
               color: white
             }
             `
+            case "op1":
+        return `
+        background-color: rgba(0, 0, 0, 0.200);
+        color: white;
+        &:hover{
+                background-color: #4589d8;
+                outline: none;
+                
+              
+              color: white
+            }
+            `
       default:
         return `
             background-color: white;
           `
     }
-  }}
-  
+  }} 
   ${(props) => {
     switch (props.width) {
       case "100":
@@ -145,8 +160,10 @@ export const Container = styled.button`
         `
         case "icon24":
         return`
-          min-width: 24px;
-          min-height: 24px;
+          min-width: 27px;
+          max-width: 27px;
+          max-height: 27px;
+          min-height: 27px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -181,6 +198,11 @@ export const Container = styled.button`
         return `
            outline: none;
             border: none;
+            padding: 0;
+            background-color: transparent;
+            &:hover{
+              background-color: transparent;
+            }
 
           `;
       case "auto":
@@ -210,6 +232,41 @@ export const Container = styled.button`
           `
     }
   }}
+  ${(props) => {
+    switch (props.disabled) {
+      case true:
+        return `
+           opacity: 0.4;
+           cursor: not-allowed;
+           pointer-events: none;
+          `;
+      case false:
+        return `
+              width: auto;
+            `
+      default:
+        return `
+            width: auto;
+          `
+    }
+  }}
+  ${(props) => {
+    switch (props.isActived) {
+      case 'true':
+        return`
+          background-color: #e9e9e9;
+          color: black;
+        `
+      case 'false':
+        return`
+          background-color: rgba(0, 0, 0, 0.26);
+          color: white;
+        `
+      default:
+        break;
+    }
+  }}
+  
   
 `
 export const ButtonGroup = styled.div`

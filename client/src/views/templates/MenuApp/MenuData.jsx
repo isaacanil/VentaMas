@@ -28,13 +28,22 @@ export const MenuData = [
         ]
     },
     {
-        title: 'Categoría',
-        path: '/app/category',
-        
-    },
-    {
-        title: 'Registro',
-        path: '/app/registro'
+        title: 'Inventario',
+        path: false,
+        submenuIconOpen: <ChevronLeft/>,
+        submenuIconClose: <ChevronRight/>,
+        submenu: [
+            {
+                title: 'Articulos',
+                path: '/app/inventario/items'
+            },
+            {
+                title: 'Administrador de Imagenes',
+                path: '/app/inventario/multimedia_manager'
+            }
+           
+
+        ]
     },
     {
         title: 'Contacto',
@@ -54,19 +63,15 @@ export const MenuData = [
         ]
     },
     {
-        title: 'Inventario',
-        path: false,
-        submenuIconOpen: <ChevronLeft/>,
-        submenuIconClose: <ChevronRight/>,
-        submenu: [
-            {
-                title: 'Articulos',
-                path: '/app/inventario'
-            },
-           
-
-        ]
+        title: 'Categoría',
+        path: '/app/category',
+        
     },
+    {
+        title: 'Registro',
+        path: '/app/registro'
+    },
+   
     {
         title: 'Configuración',
         path: '/app/setting'

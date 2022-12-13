@@ -9,10 +9,10 @@
     display: grid;
     align-items: center;
     grid-template-columns: 1fr auto;
-    padding: 0 2em;
+    padding: 0 1em;
     .UserSection{
         display: flex;
         align-items: center;
-        gap: 2em;
+        gap: 0.6em;
     }
 }

@@ -14,6 +14,9 @@ import addProductReducer from "../features/Firestore/products/addProductSlice";
 import addOrderReducer from "../features/addOrder/addOrderModalSlice";
 import updateProductReducer from "../features/updateProduct/updateProductSlice";
 import alertReducer from "../features/Alert/AlertSlice";
+import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
+import settingReducer from '../features/setting/settingSlice'
+
 const isSerializable = (value) => Iterable.isIterable(value) || isPlain(value)
 const getEntries = (value) => Iterable.isIterable(value) ? value.entries() : Object.entries(value)
 const serializableMiddleware = createSerializableStateInvariantMiddleware({
@@ -32,8 +35,9 @@ export const store = configureStore({
         addProduct: addProductReducer,
         addOrder: addOrderReducer,
         updateProduct: updateProductReducer,
-     
+        uploadImg: uploadImgReducer,
         alert: alertReducer,
+        setting: settingReducer
     },
     middleware: [serializableMiddleware],
 })

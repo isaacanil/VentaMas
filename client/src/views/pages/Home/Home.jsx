@@ -20,9 +20,6 @@ export const Home = () => {
           <div className={Style.welcomeSection_inner}>
              {user === null ? null : <h2 className={Style.welcomeSection_title}>¡Bienvenido de nuevo <span>{user.displayName}</span>!</h2>}
             <ul className={Style.WelcomeSection_items}>
-
-
-
               <li className={Style.card}>
                 <Link className={Style.card_inner} to='/app/venta/1'>
                   <div className={Style.card_img_container}>
@@ -32,10 +29,9 @@ export const Home = () => {
                 </Link>
               </li>
               <li className={Style.card}>
-                <Link className={Style.card_inner} to='/app/compra'>
+                <Link className={Style.card_inner} to='/app/compra/'>
                   <div className={Style.card_img_container}>
                     <img className={Style.card_img} src={CompraImg} alt="" />
-
                   </div>
                   <h3 className={Style.card_title}>Comprar</h3>
                 </Link>

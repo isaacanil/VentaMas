@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import { Select } from '../../templates/system/Select/Select'
-import { provider } from './Selects/Provider'
+import { providers } from './Selects/Provider'
 import { useDispatch } from 'react-redux'
 import { openModalAddOrder } from '../../../features/modals/modalSlice'
 import { separator } from '../../../hooks/separator'
@@ -35,9 +35,9 @@ export const Orders = () => {
         <div className={style.FilterBar}>
           <div className={style.FilterBarWrapper}>
             <div className={style.FilterOptions}>
-              <Select data={provider} title='PROVEEDOR'></Select>
-              <Select data={provider} title='Estado'></Select>
-              <Select data={provider} title='Condición'></Select>
+              <Select data={providers} title='PROVEEDOR'></Select>
+              <Select data={providers} title='Estado'></Select>
+              <Select data={providers} title='Condición'></Select>
             </div>
 
             <Button
@@ -45,7 +45,6 @@ export const Orders = () => {
               title='Agregar pedido'
               onClick={openModal}
             />
-
           </div>
         </div>
         <OrderListTable />

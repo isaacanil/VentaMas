@@ -1,10 +1,9 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import ProductImg from '../../../assets/producto/descarga.jfif'
 import Style from './Inventario.module.scss'
 //import { useModal } from '../../../hooks/useModal'
 import { Navigate } from 'react-router-dom'
 import { PlusIcon } from '../../../assets/system/plus/plusIcon'
-
+import noimg from '../../../assets/producto/noimg.png'
 import { getProducts, deleteProduct, getProduct } from '../../../firebase/firebaseconfig.js'
 import { useDispatch } from 'react-redux'
 import {
@@ -86,7 +85,14 @@ export const Inventario = () => {
                         />
                       </div>
                       <div className={Style.product_img_container}>
-                        <img className={Style.product_img} src={product.productImageURL} alt="" />
+                        <img
+                          className={Style.product_img}
+                          src={product.productImageURL} alt=""
+                          onError={({ currentTarget }) => {
+                            currentTarget.onerror = null;
+                            currentTarget.src = noimg;
+                            currentTarget.style.objectFit = 'contain'
+                          }} />
                       </div>
                       <div className={Style.product_name}>
                         <h3>{product.productName}</h3>
@@ -115,18 +121,18 @@ export const Inventario = () => {
                 filteredProducts.map(({ product, id }, index) => (
                   <li key={index} className={Style.product} onClick={() => console.log(product)} >
                     <div className={Style.product_header}>
-                    <Button
-                          title="Editar"
-                          // variant='contained'
-                          bgcolor='editar'
-                          onClick={() => handleUpdateProduct(product)}
-                        />
-                        <Button
-                          title={<IoMdTrash />}
-                          width='icon32'
-                          bgcolor='error'
-                          onClick={() => handleDeleteProduct(product.id)}
-                        />
+                      <Button
+                        title="Editar"
+                        // variant='contained'
+                        bgcolor='editar'
+                        onClick={() => handleUpdateProduct(product)}
+                      />
+                      <Button
+                        title={<IoMdTrash />}
+                        width='icon32'
+                        bgcolor='error'
+                        onClick={() => handleDeleteProduct(product.id)}
+                      />
                     </div>
                     <div className={Style.product_img_container}>
                       <img className={Style.product_img} src={product.productImageURL} alt="" />

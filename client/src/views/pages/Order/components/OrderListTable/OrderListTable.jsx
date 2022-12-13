@@ -1,9 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Data } from '../../Data'
 import { ListItem } from '../../ListItem/ListItem'
+import { getOrders } from '../../../../../firebase/firebaseconfig'
+import { useEffect } from 'react'
 
 export const OrderListTable = () => {
+  const [orders, setOrders] = useState([])
+  useEffect(() => {
+    getOrders(setOrders)
+  }, [])
+  console.log(orders)
     return (
         <Body>
             <TitleContainer>
@@ -11,9 +18,8 @@ export const OrderListTable = () => {
             </TitleContainer>
             <Table>
                 <TableHead>
-                    <Row  >
+                    <Row>
                         <Group column='order-list'>
-
                             <Col>#</Col>
                             <Col>Est</Col>
                             <Col>Proveedor</Col>
@@ -22,20 +28,18 @@ export const OrderListTable = () => {
                             <Col>F. Entrega</Col>
                             <Col>Total</Col>
                             <Col>Acción</Col>
-
                         </Group>
-
                     </Row>
                 </TableHead>
                 <TableBody>
                     {
-                        Data.length > 0 ? (
-                            Data.map((e, index) => (
+                        Array(orders).length > 0 ? (
+                            orders.map((e, index) => (
                                 <ListItem key={index} e={e} index={index}></ListItem>
                             ))
                         ) : null
+                    
                     }
-
                 </TableBody>
             </Table>
         </Body>

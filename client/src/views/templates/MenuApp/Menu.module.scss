@@ -1,6 +1,6 @@
 @import url(../../../styles/variables.css);
 :root {
-   --menu-items: rgb(246, 246, 246);
+   --menu-items: rgb(241, 241, 241);
 
 
    //btnMenuItem
@@ -10,42 +10,23 @@
 
 }
 
-.Container {
-   position: relative;
-   user-select: none;
-   background-color: var(--icolor);
-   width: 100%;
-   height: 2.75em;
-   display: grid;
-   grid-template-columns: auto auto min-content;
-   //justify-content: space-between;
-   align-items: center;
-  
-   
-
-   padding: 0 0.6em 0 0;
-
    .MenuBtn {
-      justify-self: flex-start;
-      width: 3.375em;
-      height: 100%;
+      
+      justify-self: start;
+      width: 2em;
+      height: 2em;
       display: flex;
+      border-radius: 100px;
       justify-content: center;
       align-items: center;
-      background-color: rgba(0, 0, 0, 0.21);
+      background-color: rgba(0, 0, 0, 0.2);
       cursor: pointer;
       
-      &:hover {
-         
-         
-         background-color: rgba(0, 0, 0, 0.21);
-         transition: all 1s ease-in-out;
-      }
-
+      
       .MenuBtn_icon {
          position: relative;
          z-index: 10;
-         width: 1.6em;
+         width: 1.2em;
          height: 2px;
          background-color: var(--menu-items);
          transition: all 1s ease-in-out;
@@ -54,10 +35,10 @@
             content: '';
             position: absolute;
             z-index: 10;
-            width: 1.6em;
+            width: 1.2em;
             height: 2px;
             background-color: var(--menu-items);
-            margin-top: 8px;
+            margin-top: 6px;
             transition: all 0.4s ease-in-out;
          }
 
@@ -65,17 +46,17 @@
             content: '';
             position: absolute;
             z-index: 10;
-            width: 1.6em;
+            width: 1.2em;
             height: 2px;
             background-color: var(--menu-items);
-            margin-top: -8px;
+            margin-top: -6px;
             transition: all 0.4s ease-in-out;
          }
       }
 
       .MenuBtn_icon_closed {
          position: relative;
-         width: 1.6em;
+         width: 1.2em;
          height: 2px;
          background-color: transparent;
          transition: all 0.2s ease-in-out;
@@ -85,7 +66,7 @@
          &::after {
             content: '';
             position: absolute;
-            width: 1.6em;
+            width: 1.2em;
             height: 2px;
             background-color: var(--menu-items);
             margin-top: 0;
@@ -98,7 +79,7 @@
          &::before {
             content: '';
             position: absolute;
-            width: 1.6em;
+            width: 1.2em;
             height: 2px;
             background-color: var(--menu-items);
             margin-top: 0;
@@ -108,107 +89,21 @@
       }
 
    }
-
-   .Menu {
-      position: absolute;
-      z-index: 999;
-      max-width: 400px;
-      width: 100%;
-      height: calc(100vh - 2.75em);
-      top: 2.75em;
-      left: 0;
-      background-color: rgb(88, 88, 88);
-      transform: translateX(0px);
-      transition: transform 0.4s ease-in-out;
-      overflow: hidden;
-
-      .Menu_links_group {
-         margin-top: 2em;
-         display: grid;
-         padding: 1em 0;
-         gap: 0.6em;
-         //background-color: rgba(255, 255, 255, 0.100);
-
-
-         .Menu_link_container {
-            list-style: none;
-            padding: 0 2em;
-            display: grid;
-            align-items: center;
-
-            .Menu_link {
-               height: 2.4em;
-               text-decoration: none;
-               color: white;
-              // background-color: rgba(255, 255, 255, 0.070);
-               border-radius: 50px;
-               display: grid;
-               align-items: center;
-               padding: 0 1em;
-               font-weight: 400;
-               display: flex;
-               justify-content: space-between;
-               align-items: center;
-               font-weight: 450;
-               div{
-                  display: flex;
-                  align-items: center;
-               }
-              
-             
-            }
-
-            .Menu_link.Active {
-               background-color: rgba(0, 0, 0, 0.400);
-               border-radius: 100px;
-               outline: 2px solid rgb(66,165,245);
-            }
-         }
-      }
-   }
-
-   .Menu.Disabled {
-
-      position: absolute;
-      transform: translateX(-900px);
-      
-      transition: transform 0.4s ease-in-out;
- 
-
-   }
-
+   
+.Menu_backdrop{
+   position: absolute;
+   height: calc(100vh);
+   left: 0;
+   width: 100%;
+   backdrop-filter: blur(0px);
+   z-index: 10;
+   pointer-events: none;
+   transition: 600ms ease-in-out;
 }
-.SubMenu_link_container {
-   list-style: none;
-   padding: 0 2em;
-   display: grid;
-   align-items: center;
+.Menu_backdrop.ActiveBackdrop{
+   display: block;
+   backdrop-filter: blur(10px);
+   background-color: rgba(0, 0, 0, 0.200);
 
-   .SubMenu_link {
-      height: 2.4em;
-      text-decoration: none;
-      color: white;
-     // background-color: rgba(255, 255, 255, 0.070);
-      border-radius: 50px;
-      display: grid;
-      align-items: center;
-      padding: 0 1em;
-      font-weight: 400;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 450;
-      div{
-         display: flex;
-         align-items: center;
-      }
-     
-    
-   }
-
-   .SubMenu_link.Active {
-      background-color: rgba(0, 0, 0, 0.400);
-      border-radius: 100px;
-      outline: 2px solid rgb(66,165,245);
-   }
+  
 }

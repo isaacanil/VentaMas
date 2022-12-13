@@ -6,22 +6,33 @@
     align-items: center;
     background-color: #ffffff;
     padding: 0.2em;
-    //box-shadow: 0 0 10px rgba(0, 0, 0, 0.100);
-    border: 1px solid rgba(0, 0, 0, 0.200);
-    border-radius: 100px;
+    //box-shadow: 0 0 10px rgba(0, 0, 0, 0.100); 
+    //border: 1px solid rgba(0, 0, 0, 0.200);
+    //border-radius: 100px;
     .Couter_button{
-       border-radius: 100px;
-       width: 25px;
-       height: 25px;
+       //border-radius: 100px;
+       width: min-content;
+       height: min-content;
        text-align: center;
-       border: 1px solid rgba(0, 0, 0, 0.300);
+       //border: 1px solid rgba(0, 0, 0, 0.300);
+       border: none;
+       outline: none;
        font-weight: 900;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       padding: none;
+       background-color: transparent;
        color: rgba(29, 29, 29, 0.842);
+       &:focus{
+         outline: none;
+       }
     }
     .CounterDisplay{
       border: 1px solid rgba(0, 0, 0, 0);
       width: 2.5em;
       text-align: center;
+      font-size: 17px;
       outline: none;
       &::-webkit-inner-spin-button, &::-webkit-outer-spin-button{
          -webkit-appearance: none;

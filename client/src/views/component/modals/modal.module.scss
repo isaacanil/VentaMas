@@ -12,8 +12,9 @@
     z-index: 10000;
     top: 0;
     left: 0;
-    display: none;
-    
+    transform: scale(0);
+
+    transition: scale 400ms ease-in-out;
     
     .Modal_container {
         width: 100vw;
@@ -25,6 +26,7 @@
         grid-template-rows: 3em auto 3em;
         border-radius: 6px;
         overflow: hidden;
+        position: relative;
         .modal_header{
             display: flex;
             color: rgb(255, 255, 255);
@@ -68,5 +70,5 @@
 
 }
 .Modal.Open{
-    display: flex;
+    transform: scale(1);
 }

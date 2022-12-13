@@ -15,12 +15,12 @@ export const DeliveryOption = () => {
     })
     const deliveryStatusInput = useRef(null)
     const focusOnDeliveryInput = () => {
-       deliveryStatusInput.current.focus()
-
+        ClientSelected ? (
+            deliveryStatusInput.current.focus()
+        ) : null
     }
     useEffect(() => {
         deliveryData.status ? focusOnDeliveryInput() : null
- 
         dispatch(
             addDelivery(deliveryData)
         )
@@ -36,7 +36,6 @@ export const DeliveryOption = () => {
             <DeliveryInner>
                 <input type="checkbox" name="" id="delivery"  onChange={e => {
                     setDeliveryData({ ...deliveryData, status: e.target.checked })
-
                 }} />
                 <label htmlFor="delivery">Delivery</label>
             </DeliveryInner>

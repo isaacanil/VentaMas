@@ -14,7 +14,7 @@ import {
 import { Alert } from '../Product/Cart/Alert';
 import Style from './Counter.module.scss'
 
-export const Counter = ({ amountToBuyTotal, stock, id, HandleMenuDelete, MenuDelete }) => {
+export const Counter = ({ amountToBuyTotal, stock, id }) => {
     const dispatch = useDispatch()
     const [DeletePrevent, setDeletePrevent] = useState(false)
     const [counter, setCounter] = useState(

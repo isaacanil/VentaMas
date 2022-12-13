@@ -12,7 +12,7 @@ import { MdClose } from 'react-icons/md'
 
 
 
-export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, isOpen }) => {
+export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, isOpen, subModal }) => {
 
     const done = () => {
         new Promise((resolve) => {
@@ -38,6 +38,7 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
                     </div>
                     <div className={Style.modal_body}>
                         {children}
+                            {subModal ? subModal : null}
                     </div>
                     <div className={Style.modal_footer}>
                         <div className={Style.Group}>

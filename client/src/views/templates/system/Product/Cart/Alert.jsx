@@ -1,7 +1,7 @@
 import { IoMdTrash } from 'react-icons/io'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { totalTaxes, deleteProduct, totalPurchase, setChange } from '../../../../../features/cart/cartSlice'
+import { totalTaxes, deleteProduct, totalPurchase, setChange, totalShoppingItems } from '../../../../../features/cart/cartSlice'
 import { Button, ButtonGroup } from '../../Button/Button'
 export const Alert = ({ isOpen, handleIsOpen, id }) => {
     const dispatch = useDispatch()
@@ -11,6 +11,9 @@ export const Alert = ({ isOpen, handleIsOpen, id }) => {
             deleteProduct(id)
         )
         dispatch(
+            totalShoppingItems()
+        )
+        dispatch(
             totalTaxes()
         )
         dispatch(
@@ -18,6 +21,9 @@ export const Alert = ({ isOpen, handleIsOpen, id }) => {
         )
         dispatch(
             setChange()
+        )
+        dispatch(
+            totalShoppingItems()
         )
         
     }

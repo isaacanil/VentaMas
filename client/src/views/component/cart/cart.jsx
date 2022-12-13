@@ -7,9 +7,7 @@ import {
   AddClientModal,
   ClientControl,
   BillingModal,
-
 } from '../../index'
-
 import {
   SelectProduct,
   totalPurchaseWithoutTaxes,
@@ -17,31 +15,23 @@ import {
   totalTaxes,
   totalPurchase,
   setChange,
-  totalShoppingItems
+  totalShoppingItems,
+  SelectTotalPurchase
 } from '../../../features/cart/cartSlice'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { deleteProduct } from '../../../features/cart/cartSlice'
 //import { useModal } from '../../../hooks/useModal'
-
 import { useNavigate } from 'react-router-dom'
 import { openModalBilling } from '../../../features/modals/modalSlice'
-import { ProductCardForCart } from '../../templates/system/Product/Cart/ProductCardForCart'
-
-
-
-
-
+import { ProductCardForCart } from './ProductCardForCart'
+import { PaymentArea } from './PaymentArea'
 export const Cart = () => {
-
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const [costoTotal, setCostoTotal] = useState('')
+  const TotalPurchaseRef = useSelector(SelectTotalPurchase)
   const ProductSelected = useSelector(SelectProduct)
-
-
   const handleInvoice = () => {
-    /*navigate('/app/venta/checkout/Billing', {replace: true})*/
     if (ProductSelected.length === 0) {
       console.log('todavía no has agregado nada')
     } else {
@@ -64,36 +54,40 @@ export const Cart = () => {
         setChange()
       )
     }
-    console.log('click')
   }
-
-  const numb = ProductSelected.reduce((total, product) => total + product.price.total, 0);
-  const total = separator(numb)
   return (
     <Fragment>
-
       <section className={style.FacturaControlContainer}>
         <ClientControl></ClientControl>
-        <ul className={style.listItem}>
-          {
-            ProductSelected.length >= 1 ?
-              (
-                ProductSelected.map((item, Index) => (
-                  <ProductCardForCart item={item} key={Index} />
-                ))
-              )
-              :
-              (<h4 style={{ margin: '1em' }}>Todavía no ha seleccionado ningún producto</h4>)
-          }
-        </ul>
-        <div className={style.resultBar}>
-          <div>
-            <h3>Total : RD${total}</h3>
+        <ul className={style.ProductsContainer}>
+          <div className={style.Products}>
+            <div className={style.ProductsWrapper}>
+              {
+                ProductSelected.length >= 1 ?
+                  (
+                    ProductSelected.map((item, Index) => (
+                      <ProductCardForCart item={item} key={Index} />
+                    ))
+                  )
+                  :
+                  (<h4 style={{ margin: '1em' }}>Seleccione un producto</h4>)
+              }
+            </div>
           </div>
-          <Button
-            title='Facturar'
-            onClick={handleInvoice}
-          />
+        </ul>
+        <div className={style.billing}>
+          <PaymentArea></PaymentArea>
+          <div className={style.resultBar}>
+            <div>
+              <h3>Total : RD${TotalPurchaseRef}</h3>
+            </div>
+            <Button
+              title='Facturar'
+              onClick={handleInvoice}
+              bgcolor='primary'
+              disabled={ProductSelected.length >= 1 ? false : true}
+            />
+          </div>
         </div>
       </section>
     </Fragment>

@@ -206,12 +206,13 @@ export const Row = styled.div`
             case 'title':
                 return `
                 font-weight: 600;
-                font-size: 16px;
+                font-size: 18px;
                 `
             default:
                 break;
         }
     }}
+   
     ${(props) => {
         switch (props.borderRadius) {
             case 'normal':
@@ -248,7 +249,7 @@ export const Row = styled.div`
         switch (props.columns) {
             case 'payment':
                 return `
-            grid-template-columns:  auto minmax(80px, 1fr) minmax(60px, 1fr) minmax(60px, 1fr);
+            grid-template-columns:  auto minmax(80px, 90px) minmax(80px, 1fr) /*minmax(60px, 1fr)*/;
             `
             case 'product-list':
                 return `

@@ -1,50 +1,50 @@
 @import url('../../../styles/variables.css');
+
 * {
   box-sizing: border-box;
   margin: 0;
 
 }
+
 .AppContainer {
-  width: 100%;
-  height: calc(100vh - 2.75em);
+  width: 100vh;
+  height: calc(100vh);
   display: grid;
-  grid-template-columns: /*min-content*/ 1fr min-content;
+  grid-template-columns: 1fr 100%;
   grid-template-rows: 1fr;
-  
- .ProductsContainer{
-  position: relative;
-   margin: 0;
-   padding: 0;
-   overflow-y: hidden;
-   display: grid;
-   grid-template-rows: min-content 1fr;
+  gap: 0;
+  margin-right: 0;
+  padding-right: 0;
 
-   
-  
- }
-  
-
-  
-}
-@media(max-width: 800px){
-  .AppContainer {
-    width: 100%;
-    height: calc(100vh - 2.75em);
+  .ProductsContainer {
+    position: relative;
+    gap: 0;
+    margin-right: 0;
+    padding-right: 0;
+    width: calc(100vw - 1.6em - 22em);
+    height: 100vh;
+    overflow-y: hidden;
     display: grid;
-    grid-template-columns: min-content 1fr min-content;
-    grid-template-rows: 1fr;
-  
+    grid-template-rows: min-content min-content 1fr;
 
-    .ProductsContainer{
+  }
+}
+
+@media(max-width: 800px) {
+  .AppContainer {
+    width: 100vw;
+    height: calc(100vh);
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+
+
+    .ProductsContainer {
       position: relative;
-       max-height: calc(100vh);
-      
-    
-       display: grid;
-       grid-template-rows: 3em 1fr 2m;
+      width: 100%;
+      display: grid;
+      grid-template-rows: 3em 1fr 2m;
       overflow: hidden;
-       
-      
-     }
+    }
   }
 }

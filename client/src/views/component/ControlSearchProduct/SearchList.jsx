@@ -7,17 +7,12 @@ export const SearchList = ({dataSearch}) => {
   
   const [products, setProduct] = useState()
   const [filteredProducts, setFilteredProducts] = useState([])
-
-
   console.log(dataSearch)
-  
- 
+
   //console.log(auth.currentUser)
     useEffect(()=>{
-
         const filtered = products.filter((e) => e.product.productName.toLowerCase().includes(dataSearch.toLowerCase()));
         setFilteredProducts(filtered)
-      
     }, [dataSearch, products])
   
     

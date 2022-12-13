@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react'
+import React, { useState, Fragment, useRef } from 'react'
 import { AddClientButton, Client } from '../../../../'
 import styled from 'styled-components'
 import { getClients } from '../../../../../firebase/firebaseconfig.js'
@@ -7,6 +7,7 @@ import { useEffect } from 'react'
 import { SelectClient, CancelShipping } from '../../../../../features/cart/cartSlice'
 import { openModalAddClient } from '../../../../../features/modals/modalSlice'
 import { useSelector, useDispatch } from 'react-redux'
+import { useOutSideAlerter } from '../../../../../hooks/useOutSideAlerter'
 export const ClientBar = () => {
     const dispatch = useDispatch()
     const ClientSelected = useSelector(SelectClient)
@@ -19,26 +20,31 @@ export const ClientBar = () => {
     useEffect(() => {
         getClients(setClients)
     }, [])
-    console.log(clients)
+    //console.log(clients)
     const handleSearchClients = (search) => {
         setSearchData(search)
         const filtered = clients.filter((e) => e.client.name.toLowerCase().includes(searchData.toLowerCase()) || e.client.address.toLowerCase().includes(searchData.toLowerCase()))
         setFilterClients(filtered)
-       
-       
     }
-    const handleOpenMenu = () => {
-        setIsOpen(true)
-        (
+    useEffect(() => {
+        if (searchData === '') {
             setFilterClients(clients)
-        )
+        }
+        if (searchData !== '') {
+            const filtered = clients.filter((e) => e.client.name.toLowerCase().includes(searchData.toLowerCase()) || e.client.address.toLowerCase().includes(searchData.toLowerCase()))
+            setFilterClients(filtered)
+        }
+    }, [searchData, clients])
 
-    }
+    const handleOpenMenu = () => setIsOpen(true)
+    const handleCloseMenu = () => setIsOpen(false)
     
 
 //console.log('cliente' + ClientSelected)
 //console.log(clients)
+const searchClientRef = useRef(null)
 
+useOutSideAlerter(searchClientRef, !isOpen, handleCloseMenu)
 return (
     <ClientSection>
         <ClientGroup>
@@ -50,12 +56,12 @@ return (
                     placeholder='Buscar Cliente'
                     onChange={(e) => handleSearchClients(e.target.value)}
                     onFocus={handleOpenMenu}
-                    
+                    ref={searchClientRef}
                 />
                 <AddClientButton></AddClientButton>
                 {
                     isOpen ? (
-                        <ClientList>
+                        <ClientList ref={searchClientRef}>
                             <ClientListWrapper>
                                 {
                                     clients.length > 0 ? (
@@ -63,12 +69,6 @@ return (
                                             <Client
                                                 setIsOpen={setIsOpen}
                                                 key={index}
-                                                name={client.name}
-                                                lastName={client.lastName}
-                                                address={client.address}
-                                                email={client.email}
-                                                taxReceipts={client.taxReceipts}
-                                                tel={client.tel}
                                                 client={client}
                                                 searchData={{ searchData, setSearchData }}
                                             ></Client>

@@ -35,12 +35,12 @@ export const ListItem = ({ e, index }) => {
           <div className={style.Group}>
             <label>Estados :</label>
             <div>
-              <StatusIndicatorDot color={e.estado}></StatusIndicatorDot>
+              <StatusIndicatorDot color={e.data.state ? e.data.state.color : null}></StatusIndicatorDot>
             </div>
           </div>
           <div className={`${style.Group} ${style.LimitText}`} >
             <label>Proveedor :</label>
-            <div>{e.Proveedor}</div>
+            <div>{e.data.provider ? e.data.provider.name : null}</div>
           </div>
           <div className={`${style.Group} ${style.center}`} >
             <label>Nota :</label>
@@ -51,15 +51,15 @@ export const ListItem = ({ e, index }) => {
           </div>
           <div className={style.Group}>
             <label>F. Pedido :</label>
-            <div>{e.orderDate}</div>
+            <div>{new Date(e.data.createdAt).toLocaleDateString()}</div>
           </div>
           <div className={style.Group}>
             <label>F. Entrega :</label>
-            <div>{e.deliveryDate}</div>
+            <div>{new Date(e.data.date).toLocaleDateString()}</div>
           </div>
           <div className={style.Group}>
             <label>Total :</label>
-            <div>${separator(e.total)}</div>
+            <div>${separator(e.data.totalPurchase)}</div>
           </div>
           <div className={style.Group}>
             <label>Acción :</label>

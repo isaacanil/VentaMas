@@ -3,16 +3,15 @@ import { useEffect } from 'react'
 import { TbTarget } from 'react-icons/tb'
 import styled from 'styled-components'
 
-export const Input = ({ type, size, title, required, focusColor, value, onChange, readOnly}) => {
+export const Input = ({ type, text, size, title, required, focusColor, labelColor, value, onChange, readOnly, onFocus}) => {
     const [focus, setFocus] = useState({
         color: focusColor,
     })
     useEffect(()=>{
         focus.focusColor === undefined ? setFocus({...focus, color:'#1155e7'}) : null
-
     }, [focusColor])
     return (
-        <Container focusColor={focus.color} size={size}>
+        <Container focusColor={focus.color} size={size} text={text} labelColor={labelColor}>
             <input
                 id=""
                 name=""
@@ -22,7 +21,7 @@ export const Input = ({ type, size, title, required, focusColor, value, onChange
                 placeholder='a'
                 onChange={onChange}
                 readOnly={readOnly}
-                
+                onFocus={onFocus} 
             />
             <label htmlFor="">{title}</label>
         </Container>
@@ -32,6 +31,7 @@ const Container = styled.div`
     display: flex;
     position: relative;
     width: 100%;
+
     label{
         margin: 0;
     position: absolute;
@@ -50,6 +50,7 @@ const Container = styled.div`
         padding:  0.5em 0.5em;
         color: rgb(92, 92, 92);
         width: 100%;
+        //text-transform: capitalize;
         max-width: 100%;
         min-width: 100%;
         transition: all 0.5s ease-in-out;
@@ -73,8 +74,22 @@ const Container = styled.div`
         
         color:  ${props => props.focusColor}; 
     }
-   
+  
     }
+    ${(props) => {
+        switch (props.text) {
+            case 'capitalize':
+                return`
+                    input{
+                    text-transform: capitalize;
+                    
+                }
+                `
+        
+            default:
+                break;
+        }
+    }}
     ${(props) => {
         switch (props.size) {
             case 'small':
@@ -89,7 +104,22 @@ const Container = styled.div`
                 return null
         }
     }}
+    ${(props) => {
+        switch (props.labelColor) {
+            case 'primary':
+                return`
+                    label{
+                        color: #535353;
+                        font-weight: 600;
+                        font-size: 12px;
 
+                    }
+                `
+        
+            default:
+                break;
+        }
+    }}
 `
 export const InputGroup = styled.div`
     display: flex;

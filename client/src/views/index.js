@@ -1,13 +1,9 @@
 
-export { Setting } from './pages/setting/setting'
-
-//database
-
-
 //Todo **************Pages*************************************************
 export { Compras } from './pages/Compra/Compras'
 export { Home } from './pages/Home/Home'
 export { Inventario } from './pages/Inventario/Inventario'
+export { MultimediaManager } from './pages/Inventario/pages/MultimediaManager/MultimediaManager'
 export { Login } from './pages/Login/Login'
 export { NotFound } from './pages/NotFound/NotFound'
 export { Registro } from './pages/Registro/Registro'
@@ -20,7 +16,7 @@ export { AddCategory } from './pages/Category/AddCategory'
 export { Orders } from './pages/Order/Orders'
 export { AddCustomProductModal } from './component/modals/AddCustomProductModal/AddCustomProductModal'
 export { SetCustomProduct } from './component/modals/CustomProduct/SetCustomProduct'
-
+export { Setting } from './pages/setting/Setting'
 
 //Todo ***********Components*************************************************
 export { ControlSearchProduct } from './component/ControlSearchProduct/ControlSearchProduct'
@@ -60,7 +56,7 @@ export { AddClientButton } from './templates/system/Button/AddClientButton'
 export { AddProductButton } from './templates/system/Button/AddProductButton'
 export { CancelPurchaseBtn } from './templates/system/Button/CancelPurchaseBtn'
 export { Select } from './templates/system/Select/Select.jsx'
-export { Product } from './templates/system/Product/product'
+export { Product } from './templates/system/Product/Product'
 export { Client } from './templates/system/client/Client'
 export {Grid} from './templates/system/Grid/Grid'
 export { WebName } from './templates/system/WebName/WebName'

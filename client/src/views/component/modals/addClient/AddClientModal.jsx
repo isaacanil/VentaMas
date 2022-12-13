@@ -60,7 +60,9 @@ export const AddClientModal = ({ isOpen }) => {
                     <FormControl>
                         <Group>
                             <Label id='nombre' >Nombre Completo:</Label>
-                            <InputText id='name' name={'name'} onChange={HandleChange} placeholder='Nombre'></InputText>
+                            <InputText 
+                                id='name' 
+                                name={'name'} onChange={HandleChange} placeholder='Nombre'></InputText>
                         </Group>
                         <Group>
                             <Label>Identificación</Label>

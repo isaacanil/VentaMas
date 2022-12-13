@@ -1,15 +1,43 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Textarea } from '../../../../templates/system/Inputs/Input'
 import { Select } from '../../../../templates/system/Select/Select'
-
+import { ConditionsData } from './ConditionsData'
+import { AddCondition, AddNote, AddDate, SelectProducts } from '../../../../../features/addOrder/addOrderModalSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 export const OrderDetails = () => {
+    const productList = useSelector(SelectProducts)
+    const dispatch = useDispatch()
+    const [condition, setCondition] = useState('')
+    const [note, setNote] = useState('')
+    const [date, setDate] = useState('')
+    console.log(date)
+    useEffect(() => {
+        if(condition !== '' && note !== ''){
+            dispatch(
+                AddCondition(condition)
+            )
+        }
+        if(note !== ''){
+            dispatch(
+                AddNote(note)
+            )
+        }
+       
+      
+            dispatch(AddDate(date))
+        
+    }, [condition, note, date])
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" id="" />
+                <input type="date" name="" id="" onChange={(e) => setDate(e.target.value)}/>
                 <Select
                     title='Condición'
+                    data={ConditionsData}
+                    setValue={setCondition}
+                    value={condition}
+
                 />
             </Section>
             <Section>
@@ -17,6 +45,7 @@ export const OrderDetails = () => {
                 <Textarea
                     height='4em'
                     placeholder='Escriba una Nota...'
+                    onChange={(e) => setNote(e.target.value)}
                 />
             </Section>
 

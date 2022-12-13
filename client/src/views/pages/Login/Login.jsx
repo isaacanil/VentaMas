@@ -101,7 +101,7 @@ export const Login = () => {
                   </div >
 
                   <div>
-                     <Button onClick={loginToApp} >Entrar</Button>
+                     <Button onClick={loginToApp} title={'Entrar'}/>
                   </div>
 
 

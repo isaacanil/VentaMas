@@ -8,10 +8,6 @@ import { IoClose } from 'react-icons/io5'
 import { Alert } from './Alert'
 export const ProductCardForCart = ({ item }) => {
 
-  const [menuDeleteExecute, setMenuDeleteExecute] = useState(false)
-  const [menuDeleteOpen, setMenuDeleteOpen] = useState(false)
-
-  
   const dispatch = useDispatch()
   const deleteProductFromCart = (id) => {
     dispatch(
@@ -25,6 +21,10 @@ export const ProductCardForCart = ({ item }) => {
   return (
     <li className={style.group} >
       <div className={`${style.Item} ${style.Item1}`}>{item.productName}</div>
+      <div className={style.CrossContainer} onClick={() => deleteProductFromCart(item.id)}>
+        <IoClose className={style.Cross} />
+      </div>
+      <div className={`${style.Item} ${style.Item3}`}>RD${separator(item.price.total)}</div>
       <Counter
         className={`${style.Item}`}
         amountToBuyTotal={item.amountToBuy.total}
@@ -32,12 +32,6 @@ export const ProductCardForCart = ({ item }) => {
         id={item.id}
         product={item}
       />
-      <div className={style.CrossContainer} onClick={() => deleteProductFromCart(item.id)}>
-        <IoClose className={style.Cross} />
-      </div>
-      <div className={`${style.Item} ${style.Item3}`}>RD${separator(item.price.total)}</div>
-      <br />
-    
     </li>
   )
 }

@@ -41,5 +41,5 @@ const Message = styled.div`
     display: flex;
     justify-content: flex-start;
     font-size: 14px;
-    z-index: 1;
+    z-index: 2;
 `

@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { IoIosArrowDown } from 'react-icons/io'
-import {MdClear} from 'react-icons/md'
+import { MdClear } from 'react-icons/md'
 
-export const Select = ({ title, data }) => {
+export const Select = ({ title, data, value, setValue }) => {
     const [isOpen, setIsOpen] = useState(false)
     const handleClose = () => {
         setIsOpen(false)
@@ -15,6 +15,7 @@ export const Select = ({ title, data }) => {
         setIsSelect({
             id: select.id,
         })
+        setValue(select),
         setTimeout(() => {
             setShowSelectTitle(select.name)
         }, 1)
@@ -32,29 +33,28 @@ export const Select = ({ title, data }) => {
                 {
                     isOpen ? (
                         <Group>
-                            <InputText size='s' placeholder='Bucar Productos'></InputText>
-                            <Button onClick={() => handleClose()}><MdClear/></Button>
+                            <InputText size='s' placeholder='Buscar Productos'></InputText>
+                            <Button onClick={() => handleClose()}><MdClear /></Button>
                         </Group>
 
                     ) : null
                 }
-
-
             </Head>
             {
                 isOpen ? (
                     <Body>
-
                         {
                             data.length > 0 ?
                                 (
                                     <List>
                                         {
-                                            data.map((item, index) => (
-                                                <Item key={index} style={isSelect.id == item.id ? { backgroundColor: 'blue', color: 'white' } : null} onClick={() => dataSelected(item)}>
-                                                    {item.name}
-                                                </Item>
-                                            ))
+                                            data ? (
+                                                data.map((item, index) => (
+                                                    <Item key={index} style={isSelect.id == item.id ? { backgroundColor: 'blue', color: 'white' } : null} onClick={() => dataSelected(item)}>
+                                                        {item.name}
+                                                    </Item>
+                                                ))
+                                            ) : null
                                         }
                                     </List>
                                 ) : null

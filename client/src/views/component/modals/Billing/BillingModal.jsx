@@ -1,13 +1,12 @@
 import React, { Fragment, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { SelectProduct, SelectTotalShoppingItems, SelectFacturaData, getId, CancelShipping } from '../../../../features/cart/cartSlice'
+import { SelectProduct, SelectTotalShoppingItems, SelectFacturaData, CancelShipping, SelectTotalPurchaseWithoutTaxes, SelectTotalTaxes, SelectChange } from '../../../../features/cart/cartSlice'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
 import { closeModalBilling } from '../../../../features/modals/modalSlice'
 import { ClientBar } from './component/ClientSection'
 import { DeliveryOption } from './component/DeliveryOption'
 import { PaymentMethod } from './component/Payment'
 import ReactToPrint from 'react-to-print'
-import { AddBills } from '../../../../firebase/firebaseconfig.js'
+import { AddBills, UpdateMultipleDocs } from '../../../../firebase/firebaseconfig.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { separator } from '../../../../hooks/separator'
 import { Receipt } from '../../../pages/checkout/Receipt'
@@ -32,11 +31,13 @@ import {
   Footer
 } from './Style'
 import { MdClose } from 'react-icons/md'
-
-export const BillingModal = ({isOpen}) => {
+export const BillingModal = ({ isOpen }) => {
   const dispatch = useDispatch()
   const data = useSelector(SelectFacturaData)
   const totalShoppingItems = useSelector(SelectTotalShoppingItems)
+  const TotalPurchaseWithoutTaxes = useSelector(SelectTotalPurchaseWithoutTaxes)
+  const TotalTaxesRef = useSelector(SelectTotalTaxes)
+  const ChangeRef = useSelector(SelectChange)
   const id = data.id
   const path = "bills"
   let ComponentRef = useRef(); // <= referencia para el documento que e va a imprimir
@@ -51,34 +52,40 @@ export const BillingModal = ({isOpen}) => {
       closeModalBilling()
     )
   }
+  const savingDataToFirebase = () => {
+    return new Promise((resolve, reject) => {
+      AddBills(data);
+      UpdateMultipleDocs(productSelected);
+      resolve()
+    })
+  }
   const HandleSubmit = () => {
-    dispatch(
-      getId()
-    )
-    AddBills(data)
-    dispatch(
-      closeModalBilling()
-    )
-    dispatch(
-      CancelShipping()
-    )
+    savingDataToFirebase()
+      .then(() => {
+        dispatch(
+          closeModalBilling()
+        )
+        dispatch(
+          CancelShipping()
+        )
+      })
   }
   return (
     <Fragment>
-       {
+      {
         isOpen ? (
           <Container>
             <BillingWrapper>
               <Head>
                 <h3>Factura #: 123232345</h3>
-                <Button 
-                  title={<MdClose/>} 
-                  width='icon32' 
-                  bgcolor='error' 
-                  onClick={closeModal}/>
+                <Button
+                  title={<MdClose />}
+                  width='icon32'
+                  bgcolor='error'
+                  onClick={closeModal} />
               </Head>
               <Body>
-                <ClientBar/>
+                <ClientBar />
                 <DeliveryOption />
                 <Main>
                   <ProductView>
@@ -94,7 +101,6 @@ export const BillingModal = ({isOpen}) => {
                       </Precio_Col>
                     </Row>
                     <ProductList>
-
                       {
                         productSelected.length >= 1 ? (
                           productSelected.map((item, index) => (
@@ -119,42 +125,50 @@ export const BillingModal = ({isOpen}) => {
                       }
                     </ProductList>
                     <Row columns='product-list' bgColor='black'>
-                    <ProductAmount>
-                      Total de artículos: {totalShoppingItems}
-                    </ProductAmount>
+                      <ProductAmount>
+                        Total de artículos: {totalShoppingItems}
+                      </ProductAmount>
+                      <Row columns='2' borderRadius='normal' >
+                        <span style={{ display: 'flex', justifyContent: 'flex-end' }}>{separator(TotalTaxesRef)}</span>
+                      </Row>
+                      <Row columns='2' borderRadius='normal' >
+                        <span style={{ display: 'flex', justifyContent: 'flex-end' }}>{separator(TotalPurchaseWithoutTaxes)}</span>
+                      </Row>
                     </Row>
                   </ProductView>
-                  <PaymentMethod/>
-                    
-                 
+                  <PaymentMethod />
                 </Main>
                 <Footer>
                   <ButtonGroup>
-                      <ReactToPrint 
-                      trigger={()=>( <Button bgcolor='primary' title='Imprimir' onClick={HandleSubmit}/>)}
-                      content={()=> ComponentRef.current}
-                      />
-                      <DocumentContainer>
-                        <Receipt  ref={ComponentRef} data={bill}/>
-                      </DocumentContainer>
-                      
-                      <Button 
+                    <ReactToPrint
+                      trigger={() => (
+                        <Button
+                          bgcolor='primary'
+                          title='Imprimir'
+                          onClick={HandleSubmit}
+                          disabled={ChangeRef >= 0 ? false : true}
+                        />)}
+                      content={() => ComponentRef.current}
+                    />
+                    <DocumentContainer>
+                      <Receipt ref={ComponentRef} data={bill} />
+                    </DocumentContainer>
+                    <Button
                       bgcolor='gray'
-                      title='Guardar' 
+                      title='Guardar'
                       onClick={HandleSubmit}
-                      />
-                      
-                   
+                      disabled={ChangeRef >= 0 ? false : true}
+                    />
                   </ButtonGroup>
                 </Footer>
               </Body>
             </BillingWrapper>
           </Container>
         ) : null
-       }
-          
-      
-     
+      }
+
+
+
     </Fragment>
 
   )

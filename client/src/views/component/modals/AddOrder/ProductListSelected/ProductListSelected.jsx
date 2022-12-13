@@ -1,21 +1,24 @@
 import React from 'react'
 import styled from 'styled-components'
 import { ProductCard } from './ProductCard'
-import { SelectProducts } from '../../../../../features/addOrder/addOrderModalSlice'
+import { SelectProducts, SelectTotalPurchase } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useSelector } from 'react-redux'
+import { separator } from '../../../../../hooks/separator'
 export const ProductListSelected = () => {
     const Products = useSelector(SelectProducts)
+    const ProductTotalPurchasePrice = useSelector(SelectTotalPurchase)
     return (
         <Container>
             <Head>
                 <h4>Lista Productos</h4>
-                <span>Total: RD$0.00</span>
+                <span>Total: RD${separator(ProductTotalPurchasePrice)}</span>
             </Head>
             <Body>
                 {
-                    Products.map(({ product }, index) => (
+                    Array(Products).length > 0 && Products ?
+                   ( Products.map(({ product }, index) => (
                         <ProductCard key={index} product={product} />
-                    ))
+                    ))) : null
                 }
             </Body>
         </Container>

@@ -6,6 +6,7 @@ import { Button } from '../../'
 import { auth } from '../../../firebase/firebaseconfig.js'
 import { logout , selectUser} from '../../../features/auth/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
+import { FaUser } from 'react-icons/fa'
 export const Account = () => {
   const dispatch = useDispatch();
   const [isOpen, SetIsOpen] = useState(false)
@@ -22,9 +23,10 @@ export const Account = () => {
   return (
 
     <div className={Style.Component_container} onClick={OpenMenu}>
-
-      <UserIcon></UserIcon>
-      {user === null ? null : <span>{user.displayName}</span>}
+      <div className={Style.UserIcon}>
+      <FaUser></FaUser>
+      </div>
+      
       <article className={!isOpen ? `${Style.AccountMenu}` : `${Style.AccountMenu} ${Style.Open}`}>
         <ul className={Style.Items}>
           <li className={Style.Item}>

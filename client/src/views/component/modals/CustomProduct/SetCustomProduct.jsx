@@ -12,11 +12,18 @@ import { selectTotalIngredientPrice, SelectIngredientsListName, formatData } fro
 import { nanoid } from 'nanoid'
 import { addProduct } from '../../../../features/cart/cartSlice'
 import { v4 } from 'uuid'
+import { Button } from '../../../templates/system/Button/Button.jsx'
+import { useNavigate } from 'react-router-dom'
+import { AddCustomProductModal } from '../AddCustomProductModal/AddCustomProductModal.jsx'
+import { removeMatchesString } from '../../../../hooks/removeMatchesString.js'
 export const SetCustomProduct = ({ isOpen }) => {
     const dispatch = useDispatch()
+    const matchList = /Completa|Pepperoni|Vegetales|Jamón y queso|Maíz |Pollo/g;
     const totalIngredientPrice = useSelector(selectTotalIngredientPrice)
     const IngredientListNameSelected = useSelector(SelectIngredientsListName)
     //console.log('hola', IngredientListNameSelected)
+    const [IngredientModalOpen, setIngredientModalOpen ] = useState(false)
+    const handleIngredientOpen = () => setIngredientModalOpen(!IngredientModalOpen)
     const [customProduct, setCustomProduct] = useState({})
     const [newProduct, setNewProduct] = useState(
         {
@@ -78,12 +85,10 @@ export const SetCustomProduct = ({ isOpen }) => {
         }
     }, [size])
     useEffect(() => {
-
         if (isComplete && productSelected.a !== '') {
             const a = JSON.parse(productSelected.a)
             const firstProductPrice = a.price.total
-            const firstProductName = a.mainIngredient
-            
+            const firstProductName = removeMatchesString(String(a.productName), matchList)
             setNewProduct({
                 ...newProduct,
                 productName: `pizza de ${firstProductName}. ingrediente extras: ${IngredientListNameSelected}`,
@@ -92,38 +97,37 @@ export const SetCustomProduct = ({ isOpen }) => {
                     total: firstProductPrice + totalIngredientPrice
                 }, size: size
             })
-
             setProduct({
                 price: { total: firstProductPrice }
             })
         }
- 
         if (!isComplete && productSelected.a !== '' && productSelected.b !== '') {
             const a = JSON.parse(productSelected.a)
             const b = JSON.parse(productSelected.b)
             const firstProductPrice = a.price.total;
-            const firstProductName = a.mainIngredient;
+            const firstProductName = removeMatchesString(String(a.productName), matchList);
             const secondProductPrice = b.price.total;
-            const secondProductName = b.mainIngredient;
-            // console.log(`${firstProductName} => ${firstProductPrice}, ${secondProductName} => ${secondProductPrice}`)
+            const secondProductName = removeMatchesString(String(b.productName), matchList);
+
+            console.log(`${firstProductName} => ${firstProductPrice}, ${secondProductName} => ${secondProductPrice}`)
             //Todo ************price****************************************************************
             const price = () => {
                 return new Promise((resolve, reject) => {
                     if (firstProductPrice > secondProductPrice) {
                         setProduct({
-                            price: {unit:firstProductPrice, total: firstProductPrice }
+                            price: { unit: firstProductPrice, total: firstProductPrice }
                         })
                         resolve(product.price.total)
-                    } 
+                    }
                     if (firstProductPrice < secondProductPrice) {
                         setProduct({
-                            price: {unit: secondProductPrice, total: secondProductPrice }
+                            price: { unit: secondProductPrice, total: secondProductPrice }
                         })
                         resolve(secondProductPrice)
-                    }  
+                    }
                     if (firstProductPrice === secondProductPrice) {
                         setProduct({
-                            price: {unit:firstProductPrice, total: firstProductPrice }
+                            price: { unit: firstProductPrice, total: firstProductPrice }
                         })
                         resolve(firstProductPrice)
                     }
@@ -133,11 +137,11 @@ export const SetCustomProduct = ({ isOpen }) => {
                 price().then((price) => {
                     setNewProduct({
                         ...newProduct,
-                        productName: `pizza de ${firstProductName} y ${secondProductName}. ingrediente extras: ${IngredientListNameSelected}`,
+                        productName: `pizza mitad de ${firstProductName} y mitad de ${secondProductName}. ingrediente extras: ${IngredientListNameSelected}`,
                         price: {
                             unit: price + totalIngredientPrice,
                             total: price + totalIngredientPrice
-                        }, 
+                        },
                         size: size,
                         id: nanoid(6)
                     })
@@ -145,11 +149,10 @@ export const SetCustomProduct = ({ isOpen }) => {
             } catch (error) {
                 console.log(error)
             }
-         
         }
     }, [productSelected.a, productSelected.b, IngredientListNameSelected])
-
-
+  
+  
     console.log(productSelected.b)
     const HandleSubmit = () => {
         setNewProduct({
@@ -157,7 +160,6 @@ export const SetCustomProduct = ({ isOpen }) => {
             id: nanoid(6),
             size,
             amountToBuy: { unit: 1, total: 1 },
-            
         })
         dispatch(
             addProduct(newProduct)
@@ -191,16 +193,16 @@ export const SetCustomProduct = ({ isOpen }) => {
                     }
                 }
             )
-            setNewProduct({
-                ...newProduct,
-                productName: '',
-                cost: { unit: 0, total: 0 },
-                id: '',
-                price: { unit: 0, total: 0 },
-                amountToBuy: { unit: 1, total: 1 },
-                tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
-                size: ''
-            })
+        setNewProduct({
+            ...newProduct,
+            productName: '',
+            cost: { unit: 0, total: 0 },
+            id: '',
+            price: { unit: 0, total: 0 },
+            amountToBuy: { unit: 1, total: 1 },
+            tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
+            size: ''
+        })
     }
     return (
         <Modal
@@ -209,6 +211,11 @@ export const SetCustomProduct = ({ isOpen }) => {
             btnSubmitName='Aceptar'
             nameRef='Producto Personalizable'
             handleSubmit={HandleSubmit}
+            subModal={
+                <AddCustomProductModal
+                    isOpen={IngredientModalOpen}
+                    handleOpen={handleIngredientOpen}
+                />}
         >
             <Body>
                 <Row>
@@ -282,7 +289,7 @@ export const SetCustomProduct = ({ isOpen }) => {
                             }
                         </IngredientListWrapper>
                         <IngredientPriceBar>
-                            <span>Cantidad Artículos</span>
+                            <Button title={'Editar Ingredientes'} onClick={handleIngredientOpen} />
                             <span>Total: RD$ {separator(totalIngredientPrice)}</span>
                         </IngredientPriceBar>
                     </IngredientList>
@@ -346,21 +353,29 @@ width: 100%;
     }
 `
 const IngredientListContainer = styled.div`
-    height: 100%;
-    max-height: 270px;
-    height: auto;
-    overflow: hidden;
-    background-color: #cecbcb;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    overflow: hidden;`
-const IngredientList = styled.div`
+   
     
+    margin: 0;
+    padding: 0;
+    border-radius: 10px;
+    height: auto;
+    position: relative;
+    `
+
+const IngredientList = styled.div`
+    display: grid;
+    height: auto;
+    grid-template-rows: 1fr min-content;
+    background-color: #bdcdce;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+   
     
     `
 const IngredientListWrapper = styled.ul`
     overflow-y: scroll;
-    height: 100%;
+    height: 15em;
     width: 100%;
     background-color: rgb(187,187,187);
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.137);
@@ -368,6 +383,7 @@ const IngredientListWrapper = styled.ul`
     display: grid;
     grid-auto-rows: min-content;
     gap: 0.6em;
+    
 
 `
 const Footer = styled.div`
@@ -378,7 +394,8 @@ const Footer = styled.div`
 const IngredientPriceBar = styled.div`
     width: 100%;
     display: flex;
-    
-    padding: 0.4em 1em;
+    height: 2.4em;
+    align-items: center;
+    padding: 0 1em;
     justify-content: space-between;
 `

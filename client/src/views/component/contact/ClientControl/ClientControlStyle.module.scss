@@ -1,39 +1,59 @@
-.ClientBar{
+.ClientBarContainer{
     position: relative;
     margin: 0;
     border: 0;
     width: 100%;
     background-color: rgba(255, 255, 255, 0.300);
-    padding: 0 1em;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    align-items: center;
-    .clientControl{
-       position: absolute;
-       z-index: 1;
-       top: 3em;
-       left: 0;
+   margin-top: 0.4em;
+    .ClientBar{
        width: 100%;
-       height: 300px;
-       background-color: rgb(196, 196, 196);
-    }
-    .IconContainer{
-       width: 2em;
-          height: 2em;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          
-          border-radius: 100px;
-          background-color: var(--White2);
-          border: 1px solid rgba(0, 0, 0, 0.307);
-       .Icon{
-          width: 1.5em;
-          fill: rgba(31, 31, 31, 0.72);
-          
-         
+       gap: 10px;
+       display: flex;
+       align-items: center; 
+       justify-content: space-between;
+      height: 2.75em;
+      
+      background-color: rgb(255, 255, 255);
+      padding: 0 0.3em;
+      //border-radius: 10px;
+     
+       .IconContainer{
+          width: 2em;
+             height: 2em;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             
+             border-radius: 100px;
+             background-color: var(--White2);
+             border: 1px solid rgba(0, 0, 0, 0.307);
+          .Icon{
+             width: 1.5em;
+             fill: rgba(31, 31, 31, 0.72);
+             
+            
+          }
        }
-    }
-    
+    }   
  }
+.row{
+   width: 100%;
+}
+ .clientControl{
+   position: absolute;
+   z-index: 1;
+   top: 3em;
+   left: 0;
+   width: 100%;
+   height: 300px;
+   background-color: rgb(112,112,112);
+   overflow-y: scroll;
+   padding: 0.5em;
+   display: grid;
+   grid-template-columns: repeat(2, 1fr);
+   gap: 0.5em;
+   align-items: center;
+   align-content: flex-start;
+   border-radius: 10px;
+
+}

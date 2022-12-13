@@ -34,10 +34,8 @@ const Input = styled.input`
         return null
       }
   }}
-
 `
 export const Textarea = styled.textarea`
-  
   background-color: #f3f3f3;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.100);
@@ -66,14 +64,11 @@ export const InputTel = styled(Input).attrs({
 `
 export const InputText = styled(Input).attrs({
   type: 'text'
-
   })`
   width: 100%;
-
 `
 export const InputPassword = styled(Input).attrs({
   type: 'password'
-
   })`
   background: #f3f3f3;
   border-radius: 100px;

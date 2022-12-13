@@ -12,38 +12,10 @@ import { useEffect } from 'react'
 import { isEmpty } from '@firebase/util'
 import { nanoid } from 'nanoid'
 import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard'
-export const AddCustomProductModal = () => {
-    // const [product, setProduct] = useState({
-    //     customProduct: '',
-    //     type: 'Pizza',
-    //     category: '',
-    //     size: '',
-    //     ingredients: [
-
-    //     ],
-    //     productRef: '',
-    //     productName: '',
-    //     stock: 0,
-    //     tax: {
-    //         ref: '',
-    //         total: 0,
-    //         unit: 0,
-    //         value: 0
-    //     },
-    //     cost: {
-    //         unit: 0,
-    //         total: 0
-    //     },
-    //     price: {
-    //         unit: 0,
-    //         total: 0
-    //     },
-    //     amountToBuy: {
-    //         unit: 1,
-    //         total: 1
-    //     }
-    // })
-    const [product, setProduct] = useState({})
+import { IoIosArrowBack, IoMdClose } from 'react-icons/io'
+export const AddCustomProductModal = ({isOpen, handleOpen}) => {
+    
+    const [product, setProduct] = useState([])
     useEffect(() => {
         getCustomProduct(setProduct)
     }, [])
@@ -84,79 +56,83 @@ export const AddCustomProductModal = () => {
 
     }
     return (
-        <Backdrop>
+        isOpen ? (
             <Modal>
-                <Head>
-                    <Container>
-                        <h4>Producto Personalizable</h4>
-                    </Container>
-                    <Container>
-                        <Button color='error'>X</Button>
-                    </Container>
-                </Head>
-                <Body>
-                    <TitleSection>
-                        <h4>Características del Producto</h4>
-                    </TitleSection>
+            <Head>
+                <Container>
+                    <Button 
+                    bgcolor='error' 
+                    startIcon={<IoIosArrowBack />} 
+                    title='atrás'
+                    onClick={handleOpen}
+                    ></Button>
+                </Container>
+            </Head>
+            <Body>
+                <TitleSection>
+                    <h4>Características del Producto</h4>
+                </TitleSection>
 
-                    {/* <Flex
-                        alignItems='center'
-                    >
+                {/* <Flex
+                    alignItems='center'
+                >
+                    <Col>
+                        <select name="" id="">
+                            <option value="">Elige un producto</option>
+                            <option value="">Pizza</option>
+                        </select>
+                    </Col>
+                    <Col>
+                        <PlusIconButton></PlusIconButton>
+                    </Col>
+
+                </Flex> */}
+                <Flex
+                    alignItems='center'
+                    justifyContent='space-between'
+                >
+                    <Group>
                         <Col>
-                            <select name="" id="">
-                                <option value="">Elige un producto</option>
-                                <option value="">Pizza</option>
-                            </select>
+                            <InputText
+                                value={ingredient.name}
+                                placeholder='Agregar Ingrediente'
+                                onChange={(e) => setIngredient({ ...ingredient, name: e.target.value })} />
                         </Col>
                         <Col>
-                            <PlusIconButton></PlusIconButton>
+                            <InputNumber
+                                value={ingredient.cost}
+                                size='small'
+                                placeholder='Precio'
+                                onChange={(e) => setIngredient(
+                                    { ...ingredient, cost: e.target.value }
+                                )} />
                         </Col>
+                    </Group>
+                    <Col justifySelf='right'>
+                        <PlusIconButton fn={handleOnChange}></PlusIconButton>
+                    </Col>
 
-                    </Flex> */}
-                    <Flex
-                        alignItems='center'
-                        justifyContent='space-between'
-                    >
-                        <Group>
-                            <Col>
-                                <InputText
-                                    value={ingredient.name}
-                                    placeholder='Agregar Ingrediente'
-                                    onChange={(e) => setIngredient({ ...ingredient, name: e.target.value })} />
-                            </Col>
-                            <Col>
-                                <InputNumber
-                                    value={ingredient.cost}
-                                    size='small'
-                                    placeholder='Precio'
-                                    onChange={(e) => setIngredient(
-                                        { ...ingredient, cost: e.target.value }
-                                    )} />
-                            </Col>
-                        </Group>
-                        <Col justifySelf='right'>
-                            <PlusIconButton fn={handleOnChange}></PlusIconButton>
-                        </Col>
+                </Flex>
+                <Box>
+                    <List>
+                        {
+                            !isEmpty(product) ? (
+                                product.ingredientList.length > 0 ? (
+                                    product.ingredientList.map((item, index) => (
+                                        <IngredientCard key={index} item={item} ></IngredientCard>
 
-                    </Flex>
-                    <Box>
-                        <List>
-                            {
-                                !isEmpty(product) ? (
-                                    product.product.ingredientList.length > 0 ? (
-                                        product.ingredientList.map((item, index) => (
-                                            <IngredientCard key={index} item={item} ></IngredientCard>
-
-                                        ))
-                                    ) : null
+                                    ))
                                 ) : null
-                            }
+                            ) : null
+                        }
 
-                        </List>
-                    </Box>
-                </Body>
-            </Modal>
-        </Backdrop>
+                    </List>
+                </Box>
+            </Body>
+        </Modal>
+        ) : null
+          
+     
     )
 }
 const Backdrop = styled.div`
@@ -168,10 +144,12 @@ const Backdrop = styled.div`
     
     `
 const Modal = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     max-height: 600px;
     width: 100%;
-    max-width: 600px;
     background-color: rgb(221,220,220);
     border-radius: 10px;
     border: 1px solid rgba(0, 0, 0, 0.100);
@@ -215,6 +193,7 @@ const List = styled.ul`
     overflow: hidden;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.137);
     display: grid;
+    grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: min-content;
     gap: 0.2em;
     

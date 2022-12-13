@@ -29,7 +29,7 @@ export const ModalManager = () => {
   const BillingModalSelected = useSelector(SelectBillingModal)
   const UpdateProdModalSelected = useSelector(SelectUpdateProdModal)
   const SetCustomPizzaSelected = useSelector(SelectSetCustomPizzaModal)
-  console.log(AddClientModalSelected)
+  //console.log(AddClientModalSelected)
 
   const handleSubmitAddProducts = async () => {
     /****************************************************************** */

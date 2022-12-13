@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { TbPlus } from 'react-icons/tb'
-
 import styled from 'styled-components'
 import { InputText } from '../../../../templates/system/Inputs/Input'
 import style from '../AddOrderModalStyle.module.scss'
@@ -8,7 +7,7 @@ import { AddProductButton_OrderPage } from '../Button'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
 import { SelectProductSelected } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import { AddProduct } from '../../../../../features/addOrder/addOrderModalSlice' 
+import { AddProduct } from '../../../../../features/addOrder/addOrderModalSlice'
 export const AddProductListSection = () => {
     const productSelected = useSelector(SelectProductSelected)
     const dispatch = useDispatch();
@@ -19,8 +18,6 @@ export const AddProductListSection = () => {
             )
         ) : null
     }
-
-  
     return (
         <div className={style.AddProductToListSection}>
             <div className={style.Group}>
@@ -51,18 +48,24 @@ export const AddProductListSection = () => {
                     <InputText
                         value={productSelected ? productSelected.product.stock : null}
                         placeholder='Cantidad'
+                        readOnly
+                        onChange
                     />
                 </div>
                 <div>
                     <InputText
                         value={productSelected ? productSelected.product.cost.unit : null}
                         placeholder='Costo'
+                        readOnly
+                        onChange
                     />
                 </div>
                 <div>
                     <InputText
                         value={productSelected ? productSelected.product.price.unit : null}
                         placeholder='SubTotal'
+                        readOnly
+                        onChange
                     />
                 </div>
                 <div>
