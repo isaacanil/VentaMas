@@ -1,9 +1,5 @@
-import { Iterable } from 'immutable'
-import { 
-    configureStore,
-    createSerializableStateInvariantMiddleware,
-    isPlain,
- } from "@reduxjs/toolkit";
+
+import {configureStore} from "@reduxjs/toolkit";
 import userReducer from '../features/auth/userSlice'
 import searchReducer from '../features/search/searchSlice'
 import cartReducer from '../features/cart/cartSlice'
@@ -17,12 +13,6 @@ import alertReducer from "../features/Alert/AlertSlice";
 import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
 import settingReducer from '../features/setting/settingSlice'
 
-const isSerializable = (value) => Iterable.isIterable(value) || isPlain(value)
-const getEntries = (value) => Iterable.isIterable(value) ? value.entries() : Object.entries(value)
-const serializableMiddleware = createSerializableStateInvariantMiddleware({
-    isSerializable,
-    getEntries,
-  })
 
 export const store = configureStore({
     reducer: {
@@ -39,5 +29,5 @@ export const store = configureStore({
         alert: alertReducer,
         setting: settingReducer
     },
-    middleware: [serializableMiddleware],
+
 })

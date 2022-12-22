@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 import { SelectClient, CancelShipping } from '../../../../../features/cart/cartSlice'
 import { openModalAddClient } from '../../../../../features/modals/modalSlice'
 import { useSelector, useDispatch } from 'react-redux'
-import { useOutSideAlerter } from '../../../../../hooks/useOutSideAlerter'
+import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
 export const ClientBar = () => {
     const dispatch = useDispatch()
     const ClientSelected = useSelector(SelectClient)
@@ -44,7 +44,7 @@ export const ClientBar = () => {
 //console.log(clients)
 const searchClientRef = useRef(null)
 
-useOutSideAlerter(searchClientRef, !isOpen, handleCloseMenu)
+useClickOutSide(searchClientRef, !isOpen, handleCloseMenu)
 return (
     <ClientSection>
         <ClientGroup>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
-
+import { monetarySymbols } from '../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
-import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange } from '../../../features/cart/cartSlice'
+import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, handleChangePaymentMethod } from '../../../features/cart/cartSlice'
 import { useEffect } from 'react'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
     const TaxesRef = useSelector(SelectTotalTaxes)
@@ -12,9 +13,7 @@ export const PaymentArea = () => {
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
     const [PayValue, setPayValue] = useState()
-    const [changeValue, setChangeValue] = useState(
-
-    )
+    const paidAmount = useSelector(state => state.cart.paymentMethod)
     const [paymentMethod, setPaymentMethod] = useState([
         {
             status: true,
@@ -47,14 +46,14 @@ export const PaymentArea = () => {
             )
 
         },
-        setValueToPaymentMethodSelected: (value) => {
+        setValueToPaymentMethodSelected: () => {
             let SearchingMethod = paymentMethod.find((methodSelected) => methodSelected.status === true)
             setPaymentMethod(
                 paymentMethod.map((method) => {
-                    if (SearchingMethod == method) {
-                        return { ...method, value: Number(value) }
+                    if (SearchingMethod.method == method.method) {
+                        return { ...method, value: Number(PayValue) }
                     }
-                    if (SearchingMethod !== method) {
+                    if (SearchingMethod.method !== method.method) {
                         return { ...method, status: false, value: 0 }
                     }
                 })
@@ -62,23 +61,22 @@ export const PaymentArea = () => {
         }
 
     }
-    useEffect(()=>{
-        PaymentMethodFN.setValueToPaymentMethodSelected(TotalPurchaseRef)
-    }, [])
     useEffect(() => {
-      
+
+    }, [PayValue])
+    console.log(PayValue)
+    useEffect(() => {
+        PaymentMethodFN.setValueToPaymentMethodSelected(TotalPurchaseRef)
+    }, [TotalPurchaseRef])
+    // useEffect(() => {
+    //     setPayValue(paidAmount.find(method => method.status === true).value)
+    // }, [TotalPurchaseRef])
+    useEffect(() => {
         dispatch(addPaymentMethod(paymentMethod))
-        dispatch(
-            setChange()
-        )
-    
-            setChangeValue(
-                ChangeRef
-            )
-    
-        setPayValue(
-            paymentMethod.find((m) => m.status === true).value
-        )
+        dispatch(handleChangePaymentMethod())
+        dispatch(setChange())
+
+
     }, [paymentMethod, ChangeRef])
     console.log(paymentMethod)
     return (
@@ -104,6 +102,7 @@ export const PaymentArea = () => {
                 <Group class='option1'>
                     <Group>
                         <input type="radio" name="payment-method" id="cash"
+                            defaultChecked
                             onChange={(e) => {
                                 PaymentMethodFN.findAndUpdate("cash", e.target.checked)
                             }}
@@ -126,25 +125,25 @@ export const PaymentArea = () => {
                     </Group>
                 </Group>
             </Area>
-            <Row>
+            <Row margin='bottom'>
                 <Group class='option1'>
-                    <span>Total ITBIS: {TaxesRef.value}</span>
+                    <span>Total ITBIS: {useFormatPrice(TaxesRef)}</span>
                     <Item>
-                        <label htmlFor="">Pago con</label>
+                        <label htmlFor="">Pago con {monetarySymbols.dollarSign}</label>
                         <input
                             type="number"
-                            value={PayValue > 0 ? PayValue : ""}
-                            onChange={(e) => PaymentMethodFN.setValueToPaymentMethodSelected(e.target.value)}
+                            value={PayValue}
+                            onChange={(e) => setPayValue(Number(e.target.value))}
                         />
                     </Item>
                 </Group>
             </Row>
-            <Row>
+            <Row margin='bottom'>
                 <Group class='option1'>
-                    <span>Delivery: {DeliveryRef.value}</span>
+                    <span>Delivery: {useFormatPrice(DeliveryRef.value)}</span>
                     <Item>
-                        <label htmlFor="">Cambio</label>
-                        <input type="text" value={ changeValue } readOnly />
+                        <label htmlFor="">Cambio {monetarySymbols.dollarSign}</label>
+                        <input type="text" value={ChangeRef} readOnly />
                     </Item>
                 </Group>
             </Row>
@@ -157,6 +156,16 @@ const Container = styled.div`
 const Row = styled.div`
     align-items: center;
     padding: 0 0.4em;
+    ${props => {
+        switch (props.margin) {
+            case 'bottom':
+                return `
+                    margin-bottom: 10px;
+                `
+            default:
+                break;
+        }
+    }}
 `
 const Group = styled.div`
     display: flex;
@@ -185,23 +194,26 @@ padding: 0;
         height: 11px;
         box-sizing: border-box;
         margin: 0;
-        padding: 0;
+        padding: 2px 0.6em;
         position: absolute;
         top: -4px;
         display: flex;
         align-items: center;
-        background-color: #ffffff;
-        color: #8b8b8b;
+        background-color: var(--icolor3);
+        color: #5c5c5c;
         font-weight: bold;
+        border-radius: 3px;
     }
     input{
         width: 100%;
-        border-radius: 4px;
-        outline: 1px solid rgba(0, 0, 0, 0.300);
-        background-color: #dbdbdb;
-        border: none;
+        border-radius: 6px;
+        outline: none;
+        border: 1px solid rgba(0, 0, 0, 0.100);
         padding: 0.2em 0.4em;
+        height: 2em;
         font-size: 14px;
+        color: var(--Gray3);
+    
 }
 `
 const STitle = styled.div`

@@ -1,14 +1,14 @@
 .Container {
     padding: 1em;
     font-size: 0.9em;
-
+    position: absolute;
+    pointer-events: none;
+    z-index: -100000000;
     .timeSection {
         display: flex;
         gap: 0.5em;
     }
-
     table {
-
         .productName {
             text-transform: lowercase;
             width: 100%;

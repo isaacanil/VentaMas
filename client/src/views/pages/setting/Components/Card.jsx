@@ -1,4 +1,4 @@
-import { styled } from "@stitches/react"
+import styled from "styled-components"
 export const Card = ({data}) => {
     return (
         <Container>
@@ -13,20 +13,15 @@ export const Card = ({data}) => {
     )
 }
 
-const Container = styled('div', {
-    backgroundColor: '#dbdbdb',
-    padding: '.8em',
-    borderRadius: '08px'
+const Container = styled.div`
+    background-color: #dbdbdb;
+    padding: .8em;
+    border-radius: 08px;
+
+`
+const Title = styled.h3`
+   color: '#283t';
+   margin: 0;
+   margin-bottom: '0.3em';
     
-})
-const Title = styled('h3', {
-   color: '#283t',
-   margin: 0,
-   marginBottom: '0.3em'
-})
-const Description = styled('div', {
-    
-})
-const Links = styled('div', {
-    
-})
+`

@@ -11,39 +11,39 @@ export const OrderListTable = () => {
     getOrders(setOrders)
   }, [])
   console.log(orders)
-    return (
-        <Body>
-            <TitleContainer>
-                <h3>Lista de Pedidos Pendientes</h3>
-            </TitleContainer>
-            <Table>
-                <TableHead>
-                    <Row>
-                        <Group column='order-list'>
-                            <Col>#</Col>
-                            <Col>Est</Col>
-                            <Col>Proveedor</Col>
-                            <Col style={{textAlign: 'center'}}>Nota</Col>
-                            <Col>F. Pedido</Col>
-                            <Col>F. Entrega</Col>
-                            <Col>Total</Col>
-                            <Col>Acción</Col>
-                        </Group>
-                    </Row>
-                </TableHead>
-                <TableBody>
-                    {
-                        Array(orders).length > 0 ? (
-                            orders.map((e, index) => (
-                                <ListItem key={index} e={e} index={index}></ListItem>
-                            ))
-                        ) : null
-                    
-                    }
-                </TableBody>
-            </Table>
-        </Body>
-    )
+  return (
+    <Body>
+      <TitleContainer>
+        <h3>Lista de Pedidos Pendientes</h3>
+      </TitleContainer>
+      <Table>
+        <TableHead>
+          <Row>
+            <Group column='order-list'>
+              <Col>#</Col>
+              <Col>Est</Col>
+              <Col>Proveedor</Col>
+              <Col style={{ textAlign: 'center' }}>Nota</Col>
+              <Col>F. Pedido</Col>
+              <Col>F. Entrega</Col>
+              <Col>Total</Col>
+              <Col>Acción</Col>
+            </Group>
+          </Row>
+        </TableHead>
+        <TableBody>
+          {
+            Array(orders).length > 0 ? (
+              orders.map((e, index) => (
+                <ListItem key={index} e={e} index={index}></ListItem>
+              ))
+            ) : null
+
+          }
+        </TableBody>
+      </Table>
+    </Body>
+  )
 }
 
 const Body = styled.header`
@@ -51,15 +51,18 @@ const Body = styled.header`
     border: 1px solid rgba(0, 0, 0, 0.100);
     border-radius: 10px;
     position: relative;
-    height: 400px;
+    height: calc(100vh - 2.75em - 2.5em - 1.5em);
     overflow: hidden;
-    max-height: 400px;
+    //max-height: 400px;
     width: 100%;
     max-width: 800px;
     display: grid;
     grid-template-rows: min-content 1fr; 
     background-color: #ffffff;
-
+    @media (max-width: 800px){
+      max-height: 100%;
+      
+  }
 `
 const Table = styled.div`
   position: relative;
@@ -67,7 +70,7 @@ const Table = styled.div`
   overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr;
-  @media (max-width: 811px){
+  @media (max-width: 800px){
     grid-template-rows: 1fr;
   }
  
@@ -89,7 +92,7 @@ const TableBody = styled.div`
   align-content: flex-start;
   overflow-y: scroll;
   @media (max-width: 800px){
-    
+  
   }
 
 `
@@ -103,7 +106,6 @@ const TitleContainer = styled.div`
     margin: 0;
     color: white;
     font-weight: 500;
-
   }
   text-align: center;
 `
@@ -112,70 +114,58 @@ const Row = styled.div`
   align-items: center;
   span{
     display: none;
-    
   }
   gap: 1em;
   ${(props) => {
-        switch (props.container) {
-            case 'first':
-                return `
-        display: grid;
+    switch (props.container) {
+      case 'first':
+        return `
         @media (max-width: 800px){
-          grid-template-columns: min-content 1fr;
-          span{
-            display: block;
-            transform: rotate(90deg);
-            width: 
-          }
+        display: grid;
+        grid-template-columns: min-content 1fr;
+        span{
+          display: block;
+          transform: rotate(90deg);
+          width: 
         }
-        
-        `
+      }
+      
+      `
+      default:
 
-            default:
-
-        }
-    }}
+    }
+  }}
     ${(props) => {
-        switch (props.border) {
-            case 'border-bottom':
-                return `
-      
-        border-bottom: 1px solid rgba(0, 0, 0, 0.200);
-        &:last-child{
-          border-bottom: none;
-        }
-      
-      
-        `
-
-            default:
-
-        }
-    }}
+    switch (props.border) {
+      case 'border-bottom':
+        return `
+              border-bottom: 1px solid rgba(0, 0, 0, 0.200);
+              &:last-child{
+                border-bottom: none;
+              }
+              `
+      default:
+    }
+  }}
   ${(props) => {
-        switch (props.color) {
-            case 'header':
-                return `
+    switch (props.color) {
+      case 'header':
+        return `
         background-color: #9c0e0e;
-      
         `
-            case 'item':
-                return `
+      case 'item':
+        return `
         background-color: #ebebeb;
-      
         `
-
-
-            default:
-
-        }
-    }}
+      default:
+    }
+  }}
 `
 const Col = styled.div`
   ${(props) => {
-        switch (props.size) {
-            case 'limit':
-                return `
+    switch (props.size) {
+      case 'limit':
+        return `
           width: 100px;
           display: -webkit-box;
           -webkit-line-clamp: 1;
@@ -185,10 +175,10 @@ const Col = styled.div`
           overflow: hidden;
           `
 
-            default:
-                break;
-        }
-    }}
+      default:
+        break;
+    }
+  }}
 `
 const Group = styled.div`
   display: grid;
@@ -197,9 +187,9 @@ const Group = styled.div`
     display: none;
   }
   ${(props) => {
-        switch (props.column) {
-            case "order-list":
-                return `
+    switch (props.column) {
+      case "order-list":
+        return `
         grid-template-columns: min-content min-content 100px 70px 0.7fr 0.7fr 1fr 110px;
         align-items: center;
         height: 3em;
@@ -212,17 +202,17 @@ const Group = styled.div`
           
         }
         `
-            default:
-                break;
-        }
-    }}
+      default:
+        break;
+    }
+  }}
   ${(props) => {
-        switch (props.name) {
-            case 'number':
-                return ` 
+    switch (props.name) {
+      case 'number':
+        return ` 
         `
-            case 'items':
-                return `
+      case 'items':
+        return `
         grid-template-columns: min-content;
         @media (max-width: 811px ){
           display: grid;
@@ -236,9 +226,9 @@ const Group = styled.div`
           }  
         }
         `
-            default:
-                return ``
-        }
-    }}
+      default:
+        return ``
+    }
+  }}
   align-items: center;
 `

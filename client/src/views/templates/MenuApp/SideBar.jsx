@@ -27,7 +27,7 @@ export const SideBar = ({ links, isOpen }) => {
 }
 const Container = styled.nav`
     position: absolute;
-    z-index: 999;
+    z-index: 9999999;
     max-width: 400px;
     width: 100%;
     height: calc(100vh - 2.75em);
@@ -35,12 +35,10 @@ const Container = styled.nav`
     left: 0;
     background-color: rgb(87, 87, 87);
     backdrop-filter: blur(100px);
-    
     transform: translateX(-900px);  
     transition: transform 0.4s ease-in-out;
     overflow-y: auto;
     overflow-x: hidden;
-    resize: horizontal;
     ${props => {
         switch (props.isOpen) {
             case true:

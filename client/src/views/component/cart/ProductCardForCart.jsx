@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import { separator } from '../../../hooks/separator'
 import { Counter } from '../../templates/system/Counter/Counter'
 import { totalShoppingItems, deleteProduct, totalPurchase, setChange } from '../../../features/cart/cartSlice'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
 export const ProductCardForCart = ({ item }) => {
     const dispatch = useDispatch()
     const deleteProductFromCart = (id) => {
@@ -27,8 +28,8 @@ export const ProductCardForCart = ({ item }) => {
                 <Title>{item.productName}</Title>
             </Row>
             <Row>
-                <Group class='space-between'>
-                    <Price>RD$ {separator(item.price.total)}</Price>
+                <Group justifyContent='space-between'>
+                    <Price>{useFormatPrice(item.price.total)}</Price>
                     <Group>
                         <Counter
                             amountToBuyTotal={item.amountToBuy.total}
@@ -53,6 +54,7 @@ const Container = styled.div`
     padding: 0 0.4em;
     border: 1px solid #00000024;
     border-radius: 10px;
+
 `
 const Row = styled.div`
  
@@ -65,7 +67,7 @@ const Group = styled.div`
     gap: 1em;
   
     ${props => {
-        switch (props.class) {
+        switch (props.justifyContent) {
             case 'space-between':
                 return `
                     justify-content: space-between;
@@ -86,16 +88,20 @@ const BtnClose = styled.div`
     padding: 0.1em;
 `
 const Title = styled.span`
-    font-weight: 620;
+    font-weight: 500;
     color: rgb(71, 71, 71);
     text-transform: capitalize;
 `
 const Price = styled.span`
     max-width: 150px;
     width: 100%;
+    font-size: 14px;
+    font-weight: 600;
     border-radius: 10px;
+    display: block;
     padding: 0 10px;
-    
-    color: #6565a5;
+    margin: 0;
+    background-color: var(--White2);
+    color: #575757;
  
 `

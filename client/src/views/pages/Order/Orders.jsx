@@ -10,20 +10,13 @@ import style from './OrdersStyle.module.scss'
 import { TbPlus } from 'react-icons/tb'
 import {
   MenuApp,
-  ButtonGroup,
   Button,
-  PurchaseButton,
-  EditButton,
-  DeleteButton,
-  ArrowRightButton,
-  StatusIndicatorDot
 } from '../../'
 import { Data } from './Data'
 import { OrderListTable } from './components/OrderListTable/OrderListTable'
 export const Orders = () => {
   const dispatch = useDispatch()
   const openModal = () => {
-    //console.log('click')
     dispatch(
       openModalAddOrder()
     )

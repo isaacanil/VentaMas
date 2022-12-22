@@ -1,14 +1,66 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { separator } from "../../hooks/separator";
 import { Product } from "../../views";
 import { v4 } from "uuid";
 import { nanoid } from "nanoid";
 import { IoFemaleSharp } from "react-icons/io5";
+import { updateClient } from "../../firebase/firebaseconfig";
+
+const defaultValue = {
+    id: '',
+    client: {
+        name: '',
+        tel: '',
+        address: '',
+        personalID: ''
+    },
+    products: [],
+    change: {
+        value: 0
+    },
+    delivery: {
+        status: false,
+        value: 0
+    },
+    paymentMethod: [
+        {
+            method: 'cash',
+            value: 0,
+            status: true
+        },
+        {
+            method: 'card',
+            value: 0,
+            status: false
+        },
+        {
+            method: 'transfer',
+            value: 0,
+            status: false
+        }
+    ],
+    totalShoppingItems: {
+        value: 0
+    },
+    totalPurchaseWithoutTaxes: {
+        value: 0
+    },
+    totalTaxes: {
+        value: 0
+    },
+    totalPurchase: {
+        value: 0
+    },
+    change: {
+        value: 0
+    }
+}
+var client = null;
 const initialState = {
     id: null,
-    client: null,
+    client: defaultValue.client,
     products: [],
     delivery: {
         status: false,
@@ -18,7 +70,7 @@ const initialState = {
         {
             method: 'cash',
             value: 0,
-            status: false
+            status: true
         },
         {
             method: 'card',
@@ -54,8 +106,32 @@ const cartSlice = createSlice({
     initialState,
     reducers: {
         addClient: (state, action) => {
-            state.client = action.payload
-            //console.log(action.payload)
+    
+            const clientData = action.payload
+            state.client = {...clientData}
+            console.log('actualizado', state.client, 'original', client)
+            if (client === null || client.id !== clientData.id) {
+                client = clientData
+                console.log('actualizado', state.client, 'original', client)
+                return
+            } 
+         
+           
+
+        },
+        handleUpdateClient: (state) => {
+            const obj1 = client;
+            const obj2 = state.client
+            const isDifferent = Object.values(obj1).sort().toString() === Object.values(obj2).sort().toString()
+            if(isDifferent === false){
+                updateClient(obj2)
+            }else{
+                return
+            }
+        },
+        deleteClient: (state) => {
+            state.client = defaultValue.client
+            client = null
         },
         addDelivery: (state, action) => {
             const { cash, status } = action.payload
@@ -84,13 +160,28 @@ const cartSlice = createSlice({
             const data = actions.payload
             state.paymentMethod = data
         },
+        handleChangePaymentMethod: (state) => {
+        //     const methodActived = state.paymentMethod.find((method) => method.status === true)
+        //    if(methodActived){
+        //         methodActived.value = state.totalPurchase.value
+        //    }
+           const obtenerMetodoPagoActivo = (paymentMethod) => {
+            return paymentMethod.find((method) => method.status === true);
+          }
+          
+          () => {
+            const methodActived = obtenerMetodoPagoActivo(state.paymentMethod);
+            if (methodActived) {
+              methodActived.value = state.totalPurchase.value;
+            }
+          }
+        },
         addProduct: (state, action) => {
             if (state.id === null || state.id === undefined || state.id === '') {
                 state.id = nanoid(8)
             }
             const checkingID = state.products.find((product) => product.id === action.payload.id)
             if (state.products.length > 0 && checkingID) {
-                console.log(checkingID.amountToBuy.total)
                 checkingID.amountToBuy.total = checkingID.amountToBuy.total + checkingID.amountToBuy.unit;
                 checkingID.price.total = checkingID.price.unit * checkingID.amountToBuy.total;
                 checkingID.stock = checkingID.stock - checkingID.amountToBuy.unit;
@@ -98,7 +189,6 @@ const cartSlice = createSlice({
             } else {
                 const product = action.payload
                 const products = state.products
-                console.log('antes ', product)
                 const newProduct = Object.assign({}, product, { stock: product.stock - product.amountToBuy.unit })
                 state.products = [...products, newProduct]
             }
@@ -122,6 +212,7 @@ const cartSlice = createSlice({
                 productFound.price.total = Number(productFound.amountToBuy.total) * productFound.price.unit;
                 productFound.tax.total = productFound.amountToBuy * productFound.tax.unit;
                 productFound.cost.total = productFound.amountToBuy * productFound.cost.unit;
+                productFound.stock = productFound.stock + productFound.amountToBuy.unit
             }
         },
         addAmountToProduct: (state, action) => {
@@ -138,61 +229,17 @@ const cartSlice = createSlice({
         diminishAmountToProduct: (state, action) => {
             const { id } = action.payload
             const productFound = state.products.find((product) => product.id === id)
-            //console.log(productFound)
-
+            const originalStock = productFound.stock
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total - productFound.amountToBuy.unit
                 productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
+                productFound.stock = productFound.stock + productFound.amountToBuy.unit
                 if (productFound.amountToBuy.total === 0) {
                     state.products.splice(state.products.indexOf(productFound), 1)
                 }
-                // productFound.amountToBuy.total == 0 ? state.products.splice(state.products.indexOf(productFound), 1) : null
-
             }
         },
-        CancelShipping: (state) => {
-
-            state.id = ""
-            state.client = null
-            state.products = []
-            state.change.value = 0
-            state.delivery = {
-                status: false,
-                value: 0
-            }
-            state.paymentMethod = [
-                {
-                    method: 'cash',
-                    value: 0,
-                    status: true
-                },
-                {
-                    method: 'card',
-                    value: 0,
-                    status: false
-                },
-                {
-                    method: 'transfer',
-                    value: 0,
-                    status: false
-                }
-            ]
-            state.totalShoppingItems = {
-                value: 0
-            }
-            state.totalPurchaseWithoutTaxes = {
-                value: 0
-            }
-            state.totalTaxes = {
-                value: 0
-            }
-            state.totalPurchase = {
-                value: 0
-            }
-            state.change.value = {
-                value: 0
-            }
-        },
+        CancelShipping: state => state = defaultValue,
         totalTaxes: (state) => {
             const productSelected = state.products
             const total = productSelected.reduce((total, product) => total + product.tax.total, 0)
@@ -226,11 +273,14 @@ const cartSlice = createSlice({
 
 export const {
     addClient,
+    handleUpdateClient,
+    deleteClient,
     addProduct,
     addDelivery,
     addCashPaymentMethod,
     addCardPaymentMethod,
     addTransferPaymentMethod,
+    handleChangePaymentMethod,
     deleteProduct,
     onChangeValueAmountToProduct,
     addAmountToProduct,

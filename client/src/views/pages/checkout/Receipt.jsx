@@ -19,7 +19,7 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
         {
             data.client ? (
                 <Fragment>
-                    <h4>Cliente : <span className={style.capital}>{data.client.name ? data.client.name : 'Cliente Genérico'}</span></h4>
+                    <h4>Cliente: <span className={style.capital}>{data.client.name ? data.client.name : 'Cliente Genérico'}</span></h4>
                     {
                         data.client.tel ? <h4>Teléfono : {data.client.tel}</h4> : null
                     }
@@ -82,48 +82,47 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
                 <div className={style.right}>{separator(data.totalTaxes.value)}</div>
             </Row>
             <Row>
-                <td className={style.title}>TOTAL A PAGAR</td>
-                <td className={style.right}>{separator(data.totalTaxes.value)}</td>
-                <td className={style.right}>{separator(data.totalPurchase.value)}</td>
+                <div className={style.title}>TOTAL A PAGAR</div>
+                <div className={style.right}>{separator(data.totalTaxes.value)}</div>
+                <div className={style.right}>{separator(data.totalPurchase.value)}</div>
             </Row>
             {
-                data.cashPaymentMethod.status ? (
+                data.paymentMethod.map((payment) => payment.method === 'cash' && payment.status === true ? (
                     <Fragment>
                         <Row>
                             <div className={style.title}>EFECTIVO</div>
                             <div></div>
-                            <div className={style.right}>{separator(data.cashPaymentMethod.value)}</div>
+                            <div className={style.right}>{separator(data.paymentMethod.map((payment)=>payment.value))}</div>
                         </Row>
-
                     </Fragment>
-                ) : null
+                ) : null)
             }
             {
-                data.cardPaymentMethod.status ? (
+                data.paymentMethod.map((payment) => payment.method === 'card' && payment.status === true ? (
                     <Fragment>
                         <Row>
                             <div className={style.title}>TARJETA</div>
                             <div></div>
-                            <div className={style.right}>{separator(data.cardPaymentMethod.value)}</div>
+                            <div className={style.right}>{separator(data.paymentMethod.map((payment)=>payment.value))}</div>
                         </Row>
                     </Fragment>
 
-                ) : null
+                ) : null)
             }
             {
-                data.transferPaymentMethod.status ? (
+                data.paymentMethod.map((payment) => payment.method === 'transfer' && payment.status === true ? (
                     <Fragment>
                         <Row>
                             <div className={style.title}>TRANSFERENCIA</div>
                             <div></div>
-                            <div className={style.right}>{separator(data.transferPaymentMethod.value)}</div>
+                            <div className={style.right}>{separator(data.paymentMethod.map((payment) => payment.value))}</div>
                         </Row>
                     </Fragment>
 
-                ) : null
+                ) : null)
             }
             {
-                data.cashPaymentMethod.status || data.cardPaymentMethod.status || data.transferPaymentMethod.status ? (
+                data.paymentMethod.map((payment)=>payment.method === "cash" || payment.method === "card" || payment.method === "transfer" ? (
                     <Fragment>
                         <Row>
                             <div className={style.title}>CAMBIO</div>
@@ -132,7 +131,7 @@ export const Receipt = React.forwardRef(({ data }, ref) => (
                         </Row>
                     </Fragment>
 
-                ) : null
+                ) : null)
             }
 
 

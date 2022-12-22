@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { TbTarget } from 'react-icons/tb'
 import styled from 'styled-components'
 
-export const Input = ({ type, text, size, title, required, focusColor, labelColor, value, onChange, readOnly, onFocus}) => {
+export const Input = ({ type, text, size, title, clearInputWhen, required, focusColor, labelColor, value, onChange, readOnly, onFocus}) => {
     const [focus, setFocus] = useState({
         color: focusColor,
     })
@@ -15,7 +15,7 @@ export const Input = ({ type, text, size, title, required, focusColor, labelColo
             <input
                 id=""
                 name=""
-                value={value}
+                value={clearInputWhen ? undefined : value}
                 type={type}
                 required={required}
                 placeholder='a'
@@ -31,7 +31,6 @@ const Container = styled.div`
     display: flex;
     position: relative;
     width: 100%;
-
     label{
         margin: 0;
     position: absolute;
@@ -63,15 +62,14 @@ const Container = styled.div`
     }     
     &:not(:placeholder-shown) + label{
         top: -13px;
-        font-size: 14px;
+        font-size: 11px;
         background-color: white;
-        color: #aaa9a9;
+        color: #8d8d8d;
     }
     &:focus + label{
         top: -13px;
         background-color: white;
-        font-size: 14px;
-        
+        font-size: 11px;
         color:  ${props => props.focusColor}; 
     }
   
@@ -111,8 +109,7 @@ const Container = styled.div`
                     label{
                         color: #535353;
                         font-weight: 600;
-                        font-size: 12px;
-
+                        
                     }
                 `
         
@@ -127,5 +124,3 @@ export const InputGroup = styled.div`
     align-items: center;
    
     `
-
-

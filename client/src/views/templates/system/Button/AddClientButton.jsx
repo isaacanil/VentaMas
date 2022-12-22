@@ -20,6 +20,7 @@ export const AddClientButton = () => {
             title={
                 <HiUserAdd/>
             }
+            borderRadius='normal'
             color='gray-dark'
             width='icon32'
             onClick={Open}>

@@ -16,6 +16,7 @@ export const CancelPurchaseBtn = () => {
      
             <Button 
             title={ <IoMdTrash/>}
+            borderRadius='normal'
             width='icon32'
             color='gray-dark'
             onClick={handleCancelShipping}

@@ -4,17 +4,17 @@
    position: relative;
    height: calc(100%);
    background-color: rgb(253, 253, 253);
-   //border-left: 1px solid rgba(0, 0, 0, 0.247);
-   width: 100%;
-   max-width: 23.6em;
+   max-width: 24em;
+   width: 100vh;
    overflow: hidden;
    display: grid;
    grid-template-columns: 1fr;
    grid-template-rows: min-content auto min-content;
-   padding: 0 1em;
+   padding: 0 ;
    margin: 0;
+   gap: 10px;
    .ProductsContainer {
-      background-color: rgba(0, 0, 0, 0.127);
+      background-color: var(--icolor3);
       display: flex;
       width: 100%;
       margin: 0;
@@ -93,6 +93,7 @@
       padding: 0 0.4em;
       align-items: center;
       justify-content: space-between;
+      border-top-left-radius: 8px;
   
       h3{
          font-size: 1.2em;
@@ -112,8 +113,8 @@
       border-bottom: 0;
       position: absolute;
       top: 0;
-      z-index: 100000;
-      display: none;
+      z-index: 10000000;
+    
 
       .ClientBar {
          background-color: var(--White2);
@@ -128,7 +129,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-
             border-radius: 100px;
             background-color: var(--White2);
             border: 1px solid rgba(0, 0, 0, 0.307);

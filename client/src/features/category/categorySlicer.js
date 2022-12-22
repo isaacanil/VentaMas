@@ -12,9 +12,7 @@ const categorySlice = createSlice({
         addCategory: (state, action) => {
             const { id, name } = action.payload
             const checkingNameIsDifferent = state.categoryList.every((cat) => cat !== name)
-            console.log(checkingNameIsDifferent)
             if (checkingNameIsDifferent && state.categoryList.length < 8) {
-                console.log('entrando')
                     state.status = true
                     state.categoryList.push(name)
             }

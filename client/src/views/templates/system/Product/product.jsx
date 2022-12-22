@@ -1,50 +1,31 @@
-import React, {useEffect} from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectImageHidden } from '../../../../features/setting/settingSlice'
+import { selectImageHidden, } from '../../../../features/setting/settingSlice'
 import { useState } from 'react'
-import { addProduct, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../features/cart/cartSlice'
+import { addProduct, handleChangePaymentMethod, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../features/cart/cartSlice'
+import { display, positions } from '@mui/system'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 export const Product = ({ product, }) => {
-    const [ isTrue, setIsTrue ] = useState(false)
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
     const ProductSelected = useSelector(SelectProduct);
     const handleGetThisProduct = (product) => {
-        dispatch(
-            addProduct(
-                product
-            )
-        )
-        dispatch(
-            totalShoppingItems()
-        )
-        dispatch(
-            totalPurchaseWithoutTaxes()
-        )
-        dispatch(
-            totalShoppingItems()
-        )
-        dispatch(
-            totalTaxes()
-        )
-        dispatch(
-            totalPurchase()
-        )
-        dispatch(
-            setChange()
-        )
-        console.log(product)
-
+        dispatch(addProduct(product))
+        dispatch(totalShoppingItems())
+        dispatch(totalPurchaseWithoutTaxes())
+        dispatch(totalShoppingItems())
+        dispatch(totalTaxes())
+        dispatch(totalPurchase())
+        dispatch(handleChangePaymentMethod())
+        dispatch(setChange())
     }
-
-
-   
     return (
-        <Container onClick={() => handleGetThisProduct(product)}>
+        <Container onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef}>
             {
-                <Head>
-                    <ImageContainer>
+                <Head imageHiddenRef={imageHiddenRef ? true : false}>
+                    <ImageContainer imageHiddenRef={imageHiddenRef}>
                         <img src={product.productImageURL} alt="" />
                     </ImageContainer>
                 </Head>
@@ -53,8 +34,8 @@ export const Product = ({ product, }) => {
                 <Title>
                     {product.productName}
                 </Title>
-                <Price>
-                    RD${separator(product.price.total)}
+                <Price imageHiddenRef={imageHiddenRef}>
+                    {useFormatPrice(product.price.total)}
                 </Price>
             </Body>
         </Container>
@@ -69,22 +50,50 @@ const Container = styled.div`
     gap: 10px;
     overflow: hidden;
     transition: 400ms all ease-in-out;
+    position: relative;
+    :hover{
+        img{
+            filter: brightness(105%);
+            transition: 300ms filter ease-in-out;
+        }
+    }
+  
+    ${(props) => {
+        switch (props.imageHiddenRef) {
+            case true:
+                return `
+                    height: 70px;
+                `
+
+            case false:
+                return `
+                    transfrom: scale(0);
+                `
+
+            default:
+                break;
+        }
+    }
+    }
 `
 const Head = styled.div`
-    transform: translate();
-    ${() => {
-        const imageHiddenRef = useSelector(selectImageHidden)
-        return imageHiddenRef === !false ? (
-            `
-                    display: none;
-                    visibility: hidden;
-                    z-index: 0;
-                    transform: translate()
-                
-                    `
-        ) : null
+    position: absolute;
+    transform: translateX(-90px);
+    transition: all 400ms ease-in-out;
+    
+    ${(props) => {
+        switch (props.imageHiddenRef) {
+            case false:
+                return `
+                position: relative;
+                transform: translateX(0px);
+                transition: all 400ms ease-in-out;
+                `
+            default:
+                break;
+        }
     }}
-    transition: visibility 4000ms ease-in-out;
+    
     
 `
 const Body = styled.div`
@@ -93,15 +102,28 @@ const Body = styled.div`
     background-color: #ffffff;
     padding: 4px 0;
     position: relative;
+    transition: 4000ms all ease-in-out;
    
 `
 const ImageContainer = styled.div`
-    height: 100%;
+    height: 90px;
     width: 90px;
     overflow: hidden;
-    transform: ${() => {
-        const imageHiddenRef = useSelector(selectImageHidden)
-        return imageHiddenRef === false ? "scale(1)" : "scale(0)"
+    ${(props) => {
+        switch (props.imageHiddenRef) {
+            case true:
+                return `
+                    transform: scale(0);
+                `
+
+            case false:
+                return `
+                    transfrom: scale(0);
+                `
+
+            default:
+                break;
+        }
     }};
     transition: transform 400ms ease-in-out;
     img{
@@ -119,9 +141,8 @@ const Price = styled.div`
     text-align: end;
     width: 100%;
     font-weight: 500;
-    border-top-left-radius: ${() => {
-        const imageHiddenRef = useSelector(selectImageHidden)
-        return imageHiddenRef === false ? '10px' : 'none'
+    border-top-left-radius: ${(props) => {
+        return props.imageHiddenRef === false ? '10px' : '0'
     }
 
     };

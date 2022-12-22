@@ -1,23 +1,41 @@
 
 import styled from 'styled-components'
 
-export const Button = ({type, bgcolor, color, title, startIcon, endIcon, onClick, width, variant, disabled, borderRadius }) => {
-  
-    return (
-      <Container 
-        bgcolor={bgcolor}
-        color={color}
-        onClick={onClick}
-        width={width}
-        variant={variant}
-        disabled={disabled}
-        borderRadius={borderRadius}
-        >
-          {startIcon ? startIcon : null}
-          {title ? title : null}
-          {endIcon ? endIcon : null}
-      </Container>
-    )
+export const Button = ({
+  bgcolor,
+  color,
+  title,
+  startIcon,
+  endIcon,
+  onClick,
+  width,
+  height,
+  variant,
+  disabled,
+  borderRadius,
+  isActivated,
+  iconOn,
+  iconOff
+}) => {
+
+  return (
+    <Container
+      bgcolor={bgcolor}
+      color={color}
+      onClick={onClick}
+      width={width}
+      height={height}
+      variant={variant}
+      disabled={disabled}
+      borderRadius={borderRadius}
+      isActivated={isActivated}
+    >
+      {isActivated === false ? iconOn : iconOff}
+      {startIcon ? startIcon : null}
+      {title ? title : null}
+      {endIcon ? endIcon : null}
+    </Container>
+  )
 }
 
 export const Container = styled.button`
@@ -30,22 +48,15 @@ export const Container = styled.button`
   white-space: nowrap;
   gap: 0.4em;
   padding: 0 0.6em;
-  //container
-  //background-color: #2a2b2b;
-  svg{
-    font-size: 1.2em;
-    margin: 0;
-  }
-  //padding
-  
-  //contain
-
-  /*font */
+  outline: none;
   color: black;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
- 
+  svg{
+    font-size: 1.2em;
+    margin: 0;
+  }
   cursor: pointer;
   transition: border-color 0.25s;
   
@@ -55,18 +66,18 @@ export const Container = styled.button`
     color: black;
   }
   &:focus, &:focus-visible{
-    outline: 4px auto -webkit-focus-ring-color;
+    outline: none;
   }
  ${(props) => {
-  switch (props.borderRadius) {
-    case 'normal':
-      return`
+    switch (props.borderRadius) {
+      case 'normal':
+        return `
         border-radius: 10px;
       `
-    default:
-      break;
-  }
- }}
+      default:
+        break;
+    }
+  }}
  ${(props) => {
     switch (props.bgcolor) {
       case "error":
@@ -89,8 +100,8 @@ export const Container = styled.button`
             }
           
         `
-        case "dark":
-          return `
+      case "dark":
+        return `
           background-color: #2a2b2b;
           color: white;
           &:hover{
@@ -117,12 +128,12 @@ export const Container = styled.button`
               color: white
             }
             `
-            case "op1":
+      case "op1":
         return `
         background-color: rgba(0, 0, 0, 0.200);
         color: white;
         &:hover{
-                background-color: #4589d8;
+                background-color: #bdbdbd;
                 outline: none;
                 
               
@@ -146,7 +157,7 @@ export const Container = styled.button`
               width: auto;
             `
       case "icon32":
-        return`
+        return `
           min-width: 32px;
           max-width: 32px;
           min-height: 32px;
@@ -158,8 +169,8 @@ export const Container = styled.button`
           margin: 0;
           font-size: 18px;
         `
-        case "icon24":
-        return`
+      case "icon24":
+        return `
           min-width: 27px;
           max-width: 27px;
           max-height: 27px;
@@ -179,17 +190,13 @@ export const Container = styled.button`
     switch (props.height) {
       case "small":
         return `
-           height: 1.6em;
+           height: 24px;
+           display: flex;
+           aling-items: center;
+           padding: 0 0.4em;
 
           `;
-      case "auto":
-        return `
-              width: auto;
-            `
-      default:
-        return `
-            width: auto;
-          `
+     
     }
   }}
    ${(props) => {
@@ -251,16 +258,24 @@ export const Container = styled.button`
     }
   }}
   ${(props) => {
-    switch (props.isActived) {
-      case 'true':
-        return`
-          background-color: #e9e9e9;
+    switch (props.isActivated) {
+      case true:
+        return `
+          background-color: #ffffff;
           color: black;
+          :hover{
+            background-color: #e9e9e9;
+            color: black;
+          }
         `
-      case 'false':
-        return`
+      case false:
+        return `
           background-color: rgba(0, 0, 0, 0.26);
           color: white;
+          :hover{
+            background-color: #e9e9e94b;
+            color: black;
+          }
         `
       default:
         break;

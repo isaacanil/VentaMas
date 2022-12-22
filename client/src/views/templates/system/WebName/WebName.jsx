@@ -5,7 +5,8 @@ const Container = styled('div')`
   display: flex;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.200);
-  padding: 0.2em 0.8em;
+  padding: 0 0.8em;
+  height: 2em;
   width: min-content;
   border-radius: 10px;
 `

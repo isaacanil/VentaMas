@@ -9,6 +9,39 @@ import { handleModalSetCustomPizza } from '../../../../features/modals/modalSlic
 import { addProduct, totalShoppingItems } from '../../../../features/cart/cartSlice';
 import { SelectProduct } from '../../../../features/cart/cartSlice';
 import { separator } from '../../../../hooks/separator';
+import { selectImageHidden } from '../../../../features/setting/settingSlice';
+
+export const CustomProduct = ({ product }) => {
+    //const [productList, setProductList] = useState([])
+    const dispatch = useDispatch();
+    const ProductSelected = useSelector(SelectProduct);
+    const imageHiddenRef = useSelector(selectImageHidden)
+    const handleGetThisProduct = (product) => {
+        dispatch(
+            handleModalSetCustomPizza()
+        )
+        console.log(product)
+    }
+    return (
+        <ProductContainer  onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef ? true : false}>
+            <ProductImgWrapper imageHiddenRef={imageHiddenRef ? true : false}>
+                <span>
+                    {/*{product.productName.charAt(0)} */}
+                    P
+                </span>
+            </ProductImgWrapper>
+            <Body>
+                <Main>
+                    <Title>{product.productName}</Title>
+                </Main>
+                <Footer>
+                   
+
+                </Footer>
+            </Body>
+        </ProductContainer>
+    )
+}
 const ProductContainer = styled.div`
     order: -2;
     border: 1px solid rgba(0, 0, 0, 0.200);
@@ -19,8 +52,26 @@ const ProductContainer = styled.div`
     display: grid;
     gap: 1em;
     grid-template-columns: min-content 1fr;
+    transition: 400ms all ease-in-out;
     align-items: center;
     align-content: center;
+    ${(props) => {
+        switch (props.imageHiddenRef) {
+            case true:
+                return `
+                    height: 70px;
+                `
+
+            case false:
+                return `
+                    transfrom: scale(0);
+                `
+
+            default:
+                break;
+        }
+    }
+    }
    
 ${(props) => {
         switch (props.container) {
@@ -29,9 +80,7 @@ ${(props) => {
                 grid-template-columns: min-content 1fr;
                 height: 80px;
                 overflow: hidden;
-                
                 `;
-
             default:
                 return `
             
@@ -46,6 +95,18 @@ const ProductImgWrapper = styled.div`
     height: 80px;
     justify-content: center;
     align-items: center;
+    ${(props) => {
+        switch (props.imageHiddenRef) {
+            case false:
+                return`
+                    position: relative;
+                    transform: translateX(0px);
+                    transition: all 400ms ease-in-out;
+                `
+            default:
+                break;
+        }  
+    }}
     span{
         display: flex;
         justify-content: center;
@@ -144,53 +205,3 @@ const ProductPrice = styled.div`
     
     
 `
-export const CustomProduct = ({ product }) => {
-    //const [productList, setProductList] = useState([])
-    const dispatch = useDispatch();
-    const ProductSelected = useSelector(SelectProduct);
-   
-    // dispatch(
-    //     addProduct(
-    //         product
-    //     )
-
-    // )
-    // dispatch(
-    //     totalShoppingItems()
-    // )
-    const handleGetThisProduct = (product) => {
-        dispatch(
-            handleModalSetCustomPizza()
-        )
-
-        console.log(product)
-
-    }
-
-
-
-    return (
-
-        <ProductContainer  onClick={() => handleGetThisProduct(product)}>
-            <ProductImgWrapper>
-                <span>
-                    {/*{product.productName.charAt(0)} */}
-                    P
-                </span>
-            </ProductImgWrapper>
-            <Body>
-                <Main>
-                    <Title>{product.productName}</Title>
-                </Main>
-                <Footer>
-                   
-
-                </Footer>
-            </Body>
-        </ProductContainer>
-
-    )
-
-
-
-}

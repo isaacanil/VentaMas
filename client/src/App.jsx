@@ -40,7 +40,8 @@ import { Fragment } from 'react';
 import { useModal } from './hooks/useModal'
 import { DeleteProductAlert } from './views/templates/system/Alerts/DeleteProductAlert'
 import { GenericLoader } from './views/templates/system/loader/GenericLoader';
-
+import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
+import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
@@ -49,13 +50,15 @@ function App() {
   //Todo ******detectando si hay usuarios logueados******
   useEffect(() => {
     AuthStateChanged(dispatch)
+    dispatch(
+      ReloadImageHiddenSetting()
+    )
   }, [])
+  const isConnected = useCheckForInternetConnection()
+  console.log(isConnected)
   if (user === false) {
     return <GenericLoader></GenericLoader>
-
   }
-  // 
-
 
   return (
     <Fragment>

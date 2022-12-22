@@ -15,38 +15,30 @@ import { login, logout } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { isObject } from "../hooks/isObject";
 
-//Todo Hi Pizza **************************************************
 const firebaseConfig = {
-  apiKey: "AIzaSyAIG5W8rtGwTQ2hxVK7XpSxU3iQBRvHaT4",
-  authDomain: "hipizza-1b9cc.firebaseapp.com",
-  projectId: "hipizza-1b9cc",
-  storageBucket: "hipizza-1b9cc.appspot.com",
-  messagingSenderId: "626612970714",
-  appId: "1:626612970714:web:8747469a390b7bb63271e3",
-  measurementId: "G-21YPCHBYHV"
+  apiKey: import.meta.env.VITE_BACKEND_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_BACKEND_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_BACKEND_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_BACKEND_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_BACKEND_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_BACKEND_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_BACKEND_FIREBASE_APP_
 };
-//Todo Original**************************************************
-// const firebaseConfig = {
-//   apiKey: "AIzaSyAJd82BkS5bp3lI5MbTJohU8rhZth3_AL4",
-//   authDomain: "ventamax-75bec.firebaseapp.com",
-//   projectId: "ventamax-75bec",
-//   storageBucket: "ventamax-75bec.appspot.com",
-//   messagingSenderId: "653993214585",
-//   appId: "1:653993214585:web:f2e6674640557a28220aa8",
-//   measurementId: "G-9RTQMM0JW2"
-// };
-//Todo Initialize Firebase *******************************************************************
 const app = initializeApp(firebaseConfig);
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
-// enableIndexedDbPersistence(db, {
-//   synchronizeTabs: true,
-//   experimentalTabSynchronization: true,
-//   forceOwnership: true,
-//   synchronizeTabs: true,
-//   experimentalForceOwningTab: true,
-// })
+enableIndexedDbPersistence(db)
+
+
+
+
+
+
+
+
+
+
 //Todo Product **************************************************************************
 export const AuthStateChanged = (dispatch) => {
   onAuthStateChanged(auth, (userAuth) => {
@@ -149,21 +141,34 @@ export const UploadProdImg = (file) => {
       })
   })
 }
-export const UploadProdData = async (product) => {
-  console.log(product)
-  const productRef = doc(db, "products", product.id)
-  try {
-    await setDoc(productRef, { product })
-    const s = 'impedimentos'
-    console.log('Document written ', product)
-  } catch (error) {
-    console.error("Error adding document: ", error)
-  }
+// export const UploadProductData = async (product) => {
+//   console.log(product)
+//   const productRef = doc(db, "products", product.id)
+//   try {
+//     await setDoc(productRef, { product })
+//     console.log('Document written ', product)
+//   } catch (error) {
+//     console.error("Error adding document: ", error)
+//   }
+// }
+export const UploadProductData = (product) => {
+  return new Promise((resolve, reject)=>{
+    const productRef = doc(db, "products", product.id)
+    setDoc(productRef, { product })
+    .then(()=>{
+      console.log('document written', product)
+      resolve()
+    })
+    .catch((error)=>{
+      console.log('Error adding document:', error)
+      reject()
+    })
+  })
 }
 /****************** **********************/
 export const getProducts = async (setProduct) => {
   const productRef = collection(db, "products")
-  const q = query(productRef, orderBy("product.productName", "desc"))
+  const q = query(productRef, orderBy("product.productName", "desc"), orderBy("product.order", "asc"))
   onSnapshot(q, (snapshot) => {
     let productsArray = snapshot.docs.map(item => item.data())
     setProduct(productsArray)
@@ -174,6 +179,15 @@ export const updateProduct = async (product) => {
   const productRef = doc(db, "products", product.id)
   await updateDoc(productRef, { product })
 }
+export const updateClient = async (client) => {
+  
+  const clientRef = doc(db, 'client', client.id)
+  await updateDoc(clientRef, { client })
+  .then(()=>{console.log('product from firebase', client)})
+
+ 
+}
+
 export const getCat = async (setCategories) => {
   const categoriesRef = collection(db, "categorys")
   const q = query(categoriesRef, orderBy("category.name"))

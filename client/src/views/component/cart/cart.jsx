@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useRef, useState } from 'react'
 import { separator } from '../../../hooks/separator'
 import style from './cartStyle.module.scss'
 import {
@@ -7,6 +7,7 @@ import {
   AddClientModal,
   ClientControl,
   BillingModal,
+  Receipt,
 } from '../../index'
 import {
   SelectProduct,
@@ -16,9 +17,10 @@ import {
   totalPurchase,
   setChange,
   totalShoppingItems,
-  SelectTotalPurchase
+  SelectTotalPurchase,
+  handleUpdateClient
 } from '../../../features/cart/cartSlice'
-
+import { HandleSubmit } from './HadleSubmit'
 import { useSelector, useDispatch } from 'react-redux'
 import { deleteProduct } from '../../../features/cart/cartSlice'
 //import { useModal } from '../../../hooks/useModal'
@@ -26,35 +28,29 @@ import { useNavigate } from 'react-router-dom'
 import { openModalBilling } from '../../../features/modals/modalSlice'
 import { ProductCardForCart } from './ProductCardForCart'
 import { PaymentArea } from './PaymentArea'
+import { useReactToPrint } from 'react-to-print'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
 export const Cart = () => {
-  const navigate = useNavigate()
+  const componentToPrintRef = useRef(null);
+  const bill = useSelector(state => state.cart)
   const dispatch = useDispatch()
   const TotalPurchaseRef = useSelector(SelectTotalPurchase)
   const ProductSelected = useSelector(SelectProduct)
+  const handlePrint = useReactToPrint({
+    content: () => componentToPrintRef.current,
+  })
   const handleInvoice = () => {
-    if (ProductSelected.length === 0) {
-      console.log('todavía no has agregado nada')
-    } else {
-      dispatch(
-        openModalBilling()
-      )
-      dispatch(
-        totalPurchaseWithoutTaxes()
-      )
-      dispatch(
-        totalShoppingItems()
-      )
-      dispatch(
-        totalTaxes()
-      )
-      dispatch(
-        totalPurchase()
-      )
-      dispatch(
-        setChange()
-      )
+    if (ProductSelected.length > 0) {
+      // dispatch(totalPurchaseWithoutTaxes())
+      // dispatch(totalShoppingItems())
+      // dispatch(totalTaxes())
+      // dispatch(totalPurchase())
+      // dispatch(setChange())
+      // handlePrint()
+      dispatch(handleUpdateClient())
     }
   }
+  
   return (
     <Fragment>
       <section className={style.FacturaControlContainer}>
@@ -79,8 +75,9 @@ export const Cart = () => {
           <PaymentArea></PaymentArea>
           <div className={style.resultBar}>
             <div>
-              <h3>Total : RD${TotalPurchaseRef}</h3>
+              <h3>Total : {useFormatPrice(TotalPurchaseRef)}</h3>
             </div>
+            <Receipt ref={componentToPrintRef} data={bill}></Receipt>
             <Button
               title='Facturar'
               onClick={handleInvoice}

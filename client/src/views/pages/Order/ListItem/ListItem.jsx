@@ -99,26 +99,19 @@ const Row = styled.div`
         }
         
         `
-
       default:
-
     }
   }}
     ${(props) => {
     switch (props.border) {
       case 'border-bottom':
         return `
-      
         border-bottom: 1px solid rgba(0, 0, 0, 0.200);
         &:last-child{
           border-bottom: none;
         }
-      
-      
         `
-
       default:
-
     }
   }}
   ${(props) => {
@@ -126,15 +119,11 @@ const Row = styled.div`
       case 'header':
         return `
         background-color: #9c0e0e;
-      
         `
       case 'item':
         return `
         background-color: #ebebeb;
-      
         `
-
-
       default:
 
     }

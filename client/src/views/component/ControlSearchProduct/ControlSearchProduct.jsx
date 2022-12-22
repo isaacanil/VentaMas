@@ -15,7 +15,7 @@ import styled from 'styled-components'
 import { InputSearch } from '../../templates/system/Inputs/Input'
 import { useMatch } from 'react-router-dom'
 import { Input } from '../../templates/system/Inputs/InputV2'
-import { Carrucel } from '../../pages/Compra/Carrucel'
+import { Carrucel } from '../Carrucel/Carrucel'
 
 
 export const ControlSearchProduct = ({ searchData, setSearchData }) => {
@@ -31,14 +31,14 @@ export const ControlSearchProduct = ({ searchData, setSearchData }) => {
     <Fragment>
 
       <div className={Style.Container}>
-        <Input
+        {/* <Input
           title='Buscar Producto'
           type='search'
           size='small'
           onChange={(e) => (
             setSearchData(e.target.value)
           )} 
-          />
+          /> */}
 
         {/* <div className={Style.icons_container}>
 

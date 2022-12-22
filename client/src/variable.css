@@ -1,14 +1,10 @@
 :root{
-    /*white to black*/
- 
-    /* colors*/
     --White: rgb(255, 255, 255);
     --White1: rgb(240, 240, 240);
     --White2: rgb(230, 230, 230);
     --White3: rgb(220, 220, 220);
     --White4: rgb( 210, 210, 210);
     --White5: rgb( 200, 200, 200);
- 
     --Gray: rgb(180, 180, 180);
     --Gray1: rgb(160, 160, 160);
     --Gray2: rgb(140, 140, 140);
@@ -30,7 +26,7 @@
     /*color terciario*/
     --icolor2: #91C9E8;
     /*color cuaternario*/
-    --icolor3: #c5e0ec;
+    --icolor3: rgb(240,244,248);
     --icolor4: rgba(202, 214, 230, 0.274);
  
  

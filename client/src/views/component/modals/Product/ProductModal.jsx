@@ -2,7 +2,7 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react'
 import Style from './Products.module.scss'
 import { Button, ErrorMessage, PlusIconButton } from '../../../index'
-import { UploadProdImg, UploadProdData, getCat } from '../../../../firebase/firebaseconfig.js'
+import { UploadProdImg, UploadProductData, getCat } from '../../../../firebase/firebaseconfig.js'
 import { Modal } from '../../../index';
 import { Navigate } from 'react-router-dom'
 import { Input, InputGroup } from '../../../templates/system/Inputs/InputV2';
@@ -73,7 +73,7 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
       })
    }, [ImgSelected])
    const handleSubmit = async () => {
-      UploadProdData(product)
+      UploadProductData(product)
       setProduct({
          productName: '',
          price: {
@@ -105,18 +105,24 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
       })
       dispatch(clearImg())
    }
-   useEffect(() => {
-      if (product.cost.unit !== undefined && product.tax.value !== undefined) {
-         setProduct({
-            ...product,
-            price: {
-               unit: product.cost.unit * product.tax.value + product.cost.unit,
-               total: product.cost.unit * product.tax.value + product.cost.unit,
-            },
-            id: nanoid(6)
-         })
+
+   const calculatePrice = () => {
+      const {cost, tax} = product;
+      if(typeof cost.unit !== 'number' || typeof tax.value !== 'number'){
+         return;
       }
-   }, [product.cost, product.tax])
+      const price = {
+         unit: cost.unit * tax.value + cost.unit,
+         total: cost.unit * tax.value + cost.unit,
+      }
+      setProduct({
+         ...product,
+         price,
+         id: nanoid(6)
+      })
+      console.log('todo esta bien')
+   }
+   useEffect(calculatePrice, [product.cost, product.tax])
    //console.log(product)
    return (
       <Modal

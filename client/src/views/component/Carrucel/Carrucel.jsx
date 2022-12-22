@@ -12,32 +12,53 @@ export const Carrucel = () => {
     const { width } = useScreenSize(categoriesRef)
     const [categories, setCategories] = useState([])
     const categoryCardRef = useRef(null)
-    const MoveScroll = () => {
+    const MoveScroll = (direction) => {
         const toStart = () => {
-            categoriesRef.current.scroll(0, 0)
+            if (categoriesRef.current.scrollLeft > 0) {
+                categoriesRef.current.scrollTo({
+                  top: 0,
+                  left: 0,
+                  behavior: 'smooth',
+                });
+              }
+          
         }
         const toEnd = () => {
-            categoriesRef.current.scroll(0,0)
+            if(categoriesRef.current.scrollLeft < categoriesRef.current.scrollWidth - categoriesRef.current.clientWidth ){
+                categoriesRef.current.scrollTo({
+                    top: 0,
+                    left: categoriesRef.current.scrollWidth,
+                    behavior: 'smooth',
+                });
+            }
         }
         const toRight = () => {
+            const distance = width / 3;
             categoriesRef.current.scrollBy({
                 top: 0,
-                left: 120,
+                left: distance,
                 behavior: 'smooth'
             })
         }
         const toLeft = () => {
+            const distance = width / 3;
             categoriesRef.current.scrollBy({
                 top: 0,
-                left: -120,
+                left: -distance,
                 behavior: 'smooth'
             })
         }
-        return {
-            toStart,
-            toEnd,
-            toRight,
-            toLeft
+        if(direction == 'start'){
+            toStart()
+        }
+        if(direction == 'end'){
+            toEnd()
+        }
+        if(direction == 'right'){
+            toRight()
+        }
+        if(direction == 'left'){
+            toLeft()
         }
     }
     
@@ -47,13 +68,13 @@ export const Carrucel = () => {
     return (
         <>
             <Container>
-                <Button onClick={() => MoveScroll().toLeft()} onDoubleClick={() => MoveScroll().toStart}><MdKeyboardArrowLeft /></Button>
+                <Button onClick={() => MoveScroll('left')} onDoubleClick={() => MoveScroll('start')}><MdKeyboardArrowLeft /></Button>
                 <Categories ref={categoriesRef}>
                     {
                         categories.length > 0 ? (
                             categories.map(({ category }, index) => (
                                 <Category category={category} fn={
-                                    MoveScroll().toStart()
+                                    MoveScroll('start')
                                 } key={index}></Category>
                             ))
                         ) : null
@@ -61,7 +82,7 @@ export const Carrucel = () => {
                     }
 
                 </Categories>
-                <Button onClick={() => MoveScroll().toRight()} ><MdKeyboardArrowRight /></Button>
+                <Button onClick={() => MoveScroll('right')} onDoubleClick={() => MoveScroll('end')} ><MdKeyboardArrowRight /></Button>
             </Container>
 
         </>
@@ -72,6 +93,8 @@ const Container = styled.div`
     display: grid;
     grid-template-columns: min-content 1fr min-content;
     align-items: center;
+    height: 2.4em;
+    padding: 0 0.2em;
     gap: 1em;
 `
 const Button = styled.button`
@@ -95,10 +118,16 @@ const Button = styled.button`
 const Categories = styled.div`
     border-radius: 10px;
     overflow-x: hidden;
+    overflow-x: scroll;
+     -webkit-overflow-scrolling: touch;
+     scrollbar-width: none; 
     display: flex;
     flex-wrap: nowrap;
     gap: 1em;
     background-color: white;
+    ::-webkit-scrollbar {
+  display: none; /* Oculta la barra de scroll */
+}
 `
 const CategoryContainer = styled.div`
     height: 2em;
@@ -106,7 +135,6 @@ const CategoryContainer = styled.div`
     align-items: center;
     padding: 0 0.6em;
     background-color: var(--icolor3);
-
     white-space: nowrap;
     border-radius: 10px;
     text-transform: uppercase;
@@ -114,17 +142,19 @@ const CategoryContainer = styled.div`
     color: rgb(43, 42, 42);
     font-size: 14px;
     transition: 300ms ease-in-out;
-    transition-property: all;
     :hover{
         background-color: #d4dce4;
     }
     ${props => {
         switch (props.selected) {
-            case "true":
+            case true:
                 return `
                     background-color: rgb(111, 185, 245);
                
                     order: -1;  
+                    :hover{
+                        background-color: rgb(111, 185, 245);
+                    }
                 `
 
             default:
@@ -160,7 +190,7 @@ const Category = ({ category, ref }) => {
     }
 
     return (
-        <CategoryContainer selected={isSelected ? "true" : "false"} onClick={(e) => start(category, ref)}>
+        <CategoryContainer selected={isSelected ? true : false} onClick={(e) => start(category, ref)}>
             {category.name}
         </CategoryContainer>
     )
