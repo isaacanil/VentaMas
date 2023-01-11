@@ -93,8 +93,8 @@ const Container = styled.div`
     display: grid;
     grid-template-columns: min-content 1fr min-content;
     align-items: center;
-    height: 2.4em;
-    padding: 0 0.2em;
+    height: 2.6em;
+    padding: 0 1em;
     gap: 1em;
 `
 const Button = styled.button`
@@ -108,7 +108,7 @@ const Button = styled.button`
     font-size: 1.3em;
     border: 0;
     
-    border-radius: 100px;
+    border-radius: 10px;
     outline: 0;
     transition: 500ms background-color ease-in-out;
     :hover{
@@ -134,27 +134,29 @@ const CategoryContainer = styled.div`
     display: flex;
     align-items: center;
     padding: 0 0.6em;
-    background-color: var(--icolor3);
+    background-color: var(--icolor2);
     white-space: nowrap;
     border-radius: 10px;
     text-transform: uppercase;
     font-weight: 500;
-    color: rgb(43, 42, 42);
+    color: rgb(109, 108, 108);
     font-size: 14px;
     transition: 300ms ease-in-out;
     :hover{
-        background-color: #d4dce4;
+        background-color: #e7f0fa;
+        color: rgb(83, 83, 83);
     }
     ${props => {
         switch (props.selected) {
             case true:
                 return `
                     background-color: rgb(111, 185, 245);
-               
+                    color: #132241;
                     order: -1;  
-                    :hover{
-                        background-color: rgb(111, 185, 245);
-                    }
+                    // :hover{
+                    //     background-color: rgb(111, 185, 245);
+                    //     color: white;
+                    // }
                 `
 
             default:

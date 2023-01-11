@@ -11,16 +11,19 @@ import { BsList } from 'react-icons/bs'
 import { TbColumns } from 'react-icons/tb'
 import { handleImageHidden, handleRowMode, selectImageHidden, ReloadImageHiddenSetting, selectIsRow } from '../../../features/setting/settingSlice'
 import { useDispatch, useSelector } from 'react-redux'
-export const MenuApp = ({ borderRadius }) => {
+import { useMatch } from 'react-router-dom'
+import { SearchProductBar } from './SearchProductBar'
+export const MenuApp = ({ borderRadius, setSearchData }) => {
   const dispatch = useDispatch()
   const [isOpenMenu, setIsOpenMenu] = useState(false)
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
-  const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
+  const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu)};
   const handledMenu = () => { setIsOpenMenu(!isOpenMenu) };
   const ref = useRef(null)
   const anotherRef = useRef(null)
   const ImageHidden = useSelector(selectImageHidden)
   const viewRowModeRef = useSelector(selectIsRow)
+  const matchWithVenta = useMatch('/app/venta/:id')
   const closeMenu = () => {
     setIsOpenMenu(false)
   }
@@ -56,25 +59,34 @@ export const MenuApp = ({ borderRadius }) => {
           <div>
             <WebName></WebName>
           </div>
+          {
+            matchWithVenta ? (
+              <SearchProductBar setSearchData={setSearchData}></SearchProductBar>
+            ) : null
+          }
         </Group>
-        <Group>
-          <Button
-            width={'icon32'}
-            borderRadius='normal'
-            iconOn={<TbColumns/>}
-            iconOff={<BsList/>}
-            isActivated={viewRowModeRef ? true : false}
-            onClick={() => handleRowModeFN()}
-           />
-          <Button
-            width={'icon32'}
-            borderRadius='normal'
-            iconOn={<MdOutlineImage/>}
-            iconOff={<MdOutlineHideImage />}
-            isActivated={ImageHidden ? true : false}
-            onClick={() => handleImageHiddenFN()}
-          />
-        </Group>
+        {
+          matchWithVenta ? (
+            <Group>
+              <Button
+                width={'icon32'}
+                borderRadius='normal'
+                iconOn={<TbColumns />}
+                iconOff={<BsList />}
+                isActivated={viewRowModeRef ? true : false}
+                onClick={() => handleRowModeFN()}
+              />
+              <Button
+                width={'icon32'}
+                borderRadius='normal'
+                iconOn={<MdOutlineImage />}
+                iconOff={<MdOutlineHideImage />}
+                isActivated={ImageHidden ? true : false}
+                onClick={() => handleImageHiddenFN()}
+              />
+            </Group>
+          ) : null
+        }
         <SideBar links={MenuData} isOpen={isOpenMenu} />
       </Container>
     </Fragment>
@@ -94,26 +106,21 @@ const Container = styled.div`
    justify-content: space-between;
    padding: 0 1em;
    z-index: 10;
-  
    ${props => {
-     switch (props.borderRadius) {
-       case 'bottom-right':
-         return `
+    switch (props.borderRadius) {
+      case 'bottom-right':
+        return `
          border-bottom-right-radius: 10px;
-         padding-right: 10px;
          @media (max-width: 800px){
           border-bottom-right-radius: 0px;
          padding-right: 1em;
-        }
-
-          
+        }   
         `
         break;
-    
       default:
         break;
     }
-   }}
+  }}
 `
 const Group = styled.div`
   display: flex;

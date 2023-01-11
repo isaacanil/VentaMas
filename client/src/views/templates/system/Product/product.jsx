@@ -2,11 +2,13 @@ import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
+import nombre from '../../../../assets/producto/noimg.png'
 import { selectImageHidden, } from '../../../../features/setting/settingSlice'
 import { useState } from 'react'
-import { addProduct, handleChangePaymentMethod, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../features/cart/cartSlice'
+import { addPaymentMethodAutoValue, addProduct, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../features/cart/cartSlice'
 import { display, positions } from '@mui/system'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import noImg from '../../../../assets/producto/noimg.png'
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
@@ -18,15 +20,25 @@ export const Product = ({ product, }) => {
         dispatch(totalShoppingItems())
         dispatch(totalTaxes())
         dispatch(totalPurchase())
-        dispatch(handleChangePaymentMethod())
+       // dispatch(addPaymentMethodAutoValue())
         dispatch(setChange())
     }
+    // const handleImgError = (e) => {
+    //     e.currentTarget.onerror = null;
+    //     e.currentTarget.src = noImgFound;
+    //     //currentTarget.style.objectFit = 'contain'
+    //     //e.target.src = noImgFound
+    // }
     return (
         <Container onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef}>
             {
                 <Head imageHiddenRef={imageHiddenRef ? true : false}>
                     <ImageContainer imageHiddenRef={imageHiddenRef}>
-                        <img src={product.productImageURL} alt="" />
+                        <img src={product.productImageURL} alt="" onError={({ currentTarget }) => {
+                            currentTarget.onerror = null;
+                            currentTarget.src = noImg;
+                            currentTarget.style.objectFit = 'contain'
+                          }}/>
                     </ImageContainer>
                 </Head>
             }
@@ -42,10 +54,10 @@ export const Product = ({ product, }) => {
     )
 }
 const Container = styled.div`
-    height: 90px;
+    height: 80px;
     width: 100%;
     background-color: #ffffff;
-    border-radius: 4px;
+    border-radius: 8px;
     display: flex;
     gap: 10px;
     overflow: hidden;
@@ -57,19 +69,15 @@ const Container = styled.div`
             transition: 300ms filter ease-in-out;
         }
     }
-  
     ${(props) => {
         switch (props.imageHiddenRef) {
             case true:
                 return `
-                    height: 70px;
+                    height: 60px;
                 `
-
             case false:
                 return `
-                    transfrom: scale(0);
                 `
-
             default:
                 break;
         }
@@ -106,9 +114,10 @@ const Body = styled.div`
    
 `
 const ImageContainer = styled.div`
-    height: 90px;
-    width: 90px;
+    height: 80px;
+    width: 80px;
     overflow: hidden;
+    padding: 4px;
     ${(props) => {
         switch (props.imageHiddenRef) {
             case true:
@@ -131,6 +140,7 @@ const ImageContainer = styled.div`
         width: 100%;
         object-fit: cover;
         object-position: center;
+        border-radius: 7px;
     }
 
 `
@@ -147,7 +157,7 @@ const Price = styled.div`
 
     };
     transition:  800ms border-radius ease-in-out;
-    background-color: rgb(216,216,216);
+    background-color: var(--White1);
 `
 const Title = styled.h5`
     color: rgba(49, 49, 49, 0.966);

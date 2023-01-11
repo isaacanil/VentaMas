@@ -1,7 +1,6 @@
 import { Fragment } from "react"
 import { AddClientModal } from "./AddClient/AddClientModal"
 import { ProductModal } from "./Product/ProductModal"
-import { BillingModal } from "../../component/modals/Billing/BillingModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { useModal } from "../../../hooks/useModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
@@ -49,9 +48,7 @@ export const ModalManager = () => {
         category,
         netContent,
       ))
-
       try {
-
         return <Navigate to={'/app/'}></Navigate>
       }
       catch (e) {
@@ -59,8 +56,6 @@ export const ModalManager = () => {
       }
     }
     /******************************************************************************** */
-
-
   }
   const closeModalAddProducts = () => {
     dispatch(
@@ -85,7 +80,6 @@ export const ModalManager = () => {
         category,
         netContent,
       ))
-
       try {
         return <Navigate to={'/app/'}></Navigate>
       }
@@ -94,8 +88,6 @@ export const ModalManager = () => {
       }
     }
     /******************************************************************************** */
-
-
   }
   const closeModalUpdateProducts = () => {
     dispatch(
@@ -123,7 +115,6 @@ export const ModalManager = () => {
       <UpdateProductModal
         isOpen={UpdateProdModalSelected}
       />
-      <BillingModal isOpen={BillingModalSelected} />
       <SetCustomProduct
         isOpen={SetCustomPizzaSelected}
         handleOpen={handleModalSetCustomPizza}

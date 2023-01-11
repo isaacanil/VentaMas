@@ -279,7 +279,6 @@ const Container = styled.div`
     }    
 `
 const Group = styled.div`
-
     select{
          padding: 0.4em;
          border-radius: 8px;

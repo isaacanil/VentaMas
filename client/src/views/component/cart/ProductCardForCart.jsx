@@ -4,23 +4,19 @@ import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import { separator } from '../../../hooks/separator'
 import { Counter } from '../../templates/system/Counter/Counter'
-import { totalShoppingItems, deleteProduct, totalPurchase, setChange } from '../../../features/cart/cartSlice'
+import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurchaseWithoutTaxes, addPaymentMethodAutoValue } from '../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 export const ProductCardForCart = ({ item }) => {
     const dispatch = useDispatch()
     const deleteProductFromCart = (id) => {
-        dispatch(
-            deleteProduct(id)
-        )
-        dispatch(
-            totalShoppingItems()
-        )
-        dispatch(
-            totalPurchase()
-        )
-        dispatch(
-            setChange()
-        )
+        dispatch(totalPurchase())
+        dispatch(deleteProduct(id))
+        dispatch(totalPurchaseWithoutTaxes())
+        dispatch(totalPurchase())
+        dispatch(totalShoppingItems())
+        dispatch(setChange())
+        dispatch(addPaymentMethodAutoValue())
+       
     }
     return (
         <Container>
@@ -51,9 +47,13 @@ const Container = styled.div`
     position: relative;
     background-color: #ffffff;
     margin: 0.3em;
-    padding: 0 0.4em;
-    border: 1px solid #00000024;
-    border-radius: 10px;
+    padding: 0.2em 0.4em;
+    border: 1px solid rgba(0, 0, 0, 0.100);
+    border-radius: 8px;
+    overflow: hidden;
+    display: grid;
+    border: none;
+    gap: 0.3em;
 
 `
 const Row = styled.div`
@@ -82,26 +82,29 @@ const Group = styled.div`
 const BtnClose = styled.div`
     display: flex;
     align-items: center;
+    justify-content: center;
+    align-items: center;
     background-color: #ce4d4d;
     color: white;
-    clip-path: circle();
+    border-radius: 6px;
     padding: 0.1em;
 `
 const Title = styled.span`
     font-weight: 500;
+    line-height: 16px;
     color: rgb(71, 71, 71);
     text-transform: capitalize;
 `
 const Price = styled.span`
-    max-width: 150px;
+    max-width: 130px;
     width: 100%;
     font-size: 14px;
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: 6px;
     display: block;
     padding: 0 10px;
     margin: 0;
-    background-color: var(--White2);
-    color: #575757;
+    background-color: var(--White1);
+    color: var(--Gray6);
  
 `

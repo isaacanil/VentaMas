@@ -1,5 +1,4 @@
 import React, { Fragment, useEffect, useState } from 'react'
-
 import { useDispatch } from 'react-redux';
 import {
     setChange,
@@ -9,7 +8,8 @@ import {
     addAmountToProduct,
     diminishAmountToProduct,
     onChangeValueAmountToProduct,
-    totalShoppingItems
+    totalShoppingItems,
+    addPaymentMethodAutoValue
 } from '../../../../features/cart/cartSlice'
 import { Alert } from '../Product/Cart/Alert';
 import Style from './Counter.module.scss'
@@ -17,97 +17,39 @@ import Style from './Counter.module.scss'
 export const Counter = ({ amountToBuyTotal, stock, id }) => {
     const dispatch = useDispatch()
     const [DeletePrevent, setDeletePrevent] = useState(false)
-    const [counter, setCounter] = useState(
-        {
-            id
-        }
-    )
+    const [counter, setCounter] = useState({id})
     useEffect(() => {
         if (stock >= counter.value) {
-            dispatch(
-                onChangeValueAmountToProduct(counter)
-            )
-
-            dispatch(
-                totalTaxes()
-            )
-            dispatch(
-                totalPurchase()
-            )
-            dispatch(
-                totalShoppingItems()
-            )
-            dispatch(
-                setChange()
-            )
+            dispatch(totalTaxes())
+            dispatch(totalShoppingItems())
+            dispatch(totalPurchase())
+            dispatch(onChangeValueAmountToProduct(counter))
+            dispatch(addPaymentMethodAutoValue())
+            dispatch(setChange())
         }
     }, [counter])
-    if (counter) {
-    }
     const handleIncreaseCounter = () => {
-        setCounter(
-            {
-                id
-
-            }
-        )
-        dispatch(
-            addAmountToProduct(counter)
-        )
-        dispatch(
-            totalShoppingItems()
-        )
-        dispatch(
-            totalTaxes()
-        )
-        dispatch(
-            totalPurchase()
-        )
-        dispatch(
-            setChange()
-        )
+        setCounter({id})
+        dispatch(addAmountToProduct(counter))
+        dispatch(totalShoppingItems())
+        dispatch(totalTaxes())
+        dispatch(totalPurchase())
+        dispatch(addPaymentMethodAutoValue())
+        dispatch(setChange())
     }
-    //console.log(amountToBuy)
     const handleDiminishCounter = () => {
         if(amountToBuyTotal > 1){
-        setCounter(
-            {
-                id
-            }
-        )
-        dispatch(
-            diminishAmountToProduct(counter)
-        )
-        dispatch(
-            totalShoppingItems()
-        )
+        setCounter({id})
+        dispatch(diminishAmountToProduct(counter))
+        dispatch(totalPurchase())
+        dispatch(totalShoppingItems())
+        dispatch(totalTaxes())
+        dispatch(addPaymentMethodAutoValue())
         }
         if (amountToBuyTotal === 1) {
-       
             setDeletePrevent(true)
-            // if (MenuDelete.execute === true) {
-            //     dispatch(
-            //         deleteProduct(id, MenuDelete)
-            //     )
-            //     setCounter(
-            //         {
-            //             id
-            //         }
-            //     )
-            //     dispatch(
-            //         totalTaxes()
-            //     )
-            //     dispatch(
-            //         totalPurchase()
-            //     )
-            //     dispatch(
-            //         setChange()
-            //     )
-            // }
-
         }
     }
-
     return (
         <Fragment>
             <div className={`${Style.Counter_container}`}>

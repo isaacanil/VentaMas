@@ -2,18 +2,20 @@ import { useState } from "react"
 import { MdClose } from "react-icons/md"
 import { useDispatch } from "react-redux"
 import styled from "styled-components"
-import { deleteClient } from "../../../../features/cart/cartSlice"
+import { deleteClientInState } from "../../../../features/cart/cartSlice"
 
-export const SearchClient = ({ type, text, ref, size, title, label, clearInputWhen, required, focusColor, labelColor, value, onChange, readOnly, onFocus }) => {
+
+export const SearchClient = ({ name, type, text, ref, size, title, label, clearInputWhen, required, focusColor, labelColor, value, onChange, fn, readOnly, onFocus }) => {
    const dispatch = useDispatch()
     const handleReset = () => {
-   dispatch(deleteClient())
- 
+         fn ? fn() : null
+         dispatch(deleteClientInState())
     }
     return (
         <Container ref={ref}>
             <InputContainer>
                 <input
+                    name={name}
                     type={type}
                     value={clearInputWhen ? undefined : title}
                     required={required}

@@ -31,22 +31,24 @@ export const Alert = ({ isOpen, handleIsOpen, id }) => {
         handleIsOpen(false)
     }
     return (
-        isOpen ? (
+      
             <Component isOpen={isOpen ? 'true' : 'false'}>
                 <h1>¿Quieres Eliminar?</h1>
                 <ButtonGroup>
                     <Button
+                    borderRadius='normal'
                         title={<IoMdTrash />}
                         width='icon32'
                         onClick={() => handleDelete(id)}
                     />
                     <Button
                         title='Cancelar'
+                        borderRadius='normal'
                         onClick={() => close()}
                     />
                 </ButtonGroup>
             </Component>
-        ) : null
+     
     )
 }
 
@@ -61,8 +63,9 @@ const Component = styled.div`
     align-items: center;
     justify-content: space-between;
     padding: 0 1em;
-    transition: all 4s ease;
+    transition: transform 500ms ease-in-out;
     z-index: 20;
+    
     h1{
         font-size: 1em;
         margin: 0;
@@ -72,12 +75,15 @@ const Component = styled.div`
         switch (props.isOpen) {
             case 'true':
                 return `
-                    trasnform: translateX(0);
+              
+                transition: transform 390ms ease-in-out;
+                transform: scale(1) translateY(0);
                 
                 `
             case 'false':
                 return `
-                    transform: translateX(200px);
+                transition: transform 200ms ease-in-out;
+                transform: scale(0.5) translateY(80px);
                   
                 `
 

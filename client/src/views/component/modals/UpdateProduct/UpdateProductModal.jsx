@@ -68,13 +68,10 @@ export const UpdateProductModal = ({ isOpen }) => {
 
     const dispatch = useDispatch()
     const [errorMassage, setErrorMassage] = useState('')
-    const BtnFiles = (e) => {
-        e.preventDefault()
-        document.getElementById('file').click()
-    }
+
     const handleSubmitAddProducts = () => {
         updateProduct(product),
-            closeModal()
+        closeModal()
         dispatch(clearUpdateProductData())
     }
     const closeModal = () => {
@@ -232,8 +229,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                         readOnly
                         placeholder='Precio de Venta' />
                 </Group>
-
-
             </Container>
         </Modal>
     )

@@ -25,7 +25,6 @@ export const AddOrderModal = ({ isOpen }) => {
     const dispatch = useDispatch();
     const [provider, setProvider] = useState('')
     const OrderSelected = useSelector(SelectOrder)
-    
     const now = new Date()
     const day = now.getDate()
     useEffect(() => {
@@ -48,7 +47,6 @@ export const AddOrderModal = ({ isOpen }) => {
         dispatch(cleanOrder());
     }
 
-    console.log(OrderSelected)
     return (
         isOpen ? (
             <div className={style.ModalContainer}>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 //importando componentes de react-router-dom
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, HashRouter } from 'react-router-dom';
@@ -22,6 +22,7 @@ import {
   Compras as CompraPage,
   Inventario as InventarioPage,
   Setting,
+  TaxReceiptSetting,
   MultimediaManager,
   Registro as RegistroPage,
   RequireAuth,
@@ -42,6 +43,7 @@ import { DeleteProductAlert } from './views/templates/system/Alerts/DeleteProduc
 import { GenericLoader } from './views/templates/system/loader/GenericLoader';
 import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
+import { getTaxReceiptData} from './features/taxReceipt/taxReceiptSlice';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
@@ -50,16 +52,14 @@ function App() {
   //Todo ******detectando si hay usuarios logueados******
   useEffect(() => {
     AuthStateChanged(dispatch)
-    dispatch(
-      ReloadImageHiddenSetting()
-    )
+    dispatch(ReloadImageHiddenSetting())
   }, [])
   const isConnected = useCheckForInternetConnection()
   console.log(isConnected)
   if (user === false) {
     return <GenericLoader></GenericLoader>
   }
-
+  
   return (
     <Fragment>
       <Router>
@@ -67,6 +67,7 @@ function App() {
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
           <Route path='/app/setting/' element={<Setting />} />
+          <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting/>}/>
           <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
           <Route path='/register' element={<Register />}></Route>
           <Route path='/login' element={<Login />}></Route>

@@ -2,6 +2,7 @@ import {createSlice} from '@reduxjs/toolkit'
 
 const initialState = {
     mode: '',
+    searchTerm: '',
     client: {
         name: '',
         tel: '',
@@ -13,16 +14,16 @@ const initialState = {
 }
 
 export const clientSlice = createSlice({
-    name: 'user',
+    name: 'clientCart',
     initialState,
     reducers: {
         
     }
 })
 
-export const { login, logout } = userSlice.actions;
+export const { login, logout } = clientSlice.actions;
 
 //selectors
-export const selectUser = (state) => state.user.user;
+export const selectUser = (state) => state.client.user;
 
 export default userSlice.reducer

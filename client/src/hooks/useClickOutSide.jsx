@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from 'react'
-
 export const useClickOutSide = (ref, executedWhenIsTrue, fn, eventType = 'mousedown') => {
     useEffect(() => {
         if(executedWhenIsTrue && ref.current) {

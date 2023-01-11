@@ -1,17 +1,13 @@
 @import url(../../../styles/variables.css);
 :root {
    --menu-items: rgb(241, 241, 241);
-
-
    //btnMenuItem
    --btnMenuItem-bg-color: var(--menu-items);
    --btnMenuItem-width: 1.6em;
    --btnMenuItem-height: 2px;
 
 }
-
    .MenuBtn {
-      
       justify-self: start;
       max-height: 32px;
       width: 2em;
@@ -22,7 +18,6 @@
       background-color: rgba(0, 0, 0, 0.2);
       border-radius: 10px;
       cursor: pointer;
-      
       
       .MenuBtn_icon {
          position: relative;
@@ -103,6 +98,7 @@
 }
 .Menu_backdrop.ActiveBackdrop{
    display: block;
+   pointer-events: visible;
    backdrop-filter: blur(10px);
    background-color: rgba(0, 0, 0, 0.200);
 

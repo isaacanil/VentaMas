@@ -1,9 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import Style from './Inventario.module.scss'
 //import { useModal } from '../../../hooks/useModal'
-import { Navigate } from 'react-router-dom'
-import { PlusIcon } from '../../../assets/system/plus/plusIcon'
-import noimg from '../../../assets/producto/noimg.png'
+import noImg from '../../../assets/producto/noimg.png'
 import { getProducts, deleteProduct, getProduct } from '../../../firebase/firebaseconfig.js'
 import { useDispatch } from 'react-redux'
 import {
@@ -15,12 +13,10 @@ import {
   SearchList
 
 } from '../../index'
-import { async } from '@firebase/util'
 import { openModalUpdateProd } from '../../../features/modals/modalSlice'
 import { ChangeProductData } from '../../../features/updateProduct/updateProductSlice'
 import { handleDeleteProductAlert } from '../../../features/Alert/AlertSlice'
 import { IoMdTrash } from 'react-icons/io'
-import { MdModeEdit } from 'react-icons/md'
 
 export const Inventario = () => {
   const dispatch = useDispatch()
@@ -32,13 +28,11 @@ export const Inventario = () => {
     //getProducts(setProducts);
     getProducts(setProducts)
   }, []);
-
   const handleDeleteProduct = (id) => {
     dispatch(
       handleDeleteProductAlert(id)
     )
   }
-
 
   useEffect(() => {
     const filtered = products.filter((e) => e.product.productName.toLowerCase().includes(searchData.toLowerCase()));
@@ -90,7 +84,7 @@ export const Inventario = () => {
                           src={product.productImageURL} alt=""
                           onError={({ currentTarget }) => {
                             currentTarget.onerror = null;
-                            currentTarget.src = noimg;
+                            currentTarget.src = noImg;
                             currentTarget.style.objectFit = 'contain'
                           }} />
                       </div>

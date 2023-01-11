@@ -28,21 +28,12 @@ const app = initializeApp(firebaseConfig);
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
-enableIndexedDbPersistence(db)
-
-
-
-
-
-
-
-
 
 
 //Todo Product **************************************************************************
 export const AuthStateChanged = (dispatch) => {
   onAuthStateChanged(auth, (userAuth) => {
-    setTimeout(()=>{
+    setTimeout(() => {
       if (userAuth) {
         const { email, uid, displayName } = userAuth
         dispatch(
@@ -51,7 +42,6 @@ export const AuthStateChanged = (dispatch) => {
             uid,
             displayName,
           })
-  
         );
       } else { dispatch(logout()) }
     }, 1000)
@@ -152,23 +142,24 @@ export const UploadProdImg = (file) => {
 //   }
 // }
 export const UploadProductData = (product) => {
-  return new Promise((resolve, reject)=>{
+  return new Promise((resolve, reject) => {
     const productRef = doc(db, "products", product.id)
     setDoc(productRef, { product })
-    .then(()=>{
-      console.log('document written', product)
-      resolve()
-    })
-    .catch((error)=>{
-      console.log('Error adding document:', error)
-      reject()
-    })
+      .then(() => {
+        console.log('document written', product)
+        resolve()
+      })
+      .catch((error) => {
+        console.log('Error adding document:', error)
+        reject()
+      })
   })
 }
 /****************** **********************/
 export const getProducts = async (setProduct) => {
   const productRef = collection(db, "products")
-  const q = query(productRef, orderBy("product.productName", "desc"), orderBy("product.order", "asc"))
+  const q = query(productRef, orderBy("product.productName", "desc"))
+  //, orderBy("product.order", "asc")
   onSnapshot(q, (snapshot) => {
     let productsArray = snapshot.docs.map(item => item.data())
     setProduct(productsArray)
@@ -180,14 +171,44 @@ export const updateProduct = async (product) => {
   await updateDoc(productRef, { product })
 }
 export const updateClient = async (client) => {
-  
+  console.log('product from firebase', client)
   const clientRef = doc(db, 'client', client.id)
   await updateDoc(clientRef, { client })
-  .then(()=>{console.log('product from firebase', client)})
-
- 
+    .then(() => { console.log('product from firebase', client) })
+}
+export const createClient = async (client) => {
+  try {
+    const clientRef = doc(db, 'client', client.id)
+    await setDoc(clientRef, { client })
+  } catch (error) {
+    console.error("Error adding document: ", error)
+  }
+}
+export const getClients = async (setClients) => {
+  const clientRef = collection(db, "client")
+  onSnapshot(clientRef, (snapshot) => {
+    let clientArray = snapshot.docs.map(item =>  item.data())
+    console.log(clientArray)
+    setClients(clientArray)
+  })
+}
+export const deleteClient = async (id) => {
+  console.log(id)
+  const counterRef = doc(db, "client", id)
+  try {
+    await deleteDoc(counterRef)
+    //deleteDoc(doc(db, `products`, id))
+    console.log(id)
+  } catch (error) {
+    console.log(error)
+  }
 }
 
+export const deleteMultipleClients = (array) => {
+  array.forEach((id) => {
+    deleteClient(id)
+  })
+}
 export const getCat = async (setCategories) => {
   const categoriesRef = collection(db, "categorys")
   const q = query(categoriesRef, orderBy("category.name"))
@@ -205,13 +226,7 @@ export const getTaxes = async (setTaxe) => {
   const taxeArray = docs.map(item => item.data())
   setTaxe(taxeArray)
 }
-export const getClients = async (setClients) => {
-  const clientRef = collection(db, "client")
-  onSnapshot(clientRef, (snapshot) => {
-    let clientArray = snapshot.docs.map(item => item.data())
-    setClients(clientArray)
-  })
-}
+
 export const addIngredientTypePizza = async (ingredient) => {
   const IngredientRef = doc(db, "products", "6dssod");
   // Atomically add a new region to the "regions" array field.
@@ -259,7 +274,7 @@ export const getBills = async (setBills, time) => {
   const { docs } = await getDocs(q);
   const arrayBills = docs.map(item => item.data());
   setBills(arrayBills)
-    
+
 }
 export const AddBills = (data) => {
   //const clientRef = doc(db, "client", "4O-0")
@@ -324,7 +339,7 @@ export const getOrder = async (setOrder) => {
 export const AddOrder = async (value) => {
   let data = {
     ...value,
-    id : nanoid(6), 
+    id: nanoid(6),
     createdAt: Date.now()
   }
   const OrderRef = doc(db, "orders", data.id)
@@ -337,11 +352,68 @@ export const AddOrder = async (value) => {
   }
 
 }
-
 export const getOrders = async (setOrders) => {
   const ordersRef = collection(db, "orders")
   onSnapshot(ordersRef, (snapshot) => {
     let orderArray = snapshot.docs.map(item => item.data())
     setOrders(orderArray)
   })
+}
+
+export const createTaxReceiptDataBD = async () => {
+  const counterRef = doc(db, "counter", "c1")
+  const taxReceipts = {
+    data: [
+      {
+        name: 'CONSUMIDOR FINAL',
+        type: 'B',
+        serie: 2,
+        sequence: 1,
+        increase: 1,
+        quantity: 2000
+      },
+      {
+        name: 'CREDITO FISCAL',
+        type: 'B',
+        serie: 1,
+        sequence: 1,
+        increase: 1,
+        quantity: 2000
+      }
+    ]
+  }
+
+
+  try {
+    await setDoc(counterRef, taxReceipts)
+    console.log(counterRef)
+  } catch (err) {
+    console.log(err)
+  }
+}
+export const updateTaxReceiptDataBD = async (taxReceipt) => {
+  console.log('entrando......................................')
+  const counterRef = doc(db, "counter", "c1")
+  try {
+    updateDoc(counterRef,
+      { data: taxReceipt }
+    );
+    console.log('listo, to bien')
+  } catch (err) {
+    console.log('todo mal')
+  }
+}
+export const deleteTaxReceiptDataBD = () => {
+  const counterRef = doc(db, "counter", "c1")
+  deleteDoc(counterRef);
+}
+export const readTaxReceiptDataBD = (setTaxReceiptDataBD) => {
+  const countersRef = collection(db, "counter")
+  onSnapshot(countersRef, (data) => {
+    let counterArray = data.docs.map(item => item.data())
+    let [obj] = counterArray
+    console.log(obj.data)
+    setTaxReceiptDataBD(obj.data)
+  });
+
 }

@@ -14,16 +14,17 @@
    margin: 0;
    gap: 10px;
    .ProductsContainer {
-      background-color: var(--icolor3);
+      background-color: var(--icolor2);
       display: flex;
       width: 100%;
       margin: 0;
       padding: 0;
       overflow: hidden;
       position: relative;
-      border-radius: 10px;
+      //border-radius: 10px;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
       .Products{
-         padding-bottom: 0.4em;
          height: 100%;
          width: 100%;
          position: relative;
@@ -35,51 +36,7 @@
             overflow: hidden;
             overflow-y: scroll;
        
-            .group {
-               display: grid;
-               grid-template-columns: 3fr 2fr min-content;
-               align-items: center;
-               justify-content: center;
-               height: auto;
-               background-color: rgb(242,248,249);
-               padding: 0.3em 0.5em;
-               //border: 1px solid rgba(0, 0, 0, 0.1);
-               //box-shadow: 0 0 10px rgba(0, 0, 0, 0.100);
-               margin: 0.5em;
-               border-radius: 6px;
-               column-gap: 0.8em;
-               row-gap: 0;
-      
-               .Item1 {
-                  font-weight: 700;
-                  color: rgba(46, 46, 46, 0.849);
-                  line-height: 1pc;
-                  font-weight: 700;
-                  font-size: 13px;
-                  display: -webkit-box;
-                  -webkit-line-clamp: 2;
-                  -webkit-box-orient: vertical;
-                  //white-space: nowrap;
-                  text-overflow: ellipsis;
-                  overflow: hidden;
-               }
-      
-               .CrossContainer {
-                  display: flex;
-                  height: min-content;
-                  align-items: center;
-                  justify-content: center;
-                  padding: 0.4em;
-                  clip-path: circle();
-                  background-color: #ae423f;
-      
-                  .Cross {
-                     fill: white;
-                     width: 0.8em;
-                  }
-               }
-      
-            }
+          
 
          }
 
@@ -113,7 +70,8 @@
       border-bottom: 0;
       position: absolute;
       top: 0;
-      z-index: 10000000;
+      z-index: 1;
+      background-color: white;
     
 
       .ClientBar {
@@ -164,7 +122,7 @@
             border-radius: 6px;
             gap: 1em;
 
-            .Item1 {}
+            
 
             .CrossContainer {
                display: flex;

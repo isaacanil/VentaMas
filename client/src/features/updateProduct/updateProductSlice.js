@@ -38,23 +38,10 @@ export const updateProductSlice = createSlice({
         ChangeProductData: (state, action) => {
             console.log(action.payload)
             state.status = true
-            state.lastProduct.productName = action.payload.productName
-            state.lastProduct.productImageURL = action.payload.productImageURL
-            state.lastProduct.cost = action.payload.cost
-            state.lastProduct.price = action.payload.price
-            state.lastProduct.stock = action.payload.stock
-            state.lastProduct.tax = action.payload.tax
-            state.lastProduct.category = action.payload.category
-            state.lastProduct.netContent = action.payload.netContent
-            state.lastProduct.amountToBuy = action.payload.amountToBuy
-            state.lastProduct.id = action.payload.id
-            state.lastProduct.order = action.payload.order
-            state.lastProduct.size = action.payload.size
-            state.lastProduct.type = action.payload.type
-
-            if( state.lastProduct.size === null){
-
-            }
+            state.lastProduct = {
+                ...state.lastProduct,
+                ...action.payload,
+              };
         },
         ChangeProductImage: (state, action) => {
             state.lastProduct.productImageURL = action.payload

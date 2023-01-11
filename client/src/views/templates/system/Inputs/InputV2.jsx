@@ -93,7 +93,9 @@ const Container = styled.div`
             case 'small':
                 return `
             
-            width: 16em;
+            width: 11em;
+            
+            
           `
             case 'medium':
                 return `

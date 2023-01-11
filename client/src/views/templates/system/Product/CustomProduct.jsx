@@ -16,18 +16,13 @@ export const CustomProduct = ({ product }) => {
     const dispatch = useDispatch();
     const ProductSelected = useSelector(SelectProduct);
     const imageHiddenRef = useSelector(selectImageHidden)
-    const handleGetThisProduct = (product) => {
-        dispatch(
-            handleModalSetCustomPizza()
-        )
-        console.log(product)
-    }
+    const handleGetThisProduct = (product) => dispatch(handleModalSetCustomPizza());
     return (
         <ProductContainer  onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef ? true : false}>
             <ProductImgWrapper imageHiddenRef={imageHiddenRef ? true : false}>
                 <span>
-                    {/*{product.productName.charAt(0)} */}
-                    P
+                    {product.productName.charAt(0)}
+               
                 </span>
             </ProductImgWrapper>
             <Body>
@@ -35,8 +30,6 @@ export const CustomProduct = ({ product }) => {
                     <Title>{product.productName}</Title>
                 </Main>
                 <Footer>
-                   
-
                 </Footer>
             </Body>
         </ProductContainer>
@@ -44,7 +37,7 @@ export const CustomProduct = ({ product }) => {
 }
 const ProductContainer = styled.div`
     order: -2;
-    border: 1px solid rgba(0, 0, 0, 0.200);
+    //border: 1px solid rgba(0, 0, 0, 0.200);
     //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.100);
     border-radius: 6px;
     background-color: rgb(255, 255, 255);
@@ -59,12 +52,12 @@ const ProductContainer = styled.div`
         switch (props.imageHiddenRef) {
             case true:
                 return `
-                    height: 70px;
+                    height: 60px;
                 `
 
             case false:
                 return `
-                    transfrom: scale(0);
+                    height: 80px;
                 `
 
             default:
@@ -91,17 +84,30 @@ ${(props) => {
 const ProductImgWrapper = styled.div`
     overflow: hidden;
     display: flex;
-    width: 80px;
-    height: 80px;
+    width: 100%;
+    height: 100%;
+    padding: 0.2em;
     justify-content: center;
     align-items: center;
     ${(props) => {
         switch (props.imageHiddenRef) {
             case false:
                 return`
-                    position: relative;
-                    transform: translateX(0px);
-                    transition: all 400ms ease-in-out;
+                height: 80px;
+                transition: all 400ms ease-in-out;
+                span{
+                    width: 80px;
+                    font-size: 3em;
+                }
+                `
+                case true:
+                    return`
+                    height: 60px;
+                    span{
+                        width: 60px;
+                        font-size: 2em;
+                    }
+                    
                 `
             default:
                 break;
@@ -111,11 +117,12 @@ const ProductImgWrapper = styled.div`
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 3em;
+        
         font-weight: 700;
-        padding: 1em;
+        height: 100%;
         color: white;
-        background-color: #2b2b2b;
+        background-color: #cc1313;
+        border-radius: 7px;
     }
 ;
     ${(props) => {

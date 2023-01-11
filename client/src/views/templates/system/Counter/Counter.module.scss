@@ -4,25 +4,24 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #ffffff;
-    padding: 0.2em;
+    background-color: var(--White1);
+    padding: 0 0.2em;
     //box-shadow: 0 0 10px rgba(0, 0, 0, 0.100); 
     //border: 1px solid rgba(0, 0, 0, 0.200);
-    //border-radius: 100px;
+    border-radius: 6px;
     .Couter_button{
-       //border-radius: 100px;
-       width: min-content;
-       height: min-content;
        text-align: center;
-       //border: 1px solid rgba(0, 0, 0, 0.300);
        border: none;
        outline: none;
        font-weight: 900;
+       width: 1.2em;
+       height: 1.2em;
        display: flex;
        align-items: center;
        justify-content: center;
        padding: none;
-       background-color: transparent;
+       border-radius: 4px;
+       background-color: var(--White);
        color: rgba(29, 29, 29, 0.842);
        &:focus{
          outline: none;
@@ -34,6 +33,7 @@
       text-align: center;
       font-size: 17px;
       outline: none;
+      background-color: transparent;
       &::-webkit-inner-spin-button, &::-webkit-outer-spin-button{
          -webkit-appearance: none;
          margin: 0;

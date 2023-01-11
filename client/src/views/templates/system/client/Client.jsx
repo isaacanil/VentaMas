@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useDispatch, useSelector } from 'react-redux';
-import { addClient } from "../../../../features/cart/cartSlice";
-import { SelectFacturaData } from "../../../../features/cart/cartSlice";
+import { selectClientInState, SelectFacturaData } from "../../../../features/cart/cartSlice";
+import { deleteClient, deleteMultipleClients } from "../../../../firebase/firebaseconfig";
 const Container = styled.li`
     list-style: none;
     border: 1px solid #00000073;
@@ -15,19 +15,17 @@ const Container = styled.li`
     text-transform: uppercase;
    
 `
-export const Client = ({ client, Close}) => {
+export const Client = ({ client, Close, updateClientMode}) => {
     const dispatch = useDispatch()
     const BillingData = useSelector(SelectFacturaData)
     const handleSubmit = (client) => {
-        dispatch(
-            addClient(
-                client
-            )
-        );
+
+        dispatch(selectClientInState(client))
+        updateClientMode()
         Close()
     }
     return (
-        <Container onClick={() => handleSubmit(client)} key={client.id}>
+        <Container onClick={() => handleSubmit(client)}>
             {client.name}
         </Container>
     )

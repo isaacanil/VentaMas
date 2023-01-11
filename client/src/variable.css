@@ -11,6 +11,7 @@
     --Gray3: rgb(120, 120, 120);
     --Gray4: rgb(100, 100, 100);
     --Gray5: rgb( 80, 80, 80);
+    --Gray6: rgb(70, 70, 70);
     --Black4: rgb(60, 60, 60);
     --Black3: rgb( 40, 40, 40);
     --Black2: rgb( 20, 20, 20);
@@ -24,9 +25,9 @@
     /*color secundario*/
     --icolor1: #67B8DE;
     /*color terciario*/
-    --icolor2: #91C9E8;
+    --icolor2: #eff6fa;
     /*color cuaternario*/
-    --icolor3: rgb(240,244,248);
+    --icolor3:  #d4e3f1 ;
     --icolor4: rgba(202, 214, 230, 0.274);
  
  

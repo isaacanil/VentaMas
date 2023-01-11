@@ -7,6 +7,7 @@ import { separator } from '../../../hooks/separator'
 import { DatePicker } from '../../templates/system/DatePicker/DatePicker'
 import { correctDate } from '../../../hooks/correctDate'
 import { SelectCategory } from '../../templates/system/Select/SelectCategory'
+import { Bill } from './Bill'
 export const Registro = () => {
   const [bills, setBills] = useState([])
   const [client, setClient] = useState('')
@@ -19,6 +20,7 @@ export const Registro = () => {
     const r = bills.reduce((total, {data}) => total + data.totalPurchase.value, 0)
     return r
   }
+  console.log(bills)
   return (
     <Fragment>
       <Container>
@@ -51,33 +53,12 @@ export const Registro = () => {
                 <ITEMS text='right'>
                   <h3>Cambio</h3>
                 </ITEMS>
-
               </BillsHead>
               <BillsBody>
                 {
                   bills.length > 0 ? (
                     bills.map(({ data }, index) => (
-                      <Bills key={index}>
-                        <ITEMS text='left'>
-                          {data.client ? data.client.name : 'No hay cliente'}
-                        </ITEMS>
-                        <ITEMS text='left'>
-                          {`${new Date(data.date.seconds * 1000).toLocaleString()} `}
-                          {/* {new Date(data.date.seconds * 1000).toLocaleString()} */}
-                        </ITEMS>
-                        <ITEMS text='right'>
-                          RD$ {separator(data.totalPurchase.value)}
-                        </ITEMS>
-                        <ITEMS text={'right'}>
-                          RD$ {separator(data.totalTaxes.value)}
-                        </ITEMS>
-                        <ITEMS text={'right'}>
-                          RD$ {separator(data.cashPaymentMethod.value)}
-                        </ITEMS>
-                        <ITEMS text={'right'}>
-                          RD$ {separator(data.change.value)}
-                        </ITEMS>
-                      </Bills>
+                     <Bill data={data} key={index} />
                     ))
                   ) : null
 
@@ -227,12 +208,7 @@ const ITEMS = styled.div`
     }
   }}
 `
-const Bills = styled(Grid)`
- background-color: white;
- border-bottom: 1px solid rgba(0, 0, 0, 0.200);
- padding: 0 1em;
- 
-`
+
 const BillsBody = styled.div`
 
 `

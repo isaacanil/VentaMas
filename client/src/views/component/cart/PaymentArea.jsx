@@ -3,16 +3,24 @@ import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
 import { monetarySymbols } from '../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
-import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, handleChangePaymentMethod } from '../../../features/cart/cartSlice'
+import { SelectDelivery, SelectTotalTaxes, addPaymentMethod,  SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../features/cart/cartSlice'
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import { getTaxReceiptData, handleNCFStatus, SELECT_NCF_STATUS } from '../../../features/taxReceipt/taxReceiptSlice'
+import { readTaxReceiptDataBD } from '../../../firebase/firebaseconfig'
+import { quitarCeros } from '../../../hooks/quitarCeros'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
+    const [taxReceiptData, setTaxReceiptData] = useState()
+    const NCF_STATUS = useSelector(SELECT_NCF_STATUS)
     const TaxesRef = useSelector(SelectTotalTaxes)
+    const PaymentValue = useSelector(SelectPaymentValue)
     const DeliveryRef = useSelector(SelectDelivery)
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
-    const [PayValue, setPayValue] = useState()
+    const [PayValue, setPayValue] = useState(0)
+    const [NCFStatus, setNCFStatus] = useState(false)
+    const [focusedPaymentInput, setFocusedPaymentInput] = useState(false)
     const paidAmount = useSelector(state => state.cart.paymentMethod)
     const [paymentMethod, setPaymentMethod] = useState([
         {
@@ -44,47 +52,50 @@ export const PaymentArea = () => {
                     }
                 })
             )
-
         },
-        setValueToPaymentMethodSelected: () => {
-            let SearchingMethod = paymentMethod.find((methodSelected) => methodSelected.status === true)
-            setPaymentMethod(
-                paymentMethod.map((method) => {
-                    if (SearchingMethod.method == method.method) {
-                        return { ...method, value: Number(PayValue) }
-                    }
-                    if (SearchingMethod.method !== method.method) {
-                        return { ...method, status: false, value: 0 }
-                    }
-                })
-            )
-        }
 
     }
+    const setValueToPaymentMethodSelected = async (value) => {
+        const updatedPaymentMethod = paymentMethod.map((method) => {
+            if (value === null) {
+                return { ...method, value: 0 };
+              }
+            if (method.status && value !== null) {
+                return { ...method, value: Number(value) };
+            }
+            return { ...method, status: false, value: 0 };
+        });
+        setPaymentMethod(updatedPaymentMethod);
+    }
+    const handlePayment = (e) => {
+        dispatch(addPaymentValue(e.target.value))
+    }
     useEffect(() => {
-
-    }, [PayValue])
-    console.log(PayValue)
-    useEffect(() => {
-        PaymentMethodFN.setValueToPaymentMethodSelected(TotalPurchaseRef)
-    }, [TotalPurchaseRef])
-    // useEffect(() => {
-    //     setPayValue(paidAmount.find(method => method.status === true).value)
-    // }, [TotalPurchaseRef])
+        setValueToPaymentMethodSelected(PaymentValue)
+        console.log('.....', paymentMethod)
+    }, [PaymentValue])
     useEffect(() => {
         dispatch(addPaymentMethod(paymentMethod))
-        dispatch(handleChangePaymentMethod())
         dispatch(setChange())
-
-
-    }, [paymentMethod, ChangeRef])
-    console.log(paymentMethod)
+        console.log(paymentMethod)
+    }, [paymentMethod])
+    useEffect(() => {
+        readTaxReceiptDataBD(setTaxReceiptData)
+      }, [])
+      useEffect(() => {
+        if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
+          dispatch(getTaxReceiptData(taxReceiptData))
+        }
+      }, [taxReceiptData])
+    useEffect(()=>{
+        dispatch(handleNCFStatus(NCFStatus))
+    }, [NCFStatus])
     return (
         <Container>
             <Row>
-                <Group class='option1'>
+                <Group className='option1'>
                     <Group>
-                        <Switch></Switch>
+                        <Switch checked={NCF_STATUS ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
                         <STitle>Comprobante Fiscal</STitle>
                     </Group>
                     <Group>
@@ -99,7 +110,7 @@ export const PaymentArea = () => {
             </Row>
             <Area>
                 <label className='title' htmlFor="">Método de Pago</label>
-                <Group class='option1'>
+                <Group className='option1'>
                     <Group>
                         <input type="radio" name="payment-method" id="cash"
                             defaultChecked
@@ -126,20 +137,20 @@ export const PaymentArea = () => {
                 </Group>
             </Area>
             <Row margin='bottom'>
-                <Group class='option1'>
+                <Group className='option1'>
                     <span>Total ITBIS: {useFormatPrice(TaxesRef)}</span>
                     <Item>
                         <label htmlFor="">Pago con {monetarySymbols.dollarSign}</label>
                         <input
                             type="number"
-                            value={PayValue}
-                            onChange={(e) => setPayValue(Number(e.target.value))}
+                            value={quitarCeros(Number(PaymentValue))}
+                            onChange={(e) => handlePayment(e)}
                         />
                     </Item>
                 </Group>
             </Row>
             <Row margin='bottom'>
-                <Group class='option1'>
+                <Group className='option1'>
                     <span>Delivery: {useFormatPrice(DeliveryRef.value)}</span>
                     <Item>
                         <label htmlFor="">Cambio {monetarySymbols.dollarSign}</label>
@@ -151,7 +162,7 @@ export const PaymentArea = () => {
     )
 }
 const Container = styled.div`
-
+    background-color: white;
 `
 const Row = styled.div`
     align-items: center;
@@ -172,7 +183,7 @@ const Group = styled.div`
     align-items: center;
     gap: 0.4em;
     ${props => {
-        switch (props.class) {
+        switch (props.className) {
             case 'option1':
                 return `
                     justify-content: space-between;
@@ -220,20 +231,24 @@ const STitle = styled.div`
     
     white-space: nowrap;
 `
-
 const Area = styled.div`
     .title{
         position: absolute;
         top: -14px;
         font-weight: 650;
         font-size: 14px;
+        line-height: 19px;
         color: var(--Black3);
         background-color: white;
+        border-radius: 10px;
+        padding: 0 0.2em;
     }
     position: relative;
     padding: 0.3em 0.5em;
-    border: 1px solid #0000003d;
-    border-radius: 8px;
+    //border: 1px solid #0000003d;
+    color: #292929;
+    background-color: var(--icolor4);
+    border-radius: 4px;
     margin: 0.4em 0;
 
 `

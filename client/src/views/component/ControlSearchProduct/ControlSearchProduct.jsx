@@ -31,14 +31,7 @@ export const ControlSearchProduct = ({ searchData, setSearchData }) => {
     <Fragment>
 
       <div className={Style.Container}>
-        {/* <Input
-          title='Buscar Producto'
-          type='search'
-          size='small'
-          onChange={(e) => (
-            setSearchData(e.target.value)
-          )} 
-          /> */}
+        {/*  */}
 
         {/* <div className={Style.icons_container}>
 
@@ -47,13 +40,23 @@ export const ControlSearchProduct = ({ searchData, setSearchData }) => {
         {/* <Button btnName='Filtro'>Filtrar</Button> */}
 
         {
-          matchWithVenta ? <Carrucel></Carrucel> : null
+          matchWithVenta ? <Carrucel/> : null
         }
         {
           matchWithInventory ? (
-            <AddProductButton
-              title='Agregar Producto'
-            />
+            <Fragment>
+              <Input
+                title='Buscar Producto'
+                type='search'
+                size='small'
+                onChange={(e) => (
+                  setSearchData(e.target.value)
+                )}
+              />
+              <AddProductButton
+                title='Agregar Producto'
+              />
+            </Fragment>
           ) : null
         }
 

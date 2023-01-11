@@ -4,12 +4,12 @@ import { CancelShipping,  } from '../../../../features/cart/cartSlice'
 import { useDispatch } from 'react-redux'
 import { IoMdTrash } from 'react-icons/io'
 import { Button } from './Button'
+import { clearTaxReceiptData } from '../../../../features/taxReceipt/taxReceiptSlice'
 export const CancelPurchaseBtn = () => {
     const dispatch = useDispatch()
     const handleCancelShipping = () => {
-        dispatch(
-          CancelShipping()
-        )
+        dispatch(CancelShipping())
+          dispatch(clearTaxReceiptData())
         
       }
     return (

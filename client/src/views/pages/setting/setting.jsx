@@ -24,26 +24,23 @@ export const Setting = () => {
 }
 
 const Container = styled.div`
-  width: '100%',
-  height: '100vh',
-  display: 'grid',
-  gridTemplateRows: 'min-content 1fr'
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: min-content 1fr;
 `
 const Body = styled.div`
-  width: '100%',
-  height: 'calc(100vh - 2.75em)'
+  width: 100%;
+  height: calc(100vh - 2.75em);
 `
-
-
-
 const Cards = styled.div`
-  padding: '10px 0 0 0',
-  display: 'grid',
-  margin: '0 auto',
-  maxWidth: '1000px',
-  width: '100%',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  -gap: '1em'
+  padding: 10px 0 0 0;
+  margin: 0 auto;
+  max-width: 1000px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1em;
 `
   
 

@@ -68,6 +68,7 @@ export const Container = styled.button`
   &:focus, &:focus-visible{
     outline: none;
   }
+  transition: background-color 500ms;
  ${(props) => {
     switch (props.borderRadius) {
       case 'normal':
@@ -151,6 +152,7 @@ export const Container = styled.button`
       case "100":
         return `
            width: 100%;
+           display: block;
           `;
       case "auto":
         return `
@@ -180,10 +182,6 @@ export const Container = styled.button`
           justify-content: center;
           padding: 0;
         `
-      default:
-        return `
-            width: auto;
-          `
     }
   }}
    ${(props) => {
@@ -229,14 +227,9 @@ export const Container = styled.button`
            color: #4b4b4b;
 
           `;
-      case "auto":
-        return `
-              width: auto;
-            `
+     
       default:
-        return `
-            width: auto;
-          `
+        return 
     }
   }}
   ${(props) => {
@@ -249,11 +242,11 @@ export const Container = styled.button`
           `;
       case false:
         return `
-              width: auto;
+            
             `
       default:
         return `
-            width: auto;
+           
           `
     }
   }}

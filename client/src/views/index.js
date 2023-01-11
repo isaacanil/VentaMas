@@ -17,6 +17,7 @@ export { Orders } from './pages/Order/Orders'
 export { AddCustomProductModal } from './component/modals/AddCustomProductModal/AddCustomProductModal'
 export { SetCustomProduct } from './component/modals/CustomProduct/SetCustomProduct'
 export { Setting } from './pages/setting/Setting'
+export { TaxReceiptSetting } from './pages/setting/subPage/TaxReceipts/TaxReceIptSetting'
 
 //Todo ***********Components*************************************************
 export { ControlSearchProduct } from './component/ControlSearchProduct/ControlSearchProduct'
@@ -27,7 +28,7 @@ export { MultiDisplayControl } from './component/MultiDisplayControl/MultiDispla
 export { RequireAuth } from './component/RequireAuth'
 export { ClientControl } from './component/contact/ClientControl/ClienteControl'
 /* modals */
-export { BillingModal } from './component/modals/Billing/BillingModal'
+
 export { ProductModal } from './component/modals/Product/ProductModal'
 export { AddClientModal } from './component/modals/AddClient/AddClientModal'
 export { Modal } from './component/modals/modal'

@@ -4,13 +4,14 @@ import styled from 'styled-components'
 import { Button } from '../../../templates/system/Button/Button'
 import { Client } from '../../../templates/system/client/Client'
 
-export const ClientSelector = ({ isOpen, setIsOpen, filteredClients}) => {
+export const ClientSelector = ({ showClientList, setShowClientList, filteredClients, client, mode, createClientMode, updateClientMode}) => {
     const [clients, setClients] = useState([])
     useEffect(()=>{
         setClients(filteredClients)
     }, [filteredClients])
     return (
-        isOpen ? (
+         
+        showClientList && mode !== 'create' ? (
             <Container>
                 <Head>
                     <Group>
@@ -18,8 +19,7 @@ export const ClientSelector = ({ isOpen, setIsOpen, filteredClients}) => {
                             startIcon={<MdPersonAdd />}
                             borderRadius='normal'
                             width='icon24'
-                           
-                           
+                            onClick={createClientMode}
                         />
                     </Group>
                     <Group>
@@ -28,7 +28,7 @@ export const ClientSelector = ({ isOpen, setIsOpen, filteredClients}) => {
                             width='icon24'
                             bgcolor='op1'
                             borderRadius='normal'
-                            onClick={(e)=> setIsOpen(false)}
+                            onClick={(e)=> setShowClientList(false)}
                         
                         />
                     </Group>
@@ -37,10 +37,12 @@ export const ClientSelector = ({ isOpen, setIsOpen, filteredClients}) => {
                 <Body>
                     {
                         clients.length > 0 ? (
-                            clients.map(({client}) => (
+                            clients.map(({client}, index) => (
                                 <Client
+                                    updateClientMode={updateClientMode}
+                                    key={index}
                                     client={client}
-                                    Close={setIsOpen}
+                                    Close={setShowClientList}
                                 />
                             ))
                         ) : null
@@ -48,6 +50,7 @@ export const ClientSelector = ({ isOpen, setIsOpen, filteredClients}) => {
                 </Body>
             </Container >
         ) : null
+      
 
 
     )

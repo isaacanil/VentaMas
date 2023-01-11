@@ -2,70 +2,61 @@ import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
 import { Input } from '../../../templates/system/Inputs/InputV2'
-import { addClient, addDelivery, SelectClient, setChange, totalPurchase } from '../../../../features/cart/cartSlice'
+import { handleClient, addDelivery, SelectClient, setChange, totalPurchase, addSourceOfPurchase, SelectDelivery } from '../../../../features/cart/cartSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { nanoid } from 'nanoid'
 import { monetarySymbols } from '../../../../constants/monetarySymbols'
-export const ClientDetails = ({ client }) => {
+import { quitarCeros } from '../../../../hooks/quitarCeros'
+export const ClientDetails = ({ createClientMode, clientSelected, client, setClient }) => {
     const dispatch = useDispatch()
-    const ClientSelected = useSelector(SelectClient)
+    const deliveryRef = useSelector(SelectDelivery)
     const deliveryStatusInput = useRef(null)
     const defaultData = {
         cash: 0.00,
         status: false
     }
+    const [sourceOfSaleList, setSourceOfSaleList] = useState([
+        {
+            serviceName: 'Presencial',
+        },
+        {
+            serviceName: 'WhatsApp',
+        },
+        {
+            serviceName: 'Teléfono',
+        },
+        {
+            serviceName: 'Teléfono',
+        }
+    ])
     const [deliveryData, setDeliveryData] = useState({
         cash: defaultData.cash,
         status: defaultData.cash
     })
-    const [shouldDispatch, setShouldDispatch] = useState(false);
-    const [clientData, setClientData] = useState({
-        name: "",
-        tel: "",
-        address: "",
-        personalID: "",
-        delivery: "",
-    })
     const focusOnDeliveryInput = () => {
-        ClientSelected ? (
+        clientSelected ? (
             deliveryStatusInput.current.focus()
         ) : null
     }
     const updateClient = (e) => {
-        setClientData({
-            ...clientData,
+        setClient({
+            ...client,
             [e.target.name]: e.target.value
         })
-        setShouldDispatch(true);
     }
     useEffect(() => {
-        if (shouldDispatch) {
-            dispatch(addClient(clientData));
-            setShouldDispatch(false);
-        }
-    }, [clientData, shouldDispatch])
-
-    const getClientProperty = (client, property, defaultValue = null) => (
-        client ? client[property] : defaultValue
-    )
-    useEffect(() => {
         deliveryData.status ? focusOnDeliveryInput() : null
+        setClient({
+            ...client,
+            delivery: deliveryData
+        })
         dispatch(addDelivery(deliveryData))
         dispatch(totalPurchase())
         dispatch(setChange())
     }, [deliveryData])
-
-    useEffect(() => {
-        setClientData({
-            ...client,
-            name: getClientProperty(client, 'name'),
-            tel: getClientProperty(client, 'tel'),
-            address: getClientProperty(client, 'address'),
-            personalID: getClientProperty(client, 'personalID'),
-
-        })
-    }, [client])
-    console.log(clientData)
+    const handleSetSourceOfPurchase = (value) => {
+        dispatch(addSourceOfPurchase(value))
+    }
     return (
         <Container>
             <Row>
@@ -75,10 +66,8 @@ export const ClientDetails = ({ client }) => {
                         <input
                             type="text"
                             name='tel'
-                            value={clientData ? (clientData.tel !== "" ? clientData.tel : "") : undefined}
-                            onChange={(e) => {
-                                updateClient(e)
-                            }}
+                            value={client.tel}
+                            onChange={e => updateClient(e)}
                         />
                     </Item>
                     <Item>
@@ -86,8 +75,8 @@ export const ClientDetails = ({ client }) => {
                         <input
                             type="text"
                             name='personalID'
-                            value={clientData ? (clientData.personalID !== "" ? (clientData.personalID) : "") : undefined}
-                            onChange={(e) => updateClient(e)}
+                            value={client.personalID}
+                            onChange={e => updateClient(e)}
                         />
                     </Item>
                 </Group>
@@ -98,7 +87,7 @@ export const ClientDetails = ({ client }) => {
                     <input
                         type="text"
                         name="address"
-                        value={clientData ? (clientData.address !== '' ? clientData.address : "") : undefined}
+                        value={client.address}
                         onChange={(e) => updateClient(e)
                         }
                     />
@@ -107,31 +96,53 @@ export const ClientDetails = ({ client }) => {
             <Row>
                 <Group>
                     <Switch
-                        checked={deliveryData ? deliveryData.status : undefined}
-                        onChange={(e) => setDeliveryData({
-                            ...deliveryData,
-                            status: e.target.checked
-                        })} />
+                        checked={deliveryRef.status ? true : false}
+                        name='delivery'
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setDeliveryData({
+                                    ...deliveryData,
+                                    status: e.target.checked,
+                                })
+                            }
+                            if (e.target.checked === false) {
+                                setDeliveryData({
+                                    ...deliveryData,
+                                    status: e.target.checked,
+                                    cash: ''
+                                })
+                            }
+
+                        }} />
                     <Item>
                         <label htmlFor="">Delivery: {monetarySymbols.dollarSign}</label>
                         <input
-                            type="text"
-                            onClick={(e) => setDeliveryData({
-                                ...deliveryData,
-                                status: true
-                            })}
+                            type="number"
+                            onClick={(e) => {
+                                setDeliveryData({
+                                    ...deliveryData,
+                                    status: true
+                                })
+                                updateClient(e)
+                            }
+                            }
+                            value={quitarCeros(Number(deliveryRef.value))}
+                            name='delivery'
                             ref={deliveryStatusInput}
-                            onChange={(e) => setDeliveryData({
-                                ...deliveryData,
-                                cash: Number(e.target.value)
-                            })} />
+                            onChange={(e) => {
+                                setDeliveryData({
+                                    ...deliveryData,
+                                    cash: Number(e.target.value)
+                                })
+                                updateClient(e)
+                            }} />
                     </Item>
-
-                    <select name="" id="">
-                        <option value="">Presencial</option>
-                        <option value="">WhatsApp</option>
-                        <option value="">Teléfono</option>
-                        <option value="">PedidosYa</option>
+                    <select name="" id="" onChange={(e) => handleSetSourceOfPurchase(e.target.value)}>
+                        {
+                            sourceOfSaleList.map((item, index) => (
+                                <option value={item.serviceName} key={index} >{item.serviceName}</option>
+                            ))
+                        }
                     </select>
                 </Group>
 

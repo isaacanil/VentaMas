@@ -15,8 +15,6 @@ export const CategoryBar = () => {
     const CategoryItemsSelected = useSelector(SelectCategoryList)
     CategoryItemsSelected.length > 0 ? console.log(CategoryItemsSelected) : null
     const [categories, setCategories] = useState('')
-
-
     const dispatch = useDispatch()
     useEffect(() => {
         getCat(setCategories)
@@ -63,13 +61,10 @@ export const CategoryBar = () => {
                                         ) : null
                                     }
                                 </CategorysSelectedList>
-
-                            </CategoryListHead>
-                         
+                            </CategoryListHead>  
                             <CategoryListWrapper>
                                 <h3>Lista de Categorías</h3>
                                 <CategoryList>
-
                                     {
                                         categories.length > 0 ? (
                                             categories.map(({ category }, index) => (
@@ -80,7 +75,6 @@ export const CategoryBar = () => {
                                         ) : null
                                     }
                                 </CategoryList>
-
                             </CategoryListWrapper>
                         </CategoryListContainer>
                     </CategoryContainer>
