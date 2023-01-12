@@ -96,7 +96,7 @@ const Container = styled.div`
 const Row = styled.div`
 display: grid;
 align-items: center;
-grid-template-columns: repeat(6, 1fr);
+grid-template-columns: minmax(150px, 0.7fr) minmax(80px, 0.4fr) minmax(55px, 0.4fr) minmax(110px, 0.9fr) minmax(100px, 0.5fr) minmax(80px, 0.4fr);
 border-bottom: 1px solid var(--Gray1);
 height: 2em;
     :last-child{
@@ -105,7 +105,7 @@ height: 2em;
 `
 const Col = styled.div`
 height: 100%;
-padding: 0 1em;
+padding: 0 0.6em;
 display: flex;
 align-items: center;
 :last-child{

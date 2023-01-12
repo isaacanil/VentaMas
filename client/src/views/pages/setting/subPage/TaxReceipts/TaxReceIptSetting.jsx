@@ -96,8 +96,9 @@ const Main = styled.div`
   display: grid;
   gap: 1em;
   margin: 0 auto;
-  width: 1000px;
-  padding: 1em 0;
+  max-width: 800px;
+  width: 100%;
+  padding: 1em;
   h4{
     padding: 0 1em;
   }
