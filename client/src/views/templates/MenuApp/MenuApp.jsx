@@ -13,7 +13,7 @@ import { handleImageHidden, handleRowMode, selectImageHidden, ReloadImageHiddenS
 import { useDispatch, useSelector } from 'react-redux'
 import { useMatch } from 'react-router-dom'
 import { SearchProductBar } from './SearchProductBar'
-export const MenuApp = ({ borderRadius, setSearchData }) => {
+export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const dispatch = useDispatch()
   const [isOpenMenu, setIsOpenMenu] = useState(false)
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
@@ -24,6 +24,7 @@ export const MenuApp = ({ borderRadius, setSearchData }) => {
   const ImageHidden = useSelector(selectImageHidden)
   const viewRowModeRef = useSelector(selectIsRow)
   const matchWithVenta = useMatch('/app/venta/:id')
+  const matchWithInventory = useMatch('/app/inventario/items')
   const closeMenu = () => {
     setIsOpenMenu(false)
   }
@@ -56,12 +57,16 @@ export const MenuApp = ({ borderRadius, setSearchData }) => {
           <div className={Style.MenuBtn} onClick={handledMenu}>
             <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
           </div>
-          <div>
-            <WebName></WebName>
-          </div>
+          {
+            !matchWithVenta ? (
+              <div>
+                <WebName></WebName>
+              </div>
+            ) : null
+          }
           {
             matchWithVenta ? (
-              <SearchProductBar setSearchData={setSearchData}></SearchProductBar>
+              <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar>
             ) : null
           }
         </Group>

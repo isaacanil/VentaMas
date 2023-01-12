@@ -71,7 +71,7 @@ export const UpdateProductModal = ({ isOpen }) => {
 
     const handleSubmitAddProducts = () => {
         updateProduct(product),
-        closeModal()
+            closeModal()
         dispatch(clearUpdateProductData())
     }
     const closeModal = () => {
@@ -85,7 +85,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             ChangeProductImage(url)
         )
     }
-  
+
     return (
         <Modal
             nameRef='Actualizar'
@@ -165,8 +165,13 @@ export const UpdateProductModal = ({ isOpen }) => {
                     </select>
                 </Group>
                 <Group>
-                    <img src={status ? product.productImageURL : undefined} alt="" />
+                    <Img>
+
+                        <img src={status ? product.productImageURL : undefined} alt="" />
+                    </Img>
                     <Button
+                    borderRadius='normal'
+                    width='w100'
                         title='Agregar Imagen'
                         onClick={handleImgController}
                     />
@@ -306,4 +311,17 @@ const Group = styled.div`
         }
     }}
   
+`
+const Img = styled.div`
+background-color: white;
+border-radius: 8px;
+overflow: hidden;
+width: 100%;
+height: 100px;
+img{
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
+}
 `

@@ -10,9 +10,12 @@ export const AddProductButton = () => {
     }
     return(
         <Button
+            bgcolor='primary'
+            borderRadius='normal'
             title="Agregar Producto"
             onClick={Open}>
-           
+            
+         
         </Button>
     )
 }

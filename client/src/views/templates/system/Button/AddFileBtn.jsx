@@ -27,7 +27,7 @@ const Container = styled.div`
         gap: 0.6em;
         border: 1px solid rgba(0, 0, 0, 0.226);
         padding: 0.2em 0.6em;
-        border-radius: 100px;
+        border-radius: 8px;
         svg{
             font-size: 1.2em;
         }

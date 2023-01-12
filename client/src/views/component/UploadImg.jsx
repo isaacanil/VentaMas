@@ -42,6 +42,7 @@ export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
                 <Container>
                     <Head>
                         <Button
+                        borderRadius='normal'
                             startIcon={<IoIosArrowBack />}
                             title='atrás'
                             onClick={() => setIsOpen(false)}
@@ -57,6 +58,7 @@ export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
                                         {
                                             ImgToUpload ? (
                                                 <Button
+                                                    borderRadius='normal'
                                                     title={<IoMdClose />}
                                                     width='icon32'
                                                     onClick={() => setImgToUpload(null)}
@@ -70,8 +72,9 @@ export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
                                             startIcon={<MdOutlineFileUpload />}
                                             id="addImg"
                                         />
-                                        <Button
+                                        <Button                                            
                                             title='subir'
+                                            borderRadius='normal'
                                             bgcolor='primary'
                                             onClick={handleSubmit}
                                             disabled={ImgToUpload ? false : true}

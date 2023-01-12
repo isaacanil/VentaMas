@@ -107,8 +107,8 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    }
 
    const calculatePrice = () => {
-      const {cost, tax} = product;
-      if(typeof cost.unit !== 'number' || typeof tax.value !== 'number'){
+      const { cost, tax } = product;
+      if (typeof cost.unit !== 'number' || typeof tax.value !== 'number') {
          return;
       }
       const price = {
@@ -148,7 +148,7 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
                <Input
                   title={'Tipo de Producto'}
                   type="text"
-                  
+
                   onChange={(e) => setProduct({
                      ...product,
                      type: firstLetter(e.target.value)
@@ -196,10 +196,10 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
             </Group>
             <Group>
                <img src={product.productImageURL} alt="" onError={({ currentTarget }) => {
-                          currentTarget.onerror = null;
-                          currentTarget.src = noimg;
-                          currentTarget.style.objectFit = 'contain'
-                        }}/>
+                  currentTarget.onerror = null;
+                  currentTarget.src = noimg;
+                  currentTarget.style.objectFit = 'contain'
+               }} />
                <Button
                   title='Agregar Imagen'
                   onClick={handleImgController}

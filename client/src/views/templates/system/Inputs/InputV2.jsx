@@ -45,8 +45,8 @@ const Container = styled.div`
     input{  
         border: none;
         outline: 1.5px solid rgba(0, 0, 0, 0.200);
-        border-radius: 10px;
-        padding:  0.5em 0.5em;
+        border-radius: 8px;
+        padding:  0.4em 0.5em;
         color: rgb(92, 92, 92);
         width: 100%;
         //text-transform: capitalize;
@@ -61,15 +61,23 @@ const Container = styled.div`
         outline:  2px solid  ${props => props.focusColor};
     }     
     &:not(:placeholder-shown) + label{
-        top: -13px;
+        top: -6px;
+        left: 0;
         font-size: 11px;
+        padding: 0.2em;
+        line-height: 11px;
+        border-radius: 2px;
         background-color: white;
         color: #8d8d8d;
     }
     &:focus + label{
-        top: -13px;
-        background-color: white;
+        top: -6px;
+        left: 0;
+        background-color: #ffffff;
+        padding: 0.2em;
+        border-radius: 2px;
         font-size: 11px;
+        line-height: 11px;
         color:  ${props => props.focusColor}; 
     }
   

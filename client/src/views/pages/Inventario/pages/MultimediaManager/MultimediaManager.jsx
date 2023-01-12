@@ -1,9 +1,8 @@
 import { nanoid } from 'nanoid'
 import React, { useState } from 'react'
 import { useEffect } from 'react'
-import { IoMdClose } from 'react-icons/io'
-import { IoOptionsOutline } from 'react-icons/io5'
-import { MdOutlineFileUpload } from 'react-icons/md'
+import { IoMdClose, IoMdTrash } from 'react-icons/io'
+import { MdClose, MdOutlineFileUpload } from 'react-icons/md'
 import styled from 'styled-components'
 import { ProductsImg, UploadProdImg, UploadProdImgData } from '../../../../../firebase/firebaseconfig'
 import { useDeleteImgFBStorage } from '../../../../../hooks/useDeleteImgFBStorage'
@@ -23,6 +22,7 @@ export const MultimediaManager = () => {
     })
   }
   console.log(ImgToUpload)
+
   const handleSubmit = () => {
     setId().then((id) => {
       UploadProdImg(ImgToUpload).then((url) => {
@@ -36,12 +36,13 @@ export const MultimediaManager = () => {
     <Container>
       <MenuApp></MenuApp>
       <Head>
-        <h1>Multimedia Manager</h1>
+        <h2>Multimedia Manager</h2>
         <ButtonGroup>
           {
             ImgToUpload ? (
               <Button
                 title={<IoMdClose />}
+                borderRadius='normal'
                 width='icon32'
                 onClick={() => setImgToUpload(null)}
                 bgcolor='error' />) : null
@@ -56,6 +57,7 @@ export const MultimediaManager = () => {
           />
           <Button
             title='subir'
+            borderRadius='normal'
             onClick={handleSubmit}
             bgcolor='primary'
             disabled={ImgToUpload ? false : true}
@@ -67,17 +69,19 @@ export const MultimediaManager = () => {
           {
             allImg.length > 0 ? (
               allImg.map((img, index) => (
-                <div key={index}>
+                <Img key={index}>
                   <div className='head'>
                     <Button
-                      title={<IoOptionsOutline />}
-                      width='icon32'
-                      bgcolor='dark'
+                      title={<IoMdTrash />}
+                      borderRadius='normal'
+                      width='icon24'
+                      bgcolor={'error'}
+                      onClick={() => useDeleteImgFBStorage(img)}
                    
                     />
                   </div>
                   <img src={img.url} alt="" onClick={() => useDeleteImgFBStorage(img)} />
-                </div>
+                </Img>
               ))
             ) : null
           }
@@ -98,13 +102,13 @@ const Head = styled.div`
   justify-content: space-between;
   height: 2.5em;
   padding: 0 1.3em;
-  h1{
-    font-size: 1.3em;
+  h2{
+    font-size: 1.2em;
     margin: 0;
   }
 `
 const Body = styled.div`
-  background-color: #dfdfdf;
+  background-color: var(--White1);
   display: grid;
 
 `
@@ -115,27 +119,36 @@ const BodyWrapper = styled.div`
   width: 100%;
   padding: 1em;
   overflow: hidden;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   grid-auto-rows:  150px;
   gap: 1em;
   
-  div{
-    width: 100%;
+`
+const Img = styled.div`
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0.2em;
+  width: 100%;
     position: relative;
-    .head{
-      padding: 0.2em 0.2em;
-      width: 100%;
+    box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.200);
+  .head{
+      padding: 0  0.2em 0.2em;
+      width: auto;
+      border-bottom-left-radius: 10px;
       position: absolute;
+      right: 0;
+      background-color: white;
       display: flex;
       justify-content: flex-end;
+      box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.200);
     }
-    
     img{
       object-fit: cover;
-      box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.400);
-      border-radius: 8px;
+      border-radius: 10px;
+
       width: 100%;
       height: 100%;
     }
-  }
+  
 `

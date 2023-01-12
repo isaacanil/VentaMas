@@ -5,7 +5,7 @@ import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChan
 //TODO ***FIRESTORE***********************************
 import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore } from "firebase/firestore";
 //TODO ***STORAGE***********************************
-import { getDownloadURL, getStorage, listAll, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"
+import { deleteObject, getDownloadURL, getStorage, listAll, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"
 
 import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
@@ -131,16 +131,17 @@ export const UploadProdImg = (file) => {
       })
   })
 }
-// export const UploadProductData = async (product) => {
-//   console.log(product)
-//   const productRef = doc(db, "products", product.id)
-//   try {
-//     await setDoc(productRef, { product })
-//     console.log('Document written ', product)
-//   } catch (error) {
-//     console.error("Error adding document: ", error)
-//   }
-// }
+export const DeleteProdImg = async (id) => {
+  console.log(id)
+  const imgRef = doc(db, "prodImages", id);
+  try {
+    await deleteDoc(imgRef)
+    //deleteDoc(doc(db, `products`, id))
+    console.log(id)
+  } catch (error) {
+    console.log(error)
+  }
+}
 export const UploadProductData = (product) => {
   return new Promise((resolve, reject) => {
     const productRef = doc(db, "products", product.id)
@@ -155,7 +156,6 @@ export const UploadProductData = (product) => {
       })
   })
 }
-/****************** **********************/
 export const getProducts = async (setProduct) => {
   const productRef = collection(db, "products")
   const q = query(productRef, orderBy("product.productName", "desc"))
@@ -203,7 +203,6 @@ export const deleteClient = async (id) => {
     console.log(error)
   }
 }
-
 export const deleteMultipleClients = (array) => {
   array.forEach((id) => {
     deleteClient(id)
@@ -226,7 +225,6 @@ export const getTaxes = async (setTaxe) => {
   const taxeArray = docs.map(item => item.data())
   setTaxe(taxeArray)
 }
-
 export const addIngredientTypePizza = async (ingredient) => {
   const IngredientRef = doc(db, "products", "6dssod");
   // Atomically add a new region to the "regions" array field.

@@ -34,8 +34,9 @@ export const Orders = () => {
             </div>
 
             <Button
+            borderRadius='normal'
               startIcon={<TbPlus />}
-              title='Agregar pedido'
+              title='Nuevo pedido'
               onClick={openModal}
             />
           </div>

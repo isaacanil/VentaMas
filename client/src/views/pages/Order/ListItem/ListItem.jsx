@@ -5,13 +5,17 @@ import style from './ListItemStyle.module.scss'
 import {
 
   ButtonGroup,
-  Button,
   PurchaseButton,
   EditButton,
   DeleteButton,
   ChevronDownButton,
-  StatusIndicatorDot
+  StatusIndicatorDot,
+  Button
 } from '../../../'
+import { IoMdCart } from 'react-icons/io'
+import { MdDelete, MdEdit } from 'react-icons/md'
+import { IoCart, IoCartSharp, IoTrashSharp } from 'react-icons/io5'
+import { TbEdit } from 'react-icons/tb'
 export const ListItem = ({ e, index }) => {
   const [openMoreInfo, setOpenMoreInfo] = useState(false)
   const HandleChangeOpenMoreInfoStatus = () => {
@@ -46,7 +50,7 @@ export const ListItem = ({ e, index }) => {
             <label>Nota :</label>
             <Button
               title='Ver'
-              height='small'
+              borderRadius='normal'
             />
           </div>
           <div className={style.Group}>
@@ -64,9 +68,24 @@ export const ListItem = ({ e, index }) => {
           <div className={style.Group}>
             <label>Acción :</label>
             <ButtonGroup>
-              <PurchaseButton></PurchaseButton>
-              <EditButton></EditButton>
-              <DeleteButton></DeleteButton>
+              <Button
+                borderRadius='normal'
+                title={<IoCartSharp />}
+                width='icon32'
+                color='gray-dark'
+              />
+              <Button
+                borderRadius='normal'
+                title={<TbEdit />}
+                width='icon32'
+                color='gray-dark'
+              />
+              <Button
+                borderRadius='normal'
+                title={<IoTrashSharp />}
+                width='icon32'
+                bgcolor='error'
+              />
             </ButtonGroup>
           </div>
         </div>

@@ -39,7 +39,7 @@ export const Ventas = () => {
       <main className={Style.AppContainer}>
         {/* <MultiDisplayControl></MultiDisplayControl> */}
         <div className={Style.ProductsContainer}>
-          <Menu borderRadius={'bottom-right'} setSearchData={setSearchData}></Menu>
+          <Menu borderRadius={'bottom-right'} searchData={searchData} setSearchData={setSearchData}></Menu>
           <ProductControl filteredProducts={filteredProducts} products={products} searchData={searchData}></ProductControl>
           <MenuComponents></MenuComponents>
           <ShoppingItemsCounter></ShoppingItemsCounter>

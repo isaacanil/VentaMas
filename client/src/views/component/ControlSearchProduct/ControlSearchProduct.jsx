@@ -16,6 +16,7 @@ import { InputSearch } from '../../templates/system/Inputs/Input'
 import { useMatch } from 'react-router-dom'
 import { Input } from '../../templates/system/Inputs/InputV2'
 import { Carrucel } from '../Carrucel/Carrucel'
+import { SearchProductBar } from '../../templates/MenuApp/SearchProductBar'
 
 
 export const ControlSearchProduct = ({ searchData, setSearchData }) => {
@@ -45,14 +46,8 @@ export const ControlSearchProduct = ({ searchData, setSearchData }) => {
         {
           matchWithInventory ? (
             <Fragment>
-              <Input
-                title='Buscar Producto'
-                type='search'
-                size='small'
-                onChange={(e) => (
-                  setSearchData(e.target.value)
-                )}
-              />
+              <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar>
+              
               <AddProductButton
                 title='Agregar Producto'
               />

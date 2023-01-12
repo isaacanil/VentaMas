@@ -11,12 +11,13 @@ import {
   AddProductButton,
   ControlSearchProduct as SearchBar,
   SearchList
-
 } from '../../index'
+
 import { openModalUpdateProd } from '../../../features/modals/modalSlice'
 import { ChangeProductData } from '../../../features/updateProduct/updateProductSlice'
 import { handleDeleteProductAlert } from '../../../features/Alert/AlertSlice'
 import { IoMdTrash } from 'react-icons/io'
+import { ProductInventoryCard } from './ProductCard'
 
 export const Inventario = () => {
   const dispatch = useDispatch()
@@ -62,50 +63,8 @@ export const Inventario = () => {
             searchData === '' ? (
               products.length !== 0 ?
                 (
-                  products.map(({ product, id }, index) => (
-                    <li key={index} className={Style.product} onClick={() => console.log(product)} >
-                      <div className={Style.product_header}>
-                        <Button
-                          title="Editar"
-                          // variant='contained'
-                          bgcolor='editar'
-                          onClick={() => handleUpdateProduct(product)}
-                        />
-                        <Button
-                          title={<IoMdTrash />}
-                          width='icon32'
-                          bgcolor='error'
-                          onClick={() => handleDeleteProduct(product.id)}
-                        />
-                      </div>
-                      <div className={Style.product_img_container}>
-                        <img
-                          className={Style.product_img}
-                          src={product.productImageURL} alt=""
-                          onError={({ currentTarget }) => {
-                            currentTarget.onerror = null;
-                            currentTarget.src = noImg;
-                            currentTarget.style.objectFit = 'contain'
-                          }} />
-                      </div>
-                      <div className={Style.product_name}>
-                        <h3>{product.productName}</h3>
-                      </div>
-                      <div className={Style.group}>
-                        <div>
-                          <span>costo: {product.cost.unit}</span>
-                        </div>
-                        <div>
-                          <span>stock: {product.stock}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <span>Contenido Neto: {product.netContent}</span>
-                      </div>
-                      <div>
-                        <span>Total: {product.price.unit}</span>
-                      </div>
-                    </li>
+                  products.map(({ product }, index) => (
+                    <ProductInventoryCard key={index} product={product} handleUpdateProduct={handleUpdateProduct} handleDeleteProduct={handleDeleteProduct} />
                   ))
                 )
                 :
@@ -113,42 +72,7 @@ export const Inventario = () => {
             ) : (
               filteredProducts.length > 0 ? (
                 filteredProducts.map(({ product, id }, index) => (
-                  <li key={index} className={Style.product} onClick={() => console.log(product)} >
-                    <div className={Style.product_header}>
-                      <Button
-                        title="Editar"
-                        // variant='contained'
-                        bgcolor='editar'
-                        onClick={() => handleUpdateProduct(product)}
-                      />
-                      <Button
-                        title={<IoMdTrash />}
-                        width='icon32'
-                        bgcolor='error'
-                        onClick={() => handleDeleteProduct(product.id)}
-                      />
-                    </div>
-                    <div className={Style.product_img_container}>
-                      <img className={Style.product_img} src={product.productImageURL} alt="" />
-                    </div>
-                    <div className={Style.product_name}>
-                      <h3>{product.productName}</h3>
-                    </div>
-                    <div className={Style.group}>
-                      <div>
-                        <span>costo: {product.cost.unit}</span>
-                      </div>
-                      <div>
-                        <span>stock: {product.stock}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <span>Contenido Neto: {product.netContent}</span>
-                    </div>
-                    <div>
-                      <span>Total: {product.price.unit}</span>
-                    </div>
-                  </li>
+                  <ProductInventoryCard key={index} product={product} handleUpdateProduct={handleUpdateProduct} handleDeleteProduct={handleDeleteProduct} />
                 ))
 
               ) : null

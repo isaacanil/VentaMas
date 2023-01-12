@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { SearchClient } from '../../templates/system/Inputs/SearchClient'
 import { useSearchFilter } from '../../../hooks/useSearchFilter'
 import styled from 'styled-components'
+import { Button } from './Button'
 
 export const Compras = () => {
     
@@ -17,7 +18,7 @@ export const Compras = () => {
   
   return (
     <Fragment>
-    
+   <Button children='Hola'/>
 
     </Fragment >
   )

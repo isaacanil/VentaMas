@@ -42,7 +42,7 @@ export const Container = styled.button`
   //border
   border-radius: 100px;
   border: 1px solid #00000030;
-  height: 2em;
+  height: 30px;
   display: flex;
   align-items: center;
   white-space: nowrap;
@@ -50,7 +50,7 @@ export const Container = styled.button`
   padding: 0 0.6em;
   outline: none;
   color: black;
-  font-size: 1em;
+
   font-weight: 500;
   font-family: inherit;
   svg{
@@ -149,7 +149,7 @@ export const Container = styled.button`
   }} 
   ${(props) => {
     switch (props.width) {
-      case "100":
+      case "w100":
         return `
            width: 100%;
            display: block;

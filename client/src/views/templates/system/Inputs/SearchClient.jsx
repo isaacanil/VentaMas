@@ -9,7 +9,6 @@ export const SearchClient = ({ name, type, text, ref, size, title, label, clearI
    const dispatch = useDispatch()
     const handleReset = () => {
          fn ? fn() : null
-         dispatch(deleteClientInState())
     }
     return (
         <Container ref={ref}>
@@ -34,17 +33,18 @@ export const SearchClient = ({ name, type, text, ref, size, title, label, clearI
     )
 }
 const Container = styled.div`
-    border: 2px solid black;
-    border-radius: 6px;
+    //border: 2px solid black;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     gap: 0 10px;
     width: 100%;
     max-width: 225px;
+    min-width: 180px;
     padding: 0 6px 2px;
     background-color: white;
     position: relative;
-    border: 2px solid #414141c3;
+    border: 1px solid #41414140;
     height: 2em;
     display: grid;
     align-items: center;
@@ -89,10 +89,11 @@ display: grid;
         outline: 0;
         width: calc(100% - 2.2em);
         position: absolute;
-        bottom: 1px;
+        bottom: 4px;
         font-size: 16px;
         padding: 0;
         background-color: transparent;
+      
         :focus{
             outline: 0;
         }
