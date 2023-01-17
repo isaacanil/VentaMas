@@ -65,7 +65,6 @@ export const Cart = () => {
       console.log(error)
     }
   }
-
   const createOrUpdateClient = async () => {
     try {
       dispatch(isNewClient())
@@ -102,11 +101,11 @@ export const Cart = () => {
   const handleInvoice = async () => {
     if (ProductSelected.length > 0) {
       try {
-        await handleTaxReceipt()
+        //await handleTaxReceipt()
         await createOrUpdateClient()
-        await savingDataToFirebase()
-        await showPrintPreview()
-        await showPrintPreview()
+        //await savingDataToFirebase()
+        //await showPrintPreview()
+        //await showPrintPreview()
         await clearDataFromState()
       } catch (error) {
         console.log(error)
@@ -135,9 +134,9 @@ export const Cart = () => {
       <div className={style.billing}>
         <PaymentArea></PaymentArea>
         <div className={style.resultBar}>
-          <div>
-            <h3>Total : {useFormatPrice(TotalPurchaseRef)}</h3>
-          </div>
+          
+            <h3><span>Total :</span><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
+         
           <Receipt ref={componentToPrintRef} data={bill}></Receipt>
           <Button
             borderRadius='normal'

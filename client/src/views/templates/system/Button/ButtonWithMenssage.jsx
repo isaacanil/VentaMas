@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-
+/******************* <Button children='Hola'/> para poder usar *********************************/
 const StyledButton = styled.button`
   position: relative;
   display: inline-block;

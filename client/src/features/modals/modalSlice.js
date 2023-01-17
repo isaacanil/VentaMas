@@ -28,6 +28,9 @@ const initialState = {
     },
     modalSetCustomPizza:{
         isOpen: false
+    }, 
+    modalCreateClient: {
+        isOpen: false
     }
 }
 const modalSlice = createSlice({
@@ -65,7 +68,11 @@ const modalSlice = createSlice({
         },
         handleModalSetCustomPizza: (state) => {
             let isOpen = state.modalSetCustomPizza.isOpen;
-            state.modalSetCustomPizza.isOpen = !isOpen
+            state.modalSetCustomPizza.isOpen = !isOpen;
+        },
+        handleModalCreateClient: (state) => {
+            let isOpen = state.modalCreateClient.isOpen;
+            state.modalCreateClient.isOpen = !isOpen;
         }
         
 
@@ -86,7 +93,8 @@ export const {
     openModalCategory,
     closeModalCategory,
     openModalAddProvider,
-    handleModalSetCustomPizza
+    handleModalSetCustomPizza,
+    handleModalCreateClient
 } = modalSlice.actions
 
 export const SelectBillingModal = state => state.modal.modalBilling.isOpen
@@ -96,5 +104,6 @@ export const SelectUpdateProdModal = state => state.modal.modalUpdateProd.isOpen
 export const SelectCategoryModal = state => state.modal.modalCategory.isOpen
 export const SelectAddOrderModal = state => state.modal.modalAddOrder.isOpen
 export const SelectSetCustomPizzaModal = state => state.modal.modalSetCustomPizza.isOpen
+export const SelectCreateClientModal = state => state.modal.modalCreateClient.isOpen
 
 export default modalSlice.reducer

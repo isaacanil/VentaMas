@@ -13,3 +13,15 @@ export const useSearchFilter = (clients, searchTerm ) => {
     }, [clients, searchTerm])
     return filteredClients;
 }
+
+export const useSearchFilterOrderMenuOption = (data, searchTerm ) => {
+    const [filteredData, setFilteredData] = useState(data.Items);
+    useEffect(() => {
+        const filtered = data.Items.filter((subItems) => {
+            return subItems.name.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+        setFilteredData(filtered);
+    }, [searchTerm, data]);
+    console.log(filteredData)
+    return filteredData;
+}

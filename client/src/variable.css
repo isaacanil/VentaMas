@@ -1,40 +1,53 @@
 :root{
     --White: rgb(255, 255, 255);
-    --White1: rgb(240, 240, 240);
-    --White2: rgb(230, 230, 230);
-    --White3: rgb(220, 220, 220);
-    --White4: rgb( 210, 210, 210);
-    --White5: rgb( 200, 200, 200);
-    --Gray: rgb(180, 180, 180);
-    --Gray1: rgb(160, 160, 160);
-    --Gray2: rgb(140, 140, 140);
-    --Gray3: rgb(120, 120, 120);
-    --Gray4: rgb(100, 100, 100);
-    --Gray5: rgb( 80, 80, 80);
-    --Gray6: rgb(70, 70, 70);
-    --Black4: rgb(60, 60, 60);
-    --Black3: rgb( 40, 40, 40);
+    --White1: rgb(250, 250, 250);
+    --White2: rgb(245, 245, 245);
+    --White3: rgb(240, 240, 240);
+    --White4: rgb(235, 235, 235);
+    --White5: rgb(230, 230, 230);
+    --Gray: rgb(220, 220, 220);
+    --Gray1: rgb( 210, 210, 210);
+    --Gray2: rgb( 200, 200, 200);
+    --Gray3: rgb(180, 180, 180);
+    --Gray4: rgb(160, 160, 160);
+    --Gray5: rgb(140, 140, 140);
+    --Gray6: rgb(120, 120, 120);
+    --Gray7: rgb(100, 100, 100);
+    --Gray8: rgb( 80, 80, 80);
+    --Gray9: rgb(70, 70, 70);
+    --Gray10: rgb(60, 60, 60);
+    --Black5: rgb(50, 50, 50);
+    --Black4: rgb(40, 40, 40);
+    --Black3: rgb( 30, 30, 30);
     --Black2: rgb( 20, 20, 20);
     --Black1: rgb( 10, 10, 10);
     --Black: rgb( 0, 0, 0);
+    
     --BlackOp: rgba(0, 0, 0, 0.200);
     --BlackOp1: rgba(0, 0, 0, 0.300);
     --BlackOp2: rgba(0, 0, 0, 0.400);
     /*color primarios*/
-    --icolor: rgb(66, 165, 245);
+    --color: rgb(66, 165, 245);
+    --color-main: #1976d2;
     /*color secundario*/
-    --icolor1: #67B8DE;
+    --color1: #67B8DE;
     /*color terciario*/
-    --icolor2: #eff6fa;
+    --color2: #eff6fa;
     /*color cuaternario*/
-    --icolor3:  #d4e3f1 ;
-    --icolor4: rgba(202, 214, 230, 0.274);
- 
- 
+    --color3:  #d4e3f1 ;
+    --color4: rgba(202, 214, 230, 0.274);
+    --color-error: #d32f2f;
+
     /*border*/
     --border-radius1: 10px;
     --border-radiusTotal: 100px;
  
+    /*font*/
+    --font-color1: var(--Black);
+    --font-color2: var(--Black4);
+    --font-color3: var(--Gray10);
+    --font-color4: var(--Gray8);
+    --font-color5: var(--Gray6)
     /*padding*/
  
     --padding: 0.5em;
@@ -59,15 +72,9 @@
  }
 
 
- @media (prefers-color-scheme: light) {
+ /* @media (prefers-color-scheme: light) {
     :root {
-      color: #213547;
-      background-color: #ffffff;
+      --bg1: var(--White);
+      --bg2: var(--White1);
     }
-    a:hover {
-      color: #747bff;
-    }
-    button {
-      background-color: #f9f9f9;
-    }
-  }
+  } */

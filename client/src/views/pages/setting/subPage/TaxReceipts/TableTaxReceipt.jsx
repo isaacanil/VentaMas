@@ -96,7 +96,7 @@ const Container = styled.div`
 const Row = styled.div`
 display: grid;
 align-items: center;
-grid-template-columns: minmax(150px, 0.7fr) minmax(80px, 0.4fr) minmax(55px, 0.4fr) minmax(110px, 0.9fr) minmax(100px, 0.5fr) minmax(80px, 0.4fr);
+grid-template-columns: minmax(150px, 0.7fr) minmax(60px, 0.4fr) minmax(52px, 0.4fr) minmax(90px, 0.8fr) minmax(100px, 0.5fr) minmax(85px, 0.4fr);
 border-bottom: 1px solid var(--Gray1);
 height: 2em;
     :last-child{
@@ -120,14 +120,22 @@ input[type="text"],input[type="number"]{
     height: 100%;
     border: 0;
     font-size: 12px;
+    padding: 0;
     :focus{
         outline: none;
     }
 }
+input[type='number']::-webkit-inner-spin-button, 
+input[type='number']::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
 h4{
     font-size: 12px;
-    margin: 0;
-    padding: 0;
+    width: 100%;
+    text-align: left;
+    margin: none;
+    padding: 0 0 !important;
 }
 h5{
     font-weight: 500;

@@ -1,5 +1,0 @@
-{
-  "projects": {
-    "default": "ventamax-75bec"
-  }
-}

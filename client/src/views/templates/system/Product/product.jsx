@@ -86,16 +86,21 @@ const Container = styled.div`
 `
 const Head = styled.div`
     position: absolute;
-    transform: translateX(-90px);
-    transition: all 400ms ease-in-out;
-    
+    transform:  translateX(-90px) scale(0);
+    transition-property: transform;
+    transition-delay: 20ms;
+    transition-duration: 600ms;
+    transition-timing-function: ease-in-out;
     ${(props) => {
         switch (props.imageHiddenRef) {
             case false:
                 return `
                 position: relative;
-                transform: translateX(0px);
-                transition: all 400ms ease-in-out;
+                transform: translateX(0px) scale(1);
+                transition-property: transform;
+                transition-delay: 20ms;
+                transition-duration: 1s;
+                transition-timing-function: ease-in-out;
                 `
             default:
                 break;
@@ -118,22 +123,7 @@ const ImageContainer = styled.div`
     width: 80px;
     overflow: hidden;
     padding: 4px;
-    ${(props) => {
-        switch (props.imageHiddenRef) {
-            case true:
-                return `
-                    transform: scale(0);
-                `
-
-            case false:
-                return `
-                    transfrom: scale(0);
-                `
-
-            default:
-                break;
-        }
-    }};
+   
     transition: transform 400ms ease-in-out;
     img{
         height: 100%;
@@ -142,33 +132,36 @@ const ImageContainer = styled.div`
         object-position: center;
         border-radius: 7px;
     }
-
 `
 const Price = styled.div`
     position: absolute;
     bottom: 0;
+    right: 0;
     padding: 0 1em;
-    text-align: end;
+    display: flex;
+    align-items: center;
+    justify-content: end;
     width: 100%;
+    height: 1.6em;
     font-weight: 500;
     border-top-left-radius: ${(props) => {
         return props.imageHiddenRef === false ? '10px' : '0'
     }
-
     };
     transition:  800ms border-radius ease-in-out;
-    background-color: var(--White1);
+    background-color: var(--White3);
+    color: var(--Gray7);
 `
 const Title = styled.h5`
     color: rgba(49, 49, 49, 0.966);
     width: 100%;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1pc;
     padding: 0 1em;
     padding-top: 0.4em;
     padding-right: 2em;
     display: -webkit-box;
-    font-weight: 650;
+    font-weight: 600;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  
     //white-space: nowrap;

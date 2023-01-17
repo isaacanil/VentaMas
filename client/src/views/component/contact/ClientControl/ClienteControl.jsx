@@ -14,8 +14,6 @@ import { Button, ButtonGroup } from '../../../templates/system/Button/Button.jsx
 import { useClickOutSide } from '../../../../hooks/useClickOutSide.jsx'
 import { useRef } from 'react'
 import { ClientDetails } from './ClientDetails.jsx'
-import { async } from '@firebase/util'
-import { MdEdit } from 'react-icons/md'
 import { SearchClient } from '../../../templates/system/Inputs/SearchClient.jsx'
 import { ClientSelector } from './ClientSelector.jsx'
 import { useSearchFilter } from '../../../../hooks/useSearchFilter.js'

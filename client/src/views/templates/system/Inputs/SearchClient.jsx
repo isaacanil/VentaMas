@@ -2,8 +2,6 @@ import { useState } from "react"
 import { MdClose } from "react-icons/md"
 import { useDispatch } from "react-redux"
 import styled from "styled-components"
-import { deleteClientInState } from "../../../../features/cart/cartSlice"
-
 
 export const SearchClient = ({ name, type, text, ref, size, title, label, clearInputWhen, required, focusColor, labelColor, value, onChange, fn, readOnly, onFocus }) => {
    const dispatch = useDispatch()
@@ -78,7 +76,7 @@ display: grid;
         top: -8px;
         left: 0;
         pointer-events: none;
-        background-color: var(--icolor2);
+        background-color: var(--color2);
         font-weight: 600;
         color: #202020;
         padding: 2px 4px;

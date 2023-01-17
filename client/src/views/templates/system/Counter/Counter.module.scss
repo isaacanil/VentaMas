@@ -4,16 +4,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--White1);
+    background-color: var(--White3);
     padding: 0 0.2em;
     //box-shadow: 0 0 10px rgba(0, 0, 0, 0.100); 
     //border: 1px solid rgba(0, 0, 0, 0.200);
     border-radius: 6px;
     .Couter_button{
-       text-align: center;
        border: none;
        outline: none;
-       font-weight: 900;
+       font-weight: 700;
+       line-height: 10px;
        width: 1.2em;
        height: 1.2em;
        display: flex;
@@ -22,7 +22,10 @@
        padding: none;
        border-radius: 4px;
        background-color: var(--White);
-       color: rgba(29, 29, 29, 0.842);
+       color: var(--Gray6);
+       span{
+         
+       }
        &:focus{
          outline: none;
        }

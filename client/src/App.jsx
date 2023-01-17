@@ -44,6 +44,7 @@ import { GenericLoader } from './views/templates/system/loader/GenericLoader';
 import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
 import { getTaxReceiptData} from './features/taxReceipt/taxReceiptSlice';
+import { ClientAdmin } from './views/pages/Contact/Client/ClientAdmin';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
@@ -88,7 +89,7 @@ function App() {
           </Route>
           <Route path='/app/pedido/' element={<Orders />}>
           </Route>
-          <Route path='/app/contact/client' element={<CompraPage></CompraPage>} />
+          <Route path='/app/contact/client' element={<ClientAdmin/>} />
           <Route path='/app/contact/provider' element={<h2>Proveedor</h2>} />
           <Route path='/app/venta' >
             <Route path=':displayID' element={

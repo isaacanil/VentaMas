@@ -108,7 +108,7 @@ const Head = styled.div`
   }
 `
 const Body = styled.div`
-  background-color: var(--White1);
+  background-color: var(--icolor4);
   display: grid;
 
 `
@@ -131,7 +131,6 @@ const Img = styled.div`
   padding: 0.2em;
   width: 100%;
     position: relative;
-    box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.200);
   .head{
       padding: 0  0.2em 0.2em;
       width: auto;
@@ -141,7 +140,7 @@ const Img = styled.div`
       background-color: white;
       display: flex;
       justify-content: flex-end;
-      box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.200);
+      //box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.200);
     }
     img{
       object-fit: cover;

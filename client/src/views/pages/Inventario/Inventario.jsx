@@ -42,7 +42,6 @@ export const Inventario = () => {
 
   const handleUpdateProduct = (product) => {
     console.log(product)
-
     dispatch(
       openModalUpdateProd(),
     )
@@ -55,9 +54,7 @@ export const Inventario = () => {
     <Fragment>
       <Menu></Menu>
       <div className={Style.AppContainer}>
-
         <SearchBar searchData={searchData} setSearchData={setSearchData}></SearchBar>
-
         <ul className={Style.products}>
           {
             searchData === '' ? (
@@ -80,7 +77,6 @@ export const Inventario = () => {
           }
         </ul>
       </div>
-
     </Fragment>
   )
 }

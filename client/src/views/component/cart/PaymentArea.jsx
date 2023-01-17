@@ -210,7 +210,7 @@ padding: 0;
         top: -4px;
         display: flex;
         align-items: center;
-        background-color: var(--icolor3);
+        background-color: var(--color3);
         color: #5c5c5c;
         font-weight: bold;
         border-radius: 3px;

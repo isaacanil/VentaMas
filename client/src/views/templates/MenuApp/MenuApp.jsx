@@ -17,7 +17,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const dispatch = useDispatch()
   const [isOpenMenu, setIsOpenMenu] = useState(false)
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
-  const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu)};
+  const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
   const handledMenu = () => { setIsOpenMenu(!isOpenMenu) };
   const ref = useRef(null)
   const anotherRef = useRef(null)
@@ -41,7 +41,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   }
   return (
     <Fragment>
-      <div
+      {/* <div
         className={isOpenMenu ?
           (
             `${Style.Menu_backdrop} ${Style.ActiveBackdrop}`
@@ -51,8 +51,9 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
         ref={anotherRef}
         onClick={handledMenu}
       >
-      </div>
-      <Container borderRadius={borderRadius} ref={ref}>
+      </div> */}
+      <Backdrop isOpen={isOpenMenu ? true : false}/>
+      <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
           <div className={Style.MenuBtn} onClick={handledMenu}>
             <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
@@ -98,11 +99,34 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
 
   )
 }
-
+const Backdrop = styled.div`
+  height: calc(100vh);
+        width: 100%;
+        position: absolute;
+        left: 0;
+        backdrop-filter: blur(0px);
+        z-index: 10;
+        pointer-events: none;
+        transition: 600ms ease-in-out;
+   ${props => {
+    switch (props.isOpen) {
+        case true:
+        return `
+        z-index: 999999;
+        display: block;
+        pointer-events: visible;
+        backdrop-filter: blur(10px);
+        background-color: rgba(0, 0, 0, 0.200);
+        `
+      default:
+        break;
+    }
+  }}
+`
 const Container = styled.div`
   position: relative;
    user-select: none;
-   background-color: var(--icolor);
+   background-color: var(--color);
    width: 100%;
    height: 2.75em;
    display: flex;
@@ -111,6 +135,22 @@ const Container = styled.div`
    justify-content: space-between;
    padding: 0 1em;
    z-index: 10;
+  ${props => {
+    switch (props.isOpen) {
+      case true:
+        return `
+          z-index: 999999;
+        `
+      case false:
+        return `
+        z-index: 10;
+        transition-property: z-index;
+        transition-delay: 3s;
+      `
+      default:
+        break;
+    }
+  }}
    ${props => {
     switch (props.borderRadius) {
       case 'bottom-right':

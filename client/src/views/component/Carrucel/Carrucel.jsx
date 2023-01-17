@@ -134,7 +134,7 @@ const CategoryContainer = styled.div`
     display: flex;
     align-items: center;
     padding: 0 0.6em;
-    background-color: var(--icolor2);
+    background-color: var(--color2);
     white-space: nowrap;
     border-radius: 10px;
     text-transform: uppercase;

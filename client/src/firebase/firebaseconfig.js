@@ -185,8 +185,11 @@ export const createClient = async (client) => {
   }
 }
 export const getClients = async (setClients) => {
+  
   const clientRef = collection(db, "client")
-  onSnapshot(clientRef, (snapshot) => {
+  const q = query(clientRef, orderBy("client.name", "asc"))
+
+  onSnapshot(q, (snapshot) => {
     let clientArray = snapshot.docs.map(item =>  item.data())
     console.log(clientArray)
     setClients(clientArray)

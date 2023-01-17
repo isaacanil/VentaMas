@@ -14,7 +14,7 @@
    margin: 0;
    gap: 10px;
    .ProductsContainer {
-      background-color: var(--icolor2);
+      background-color: var(--color2);
       display: flex;
       width: 100%;
       margin: 0;
@@ -44,18 +44,24 @@
    }
 
    .resultBar {
-      background-color: var(--Gray5);
+      background-color: var(--Gray8);
       color: white;
       display: flex;
       padding: 0 0.4em;
       align-items: center;
       justify-content: space-between;
       border-top-left-radius: 8px;
-  
-      h3{
-         font-size: 1.2em;
-
-      }
+         
+         h3{
+            width: 100%;
+            display: flex;
+            gap: 0.4em;
+            .price{
+               letter-spacing: 1px;
+            }
+            font-size: 1.2em;
+         }
+      
    }
 
 }
@@ -72,6 +78,7 @@
       top: 0;
       z-index: 1;
       background-color: white;
+      display: none;
     
 
       .ClientBar {

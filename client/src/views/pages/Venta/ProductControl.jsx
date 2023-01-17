@@ -2,7 +2,6 @@ import React, { Fragment, useState, useEffect } from 'react'
 import style from './ProductControlStyle.module.scss'
 import { getProducts, QueryByCategory, watchingUserState } from '../../../firebase/firebaseconfig.js'
 import { Button, Product, Grid, ControlSearchProduct } from '../../'
-import { SelectCategoryList, SelectCategoryStatus } from '../../../features/category/categorySlicer';
 import { useSelector } from "react-redux";
 import { CustomProduct } from '../../templates/system/Product/CustomProduct'
 import { selectIsRow } from '../../../features/setting/settingSlice';
@@ -30,7 +29,7 @@ export const ProductControl = ({products, filteredProducts, searchData}) => {
                     {
                         searchData === '' && products.length > 0 ?
                             (
-                                <Grid columns='4' isRow={viewRowModeRef ? true : false} onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}>
+                                <Grid padding='bottom' columns='4' isRow={viewRowModeRef ? true : false} onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}>
                                     {products.map(({ product }, index) => (
                                         product.custom ?
                                             (

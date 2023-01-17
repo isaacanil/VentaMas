@@ -10,16 +10,18 @@ export const ShoppingItemsCounter = () => {
 }
 
 const Container = styled.div`
-    background-color: #313131;
+    background-color: var(--Gray8);
     font-weight: 600;
     padding: 0 1em;
     display: flex;
     align-items: center;
-    height: 2.4em;
+    height: 2em;
     position: absolute;
     border-radius: 100px;
+    /* border-top-left-radius: 6px;
+    border-top-right-radius: 6px; */
     color: white;
     bottom: 0.2em;
-    left: 0.2em;
+    right: 1.2em;
  
 `

@@ -4,48 +4,56 @@ import { Data } from '../../Data'
 import { ListItem } from '../../ListItem/ListItem'
 import { getOrders } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
+import { OrderItem } from '../../ListItem/OrderItem'
 
-export const OrderListTable = () => {
+export const PendingOrdersTable = () => {
   const [orders, setOrders] = useState([])
   useEffect(() => {
     getOrders(setOrders)
   }, [])
   console.log(orders)
   return (
-    <Body>
-      <TitleContainer>
-        <h3>Lista de Pedidos Pendientes</h3>
-      </TitleContainer>
-      <Table>
-        <TableHead>
-          <Row>
-            <Group column='order-list'>
-              <Col>#</Col>
-              <Col>Est</Col>
-              <Col>Proveedor</Col>
-              <Col style={{ textAlign: 'center' }}>Nota</Col>
-              <Col>F. Pedido</Col>
-              <Col>F. Entrega</Col>
-              <Col>Total</Col>
-              <Col>Acción</Col>
-            </Group>
-          </Row>
-        </TableHead>
-        <TableBody>
-          {
-            Array(orders).length > 0 ? (
-              orders.map((e, index) => (
-                <ListItem key={index} e={e} index={index}></ListItem>
-              ))
-            ) : null
+    <Container>
+      <Body>
+        <TitleContainer>
+          <h3>Lista de Compras</h3>
+        </TitleContainer>
+        <Table>
 
-          }
-        </TableBody>
-      </Table>
-    </Body>
+          <Row fill='fill'>
+
+            <Col>#</Col>
+            <Col>Proveedor</Col>
+            <Col>Nota</Col>
+            <Col>Fecha</Col>
+            <Col>Fecha de Pago</Col>
+            <Col position='right'>Total</Col>
+            <Col>Acción</Col>
+
+          </Row>
+
+          <TableBody>
+            {
+              Array(orders).length > 0 ? (
+                orders.map((e, index) => (
+                  <OrderItem Row={Row} Col={Col} key={index} e={e} index={index} />
+                ))
+              ) : null
+
+            }
+          </TableBody>
+        </Table>
+      </Body>
+    </Container>
+
   )
 }
-
+const Container = styled.div`
+    width: 100%;
+    padding: 0 1em;
+    display: flex;
+    justify-content: center;
+`
 const Body = styled.header`
     justify-self: center;
     border: 1px solid rgba(0, 0, 0, 0.100);
@@ -55,7 +63,8 @@ const Body = styled.header`
     overflow: hidden;
     //max-height: 400px;
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
+    
     display: grid;
     grid-template-rows: min-content 1fr; 
     background-color: #ffffff;
@@ -66,34 +75,24 @@ const Body = styled.header`
 `
 const Table = styled.div`
   position: relative;
-
+  width: 100%;
   overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr;
-  @media (max-width: 800px){
-    grid-template-rows: 1fr;
-  }
+  
  
 
 `
-const TableHead = styled.div`
-  background-color: #e7e7e7;
-  font-weight: 600;
-  padding: 0 16px 0 0;
-  @media (max-width: 811px){
-    display:none;
-  
-  }
-  
-`
+
 const TableBody = styled.div`
   display: grid;
   align-items: flex-start;
   align-content: flex-start;
-  overflow-y: scroll;
-  @media (max-width: 800px){
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  color: rgb(70, 70, 70);
   
-  }
 
 `
 const TitleContainer = styled.div`
@@ -112,10 +111,19 @@ const TitleContainer = styled.div`
 const Row = styled.div`
   display: grid;
   align-items: center;
-  span{
-    display: none;
-  }
+  height: 3em;
   gap: 1em;
+  grid-template-columns: 
+  minmax(44px, 0.1fr) //numero
+  minmax(120px, 0.5fr) //proveedor
+  minmax(64px, 0.1fr) //nota
+  minmax(104px, 0.4fr) //f. pedido
+  minmax(104px, 0.4fr) //f. entrega
+  minmax(110px, 0.4fr) //total
+  minmax(126px, 0.3fr); //acción
+  @media (max-width: 800px){
+    gap: 0;
+  }
   ${(props) => {
     switch (props.container) {
       case 'first':
@@ -160,13 +168,89 @@ const Row = styled.div`
       default:
     }
   }}
+  ${(props) => {
+    switch (props.fill) {
+      case 'fill':
+        return `
+          padding-right: 16px;
+          height: 2em;
+          background-color: var(--White1);
+        `
+
+      default:
+        break;
+    }
+  }}
 `
+// const Row = styled.div`
+//   display: grid;
+//   align-items: center;
+
+//   gap: 1em;
+//   ${(props) => {
+//     switch (props.container) {
+//       case 'first':
+//         return `
+//         @media (max-width: 800px){
+//         display: grid;
+//         grid-template-columns: min-content 1fr;
+//         span{
+//           display: block;
+//           transform: rotate(90deg);
+//           width: 
+//         }
+//       }
+
+//       `
+//       default:
+
+//     }
+//   }}
+//     ${(props) => {
+//     switch (props.border) {
+//       case 'border-bottom':
+//         return `
+//               border-bottom: 1px solid rgba(0, 0, 0, 0.200);
+//               &:last-child{
+//                 border-bottom: none;
+//               }
+//               `
+//       default:
+//     }
+//   }}
+//   ${(props) => {
+//     switch (props.color) {
+//       case 'header':
+//         return `
+//         background-color: #9c0e0e;
+//         `
+//       case 'item':
+//         return `
+//         background-color: #ebebeb;
+//         `
+//       default:
+//     }
+//   }}
+// `
 const Col = styled.div`
+  padding: 0 0.6em;
+  ${props => {
+    switch (props.position) {
+      case 'right':
+        return`
+          text-align: right;
+        `;
+    
+      default:
+        break;
+    }
+  }}
   ${(props) => {
     switch (props.size) {
       case 'limit':
         return `
-          width: 100px;
+          width: 100%;
+          
           display: -webkit-box;
           -webkit-line-clamp: 1;
           -webkit-box-orient: vertical;  

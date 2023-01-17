@@ -92,6 +92,7 @@ const BtnClose = styled.div`
 const Title = styled.span`
     font-weight: 500;
     line-height: 16px;
+    font-size: 14px;
     color: rgb(71, 71, 71);
     text-transform: capitalize;
 `

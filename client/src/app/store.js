@@ -13,7 +13,7 @@ import alertReducer from "../features/Alert/AlertSlice";
 import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
 import settingReducer from '../features/setting/settingSlice'
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
-
+import orderReducer from '../features/order/ordersSlice'
 
 export const store = configureStore({
     reducer: {
@@ -25,6 +25,7 @@ export const store = configureStore({
         customProduct: customProductReducer,
         addProduct: addProductReducer,
         addOrder: addOrderReducer,
+        order: orderReducer,
         updateProduct: updateProductReducer,
         uploadImg: uploadImgReducer,
         alert: alertReducer,

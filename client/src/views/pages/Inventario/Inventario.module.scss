@@ -3,7 +3,7 @@
     display: grid;
     position: relative;
     grid-template-columns: auto;
-    background-color: rgb(240, 240, 240);
+    background-color: var(--color2);
     grid-template-rows: 1fr;
     height: calc(100vh - 2.75em);
    overflow: hidden;
