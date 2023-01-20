@@ -7,8 +7,8 @@ import { CustomProduct } from '../../templates/system/Product/CustomProduct'
 import { selectIsRow } from '../../../features/setting/settingSlice';
 import { Carrucel } from '../../component/Carrucel/Carrucel';
 
-export const ProductControl = ({products, filteredProducts, searchData}) => {
-    
+export const ProductControl = ({products}) => {
+    console.log(products)
     // const [products, setProducts] = useState([])
     // const [searchData, setSearchData] = useState('')
     // const [filteredProducts, setFilteredProducts] = useState([])
@@ -24,10 +24,9 @@ export const ProductControl = ({products, filteredProducts, searchData}) => {
             {/* <ControlSearchProduct searchData={searchData} setSearchData={setSearchData}></ControlSearchProduct> */}
             <Carrucel />
             <div className={[style.container]}>
-
                 <div className={style.wrapper} >
                     {
-                        searchData === '' && products.length > 0 ?
+                         products.length > 0 ?
                             (
                                 <Grid padding='bottom' columns='4' isRow={viewRowModeRef ? true : false} onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}>
                                     {products.map(({ product }, index) => (
@@ -45,22 +44,7 @@ export const ProductControl = ({products, filteredProducts, searchData}) => {
                                     ))}
                                 </Grid>
 
-                            ) : (
-                                <Grid columns='4'>
-                                    {filteredProducts.map(({ product }, index) => (product.custom ?
-                                        (
-                                            <CustomProduct key={index} product={product}></CustomProduct>
-                                        ) : (
-                                            <Product
-                                                key={index}
-                                                view='row'
-                                                product={product}>
-                                            </Product>
-                                        )
-                                    ))
-                                    }
-                                </Grid>
-                            )
+                            ) : null
                     }
 
                 </div>

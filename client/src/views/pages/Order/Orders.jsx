@@ -1,12 +1,25 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
+import { Provider, useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import {
   MenuApp,
   Button,
 } from '../../'
+import { handleSelectOptions } from '../../../features/order/ordersSlice'
+import { getProviders } from '../../../firebase/firebaseconfig'
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
 import { ToolBar } from './ToolBar'
 export const Orders = () => { 
+  const dispatch = useDispatch();
+  const [providers, setProviders] = useState([])
+  useEffect(()=>{
+    getProviders(setProviders)
+  },[])
+  useEffect(() =>{
+    if(providers.length > 0){
+      dispatch(handleSelectOptions({optionsID: 'Proveedores', datas: providers}))
+    }
+  },[providers])
   return (
     <Fragment>
       <MenuApp></MenuApp>

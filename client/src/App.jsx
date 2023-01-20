@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { login, logout, selectUser } from './features/auth/userSlice'
 import { SelectProduct, } from './features/cart/cartSlice'
 import { AuthStateChanged } from './firebase/firebaseconfig'
-import { Category } from './views/pages/category/Category';
+
 //páginas y componentes
 import {
   Welcome,
@@ -34,6 +34,8 @@ import {
   AddCustomProductModal,
   SetCustomProduct,
   AlertHandler,
+  CategoryAdmin,
+  ProviderAdmin
 
 } from './views/index'
 import { Collection } from './views/pages/Collection'
@@ -45,6 +47,7 @@ import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
 import { getTaxReceiptData} from './features/taxReceipt/taxReceiptSlice';
 import { ClientAdmin } from './views/pages/Contact/Client/ClientAdmin';
+import { FreeSpace } from './FreeSpace';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
@@ -67,7 +70,8 @@ function App() {
         <ModalManager></ModalManager>
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
-          <Route path='/app/setting/' element={<Setting />} />
+          {/* <Route path='/app/setting/' element={<Setting />} /> */}
+          <Route path='/app/setting/' element={<FreeSpace/>} />
           <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting/>}/>
           <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
           <Route path='/register' element={<Register />}></Route>
@@ -90,7 +94,7 @@ function App() {
           <Route path='/app/pedido/' element={<Orders />}>
           </Route>
           <Route path='/app/contact/client' element={<ClientAdmin/>} />
-          <Route path='/app/contact/provider' element={<h2>Proveedor</h2>} />
+          <Route path='/app/contact/provider' element={<ProviderAdmin />} />
           <Route path='/app/venta' >
             <Route path=':displayID' element={
               <RequireAuth>
@@ -100,16 +104,16 @@ function App() {
           </Route>
           <Route path='/app/category' element={
             <RequireAuth>
-              <Category></Category>
+              <CategoryAdmin></CategoryAdmin>
             </RequireAuth>
           }>
           </Route>
-          <Route path='/app/category/add' element={
+          {/* <Route path='/app/category/add' element={
             <RequireAuth>
               <AddCategory></AddCategory>
             </RequireAuth>
           }>
-          </Route>
+          </Route> */}
           <Route path='/app/inventario/items' element={
             <RequireAuth>
               <InventarioPage></InventarioPage>

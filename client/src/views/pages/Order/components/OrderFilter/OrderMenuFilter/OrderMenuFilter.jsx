@@ -4,30 +4,37 @@ import styled from 'styled-components'
 import { selectOrderFilterOptions } from '../../../../../../features/order/ordersSlice'
 import { Item } from './Item'
 
-export const OrderMenuFilter = ({MenuIsOpen}) => {
+export const OrderMenuFilter = ({ MenuIsOpen }) => {
   const OrderFilterOptionsSelected = useSelector(selectOrderFilterOptions)
-
+  const propertiesName = [
+    'provider'
+  ]
   return (
     <Container isOpen={MenuIsOpen ? true : false}>
-        <Head>
-          <h3>Filtros</h3>
-        </Head>
-        <Body>
-          {
-            OrderFilterOptionsSelected.map((item, index)=>(
-              <Item data={item} index={index} key={index}></Item>
+      <Head>
+        <h3>Filtros</h3>
+      </Head>
+      <Body>
+        {
+          OrderFilterOptionsSelected.length > 0 ? (
+            OrderFilterOptionsSelected.map((item, index) => (
+              propertiesName.map((propertyName)=>(
+                <Item data={item} index={index} propertyName={propertyName} key={index} />
+              ))       
+
             ))
-          }
-        </Body>
-      </Container>
+          ) : null
+        }
+      </Body>
+    </Container>
   )
 }
 
 const Container = styled.div`
   overflow: hidden;
-  max-height: 350px;
+  max-height: 400px;
   height: 100%;
-  max-width: 300px;
+  max-width: 400px;
   border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.150);
   margin-left: 4px;

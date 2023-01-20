@@ -1,18 +1,18 @@
-import React, { useEffect } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { separator } from '../../../../hooks/separator'
+import { separator } from '../../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
-import nombre from '../../../../assets/producto/noimg.png'
-import { selectImageHidden, } from '../../../../features/setting/settingSlice'
-import { useState } from 'react'
-import { addPaymentMethodAutoValue, addProduct, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../features/cart/cartSlice'
-import { display, positions } from '@mui/system'
-import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import noImg from '../../../../assets/producto/noimg.png'
+
+import { selectImageHidden, } from '../../../../../features/setting/settingSlice'
+import { addPaymentMethodAutoValue, addProduct, deleteProduct, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../../features/cart/cartSlice'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
+import noImg from '../../../../../assets/producto/noimg.png'
+import { IsProductSelected } from './IsProductSelected'
+import { IoMdClose } from 'react-icons/io'
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
-    const ProductSelected = useSelector(SelectProduct);
+    const ProductsSelected = useSelector(SelectProduct);
     const handleGetThisProduct = (product) => {
         dispatch(addProduct(product))
         dispatch(totalShoppingItems())
@@ -20,7 +20,7 @@ export const Product = ({ product, }) => {
         dispatch(totalShoppingItems())
         dispatch(totalTaxes())
         dispatch(totalPurchase())
-       // dispatch(addPaymentMethodAutoValue())
+        // dispatch(addPaymentMethodAutoValue())
         dispatch(setChange())
     }
     // const handleImgError = (e) => {
@@ -29,16 +29,32 @@ export const Product = ({ product, }) => {
     //     //currentTarget.style.objectFit = 'contain'
     //     //e.target.src = noImgFound
     // }
+ 
+    const deleteProductFromCart = (e, id) => {
+        e.stopPropagation()
+        dispatch(totalPurchase())
+        dispatch(deleteProduct(id))
+        dispatch(totalPurchaseWithoutTaxes())
+        dispatch(totalPurchase())
+        dispatch(totalShoppingItems())
+        dispatch(setChange())
+        dispatch(addPaymentMethodAutoValue())
+       
+    }
+
+    const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id)
     return (
-        <Container onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef}>
+        <Container onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
             {
                 <Head imageHiddenRef={imageHiddenRef ? true : false}>
                     <ImageContainer imageHiddenRef={imageHiddenRef}>
-                        <img src={product.productImageURL} alt="" onError={({ currentTarget }) => {
-                            currentTarget.onerror = null;
-                            currentTarget.src = noImg;
-                            currentTarget.style.objectFit = 'contain'
-                          }}/>
+                        <img src={product.productImageURL} alt=""
+                        // onError={({ currentTarget }) => {
+                        //     currentTarget.onerror = null;
+                        //     currentTarget.src = noImg;
+                        //     currentTarget.style.objectFit = 'contain'
+                        // }}
+                        />
                     </ImageContainer>
                 </Head>
             }
@@ -46,14 +62,34 @@ export const Product = ({ product, }) => {
                 <Title>
                     {product.productName}
                 </Title>
-                <Price imageHiddenRef={imageHiddenRef}>
-                    {useFormatPrice(product.price.total)}
-                </Price>
+                <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
+
+
+                    {ProductCheckInCart.status ? (
+                        <Group>
+                            <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.total}</AmountToBuy>
+
+                            {/* <DeleteProduct>
+                                <IoMdClose />
+                            </DeleteProduct> */}
+                        </Group>
+                    ) : <Group />}
+
+                    <Group>
+                        <Price>{useFormatPrice(product.price.total)}</Price>
+                        {ProductCheckInCart.status ? (
+                            <DeleteProduct onClick={(e) => deleteProductFromCart(e, product.id)}>
+                                <IoMdClose />
+                            </DeleteProduct>
+                        ) : null}
+                    </Group>
+                </Footer>
             </Body>
         </Container>
     )
 }
 const Container = styled.div`
+
     height: 80px;
     width: 100%;
     background-color: #ffffff;
@@ -63,12 +99,27 @@ const Container = styled.div`
     overflow: hidden;
     transition: 400ms all ease-in-out;
     position: relative;
+    outline: 2px solid transparent;
     :hover{
         img{
             filter: brightness(105%);
             transition: 300ms filter ease-in-out;
         }
     }
+    ${(props) => {
+        switch (props.isSelected) {
+            case true:
+                return `
+                outline: 3px solid var(--color1);   
+
+                      
+                `
+
+
+            default:
+                break;
+        }
+    }}
     ${(props) => {
         switch (props.imageHiddenRef) {
             case true:
@@ -133,17 +184,18 @@ const ImageContainer = styled.div`
         border-radius: 7px;
     }
 `
-const Price = styled.div`
+const Footer = styled.div`
     position: absolute;
     bottom: 0;
     right: 0;
-    padding: 0 1em;
+    padding: 0 0.8em;
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: space-between;
     width: 100%;
     height: 1.6em;
     font-weight: 500;
+    pointer-events: none;
     border-top-left-radius: ${(props) => {
         return props.imageHiddenRef === false ? '10px' : '0'
     }
@@ -151,6 +203,40 @@ const Price = styled.div`
     transition:  800ms border-radius ease-in-out;
     background-color: var(--White3);
     color: var(--Gray7);
+   
+`
+const AmountToBuy = styled.div`
+    padding: 0 0.4em;
+    height: 1.4em;
+    width: 2em;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    background-color: var(--color1);
+    color: white;
+`
+const DeleteProduct = styled.button`
+height: 1.4em;
+width: 1.4em;
+border-radius: 4px;
+display: flex;
+align-items: center;
+outline: 0;
+border: 0;
+padding: 0;
+line-height: 0;
+font-weight: bold;
+justify-content: center;
+background-color: var(--color-error);
+color: white;
+pointer-events: all;
+`
+const Group = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1em;
 `
 const Title = styled.h5`
     color: rgba(49, 49, 49, 0.966);
@@ -169,4 +255,7 @@ const Title = styled.h5`
     text-overflow: ellipsis;
     overflow: hidden;
     
+`
+const Price = styled.h4`
+    line-height: 0;
 `

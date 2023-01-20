@@ -73,9 +73,7 @@ export const Carrucel = () => {
                     {
                         categories.length > 0 ? (
                             categories.map(({ category }, index) => (
-                                <Category category={category} fn={
-                                    MoveScroll('start')
-                                } key={index}></Category>
+                                <Category category={category} key={index}></Category>
                             ))
                         ) : null
 
@@ -152,7 +150,7 @@ const CategoryContainer = styled.div`
                 return `
                     background-color: rgb(111, 185, 245);
                     color: #132241;
-                    order: -1;  
+                    //order: -1;  
                     // :hover{
                     //     background-color: rgb(111, 185, 245);
                     //     color: white;
@@ -170,12 +168,7 @@ const Category = ({ category, ref }) => {
     const start = (category, ref) => {
         if (isSelected === false) {
             setIsSelected(!isSelected)
-            dispatch(
-                addCategory(category)
-            )
-            setTimeout(() => {
-                ref.current.scroll(0, 0)
-            }, 1000)
+            dispatch(addCategory(category))
         }
         if (isSelected) {
             setIsSelected(!isSelected)
@@ -190,7 +183,6 @@ const Category = ({ category, ref }) => {
 
 
     }
-
     return (
         <CategoryContainer selected={isSelected ? true : false} onClick={(e) => start(category, ref)}>
             {category.name}

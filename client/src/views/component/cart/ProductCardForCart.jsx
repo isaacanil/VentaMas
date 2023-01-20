@@ -43,10 +43,10 @@ export const ProductCardForCart = ({ item }) => {
     )
 }
 const Container = styled.div`
-    width: 100% - 0.6em;
+    width: 100%;
+    height: min-content;
     position: relative;
     background-color: #ffffff;
-    margin: 0.3em;
     padding: 0.2em 0.4em;
     border: 1px solid rgba(0, 0, 0, 0.100);
     border-radius: 8px;

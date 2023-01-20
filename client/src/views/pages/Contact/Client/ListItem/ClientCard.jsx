@@ -10,11 +10,17 @@ import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndic
 import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
 import { deleteClient } from '../../../../../firebase/firebaseconfig'
 import { Message } from '../../../../templates/system/message/Message'
+import { useDispatch } from 'react-redux'
+import { toggleClientModal } from '../../../../../features/modals/modalSlice'
+import { modes } from '../../../../../constants/modes'
 export const OrderItem = ({ e, index, Row, Col }) => {
+    const {updateMode} = modes.operationModes
     const noData = <Message title='(vacio)' fontSize='small' bgColor='error'/>
+    const dispatch= useDispatch()
     const handleDeleteClient = (id) => {
         deleteClient(id)
     }
+    const openModalUpdateMode = () => {dispatch(toggleClientModal({mode: updateMode, data: e}))}
     return (
         <Row>
             <Col>{e.id}</Col>
@@ -29,17 +35,17 @@ export const OrderItem = ({ e, index, Row, Col }) => {
             </Col>
 
 
-            <Col>
+            <Col size='limit'>
                 {e.address ? e.address : noData}
             </Col>
             <Col>
                 <ButtonGroup>
-                    
                     <Button
                         borderRadius='normal'
                         title={<TbEdit />}
                         width='icon32'
                         color='gray-dark'
+                        onClick={openModalUpdateMode}
                     />
                     <Button
                         borderRadius='normal'

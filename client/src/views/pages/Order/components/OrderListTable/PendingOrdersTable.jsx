@@ -78,6 +78,7 @@ const Table = styled.div`
   position: relative;
   width: 100%;
   overflow: hidden;
+  overflow-x: auto;
   display: grid;
   grid-template-rows: min-content 1fr;
   

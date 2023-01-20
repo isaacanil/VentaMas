@@ -12,6 +12,7 @@ export const MenuWebsite = () => {
                 {/* <ButtonSetting></ButtonSetting> */}
                 <Button 
                     borderRadius={'normal'}
+                    color='gray-dark'
                     width={'icon32'}
                     title={<MdSettings/>}
                 />

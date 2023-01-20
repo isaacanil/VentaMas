@@ -9,14 +9,5 @@ export const settingData = [
         description: 'Configurar comprobante fiscal.',
         path: '/app/setting/tax-receipt'
     },
-    {
-        title: 'Empresa',
-        description: 'Complete los datos de su organización.',
-        path: ''
-    },
-    {
-        title: 'Comprobante Fiscal',
-        description: 'Configurar comprobante fiscal.',
-        path: ''
-    },
+   
 ]

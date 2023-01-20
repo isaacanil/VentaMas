@@ -6,9 +6,13 @@ import { useSearchFilter, useSearchFilterOrderMenuOption } from '../../../../../
 import { Input } from './Input'
 import { modifyOrderMenuData } from './modifyOrderMenuData'
 
-export const Item = ({ data, index }) => {
+export const Item = ({ data, index, propertyName }) => {
     const [searchTerm, setSearchTerm] = useState('')
-    const optionsFiltered = useSearchFilterOrderMenuOption(data, searchTerm)
+
+   
+        const optionsFiltered = useSearchFilterOrderMenuOption(data, searchTerm)
+
+
 
     const [isItemOpen, setIsItemOpen] = useState(false)
     const handleOpenItem = () => setIsItemOpen(!isItemOpen)
@@ -28,14 +32,14 @@ export const Item = ({ data, index }) => {
                                         <FilterOption key={subIndex}  isSelected={item.selected ? true : false}>
                                             <input type="checkbox" name="selected" id={subIndex}  />
                                             <label htmlFor={subIndex}>
-                                                {item.name}
+                                                {item[propertyName].name}
                                             </label>
                                         </FilterOption>
                                     ) : null
                                     
                                 ))
                             }
-                             {data.Items.length > 4 && <button>See More</button>}
+                             {data.Items.length > 3 && <button>See More</button>}
 
                         </Items>
                     </Fragment>

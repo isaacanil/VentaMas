@@ -5,17 +5,16 @@ import {
   MenuApp,
   Button,
 } from '../../../'
-import { CreateContact } from './components/CreateContact/CreateContact'
-import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
+import { CreateContact } from './components/ClientForm/ClientForm'
+import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
 import { ToolBar } from './ToolBar'
 export const ClientAdmin = () => { 
   return (
     <Fragment>
       <MenuApp></MenuApp>
-      <CreateContact></CreateContact>
       <Container>
         <ToolBar></ToolBar>
-        <PendingOrdersTable />
+        <ClientsListTable />
       </Container>
     </Fragment>
   )

@@ -26,6 +26,7 @@ export const Account = () => {
 
     <div className={Style.Component_container} onClick={OpenMenu}>
       <Button
+      color='gray-dark'
         borderRadius={'normal'}
         width={'icon32'}
         title={<FaUserCog />}

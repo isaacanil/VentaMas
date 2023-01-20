@@ -12,22 +12,26 @@ import {
   SelectAddClientModal,
   SelectAddOrderModal,
   SelectAddProdModal,
-  SelectBillingModal,
   SelectUpdateProdModal,
   SelectSetCustomPizzaModal,
   handleModalSetCustomPizza,
   closeModalAddProd,
   closeModalUpdateProd,
+  SelectProviderModalData,
+  SelectClientModalData,
 
 } from "../../../features/modals/modalSlice"
+import { CreateContact } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
+import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
 export const ModalManager = () => {
   const dispatch = useDispatch()
   const AddClientModalSelected = useSelector(SelectAddClientModal)
   const AddOrderModalSelected = useSelector(SelectAddOrderModal)
   const AddProdModalSelected = useSelector(SelectAddProdModal)
-  const BillingModalSelected = useSelector(SelectBillingModal)
   const UpdateProdModalSelected = useSelector(SelectUpdateProdModal)
   const SetCustomPizzaSelected = useSelector(SelectSetCustomPizzaModal)
+  const ClientModalDataSelected = useSelector(SelectClientModalData)
+  const ProviderModalDataSelected = useSelector(SelectProviderModalData)
   //console.log(AddClientModalSelected)
 
   const handleSubmitAddProducts = async () => {
@@ -119,6 +123,8 @@ export const ModalManager = () => {
         isOpen={SetCustomPizzaSelected}
         handleOpen={handleModalSetCustomPizza}
       />
+      <CreateContact isOpen={ClientModalDataSelected.isOpen} mode={ClientModalDataSelected.mode} data={ClientModalDataSelected.mode === 'update' ? ClientModalDataSelected.data : null}></CreateContact>
+      <ProviderForm isOpen={ProviderModalDataSelected.isOpen} mode={ProviderModalDataSelected.mode} data={ProviderModalDataSelected.mode === 'update' ? ProviderModalDataSelected.data : null}></ProviderForm>
       <AddOrderModal isOpen={AddOrderModalSelected} />
       <AddProvider />
     </Fragment>

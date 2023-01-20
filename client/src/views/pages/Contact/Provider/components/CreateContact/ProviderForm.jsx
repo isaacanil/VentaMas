@@ -1,64 +1,114 @@
 import { nanoid } from 'nanoid'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { MdClose } from 'react-icons/md'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+import { modes } from '../../../../../../constants/modes'
+import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
+import { createProvider, updateProvider } from '../../../../../../firebase/firebaseconfig'
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber'
+
 import { useFormatRNC } from '../../../../../../hooks/useFormatRNC'
 import { Button } from '../../../../../templates/system/Button/Button'
 import { Message } from '../../../../../templates/system/message/Message'
 
-export const CreateContact = () => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [newClient, setNewClient] = useState({
+const { createMode, deleteMode, updateMode } = modes.operationModes
+export const ProviderForm = ({ isOpen, mode, data }) => {
+    const dispatch = useDispatch()
+    const [newProvider, setNewProvider] = useState({
         name: '',
         address: '',
         tel: '',
-        personalID: '',
-        delivery: {
-            status: false,
-            value: ''
+    });
+    const [executed, setExecuted] = useState(false)
+    // use the existingProvider data to pre-populate the form fields in update mode
+    useEffect(() => {
+        if (mode === 'update' && data !== null) {
+            setNewProvider(data);
         }
-    })
-    console.log(newClient)
-    function validateNewClient(client) {
-        if (!client.name || !client.personalID) {
+        if (data === null) {
+            setNewProvider({
+                name: '',
+                address: '',
+                tel: '',
+            })
+        }
+    }, [mode, data])
+
+    function validateNewProvider(provider) {
+        if (provider.name === '' || provider.id === '') {
             alert("El nombre y el ID personal son obligatorios");
             return false;
         }
         return true;
     }
-    const addIdToNewClient = async () => {
-        try {
-            setNewClient({
-                ...newClient,
-                id: nanoid(8)
-            })
-        } catch (error) {
 
+    const addIdToNewProvider = async () => {
+        try {
+            setNewProvider({
+                ...newProvider,
+                id: nanoid(8)
+            });
+
+        } catch (error) {
+            console.log(error);
         }
     }
-    const handleCreateClient = async () => {
-
-        if (validateNewClient(newClient)) {
+    const handleCreateProvider = async () => {
+        if (validateNewProvider(newProvider)) {
             try {
-                createClient(newClient)
+                createProvider(newProvider);
             } catch (error) {
-                console.log(error)
+                console.log(error);
             }
         }
     }
-    const showClient = async () => {
+    const handleUpdateProvider = async () => {
+        if (validateNewProvider(newProvider)) {
+            try {
+                updateProvider(newProvider);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+    const handleOpenModal = async () => {
         try {
-            console.log(newClient, '//////....../////')
-        } catch (err) {
-            console.log(err)
+            dispatch(toggleProviderModal({ mode: 'create' }))
+            setNewProvider({
+                id: '',
+                name: '',
+                address: '',
+                tel: '',
+
+            })
+            setExecuted(false)
+        } catch (error) {
+            console.log(error)
         }
     }
     const handleSubmit = async () => {
-        //await handleCreateClient()
-        await addIdToNewClient()
-        await showClient()
+        if (mode === 'create') {
+            try {
+                    await addIdToNewProvider()
+                    .catch(err => console.log(err));
+            } catch (err) {
+                console.log(err)
+            }
+        } else if (mode === 'update') {
+            await handleUpdateProvider();
+        }
+        await handleOpenModal()
     }
+    console.log(newProvider)
+
+    useEffect(() => {
+        if (mode === 'create' && newProvider.id && executed === false) {
+            handleCreateProvider()
+            setExecuted(true);
+        }
+    }, [mode, newProvider.id, executed])
+
     return (
         <Container>
             <SideBar isOpen={isOpen ? true : false}>
@@ -69,17 +119,21 @@ export const CreateContact = () => {
                         borderRadius='normal'
                         variant='contained'
                         title={<MdClose />}
+                        onClick={handleOpenModal}
                     ></Button>
-                    <h3>Nuevo Cliente</h3>
+                    <h3>{mode === 'create' ? 'Nuevo Proveedor' : 'Editar Proveedor'}</h3>
                 </ToolBar>
 
                 <Body>
                     <Group>
                         <label htmlFor="">Nombre</label>
-                        <input name='name' type="text"
+                        <input
+                            name='name'
+                            type="text"
+                            value={newProvider.name}
                             onChange={(e) =>
-                                setNewClient({
-                                    ...newClient,
+                                setNewProvider({
+                                    ...newProvider,
                                     [e.target.name]: e.target.value
                                 })}
                             placeholder='Juan Pérez.'
@@ -91,33 +145,17 @@ export const CreateContact = () => {
                                 bgColor='primary'
                                 fontSize='small'
                                 width='auto'
-                                title={(useFormatPhoneNumber(newClient.tel))}
+                                title={(useFormatPhoneNumber(newProvider.tel))}
                             >
                             </Message></label>
-                        <input type="text" name='tel' placeholder='8496503586' value={newClient.tel}
+                        <input
+                            type="text"
+                            name='tel'
+                            placeholder='8496503586'
+                            value={newProvider.tel}
                             onChange={(e) =>
-                                setNewClient({
-                                    ...newClient,
-                                    [e.target.name]: e.target.value
-                                })}
-                        />
-                    </Group>
-                    <Group>
-                        <label htmlFor="">RNC/Cédula
-                            <Message
-                                bgColor='primary'
-                                fontSize='small'
-                                width='auto'
-                                title={(useFormatRNC(newClient.personalID))}
-
-                            >
-                            </Message>
-                        </label>
-                        <input type="text" placeholder='110056007'
-                            name='personalID'
-                            onChange={(e) =>
-                                setNewClient({
-                                    ...newClient,
+                                setNewProvider({
+                                    ...newProvider,
                                     [e.target.name]: e.target.value
                                 })}
                         />
@@ -125,10 +163,15 @@ export const CreateContact = () => {
                     <Group>
                         <label htmlFor="">Dirección</label>
 
-                        <textarea name="address" id="" cols="20" rows="5"
+                        <textarea
+                            name="address"
+                            id=""
+                            cols="20"
+                            rows="5"
+                            value={newProvider.address}
                             placeholder='27 de Febrero #12, Ensanche Ozama, Santo Domingo'
-                            onChange={(e) => setNewClient({
-                                ...newClient,
+                            onChange={(e) => setNewProvider({
+                                ...newProvider,
                                 [e.target.name]: e.target.value
                             })}
                         ></textarea>
@@ -139,7 +182,7 @@ export const CreateContact = () => {
                 <Footer>
                     <Button
                         borderRadius='normal'
-                        title='Crear'
+                        title={mode === 'create' ? 'Crear' : 'Actualizar'}
                         bgcolor='primary'
                         onClick={handleSubmit}
                     />
@@ -152,10 +195,11 @@ const Container = styled.div`
   position: absolute;
   top: 0px;
   right: 0px;
-    max-width: 26em;
+   
     width: 100%;
     height: 100vh;
     overflow: hidden;
+    pointer-events: none;
 
    
 `
@@ -163,18 +207,27 @@ const SideBar = styled.div`
     position: absolute;
     max-width: 26em;
     width: 100%;
+    height: 100vh;
+    box-shadow: none;
     background-color: var(--White1);
+    pointer-events: all;
     top: 0;
     right: 0;
-    z-index: 10;
+    z-index: 10000;
     
     transform: translateX(600px);  
-    transition: transform 0.4s ease-in-out;
+    transition-property: transform, box-shadow;
+    transition-timing-function: ease-in-out, ease-in-out;
+    transition-delay: 0s, 700ms;
+    transition-duration: 800ms, 600ms;
+
+  
     ${(props) => {
         switch (props.isOpen) {
             case true:
                 return `
                 transform: translateX(0px); 
+                box-shadow: 10px 6px 20px 30px rgba(0, 0, 0, 0.200);
                 `
 
             default:

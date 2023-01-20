@@ -1,0 +1,142 @@
+.Container {
+    display: grid;
+    gap: 1em;
+    grid-template-columns: 1fr;
+    width: 100%;
+    height: 3.6em;
+    //border-bottom: 1px solid rgba(0, 0, 0, 0.050);
+    &:last-child{
+        border-bottom: none;
+    }
+
+    .Btn {
+        display: none;
+
+    }
+
+    .Items {
+        display: grid;
+        grid-template-columns: min-content 1fr;
+        padding: 0 1em;
+        align-items: center;
+        gap: 1.6em;
+        
+
+        width: 100%;
+
+        .MoreInfo {
+            display: grid;
+            align-items: center;
+            gap: 1.6em;
+            grid-template-columns: min-content min-content 70px 0.7fr 0.7fr 1fr min-content;
+        }
+        
+
+        .LimitText {
+            width: 100px;
+            height: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            //white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .Group {
+            display: grid;
+            grid-template-columns: 1fr;
+
+            label {
+                display: none;
+                font-weight: 600;
+            }
+
+        }
+        .Group.center{
+            justify-content: center;
+            justify-items: center;
+        }
+    }
+
+}
+
+@media (max-width: 800px) {
+
+    .Container {
+        display: grid;
+       align-items: flex-start;
+        justify-content: center;
+        gap: 0;
+        grid-template-columns: min-content 1fr;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.200);
+        height: 100%;
+        &:last-child{
+            border-bottom: 0;
+        }
+
+        .Btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.5em;
+            height: 3.5em;
+
+        
+            
+        
+        }
+        
+        .Items {
+            display: grid;
+            grid-template-columns: 1fr;
+            height: auto;
+            position: relative;
+            // background-color: rgb(235,235,235);
+            padding: 1em;
+            z-index: 1;
+          
+            
+            
+
+            .MoreInfo{
+                display: none;
+                align-items: center;
+                gap: 1.6em;
+                grid-template-columns: 1fr;
+                z-index: 10000 !important;
+                width: 100%;
+                //background-color: aqua;
+       
+         
+            }
+            .MoreInfo.Visible{
+                display: grid;
+                z-index: 9999;
+            }
+            .LimitText {
+                width: auto;
+                height: auto;
+                display: block;
+                overflow: hidden;
+            }
+
+            .Group {
+                display: grid;
+                grid-template-columns: 0.4fr 1fr;
+                align-items: center;
+                z-index: 0;
+                label {
+                    display: block;
+                    z-index: 0;
+                }
+
+            }
+            .Group.center{
+                justify-content: left;
+                justify-items: left;
+            }
+        }
+    }
+
+}

@@ -2,17 +2,17 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { openModalAddOrder } from '../../../../features/modals/modalSlice'
+import { modes } from '../../../../constants/modes'
+import { toggleClientModal } from '../../../../features/modals/modalSlice'
 import { Button } from '../../../templates/system/Button/Button'
 import { OrderFilter } from './components/OrderFilter/OrderFilter'
 
 export const ToolBar = () => {
+    const {createMode} = modes.operationModes
     const dispatch = useDispatch()
-    const openModal = () => {
-        dispatch(
-            openModalAddOrder()
-        )
-    }
+    
+    const openModal = () => dispatch(toggleClientModal({mode: createMode, data: null}))
+    
     return (
         <Container>
             <Wrapper>

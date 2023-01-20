@@ -12,24 +12,7 @@ import { TableTaxReceipt } from './TableTaxReceipt'
 export const TaxReceiptSetting = () => {
   const dispatch = useDispatch()
   const [taxReceiptData, setTaxReceiptData] = useState([])
-  const [taxReceipt, setTaxReceipt] = useState([
-    {
-      name: 'CONSUMIDOR FINAL',
-      type: 'B',
-      serie: '01',
-      sequence: '0000000001',
-      increase: '1',
-      quantity: '2000'
-    },
-    {
-      name: 'CONSUMIDOR FISCAL',
-      type: 'B',
-      serie: '02',
-      sequence: '0000000001',
-      increase: '1',
-      quantity: '2000'
-    }
-  ])
+  const [taxReceipt, setTaxReceipt] = useState([])
 
   console.log(taxReceipt)
   useEffect(() => {

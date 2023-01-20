@@ -11,7 +11,7 @@ export const MenuData = [
         path: '/app/venta/1'
     },
     {
-        title: 'Compra',
+        title: 'Compras y Pedidos',
         path: false,
         submenuIconOpen: <ChevronLeft/>,
         submenuIconClose: <ChevronRight/>,

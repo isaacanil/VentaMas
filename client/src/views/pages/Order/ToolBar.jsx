@@ -19,9 +19,7 @@ export const ToolBar = () => {
     return (
         <Container>
             <Wrapper>
-                
                 <OrderFilter></OrderFilter>
-
                 <Button
                     borderRadius='normal'
                     bgcolor='primary'

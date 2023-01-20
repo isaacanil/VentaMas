@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { getClients, getOrders } from '../../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
-import { OrderItem } from '../../ListItem/OrderItem'
+import { OrderItem } from '../../ListItem/ClientCard'
 
-export const PendingOrdersTable = () => {
+export const ClientsListTable = () => {
   const [clients, setClients] = useState([])
 
   useEffect(() => { getClients(setClients) }, [])
@@ -70,6 +70,7 @@ const Table = styled.div`
   position: relative;
   width: 100%;
   overflow: hidden;
+  overflow-x: auto;
   display: grid;
   grid-template-rows: min-content 1fr;
   
@@ -105,13 +106,13 @@ const Row = styled.div`
   display: grid;
   align-items: center;
   height: 3em;
-  gap: 0.6em;
+  gap: 1em;
   grid-template-columns: 
-  minmax(100px, 0.1fr) //ID
-  minmax(120px, 0.6fr) //Nombre
-  minmax(148px, 0.3fr) //Telefono
-  minmax(110px, 0.3fr) //RNC/Cedula
-  minmax(120px, 1fr) //Direccion
+  minmax(120px, 0.1fr) //ID
+  minmax(170px, 0.4fr) //Nombre
+  minmax(170px, 0.4fr) //Telefono
+  minmax(130px, 0.3fr) //RNC/Cedula
+  minmax(170px, 1fr) //Direccion
   minmax(92px, 0.2fr); //acción
   @media (max-width: 800px){
     gap: 0;
@@ -164,7 +165,7 @@ const Row = styled.div`
     switch (props.fill) {
       case 'fill':
         return `
-          padding-right: 16px;
+          padding-right: 18px;
           height: 2em;
           background-color: var(--White1);
         `

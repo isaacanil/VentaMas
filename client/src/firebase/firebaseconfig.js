@@ -91,7 +91,6 @@ export const watchingUserState = (setUserDisplayName) => {
     }
   })
 }
-/****************** **********************/
 export const UploadProdImgData = async (id, url) => {
   const imgRef = doc(db, "prodImages", id);
   try {
@@ -158,7 +157,7 @@ export const UploadProductData = (product) => {
 }
 export const getProducts = async (setProduct) => {
   const productRef = collection(db, "products")
-  const q = query(productRef, orderBy("product.productName", "desc"))
+  const q = query(productRef, orderBy("product.productName", "desc"), orderBy("product.order", "asc"))
   //, orderBy("product.order", "asc")
   onSnapshot(q, (snapshot) => {
     let productsArray = snapshot.docs.map(item => item.data())
@@ -170,6 +169,37 @@ export const updateProduct = async (product) => {
   const productRef = doc(db, "products", product.id)
   await updateDoc(productRef, { product })
 }
+export const createProvider = async (provider) => {
+  console.log(provider)
+  try {
+    const providerRef = doc(db, 'providers', provider.id)
+    await setDoc(providerRef, { provider })
+  } catch (error) {
+    console.error("Error adding document: ", error)
+  }
+}
+export const updateProvider = async (provider) => {
+  const providerRef = doc(db, 'providers', provider.id)
+  await updateDoc(providerRef, { provider })
+    .then(() => { console.log('product from firebase', provider) })
+}
+export const deleteProvider = async (id) => {
+   const providerRef = doc(db, "providers", id)
+  try {
+    await deleteDoc(providerRef)
+    console.log(id)
+  } catch (error) {
+    console.log(error)
+  }
+}
+export const getProviders = async (setProviders) => {
+  const providersRef = collection(db, "providers")
+  const q = query(providersRef, orderBy("provider.name", "asc"))
+  onSnapshot(q, (snapshot) => {
+    let providersArray = snapshot.docs.map(item =>  item.data())
+    setProviders(providersArray)
+  })
+}
 export const updateClient = async (client) => {
   console.log('product from firebase', client)
   const clientRef = doc(db, 'client', client.id)
@@ -177,6 +207,7 @@ export const updateClient = async (client) => {
     .then(() => { console.log('product from firebase', client) })
 }
 export const createClient = async (client) => {
+  console.log(client)
   try {
     const clientRef = doc(db, 'client', client.id)
     await setDoc(clientRef, { client })
@@ -185,10 +216,8 @@ export const createClient = async (client) => {
   }
 }
 export const getClients = async (setClients) => {
-  
   const clientRef = collection(db, "client")
   const q = query(clientRef, orderBy("client.name", "asc"))
-
   onSnapshot(q, (snapshot) => {
     let clientArray = snapshot.docs.map(item =>  item.data())
     console.log(clientArray)
@@ -314,13 +343,14 @@ export const UpdateMultipleDocs = (products) => {
 }
 export const QueryByCategory = async (setProductArray, categoryArrayData, categoryStatus) => {
   const productsRef = collection(db, "products")
-  const q = query(productsRef, where("product.category", "in", categoryArrayData));
+  const q = query(productsRef, where("product.category", "in", categoryArrayData), orderBy("product.productName", "desc"), orderBy("product.order", "asc"));
   const { docs } = await getDocs(q);
   const array = docs.map((doc) => doc.data());
   if (categoryStatus) {
     setProductArray(array);
   }
 }
+
 export const QueryByType = async (setProducts, type, size) => {
   const productsRef = collection(db, "products")
   const q = query(productsRef, where("product.type", "==", type), where("product.size", "==", size))
@@ -360,7 +390,6 @@ export const getOrders = async (setOrders) => {
     setOrders(orderArray)
   })
 }
-
 export const createTaxReceiptDataBD = async () => {
   const counterRef = doc(db, "counter", "c1")
   const taxReceipts = {
@@ -383,8 +412,6 @@ export const createTaxReceiptDataBD = async () => {
       }
     ]
   }
-
-
   try {
     await setDoc(counterRef, taxReceipts)
     console.log(counterRef)
@@ -417,4 +444,21 @@ export const readTaxReceiptDataBD = (setTaxReceiptDataBD) => {
     setTaxReceiptDataBD(obj.data)
   });
 
+}
+export const getUsers = () => {
+  const usersRef = collection(db, "users")
+  
+  onSnapshot(usersRef, (snapshot) => {
+    let usersArray = snapshot.docs.map(async (item) => {
+      let userData = item.data()
+      
+      
+      let rolRef = userData.user.rol
+  
+      
+    }
+    )
+   
+    //setOrder(orderArray)
+  })
 }
