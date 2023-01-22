@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
 import { monetarySymbols } from '../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
-import { SelectDelivery, SelectTotalTaxes, addPaymentMethod,  SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../features/cart/cartSlice'
+import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../features/cart/cartSlice'
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import { getTaxReceiptData, handleNCFStatus, SELECT_NCF_STATUS } from '../../../features/taxReceipt/taxReceiptSlice'
@@ -59,7 +59,7 @@ export const PaymentArea = () => {
         const updatedPaymentMethod = paymentMethod.map((method) => {
             if (value === null) {
                 return { ...method, value: 0 };
-              }
+            }
             if (method.status && value !== null) {
                 return { ...method, value: Number(value) };
             }
@@ -81,13 +81,13 @@ export const PaymentArea = () => {
     }, [paymentMethod])
     useEffect(() => {
         readTaxReceiptDataBD(setTaxReceiptData)
-      }, [])
-      useEffect(() => {
+    }, [])
+    useEffect(() => {
         if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
-          dispatch(getTaxReceiptData(taxReceiptData))
+            dispatch(getTaxReceiptData(taxReceiptData))
         }
-      }, [taxReceiptData])
-    useEffect(()=>{
+    }, [taxReceiptData])
+    useEffect(() => {
         dispatch(handleNCFStatus(NCFStatus))
     }, [NCFStatus])
     return (
@@ -109,7 +109,7 @@ export const PaymentArea = () => {
                 </Group>
             </Row>
             <Area>
-                <label className='title' htmlFor="">Método de Pago</label>
+                {/* <label className='title' htmlFor="">Método de Pago</label> */}
                 <Group className='option1'>
                     <Group>
                         <input type="radio" name="payment-method" id="cash"
@@ -191,7 +191,32 @@ const Group = styled.div`
             default:
                 break;
         }
+
     }}
+   
+    input[type="radio"]:checked + label{
+       
+      background-color: var(--color);
+      color: black;
+      font-weight: 500;
+      color: white;
+      
+        
+    }
+    input[type="radio"]{
+        display:none;
+    }
+    label{
+        border-radius: 4px;
+        padding: 0 0.6em;
+        transition: background-color, 400ms ease-in-out, color 400ms ease-in-out;
+        :hover{
+            background-color: var(--color3)
+        }
+    }
+    
+    
+    
 `
 const Item = styled.div`
 padding: 0;
