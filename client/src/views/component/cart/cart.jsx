@@ -103,9 +103,9 @@ export const Cart = () => {
     if (ProductSelected.length > 0) {
       try {
         await handleTaxReceipt()
-        //await createOrUpdateClient()
+        await createOrUpdateClient()
         await savingDataToFirebase()
-        //await showPrintPreview()
+        await showPrintPreview()
         await showPrintPreview()
         await clearDataFromState()
       } catch (error) {

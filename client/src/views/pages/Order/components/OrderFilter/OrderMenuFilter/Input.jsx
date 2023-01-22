@@ -22,7 +22,7 @@ export const Input = ({data, onChange, fn}) => {
 const Container = styled.div`
     width: 100%;
     display: flex;
-    height: 2em;
+    height: 2.6em;
     align-items: center;
     justify-content: space-between;
     background-color: white;

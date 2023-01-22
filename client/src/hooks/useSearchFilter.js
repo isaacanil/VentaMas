@@ -31,16 +31,16 @@ export const useSearchFilterX = (list, searchTerm, filterField) => {
 
 
 export const useSearchFilterOrderMenuOption = (data, searchTerm ) => {
-    const [filteredData, setFilteredData] = useState(data.Items);
+    const [filteredData, setFilteredData] = useState(data);
+
     useEffect(() => {
-        console.log(data.Items.filter((item)=>console.log(item)))
-        // if(data.length > 0){
-        //     const filtered = data.Items.filter((item) => {
-        //         console.log(item)
-        //     });
-        //     setFilteredData(filtered);
-        // }
+        if(String(searchTerm).trim() === ''){
+            setFilteredData(data)
+            return;
+        }
+        const searchRegex = new RegExp(searchTerm, 'i');
+        const filtered = data.filter((item)=>searchRegex.test(item.name))
+        setFilteredData(filtered.slice(0, 3))
     }, [searchTerm, data]);
-    console.log(filteredData)
     return filteredData;
 }
