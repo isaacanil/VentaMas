@@ -27,7 +27,7 @@ export const ClientControl = () => {
       showClientList: true
     },
     UPDATE: {
-      label: 'Actualizar Cliente',
+      label: 'Actualizar',
       mode: 'update',
       name: 'name',
       showClientList: false

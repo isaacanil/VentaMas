@@ -111,7 +111,7 @@ export const PaymentArea = () => {
             <Area>
                 {/* <label className='title' htmlFor="">Método de Pago</label> */}
                 <Group className='option1'>
-                    <Group>
+                    <Group grow='2'>
                         <input type="radio" name="payment-method" id="cash"
                             defaultChecked
                             onChange={(e) => {
@@ -120,7 +120,7 @@ export const PaymentArea = () => {
                         />
                         <label htmlFor='cash'>Efectivo</label>
                     </Group>
-                    <Group>
+                    <Group grow='2'>
                         <input type="radio" name="payment-method" id="card"
                             onChange={(e) => {
                                 PaymentMethodFN.findAndUpdate("card", e.target.checked)
@@ -181,7 +181,20 @@ const Row = styled.div`
 const Group = styled.div`
     display: flex;
     align-items: center;
-    gap: 0.4em;
+    justify-content: space-evenly;
+    flex-grow: 1;
+    gap: 0.8em;
+    ${props => {
+        switch (props.grow) {
+            case props.grow:
+                return`
+                flex-grow: ${props.grow};
+                ` 
+        
+            default:
+                break;
+        }
+    }}
     ${props => {
         switch (props.className) {
             case 'option1':
@@ -207,9 +220,12 @@ const Group = styled.div`
         display:none;
     }
     label{
+        flex-grow: 1;
         border-radius: 4px;
-        padding: 0 0.6em;
         transition: background-color, 400ms ease-in-out, color 400ms ease-in-out;
+        background-color: #ccd7e6;
+        font-weight: 500;
+        text-align: center;
         :hover{
             background-color: var(--color3)
         }
