@@ -15,10 +15,13 @@ export const Button = ({
   borderRadius,
   isActivated,
   iconOn,
-  iconOff
-}) => {
+  iconOff,
+  position
 
+}) => {
+  
   return (
+
     <Container
       bgcolor={bgcolor}
       color={color}
@@ -29,6 +32,8 @@ export const Button = ({
       disabled={disabled}
       borderRadius={borderRadius}
       isActivated={isActivated}
+
+
     >
       {isActivated === false ? iconOn : iconOff}
       {startIcon ? startIcon : null}
@@ -194,7 +199,7 @@ export const Container = styled.button`
            padding: 0 0.4em;
 
           `;
-     
+
     }
   }}
    ${(props) => {
@@ -227,9 +232,9 @@ export const Container = styled.button`
            color: #4b4b4b;
 
           `;
-     
+
       default:
-        return 
+        return
     }
   }}
   ${(props) => {

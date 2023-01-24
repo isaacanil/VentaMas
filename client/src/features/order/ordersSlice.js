@@ -32,10 +32,13 @@ const initialState = {
                 { name: 'condicion 7' },
             ]
         },
-       
-       
-      
-            
+
+
+
+
+    ],
+    pendingOrders: [
+
     ]
 }
 
@@ -69,26 +72,51 @@ export const orderSlice = createSlice({
                 return newState;
             }
         },
-        handleOpenOptions: (state, actions) => { 
-            const {id} = actions.payload
+        handleOpenOptions: (state, actions) => {
+            const { id } = actions.payload
             //const newFilterOptions = state.orderFilterOptions.find((item)=>item.id === id)
             let newFilterOptions = state.orderFilterOptions.map((item) => {
                 if (item.id === id) {
-                  return { ...item, isOpen: !item.isOpen };
+                    return { ...item, isOpen: !item.isOpen };
                 } else if (item.id !== id) {
-                  return { ...item, isOpen: false };
+                    return { ...item, isOpen: false };
                 }
-              });
-              state.orderFilterOptions = newFilterOptions
-            
+            });
+            state.orderFilterOptions = newFilterOptions
+
+        },
+        getPendingOrdersFromDB: (state, actions) => {
+            const originalOrderList = actions.payload
+            let orderList = originalOrderList.map((item) => {
+                return { ...item, selected: false }
+            })
+            state.pendingOrders = orderList
+        
+
+        },
+        selectPendingOrder: (state, actions) => {
+            const { id } = actions.payload
+
+            const orderSelected = state.pendingOrders.map((item) => {
+                if (item.data.id === id) {
+                    return { ...item, selected: true }
+                } else if(item.data.id !== id){
+                    return { ...item, selected: false }
+                }
+            })
+            state.pendingOrders = orderSelected
+
+
+
         }
 
     }
 })
 
-export const { handleOpenOptions, handleSetOptions } = orderSlice.actions;
+export const { getPendingOrdersFromDB, handleOpenOptions, handleSetOptions, selectPendingOrder } = orderSlice.actions;
 
 //selectors
 export const selectOrderFilterOptions = (state) => state.order.orderFilterOptions;
+export const selectOrderList = (state) => state.order.pendingOrders;
 
 export default orderSlice.reducer

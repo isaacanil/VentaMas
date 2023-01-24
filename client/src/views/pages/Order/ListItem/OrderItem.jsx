@@ -8,8 +8,15 @@ import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { Button } from '../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
 import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
+import { ActionsButtonsGroup } from './ActionsButtonsGroup'
+import { useDispatch } from 'react-redux'
+import { selectPendingOrder } from '../../../../features/order/ordersSlice'
 
 export const OrderItem = ({ e, index, Row, Col }) => {
+    const dispatch = useDispatch()
+    const handleViewNotes = () => {
+        dispatch(selectPendingOrder({ id: e.data.id }))
+    }
     return (
         <Row>
             <Col>{index + 1}</Col>
@@ -24,6 +31,7 @@ export const OrderItem = ({ e, index, Row, Col }) => {
                     title='ver'
                     borderRadius='normal'
                     color='gray-dark'
+                    onClick={handleViewNotes}
                 />
             </Col>
             <Col>
@@ -35,26 +43,7 @@ export const OrderItem = ({ e, index, Row, Col }) => {
                 <div>{useFormatPrice(e.data.totalPurchase)}</div>
             </Col>
             <Col>
-                <ButtonGroup>
-                    <Button
-                        borderRadius='normal'
-                        title={<IoCartSharp />}
-                        width='icon32'
-                        color='gray-dark'
-                    />
-                    <Button
-                        borderRadius='normal'
-                        title={<TbEdit />}
-                        width='icon32'
-                        color='gray-dark'
-                    />
-                    <Button
-                        borderRadius='normal'
-                        title={<IoTrashSharp />}
-                        width='icon32'
-                        bgcolor='error'
-                    />
-                </ButtonGroup>
+                <ActionsButtonsGroup orderData={e}/>
             </Col>
 
         </Row>

@@ -48,7 +48,7 @@ export const MultimediaManager = () => {
                 bgcolor='error' />) : null
           }
           <AddFileBtn
-            title="Agregar Imagen"
+            title="Imagen"
             fn={() => handleUploadImg()}
             setFile={setImgToUpload}
             file={ImgToUpload}
@@ -119,9 +119,9 @@ const BodyWrapper = styled.div`
   width: 100%;
   padding: 1em;
   overflow: hidden;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  grid-auto-rows:  150px;
-  gap: 1em;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-auto-rows:  130px;
+  gap: 0.1em;
   
 `
 const Img = styled.div`
@@ -144,7 +144,7 @@ const Img = styled.div`
     }
     img{
       object-fit: cover;
-      border-radius: 10px;
+      border-radius: 4px;
 
       width: 100%;
       height: 100%;

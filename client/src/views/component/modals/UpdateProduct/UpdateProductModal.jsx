@@ -85,7 +85,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             ChangeProductImage(url)
         )
     }
-
+    
     return (
         <Modal
             nameRef='Actualizar'

@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-export const ButtonGroup = ({children}) => {
+export const ButtonGroup = ({children, position}) => {
   return (
-    <Container>
+    <Container position={position}>
         {children}
     </Container>
   )
@@ -12,4 +12,15 @@ export const ButtonGroup = ({children}) => {
 const Container = styled.div`
     display: flex;
     gap: 0.4em;
+    ${(props) => {
+      switch (props.position) {
+        case 'right':
+          return`
+            align-items: end;
+          `
+      
+        default:
+          break;
+      }
+    }}
 `

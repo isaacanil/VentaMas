@@ -239,7 +239,7 @@ const Group = styled.div`
     gap: 1em;
 `
 const Title = styled.h5`
-    color: rgba(49, 49, 49, 0.966);
+    color: var(--Gray7);
     width: 100%;
     font-size: 13px;
     line-height: 1pc;

@@ -383,6 +383,9 @@ export const AddOrder = async (value) => {
   }
 
 }
+export const deleteOrderFromDB = async (id) => {
+  deleteDoc(doc(db, `orders`, id))
+}
 export const getOrders = async (setOrders) => {
   const ordersRef = collection(db, "orders")
   onSnapshot(ordersRef, (snapshot) => {

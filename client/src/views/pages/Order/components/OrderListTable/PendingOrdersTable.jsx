@@ -1,17 +1,25 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Data } from '../../Data'
-import { ListItem } from '../../ListItem/ListItem'
+
 import { getOrders } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
 import { OrderItem } from '../../ListItem/OrderItem'
+import { useDispatch, useSelector } from 'react-redux'
+import { getPendingOrdersFromDB, selectOrderList } from '../../../../../features/order/ordersSlice'
 
 export const PendingOrdersTable = () => {
-  const [orders, setOrders] = useState([])
+  const [ordersFromBD, setOrderFromBD] = useState([])
+  const dispatch = useDispatch()
   useEffect(() => {
-    getOrders(setOrders)
+    getOrders(setOrderFromBD)
   }, [])
-  console.log(orders)
+
+  useMemo(()=>{
+    if(ordersFromBD.length > 0) dispatch(getPendingOrdersFromDB(ordersFromBD))
+  }, [ordersFromBD])
+ 
+  const pendingOrderList = useSelector(selectOrderList)
+  console.log(pendingOrderList)
   return (
     <Container>
       <Body>
@@ -21,7 +29,6 @@ export const PendingOrdersTable = () => {
         <Table>
 
           <Row fill='fill'>
-
             <Col>#</Col>
             <Col>Est</Col>
             <Col>Proveedor</Col>
@@ -30,14 +37,12 @@ export const PendingOrdersTable = () => {
             <Col>F. Entrega</Col>
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
-
           </Row>
-
           <TableBody>
             {
-              Array(orders).length > 0 ? (
-                orders.map((e, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} e={e} index={index} />
+              pendingOrderList.length > 0 ? (
+                pendingOrderList.map((data, index) => (
+                  <OrderItem Row={Row} Col={Col} key={index} e={data} index={index} />
                 ))
               ) : null
 

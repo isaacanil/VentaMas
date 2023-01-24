@@ -12,9 +12,8 @@ import { ToolBar } from './ToolBar'
 export const Orders = () => { 
   const dispatch = useDispatch();
   const [providers, setProviders] = useState([])
-  useEffect(()=>{
-    getProviders(setProviders)
-  },[])
+  useEffect(()=>{getProviders(setProviders)},[])
+  
   useEffect(() =>{
     if(providers.length > 0){
       dispatch(handleSetOptions({optionsID: 'Proveedores', datas: providers, propertyName: 'provider'}))
