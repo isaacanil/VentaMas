@@ -19,6 +19,7 @@ import { clearImg, SaveImg } from '../../../../features/uploadImg/uploadImageSli
 import { selectImg } from '../../../../features/uploadImg/uploadImageSlice';
 import { firstLetter } from '../../../../hooks/firstLetter';
 import { parseToString } from '../../../../hooks/parseToString';
+import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter';
 export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    const dispatch = useDispatch();
    const ImgSelected = useSelector(selectImg);
@@ -112,8 +113,8 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
          return;
       }
       const price = {
-         unit: cost.unit * tax.value + cost.unit,
-         total: cost.unit * tax.value + cost.unit,
+         unit: useDecimalLimiter(cost.unit * tax.value + cost.unit),
+         total: useDecimalLimiter(cost.unit * tax.value + cost.unit),
       }
       setProduct({
          ...product,
