@@ -19,7 +19,7 @@ const initialState = {
             ]
         },
         {
-            name: 'Condicion',
+            name: 'Condición',
             id: nanoid(8),
             isOpen: false,
             Items: [
@@ -118,5 +118,6 @@ export const { getPendingOrdersFromDB, handleOpenOptions, handleSetOptions, sele
 //selectors
 export const selectOrderFilterOptions = (state) => state.order.orderFilterOptions;
 export const selectOrderList = (state) => state.order.pendingOrders;
+export const selectOrderItemSelected = (state) => state.order.pendingOrders.find((item) => item.selected === true);
 
 export default orderSlice.reducer

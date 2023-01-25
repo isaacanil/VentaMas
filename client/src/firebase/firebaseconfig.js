@@ -184,7 +184,7 @@ export const updateProvider = async (provider) => {
     .then(() => { console.log('product from firebase', provider) })
 }
 export const deleteProvider = async (id) => {
-   const providerRef = doc(db, "providers", id)
+  const providerRef = doc(db, "providers", id)
   try {
     await deleteDoc(providerRef)
     console.log(id)
@@ -196,7 +196,7 @@ export const getProviders = async (setProviders) => {
   const providersRef = collection(db, "providers")
   const q = query(providersRef, orderBy("provider.name", "asc"))
   onSnapshot(q, (snapshot) => {
-    let providersArray = snapshot.docs.map(item =>  item.data())
+    let providersArray = snapshot.docs.map(item => item.data())
     setProviders(providersArray)
   })
 }
@@ -219,7 +219,7 @@ export const getClients = async (setClients) => {
   const clientRef = collection(db, "client")
   const q = query(clientRef, orderBy("client.name", "asc"))
   onSnapshot(q, (snapshot) => {
-    let clientArray = snapshot.docs.map(item =>  item.data())
+    let clientArray = snapshot.docs.map(item => item.data())
     console.log(clientArray)
     setClients(clientArray)
   })
@@ -448,20 +448,42 @@ export const readTaxReceiptDataBD = (setTaxReceiptDataBD) => {
   });
 
 }
-export const getUsers = () => {
+export const getUsers = (setUsers) => {
   const usersRef = collection(db, "users")
-  
+
   onSnapshot(usersRef, (snapshot) => {
     let usersArray = snapshot.docs.map(async (item) => {
       let userData = item.data()
-      
-      
       let rolRef = userData.user.rol
-  
-      
-    }
-    )
-   
-    //setOrder(orderArray)
+      let rolDoc = (await getDoc(rolRef)).data()
+      userData.user.rol = rolDoc.rol
+      return userData
+    })
+    Promise.all(usersArray).then(result => {
+      setUsers(result)
+    }).catch(error => {
+      console.log(error)
+    });
+    // setUsers(usersArray)
   })
+}
+export const createUser = (rolType) => {
+  let rolRef = null
+  if (rolType === 'admin') {
+    rolRef = doc(db, 'roles', 'bVCX7NQPccNlCbGHdpF1')
+  }
+  if (rolType === 'readOnly') {
+    rolRef = doc(db, 'roles', 'IEqNtudsdN5UxaXppKr5')
+  }
+
+  if (rolRef !== null) {
+
+    const user = {
+      id: nanoid(12),
+      name: 'jorge',
+      rol: rolRef
+    }
+    const userRef = doc(db, 'users', user.id)
+    setDoc(userRef, { user })
+  }
 }

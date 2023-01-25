@@ -19,14 +19,14 @@ export const ActionsButtonsGroup = ({ orderData }) => {
     const OrderListRef = useSelector(selectOrderList)
     const [showConfirmButtons, setShowConfirmButtons] = useState(false)
     const [isAccept, setIsAccept] = useState(null)
-    const [mode, setMode] = useState()
+    const [mode, setMode] = useState(null)
     useEffect(() => {
         if (orderData.data.id && !orderData.selected) {
             setShowConfirmButtons(false)
         }
     }, [orderData])
     useEffect(() => {
-        if (orderData.data.id && orderData.selected) {
+        if (orderData.data.id && orderData.selected && mode !== null) {
             setShowConfirmButtons(true)
         } else {
             setShowConfirmButtons(false)
@@ -34,7 +34,6 @@ export const ActionsButtonsGroup = ({ orderData }) => {
     }, [OrderListRef])
     const handleEditMode = () => {
         setMode(modes.edit)
-
         dispatch(selectPendingOrder({ id: orderData.data.id }))
 
     }
@@ -52,11 +51,13 @@ export const ActionsButtonsGroup = ({ orderData }) => {
             accept: () => {
                 console.log('compra aceptada')
                 setShowConfirmButtons(false)
+               
                 setIsAccept(null) // reset the state variable
             },
             reject: () => {
                 console.log('compra rechazada')
                 setShowConfirmButtons(false)
+                setMode(null)
                 setIsAccept(null) // reset the state variable
             }
         },
@@ -64,6 +65,7 @@ export const ActionsButtonsGroup = ({ orderData }) => {
             accept: () => {
                 console.log('editar aceptada')
                 setShowConfirmButtons(false)
+                setMode(null)
                 setIsAccept(null) // reset the state variable
             },
             reject: () => {
@@ -89,6 +91,7 @@ export const ActionsButtonsGroup = ({ orderData }) => {
     }
     const reset = () => {
         setShowConfirmButtons(false)
+        setMode(null)
         setIsAccept(null) // reset the state variable
     }
     useEffect(() => {

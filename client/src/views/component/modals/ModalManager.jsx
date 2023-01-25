@@ -2,7 +2,6 @@ import { Fragment } from "react"
 import { AddClientModal } from "./AddClient/AddClientModal"
 import { ProductModal } from "./Product/ProductModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
-import { useModal } from "../../../hooks/useModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
 import { SetCustomProduct } from "./CustomProduct/SetCustomProduct"
 import { AddProvider } from "./AddProvider/AddProvider"
@@ -16,13 +15,14 @@ import {
   SelectSetCustomPizzaModal,
   handleModalSetCustomPizza,
   closeModalAddProd,
-  closeModalUpdateProd,
   SelectProviderModalData,
   SelectClientModalData,
+  SelectViewOrdersNotesModalData,
 
 } from "../../../features/modals/modalSlice"
 import { CreateContact } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
 import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
+import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
 export const ModalManager = () => {
   const dispatch = useDispatch()
   const AddClientModalSelected = useSelector(SelectAddClientModal)
@@ -32,72 +32,15 @@ export const ModalManager = () => {
   const SetCustomPizzaSelected = useSelector(SelectSetCustomPizzaModal)
   const ClientModalDataSelected = useSelector(SelectClientModalData)
   const ProviderModalDataSelected = useSelector(SelectProviderModalData)
+  const ViewOrdersNotesModalDataSelected = useSelector(SelectViewOrdersNotesModalData)
   //console.log(AddClientModalSelected)
 
-  const handleSubmitAddProducts = async () => {
-    /****************************************************************** */
-    const extentionsFile = /.jpg|.jpeg|.png| .webp| .gif/i;
-    if (!extentionsFile.exec(productImage.name)) {
-      console.log(productImage.name)
-      setErrorMassage(<ErrorMessage text='Error de archivo (no es una imagen valida)'></ErrorMessage>)
-    } else {
-      setErrorMassage('')
-      //referencia
-      UploadProdImg(productImage).then((url) => UploadProdData(
-        url,
-        productName,
-        cost,
-        taxRef,
-        stock,
-        category,
-        netContent,
-      ))
-      try {
-        return <Navigate to={'/app/'}></Navigate>
-      }
-      catch (e) {
-        console.error("Error adding document: ", e)
-      }
-    }
-    /******************************************************************************** */
-  }
   const closeModalAddProducts = () => {
     dispatch(
       closeModalAddProd()
     )
   }
-  const handleSubmitUpdateProducts = async () => {
-    /****************************************************************** */
-    const extentionsFile = /.jpg|.jpeg|.png| .webp| .gif/i;
-    if (!extentionsFile.exec(productImage.name)) {
-      console.log(productImage.name)
-      setErrorMassage(<ErrorMessage text='Error de archivo (no es una imagen valida)'></ErrorMessage>)
-    } else {
-      setErrorMassage('')
-      //referencia
-      UploadProdImg(productImage).then((url) => UploadProdData(
-        url,
-        productName,
-        cost,
-        taxRef,
-        stock,
-        category,
-        netContent,
-      ))
-      try {
-        return <Navigate to={'/app/'}></Navigate>
-      }
-      catch (e) {
-        console.error("Error adding document: ", e)
-      }
-    }
-    /******************************************************************************** */
-  }
-  const closeModalUpdateProducts = () => {
-    dispatch(
-      closeModalUpdateProd()
-    )
-  }
+
   return (
     <Fragment>
       <AddClientModal
@@ -123,10 +66,11 @@ export const ModalManager = () => {
         isOpen={SetCustomPizzaSelected}
         handleOpen={handleModalSetCustomPizza}
       />
+      <MessageAlert isOpen={ViewOrdersNotesModalDataSelected.isOpen} data={ViewOrdersNotesModalDataSelected.data}></MessageAlert>
       <CreateContact isOpen={ClientModalDataSelected.isOpen} mode={ClientModalDataSelected.mode} data={ClientModalDataSelected.mode === 'update' ? ClientModalDataSelected.data : null}></CreateContact>
       <ProviderForm isOpen={ProviderModalDataSelected.isOpen} mode={ProviderModalDataSelected.mode} data={ProviderModalDataSelected.mode === 'update' ? ProviderModalDataSelected.data : null}></ProviderForm>
       <AddOrderModal isOpen={AddOrderModalSelected} />
-      <AddProvider />
+      {/* <AddProvider /> */}
     </Fragment>
   )
 

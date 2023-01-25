@@ -13,6 +13,7 @@ import { handleImageHidden, handleRowMode, selectImageHidden, ReloadImageHiddenS
 import { useDispatch, useSelector } from 'react-redux'
 import { useMatch } from 'react-router-dom'
 import { SearchProductBar } from './SearchProductBar'
+import { Tooltip } from '../system/Button/Tooltip'
 export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const dispatch = useDispatch()
   const [isOpenMenu, setIsOpenMenu] = useState(false)
@@ -52,7 +53,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
         onClick={handledMenu}
       >
       </div> */}
-      <Backdrop isOpen={isOpenMenu ? true : false}/>
+      <Backdrop isOpen={isOpenMenu ? true : false} />
       <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
           <div className={Style.MenuBtn} onClick={handledMenu}>
@@ -74,21 +75,31 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
         {
           matchWithVenta ? (
             <Group>
-              <Button
-                width={'icon32'}
-                borderRadius='normal'
-                iconOn={<TbColumns />}
-                iconOff={<BsList />}
-                isActivated={viewRowModeRef ? true : false}
-                onClick={() => handleRowModeFN()}
+              <Tooltip
+                placement='bottom'
+                description={'Cambiar vista'}
+                Children={
+                  <Button
+                    width={'icon32'}
+                    borderRadius='normal'
+                    iconOn={<TbColumns />}
+                    iconOff={<BsList />}
+                    isActivated={viewRowModeRef ? true : false}
+                    onClick={() => handleRowModeFN()}
+                  />}
               />
-              <Button
-                width={'icon32'}
-                borderRadius='normal'
-                iconOn={<MdOutlineImage />}
-                iconOff={<MdOutlineHideImage />}
-                isActivated={ImageHidden ? true : false}
-                onClick={() => handleImageHiddenFN()}
+              <Tooltip
+                placement='bottom-end'
+                description={'Mostrar Imagen'}
+                Children={
+                  <Button
+                    width={'icon32'}
+                    borderRadius='normal'
+                    iconOn={<MdOutlineImage />}
+                    iconOff={<MdOutlineHideImage />}
+                    isActivated={ImageHidden ? true : false}
+                    onClick={() => handleImageHiddenFN()}
+                  />}
               />
             </Group>
           ) : null
@@ -110,7 +121,7 @@ const Backdrop = styled.div`
         transition: 600ms ease-in-out;
    ${props => {
     switch (props.isOpen) {
-        case true:
+      case true:
         return `
         z-index: 999999;
         display: block;

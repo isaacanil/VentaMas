@@ -1,5 +1,7 @@
 
+import { useState } from 'react'
 import styled from 'styled-components'
+
 
 export const Button = ({
   bgcolor,
@@ -16,10 +18,12 @@ export const Button = ({
   isActivated,
   iconOn,
   iconOff,
-  position
+  titlePosition,
+  
 
 }) => {
-  
+
+
   return (
 
     <Container
@@ -32,13 +36,17 @@ export const Button = ({
       disabled={disabled}
       borderRadius={borderRadius}
       isActivated={isActivated}
-
+      titlePosition={titlePosition}
+   
 
     >
-      {isActivated === false ? iconOn : iconOff}
-      {startIcon ? startIcon : null}
-      {title ? title : null}
-      {endIcon ? endIcon : null}
+    
+        {isActivated === false ? iconOn : iconOff}
+        {startIcon ? startIcon : null}
+        {title ? title : null}
+        {endIcon ? endIcon : null}
+     
+      
     </Container>
   )
 }
@@ -55,7 +63,6 @@ export const Container = styled.button`
   padding: 0 0.6em;
   outline: none;
   color: black;
-
   font-weight: 500;
   font-family: inherit;
   svg{
@@ -73,12 +80,24 @@ export const Container = styled.button`
   &:focus, &:focus-visible{
     outline: none;
   }
+ 
   transition: background-color 500ms;
+  ${(props) => {
+    switch (props.titlePosition) {
+      case 'center':
+        return `
+          justify-content: center;
+        `
+
+      default:
+        break;
+    }
+  }}
  ${(props) => {
     switch (props.borderRadius) {
       case 'normal':
         return `
-        border-radius: 10px;
+        border-radius: var(--border-radius);
       `
       default:
         break;
@@ -231,7 +250,16 @@ export const Container = styled.button`
         return `
            color: #4b4b4b;
 
-          `;
+          `
+      case "primary":
+        return`
+          color: #1768c4;
+            :hover{
+              color: #1768c4;
+            }
+
+        `
+    
 
       default:
         return

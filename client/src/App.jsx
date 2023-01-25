@@ -70,8 +70,8 @@ function App() {
         <ModalManager></ModalManager>
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
-          <Route path='/app/setting/' element={<Setting />} />
-          
+          {/* <Route path='/app/setting/' element={<Setting />} /> */}
+          <Route path='/app/setting/' element={<FreeSpace />} />
           <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting/>}/>
           <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
           <Route path='/register' element={<Register />}></Route>

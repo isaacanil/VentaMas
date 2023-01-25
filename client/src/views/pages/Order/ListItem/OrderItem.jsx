@@ -1,22 +1,25 @@
-import React from 'react'
-import { IoCartSharp, IoTrashSharp } from 'react-icons/io5'
-import { TbEdit } from 'react-icons/tb'
-import { CgNotes } from 'react-icons/cg'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { separator } from '../../../../hooks/separator'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { Button } from '../../../templates/system/Button/Button'
-import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
 import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
 import { ActionsButtonsGroup } from './ActionsButtonsGroup'
-import { useDispatch } from 'react-redux'
-import { selectPendingOrder } from '../../../../features/order/ordersSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectOrderItemSelected, selectPendingOrder } from '../../../../features/order/ordersSlice'
+import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
 
 export const OrderItem = ({ e, index, Row, Col }) => {
     const dispatch = useDispatch()
+    const [isOpen, setIsOpen] = useState(false)
+    const orderItemSelectedRef = useSelector(selectOrderItemSelected)
+    console.log(orderItemSelectedRef)
     const handleViewNotes = () => {
-        dispatch(selectPendingOrder({ id: e.data.id }))
+        dispatch(selectPendingOrder({ id: e.data.id })) 
+        setIsOpen(!isOpen)
     }
+    useEffect(()=>{
+        dispatch(toggleViewOrdersNotes({data: orderItemSelectedRef, isOpen: isOpen}))
+    }, [isOpen, orderItemSelectedRef])
     return (
         <Row>
             <Col>{index + 1}</Col>

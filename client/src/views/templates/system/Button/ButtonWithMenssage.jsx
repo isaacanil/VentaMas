@@ -16,15 +16,16 @@ const Tooltip = styled.div`
   border-radius: 0.25rem;
 `;
 
-export const Button = ({ children }) => {
+export const ButtonWithMessage = ({ children }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 10000 });
 
   const handleMouseEnter = (event) => {
     setIsHovered(true);
     setTooltipPosition({
+      ...tooltipPosition,
       x: event.clientX,
-      y: event.clientY,
+  
     });
   };
 
