@@ -5,7 +5,7 @@ import {
   MenuApp,
   Button,
 } from '../../'
-import { handleSelectOptions } from '../../../features/order/ordersSlice'
+import { handleSetOptions } from '../../../features/order/ordersSlice'
 import { getProviders } from '../../../firebase/firebaseconfig'
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
 import { ToolBar } from './ToolBar'
@@ -17,7 +17,7 @@ export const Orders = () => {
   },[])
   useEffect(() =>{
     if(providers.length > 0){
-      dispatch(handleSelectOptions({optionsID: 'Proveedores', datas: providers}))
+      dispatch(handleSetOptions({optionsID: 'Proveedores', datas: providers, propertyName: 'provider'}))
     }
   },[providers])
   return (

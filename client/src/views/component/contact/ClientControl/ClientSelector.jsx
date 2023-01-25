@@ -4,15 +4,15 @@ import styled from 'styled-components'
 import { Button } from '../../../templates/system/Button/Button'
 import { Client } from '../../../templates/system/client/Client'
 
-export const ClientSelector = ({ showClientList, setShowClientList, filteredClients, client, mode, createClientMode, updateClientMode}) => {
+export const ClientSelector = ({ showClientList, setShowClientList, filteredClients, client, mode, searchTerm, createClientMode, updateClientMode}) => {
     const [clients, setClients] = useState([])
     useEffect(()=>{
         setClients(filteredClients)
     }, [filteredClients])
     return (
          
-        showClientList && mode !== 'create' ? (
-            <Container>
+       
+            <Container isOpen={showClientList ? true : false}>
                 <Head>
                     <Group>
                         <Button
@@ -34,7 +34,7 @@ export const ClientSelector = ({ showClientList, setShowClientList, filteredClie
                     </Group>
                     
                 </Head>
-                <Body>
+                <Body isEmpty={clients.length > 0 ? true : false}>
                     {
                         clients.length > 0 ? (
                             clients.map(({client}, index) => (
@@ -43,13 +43,18 @@ export const ClientSelector = ({ showClientList, setShowClientList, filteredClie
                                     key={index}
                                     client={client}
                                     Close={setShowClientList}
+                                    searchTerm={searchTerm}
                                 />
                             ))
                         ) : null
+                        
+                    }
+                    {
+                        clients.length === 0 ? (<h3>cliente no encontrado</h3>) : null
                     }
                 </Body>
             </Container >
-        ) : null
+      
       
 
 
@@ -60,14 +65,35 @@ const Container = styled.div`
     border-radius: 10px;
     top: 3em;
     overflow: hidden;
-    width: 24em;
+    width: 100%;
     background-color: rgb(80, 80, 80);
     display: grid;
     grid-template-rows: 2em 1fr;
     z-index: 1000;
+    transform: translateY(-600px) scaleY(0);
+    transition: transform 4s ease-in-out;
+    transition-property: transform, z-index;
+    transition-timing-function: ease-in-out, ease-in-out;
+    transition-duration: 1s, 40ms, 1s;
+    
+    ${props => {
+        switch (props.isOpen) {
+            case true:
+                return`
+                    
+                    transform: translateY(0px) scaleY(1);
+                    
+                `
+         
+        
+            default:
+                break;
+        }
+    }
+    }
 `
 const Head = styled.div`
-    background-color: #ffffffae;
+    background-color: #7a7a7a;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -79,15 +105,31 @@ const Body = styled.div`
    top: 3em;
    left: 0;
    width: 100%;
-   height: 300px;
-   background-color: rgb(112,112,112);
+   max-height: calc(100vh - 18em);
+   min-height: 300px;
+   width: 100%;
+   background-color: #575757;
    overflow-y: scroll;
    padding: 0.5em;
    display: grid;
-   grid-template-columns: repeat(2, 1fr);
+   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
    gap: 0.5em;
    align-items: center;
    align-content: flex-start;
+   ${props => {
+    switch (props.isEmpty) {
+        case false:
+            return`
+                grid-template-columns: 1fr;
+            `
+    
+        default:
+            break;
+    }
+   }}
+   h3{
+    color: white;
+   }
 `
 const Group = styled.div`
     

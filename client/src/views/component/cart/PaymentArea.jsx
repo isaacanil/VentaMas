@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
 import { monetarySymbols } from '../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
-import { SelectDelivery, SelectTotalTaxes, addPaymentMethod,  SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../features/cart/cartSlice'
+import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../features/cart/cartSlice'
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import { getTaxReceiptData, handleNCFStatus, SELECT_NCF_STATUS } from '../../../features/taxReceipt/taxReceiptSlice'
@@ -59,7 +59,7 @@ export const PaymentArea = () => {
         const updatedPaymentMethod = paymentMethod.map((method) => {
             if (value === null) {
                 return { ...method, value: 0 };
-              }
+            }
             if (method.status && value !== null) {
                 return { ...method, value: Number(value) };
             }
@@ -81,13 +81,13 @@ export const PaymentArea = () => {
     }, [paymentMethod])
     useEffect(() => {
         readTaxReceiptDataBD(setTaxReceiptData)
-      }, [])
-      useEffect(() => {
+    }, [])
+    useEffect(() => {
         if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
-          dispatch(getTaxReceiptData(taxReceiptData))
+            dispatch(getTaxReceiptData(taxReceiptData))
         }
-      }, [taxReceiptData])
-    useEffect(()=>{
+    }, [taxReceiptData])
+    useEffect(() => {
         dispatch(handleNCFStatus(NCFStatus))
     }, [NCFStatus])
     return (
@@ -109,9 +109,9 @@ export const PaymentArea = () => {
                 </Group>
             </Row>
             <Area>
-                <label className='title' htmlFor="">Método de Pago</label>
+                {/* <label className='title' htmlFor="">Método de Pago</label> */}
                 <Group className='option1'>
-                    <Group>
+                    <Group grow='2'>
                         <input type="radio" name="payment-method" id="cash"
                             defaultChecked
                             onChange={(e) => {
@@ -120,7 +120,7 @@ export const PaymentArea = () => {
                         />
                         <label htmlFor='cash'>Efectivo</label>
                     </Group>
-                    <Group>
+                    <Group grow='2'>
                         <input type="radio" name="payment-method" id="card"
                             onChange={(e) => {
                                 PaymentMethodFN.findAndUpdate("card", e.target.checked)
@@ -181,7 +181,20 @@ const Row = styled.div`
 const Group = styled.div`
     display: flex;
     align-items: center;
-    gap: 0.4em;
+    justify-content: space-evenly;
+    flex-grow: 1;
+    gap: 0.8em;
+    ${props => {
+        switch (props.grow) {
+            case props.grow:
+                return`
+                flex-grow: ${props.grow};
+                ` 
+        
+            default:
+                break;
+        }
+    }}
     ${props => {
         switch (props.className) {
             case 'option1':
@@ -191,7 +204,35 @@ const Group = styled.div`
             default:
                 break;
         }
+
     }}
+   
+    input[type="radio"]:checked + label{
+       
+      background-color: var(--color);
+      color: black;
+      font-weight: 500;
+      color: white;
+      
+        
+    }
+    input[type="radio"]{
+        display:none;
+    }
+    label{
+        flex-grow: 1;
+        border-radius: 4px;
+        transition: background-color, 400ms ease-in-out, color 400ms ease-in-out;
+        background-color: #ccd7e6;
+        font-weight: 500;
+        text-align: center;
+        :hover{
+            background-color: var(--color3)
+        }
+    }
+    
+    
+    
 `
 const Item = styled.div`
 padding: 0;

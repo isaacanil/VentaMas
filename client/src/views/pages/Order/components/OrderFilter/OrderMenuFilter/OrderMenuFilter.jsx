@@ -18,11 +18,8 @@ export const OrderMenuFilter = ({ MenuIsOpen }) => {
         {
           OrderFilterOptionsSelected.length > 0 ? (
             OrderFilterOptionsSelected.map((item, index) => (
-              propertiesName.map((propertyName)=>(
-                <Item data={item} index={index} propertyName={propertyName} key={index} />
+                <Item data={item} index={index}  key={index} />
               ))       
-
-            ))
           ) : null
         }
       </Body>
@@ -32,13 +29,14 @@ export const OrderMenuFilter = ({ MenuIsOpen }) => {
 
 const Container = styled.div`
   overflow: hidden;
-  max-height: 400px;
+  overflow-y: scroll;
+  max-height: 500px;
   height: 100%;
-  max-width: 400px;
+  max-width: 500px;
+  width: 100%;
   border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.150);
-  margin-left: 4px;
-  width: 100%;
+  
   top: 5.2em;
   position: absolute;
   z-index: 1;
@@ -47,6 +45,16 @@ const Container = styled.div`
   transition: transform 400ms ease-in-out;
   transform: perspective();
   box-shadow: 10px 10px 10px 2px rgba(0, 0, 0, 0.150);
+  @media (max-width: 600px){
+    left: 0;
+    max-width: none;
+    border-radius: 0;
+    width: 100%;
+    max-height: none;
+    height: calc(100vh - 4.75em);
+    margin: 0;
+    border: 0;
+  }
   ${props => {
     switch (props.isOpen) {
       case true:
@@ -66,6 +74,7 @@ const Container = styled.div`
 `
 const Head = styled.div`
   background-color: var(--White);
+
   h3{
     margin: 0;
     padding: 0.4em 1em;

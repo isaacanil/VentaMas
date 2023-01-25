@@ -4,8 +4,8 @@
    position: relative;
    height: calc(100%);
    background-color: rgb(253, 253, 253);
-   max-width: 24em;
-   width: 100vh;
+   max-width: 30em;
+   width: 100%;
    overflow: hidden;
    display: grid;
    grid-template-columns: 1fr;
@@ -43,27 +43,28 @@
       }
    }
 
-   .resultBar {
-      background-color: var(--Gray8);
-      color: white;
-      display: flex;
-      padding: 0 0.4em;
-      align-items: center;
-      justify-content: space-between;
-      border-top-left-radius: 8px;
-         
-         h3{
-            width: 100%;
-            display: flex;
-            gap: 0.4em;
-            .price{
-               letter-spacing: 1px;
-            }
-            font-size: 1.2em;
-         }
-      
-   }
+  
 
+}
+.resultBar {
+   background-color: var(--Gray8);
+   color: white;
+   display: flex;
+   padding: 0 0.4em;
+   align-items: center;
+   justify-content: space-between;
+   border-top-left-radius: 8px;
+      
+      h3{
+         width: 100%;
+         display: flex;
+         gap: 0.4em;
+         .price{
+            letter-spacing: 1px;
+         }
+         font-size: 1.2em;
+      }
+   
 }
 
 @media(max-width: 800px) {
