@@ -77,8 +77,8 @@ export const UpdateProductModal = ({ isOpen }) => {
            return;
         }
         const price = {
-           unit: useDecimalLimiter(cost.unit * tax.value + cost.unit),
-           total: useDecimalLimiter(cost.unit * tax.value + cost.unit),
+           unit: cost.unit * tax.value + cost.unit,
+           total: cost.unit * tax.value + cost.unit,
         }
         setProduct({
            ...product,
