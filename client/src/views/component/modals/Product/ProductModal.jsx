@@ -20,6 +20,33 @@ import { selectImg } from '../../../../features/uploadImg/uploadImageSlice';
 import { firstLetter } from '../../../../hooks/firstLetter';
 import { parseToString } from '../../../../hooks/parseToString';
 import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter';
+const EmptyProduct = {
+   productName: '',
+   price: {
+   },
+   cost: {
+      unit: undefined,
+      total: undefined,
+   },
+   amountToBuy: {
+      unit: 1,
+      total: 1,
+   },
+   type: '',
+   productImageURL: 'NoImage/NoImage.png',
+   netContent: '',
+   category: '',
+   size: '',
+   order: 1,
+   tax: {
+      ref: '',
+      value: undefined,
+      unit: '',
+      total: ''
+   },
+   stock: '',
+   id: '',
+}
 export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    const dispatch = useDispatch();
    const ImgSelected = useSelector(selectImg);
@@ -30,36 +57,9 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
       getTaxes(setTaxesList)
       getCat(setCatList)
    }, [])
-   const [productImage, setProductImage] = useState(null)
-   const [product, setProduct] = useState({
-      productName: '',
-      price: {
-      },
-      cost: {
-         unit: undefined,
-         total: undefined,
-      },
-      amountToBuy: {
-         unit: 1,
-         total: 1,
-      },
-      type: '',
-      productImageURL: 'NoImage/NoImage.png',
-      netContent: '',
-      category: '',
-      size: '',
-      order: 1,
-      tax: {
-         ref: '',
-         value: undefined,
-         unit: '',
-         total: ''
-      },
-      stock: '',
-      id: '',
-   })
-   const [errorMassage, setErrorMassage] = useState('')
-   //img
+
+   const [product, setProduct] = useState(EmptyProduct)
+ 
    const handleImgController = (e) => {
       e.preventDefault()
       setImgController(!imgController)
@@ -75,35 +75,7 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    }, [ImgSelected])
    const handleSubmit = async () => {
       UploadProductData(product)
-      setProduct({
-         productName: '',
-         price: {
-            unit: undefined,
-            total: undefined,
-         },
-         cost: {
-            unit: undefined,
-            total: undefined,
-         },
-         amountToBuy: {
-            unit: 1,
-            amount: 1,
-         },
-         type: '',
-         productImageURL: '',
-         netContent: '',
-         category: '',
-         size: '',
-         tax: {
-            ref: '',
-            value: undefined,
-            unit: '',
-            total: ''
-         },
-         stock: '',
-         id: '',
-
-      })
+      setProduct(EmptyProduct)
       dispatch(clearImg())
    }
 
@@ -113,8 +85,8 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
          return;
       }
       const price = {
-         unit: useDecimalLimiter(cost.unit * tax.value + cost.unit),
-         total: useDecimalLimiter(cost.unit * tax.value + cost.unit),
+         unit: cost.unit * tax.value + cost.unit,
+         total: cost.unit * tax.value + cost.unit,
       }
       setProduct({
          ...product,
