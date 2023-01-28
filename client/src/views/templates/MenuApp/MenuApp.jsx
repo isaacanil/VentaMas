@@ -50,8 +50,6 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
               <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
             </div>
           
-        
-
           {
             !matchWithVenta ? (
               <div>
@@ -159,7 +157,7 @@ const Container = styled.div`
     switch (props.borderRadius) {
       case 'bottom-right':
         return `
-         border-bottom-right-radius: 10px;
+         border-bottom-right-radius: var(--border-radius-light);
          @media (max-width: 800px){
           border-bottom-right-radius: 0px;
          padding-right: 1em;

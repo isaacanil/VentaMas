@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { getClients } from '../../../../firebase/firebaseconfig.js'
-import { CancelShipping, createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setClientModeInState, updateClientInState } from '../../../../features/cart/cartSlice'
+import { createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setClientModeInState, updateClientInState } from '../../../../features/cart/cartSlice'
 import style from './ClientControlStyle.module.scss'
 import {
-  InputText,
-  Client,
   CancelPurchaseBtn,
-  AddClientButton
 } from '../../../'
 import { useDispatch, useSelector } from 'react-redux'
 import { Input } from '../../../templates/system/Inputs/InputV2.jsx'

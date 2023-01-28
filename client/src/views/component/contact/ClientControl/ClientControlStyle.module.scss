@@ -1,11 +1,8 @@
 .ClientBarContainer{
     position: relative;
-    
     margin: 0;
     border: 0;
     width: 100%;
-  
-   
    
     .ClientBar{
        width: 100%;
@@ -17,7 +14,7 @@
       position: relative;
       z-index: 2000;
       background-color: var(--Gray8);
-      border-bottom-left-radius: 6px;
+      border-bottom-left-radius: var(--border-radius-light);
       padding: 0 0.3em;
       //border-radius: 10px;
      

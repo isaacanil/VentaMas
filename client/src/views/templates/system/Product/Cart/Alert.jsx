@@ -7,14 +7,9 @@ export const Alert = ({ isOpen, handleIsOpen, id }) => {
     const dispatch = useDispatch()
     const handleDelete = (id) => {
         handleIsOpen(false)
-        dispatch(
-            deleteProduct(id)
-        )
-        dispatch(
-            totalShoppingItems()
-        )
-        dispatch(
-            totalTaxes()
+        dispatch(deleteProduct(id))
+        dispatch(totalShoppingItems())
+        dispatch(totalTaxes()
         )
         dispatch(
             totalPurchase()

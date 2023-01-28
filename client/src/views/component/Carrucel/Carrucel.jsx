@@ -69,13 +69,10 @@ export const Carrucel = () => {
     return (
         <>
             <Container>
-                <Tooltip 
-                placement='buttom-start' 
-                description='retroceder'
-                Children={
+              
                     <Button onClick={() => MoveScroll('left')} onDoubleClick={() => MoveScroll('start')}><MdKeyboardArrowLeft /></Button>
 
-                }/>
+              
                 <Categories ref={categoriesRef}>
                     {
                         categories.length > 0 ? (
@@ -113,7 +110,7 @@ const Button = styled.button`
     font-size: 1.3em;
     border: 0;
     
-    border-radius: 10px;
+    border-radius: var(--border-radius-light);
     outline: 0;
     transition: 500ms background-color ease-in-out;
     :hover{
@@ -121,7 +118,7 @@ const Button = styled.button`
     }
 `
 const Categories = styled.div`
-    border-radius: 10px;
+    border-radius: var(--border-radius-light);
     overflow-x: hidden;
     overflow-x: scroll;
      -webkit-overflow-scrolling: touch;
@@ -135,17 +132,21 @@ const Categories = styled.div`
 }
 `
 const CategoryContainer = styled.div`
-    height: 2em;
-    display: flex;
-    align-items: center;
-    padding: 0 0.6em;
-    background-color: var(--color2);
-    white-space: nowrap;
-    border-radius: 10px;
-    text-transform: uppercase;
+//font & text
+font-size: 14px;
+letter-spacing: 0.2px;
+white-space: nowrap;
+//box
+height: 2em;
+display: flex;
+align-items: center;
+padding: 0 0.75em;
+//color & Ground
+background-color: var(--color2);
+    border-radius: var(--border-radius);
+    text-transform: capitalize;
     font-weight: 500;
     color: rgb(109, 108, 108);
-    font-size: 14px;
     transition: 300ms ease-in-out;
     :hover{
         background-color: #e7f0fa;
