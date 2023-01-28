@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { IoIosArrowDown } from 'react-icons/io'
 import { MdClear } from 'react-icons/md'
 
-export const Select = ({ title, data, value, setValue }) => {
+export const Select = ({ title, data, value, setValue, placement, property }) => {
     const [isOpen, setIsOpen] = useState(false)
     const handleClose = () => {
         setIsOpen(false)
@@ -16,11 +16,13 @@ export const Select = ({ title, data, value, setValue }) => {
             id: select.id,
         })
         setValue(select),
-        setTimeout(() => {
-            setShowSelectTitle(select.name)
-        }, 1)
+            setTimeout(() => {
+                setShowSelectTitle(select[property])
+            }, 1)
         setIsOpen(false)
     }
+    console.log(data)
+    // const {Items} = data
     return (
         <Container>
             <Head>
@@ -33,7 +35,7 @@ export const Select = ({ title, data, value, setValue }) => {
                 {
                     isOpen ? (
                         <Group>
-                            <InputText size='s' placeholder='Buscar Productos'></InputText>
+                            <InputText size='s' placeholder={`Buscar ${data.name}`}></InputText>
                             <Button onClick={() => handleClose()}><MdClear /></Button>
                         </Group>
 
@@ -42,16 +44,16 @@ export const Select = ({ title, data, value, setValue }) => {
             </Head>
             {
                 isOpen ? (
-                    <Body>
+                    <Body placement={placement}>
                         {
-                            data.length > 0 ?
+                            data.Items.length > 0 ?
                                 (
                                     <List>
                                         {
-                                            data ? (
-                                                data.map((item, index) => (
+                                            data.Items ? (
+                                                data.Items.map((item, index) => (
                                                     <Item key={index} style={isSelect.id == item.id ? { backgroundColor: 'blue', color: 'white' } : null} onClick={() => dataSelected(item)}>
-                                                        {item.name}
+                                                        {item[property]}
                                                     </Item>
                                                 ))
                                             ) : null
@@ -69,15 +71,17 @@ export const Select = ({ title, data, value, setValue }) => {
 }
 const Container = styled.div`
     position: relative;
-    max-width: min-content;
-    z-index: 3;
+    max-width: 200px;
+    width: 100%;
+    
 `
 
 const Head = styled.div`
+    width: 100%;
     display: flex;
     align-items: center;
     border: 1px solid rgba(0, 0, 0, 0.200);
-    border-radius: 10px;
+    border-radius: var(--border-radius-light);
     overflow: hidden;
     padding: 0 0 0 0.2em;
     transition-duration: 20s;
@@ -86,17 +90,28 @@ const Head = styled.div`
     
 `
 const Body = styled.div`
-    min-width: 200px;
-    max-width: 260px;
+
+    min-width: 300px;
+    width: 100%;
     max-height: 200px;
     position: absolute;
     top: 2.3em;
-    z-index: 1;
+    z-index: 3;
     background-color: #ffffff;
     overflow: hidden;
     border-radius: 6px;
     border: 1px solid rgba(0, 0, 0, 0.200);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.200);
+    ${(props) => {
+        switch (props.placement) {
+            case 'top': 
+            return`
+                top: -600%;
+            `
+            default: 
+            return null
+        }
+    }}
 `
 const List = styled.ul`
     z-index: 1;
@@ -107,19 +122,20 @@ const List = styled.ul`
 `
 const Group = styled.div`
     height: 2em;
-    min-width: 10em;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap:10px;
     transition: 1s display ease-in-out;
     padding-right: 0.5em;
+
     h3{
         margin: 0 0 0 10px;
         font-weight: 500;
         font-size: 1em;
         color: rgb(66, 66, 66);
-        width: 120px;
+        width: 100%;
         font-size: 12px;
         line-height: 1pc;
         display: -webkit-box;
@@ -135,8 +151,12 @@ const Group = styled.div`
 const Item = styled.p`
         list-style: none;
         padding: 0 1em;
+        display: flex;
+        align-items: center;
+        height: 2em;
+        background-color: var(--White2);
     &:hover{
-        background-color: #4081d6;
+        background-color: var(--color);
         color: white;
     }
 
@@ -158,7 +178,8 @@ const InputText = styled.input.attrs({
     border: 1px solid rgba(0, 0, 0, 0);
     height: 1.6em;
     border-radius: 6px;
-    width: 126px;
+    width: 100%;
+    padding: 0 0.4em;
     &:focus{
         outline: 2px solid #00000052;
     }

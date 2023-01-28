@@ -1,17 +1,24 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Data } from '../../Data'
 import { ListItem } from '../../ListItem/ListItem'
-import { getOrders } from '../../../../../firebase/firebaseconfig'
+import { getPurchaseFromDB } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
 import { OrderItem } from '../../ListItem/OrderItem'
+import { useDispatch } from 'react-redux'
+import { getPendingPurchaseFromDB } from '../../../../../features/Purchase/purchaseSlice'
 
 export const PendingOrdersTable = () => {
-  const [orders, setOrders] = useState([])
+  const dispatch = useDispatch()
+  const [purchasesFromBD, setPurchasesFromBD] = useState([])
   useEffect(() => {
-    getOrders(setOrders)
+    getPurchaseFromDB(setPurchasesFromBD)
   }, [])
-  console.log(orders)
+ 
+  useMemo(()=>{
+    if(purchasesFromBD.length > 0) dispatch(getPendingPurchaseFromDB(purchasesFromBD))
+  }, [purchasesFromBD])
+
   return (
     <Container>
       <Body>
@@ -21,21 +28,19 @@ export const PendingOrdersTable = () => {
         <Table>
 
           <Row fill='fill'>
-
             <Col>#</Col>
             <Col>Proveedor</Col>
             <Col>Nota</Col>
             <Col>Fecha</Col>
-            <Col>Fecha de Pago</Col>
+            <Col>F. Pago</Col>
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
-
           </Row>
 
           <TableBody>
             {
-              Array(orders).length > 0 ? (
-                orders.map((e, index) => (
+              Array(purchasesFromBD).length > 0 ? (
+                purchasesFromBD.map((e, index) => (
                   <OrderItem Row={Row} Col={Col} key={index} e={e} index={index} />
                 ))
               ) : null
@@ -88,7 +93,7 @@ const TableBody = styled.div`
   display: grid;
   align-items: flex-start;
   align-content: flex-start;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
   color: rgb(70, 70, 70);
@@ -114,7 +119,7 @@ const Row = styled.div`
   height: 3em;
   gap: 1em;
   grid-template-columns: 
-  minmax(44px, 0.1fr) //numero
+  minmax(100px, 0.3fr) //numero
   minmax(120px, 0.5fr) //proveedor
   minmax(64px, 0.1fr) //nota
   minmax(104px, 0.4fr) //f. pedido

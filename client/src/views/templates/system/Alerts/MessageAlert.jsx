@@ -9,7 +9,7 @@ export const MessageAlert = ({isOpen , data}) => {
 
   const closeModal = ()=>{
     dispatch(
-      toggleViewOrdersNotes({isOpen: false})
+      toggleViewOrdersNotes({isOpen: 'close'})
     )
   }
   return (

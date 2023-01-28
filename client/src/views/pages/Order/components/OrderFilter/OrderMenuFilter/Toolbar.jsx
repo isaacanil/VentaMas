@@ -17,18 +17,18 @@ export const Toolbar = ({ data, handleOpen, elementRef}) => {
             <Col position='end'>
                 {
                   
-                        <Tooltip 
-                        description={`Crear ${data.name}`} 
-                        placement='bottom-end'
-                        Children={<Button
-                            title={<CgMathPlus />}
-                            borderRadius='normal'
-                            width='icon32'
-                            elementRef={elementRef}
-                            description={'hola'}
-                            color='primary'
-                        />}
-                        />
+                        // <Tooltip 
+                        // description={`Crear ${data.name}`} 
+                        // placement='bottom-end'
+                        // Children={<Button
+                        //     title={<CgMathPlus />}
+                        //     borderRadius='normal'
+                        //     width='icon32'
+                        //     elementRef={elementRef}
+                        //     description={'hola'}
+                        //     color='primary'
+                        // />}
+                        // />
 
                  
                 }

@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md'
 import { addCategory, deleteCategorySelected } from '../../../features/category/categorySlicer'
 import { useDispatch } from 'react-redux'
+import { Tooltip } from '../../templates/system/Button/Tooltip'
 
 export const Carrucel = () => {
     const categoriesRef = useRef(null)
@@ -68,7 +69,13 @@ export const Carrucel = () => {
     return (
         <>
             <Container>
-                <Button onClick={() => MoveScroll('left')} onDoubleClick={() => MoveScroll('start')}><MdKeyboardArrowLeft /></Button>
+                <Tooltip 
+                placement='buttom-start' 
+                description='retroceder'
+                Children={
+                    <Button onClick={() => MoveScroll('left')} onDoubleClick={() => MoveScroll('start')}><MdKeyboardArrowLeft /></Button>
+
+                }/>
                 <Categories ref={categoriesRef}>
                     {
                         categories.length > 0 ? (

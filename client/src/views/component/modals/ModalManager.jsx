@@ -18,13 +18,16 @@ import {
   SelectProviderModalData,
   SelectClientModalData,
   SelectViewOrdersNotesModalData,
+  SelectAddPurchaseModal,
 
 } from "../../../features/modals/modalSlice"
 import { CreateContact } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
 import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
 import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
+import { AddPurchaseModal } from "./AddPurchase/AddPurchaseModal"
 export const ModalManager = () => {
   const dispatch = useDispatch()
+  const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
   const AddClientModalSelected = useSelector(SelectAddClientModal)
   const AddOrderModalSelected = useSelector(SelectAddOrderModal)
   const AddProdModalSelected = useSelector(SelectAddProdModal)
@@ -35,16 +38,14 @@ export const ModalManager = () => {
   const ViewOrdersNotesModalDataSelected = useSelector(SelectViewOrdersNotesModalData)
   //console.log(AddClientModalSelected)
 
-  const closeModalAddProducts = () => {
-    dispatch(
-      closeModalAddProd()
-    )
-  }
-
+  const closeModalAddProducts = () => {dispatch(closeModalAddProd())}
   return (
     <Fragment>
       <AddClientModal
         isOpen={AddClientModalSelected}
+      />
+      <AddPurchaseModal
+        isOpen={AddPurchaseModalSelected}
       />
       <ProductModal
         btnSubmitName='Guardar'
@@ -52,13 +53,6 @@ export const ModalManager = () => {
         isOpen={AddProdModalSelected}
         closeModal={closeModalAddProducts}
       />
-      {/* <ProductModal
-        btnSubmitName='Actualizar'
-        title='Actualizar Producto'
-        isOpen={UpdateProdModalSelected}
-        closeModal={closeModalUpdateProducts}
-        handleSubmit={handleSubmitUpdateProducts}
-      /> */}
       <UpdateProductModal
         isOpen={UpdateProdModalSelected}
       />

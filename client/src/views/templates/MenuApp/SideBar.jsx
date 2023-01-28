@@ -3,6 +3,7 @@ import { FaUser } from "react-icons/fa"
 import { useSelector } from "react-redux"
 import styled from "styled-components"
 import { selectUser } from "../../../features/auth/userSlice"
+import { Tooltip } from "../system/Button/Tooltip"
 import { MenuLink } from "./MenuLink"
 import { UserSection } from "./UserSection"
 
@@ -17,7 +18,9 @@ export const SideBar = ({ links, isOpen }) => {
                 <Links>
                     {
                         links.map((item, index) => (
-                            <MenuLink item={item} key={index}></MenuLink>
+                            
+                                <MenuLink item={item} key={index}></MenuLink>
+                        
                         ))
                     }
                 </Links>

@@ -5,21 +5,22 @@ import { getOrders } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
 import { OrderItem } from '../../ListItem/OrderItem'
 import { useDispatch, useSelector } from 'react-redux'
-import { getPendingOrdersFromDB, selectOrderList } from '../../../../../features/order/ordersSlice'
+import { selectOrderList } from '../../../../../features/order/ordersSlice'
+import { OrdersData, SetPendingOrdersInState } from '../../../../../firebase/OrderConfig'
 
 export const PendingOrdersTable = () => {
-  const [ordersFromBD, setOrderFromBD] = useState([])
-  const dispatch = useDispatch()
-  useEffect(() => {
-    getOrders(setOrderFromBD)
-  }, [])
+  const [orders, setOrders] = useState([])
+  const ordersFromBD = OrdersData()
+  SetPendingOrdersInState(ordersFromBD)
+  let pendingOrderList = useSelector(selectOrderList)
+  const Items = pendingOrderList.length > 0 ? ( pendingOrderList[0].Items ? pendingOrderList[0].Items : null) : null
+  useEffect(()=>{
+    if(Items){
+      setOrders(Items)
+    }
+  },[Items])
+ console.log(orders)
 
-  useMemo(()=>{
-    if(ordersFromBD.length > 0) dispatch(getPendingOrdersFromDB(ordersFromBD))
-  }, [ordersFromBD])
- 
-  const pendingOrderList = useSelector(selectOrderList)
-  console.log(pendingOrderList)
   return (
     <Container>
       <Body>
@@ -27,7 +28,6 @@ export const PendingOrdersTable = () => {
           <h3>Lista de Pedidos Pendientes</h3>
         </TitleContainer>
         <Table>
-
           <Row fill='fill'>
             <Col>#</Col>
             <Col>Est</Col>
@@ -40,12 +40,11 @@ export const PendingOrdersTable = () => {
           </Row>
           <TableBody>
             {
-              pendingOrderList.length > 0 ? (
-                pendingOrderList.map((data, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} e={data} index={index} />
+              orders.length > 0 ? (
+                orders.map((data, index) => (
+                  <OrderItem Row={Row} Col={Col} key={index} data={data} index={index} />
                 ))
               ) : null
-
             }
           </TableBody>
         </Table>
@@ -95,7 +94,7 @@ const TableBody = styled.div`
   display: grid;
   align-items: flex-start;
   align-content: flex-start;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
   color: rgb(70, 70, 70);

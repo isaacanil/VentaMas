@@ -83,7 +83,7 @@ const Component = styled.div`
             case 'false':
                 return `
                 transition: transform 200ms ease-in-out;
-                transform: scale(0.5) translateY(80px);
+                transform: scale(0.5) translateY(-200%);
                   
                 `
 

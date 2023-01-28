@@ -70,6 +70,10 @@ const addOrderSlice = createSlice({
       const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock), 0)
       state.order.totalPurchase = totalPurchase
     },
+    updateStock: (state, actions) => {
+      const {newStock } = actions.payload
+      state.productSelected.product.stock = newStock
+    },
     AddNote: (state, actions) => {
       state.order.note = actions.payload
     },
@@ -139,12 +143,13 @@ export const {
   AddDate,
   AddIdToOrder,
   cleanOrder,
-  AddProvider
+  AddProvider,
+  updateStock
 } = addOrderSlice.actions
 
-export const SelectProductSelected = state => state.addOrder.productSelected
-export const SelectProducts = state => state.addOrder.order.products
-export const SelectOrder = state => state.addOrder.order
-export const SelectTotalPurchase = state => state.addOrder.order.totalPurchase
+export const SelectProductSelected = state => state.addOrder.productSelected;
+export const SelectProducts = state => state.addOrder.order.products;
+export const SelectOrder = state => state.addOrder.order;
+export const SelectTotalPurchase = state => state.addOrder.order.totalPurchase;
 
 export default addOrderSlice.reducer

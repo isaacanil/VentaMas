@@ -20,6 +20,9 @@ const initialState = {
     modalAddOrder: {
         isOpen: false,
     },
+    modalAddPurchase: {
+        isOpen: false
+    },
     modalAddProvider: {
         isOpen: false
     },
@@ -68,6 +71,10 @@ const modalSlice = createSlice({
         closeModalAddOrder: (state) => {
             state.modalAddOrder.isOpen = false;
         },
+        toggleAddPurchaseModal: (state) => {
+            let isOpen = state.modalAddPurchase.isOpen;
+            state.modalAddPurchase.isOpen = !isOpen;
+        },
         openModalAddProvider: (state) => {
             let isOpen = state.modalAddOrder.isOpen;
             state.modalAddProvider.isOpen = !isOpen;
@@ -115,20 +122,21 @@ const modalSlice = createSlice({
             }
         },
         toggleViewOrdersNotes: (state, actions) => {
-            const {data} = actions.payload
-            const isOpen = state.modalToggleOrderNote.isOpen;
+            const {data, isOpen} = actions.payload;
             state.modalToggleOrderNote.isOpen = !isOpen;
-            if(isOpen === false){
-                state.modalToggleOrderNote.data = null
+
+            if(isOpen === 'close'){
+                state.modalToggleOrderNote.data = null;
                 return
-            }
-            if(data == null || data == false){
-                state.modalToggleOrderNote.isOpen = false;
-                return
-            }
-            if(data !== null && data !== false && isOpen === true){
+            }  
+            if(data !== null && data !== false && isOpen === 'open'){
                 state.modalToggleOrderNote.data = data;
                 state.modalToggleOrderNote.isOpen = true;
+                if(data == null || data == false){
+                    state.modalToggleOrderNote.isOpen = false;
+                    state.modalToggleOrderNote.data = null;
+                    return
+                }
                 return
             }
         }
@@ -150,12 +158,14 @@ export const {
     openModalAddProvider,
     handleModalSetCustomPizza,
     handleModalCreateClient,
+    toggleAddPurchaseModal,
     toggleProviderModal,
     toggleClientModal,
     toggleViewOrdersNotes
 } = modalSlice.actions
 
 export const SelectBillingModal = state => state.modal.modalBilling.isOpen;
+export const SelectAddPurchaseModal = state => state.modal.modalAddPurchase.isOpen;
 export const SelectAddProdModal = state => state.modal.modalAddProd.isOpen;
 export const SelectAddClientModal = state => state.modal.modalAddClient.isOpen;
 export const SelectUpdateProdModal = state => state.modal.modalUpdateProd.isOpen;

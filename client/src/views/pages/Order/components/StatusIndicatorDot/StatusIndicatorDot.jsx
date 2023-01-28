@@ -16,19 +16,19 @@ const Container = styled.div`
         switch (props.colorRef) {
             case 'red':
                 return`
-                    background-color: #e64747;
+                    background-color: #e66767;
                 `
             case 'yellow':
                 return`
-                    background-color: #f7e43c;
+                    background-color: #ebdc54;
                 `
             case 'green':
                 return`
-                    background-color: #45db59;
+                    background-color: #7de08b;
                 `
             case 'gray':
                 return`
-                    background-color: #777777;
+                    background-color: #797979;
                 `
                 
               

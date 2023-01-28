@@ -12,7 +12,7 @@ import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndic
 export const OrderItem = ({ e, index, Row, Col }) => {
     return (
         <Row>
-            <Col>{index + 1}</Col>
+            <Col>{e.data.id}</Col>
            
             <Col size='limit'>
                 <div>{e.data.provider ? e.data.provider.name : null}</div>
@@ -34,7 +34,6 @@ export const OrderItem = ({ e, index, Row, Col }) => {
             </Col>
             <Col>
                 <ButtonGroup>
-                  
                     <Button
                         borderRadius='normal'
                         title={<TbEdit />}

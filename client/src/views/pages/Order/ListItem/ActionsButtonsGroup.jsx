@@ -4,10 +4,11 @@ import { IoCartSharp, IoTrashSharp } from 'react-icons/io5'
 import { MdOutlineCheck, MdOutlineClear, MdOutlineDelete } from 'react-icons/md'
 import { TbEdit } from 'react-icons/tb'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectOrderList, selectPendingOrder } from '../../../../features/order/ordersSlice'
-import { deleteOrderFromDB } from '../../../../firebase/firebaseconfig'
+import { selectOrderList, selectPendingOrder,  } from '../../../../features/order/ordersSlice'
+import { deleteOrderFromDB, PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
 import { Button } from '../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
+import { Tooltip } from '../../../templates/system/Button/Tooltip'
 
 export const ActionsButtonsGroup = ({ orderData }) => {
     const modes = {
@@ -20,38 +21,37 @@ export const ActionsButtonsGroup = ({ orderData }) => {
     const [showConfirmButtons, setShowConfirmButtons] = useState(false)
     const [isAccept, setIsAccept] = useState(null)
     const [mode, setMode] = useState(null)
+    console.log(orderData)
     useEffect(() => {
-        if (orderData.data.id && !orderData.selected) {
+        if (orderData.selected === false) {
             setShowConfirmButtons(false)
         }
-    }, [orderData])
+    }, [OrderListRef])
     useEffect(() => {
-        if (orderData.data.id && orderData.selected && mode !== null) {
+        if (orderData.selected === true && mode !== null) {
             setShowConfirmButtons(true)
         } else {
             setShowConfirmButtons(false)
         }
-    }, [OrderListRef])
+    }, [orderData])
     const handleEditMode = () => {
         setMode(modes.edit)
-        dispatch(selectPendingOrder({ id: orderData.data.id }))
-
+        dispatch(selectPendingOrder({ id: orderData.id }))
     }
     const handleDeleteMode = () => {
         setMode(modes.delete)
-        dispatch(selectPendingOrder({ id: orderData.data.id }))
+        dispatch(selectPendingOrder({ id: orderData.id }))
     }
     const handlePurchasingMode = async () => {
         setMode(modes.purchase)
-        dispatch(selectPendingOrder({ id: orderData.data.id }))
-
+        dispatch(selectPendingOrder({ id: orderData.id }))
     }
     const confirmationHandlers = {
         purchase: {
             accept: () => {
                 console.log('compra aceptada')
                 setShowConfirmButtons(false)
-               
+                PassDataToPurchaseList(orderData)
                 setIsAccept(null) // reset the state variable
             },
             reject: () => {
@@ -76,7 +76,7 @@ export const ActionsButtonsGroup = ({ orderData }) => {
         },
         delete: {
             accept: () => {
-                deleteOrderFromDB(orderData.data.id)
+                deleteOrderFromDB(orderData.id)
                 console.log('eliminación completada')
                 setShowConfirmButtons(false)
                 setIsAccept(null) // reset the state variable
@@ -138,27 +138,48 @@ export const ActionsButtonsGroup = ({ orderData }) => {
         <ButtonGroup position={showConfirmButtons === true ? 'right' : null}>
             {showConfirmButtons === false ? (
                 <Fragment>
-                    <Button
+                    <Tooltip 
+                    description='Comprar'
+                    placement='bottom-start'
+                    Children={
+                        <Button
                         borderRadius='normal'
                         title={<IoCartSharp />}
                         width='icon32'
+                        border='light'
                         color='gray-dark'
                         onClick={handlePurchasingMode}
                     />
-                    <Button
+                    }
+                    />
+                   <Tooltip
+                   description='Editar'
+                   placement='bottom'
+                    Children={
+                        <Button
                         borderRadius='normal'
                         title={<TbEdit />}
                         width='icon32'
+                        border='light'
                         color='gray-dark'
                         onClick={handleEditMode}
                     />
-                    <Button
-                        borderRadius='normal'
-                        title={<IoTrashSharp />}
-                        width='icon32'
-                        bgcolor='error'
-                        onClick={handleDeleteMode}
+                    }
+                   />
+                    <Tooltip
+                        description='Eliminar'
+                        placement='bottom-end'
+                        Children={
+                            <Button
+                            borderRadius='normal'
+                            title={<IoTrashSharp />}
+                            width='icon32'
+                            bgcolor='error'
+                            onClick={handleDeleteMode}
+                        />
+                        }
                     />
+                   
                 </Fragment>
 
             ) : null}

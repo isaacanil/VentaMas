@@ -42,23 +42,16 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   }
   return (
     <Fragment>
-      {/* <div
-        className={isOpenMenu ?
-          (
-            `${Style.Menu_backdrop} ${Style.ActiveBackdrop}`
-          ) : (
-            Style.Menu_backdrop
-          )}
-        ref={anotherRef}
-        onClick={handledMenu}
-      >
-      </div> */}
       <Backdrop isOpen={isOpenMenu ? true : false} />
       <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
-          <div className={Style.MenuBtn} onClick={handledMenu}>
-            <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
-          </div>
+          
+            <div className={Style.MenuBtn} onClick={handledMenu}>
+              <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
+            </div>
+          
+        
+
           {
             !matchWithVenta ? (
               <div>
@@ -90,7 +83,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
               />
               <Tooltip
                 placement='bottom-end'
-                description={'Mostrar Imagen'}
+                description={ImageHidden ? 'Mostrar Imagen' : 'Ocultar Imagen'}
                 Children={
                   <Button
                     width={'icon32'}

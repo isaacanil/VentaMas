@@ -7,46 +7,56 @@ import { ActionsButtonsGroup } from './ActionsButtonsGroup'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectOrderItemSelected, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
+import { Tooltip } from '../../../templates/system/Button/Tooltip'
 
-export const OrderItem = ({ e, index, Row, Col }) => {
+export const OrderItem = ({ data, index, Row, Col }) => {
     const dispatch = useDispatch()
     const [isOpen, setIsOpen] = useState(false)
+    const [showNote, setShowNote] = useState(false)
+    
     const orderItemSelectedRef = useSelector(selectOrderItemSelected)
     console.log(orderItemSelectedRef)
-    const handleViewNotes = () => {
-        dispatch(selectPendingOrder({ id: e.data.id })) 
+    const handleViewNotes = () => {  
         setIsOpen(!isOpen)
+        dispatch(toggleViewOrdersNotes({data, isOpen: 'open'}))
     }
-    useEffect(()=>{
-        dispatch(toggleViewOrdersNotes({data: orderItemSelectedRef, isOpen: isOpen}))
-    }, [isOpen, orderItemSelectedRef])
+    console.log(data)
+ 
     return (
         <Row>
             <Col>{index + 1}</Col>
             <Col>
-                <StatusIndicatorDot color={e.data.state ? e.data.state.color : null}></StatusIndicatorDot>
+                <StatusIndicatorDot color={data.state ? data.state.color : null}></StatusIndicatorDot>
             </Col>
             <Col size='limit'>
-                <div>{e.data.provider ? e.data.provider.name : null}</div>
+                <div>{data.provider ? data.provider.name : null}</div>
             </Col>
             <Col>
-                <Button
-                    title='ver'
-                    borderRadius='normal'
-                    color='gray-dark'
-                    onClick={handleViewNotes}
-                />
+            <Tooltip
+                placement='bottom'
+                description='ver nota'
+                Children={
+                    <Button
+                        title='ver'
+                        borderRadius='normal'
+                        color='gray-dark'
+                        border='light'
+                        onClick={(data) => handleViewNotes(data)}
+                    />
+                }
+
+            />
             </Col>
             <Col>
-                <div>{new Date(e.data.createdAt).toLocaleDateString()}</div></Col>
+                <div>{new Date(data.createdAt).toLocaleDateString()}</div></Col>
             <Col>
-                <div>{new Date(e.data.date).toLocaleDateString()}</div>
+                <div>{new Date(data.date).toLocaleDateString()}</div>
             </Col>
             <Col position='right'>
-                <div>{useFormatPrice(e.data.totalPurchase)}</div>
+                <div>{useFormatPrice(data.totalPurchase)}</div>
             </Col>
             <Col>
-                <ActionsButtonsGroup orderData={e}/>
+                <ActionsButtonsGroup orderData={data}/>
             </Col>
 
         </Row>

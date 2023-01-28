@@ -1,42 +1,47 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Select } from '../../../../templates/system/Select/Select'
-import { ConditionsData } from './ConditionsData'
+
 import { AddCondition, AddNote, AddDate, SelectProducts } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
+import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
+import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
 export const OrderDetails = () => {
+    const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
     const dispatch = useDispatch()
     const [condition, setCondition] = useState('')
     const [note, setNote] = useState('')
     const [date, setDate] = useState('')
-    console.log(date)
+    console.log(orderFilterOptions)
     useEffect(() => {
-        if(condition !== '' && note !== ''){
+        if(condition !== ''){
             dispatch(
                 AddCondition(condition)
             )
+            
         }
         if(note !== ''){
             dispatch(
                 AddNote(note)
             )
         }
-       
-      
-            dispatch(AddDate(date))
-        
+        dispatch(AddDate(date))
     }, [condition, note, date])
+    
+    const beforeToday = new Date()
+    const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" id="" onChange={(e) => setDate(e.target.value)}/>
+                <input type="date" name="" id="" min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)}/>
                 <Select
                     title='Condición'
-                    data={ConditionsData}
+                    data={data}
                     setValue={setCondition}
                     value={condition}
+                    placement='top'
 
                 />
             </Section>

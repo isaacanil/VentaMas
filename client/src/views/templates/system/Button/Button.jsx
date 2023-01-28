@@ -5,6 +5,7 @@ import styled from 'styled-components'
 
 export const Button = ({
   bgcolor,
+  border,
   color,
   title,
   startIcon,
@@ -19,7 +20,6 @@ export const Button = ({
   iconOn,
   iconOff,
   titlePosition,
-  
 
 }) => {
 
@@ -37,8 +37,8 @@ export const Button = ({
       borderRadius={borderRadius}
       isActivated={isActivated}
       titlePosition={titlePosition}
+      border={border}
    
-
     >
     
         {isActivated === false ? iconOn : iconOff}
@@ -46,7 +46,6 @@ export const Button = ({
         {title ? title : null}
         {endIcon ? endIcon : null}
      
-      
     </Container>
   )
 }
@@ -54,7 +53,8 @@ export const Button = ({
 export const Container = styled.button`
   //border
   border-radius: 100px;
-  border: 1px solid #00000030;
+  outline: none;
+  border: none;
   height: 30px;
   display: flex;
   align-items: center;
@@ -134,13 +134,11 @@ export const Container = styled.button`
             color: white
           }
           `
-
       case "gray":
         return `
-            background-color: #8d8d8d;
-            color: white;
+            background-color: #e6e6e6;
+            color: var(--font-color-dark-slightly);
             
-           
            
           `
       case "primary":
@@ -214,8 +212,18 @@ export const Container = styled.button`
         return `
            height: 24px;
            display: flex;
-           aling-items: center;
+           align-items: center;
            padding: 0 0.4em;
+
+          `;
+
+    }
+  }}
+   ${(props) => {
+    switch (props.border) {
+      case "light":
+        return `
+          border: var(--border-primary);
 
           `;
 

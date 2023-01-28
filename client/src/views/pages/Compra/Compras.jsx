@@ -1,15 +1,18 @@
-import React, { Fragment } from 'react'
+import React, { Fragment} from 'react'
 import styled from 'styled-components'
-import { useDispatch } from 'react-redux'
-import style from './OrdersStyle.module.scss'
-import { TbPlus } from 'react-icons/tb'
-import {
-  MenuApp,
-  Button,
-} from '../..'
+import {MenuApp} from '../..'
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
 import { ToolBar } from './ToolBar'
+import { ProvidersData, SetProvidersInFilterOptionsMenu } from '../../../firebase/ProviderConfig'
+import { OrdersData, SetPendingOrdersInState } from '../../../firebase/OrderConfig'
+
+
 export const Compras = () => { 
+  const providers = ProvidersData();
+  SetProvidersInFilterOptionsMenu(providers);
+  const orders = OrdersData()  
+  SetPendingOrdersInState(orders)
+
   return (
     <Fragment>
       <MenuApp></MenuApp>

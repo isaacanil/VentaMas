@@ -69,9 +69,6 @@ export const Product = ({ product, }) => {
                         <Group>
                             <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.total}</AmountToBuy>
 
-                            {/* <DeleteProduct>
-                                <IoMdClose />
-                            </DeleteProduct> */}
                         </Group>
                     ) : <Group />}
 

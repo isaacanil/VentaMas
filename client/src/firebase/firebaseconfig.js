@@ -350,7 +350,6 @@ export const QueryByCategory = async (setProductArray, categoryArrayData, catego
     setProductArray(array);
   }
 }
-
 export const QueryByType = async (setProducts, type, size) => {
   const productsRef = collection(db, "products")
   const q = query(productsRef, where("product.type", "==", type), where("product.size", "==", size))
@@ -359,19 +358,13 @@ export const QueryByType = async (setProducts, type, size) => {
   console.log(array)
   setProducts(array)
 }
-export const getOrder = async (setOrder) => {
-  const orderRef = collection(db, "order")
-  const q = query(orderRef, orderBy("order", "desc"), orderBy("", "desc"))
-  onSnapshot(q, (snapshot) => {
-    let orderArray = snapshot.docs.map(item => item.data())
-    setOrder(orderArray)
-  })
-}
 export const AddOrder = async (value) => {
+  const providerRef = doc(db, 'providers', value.provider.id)
   let data = {
     ...value,
     id: nanoid(6),
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    provider: providerRef
   }
   const OrderRef = doc(db, "orders", data.id)
   console.log(data)
@@ -383,15 +376,57 @@ export const AddOrder = async (value) => {
   }
 
 }
+export const PassDataToPurchaseList = async (data) => {
+  const providerRef = doc(db, 'providers', data.provider.id)
+  const purchaseRef = doc(db, 'purchases', data.id)
+  
+  try {
+    await setDoc(purchaseRef, { 
+      data: { 
+        ...data,
+        provider: providerRef} 
+    })
+  } catch (error) {
+    console.error("Error adding purchase: ", error)
+  }
+
+}
+export const getPurchaseFromDB = async (setPurchases) => {
+  const purchasesRef = collection(db, 'purchases')
+  onSnapshot(purchasesRef, (snapshot) => {
+    let purchaseArray = snapshot.docs.map(async (item) => {
+      let purchaseData = item.data();
+      let providerRef = purchaseData.data.provider;
+      let providerDoc = (await getDoc(providerRef)).data();
+      purchaseData.data.provider = providerDoc.provider;
+      return purchaseData
+    })
+    Promise.all(purchaseArray).then((result)=>{
+      setPurchases(result)
+    }).catch((error)=>{
+      console.log(error)
+    });
+  })
+}
+export const getOrders = (setOrder) => {
+  const orderRef = collection(db, "orders")
+  onSnapshot(orderRef, (snapshot) => {
+    let orderArray = snapshot.docs.map(async (item) => {
+      let orderData = item.data()
+      let providerRef = orderData.data.provider;
+      let providerDoc = (await getDoc(providerRef)).data()
+      orderData.data.provider = providerDoc.provider
+      return orderData
+    })
+    Promise.all(orderArray).then(result => {
+      setOrder(result)
+    }).catch(error => {
+      console.log(error)
+    });
+  })
+}
 export const deleteOrderFromDB = async (id) => {
   deleteDoc(doc(db, `orders`, id))
-}
-export const getOrders = async (setOrders) => {
-  const ordersRef = collection(db, "orders")
-  onSnapshot(ordersRef, (snapshot) => {
-    let orderArray = snapshot.docs.map(item => item.data())
-    setOrders(orderArray)
-  })
 }
 export const createTaxReceiptDataBD = async () => {
   const counterRef = doc(db, "counter", "c1")
@@ -450,7 +485,6 @@ export const readTaxReceiptDataBD = (setTaxReceiptDataBD) => {
 }
 export const getUsers = (setUsers) => {
   const usersRef = collection(db, "users")
-
   onSnapshot(usersRef, (snapshot) => {
     let usersArray = snapshot.docs.map(async (item) => {
       let userData = item.data()
@@ -467,6 +501,7 @@ export const getUsers = (setUsers) => {
     // setUsers(usersArray)
   })
 }
+
 export const createUser = (rolType) => {
   let rolRef = null
   if (rolType === 'admin') {

@@ -17,6 +17,7 @@ import { ClientDetails } from './ClientDetails.jsx'
 import { SearchClient } from '../../../templates/system/Inputs/SearchClient.jsx'
 import { ClientSelector } from './ClientSelector.jsx'
 import { useSearchFilter } from '../../../../hooks/useSearchFilter.js'
+import { Tooltip } from '../../../templates/system/Button/Tooltip.jsx'
 
 export const ClientControl = () => {
   const CLIENT_MODE = {
@@ -27,7 +28,7 @@ export const ClientControl = () => {
       showClientList: true
     },
     UPDATE: {
-      label: 'Actualizar Cliente',
+      label: 'Actualizar',
       mode: 'update',
       name: 'name',
       showClientList: false
@@ -181,7 +182,9 @@ export const ClientControl = () => {
             onChange={(e) => handleChangeClient(e)}
           />
           <ButtonGroup>
-            <CancelPurchaseBtn></CancelPurchaseBtn>
+            <Tooltip placement='bottom-end' description='Cancelar Venta' Children={<CancelPurchaseBtn/>}>
+            
+            </Tooltip>
           </ButtonGroup>
         </div>
       </div>

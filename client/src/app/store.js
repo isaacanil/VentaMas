@@ -14,7 +14,7 @@ import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
 import settingReducer from '../features/setting/settingSlice'
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
 import orderReducer from '../features/order/ordersSlice'
-
+import purchaseReducer from '../features/Purchase/purchaseSlice'
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -30,7 +30,7 @@ export const store = configureStore({
         uploadImg: uploadImgReducer,
         alert: alertReducer,
         setting: settingReducer,
-        taxReceipt: taxReceiptReducer
+        taxReceipt: taxReceiptReducer, 
+        purchase: purchaseReducer
     },
-
 })

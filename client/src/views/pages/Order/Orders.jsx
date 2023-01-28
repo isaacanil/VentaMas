@@ -1,24 +1,13 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import { Provider, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import {
-  MenuApp,
-  Button,
-} from '../../'
-import { handleSetOptions } from '../../../features/order/ordersSlice'
-import { getProviders } from '../../../firebase/firebaseconfig'
+import { MenuApp } from '../../'
+import { ProvidersData, SetProvidersInFilterOptionsMenu } from '../../../firebase/ProviderConfig'
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
 import { ToolBar } from './ToolBar'
 export const Orders = () => { 
-  const dispatch = useDispatch();
-  const [providers, setProviders] = useState([])
-  useEffect(()=>{getProviders(setProviders)},[])
-  
-  useEffect(() =>{
-    if(providers.length > 0){
-      dispatch(handleSetOptions({optionsID: 'Proveedores', datas: providers, propertyName: 'provider'}))
-    }
-  },[providers])
+  const providers = ProvidersData();
+  SetProvidersInFilterOptionsMenu(providers);
   return (
     <Fragment>
       <MenuApp></MenuApp>

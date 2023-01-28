@@ -114,7 +114,7 @@ export const Cart = () => {
     }
   }
   return (
-    <Container className={style.FacturaControlContainer}>
+    <Container>
       <ClientControl></ClientControl>
       <ProductsList>
         {
@@ -152,8 +152,8 @@ const Container = styled.div`
   position: relative;
    height: calc(100%);
    background-color: rgb(253, 253, 253);
-   max-width: 24em;
-   width: 100%;
+   max-width: 30em;
+   width: 24em;
    overflow: hidden;
    display: grid;
    grid-template-columns: 1fr;

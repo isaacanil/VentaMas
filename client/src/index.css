@@ -28,6 +28,7 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 }
+
 body {
   margin: 0;
   padding: 0;
@@ -80,7 +81,7 @@ input{
 
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 14px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -91,7 +92,7 @@ input{
 
 ::-webkit-scrollbar-track {
   background-color: #f1f1f1;
-  border-radius: 10px;
+
 }
 
 
