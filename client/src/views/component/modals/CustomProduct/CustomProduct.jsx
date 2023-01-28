@@ -7,13 +7,8 @@ import { separator } from '../../../../hooks/separator'
 import { Modal } from '../modal'
 import { IngredientCard } from '../../../templates/system/customProduct/typePizza/ingredientCard'
 export const CustomProduct = () => {
-    const [customProduct, setCustomProduct] = useState({})
-    useEffect(() => {
-        getCustomProduct(setCustomProduct)
-    }, [])
-    console.log(customProduct)
-
-    const [products, setProducts] = useState([])
+    const [customProduct, setCustomProduct] = useState({});
+    const [products, setProducts] = useState([]);
     const [product, setProduct] = useState({
         id: '',
         type: '',
@@ -31,59 +26,52 @@ export const CustomProduct = () => {
             first: '',
             second: ''
         }
-    })
-    const [productSelected, setProductSelected] = useState(
-        {
-            a: '',
-            b: ''
+    });
+    const [productSelected, setProductSelected] = useState({
+        a: '',
+        b: ''
+    });
+    const [isComplete, setIsComplete] = useState(true);
+    const [size, setSize] = useState('');
+
+    useEffect(() => {
+        getCustomProduct(setCustomProduct);
+    }, []);
+
+    useEffect(() => {
+        if (size !== '') {
+            QueryByType(setProducts, size);
         }
-    )
-    const [isComplete, setIsComplete] = useState(true)
-    const handleProduct = (data) => {
-        data === 'false' ? setIsComplete(false) : null;
-        data === 'true' ? setIsComplete(true) : null;
-        // console.log(isComplete)
-    }
-        if (size === '') {
-            console.log('esperando')
-        } else {
-            
-            QueryByType(setProducts, size)
-        }
-  
+    }, [size]);
+
     useEffect(() => {
         if (isComplete && productSelected.a !== '') {
-            const a = JSON.parse(productSelected.a)
-            const firstProductPrice = a.price.total
-            console.log('solo uno por ahora')
-            setProduct({
-                price: { total: firstProductPrice }
-            })
-        }
-        if (!isComplete && productSelected.a !== '' > 0 && productSelected.b !== '') {
-            console.log('comparando dos Items')
-            const a = JSON.parse(productSelected.a)
-            const b = JSON.parse(productSelected.b)
+            const a = JSON.parse(productSelected.a);
+            const firstProductPrice = a.price.total;
+            setProduct({ price: { total: firstProductPrice } });
+        } else if (!isComplete && productSelected.a !== '' && productSelected.b !== '') {
+            const a = JSON.parse(productSelected.a);
+            const b = JSON.parse(productSelected.b);
             const firstProductPrice = a.price.total;
             const secondProductPrice = b.price.total;
-            console.log('price: ', firstProductPrice, secondProductPrice)
             if (firstProductPrice > secondProductPrice) {
-                setProduct({
-                    price: { total: firstProductPrice }
-                })
+                setProduct({ price: { total: firstProductPrice } });
             } else if (firstProductPrice < secondProductPrice) {
-                setProduct({
-                    price: { total: secondProductPrice }
-                })
-            } else if (firstProductPrice == secondProductPrice) {
-                setProduct({
-                    price: { total: firstProductPrice }
-                })
+                setProduct({ price: { total: secondProductPrice } });
+            } else {
+                setProduct({ price: { total: firstProductPrice } });
             }
-            //console.log(productSelected.a)  
         }
-    }, [productSelected.a, productSelected.b])
-    console.log(size)
+    }, [productSelected.a, productSelected.b]);
+
+    const handleProduct = (data) => {
+        if (data === 'false') {
+            setIsComplete(false);
+        } else if (data === 'true') {
+            setIsComplete(true);
+        }
+    }
+
     return (
         <Modal nameRef='Producto Personalizable' btnSubmitName='Aceptar'>
             <Body>
