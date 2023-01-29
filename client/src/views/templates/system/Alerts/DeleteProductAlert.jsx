@@ -28,7 +28,7 @@ export const DeleteProductAlert = ({ success }) => {
             <Backdrop>
                 <Container>
                     <Head>
-                        <h1>Eliminar Producto?</h1>
+                        <h1>¿Eliminar Producto?</h1>
                     </Head>
                     <Body>
                         <p>Esta seguro que desea eliminar este producto?</p>
@@ -38,11 +38,13 @@ export const DeleteProductAlert = ({ success }) => {
                             bgcolor='error'
                             startIcon={<IoMdTrash />}
                             title='Eliminar'
+                            borderRadius='normal'
                             onClick={handleSuccess}
                         />
                         <Button
                             bgcolor='gray'
                             title='Cancelar'
+                            borderRadius='normal'
                             onClick={() => handleCancel()}
                         />
                     </Footer>

@@ -73,7 +73,7 @@ export const Container = styled.button`
     switch (props.borderRadius) {
       case 'normal':
         return `
-        border-radius: 10px;
+        border-radius: 8px;
       `
       default:
         break;

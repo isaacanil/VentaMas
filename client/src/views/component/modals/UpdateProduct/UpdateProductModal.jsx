@@ -11,6 +11,7 @@ import { UploadImg } from '../../UploadImg'
 import { Modal } from '../modal'
 import { quitarCeros } from '../../../../hooks/quitarCeros'
 import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter'
+import { useRoundDecimals } from '../../../../hooks/roundToTwoDecimals'
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, lastProduct } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState([])
@@ -77,8 +78,8 @@ export const UpdateProductModal = ({ isOpen }) => {
            return;
         }
         const price = {
-           unit: cost.unit * tax.value + cost.unit,
-           total: cost.unit * tax.value + cost.unit,
+           unit: useRoundDecimals(cost.unit * tax.value + cost.unit),
+           total: useRoundDecimals(cost.unit * tax.value + cost.unit),
         }
         setProduct({
            ...product,
@@ -109,7 +110,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     console.log(product)
     return (
         <Modal
-            nameRef='Actualizar'
+            nameRef={`Actualizar ${product.id} `}
             isOpen={isOpen}
             close={closeModal}
             btnSubmitName='Guardar'
