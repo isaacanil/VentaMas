@@ -34,6 +34,8 @@ const initialState = {
     ],
     pendingPurchase: [
 
+    ],
+    addPurchase: [ 
     ]
 }
 
@@ -74,6 +76,9 @@ export const purchaseSlice = createSlice({
                 return newState;
             }
         },
+        handleDeletePurchaseSelected: (state) => {
+            
+        }
     }
 })
 

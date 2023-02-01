@@ -125,7 +125,7 @@ const Row = styled.div`
   minmax(104px, 0.4fr) //f. pedido
   minmax(104px, 0.4fr) //f. entrega
   minmax(110px, 0.4fr) //total
-  minmax(126px, 0.3fr); //acción
+  minmax(106px, 0.15fr); //acción
   @media (max-width: 800px){
     gap: 0;
   }

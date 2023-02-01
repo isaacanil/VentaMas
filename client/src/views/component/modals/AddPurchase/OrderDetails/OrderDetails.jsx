@@ -7,49 +7,47 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
 import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
-export const OrderDetails = () => {
+export const OrderDetails = ({ reset, setReset, purchaseData }) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
     const dispatch = useDispatch()
     const [condition, setCondition] = useState('')
     const [note, setNote] = useState('')
-    const [date, setDate] = useState('')
+    const [date, setDate] = useState(undefined)
     console.log(orderFilterOptions)
-    useEffect(() => {
-        if(condition !== ''){
-            dispatch(
-                AddCondition(condition)
-            )
-            
-        }
-        if(note !== ''){
-            dispatch(
-                AddNote(note)
-            )
-        }
-        dispatch(AddDate(date))
-    }, [condition, note, date])
     
+    useEffect(()=>{
+        if(purchaseData.note){
+            setNote(purchaseData.note)
+        }
+        if(purchaseData.date){
+            setDate(purchaseData.date)
+        }
+    },[purchaseData])
+
     const beforeToday = new Date()
     const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" id="" min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)}/>
+                <input type="date" name="" id="" value={date} min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)} />
                 <Select
+                    setReset={setReset}
+                    reset={reset}
                     property='name'
                     title='Condición'
                     data={data}
                     setValue={setCondition}
                     value={condition}
                     placement='top'
-
+                    
                 />
             </Section>
             <Section>
                 <h5>Nota</h5>
                 <Textarea
                     height='4em'
+                    value={note}
                     placeholder='Escriba una Nota...'
                     onChange={(e) => setNote(e.target.value)}
                 />

@@ -41,7 +41,6 @@ import {
 import { Collection } from './views/pages/Collection'
 import { Fragment } from 'react';
 import { useModal } from './hooks/useModal'
-import { DeleteProductAlert } from './views/templates/system/Alerts/DeleteProductAlert'
 import { GenericLoader } from './views/templates/system/loader/GenericLoader';
 import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';

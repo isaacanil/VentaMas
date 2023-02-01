@@ -52,6 +52,7 @@ export const AddProductListSection = () => {
                     <span>Subtotal</span>
                 </Col>
                 <Col>
+                <span></span>
                 </Col>
             </Group>
             <Group>
@@ -102,11 +103,11 @@ export const AddProductListSection = () => {
 }
 
 const Container = styled.div`
-    background-color: rgb(220, 233, 245);
+    background-color: var(--White2);
     border-radius: 8px;
     display: grid;
     gap: 0.2em;
-    padding: 0.4em 1em;
+    padding: 0 1em 0.4em;
     border: var(--border-primary);
 `
 const Group = styled.div`
@@ -119,6 +120,13 @@ const Group = styled.div`
 const Col = styled.div`
        display: flex;
        font-weight: 500;
+       min-width: 2em;
+       align-items: center;
+       span{
+        
+    font-size: 12px;
+    line-height: 12px;
+       }
 `
 const ProductName = styled.div`
     display: flex;

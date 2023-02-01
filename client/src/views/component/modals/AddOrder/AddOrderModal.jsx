@@ -25,10 +25,10 @@ import { selectOrderFilterOptions } from '../../../../features/order/ordersSlice
 import { CgMathPlus } from 'react-icons/cg'
 export const AddOrderModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-    const [provider, setProvider] = useState('')
-    const OrderSelected = useSelector(SelectOrder)
-    const now = new Date()
-    const day = now.getDate()
+    const [provider, setProvider] = useState(undefined);
+    const OrderSelected = useSelector(SelectOrder);
+    const [reset, setReset] = useState(false);
+
     useEffect(() => {
         if (provider !== '') {dispatch(AddProvider(provider))}
     }, [provider])
@@ -37,11 +37,12 @@ export const AddOrderModal = ({ isOpen }) => {
         dispatch(closeModalAddOrder());
         AddOrder(OrderSelected);
         dispatch(cleanOrder());
+        setReset(true)
     }
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
-    return (
 
+    return (
         <Container isOpen={isOpen === true ? true : false}>
             <div className={style.Modal}>
                 <div className={style.ModalHeader}>
@@ -59,19 +60,21 @@ export const AddOrderModal = ({ isOpen }) => {
                 <div className={style.ModalBody}>
                     <header >
                         <Select
+                            setReset={setReset}
+                            reset={reset}
+                            property='name'
                             title='Proveedor'
                             data={providers}
                             setValue={setProvider}
                             value={provider}
                         ></Select>
-                        <Button
+                        <Button                         
                             title={<CgMathPlus />}
                             borderRadius={'normal'}
                             border='light'
                             width={'icon32'}
                             bgcolor='gray'
                         />
-                        {/* <PlusIconButton onClick={handleModal}></PlusIconButton> */}
                     </header>
                     <AddProductListSection></AddProductListSection>
                     <ProductListSelected></ProductListSelected>
@@ -105,12 +108,12 @@ const Container = styled.div`
     clip-path: circle(20.9% at 50% 50%);
     justify-content: center;
     align-items: center;
-
     opacity: 0;
     transition-property: transform, clip-path, opacity;
     transition-duration: 400ms, 600ms, 300ms;
     transition-delay: 100ms, 400ms, 0ms;
     transition-timing-function: ease-in-out, ease-in-out;
+
     ${props => {
         switch (props.isOpen) {
             case true:
@@ -123,9 +126,7 @@ const Container = styled.div`
                 transition-timing-function: ease-in-out, ease-in-out;
                 transition-duration: 600ms, 200ms, 400ms;
                 transition-delay: 0ms, 0ms, 0ms;
-         
                 `
-
             default:
                 break;
         }

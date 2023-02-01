@@ -33,7 +33,7 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
                     <div className={Style.modal_header}>
 
                         <h3>{nameRef}</h3>
-                        <Button title={<MdClose/>} width='icon32' bgcolor='error'   onClick={close}/>
+                        <Button title={<MdClose/>} width='icon24' borderRadius='normal' bgcolor='error'   onClick={close}/>
 
                     </div>
                     <div className={Style.modal_body}>
@@ -43,6 +43,7 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
                     <div className={Style.modal_footer}>
                         <div className={Style.Group}>
                             <Button 
+                                borderRadius='normal'
                                 title={btnSubmitName} 
                                 onClick={done}
                             />

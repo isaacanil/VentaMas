@@ -1,22 +1,25 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { ProductCard } from './ProductCard'
-import { SelectProducts, SelectTotalPurchase } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useSelector } from 'react-redux'
 import { separator } from '../../../../../hooks/separator'
-export const ProductListSelected = () => {
-    const Products = useSelector(SelectProducts)
-    const ProductTotalPurchasePrice = useSelector(SelectTotalPurchase)
+export const ProductListSelected = ({productsData}) => {
+    const [products, setProducts] = useState([])
+    useEffect(()=>{
+        setProducts(productsData)
+    }, [productsData])
+    console.log(products)
+    // const ProductTotalPurchasePrice = useSelector(SelectTotalPurchase)
     return (
         <Container>
             <Head>
                 <h4>Lista Productos</h4>
-                <span>Total: RD${separator(ProductTotalPurchasePrice)}</span>
+                <span>Total: RD${/*separator()/-*/}</span>
             </Head>
             <Body>
                 {
-                    Array(Products).length > 0 && Products ?
-                   ( Products.map(({ product }, index) => (
+                    products.length > 0 && products ?
+                   ( products.map(({ product }, index) => (
                         <ProductCard key={index} product={product} />
                     ))) : null
                 }

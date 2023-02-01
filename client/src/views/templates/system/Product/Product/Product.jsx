@@ -86,11 +86,11 @@ export const Product = ({ product, }) => {
     )
 }
 const Container = styled.div`
-
+    box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.020);
     height: 80px;
     width: 100%;
     background-color: #ffffff;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     display: flex;
     gap: 10px;
     overflow: hidden;
@@ -171,7 +171,6 @@ const ImageContainer = styled.div`
     width: 80px;
     overflow: hidden;
     padding: 4px;
-   
     transition: transform 400ms ease-in-out;
     img{
         height: 100%;
@@ -191,15 +190,17 @@ const Footer = styled.div`
     justify-content: space-between;
     width: 100%;
     height: 1.6em;
-    font-weight: 500;
     pointer-events: none;
+    
     border-top-left-radius: ${(props) => {
         return props.imageHiddenRef === false ? '10px' : '0'
     }
-    };
-    transition:  800ms border-radius ease-in-out;
-    background-color: var(--White3);
-    color: var(--Gray7);
+};
+transition:  800ms border-radius ease-in-out;
+background-color: var(--White1);
+font-weight: 400;
+color: var(--Gray6);
+letter-spacing: 0.2px;
    
 `
 const AmountToBuy = styled.div`
@@ -212,7 +213,7 @@ const AmountToBuy = styled.div`
     justify-content: center;
     line-height: 0;
     background-color: var(--color1);
-    color: white;
+    color: #ffffff;
 `
 const DeleteProduct = styled.button`
 height: 1.4em;
@@ -236,23 +237,26 @@ const Group = styled.div`
     gap: 1em;
 `
 const Title = styled.h5`
-    color: var(--Gray7);
+    color: var(--Gray6);
     width: 100%;
-    font-size: 13px;
+    font-size: 13.4px;
     line-height: 1pc;
     padding: 0 1em;
     padding-top: 0.4em;
     padding-right: 2em;
     display: -webkit-box;
     font-weight: 600;
+    letter-spacing: 0.4px;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  
     //white-space: nowrap;
-    text-transform: uppercase;
+    text-transform: capitalize;
     text-overflow: ellipsis;
     overflow: hidden;
     
 `
 const Price = styled.h4`
     line-height: 0;
+    font-weight: 550;
+    color: var(--color)
 `

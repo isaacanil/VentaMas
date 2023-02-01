@@ -21,7 +21,7 @@ export const MessageAlert = ({isOpen , data}) => {
           </IconContainer>
           <MessageContainer>
             <Message>
-              {data !== "" && data !== null ? (data.data.note ? data.data.note : 'vacio') : null}
+              {data !== "" && data !== null ? (data.note ? data.note : 'vacio') : null}
            
             </Message>  
           </MessageContainer>

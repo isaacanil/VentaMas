@@ -11,7 +11,7 @@ export const OrderDetails = () => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
     const dispatch = useDispatch()
-    const [condition, setCondition] = useState('')
+    const [condition, setCondition] = useState(undefined)
     const [note, setNote] = useState('')
     const [date, setDate] = useState('')
     console.log(orderFilterOptions)
@@ -37,12 +37,13 @@ export const OrderDetails = () => {
             <Section flex>
                 <input type="date" name="" id="" min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)}/>
                 <Select
+                    property='name'
                     title='Condición'
                     data={data}
                     setValue={setCondition}
                     value={condition}
                     placement='top'
-
+                    
                 />
             </Section>
             <Section>

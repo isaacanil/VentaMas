@@ -7,36 +7,51 @@ import { Button } from '../../../'
 import { AddProductListSection } from './AddProductListSection/AddProductListSection'
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { IoMdClose } from 'react-icons/io'
-import { SelectOrder, AddProvider, cleanOrder } from '../../../../features/addOrder/addOrderModalSlice'
+import { SelectOrder, cleanOrder } from '../../../../features/addOrder/addOrderModalSlice'
 import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { selectOrderFilterOptions, selectOrderList, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
+import { getOrderData, AddProvider, selectPurchase } from '../../../../features/Purchase/addPurchaseSlice'
+
 
 export const AddPurchaseModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-    const [provider, setProvider] = useState('')
-
+    const [provider, setProvider] = useState({name: 'Hola', id: 's1d3232'})
+    const [orderToPurchase, setOrderToPurchase] = useState(undefined)
+    const [reset, setReset] = useState()
     const OrderSelected = useSelector(SelectOrder)
     const now = new Date()
     const day = now.getDate()
+    const SELECTED_PURCHASE = useSelector(selectPurchase)
+
     useEffect(() => {
-        if (provider !== '') { dispatch(AddProvider(provider)) }
-    }, [provider])
-    const handleModal = () => { dispatch(toggleAddPurchaseModal()) }
+        if(SELECTED_PURCHASE){
+            SELECTED_PURCHASE.provider ? setProvider(SELECTED_PURCHASE.provider) : null
+        }
+    }, [SELECTED_PURCHASE])
+    useEffect(() => {
+        if (provider !== undefined) { dispatch(AddProvider(provider)) }
+        if (orderToPurchase !== undefined) { dispatch(getOrderData(orderToPurchase)) }
+    }, [provider, orderToPurchase])
+    const handleModal = () => { 
+        dispatch(toggleAddPurchaseModal()) 
+        setReset(true)
+    }
     const HandleSubmit = () => {
         dispatch(closeModalAddOrder());
         AddOrder(OrderSelected);
+        setReset(true)
         dispatch(cleanOrder());
     }
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
     let pendingOrders = useSelector(selectOrderList)
     pendingOrders = pendingOrders[0]
-    console.log(pendingOrders, providers)
-    
+    console.log(provider)
+   
     return (
         <Container isOpen={isOpen === true ? true : false}>
             <Modal>
@@ -55,20 +70,23 @@ export const AddPurchaseModal = ({ isOpen }) => {
                 <Body>
                     <div>
                         <Select
+                            setReset={setReset}
+                            reset={reset}
                             property='id'
                             title='Pedidos'
                             data={pendingOrders}
-                            setValue={setProvider}
-                        >
-                        </Select>
+                            setValue={setOrderToPurchase}
+                        />
                     </div>
                     <header >
                         <Select
+                            setReset={setReset}
+                            reset={reset}
                             property='name'
                             title='Proveedor'
                             data={providers}
                             setValue={setProvider}
-                        ></Select>
+                        />
                         <Button
                             title={<CgMathPlus />}
                             borderRadius={'normal'}
@@ -76,16 +94,16 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             width={'icon32'}
                             bgcolor='gray'
                         />
-                       
+
                     </header>
                     <AddProductListSection></AddProductListSection>
-                    <ProductListSelected></ProductListSelected>
-                    <OrderDetails></OrderDetails>
+                    <ProductListSelected productsData={SELECTED_PURCHASE.products}></ProductListSelected>
+                    <OrderDetails reset={reset} setReset={setReset} purchaseData={SELECTED_PURCHASE}></OrderDetails>
                 </Body>
                 <Footer>
                     <WrapperFooter>
                         <Button
-                            title='Crear Pedido'
+                            title='Comprar'
                             borderRadius={'normal'}
                             bgcolor='primary'
                             onClick={HandleSubmit}
@@ -113,7 +131,7 @@ const Container = styled.div`
 
     opacity: 0;
     transition-property: transform, clip-path, opacity;
-    transition-duration: 400ms, 600ms, 300ms;
+    transition-duration: 400ms, 1000ms, 300ms;
     transition-delay: 100ms, 400ms, 0ms;
     transition-timing-function: ease-in-out, ease-in-out;
     ${props => {
@@ -122,11 +140,10 @@ const Container = styled.div`
                 return `
                 transform: scaleY(1);
                 opacity: 1;
-            
                 clip-path: circle(100% at 50% 50%);
                 transition-property: transform, clip-path, opacity;
                 transition-timing-function: ease-in-out, ease-in-out;
-                transition-duration: 600ms, 200ms, 400ms;
+                transition-duration: 400ms, 500ms, 500ms;
                 transition-delay: 0ms, 0ms, 0ms;
          
                 `

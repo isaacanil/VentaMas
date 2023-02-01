@@ -1,5 +1,28 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { nanoid } from "nanoid";
+const EmptyOrder = {
+  id: "",
+  products: [],
+  totalPurchase: 0.00,
+  condition: "",
+  date: "",
+  note: "",
+  createdAt: "",
+  updatedAt: "",
+  state: {
+  },
+  provider: {
+    providerId: "",
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    createdAt: "",
+    updatedAt: "",
+
+  }
+}
+
 const initialState = {
   productSelected: {
     product: {
@@ -14,31 +37,7 @@ const initialState = {
 
     }
   },
-  order: {
-    id: "",
-    products: [],
-    totalPurchase: 0.00,
-    condition: "",
-    date: "",
-    note: "",
-    createdAt: "",
-    updatedAt: "",
-    state: {
-      name: 'solicitado',
-      color: 'yellow'
-    },
-    provider: {
-      providerId: "",
-      name: "",
-      phone: "",
-      email: "",
-      address: "",
-      createdAt: "",
-      updatedAt: "",
-
-    }
-  }
-
+  order: EmptyOrder
 }
 const addOrderSlice = createSlice({
   name: 'addOrder',
@@ -103,30 +102,7 @@ const addOrderSlice = createSlice({
 
         }
       }
-      state.order = {
-        id: "",
-        products: [],
-        totalPurchase: 0.00,
-        condition: "",
-        date: "",
-        note: "",
-        createdAt: "",
-        updatedAt: "",
-        state: {
-          name: 'solicitado',
-          color: 'yellow'
-        },
-        provider: {
-          providerId: "",
-          name: "",
-          phone: "",
-          email: "",
-          address: "",
-          createdAt: "",
-          updatedAt: "",
-
-        }
-      }
+      state.order = EmptyOrder
     },
     AddProvider: (state, actions) => {
       state.order.provider = actions.payload

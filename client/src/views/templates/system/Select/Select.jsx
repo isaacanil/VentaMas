@@ -1,28 +1,46 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { IoIosArrowDown } from 'react-icons/io'
 import { MdClear } from 'react-icons/md'
 
-export const Select = ({ title, data, value, setValue, placement, property }) => {
+export const Select = ({ title, data, value, setValue, placement = 'bottom', property = 'name', reset, setReset }) => {
     const [isOpen, setIsOpen] = useState(false)
+    const [showSelectTitle, setShowSelectTitle] = useState(title)
+    const [isSelect, setIsSelect] = useState({ id: '' })
     const handleClose = () => {
         setIsOpen(false)
     }
-    const [showSelectTitle, setShowSelectTitle] = useState(title)
-    const [isSelect, setIsSelect] = useState({ status: false, id: '', value: '' })
-    const dataSelected = (select) => {
-        console.log(select)
-        setIsSelect({
-            id: select.id,
-        })
-        setValue(select),
+    useEffect(() => {
+        if (reset) {
+            setIsSelect({ id: '' });
+            setShowSelectTitle(title);
             setTimeout(() => {
-                setShowSelectTitle(select[property])
-            }, 1)
-        setIsOpen(false)
+                setReset(false)
+            }, 1000)
+        }
+    }, [reset, title]);
+    
+    useEffect(() => {
+        if (value !== undefined) {
+            setShowSelectTitle(value);
+        }
+    }, [value, property]);
+    const dataSelected = (select) => {
+        setIsSelect({ id: select.id })
+        setValue(select),
+            setShowSelectTitle(select[property])
+        handleClose()
+        console.log(value)
     }
-    console.log(data)
-    // const {Items} = data
+
+    console.log(isSelect)
+    const handleEmptyData = () => {
+        setShowSelectTitle(title)
+        handleClose()
+    }
+    const deselect = [
+        { id: 'ninguno', name: 'ninguno' }
+    ]
     return (
         <Container>
             <Head>
@@ -49,6 +67,13 @@ export const Select = ({ title, data, value, setValue, placement, property }) =>
                             data.Items.length > 0 ?
                                 (
                                     <List>
+                                        {deselect.length > 0 ? (
+                                            deselect.map((item, index) => (
+                                                <Item key={index} style={isSelect.id == item.id ? { backgroundColor: 'blue', color: 'white' } : null} onClick={() => handleEmptyData(item)}>
+                                                    {item.name}
+                                                </Item>
+                                            ))
+                                        ) : null}
                                         {
                                             data.Items ? (
                                                 data.Items.map((item, index) => (
@@ -73,9 +98,7 @@ const Container = styled.div`
     position: relative;
     max-width: 200px;
     width: 100%;
-    
 `
-
 const Head = styled.div`
     width: 100%;
     display: flex;
@@ -86,8 +109,7 @@ const Head = styled.div`
     padding: 0 0 0 0.2em;
     transition-duration: 20s;
     transition-timing-function: ease-in-out;
-    transition-property: all;
-    
+    transition-property: all; 
 `
 const Body = styled.div`
 
@@ -104,12 +126,12 @@ const Body = styled.div`
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.200);
     ${(props) => {
         switch (props.placement) {
-            case 'top': 
-            return`
+            case 'top':
+                return `
                 top: -600%;
             `
-            default: 
-            return null
+            default:
+                return null
         }
     }}
 `

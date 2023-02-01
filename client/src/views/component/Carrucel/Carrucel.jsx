@@ -101,7 +101,7 @@ const Container = styled.div`
 `
 const Button = styled.button`
     height: 1.5em;
-    width: 1.5em;
+    width: 1em;
     padding: 0;
     margin: 0;
     display: flex;
@@ -109,7 +109,7 @@ const Button = styled.button`
     justify-content: center;
     font-size: 1.3em;
     border: 0;
-    
+    background-color: transparent;
     border-radius: var(--border-radius-light);
     outline: 0;
     transition: 500ms background-color ease-in-out;
@@ -125,7 +125,7 @@ const Categories = styled.div`
      scrollbar-width: none; 
     display: flex;
     flex-wrap: nowrap;
-    gap: 1em;
+    gap: 0.6em;
     background-color: white;
     ::-webkit-scrollbar {
   display: none; /* Oculta la barra de scroll */

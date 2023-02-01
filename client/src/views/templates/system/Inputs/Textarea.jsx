@@ -1,14 +1,15 @@
 import React from 'react'
 import styled from 'styled-components'
 
-export const Textarea = ({ onClick, onChange }) => {
+export const Textarea = ({ onClick, onChange, value }) => {
     return (
         <Container>
             <textarea
                 name=""
                 id=""
                 cols="30"
-                rows="10"
+                rows="0"
+                value={value}
                 onClick={onClick}
                 onChange={onChange}
 

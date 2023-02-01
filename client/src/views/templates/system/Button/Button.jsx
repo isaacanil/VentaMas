@@ -60,13 +60,14 @@ export const Container = styled.button`
   align-items: center;
   white-space: nowrap;
   gap: 0.4em;
-  padding: 0 0.6em;
+  padding: 0 0.8em;
   outline: none;
   color: black;
   font-weight: 500;
+  font-size: 14px;
   font-family: inherit;
   svg{
-    font-size: 1.2em;
+    font-size: 1.4em;
     margin: 0;
   }
   cursor: pointer;
@@ -136,8 +137,11 @@ export const Container = styled.button`
           `
       case "gray":
         return `
-            background-color: #e6e6e6;
+            background-color: var(--White3);
             color: var(--font-color-dark-slightly);
+            :hover{
+             color: var(--font-color-dark-slightly);
+            }
             
            
           `

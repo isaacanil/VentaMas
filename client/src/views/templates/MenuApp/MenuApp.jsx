@@ -14,13 +14,19 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useMatch } from 'react-router-dom'
 import { SearchProductBar } from './SearchProductBar'
 import { Tooltip } from '../system/Button/Tooltip'
+import { colorPalette } from '../../../features/theme/themeSlice'
+
+
+
 export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
+  const { color } = colorPalette()
   const dispatch = useDispatch()
   const [isOpenMenu, setIsOpenMenu] = useState(false)
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
   const handledMenu = () => { setIsOpenMenu(!isOpenMenu) };
   const ref = useRef(null)
+
   const anotherRef = useRef(null)
   const ImageHidden = useSelector(selectImageHidden)
   const viewRowModeRef = useSelector(selectIsRow)
@@ -43,13 +49,13 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   return (
     <Fragment>
       <Backdrop isOpen={isOpenMenu ? true : false} />
-      <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
+      <Container bgColor={color} borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
-          
-            <div className={Style.MenuBtn} onClick={handledMenu}>
-              <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
-            </div>
-          
+
+          <div className={Style.MenuBtn} onClick={handledMenu}>
+            <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
+          </div>
+
           {
             !matchWithVenta ? (
               <div>
@@ -109,7 +115,7 @@ const Backdrop = styled.div`
         backdrop-filter: blur(0px);
         z-index: 10;
         pointer-events: none;
-        transition: 600ms ease-in-out;
+        transition: 400ms ease-in-out;
    ${props => {
     switch (props.isOpen) {
       case true:
@@ -128,7 +134,7 @@ const Backdrop = styled.div`
 const Container = styled.div`
   position: relative;
    user-select: none;
-   background-color: var(--color);
+   background-color: ${props => props.bgColor};
    width: 100%;
    height: 2.75em;
    display: flex;
@@ -147,7 +153,7 @@ const Container = styled.div`
         return `
         z-index: 10;
         transition-property: z-index;
-        transition-delay: 3s;
+        transition-delay: 400ms;
       `
       default:
         break;
