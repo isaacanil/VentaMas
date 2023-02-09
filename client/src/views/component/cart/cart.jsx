@@ -75,9 +75,9 @@ export const Cart = () => {
   }
   const savingDataToFirebase = async () => {
     try {
-      //AddBills(billData);
+      AddBills(billData);
       dispatch(updateTaxCreditInFirebase())
-      //UpdateMultipleDocs(ProductSelected);
+      UpdateMultipleDocs(ProductSelected);
     } catch (err) {
       console.log(err)
     }
@@ -99,15 +99,17 @@ export const Cart = () => {
 
     }
   }
+
   const handleInvoice = async () => {
     if (ProductSelected.length > 0) {
       try {
         await handleTaxReceipt()
         await createOrUpdateClient()
-        await savingDataToFirebase()
+        //await savingDataToFirebase()
         await showPrintPreview()
         await showPrintPreview()
         await clearDataFromState()
+        dispatch(notification)
       } catch (error) {
         console.log(error)
       }
