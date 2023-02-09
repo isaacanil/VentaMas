@@ -105,11 +105,11 @@ export const Cart = () => {
       try {
         await handleTaxReceipt()
         await createOrUpdateClient()
-        //await savingDataToFirebase()
+        await savingDataToFirebase()
         await showPrintPreview()
         await showPrintPreview()
         await clearDataFromState()
-        dispatch(notification)
+      
       } catch (error) {
         console.log(error)
       }
