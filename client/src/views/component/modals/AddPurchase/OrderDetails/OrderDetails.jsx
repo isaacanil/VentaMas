@@ -7,24 +7,40 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
 import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
-export const OrderDetails = ({ reset, setReset, purchaseData }) => {
+export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
     const dispatch = useDispatch()
-    const [condition, setCondition] = useState('')
-    const [note, setNote] = useState('')
-    const [date, setDate] = useState(undefined)
-    console.log(orderFilterOptions)
-    
-    useEffect(()=>{
-        if(purchaseData.note){
-            setNote(purchaseData.note)
-        }
-        if(purchaseData.date){
-            setDate(purchaseData.date)
-        }
-    },[purchaseData])
+    const [condition, setCondition] = useState(null)
+    const [note, setNote] = useState(null)
+    const [date, setDate] = useState(null)
 
+    useEffect(()=> {
+        if(SELECTED_PURCHASE.condition !== '') {
+            setCondition(
+                {
+                    name: SELECTED_PURCHASE.condition.name,
+                    id: SELECTED_PURCHASE.condition.id
+                } 
+            )
+              
+        }
+    },[SELECTED_PURCHASE])
+    console.log(SELECTED_PURCHASE)
+    useEffect(()=>{     
+        if(SELECTED_PURCHASE && SELECTED_PURCHASE.note){
+            setNote(SELECTED_PURCHASE.note)
+        }else{
+            setNote('')
+        }
+        if(SELECTED_PURCHASE && SELECTED_PURCHASE.date){
+            setDate(SELECTED_PURCHASE.date)
+        }else{
+            setDate('')
+        }
+    },[SELECTED_PURCHASE])
+    console.log(SELECTED_PURCHASE)
+ 
     const beforeToday = new Date()
     const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
     return (

@@ -1,7 +1,8 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import {SelectProduct} from '../../../../../features/addOrder/addOrderModalSlice'
+import { SelectProduct } from '../../../../../features/Purchase/addPurchaseSlice'
+
 
 export const ProductCard = ({data, showProductList}) => {
    const dispatch = useDispatch()

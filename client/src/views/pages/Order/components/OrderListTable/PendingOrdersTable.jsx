@@ -3,23 +3,21 @@ import styled from 'styled-components'
 
 import { getOrders } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
-import { OrderItem } from '../../ListItem/OrderItem'
+import { OrderCard } from '../../ListItem/OrderCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectOrderList } from '../../../../../features/order/ordersSlice'
 import { OrdersData, SetPendingOrdersInState } from '../../../../../firebase/OrderConfig'
 
 export const PendingOrdersTable = () => {
+  const [activeId, setActiveID] = useState(null) //id global for btns"
   const [orders, setOrders] = useState([])
   const ordersFromBD = OrdersData()
   SetPendingOrdersInState(ordersFromBD)
   let pendingOrderList = useSelector(selectOrderList)
   const Items = pendingOrderList.length > 0 ? ( pendingOrderList[0].Items ? pendingOrderList[0].Items : null) : null
   useEffect(()=>{
-    if(Items){
-      setOrders(Items)
-    }
-  },[Items])
- console.log(orders)
+    getOrders(setOrders)
+  },[])
 
   return (
     <Container>
@@ -37,12 +35,12 @@ export const PendingOrdersTable = () => {
             <Col>F. Entrega</Col>
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
-          </Row>
+          </Row> 
           <TableBody>
             {
               orders.length > 0 ? (
-                orders.map((data, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} data={data} index={index} />
+                orders.map((orderData, index) => (
+                  <OrderCard Row={Row} Col={Col} key={index} orderData={orderData} index={index} activeId={activeId} setActiveId={setActiveID}/>
                 ))
               ) : null
             }
@@ -50,7 +48,6 @@ export const PendingOrdersTable = () => {
         </Table>
       </Body>
     </Container>
-
   )
 }
 const Container = styled.div`

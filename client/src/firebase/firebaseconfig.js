@@ -14,6 +14,8 @@ import { useDispatch } from "react-redux";
 import { login, logout } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { isObject } from "../hooks/isObject";
+import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
+import { updateStock } from "../features/addOrder/addOrderModalSlice";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_BACKEND_FIREBASE_API_KEY,
@@ -304,7 +306,6 @@ export const getBills = async (setBills, time) => {
   const { docs } = await getDocs(q);
   const arrayBills = docs.map(item => item.data());
   setBills(arrayBills)
-
 }
 export const AddBills = (data) => {
   //const clientRef = doc(db, "client", "4O-0")
@@ -319,7 +320,6 @@ export const AddBills = (data) => {
   } catch (error) {
     console.log(error)
   }
-
 }
 export const UpdateMultipleDocs = (products) => {
   products.forEach((productData) => {
@@ -364,7 +364,8 @@ export const AddOrder = async (value) => {
     ...value,
     id: nanoid(6),
     createdAt: Date.now(),
-    provider: providerRef
+    provider: providerRef,
+    state: selectItemByName(orderAndDataState, 'Solicitado')
   }
   const OrderRef = doc(db, "orders", data.id)
   console.log(data)
@@ -376,20 +377,45 @@ export const AddOrder = async (value) => {
   }
 
 }
+const UpdateProducts = async (products) => {
+  try {
+    products.forEach((productData) => {
+       productData = productData.product
+      const productRef = doc(db, 'products', productData.id)
+      const updatedStock = productData.stock.newStock + productData.stock.actualStock
+      productData = {...productData, stock: updatedStock}
+      const product = productData
+      
+      updateDoc(productRef, {product})
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+const UpdateOrder = async (order) => {
+  const orderRef = doc(db, 'orders', order.id)
+  const providerRef = doc(db, 'providers', order.provider.id)
+  const newChange = {data: {...order, state: selectItemByName(orderAndDataState, 'Entregado'), provider: providerRef} }
+  try {
+    updateDoc(orderRef, newChange)
+  } catch (error) {console.log(error)}
+}
 export const PassDataToPurchaseList = async (data) => {
   const providerRef = doc(db, 'providers', data.provider.id)
   const purchaseRef = doc(db, 'purchases', data.id)
-  
+  await UpdateProducts(data.products)
+  await UpdateOrder(data)
   try {
-    await setDoc(purchaseRef, { 
-      data: { 
+    await setDoc(purchaseRef, {
+      data: {
         ...data,
-        provider: providerRef} 
+        provider: providerRef,
+        state: selectItemByName(orderAndDataState, 'Entregado')
+      }
     })
   } catch (error) {
     console.error("Error adding purchase: ", error)
   }
-
 }
 export const getPurchaseFromDB = async (setPurchases) => {
   const purchasesRef = collection(db, 'purchases')
@@ -401,16 +427,20 @@ export const getPurchaseFromDB = async (setPurchases) => {
       purchaseData.data.provider = providerDoc.provider;
       return purchaseData
     })
-    Promise.all(purchaseArray).then((result)=>{
+    Promise.all(purchaseArray).then((result) => {
       setPurchases(result)
-    }).catch((error)=>{
+    }).catch((error) => {
       console.log(error)
     });
   })
 }
+export const deletePurchase = async (id) => {
+  deleteDoc(doc(db, 'purchases', id))
+}
 export const getOrders = (setOrder) => {
   const orderRef = collection(db, "orders")
-  onSnapshot(orderRef, (snapshot) => {
+  const q = query(orderRef, where("data.state.name", "==", "Solicitado"))
+  onSnapshot(q, (snapshot) => {
     let orderArray = snapshot.docs.map(async (item) => {
       let orderData = item.data()
       let providerRef = orderData.data.provider;
@@ -469,6 +499,18 @@ export const updateTaxReceiptDataBD = async (taxReceipt) => {
     console.log('todo mal')
   }
 }
+export const updateCategoryDataBD = async (category) => {
+
+  const counterRef = doc(db, "categories", category.id)
+  try {
+    updateDoc(counterRef,
+      { category }
+    );
+    console.log('listo, to bien')
+  } catch (err) {
+    console.log('todo mal')
+  }
+}
 export const deleteTaxReceiptDataBD = () => {
   const counterRef = doc(db, "counter", "c1")
   deleteDoc(counterRef);
@@ -501,7 +543,6 @@ export const getUsers = (setUsers) => {
     // setUsers(usersArray)
   })
 }
-
 export const createUser = (rolType) => {
   let rolRef = null
   if (rolType === 'admin') {

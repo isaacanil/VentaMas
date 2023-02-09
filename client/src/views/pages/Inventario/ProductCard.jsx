@@ -48,9 +48,9 @@ export const ProductInventoryCard = ({ product, handleUpdateProduct, handleDelet
                         <span>stock: {product.stock}</span>
                     </Item>
                 </Group>
-                <Item>
+                {/* <Item>
                     <span>Contenido Neto: {product.netContent}</span>
-                </Item>
+                </Item> */}
                 <Item>
                     <span>Total: {useFormatPrice(product.price.unit)}</span>
                 </Item>

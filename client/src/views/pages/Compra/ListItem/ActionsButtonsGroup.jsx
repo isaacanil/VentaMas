@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom'
 import { toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
 import { selectOrderList, selectPendingOrder, } from '../../../../features/order/ordersSlice'
 import { getOrderData } from '../../../../features/Purchase/addPurchaseSlice'
-import { deleteOrderFromDB, PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
+import { deleteOrderFromDB, deletePurchase, PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
 import { Button } from '../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
 import { Tooltip } from '../../../templates/system/Button/Tooltip'
 
-export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
+export const ActionsButtonsGroup = ({ purchaseData, activeId, setActiveId }) => {
     const modes = {
         purchase: 'purchase',
         delete: 'delete',
@@ -24,49 +24,26 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
     const [isAccept, setIsAccept] = useState(null)
     const [mode, setMode] = useState(null)
     const navigate = useNavigate()
-    useEffect(()=>{
-        if(!activeId || orderData.id !== activeId) {
+    useEffect(() => {
+        if (!activeId || purchaseData.id !== activeId) {
             setShowConfirmButtons(false)
         }
-        if(activeId && orderData.id === activeId && mode !== null){
+        if (activeId && purchaseData.id === activeId && mode !== null) {
             setShowConfirmButtons(true)
         }
-    }, [activeId, orderData.id ])
+    }, [activeId, purchaseData.id])
     const handleEditMode = (id) => {
         setMode(modes.edit)
         setActiveId(id)
         setShowConfirmButtons(true)
     }
-    const handlePurchasingMode = async (id) => {
-        setMode(modes.purchase)
-        setActiveId(id)
-        setShowConfirmButtons(true)
-     
-    }
+
     const handleDeleteMode = (id) => {
         setMode(modes.delete)
         setActiveId(id)
         setShowConfirmButtons(true)
     }
     const confirmationHandlers = {
-        purchase: {
-            accept: () => {
-                console.log('compra aceptada')
-                setShowConfirmButtons(false)
-                // PassDataToPurchaseList(orderData)
-                dispatch(getOrderData(orderData))
-                navigate('/app/compra')
-                dispatch(toggleAddPurchaseModal())
-
-                setIsAccept(null) // reset the state variable
-            },
-            reject: () => {
-                console.log('compra rechazada')
-                setShowConfirmButtons(false)
-                setMode(null)
-                setIsAccept(null) // reset the state variable
-            }
-        },
         edit: {
             accept: () => {
                 console.log('editar aceptada')
@@ -82,7 +59,7 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
         },
         delete: {
             accept: () => {
-                deleteOrderFromDB(orderData.id)
+                deletePurchase(purchaseData.id)
                 console.log('eliminación completada')
                 setShowConfirmButtons(false)
                 setIsAccept(null) // reset the state variable
@@ -102,19 +79,6 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
     }
     useEffect(() => {
         switch (mode) {
-            case modes.purchase:
-                if (isAccept === true) {
-                    confirmationHandlers.purchase.accept()
-                    return
-                }
-                if (isAccept === false) {
-                    confirmationHandlers.purchase.reject()
-                    return
-                }
-                if (isAccept === null) {
-                    reset()
-                    return
-                }
             case modes.edit:
                 if (isAccept === true) {
                     confirmationHandlers.edit.accept()
@@ -145,47 +109,32 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
             {showConfirmButtons === false ? (
                 <Fragment>
                     <Tooltip
-                        description='Comprar'
-                        placement='bottom-start'
-                        Children={
-                            <Button
-                                borderRadius='normal'
-                                title={<IoCartSharp />}
-                                width='icon32'
-                                border='light'
-                                color='gray-dark'
-                                onClick={() => handlePurchasingMode(orderData.id)}
-
-                            />
-                        }
-                    />
-                    <Tooltip
                         description='Editar'
-                        placement='bottom'
+                        placement='bottom-start'
                         Children={
                             <Button
                                 borderRadius='normal'
                                 title={<TbEdit />}
                                 width='icon32'
-                                border='light'
                                 color='gray-dark'
-                                onClick={() => handleEditMode(orderData.id)}
+                                onClick={() => handleEditMode(purchaseData.id)}
                             />
                         }
                     />
                     <Tooltip
                         description='Eliminar'
-                        placement='bottom-end'
+                        placement='bottom'
                         Children={
                             <Button
                                 borderRadius='normal'
                                 title={<IoTrashSharp />}
                                 width='icon32'
                                 bgcolor='error'
-                                onClick={() => handleDeleteMode(orderData.id)}
+                                onClick={() => handleDeleteMode(purchaseData.id)}
                             />
                         }
                     />
+                   
                 </Fragment>
             ) : (
                 <Fragment>
@@ -203,7 +152,7 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                         onClick={() => setIsAccept(false)}
                     />
                 </Fragment>
-            ) }
+            )}
         </ButtonGroup>
     )
 }

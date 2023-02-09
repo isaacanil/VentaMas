@@ -7,15 +7,16 @@ import { separator } from '../../../../hooks/separator'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { Button } from '../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
-import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
+import { correctDate } from '../../../../hooks/correctDate'
+import { ActionsButtonsGroup } from './ActionsButtonsGroup'
 
-export const OrderItem = ({ e, index, Row, Col }) => {
+export const PurchaseCard = ({ purchaseData, index, Row, Col, activeId, setActiveId }) => {
+    const {data} = purchaseData
     return (
         <Row>
-            <Col>{e.data.id}</Col>
-           
+            <Col>{data.id}</Col>   
             <Col size='limit'>
-                <div>{e.data.provider ? e.data.provider.name : null}</div>
+                <div>{data.provider ? data.provider.name : null}</div>
             </Col>
             <Col>
                 <Button
@@ -25,27 +26,16 @@ export const OrderItem = ({ e, index, Row, Col }) => {
                 />
             </Col>
             <Col>
-                <div>{new Date(e.data.createdAt).toLocaleDateString()}</div></Col>
+                <div>{correctDate(data.createdAt).toLocaleDateString()}</div></Col>
             <Col>
-                <div>{new Date(e.data.date).toLocaleDateString()}</div>
+                <div>{correctDate(data.date).toLocaleDateString()}</div>
             </Col>
             <Col position='right'>
-                <div>{useFormatPrice(e.data.totalPurchase)}</div>
+                <div>{useFormatPrice(data.totalPurchase)}</div>
             </Col>
             <Col>
-                <ButtonGroup>
-                    <Button
-                        borderRadius='normal'
-                        title={<TbEdit />}
-                        width='icon32'
-                        color='gray-dark'
-                    />
-                    <Button
-                        borderRadius='normal'
-                        title={<IoTrashSharp />}
-                        width='icon32'
-                        bgcolor='error'
-                    />
+                <ButtonGroup>                   
+                    <ActionsButtonsGroup purchaseData={data} activeId={activeId} setActiveId={setActiveId}></ActionsButtonsGroup>
                 </ButtonGroup>
             </Col>
 

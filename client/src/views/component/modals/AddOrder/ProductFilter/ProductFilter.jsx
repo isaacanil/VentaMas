@@ -14,7 +14,7 @@ export const ProductFilter = ({ productName }) => {
     getProducts(setProducts)
   }, [])
 useEffect(()=>{
-  if(productName === null || productName === undefined){
+  if(!productName){
     setValue('')
   }
   if(productName){

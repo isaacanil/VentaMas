@@ -4,7 +4,8 @@ import styled from 'styled-components'
 const StyledH1 = styled.h1`
   font-family: Roboto, sans-serif;
   font-weight: 300;
-  line-height: 1.25;
+  line-height: 1;
+  margin: 0;
   padding: 0;
   color: ${props => props.color };
   font-size: ${props => {
@@ -24,7 +25,9 @@ const StyledH1 = styled.h1`
 const StyledH2 = styled.h2`
   font-family: Roboto, sans-serif;
   font-weight: 300;
-  line-height: 1.25;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
   color: ${props => props.color };
   font-size: ${props => {
         switch (props.size) {
@@ -43,7 +46,9 @@ const StyledH2 = styled.h2`
 const StyledH3 = styled.h3`
   font-family: Roboto, sans-serif;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
   color: ${props => props.color };
   font-size: ${props => {
         switch (props.size) {
@@ -60,9 +65,10 @@ const StyledH3 = styled.h3`
 `
 
 const StyledH4 = styled.h4`
-  font-family: Roboto, sans-serif;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
   color: ${props => props.color };
   font-size: ${props => {
         switch (props.size) {
@@ -79,9 +85,10 @@ const StyledH4 = styled.h4`
 `
 
 const StyledH5 = styled.h5`
-  font-family: Roboto, sans-serif;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1;
+  margin: 0;
+  color: ${props => props.color };
   font-size: ${props => {
         switch (props.size) {
             case 'small':
@@ -98,9 +105,8 @@ const StyledH5 = styled.h5`
 `
 
 const StyledH6 = styled.h6`
-  font-family: Roboto, sans-serif;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1;
   color: ${props => props.color };
   font-size: ${props => {
         switch (props.size) {
@@ -117,7 +123,6 @@ const StyledH6 = styled.h6`
 `
 
 const StyledP = styled.p`
-  font-family: Roboto, sans-serif;
   font-weight: 400;
   line-height: 1.5;
   color: ${props => props.color };
@@ -126,7 +131,7 @@ const StyledP = styled.p`
             case 'small':
                 return '12px'
             case 'medium':
-                return '16px'
+                return '14px'
             case 'big':
                 return '20px'
             default:
@@ -135,22 +140,22 @@ const StyledP = styled.p`
     }};
 `
 
-export const Typography = ({ children, variant = 'body1', color }) => {
+export const Typography = ({ children, variant = 'body1', color, size }) => {
     switch (variant) {
         case 'h1':
-            return <StyledH1 color={color}>{children}</StyledH1>
+            return <StyledH1 color={color} size={size}>{children}</StyledH1>
         case 'h2':
-            return <StyledH2 color={color}>{children}</StyledH2>
+            return <StyledH2 color={color} size={size}>{children}</StyledH2>
         case 'h3':
-            return <StyledH3 color={color}>{children}</StyledH3>
+            return <StyledH3 color={color} size={size}>{children}</StyledH3>
         case 'h4':
-            return <StyledH4 color={color}>{children}</StyledH4>
+            return <StyledH4 color={color} size={size}>{children}</StyledH4>
         case 'h5':
-            return <StyledH5 color={color}>{children}</StyledH5>
+            return <StyledH5 color={color} size={size}>{children}</StyledH5>
         case 'h6':
-            return <StyledH6 color={color}>{children}</StyledH6>
+            return <StyledH6 color={color} size={size}>{children}</StyledH6>
         default:
-            return <StyledP color={color}>{children}</StyledP>
+            return <StyledP color={color} size={size}>{children}</StyledP>
     }
 }
 

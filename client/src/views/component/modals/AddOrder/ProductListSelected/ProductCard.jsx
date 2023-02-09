@@ -12,7 +12,7 @@ export const ProductCard = ({product}) => {
         </Col>
         <Col>
             <h5>
-                {product.stock}
+                {product.stock.newStock}
             </h5>
         </Col>
         <Col>
@@ -22,7 +22,7 @@ export const ProductCard = ({product}) => {
         </Col>
         <Col>
             <h5>
-                RD${separator(product.cost.unit * product.stock)}
+                RD${separator(product.cost.unit * product.stock.newStock)}
             </h5>
         </Col>
         <Col>

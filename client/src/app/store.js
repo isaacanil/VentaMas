@@ -17,6 +17,7 @@ import orderReducer from '../features/order/ordersSlice'
 import purchaseReducer from '../features/Purchase/purchaseSlice'
 import themeReducer from "../features/theme/themeSlice";
 import addPurchaseReducer from "../features/Purchase/addPurchaseSlice";
+import notificationReducer from "../features/notification/notificationSlice"
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -35,6 +36,7 @@ export const store = configureStore({
         taxReceipt: taxReceiptReducer, 
         purchase: purchaseReducer,
         theme: themeReducer,
-        addPurchase: addPurchaseReducer
+        addPurchase: addPurchaseReducer, 
+        notification: notificationReducer
     },
 })

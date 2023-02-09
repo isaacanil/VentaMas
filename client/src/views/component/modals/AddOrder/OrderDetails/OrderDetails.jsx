@@ -11,9 +11,9 @@ export const OrderDetails = () => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
     const dispatch = useDispatch()
-    const [condition, setCondition] = useState(undefined)
-    const [note, setNote] = useState('')
-    const [date, setDate] = useState('')
+    const [condition, setCondition] = useState(null)
+    const [note, setNote] = useState(null)
+    const [date, setDate] = useState(null)
     console.log(orderFilterOptions)
     useEffect(() => {
         if(condition !== ''){

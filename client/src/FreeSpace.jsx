@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { addNotification } from './features/notification/NotificationSlice'
+import { selectOrderFilterOptions } from './features/order/ordersSlice'
 import { colorPalette } from './features/theme/themeSlice'
-import { createUser, getUsers } from './firebase/firebaseconfig'
-import { ButtonWithMessage } from './views/templates/system/Button/ButtonWithMenssage'
-import { Typography } from './views/templates/system/Typografy/Typografy'
+import { SelectDataFromOrder } from './hooks/useSelectDataFromOrder'
+import { Button } from './views'
+import { Notification } from './views/templates/system/Notification/Notification'
 
 export const FreeSpace = () => {
+  const dispatch = useDispatch()
+  const handleGetNotification = () => {
+    dispatch(addNotification({message: 'Hola, que haces?', type: 'success' }))
+  }
   //   const [users, setUsers] = useState([])
   //   const [rol, setRol] = useState()
 
@@ -17,12 +23,14 @@ export const FreeSpace = () => {
   //   {rol: {name: 'admin'}},
   //   {rol: {name: 'readOnly'}}
   //  ]
-  
-  const {color} = colorPalette()
+
+
 
   return (
     <div>
-      <Typography variant='h1' color={color}>Free Space</Typography>
+     <Notification/>
+     <Button title="Click" borderRadius='normal' onClick={handleGetNotification}></Button>
+          
       {/* <Typography variant='p' color={font2} >Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas in dolore molestiae voluptatem quidem a eligendi, deserunt rem cumque qui necessitatibus distinctio expedita quae minus iusto blanditiis saepe itaque totam?</Typography> */}
       {/* <select name="" id="" onChange={(e)=>setRol(e.target.value)}>
         {rolesList.map(({rol})=>(

@@ -22,21 +22,21 @@ const EmptyOrder = {
 
   }
 }
+const EmptyProductSelected =  {
+  product: {
+    productName: "",
+    cost: {
+      unit: 0
+    },
+    stock: 0,
+    price: {
+      unit: 0
+    },
 
+  }
+}
 const initialState = {
-  productSelected: {
-    product: {
-      productName: "",
-      cost: {
-        unit: 0
-      },
-      stock: 0,
-      price: {
-        unit: 0
-      },
-
-    }
-  },
+  productSelected: EmptyProductSelected,
   order: EmptyOrder
 }
 const addOrderSlice = createSlice({
@@ -66,12 +66,12 @@ const addOrderSlice = createSlice({
 
       //total Precio del pedido
       const productList = state.order.products
-      const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock), 0)
+      const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock.newStock), 0)
       state.order.totalPurchase = totalPurchase
     },
     updateStock: (state, actions) => {
-      const {newStock } = actions.payload
-      state.productSelected.product.stock = newStock
+      const {stock } = actions.payload
+      state.productSelected.product.stock = stock
     },
     AddNote: (state, actions) => {
       state.order.note = actions.payload
@@ -89,24 +89,13 @@ const addOrderSlice = createSlice({
       state.order.id = nanoid(6)
     },
     cleanOrder: (state) => {
-      state.productSelected = {
-        product: {
-          productName: "",
-          cost: {
-            unit: 0
-          },
-          stock: 0,
-          price: {
-            unit: 0
-          },
-
-        }
-      }
+      state.productSelected = EmptyProductSelected
       state.order = EmptyOrder
     },
     AddProvider: (state, actions) => {
       state.order.provider = actions.payload
-    }
+    },
+   
 
   }
 })

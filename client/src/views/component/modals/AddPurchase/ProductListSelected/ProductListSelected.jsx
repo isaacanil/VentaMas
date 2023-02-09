@@ -3,23 +3,27 @@ import styled from 'styled-components'
 import { ProductCard } from './ProductCard'
 import { useSelector } from 'react-redux'
 import { separator } from '../../../../../hooks/separator'
-export const ProductListSelected = ({productsData}) => {
+import { formatData } from '../../../../../features/customProducts/customProductSlice'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
+export const ProductListSelected = ({SELECTED_PURCHASE}) => {
     const [products, setProducts] = useState([])
+    
     useEffect(()=>{
-        setProducts(productsData)
-    }, [productsData])
-    console.log(products)
-    // const ProductTotalPurchasePrice = useSelector(SelectTotalPurchase)
+        setProducts(SELECTED_PURCHASE.products)
+    }, [SELECTED_PURCHASE])
+
+    const ProductTotalPurchasePrice = SELECTED_PURCHASE.totalPurchase 
+    
     return (
         <Container>
             <Head>
                 <h4>Lista Productos</h4>
-                <span>Total: RD${/*separator()/-*/}</span>
+                <span>Total: {useFormatPrice(ProductTotalPurchasePrice)}</span>
             </Head>
             <Body>
                 {
-                    products.length > 0 && products ?
-                   ( products.map(({ product }, index) => (
+                    products.length > 0 ? ( 
+                    products.map(({ product }, index) => (
                         <ProductCard key={index} product={product} />
                     ))) : null
                 }

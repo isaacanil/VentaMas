@@ -25,7 +25,6 @@ export const Button = ({
 
 
   return (
-
     <Container
       bgcolor={bgcolor}
       color={color}
@@ -65,6 +64,8 @@ export const Container = styled.button`
   color: black;
   font-weight: 500;
   font-size: 14px;
+  
+pointer-events: all;
   font-family: inherit;
   svg{
     font-size: 1.4em;
@@ -268,6 +269,14 @@ export const Container = styled.button`
           color: #1768c4;
             :hover{
               color: #1768c4;
+            }
+
+        `
+        case "danger":
+        return`
+          color: #cf1616;
+            :hover{
+              color: #c41d17;
             }
 
         `

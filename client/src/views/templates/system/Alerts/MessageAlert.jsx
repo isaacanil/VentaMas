@@ -22,7 +22,6 @@ export const MessageAlert = ({isOpen , data}) => {
           <MessageContainer>
             <Message>
               {data !== "" && data !== null ? (data.note ? data.note : 'vacio') : null}
-           
             </Message>  
           </MessageContainer>
         </Body>
@@ -67,6 +66,7 @@ const Container = styled.div`
   width: 100%;
 
   //border
+
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   box-shadow: var(--box-shadow);
@@ -81,7 +81,16 @@ const Container = styled.div`
   position: relative;
   align-items: center;
   padding: 0.5em 0;
-  
+
+  @media (max-width: 1000px){
+    border-radius: 0;
+    height: 400px;
+    grid-auto-rows: auto;
+    background-color: red;
+
+
+  }
+
   ${(props) => {
     switch (props.isOpen) {
       case false:
@@ -109,7 +118,12 @@ const Body = styled.div`
   grid-template-columns: 0.4fr 1fr;
 
   grid-template-rows: 1fr;
-
+  @media (max-width: 1000px){
+    border-radius: 0;
+    height: 400px;
+    grid-auto-columns: 1fr;
+    grid-template-rows: auto;
+  }
   
 `
 const Footer = styled.div`

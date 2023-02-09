@@ -27,7 +27,7 @@
     --BlackOp1: rgba(0, 0, 0, 0.300);
     --BlackOp2: rgba(0, 0, 0, 0.400);
     /*color primarios*/
-    --color: rgb(66, 165, 245);
+    --color: #42a5f5;
     --color-main: #1976d2;
     /*color secundario*/
     --color1: #67B8DE;
@@ -56,7 +56,7 @@
     
     --padding: 0.4em;
     --padding1: 1em;
-
+  
  
     /*gap*/
     --gap: 0.5em;

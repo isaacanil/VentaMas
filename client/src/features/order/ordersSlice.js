@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { nanoid } from 'nanoid';
+import { orderAndDataCondition, orderAndDataState } from '../../constants/orderAndPurchaseState';
 import { getProviders } from '../../firebase/firebaseconfig';
 
 const initialState = {
@@ -8,24 +9,13 @@ const initialState = {
             name: 'Estados',
             id: nanoid(8),
             isOpen: false,
-            Items: [
-                { id: nanoid(8), name: 'Atrasado', color: '#e66767', selected: false },
-                { id: nanoid(8), name: 'Solicitado', color: '#ebdc54', selected: false },
-                { id: nanoid(8), name: 'Entregado', color: '#7de08b', selected: false },
-                { id: nanoid(8), name: 'Cancelado', color: '#797979', selected: false },
-            ]
+            Items: orderAndDataState
         },
         {
             name: 'Condición',
             id: nanoid(8),
             isOpen: false,
-            Items: [
-                { id: nanoid(8), name: 'Contado', selected: false },
-                { id: nanoid(8), name: '1 semana', selected: false },
-                { id: nanoid(8), name: '15 días', selected: false },
-                { id: nanoid(8), name: '30 días', selected: false },
-                { id: nanoid(8), name: 'Otros', selected: false },
-            ]
+            Items: orderAndDataCondition
         },
     ],
     pendingOrders: [
@@ -76,18 +66,8 @@ export const orderSlice = createSlice({
             state.orderFilterOptions = newFilterOptions
 
         },
-        // getPendingOrdersFromDB: (state, actions) => {
-        //     const originalOrderList = actions.payload
-        //     let orderList = originalOrderList.map((item) => {
-        //         return { ...item, selected: false }
-        //     })
-        //     state.pendingOrders = orderList
-
-
-        // },
         selectPendingOrder: (state, actions) => {
             const { id } = actions.payload
-
             const newState = { ...state }
             const newPendingOrders = newState.pendingOrders[0].Items.map((item) => {
                 if (item.id === id) {
@@ -97,19 +77,15 @@ export const orderSlice = createSlice({
                 }
             });
             newState.pendingOrders[0].Items = newPendingOrders
-            
-
-
-
         },
         getPendingOrdersFromDB: (state, actions) => {
             // Función para manejar opciones y actualizar estado
-            const { optionsID, datas, propertyName } = actions.payload
+            const { optionsID, datas } = actions.payload
             let newOptionGroup = {
                 name: optionsID,
                 id: nanoid(8),
                 isOpen: false,
-                Items: datas.map((item) => { return { ...item[propertyName], selected: false } })
+                Items: datas.map((item) => { return { ...item.data, selected: false } })
             }
             // Buscando objeto existente
             let exist = state.pendingOrders.find(x => x.name === optionsID);
@@ -127,6 +103,9 @@ export const orderSlice = createSlice({
                 // Retornando nuevo estado
                 return newState;
             }
+        },
+        getDefaultOrderState: (state) => {
+            state.orderFilterOptions
         }
 
     }

@@ -4,96 +4,77 @@ import { IoIosArrowDown } from 'react-icons/io'
 import { MdClear } from 'react-icons/md'
 
 export const Select = ({ title, data, value, setValue, placement = 'bottom', property = 'name', reset, setReset }) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [showSelectTitle, setShowSelectTitle] = useState(title)
-    const [isSelect, setIsSelect] = useState({ id: '' })
-    const handleClose = () => {
-        setIsOpen(false)
-    }
+    const [isOpen, setIsOpen] = useState(false);
+    const [showSelectTitle, setShowSelectTitle] = useState(title);
+    const [selectedId, setSelectedId] = useState('');
+  
     useEffect(() => {
-        if (reset) {
-            setIsSelect({ id: '' });
-            setShowSelectTitle(title);
-            setTimeout(() => {
-                setReset(false)
-            }, 1000)
-        }
+      if (reset) {
+        setSelectedId('');
+        setShowSelectTitle(title);
+        setReset(false);
+      }
     }, [reset, title]);
-    
+  
     useEffect(() => {
-        if (value !== undefined) {
-            setShowSelectTitle(value);
-        }
-    }, [value, property]);
-    const dataSelected = (select) => {
-        setIsSelect({ id: select.id })
-        setValue(select),
-            setShowSelectTitle(select[property])
-        handleClose()
-        console.log(value)
-    }
-
-    console.log(isSelect)
-    const handleEmptyData = () => {
-        setShowSelectTitle(title)
-        handleClose()
-    }
-    const deselect = [
-        { id: 'ninguno', name: 'ninguno' }
-    ]
+      if (value && data && data.Items) {
+        setShowSelectTitle(value[property] || title);
+        const selectedItem = data.Items.find(item => item.id === value.id);
+        setSelectedId(selectedItem?.id || '');
+      }
+    }, [value, property, data]);
+  
+    const handleSelect = select => {
+      setSelectedId(select.id);
+      setValue(select);
+      setShowSelectTitle(select[property]);
+      setIsOpen(false);
+    };
+  
     return (
-        <Container>
-            <Head>
-                {isOpen === false ? (
-                    <Group onClick={() => setIsOpen(true)}>
-                        <h3>{showSelectTitle}</h3>
-                        <IoIosArrowDown></IoIosArrowDown>
-                    </Group>
-                ) : null}
-                {
-                    isOpen ? (
-                        <Group>
-                            <InputText size='s' placeholder={`Buscar ${data.name}`}></InputText>
-                            <Button onClick={() => handleClose()}><MdClear /></Button>
-                        </Group>
-
-                    ) : null
-                }
-            </Head>
-            {
-                isOpen ? (
-                    <Body placement={placement}>
-                        {
-                            data.Items.length > 0 ?
-                                (
-                                    <List>
-                                        {deselect.length > 0 ? (
-                                            deselect.map((item, index) => (
-                                                <Item key={index} style={isSelect.id == item.id ? { backgroundColor: 'blue', color: 'white' } : null} onClick={() => handleEmptyData(item)}>
-                                                    {item.name}
-                                                </Item>
-                                            ))
-                                        ) : null}
-                                        {
-                                            data.Items ? (
-                                                data.Items.map((item, index) => (
-                                                    <Item key={index} style={isSelect.id == item.id ? { backgroundColor: 'blue', color: 'white' } : null} onClick={() => dataSelected(item)}>
-                                                        {item[property]}
-                                                    </Item>
-                                                ))
-                                            ) : null
-                                        }
-                                    </List>
-                                ) : null
-                        }
-
-                    </Body>
-                ) : null
-            }
-
-        </Container>
-    )
-}
+      <Container>
+        <Head>
+          {!isOpen ? (
+            <Group onClick={() => setIsOpen(true)}>
+              <h3>{showSelectTitle}</h3>
+              <IoIosArrowDown />
+            </Group>
+          ) : null}
+          {isOpen ? (
+            <Group>
+              <InputText size="s" placeholder={`Buscar ${data.name}`} />
+              <Button onClick={() => setIsOpen(false)}>
+                <MdClear />
+              </Button>
+            </Group>
+          ) : null}
+        </Head>
+        {isOpen ? (
+      <Body placement={placement}>
+        {data.Items.length > 0 ? (
+          <List>
+            <Item
+              style={selectedId === '' ? { backgroundColor: 'blue', color: 'white' } : null}
+              onClick={() => handleReset()}
+            >
+              Ninguno
+            </Item>
+            {data.Items.map((item, index) => (
+              <Item
+                key={index}
+                style={selectedId === item.id ? { backgroundColor: 'blue', color: 'white' } : null}
+                onClick={() => handleSelect(item)}
+              >
+                {item[property]}
+              </Item>
+            ))}
+          </List>
+        ) : null}
+      </Body>
+    ) : null}
+      </Container>
+    );
+  };
 const Container = styled.div`
     position: relative;
     max-width: 200px;

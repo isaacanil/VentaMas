@@ -2,12 +2,10 @@ import React, { useState } from 'react'
 import { TbPlus } from 'react-icons/tb'
 import styled from 'styled-components'
 import { InputNumber, InputText } from '../../../../templates/system/Inputs/Input'
-
 import { AddProductButton_OrderPage } from '../Button'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
-import { SelectProductSelected, updateStock } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import { AddProduct } from '../../../../../features/addOrder/addOrderModalSlice'
+import { AddProduct, SelectProductSelected, updateStock } from '../../../../../features/Purchase/addPurchaseSlice'
 import { Button } from '../../../../templates/system/Button/Button'
 import { Tooltip } from '../../../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
@@ -16,14 +14,18 @@ export const AddProductListSection = () => {
     const productSelected = useSelector(SelectProductSelected)
     const [product, setProduct] = useState(null)
     useEffect(() => {
-        setProduct({ ...productSelected, product: { stock: '' } })
+        if (productSelected) {
+            setProduct({ ...productSelected, product: { stock: { actualStock: '', newStock: '' } } })
+        }
     }, [productSelected])
-    const newStock = productSelected ? `${Number(productSelected.product.stock) + Number((product !== null ? (product.product.stock) : null))}` : null
+    const actualStock = product ? Number(productSelected.product.stock) : null;
+    const newStock = product ? Number(product.product.stock.newStock) : null;
+    const stock = { newStock, actualStock }
+    const totalStock = productSelected ? `${actualStock + newStock}` : null
     const AddToOrderProductList = () => {
         if (productSelected) {
-            dispatch(updateStock({ newStock }))
+            dispatch(updateStock({ stock }))
             dispatch(AddProduct())
-
         }
     }
     console.log(product)
@@ -43,7 +45,7 @@ export const AddProductListSection = () => {
                     </ProductName>
                 </Col>
                 <Col>
-                    <span>{`Cantidad ${productSelected ? `(${newStock})` : null}`}</span>
+                    <span>{`Cantidad ${productSelected ? `(${totalStock})` : null}`}</span>
                 </Col>
                 <Col>
                     <span>Costo</span>
@@ -52,7 +54,7 @@ export const AddProductListSection = () => {
                     <span>Subtotal</span>
                 </Col>
                 <Col>
-                <span></span>
+                    <span></span>
                 </Col>
             </Group>
             <Group>
@@ -61,13 +63,12 @@ export const AddProductListSection = () => {
                 />
                 <div>
                     <InputNumber
-
-                        value={productSelected ? (product !== null ? (product.product.stock) : null) : ''}
+                        value={productSelected ? (product !== null ? (product.product.stock.newStock) : null) : ''}
                         placeholder='Cantidad'
                         onChange={(e) => setProduct({
                             ...product,
                             product: {
-                                stock: e.target.value
+                                stock: { newStock: e.target.value }
                             }
                         })}
                     />
@@ -77,7 +78,6 @@ export const AddProductListSection = () => {
                         value={productSelected ? productSelected.product.cost.unit : null}
                         placeholder='Costo'
                         readOnly
-
                     />
                 </div>
                 <div>
@@ -85,7 +85,6 @@ export const AddProductListSection = () => {
                         value={productSelected ? productSelected.product.price.unit : null}
                         placeholder='SubTotal'
                         readOnly
-
                     />
                 </div>
                 <div>
@@ -122,8 +121,7 @@ const Col = styled.div`
        font-weight: 500;
        min-width: 2em;
        align-items: center;
-       span{
-        
+       span{    
     font-size: 12px;
     line-height: 12px;
        }

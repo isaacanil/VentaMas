@@ -15,58 +15,64 @@ export const AddProductListSection = () => {
     const dispatch = useDispatch();
     const productSelected = useSelector(SelectProductSelected)
     const [product, setProduct] = useState(null)
-    useEffect(()=> {
-        setProduct({...productSelected, product: {stock: ''}})
+    useEffect(() => {
+        productSelected ? (
+            setProduct({ ...productSelected, product: { stock: { actualStock: '', newStock: '' } } })
+        ) : null
     }, [productSelected])
-    const newStock = productSelected ? `${Number(productSelected.product.stock) + Number((product !== null ? (product.product.stock) : null))}` : null
+    const actualStock = product ? Number(productSelected.product.stock) : null;
+    const newStock = product ? Number(product.product.stock.newStock) : null;
+    const stock = { newStock, actualStock }
+    const totalStock = productSelected ? `${actualStock + newStock}` : null
     const AddToOrderProductList = () => {
-        if(productSelected){
-            dispatch(updateStock({newStock}))
+        if (productSelected) {
+            dispatch(updateStock({ stock }))
             dispatch(AddProduct())
-
         }
     }
     console.log(product)
     return (
-        <div className={style.AddProductToListSection}>
-            <div className={style.Group}>
-                <div className={style.col}>
-                    <span className={style.ProductName}>
+        <Container>
+            <Group>
+                <Col>
+                    <ProductName>
                         <span>Product</span>
-                        <Tooltip 
+                        <Tooltip
                             description='Crear Producto'
                             placement='bottom'
                             Children={
-                                <AddProductButton_OrderPage/>
+                                <AddProductButton_OrderPage />
                             }
                         />
-                    </span>
-                </div>
-                <div className={style.col}>
-                    <span>{`Cantidad ${productSelected ? `(${newStock})` : null}`}</span>
-                </div>
-                <div className={style.col}>
+                    </ProductName>
+                </Col>
+                <Col>
+                    <span>{`Cantidad ${productSelected ? `(${totalStock})` : null}`}</span>
+                </Col>
+                <Col>
                     <span>Costo</span>
-                </div>
-                <div className={style.col}>
+                </Col>
+                <Col>
                     <span>Subtotal</span>
-                </div>
-                <div className={style.col}>
-                </div>
-            </div>
-            <div className={style.Group}>
+                </Col>
+                <Col>
+                </Col>
+            </Group>
+            <Group>
                 <ProductFilter
                     productName={productSelected ? productSelected.product.productName : ''}
                 />
                 <div>
                     <InputNumber
 
-                        value={productSelected ? (product !== null ? (product.product.stock) : null) : ''}
+                        value={productSelected ? (product !== null ? (product.product.stock.newStock) : null) : ''}
                         placeholder='Cantidad'
                         onChange={(e) => setProduct({
                             ...product,
-                            product:{
-                                stock: e.target.value
+                            product: {
+                                stock: {
+                                    newStock: e.target.value
+                                }
                             }
                         })}
                     />
@@ -76,7 +82,7 @@ export const AddProductListSection = () => {
                         value={productSelected ? productSelected.product.cost.unit : null}
                         placeholder='Costo'
                         readOnly
-                    
+
                     />
                 </div>
                 <div>
@@ -84,16 +90,46 @@ export const AddProductListSection = () => {
                         value={productSelected ? productSelected.product.price.unit : null}
                         placeholder='SubTotal'
                         readOnly
-                    
+
                     />
                 </div>
                 <div>
-                    <Button title={<TbPlus/>} width='icon32' border='light' borderRadius='normal' onClick={AddToOrderProductList} >
-                        
+                    <Button title={<TbPlus />} width='icon32' border='light' borderRadius='normal' onClick={AddToOrderProductList} >
+
                     </Button>
                 </div>
-            </div>
-        </div>
+            </Group>
+        </Container>
     )
 }
-
+const Container = styled.div`
+    background-color: var(--White2);
+    border-radius: 8px;
+    display: grid;
+    gap: 0.2em;
+    padding: 0 1em 0.4em;
+    border: var(--border-primary);
+`
+const Group = styled.div`
+     color: rgb(37, 37, 37);
+     display: grid;
+     grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr min-content;
+     position: relative;
+     gap: 1em;
+`
+const Col = styled.div`
+       display: flex;
+       font-weight: 500;
+       min-width: 2em;
+       align-items: center;
+       span{
+        
+    font-size: 12px;
+    line-height: 12px;
+       }
+`
+const ProductName = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1em;
+`

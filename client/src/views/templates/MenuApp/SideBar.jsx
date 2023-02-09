@@ -30,7 +30,7 @@ export const SideBar = ({ links, isOpen }) => {
 }
 const Container = styled.nav`
     position: absolute;
-    z-index: 9999999;
+    z-index: 100;
     max-width: 400px;
     width: 100%;
     height: calc(100vh - 2.75em);
@@ -65,6 +65,7 @@ const Links = styled.ul`
     gap: 0.7em;`
 const Head = styled.div`
     padding: 1em;
+    margin-bottom: 0.6em;
     
     
 `

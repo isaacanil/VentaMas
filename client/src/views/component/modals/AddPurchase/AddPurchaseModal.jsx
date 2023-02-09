@@ -8,53 +8,82 @@ import { AddProductListSection } from './AddProductListSection/AddProductListSec
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { IoMdClose } from 'react-icons/io'
 import { SelectOrder, cleanOrder } from '../../../../features/addOrder/addOrderModalSlice'
-import { AddOrder } from '../../../../firebase/firebaseconfig'
+import { AddOrder, PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
 import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { selectOrderFilterOptions, selectOrderList, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
-import { getOrderData, AddProvider, selectPurchase } from '../../../../features/Purchase/addPurchaseSlice'
+import { getOrderData, AddProvider, selectPurchase, cleanPurchase } from '../../../../features/Purchase/addPurchaseSlice'
 
 
 export const AddPurchaseModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-    const [provider, setProvider] = useState({name: 'Hola', id: 's1d3232'})
-    const [orderToPurchase, setOrderToPurchase] = useState(undefined)
+    const [provider, setProvider] = useState(null)
+    const [orderToPurchase, setOrderToPurchase] = useState(null)
     const [reset, setReset] = useState()
     const OrderSelected = useSelector(SelectOrder)
+    const [prevProvider, setPrevProvider] = useState(null)
     const now = new Date()
     const day = now.getDate()
     const SELECTED_PURCHASE = useSelector(selectPurchase)
+    
+    useEffect(() => {
+        const provider = SELECTED_PURCHASE.provider;
+        if (!provider) return;
+        if (provider.id !== null && provider.name !== null) {
+            setProvider({
+                name: provider.name,
+                id: provider.id
+            });
+        }
+    }, [SELECTED_PURCHASE.provider]);
 
     useEffect(() => {
-        if(SELECTED_PURCHASE){
-            SELECTED_PURCHASE.provider ? setProvider(SELECTED_PURCHASE.provider) : null
+        if (provider !== null && provider !== prevProvider) {
+          dispatch(AddProvider(provider))
         }
-    }, [SELECTED_PURCHASE])
+        setPrevProvider(provider);
+      }, [provider]);
+
+      useEffect(() => {
+        if (orderToPurchase) {
+          dispatch(getOrderData(orderToPurchase));
+        }
+      }, [orderToPurchase]);
+    console.log(orderToPurchase)
+      
     useEffect(() => {
-        if (provider !== undefined) { dispatch(AddProvider(provider)) }
-        if (orderToPurchase !== undefined) { dispatch(getOrderData(orderToPurchase)) }
-    }, [provider, orderToPurchase])
-    const handleModal = () => { 
-        dispatch(toggleAddPurchaseModal()) 
-        setReset(true)
+        const order = SELECTED_PURCHASE;
+        if (!order) return;
+        if (order.id !== null) {
+            setOrderToPurchase({
+                ...orderToPurchase,
+                id: order.id
+            });
+        }
+    }, [SELECTED_PURCHASE]);
+
+    const handleModal = () => {
+        dispatch(toggleAddPurchaseModal());
+        setReset(true);
+        dispatch(cleanPurchase());
     }
     const HandleSubmit = () => {
-        dispatch(closeModalAddOrder());
-        AddOrder(OrderSelected);
-        setReset(true)
-        dispatch(cleanOrder());
+        dispatch(toggleAddPurchaseModal());
+        PassDataToPurchaseList(SELECTED_PURCHASE); 
+        setReset(true);
+        dispatch(cleanPurchase());
     }
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
-    let pendingOrders = useSelector(selectOrderList)
+    let pendingOrders = useSelector(selectOrderList);
     pendingOrders = pendingOrders[0]
     console.log(provider)
-   
+
     return (
         <Container isOpen={isOpen === true ? true : false}>
-            <Modal>
+            <Modal >
                 <Header>
                     <WrapperHeader>
                         <h3>Realizar Compra</h3>
@@ -75,6 +104,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             property='id'
                             title='Pedidos'
                             data={pendingOrders}
+                            value={orderToPurchase}
                             setValue={setOrderToPurchase}
                         />
                     </div>
@@ -85,6 +115,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             property='name'
                             title='Proveedor'
                             data={providers}
+                            value={provider}
                             setValue={setProvider}
                         />
                         <Button
@@ -94,11 +125,10 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             width={'icon32'}
                             bgcolor='gray'
                         />
-
                     </header>
                     <AddProductListSection></AddProductListSection>
-                    <ProductListSelected productsData={SELECTED_PURCHASE.products}></ProductListSelected>
-                    <OrderDetails reset={reset} setReset={setReset} purchaseData={SELECTED_PURCHASE}></OrderDetails>
+                    <ProductListSelected SELECTED_PURCHASE={SELECTED_PURCHASE}></ProductListSelected>
+                    <OrderDetails reset={reset} setReset={setReset} SELECTED_PURCHASE={SELECTED_PURCHASE}></OrderDetails>
                 </Body>
                 <Footer>
                     <WrapperFooter>

@@ -8,7 +8,8 @@ import { addPaymentMethodAutoValue, addProduct, deleteProduct, SelectProduct, se
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import noImg from '../../../../../assets/producto/noimg.png'
 import { IsProductSelected } from './IsProductSelected'
-import { IoMdClose } from 'react-icons/io'
+import { IoMdClose, IoMdTrash } from 'react-icons/io'
+import { Button } from '../../Button/Button'
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
@@ -29,7 +30,7 @@ export const Product = ({ product, }) => {
     //     //currentTarget.style.objectFit = 'contain'
     //     //e.target.src = noImgFound
     // }
- 
+
     const deleteProductFromCart = (e, id) => {
         e.stopPropagation()
         dispatch(totalPurchase())
@@ -39,7 +40,7 @@ export const Product = ({ product, }) => {
         dispatch(totalShoppingItems())
         dispatch(setChange())
         dispatch(addPaymentMethodAutoValue())
-       
+
     }
 
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id)
@@ -62,6 +63,17 @@ export const Product = ({ product, }) => {
                 <Title>
                     {product.productName}
                 </Title>
+                {ProductCheckInCart.status ? (
+                            <Button
+                                startIcon={<IoMdTrash />}
+                                width='icon24'
+                                color={'danger'}
+                                borderRadius='normal'
+                                // bgcolor='error'
+                                variant='contained'
+                                onClick={(e) => deleteProductFromCart(e, product.id)}
+                            />
+                        ) : null}
                 <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
 
 
@@ -73,12 +85,8 @@ export const Product = ({ product, }) => {
                     ) : <Group />}
 
                     <Group>
-                        <Price>{useFormatPrice(product.price.total)}</Price>
-                        {ProductCheckInCart.status ? (
-                            <DeleteProduct onClick={(e) => deleteProductFromCart(e, product.id)}>
-                                <IoMdClose />
-                            </DeleteProduct>
-                        ) : null}
+                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product.price.total)}</Price>
+                       
                     </Group>
                 </Footer>
             </Body>
@@ -164,6 +172,8 @@ const Body = styled.div`
     padding: 4px 0;
     position: relative;
     transition: 4000ms all ease-in-out;
+    display: grid;
+    grid-template-columns: 1fr min-content;
    
 `
 const ImageContainer = styled.div`
@@ -195,7 +205,7 @@ const Footer = styled.div`
     border-top-left-radius: ${(props) => {
         return props.imageHiddenRef === false ? '10px' : '0'
     }
-};
+    };
 transition:  800ms border-radius ease-in-out;
 background-color: var(--White1);
 font-weight: 400;
@@ -212,25 +222,10 @@ const AmountToBuy = styled.div`
     align-items: center;
     justify-content: center;
     line-height: 0;
-    background-color: var(--color1);
-    color: #ffffff;
+    background-color: var(--White4);
+    color: var(--color);
 `
-const DeleteProduct = styled.button`
-height: 1.4em;
-width: 1.4em;
-border-radius: 4px;
-display: flex;
-align-items: center;
-outline: 0;
-border: 0;
-padding: 0;
-line-height: 0;
-font-weight: bold;
-justify-content: center;
-background-color: var(--color-error);
-color: white;
-pointer-events: all;
-`
+
 const Group = styled.div`
     display: flex;
     align-items: center;
@@ -258,5 +253,16 @@ const Title = styled.h5`
 const Price = styled.h4`
     line-height: 0;
     font-weight: 550;
-    color: var(--color)
+    color: #1D69A8;
+    transition: color 400ms ease-in-out;
+    ${(props) => {
+        switch (props.isSelected) {
+            case true:
+                return`
+                    color: var(--color)
+                ` 
+            default:
+                break;
+        }
+    }}
 `

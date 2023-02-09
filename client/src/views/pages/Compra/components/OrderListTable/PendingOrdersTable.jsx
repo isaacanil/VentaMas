@@ -1,23 +1,22 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Data } from '../../Data'
-import { ListItem } from '../../ListItem/ListItem'
 import { getPurchaseFromDB } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
-import { OrderItem } from '../../ListItem/OrderItem'
+import { PurchaseCard } from '../../ListItem/PurchaseCard'
 import { useDispatch } from 'react-redux'
 import { getPendingPurchaseFromDB } from '../../../../../features/Purchase/purchaseSlice'
 
 export const PendingOrdersTable = () => {
   const dispatch = useDispatch()
-  const [purchasesFromBD, setPurchasesFromBD] = useState([])
+  const [activeId, setActiveId] = useState()
+  const [purchases, setPurchases] = useState([])
   useEffect(() => {
-    getPurchaseFromDB(setPurchasesFromBD)
+    getPurchaseFromDB(setPurchases)
   }, [])
  
   useMemo(()=>{
-    if(purchasesFromBD.length > 0) dispatch(getPendingPurchaseFromDB(purchasesFromBD))
-  }, [purchasesFromBD])
+    if(purchases.length > 0) dispatch(getPendingPurchaseFromDB(purchases))
+  }, [purchases])
 
   return (
     <Container>
@@ -26,7 +25,6 @@ export const PendingOrdersTable = () => {
           <h3>Lista de Compras</h3>
         </TitleContainer>
         <Table>
-
           <Row fill='fill'>
             <Col>#</Col>
             <Col>Proveedor</Col>
@@ -36,12 +34,11 @@ export const PendingOrdersTable = () => {
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
           </Row>
-
           <TableBody>
             {
-              Array(purchasesFromBD).length > 0 ? (
-                purchasesFromBD.map((e, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} e={e} index={index} />
+              purchases.length > 0 ? (
+                purchases.map((purchaseData, index) => (
+                  <PurchaseCard Row={Row} Col={Col} key={index} purchaseData={purchaseData} index={index} activeId={activeId} setActiveId={setActiveId}/>
                 ))
               ) : null
 

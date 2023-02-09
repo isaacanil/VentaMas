@@ -97,7 +97,7 @@ const Container = styled.div`
     align-items: center;
     height: 2.6em;
     padding: 0 1em;
-    gap: 1em;
+    gap: 0.4em;
 `
 const Button = styled.button`
     height: 1.5em;

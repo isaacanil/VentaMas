@@ -25,6 +25,7 @@ import { CreateContact } from "../../pages/Contact/Client/components/ClientForm/
 import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
 import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
 import { AddPurchaseModal } from "./AddPurchase/AddPurchaseModal"
+import { Notification } from "../../templates/system/Notification/Notification"
 export const ModalManager = () => {
   const dispatch = useDispatch()
   const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
@@ -38,7 +39,7 @@ export const ModalManager = () => {
   const ViewOrdersNotesModalDataSelected = useSelector(SelectViewOrdersNotesModalData)
   //console.log(AddClientModalSelected)
 
-  const closeModalAddProducts = () => {dispatch(closeModalAddProd())}
+  const closeModalAddProducts = () => { dispatch(closeModalAddProd()) }
   return (
     <Fragment>
       <AddClientModal
@@ -61,10 +62,17 @@ export const ModalManager = () => {
         handleOpen={handleModalSetCustomPizza}
       />
       <MessageAlert isOpen={ViewOrdersNotesModalDataSelected.isOpen} data={ViewOrdersNotesModalDataSelected.data}></MessageAlert>
-      <CreateContact isOpen={ClientModalDataSelected.isOpen} mode={ClientModalDataSelected.mode} data={ClientModalDataSelected.mode === 'update' ? ClientModalDataSelected.data : null}></CreateContact>
-      <ProviderForm isOpen={ProviderModalDataSelected.isOpen} mode={ProviderModalDataSelected.mode} data={ProviderModalDataSelected.mode === 'update' ? ProviderModalDataSelected.data : null}></ProviderForm>
+      <CreateContact 
+      isOpen={ClientModalDataSelected.isOpen} 
+      mode={ClientModalDataSelected.mode} 
+      data={ClientModalDataSelected.mode === 'update' ? ClientModalDataSelected.data : null}/>
+      <ProviderForm
+        isOpen={ProviderModalDataSelected.isOpen}
+        mode={ProviderModalDataSelected.mode}
+        data={ProviderModalDataSelected.mode === 'update' ? ProviderModalDataSelected.data : null} />
       <AddOrderModal isOpen={AddOrderModalSelected} />
       {/* <AddProvider /> */}
+      <Notification/>
     </Fragment>
   )
 

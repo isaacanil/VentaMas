@@ -84,7 +84,7 @@ export const UpdateProductModal = ({ isOpen }) => {
            ...product,
            price
         })
-        console.log('todo esta bien')
+       
      }
      useEffect(calculatePrice, [product.cost, product.tax])
     const dispatch = useDispatch()
@@ -106,7 +106,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             ChangeProductImage(url)
         )
     }
-    console.log(product)
+
     
     return (
         <Modal

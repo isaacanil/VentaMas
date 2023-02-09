@@ -16,28 +16,36 @@ import { AddProductListSection } from './AddProductListSection/AddProductListSec
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { IoMdClose } from 'react-icons/io'
 import { SelectOrder, AddProvider, cleanOrder } from '../../../../features/addOrder/addOrderModalSlice'
-import { async } from '@firebase/util'
 import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { useEffect } from 'react'
 import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { selectOrderFilterOptions } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
+import { addNotification } from '../../../../features/notification/NotificationSlice'
+
 export const AddOrderModal = ({ isOpen }) => {
     const dispatch = useDispatch();
     const [provider, setProvider] = useState(undefined);
     const OrderSelected = useSelector(SelectOrder);
     const [reset, setReset] = useState(false);
-
     useEffect(() => {
         if (provider !== '') {dispatch(AddProvider(provider))}
     }, [provider])
-    const handleModal = () => {dispatch(openModalAddOrder())}
+    const handleModal = () => {
+        dispatch(openModalAddOrder())
+        dispatch(cleanOrder());
+        setReset(true);
+    }
     const HandleSubmit = () => {
         dispatch(closeModalAddOrder());
         AddOrder(OrderSelected);
         dispatch(cleanOrder());
-        setReset(true)
+        setReset(true);
+        setTimeout(()=>{
+            dispatch(addNotification({message: 'Hola, que haces?', type: 'success' }))
+        }, 1000)
+    
     }
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
@@ -47,7 +55,7 @@ export const AddOrderModal = ({ isOpen }) => {
             <div className={style.Modal}>
                 <div className={style.ModalHeader}>
                     <div className={style.ModalWrapperHeader}>
-                        <h3>Creación Pedidos</h3>
+                        <h3>Nuevo Pedido</h3>
                         <Button
                             width='icon24'
                             bgcolor='error'
@@ -78,7 +86,7 @@ export const AddOrderModal = ({ isOpen }) => {
                     </header>
                     <AddProductListSection></AddProductListSection>
                     <ProductListSelected></ProductListSelected>
-                    <OrderDetails></OrderDetails>
+                    <OrderDetails reset={reset} setReset={setReset} ></OrderDetails>
                 </div>
                 <div className={style.ModaFooter}>
                     <div className={style.ModalWrapperFooter}>

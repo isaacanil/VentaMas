@@ -8,20 +8,19 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectOrderItemSelected, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
 import { Tooltip } from '../../../templates/system/Button/Tooltip'
+import { correctDate } from '../../../../hooks/correctDate'
 
-export const OrderItem = ({ data, index, Row, Col }) => {
+export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId }) => {
     const dispatch = useDispatch()
     const [isOpen, setIsOpen] = useState(false)
     const [showNote, setShowNote] = useState(false)
-    
     const orderItemSelectedRef = useSelector(selectOrderItemSelected)
-    console.log(orderItemSelectedRef)
+    const {data} = orderData
     const handleViewNotes = () => {  
         setIsOpen(!isOpen)
-        dispatch(toggleViewOrdersNotes({data, isOpen: 'open'}))
+        dispatch(toggleViewOrdersNotes({data, isOpen: 'open'}))   
     }
-    console.log(data)
- 
+   
     return (
         <Row>
             <Col>{index + 1}</Col>
@@ -48,15 +47,15 @@ export const OrderItem = ({ data, index, Row, Col }) => {
             />
             </Col>
             <Col>
-                <div>{new Date(data.createdAt).toLocaleDateString()}</div></Col>
+                <div>{ correctDate(data.createdAt).toLocaleDateString()}</div></Col>
             <Col>
-                <div>{new Date(data.date).toLocaleDateString()}</div>
+                <div>{ correctDate(data.date).toLocaleDateString()}</div>
             </Col>
             <Col position='right'>
                 <div>{useFormatPrice(data.totalPurchase)}</div>
             </Col>
             <Col>
-                <ActionsButtonsGroup orderData={data}/>
+                <ActionsButtonsGroup orderData={data} activeId={activeId} setActiveId={setActiveId}/>
             </Col>
 
         </Row>

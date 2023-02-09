@@ -7,7 +7,6 @@
    .Menu_link {
       height: 2.4em;
 
-  
       // background-color: rgba(255, 255, 255, 0.070);
       border-radius: 50px;
       display: flex;
@@ -39,11 +38,9 @@
       }
 
       .wrapper.active {
-         transform: scale(1.03);
          background-color: rgb(236, 236, 236);
          color: rgb(26, 26, 26);
          border-radius: 10px;
-         box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.274);
       }
 
 
@@ -75,16 +72,18 @@
 
    .Head {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       justify-content: space-between;
       align-items: center;
-      padding: 0 1em;
+      padding: 0 1.5em 0 1em;
+      margin: 0 0 1em;
       
       span {
          font-size: 16px;
          line-height: 18px;
          font-weight: 500;
          text-align: center;
+         text-align: end;
       }
 
       button {
@@ -141,7 +140,6 @@
             background-color: rgb(235, 235, 235);
             color: rgb(26, 26, 26);
             padding: 1em;
-            transform: scale(1.04);
          }
 
       }
