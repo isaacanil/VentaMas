@@ -4,14 +4,15 @@ import { ProductCard } from './ProductCard'
 import { SelectProducts, SelectTotalPurchase } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useSelector } from 'react-redux'
 import { separator } from '../../../../../hooks/separator'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 export const ProductListSelected = () => {
     const Products = useSelector(SelectProducts)
     const ProductTotalPurchasePrice = useSelector(SelectTotalPurchase)
     return (
         <Container>
             <Head>
-                <h4>Lista Productos</h4>
-                <span>Total: RD${separator(ProductTotalPurchasePrice)}</span>
+                <h4>Lista de productos</h4>
+                <span>Total: {useFormatPrice(ProductTotalPurchasePrice)}</span>
             </Head>
             <Body>
                 {
@@ -25,18 +26,19 @@ export const ProductListSelected = () => {
     )
 }
 const Container = styled.div`
-    background-color: #ffffff;
     border: var(--border-primary);
+    background-color: var(--White2);
     border-radius: 6px;
     height: 12em;
     position: relative;
     display: grid;
     grid-template-rows: min-content 1fr;
     overflow: hidden;
+    padding-bottom: 6px;
 
 `
 const Head = styled.div`
-    background-color: #e9e9e9;
+    background-color: var(--White1);
     color: #303030;
     height: 2em;
     display: grid;
@@ -54,7 +56,7 @@ const Head = styled.div`
     }
 `
 const Body = styled.div`
-   
- 
+   padding: 0.4em;
+    
     overflow-y: scroll;
 `

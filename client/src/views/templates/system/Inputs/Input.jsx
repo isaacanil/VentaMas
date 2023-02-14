@@ -2,25 +2,37 @@
 import styled from 'styled-components'
 
 const Input = styled.input`
+  
+  background: rgb(253, 253, 253);
+  border-radius: var(--border-radius-light);
+  height: 1.7em;
+  padding: 0.5em;
+  //min-width: 200px;
+  border: 0;
+  
+  &:focus{
+ 
+    outline:  2px solid var(--color);
+  }
   ${props => props.circle ? (
    ` 
    border-radius: 100px;
    `
   ) : null}
-  
-  background: rgb(253, 253, 253);
-  border-radius: var(--border-radius);
-  border: var(--border-primary);
-  height: 1.7em;
-  padding: 0.5em;
-  //min-width: 200px;
-  font-size: 18px;
-  //border: 1px solid rgba(0, 0, 0, 0.100);
-  border: 1px solid rgba(0, 0, 0, 0.100);
-  &:focus{
- 
-    outline:  2px solid var(--color);
-  }
+  ${props => {
+   switch (props.bgColor) {
+    case 'gray-light':
+      return`
+        background-color: var(--White1);
+      `
+   
+    default:
+      break;
+   }
+  }}
+  ${props => props.border ? (
+   `  border: var(--border-primary);`
+  ) : null}
   ${(props)=> {
       switch(props.size){
         case 'small': 

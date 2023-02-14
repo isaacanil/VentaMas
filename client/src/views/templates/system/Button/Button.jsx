@@ -17,12 +17,13 @@ export const Button = ({
   disabled,
   borderRadius,
   isActivated,
+  isActivatedColors,
   iconOn,
   iconOff,
   titlePosition,
 
 }) => {
-
+ 
 
   return (
     <Container
@@ -37,10 +38,10 @@ export const Button = ({
       isActivated={isActivated}
       titlePosition={titlePosition}
       border={border}
-   
+      isActivatedColors={isActivatedColors}
     >
     
-        {isActivated === false ? iconOn : iconOff}
+        {isActivated ? iconOn : iconOff}
         {startIcon ? startIcon : null}
         {title ? title : null}
         {endIcon ? endIcon : null}
@@ -65,6 +66,7 @@ export const Container = styled.button`
   font-weight: 500;
   font-size: 14px;
   
+  
 pointer-events: all;
   font-family: inherit;
   svg{
@@ -75,9 +77,10 @@ pointer-events: all;
   transition: border-color 0.25s;
   
   &:hover{
-    background-color: #d6d6d6;
-    backdrop-filter: opacity(10);
-    color: black;
+    ${props => !props.isActivated ? `
+      background-color: #d6d6d6;
+      backdrop-filter: opacity(10);
+    ` : null}
   }
   &:focus, &:focus-visible{
     outline: none;
@@ -151,20 +154,25 @@ pointer-events: all;
         background-color: #42a5f5;
         color: white;
         &:hover{
-                background-color: #4589d8;
-              
+                background-color: #4589d8;  
               color: white
             }
             `
+      case "warning":
+        return `
+        background-color: var(--color-warning);
+        color: white;
+        :hover{
+          background-color: #f5a742;
+        }
+        `
       case "op1":
         return `
         background-color: rgba(0, 0, 0, 0.200);
         color: white;
         &:hover{
                 background-color: #bdbdbd;
-                outline: none;
-                
-              
+                outline: none;      
               color: white
             }
             `
@@ -178,8 +186,8 @@ pointer-events: all;
     switch (props.width) {
       case "w100":
         return `
-           width: 100%;
-           display: block;
+        width: 100%;
+        min-width: 100%;
           `;
       case "auto":
         return `
@@ -304,7 +312,7 @@ pointer-events: all;
           `
     }
   }}
-  ${(props) => {
+  /* ${(props) => {
     switch (props.isActivated) {
       case true:
         return `
@@ -323,6 +331,45 @@ pointer-events: all;
             background-color: #e9e9e94b;
             color: black;
           }
+        `
+        case props.isActivated: 
+        return`
+          background-color: ${props.isActivated};
+        `
+      default:
+        break;
+    }
+  }} */
+  ${(props) => {
+    switch (props.isActivatedColors) {
+      case 'style1':
+        return `
+        ${props.isActivated === true ? `
+        background-color: #ffffff;
+          color: black;
+          :hover{
+            background-color: #e9e9e9;
+            color: black;
+          }
+        ` : `
+        background-color: rgba(0, 0, 0, 0.26);
+          color: white;
+          :hover{
+            background-color: #e9e9e94b;
+            color: black;
+          }
+        `}
+         
+        `
+      case false:
+        return `
+          background-color: rgba(0, 0, 0, 0.26);
+          color: white;
+      
+        `
+        case props.isActivated: 
+        return`
+          background-color: ${props.isActivated};
         `
       default:
         break;

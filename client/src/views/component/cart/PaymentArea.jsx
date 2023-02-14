@@ -9,6 +9,7 @@ import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import { getTaxReceiptData, handleNCFStatus, SELECT_NCF_STATUS } from '../../../features/taxReceipt/taxReceiptSlice'
 import { readTaxReceiptDataBD } from '../../../firebase/firebaseconfig'
 import { quitarCeros } from '../../../hooks/quitarCeros'
+import CustomInput from '../../templates/system/Inputs/CustomInput'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
     const [taxReceiptData, setTaxReceiptData] = useState()
@@ -99,12 +100,7 @@ export const PaymentArea = () => {
                         <STitle>Comprobante Fiscal</STitle>
                     </Group>
                     <Group>
-                        <select name="" id="">
-                            <option value="">Descuento</option>
-                            <option value="">10%</option>
-                            <option value="">15%</option>
-                            <option value="">20%</option>
-                        </select>
+                        <CustomInput options={["10", "20", "30"]}/>
                     </Group>
                 </Group>
             </Row>

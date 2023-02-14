@@ -26,25 +26,48 @@ import { addNotification } from '../../../../features/notification/NotificationS
 
 export const AddOrderModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-    const [provider, setProvider] = useState(undefined);
+    const [provider, setProvider] = useState(null);
     const OrderSelected = useSelector(SelectOrder);
     const [reset, setReset] = useState(false);
     useEffect(() => {
-        if (provider !== '') {dispatch(AddProvider(provider))}
+        if (provider) {dispatch(AddProvider(provider))}
     }, [provider])
     const handleModal = () => {
         dispatch(openModalAddOrder())
         dispatch(cleanOrder());
         setReset(true);
     }
-    const HandleSubmit = () => {
-        dispatch(closeModalAddOrder());
-        AddOrder(OrderSelected);
-        dispatch(cleanOrder());
-        setReset(true);
-        setTimeout(()=>{
-            dispatch(addNotification({message: 'Hola, que haces?', type: 'success' }))
-        }, 1000)
+    const HandleSubmit = async() => {
+        if (OrderSelected.proveedor === null || OrderSelected.provider.id == ""){
+            dispatch(addNotification({title: 'Error', message: 'Agregue el proveedor', type: 'error'}))
+            return
+        }
+        if (OrderSelected.products <= 0){
+            dispatch(addNotification({title: 'Error', message: 'Agregue un producto', type: 'error'}))
+            return
+        }
+        if (OrderSelected.date === null){
+            dispatch(addNotification({title: 'Error', message: 'Agregue la Fecha de entrega', type: 'error'}))
+            return
+        }
+        if (OrderSelected.date === null){
+            dispatch(addNotification({title: 'Error', message: 'Agregue la Condición', type: 'error'}))
+            return
+        }
+       
+        try {
+            
+            AddOrder(OrderSelected).then(()=>{
+                dispatch(addNotification({message: 'Pedido Creado', type: 'success' }))
+                setReset(true);
+                dispatch(closeModalAddOrder());
+                dispatch(cleanOrder());
+            })
+        } catch (error) {
+            setTimeout(()=>{
+                dispatch(addNotification({title: 'Error', message: `${error}`, type: 'error' }))
+            }, 1000)
+        }
     
     }
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
@@ -57,10 +80,10 @@ export const AddOrderModal = ({ isOpen }) => {
                     <div className={style.ModalWrapperHeader}>
                         <h3>Nuevo Pedido</h3>
                         <Button
-                            width='icon24'
-                            bgcolor='error'
+                            bgcolor='gray'
                             borderRadius='normal'
-                            title={<IoMdClose />}
+                            endIcon={<IoMdClose />}
+                            title='Cerrar'
                             onClick={handleModal}
                         />
                     </div>
@@ -79,15 +102,13 @@ export const AddOrderModal = ({ isOpen }) => {
                         <Button                         
                             title={<CgMathPlus />}
                             borderRadius={'normal'}
-                            border='light'
+                            color='gray-dark'
                             width={'icon32'}
-                            bgcolor='gray'
                         />
                     </header>
                     <AddProductListSection></AddProductListSection>
                     <ProductListSelected></ProductListSelected>
                     <OrderDetails reset={reset} setReset={setReset} ></OrderDetails>
-                </div>
                 <div className={style.ModaFooter}>
                     <div className={style.ModalWrapperFooter}>
                         <Button
@@ -97,6 +118,7 @@ export const AddOrderModal = ({ isOpen }) => {
                             onClick={HandleSubmit}
                         />
                     </div>
+                </div>
                 </div>
             </div>
         </Container>

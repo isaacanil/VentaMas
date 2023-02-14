@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
 import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
-export const OrderDetails = () => {
+export const OrderDetails = ({setReset, reset}) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
     const dispatch = useDispatch()
@@ -27,15 +27,22 @@ export const OrderDetails = () => {
                 AddNote(note)
             )
         }
+        
         dispatch(AddDate(date))
     }, [condition, note, date])
+    useEffect(()=>{
+        if(reset){
+            setNote('')
+            setDate('')
+        }
+    },[reset])
     
     const beforeToday = new Date()
     const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" id="" min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)}/>
+                <input type="date" name="" value={date} id="" min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)}/>
                 <Select
                     property='name'
                     title='Condición'
@@ -43,6 +50,9 @@ export const OrderDetails = () => {
                     setValue={setCondition}
                     value={condition}
                     placement='top'
+                    setReset={setReset}
+                    reset={reset}
+                    
                     
                 />
             </Section>
@@ -50,7 +60,8 @@ export const OrderDetails = () => {
                 <h5>Nota</h5>
                 <Textarea
                     height='4em'
-                    placeholder='Escriba una Nota...'
+                    value={note}
+                    placeholder='Agrega una nota al pedido ...'
                     onChange={(e) => setNote(e.target.value)}
                 />
             </Section>

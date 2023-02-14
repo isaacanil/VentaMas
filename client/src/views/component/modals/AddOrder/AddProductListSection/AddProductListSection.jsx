@@ -11,24 +11,39 @@ import { AddProduct } from '../../../../../features/addOrder/addOrderModalSlice'
 import { Button } from '../../../../templates/system/Button/Button'
 import { Tooltip } from '../../../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
+import { addNotification } from '../../../../../features/notification/NotificationSlice'
 export const AddProductListSection = () => {
     const dispatch = useDispatch();
     const productSelected = useSelector(SelectProductSelected)
     const [product, setProduct] = useState(null)
+    
     useEffect(() => {
         productSelected ? (
             setProduct({ ...productSelected, product: { stock: { actualStock: '', newStock: '' } } })
         ) : null
     }, [productSelected])
+
     const actualStock = product ? Number(productSelected.product.stock) : null;
     const newStock = product ? Number(product.product.stock.newStock) : null;
     const stock = { newStock, actualStock }
     const totalStock = productSelected ? `${actualStock + newStock}` : null
+
     const AddToOrderProductList = () => {
-        if (productSelected) {
+        
+        if (product === 0){
+            dispatch(addNotification({title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error'}))
+            return
+        }
+        if (newStock === 0){
+            dispatch(addNotification({title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error'}))
+            return
+        }
+        if (productSelected && newStock > 0) {
             dispatch(updateStock({ stock }))
             dispatch(AddProduct())
         }
+        
+        
     }
     console.log(product)
     return (
@@ -61,12 +76,14 @@ export const AddProductListSection = () => {
             <Group>
                 <ProductFilter
                     productName={productSelected ? productSelected.product.productName : ''}
+                    
+                    
                 />
                 <div>
                     <InputNumber
-
+                         bgColor='gray-light'
+                         border
                         value={productSelected ? (product !== null ? (product.product.stock.newStock) : null) : ''}
-                        placeholder='Cantidad'
                         onChange={(e) => setProduct({
                             ...product,
                             product: {
@@ -82,6 +99,8 @@ export const AddProductListSection = () => {
                         value={productSelected ? productSelected.product.cost.unit : null}
                         placeholder='Costo'
                         readOnly
+                        border
+                        bgColor='gray-light'
 
                     />
                 </div>
@@ -90,6 +109,8 @@ export const AddProductListSection = () => {
                         value={productSelected ? productSelected.product.price.unit : null}
                         placeholder='SubTotal'
                         readOnly
+                        border
+                        bgColor='gray-light'
 
                     />
                 </div>
@@ -103,12 +124,12 @@ export const AddProductListSection = () => {
     )
 }
 const Container = styled.div`
-    background-color: var(--White2);
+    background-color: var(--White);
     border-radius: 8px;
     display: grid;
     gap: 0.2em;
-    padding: 0 1em 0.4em;
-    border: var(--border-primary);
+    padding: 0.2em 1em 0.4em;
+    //border: var(--border-primary);
 `
 const Group = styled.div`
      color: rgb(37, 37, 37);

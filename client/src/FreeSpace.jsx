@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
 import { addNotification } from './features/notification/NotificationSlice'
 import { selectOrderFilterOptions } from './features/order/ordersSlice'
 import { colorPalette } from './features/theme/themeSlice'
 import { SelectDataFromOrder } from './hooks/useSelectDataFromOrder'
 import { Button } from './views'
+import CustomInput from './views/templates/system/Inputs/CustomInput'
+import { Input } from './views/templates/system/Inputs/InputV3'
 import { Notification } from './views/templates/system/Notification/Notification'
 
 export const FreeSpace = () => {
@@ -23,14 +26,16 @@ export const FreeSpace = () => {
   //   {rol: {name: 'admin'}},
   //   {rol: {name: 'readOnly'}}
   //  ]
-
-
-
+  const [change, setChange] = useState(false)
+  const handleChange = () => setChange(!change)
   return (
     <div>
      <Notification/>
-     <Button title="Click" borderRadius='normal' onClick={handleGetNotification}></Button>
-          
+     <Button title="Click" borderRadius='normal' onClick={handleChange}></Button>
+       <Square visible={change ? true : false}>
+        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ea sunt eum repellat? Tempore magni illum animi dolorem itaque adipisci, odio explicabo molestiae soluta deleniti officia quam necessitatibus porro numquam ex?
+       </Square>
+       <CustomInput options={["10%", "20%", "30%"]}/>
       {/* <Typography variant='p' color={font2} >Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas in dolore molestiae voluptatem quidem a eligendi, deserunt rem cumque qui necessitatibus distinctio expedita quae minus iusto blanditiis saepe itaque totam?</Typography> */}
       {/* <select name="" id="" onChange={(e)=>setRol(e.target.value)}>
         {rolesList.map(({rol})=>(
@@ -62,3 +67,21 @@ export const FreeSpace = () => {
     </div>
   )
 }
+const Square = styled.div`
+  width: 200px;
+  height: 200px;
+  background-color: red;
+  transition: height 1s ease-in-out ;
+  overflow: hidden;
+  ${props => {
+    switch (props.visible) {
+      case false:
+        return`
+          height: 0px;
+        `
+    
+      default:
+        break;
+    }
+  }}
+`

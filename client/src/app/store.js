@@ -17,7 +17,9 @@ import orderReducer from '../features/order/ordersSlice'
 import purchaseReducer from '../features/Purchase/purchaseSlice'
 import themeReducer from "../features/theme/themeSlice";
 import addPurchaseReducer from "../features/Purchase/addPurchaseSlice";
-import notificationReducer from "../features/notification/notificationSlice"
+import notificationReducer from "../features/notification/notificationSlice";
+import navReducer from "../features/nav/navSlice";
+import appReducer from "../features/appModes/appModeSlice";
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -37,6 +39,8 @@ export const store = configureStore({
         purchase: purchaseReducer,
         theme: themeReducer,
         addPurchase: addPurchaseReducer, 
-        notification: notificationReducer
+        notification: notificationReducer,
+        nav: navReducer,
+        app: appReducer
     },
 })

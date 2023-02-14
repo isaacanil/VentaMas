@@ -157,15 +157,19 @@ export const UploadProductData = (product) => {
       })
   })
 }
-export const getProducts = async (setProduct) => {
+export const getProducts = async (setProduct, trackInventory) => {
   const productRef = collection(db, "products")
-  const q = query(productRef, orderBy("product.productName", "desc"), orderBy("product.order", "asc"))
+  const q = query(productRef, 
+    trackInventory ? where("product.trackInventory", "==", true) : null,
+    orderBy("product.productName", "desc"), 
+    orderBy("product.order", "asc"), )
   //, orderBy("product.order", "asc")
   onSnapshot(q, (snapshot) => {
     let productsArray = snapshot.docs.map(item => item.data())
     setProduct(productsArray)
   })
 }
+
 export const updateProduct = async (product) => {
   console.log('product from firebase', product)
   const productRef = doc(db, "products", product.id)

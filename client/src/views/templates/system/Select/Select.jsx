@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { IoIosArrowDown } from 'react-icons/io'
 import { MdClear } from 'react-icons/md'
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 
 export const Select = ({ title, data, value, setValue, placement = 'bottom', property = 'name', reset, setReset }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [showSelectTitle, setShowSelectTitle] = useState(title);
     const [selectedId, setSelectedId] = useState('');
-  
+    const SelectRef = useRef(null)
+
     useEffect(() => {
       if (reset) {
         setSelectedId('');
@@ -23,16 +25,23 @@ export const Select = ({ title, data, value, setValue, placement = 'bottom', pro
         setSelectedId(selectedItem?.id || '');
       }
     }, [value, property, data]);
-  
+
     const handleSelect = select => {
       setSelectedId(select.id);
       setValue(select);
       setShowSelectTitle(select[property]);
       setIsOpen(false);
     };
-  
+
+    const handleReset = () => {
+      setSelectedId('');
+        setShowSelectTitle(title);
+        setReset(false);
+        setIsOpen(false);
+    }
+    useClickOutSide(SelectRef, isOpen, ()=>{setIsOpen(false)})
     return (
-      <Container>
+      <Container ref={SelectRef}>
         <Head>
           {!isOpen ? (
             <Group onClick={() => setIsOpen(true)}>
@@ -79,13 +88,15 @@ const Container = styled.div`
     position: relative;
     max-width: 200px;
     width: 100%;
+    
 `
 const Head = styled.div`
     width: 100%;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.200);
+    border: 1px solid rgba(0, 0, 0, 0.100);
     border-radius: var(--border-radius-light);
+    background-color: var(--White);
     overflow: hidden;
     padding: 0 0 0 0.2em;
     transition-duration: 20s;

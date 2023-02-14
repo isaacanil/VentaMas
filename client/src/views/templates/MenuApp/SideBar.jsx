@@ -38,7 +38,7 @@ const Container = styled.nav`
     left: 0;
     background-color: rgb(87, 87, 87);
     backdrop-filter: blur(100px);
-    transform: translateX(-900px);  
+    transform: translateX(-100%);  
     transition: transform 0.4s ease-in-out;
     overflow-y: auto;
     overflow-x: hidden;

@@ -8,6 +8,7 @@ export const SearchClient = ({ name, type, text, ref, size, title, label, clearI
     const handleReset = () => {
          fn ? fn() : null
     }
+    
     return (
         <Container ref={ref}>
             <InputContainer>

@@ -59,7 +59,7 @@ function App() {
   }, [])
   const isConnected = useCheckForInternetConnection()
   console.log(isConnected)
-  if (user === false) {
+  if (user === false || null) {
     return <GenericLoader></GenericLoader>
   }
   

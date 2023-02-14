@@ -26,6 +26,7 @@ import { ProviderForm } from "../../pages/Contact/Provider/components/CreateCont
 import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
 import { AddPurchaseModal } from "./AddPurchase/AddPurchaseModal"
 import { Notification } from "../../templates/system/Notification/Notification"
+import { SmallNotification } from "../../templates/system/Notification/SmallNotification"
 export const ModalManager = () => {
   const dispatch = useDispatch()
   const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
@@ -73,6 +74,7 @@ export const ModalManager = () => {
       <AddOrderModal isOpen={AddOrderModalSelected} />
       {/* <AddProvider /> */}
       <Notification/>
+      <SmallNotification/>
     </Fragment>
   )
 

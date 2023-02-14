@@ -152,7 +152,6 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                                 borderRadius='normal'
                                 title={<IoCartSharp />}
                                 width='icon32'
-                                border='light'
                                 color='gray-dark'
                                 onClick={() => handlePurchasingMode(orderData.id)}
 
@@ -167,7 +166,6 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                                 borderRadius='normal'
                                 title={<TbEdit />}
                                 width='icon32'
-                                border='light'
                                 color='gray-dark'
                                 onClick={() => handleEditMode(orderData.id)}
                             />

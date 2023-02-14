@@ -27,7 +27,8 @@ const initialState = {
             unit: 1,
             total: 1
         },
-        id: ''
+        id: '',
+        trackInventory: false
     }
 }
 

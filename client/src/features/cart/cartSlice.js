@@ -29,6 +29,9 @@ const defaultValue = {
             status: false,
             value: 0
         },
+        discount: {
+            value: 0
+        },
         paymentMethod: [
             {
                 method: 'cash',
@@ -249,11 +252,20 @@ const cartSlice = createSlice({
             const result = ProductsSelected.reduce((total, product) => total + product.cost.total, 0);
             state.data.totalPurchaseWithoutTaxes.value = result;
         },
+        addDiscount: (state, action) => {
+            const value = action.payload
+            state.data.discount.value = Number(value)
+        },
         totalPurchase: (state) => {
             const productSelected = state.data.products
-            const total = productSelected.reduce((total, product) => total + product.price.total, 0)
+            const discountRawValue = Number(state.data.discount.value);
+            const discountPercentage = (discountRawValue / 100);
+            const total = Number(productSelected.reduce((total, product) => total + product.price.total, 0))
+            const discount = total * discountPercentage;
+            const totalWithDiscount = total - discount;
             const Delivery = state.data.delivery.value;
-            state.data.totalPurchase.value = (Number(Delivery) + Number(total))
+            state.data.totalPurchase.value = (Number(Delivery) + Number(totalWithDiscount))
+  
         },
         setChange: (state) => {
             const totalPurchase = state.data.totalPurchase.value;
@@ -280,6 +292,7 @@ export const {
     addDelivery,
     addPaymentValue,
     addPaymentMethod,
+    addDiscount,
     addPaymentMethodAutoValue,
     addProduct,
     addSourceOfPurchase,
@@ -313,6 +326,7 @@ export const SelectChange = (state) => state.cart.data.change.value;
 export const SelectSourceOfPurchase = (state) => state.cart.data.sourceOfPurchase;
 export const SelectPaymentValue = (state) => state.cart.data.payment.value;
 export const SelectClientMode = (state) => state.cart.handleClient.mode;
+export const SelectDiscount = (state) => state.cart.data.discount.value;
 
 export default cartSlice.reducer
 

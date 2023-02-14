@@ -17,7 +17,7 @@ export const MessageAlert = ({isOpen , data}) => {
       <Container isOpen={isOpen === true ? true : false}>
         <Body>
           <IconContainer>
-          <MdMessage/>
+            <MdMessage/>
           </IconContainer>
           <MessageContainer>
             <Message>
@@ -82,14 +82,7 @@ const Container = styled.div`
   align-items: center;
   padding: 0.5em 0;
 
-  @media (max-width: 1000px){
-    border-radius: 0;
-    height: 400px;
-    grid-auto-rows: auto;
-    background-color: red;
-
-
-  }
+  
 
   ${(props) => {
     switch (props.isOpen) {
@@ -106,22 +99,23 @@ const Container = styled.div`
   
   
 `
-
 const Body = styled.div`
   height: 100%;
   max-width: 100%;
   width: 100%;
-  
   overflow: hidden;
   padding: 1em 2em 1em 0;
   display: grid;
   grid-template-columns: 0.4fr 1fr;
-
   grid-template-rows: 1fr;
+
   @media (max-width: 1000px){
     border-radius: 0;
-    height: 400px;
-    grid-auto-columns: 1fr;
+    height: min-content;
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+    align-content: flex-start;
+    justify-content: center;
     grid-template-rows: auto;
   }
   
@@ -133,7 +127,7 @@ const Footer = styled.div`
 `
 const IconContainer = styled.div`
   width: 100%;
-  height: 100%;
+  height: min-content;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,7 +135,7 @@ const IconContainer = styled.div`
   color: var(--font-color-dark-slightly);
 `
 const MessageContainer = styled.div`
-height: 100%;
+height: min-content;
 width: 100%;
 overflow: hidden;
 overflow-wrap: break-word;

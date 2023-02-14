@@ -11,42 +11,48 @@ import { UploadImg } from '../../UploadImg'
 import { Modal } from '../modal'
 import { quitarCeros } from '../../../../hooks/quitarCeros'
 import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter'
+import { MdRadioButtonChecked, MdRadioButtonUnchecked } from 'react-icons/md'
+const EmptyProduct = {
+    productName: "",
+    cost: {
+        unit: 0,
+        total: 0
+    },
+    amountToBuy: { unit: 1, total: 1 },
+    productImageURL: undefined,
+    category: undefined,
+    stock: "",
+    type: "",
+    size: "",
+    netContent: "",
+    tax: {
+        unit: 0,
+        ref: 'Excento',
+        value: 0,
+        total: 0
+    },
+    id: "",
+    trackInventory: false,
+    order: 0,
+    price: {
+        unit: 0,
+        total: 0
+    }
+}
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, lastProduct } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState([])
     const [taxRef, setTaxRef] = useState('')
     const [catList, setCatList] = useState([])
     const [imgController, setImgController] = useState(false)
+    const [product, setProduct] = useState(EmptyProduct)
+    const dispatch = useDispatch()
+
     const handleImgController = (e) => {
         e.preventDefault()
         setImgController(!imgController)
     }
-    const [product, setProduct] = useState({
-        productName: "",
-        cost: {
-            unit: 0,
-            total: 0
-        },
-        amountToBuy: { unit: 1, total: 1 },
-        productImageURL: undefined,
-        category: undefined,
-        stock: "",
-        type: "",
-        size: "",
-        netContent: "",
-        tax: {
-            unit: 0,
-            ref: 'Excento',
-            value: 0,
-            total: 0
-        },
-        id: "",
-        order: 0,
-        price: {
-            unit: 0,
-            total: 0
-        }
-    })
+
     useEffect(() => {
         setProduct(
             {
@@ -60,6 +66,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                 netContent: parseToString(lastProduct.netContent),
                 tax: lastProduct.tax,
                 price: lastProduct.price,
+                trackInventory: lastProduct.trackInventory,
                 order: parseToString(lastProduct.order),
                 size: parseToString(lastProduct.size),
                 type: parseToString(lastProduct.type),
@@ -67,47 +74,39 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         )
     }, [lastProduct])
+
     useEffect(() => {
         getTaxes(setTaxesList)
         getCat(setCatList)
     }, [])
     const calculatePrice = () => {
         const { cost, tax } = product;
-        if (typeof cost.unit !== 'number' || typeof tax.value !== 'number') {
-           return;
-        }
+        if (typeof cost.unit !== 'number' || typeof tax.value !== 'number') { return }
         const price = {
-           unit: cost.unit * tax.value + cost.unit,
-           total: cost.unit * tax.value + cost.unit,
+            unit: cost.unit * tax.value + cost.unit,
+            total: cost.unit * tax.value + cost.unit,
         }
-        setProduct({
-           ...product,
-           price
-        })
-       
-     }
-     useEffect(calculatePrice, [product.cost, product.tax])
-    const dispatch = useDispatch()
-    const [errorMassage, setErrorMassage] = useState('')
+        setProduct({ ...product, price })
+    }
+
+    useEffect(calculatePrice, [product.cost, product.tax])
 
     const handleSubmitAddProducts = () => {
-        updateProduct(product),
-            closeModal()
+        updateProduct(product)
+        closeModal()
         dispatch(clearUpdateProductData())
-    }
-    const closeModal = () => {
-        dispatch(
-            closeModalUpdateProd()
-        )
-        dispatch(clearUpdateProductData())
-    }
-    const localUpdateImage = (url) => {
-        dispatch(
-            ChangeProductImage(url)
-        )
     }
 
-    
+    const closeModal = () => {
+        dispatch(closeModalUpdateProd())
+        dispatch(clearUpdateProductData())
+    }
+
+    const localUpdateImage = (url) => {
+        dispatch(ChangeProductImage(url))
+    }
+    console.log(product)
+
     return (
         <Modal
             nameRef='Actualizar'
@@ -120,7 +119,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                     fnAddImg={localUpdateImage}
                     isOpen={imgController}
                     setIsOpen={setImgController}
-                />}
+                />
+            }
         >
             <Container>
                 <Group column='2'>
@@ -188,13 +188,14 @@ export const UpdateProductModal = ({ isOpen }) => {
                 </Group>
                 <Group>
                     <Img>
-
                         <img src={status ? product.productImageURL : undefined} alt="" />
                     </Img>
                     <Button
                         borderRadius='normal'
                         width='w100'
                         title='Agregar Imagen'
+                        bgcolor='primary'
+                        titlePosition='center'
                         onClick={handleImgController}
                     />
                 </Group>
@@ -210,6 +211,30 @@ export const UpdateProductModal = ({ isOpen }) => {
                         })}
                     />
                     <Input
+                        size='small'
+                        type="text"
+                        title={'Order'}
+                        value={status ? product.order : undefined}
+                        onChange={(e) => setProduct({
+                            ...product,
+                            order: Number(e.target.value)
+                        })}
+                    />
+                    <Button
+                        borderRadius={'normal'}
+                        title={'Invetariable'}
+                        //border={'light'}
+                        isActivated={product.trackInventory ? true : false}
+                        iconOn={<MdRadioButtonChecked/>}
+                        iconOff={<MdRadioButtonUnchecked/>}
+                        onClick={() => setProduct({
+                            ...product,
+                            trackInventory: !product.trackInventory
+                        })}
+                    />
+                </Group>
+                <Group orientation='vertical'>
+                    <Input
                         title={'Costo'}
                         type="number"
                         value={status ? quitarCeros(product.cost.unit) : undefined}
@@ -220,18 +245,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                                 total: Number(e.target.value)
                             }
                         })} />
-                </Group>
-                <Group orientation='vertical'>
-                    <Input
-                        size='small'
-                        type="text"
-                        title={'Order'}
-                        value={status ? product.order : undefined}
-                        onChange={(e) => setProduct({
-                            ...product,
-                            order: Number(e.target.value)
-                        })}
-                    />
                     <select id="" onChange={(e) => setProduct({
                         ...product,
                         tax: JSON.parse(e.target.value)
@@ -256,7 +269,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         readOnly
                         placeholder='Precio de Venta' />
                 </Group>
-            </Container>
+            </Container>G
         </Modal>
     )
 }
@@ -277,8 +290,8 @@ const Container = styled.div`
 const Group = styled.div`
 
     select{
-         padding: 0.4em;
-         border-radius: 8px;
+         padding: 0 0.4em;
+         border-radius: var(--border-radius-light);
          border: none;
          outline: 1px solid rgb(145, 145, 145);
       }
@@ -292,21 +305,24 @@ const Group = styled.div`
         grid-column: 1 / 3;
     }
     &:nth-child(4){
-        background-color: #cce1e9;
-        padding: 6px;
-        border-radius: 8px;
-        border: 1px solid rgba(2, 2, 2, 0.100);
+        //background-color: #cce1e9;
+        //padding: 6px;
+        padding: 0;
+        border-radius: var(--border-radius-light);
+        //border: 1px solid rgba(2, 2, 2, 0.100);
         img{
             width: 100%;
             height: 100px;
             object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
+            border-radius: var(--border-radius-light);
         }
         grid-column: 3 / 4;
         grid-row: 1 / 4;
-        display: grid;
-        gap: 1em;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+       
+        
        // justify-content: center;
         justify-items: center;
     }
@@ -346,4 +362,31 @@ img{
     object-fit: cover;
     box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
 }
+`
+const InvetoryCheckContainer = styled.div`
+    position: relative;
+    height: 2em;
+    width: 8em;
+    display: flex;
+    align-items: center;
+    label{
+        padding: 0 1em;
+        border-radius: var(--border-radius-light);
+        background-color: #0084ff;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        /* position: absolute;
+        top: -16px;
+        font-size: 12px;
+        line-height: 12px; */
+    }
+    input[type="checkbox"]:checked + label{
+        background-color: green;
+    }
+    input[type="checkbox"]{
+        margin: 0;
+        
+        
+    }
 `

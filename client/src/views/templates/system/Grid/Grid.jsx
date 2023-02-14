@@ -5,7 +5,7 @@ export const Grid = styled('div')`
     display: grid; 
     gap: 0.7em;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    transition: all 400ms ease-in-out;
+
     ${(props ) => {
         switch (props.padding) {
             case 'bottom':

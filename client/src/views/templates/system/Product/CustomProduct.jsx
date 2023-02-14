@@ -157,7 +157,7 @@ const Main = styled.div`
    
 `
 const Title = styled.h5`
-  color: var(--Gray6);
+    color: var(--Gray6);
     width: 100%;
     font-size: 13.5px;
     line-height: 1pc;
@@ -180,8 +180,7 @@ const ProductStock = styled.div`
     color: white;
     display: flex;
     justify-content: center;
-    align-items: center;
-  
+    align-items: center; 
 `
 const Footer = styled.footer`
 
@@ -203,6 +202,5 @@ const ProductPrice = styled.div`
     color: #424242;
     
     //border-radius: 50px;
-    
     
 `

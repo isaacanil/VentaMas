@@ -59,14 +59,12 @@ useEffect(()=>{
   )
 }
 const Component = styled.div`
-  
   display: block;
   z-index: 1;
-
 `
 const ProductsList = styled.div`
   max-width: 300px;
-  height: 200px;
+  height: calc(200px - 2.75em);
   width: 100%;
   border: 1px solid  #00000081;
   position: absolute;

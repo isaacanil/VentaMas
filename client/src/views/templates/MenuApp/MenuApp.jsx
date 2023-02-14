@@ -15,6 +15,7 @@ import { useMatch } from 'react-router-dom'
 import { SearchProductBar } from './SearchProductBar'
 import { Tooltip } from '../system/Button/Tooltip'
 import { colorPalette } from '../../../features/theme/themeSlice'
+import { toggleOpenMenu } from '../../../features/nav/navSlice'
 
 
 
@@ -24,7 +25,12 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const [isOpenMenu, setIsOpenMenu] = useState(false)
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
-  const handledMenu = () => { setIsOpenMenu(!isOpenMenu) };
+  const handledMenu = () => { 
+    setIsOpenMenu(!isOpenMenu)
+  };
+  useEffect(() => {
+    dispatch(toggleOpenMenu(isOpenMenu))
+  }, [isOpenMenu])
   const ref = useRef(null)
 
   const anotherRef = useRef(null)
@@ -79,9 +85,10 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
                   <Button
                     width={'icon32'}
                     borderRadius='normal'
-                    iconOn={<TbColumns />}
-                    iconOff={<BsList />}
+                    iconOff={<TbColumns />}
+                    iconOn={<BsList />}
                     isActivated={viewRowModeRef ? true : false}
+                    isActivatedColors='style1'
                     onClick={() => handleRowModeFN()}
                   />}
               />
@@ -90,11 +97,13 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
                 description={ImageHidden ? 'Mostrar Imagen' : 'Ocultar Imagen'}
                 Children={
                   <Button
+
                     width={'icon32'}
                     borderRadius='normal'
-                    iconOn={<MdOutlineImage />}
-                    iconOff={<MdOutlineHideImage />}
                     isActivated={ImageHidden ? true : false}
+                    isActivatedColors='style1'
+                    iconOff={<MdOutlineImage />}
+                    iconOn={<MdOutlineHideImage />}
                     onClick={() => handleImageHiddenFN()}
                   />}
               />

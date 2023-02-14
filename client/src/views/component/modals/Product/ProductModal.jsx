@@ -171,10 +171,14 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
                   currentTarget.src = noimg;
                   currentTarget.style.objectFit = 'contain'
                }} />
-               <Button
-                  title='Agregar Imagen'
-                  onClick={handleImgController}
-               />
+                <Button
+                        borderRadius='normal'
+                        width='w100'
+                        title='Agregar Imagen'
+                        bgcolor='primary'
+                        titlePosition='center'
+                        onClick={handleImgController}
+                    />
             </Group>
             <Group orientation='vertical'>
                <Input
@@ -228,8 +232,6 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
                   readOnly
                   placeholder='Precio de Venta' />
             </Group>
-
-
          </Container>
       </Modal>
    )
@@ -250,9 +252,10 @@ const Container = styled.div`
     }    
 `
 const Group = styled.div`
+
     select{
-         padding: 0.4em;
-         border-radius: 8px;
+         padding: 0 0.4em;
+         border-radius: var(--border-radius-light);
          border: none;
          outline: 1px solid rgb(145, 145, 145);
       }
@@ -266,21 +269,24 @@ const Group = styled.div`
         grid-column: 1 / 3;
     }
     &:nth-child(4){
-        background-color: #cce1e9;
-        padding: 6px;
-        border-radius: 8px;
-        border: 1px solid rgba(2, 2, 2, 0.100);
+        //background-color: #cce1e9;
+        //padding: 6px;
+        padding: 0;
+        border-radius: var(--border-radius-light);
+        //border: 1px solid rgba(2, 2, 2, 0.100);
         img{
             width: 100%;
             height: 100px;
             object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
+            border-radius: var(--border-radius-light);
         }
         grid-column: 3 / 4;
         grid-row: 1 / 4;
-        display: grid;
-        gap: 1em;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+       
+        
        // justify-content: center;
         justify-items: center;
     }
@@ -291,20 +297,20 @@ const Group = styled.div`
        grid-column: 1 / 4;
    }
     ${(props) => {
-      switch (props.orientation) {
-         case 'vertical':
-            return `
+        switch (props.orientation) {
+            case 'vertical':
+                return `
                     display: flex;
                     gap: 1em;
                 `
 
-         case 'horizontal':
-            return `
+            case 'horizontal':
+                return `
                     display: grid
                 `
-         default:
-            break;
-      }
-   }}
+            default:
+                break;
+        }
+    }}
   
 `

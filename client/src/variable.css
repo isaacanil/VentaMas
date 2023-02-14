@@ -36,7 +36,10 @@
     /*color cuaternario*/
     --color3:  #d4e3f1 ;
     --color4: rgba(202, 214, 230, 0.274);
-    --color-error: #d32f2f;
+    --color-error: #cf5555;
+    --color-warning: #ff9800;
+    --color-success: #7adf7d;
+    --color-info: #2196f3;
 
     /*border*/
     --border-radius-light: 4px;

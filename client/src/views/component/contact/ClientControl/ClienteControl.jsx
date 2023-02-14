@@ -179,9 +179,7 @@ export const ClientControl = () => {
             onChange={(e) => handleChangeClient(e)}
           />
           <ButtonGroup>
-            <Tooltip placement='bottom-end' description='Cancelar Venta' Children={<CancelPurchaseBtn/>}>
-            
-            </Tooltip>
+            <Tooltip placement='bottom-end' description='Cancelar Venta' Children={<CancelPurchaseBtn/>}/>
           </ButtonGroup>
         </div>
       </div>

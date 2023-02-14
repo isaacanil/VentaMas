@@ -34,18 +34,20 @@ const Container = styled.div`
     label{
         margin: 0;
     position: absolute;
-    top: 6px;
-    left: 10px;
+    top: -16px;
+    left: 0;
     color: rgb(150, 150, 150);
+    font-size: 12px;
     transition: all 0.5s ease;
     height: min-content;
+    line-height: 12px;
     padding: 0 3px;
     pointer-events: none;
     }
     input{  
         border: none;
         outline: 1.5px solid rgba(0, 0, 0, 0.200);
-        border-radius: 8px;
+        border-radius: var(--border-radius-light);
         padding:  0.4em 0.5em;
         color: rgb(92, 92, 92);
         width: 100%;
@@ -60,7 +62,7 @@ const Container = styled.div`
         //border: 1px solid rgba(0, 0, 0, 0.300);
         outline:  2px solid  ${props => props.focusColor};
     }     
-    &:not(:placeholder-shown) + label{
+    /* &:not(:placeholder-shown) + label{
         top: -6px;
         left: 0;
         font-size: 11px;
@@ -69,18 +71,10 @@ const Container = styled.div`
         border-radius: 2px;
         background-color: white;
         color: #8d8d8d;
-    }
+    } */
     &:focus + label{
-        top: -6px;
-        left: 0;
-        background-color: #ffffff;
-        padding: 0.2em;
-        border-radius: 2px;
-        font-size: 11px;
-        line-height: 11px;
         color:  ${props => props.focusColor}; 
     }
-  
     }
     ${(props) => {
         switch (props.text) {

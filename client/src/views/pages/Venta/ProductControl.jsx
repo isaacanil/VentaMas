@@ -8,13 +8,9 @@ import { selectIsRow } from '../../../features/setting/settingSlice';
 import { Carrucel } from '../../component/Carrucel/Carrucel';
 
 export const ProductControl = ({products}) => {
-    console.log(products)
-    // const [products, setProducts] = useState([])
-    // const [searchData, setSearchData] = useState('')
-    // const [filteredProducts, setFilteredProducts] = useState([])
-    const viewRowModeRef = useSelector(selectIsRow)
-    
+    const viewRowModeRef = useSelector(selectIsRow)   
     const [userDisplayName, setUserDisplayName] = useState('')
+    
     useEffect(() => {
         watchingUserState(setUserDisplayName)
     }, [])

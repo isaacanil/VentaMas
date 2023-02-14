@@ -12,7 +12,7 @@ const EmptyOrder = {
   state: {
   },
   provider: {
-    providerId: "",
+    id: "",
     name: "",
     phone: "",
     email: "",
@@ -47,6 +47,17 @@ const addOrderSlice = createSlice({
       state.productSelected = actions.payload
       console.log(state.productSelected)
       //const purchase = state.order.products.reduce((item)=>)
+    },
+    DeleteProduct: (state, actions) => {
+      const { id } = actions.payload
+      const productSelected = state.order.products.filter((item) => item.product.id === id)
+      const index = state.order.products.indexOf(productSelected)
+      state.order.products.splice(index, 1)
+      //total Precio del pedido
+      const productList = state.order.products
+      const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock.newStock), 0)
+      state.order.totalPurchase = totalPurchase
+
     },
     AddProduct: (state) => {
       state.order.products.push(state.productSelected)
@@ -93,10 +104,11 @@ const addOrderSlice = createSlice({
       state.order = EmptyOrder
     },
     AddProvider: (state, actions) => {
-      state.order.provider = actions.payload
+      const provider = actions.payload
+      if(provider !== null){
+        state.order.provider = provider
+      }
     },
-   
-
   }
 })
 export const {
@@ -109,7 +121,8 @@ export const {
   AddIdToOrder,
   cleanOrder,
   AddProvider,
-  updateStock
+  updateStock,
+  DeleteProduct
 } = addOrderSlice.actions
 
 export const SelectProductSelected = state => state.addOrder.productSelected;

@@ -32,8 +32,13 @@ import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import { AddBills, UpdateMultipleDocs } from '../../../firebase/firebaseconfig'
 import { IncreaseEndConsumer, IncreaseTaxCredit, SELECT_NCF_CODE, SELECT_NCF_STATUS, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice'
 import styled from 'styled-components'
+import { addNotification } from '../../../features/notification/NotificationSlice'
+import { selectMenuOpenStatus } from '../../../features/nav/navSlice'
+import { selectAppMode } from '../../../features/appModes/appModeSlice'
 export const Cart = () => {
+  const isOpen = useSelector(selectMenuOpenStatus)
   const dispatch = useDispatch()
+  const selectMode = useSelector(selectAppMode)
   const componentToPrintRef = useRef(null);
   const bill = useSelector(state => state.cart.data)
   const taxReceiptDataRef = useSelector(selectTaxReceiptData)
@@ -75,9 +80,14 @@ export const Cart = () => {
   }
   const savingDataToFirebase = async () => {
     try {
-      //AddBills(billData);
-      dispatch(updateTaxCreditInFirebase())
-      //UpdateMultipleDocs(ProductSelected);
+      if (selectMode === true) {
+        AddBills(billData);
+        dispatch(updateTaxCreditInFirebase())
+        UpdateMultipleDocs(ProductSelected);
+        dispatch(addNotification({message: "Venta Realizada", type: 'success', title: 'Completada'}))
+      } else {
+        dispatch(addNotification({message: "No se puede Facturar en Modo Demo", type: 'error'}))
+      }
     } catch (err) {
       console.log(err)
     }
@@ -100,21 +110,25 @@ export const Cart = () => {
     }
   }
   const handleInvoice = async () => {
-    if (ProductSelected.length > 0) {
-      try {
-        await handleTaxReceipt()
-        await createOrUpdateClient()
-        await savingDataToFirebase()
-        await showPrintPreview()
-        await showPrintPreview()
-        await clearDataFromState()
-      } catch (error) {
-        console.log(error)
-      }
+    if (ProductSelected.length === 0) {
+      dispatch(addNotification({message: "No hay productos seleccionados", type: 'error'}))
+      return;
+    }
+  
+    try {
+      await handleTaxReceipt()
+      await createOrUpdateClient()
+      await savingDataToFirebase()
+      await showPrintPreview()
+      await clearDataFromState()
+      
+    } catch (error) {
+      dispatch(addNotification({message: "Ocurrió un Error, Intente de Nuevo", type: 'error'}))
+      console.error(error)
     }
   }
   return (
-    <Container>
+    <Container isOpen={isOpen ? true : false}>
       <ClientControl></ClientControl>
       <ProductsList>
         {
@@ -161,6 +175,7 @@ const Container = styled.div`
    padding: 0 ;
    margin: 0;
    gap: 10px;
+   transition: width 600ms 200ms ease;
    @media(max-width: 800px){
     height: calc(100vh);
       width: 100%;
@@ -174,6 +189,19 @@ const Container = styled.div`
       background-color: white;
       display: none;
    }
+   ${props => {
+    switch (props.isOpen) {
+      case true:
+        return `
+        width: 0;
+        
+        `
+        break;
+    
+      default:
+        break;
+    }
+   }}
 `
 const ProductsList = styled.ul`
   background-color: var(--color2);
