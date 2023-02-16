@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useDispatch, useSelector } from 'react-redux';
-import { selectClientInState, SelectFacturaData } from "../../../../features/cart/cartSlice";
+import { addDelivery, selectClientInState, SelectFacturaData } from "../../../../features/cart/cartSlice";
 import { deleteClient, deleteMultipleClients } from "../../../../firebase/firebaseconfig";
 import { highlightSearch } from "../highlight/Highlight";
 const Container = styled.li`
@@ -27,6 +27,7 @@ export const Client = ({ client, Close, updateClientMode, searchTerm}) => {
     const BillingData = useSelector(SelectFacturaData)
     const handleSubmit = (client) => {
         dispatch(selectClientInState(client))
+        dispatch(addDelivery())
         updateClientMode()
         Close()
     }

@@ -75,9 +75,9 @@ export const Cart = () => {
   }
   const savingDataToFirebase = async () => {
     try {
-      //AddBills(billData);
+      AddBills(billData);
       dispatch(updateTaxCreditInFirebase())
-      //UpdateMultipleDocs(ProductSelected);
+      UpdateMultipleDocs(ProductSelected);
     } catch (err) {
       console.log(err)
     }
@@ -86,7 +86,6 @@ export const Cart = () => {
     try {
       dispatch(CancelShipping())
       dispatch(clearTaxReceiptData())
-
     } catch (error) {
       console.log('error al borrar los datos del state de factura')
     }
@@ -94,9 +93,7 @@ export const Cart = () => {
   const showPrintPreview = async () => {
     try {
       handlePrint()
-
     } catch (error) {
-
     }
   }
   const handleInvoice = async () => {
