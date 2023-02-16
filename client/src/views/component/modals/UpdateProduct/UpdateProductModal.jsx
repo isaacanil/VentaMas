@@ -31,9 +31,23 @@ const EmptyProduct = {
         value: 0,
         total: 0
     },
+    available: "", // disponibilidad producto
+    initialCost: "", // costo producción
+    surcharge: "", // recargo adicional
+    salePrice: "", // precio venta
+    profit: "", // ganancia neta
+    profitMargin: "", // margen ganancia
+    description: "", // descripción producto
+    rating: "", // valoración producto
+    reviews: "", // reseñas producto
+    shipping: "", // envío producto
+    seller: "", // vendedor producto
+    warranty: "", // garantía producto
+    barcode: "", // código barras
     id: "",
     trackInventory: false,
     order: 0,
+    margin: "",
     price: {
         unit: 0,
         total: 0
@@ -70,7 +84,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                 order: parseToString(lastProduct.order),
                 size: parseToString(lastProduct.size),
                 type: parseToString(lastProduct.type),
-                amountToBuy: { unit: 1, total: 1 }
+                amountToBuy: { unit: 1, total: 1 },
+
             }
         )
     }, [lastProduct])
@@ -225,8 +240,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                         title={'Invetariable'}
                         //border={'light'}
                         isActivated={product.trackInventory ? true : false}
-                        iconOn={<MdRadioButtonChecked/>}
-                        iconOff={<MdRadioButtonUnchecked/>}
+                        iconOn={<MdRadioButtonChecked />}
+                        iconOff={<MdRadioButtonUnchecked />}
                         onClick={() => setProduct({
                             ...product,
                             trackInventory: !product.trackInventory

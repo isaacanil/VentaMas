@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
 import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
+import { Button } from '../../../../templates/system/Button/Button'
+import { IoReceipt } from 'react-icons/io5'
 export const OrderDetails = ({setReset, reset}) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
@@ -17,17 +19,11 @@ export const OrderDetails = ({setReset, reset}) => {
     console.log(orderFilterOptions)
     useEffect(() => {
         if(condition !== ''){
-            dispatch(
-                AddCondition(condition)
-            )
-            
+            dispatch(AddCondition(condition))       
         }
         if(note !== ''){
-            dispatch(
-                AddNote(note)
-            )
-        }
-        
+            dispatch(AddNote(note))
+        }    
         dispatch(AddDate(date))
     }, [condition, note, date])
     useEffect(()=>{
@@ -53,7 +49,13 @@ export const OrderDetails = ({setReset, reset}) => {
                     setReset={setReset}
                     reset={reset}
                     
-                    
+                />
+                <Button 
+                title={"Subir recibo"}
+                startIcon={<IoReceipt/>}
+                bgcolor='gray'
+                border=''
+                borderRadius={"normal"}
                 />
             </Section>
             <Section>
@@ -70,6 +72,8 @@ export const OrderDetails = ({setReset, reset}) => {
     )
 }
 const Container = styled.div`
+display: grid;
+gap: 1em;
 `
 const Section = styled.section`
     ${props => props.flex ? `

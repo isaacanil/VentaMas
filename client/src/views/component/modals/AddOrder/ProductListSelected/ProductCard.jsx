@@ -26,12 +26,12 @@ export const ProductCard = ({product}) => {
         </Col>
         <Col>
             <span>
-                RD${separator(product.cost.unit)}
+                RD${separator(product.initialCost)}
             </span>
         </Col>
         <Col>
             <span>
-                RD${separator(product.cost.unit * product.stock.newStock)}
+                RD${separator(product.initialCost * product.stock.newStock)}
             </span>
         </Col>
         <Button

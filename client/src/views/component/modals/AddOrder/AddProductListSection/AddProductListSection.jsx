@@ -5,7 +5,7 @@ import { InputNumber, InputText } from '../../../../templates/system/Inputs/Inpu
 import style from '../AddOrderModalStyle.module.scss'
 import { AddProductButton_OrderPage } from '../Button'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
-import { SelectProductSelected, updateStock } from '../../../../../features/addOrder/addOrderModalSlice'
+import { getInitialCost, SelectProductSelected, updateStock } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { AddProduct } from '../../../../../features/addOrder/addOrderModalSlice'
 import { Button } from '../../../../templates/system/Button/Button'
@@ -16,18 +16,16 @@ export const AddProductListSection = () => {
     const dispatch = useDispatch();
     const productSelected = useSelector(SelectProductSelected)
     const [product, setProduct] = useState(null)
-    
-    useEffect(() => {
-        productSelected ? (
-            setProduct({ ...productSelected, product: { stock: { actualStock: '', newStock: '' } } })
-        ) : null
-    }, [productSelected])
-
+    const [showProductList, setShowProductList] = useState(false)
+ 
     const actualStock = product ? Number(productSelected.product.stock) : null;
     const newStock = product ? Number(product.product.stock.newStock) : null;
-    const stock = { newStock, actualStock }
-    const totalStock = productSelected ? `${actualStock + newStock}` : null
+    const stock = { newStock, actualStock };
+    const totalStock = productSelected ? `${actualStock + newStock}` : null;
 
+    const cost = productSelected && product ? { unit: productSelected.product.cost.unit } : null;
+    const initialCost = product ? Number(product.product.initialCost) : null;
+    const subTotal = product ? Number(product.product.initialCost) * Number(product.product.stock.newStock) : null;
     const AddToOrderProductList = () => {
         
         if (product === 0){
@@ -40,11 +38,34 @@ export const AddProductListSection = () => {
         }
         if (productSelected && newStock > 0) {
             dispatch(updateStock({ stock }))
+            dispatch(getInitialCost({ initialCost, cost }))
             dispatch(AddProduct())
         }
         
         
     }
+    useEffect(() => {
+        productSelected ? (
+            setProduct({ ...productSelected, product: { stock: { actualStock: '', newStock: '' }, cost: {unit: ''}, initialCost: '' } })
+        ) : null
+    }, [productSelected])
+    useEffect(()=> {
+        if(product && (productSelected.product.productName) && Number(product.product.initialCost) > Number(productSelected.product.cost.unit)){
+            // dispatch(addNotification({title: 'Error', message: 'El costo inicial no puede ser mayor al costo unitario', type: 'error'}))
+            //setProduct({...product, product: {...product.product, initialCost: ''}})
+            dispatch(addNotification({title: 'Advertencia', message: 'El costo inicial es mayor al costo unitario', type: 'error'}))
+        }
+    }, [initialCost])
+    useEffect(()=> {
+        if(productSelected.product.productName === "" && initialCost > 0){
+            dispatch(addNotification({title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'error'}))
+            setShowProductList(true)
+        }
+        if(productSelected.product.productName === "" && newStock > 0){
+            dispatch(addNotification({title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'warning'}))
+            setShowProductList(true)
+        }
+    }, [initialCost, newStock])
     console.log(product)
     return (
         <Container>
@@ -65,7 +86,7 @@ export const AddProductListSection = () => {
                     <span>{`Cantidad ${productSelected ? `(${totalStock})` : null}`}</span>
                 </Col>
                 <Col>
-                    <span>Costo</span>
+                    <span>Costo {`(${productSelected ? (cost ? cost.unit : null) : null})`}</span>
                 </Col>
                 <Col>
                     <span>Subtotal</span>
@@ -75,9 +96,9 @@ export const AddProductListSection = () => {
             </Group>
             <Group>
                 <ProductFilter
-                    productName={productSelected ? productSelected.product.productName : ''}
-                    
-                    
+                isOpen={showProductList}
+                setIsOpen={setShowProductList}
+                    productName={productSelected ? productSelected.product.productName : ''}     
                 />
                 <div>
                     <InputNumber
@@ -87,6 +108,7 @@ export const AddProductListSection = () => {
                         onChange={(e) => setProduct({
                             ...product,
                             product: {
+                                ...product.product,
                                 stock: {
                                     newStock: e.target.value
                                 }
@@ -96,22 +118,26 @@ export const AddProductListSection = () => {
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? productSelected.product.cost.unit : null}
+                        value={productSelected ? (product !== null ? (product.product.initialCost): null) : null}
                         placeholder='Costo'
-                        readOnly
+                        onChange={(e) => setProduct({
+                            ...product,
+                            product: {
+                                ...product.product,
+                                initialCost: e.target.value    
+                            }
+                        })}
                         border
                         bgColor='gray-light'
-
                     />
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? productSelected.product.price.unit : null}
+                        value={productSelected ? subTotal : null}
                         placeholder='SubTotal'
                         readOnly
                         border
                         bgColor='gray-light'
-
                     />
                 </div>
                 <div>

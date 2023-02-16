@@ -27,7 +27,7 @@ export const ProductListSelected = () => {
 }
 const Container = styled.div`
     border: var(--border-primary);
-    background-color: var(--White2);
+    background-color: var(--White1);
     border-radius: 6px;
     height: 12em;
     position: relative;

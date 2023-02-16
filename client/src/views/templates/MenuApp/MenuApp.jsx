@@ -17,8 +17,6 @@ import { Tooltip } from '../system/Button/Tooltip'
 import { colorPalette } from '../../../features/theme/themeSlice'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
 
-
-
 export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const { color } = colorPalette()
   const dispatch = useDispatch()
@@ -32,7 +30,6 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
     dispatch(toggleOpenMenu(isOpenMenu))
   }, [isOpenMenu])
   const ref = useRef(null)
-
   const anotherRef = useRef(null)
   const ImageHidden = useSelector(selectImageHidden)
   const viewRowModeRef = useSelector(selectIsRow)
@@ -118,13 +115,13 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
 }
 const Backdrop = styled.div`
   height: calc(100vh);
-        width: 100%;
-        position: absolute;
-        left: 0;
-        backdrop-filter: blur(0px);
+  width: 100%;
+  position: absolute;
+  left: 0;
+  backdrop-filter: blur(0px);
         z-index: 10;
         pointer-events: none;
-        transition: 400ms ease-in-out;
+        transition: 1s ease;
    ${props => {
     switch (props.isOpen) {
       case true:
@@ -132,8 +129,9 @@ const Backdrop = styled.div`
         z-index: 999999;
         display: block;
         pointer-events: visible;
-        backdrop-filter: blur(10px);
-        background-color: rgba(0, 0, 0, 0.200);
+        backdrop-filter: blur(2px);
+        webkit-backdrop-filter: blur(6px);
+       // background-color: rgba(0, 0, 0, 0.200);
         `
       default:
         break;

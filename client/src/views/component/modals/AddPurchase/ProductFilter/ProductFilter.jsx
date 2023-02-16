@@ -25,6 +25,8 @@ useEffect(()=>{
   return (
     <Component>
       <InputText
+        border
+        bgColor='gray-light'
         size='small'
         value={value}
         placeholder='Buscar...'

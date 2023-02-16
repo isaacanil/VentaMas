@@ -3,13 +3,14 @@ import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import {SelectProduct} from '../../../../../features/addOrder/addOrderModalSlice'
 
-export const ProductCard = ({data, showProductList}) => {
+export const ProductCard = ({data, setShowProductList}) => {
    const dispatch = useDispatch()
    const handleSelectProduct = (data) => {
        
         dispatch(
             SelectProduct(data)
         )
+        setShowProductList(false)
    }
   return (
     <Container onClick={() => handleSelectProduct(data)}>

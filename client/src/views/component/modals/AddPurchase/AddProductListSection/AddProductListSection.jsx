@@ -65,6 +65,8 @@ export const AddProductListSection = () => {
                     <InputNumber
                         value={productSelected ? (product !== null ? (product.product.stock.newStock) : null) : ''}
                         placeholder='Cantidad'
+                        border
+                        bgColor='gray-light'
                         onChange={(e) => setProduct({
                             ...product,
                             product: {
@@ -77,6 +79,8 @@ export const AddProductListSection = () => {
                     <InputText
                         value={productSelected ? productSelected.product.cost.unit : null}
                         placeholder='Costo'
+                        border
+                        bgColor='gray-light'
                         readOnly
                     />
                 </div>
@@ -84,6 +88,8 @@ export const AddProductListSection = () => {
                     <InputText
                         value={productSelected ? productSelected.product.price.unit : null}
                         placeholder='SubTotal'
+                        border
+                        bgColor='gray-light'
                         readOnly
                     />
                 </div>
@@ -102,12 +108,11 @@ export const AddProductListSection = () => {
 }
 
 const Container = styled.div`
-    background-color: var(--White2);
     border-radius: 8px;
     display: grid;
     gap: 0.2em;
     padding: 0 1em 0.4em;
-    border: var(--border-primary);
+    //border: var(--border-primary);
 `
 const Group = styled.div`
      color: rgb(37, 37, 37);

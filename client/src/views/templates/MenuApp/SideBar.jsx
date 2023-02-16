@@ -17,10 +17,8 @@ export const SideBar = ({ links, isOpen }) => {
             <Body>
                 <Links>
                     {
-                        links.map((item, index) => (
-                            
+                        links.map((item, index) => (           
                                 <MenuLink item={item} key={index}></MenuLink>
-                        
                         ))
                     }
                 </Links>
@@ -39,7 +37,7 @@ const Container = styled.nav`
     background-color: rgb(87, 87, 87);
     backdrop-filter: blur(100px);
     transform: translateX(-100%);  
-    transition: transform 0.4s ease-in-out;
+    transition: transform 400ms ease;
     overflow-y: auto;
     overflow-x: hidden;
     ${props => {
@@ -47,7 +45,7 @@ const Container = styled.nav`
             case true:
                 return `
                 transform: translateX(0px);
-                transition: transform 400ms ease-in-out;
+            
                 `
 
 

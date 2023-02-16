@@ -5,11 +5,11 @@ import { IoClose } from 'react-icons/io5'
 import { getProducts } from '../../../../../firebase/firebaseconfig'
 import { ProductCard } from './ProductCard'
 import { SelectProductSelected } from '../../../../../features/addOrder/addOrderModalSlice'
-export const ProductFilter = ({ productName }) => {
+export const ProductFilter = ({ productName, isOpen, setIsOpen }) => {
 
   const [products, setProducts] = useState([])
   const [value, setValue] = useState(undefined)
-  const [showProductList, setShowProductList] = useState(false)
+  
   useEffect(() => {
     getProducts(setProducts, true)
   }, [])
@@ -30,15 +30,15 @@ useEffect(()=>{
         value={value}
         placeholder='Buscar...'
         onChange={(e) => setValue(e.target.value)}
-        onFocus={() => setShowProductList(true)}
+        onFocus={() => setIsOpen(true)}
         bgColor='gray-light'
       />
-      {showProductList ? (
+      {isOpen ? (
         <ProductsList>
           <ProductsListHead>
             <span>Lista de Producto</span>
             <span>
-              <Button onClick={() => setShowProductList(false)}>
+              <Button onClick={() => setIsOpen(false)}>
                 <IoClose />
               </Button>
             </span>
@@ -49,8 +49,7 @@ useEffect(()=>{
                 <ProductCard
                   key={index}
                   data={data}
-                  showProductList={showProductList}
-
+                  setShowProductList={setIsOpen}
                 />
               ))
             }

@@ -27,7 +27,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
     const now = new Date()
     const day = now.getDate()
     const SELECTED_PURCHASE = useSelector(selectPurchase)
-    
+
     useEffect(() => {
         const provider = SELECTED_PURCHASE.provider;
         if (!provider) return;
@@ -41,18 +41,18 @@ export const AddPurchaseModal = ({ isOpen }) => {
 
     useEffect(() => {
         if (provider !== null && provider !== prevProvider) {
-          dispatch(AddProvider(provider))
+            dispatch(AddProvider(provider))
         }
         setPrevProvider(provider);
-      }, [provider]);
+    }, [provider]);
 
-      useEffect(() => {
+    useEffect(() => {
         if (orderToPurchase) {
-          dispatch(getOrderData(orderToPurchase));
+            dispatch(getOrderData(orderToPurchase));
         }
-      }, [orderToPurchase]);
+    }, [orderToPurchase]);
     console.log(orderToPurchase)
-      
+
     useEffect(() => {
         const order = SELECTED_PURCHASE;
         if (!order) return;
@@ -71,7 +71,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
     }
     const HandleSubmit = () => {
         dispatch(toggleAddPurchaseModal());
-        PassDataToPurchaseList(SELECTED_PURCHASE); 
+        PassDataToPurchaseList(SELECTED_PURCHASE);
         setReset(true);
         dispatch(cleanPurchase());
     }
@@ -96,50 +96,50 @@ export const AddPurchaseModal = ({ isOpen }) => {
                         />
                     </WrapperHeader>
                 </Header>
-                <Body>
-                    <div>
-                        <Select
-                            setReset={setReset}
-                            reset={reset}
-                            property='id'
-                            title='Pedidos'
-                            data={pendingOrders}
-                            value={orderToPurchase}
-                            setValue={setOrderToPurchase}
-                        />
-                    </div>
-                    <header >
-                        <Select
-                            setReset={setReset}
-                            reset={reset}
-                            property='name'
-                            title='Proveedor'
-                            data={providers}
-                            value={provider}
-                            setValue={setProvider}
-                        />
-                        <Button
-                            title={<CgMathPlus />}
-                            borderRadius={'normal'}
-                            border='light'
-                            width={'icon32'}
-                            bgcolor='gray'
-                        />
-                    </header>
-                    <AddProductListSection></AddProductListSection>
-                    <ProductListSelected SELECTED_PURCHASE={SELECTED_PURCHASE}></ProductListSelected>
-                    <OrderDetails reset={reset} setReset={setReset} SELECTED_PURCHASE={SELECTED_PURCHASE}></OrderDetails>
-                </Body>
-                <Footer>
-                    <WrapperFooter>
-                        <Button
-                            title='Comprar'
-                            borderRadius={'normal'}
-                            bgcolor='primary'
-                            onClick={HandleSubmit}
-                        />
-                    </WrapperFooter>
-                </Footer>
+                <BodyContainer>
+                    <Body>
+                        <div>
+                            <Select
+                                setReset={setReset}
+                                reset={reset}
+                                property='id'
+                                title='Pedidos'
+                                data={pendingOrders}
+                                value={orderToPurchase}
+                                setValue={setOrderToPurchase}
+                            />
+                        </div>
+                        <header >
+                            <Select
+                                setReset={setReset}
+                                reset={reset}
+                                property='name'
+                                title='Proveedor'
+                                data={providers}
+                                value={provider}
+                                setValue={setProvider}
+                            />
+                            <Button
+                                title={<CgMathPlus />}
+                                borderRadius={'normal'}
+                                border='light'
+                                width={'icon32'}
+                                bgcolor='gray'
+                            />
+                        </header>
+                        <AddProductListSection></AddProductListSection>
+                        <ProductListSelected SELECTED_PURCHASE={SELECTED_PURCHASE}></ProductListSelected>
+                        <OrderDetails reset={reset} setReset={setReset} SELECTED_PURCHASE={SELECTED_PURCHASE}></OrderDetails>
+                        <WrapperFooter>
+                            <Button
+                                title='Comprar'
+                                borderRadius={'normal'}
+                                bgcolor='primary'
+                                onClick={HandleSubmit}
+                            />
+                        </WrapperFooter>
+                    </Body>
+                </BodyContainer>
             </Modal>
         </Container>
 
@@ -158,7 +158,6 @@ const Container = styled.div`
     clip-path: circle(20.9% at 50% 50%);
     justify-content: center;
     align-items: center;
-
     opacity: 0;
     transition-property: transform, clip-path, opacity;
     transition-duration: 400ms, 1000ms, 300ms;
@@ -191,7 +190,7 @@ const Modal = styled.div`
     // border: 1px solid rgba(0, 0, 0, 0.300);
     overflow: hidden;
     display: grid;
-    grid-template-rows: min-content 1fr 2.75em;
+    grid-template-rows: min-content 1fr;
 `
 
 
@@ -209,8 +208,12 @@ const WrapperHeader = styled.div`
     justify-content: space-between;
     color: white;
 `
-const Body = styled.div`
+const BodyContainer = styled.div`
+    width: 100%;
     overflow-y: auto;
+`
+const Body = styled.div`
+   
         max-width: var(--max-width);
         margin: 0 auto;
         width: 100%;
@@ -218,7 +221,7 @@ const Body = styled.div`
         display: grid;
         align-items: flex-start;
         align-content: flex-start;
-        gap: 0.6em;
+        gap: 1em;
         header {
             display: flex;
             gap: 1em;

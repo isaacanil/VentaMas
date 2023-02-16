@@ -32,7 +32,7 @@ export const ProductListSelected = ({SELECTED_PURCHASE}) => {
     )
 }
 const Container = styled.div`
-    background-color: #ffffff;
+    background-color: var(--White1);
     border: var(--border-primary);
     border-radius: 6px;
     height: 12em;
@@ -43,7 +43,7 @@ const Container = styled.div`
 
 `
 const Head = styled.div`
-    background-color: #e9e9e9;
+    
     color: #303030;
     height: 2em;
     display: grid;

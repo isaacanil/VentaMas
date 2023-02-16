@@ -21,7 +21,7 @@ export const Textarea = ({ onClick, onChange, value, placeholder }) => {
 
 const Container = styled.div`
     textarea{
-        background-color: var(--White);
+        background-color: var(--White2);
         border-radius: 10px;
         border: 1px solid rgba(0, 0, 0, 0.100);
         resize: none;

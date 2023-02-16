@@ -28,6 +28,7 @@ const EmptyProductSelected =  {
     cost: {
       unit: 0
     },
+    initialCost:'',
     stock: 0,
     price: {
       unit: 0
@@ -77,8 +78,12 @@ const addOrderSlice = createSlice({
 
       //total Precio del pedido
       const productList = state.order.products
-      const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock.newStock), 0)
+      const totalPurchase = productList.reduce((total, item) => total + (item.product.initialCost * item.product.stock.newStock), 0)
       state.order.totalPurchase = totalPurchase
+    },
+    getInitialCost: (state, actions) => {
+      const {initialCost} = actions.payload
+      state.productSelected.product.initialCost = initialCost 
     },
     updateStock: (state, actions) => {
       const {stock } = actions.payload
@@ -114,6 +119,7 @@ const addOrderSlice = createSlice({
 export const {
   SelectProduct,
   AddProduct,
+  getInitialCost,
   AddNote,
   AddCondition,
   AddCreatedDate,

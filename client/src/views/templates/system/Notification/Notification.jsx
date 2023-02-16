@@ -15,11 +15,11 @@ export const Notification = () => {
     const dispatch = useDispatch()
     useEffect(() => {
         if (visible) {
-        setTimeout(() => {
-            dispatch(removeNotification())
-        }, 6000);
+            setTimeout(() => {
+                dispatch(removeNotification())
+            }, 6000);
         }
-        }, [visible]);
+    }, [visible]);
     useEffect(() => {
         if (type) {
             switch (type) {
@@ -28,6 +28,8 @@ export const Notification = () => {
                 case 'success':
                     return setIcon(<FaCheckCircle />)
                 case 'info':
+                    return setIcon(<FaInfoCircle />)
+                case 'warning':
                     return setIcon(<FaInfoCircle />)
                 default:
                     return setIcon(null)
@@ -50,8 +52,9 @@ const Container = styled.div`
  max-width: 24em;
   width: 100%;
   min-height: 4em;
+  height: auto;
 color: #fff;
-padding: 0.4em 1em;
+padding: 0.8em 1em;
 border-radius: 4px;
 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 background-color: var(--White);
@@ -97,23 +100,27 @@ ${props => {
                 `
             case 'success':
                 return `
-
                 color: #4e4e4e;
                 svg{
                     fill: #8cd88c;
                 }
                 `
-                case 'info':
+            case 'info':
                 return `
-
                 color: #4e4e4e;
                 svg{
                     fill: #8cbcd8;
                 }
                 `
+            case 'warning':
+                return `
+                color: #4e4e4e;
+                svg{
+                    fill: #e29843;
+                }
+                `
             default:
                 return `
-
                 color: #4e4e4e;
                 svg{
                     fill: #8cd88c;
@@ -131,10 +138,11 @@ margin: 0;
 const Body = styled.div`
     display: grid;
     align-items: center;
+    gap: 0.2em;
 `
 const Icon = styled.div`
     height: 2.4em;
-    width: 2.4em;
+    width: 2.8em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -153,9 +161,13 @@ const Icon = styled.div`
                 return `
                 background-color: #8cd88c;
                 `
-                case 'info':
+            case 'info':
                 return `
                 background-color: #8cbcd8;
+                `
+            case 'warning':
+                return `
+                background-color: #FFCC00;
                 `
             default:
                 return `
@@ -168,4 +180,5 @@ const Icon = styled.div`
 `
 const Message = styled.p`
     font-size: 14px;
+    line-height: 16px;
 `

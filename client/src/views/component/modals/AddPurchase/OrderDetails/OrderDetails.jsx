@@ -14,7 +14,6 @@ export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
     const [condition, setCondition] = useState(null)
     const [note, setNote] = useState(null)
     const [date, setDate] = useState(null)
-
     useEffect(()=> {
         if(SELECTED_PURCHASE.condition !== '') {
             setCondition(
@@ -73,6 +72,8 @@ export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
     )
 }
 const Container = styled.div`
+display: grid;
+gap: 1em;
 `
 const Section = styled.section`
     ${props => props.flex ? `

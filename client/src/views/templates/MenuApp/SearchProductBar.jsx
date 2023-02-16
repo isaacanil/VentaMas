@@ -10,10 +10,21 @@ export const SearchProductBar = ({ searchData, setSearchData }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useEffect(()=>{
-      if(searchData === '$activeDevMode'){
-        //navigate('/devTools')
-        setSearchData('')
-        dispatch(toggleMode())
+      switch(searchData){
+        case '$activeDevMode':
+          dispatch(toggleMode())
+          setSearchData('')
+          break;
+        case '$openClientList':
+          navigate('/devTools')
+          setSearchData('')
+          break;
+        case '$goToFreeSpace':
+          navigate('/app/freeSpace')
+          setSearchData('')
+          break;
+        default:  
+          break;
       }
     }, [searchData])
     return (

@@ -4,6 +4,8 @@ import styled from 'styled-components'
 import { addNotification } from './features/notification/NotificationSlice'
 import { selectOrderFilterOptions } from './features/order/ordersSlice'
 import { colorPalette } from './features/theme/themeSlice'
+import { getProduct, getProducts } from './firebase/firebaseconfig'
+import { ProductsByCategory } from './hooks/ProductsByCategory'
 import { SelectDataFromOrder } from './hooks/useSelectDataFromOrder'
 import { Button } from './views'
 import CustomInput from './views/templates/system/Inputs/CustomInput'
@@ -15,6 +17,11 @@ export const FreeSpace = () => {
   const handleGetNotification = () => {
     dispatch(addNotification({message: 'Hola, que haces?', type: 'success' }))
   }
+  const [products, setProducts] = useState([])
+  useEffect(() => {
+    getProducts(setProducts)
+  }, [])
+
   //   const [users, setUsers] = useState([])
   //   const [rol, setRol] = useState()
 
@@ -35,7 +42,7 @@ export const FreeSpace = () => {
        <Square visible={change ? true : false}>
         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ea sunt eum repellat? Tempore magni illum animi dolorem itaque adipisci, odio explicabo molestiae soluta deleniti officia quam necessitatibus porro numquam ex?
        </Square>
-       <CustomInput options={["10%", "20%", "30%"]}/>
+       <ProductsByCategory children={products}></ProductsByCategory>
       {/* <Typography variant='p' color={font2} >Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas in dolore molestiae voluptatem quidem a eligendi, deserunt rem cumque qui necessitatibus distinctio expedita quae minus iusto blanditiis saepe itaque totam?</Typography> */}
       {/* <select name="" id="" onChange={(e)=>setRol(e.target.value)}>
         {rolesList.map(({rol})=>(
