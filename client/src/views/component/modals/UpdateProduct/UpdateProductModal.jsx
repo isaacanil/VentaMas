@@ -9,7 +9,9 @@ import { Button } from '../../../templates/system/Button/Button'
 import { Input } from '../../../templates/system/Inputs/InputV2'
 import { UploadImg } from '../../UploadImg'
 import { Modal } from '../modal'
-
+import { quitarCeros } from '../../../../hooks/quitarCeros'
+import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter'
+import { useRoundDecimals } from '../../../../hooks/roundToTwoDecimals'
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, lastProduct } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState([])
@@ -33,7 +35,12 @@ export const UpdateProductModal = ({ isOpen }) => {
         type: "",
         size: "",
         netContent: "",
-        tax: "",
+        tax: {
+            unit: 0,
+            ref: 'Excento',
+            value: 0,
+            total: 0
+        },
         id: "",
         order: 0,
         price: {
@@ -65,7 +72,22 @@ export const UpdateProductModal = ({ isOpen }) => {
         getTaxes(setTaxesList)
         getCat(setCatList)
     }, [])
-
+    const calculatePrice = () => {
+        const { cost, tax } = product;
+        if (typeof cost.unit !== 'number' || typeof tax.value !== 'number') {
+           return;
+        }
+        const price = {
+           unit: useRoundDecimals(cost.unit * tax.value + cost.unit),
+           total: useRoundDecimals(cost.unit * tax.value + cost.unit),
+        }
+        setProduct({
+           ...product,
+           price
+        })
+        console.log('todo esta bien')
+     }
+     useEffect(calculatePrice, [product.cost, product.tax])
     const dispatch = useDispatch()
     const [errorMassage, setErrorMassage] = useState('')
 
@@ -85,10 +107,10 @@ export const UpdateProductModal = ({ isOpen }) => {
             ChangeProductImage(url)
         )
     }
-
+    console.log(product)
     return (
         <Modal
-            nameRef='Actualizar'
+            nameRef={`Actualizar ${product.id} `}
             isOpen={isOpen}
             close={closeModal}
             btnSubmitName='Guardar'
@@ -170,8 +192,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                         <img src={status ? product.productImageURL : undefined} alt="" />
                     </Img>
                     <Button
-                    borderRadius='normal'
-                    width='w100'
+                        borderRadius='normal'
+                        width='w100'
                         title='Agregar Imagen'
                         onClick={handleImgController}
                     />
@@ -190,7 +212,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                     <Input
                         title={'Costo'}
                         type="number"
-                        value={status ? product.cost.unit : undefined}
+                        value={status ? quitarCeros(product.cost.unit) : undefined}
                         onChange={(e) => setProduct({
                             ...product,
                             cost: {

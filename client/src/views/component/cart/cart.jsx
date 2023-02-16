@@ -96,6 +96,7 @@ export const Cart = () => {
     } catch (error) {
     }
   }
+
   const handleInvoice = async () => {
     if (ProductSelected.length > 0) {
       try {
@@ -105,6 +106,7 @@ export const Cart = () => {
         await showPrintPreview()
         await showPrintPreview()
         await clearDataFromState()
+      
       } catch (error) {
         console.log(error)
       }

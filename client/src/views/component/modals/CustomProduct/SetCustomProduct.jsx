@@ -10,80 +10,60 @@ import { useDispatch, useSelector } from 'react-redux'
 import { SelectSetCustomPizzaModal, handleModalSetCustomPizza } from '../../../../features/modals/modalSlice'
 import { selectTotalIngredientPrice, SelectIngredientsListName, formatData } from '../../../../features/customProducts/customProductSlice'
 import { nanoid } from 'nanoid'
-import { addProduct } from '../../../../features/cart/cartSlice'
+import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../features/cart/cartSlice'
 import { v4 } from 'uuid'
 import { Button } from '../../../templates/system/Button/Button.jsx'
 import { useNavigate } from 'react-router-dom'
 import { AddCustomProductModal } from '../AddCustomProductModal/AddCustomProductModal.jsx'
 import { removeMatchesString } from '../../../../hooks/removeMatchesString.js'
+const EmptyProduct = {
+    id: '',
+    type: '',
+    productName: '',
+    category: '',
+    amountToBuy: { unit: 1, total: 1, },
+    price: { unit: 0, total: 0 },
+    mitad: { first: '', second: '' }
+}
+const EmptyNewProduct = {
+    productName: '',
+    cost: { unit: 0, total: 0 },
+    id: '',
+    price: { unit: 0, total: 0 },
+    amountToBuy: { unit: 1, total: 1 },
+    tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
+    size: '',
+}
+const EmptyProductSelected = { a: '', b: '' }
 export const SetCustomProduct = ({ isOpen }) => {
+
     const dispatch = useDispatch()
     const matchList = /Completa|Pepperoni|Vegetales|Jamón y queso|Maíz |Pollo/g;
     const totalIngredientPrice = useSelector(selectTotalIngredientPrice)
     const IngredientListNameSelected = useSelector(SelectIngredientsListName)
-    //console.log('hola', IngredientListNameSelected)
-    const [IngredientModalOpen, setIngredientModalOpen ] = useState(false)
+    const [IngredientModalOpen, setIngredientModalOpen] = useState(false)
     const handleIngredientOpen = () => setIngredientModalOpen(!IngredientModalOpen)
     const [customProduct, setCustomProduct] = useState({})
-    const [newProduct, setNewProduct] = useState(
-        {
-            productName: '',
-            cost: { unit: 0, total: 0 },
-            id: '',
-            price: { unit: 0, total: 0 },
-            amountToBuy: { unit: 1, total: 1 },
-            tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
-            size: '',
-        },
-    )
-    useEffect(() => {
-        getCustomProduct(setCustomProduct)
-    }, [])
+    const [newProduct, setNewProduct] = useState(EmptyNewProduct)
     const [size, setSize] = useState('')
     const [products, setProducts] = useState([])
-    const [product, setProduct] = useState({
-        id: '',
-        type: '',
-        productName: '',
-        category: '',
-        amountToBuy: {
-            unit: 1,
-            total: 1,
-        },
-        price: {
-            unit: 0,
-            total: 0
-        },
-        mitad: {
-            first: '',
-            second: ''
-        }
-    })
-    const [productSelected, setProductSelected] = useState(
-        {
-            a: '',
-            b: ''
-        }
-    )
+    const [product, setProduct] = useState(EmptyProduct)
+    const [productSelected, setProductSelected] = useState(EmptyProductSelected)
     const [isComplete, setIsComplete] = useState(true)
+    let type = 'pizza';
+
+    useEffect(() => { getCustomProduct(setCustomProduct) }, [])
     const handleProduct = (data) => {
         data === 'false' ? setIsComplete(false) : null;
         data === 'true' ? setIsComplete(true) : null;
-        // console.log(isComplete)
     }
-    const closeModal = () => {
-        dispatch(
-            handleModalSetCustomPizza()
-        )
-    }
-    let type = 'pizza';
+    const closeModal = () => { dispatch(handleModalSetCustomPizza()) }
     useEffect(() => {
-        if (size === '') {
-            // console.log('esperando')
-        } else {
+        if (size !== '') {
             QueryByType(setProducts, type, size)
         }
     }, [size])
+    
     useEffect(() => {
         if (isComplete && productSelected.a !== '') {
             const a = JSON.parse(productSelected.a)
@@ -91,11 +71,13 @@ export const SetCustomProduct = ({ isOpen }) => {
             const firstProductName = removeMatchesString(String(a.productName), matchList)
             setNewProduct({
                 ...newProduct,
-                productName: `pizza de ${firstProductName}. ingrediente extras: ${IngredientListNameSelected}`,
+                productName: `pizza de ${firstProductName}. extras: ${IngredientListNameSelected}`,
                 price: {
                     unit: firstProductPrice + totalIngredientPrice,
                     total: firstProductPrice + totalIngredientPrice
-                }, size: size
+                }, 
+                size: size,
+                id: nanoid(8)
             })
             setProduct({
                 price: { total: firstProductPrice }
@@ -110,7 +92,7 @@ export const SetCustomProduct = ({ isOpen }) => {
             const secondProductName = removeMatchesString(String(b.productName), matchList);
 
             console.log(`${firstProductName} => ${firstProductPrice}, ${secondProductName} => ${secondProductPrice}`)
-            //Todo ************price****************************************************************
+
             const price = () => {
                 return new Promise((resolve, reject) => {
                     if (firstProductPrice > secondProductPrice) {
@@ -151,58 +133,22 @@ export const SetCustomProduct = ({ isOpen }) => {
             }
         }
     }, [productSelected.a, productSelected.b, IngredientListNameSelected])
-  
-  
+
+
     console.log(productSelected.b)
     const HandleSubmit = () => {
-        setNewProduct({
-            ...newProduct,
-            id: nanoid(6),
-            size,
-            amountToBuy: { unit: 1, total: 1 },
-        })
-        dispatch(
-            addProduct(newProduct)
-        )
-        dispatch(
-            formatData()
-        )
-        setProductSelected(
-            {
-                a: '',
-                b: ''
-            }
-        ),
-            setIsComplete(true),
-            setProduct(
-                {
-                    id: '',
-                    type: '',
-                    productName: '',
-                    amountToBuy: {
-                        unit: 1,
-                        total: 1,
-                    },
-                    price: {
-                        unit: 0,
-                        total: 0
-                    },
-                    mitad: {
-                        first: '',
-                        second: ''
-                    }
-                }
-            )
-        setNewProduct({
-            ...newProduct,
-            productName: '',
-            cost: { unit: 0, total: 0 },
-            id: '',
-            price: { unit: 0, total: 0 },
-            amountToBuy: { unit: 1, total: 1 },
-            tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
-            size: ''
-        })
+        dispatch(addProduct(newProduct))
+        dispatch(formatData())
+        setProductSelected(EmptyProductSelected)
+        dispatch(totalPurchaseWithoutTaxes())
+        dispatch(totalShoppingItems())
+        dispatch(totalTaxes())
+        dispatch(totalPurchase())
+        dispatch(setChange())
+        setIsComplete(true)
+        setProduct(EmptyProduct)
+        setNewProduct(EmptyNewProduct)
+        
     }
     return (
         <Modal

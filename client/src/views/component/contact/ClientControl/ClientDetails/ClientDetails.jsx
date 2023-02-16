@@ -54,6 +54,7 @@ export const ClientDetails = ({ createClientMode, clientSelected, client, setCli
                             name='tel'
                             value={client.tel}
                             onChange={e => updateClient(e)}
+                            autocomplete='off'
                         />
                     </Item>
                     <Item>
@@ -63,6 +64,7 @@ export const ClientDetails = ({ createClientMode, clientSelected, client, setCli
                             name='personalID'
                             value={client.personalID}
                             onChange={e => updateClient(e)}
+                            autocomplete='off'
                         />
                     </Item>
                 </Group>
@@ -75,7 +77,9 @@ export const ClientDetails = ({ createClientMode, clientSelected, client, setCli
                         name="address"
                         value={client.address}
                         onChange={(e) => updateClient(e)
+                            
                         }
+                        autocomplete="off"
                     />
                 </Item>
             </Row>
