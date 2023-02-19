@@ -98,8 +98,8 @@ export const UpdateProductModal = ({ isOpen }) => {
         const { cost, tax } = product;
         if (typeof cost.unit !== 'number' || typeof tax.value !== 'number') { return }
         const price = {
-            unit: cost.unit * tax.value + cost.unit,
-            total: cost.unit * tax.value + cost.unit,
+           unit: cost.unit * tax.value + cost.unit,
+           total: cost.unit * tax.value + cost.unit,
         }
         setProduct({ ...product, price })
     }
@@ -124,7 +124,7 @@ export const UpdateProductModal = ({ isOpen }) => {
 
     return (
         <Modal
-            nameRef='Actualizar'
+            nameRef={`Actualizar ${product.id} `}
             isOpen={isOpen}
             close={closeModal}
             btnSubmitName='Guardar'

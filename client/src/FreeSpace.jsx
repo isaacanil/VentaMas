@@ -5,6 +5,7 @@ import { addNotification } from './features/notification/NotificationSlice'
 import { selectOrderFilterOptions } from './features/order/ordersSlice'
 import { colorPalette } from './features/theme/themeSlice'
 import { getProduct, getProducts } from './firebase/firebaseconfig'
+import { getData } from './firebase/firebaseconfigClients'
 import { ProductsByCategory } from './hooks/ProductsByCategory'
 import { SelectDataFromOrder } from './hooks/useSelectDataFromOrder'
 import { Button } from './views'
@@ -34,9 +35,19 @@ export const FreeSpace = () => {
   //   {rol: {name: 'readOnly'}}
   //  ]
   const [change, setChange] = useState(false)
+  const [data, setData] = useState([])
   const handleChange = () => setChange(!change)
+  useEffect(()=>{
+    getData(setData)
+  }, [])
+    console.log(data)
   return (
     <div>
+      {
+        //data.length > 0 ? 'Hola' : 'nada'
+        data.map((doc)=>(<li>{doc.name}</li>))
+      }
+     
      <Notification/>
      <Button title="Click" borderRadius='normal' onClick={handleChange}></Button>
        <Square visible={change ? true : false}>
@@ -77,8 +88,8 @@ export const FreeSpace = () => {
 const Square = styled.div`
   width: 200px;
   height: 200px;
-  background-color: red;
-  transition: height 1s ease-in-out ;
+  background-color: #4c00ff;
+  transition: height 1s ease-in- out ;
   overflow: hidden;
   ${props => {
     switch (props.visible) {

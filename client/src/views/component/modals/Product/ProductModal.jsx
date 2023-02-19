@@ -73,7 +73,35 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    }, [ImgSelected])
    const handleSubmit = async () => {
       UploadProductData(product)
-      setProduct(EmptyProductData)
+      setProduct({
+         productName: '',
+         price: {
+            unit: undefined,
+            total: undefined,
+         },
+         cost: {
+            unit: undefined,
+            total: undefined,
+         },
+         amountToBuy: {
+            unit: 1,
+            amount: 1,
+         },
+         type: '',
+         productImageURL: '',
+         netContent: '',
+         category: '',
+         size: '',
+         tax: {
+            ref: '',
+            value: undefined,
+            unit: '',
+            total: ''
+         },
+         stock: '',
+         id: '',
+
+      })
       dispatch(clearImg())
    }
 
@@ -83,8 +111,8 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
          return;
       }
       const price = {
-         unit: cost.unit * tax.value + cost.unit,
-         total: cost.unit * tax.value + cost.unit,
+         unit: useDecimalLimiter(cost.unit * tax.value + cost.unit),
+         total: useDecimalLimiter(cost.unit * tax.value + cost.unit),
       }
       setProduct({
          ...product,
@@ -303,7 +331,6 @@ const Group = styled.div`
                     display: flex;
                     gap: 1em;
                 `
-
             case 'horizontal':
                 return `
                     display: grid

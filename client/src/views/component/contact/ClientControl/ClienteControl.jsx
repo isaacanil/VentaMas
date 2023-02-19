@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { getClients } from '../../../../firebase/firebaseconfig.js'
-import { createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setClientModeInState, updateClientInState } from '../../../../features/cart/cartSlice'
+import { addDelivery, createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setChange, setClientModeInState, totalPurchase, updateClientInState } from '../../../../features/cart/cartSlice'
 import style from './ClientControlStyle.module.scss'
 import {
   CancelPurchaseBtn,
@@ -10,7 +10,7 @@ import { Input } from '../../../templates/system/Inputs/InputV2.jsx'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button.jsx'
 import { useClickOutSide } from '../../../../hooks/useClickOutSide.jsx'
 import { useRef } from 'react'
-import { ClientDetails } from './ClientDetails.jsx'
+import { ClientDetails } from './ClientDetails/ClientDetails.jsx'
 import { SearchClient } from '../../../templates/system/Inputs/SearchClient.jsx'
 import { ClientSelector } from './ClientSelector.jsx'
 import { useSearchFilter } from '../../../../hooks/useSearchFilter.js'
@@ -37,7 +37,6 @@ export const ClientControl = () => {
       showClientList: false
     }
   }
-
   const dispatch = useDispatch()
   const [clients, setClients] = useState('')
   const SelectedClientMode = useSelector(SelectClientMode)
@@ -75,7 +74,10 @@ export const ClientControl = () => {
       tel: '',
       address: '',
       personalID: '',
-      delivery: 0
+      delivery: {
+        status: false,
+        value: ''
+      }
     })
 
   }
@@ -97,8 +99,7 @@ export const ClientControl = () => {
         setSearchClientLabel(`${CLIENT_MODE.SEARCH.label}`)
         break;
 
-      case CLIENT_MODE.UPDATE.mode:
-       
+      case CLIENT_MODE.UPDATE.mode: 
         setSearchTerm(clientSelected.name === '' ? clientSelected.name : client.name)
         setSearchClientLabel(`${CLIENT_MODE.UPDATE.label} (${clientSelected.name})`)
         closeMenu()
@@ -133,6 +134,9 @@ export const ClientControl = () => {
 
       case CLIENT_MODE.UPDATE.mode:
         dispatch(updateClientInState(client))
+        dispatch(totalPurchase())
+        dispatch(setChange())
+    
         break;
 
       case CLIENT_MODE.CREATE.mode:
@@ -165,7 +169,7 @@ export const ClientControl = () => {
         break;
     }
   }
-  console.log('MODE:: => ', MODE)
+  console.log('Client:: => ', client)
   return (
     <div className={style.ClientBarContainer} ref={searchClientRef}>
       <div className={style.row}>

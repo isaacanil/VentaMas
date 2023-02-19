@@ -9,9 +9,7 @@ export const ClientSelector = ({ showClientList, setShowClientList, filteredClie
     useEffect(()=>{
         setClients(filteredClients)
     }, [filteredClients])
-    return (
-         
-       
+    return (  
             <Container isOpen={showClientList ? true : false}>
                 <Head>
                     <Group>

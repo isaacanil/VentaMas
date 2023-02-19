@@ -36,6 +36,7 @@ export const ClientDetails = ({ createClientMode, clientSelected, client, setCli
             if(clientSelected.delivery){
                 deliveryData.status ? focusOnDeliveryInput() : null
                 setDeliveryData(clientSelected.delivery)
+                dispatch(totalPurchase())
             }
         }
     }, [clientSelected])

@@ -121,7 +121,7 @@ const Backdrop = styled.div`
   backdrop-filter: blur(0px);
         z-index: 10;
         pointer-events: none;
-        transition: 1s ease;
+        transition: all 1s  ease;
    ${props => {
     switch (props.isOpen) {
       case true:

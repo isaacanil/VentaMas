@@ -8,47 +8,53 @@ import { nanoid } from "nanoid";
 import { IoFemaleSharp } from "react-icons/io5";
 import { createClient, updateClient } from "../../firebase/firebaseconfig";
 import { useCompareObjectsInState } from "../../hooks/useCompareObject";
+const DefaultDelivery = {
+    status: false,
+    value: ""
+}
+const DefaultClient = {
+    name: "",
+    tel: "",
+    address: "",
+    personalID: "",
+    delivery: DefaultDelivery
+};
+const GenericClient = {
+    ...DefaultClient,
+    name: "Cliente Genérico"
+}
+const DefaultPaymentMethod = [
+    {
+        method: "cash",
+        value: 0,
+        status: true
+    },
+    {
+        method: "card",
+        value: 0,
+        status: false
+    },
+    {
+        method: "transfer",
+        value: 0,
+        status: false
+    }
+];
+
+
 const defaultValue = {
     data: {
         id: '',
-        client: {
-            name: '',
-            tel: '',
-            address: '',
-            personalID: '',
-            delivery: {
-                status: false,
-                value: ''
-            }
-        },
+        client: DefaultClient,
         products: [],
         change: {//cambio
             value: 0
         },
-        delivery: {
-            status: false,
-            value: 0
-        },
+        delivery: DefaultDelivery,
         discount: {
             value: 0
         },
-        paymentMethod: [
-            {
-                method: 'cash',
-                value: 0,
-                status: true
-            },
-            {
-                method: 'card',
-                value: 0,
-                status: false
-            },
-            {
-                method: 'transfer',
-                value: 0,
-                status: false
-            }
-        ],
+        paymentMethod: DefaultPaymentMethod,
         NCF: '',
         totalShoppingItems: {
             value: 0
@@ -86,12 +92,7 @@ const cartSlice = createSlice({
         isNewClient: (state) => {
             if (state.data.client.name === '') {
                 console.log('no cliente')
-                state.data.client = {
-                    name: 'Cliente Genérico',
-                    tel: '',
-                    address: '',
-                    personalID: ''
-                }
+                state.data.client = GenericClient
                 return
             }
             if (state.handleClient.UPDATED_CLIENT !== null && state.handleClient.UPDATED_CLIENT.id === state.data.client.id && !useCompareObjectsInState(state.data.client, state.handleClient.UPDATED_CLIENT)) {
@@ -107,15 +108,14 @@ const cartSlice = createSlice({
                 createClient(state.data.client)
                 return
             }
-
             return
-
         },
         updateClientInState: (state, action) => {
             const updatedClient = action.payload
             const clientSelected = state.data.client
             if (updatedClient.id === clientSelected.id) {
                 state.handleClient.UPDATED_CLIENT = updatedClient
+                state.data.delivery = updatedClient.delivery
                 console.log(state.handleClient.UPDATED_CLIENT, 'update función')
             }
         },
@@ -124,22 +124,11 @@ const cartSlice = createSlice({
             state.data.client = action.payload
         },
         selectClientInState: (state, action) => {
-            state.data.client = action.payload
-            console.log(state.handleClient.UPDATED_CLIENT, state.data.client, 'client')
-            
+            state.data.client = action.payload  
         },
         deleteClientInState: (state) => {
-            state.data.client = {
-                name: '',
-                tel: '',
-                address: '',
-                personalID: '',
-                delivery: ''
-            }
-            state.data.delivery = {
-                status: false,
-                value: ''
-            }
+            state.data.client = DefaultClient
+            state.data.delivery = DefaultDelivery
             state.handleClient.UPDATED_CLIENT = null
         },
         addPaymentValue: (state, actions) => {
@@ -153,13 +142,21 @@ const cartSlice = createSlice({
         addTaxReceiptInState: (state, actions) => {
             state.data.NCF = actions.payload
         },
-        addDelivery: (state, action) => {
-            const { cash, status } = action.payload
-            state.data.delivery.value = cash
-            state.data.delivery.status = status
-            if (state.data.delivery.status === false) {
-                state.data.delivery.value = 0
+        addDelivery: (state) => {
+            const clientDeliveryData = state.data.client.delivery;
+            const updateClientDeliveryData = state.handleClient.UPDATED_CLIENT ? state.handleClient.UPDATED_CLIENT.delivery : null;
+            if(updateClientDeliveryData && clientDeliveryData){
+                if(clientDeliveryData.status === true && clientDeliveryData.value !== ''){
+                    updateClientDeliveryData.status = clientDeliveryData.status
+                    updateClientDeliveryData.value = clientDeliveryData.value
+                }
+                else{
+                    updateClientDeliveryData.status = false
+                    updateClientDeliveryData.value = ''
+                }
+               
             }
+
         },
         addPaymentMethod: (state, actions) => {
             const data = actions.payload

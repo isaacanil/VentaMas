@@ -96,7 +96,6 @@ export const Cart = () => {
     try {
       dispatch(CancelShipping())
       dispatch(clearTaxReceiptData())
-
     } catch (error) {
       console.log('error al borrar los datos del state de factura')
     }
@@ -104,11 +103,10 @@ export const Cart = () => {
   const showPrintPreview = async () => {
     try {
       handlePrint()
-
     } catch (error) {
-
     }
   }
+
   const handleInvoice = async () => {
     if (ProductSelected.length === 0) {
       dispatch(addNotification({message: "No hay productos seleccionados", type: 'error'}))

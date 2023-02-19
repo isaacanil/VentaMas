@@ -1,5 +1,6 @@
 
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 
@@ -23,7 +24,6 @@ export const Button = ({
   titlePosition,
 
 }) => {
- 
 
   return (
     <Container
