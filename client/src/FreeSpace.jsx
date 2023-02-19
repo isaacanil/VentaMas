@@ -89,7 +89,7 @@ const Square = styled.div`
   width: 200px;
   height: 200px;
   background-color: #ff5100;
-  transition: height 1s ease-in- out ;
+  transition: height 1s ease-in-out ;
   overflow: hidden;
   ${props => {
     switch (props.visible) {
