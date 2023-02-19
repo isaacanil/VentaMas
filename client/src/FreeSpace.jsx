@@ -88,7 +88,7 @@ export const FreeSpace = () => {
 const Square = styled.div`
   width: 200px;
   height: 200px;
-  background-color: #4c00ff;
+  background-color: #ff5100;
   transition: height 1s ease-in- out ;
   overflow: hidden;
   ${props => {
