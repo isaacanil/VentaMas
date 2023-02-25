@@ -2,7 +2,7 @@
 //Todo **************Pages*************************************************
 export { Compras } from './pages/Compra/Compras'
 export { Home } from './pages/Home/Home'
-export { Inventario } from './pages/Inventario/Inventario'
+export { Inventario } from './pages/Inventario/pages/ItemsManager/Inventario'
 export { MultimediaManager } from './pages/Inventario/pages/MultimediaManager/MultimediaManager'
 export { Login } from './pages/Login/Login'
 export { NotFound } from './pages/NotFound/NotFound'

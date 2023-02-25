@@ -4,7 +4,8 @@ import { useEffect } from 'react'
 import { IoMdClose, IoMdTrash } from 'react-icons/io'
 import { MdClose, MdOutlineFileUpload } from 'react-icons/md'
 import styled from 'styled-components'
-import { ProductsImg, UploadProdImg, UploadProdImgData } from '../../../../../firebase/firebaseconfig'
+import { ProductsImg, UploadProdImgData } from '../../../../../firebase/firebaseconfig'
+import { fbAddProductImg } from '../../../../../firebase/products/fbAddProductImg'
 import { useDeleteImgFBStorage } from '../../../../../hooks/useDeleteImgFBStorage'
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
@@ -25,7 +26,7 @@ export const MultimediaManager = () => {
 
   const handleSubmit = () => {
     setId().then((id) => {
-      UploadProdImg(ImgToUpload).then((url) => {
+      fbAddProductImg(ImgToUpload).then((url) => {
         UploadProdImgData(id, url)
         setImgToUpload(null)
       })

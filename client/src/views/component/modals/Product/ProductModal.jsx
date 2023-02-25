@@ -2,7 +2,7 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react'
 import Style from './Products.module.scss'
 import { Button, ErrorMessage, PlusIconButton } from '../../../index'
-import { UploadProdImg, UploadProductData, getCat } from '../../../../firebase/firebaseconfig.js'
+import { getCat } from '../../../../firebase/firebaseconfig.js'
 import { Modal } from '../../../index';
 import { Navigate } from 'react-router-dom'
 import { Input, InputGroup } from '../../../templates/system/Inputs/InputV2';
@@ -18,6 +18,7 @@ import { selectImg } from '../../../../features/uploadImg/uploadImageSlice';
 import { firstLetter } from '../../../../hooks/firstLetter';
 import { parseToString } from '../../../../hooks/parseToString';
 import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter';
+import { fbAddProduct } from '../../../../firebase/products/fbAddProduct';
 const EmptyProductData = {
    productName: '',
    price: {
@@ -51,57 +52,33 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    const [imgController, setImgController] = useState(false)
    const [taxesList, setTaxesList] = useState([])
    const [catList, setCatList] = useState([])
+   const [productImage, setProductImage] = useState(null)
+   const [product, setProduct] = useState(EmptyProductData)
+
    useEffect(() => {
       getTaxes(setTaxesList)
       getCat(setCatList)
    }, [])
-   const [productImage, setProductImage] = useState(null)
-   const [product, setProduct] = useState(EmptyProductData)
-   //img
+
    const handleImgController = (e) => {
       e.preventDefault()
       setImgController(!imgController)
    }
+
    const HandleSaveImg = (img) => {
       dispatch(SaveImg(img))
    }
+
    useEffect(() => {
       setProduct({
          ...product,
          productImageURL: ImgSelected
       })
    }, [ImgSelected])
-   const handleSubmit = async () => {
-      UploadProductData(product)
-      setProduct({
-         productName: '',
-         price: {
-            unit: undefined,
-            total: undefined,
-         },
-         cost: {
-            unit: undefined,
-            total: undefined,
-         },
-         amountToBuy: {
-            unit: 1,
-            amount: 1,
-         },
-         type: '',
-         productImageURL: '',
-         netContent: '',
-         category: '',
-         size: '',
-         tax: {
-            ref: '',
-            value: undefined,
-            unit: '',
-            total: ''
-         },
-         stock: '',
-         id: '',
 
-      })
+   const handleSubmit = async () => {
+      fbAddProduct(product)
+      setProduct(EmptyProductData)
       dispatch(clearImg())
    }
 
@@ -121,8 +98,9 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
       })
       console.log('todo esta bien')
    }
+
    useEffect(calculatePrice, [product.cost, product.tax])
-   //console.log(product)
+
    return (
       <Modal
          nameRef={title}

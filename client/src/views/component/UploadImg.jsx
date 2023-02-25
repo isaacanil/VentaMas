@@ -5,11 +5,12 @@ import styled from 'styled-components'
 import { Button, ButtonGroup } from '../templates/system/Button/Button'
 import noimg from '../../assets/producto/noimg.png'
 import { AddFileBtn } from '../templates/system/Button/AddFileBtn'
-import { ProductsImg, UploadProdImg, UploadProdImgData } from '../../firebase/firebaseconfig'
+import { ProductsImg, UploadProdImgData } from '../../firebase/firebaseconfig'
 import { nanoid } from 'nanoid'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChangeProductImage, selectUpdateProductData } from '../../features/updateProduct/updateProductSlice'
+import { fbAddProductImg } from '../../firebase/products/fbAddProductImg'
 export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
     const { status, lastProduct } = useSelector(selectUpdateProductData)
     const [img, setImg] = useState(lastProduct.productImageURL)
@@ -29,7 +30,7 @@ export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
     }
     const handleSubmit = () => {
         setId().then((id) => {
-            UploadProdImg(ImgToUpload).then((url) => {
+            fbAddProductImg(ImgToUpload).then((url) => {
                 UploadProdImgData(id, url)
                 setImgToUpload(null)
             })

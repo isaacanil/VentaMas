@@ -14,6 +14,7 @@ const EmptyPurchase = {
         name: 'solicitado',
         color: 'yellow'
     },
+    imageReceiptURL: null,
     provider: {
         id: null,
         name: "",
@@ -90,6 +91,9 @@ export const addPurchaseSlice = createSlice({
         cleanPurchase: (state) => {
             state.productSelected = EmptyProduct 
             state.purchase = EmptyPurchase
+        },
+        AddReceiptImage: (state, actions) => {
+            state.purchase.imageReceiptURL = actions.payload
         },
         AddProvider: (state, actions) => {
             const provider = actions.payload

@@ -13,9 +13,8 @@ import { v4 } from 'uuid'
 import { useDispatch } from "react-redux";
 import { login, logout } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
-import { isObject } from "../hooks/isObject";
 import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
-import { updateStock } from "../features/addOrder/addOrderModalSlice";
+import { SaveImg, UploadImgLoading, UploadProgress } from "../features/uploadImg/uploadImageSlice";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -27,11 +26,13 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-
 const app = initializeApp(firebaseConfig);
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
+
+
+
 
 
 //Todo Product **************************************************************************
@@ -107,75 +108,45 @@ export const UploadProdImgData = async (id, url) => {
     console.log(error)
   }
 }
+export const deleteImgFromUrl = async (url) => {
+  const fileRef = ref(storage, url)
+  try {
+      await deleteObject(fileRef)
+      console.log(id)
+  } catch (error) {
+      console.log(error)
+  }
+}
+export const fbAddImgReceiptData = async (id, url) => {
+  const imgRef = doc(db, "receiptImages", id);
+  try {
+    await setDoc(imgRef, {
+      id: id,
+      url: url
+    });
+  } catch (error) {
+    console.log(error)
+  }
+}
+export const fbDeletePurchaseReceiptImg = async (data) => {
+  const {url} = data
+  try {
+    if(url){await deleteImgFromUrl(url)}
+      console.log(url)
+  } catch (error) {
+      console.log(error)
+  }
+}
 export const ProductsImg = (SetAllImg) => {
   const imageRef = collection(db, "prodImages");
   const q = query(imageRef);
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+  onSnapshot(q, (querySnapshot) => {
     const img = [];
     querySnapshot.forEach((doc) => {
       img.push(doc.data());
     });
     SetAllImg(img)
   });
-}
-export const UploadProdImg = (file) => {
-  const today = new Date();
-  const hour = `${today.getHours()}:${today.getMinutes()}`
-  const storageRef = ref(storage, `products/${v4()}.jpg`)
-
-  return new Promise((resolve, reject) => {
-    uploadBytes(storageRef, file)
-      .then((snapshot) => {
-        getDownloadURL(storageRef)
-          .then((url) => {
-            console.log('File available at', url);
-            resolve(url);
-          });
-      })
-  })
-}
-export const DeleteProdImg = async (id) => {
-  console.log(id)
-  const imgRef = doc(db, "prodImages", id);
-  try {
-    await deleteDoc(imgRef)
-    //deleteDoc(doc(db, `products`, id))
-    console.log(id)
-  } catch (error) {
-    console.log(error)
-  }
-}
-export const UploadProductData = (product) => {
-  return new Promise((resolve, reject) => {
-    const productRef = doc(db, "products", product.id)
-    setDoc(productRef, { product })
-      .then(() => {
-        console.log('document written', product)
-        resolve()
-      })
-      .catch((error) => {
-        console.log('Error adding document:', error)
-        reject()
-      })
-  })
-}
-export const getProducts = async (setProduct, trackInventory) => {
-  const productRef = collection(db, "products")
-  const q = query(productRef, 
-    trackInventory ? where("product.trackInventory", "==", true) : null,
-    orderBy("product.productName", "desc"), 
-    orderBy("product.order", "asc"), )
-  //, orderBy("product.order", "asc")
-  onSnapshot(q, (snapshot) => {
-    let productsArray = snapshot.docs.map(item => item.data())
-    setProduct(productsArray)
-  })
-}
-
-export const updateProduct = async (product) => {
-  console.log('product from firebase', product)
-  const productRef = doc(db, "products", product.id)
-  await updateDoc(productRef, { product })
 }
 export const createProvider = async (provider) => {
   console.log(provider)
@@ -386,13 +357,13 @@ export const AddOrder = async (value) => {
 const UpdateProducts = async (products) => {
   try {
     products.forEach((productData) => {
-       productData = productData.product
+      productData = productData.product
       const productRef = doc(db, 'products', productData.id)
       const updatedStock = productData.stock.newStock + productData.stock.actualStock
-      productData = {...productData, stock: updatedStock}
+      productData = { ...productData, stock: updatedStock }
       const product = productData
-      
-      updateDoc(productRef, {product})
+
+      updateDoc(productRef, { product })
     })
   } catch (error) {
     console.log(error)
@@ -401,10 +372,10 @@ const UpdateProducts = async (products) => {
 const UpdateOrder = async (order) => {
   const orderRef = doc(db, 'orders', order.id)
   const providerRef = doc(db, 'providers', order.provider.id)
-  const newChange = {data: {...order, state: selectItemByName(orderAndDataState, 'Entregado'), provider: providerRef} }
+  const newChange = { data: { ...order, state: selectItemByName(orderAndDataState, 'Entregado'), provider: providerRef } }
   try {
     updateDoc(orderRef, newChange)
-  } catch (error) {console.log(error)}
+  } catch (error) { console.log(error) }
 }
 export const PassDataToPurchaseList = async (data) => {
   const providerRef = doc(db, 'providers', data.provider.id)

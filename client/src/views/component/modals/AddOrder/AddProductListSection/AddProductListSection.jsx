@@ -3,7 +3,7 @@ import { TbPlus } from 'react-icons/tb'
 import styled from 'styled-components'
 import { InputNumber, InputText } from '../../../../templates/system/Inputs/Input'
 import style from '../AddOrderModalStyle.module.scss'
-import { AddProductButton_OrderPage } from '../Button'
+import { AddProductButton } from '../Button'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
 import { getInitialCost, SelectProductSelected, updateStock } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,6 +12,7 @@ import { Button } from '../../../../templates/system/Button/Button'
 import { Tooltip } from '../../../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
 import { addNotification } from '../../../../../features/notification/NotificationSlice'
+import { openModalAddProd } from '../../../../../features/modals/modalSlice'
 export const AddProductListSection = () => {
     const dispatch = useDispatch();
     const productSelected = useSelector(SelectProductSelected)
@@ -66,6 +67,7 @@ export const AddProductListSection = () => {
             setShowProductList(true)
         }
     }, [initialCost, newStock])
+   
     console.log(product)
     return (
         <Container>
@@ -77,7 +79,7 @@ export const AddProductListSection = () => {
                             description='Crear Producto'
                             placement='bottom'
                             Children={
-                                <AddProductButton_OrderPage />
+                                <AddProductButton />
                             }
                         />
                     </ProductName>

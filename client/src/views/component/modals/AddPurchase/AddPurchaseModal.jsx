@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { SelectAddOrderModal, openModalAddOrder, toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
+import { toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
 import { Select } from '../../..'
 import { ProductListSelected } from './ProductListSelected/ProductListSelected'
 import { Button } from '../../../'
@@ -8,13 +8,13 @@ import { AddProductListSection } from './AddProductListSection/AddProductListSec
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { IoMdClose } from 'react-icons/io'
 import { SelectOrder, cleanOrder } from '../../../../features/addOrder/addOrderModalSlice'
-import { AddOrder, PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
-import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
+import { PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
 import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { selectOrderFilterOptions, selectOrderList, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
 import { getOrderData, AddProvider, selectPurchase, cleanPurchase } from '../../../../features/Purchase/addPurchaseSlice'
+
 
 
 export const AddPurchaseModal = ({ isOpen }) => {

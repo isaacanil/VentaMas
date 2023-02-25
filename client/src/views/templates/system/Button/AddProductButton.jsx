@@ -1,6 +1,7 @@
 import { Button } from "./Button";
 import { useDispatch } from "react-redux";
 import { openModalAddProd } from "../../../../features/modals/modalSlice";
+import { CgMathPlus } from "react-icons/cg";
 export const AddProductButton = () => {
     const dispatch = useDispatch()
     const Open = () => {
@@ -10,12 +11,10 @@ export const AddProductButton = () => {
     }
     return(
         <Button
-            bgcolor='primary'
             borderRadius='normal'
-            title="Agregar Producto"
+            startIcon={<CgMathPlus/>}
+            title="Producto"
             onClick={Open}>
-            
-         
         </Button>
     )
 }

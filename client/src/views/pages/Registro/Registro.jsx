@@ -8,6 +8,7 @@ import { DatePicker } from '../../templates/system/DatePicker/DatePicker'
 import { correctDate } from '../../../hooks/correctDate'
 import { SelectCategory } from '../../templates/system/Select/SelectCategory'
 import { Bill } from './Bill'
+import DateRangeFilter from '../../templates/system/DatePicker/DateRangeFIlter'
 export const Registro = () => {
   const [bills, setBills] = useState([])
   const [client, setClient] = useState('')
@@ -28,7 +29,8 @@ export const Registro = () => {
         <FilterBar>
           <span>
             <DatePicker dates={setDatesSelected}></DatePicker>
-            <SelectCategory />
+            {/* <DateRangeFilter></DateRangeFilter> */}
+            {/* <SelectCategory /> */}
           </span>
         </FilterBar>
         <BillsContainer>

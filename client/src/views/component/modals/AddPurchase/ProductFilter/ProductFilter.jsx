@@ -2,26 +2,26 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { InputText } from '../../../../templates/system/Inputs/Input'
 import { IoClose } from 'react-icons/io5'
-import { getProducts } from '../../../../../firebase/firebaseconfig'
 import { ProductCard } from './productCard'
 import { SelectProductSelected } from '../../../../../features/addOrder/addOrderModalSlice'
+import { fbGetProducts } from '../../../../../firebase/products/fbGetProducts'
 export const ProductFilter = ({ productName }) => {
 
   const [products, setProducts] = useState([])
   const [value, setValue] = useState(undefined)
   const [showProductList, setShowProductList] = useState(false)
   useEffect(() => {
-    getProducts(setProducts)
+    fbGetProducts(setProducts)
   }, [])
-useEffect(()=>{
-  if(!productName){
-    setValue('')
-  }
-  if(productName){
-    console.log(productName)
-    setValue(productName)
-  }
-},[productName])
+  useEffect(() => {
+    if (!productName) {
+      setValue('')
+    }
+    if (productName) {
+      console.log(productName)
+      setValue(productName)
+    }
+  }, [productName])
   return (
     <Component>
       <InputText

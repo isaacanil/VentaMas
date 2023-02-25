@@ -9,7 +9,8 @@ import {
   Cart
 } from '../../'
 import { SelectCategoryList, SelectCategoryStatus } from '../../../features/category/categorySlicer'
-import { getProducts, QueryByCategory } from '../../../firebase/firebaseconfig'
+import {  QueryByCategory } from '../../../firebase/firebaseconfig'
+import { fbGetProducts } from '../../../firebase/products/fbGetProducts'
 import { useSearchFilterX } from '../../../hooks/useSearchFilter'
 import { ProductControl } from './ProductControl.jsx'
 import { ShoppingItemsCounter } from './ShoppingItemsCounter'
@@ -21,12 +22,13 @@ export const Ventas = () => {
   const categoryArrayData = useSelector(SelectCategoryList)
   const [products, setProducts] = useState([])
   const [searchData, setSearchData] = useState('')
+
   useEffect(() => {
     if (categoryStatus) {
       QueryByCategory(setProducts, categoryArrayData, categoryStatus)
     }
     if (categoryStatus === false) {
-      getProducts(setProducts)
+      fbGetProducts(setProducts)
     }
   }, [categoryArrayData, categoryStatus])
 

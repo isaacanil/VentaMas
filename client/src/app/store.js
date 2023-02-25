@@ -20,6 +20,8 @@ import addPurchaseReducer from "../features/Purchase/addPurchaseSlice";
 import notificationReducer from "../features/notification/notificationSlice";
 import navReducer from "../features/nav/navSlice";
 import appReducer from "../features/appModes/appModeSlice";
+import loaderReducer from "../features/loader/loaderSlice";
+import viewerImageReducer from "../features/imageViewer/imageViewerSlice";
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -41,6 +43,8 @@ export const store = configureStore({
         addPurchase: addPurchaseReducer, 
         notification: notificationReducer,
         nav: navReducer,
-        app: appReducer
+        app: appReducer,
+        loader: loaderReducer,
+        imageViewer: viewerImageReducer
     },
 })

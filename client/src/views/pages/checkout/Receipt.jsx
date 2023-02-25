@@ -44,6 +44,9 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                             data.client.tel ? <h4>Teléfono : {data.client.tel}</h4> : null
                         }
                         {
+                            data.client
+                        }
+                        {
                             data.client.address ? <h4>Dir : {data.client.address}</h4> : null
                         }
                     </Fragment>

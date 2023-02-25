@@ -3,15 +3,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { closeModalUpdateProd } from '../../../../features/modals/modalSlice'
 import { ChangeProductImage, clearUpdateProductData, selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice'
-import { getCat, getTaxes, updateProduct } from '../../../../firebase/firebaseconfig'
+import { getCat, getTaxes } from '../../../../firebase/firebaseconfig'
 import { parseToString } from '../../../../hooks/parseToString'
 import { Button } from '../../../templates/system/Button/Button'
 import { Input } from '../../../templates/system/Inputs/InputV2'
 import { UploadImg } from '../../UploadImg'
 import { Modal } from '../modal'
 import { quitarCeros } from '../../../../hooks/quitarCeros'
-import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter'
 import { MdRadioButtonChecked, MdRadioButtonUnchecked } from 'react-icons/md'
+import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct'
 const EmptyProduct = {
     productName: "",
     cost: {
@@ -85,7 +85,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                 size: parseToString(lastProduct.size),
                 type: parseToString(lastProduct.type),
                 amountToBuy: { unit: 1, total: 1 },
-
             }
         )
     }, [lastProduct])
@@ -107,7 +106,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     useEffect(calculatePrice, [product.cost, product.tax])
 
     const handleSubmitAddProducts = () => {
-        updateProduct(product)
+        fbUpdateProduct(product)
         closeModal()
         dispatch(clearUpdateProductData())
     }

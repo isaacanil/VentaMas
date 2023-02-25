@@ -1,24 +1,24 @@
 import React from 'react'
-import { IoMdTrash } from 'react-icons/io'
-import styled from 'styled-components'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import { Button } from '../../templates/system/Button/Button'
-import noImg from '../../../assets/producto/noimg.png'
-import { TbEdit } from 'react-icons/tb'
-export const ProductInventoryCard = ({ product, handleUpdateProduct, handleDeleteProduct }) => {
+import { IoMdTrash } from 'react-icons/io';
+import { TbEdit } from 'react-icons/tb';
+import styled from 'styled-components';
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import { Button } from '../../../../../templates/system/Button/Button';
+
+export const ProductCardColumn = ({handleDeleteProduct, handleUpdateProduct, product}) => {
     return (
         <Container>
             <Head>
                 <Button
                     title="Editar"
-                    startIcon={<TbEdit/>}
+                    startIcon={<TbEdit />}
                     borderRadius='normal'
                     // variant='contained'
                     color={'gray-dark'}
                     bgcolor='editar'
                     onClick={() => handleUpdateProduct(product)}
                 />
-                <Button                
+                <Button
                     startIcon={<IoMdTrash />}
                     // width='icon32'
                     color={'gray-dark'}
@@ -40,14 +40,14 @@ export const ProductInventoryCard = ({ product, handleUpdateProduct, handleDelet
                 <ProductName>
                     <h3>{product.productName}</h3>
                 </ProductName>
-                <Group>
+              
                     <Item>
                         <span>costo: {useFormatPrice(product.cost.unit)}</span>
                     </Item>
                     <Item>
                         <span>stock: {product.stock}</span>
                     </Item>
-                </Group>
+              
                 {/* <Item>
                     <span>Contenido Neto: {product.netContent}</span>
                 </Item> */}
@@ -59,6 +59,7 @@ export const ProductInventoryCard = ({ product, handleUpdateProduct, handleDelet
         </Container>
     )
 }
+
 const Container = styled.div`
  
  background-color: white;

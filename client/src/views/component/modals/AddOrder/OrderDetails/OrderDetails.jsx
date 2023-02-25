@@ -48,14 +48,6 @@ export const OrderDetails = ({setReset, reset}) => {
                     placement='top'
                     setReset={setReset}
                     reset={reset}
-                    
-                />
-                <Button 
-                title={"Subir recibo"}
-                startIcon={<IoReceipt/>}
-                bgcolor='gray'
-                border=''
-                borderRadius={"normal"}
                 />
             </Section>
             <Section>

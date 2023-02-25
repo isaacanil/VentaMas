@@ -302,6 +302,13 @@ pointer-events: all;
            cursor: not-allowed;
            pointer-events: none;
           `;
+      case 'style1':
+        return `
+          background-color: var(--color);
+          color: var(--White);
+          cursor: not-allowed;
+          pointer-events: none;
+          `
       case false:
         return `
             

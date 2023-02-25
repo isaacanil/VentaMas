@@ -27,6 +27,8 @@ import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
 import { AddPurchaseModal } from "./AddPurchase/AddPurchaseModal"
 import { Notification } from "../../templates/system/Notification/Notification"
 import { SmallNotification } from "../../templates/system/Notification/SmallNotification"
+import Loader from "../../templates/system/loader/Loader"
+import ImageViewer from "../../templates/system/ImageViewer/ImageViewer"
 export const ModalManager = () => {
   const dispatch = useDispatch()
   const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
@@ -74,6 +76,8 @@ export const ModalManager = () => {
       <AddOrderModal isOpen={AddOrderModalSelected} />
       {/* <AddProvider /> */}
       <Notification/>
+      <Loader/>
+      <ImageViewer/> 
       <SmallNotification/>
     </Fragment>
   )

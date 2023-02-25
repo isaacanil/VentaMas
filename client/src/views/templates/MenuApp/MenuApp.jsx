@@ -1,7 +1,7 @@
 import React, { useState, Fragment, useRef, useEffect } from 'react'
 import Style from './Menu.module.scss'
 import { MenuData } from './MenuData'
-import { WebName } from '../../'
+import { AddProductButton, WebName } from '../../'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './SideBar'
@@ -16,6 +16,7 @@ import { SearchProductBar } from './SearchProductBar'
 import { Tooltip } from '../system/Button/Tooltip'
 import { colorPalette } from '../../../features/theme/themeSlice'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
+import { CgMathPlus } from 'react-icons/cg'
 
 export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const { color } = colorPalette()
@@ -40,14 +41,10 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   }
   useClickOutSide(ref, !isOpenMenu, closeMenu)
   const handleImageHiddenFN = () => {
-    dispatch(
-      handleImageHidden()
-    )
+    dispatch(handleImageHidden())
   }
   const handleRowModeFN = () => {
-    dispatch(
-      handleRowMode()
-    )
+    dispatch(handleRowMode())
   }
   return (
     <Fragment>
@@ -60,7 +57,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
           </div>
 
           {
-            !matchWithVenta ? (
+            !matchWithVenta && !matchWithInventory ? (
               <div>
                 <WebName></WebName>
               </div>
@@ -70,6 +67,16 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
             matchWithVenta ? (
               <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar>
             ) : null
+          }
+          {
+              matchWithInventory ? (
+                <Fragment>
+                  <Group>
+                  <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar>
+              
+                  </Group>
+                </Fragment>
+              ) : null
           }
         </Group>
         {
@@ -105,6 +112,15 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
                   />}
               />
             </Group>
+          ) : null
+        }
+        {
+          matchWithInventory ? (
+            <Fragment>
+              <Group>
+              <AddProductButton/>
+              </Group>
+            </Fragment>
           ) : null
         }
         <SideBar links={MenuData} isOpen={isOpenMenu} />
