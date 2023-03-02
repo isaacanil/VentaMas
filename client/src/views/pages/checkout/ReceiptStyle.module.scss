@@ -4,6 +4,9 @@
     position: absolute;
     pointer-events: none;
     z-index: -100000000;
+    p{
+        line-height: 16px;
+    }
   
     .timeSection {
         display: flex;
@@ -25,7 +28,8 @@
 }
 
 .title {
-    font-weight: bold;
+
+    font-size: 14px;
 }
 
 .center {

@@ -21,7 +21,7 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, setFile, file, fn })
             setFile(e.target.files[0])
     }
     useEffect(()=>{
-        fn()
+        file && fn()
     }, [file])
    
     useEffect(()=>{

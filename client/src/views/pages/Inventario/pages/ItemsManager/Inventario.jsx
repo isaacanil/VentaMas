@@ -36,7 +36,7 @@ export const Inventario = () => {
     dispatch(openModalUpdateProd());
     dispatch(ChangeProductData(product));
   };
-
+  
   return (
     <Fragment>
       <Menu searchData={searchData} setSearchData={setSearchData} />
@@ -47,7 +47,6 @@ export const Inventario = () => {
     </Fragment>
   );
 };
-
         {/* <ProductsList>
           {
             products.length > 0 ?

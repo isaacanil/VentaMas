@@ -4,7 +4,7 @@ import { separator } from '../../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { selectImageHidden, } from '../../../../../features/setting/settingSlice'
-import { addPaymentMethodAutoValue, addProduct, deleteProduct, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../../features/cart/cartSlice'
+import { addPaymentMethodAutoValue, addProduct, addTaxReceiptInState, deleteProduct, SelectDelivery, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import noImg from '../../../../../assets/producto/noimg.png'
 import { IsProductSelected } from './IsProductSelected'
@@ -13,7 +13,18 @@ import { Button } from '../../Button/Button'
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
-    const ProductsSelected = useSelector(SelectProduct);
+    const ProductsSelected = useSelector(SelectProduct)
+    const deliverySelected = useSelector(SelectDelivery)
+    useEffect(() => {
+            dispatch(totalShoppingItems())
+            dispatch(totalPurchase())
+            dispatch(addPaymentMethodAutoValue())
+            dispatch(totalTaxes())
+            dispatch(setChange())
+           // dispatch(addTaxReceiptInState(NCF_code))
+    }, [ProductsSelected, deliverySelected])
+
+
     const handleGetThisProduct = (product) => {
         dispatch(addProduct(product))
         dispatch(totalShoppingItems())
@@ -24,22 +35,10 @@ export const Product = ({ product, }) => {
         // dispatch(addPaymentMethodAutoValue())
         dispatch(setChange())
     }
-    // const handleImgError = (e) => {
-    //     e.currentTarget.onerror = null;
-    //     e.currentTarget.src = noImgFound;
-    //     //currentTarget.style.objectFit = 'contain'
-    //     //e.target.src = noImgFound
-    // }
 
     const deleteProductFromCart = (e, id) => {
         e.stopPropagation()
-        dispatch(totalPurchase())
         dispatch(deleteProduct(id))
-        dispatch(totalPurchaseWithoutTaxes())
-        dispatch(totalPurchase())
-        dispatch(totalShoppingItems())
-        dispatch(setChange())
-        dispatch(addPaymentMethodAutoValue())
 
     }
 
@@ -76,7 +75,6 @@ export const Product = ({ product, }) => {
                         ) : null}
                 <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
 
-
                     {ProductCheckInCart.status ? (
                         <Group>
                             <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.total}</AmountToBuy>
@@ -85,8 +83,7 @@ export const Product = ({ product, }) => {
                     ) : <Group />}
 
                     <Group>
-                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product.price.total)}</Price>
-                       
+                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product.price.total)}</Price>        
                     </Group>
                 </Footer>
             </Body>
@@ -115,12 +112,8 @@ const Container = styled.div`
         switch (props.isSelected) {
             case true:
                 return `
-                outline: 3px solid var(--color1);   
-
-                      
+                outline: 2.9px solid var(--color1);                
                 `
-
-
             default:
                 break;
         }

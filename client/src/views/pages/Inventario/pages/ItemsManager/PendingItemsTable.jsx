@@ -15,8 +15,9 @@ export const PendingItemsTable = ({ productsArray }) => {
           <Row fill='fill'>
             <Col>Image</Col>
             <Col>Nombre</Col>
-            <Col position='right'>Costo</Col>
             <Col position='right'>Stock</Col>
+            <Col position='right'>Costo</Col>
+            <Col position='right'>Impuesto</Col>
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
           </Row>
@@ -44,7 +45,6 @@ const Body = styled.header`
   position: relative;
   max-height: calc(100vh - 5.5em);
   width: 100%;
-  max-width: 1240px;
   display: grid;
   grid-template-rows: min-content 1fr; 
   background-color: #ffffff;
@@ -93,6 +93,7 @@ const Row = styled.div`
   minmax(200px, 1fr) //Name
   minmax(70px, 0.4fr) //cost
   minmax(70px, 0.4fr) //stock
+  minmax(70px, 0.5fr) //precio
   minmax(70px, 0.5fr) //precio
   minmax(80px, 0.1fr); //acción
   @media (max-width: 800px){

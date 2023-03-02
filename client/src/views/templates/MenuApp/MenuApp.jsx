@@ -6,10 +6,10 @@ import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './SideBar'
 import { Button } from '../../'
-import { MdOutlineHideImage, MdOutlineImage } from "react-icons/md";
-import { BsList } from 'react-icons/bs'
+import { MdFullscreen, MdOutlineFullscreenExit, MdOutlineHideImage, MdOutlineImage } from "react-icons/md";
+import { BsArrowsFullscreen, BsFullscreenExit, BsList } from 'react-icons/bs'
 import { TbColumns } from 'react-icons/tb'
-import { handleImageHidden, handleRowMode, selectImageHidden, ReloadImageHiddenSetting, selectIsRow } from '../../../features/setting/settingSlice'
+import { handleImageHidden, handleRowMode, selectImageHidden, ReloadImageHiddenSetting, selectIsRow, toggleFullScreen, selectFullScreen } from '../../../features/setting/settingSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useMatch } from 'react-router-dom'
 import { SearchProductBar } from './SearchProductBar'
@@ -34,6 +34,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const anotherRef = useRef(null)
   const ImageHidden = useSelector(selectImageHidden)
   const viewRowModeRef = useSelector(selectIsRow)
+  const FullScreen = useSelector(selectFullScreen)
   const matchWithVenta = useMatch('/app/venta/:id')
   const matchWithInventory = useMatch('/app/inventario/items')
   const closeMenu = () => {
@@ -42,6 +43,9 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   useClickOutSide(ref, !isOpenMenu, closeMenu)
   const handleImageHiddenFN = () => {
     dispatch(handleImageHidden())
+  }
+  const handleFullScreenFN = () => {
+    dispatch(toggleFullScreen())
   }
   const handleRowModeFN = () => {
     dispatch(handleRowMode())
@@ -109,6 +113,21 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
                     iconOff={<MdOutlineImage />}
                     iconOn={<MdOutlineHideImage />}
                     onClick={() => handleImageHiddenFN()}
+                  />}
+              />
+               <Tooltip
+                placement='bottom-end'
+                description={FullScreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
+                Children={
+                  <Button
+
+                    width={'icon32'}
+                    borderRadius='normal'
+                    isActivated={FullScreen ? true : false}
+                    isActivatedColors='style1'
+                    iconOff={< MdOutlineFullscreenExit/>}
+                    iconOn={<MdFullscreen />}
+                    onClick={() => handleFullScreenFN()}
                   />}
               />
             </Group>
@@ -201,6 +220,6 @@ const Container = styled.div`
 const Group = styled.div`
   display: flex;
   align-items: center;
-  gap: 1.2em;
+  gap: 0.8em;
 `
 

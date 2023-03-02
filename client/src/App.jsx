@@ -44,9 +44,12 @@ import { useModal } from './hooks/useModal'
 import { GenericLoader } from './views/templates/system/loader/GenericLoader';
 import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
-import { getTaxReceiptData} from './features/taxReceipt/taxReceiptSlice';
+import { getTaxReceiptData, IncreaseEndConsumer} from './features/taxReceipt/taxReceiptSlice';
 import { ClientAdmin } from './views/pages/Contact/Client/ClientAdmin';
 import { FreeSpace } from './FreeSpace';
+import { useFullScreen } from './hooks/useFullScreen';
+import AppInfo from './views/pages/setting/subPage/AppInfo/AppInfo';
+import BusinessInfo from './views/pages/setting/subPage/ClientInfo/ClientInfo';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
@@ -56,7 +59,13 @@ function App() {
   useEffect(() => {
     AuthStateChanged(dispatch)
     dispatch(ReloadImageHiddenSetting())
+
+  
+    
   }, [])
+
+  useFullScreen()
+
   const isConnected = useCheckForInternetConnection()
   console.log(isConnected)
   if (user === false || null) {
@@ -69,9 +78,12 @@ function App() {
         <ModalManager></ModalManager>
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
-          <Route path='/app/setting/' element={<Setting />} />
           <Route path='/app/freeSpace/' element={<FreeSpace />} />
+         <Route path='/app/receipt/' element={<Receipt />} />
+         <Route path='/app/setting/business-info' element={<BusinessInfo />} />
+          <Route path='/app/settings/' element={<Setting />} />
           <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting/>}/>
+          <Route path='/app/setting/app-info' element={<AppInfo/>}/>
           <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
           <Route path='/register' element={<Register />}></Route>
           <Route path='/login' element={<Login />}></Route>

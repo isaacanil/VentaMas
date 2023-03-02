@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import style from './ProductControlStyle.module.scss'
-import { watchingUserState } from '../../../firebase/firebaseconfig.js'
+import { watchingUserState } from '../../../firebase/firebaseconfig.jsx'
 import { Button, Product, Grid, ControlSearchProduct } from '../../'
 import { useSelector } from "react-redux";
 import { CustomProduct } from '../../templates/system/Product/CustomProduct'

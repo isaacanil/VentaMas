@@ -1,40 +1,34 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react'
-import { separator } from '../../../hooks/separator'
+import React, { useEffect, useRef, useState } from 'react'
+
 import style from './cartStyle.module.scss'
 import {
-  Counter,
   Button,
-  AddClientModal,
   ClientControl,
   Receipt,
 } from '../../index'
 import {
   SelectProduct,
-  totalPurchaseWithoutTaxes,
   CancelShipping,
-  totalTaxes,
-  totalPurchase,
-  setChange,
-  totalShoppingItems,
   SelectTotalPurchase,
-  handleClient,
   isNewClient,
   SelectClient,
   SelectFacturaData,
-  addTaxReceiptInState
+  addTaxReceiptInState,
+  SelectNCF,
 } from '../../../features/cart/cartSlice'
+
 import { useSelector, useDispatch } from 'react-redux'
-//import { useModal } from '../../../hooks/useModal'
 import { ProductCardForCart } from './ProductCardForCart'
 import { PaymentArea } from './PaymentArea'
 import { useReactToPrint } from 'react-to-print'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import { AddBills, UpdateMultipleDocs } from '../../../firebase/firebaseconfig'
-import { IncreaseEndConsumer, IncreaseTaxCredit, SELECT_NCF_CODE, SELECT_NCF_STATUS, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice'
+import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectNcfStatus, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice'
 import styled from 'styled-components'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { selectMenuOpenStatus } from '../../../features/nav/navSlice'
 import { selectAppMode } from '../../../features/appModes/appModeSlice'
+
 export const Cart = () => {
   const isOpen = useSelector(selectMenuOpenStatus)
   const dispatch = useDispatch()
@@ -43,29 +37,39 @@ export const Cart = () => {
   const bill = useSelector(state => state.cart.data)
   const taxReceiptDataRef = useSelector(selectTaxReceiptData)
   const clientSelected = useSelector(SelectClient)
-  const NCF_status = useSelector(SELECT_NCF_STATUS)
-  const NCF_code = useSelector(SELECT_NCF_CODE)
+  const ncfStatus = useSelector(selectNcfStatus)
+  const ncfCode = useSelector(selectNcfCode)
+  const [submittable, setSubmittable] = useState(false)
   const TotalPurchaseRef = useSelector(SelectTotalPurchase)
+  const ncfCartSelected = useSelector(SelectNCF)
   const ProductSelected = useSelector(SelectProduct)
   const billData = useSelector(SelectFacturaData)
+  const [printed, setPrinted] = useState(false)
+
   useEffect(() => {
-    if (NCF_code !== null) {
-      dispatch(addTaxReceiptInState(NCF_code))
+    if (ncfCode !== null) {
+      dispatch(addTaxReceiptInState(ncfCode))
     }
-  }, [NCF_code])
-  const handlePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
-  })
+    if (ncfCode) {
+      dispatch(addTaxReceiptInState(ncfCode))
+    }
+  }, [ncfCode])
+
   const handleTaxReceipt = async () => {
-    console.log(NCF_status)
     try {
-      if (NCF_status === true) {
-        console.log('true')
-        dispatch(IncreaseTaxCredit())
-      }
-      if (NCF_status === false) {
-        console.log('false')
-        dispatch(IncreaseEndConsumer())
+      switch (ncfStatus) {
+        case true:
+          dispatch(IncreaseTaxCredit())
+          console.log('hay ncf')
+          break;
+        case false:
+          dispatch(IncreaseEndConsumer())
+          console.log('no hay ncf')
+          break;
+        default:
+          dispatch(IncreaseEndConsumer())
+          console.log('no hay ncf')
+          break;
       }
     } catch (error) {
       console.log(error)
@@ -78,15 +82,16 @@ export const Cart = () => {
       console.log(error)
     }
   }
-  const savingDataToFirebase = async () => {
+  const savingDataToFirebase = async (bill) => {
+    dispatch(addTaxReceiptInState(ncfCode))
     try {
       if (selectMode === true) {
-        AddBills(billData);
+        AddBills(bill)
         dispatch(updateTaxCreditInFirebase())
         UpdateMultipleDocs(ProductSelected);
-        dispatch(addNotification({message: "Venta Realizada", type: 'success', title: 'Completada'}))
+        dispatch(addNotification({ message: "Venta Realizada", type: 'success', title: 'Completada' }))
       } else {
-        dispatch(addNotification({message: "No se puede Facturar en Modo Demo", type: 'error'}))
+        dispatch(addNotification({ message: "No se puede Facturar en Modo Demo", type: 'error' }))
       }
     } catch (err) {
       console.log(err)
@@ -106,25 +111,62 @@ export const Cart = () => {
     } catch (error) {
     }
   }
+  const handlePrint = useReactToPrint({
+    content: () => componentToPrintRef.current,
+    onAfterPrint: () => setPrinted(true),
+
+
+  })
+  const TIME_TO_WAIT = 1000;
 
   const handleInvoice = async () => {
+    dispatch(addTaxReceiptInState(ncfCode))
     if (ProductSelected.length === 0) {
-      dispatch(addNotification({message: "No hay productos seleccionados", type: 'error'}))
+      dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
       return;
     }
-  
+
     try {
-      await handleTaxReceipt()
-      await createOrUpdateClient()
-      await savingDataToFirebase()
-      await showPrintPreview()
-      await clearDataFromState()
-      
+      await handleTaxReceipt().then(() => {
+        return esperar(TIME_TO_WAIT);
+      }).then(() => {
+        return createOrUpdateClient();
+      }).then(() => {
+        return showPrintPreview();
+      }).then(() => {
+        return esperar(TIME_TO_WAIT);
+      }).catch((error) => {
+        handleInvoiceError(error);
+      });
     } catch (error) {
-      dispatch(addNotification({message: "Ocurrió un Error, Intente de Nuevo", type: 'error'}))
-      console.error(error)
+      handleInvoiceError(error);
     }
   }
+
+  function esperar(tiempo) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, tiempo);
+    });
+  }
+
+  function handleInvoiceError(error) {
+    dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
+    console.error(error);
+  }
+  useEffect(() => {
+    if (ncfCartSelected !== null && submittable === false && printed === true) {
+      savingDataToFirebase(billData)
+      console.log('=> => => => =>', ncfCartSelected)
+      setSubmittable(true)
+    }
+  }, [ncfCartSelected, submittable, printed])
+  useEffect(() => {
+    if (submittable === true) {
+      clearDataFromState()
+      setSubmittable(false)
+      setPrinted(false)
+    }
+  }, [submittable])
   return (
     <Container isOpen={isOpen ? true : false}>
       <ClientControl></ClientControl>
@@ -195,11 +237,11 @@ const Container = styled.div`
         
         `
         break;
-    
+
       default:
         break;
     }
-   }}
+  }}
 `
 const ProductsList = styled.ul`
   background-color: var(--color2);

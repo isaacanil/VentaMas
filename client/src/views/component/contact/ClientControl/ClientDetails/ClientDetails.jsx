@@ -184,7 +184,7 @@ input{
     padding: 0.2em 0.4em;
     height: 2em;
     font-size: 14px;
-    color: var(--Black4);
+    color: var(--Gray5);
     width: 100%;
     }
 `

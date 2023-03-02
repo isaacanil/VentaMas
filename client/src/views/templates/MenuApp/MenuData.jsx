@@ -74,6 +74,6 @@ export const MenuData = [
    
     {
         title: 'Configuración',
-        path: '/app/setting'
+        path: '/app/settings'
     }
 ]

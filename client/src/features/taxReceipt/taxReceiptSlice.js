@@ -4,16 +4,15 @@ import { increaseSequence } from './increaseSequence'
 import { updateTaxReceiptDataBD } from '../../firebase/firebaseconfig'
 const initialState = {
     data: [],
-    NCF_code: null,
-    NCF_status: false
+    ncfCode: null,
+    ncfStatus: false
 }
 
 export const taxReceiptSlice = createSlice({
     name: 'taxReceipt',
     initialState,
     reducers: {
-        getTaxReceiptData: (state, action) => {
-            //console.log(action.payload)           
+        getTaxReceiptData: (state, action) => {          
             state.data = action.payload
         },
         IncreaseEndConsumer: (state) => {
@@ -22,7 +21,7 @@ export const taxReceiptSlice = createSlice({
                 const {type, serie, sequence, increase, quantity} = endConsumer 
                 endConsumer.quantity = String(Number(quantity) - 1)
                 endConsumer.sequence = increaseSequence(sequence, increase, 10)
-                state.NCF_code = type + serie + increaseSequence(sequence, increase, 10) 
+                state.ncfCode = type + serie + increaseSequence(sequence, increase, 10) 
             }
         },
         IncreaseTaxCredit: (state) => {
@@ -31,7 +30,7 @@ export const taxReceiptSlice = createSlice({
                 const {type, serie, sequence, increase, quantity} = taxCredit 
                 taxCredit.quantity = String(Number(quantity) - 1)
                 taxCredit.sequence = increaseSequence(sequence, increase, 10)
-                state.NCF_code = type + serie + increaseSequence(sequence, increase, 10) 
+                state.ncfCode = type + serie + increaseSequence(sequence, increase, 10) 
             }
         },
         updateTaxCreditInFirebase: (state) => {
@@ -39,10 +38,11 @@ export const taxReceiptSlice = createSlice({
             updateTaxReceiptDataBD(taxReceipt)
         },
         handleNCFStatus: (state, actions) => {
-            state.NCF_status = actions.payload
+            state.ncfStatus = actions.payload
         },
         clearTaxReceiptData: (state) => {
-            state.NCF_status = false
+            state.ncfStatus = false
+            state.ncfCode = null
         }
     }
 })
@@ -53,5 +53,5 @@ export const { getTaxReceiptData, clearTaxReceiptData, IncreaseEndConsumer, Incr
 export default taxReceiptSlice.reducer
 
 export const selectTaxReceiptData = (state) => state.taxReceipt.data;
-export const SELECT_NCF_STATUS = (state) => state.taxReceipt.NCF_status;
-export const SELECT_NCF_CODE = (state) => state.taxReceipt.NCF_code;
+export const selectNcfStatus = (state) => state.taxReceipt.ncfStatus;
+export const selectNcfCode = (state) => state.taxReceipt.ncfCode;

@@ -6,80 +6,64 @@ import { useDispatch, useSelector } from 'react-redux'
 import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../features/cart/cartSlice'
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import { getTaxReceiptData, handleNCFStatus, SELECT_NCF_STATUS } from '../../../features/taxReceipt/taxReceiptSlice'
+import { getTaxReceiptData, handleNCFStatus, selectNcfStatus } from '../../../features/taxReceipt/taxReceiptSlice'
 import { readTaxReceiptDataBD } from '../../../firebase/firebaseconfig'
 import { quitarCeros } from '../../../hooks/quitarCeros'
 import CustomInput from '../../templates/system/Inputs/CustomInput'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
     const [taxReceiptData, setTaxReceiptData] = useState()
-    const NCF_STATUS = useSelector(SELECT_NCF_STATUS)
+    const selectedNcfStatus = useSelector(selectNcfStatus)
     const TaxesRef = useSelector(SelectTotalTaxes)
     const PaymentValue = useSelector(SelectPaymentValue)
     const DeliveryRef = useSelector(SelectDelivery)
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
-    const [PayValue, setPayValue] = useState(0)
     const [NCFStatus, setNCFStatus] = useState(false)
-    const [focusedPaymentInput, setFocusedPaymentInput] = useState(false)
-    const paidAmount = useSelector(state => state.cart.paymentMethod)
     const [paymentMethod, setPaymentMethod] = useState([
         {
             status: true,
-            value: 0,
             method: 'cash'
         },
         {
             status: false,
-            value: 0,
             method: 'card'
         },
         {
             status: false,
-            value: 0,
             method: 'transfer'
         }
     ])
-    const PaymentMethodFN = {
-        findAndUpdate: (id, value) => {
-            let SearchingMethod = paymentMethod.find((methodSelected) => methodSelected.method === id)
-            setPaymentMethod(
-                paymentMethod.map((method) => {
-                    if (SearchingMethod == method) {
-                        return { ...method, status: value, value: TotalPurchaseRef }
-                    }
-                    if (SearchingMethod !== method) {
-                        return { ...method, status: false, value: 0 }
-                    }
-                })
-            )
-        },
+    const [paymentValue, setPaymentValue] = useState(0)
+    const SelectPaymentMethod = (id, value) => {
+        let SearchingMethod = paymentMethod.find((methodSelected) => methodSelected.method === id)
+        setPaymentMethod(
+            paymentMethod.map((method) => {
+                if (SearchingMethod == method) {
+                    return { ...method, status: value }
+                }
+                if (SearchingMethod !== method) {
+                    return { ...method, status: false }
+                }
+            })
+        )
+    }
 
-    }
-    const setValueToPaymentMethodSelected = async (value) => {
-        const updatedPaymentMethod = paymentMethod.map((method) => {
-            if (value === null) {
-                return { ...method, value: 0 };
-            }
-            if (method.status && value !== null) {
-                return { ...method, value: Number(value) };
-            }
-            return { ...method, status: false, value: 0 };
-        });
-        setPaymentMethod(updatedPaymentMethod);
-    }
-    const handlePayment = (e) => {
-        dispatch(addPaymentValue(e.target.value))
-    }
     useEffect(() => {
-        setValueToPaymentMethodSelected(PaymentValue)
-        console.log('.....', paymentMethod)
-    }, [PaymentValue])
+        dispatch(addPaymentValue(paymentValue))
+        dispatch(setChange())
+    }, [paymentValue])
+
+    useEffect(() => {
+        dispatch(addPaymentMethodAutoValue())
+        setPaymentValue(TotalPurchaseRef)
+    }, [TotalPurchaseRef])
+
     useEffect(() => {
         dispatch(addPaymentMethod(paymentMethod))
-        dispatch(setChange())
         console.log(paymentMethod)
     }, [paymentMethod])
+
     useEffect(() => {
         readTaxReceiptDataBD(setTaxReceiptData)
     }, [])
@@ -96,38 +80,33 @@ export const PaymentArea = () => {
             <Row>
                 <Group className='option1'>
                     <Group>
-                        <Switch checked={NCF_STATUS ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
+                        <Switch checked={selectedNcfStatus ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
                         <STitle>Comprobante Fiscal</STitle>
                     </Group>
                     <Group>
-                        <CustomInput options={["10", "20", "30"]}/>
+                        <CustomInput options={["10", "20", "30"]} />
                     </Group>
                 </Group>
             </Row>
             <Area>
-                {/* <label className='title' htmlFor="">Método de Pago</label> */}
                 <Group className='option1'>
                     <Group grow='2'>
                         <input type="radio" name="payment-method" id="cash"
                             defaultChecked
-                            onChange={(e) => {
-                                PaymentMethodFN.findAndUpdate("cash", e.target.checked)
-                            }}
+                            onChange={(e) => { SelectPaymentMethod("cash", e.target.checked) }}
                         />
                         <label htmlFor='cash'>Efectivo</label>
                     </Group>
                     <Group grow='2'>
                         <input type="radio" name="payment-method" id="card"
-                            onChange={(e) => {
-                                PaymentMethodFN.findAndUpdate("card", e.target.checked)
-                            }} />
+                            onChange={(e) => { SelectPaymentMethod("card", e.target.checked) }}
+                        />
                         <label htmlFor='card'>Tarjeta</label>
                     </Group>
                     <Group>
                         <input type="radio" name="payment-method" id="transfer"
-                            onChange={(e) => {
-                                PaymentMethodFN.findAndUpdate("transfer", e.target.checked)
-                            }} />
+                            onChange={(e) => { SelectPaymentMethod("transfer", e.target.checked) }}
+                        />
                         <label htmlFor='transfer'>Transferencia</label>
                     </Group>
                 </Group>
@@ -139,8 +118,8 @@ export const PaymentArea = () => {
                         <label htmlFor="">Pago con {monetarySymbols.dollarSign}</label>
                         <input
                             type="number"
-                            value={quitarCeros(Number(PaymentValue))}
-                            onChange={(e) => handlePayment(e)}
+                            value={quitarCeros(Number(paymentValue))}
+                            onChange={(e) => setPaymentValue(e.target.value)}
                         />
                     </Item>
                 </Group>
@@ -183,10 +162,10 @@ const Group = styled.div`
     ${props => {
         switch (props.grow) {
             case props.grow:
-                return`
+                return `
                 flex-grow: ${props.grow};
-                ` 
-        
+                `
+
             default:
                 break;
         }

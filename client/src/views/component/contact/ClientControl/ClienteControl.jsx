@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { getClients } from '../../../../firebase/firebaseconfig.js'
+import { getClients } from '../../../../firebase/firebaseconfig.jsx'
 import { addDelivery, createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setChange, setClientModeInState, totalPurchase, updateClientInState } from '../../../../features/cart/cartSlice'
 import style from './ClientControlStyle.module.scss'
 import {

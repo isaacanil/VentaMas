@@ -41,17 +41,22 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                 </Col>
                 <Col position='right'>
                     <Item position='right'>
-                        <span>{useFormatPrice(product.cost.unit)}</span>
+                        <span>{useFormatNumber(product.stock)}</span>
                     </Item>
                 </Col>
                 <Col position='right'>
                     <Item position='right'>
-                        <span>{useFormatNumber(product.stock)}</span>
+                        <span>{useFormatPrice(product.cost.unit)}</span>
                     </Item>
                 </Col>
                 {/* <Item>
                     <span>Contenido Neto: {product.netContent}</span>
                 </Item> */}
+                <Col position='right'>
+                    <Item position='right'>
+                        <span>{useFormatPrice(product.tax.value * product.cost.unit)}</span>
+                    </Item>
+                </Col>
                 <Col position='right'>
                     <Item position='right'>
                         <span>{useFormatPrice(product.price.unit)}</span>
@@ -86,7 +91,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
 const Container = styled.div`
  background-color: white;
  padding-right: 0.6em;
- padding-right: 16px;
+ padding-right: 0px;
 `
 const Head = styled.div`
    display: flex;

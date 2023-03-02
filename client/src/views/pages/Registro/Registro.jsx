@@ -1,26 +1,40 @@
 import React, { Fragment, useState } from 'react'
-import { MenuApp, InputText } from '../../'
+import { MenuApp, InputText, Button } from '../../'
 import styled from 'styled-components'
-import { getBills } from '../../../firebase/firebaseconfig.js'
+import { getBills } from '../../../firebase/firebaseconfig.jsx'
 import { useEffect } from 'react'
 import { separator } from '../../../hooks/separator'
 import { DatePicker } from '../../templates/system/DatePicker/DatePicker'
 import { correctDate } from '../../../hooks/correctDate'
 import { SelectCategory } from '../../templates/system/Select/SelectCategory'
 import { Bill } from './Bill'
-import DateRangeFilter from '../../templates/system/DatePicker/DateRangeFIlter'
+import { SiMicrosoftexcel } from 'react-icons/si'
+import useExcelExport from '../../../hooks/exportToExcel/useExportToExcel'
+import exportToExcel from '../../../hooks/exportToExcel/useExportToExcel'
+import formatBill from '../../../hooks/exportToExcel/formatBill'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import Clock from '../../../hooks/Clock'
 export const Registro = () => {
   const [bills, setBills] = useState([])
   const [client, setClient] = useState('')
   const [datesSelected, setDatesSelected] = useState({})
+
   useEffect(() => {
     getBills(setBills, datesSelected)
   }, [datesSelected])
   console.log(datesSelected)
-  const totalPurchases = () =>{
-    const r = bills.reduce((total, {data}) => total + data.totalPurchase.value, 0)
+  const totalPurchases = () => {
+    const r = bills.reduce((total, { data }) => total + data.totalPurchase.value, 0)
     return r
   }
+  const transformedData = bills.map((bill) => {
+    return formatBill(bill.data);
+  });
+  const handleExportButtonClick = () => {
+    exportToExcel(transformedData, 'Registros', 'Registro.xlsx');
+  };
+
+
   console.log(bills)
   return (
     <Fragment>
@@ -29,7 +43,13 @@ export const Registro = () => {
         <FilterBar>
           <span>
             <DatePicker dates={setDatesSelected}></DatePicker>
-            {/* <DateRangeFilter></DateRangeFilter> */}
+            <Button
+              title={'export'}
+              borderRadius='normal'
+              bgcolor={'success'}
+              onClick={() => handleExportButtonClick()}
+              startIcon={<SiMicrosoftexcel />}
+            />
             {/* <SelectCategory /> */}
           </span>
         </FilterBar>
@@ -60,21 +80,32 @@ export const Registro = () => {
                 {
                   bills.length > 0 ? (
                     bills.map(({ data }, index) => (
-                     <Bill data={data} key={index} />
+                      <Bill data={data} key={index} />
                     ))
                   ) : null
 
                 }
               </BillsBody>
+              <PriceBox>
+                <Group>
+                  <h3>
+                    Total: {useFormatPrice(totalPurchases())}
+                  </h3>
+                  <h3>
+                    {bills.length} Facturas
+                  </h3>
+                </Group>
+                <Group>
+                  <h3>
+                    {new Date().toLocaleDateString('es-US')}
+                  </h3>
+                  <h3>
+                    <Clock />
+                  </h3>
+                </Group>
+              </PriceBox>
             </BillsWrapper>
           </Layer>
-              <PriceBox>
-                <h3>
-                 Total : RD$ {separator(totalPurchases())}
-
-                </h3>
-
-              </PriceBox>
         </BillsContainer>
       </Container>
     </Fragment>
@@ -85,8 +116,8 @@ const Container = styled.div`
   height: 100vh;
   overflow: hidden;
   display: grid;
+  background-color: #ffffff;
   grid-template-rows: min-content min-content 1fr;
-  gap: 1em;
   box-sizing: border-box;
  
 `
@@ -113,20 +144,20 @@ const FilterBar = styled.div`
 const BillsContainer = styled.div`
   width: 100%;
   height: auto;
-  //background-color: red;
   display: grid;
-
+  align-items: flex-start;
+  align-content: flex-start;
   justify-items: center;
 
 `
 const Layer = styled.div`
   background-color: #fff;
-height: calc(100vh - 2.75em - 2.75em - 13em);
+height: calc(100vh - 2.75em - 2.75em - 4.125em);
 max-width: 1000px;
 width: 100%;
 margin: 1em;
 position: relative;
-border: 1px solid black;
+border: 1px solid rgba(14, 14, 14, 0.100);
 border-radius: 8px;
 overflow: hidden;
 
@@ -139,8 +170,8 @@ const BillsWrapper = styled.div`
   width: 100%;
   height: 100%;
   display: grid;
-  
   grid-template-rows: min-content 1fr min-content;
+    color: #505050;
   overflow-y: scroll;
   position: relative;
   &::after{
@@ -175,6 +206,7 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   justify-content: center;
+  
   gap: 0 1em;
  
 `
@@ -182,7 +214,7 @@ const BillsHead = styled(Grid)`
   padding: 0 1em;
   position: sticky;
   top: 0;
-  background-color: #e6e6e6;
+  background-color: #eeeeee;
   
 `
 const ITEMS = styled.div`
@@ -191,7 +223,7 @@ const ITEMS = styled.div`
     font-size: 0.8em;
   }
   width: 100%;
-  height: 3em;
+  height: 2em;
   display: grid;
   text-align: center;
   align-items: center;
@@ -215,22 +247,33 @@ const BillsBody = styled.div`
 
 `
 const PriceBox = styled.div`
-  height: 2.75em;
+  height: 2em;
   width: 100%;
   max-width: 1000px;
-  background-color: #d4d4d4;
-  border-radius: 10em;
+  background-color: rgb(241, 241, 241);
   padding: 0 1em;
+  position: sticky;
+  bottom: 0;
+  border-top: 1px solid rgba(14, 14, 14, 0.100);
+
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  
+
+`
+const Group = styled.div`
+  display: flex;
+  gap: 2.5em;
   align-items: center;
   h3{
     font-weight: 500;
-    font-size: 1.2em;
+    font-size: 1.1em;
+      line-height: 1.5em;
     margin: 0;
   }
-
  
-
 `
 
 const Footer = styled(Grid)`

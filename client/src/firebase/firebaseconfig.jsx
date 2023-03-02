@@ -15,6 +15,12 @@ import { login, logout } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
 import { SaveImg, UploadImgLoading, UploadProgress } from "../features/uploadImg/uploadImageSlice";
+import { selectAppMode } from '../features/appModes/appModeSlice'
+import { DynamicConfig } from "./DynamicConfig";
+
+
+
+
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -24,9 +30,12 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-};
-
+}
+const adminConfig = <DynamicConfig/>
+const auxApp = initializeApp(adminConfig, 'alt');
 const app = initializeApp(firebaseConfig);
+console.log(app)
+console.log(auxApp)
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
@@ -52,8 +61,8 @@ export const AuthStateChanged = (dispatch) => {
     }, 1000)
   })
 }
-export const HandleRegister = (name, email, pass, confirmPass) => {
-  const Navigate = useNavigate();
+export const HandleRegister = (name, email, pass, confirmPass, Navigate) => {
+  
   if (pass === confirmPass) {
     createUserWithEmailAndPassword(auth, email, pass)
       .then(userAuth => {
@@ -111,10 +120,10 @@ export const UploadProdImgData = async (id, url) => {
 export const deleteImgFromUrl = async (url) => {
   const fileRef = ref(storage, url)
   try {
-      await deleteObject(fileRef)
-      console.log(id)
+    await deleteObject(fileRef)
+    console.log(id)
   } catch (error) {
-      console.log(error)
+    console.log(error)
   }
 }
 export const fbAddImgReceiptData = async (id, url) => {
@@ -129,12 +138,12 @@ export const fbAddImgReceiptData = async (id, url) => {
   }
 }
 export const fbDeletePurchaseReceiptImg = async (data) => {
-  const {url} = data
+  const { url } = data
   try {
-    if(url){await deleteImgFromUrl(url)}
-      console.log(url)
+    if (url) { await deleteImgFromUrl(url) }
+    console.log(url)
   } catch (error) {
-      console.log(error)
+    console.log(error)
   }
 }
 export const ProductsImg = (SetAllImg) => {

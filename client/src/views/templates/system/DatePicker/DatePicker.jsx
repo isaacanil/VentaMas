@@ -51,7 +51,7 @@ export const DatePicker = ({dates}) => {
                 <Col>
                     <Label>Fecha Inicio</Label>
                     <input
-                        value={new Date(datesSelected.startDate).toLocaleDateString('en-CA')}
+                        value={new Date(datesSelected.startDate).toISOString().slice(0, 10)}
                         type="date"
                         name="startDate"
                         onChange={(e) => setDates({...datesSelected, startDate: setTimeMorning(e.target.value)})}
@@ -60,7 +60,7 @@ export const DatePicker = ({dates}) => {
                 <Col>
                     <Label>Fecha Fin</Label>
                     <input
-                        value={new Date(datesSelected.endDate).toLocaleDateString('en-CA')}
+                        value={new Date(datesSelected.endDate).toISOString().slice(0, 10)}
                         min={datesSelected.startDate}
                         max={new Date().toISOString().slice(0, 10) }
                         type="date"
@@ -74,13 +74,14 @@ export const DatePicker = ({dates}) => {
     )
 }
 const Container = styled.div`
-
+    padding: 0.2em 0;
     input[type="date"]{
         
-        padding: 0.3em 0.em;
+        padding: 0.1em 0.2em;
         border: none;
-        outline: 1.5px solid rgba(0, 0, 0, 0.200);
-        border-radius: 10px;
+        width: 10em;
+        border-radius: 4px;
+        background-color: var(--White2);
         color: rgb(92, 92, 92);
         transition: all 0.5s ease-in-out;
         &::placeholder{
@@ -109,6 +110,8 @@ const Group = styled.div`
     
 `
 const Label = styled.label`
+    line-height: 14px;
+    font-size: 13px;
 `
 const Col = styled.div`
     display: flex;

@@ -22,9 +22,9 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
     const [counter, setCounter] = useState({ id })
     useEffect(() => {
         if (stock >= counter.value) {
-            dispatch(totalTaxes())
             dispatch(totalShoppingItems())
             dispatch(totalPurchase())
+            dispatch(totalTaxes())
             dispatch(onChangeValueAmountToProduct(counter))
             dispatch(addPaymentMethodAutoValue())
             dispatch(setChange())
@@ -34,11 +34,13 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
         setCounter({ id })
         dispatch(addAmountToProduct(counter))
         dispatch(totalShoppingItems())
-        dispatch(totalTaxes())
         dispatch(totalPurchase())
         dispatch(addPaymentMethodAutoValue())
+        dispatch(totalTaxes())
         dispatch(setChange())
     }
+  
+
     const handleDiminishCounter = () => {
         if (amountToBuyTotal > 1) {
             setCounter({ id })

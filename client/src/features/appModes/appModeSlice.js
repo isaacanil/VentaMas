@@ -6,7 +6,7 @@ import { addNotification } from '../notification/NotificationSlice';
 const appModeSlice = createSlice({
     name: 'appMode',
     initialState: {
-        mode: modes.appMode.pruebas,
+        mode: true,
         notificationMode: modes.appMode.pruebas
     },
     reducers: {

@@ -40,12 +40,12 @@ export const Button = ({
       border={border}
       isActivatedColors={isActivatedColors}
     >
-    
-        {isActivated ? iconOn : iconOff}
-        {startIcon ? startIcon : null}
-        {title ? title : null}
-        {endIcon ? endIcon : null}
-     
+
+      {isActivated ? iconOn : iconOff}
+      {startIcon ? startIcon : null}
+      {title ? title : null}
+      {endIcon ? endIcon : null}
+
     </Container>
   )
 }
@@ -117,6 +117,15 @@ pointer-events: all;
             Justify-content: center;
             &:hover{
               background-color: #b10505;
+              color: white
+            }
+          `
+      case "success":
+        return `
+            background-color: ##B2DFDB;
+            color: #636363;
+            &:hover{
+              background-color: #B2DFDB;
               color: white
             }
           `
@@ -273,22 +282,22 @@ pointer-events: all;
 
           `
       case "primary":
-        return`
+        return `
           color: #1768c4;
             :hover{
               color: #1768c4;
             }
 
         `
-        case "danger":
-        return`
+      case "danger":
+        return `
           color: #cf1616;
             :hover{
               color: #c41d17;
             }
 
         `
-    
+
 
       default:
         return
@@ -339,8 +348,8 @@ pointer-events: all;
             color: black;
           }
         `
-        case props.isActivated: 
-        return`
+      case props.isActivated:
+        return `
           background-color: ${props.isActivated};
         `
       default:
@@ -374,8 +383,8 @@ pointer-events: all;
           color: white;
       
         `
-        case props.isActivated: 
-        return`
+      case props.isActivated:
+        return `
           background-color: ${props.isActivated};
         `
       default:
@@ -387,6 +396,6 @@ pointer-events: all;
 `
 export const ButtonGroup = styled.div`
   display: flex;
-  gap: 1em;
+  gap: 0.4em;
 `
 

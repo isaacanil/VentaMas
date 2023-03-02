@@ -8,6 +8,7 @@ import { getData } from './firebase/firebaseconfigClients'
 import { ProductsByCategory } from './hooks/ProductsByCategory'
 import { SelectDataFromOrder } from './hooks/useSelectDataFromOrder'
 import { Button, Inventario } from './views'
+import AddCategoryModal from './views/component/modals/AddCategory/AddCategory'
 import Modal from './views/templates/Modal/Modal'
 import { Calendar } from './views/templates/system/DatePicker/Calendar'
 
@@ -60,7 +61,7 @@ export const FreeSpace = () => {
     <DatePicker></DatePicker>
     {/* <DateRangeFilter></DateRangeFilter> */}
     {/* <Calendar></Calendar> */}
-    <DateFilter onChange={handleDateChange}></DateFilter>
+      <AddCategoryModal initialCategory={{name: 'Hola', id:'ters'}}></AddCategoryModal>
      <Button title="Click" borderRadius='normal' onClick={handleLoader}></Button>
        <Square visible={change ? true : false}>
         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ea sunt eum repellat? Tempore magni illum animi dolorem itaque adipisci, odio explicabo molestiae soluta deleniti officia quam necessitatibus porro numquam ex?

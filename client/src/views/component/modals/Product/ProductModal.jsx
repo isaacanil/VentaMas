@@ -2,7 +2,7 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react'
 import Style from './Products.module.scss'
 import { Button, ErrorMessage, PlusIconButton } from '../../../index'
-import { getCat } from '../../../../firebase/firebaseconfig.js'
+import { getCat, getTaxes } from '../../../../firebase/firebaseconfig.jsx'
 import { Modal } from '../../../index';
 import { Navigate } from 'react-router-dom'
 import { Input, InputGroup } from '../../../templates/system/Inputs/InputV2';
@@ -10,7 +10,6 @@ import { nanoid } from 'nanoid'
 import noimg from '../../../../assets/producto/noimg.png'
 //template
 import { useSelector, useDispatch } from 'react-redux';
-import { getTaxes } from '../../../../firebase/firebaseconfig.js';
 import styled from 'styled-components';
 import { UploadImg } from '../../UploadImg';
 import { clearImg, SaveImg } from '../../../../features/uploadImg/uploadImageSlice';
