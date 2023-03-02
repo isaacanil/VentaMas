@@ -3,6 +3,7 @@ import { FaUser } from "react-icons/fa"
 import { useSelector } from "react-redux"
 import styled from "styled-components"
 import { selectUser } from "../../../features/auth/userSlice"
+import { Tooltip } from "../system/Button/Tooltip"
 import { MenuLink } from "./MenuLink"
 import { UserSection } from "./UserSection"
 
@@ -16,8 +17,8 @@ export const SideBar = ({ links, isOpen }) => {
             <Body>
                 <Links>
                     {
-                        links.map((item, index) => (
-                            <MenuLink item={item} key={index}></MenuLink>
+                        links.map((item, index) => (           
+                                <MenuLink item={item} key={index}></MenuLink>
                         ))
                     }
                 </Links>
@@ -27,7 +28,7 @@ export const SideBar = ({ links, isOpen }) => {
 }
 const Container = styled.nav`
     position: absolute;
-    z-index: 9999999;
+    z-index: 100;
     max-width: 400px;
     width: 100%;
     height: calc(100vh - 2.75em);
@@ -35,8 +36,8 @@ const Container = styled.nav`
     left: 0;
     background-color: rgb(87, 87, 87);
     backdrop-filter: blur(100px);
-    transform: translateX(-900px);  
-    transition: transform 0.4s ease-in-out;
+    transform: translateX(-100%);  
+    transition: transform 400ms ease;
     overflow-y: auto;
     overflow-x: hidden;
     ${props => {
@@ -44,7 +45,7 @@ const Container = styled.nav`
             case true:
                 return `
                 transform: translateX(0px);
-                transition: transform 400ms ease-in-out;
+            
                 `
 
 
@@ -62,6 +63,7 @@ const Links = styled.ul`
     gap: 0.7em;`
 const Head = styled.div`
     padding: 1em;
+    margin-bottom: 0.6em;
     
     
 `

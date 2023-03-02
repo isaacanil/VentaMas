@@ -2,7 +2,7 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react'
 import Style from './Products.module.scss'
 import { Button, ErrorMessage, PlusIconButton } from '../../../index'
-import { UploadProdImg, UploadProductData, getCat } from '../../../../firebase/firebaseconfig.js'
+import { getCat, getTaxes } from '../../../../firebase/firebaseconfig.jsx'
 import { Modal } from '../../../index';
 import { Navigate } from 'react-router-dom'
 import { Input, InputGroup } from '../../../templates/system/Inputs/InputV2';
@@ -10,19 +10,15 @@ import { nanoid } from 'nanoid'
 import noimg from '../../../../assets/producto/noimg.png'
 //template
 import { useSelector, useDispatch } from 'react-redux';
-import { getTaxes } from '../../../../firebase/firebaseconfig.js';
 import styled from 'styled-components';
-import { separator } from '../../../../hooks/separator';
-import { selectProduct, priceTotal } from '../../../../features/Firestore/products/addProductSlice';
 import { UploadImg } from '../../UploadImg';
 import { clearImg, SaveImg } from '../../../../features/uploadImg/uploadImageSlice';
 import { selectImg } from '../../../../features/uploadImg/uploadImageSlice';
 import { firstLetter } from '../../../../hooks/firstLetter';
 import { parseToString } from '../../../../hooks/parseToString';
 import { useDecimalLimiter } from '../../../../hooks/useDecimalLimiter';
-import { useRoundDecimals } from '../../../../hooks/roundToTwoDecimals';
-
-const EmptyProduct = {
+import { fbAddProduct } from '../../../../firebase/products/fbAddProduct';
+const EmptyProductData = {
    productName: '',
    price: {
    },
@@ -55,29 +51,61 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    const [imgController, setImgController] = useState(false)
    const [taxesList, setTaxesList] = useState([])
    const [catList, setCatList] = useState([])
+   const [productImage, setProductImage] = useState(null)
+   const [product, setProduct] = useState(EmptyProductData)
+
    useEffect(() => {
       getTaxes(setTaxesList)
       getCat(setCatList)
    }, [])
 
-   const [product, setProduct] = useState(EmptyProduct)
- 
    const handleImgController = (e) => {
       e.preventDefault()
       setImgController(!imgController)
    }
+
    const HandleSaveImg = (img) => {
       dispatch(SaveImg(img))
    }
+
    useEffect(() => {
       setProduct({
          ...product,
          productImageURL: ImgSelected
       })
    }, [ImgSelected])
+
    const handleSubmit = async () => {
       UploadProductData(product)
-      setProduct(EmptyProduct)
+      setProduct({
+         productName: '',
+         price: {
+            unit: undefined,
+            total: undefined,
+         },
+         cost: {
+            unit: undefined,
+            total: undefined,
+         },
+         amountToBuy: {
+            unit: 1,
+            amount: 1,
+         },
+         type: '',
+         productImageURL: '',
+         netContent: '',
+         category: '',
+         size: '',
+         tax: {
+            ref: '',
+            value: undefined,
+            unit: '',
+            total: ''
+         },
+         stock: '',
+         id: '',
+
+      })
       dispatch(clearImg())
    }
 
@@ -97,8 +125,9 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
       })
       console.log('todo esta bien')
    }
+
    useEffect(calculatePrice, [product.cost, product.tax])
-   //console.log(product)
+
    return (
       <Modal
          nameRef={title}
@@ -175,10 +204,14 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
                   currentTarget.src = noimg;
                   currentTarget.style.objectFit = 'contain'
                }} />
-               <Button
-                  title='Agregar Imagen'
-                  onClick={handleImgController}
-               />
+                <Button
+                        borderRadius='normal'
+                        width='w100'
+                        title='Agregar Imagen'
+                        bgcolor='primary'
+                        titlePosition='center'
+                        onClick={handleImgController}
+                    />
             </Group>
             <Group orientation='vertical'>
                <Input
@@ -232,8 +265,6 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
                   readOnly
                   placeholder='Precio de Venta' />
             </Group>
-
-
          </Container>
       </Modal>
    )
@@ -254,9 +285,10 @@ const Container = styled.div`
     }    
 `
 const Group = styled.div`
+
     select{
-         padding: 0.4em;
-         border-radius: 8px;
+         padding: 0 0.4em;
+         border-radius: var(--border-radius-light);
          border: none;
          outline: 1px solid rgb(145, 145, 145);
       }
@@ -270,21 +302,24 @@ const Group = styled.div`
         grid-column: 1 / 3;
     }
     &:nth-child(4){
-        background-color: #cce1e9;
-        padding: 6px;
-        border-radius: 8px;
-        border: 1px solid rgba(2, 2, 2, 0.100);
+        //background-color: #cce1e9;
+        //padding: 6px;
+        padding: 0;
+        border-radius: var(--border-radius-light);
+        //border: 1px solid rgba(2, 2, 2, 0.100);
         img{
             width: 100%;
             height: 100px;
             object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
+            border-radius: var(--border-radius-light);
         }
         grid-column: 3 / 4;
         grid-row: 1 / 4;
-        display: grid;
-        gap: 1em;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+       
+        
        // justify-content: center;
         justify-items: center;
     }
@@ -295,20 +330,19 @@ const Group = styled.div`
        grid-column: 1 / 4;
    }
     ${(props) => {
-      switch (props.orientation) {
-         case 'vertical':
-            return `
+        switch (props.orientation) {
+            case 'vertical':
+                return `
                     display: flex;
                     gap: 1em;
                 `
-
-         case 'horizontal':
-            return `
+            case 'horizontal':
+                return `
                     display: grid
                 `
-         default:
-            break;
-      }
-   }}
+            default:
+                break;
+        }
+    }}
   
 `

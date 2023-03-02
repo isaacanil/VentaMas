@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { InputText, InputPassword, Button } from '../../index'
-import { HandleRegister } from '../../../firebase/firebaseconfig.js'
+import { HandleRegister } from '../../../firebase/firebaseconfig.jsx'
 
 
 import { useNavigate } from 'react-router-dom';
@@ -8,16 +8,16 @@ import { confirmPasswordReset } from 'firebase/auth';
 
 export const Register = () => {
 
-
+  const Navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
-  HandleRegister(name, email, pass, confirmPass)
+  const handleRegister = () => HandleRegister(name, email, pass, confirmPass, Navigate);
   return (
     <div>
       <h2>Register</h2>
-      <form onSubmit={HandleRegister}>
+      <div>
         <div>
           <label htmlFor="">Name:  </label>
           <InputText
@@ -56,8 +56,8 @@ export const Register = () => {
             id=""
             onChange={e => setConfirmPass(e.target.value)} />
         </div>
-        <Button>Crear</Button>
-      </form>
+        <Button bgcolor='primary' title={'Guardar'} onClick={handleRegister}/>
+      </div>
     </div>
   )
 }

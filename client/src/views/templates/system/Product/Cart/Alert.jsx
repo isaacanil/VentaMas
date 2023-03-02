@@ -7,14 +7,9 @@ export const Alert = ({ isOpen, handleIsOpen, id }) => {
     const dispatch = useDispatch()
     const handleDelete = (id) => {
         handleIsOpen(false)
-        dispatch(
-            deleteProduct(id)
-        )
-        dispatch(
-            totalShoppingItems()
-        )
-        dispatch(
-            totalTaxes()
+        dispatch(deleteProduct(id))
+        dispatch(totalShoppingItems())
+        dispatch(totalTaxes()
         )
         dispatch(
             totalPurchase()
@@ -83,7 +78,7 @@ const Component = styled.div`
             case 'false':
                 return `
                 transition: transform 200ms ease-in-out;
-                transform: scale(0.5) translateY(170%);
+                transform: scale(0.5) translateY(-200%);
                   
                 `
 

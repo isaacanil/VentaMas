@@ -1,17 +1,23 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Data } from '../../Data'
-import { ListItem } from '../../ListItem/ListItem'
-import { getOrders } from '../../../../../firebase/firebaseconfig'
+import { getPurchaseFromDB } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
-import { OrderItem } from '../../ListItem/OrderItem'
+import { PurchaseCard } from '../../ListItem/PurchaseCard'
+import { useDispatch } from 'react-redux'
+import { getPendingPurchaseFromDB } from '../../../../../features/Purchase/purchaseSlice'
 
 export const PendingOrdersTable = () => {
-  const [orders, setOrders] = useState([])
+  const dispatch = useDispatch()
+  const [activeId, setActiveId] = useState()
+  const [purchases, setPurchases] = useState([])
   useEffect(() => {
-    getOrders(setOrders)
+    getPurchaseFromDB(setPurchases)
   }, [])
-  console.log(orders)
+ 
+  useMemo(()=>{
+    if(purchases.length > 0) dispatch(getPendingPurchaseFromDB(purchases))
+  }, [purchases])
+
   return (
     <Container>
       <Body>
@@ -19,24 +25,20 @@ export const PendingOrdersTable = () => {
           <h3>Lista de Compras</h3>
         </TitleContainer>
         <Table>
-
           <Row fill='fill'>
-
             <Col>#</Col>
             <Col>Proveedor</Col>
             <Col>Nota</Col>
             <Col>Fecha</Col>
-            <Col>Fecha de Pago</Col>
+            <Col>F. Pago</Col>
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
-
           </Row>
-
           <TableBody>
             {
-              Array(orders).length > 0 ? (
-                orders.map((e, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} e={e} index={index} />
+              purchases.length > 0 ? (
+                purchases.map((purchaseData, index) => (
+                  <PurchaseCard Row={Row} Col={Col} key={index} purchaseData={purchaseData} index={index} activeId={activeId} setActiveId={setActiveId}/>
                 ))
               ) : null
 
@@ -88,7 +90,7 @@ const TableBody = styled.div`
   display: grid;
   align-items: flex-start;
   align-content: flex-start;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
   color: rgb(70, 70, 70);
@@ -114,13 +116,13 @@ const Row = styled.div`
   height: 3em;
   gap: 1em;
   grid-template-columns: 
-  minmax(44px, 0.1fr) //numero
+  minmax(100px, 0.3fr) //numero
   minmax(120px, 0.5fr) //proveedor
   minmax(64px, 0.1fr) //nota
   minmax(104px, 0.4fr) //f. pedido
   minmax(104px, 0.4fr) //f. entrega
   minmax(110px, 0.4fr) //total
-  minmax(126px, 0.3fr); //acción
+  minmax(106px, 0.15fr); //acción
   @media (max-width: 800px){
     gap: 0;
   }

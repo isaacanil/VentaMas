@@ -4,7 +4,8 @@ import { useEffect } from 'react'
 import { IoMdClose, IoMdTrash } from 'react-icons/io'
 import { MdClose, MdOutlineFileUpload } from 'react-icons/md'
 import styled from 'styled-components'
-import { ProductsImg, UploadProdImg, UploadProdImgData } from '../../../../../firebase/firebaseconfig'
+import { ProductsImg, UploadProdImgData } from '../../../../../firebase/firebaseconfig'
+import { fbAddProductImg } from '../../../../../firebase/products/fbAddProductImg'
 import { useDeleteImgFBStorage } from '../../../../../hooks/useDeleteImgFBStorage'
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
@@ -25,7 +26,7 @@ export const MultimediaManager = () => {
 
   const handleSubmit = () => {
     setId().then((id) => {
-      UploadProdImg(ImgToUpload).then((url) => {
+      fbAddProductImg(ImgToUpload).then((url) => {
         UploadProdImgData(id, url)
         setImgToUpload(null)
       })
@@ -48,7 +49,7 @@ export const MultimediaManager = () => {
                 bgcolor='error' />) : null
           }
           <AddFileBtn
-            title="Agregar Imagen"
+            title="Imagen"
             fn={() => handleUploadImg()}
             setFile={setImgToUpload}
             file={ImgToUpload}
@@ -119,9 +120,9 @@ const BodyWrapper = styled.div`
   width: 100%;
   padding: 1em;
   overflow: hidden;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  grid-auto-rows:  150px;
-  gap: 1em;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-auto-rows:  130px;
+  gap: 0.1em;
   
 `
 const Img = styled.div`
@@ -144,7 +145,7 @@ const Img = styled.div`
     }
     img{
       object-fit: cover;
-      border-radius: 10px;
+      border-radius: 4px;
 
       width: 100%;
       height: 100%;

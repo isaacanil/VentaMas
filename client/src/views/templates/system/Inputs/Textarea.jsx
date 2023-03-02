@@ -1,16 +1,18 @@
 import React from 'react'
 import styled from 'styled-components'
 
-export const Textarea = ({ onClick, onChange }) => {
+export const Textarea = ({ onClick, onChange, value, placeholder }) => {
     return (
         <Container>
             <textarea
                 name=""
                 id=""
                 cols="30"
-                rows="10"
+                rows="0"
+                value={value}
                 onClick={onClick}
                 onChange={onChange}
+                placeholder={placeholder}
 
             ></textarea>
         </Container>
@@ -19,7 +21,7 @@ export const Textarea = ({ onClick, onChange }) => {
 
 const Container = styled.div`
     textarea{
-        background-color: #f3f3f3;
+        background-color: var(--White2);
         border-radius: 10px;
         border: 1px solid rgba(0, 0, 0, 0.100);
         resize: none;

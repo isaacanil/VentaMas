@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { nanoid } from 'nanoid';
+import { orderAndDataCondition, orderAndDataState } from '../../constants/orderAndPurchaseState';
 import { getProviders } from '../../firebase/firebaseconfig';
 
 const initialState = {
@@ -8,34 +9,17 @@ const initialState = {
             name: 'Estados',
             id: nanoid(8),
             isOpen: false,
-            Items: [
-                { name: 'estado 1' },
-                { name: 'estado 2' },
-                { name: 'estado 3' },
-                { name: 'estado 4' },
-                { name: 'estado 5' },
-                { name: 'estado 6' },
-                { name: 'estado 7' },
-            ]
+            Items: orderAndDataState
         },
         {
-            name: 'Condicion',
+            name: 'Condición',
             id: nanoid(8),
             isOpen: false,
-            Items: [
-                { name: 'condicion 1' },
-                { name: 'condicion 2' },
-                { name: 'condicion 3' },
-                { name: 'condicion 4' },
-                { name: 'condicion 5' },
-                { name: 'condicion 6' },
-                { name: 'condicion 7' },
-            ]
+            Items: orderAndDataCondition
         },
-       
-       
-      
-            
+    ],
+    pendingOrders: [
+
     ]
 }
 
@@ -69,26 +53,70 @@ export const orderSlice = createSlice({
                 return newState;
             }
         },
-        handleOpenOptions: (state, actions) => { 
-            const {id} = actions.payload
+        handleOpenOptions: (state, actions) => {
+            const { id } = actions.payload
             //const newFilterOptions = state.orderFilterOptions.find((item)=>item.id === id)
             let newFilterOptions = state.orderFilterOptions.map((item) => {
                 if (item.id === id) {
-                  return { ...item, isOpen: !item.isOpen };
+                    return { ...item, isOpen: !item.isOpen };
                 } else if (item.id !== id) {
-                  return { ...item, isOpen: false };
+                    return { ...item, isOpen: false };
                 }
-              });
-              state.orderFilterOptions = newFilterOptions
-            
+            });
+            state.orderFilterOptions = newFilterOptions
+
+        },
+        selectPendingOrder: (state, actions) => {
+            const { id } = actions.payload
+            const newState = { ...state }
+            const newPendingOrders = newState.pendingOrders[0].Items.map((item) => {
+                if (item.id === id) {
+                    return { ...item, selected: true }
+                } else if (item.id !== id) {
+                    return { ...item, selected: false }
+                }
+            });
+            newState.pendingOrders[0].Items = newPendingOrders
+        },
+        getPendingOrdersFromDB: (state, actions) => {
+            // Función para manejar opciones y actualizar estado
+            const { optionsID, datas } = actions.payload
+            let newOptionGroup = {
+                name: optionsID,
+                id: nanoid(8),
+                isOpen: false,
+                Items: datas.map((item) => { return { ...item.data, selected: false } })
+            }
+            // Buscando objeto existente
+            let exist = state.pendingOrders.find(x => x.name === optionsID);
+            // Si existe, lo actualiza
+            if (exist) {
+                // Recorriendo arreglo y reemplazando objeto existente
+                let newFilterOptions = state.pendingOrders.map(x => x.name === optionsID ? newOptionGroup : x);
+                // Retornando nuevo estado
+                return { ...state, pendingOrders: newFilterOptions };
+            }
+            // Si no existe, lo agrega
+            else {
+                // Creando copia de estado y agregando nuevo objeto
+                const newState = { ...state, pendingOrders: [...state.pendingOrders, newOptionGroup] };
+                // Retornando nuevo estado
+                return newState;
+            }
+        },
+        getDefaultOrderState: (state) => {
+            state.orderFilterOptions
         }
 
     }
 })
 
-export const { handleOpenOptions, handleSetOptions } = orderSlice.actions;
+export const { getPendingOrdersFromDB, handleOpenOptions, handleSetOptions, selectPendingOrder } = orderSlice.actions;
 
 //selectors
 export const selectOrderFilterOptions = (state) => state.order.orderFilterOptions;
+
+export const selectOrderList = (state) => state.order.pendingOrders;
+export const selectOrderItemSelected = (state) => state.order.pendingOrders;
 
 export default orderSlice.reducer

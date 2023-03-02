@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { selectOrderFilterOptions } from '../../../../../../features/order/ordersSlice'
@@ -6,32 +6,32 @@ import { Item } from './Item'
 
 export const OrderMenuFilter = ({ MenuIsOpen }) => {
   const OrderFilterOptionsSelected = useSelector(selectOrderFilterOptions)
-  const propertiesName = [
-    'provider'
-  ]
+ 
   return (
-    <Container isOpen={MenuIsOpen ? true : false}>
-      <Head>
-        <h3>Filtros</h3>
-      </Head>
-      <Body>
-        {
-          OrderFilterOptionsSelected.length > 0 ? (
-            OrderFilterOptionsSelected.map((item, index) => (
-                <Item data={item} index={index}  key={index} />
-              ))       
-          ) : null
-        }
-      </Body>
+    <Container isOpen={MenuIsOpen ? true : false} >
+      <Wrapper>
+        <Head>
+          <h3>Filtros</h3>
+        </Head>
+        <Body>
+          {
+            OrderFilterOptionsSelected.length > 0 ? (
+              OrderFilterOptionsSelected.map((item, index) => (
+                <Item data={item} index={index} key={index} />
+              ))
+            ) : null
+          }
+        </Body>
+      </Wrapper>
+
     </Container>
   )
 }
 
 const Container = styled.div`
   overflow: hidden;
-  overflow-y: scroll;
-  max-height: 500px;
-  height: 100%;
+  
+  height: calc(100vh - 9em);
   max-width: 500px;
   width: 100%;
   border-radius: 6px;
@@ -43,7 +43,6 @@ const Container = styled.div`
   background-color: #ffffff;
   transform: scale(1);
   transition: transform 400ms ease-in-out;
-  transform: perspective();
   box-shadow: 10px 10px 10px 2px rgba(0, 0, 0, 0.150);
   @media (max-width: 600px){
     left: 0;
@@ -51,7 +50,7 @@ const Container = styled.div`
     border-radius: 0;
     width: 100%;
     max-height: none;
-    height: calc(100vh - 4.75em);
+    height: calc(100vh - 5.3em);
     margin: 0;
     border: 0;
   }
@@ -71,6 +70,11 @@ const Container = styled.div`
         break;
     }
   }}
+`
+const Wrapper = styled.div`
+  height: 100%;
+  width: 100%;
+  overflow-y: scroll;
 `
 const Head = styled.div`
   background-color: var(--White);

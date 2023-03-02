@@ -1,33 +1,31 @@
 
 import React from 'react'
-import { BsFilter } from 'react-icons/bs'
-import { MdFilter } from 'react-icons/md'
-import { TbPlus } from 'react-icons/tb'
+import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { openModalAddOrder } from '../../../features/modals/modalSlice'
+import { toggleAddPurchaseModal } from '../../../features/modals/modalSlice'
 import { Button } from '../../templates/system/Button/Button'
+import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { OrderFilter } from './components/OrderFilter/OrderFilter'
 
 export const ToolBar = () => {
     const dispatch = useDispatch()
-    const openModal = () => {
-        dispatch(
-            openModalAddOrder()
-        )
-    }
+    const openModal = () => {dispatch(toggleAddPurchaseModal())}
     return (
         <Container>
-            <Wrapper>
-                
+            <Wrapper>  
                 <OrderFilter></OrderFilter>
-
-                <Button
-                    borderRadius='normal'
-                    bgcolor='primary'
-                    title='Nuevo Pedido'
-                    onClick={openModal}
-                />
+                <Tooltip 
+                description='Realizar Comprar'
+                Children={
+                    <Button
+                        borderRadius='normal'
+                        bgcolor='primary'
+                        startIcon={<CgMathPlus/>}
+                        title={`Comprar`}
+                        onClick={openModal}
+                    />
+                }/>
             </Wrapper>
         </Container>
     )

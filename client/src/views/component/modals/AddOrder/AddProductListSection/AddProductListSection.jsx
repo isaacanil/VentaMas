@@ -1,94 +1,184 @@
 import React, { useState } from 'react'
 import { TbPlus } from 'react-icons/tb'
 import styled from 'styled-components'
-import { InputText } from '../../../../templates/system/Inputs/Input'
+import { InputNumber, InputText } from '../../../../templates/system/Inputs/Input'
 import style from '../AddOrderModalStyle.module.scss'
-import { AddProductButton_OrderPage } from '../Button'
+import { AddProductButton } from '../Button'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
-import { SelectProductSelected } from '../../../../../features/addOrder/addOrderModalSlice'
+import { getInitialCost, SelectProductSelected, updateStock } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { AddProduct } from '../../../../../features/addOrder/addOrderModalSlice'
+import { Button } from '../../../../templates/system/Button/Button'
+import { Tooltip } from '../../../../templates/system/Button/Tooltip'
+import { useEffect } from 'react'
+import { addNotification } from '../../../../../features/notification/NotificationSlice'
+import { openModalAddProd } from '../../../../../features/modals/modalSlice'
 export const AddProductListSection = () => {
-    const productSelected = useSelector(SelectProductSelected)
     const dispatch = useDispatch();
+    const productSelected = useSelector(SelectProductSelected)
+    const [product, setProduct] = useState(null)
+    const [showProductList, setShowProductList] = useState(false)
+ 
+    const actualStock = product ? Number(productSelected.product.stock) : null;
+    const newStock = product ? Number(product.product.stock.newStock) : null;
+    const stock = { newStock, actualStock };
+    const totalStock = productSelected ? `${actualStock + newStock}` : null;
+
+    const cost = productSelected && product ? { unit: productSelected.product.cost.unit } : null;
+    const initialCost = product ? Number(product.product.initialCost) : null;
+    const subTotal = product ? Number(product.product.initialCost) * Number(product.product.stock.newStock) : null;
     const AddToOrderProductList = () => {
-        productSelected ? (
-            dispatch(
-                AddProduct()
-            )
-        ) : null
+        
+        if (product === 0){
+            dispatch(addNotification({title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error'}))
+            return
+        }
+        if (newStock === 0){
+            dispatch(addNotification({title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error'}))
+            return
+        }
+        if (productSelected && newStock > 0) {
+            dispatch(updateStock({ stock }))
+            dispatch(getInitialCost({ initialCost, cost }))
+            dispatch(AddProduct())
+        }
+        
+        
     }
+    useEffect(() => {
+        productSelected ? (
+            setProduct({ ...productSelected, product: { stock: { actualStock: '', newStock: '' }, cost: {unit: ''}, initialCost: '' } })
+        ) : null
+    }, [productSelected])
+    useEffect(()=> {
+        if(product && (productSelected.product.productName) && Number(product.product.initialCost) > Number(productSelected.product.cost.unit)){
+            // dispatch(addNotification({title: 'Error', message: 'El costo inicial no puede ser mayor al costo unitario', type: 'error'}))
+            //setProduct({...product, product: {...product.product, initialCost: ''}})
+            dispatch(addNotification({title: 'Advertencia', message: 'El costo inicial es mayor al costo unitario', type: 'error'}))
+        }
+    }, [initialCost])
+    useEffect(()=> {
+        if(productSelected.product.productName === "" && initialCost > 0){
+            dispatch(addNotification({title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'error'}))
+            setShowProductList(true)
+        }
+        if(productSelected.product.productName === "" && newStock > 0){
+            dispatch(addNotification({title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'warning'}))
+            setShowProductList(true)
+        }
+    }, [initialCost, newStock])
+   
+    console.log(product)
     return (
-        <div className={style.AddProductToListSection}>
-            <div className={style.Group}>
-                <div className={style.col}>
-                    <span className={style.ProductName}>
+        <Container>
+            <Group>
+                <Col>
+                    <ProductName>
                         <span>Product</span>
-                        <AddProductButton_OrderPage
-                            message='Agregar Producto' />
-                    </span>
-                </div>
-                <div className={style.col}>
-                    <span>Cantidad</span>
-                </div>
-                <div className={style.col}>
-                    <span>Costo</span>
-                </div>
-                <div className={style.col}>
+                        <Tooltip
+                            description='Crear Producto'
+                            placement='bottom'
+                            Children={
+                                <AddProductButton />
+                            }
+                        />
+                    </ProductName>
+                </Col>
+                <Col>
+                    <span>{`Cantidad ${productSelected ? `(${totalStock})` : null}`}</span>
+                </Col>
+                <Col>
+                    <span>Costo {`(${productSelected ? (cost ? cost.unit : null) : null})`}</span>
+                </Col>
+                <Col>
                     <span>Subtotal</span>
-                </div>
-                <div className={style.col}>
-                </div>
-            </div>
-            <div className={style.Group}>
+                </Col>
+                <Col>
+                </Col>
+            </Group>
+            <Group>
                 <ProductFilter
-                    productName={productSelected ? productSelected.product.productName : ''}
+                isOpen={showProductList}
+                setIsOpen={setShowProductList}
+                    productName={productSelected ? productSelected.product.productName : ''}     
                 />
                 <div>
-                    <InputText
-                        value={productSelected ? productSelected.product.stock : null}
-                        placeholder='Cantidad'
-                        readOnly
-                        onChange
+                    <InputNumber
+                         bgColor='gray-light'
+                         border
+                        value={productSelected ? (product !== null ? (product.product.stock.newStock) : null) : ''}
+                        onChange={(e) => setProduct({
+                            ...product,
+                            product: {
+                                ...product.product,
+                                stock: {
+                                    newStock: e.target.value
+                                }
+                            }
+                        })}
                     />
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? productSelected.product.cost.unit : null}
+                        value={productSelected ? (product !== null ? (product.product.initialCost): null) : null}
                         placeholder='Costo'
-                        readOnly
-                        onChange
+                        onChange={(e) => setProduct({
+                            ...product,
+                            product: {
+                                ...product.product,
+                                initialCost: e.target.value    
+                            }
+                        })}
+                        border
+                        bgColor='gray-light'
                     />
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? productSelected.product.price.unit : null}
+                        value={productSelected ? subTotal : null}
                         placeholder='SubTotal'
                         readOnly
-                        onChange
+                        border
+                        bgColor='gray-light'
                     />
                 </div>
                 <div>
-                    <Button onClick={AddToOrderProductList}>
-                        <TbPlus></TbPlus>
+                    <Button title={<TbPlus />} width='icon32' border='light' borderRadius='normal' onClick={AddToOrderProductList} >
+
                     </Button>
                 </div>
-            </div>
-        </div>
+            </Group>
+        </Container>
     )
 }
-
-const Button = styled.button`
-  width: 1.8em;
-  height: 1.8em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  
-  font-size: 1.06em;
-  border-radius: 100%;
-  &:focus {
-    outline: none;
-  }
+const Container = styled.div`
+    background-color: var(--White);
+    border-radius: 8px;
+    display: grid;
+    gap: 0.2em;
+    padding: 0.2em 1em 0.4em;
+    //border: var(--border-primary);
+`
+const Group = styled.div`
+     color: rgb(37, 37, 37);
+     display: grid;
+     grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr min-content;
+     position: relative;
+     gap: 1em;
+`
+const Col = styled.div`
+       display: flex;
+       font-weight: 500;
+       min-width: 2em;
+       align-items: center;
+       span{
+        
+    font-size: 12px;
+    line-height: 12px;
+       }
+`
+const ProductName = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1em;
 `

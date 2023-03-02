@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { getClients } from '../../../../firebase/firebaseconfig.js'
-import { addDelivery, CancelShipping, createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setClientModeInState, updateClientInState } from '../../../../features/cart/cartSlice'
+import { getClients } from '../../../../firebase/firebaseconfig.jsx'
+import { addDelivery, createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setChange, setClientModeInState, totalPurchase, updateClientInState } from '../../../../features/cart/cartSlice'
 import style from './ClientControlStyle.module.scss'
 import {
-  InputText,
-  Client,
   CancelPurchaseBtn,
-  AddClientButton
 } from '../../../'
 import { useDispatch, useSelector } from 'react-redux'
 import { Input } from '../../../templates/system/Inputs/InputV2.jsx'
@@ -17,6 +14,7 @@ import { ClientDetails } from './ClientDetails/ClientDetails.jsx'
 import { SearchClient } from '../../../templates/system/Inputs/SearchClient.jsx'
 import { ClientSelector } from './ClientSelector.jsx'
 import { useSearchFilter } from '../../../../hooks/useSearchFilter.js'
+import { Tooltip } from '../../../templates/system/Button/Tooltip.jsx'
 
 export const ClientControl = () => {
   const CLIENT_MODE = {
@@ -101,8 +99,7 @@ export const ClientControl = () => {
         setSearchClientLabel(`${CLIENT_MODE.SEARCH.label}`)
         break;
 
-      case CLIENT_MODE.UPDATE.mode:
-       
+      case CLIENT_MODE.UPDATE.mode: 
         setSearchTerm(clientSelected.name === '' ? clientSelected.name : client.name)
         setSearchClientLabel(`${CLIENT_MODE.UPDATE.label} (${clientSelected.name})`)
         closeMenu()
@@ -137,7 +134,6 @@ export const ClientControl = () => {
 
       case CLIENT_MODE.UPDATE.mode:
         dispatch(updateClientInState(client))
-        dispatch(addDelivery())
         break;
 
       case CLIENT_MODE.CREATE.mode:
@@ -184,7 +180,7 @@ export const ClientControl = () => {
             onChange={(e) => handleChangeClient(e)}
           />
           <ButtonGroup>
-            <CancelPurchaseBtn></CancelPurchaseBtn>
+            <Tooltip placement='bottom-end' description='Cancelar Venta' Children={<CancelPurchaseBtn/>}/>
           </ButtonGroup>
         </div>
       </div>

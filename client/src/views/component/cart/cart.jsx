@@ -1,66 +1,75 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react'
-import { separator } from '../../../hooks/separator'
+import React, { useEffect, useRef, useState } from 'react'
+
 import style from './cartStyle.module.scss'
 import {
-  Counter,
   Button,
-  AddClientModal,
   ClientControl,
   Receipt,
 } from '../../index'
 import {
   SelectProduct,
-  totalPurchaseWithoutTaxes,
   CancelShipping,
-  totalTaxes,
-  totalPurchase,
-  setChange,
-  totalShoppingItems,
   SelectTotalPurchase,
-  handleClient,
   isNewClient,
   SelectClient,
   SelectFacturaData,
-  addTaxReceiptInState
+  addTaxReceiptInState,
+  SelectNCF,
 } from '../../../features/cart/cartSlice'
+
 import { useSelector, useDispatch } from 'react-redux'
-//import { useModal } from '../../../hooks/useModal'
 import { ProductCardForCart } from './ProductCardForCart'
 import { PaymentArea } from './PaymentArea'
 import { useReactToPrint } from 'react-to-print'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import { AddBills, UpdateMultipleDocs } from '../../../firebase/firebaseconfig'
-import { IncreaseEndConsumer, IncreaseTaxCredit, SELECT_NCF_CODE, SELECT_NCF_STATUS, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice'
+import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectNcfStatus, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice'
 import styled from 'styled-components'
+import { addNotification } from '../../../features/notification/NotificationSlice'
+import { selectMenuOpenStatus } from '../../../features/nav/navSlice'
+import { selectAppMode } from '../../../features/appModes/appModeSlice'
+
 export const Cart = () => {
+  const isOpen = useSelector(selectMenuOpenStatus)
   const dispatch = useDispatch()
+  const selectMode = useSelector(selectAppMode)
   const componentToPrintRef = useRef(null);
   const bill = useSelector(state => state.cart.data)
   const taxReceiptDataRef = useSelector(selectTaxReceiptData)
   const clientSelected = useSelector(SelectClient)
-  const NCF_status = useSelector(SELECT_NCF_STATUS)
-  const NCF_code = useSelector(SELECT_NCF_CODE)
+  const ncfStatus = useSelector(selectNcfStatus)
+  const ncfCode = useSelector(selectNcfCode)
+  const [submittable, setSubmittable] = useState(false)
   const TotalPurchaseRef = useSelector(SelectTotalPurchase)
+  const ncfCartSelected = useSelector(SelectNCF)
   const ProductSelected = useSelector(SelectProduct)
   const billData = useSelector(SelectFacturaData)
+  const [printed, setPrinted] = useState(false)
+
   useEffect(() => {
-    if (NCF_code !== null) {
-      dispatch(addTaxReceiptInState(NCF_code))
+    if (ncfCode !== null) {
+      dispatch(addTaxReceiptInState(ncfCode))
     }
-  }, [NCF_code])
-  const handlePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
-  })
+    if (ncfCode) {
+      dispatch(addTaxReceiptInState(ncfCode))
+    }
+  }, [ncfCode])
+
   const handleTaxReceipt = async () => {
-    console.log(NCF_status)
     try {
-      if (NCF_status === true) {
-        console.log('true')
-        dispatch(IncreaseTaxCredit())
-      }
-      if (NCF_status === false) {
-        console.log('false')
-        dispatch(IncreaseEndConsumer())
+      switch (ncfStatus) {
+        case true:
+          dispatch(IncreaseTaxCredit())
+          console.log('hay ncf')
+          break;
+        case false:
+          dispatch(IncreaseEndConsumer())
+          console.log('no hay ncf')
+          break;
+        default:
+          dispatch(IncreaseEndConsumer())
+          console.log('no hay ncf')
+          break;
       }
     } catch (error) {
       console.log(error)
@@ -73,11 +82,17 @@ export const Cart = () => {
       console.log(error)
     }
   }
-  const savingDataToFirebase = async () => {
+  const savingDataToFirebase = async (bill) => {
+    dispatch(addTaxReceiptInState(ncfCode))
     try {
-      AddBills(billData);
-      dispatch(updateTaxCreditInFirebase())
-      UpdateMultipleDocs(ProductSelected);
+      if (selectMode === true) {
+        AddBills(bill)
+        dispatch(updateTaxCreditInFirebase())
+        UpdateMultipleDocs(ProductSelected);
+        dispatch(addNotification({ message: "Venta Realizada", type: 'success', title: 'Completada' }))
+      } else {
+        dispatch(addNotification({ message: "No se puede Facturar en Modo Demo", type: 'error' }))
+      }
     } catch (err) {
       console.log(err)
     }
@@ -96,7 +111,6 @@ export const Cart = () => {
     } catch (error) {
     }
   }
-
   const handleInvoice = async () => {
     if (ProductSelected.length > 0) {
       try {
@@ -106,14 +120,38 @@ export const Cart = () => {
         await showPrintPreview()
         await showPrintPreview()
         await clearDataFromState()
-      
       } catch (error) {
         console.log(error)
       }
     }
   }
+
+  function esperar(tiempo) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, tiempo);
+    });
+  }
+
+  function handleInvoiceError(error) {
+    dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
+    console.error(error);
+  }
+  useEffect(() => {
+    if (ncfCartSelected !== null && submittable === false && printed === true) {
+      savingDataToFirebase(billData)
+      console.log('=> => => => =>', ncfCartSelected)
+      setSubmittable(true)
+    }
+  }, [ncfCartSelected, submittable, printed])
+  useEffect(() => {
+    if (submittable === true) {
+      clearDataFromState()
+      setSubmittable(false)
+      setPrinted(false)
+    }
+  }, [submittable])
   return (
-    <Container>
+    <Container isOpen={isOpen ? true : false}>
       <ClientControl></ClientControl>
       <ProductsList>
         {
@@ -150,7 +188,7 @@ export const Cart = () => {
 const Container = styled.div`
   position: relative;
    height: calc(100%);
-   background-color: rgb(253, 253, 253);
+   background-color: rgb(255, 255, 255);
    max-width: 30em;
    width: 24em;
    overflow: hidden;
@@ -160,6 +198,7 @@ const Container = styled.div`
    padding: 0 ;
    margin: 0;
    gap: 10px;
+   transition: width 600ms 200ms ease;
    @media(max-width: 800px){
     height: calc(100vh);
       width: 100%;
@@ -173,6 +212,19 @@ const Container = styled.div`
       background-color: white;
       display: none;
    }
+   ${props => {
+    switch (props.isOpen) {
+      case true:
+        return `
+        width: 0;
+        
+        `
+        break;
+
+      default:
+        break;
+    }
+  }}
 `
 const ProductsList = styled.ul`
   background-color: var(--color2);

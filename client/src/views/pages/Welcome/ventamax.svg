@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: #42a5f5;
+        stroke-width: 2px;
+      }
+
+      .cls-2 {
+        font-size: 51.16px;
+        fill: #42a5f5;
+        font-family: Arial;
+        font-weight: 700;
+      }
+    </style>
+  </defs>
+  <circle id="Elipse_1" data-name="Elipse 1" class="cls-1" cx="31.781" cy="32.219" r="29.813"/>
+  <text id="V" class="cls-2" transform="translate(14.728 50.763) scale(0.977)">V</text>
+</svg>

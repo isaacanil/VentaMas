@@ -1,34 +1,37 @@
 import React from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../hooks/separator'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
 
 export const Bill = ({data}) => {
+  const totalTax = data.products.reduce((total, product) => total + (product.tax.value * product.cost.unit) * product.amountToBuy.total, 0)
     return (
         <Container>
             <ITEMS text='left'>
                 {data.client ? data.client.name : 'No hay cliente'}
             </ITEMS>
             <ITEMS text='left'>
-                {`${new Date(data.date.seconds * 1000).toLocaleString()} `}
+                {`${new Date(data.date.seconds * 1000).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+} `}
                 {/* {new Date(data.date.seconds * 1000).toLocaleString()} */}
             </ITEMS>
             <ITEMS text='right'>
-                RD$ {separator(data.totalPurchase.value)}
+              {useFormatPrice(data.totalPurchase.value)}
             </ITEMS>
             <ITEMS text={'right'}>
-                RD$ {separator(data.totalTaxes.value)}
+              {useFormatPrice(totalTax)}
             </ITEMS>
             <ITEMS text={'right'}>
-                {/* RD$ {separator(data.cashPaymentMethod.value)} */}
+                {/* RD$ {useFormatPrice(data.cashPaymentMethod.value)} */}
                 {
-                  data && data.cashPaymentMethod ? data.cashPaymentMethod.value : null
+                  data && data.cashPaymentMethod ? useFormatPrice(data.cashPaymentMethod.value) : null
                 }
                 {
-                  data && data.paymentMethod ? data.paymentMethod.find((bill) => bill.status === true).value : null
+                  data && data.paymentMethod ? useFormatPrice(data.paymentMethod.find((bill) => bill.status === true).value) : null
                 }
             </ITEMS>
             <ITEMS text={'right'}>
-                RD$ {separator(data.change.value)}
+                {useFormatPrice(data.change.value)}
             </ITEMS>
         </Container>
     )
@@ -42,7 +45,7 @@ const Grid = styled.div`
 `
 const Container = styled(Grid)`
  background-color: white;
- border-bottom: 1px solid rgba(0, 0, 0, 0.200);
+ border-bottom: 1px solid rgba(0, 0, 0, 0.100);
  padding: 0 1em;
  
 `
@@ -52,7 +55,7 @@ const ITEMS = styled.div`
     font-size: 0.8em;
   }
   width: 100%;
-  height: 3em;
+  height: 3.2em;
   display: grid;
   text-align: center;
   align-items: center;

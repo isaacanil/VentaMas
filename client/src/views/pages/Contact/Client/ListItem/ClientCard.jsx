@@ -20,7 +20,7 @@ export const OrderItem = ({ e, index, Row, Col }) => {
     const handleDeleteClient = (id) => {
         deleteClient(id)
     }
-    const openModalUpdateMode = () => {dispatch(toggleClientModal({mode: updateMode, data: e}))}
+    const openModalUpdateMode = (e) => {dispatch(toggleClientModal({mode: updateMode, data: e}))}
     return (
         <Row>
             <Col>{e.id}</Col>

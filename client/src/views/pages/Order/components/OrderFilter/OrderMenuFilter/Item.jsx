@@ -8,29 +8,28 @@ import { useSearchFilter, useSearchFilterOrderMenuOption } from '../../../../../
 import { Button } from '../../../../../templates/system/Button/Button'
 import { Input } from './Input'
 import { modifyOrderMenuData } from './modifyOrderMenuData'
+import { Toolbar } from './Toolbar'
 
-export const Item = ({ data, index, propertyName }) => {
+export const Item = ({ data, index, propertyName, }) => {
     const [searchTerm, setSearchTerm] = useState('')
     const dispatch = useDispatch()
     const { Items } = data
     console.log(propertyName)
     const optionsFiltered = useSearchFilterOrderMenuOption(Items, searchTerm)
-
-    const [isItemOpen, setIsItemOpen] = useState(false)
     // const handleOpenItem = () => setIsItemOpen(!isItemOpen)
     const handleOpenItem = (id) => dispatch(handleOpenOptions({ id }))
-
     return (
-        <Container>
+        <Container>  
             <Head isOpen={data.isOpen ? true : false} onClick={() => handleOpenItem(data.id)}>
                 <IoIosArrowForward /> <span>{data.name}</span>
             </Head>
             <Body isOpen={data.isOpen ? true : false} index={index}>
+                <Toolbar data={data} handleOpen={() => handleOpenItem(data.id)}></Toolbar>
                 <Input data={data} onChange={(e) => setSearchTerm(e.target.value)} fn={() => setSearchTerm('')} />
                 <OptionFilterList>
                     {
                         optionsFiltered.map((item, subIndex) => (
-                            subIndex <= 2 ? (
+                            subIndex <= 5 ? (
                                 <FilterOption key={subIndex} isSelected={item.selected ? true : false}>
                                     <input type="checkbox" name="selected" id={subIndex} />
                                     <label htmlFor={subIndex}>
@@ -41,8 +40,8 @@ export const Item = ({ data, index, propertyName }) => {
 
                         ))
                     }
-                    {optionsFiltered.length === 0 ? <span>No encontrado</span> : null}
-                    {data.Items.length > 3 && <Button title='ver más'/>}
+                    {optionsFiltered.length === 0 ? <span>No se encontraron resultados.</span> : null}
+                    {optionsFiltered.length !== 0 && data.Items.length > 3 && <Button title='ver más' borderRadius='normal' titlePosition='center'/>}
 
                 </OptionFilterList>
             </Body>
@@ -62,35 +61,33 @@ padding: 0.4em 1em;
 gap: 1em;
 display: grid;
 align-items: flex-start;
+align-content: flex-start;
 transform: translate(0, 0px);
 padding: 0.4em 1em;
-position: relative;
-height: auto;
+position: absolute;
+top: 0px;
+width: 100%;
+height: 100%;
 z-index: 1;
 gap: 1em;
-animation: delay 1s;
-transition-property: transform, z-index;
-transition-duration: 400ms, 400ms;
-transition-delay: 0s, 400ms;
-transition-timing-function: easy-in-out;
+transition-property: transform;
+transition-duration: 300ms;
+transition-delay: 0ms;
+transition-timing-function: linear;
 
     ${props => {
         switch (props.isOpen) {
-            case true:
-                return `
-
-                `
-
+          
             case false:
                 return `   
-                transform: translate(0, -700px);  
+                transform: translate(600px, 0px);  
                 position: absolute; 
-                z-index: ${-(props.index + 3)};
+                top: 0;
                 width: 100%;   
-                transition-property: transform, z-index;
-                transition-duration: 2s, 400ms;
-                transition-delay: 100ms, 0ms;
-                transition-timing-function: easy-in-out, lineal;
+                transition-property: transform;
+                transition-duration: 400ms;
+                transition-delay: 0ms;
+                transition-timing-function: linear;
         `
 
             default:
@@ -112,7 +109,7 @@ height: 2.7em;
         switch (props.isOpen) {
             case true:
                 return`
-                background-color: var(--color);
+                background-color: #dbe7ff;
                 `
               
         

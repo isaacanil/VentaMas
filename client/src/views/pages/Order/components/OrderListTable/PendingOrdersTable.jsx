@@ -1,17 +1,24 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Data } from '../../Data'
-import { ListItem } from '../../ListItem/ListItem'
+
 import { getOrders } from '../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
-import { OrderItem } from '../../ListItem/OrderItem'
+import { OrderCard } from '../../ListItem/OrderCard'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectOrderList } from '../../../../../features/order/ordersSlice'
+import { OrdersData, SetPendingOrdersInState } from '../../../../../firebase/OrderConfig'
 
 export const PendingOrdersTable = () => {
+  const [activeId, setActiveID] = useState(null) //id global for btns"
   const [orders, setOrders] = useState([])
-  useEffect(() => {
+  const ordersFromBD = OrdersData()
+  SetPendingOrdersInState(ordersFromBD)
+  let pendingOrderList = useSelector(selectOrderList)
+  const Items = pendingOrderList.length > 0 ? ( pendingOrderList[0].Items ? pendingOrderList[0].Items : null) : null
+  useEffect(()=>{
     getOrders(setOrders)
-  }, [])
-  console.log(orders)
+  },[])
+
   return (
     <Container>
       <Body>
@@ -19,9 +26,7 @@ export const PendingOrdersTable = () => {
           <h3>Lista de Pedidos Pendientes</h3>
         </TitleContainer>
         <Table>
-
           <Row fill='fill'>
-
             <Col>#</Col>
             <Col>Est</Col>
             <Col>Proveedor</Col>
@@ -30,23 +35,19 @@ export const PendingOrdersTable = () => {
             <Col>F. Entrega</Col>
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
-
-          </Row>
-
+          </Row> 
           <TableBody>
             {
-              Array(orders).length > 0 ? (
-                orders.map((e, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} e={e} index={index} />
+              orders.length > 0 ? (
+                orders.map((orderData, index) => (
+                  <OrderCard Row={Row} Col={Col} key={index} orderData={orderData} index={index} activeId={activeId} setActiveId={setActiveID}/>
                 ))
               ) : null
-
             }
           </TableBody>
         </Table>
       </Body>
     </Container>
-
   )
 }
 const Container = styled.div`
@@ -90,7 +91,7 @@ const TableBody = styled.div`
   display: grid;
   align-items: flex-start;
   align-content: flex-start;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
   color: rgb(70, 70, 70);

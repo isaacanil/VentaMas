@@ -1,0 +1,45 @@
+{
+    client:{
+        src:{
+            app:{
+                store.js
+            }
+            firebaseConfig:{
+                firebaseConfig.js
+            }
+            views:{
+                component:{
+
+                }
+                pages:{
+                    cart:{
+                        Cart.js
+                    }
+                    home:{
+                        Home.js
+                    }
+                    login:{
+                        Login.js
+                    }   
+                    product:{
+                        Product.js
+                    }   
+                    register:{
+                        Register.js
+                    }
+                    checkout:{
+                        Checkout.js
+                    }
+                    invetario:{
+                        Invetario.js
+                    }
+                    order:{
+                        Order.js
+                    }
+                    compras
+               
+
+            }
+        }
+    }
+}

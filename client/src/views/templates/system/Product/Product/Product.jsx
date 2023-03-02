@@ -4,15 +4,27 @@ import { separator } from '../../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { selectImageHidden, } from '../../../../../features/setting/settingSlice'
-import { addPaymentMethodAutoValue, addProduct, deleteProduct, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../../features/cart/cartSlice'
+import { addPaymentMethodAutoValue, addProduct, addTaxReceiptInState, deleteProduct, SelectDelivery, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import noImg from '../../../../../assets/producto/noimg.png'
 import { IsProductSelected } from './IsProductSelected'
-import { IoMdClose } from 'react-icons/io'
+import { IoMdClose, IoMdTrash } from 'react-icons/io'
+import { Button } from '../../Button/Button'
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
-    const ProductsSelected = useSelector(SelectProduct);
+    const ProductsSelected = useSelector(SelectProduct)
+    const deliverySelected = useSelector(SelectDelivery)
+    useEffect(() => {
+            dispatch(totalShoppingItems())
+            dispatch(totalPurchase())
+            dispatch(addPaymentMethodAutoValue())
+            dispatch(totalTaxes())
+            dispatch(setChange())
+           // dispatch(addTaxReceiptInState(NCF_code))
+    }, [ProductsSelected, deliverySelected])
+
+
     const handleGetThisProduct = (product) => {
         dispatch(addProduct(product))
         dispatch(totalShoppingItems())
@@ -23,23 +35,11 @@ export const Product = ({ product, }) => {
         // dispatch(addPaymentMethodAutoValue())
         dispatch(setChange())
     }
-    // const handleImgError = (e) => {
-    //     e.currentTarget.onerror = null;
-    //     e.currentTarget.src = noImgFound;
-    //     //currentTarget.style.objectFit = 'contain'
-    //     //e.target.src = noImgFound
-    // }
- 
+
     const deleteProductFromCart = (e, id) => {
         e.stopPropagation()
-        dispatch(totalPurchase())
         dispatch(deleteProduct(id))
-        dispatch(totalPurchaseWithoutTaxes())
-        dispatch(totalPurchase())
-        dispatch(totalShoppingItems())
-        dispatch(setChange())
-        dispatch(addPaymentMethodAutoValue())
-       
+
     }
 
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id)
@@ -62,26 +62,28 @@ export const Product = ({ product, }) => {
                 <Title>
                     {product.productName}
                 </Title>
+                {ProductCheckInCart.status ? (
+                            <Button
+                                startIcon={<IoMdTrash />}
+                                width='icon24'
+                                color={'danger'}
+                                borderRadius='normal'
+                                // bgcolor='error'
+                                variant='contained'
+                                onClick={(e) => deleteProductFromCart(e, product.id)}
+                            />
+                        ) : null}
                 <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
-
 
                     {ProductCheckInCart.status ? (
                         <Group>
                             <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.total}</AmountToBuy>
 
-                            {/* <DeleteProduct>
-                                <IoMdClose />
-                            </DeleteProduct> */}
                         </Group>
                     ) : <Group />}
 
                     <Group>
-                        <Price>{useFormatPrice(product.price.total)}</Price>
-                        {ProductCheckInCart.status ? (
-                            <DeleteProduct onClick={(e) => deleteProductFromCart(e, product.id)}>
-                                <IoMdClose />
-                            </DeleteProduct>
-                        ) : null}
+                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product.price.total)}</Price>        
                     </Group>
                 </Footer>
             </Body>
@@ -89,11 +91,11 @@ export const Product = ({ product, }) => {
     )
 }
 const Container = styled.div`
-
+    box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.020);
     height: 80px;
     width: 100%;
     background-color: #ffffff;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     display: flex;
     gap: 10px;
     overflow: hidden;
@@ -110,12 +112,8 @@ const Container = styled.div`
         switch (props.isSelected) {
             case true:
                 return `
-                outline: 3px solid var(--color1);   
-
-                      
+                outline: 2.9px solid var(--color1);                
                 `
-
-
             default:
                 break;
         }
@@ -167,6 +165,8 @@ const Body = styled.div`
     padding: 4px 0;
     position: relative;
     transition: 4000ms all ease-in-out;
+    display: grid;
+    grid-template-columns: 1fr min-content;
    
 `
 const ImageContainer = styled.div`
@@ -174,7 +174,6 @@ const ImageContainer = styled.div`
     width: 80px;
     overflow: hidden;
     padding: 4px;
-   
     transition: transform 400ms ease-in-out;
     img{
         height: 100%;
@@ -194,15 +193,17 @@ const Footer = styled.div`
     justify-content: space-between;
     width: 100%;
     height: 1.6em;
-    font-weight: 500;
     pointer-events: none;
+    
     border-top-left-radius: ${(props) => {
         return props.imageHiddenRef === false ? '10px' : '0'
     }
     };
-    transition:  800ms border-radius ease-in-out;
-    background-color: var(--White3);
-    color: var(--Gray7);
+transition:  800ms border-radius ease-in-out;
+background-color: var(--White1);
+font-weight: 400;
+color: var(--Gray6);
+letter-spacing: 0.2px;
    
 `
 const AmountToBuy = styled.div`
@@ -214,48 +215,47 @@ const AmountToBuy = styled.div`
     align-items: center;
     justify-content: center;
     line-height: 0;
-    background-color: var(--color1);
-    color: white;
+    background-color: var(--White4);
+    color: var(--color);
 `
-const DeleteProduct = styled.button`
-height: 1.4em;
-width: 1.4em;
-border-radius: 4px;
-display: flex;
-align-items: center;
-outline: 0;
-border: 0;
-padding: 0;
-line-height: 0;
-font-weight: bold;
-justify-content: center;
-background-color: var(--color-error);
-color: white;
-pointer-events: all;
-`
+
 const Group = styled.div`
     display: flex;
     align-items: center;
     gap: 1em;
 `
 const Title = styled.h5`
-    color: rgba(49, 49, 49, 0.966);
+    color: var(--Gray6);
     width: 100%;
-    font-size: 13px;
+    font-size: 13.4px;
     line-height: 1pc;
     padding: 0 1em;
     padding-top: 0.4em;
     padding-right: 2em;
     display: -webkit-box;
     font-weight: 600;
+    letter-spacing: 0.4px;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  
     //white-space: nowrap;
-    text-transform: uppercase;
+    text-transform: capitalize;
     text-overflow: ellipsis;
     overflow: hidden;
     
 `
 const Price = styled.h4`
     line-height: 0;
+    font-weight: 550;
+    color: #1D69A8;
+    transition: color 400ms ease-in-out;
+    ${(props) => {
+        switch (props.isSelected) {
+            case true:
+                return`
+                    color: var(--color)
+                ` 
+            default:
+                break;
+        }
+    }}
 `

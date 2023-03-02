@@ -3,44 +3,42 @@ import styled from 'styled-components'
 import { Button } from '../Button/Button'
 import { IoMdTrash } from 'react-icons/io'
 import { useSelector } from 'react-redux'
-//import { handleDeleteProduct } from '../../../../features/Alert/alertslice'
 import { selectDeleteProductAlert, handleDeleteProductAlertSuccess, handleDeleteProductAlert } from '../../../../features/Alert/AlertSlice'
 import { useDispatch } from 'react-redux'
+import { GoAlert } from 'react-icons/go'
 export const DeleteClientAlert = ({ success }) => {
     const dispatch = useDispatch()
     const isOpen = useSelector(selectDeleteProductAlert)
-   
+
     const handleCancel = () => {
-        dispatch(
-            handleDeleteProductAlert()
-        )
+        dispatch(handleDeleteProductAlert())
     }
     const handleSuccess = () => {
-        dispatch(
-            handleDeleteProductAlertSuccess()
-        )
-        dispatch(
-            handleDeleteProductAlert()
-        )
+        dispatch(handleDeleteProductAlertSuccess())
+        dispatch(handleDeleteProductAlert())
     }
     return (
         isOpen ? (
             <Backdrop>
                 <Container>
                     <Head>
-                        <h1>Eliminar Producto?</h1>
+                        <h1>Eliminar Producto</h1>
                     </Head>
                     <Body>
-                        <p>Esta seguro que desea eliminar este producto?</p>
+                        <Message>
+                           <GoAlert/> <p>Esta acción borrara permanentemente todos los datos</p>
+                        </Message>
                     </Body>
                     <Footer>
                         <Button
+                            borderRadius='normal'
                             bgcolor='error'
                             startIcon={<IoMdTrash />}
                             title='Eliminar'
                             onClick={handleSuccess}
                         />
                         <Button
+                            borderRadius='normal'
                             bgcolor='gray'
                             title='Cancelar'
                             onClick={() => handleCancel()}
@@ -55,11 +53,11 @@ export const DeleteClientAlert = ({ success }) => {
 const Backdrop = styled.div`
     position: absolute;
     top: 0;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(2px);
     z-index: 20;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(16, 16, 16, 0.300);
     display: grid;
     align-items: center;
     justify-items: center;
@@ -67,11 +65,24 @@ const Backdrop = styled.div`
     align-content: center;
     grid-template-columns: 1fr;
  `
+const Message = styled.div`
+    background-color: rgb(251,233,231);
+    color: rgb(211,47,47);
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    height: 3em;
+    padding: 0 1.4em;
+    font-size: 1.3em;
+    p{
+        font-size: 14px;
+    }
+ `
 const Container = styled.div`
     max-width: 650px;
     border-radius: 8px;
     width: 100%;
-    height: 300px;
+    height: 18em;
     background-color: white;
     display: grid;
     grid-template-rows: 1fr 3fr 1fr;
@@ -82,11 +93,11 @@ align-items: center;
 gap: 1em;
 padding: 0 1em;
     h1{
-        font-size: 1.5rem;
+        font-size: 1.25em;
         margin: 0;
     }
     svg{
-        font-size: 1em;
+        font-size: 1.5em;
         fill: #f7f7f7;
         height: 2.2em;
         width: 2.2em;

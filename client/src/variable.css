@@ -27,33 +27,39 @@
     --BlackOp1: rgba(0, 0, 0, 0.300);
     --BlackOp2: rgba(0, 0, 0, 0.400);
     /*color primarios*/
-    --color: rgb(66, 165, 245);
+    --color: #42a5f5;
     --color-main: #1976d2;
     /*color secundario*/
     --color1: #67B8DE;
     /*color terciario*/
-    --color2: #eff6fa;
+    --color2: #f2f7fa;
     /*color cuaternario*/
     --color3:  #d4e3f1 ;
     --color4: rgba(202, 214, 230, 0.274);
-    --color-error: #d32f2f;
+    --color-error: #cf5555;
+    --color-warning: #ff9800;
+    --color-success: #7adf7d;
+    --color-info: #2196f3;
 
     /*border*/
-    --border-radius1: 10px;
-    --border-radiusTotal: 100px;
- 
+    --border-radius-light: 4px;
+    --border-radius: 7px;
+    --border-radius-total: 100px;
+    --border-primary: 1px solid rgba(0, 0, 0, 0.100);
+    --border-color: rgba(0, 0, 0, 0.100);
+
     /*font*/
-    --font-color1: var(--Black);
-    --font-color2: var(--Black4);
-    --font-color3: var(--Gray10);
+    --font-color-dark: var(--Black4);
+    --font-color-dark-medium: var(--Black4);
+    --font-color-dark-slightly: var(--Gray8);
     --font-color4: var(--Gray8);
-    --font-color5: var(--Gray6)
+    --font-color5: var(--Gray6);
     /*padding*/
- 
-    --padding: 0.5em;
+    --box-shadow: 0px 15px 25px rgba(0,0,0,0.2);
+    
+    --padding: 0.4em;
     --padding1: 1em;
-    --padding2: 1.5em;
-    --padding3: 2em;
+  
  
     /*gap*/
     --gap: 0.5em;
@@ -66,9 +72,15 @@
  
     /*Media Querys*/
     --WdMedium: 800px;
- 
- 
- 
+    --max-width: 1000px;
+
+
+  --typografy: 
+
+
+
+
+
  }
 
 

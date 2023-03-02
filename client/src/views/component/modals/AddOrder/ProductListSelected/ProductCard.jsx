@@ -1,46 +1,61 @@
 import React from 'react'
+import { IoMdTrash } from 'react-icons/io'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+import { DeleteProduct } from '../../../../../features/addOrder/addOrderModalSlice'
 import { separator } from '../../../../../hooks/separator'
+import { Button } from '../../../../templates/system/Button/Button'
 
 export const ProductCard = ({product}) => {
+    const dispatch = useDispatch()
+    const handleDeleteProduct = () => {
+        console.log(product.id)
+        dispatch(DeleteProduct(product.id))
+    }
   return (
     <Container>
         <Col>
-            <h5>
+            <span>
                 {product.productName}
-            </h5>
+            </span>
         </Col>
         <Col>
-            <h5>
-                {product.stock}
-            </h5>
+            <span>
+                {product.stock.newStock}
+            </span>
         </Col>
         <Col>
-            <h5>
-                RD${separator(product.cost.unit)}
-            </h5>
+            <span>
+                RD${separator(product.initialCost)}
+            </span>
         </Col>
         <Col>
-            <h5>
-                RD${separator(product.cost.unit * product.stock)}
-            </h5>
+            <span>
+                RD${separator(product.initialCost * product.stock.newStock)}
+            </span>
         </Col>
-        <Col>
-            
-        </Col>
+        <Button
+        title={<IoMdTrash />}
+        width='icon24'
+        border='light'
+        borderRadius='normal'
+        onClick={handleDeleteProduct}
+        />
+      
     </Container>
   )
 }
 const Container = styled.div`
     display: grid;
-    grid-template-columns: 250px min-content 1fr 1fr 1fr;
+    grid-template-columns: 250px 30px 1fr 1fr min-content;
     height: 2.75em;
     align-items: center;
     align-content: center;
     padding: 0 0.8em;
     background-color: #fff;
-    border-bottom: 1px solid #00000034;
     color: #353535;
+    border: var(--border-primary);
+    border-radius: var(--border-radius-light);
     gap: 1em;
     &:last-child{
         border-bottom: none;
@@ -48,33 +63,37 @@ const Container = styled.div`
     
 `
 const Col = styled.div`
+color: var(--Gray6);
     &:first-child{
-        h5{
+        span{
             max-width: 180px;
             width: 100%;
-            font-size: 12px;
             line-height: 1pc;
             display: -webkit-box;
             -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;  
             //white-space: nowrap;
-            text-transform: uppercase;
+            text-transform: capitalize;
             text-overflow: ellipsis;
-            overflow: hidden;
-           
-            
+            overflow: hidden;            
         }
     }
     &:nth-child(3n){
-        h5{
+        span{
             display: block;
             text-align: right;
         }
     }
     &:nth-child(4n){
-        h5{
+        span{
             display: block;
             text-align: right;
         }
+    }
+    &:nth-child(4n){
+      
+            display: block;
+            text-align: right;
+        
     }
 `

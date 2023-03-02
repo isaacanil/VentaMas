@@ -8,6 +8,7 @@ export const SearchClient = ({ name, type, text, ref, size, title, label, clearI
     const handleReset = () => {
          fn ? fn() : null
     }
+    
     return (
         <Container ref={ref}>
             <InputContainer>
@@ -69,7 +70,7 @@ display: grid;
         height: min-content;
         max-height: min-content;
         min-height: min-content;
-        line-height: 11px;
+        line-height: 10px;
         font-size: 11px;
         margin: 0;
         padding: 0;

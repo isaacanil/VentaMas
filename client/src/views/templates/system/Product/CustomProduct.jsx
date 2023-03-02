@@ -10,6 +10,7 @@ import { addProduct, totalShoppingItems } from '../../../../features/cart/cartSl
 import { SelectProduct } from '../../../../features/cart/cartSlice';
 import { separator } from '../../../../hooks/separator';
 import { selectImageHidden } from '../../../../features/setting/settingSlice';
+import { FaPizzaSlice } from 'react-icons/fa';
 
 export const CustomProduct = ({ product }) => {
     //const [productList, setProductList] = useState([])
@@ -21,7 +22,8 @@ export const CustomProduct = ({ product }) => {
         <ProductContainer  onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef ? true : false}>
             <ProductImgWrapper imageHiddenRef={imageHiddenRef ? true : false}>
                 <span>
-                    {product.productName.charAt(0)}
+                    {/* {product.productName.charAt(0)} */}
+                    {<FaPizzaSlice/>}
                
                 </span>
             </ProductImgWrapper>
@@ -43,7 +45,7 @@ const ProductContainer = styled.div`
     background-color: rgb(255, 255, 255);
     overflow: hidden;
     display: grid;
-    gap: 1em;
+    gap: 10px;
     grid-template-columns: min-content 1fr;
     transition: 400ms all ease-in-out;
     align-items: center;
@@ -84,9 +86,7 @@ ${(props) => {
 const ProductImgWrapper = styled.div`
     overflow: hidden;
     display: flex;
-    width: 100%;
-    height: 100%;
-    padding: 0.2em;
+    padding: 4px;
     justify-content: center;
     align-items: center;
     ${(props) => {
@@ -94,10 +94,12 @@ const ProductImgWrapper = styled.div`
             case false:
                 return`
                 height: 80px;
+                width: 80px;
                 transition: all 400ms ease-in-out;
                 span{
-                    width: 80px;
-                    font-size: 3em;
+                    width: 100%;
+                    height: 100%;
+                    font-size: 2.2em;
                 }
                 `
                 case true:
@@ -117,11 +119,12 @@ const ProductImgWrapper = styled.div`
         display: flex;
         justify-content: center;
         align-items: center;
-        
+        height: 80px;
+        width: 80px;
         font-weight: 700;
         height: 100%;
-        color: white;
-        background-color: #cc1313;
+        color: rgba(0, 0, 0, 0.200);
+        background-color: var(--White3);
         border-radius: 7px;
     }
 ;
@@ -143,42 +146,33 @@ const ProductImgWrapper = styled.div`
     
 `;
 const Body = styled.div`
-    height: 100%;
+     height: 100%;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    grid-template-columns: min-content;
-    grid-template-rows: 1fr 1fr;
+    background-color: #ffffff;
+    padding: 4px 0;
     position: relative;
+    transition: 4000ms all ease-in-out;
     `
 const Main = styled.div`
-    padding: 0.6em 0.4em 0;
+   
 `
 const Title = styled.h5`
-    color: rgb(66, 66, 66);
-    width: 150px;
+    color: var(--Gray6);
+    width: 100%;
+    font-size: 13.5px;
     line-height: 1pc;
-    font-size: 12px;
+    padding: 0 1em;
+    padding-top: 0.4em;
+    padding-right: 2em;
     display: -webkit-box;
+    font-weight: 600;
+    letter-spacing: 0.2px;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  
     //white-space: nowrap;
-    text-transform: uppercase;
+    text-transform: capitalize;
     text-overflow: ellipsis;
     overflow: hidden;
-    @media (max-width: 1300px){
-        width: 120px;
-    }
-    @media (max-width: 1200px){
-        width: 170px;
-    }
-    @media (max-width: 1050px){
-        width: 140px;
-    }
-    @media (max-width: 1050px){
-      width: 120px;
-    }
 `
 const ProductStock = styled.div`
     height: 50px;
@@ -186,8 +180,7 @@ const ProductStock = styled.div`
     color: white;
     display: flex;
     justify-content: center;
-    align-items: center;
-  
+    align-items: center; 
 `
 const Footer = styled.footer`
 
@@ -209,6 +202,5 @@ const ProductPrice = styled.div`
     color: #424242;
     
     //border-radius: 50px;
-    
     
 `

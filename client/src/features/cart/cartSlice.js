@@ -6,7 +6,7 @@ import { Product } from "../../views";
 import { v4 } from "uuid";
 import { nanoid } from "nanoid";
 import { IoFemaleSharp } from "react-icons/io5";
-import { createClient, updateClient } from "../../firebase/firebaseconfig";
+import { AddBills, createClient, updateClient } from "../../firebase/firebaseconfig";
 import { useCompareObjectsInState } from "../../hooks/useCompareObject";
 const DefaultDelivery = {
     status: false,
@@ -50,8 +50,27 @@ const defaultValue = {
         change: {//cambio
             value: 0
         },
-        delivery: DefaultDelivery,
-        paymentMethod: DefaultPaymentMethod,
+        delivery: {
+            status: false,
+            value: 0
+        },
+        paymentMethod: [
+            {
+                method: 'cash',
+                value: 0,
+                status: true
+            },
+            {
+                method: 'card',
+                value: 0,
+                status: false
+            },
+            {
+                method: 'transfer',
+                value: 0,
+                status: false
+            }
+        ],
         NCF: '',
         totalShoppingItems: {
             value: 0
@@ -66,7 +85,7 @@ const defaultValue = {
             value: 0
         },
         totalPurchase: {
-            value: ''
+            value: 0
         },
         sourceOfPurchase: 'Presencial'
     },
@@ -112,7 +131,27 @@ const cartSlice = createSlice({
             const clientSelected = state.data.client
             if (updatedClient.id === clientSelected.id) {
                 state.handleClient.UPDATED_CLIENT = updatedClient
-                console.log(state.handleClient.UPDATED_CLIENT, 'update función')
+                let updatedClientCopy = { ...updatedClient };
+
+                if (!('delivery' in updatedClientCopy) ||
+                    typeof updatedClientCopy.delivery === 'number' ||
+                    typeof updatedClientCopy.delivery === 'string') {
+                    updatedClientCopy.delivery = { value: 0, status: false };
+                    state.data = { ...state.data, delivery: updatedClientCopy.delivery };
+                        
+                   
+                }
+
+                if (!('value' in updatedClientCopy.delivery) && !('status' in updatedClientCopy.delivery)) {
+                    const newDelivery = { ...updatedClientCopy.delivery, value: 0, status: false };
+                    state.data = { ...state.data, delivery: newDelivery };
+                    return
+                }
+
+                state.handleClient.UPDATED_CLIENT = updatedClientCopy
+                state.data.client.delivery = updatedClientCopy.delivery
+                state.data.delivery = updatedClientCopy.delivery
+
             }
         },
         createClientInState: (state, action) => {
@@ -120,7 +159,9 @@ const cartSlice = createSlice({
             state.data.client = action.payload
         },
         selectClientInState: (state, action) => {
-            state.data.client = action.payload  
+            state.data.client = action.payload
+            console.log(state.handleClient.UPDATED_CLIENT, state.data.client, 'client')
+            
         },
         deleteClientInState: (state) => {
             state.data.client = DefaultClient
@@ -138,19 +179,12 @@ const cartSlice = createSlice({
         addTaxReceiptInState: (state, actions) => {
             state.data.NCF = actions.payload
         },
-        addDelivery: (state) => {
-            const clientDeliveryData = state.data.client.delivery;
-            const updateClientDeliveryData = state.handleClient.UPDATED_CLIENT ? state.handleClient.UPDATED_CLIENT.delivery : null;
-            if(updateClientDeliveryData && clientDeliveryData){
-                if(clientDeliveryData.status === true && clientDeliveryData.value !== ''){
-                    updateClientDeliveryData.status = clientDeliveryData.status
-                    updateClientDeliveryData.value = clientDeliveryData.value
-                }
-                else{
-                    updateClientDeliveryData.status = false
-                    updateClientDeliveryData.value = ''
-                }
-               
+        addDelivery: (state, action) => {
+            const { cash, status } = action.payload
+            state.data.delivery.value = cash
+            state.data.delivery.status = status
+            if (state.data.delivery.status === false) {
+                state.data.delivery.value = 0
             }
 
         },
@@ -166,10 +200,10 @@ const cartSlice = createSlice({
             }
         },
         addPaymentMethodAutoValue: (state) => {
-            const activatedMethod = state.data.paymentMethod.find((method) => method.status === true)
-            if (activatedMethod) {
-                activatedMethod.value = state.data.totalPurchase.value
-            }
+            const totalPurchase = state.data.totalPurchase.value
+            state.data.payment.value = totalPurchase
+
+
         },
         addProduct: (state, action) => {
             if (state.data.id === null || state.data.id === undefined || state.data.id === '') {
@@ -200,7 +234,7 @@ const cartSlice = createSlice({
         },
         onChangeValueAmountToProduct: (state, action) => {
             const { id, value } = action.payload
-            const productFound = state.data.data.products.find(product => product.id === id)
+            const productFound = state.data.products.find(product => product.id === id)
             if (productFound) {
                 productFound.amountToBuy.total = Number(value)
                 //console.log(Number(value))
@@ -237,7 +271,7 @@ const cartSlice = createSlice({
         CancelShipping: state => state = defaultValue,
         totalTaxes: (state) => {
             const productSelected = state.data.products
-            const total = productSelected.reduce((total, product) => total + product.tax.total, 0)
+            const total = productSelected.reduce((total, product) => total + (product.tax.value * product.cost.unit) * product.amountToBuy.total, 0)
             state.data.totalTaxes.value = total
         },
         totalPurchaseWithoutTaxes: (state) => {
@@ -245,18 +279,27 @@ const cartSlice = createSlice({
             const result = ProductsSelected.reduce((total, product) => total + product.cost.total, 0);
             state.data.totalPurchaseWithoutTaxes.value = result;
         },
+        addDiscount: (state, action) => {
+            const value = action.payload
+            state.data.discount.value = Number(value)
+        },
         totalPurchase: (state) => {
             const productSelected = state.data.products
-            const total = productSelected.reduce((total, product) => total + product.price.total, 0)
+            const discountRawValue = Number(state.data.discount.value);
+            const discountPercentage = (discountRawValue / 100);
+            const total = Number(productSelected.reduce((total, product) => total + product.price.total, 0))
+            const discount = total * discountPercentage;
+            const totalWithDiscount = total - discount;
             const Delivery = state.data.delivery.value;
-            state.data.totalPurchase.value = (Number(Delivery) + Number(total))
+            state.data.totalPurchase.value = (Number(Delivery) + Number(totalWithDiscount))
+
         },
         setChange: (state) => {
             const totalPurchase = state.data.totalPurchase.value;
-            const isTrue = state.data.paymentMethod.find((method) => method.status === true)
-            if (isTrue && isTrue.value !== false) {
-                state.data.change.value = ((Number(totalPurchase) * -1) + Number(isTrue.value))
-            }
+            const payment = state.data.payment.value;
+            state.data.change.value = Number(payment) - Number(totalPurchase)
+            // if (isTrue && isTrue.value !== false) {
+            // }
         },
         totalShoppingItems: (state) => {
             const Items = state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0)
@@ -265,7 +308,8 @@ const cartSlice = createSlice({
         addSourceOfPurchase: (state, actions) => {
             const source = actions.payload
             state.data.sourceOfPurchase = source
-        }
+        },
+        
     }
 })
 
@@ -276,6 +320,7 @@ export const {
     addDelivery,
     addPaymentValue,
     addPaymentMethod,
+    addDiscount,
     addPaymentMethodAutoValue,
     addProduct,
     addSourceOfPurchase,
@@ -294,7 +339,8 @@ export const {
     totalPurchaseWithoutTaxes,
     totalShoppingItems,
     totalTaxes,
-    updateClientInState
+    updateClientInState,
+    saveBillInFirebase
 } = cartSlice.actions
 
 export const SelectProduct = (state) => state.cart.data.products;
@@ -309,6 +355,8 @@ export const SelectChange = (state) => state.cart.data.change.value;
 export const SelectSourceOfPurchase = (state) => state.cart.data.sourceOfPurchase;
 export const SelectPaymentValue = (state) => state.cart.data.payment.value;
 export const SelectClientMode = (state) => state.cart.handleClient.mode;
+export const SelectDiscount = (state) => state.cart.data.discount.value;
+export const SelectNCF = (state) => state.cart.data.NCF;
 
 export default cartSlice.reducer
 

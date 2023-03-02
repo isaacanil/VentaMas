@@ -21,7 +21,6 @@ export const useSearchFilterX = (list, searchTerm, filterField) => {
             setFilteredList(list)
             return;
         }
-        
         const searchRegex = new RegExp(searchTerm, 'i');
         const filtered = list.filter(item => searchRegex.test(item[filterField.split(".")[0]][filterField.split(".")[1]]))
         setFilteredList(filtered)

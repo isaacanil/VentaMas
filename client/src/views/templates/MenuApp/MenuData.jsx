@@ -18,11 +18,11 @@ export const MenuData = [
         //<ChevronLeft/> <ChevronRight/>
         submenu: [
             {
-                title: 'Pedido',
+                title: 'Pedidos Pendientes',
                 path: '/app/pedido'
             },
             {
-                title: 'Compra',
+                title: 'Compras',
                 path: '/app/compra'
             }
         ]
@@ -74,6 +74,6 @@ export const MenuData = [
    
     {
         title: 'Configuración',
-        path: '/app/setting'
+        path: '/app/settings'
     }
 ]

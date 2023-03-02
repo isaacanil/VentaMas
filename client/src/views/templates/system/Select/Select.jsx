@@ -1,102 +1,131 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { IoIosArrowDown } from 'react-icons/io'
 import { MdClear } from 'react-icons/md'
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 
-export const Select = ({ title, data, value, setValue }) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const handleClose = () => {
-        setIsOpen(false)
+export const Select = ({ title, data, value, setValue, placement = 'bottom', property = 'name', reset, setReset }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [showSelectTitle, setShowSelectTitle] = useState(title);
+    const [selectedId, setSelectedId] = useState('');
+    const SelectRef = useRef(null)
+
+    useEffect(() => {
+      if (reset) {
+        setSelectedId('');
+        setShowSelectTitle(title);
+        setReset(false);
+      }
+    }, [reset, title]);
+  
+    useEffect(() => {
+      if (value && data && data.Items) {
+        setShowSelectTitle(value[property] || title);
+        const selectedItem = data.Items.find(item => item.id === value.id);
+        setSelectedId(selectedItem?.id || '');
+      }
+    }, [value, property, data]);
+
+    const handleSelect = select => {
+      setSelectedId(select.id);
+      setValue(select);
+      setShowSelectTitle(select[property]);
+      setIsOpen(false);
+    };
+
+    const handleReset = () => {
+      setSelectedId('');
+        setShowSelectTitle(title);
+        setReset(false);
+        setIsOpen(false);
     }
-    const [showSelectTitle, setShowSelectTitle] = useState(title)
-    const [isSelect, setIsSelect] = useState({ status: false, id: '', value: '' })
-    const dataSelected = (select) => {
-        console.log(select)
-        setIsSelect({
-            id: select.id,
-        })
-        setValue(select),
-        setTimeout(() => {
-            setShowSelectTitle(select.name)
-        }, 1)
-        setIsOpen(false)
-    }
+    useClickOutSide(SelectRef, isOpen, ()=>{setIsOpen(false)})
     return (
-        <Container>
-            <Head>
-                {isOpen === false ? (
-                    <Group onClick={() => setIsOpen(true)}>
-                        <h3>{showSelectTitle}</h3>
-                        <IoIosArrowDown></IoIosArrowDown>
-                    </Group>
-                ) : null}
-                {
-                    isOpen ? (
-                        <Group>
-                            <InputText size='s' placeholder='Buscar Productos'></InputText>
-                            <Button onClick={() => handleClose()}><MdClear /></Button>
-                        </Group>
-
-                    ) : null
-                }
-            </Head>
-            {
-                isOpen ? (
-                    <Body>
-                        {
-                            data.length > 0 ?
-                                (
-                                    <List>
-                                        {
-                                            data ? (
-                                                data.map((item, index) => (
-                                                    <Item key={index} style={isSelect.id == item.id ? { backgroundColor: 'blue', color: 'white' } : null} onClick={() => dataSelected(item)}>
-                                                        {item.name}
-                                                    </Item>
-                                                ))
-                                            ) : null
-                                        }
-                                    </List>
-                                ) : null
-                        }
-
-                    </Body>
-                ) : null
-            }
-
-        </Container>
-    )
-}
+      <Container ref={SelectRef}>
+        <Head>
+          {!isOpen ? (
+            <Group onClick={() => setIsOpen(true)}>
+              <h3>{showSelectTitle}</h3>
+              <IoIosArrowDown />
+            </Group>
+          ) : null}
+          {isOpen ? (
+            <Group>
+              <InputText size="s" placeholder={`Buscar ${data.name}`} />
+              <Button onClick={() => setIsOpen(false)}>
+                <MdClear />
+              </Button>
+            </Group>
+          ) : null}
+        </Head>
+        {isOpen ? (
+      <Body placement={placement}>
+        {data.Items.length > 0 ? (
+          <List>
+            <Item
+              style={selectedId === '' ? { backgroundColor: 'blue', color: 'white' } : null}
+              onClick={() => handleReset()}
+            >
+              Ninguno
+            </Item>
+            {data.Items.map((item, index) => (
+              <Item
+                key={index}
+                style={selectedId === item.id ? { backgroundColor: 'blue', color: 'white' } : null}
+                onClick={() => handleSelect(item)}
+              >
+                {item[property]}
+              </Item>
+            ))}
+          </List>
+        ) : null}
+      </Body>
+    ) : null}
+      </Container>
+    );
+  };
 const Container = styled.div`
     position: relative;
-    max-width: min-content;
-    z-index: 3;
+    max-width: 200px;
+    width: 100%;
+    
 `
-
 const Head = styled.div`
+    width: 100%;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.200);
-    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.100);
+    border-radius: var(--border-radius-light);
+    background-color: var(--White);
     overflow: hidden;
     padding: 0 0 0 0.2em;
     transition-duration: 20s;
     transition-timing-function: ease-in-out;
-    transition-property: all;
-    
+    transition-property: all; 
 `
 const Body = styled.div`
-    min-width: 200px;
-    max-width: 260px;
+
+    min-width: 300px;
+    width: 100%;
     max-height: 200px;
     position: absolute;
     top: 2.3em;
-    z-index: 1;
+    z-index: 3;
     background-color: #ffffff;
     overflow: hidden;
     border-radius: 6px;
     border: 1px solid rgba(0, 0, 0, 0.200);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.200);
+    ${(props) => {
+        switch (props.placement) {
+            case 'top':
+                return `
+                top: -600%;
+            `
+            default:
+                return null
+        }
+    }}
 `
 const List = styled.ul`
     z-index: 1;
@@ -107,19 +136,20 @@ const List = styled.ul`
 `
 const Group = styled.div`
     height: 2em;
-    min-width: 10em;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap:10px;
     transition: 1s display ease-in-out;
     padding-right: 0.5em;
+
     h3{
         margin: 0 0 0 10px;
         font-weight: 500;
         font-size: 1em;
         color: rgb(66, 66, 66);
-        width: 120px;
+        width: 100%;
         font-size: 12px;
         line-height: 1pc;
         display: -webkit-box;
@@ -135,8 +165,12 @@ const Group = styled.div`
 const Item = styled.p`
         list-style: none;
         padding: 0 1em;
+        display: flex;
+        align-items: center;
+        height: 2em;
+        background-color: var(--White2);
     &:hover{
-        background-color: #4081d6;
+        background-color: var(--color);
         color: white;
     }
 
@@ -158,7 +192,8 @@ const InputText = styled.input.attrs({
     border: 1px solid rgba(0, 0, 0, 0);
     height: 1.6em;
     border-radius: 6px;
-    width: 126px;
+    width: 100%;
+    padding: 0 0.4em;
     &:focus{
         outline: 2px solid #00000052;
     }

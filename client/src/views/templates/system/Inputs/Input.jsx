@@ -2,25 +2,37 @@
 import styled from 'styled-components'
 
 const Input = styled.input`
+  
+  background: rgb(253, 253, 253);
+  border-radius: var(--border-radius-light);
+  height: 1.7em;
+  padding: 0.5em;
+  //min-width: 200px;
+  border: 0;
+  
+  &:focus{
+ 
+    outline:  2px solid var(--color);
+  }
   ${props => props.circle ? (
    ` 
    border-radius: 100px;
    `
   ) : null}
-  
-  background: rgb(253, 253, 253);
-  border-radius: 10px;
-  height: 1.7em;
-  padding: 0.5em;
-  //min-width: 200px;
-  font-size: 18px;
-  //border: 1px solid rgba(0, 0, 0, 0.100);
-  border: 1px solid rgba(0, 0, 0, 0.100);
-  &:focus{
-    box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.200);
-    //border: 1px solid rgba(0, 0, 0, 0.300);
-    outline:  1px solid rgba(0, 0, 0, 0.300);
-  }
+  ${props => {
+   switch (props.bgColor) {
+    case 'gray-light':
+      return`
+        background-color: var(--White1);
+      `
+   
+    default:
+      break;
+   }
+  }}
+  ${props => props.border ? (
+   `  border: var(--border-primary);`
+  ) : null}
   ${(props)=> {
       switch(props.size){
         case 'small': 
@@ -57,6 +69,7 @@ export const InputNumber = styled(Input).attrs({
   -webkit-appearance: none; 
   margin: 0; 
 }
+width: 100%;
 `
 export const InputTel = styled(Input).attrs({
   type: 'tel'

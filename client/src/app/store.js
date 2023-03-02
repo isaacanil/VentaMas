@@ -14,7 +14,14 @@ import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
 import settingReducer from '../features/setting/settingSlice'
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
 import orderReducer from '../features/order/ordersSlice'
-
+import purchaseReducer from '../features/Purchase/purchaseSlice'
+import themeReducer from "../features/theme/themeSlice";
+import addPurchaseReducer from "../features/Purchase/addPurchaseSlice";
+import notificationReducer from "../features/notification/notificationSlice";
+import navReducer from "../features/nav/navSlice";
+import appReducer from "../features/appModes/appModeSlice";
+import loaderReducer from "../features/loader/loaderSlice";
+import viewerImageReducer from "../features/imageViewer/imageViewerSlice";
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -30,7 +37,14 @@ export const store = configureStore({
         uploadImg: uploadImgReducer,
         alert: alertReducer,
         setting: settingReducer,
-        taxReceipt: taxReceiptReducer
+        taxReceipt: taxReceiptReducer, 
+        purchase: purchaseReducer,
+        theme: themeReducer,
+        addPurchase: addPurchaseReducer, 
+        notification: notificationReducer,
+        nav: navReducer,
+        app: appReducer,
+        loader: loaderReducer,
+        imageViewer: viewerImageReducer
     },
-
 })

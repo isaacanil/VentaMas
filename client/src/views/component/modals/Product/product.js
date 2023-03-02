@@ -1,0 +1,32 @@
+const product = {
+  name: "", // nombre producto
+  image: "", // imagen producto
+  stock: "", // cantidad existente
+  trackInventory: "", // seguimiento inventario
+  available: "", // disponibilidad producto
+  initialCost: "", // costo producción
+  surcharge: "", // recargo adicional
+  salePrice: "", // precio venta
+  profit: "", // ganancia neta
+  profitMargin: "", // margen ganancia
+  price: "", // precio producto
+  description: "", // descripción producto
+  category: "", // categoría producto
+  rating: "", // valoración producto
+  reviews: "", // reseñas producto
+  availability: "", // disponibilidad producto
+  shipping: "", // envío producto
+  seller: "", // vendedor producto
+  warranty: "", // garantía producto
+  return: "", // devolución producto
+  barcode: "", // código barras
+  cost: "", // costo venta
+  margin: "", // margen beneficio
+  amountToBuy: "", // cantidad comprar
+  type: "", // tipo producto
+  netContent: "", // contenido neto
+  size: "", // tamaño producto
+  order: "", // orden producto
+  tax: "", // impuesto producto
+  discount: "" // descuento producto
+}

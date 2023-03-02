@@ -1,50 +1,61 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Select } from '../../../../templates/system/Select/Select'
-import { ConditionsData } from './ConditionsData'
+
 import { AddCondition, AddNote, AddDate, SelectProducts } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
-export const OrderDetails = () => {
+import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
+import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
+import { Button } from '../../../../templates/system/Button/Button'
+import { IoReceipt } from 'react-icons/io5'
+export const OrderDetails = ({setReset, reset}) => {
+    const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
     const dispatch = useDispatch()
-    const [condition, setCondition] = useState('')
-    const [note, setNote] = useState('')
-    const [date, setDate] = useState('')
-    console.log(date)
+    const [condition, setCondition] = useState(null)
+    const [note, setNote] = useState(null)
+    const [date, setDate] = useState(null)
+    console.log(orderFilterOptions)
     useEffect(() => {
-        if(condition !== '' && note !== ''){
-            dispatch(
-                AddCondition(condition)
-            )
+        if(condition !== ''){
+            dispatch(AddCondition(condition))       
         }
         if(note !== ''){
-            dispatch(
-                AddNote(note)
-            )
-        }
-       
-      
-            dispatch(AddDate(date))
-        
+            dispatch(AddNote(note))
+        }    
+        dispatch(AddDate(date))
     }, [condition, note, date])
+    useEffect(()=>{
+        if(reset){
+            setNote('')
+            setDate('')
+        }
+    },[reset])
+    
+    const beforeToday = new Date()
+    const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" id="" onChange={(e) => setDate(e.target.value)}/>
+                <input type="date" name="" value={date} id="" min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)}/>
                 <Select
+                    property='name'
                     title='Condición'
-                    data={ConditionsData}
+                    data={data}
                     setValue={setCondition}
                     value={condition}
-
+                    placement='top'
+                    setReset={setReset}
+                    reset={reset}
                 />
             </Section>
             <Section>
                 <h5>Nota</h5>
                 <Textarea
                     height='4em'
-                    placeholder='Escriba una Nota...'
+                    value={note}
+                    placeholder='Agrega una nota al pedido ...'
                     onChange={(e) => setNote(e.target.value)}
                 />
             </Section>
@@ -53,6 +64,8 @@ export const OrderDetails = () => {
     )
 }
 const Container = styled.div`
+display: grid;
+gap: 1em;
 `
 const Section = styled.section`
     ${props => props.flex ? `

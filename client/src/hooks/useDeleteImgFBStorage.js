@@ -1,5 +1,6 @@
 import { deleteObject, ref } from "firebase/storage";
-import { DeleteProdImg, storage } from "../firebase/firebaseconfig";
+import {  storage } from "../firebase/firebaseconfig";
+import { fbDeleteProductImg } from "../firebase/products/fbDeleteProductImg";
 
 export const useDeleteImgFBStorage = (imgUrl) => {
     const imgRef = ref(storage, imgUrl.url)
@@ -8,7 +9,7 @@ export const useDeleteImgFBStorage = (imgUrl) => {
     deleteObject(imgRef)
     .then(() => {
         console.log(`deleted ${imgUrl}`)
-        DeleteProdImg(imgUrl.id)
+        fbDeleteProductImg(imgUrl.id)
     })
     .catch((error) => { console.log(error) })
 }

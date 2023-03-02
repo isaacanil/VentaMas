@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import { InputText, Textarea } from '../../templates/system/Inputs/Input'
 import { v4 } from 'uuid'
-import { UploadCat } from '../../../firebase/firebaseconfig.js'
+import { UploadCat } from '../../../firebase/firebaseconfig.jsx'
 export const AddCategory = () => {
   
     const [catName, setCatName] = useState('')

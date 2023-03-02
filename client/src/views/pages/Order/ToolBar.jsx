@@ -1,6 +1,7 @@
 
 import React from 'react'
 import { BsFilter } from 'react-icons/bs'
+import { CgMathPlus } from 'react-icons/cg'
 import { MdFilter } from 'react-icons/md'
 import { TbPlus } from 'react-icons/tb'
 import { useDispatch } from 'react-redux'
@@ -23,7 +24,8 @@ export const ToolBar = () => {
                 <Button
                     borderRadius='normal'
                     bgcolor='primary'
-                    title='Nuevo Pedido'
+                    startIcon={<CgMathPlus/>}
+                    title='Pedido'
                     onClick={openModal}
                 />
             </Wrapper>
@@ -42,9 +44,12 @@ const Container = styled.div`
 const Wrapper = styled.div`
     max-width: 1000px;
     width: 100%;
-    padding: 0 1em;
+    
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1em;
+    @media (max-width: 1000px){
+        padding: 1em;
+    }
 `

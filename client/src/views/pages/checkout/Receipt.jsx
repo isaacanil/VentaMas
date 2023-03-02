@@ -29,27 +29,31 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
             <h3 className={style.center} style={{ margin: 0, fontSize: '18px' }}>Hi Pizza</h3>
             <h4 className={style.center}>Plaza Ana Rocio 1er nivel</h4>
             <h4 className={style.center}>809-761-9082</h4>
+            <br />
             <div className={style.timeSection}>
-                <h4>{`${day}/${month}/${year}`}</h4>
-                <h4>{`${hour}:${minute}:${second}`}</h4>
+                <p>{`${day}/${month}/${year}`}</p>
+                <p>{`${hour}:${minute}:${second}`}</p>
             </div>
             <div>
-                <h4>NCF: {data.NCF}</h4>
+                <p>NCF: {data.NCF}</p>
             </div>
             {
                 data.client ? (
                     <Fragment>
-                        <h4>Cliente: <span className={style.capital}>{data.client.name ? data.client.name : 'Cliente Genérico'}</span></h4>
+                        <p>Cliente: <span className={style.capital}>{data.client.name ? data.client.name : 'Cliente Genérico'}</span></p>
                         {
-                            data.client.tel ? <h4>Teléfono : {data.client.tel}</h4> : null
+                            data.client.tel ? <p>Teléfono : {data.client.tel}</p> : null
                         }
                         {
-                            data.client.address ? <h4>Dir : {data.client.address}</h4> : null
+                            data.client.personalID ? <p>Cédula/RNC : {data.client.personalID}</p> : null
+                        }
+                        {
+                            data.client.address ? <p>Dir : {data.client.address}</p> : null
                         }
                     </Fragment>
                 ) : null
             }
-            
+
             <hr className={style.line} />
             <h4 className={style.center}>FACTURA PARA CONSUMIDOR FINAL</h4>
             <hr className={style.line} />
@@ -68,7 +72,7 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                                     <li className={style.product} key={index}>
                                         <div className={style.row3}>
                                             <div>{product.amountToBuy.total} x {separator(product.price.unit)}</div>
-                                            <div className={style.right}>{separator(product.tax.total)}</div>
+                                            <div className={style.right}>{separator((product.tax.value * product.cost.total) * product.amountToBuy.total)}</div>
                                             <div className={style.right}>{separator(product.price.total)}</div>
                                         </div>
                                         <div className={style.row1}>
@@ -108,7 +112,6 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                         <div></div>
                         <div className={style.right}>{separator(paymentMethodActivated.value)}</div>
                     </Row>
-
 
                 }
                 <Row>

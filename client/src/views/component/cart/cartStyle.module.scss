@@ -22,8 +22,8 @@
       overflow: hidden;
       position: relative;
       //border-radius: 10px;
-      border-top-left-radius: 8px;
-      border-bottom-left-radius: 8px;
+      border-top-left-radius: var(--border-radius-light);
+      border-bottom-left-radius: var(--border-radius-light);
       .Products{
          height: 100%;
          width: 100%;
@@ -48,12 +48,13 @@
 }
 .resultBar {
    background-color: var(--Gray8);
+   
    color: white;
    display: flex;
    padding: 0 0.4em;
    align-items: center;
    justify-content: space-between;
-   border-top-left-radius: 8px;
+   border-top-left-radius: var(--border-radius-light);
       
       h3{
          width: 100%;

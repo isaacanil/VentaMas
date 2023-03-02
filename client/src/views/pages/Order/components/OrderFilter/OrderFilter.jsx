@@ -14,6 +14,7 @@ export const OrderFilter = () => {
         startIcon={<BsFilter />}
         title={`Filtros`}
         color='gray-dark'
+        border='light'
         onClick={handleOpenMenu}
       />
       <OrderMenuFilter MenuIsOpen={MenuIsOpen}/>
