@@ -72,20 +72,7 @@ export const AddCustomProductModal = ({isOpen, handleOpen}) => {
                     <h4>Características del Producto</h4>
                 </TitleSection>
 
-                {/* <Flex
-                    alignItems='center'
-                >
-                    <Col>
-                        <select name="" id="">
-                            <option value="">Elige un producto</option>
-                            <option value="">Pizza</option>
-                        </select>
-                    </Col>
-                    <Col>
-                        <PlusIconButton></PlusIconButton>
-                    </Col>
-
-                </Flex> */}
+              
                 <Flex
                     alignItems='center'
                     justifyContent='space-between'
@@ -117,7 +104,9 @@ export const AddCustomProductModal = ({isOpen, handleOpen}) => {
                         {
                             !isEmpty(product) ? (
                                 product.ingredientList.length > 0 ? (
-                                    product.ingredientList.map((item, index) => (
+                                    product.ingredientList
+                                    .sort((a, b) => a.name > b.name ? 1 : -1)
+                                    .map((item, index) => (
                                         <IngredientCard key={index} item={item} ></IngredientCard>
 
                                     ))
@@ -149,7 +138,7 @@ const Modal = styled.div`
     height: 100%;
     max-height: 600px;
     width: 100%;
-    background-color: rgb(221,220,220);
+    background-color: var(--White3);
     border-radius: 10px;
     border: 1px solid rgba(0, 0, 0, 0.100);
     overflow: hidden;

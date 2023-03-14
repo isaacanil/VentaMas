@@ -111,18 +111,35 @@ export const Cart = () => {
     } catch (error) {
     }
   }
+  const handlePrint = useReactToPrint({
+    content: () => componentToPrintRef.current,
+    onAfterPrint: () => setPrinted(true),
+
+
+  })
+  const TIME_TO_WAIT = 1000;
+
   const handleInvoice = async () => {
-    if (ProductSelected.length > 0) {
-      try {
-        await handleTaxReceipt()
-        await createOrUpdateClient()
-        await savingDataToFirebase()
-        await showPrintPreview()
-        await showPrintPreview()
-        await clearDataFromState()
-      } catch (error) {
-        console.log(error)
-      }
+    dispatch(addTaxReceiptInState(ncfCode))
+    if (ProductSelected.length === 0) {
+      dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
+      return;
+    }
+
+    try {
+      await handleTaxReceipt().then(() => {
+        return esperar(TIME_TO_WAIT);
+      }).then(() => {
+        return createOrUpdateClient();
+      }).then(() => {
+        return showPrintPreview();
+      }).then(() => {
+        return esperar(TIME_TO_WAIT);
+      }).catch((error) => {
+        handleInvoiceError(error);
+      });
+    } catch (error) {
+      handleInvoiceError(error);
     }
   }
 

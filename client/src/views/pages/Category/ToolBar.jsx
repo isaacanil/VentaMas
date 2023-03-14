@@ -2,7 +2,7 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { handleModalCreateClient, openModalAddOrder } from '../../../features/modals/modalSlice'
+import { handleModalCreateClient, openModalAddOrder, toggleAddCategory } from '../../../features/modals/modalSlice'
 import { Button } from '../../templates/system/Button/Button'
 
 import { OrderFilter } from './components/OrderFilter/OrderFilter'
@@ -10,8 +10,8 @@ import { OrderFilter } from './components/OrderFilter/OrderFilter'
 export const ToolBar = () => {
     const dispatch = useDispatch()
     
-    const openModal = () => dispatch(handleModalCreateClient())
-    
+    const openModal = () => dispatch(toggleAddCategory({isOpen: true}))
+
     return (
         <Container>
             <Wrapper>

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { Tooltip } from './Tooltip'
 
 
 export const Button = ({
@@ -22,31 +23,33 @@ export const Button = ({
   iconOn,
   iconOff,
   titlePosition,
+  tooltipDescription,
+  tooltipPlacement,
 
 }) => {
 
   return (
-    <Container
-      bgcolor={bgcolor}
-      color={color}
-      onClick={onClick}
-      width={width}
-      height={height}
-      variant={variant}
-      disabled={disabled}
-      borderRadius={borderRadius}
-      isActivated={isActivated}
-      titlePosition={titlePosition}
-      border={border}
-      isActivatedColors={isActivatedColors}
-    >
+        <Container
+          bgcolor={bgcolor}
+          color={color}
+          onClick={onClick}
+          width={width}
+          height={height}
+          variant={variant}
+          disabled={disabled}
+          borderRadius={borderRadius}
+          isActivated={isActivated}
+          titlePosition={titlePosition}
+          border={border}
+          isActivatedColors={isActivatedColors}
+        >
 
-      {isActivated ? iconOn : iconOff}
-      {startIcon ? startIcon : null}
-      {title ? title : null}
-      {endIcon ? endIcon : null}
+          {isActivated ? iconOn : iconOff}
+          {startIcon ? startIcon : null}
+          {title ? title : null}
+          {endIcon ? endIcon : null}
 
-    </Container>
+        </Container>
   )
 }
 
@@ -103,6 +106,10 @@ pointer-events: all;
       case 'normal':
         return `
         border-radius: var(--border-radius);
+      `
+      case 'light':
+        return `
+        border-radius: var(--border-radius-light);
       `
       default:
         break;

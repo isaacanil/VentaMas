@@ -1,5 +1,88 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+import { DateTime } from "luxon";
+import { Button } from "../Button/Button";
+
+export const Calendar = () => {
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(DateTime.local());
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(currentMonth.minus({ months: 1 }));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(currentMonth.plus({ months: 1 }));
+  };
+
+  const month = currentMonth.toFormat("LLLL");
+  const year = currentMonth.toFormat("yyyy");
+  const monthStart = currentMonth.startOf("month");
+  const daysInMonth = monthStart.daysInMonth;
+  const firstDayOfMonth = monthStart.weekday;
+
+  const handleDateClick = (day) => {
+    setSelectedDate(day);
+  };
+
+  const handleTodayClick = () => {
+    setCurrentMonth(DateTime.local());
+    setSelectedDate(DateTime.local().day);
+  };
+
+  return (
+    <CalendarContainer>
+      <CalendarHeader>
+        <CalendarButton onClick={handlePrevMonth}>Prev</CalendarButton>
+        <CalendarMonth>{month} {year}</CalendarMonth>
+        <CalendarButton onClick={handleNextMonth}>Next</CalendarButton>
+      </CalendarHeader>
+      <CalendarTable>
+        <thead>
+          <CalendarRow>
+            {daysOfWeek.map((day) => (
+              <CalendarCell key={day}>{day}</CalendarCell>
+            ))}
+          </CalendarRow>
+        </thead>
+        <tbody>
+          {[...Array(Math.ceil((daysInMonth + firstDayOfMonth) / 7)).keys()].map(
+            (weekIndex) => (
+              <CalendarRow key={weekIndex}>
+                {[...Array(7).keys()].map((dayIndex) => {
+                  const day = weekIndex * 7 + dayIndex - firstDayOfMonth + 1;
+                  const isToday =
+                    currentMonth.hasSame(DateTime.local(), "month") &&
+                    day === DateTime.local().day;
+                  const isSelected = selectedDate === day;
+                  return (
+                    <CalendarCell
+                      key={day}
+                      onClick={() => handleDateClick(day)}
+                      isToday={isToday}
+                      isSelected={isSelected}
+                      aria-label={isSelected ? `Selected: ${day} ${month} ${year}` : `${day} ${month} ${year}`}
+                    >
+                      {day > 0 && day <= daysInMonth ? day : ""}
+                    </CalendarCell>
+                  );
+                })}
+              </CalendarRow>
+            )
+          )}
+        </tbody>
+      </CalendarTable>
+      <Button 
+      title="Today"
+      onClick={handleTodayClick}
+      />
+    </CalendarContainer>
+  );
+};
+
+
+
 
 const CalendarContainer = styled.div`
   display: inline-block;
@@ -45,7 +128,7 @@ const CalendarCell = styled.td`
   text-align: center;
   cursor: pointer;
   &:hover {
-    background-color: #f5f5f5;
+    background-color: #188dec;
   }
   ${({ isToday }) =>
         isToday &&
@@ -56,79 +139,7 @@ const CalendarCell = styled.td`
   ${({ isSelected }) =>
         isSelected &&
         `
-    background-color: #ccc;
+    background-color: #4e8fe4;
     color: #fff;
   `}
 `;
-
-const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-export const Calendar = () => {
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [currentMonth, setCurrentMonth] = useState(new Date());
-
-    const handlePrevMonth = () => {
-        const prevMonth = new Date(currentMonth);
-        prevMonth.setMonth(currentMonth.getMonth() - 1);
-        setCurrentMonth(prevMonth);
-    };
-
-    const handleNextMonth = () => {
-        const nextMonth = new Date(currentMonth);
-        nextMonth.setMonth(currentMonth.getMonth() + 1);
-        setCurrentMonth(nextMonth);
-    };
-
-    const today = new Date();
-    const month = currentMonth.toLocaleString("default", { month: "long" });
-    const year = currentMonth.getFullYear();
-    const daysInMonth = new Date(year, currentMonth.getMonth() + 1, 0).getDate();
-    const firstDayOfMonth = new Date(year, currentMonth.getMonth(), 1).getDay();
-
-    const handleDateClick = (day) => {
-        setSelectedDate(day);
-    };
-
-    return (
-        <CalendarContainer>
-            <CalendarHeader>
-                <CalendarButton onClick={handlePrevMonth}>Prev</CalendarButton>
-                <CalendarMonth>{month} {year}</CalendarMonth>
-                <CalendarButton onClick={handleNextMonth}>Next</CalendarButton>
-            </CalendarHeader>
-            <CalendarTable>
-                <thead>
-                    <CalendarRow>
-                        {daysOfWeek.map((day) => (
-                            <CalendarCell key={day}>{day}</CalendarCell>
-                        ))}
-                    </CalendarRow>
-                </thead>
-                <tbody>
-                    {[...Array(Math.ceil((daysInMonth + firstDayOfMonth) / 7)).keys()].map(
-                        (weekIndex) => (
-                            <CalendarRow key={weekIndex}>
-                                {[...Array(7).keys()].map((dayIndex) => {
-                                    const day = weekIndex * 7 + dayIndex - firstDayOfMonth + 1;
-                                    const isToday =
-                                        today.getMonth() === new Date(year, currentMonth.getMonth(), day).getMonth() &&
-                                        today.getDate() === day;
-                                    const isSelected = selectedDate === day;
-                                    return (
-                                        <CalendarCell
-                                            key={day}
-                                            onClick={() => handleDateClick(day)}
-                                            isToday={isToday}
-                                            isSelected={isSelected}
-                                        >
-                                            {day > 0 && day <= daysInMonth ? day : ""}
-                                        </CalendarCell>
-                                    );
-                                })}
-                            </CalendarRow>
-                        )
-                    )}
-                </tbody>
-            </CalendarTable>
-        </CalendarContainer>
-    )}

@@ -50,28 +50,12 @@ const defaultValue = {
         change: {//cambio
             value: 0
         },
-        delivery: {
-            status: false,
+        delivery: DefaultDelivery,
+        discount: {
             value: 0
         },
-        paymentMethod: [
-            {
-                method: 'cash',
-                value: 0,
-                status: true
-            },
-            {
-                method: 'card',
-                value: 0,
-                status: false
-            },
-            {
-                method: 'transfer',
-                value: 0,
-                status: false
-            }
-        ],
-        NCF: '',
+        paymentMethod: DefaultPaymentMethod,
+        NCF: null,
         totalShoppingItems: {
             value: 0
         },
@@ -160,8 +144,6 @@ const cartSlice = createSlice({
         },
         selectClientInState: (state, action) => {
             state.data.client = action.payload
-            console.log(state.handleClient.UPDATED_CLIENT, state.data.client, 'client')
-            
         },
         deleteClientInState: (state) => {
             state.data.client = DefaultClient
@@ -179,12 +161,21 @@ const cartSlice = createSlice({
         addTaxReceiptInState: (state, actions) => {
             state.data.NCF = actions.payload
         },
-        addDelivery: (state, action) => {
-            const { cash, status } = action.payload
-            state.data.delivery.value = cash
-            state.data.delivery.status = status
-            if (state.data.delivery.status === false) {
-                state.data.delivery.value = 0
+        addDelivery: (state) => {
+            const clientDeliveryData = state.data.client.delivery;
+            const updateClientDeliveryData = state.handleClient.UPDATED_CLIENT ? state.handleClient.UPDATED_CLIENT.delivery : null;
+
+            if (updateClientDeliveryData) {
+                if (!("status" in updateClientDeliveryData) && !("value" in updateClientDeliveryData)) {
+                    updateClientDeliveryData.status = false
+                    updateClientDeliveryData.value = 0
+                    return
+                }
+                if (updateClientDeliveryData.status === true && updateClientDeliveryData.value !== '') {
+                    updateClientDeliveryData.status = clientDeliveryData.status || false
+                    updateClientDeliveryData.value = clientDeliveryData.value || 0
+                }
+                state.data.delivery = updateClientDeliveryData
             }
 
         },
@@ -213,13 +204,24 @@ const cartSlice = createSlice({
             if (state.data.products.length > 0 && checkingID) {
                 checkingID.amountToBuy.total = checkingID.amountToBuy.total + checkingID.amountToBuy.unit;
                 checkingID.price.total = checkingID.price.unit * checkingID.amountToBuy.total;
-                checkingID.stock = checkingID.stock - checkingID.amountToBuy.unit;
                 checkingID.tax.total = checkingID.tax.unit * checkingID.amountToBuy.total;
+
+                if(checkingID.trackInventory === true){
+                    checkingID.stock = checkingID.stock - checkingID.amountToBuy.unit;
+                }
             } else {
                 const product = action.payload
                 const products = state.data.products
-                const newProduct = Object.assign({}, product, { stock: product.stock - product.amountToBuy.unit })
-                state.data.products = [...products, newProduct]
+                if(product.trackInventory){
+                    const newProduct = Object.assign({}, product, { stock: product.stock - product.amountToBuy.unit })
+                    state.data.products = [...products, newProduct]
+                    return
+                }
+                if(!product.trackInventory){
+                    const newProduct = Object.assign({}, product, { stock: 0 })
+                    state.data.products = [...products, newProduct]
+                    return
+                }
             }
         },
         deleteProduct: (state, action) => {
@@ -249,7 +251,9 @@ const cartSlice = createSlice({
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total + productFound.amountToBuy.unit
-                productFound.stock = productFound.stock - productFound.amountToBuy.unit;
+                if(productFound.trackInventory === true){
+                    productFound.stock = productFound.stock - productFound.amountToBuy.unit;
+                }
                 productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
                 productFound.tax.total = productFound.amountToBuy.total * productFound.tax.unit + productFound.tax.unit;
                 productFound.cost.total = productFound.amountToBuy.total * productFound.cost.unit + productFound.cost.unit;
@@ -262,7 +266,9 @@ const cartSlice = createSlice({
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total - productFound.amountToBuy.unit
                 productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
-                productFound.stock = productFound.stock + productFound.amountToBuy.unit
+                if(productFound.trackInventory === true){
+                    productFound.stock = productFound.stock + productFound.amountToBuy.unit
+                }
                 if (productFound.amountToBuy.total === 0) {
                     state.data.products.splice(state.data.products.indexOf(productFound), 1)
                 }

@@ -3,19 +3,17 @@ import { ChevronRight, ChevronLeft } from '../system/Icons/Chevron/Chevron'
 export const MenuData = [
     {
         title: 'Inicio',
-        path: '/app/',
-        
+        path: '/app/',    
     },
     {
         title: 'Venta',
-        path: '/app/venta/1'
+        path: '/app/sale/1'
     },
     {
         title: 'Compras y Pedidos',
         path: false,
         submenuIconOpen: <ChevronLeft/>,
         submenuIconClose: <ChevronRight/>,
-        //<ChevronLeft/> <ChevronRight/>
         submenu: [
             {
                 title: 'Pedidos Pendientes',
@@ -34,11 +32,11 @@ export const MenuData = [
         submenuIconClose: <ChevronRight/>,
         submenu: [
             {
-                title: 'Articulos',
+                title: 'Artículos',
                 path: '/app/inventario/items'
             },
             {
-                title: 'Administrador de Imagenes',
+                title: 'Administrador de Imágenes',
                 path: '/app/inventario/multimedia_manager'
             }
            
@@ -71,7 +69,19 @@ export const MenuData = [
         title: 'Registro',
         path: '/app/registro'
     },
-   
+    // {
+    //     title: 'Reportes',
+    //     path: null,
+    //     submenuIconOpen: <ChevronLeft/>,
+    //     submenuIconClose: <ChevronRight/>,
+    //     submenu: [
+    //         {
+    //             title: 'Ventas',
+    //             path: '/app/report/sales'                    
+    //         }
+    //     ]
+
+    // },
     {
         title: 'Configuración',
         path: '/app/settings'

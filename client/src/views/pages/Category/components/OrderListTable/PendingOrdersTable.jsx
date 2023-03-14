@@ -6,9 +6,11 @@ import { getCat } from '../../../../../firebase/firebaseconfig'
 
 export const PendingOrdersTable = () => {
   const [categories, setCategories] = useState([])
+  const [activeCategory, setActiveCategory] = useState(null)
   useEffect(() => {
     getCat(setCategories)
   }, [])
+  console.log(categories)
   return (
     <Container>
       <Body>
@@ -16,12 +18,19 @@ export const PendingOrdersTable = () => {
           <h3>Administrar Categoría</h3>
         </TitleContainer>
         <Table>
-
           <TableBody>
             {
-              Array(categories).length > 0 ? (
+              categories.length > 0 ? (
                 categories.map(({ category }, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} cat={category} index={index} />
+                  <OrderItem 
+                  Row={Row} 
+                  Col={Col} 
+                  activeCategory={activeCategory}
+                  setActiveCategory={setActiveCategory}
+                  key={index} 
+                  cat={category} 
+                  index={index} 
+                  />
                 ))
               ) : null
 
@@ -62,21 +71,26 @@ const Table = styled.div`
   position: relative;
   width: 100%;
   overflow: auto;
+  height: calc(100vh - 2.75em - 2.5em - 1.5em);
   display: grid;
   grid-template-rows: min-content 1fr;
+  align-items: stretch;
   
- 
-
-`
+  
+  `
 const TableBody = styled.div`
+
   display: grid;
   align-items: flex-start;
   align-content: flex-start;
+  grid-auto-rows: min-content;
   grid-template-columns:  repeat(auto-fill, minmax(250px, 1fr));
   overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
   height: 100%;
+
+  height: calc(100vh - 2.75em - 2.5em - 1.5em - 1em);
   color: var(--Gray10);
   font-size: 15px;
   

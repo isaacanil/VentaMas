@@ -3,7 +3,7 @@ import { AddClientModal } from "./AddClient/AddClientModal"
 import { ProductModal } from "./Product/ProductModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
-import { SetCustomProduct } from "./CustomProduct/SetCustomProduct"
+import { SetCustomProduct } from "./CustomProduct/SetCustomProduct/SetCustomProduct"
 import { AddProvider } from "./AddProvider/AddProvider"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
@@ -19,6 +19,7 @@ import {
   SelectClientModalData,
   SelectViewOrdersNotesModalData,
   SelectAddPurchaseModal,
+  SelectAddCategoryModal,
 
 } from "../../../features/modals/modalSlice"
 import { CreateContact } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
@@ -29,6 +30,7 @@ import { Notification } from "../../templates/system/Notification/Notification"
 import { SmallNotification } from "../../templates/system/Notification/SmallNotification"
 import Loader from "../../templates/system/loader/Loader"
 import ImageViewer from "../../templates/system/ImageViewer/ImageViewer"
+import AddCategoryModal from "./AddCategoryMode/AddCategoryMode"
 export const ModalManager = () => {
   const dispatch = useDispatch()
   const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
@@ -39,6 +41,7 @@ export const ModalManager = () => {
   const SetCustomPizzaSelected = useSelector(SelectSetCustomPizzaModal)
   const ClientModalDataSelected = useSelector(SelectClientModalData)
   const ProviderModalDataSelected = useSelector(SelectProviderModalData)
+  const AddCategoryModalSelected = useSelector(SelectAddCategoryModal)
   const ViewOrdersNotesModalDataSelected = useSelector(SelectViewOrdersNotesModalData)
   //console.log(AddClientModalSelected)
 
@@ -76,6 +79,10 @@ export const ModalManager = () => {
       <AddOrderModal isOpen={AddOrderModalSelected} />
       {/* <AddProvider /> */}
       <Notification/>
+      <AddCategoryModal 
+        isOpen={AddCategoryModalSelected.isOpen}
+        categoryToUpdate={AddCategoryModalSelected.data}
+      />
       <Loader/>
       <ImageViewer/> 
       <SmallNotification/>

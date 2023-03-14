@@ -4,17 +4,16 @@ import { useSelector, useDispatch } from 'react-redux'
 import style from './AddOrderModalStyle.module.scss'
 import { SelectAddOrderModal, openModalAddOrder } from '../../../../features/modals/modalSlice'
 import { Select } from '../../..'
-import { ProductListSelected } from './ProductListSelected/ProductListSelected'
+import { ProductListSelected } from '../../ProductListSelected/ProductListSelected'
 import {
     PlusIconButton,
     Button,
     InputText,
 } from '../../../'
 
-import { AddProductListSection } from './AddProductListSection/AddProductListSection'
+import { StockedProductPicker } from '../../StockedProductPicker/StockedProductPicker'
 import { OrderDetails } from './OrderDetails/OrderDetails'
-import { IoMdClose } from 'react-icons/io'
-import { SelectOrder, AddProvider, cleanOrder } from '../../../../features/addOrder/addOrderModalSlice'
+import { SelectOrder, AddProvider, cleanOrder, AddProductToOrder, getInitialCost, updateStock, SelectProductSelected, SelectProduct, SelectProducts, SelectTotalPurchase, DeleteProduct } from '../../../../features/addOrder/addOrderModalSlice'
 import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { useEffect } from 'react'
@@ -22,17 +21,22 @@ import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { selectOrderFilterOptions } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { addNotification } from '../../../../features/notification/NotificationSlice'
+import ModalHeader from './Modal/ModalHeader'
 
 export const AddOrderModal = ({ isOpen }) => {
     const dispatch = useDispatch();
     const [provider, setProvider] = useState(null);
     const OrderSelected = useSelector(SelectOrder);
     const [reset, setReset] = useState(false);
+    const productSelected = useSelector(SelectProductSelected);
+    const productsSelected = useSelector(SelectProducts);
+
+    const productTotalPurchasePrice = useSelector(SelectTotalPurchase)
     useEffect(() => {
         if (provider) { dispatch(AddProvider(provider)) }
     }, [provider])
 
-    const handleModal = () => {
+    const handleCloseModal = () => {
         dispatch(openModalAddOrder())
         dispatch(cleanOrder());
         setReset(true);
@@ -71,21 +75,22 @@ export const AddOrderModal = ({ isOpen }) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
 
+    const handleAddProductToOrder = ({ stock, initialCost, cost }) => {
+        dispatch(updateStock({ stock }))
+        dispatch(getInitialCost({ initialCost, cost }))
+        dispatch(AddProductToOrder())
+    }
+    const handleSelectProduct = (product) => {
+        dispatch(SelectProduct(product))
+    }
+    const handleDeleteProduct = (product) => {
+        dispatch(DeleteProduct(product.id))
+    }
+
     return (
-        <Container isOpen={isOpen === true ? true : false}>
+        <Backdrop isOpen={isOpen === true ? true : false}>
             <Modal>
-                <Head>
-                    <HeadWrapper>
-                        <h3>Nuevo Pedido</h3>
-                        <Button
-                            bgcolor='gray'
-                            borderRadius='normal'
-                            endIcon={<IoMdClose />}
-                            title='Cerrar'
-                            onClick={handleModal}
-                        />
-                    </HeadWrapper>
-                </Head>
+                <ModalHeader close={handleCloseModal} title='Nuevo Pedido' />
                 <BodyContainer>
                     <Body>
                         <header >
@@ -105,9 +110,16 @@ export const AddOrderModal = ({ isOpen }) => {
                                 width={'icon32'}
                             />
                         </header>
-                        <AddProductListSection></AddProductListSection>
-                        <ProductListSelected></ProductListSelected>
-                        <OrderDetails reset={reset} setReset={setReset}></OrderDetails>
+                        <StockedProductPicker fn={handleAddProductToOrder} handleSelectProduct={handleSelectProduct} productSelected={productSelected}></StockedProductPicker>
+                        <ProductListSelected
+                            productsSelected={productsSelected}
+                            productsTotalPrice={productTotalPurchasePrice}
+                            handleDeleteProduct={handleDeleteProduct}
+                        />
+                        <OrderDetails
+                            reset={reset}
+                            setReset={setReset}
+                        />
                         <div className={style.ModaFooter}>
                             <div className={style.ModalWrapperFooter}>
                                 <Button
@@ -121,12 +133,12 @@ export const AddOrderModal = ({ isOpen }) => {
                     </Body>
                 </BodyContainer>
             </Modal>
-        </Container>
+        </Backdrop>
 
     )
 }
 
-const Container = styled.div`
+const Backdrop = styled.div`
     z-index: 20;
     position: absolute;
     height: 100vh;
@@ -172,20 +184,7 @@ const Modal = styled.div`
     display: grid;
     grid-template-rows: min-content 1fr;
 `
-const Head = styled.div`
- width: 100%;
-        padding: 0 1em;
-        background-color: var(--Gray8);
-        color: white;
-`
-const HeadWrapper = styled.div`
-    max-width: var(--max-width);
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-`
+
 const BodyContainer = styled.div`
 width: 100%;
 overflow-y: auto;

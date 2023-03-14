@@ -6,10 +6,10 @@ import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './SideBar'
 import { Button } from '../../'
-import { MdFullscreen, MdOutlineFullscreenExit, MdOutlineHideImage, MdOutlineImage } from "react-icons/md";
+import { MdFullscreen, MdOutlineFullscreenExit, MdOutlineHideImage, MdOutlineImage, MdSubtitles, MdSubtitlesOff } from "react-icons/md";
 import { BsArrowsFullscreen, BsFullscreenExit, BsList } from 'react-icons/bs'
 import { TbColumns } from 'react-icons/tb'
-import { handleImageHidden, handleRowMode, selectImageHidden, ReloadImageHiddenSetting, selectIsRow, toggleFullScreen, selectFullScreen } from '../../../features/setting/settingSlice'
+import { handleImageHidden, handleRowMode, selectImageHidden, ReloadImageHiddenSetting, selectIsRow, toggleFullScreen, selectFullScreen, selectCategoryGrouped, toggleCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useMatch } from 'react-router-dom'
 import { SearchProductBar } from './SearchProductBar'
@@ -34,8 +34,9 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const anotherRef = useRef(null)
   const ImageHidden = useSelector(selectImageHidden)
   const viewRowModeRef = useSelector(selectIsRow)
+  const categoryGrouped = useSelector(selectCategoryGrouped)
   const FullScreen = useSelector(selectFullScreen)
-  const matchWithVenta = useMatch('/app/venta/:id')
+  const matchWithVenta = useMatch('/app/sale/:id')
   const matchWithInventory = useMatch('/app/inventario/items')
   const closeMenu = () => {
     setIsOpenMenu(false)
@@ -49,6 +50,9 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   }
   const handleRowModeFN = () => {
     dispatch(handleRowMode())
+  }
+  const handleCategoryGroupedFN = () => {
+    dispatch(toggleCategoryGrouped())
   }
   return (
     <Fragment>
@@ -77,7 +81,6 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
                 <Fragment>
                   <Group>
                   <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar>
-              
                   </Group>
                 </Fragment>
               ) : null
@@ -85,7 +88,22 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
         </Group>
         {
           matchWithVenta ? (
+            
             <Group>
+                <Tooltip
+                placement='bottom'
+                description={'Cambiar vista'}
+                Children={
+                  <Button
+                    width={'icon32'}
+                    borderRadius='normal'
+                    iconOff={<MdSubtitlesOff />}
+                    iconOn={<MdSubtitles />}
+                    isActivated={categoryGrouped ? true : false}
+                    isActivatedColors='style1'
+                    onClick={() => handleCategoryGroupedFN()}
+                  />}
+              />
               <Tooltip
                 placement='bottom'
                 description={'Cambiar vista'}
@@ -100,12 +118,12 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
                     onClick={() => handleRowModeFN()}
                   />}
               />
+              
               <Tooltip
                 placement='bottom-end'
                 description={ImageHidden ? 'Mostrar Imagen' : 'Ocultar Imagen'}
                 Children={
                   <Button
-
                     width={'icon32'}
                     borderRadius='normal'
                     isActivated={ImageHidden ? true : false}

@@ -76,36 +76,8 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
    }, [ImgSelected])
 
    const handleSubmit = async () => {
-      UploadProductData(product)
-      setProduct({
-         productName: '',
-         price: {
-            unit: undefined,
-            total: undefined,
-         },
-         cost: {
-            unit: undefined,
-            total: undefined,
-         },
-         amountToBuy: {
-            unit: 1,
-            amount: 1,
-         },
-         type: '',
-         productImageURL: '',
-         netContent: '',
-         category: '',
-         size: '',
-         tax: {
-            ref: '',
-            value: undefined,
-            unit: '',
-            total: ''
-         },
-         stock: '',
-         id: '',
-
-      })
+      fbAddProduct(product)
+      setProduct(EmptyProductData)
       dispatch(clearImg())
    }
 
@@ -115,8 +87,8 @@ export const ProductModal = ({ title, btnSubmitName, closeModal, isOpen }) => {
          return;
       }
       const price = {
-         unit: useRoundDecimals(cost.unit * tax.value + cost.unit),
-         total: useRoundDecimals(cost.unit * tax.value + cost.unit),
+         unit: useDecimalLimiter(cost.unit * tax.value + cost.unit),
+         total: useDecimalLimiter(cost.unit * tax.value + cost.unit),
       }
       setProduct({
          ...product,

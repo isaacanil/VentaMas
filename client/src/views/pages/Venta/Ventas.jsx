@@ -9,6 +9,7 @@ import {
   Cart
 } from '../../'
 import { SelectCategoryList, SelectCategoryStatus } from '../../../features/category/categorySlicer'
+import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import {  QueryByCategory } from '../../../firebase/firebaseconfig'
 import { fbGetProducts } from '../../../firebase/products/fbGetProducts'
 import { useSearchFilterX } from '../../../hooks/useSearchFilter'
@@ -22,7 +23,7 @@ export const Ventas = () => {
   const categoryArrayData = useSelector(SelectCategoryList)
   const [products, setProducts] = useState([])
   const [searchData, setSearchData] = useState('')
-
+  const categoryGrouped = useSelector(selectCategoryGrouped)
   useEffect(() => {
     if (categoryStatus) {
       QueryByCategory(setProducts, categoryArrayData, categoryStatus)
@@ -39,7 +40,7 @@ export const Ventas = () => {
         {/* <MultiDisplayControl></MultiDisplayControl> */}
         <div className={Style.ProductsContainer}>
           <Menu borderRadius={'bottom-right'} searchData={searchData} setSearchData={setSearchData}></Menu>
-          <ProductControl products={productFiltered}></ProductControl>
+          <ProductControl products={productFiltered}isProductGrouped={categoryGrouped}></ProductControl>
           <MenuComponents></MenuComponents>
           <ShoppingItemsCounter></ShoppingItemsCounter>
         </div>

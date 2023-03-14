@@ -5,12 +5,14 @@ const initialState = {
     userPreference: {
         view: {
             imageHidden: true,
-            rowMode: false
+            rowMode: false,
+            categoryGrouped: false,
         }
     },
     system:{
         isConnected: undefined,
-        fullScreen: false
+        fullScreen: false,
+
     }
 }
 
@@ -29,6 +31,8 @@ export const settingSlice = createSlice({
             state.userPreference.view.imageHidden = JSON.parse(savedDataImageHidden)
             let savedDataRowMode = localStorage.getItem('viewProductRowMode')
             state.userPreference.view.rowMode = JSON.parse(savedDataRowMode)
+            let savedDataCategoryGrouped = localStorage.getItem('viewProductCategoryGrouped')
+            state.userPreference.view.categoryGrouped = JSON.parse(savedDataCategoryGrouped)
           
         },
         handleRowMode: (state) => {
@@ -36,6 +40,12 @@ export const settingSlice = createSlice({
             localStorage.setItem('viewProductRowMode', JSON.stringify(!rowMode))
             let getData = localStorage.getItem('viewProductRowMode')
             state.userPreference.view.rowMode = JSON.parse(getData)
+        },
+        toggleCategoryGrouped: (state) => {
+            let categoryGrouped = state.userPreference.view.categoryGrouped
+            localStorage.setItem('viewProductCategoryGrouped', JSON.stringify(!categoryGrouped))
+            let getData = localStorage.getItem('viewProductCategoryGrouped')
+            state.userPreference.view.categoryGrouped = JSON.parse(getData)
         },
         toggleFullScreen: (state) => {
             let fullScreenMode = state.system.fullScreen
@@ -50,9 +60,10 @@ export const settingSlice = createSlice({
     }
 })
 
-export const { handleImageHidden, ReloadImageHiddenSetting, handleRowMode, toggleFullScreen} = settingSlice.actions;
+export const { handleImageHidden, toggleCategoryGrouped, ReloadImageHiddenSetting, handleRowMode, toggleFullScreen} = settingSlice.actions;
 
 //selectors
+export const selectCategoryGrouped = (state) => state.setting.userPreference.view.categoryGrouped;
 export const selectImageHidden = (state) => state.setting.userPreference.view.imageHidden;
 export const selectIsRow = (state) => state.setting.userPreference.view.rowMode;
 export const selectFullScreen = (state) => state.setting.system.fullScreen;

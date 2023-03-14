@@ -10,11 +10,12 @@ import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder
 import { Button } from '../../../../templates/system/Button/Button'
 import { IoReceipt } from 'react-icons/io5'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
-import { SaveImg } from '../../../../../features/uploadImg/uploadImageSlice'
+import { SaveImg, selectUploadImageUrl } from '../../../../../features/uploadImg/uploadImageSlice'
 import { fbAddReceiptPurchaseImg } from '../../../../../firebase/products/fbAddProductImg'
 import { fbDeleteProductImg } from '../../../../../firebase/products/fbDeleteProductImg'
 import { fbDeletePurchaseReceiptImg } from '../../../../../firebase/firebaseconfig'
 import { fbAddPurchaseReceiptImg } from '../../../../../firebase/purchase/addPurchaseImg'
+import { toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
 export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const productList = useSelector(SelectProducts)
@@ -23,6 +24,7 @@ export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
     const [imgReceipt, setImgReceipt] = useState(null)
     const [note, setNote] = useState(null)
     const [date, setDate] = useState(null)
+    const urlPurchaseImg = useSelector(selectUploadImageUrl)
     useEffect(() => {
         if (SELECTED_PURCHASE.condition !== '') {
             setCondition(
@@ -56,7 +58,7 @@ export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
         }
         // fbDeletePurchaseReceiptImg({url: 'https://firebasestorage.googleapis.com/v0/b/hipizza-1b9cc.appspot.com/o/receiptPurchaseImg%2Fc1a61eb1-afdf-44a3-b904-0969b6ed637a.jpg?alt=media&token=c283a281-62b4-468b-b3aa-3a6af65477c7'})¿
     }
-
+    const handleImgView = () => dispatch(toggleImageViewer({ show: true, url: urlPurchaseImg }));
     const beforeToday = new Date()
     const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
     return (
@@ -81,6 +83,10 @@ export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
                     setFile={setImgReceipt}
                     fn={() => handleReceiptImg()}
                 />
+                {
+                    urlPurchaseImg && <Button onClick={handleImgView} title='ver imagen' borderRadius='normal'/>
+                }
+           
             </Section>
             <Section>
                 <h5>Nota</h5>

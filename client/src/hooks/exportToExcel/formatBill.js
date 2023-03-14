@@ -1,3 +1,4 @@
+import { useFormatPrice } from "../useFormatPrice";
 import useFormatTimestamp from "../useFormatTimeStamp";
 
 const formatBill = (data) => {
@@ -32,12 +33,12 @@ const formatBill = (data) => {
       ['Dirección Cliente']: address ? address : 'N/A',
       ['RNC/Cédula']: personalID ? personalID : 'N/A',
       ['Cantidad de Productos']: shoppingItems,
-      ['Total ITBIS']: taxes,
+      ['Total ITBIS']: useFormatPrice(taxes),
       ['Método de Pago']: method(),
       ['Pagado']: paymentValue(),
-      ['Delivery']: deliveryValue,
-      ['Cambio']: changeValue,
-      ['Total']: total
+      ['Delivery']: useFormatPrice(deliveryValue, 'rd'),
+      ['Cambio']: useFormatPrice(changeValue),
+      ['Total']: useFormatPrice(total)
     }
   }
   

@@ -17,7 +17,7 @@ import {
   Home,
   NotFound,
   Login,
-  Register,
+  SignUp,
   Ventas as VentaPage,
   Compras as CompraPage,
   Inventario as InventarioPage,
@@ -35,7 +35,8 @@ import {
   SetCustomProduct,
   AlertHandler,
   CategoryAdmin,
-  ProviderAdmin
+  ProviderAdmin,
+  Registro
 
 } from './views/index'
 import { Collection } from './views/pages/Collection'
@@ -44,12 +45,17 @@ import { useModal } from './hooks/useModal'
 import { GenericLoader } from './views/templates/system/loader/GenericLoader';
 import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
-import { getTaxReceiptData, IncreaseEndConsumer} from './features/taxReceipt/taxReceiptSlice';
+import { getTaxReceiptData, IncreaseEndConsumer } from './features/taxReceipt/taxReceiptSlice';
 import { ClientAdmin } from './views/pages/Contact/Client/ClientAdmin';
 import { FreeSpace } from './FreeSpace';
 import { useFullScreen } from './hooks/useFullScreen';
 import AppInfo from './views/pages/setting/subPage/AppInfo/AppInfo';
 import BusinessInfo from './views/pages/setting/subPage/ClientInfo/ClientInfo';
+import SalesReport from './views/pages/Reports/ReportsSale';
+import { Feedback } from './views/pages/Feedback/FeedbackShorter';
+import { FeedbackChat } from './views/pages/Feedback/FeedbackChat';
+
+
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
@@ -59,19 +65,16 @@ function App() {
   useEffect(() => {
     AuthStateChanged(dispatch)
     dispatch(ReloadImageHiddenSetting())
-
-  
-    
   }, [])
 
   useFullScreen()
 
   const isConnected = useCheckForInternetConnection()
   console.log(isConnected)
-  if (user === false || null) {
+  if (!user) {
     return <GenericLoader></GenericLoader>
   }
-  
+
   return (
     <Fragment>
       <Router>
@@ -79,13 +82,14 @@ function App() {
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
           <Route path='/app/freeSpace/' element={<FreeSpace />} />
-         <Route path='/app/receipt/' element={<Receipt />} />
-         <Route path='/app/setting/business-info' element={<BusinessInfo />} />
+          <Route path='/app/feedback' element={<FeedbackChat  />}/>
+          <Route path='/app/receipt/' element={<Receipt />} />
+          <Route path='/app/setting/business-info' element={<BusinessInfo />} />
           <Route path='/app/settings/' element={<Setting />} />
-          <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting/>}/>
-          <Route path='/app/setting/app-info' element={<AppInfo/>}/>
+          <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting />} />
+          <Route path='/app/setting/app-info' element={<AppInfo />} />
           <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
-          <Route path='/register' element={<Register />}></Route>
+          {/* <Route path='/register' element={<Register />}></Route> */}
           <Route path='/login' element={<Login />}></Route>
           <Route path='/' element={<Welcome />} ></Route>
           <Route path='/collection' element={<Collection />}></Route>
@@ -104,27 +108,31 @@ function App() {
           </Route>
           <Route path='/app/pedido/' element={<Orders />}>
           </Route>
-          <Route path='/app/contact/client' element={<ClientAdmin/>} />
+          <Route path='/app/contact/client' element={<ClientAdmin />} />
           <Route path='/app/contact/provider' element={<ProviderAdmin />} />
-          <Route path='/app/venta' >
-            <Route path=':displayID' element={
-              <RequireAuth>
-                <VentaPage></VentaPage>
-              </RequireAuth>
-            } ></Route>
-          </Route>
+          <Route path='/app/sale/1' element={
+            <RequireAuth>
+            <VentaPage/>
+            </RequireAuth>
+          } />
+            <Route path='/app/registro' element={
+            <RequireAuth>
+            <Registro/>
+            </RequireAuth>
+          } />
+            <Route path='/app/report/sales' element={
+            <RequireAuth>
+            <SalesReport/>
+            </RequireAuth>
+          } />
+           
+      
           <Route path='/app/category' element={
             <RequireAuth>
               <CategoryAdmin></CategoryAdmin>
             </RequireAuth>
           }>
           </Route>
-          {/* <Route path='/app/category/add' element={
-            <RequireAuth>
-              <AddCategory></AddCategory>
-            </RequireAuth>
-          }>
-          </Route> */}
           <Route path='/app/inventario/items' element={
             <RequireAuth>
               <InventarioPage></InventarioPage>
@@ -132,12 +140,11 @@ function App() {
           }>
           </Route>
           <Route path='/app/inventario/multimedia_manager' element={<MultimediaManager />}>
-
           </Route>
           <Route e></Route>
-          <Route path='/app/registro' element={
+          <Route path='/app/sign-up' element={
             <RequireAuth>
-              <RegistroPage></RegistroPage>
+              <SignUp></SignUp>
             </RequireAuth>
           }>
           </Route>

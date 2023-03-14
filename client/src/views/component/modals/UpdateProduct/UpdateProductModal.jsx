@@ -12,6 +12,7 @@ import { Modal } from '../modal'
 import { quitarCeros } from '../../../../hooks/quitarCeros'
 import { MdRadioButtonChecked, MdRadioButtonUnchecked } from 'react-icons/md'
 import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct'
+import { InventariableButton } from './InventariableButton'
 const EmptyProduct = {
     productName: "",
     cost: {
@@ -80,11 +81,24 @@ export const UpdateProductModal = ({ isOpen }) => {
                 netContent: parseToString(lastProduct.netContent),
                 tax: lastProduct.tax,
                 price: lastProduct.price,
-                trackInventory: lastProduct.trackInventory,
-                order: parseToString(lastProduct.order),
-                size: parseToString(lastProduct.size),
-                type: parseToString(lastProduct.type),
-                amountToBuy: { unit: 1, total: 1 },
+                trackInventory: lastProduct.trackInventory || false,
+                order: parseToString(lastProduct.order) || 0,
+                size: parseToString(lastProduct.size) || '',
+                type: parseToString(lastProduct.type) || '',
+                amountToBuy: { unit: 1, total: 1 } || lastProduct.amountToBuy,
+                margin: parseToString(lastProduct.margin) || '',
+                available: parseToString(lastProduct.available) || '',
+                initialCost: parseToString(lastProduct.initialCost) || '',
+                surcharge: parseToString(lastProduct.surcharge) || '',
+                salePrice: parseToString(lastProduct.salePrice) || '',
+                profit: parseToString(lastProduct.profit) || '',
+                profitMargin: parseToString(lastProduct.profitMargin) || '',
+                description: parseToString(lastProduct.description) || '',
+                rating: parseToString(lastProduct.rating) || '',
+                reviews: parseToString(lastProduct.reviews) || '',
+                shipping: parseToString(lastProduct.shipping) || '',
+                seller: parseToString(lastProduct.seller) || '',
+
             }
         )
     }, [lastProduct])
@@ -158,7 +172,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                             ...product,
                             type: e.target.value
                         })}
-
                     />
                     <Input
                         title={'Stock'}
@@ -234,17 +247,9 @@ export const UpdateProductModal = ({ isOpen }) => {
                             order: Number(e.target.value)
                         })}
                     />
-                    <Button
-                        borderRadius={'normal'}
-                        title={'Invetariable'}
-                        //border={'light'}
-                        isActivated={product.trackInventory ? true : false}
-                        iconOn={<MdRadioButtonChecked />}
-                        iconOff={<MdRadioButtonUnchecked />}
-                        onClick={() => setProduct({
-                            ...product,
-                            trackInventory: !product.trackInventory
-                        })}
+                    <InventariableButton
+                        setProduct={setProduct}
+                        product={ product }
                     />
                 </Group>
                 <Group orientation='vertical'>
@@ -283,7 +288,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         readOnly
                         placeholder='Precio de Venta' />
                 </Group>
-            </Container>G
+            </Container>
         </Modal>
     )
 }

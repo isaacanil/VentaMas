@@ -28,6 +28,7 @@
     --BlackOp2: rgba(0, 0, 0, 0.400);
     /*color primarios*/
     --color: #42a5f5;
+    --color-dark: #1D69A8;
     --color-main: #1976d2;
     /*color secundario*/
     --color1: #67B8DE;
@@ -40,6 +41,14 @@
     --color-warning: #ff9800;
     --color-success: #7adf7d;
     --color-info: #2196f3;
+    --color-light-yellow: #FFFF99;
+  --color-pale-pink: #FFB6C1;
+  --color-pale-green: #98FB98;
+  --color-pale-orange: #FFDAB9;
+  --color-sky-blue: #87CEEB;
+  --color-pale-lilac: #E6E6FA;
+  --color-pale-pink-2: #FFC0CB;
+  --color-pale-turquoise: #AFEEEE;
 
     /*border*/
     --border-radius-light: 4px;

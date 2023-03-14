@@ -18,10 +18,6 @@ import { SaveImg, UploadImgLoading, UploadProgress } from "../features/uploadImg
 import { selectAppMode } from '../features/appModes/appModeSlice'
 import { DynamicConfig } from "./DynamicConfig";
 
-
-
-
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -31,6 +27,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
+
 const adminConfig = <DynamicConfig/>
 const auxApp = initializeApp(adminConfig, 'alt');
 const app = initializeApp(firebaseConfig);
@@ -39,10 +36,6 @@ console.log(auxApp)
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
-
-
-
-
 
 //Todo Product **************************************************************************
 export const AuthStateChanged = (dispatch) => {
@@ -230,11 +223,22 @@ export const deleteMultipleClients = (array) => {
 }
 export const getCat = async (setCategories) => {
   const categoriesRef = collection(db, "categorys")
-  const q = query(categoriesRef, orderBy("category.name"))
+  const q = query(categoriesRef, orderBy("category.name" , "desc"))
   onSnapshot(q, (snapshot) => {
     let categoriesArray = snapshot.docs.map(item => item.data())
     setCategories(categoriesArray)
+    console.log(categoriesArray)
   })
+}
+export const fbDeleteCategory = async (id) => {
+  const counterRef = doc(db, "categorys", id)
+  try {
+    await deleteDoc(counterRef)
+    //deleteDoc(doc(db, `products`, id))
+    console.log(id)
+  } catch (error) {
+    console.log(error)
+  }
 }
 export const getProduct = async (id) => {
   getDoc(doc(db, 'products', id))
@@ -274,24 +278,35 @@ export const getCustomProduct = async (setProduct) => {
     setProduct(data)
   })
 }
-export const UploadCat = async (path, category, id) => {
-  await setDoc(doc(db, `${path}`, id), {
-    category
-  });
+export const UploadCat = async (path, category) => {
+  const id = nanoid(10)
+  let categoryRef = doc(db, `${path}`, id);
+  await setDoc(categoryRef, {
+    category : {
+      ...category,
+      id
+    }
+  }).then(()=>{
+    console.log('category uploaded')
+  }).catch((error)=>{
+    console.log(error)
+  })
+  
 }
 export const deleteProduct = (id) => {
   deleteDoc(doc(db, `products`, id))
 }
 export const getBills = async (setBills, time) => {
-  //const date = Timestamp.fromDate(time.startDate)
   const start = new Date(time.startDate);
   const end = new Date(time.endDate);
-  console.log('firebase: ', start, end)
+
   const Ref = collection(db, `bills`);
   const q = query(Ref, where("data.date", ">=", start), where("data.date", "<=", end), orderBy("data.date", "desc"));
-  const { docs } = await getDocs(q);
-  const arrayBills = docs.map(item => item.data());
-  setBills(arrayBills)
+ 
+  onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map(item => item.data())
+    setBills(data)
+  })
 }
 export const AddBills = (data) => {
   //const clientRef = doc(db, "client", "4O-0")
@@ -338,7 +353,7 @@ export const QueryByCategory = async (setProductArray, categoryArrayData, catego
 }
 export const QueryByType = async (setProducts, type, size) => {
   const productsRef = collection(db, "products")
-  const q = query(productsRef, where("product.type", "==", type), where("product.size", "==", size))
+  const q = query(productsRef, where("product.type", "==", type), where("product.size", "==", size), orderBy("product.productName", "asc"));
   const { docs } = await getDocs(q);
   const array = docs.map((item) => item.data());
   console.log(array)
@@ -486,13 +501,13 @@ export const updateTaxReceiptDataBD = async (taxReceipt) => {
   }
 }
 export const updateCategoryDataBD = async (category) => {
-
-  const counterRef = doc(db, "categories", category.id)
+ 
+  const counterRef = doc(db, "categorys", category.id)
   try {
     updateDoc(counterRef,
       { category }
     );
-    console.log('listo, to bien')
+    console.log('listo, todo bien')
   } catch (err) {
     console.log('todo mal')
   }

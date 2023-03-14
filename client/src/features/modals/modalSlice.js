@@ -42,7 +42,11 @@ const initialState = {
     modalToggleOrderNote: {
         isOpen: false,
         data: null
-    }
+    },
+    modalToggleAddCategory: {
+        isOpen: false,
+        data: null
+    },
 }
 const modalSlice = createSlice({
     name: 'modal',
@@ -125,11 +129,11 @@ const modalSlice = createSlice({
             const {data, isOpen} = actions.payload;
             state.modalToggleOrderNote.isOpen = !isOpen;
 
-            if(isOpen === 'close'){
+            if(isOpen === false){
                 state.modalToggleOrderNote.data = null;
                 return
             }  
-            if(data !== null && data !== false && isOpen === 'open'){
+            if(data !== null && data !== false && isOpen === true){
                 state.modalToggleOrderNote.data = data;
                 state.modalToggleOrderNote.isOpen = true;
                 if(data == null || data == false){
@@ -139,6 +143,21 @@ const modalSlice = createSlice({
                 }
                 return
             }
+        },
+        toggleAddCategory: (state, actions) => {
+            const {isOpen, data} = actions.payload;
+            state.modalToggleAddCategory.isOpen = isOpen;
+
+            if(isOpen === 'close'){
+                state.modalToggleAddCategory.isOpen = false;
+            }  
+            if(data){
+                state.modalToggleAddCategory.data = data;                
+            }
+            if(data === null){
+                state.modalToggleAddCategory.data = null;
+            }
+           
         }
     }
 })
@@ -161,7 +180,8 @@ export const {
     toggleAddPurchaseModal,
     toggleProviderModal,
     toggleClientModal,
-    toggleViewOrdersNotes
+    toggleViewOrdersNotes,
+    toggleAddCategory
 } = modalSlice.actions
 
 export const SelectBillingModal = state => state.modal.modalBilling.isOpen;
@@ -175,6 +195,7 @@ export const SelectSetCustomPizzaModal = state => state.modal.modalSetCustomPizz
 export const SelectClientModalData = state => state.modal.modalToggleClient;
 export const SelectProviderModalData = state => state.modal.modalToggleProvider;
 export const SelectViewOrdersNotesModalData = state => state.modal.modalToggleOrderNote;
+export const SelectAddCategoryModal = state => state.modal.modalToggleAddCategory;
 
 
 export default modalSlice.reducer

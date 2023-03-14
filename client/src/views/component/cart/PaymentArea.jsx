@@ -10,6 +10,7 @@ import { getTaxReceiptData, handleNCFStatus, selectNcfStatus } from '../../../fe
 import { readTaxReceiptDataBD } from '../../../firebase/firebaseconfig'
 import { quitarCeros } from '../../../hooks/quitarCeros'
 import CustomInput from '../../templates/system/Inputs/CustomInput'
+import { useRoundedNumber } from '../../../hooks/useRoundedNumber'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
     const [taxReceiptData, setTaxReceiptData] = useState()
@@ -23,15 +24,19 @@ export const PaymentArea = () => {
     const [paymentMethod, setPaymentMethod] = useState([
         {
             status: true,
-            method: 'cash'
+            method: 'cash',
+            name: 'Efectivo',
+
         },
         {
             status: false,
-            method: 'card'
+            method: 'card',
+            name: 'Tarjeta',
         },
         {
             status: false,
-            method: 'transfer'
+            method: 'transfer',
+            name: 'Transfer...',
         }
     ])
     const [paymentValue, setPaymentValue] = useState(0)
@@ -78,10 +83,10 @@ export const PaymentArea = () => {
     return (
         <Container>
             <Row>
-                <Group className='option1'>
+                <Group className='tax-discount'>
                     <Group>
-                        <Switch checked={selectedNcfStatus ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
-                        <STitle>Comprobante Fiscal</STitle>
+                        <Switch checked={selectedNcfStatus ? true : false}  onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
+                        <STitle>Comp. Fiscal.</STitle>
                     </Group>
                     <Group>
                         <CustomInput options={["10", "20", "30"]} />
@@ -89,7 +94,23 @@ export const PaymentArea = () => {
                 </Group>
             </Row>
             <Area>
-                <Group className='option1'>
+                <Group className='paymentMethod'>
+                    {paymentMethod.map((method) => {
+                        return (
+                            <Group grow='2'>
+                                <input type="radio" name="payment-method" id={method.method}
+                                    defaultChecked={method.status}
+                                    onChange={(e) => { SelectPaymentMethod(method.method, e.target.checked) }}
+                                />
+                                <label htmlFor={method.method}>{method.name}</label>
+                            </Group>
+                        )
+                    }
+                    )}                 
+                </Group>
+            </Area>
+            {/* <Area>
+                <Group className='paymentMethod'>
                     <Group grow='2'>
                         <input type="radio" name="payment-method" id="cash"
                             defaultChecked
@@ -110,15 +131,15 @@ export const PaymentArea = () => {
                         <label htmlFor='transfer'>Transferencia</label>
                     </Group>
                 </Group>
-            </Area>
+            </Area> */}
             <Row margin='bottom'>
                 <Group className='option1'>
-                    <span>Total ITBIS: {useFormatPrice(TaxesRef)}</span>
+                    <span><span>ITBIS:</span>  {useFormatPrice(TaxesRef)}</span>
                     <Item>
                         <label htmlFor="">Pago con {monetarySymbols.dollarSign}</label>
                         <input
                             type="number"
-                            value={quitarCeros(Number(paymentValue))}
+                            value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
                             onChange={(e) => setPaymentValue(e.target.value)}
                         />
                     </Item>
@@ -126,11 +147,12 @@ export const PaymentArea = () => {
             </Row>
             <Row margin='bottom'>
                 <Group className='option1'>
-                    <span>Delivery: {useFormatPrice(DeliveryRef.value)}</span>
-                    <Item>
+                    <span><span>Delivery:</span> {useFormatPrice(DeliveryRef.value)}</span>
+                    <span><span>Cambio:</span> {useFormatPrice(ChangeRef)}</span>
+                    {/* <Item>
                         <label htmlFor="">Cambio {monetarySymbols.dollarSign}</label>
-                        <input type="text" value={ChangeRef} readOnly />
-                    </Item>
+                        <input type="text" value={useRoundedNumber(ChangeRef)} readOnly />
+                    </Item> */}
                 </Group>
             </Row>
         </Container>
@@ -156,9 +178,13 @@ const Row = styled.div`
 const Group = styled.div`
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
+
     flex-grow: 1;
     gap: 0.8em;
+    span{
+        display: flex;
+        justify-content: space-between;
+    }
     ${props => {
         switch (props.grow) {
             case props.grow:
@@ -174,7 +200,20 @@ const Group = styled.div`
         switch (props.className) {
             case 'option1':
                 return `
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
                     justify-content: space-between;
+                    gap: 2em;
+                `
+            case 'paymentMethod':
+                return `
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                `
+            case 'tax-discount':
+                return `
+                display: grid;
+                grid-template-columns: 1fr 1fr;
                 `
             default:
                 break;
@@ -182,13 +221,11 @@ const Group = styled.div`
 
     }}
    
-    input[type="radio"]:checked + label{
-       
+    input[type="radio"]:checked + label{  
       background-color: var(--color);
       color: black;
       font-weight: 500;
       color: white;
-      
         
     }
     input[type="radio"]{
@@ -214,16 +251,17 @@ padding: 0;
     flex-shrink: 1;
     height: 2em;
     position: relative;
-    display: flex;
     align-items: center;
+    
     label{
         font-size: 11px;
         height: 11px;
         box-sizing: border-box;
         margin: 0;
-        padding: 2px 0.6em;
+        padding: 2px 0.6em; 
         position: absolute;
-        top: -4px;
+        top: -8px;
+        left: 0;
         display: flex;
         align-items: center;
         background-color: var(--color3);
@@ -232,14 +270,29 @@ padding: 0;
         border-radius: 3px;
     }
     input{
-        width: 100%;
         border-radius: 6px;
         outline: none;
         border: 1px solid rgba(0, 0, 0, 0.100);
-        padding: 0.2em 0.4em;
-        height: 2em;
-        font-size: 14px;
-        color: var(--Gray3);
+        padding: 0em 0.4em;
+        height: 1.8em;
+        font-size: 16px;
+        line-height: 14px;
+        width: 100%;
+        justify-self: flex-end;
+        color: var(--Gray10);
+        text-align: right;
+        &:focus{
+            text-align: left;
+        }
+        ::-webkit-outer-spin-button,
+        ::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        margin: 0;
+        -moz-appearance: textfield;
+}
+        :read-only{
+            text-align: right;
+        }
     
 }
 `

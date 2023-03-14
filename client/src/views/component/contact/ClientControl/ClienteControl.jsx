@@ -134,6 +134,9 @@ export const ClientControl = () => {
 
       case CLIENT_MODE.UPDATE.mode:
         dispatch(updateClientInState(client))
+        dispatch(totalPurchase())
+        dispatch(setChange())
+    
         break;
 
       case CLIENT_MODE.CREATE.mode:

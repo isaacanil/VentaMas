@@ -2,20 +2,18 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
 import { Select } from '../../..'
-import { ProductListSelected } from './ProductListSelected/ProductListSelected'
 import { Button } from '../../../'
-import { AddProductListSection } from './AddProductListSection/AddProductListSection'
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { IoMdClose } from 'react-icons/io'
-import { SelectOrder, cleanOrder } from '../../../../features/addOrder/addOrderModalSlice'
+import { SelectOrder } from '../../../../features/addOrder/addOrderModalSlice'
 import { PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
 import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { selectOrderFilterOptions, selectOrderList, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
-import { getOrderData, AddProvider, selectPurchase, cleanPurchase } from '../../../../features/Purchase/addPurchaseSlice'
-
-
+import { getOrderData, AddProvider, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts } from '../../../../features/Purchase/addPurchaseSlice'
+import { StockedProductPicker } from '../../StockedProductPicker/StockedProductPicker'
+import { ProductListSelected } from '../../ProductListSelected/ProductListSelected'
 
 export const AddPurchaseModal = ({ isOpen }) => {
     const dispatch = useDispatch();
@@ -23,6 +21,8 @@ export const AddPurchaseModal = ({ isOpen }) => {
     const [orderToPurchase, setOrderToPurchase] = useState(null)
     const [reset, setReset] = useState()
     const OrderSelected = useSelector(SelectOrder)
+    const productSelected = useSelector(SelectProductSelected)
+    const productsSelected = useSelector(selectProducts)
     const [prevProvider, setPrevProvider] = useState(null)
     const now = new Date()
     const day = now.getDate()
@@ -69,7 +69,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
         setReset(true);
         dispatch(cleanPurchase());
     }
-    const HandleSubmit = () => {
+    const handleSubmit = () => {
         dispatch(toggleAddPurchaseModal());
         PassDataToPurchaseList(SELECTED_PURCHASE);
         setReset(true);
@@ -80,6 +80,18 @@ export const AddPurchaseModal = ({ isOpen }) => {
     let pendingOrders = useSelector(selectOrderList);
     pendingOrders = pendingOrders[0]
     console.log(provider)
+
+    const handleAddProduct = ({ stock, initialCost, cost }) => {
+        dispatch(updateStock({ stock }))
+        dispatch(getInitialCost({ initialCost, cost }))
+        dispatch(AddProductToPurchase())
+    }
+    const handleSelectProduct = (data) => {
+        dispatch(SelectProduct(data))
+    }
+    const handleDeleteProduct = (product) => {
+        dispatch(deleteProductFromPurchase(product.id))
+    }
 
     return (
         <Container isOpen={isOpen === true ? true : false}>
@@ -127,15 +139,22 @@ export const AddPurchaseModal = ({ isOpen }) => {
                                 bgcolor='gray'
                             />
                         </header>
-                        <AddProductListSection></AddProductListSection>
-                        <ProductListSelected SELECTED_PURCHASE={SELECTED_PURCHASE}></ProductListSelected>
-                        <OrderDetails reset={reset} setReset={setReset} SELECTED_PURCHASE={SELECTED_PURCHASE}></OrderDetails>
+                        <StockedProductPicker fn={handleAddProduct} handleSelectProduct={handleSelectProduct} productSelected={productSelected} />
+                        <ProductListSelected
+                            productsSelected={SELECTED_PURCHASE.products}
+                            productsTotalPrice={SELECTED_PURCHASE.totalPurchase}
+                            handleDeleteProduct={handleDeleteProduct} />
+                        <OrderDetails
+                            reset={reset}
+                            setReset={setReset}
+                            SELECTED_PURCHASE={SELECTED_PURCHASE}
+                        />
                         <WrapperFooter>
                             <Button
                                 title='Comprar'
                                 borderRadius={'normal'}
                                 bgcolor='primary'
-                                onClick={HandleSubmit}
+                                onClick={handleSubmit}
                             />
                         </WrapperFooter>
                     </Body>

@@ -1,7 +1,6 @@
-import { current } from '@reduxjs/toolkit';
-import React, { useCallback, useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { Button } from '../../../../../templates/system/Button/Button'
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { Button } from '../../../../../templates/system/Button/Button';
 
 export const PaginationBar = ({ products, setFilteredProducts, productsPerPage }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,12 +10,8 @@ export const PaginationBar = ({ products, setFilteredProducts, productsPerPage }
   const totalPages = Math.ceil(products.length / productsPerPage);
 
   const handlePageChange = (page) => {
-    const { startIndex, endIndex } = indexes;
-    const updatedCurrentProducts = products.slice(startIndex + (page - 1) * productsPerPage, endIndex + (page - 1) * productsPerPage);
-    setCurrentProducts(updatedCurrentProducts);
-    setFilteredProducts(updatedCurrentProducts);
     setCurrentPage(page);
-  }
+  };
 
   useEffect(() => {
     const startIndex = 0;
@@ -24,16 +19,15 @@ export const PaginationBar = ({ products, setFilteredProducts, productsPerPage }
     const updatedCurrentProducts = products.slice(startIndex, endIndex);
     setFilteredProducts(updatedCurrentProducts);
     setCurrentProducts(updatedCurrentProducts);
-  }, []);
+  }, [products, productsPerPage, setFilteredProducts]);
 
   useEffect(() => {
-    const { startIndex, endIndex } = indexes;
-    const updatedCurrentProducts = products.slice(startIndex + (currentPage - 1) * productsPerPage, endIndex + (currentPage - 1) * productsPerPage);
-    if (JSON.stringify(updatedCurrentProducts) !== JSON.stringify(currentProducts)) {
-      setCurrentProducts(updatedCurrentProducts);
-      setFilteredProducts(updatedCurrentProducts);
-    }
-  }, [currentPage]);
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const endIndex = startIndex + productsPerPage;
+    const updatedCurrentProducts = products.slice(startIndex, endIndex);
+    setCurrentProducts(updatedCurrentProducts);
+    setFilteredProducts(updatedCurrentProducts);
+  }, [currentPage, products, productsPerPage, setFilteredProducts]);
 
   const paginationButtons = [...Array(totalPages)].map((_, index) => {
     const page = index + 1;
@@ -46,20 +40,12 @@ export const PaginationBar = ({ products, setFilteredProducts, productsPerPage }
         title={`${page}`}
         borderRadius={'normal'}
         width="icon32"
-      >
-        {page}
-      </Button>
+      />
     );
   });
 
   return <Container>{paginationButtons}</Container>;
 };
-
-
-
-
-
-
 
 const Container = styled.div`
     height: 2.75em;

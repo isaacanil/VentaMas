@@ -8,13 +8,20 @@ import { getData } from './firebase/firebaseconfigClients'
 import { ProductsByCategory } from './hooks/ProductsByCategory'
 import { SelectDataFromOrder } from './hooks/useSelectDataFromOrder'
 import { Button, Inventario } from './views'
-import AddCategoryModal from './views/component/modals/AddCategory/AddCategory'
+import PizzaCustomizer from './views/component/modals/SetCustomPizzaModal/SetCustomPizzaModal'
+import PizzaModal from './views/component/PizzaConfigurator/PizzaModal'
+import RunMenu from './views/component/RunMenu/RunMenu'
+import { DashBoard } from './views/pages/Dashboard/DashBoard'
+import BillDataPreview from './views/pages/Registro/BillDataPreview/BillDataPreview'
 import Modal from './views/templates/Modal/Modal'
+import TimeFilterButton from './views/templates/system/Button/TimeFilterButton/TimeFilterButton'
+import SaleBarChart from './views/templates/system/ChartsAndBars/SaleChart'
 import { Calendar } from './views/templates/system/DatePicker/Calendar'
 
 import DatePicker from './views/templates/system/DatePicker/DatePicker2'
 import DateRangeFilter from './views/templates/system/DatePicker/DateRangeFIlter'
 import DateFilter from './views/templates/system/DatePicker/DateRangeFilter2'
+import DateRangePicker from './views/templates/system/DatePicker/DateRangePicker'
 import ImageViewer from './views/templates/system/ImageViewer/ImageViewer'
 import CustomInput from './views/templates/system/Inputs/CustomInput'
 import { Input } from './views/templates/system/Inputs/InputV3'
@@ -23,15 +30,12 @@ import { Notification } from './views/templates/system/Notification/Notification
 
 export const FreeSpace = () => {
   const dispatch = useDispatch()
-  const handleGetNotification = () => {
-  }
-  
+
+ 
+
   //   const [users, setUsers] = useState([])
   //   const [rol, setRol] = useState()
-  const handleLoader = () => {
-    console.log('hola')
-    dispatch(toggleImageViewer({show: true, url: ''}))
-  }
+ 
   //dispatch(addNotification({message: 'Hola, que haces?', type: 'success' }))
   //  useEffect(() => {getUsers(setUsers)}, [])
 
@@ -44,29 +48,37 @@ export const FreeSpace = () => {
   const [change, setChange] = useState(false)
   const [data, setData] = useState([])
   const handleChange = () => setChange(!change)
-  useEffect(()=>{
+  useEffect(() => {
     getData(setData)
   }, [])
-    console.log(data)
-    const handleDateChange = (date) => {
-      console.log(date)
-    }
+ 
+
+ 
+
+
   return (
     <div>
       {
         //data.length > 0 ? 'Hola' : 'nada'
-        data.map((doc)=>(<li>{doc.name}</li>))
+        // data.map((doc)=>(<li>{doc.name}</li>))
       }
-     {/* <Notification/> */}
-    <DatePicker></DatePicker>
-    {/* <DateRangeFilter></DateRangeFilter> */}
-    {/* <Calendar></Calendar> */}
-      <AddCategoryModal initialCategory={{name: 'Hola', id:'ters'}}></AddCategoryModal>
-     <Button title="Click" borderRadius='normal' onClick={handleLoader}></Button>
+      <PizzaModal></PizzaModal>
+      {/* <Notification/> */}
+      {/* <DatePicker></DatePicker> */}
+      {/* <DateRangeFilter></DateRangeFilter> */}
+      {/* <Calendar></Calendar> */}
+
+      {/* <AddCategoryModal initialCategory={{name: 'Hola', id:'ters'}}></AddCategoryModal> */}
+      {/* <DashBoard/> */}
+      {/* <RunMenu></RunMenu> */}
+      {/* <Calendar></Calendar> */}
+      {/* <BillDataPreview data={billData}/> */}
+    
+      {/* <Button title="Click" borderRadius='normal' onClick={handleLoader}></Button>
        <Square visible={change ? true : false}>
         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ea sunt eum repellat? Tempore magni illum animi dolorem itaque adipisci, odio explicabo molestiae soluta deleniti officia quam necessitatibus porro numquam ex?
-       </Square>
-       {/* <Modal children={<Inventario/>}/> */}
+       </Square> */}
+      {/* <Modal children={<Inventario/>}/> */}
       {/* <Typography variant='p' color={font2} >Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas in dolore molestiae voluptatem quidem a eligendi, deserunt rem cumque qui necessitatibus distinctio expedita quae minus iusto blanditiis saepe itaque totam?</Typography> */}
       {/* <select name="" id="" onChange={(e)=>setRol(e.target.value)}>
         {rolesList.map(({rol})=>(
@@ -98,21 +110,21 @@ export const FreeSpace = () => {
     </div>
   )
 }
-const Square = styled.div`
-  width: 200px;
-  height: 200px;
-  background-color: #ff5100;
-  transition: height 1s ease-in-out ;
-  overflow: hidden;
-  ${props => {
-    switch (props.visible) {
-      case false:
-        return`
-          height: 0px;
-        `
-    
-      default:
-        break;
-    }
-  }}
-`
+// const Square = styled.div`
+//   width: 200px;
+//   height: 200px;
+//   background-color: #ff5100;
+//   transition: height 1s ease-in-out ;
+//   overflow: hidden;
+//   ${props => {
+//     switch (props.visible) {
+//       case false:
+//         return `
+//           height: 0px;
+//         `
+
+//       default:
+//         break;
+//     }
+//   }}
+// `

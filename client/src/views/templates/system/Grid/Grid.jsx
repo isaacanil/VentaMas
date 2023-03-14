@@ -10,7 +10,7 @@ export const Grid = styled('div')`
         switch (props.padding) {
             case 'bottom':
                 return`
-                    padding-bottom: 2.75em;
+                    // padding-bottom: 2.75em;
                 `
         
             default:

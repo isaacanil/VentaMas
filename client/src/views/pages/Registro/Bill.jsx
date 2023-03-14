@@ -2,39 +2,41 @@ import React from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../hooks/separator'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import { getTimeElapsed } from '../../../hooks/useFormatTime'
 
-export const Bill = ({data}) => {
+export const Bill = ({ data }) => {
   const totalTax = data.products.reduce((total, product) => total + (product.tax.value * product.cost.unit) * product.amountToBuy.total, 0)
-    return (
-        <Container>
-            <ITEMS text='left'>
-                {data.client ? data.client.name : 'No hay cliente'}
-            </ITEMS>
-            <ITEMS text='left'>
-                {`${new Date(data.date.seconds * 1000).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-} `}
-                {/* {new Date(data.date.seconds * 1000).toLocaleString()} */}
-            </ITEMS>
-            <ITEMS text='right'>
-              {useFormatPrice(data.totalPurchase.value)}
-            </ITEMS>
-            <ITEMS text={'right'}>
-              {useFormatPrice(totalTax)}
-            </ITEMS>
-            <ITEMS text={'right'}>
-                {/* RD$ {useFormatPrice(data.cashPaymentMethod.value)} */}
-                {
-                  data && data.cashPaymentMethod ? useFormatPrice(data.cashPaymentMethod.value) : null
-                }
-                {
-                  data && data.paymentMethod ? useFormatPrice(data.paymentMethod.find((bill) => bill.status === true).value) : null
-                }
-            </ITEMS>
-            <ITEMS text={'right'}>
-                {useFormatPrice(data.change.value)}
-            </ITEMS>
-        </Container>
-    )
+  return (
+    <Container>
+      <ITEMS text='left'>
+        {data.client ? data.client.name : 'No hay cliente'}
+      </ITEMS>
+      <ITEMS text='left'>
+        {/* {`${new Date(data.date.seconds * 1000).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+          } `} */}
+          
+        {getTimeElapsed(data.date.seconds * 1000)}
+      </ITEMS>
+      <ITEMS text='right'>
+        {useFormatPrice(data.totalPurchase.value)}
+      </ITEMS>
+      <ITEMS text={'right'}>
+        {useFormatPrice(totalTax)}
+      </ITEMS>
+      <ITEMS text={'right'}>
+        {/* RD$ {useFormatPrice(data.cashPaymentMethod.value)} */}
+        {
+          data && data.cashPaymentMethod ? useFormatPrice(data.cashPaymentMethod.value) : null
+        }
+        {
+          data && data.paymentMethod ? useFormatPrice(data.paymentMethod.find((bill) => bill.status === true).value) : null
+        }
+      </ITEMS>
+      <ITEMS text={'right'}>
+        {useFormatPrice(data.change.value)}
+      </ITEMS>
+    </Container>
+  )
 }
 const Grid = styled.div`
   display: grid;

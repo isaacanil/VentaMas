@@ -120,7 +120,6 @@ const Body = styled.div`
             return`
                 grid-template-columns: 1fr;
             `
-    
         default:
             break;
     }

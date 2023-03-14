@@ -1,80 +1,65 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components"
-
+import { DateTime } from "luxon";
 const getDefaultDate = () => {
-
-  let r = Date.now()
-  let today = new Date(r)
-  today.setHours(0)
-  const startDate = today.setHours(0, 0, 0, 0)
-  const endDate = Date.now()
-  return {startDate, endDate}
+    const today = DateTime.local().startOf('day');
+    const startDate = today.toMillis();
+    const endDate = DateTime.local().endOf('day').toMillis();
+    return { startDate, endDate };
 }
-
-const getDateToTimeStamp = (startDate, endDate) => {
-    const date = new Date()
-    let hour = date.getHours();
-    let minute = date.getMinutes();
-    let seconds = date.getSeconds();
-    const startDateToTime = new Date(`${startDate}`).setHours(0) / 1000;
-    const endDateToTime = new Date(`${endDate}`).setHours(hour, minute ,seconds ) / 1000;
-    console.log(new Date(startDateToTime))
-    return {startDateToTime, endDateToTime}
+const setTimeMorning = (date) => {
+    return DateTime.fromISO(date).set({ hour: 4 }).toMillis();
+  }
+const setTimeNight = (date) => {
+    return DateTime.fromISO(date).set({ hour: 23, minute: 59, second: 59 }).toMillis();
 }
-
-export const DatePicker = ({dates}) => {
-    //Me tra el dia de hoy 
-    const getDefaultValue = getDefaultDate()
-    const [datesSelected, setDates] = useState(getDefaultValue)
-
-    console.log(datesSelected)
+export const DatePicker = ({ dates, data }) => {
+    // Me tra el dia de hoy 
+    const getDefaultValue = getDefaultDate();
+    const [datesSelected, setDates] = useState(getDefaultValue);
 
     useEffect(() => {
-        dates(datesSelected)  
-    }, [datesSelected])
-  const setTimeMorning = (date) => {
-    const r = new Date(date)
-    r.setUTCHours(4)
-    r.getTime()
-    return r
-  }
- const setTimeNight = (date) =>{
-     const r = new Date(date)
-     r.setUTCHours(27, 59, 55)
-     r.getTime()
-     console.log('final', date, r)
-    return r
- }
+        dates(datesSelected);
+    }, [datesSelected]);
+    useEffect(() => {
+        setDates(getDefaultValue);
+    }, []);
+    useEffect(() => {
+        if(data.startDate && data.endDate){
+            setDates(data);
+        }
+    }, [data])
+
     return (
         <Container>
             <Group>
                 <Col>
                     <Label>Fecha Inicio</Label>
                     <input
-                        value={new Date(datesSelected.startDate).toISOString().slice(0, 10)}
+                        value={DateTime.fromMillis(datesSelected.startDate).toISODate()}
                         type="date"
                         name="startDate"
-                        onChange={(e) => setDates({...datesSelected, startDate: setTimeMorning(e.target.value)})}
+                        onChange={(e) => setDates({ ...datesSelected, startDate: setTimeMorning(e.target.value) })}
                     />
                 </Col>
                 <Col>
                     <Label>Fecha Fin</Label>
                     <input
-                        value={new Date(datesSelected.endDate).toISOString().slice(0, 10)}
-                        min={datesSelected.startDate}
-                        max={new Date().toISOString().slice(0, 10) }
+                        value={DateTime.fromMillis(datesSelected.endDate).toISODate()}
+                        min={DateTime.fromMillis(datesSelected.startDate).toISODate()}
+                        max={DateTime.local().toISODate()}
                         type="date"
                         name="endDate"
-                        onChange={(e) => setDates({...datesSelected, endDate: setTimeNight(e.target.value)})}
+                        onChange={(e) => setDates({ ...datesSelected, endDate: setTimeNight(e.target.value) })}
                     />
                 </Col>
             </Group>
-
         </Container>
     )
 }
+
 const Container = styled.div`
-    padding: 0.2em 0;
+
     input[type="date"]{
         
         padding: 0.1em 0.2em;

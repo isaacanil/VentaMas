@@ -1,4 +1,7 @@
 import React from 'react'
+import { BsDot } from 'react-icons/bs';
+import { FaBoxOpen, FaTag } from 'react-icons/fa';
+import { FiShoppingBag } from 'react-icons/fi';
 import { IoMdTrash } from 'react-icons/io';
 import { TbEdit } from 'react-icons/tb';
 import { useDispatch } from 'react-redux';
@@ -9,6 +12,7 @@ import { ChangeProductData } from '../../../../../../features/updateProduct/upda
 import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button';
+import StockIndicator from '../../../../../templates/system/labels/StockIndicator';
 
 export const ProductCardRow = ({ product, Col, Row }) => {
     const dispatch = useDispatch();
@@ -41,7 +45,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                 </Col>
                 <Col position='right'>
                     <Item position='right'>
-                        <span>{useFormatNumber(product.stock)}</span>
+                        <StockIndicator stock={product.stock} trackInventory={product.trackInventory}></StockIndicator>
                     </Item>
                 </Col>
                 <Col position='right'>

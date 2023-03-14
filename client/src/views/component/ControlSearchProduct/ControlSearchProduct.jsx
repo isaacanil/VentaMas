@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react'
 import Style from './ProductControl.module.scss'
 import { useMatch } from 'react-router-dom'
-import { Carrucel } from '../Carrucel/Carrucel'
+import { Carrusel } from '../Carrusel/Carrusel'
 
 
 export const ControlSearchProduct = ({ searchData, setSearchData }) => {

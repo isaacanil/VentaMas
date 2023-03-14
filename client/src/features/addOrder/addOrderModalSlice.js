@@ -56,11 +56,11 @@ const addOrderSlice = createSlice({
       state.order.products.splice(index, 1)
       //total Precio del pedido
       const productList = state.order.products
-      const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock.newStock), 0)
+      const totalPurchase = productList.reduce((total, item) => total + (item.product.initialCost * item.product.stock.newStock), 0)
       state.order.totalPurchase = totalPurchase
 
     },
-    AddProduct: (state) => {
+    AddProductToOrder: (state) => {
       state.order.products.push(state.productSelected)
       console.log(state.order.products)
       state.productSelected = {
@@ -75,8 +75,6 @@ const addOrderSlice = createSlice({
           },
         }
       }
-
-      //total Precio del pedido
       const productList = state.order.products
       const totalPurchase = productList.reduce((total, item) => total + (item.product.initialCost * item.product.stock.newStock), 0)
       state.order.totalPurchase = totalPurchase
@@ -118,7 +116,7 @@ const addOrderSlice = createSlice({
 })
 export const {
   SelectProduct,
-  AddProduct,
+  AddProductToOrder,
   getInitialCost,
   AddNote,
   AddCondition,

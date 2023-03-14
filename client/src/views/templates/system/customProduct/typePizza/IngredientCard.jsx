@@ -2,10 +2,10 @@ import React from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
-import { addIngredient, gettingIngredientList, totalPurchase, deleteIngredient, SelectIngredientsListName } from '../../../../../features/customProducts/customProductSlice'
-export const IngredientCard = ({ item }) => {
+import { addIngredient, gettingIngredientList, totalPurchase, deleteIngredient, selectIngredientList } from '../../../../../features/customProducts/customProductSlice'
+export const IngredientCard = ({ item, index }) => {
     const dispatch = useDispatch()
-   
+   const IngredientsList = useSelector(selectIngredientList)
     const handleIngredient = (status, item) => {
         status ? (
             dispatch(
@@ -31,9 +31,11 @@ export const IngredientCard = ({ item }) => {
             )
        // console.log(status)
     }
+    const IngredientSelected = (array, id) => array.some(element => element.id === id);
+    
 return (
-    <Container>
-        <input type="checkbox" name="" id="" onChange={(e) => handleIngredient(e.target.checked, item)} />
+    <Container htmlFor={index}>
+        <input type="checkbox" name="" checked={IngredientSelected(IngredientsList, item.id)} id={index} onChange={(e) => handleIngredient(e.target.checked, item)} />
         <span>
             {item.name}
         </span>
@@ -44,7 +46,7 @@ return (
 )
 }
 
-const Container = styled.li`
+const Container = styled.label`
     list-style: none;
     height: 2.2em;
     display: grid;
@@ -52,7 +54,7 @@ const Container = styled.li`
     grid-template-columns: min-content 1fr 0.8fr;
     gap: 1em;
     padding: 0 1em;
-    background-color: #e6e6e6;
+    background-color: #f1efef;
     border-radius: 8px;
 `
 
