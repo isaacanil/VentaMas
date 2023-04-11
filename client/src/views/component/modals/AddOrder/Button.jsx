@@ -7,9 +7,7 @@ import { Button } from '../../../templates/system/Button/Button'
 
 export const AddProductButton = () => {
   const dispatch = useDispatch()
-  const OpenAddProductModal = () => {
-    dispatch(openModalAddProd())
-  }
+  const OpenAddProductModal = () => dispatch(openModalAddProd());
   return (
     <Button
       startIcon={<TbPlus />}

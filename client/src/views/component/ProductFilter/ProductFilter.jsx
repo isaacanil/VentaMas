@@ -6,21 +6,23 @@ import { ProductCard } from './ProductCard'
 import { SelectProductSelected } from '../../../features/addOrder/addOrderModalSlice'
 import { fbGetProducts } from '../../../firebase/products/fbGetProducts'
 export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProduct }) => {
-
   const [products, setProducts] = useState([])
   const [value, setValue] = useState(undefined)
+  const close = () => {
+    setIsOpen(false)
+  }
   useEffect(() => {
     fbGetProducts(setProducts, true)
   }, [])
-useEffect(()=>{
-  if(!productName){
-    setValue('')
-  }
-  if(productName){
-    console.log(productName)
-    setValue(productName)
-  }
-},[productName])
+  useEffect(() => {
+    if (!productName) {
+      setValue('')
+    }
+    if (productName) {
+      console.log(productName)
+      setValue(productName)
+    }
+  }, [productName])
   return (
     <Component>
       <InputText
@@ -37,7 +39,7 @@ useEffect(()=>{
           <ProductsListHead>
             <span>Lista de Producto</span>
             <span>
-              <Button onClick={() => setIsOpen(false)}>
+              <Button onClick={close}>
                 <IoClose />
               </Button>
             </span>
@@ -49,6 +51,7 @@ useEffect(()=>{
                   fn={handleSelectProduct}
                   key={index}
                   data={data}
+                  close={close}
                   setShowProductList={setIsOpen}
                 />
               ))
@@ -65,13 +68,13 @@ const Component = styled.div`
 `
 const ProductsList = styled.div`
   max-width: 1000px;
-  height: calc(100vh - 2.75em - 2.75em - 7.7em);
-  width: calc(100% + 2em);
+  height: calc(100vh - 16em);
+  width: 100%;
   border: var(--border-primary);
   position: absolute;
   top: 2.8em;
-  left: -1em;
-  right: -1em;
+
+  margin: 0 auto;
   box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.400);
   border-radius: 08px;
   overflow: hidden;

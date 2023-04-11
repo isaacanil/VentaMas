@@ -22,6 +22,7 @@ export const Button = ({
   isActivatedColors,
   iconOn,
   iconOff,
+  iconColor,
   titlePosition,
   tooltipDescription,
   tooltipPlacement,
@@ -29,27 +30,28 @@ export const Button = ({
 }) => {
 
   return (
-        <Container
-          bgcolor={bgcolor}
-          color={color}
-          onClick={onClick}
-          width={width}
-          height={height}
-          variant={variant}
-          disabled={disabled}
-          borderRadius={borderRadius}
-          isActivated={isActivated}
-          titlePosition={titlePosition}
-          border={border}
-          isActivatedColors={isActivatedColors}
-        >
+    <Container
+      bgcolor={bgcolor}
+      color={color}
+      onClick={onClick}
+      width={width}
+      height={height}
+      variant={variant}
+      disabled={disabled}
+      borderRadius={borderRadius}
+      isActivated={isActivated}
+      titlePosition={titlePosition}
+      border={border}
+      iconColor={iconColor}
+      isActivatedColors={isActivatedColors}
+    >
 
-          {isActivated ? iconOn : iconOff}
-          {startIcon ? startIcon : null}
-          {title ? title : null}
-          {endIcon ? endIcon : null}
+      {isActivated ? iconOn : iconOff}
+      {startIcon ? startIcon : null}
+      {title ? title : null}
+      {endIcon ? endIcon : null}
 
-        </Container>
+    </Container>
   )
 }
 
@@ -69,11 +71,10 @@ export const Container = styled.button`
   font-weight: 500;
   font-size: 14px;
   
-  
-pointer-events: all;
+  pointer-events: all;
   font-family: inherit;
   svg{
-    font-size: 1.4em;
+    font-size: 1.2em;
     margin: 0;
   }
   cursor: pointer;
@@ -101,6 +102,7 @@ pointer-events: all;
         break;
     }
   }}
+
  ${(props) => {
     switch (props.borderRadius) {
       case 'normal':

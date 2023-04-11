@@ -11,7 +11,7 @@ import noimg from '../../../../assets/producto/noimg.png'
 //template
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import { UploadImg } from '../../UploadImg';
+import { UploadImg } from '../../UploadImg/UploadImg';
 import { clearImg, SaveImg } from '../../../../features/uploadImg/uploadImageSlice';
 import { selectImg } from '../../../../features/uploadImg/uploadImageSlice';
 import { firstLetter } from '../../../../hooks/firstLetter';

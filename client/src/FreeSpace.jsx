@@ -28,10 +28,9 @@ import { Input } from './views/templates/system/Inputs/InputV3'
 import Loader from './views/templates/system/loader/Loader'
 import { Notification } from './views/templates/system/Notification/Notification'
 
+
 export const FreeSpace = () => {
   const dispatch = useDispatch()
-
- 
 
   //   const [users, setUsers] = useState([])
   //   const [rol, setRol] = useState()
@@ -62,7 +61,7 @@ export const FreeSpace = () => {
         //data.length > 0 ? 'Hola' : 'nada'
         // data.map((doc)=>(<li>{doc.name}</li>))
       }
-      <PizzaModal></PizzaModal>
+
       {/* <Notification/> */}
       {/* <DatePicker></DatePicker> */}
       {/* <DateRangeFilter></DateRangeFilter> */}

@@ -1,3 +1,5 @@
+import { faCircleMinus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { FaTag } from 'react-icons/fa';
 import styled from 'styled-components';
@@ -9,25 +11,21 @@ function StockIndicator({ stock, trackInventory }) {
 
 
     if (trackInventory) {
-        
+
         return (
             <StockContainer trackInventory={trackInventory} stock={stock}>
-                {/* <StockBox color={color} /> */}
-
-            
-                    {stock}
-                    {!stock && 'sin stock'}
-            
-
+                {stock}
             </StockContainer>
         );
     } else {
         return (
-            
-                <StockContainer>
-                    <span><FaTag /></span>
-                </StockContainer>
-       
+
+            <StockContainer trackInventory={trackInventory}>
+                <span>
+                    <FontAwesomeIcon icon={faCircleMinus} />
+                </span>
+            </StockContainer>
+
         );
     }
 }
@@ -44,10 +42,21 @@ const StockContainer = styled.div`
     border-radius: var(--border-radius-light);
     ${props => !props.stock && `
     white-space: nowrap;
-    width: min-content;
+
     background-color: #ebebeb !important;
     color: #616161 !important;
     `}
+    
+    ${props => {
+        switch (props.trackInventory) {
+            case false:
+                return `
+                display: flex;
+        `;
+            default:
+                break;
+        }
+    }}
     ${props => {
         switch (true) {
             case props.stock < 10:

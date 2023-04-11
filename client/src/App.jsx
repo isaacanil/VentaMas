@@ -54,7 +54,10 @@ import BusinessInfo from './views/pages/setting/subPage/ClientInfo/ClientInfo';
 import SalesReport from './views/pages/Reports/ReportsSale';
 import { Feedback } from './views/pages/Feedback/FeedbackShorter';
 import { FeedbackChat } from './views/pages/Feedback/FeedbackChat';
-
+import { ChatBox } from './views/component/ChatBox/ChatBox';
+import { AddProductAndServicesModal } from './views/component/modals/AddProduct&Services/AddProduct&Services';
+import { OrderDetails } from './views/component/modals/OrderDetailModal/OrderDetailModal';
+import { ProductOutflow } from './views/pages/Inventario/pages/ProductOutflow/ProductOutflow';
 
 function App() {
   const dispatch = useDispatch();
@@ -71,9 +74,10 @@ function App() {
 
   const isConnected = useCheckForInternetConnection()
   console.log(isConnected)
-  if (!user) {
+  if (user === false || user === !null) {
     return <GenericLoader></GenericLoader>
   }
+
 
   return (
     <Fragment>
@@ -82,7 +86,8 @@ function App() {
         <Routes >
           {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
           <Route path='/app/freeSpace/' element={<FreeSpace />} />
-          <Route path='/app/feedback' element={<FeedbackChat  />}/>
+          {/* <Route path='/app/feedback' element={<ChatBox  />}/> */}
+          {/* <Route path='/app/feedback' element={<HomeScreen />} /> */}
           <Route path='/app/receipt/' element={<Receipt />} />
           <Route path='/app/setting/business-info' element={<BusinessInfo />} />
           <Route path='/app/settings/' element={<Setting />} />
@@ -112,21 +117,19 @@ function App() {
           <Route path='/app/contact/provider' element={<ProviderAdmin />} />
           <Route path='/app/sale/1' element={
             <RequireAuth>
-            <VentaPage/>
+              <VentaPage />
             </RequireAuth>
           } />
-            <Route path='/app/registro' element={
+          <Route path='/app/registro' element={
             <RequireAuth>
-            <Registro/>
+              <Registro />
             </RequireAuth>
           } />
-            <Route path='/app/report/sales' element={
+          <Route path='/app/report/sales' element={
             <RequireAuth>
-            <SalesReport/>
+              <SalesReport />
             </RequireAuth>
           } />
-           
-      
           <Route path='/app/category' element={
             <RequireAuth>
               <CategoryAdmin></CategoryAdmin>
@@ -137,21 +140,24 @@ function App() {
             <RequireAuth>
               <InventarioPage></InventarioPage>
             </RequireAuth>
-          }>
-          </Route>
+          }/>
+           <Route path='/app/inventario/product-outflow' element={
+            <RequireAuth>
+              <ProductOutflow />
+            </RequireAuth>
+          }/> 
           <Route path='/app/inventario/multimedia_manager' element={<MultimediaManager />}>
           </Route>
           <Route e></Route>
           <Route path='/app/sign-up' element={
-            <RequireAuth>
+            // <RequireAuth>
               <SignUp></SignUp>
-            </RequireAuth>
+            // </RequireAuth>
           }>
           </Route>
         </Routes>
       </Router>
       <AlertHandler></AlertHandler>
-
     </Fragment>
   );
 }

@@ -5,6 +5,8 @@ import styled from 'styled-components'
 import { auth } from '../../../firebase/firebaseconfig'
 import { useDispatch } from 'react-redux'
 import { logout } from '../../../features/auth/userSlice'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowRightFromBracket, faUser } from '@fortawesome/free-solid-svg-icons'
 
 export const UserSection = ({ user }) => {
   const dispatch = useDispatch()
@@ -17,12 +19,13 @@ export const UserSection = ({ user }) => {
     <Container>
       <Group>
         <Icon>
-          <FaUser></FaUser>
+          <FontAwesomeIcon icon={faUser} />
         </Icon>
         <span>{user === null ? null : <span>{user.displayName}</span>}</span>
       </Group>
       <Group>
         <Button
+          bgcolor={'primary'}
           title={'Cerrar Sección'}
           borderRadius='normal' 
           onClick={logoutOfApp}
@@ -38,16 +41,18 @@ const Container = styled.div`
   display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 1em;
+    margin-bottom: 0.6em;
     
-    border-radius: 10px;
+    
     span{
       font-weight: 600;
-      color: white;
+      color: #636262;
       text-transform: capitalize;
     }
 `
 const Icon = styled.div`
-  background-color: rgb(41, 41, 41);
+  background-color: var(--color2);
   max-height: 2em; 
   max-width: 2em;
   height: 2em; 
@@ -55,8 +60,8 @@ const Icon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  color: white;
+  border-radius: var(--border-radius-light);
+  color: #555555;
 
 `
 const Group = styled.div`

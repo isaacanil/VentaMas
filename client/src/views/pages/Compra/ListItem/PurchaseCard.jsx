@@ -7,7 +7,7 @@ import { separator } from '../../../../hooks/separator'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { Button } from '../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
-import { correctDate } from '../../../../hooks/correctDate'
+import { correctDate } from '../../../../hooks/time/correctDate'
 import { ActionsButtonsGroup } from './ActionsButtonsGroup'
 
 export const PurchaseCard = ({ purchaseData, index, Row, Col, activeId, setActiveId }) => {

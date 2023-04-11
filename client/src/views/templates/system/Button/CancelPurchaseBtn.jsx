@@ -1,29 +1,25 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { CancelShipping,  } from '../../../../features/cart/cartSlice'
+import { CancelShipping, } from '../../../../features/cart/cartSlice'
 import { useDispatch } from 'react-redux'
 import { IoMdTrash } from 'react-icons/io'
 import { Button } from './Button'
 import { clearTaxReceiptData } from '../../../../features/taxReceipt/taxReceiptSlice'
+import { icons } from '../../../../constants/icons/icons'
 export const CancelPurchaseBtn = () => {
     const dispatch = useDispatch()
     const handleCancelShipping = () => {
         dispatch(CancelShipping())
-          dispatch(clearTaxReceiptData())
-        
-      }
+        dispatch(clearTaxReceiptData())
+    }
     return (
-     
-            <Button 
-            title={ <IoMdTrash/>}
+        <Button
+            title={icons.operationModes.delete}
             borderRadius='normal'
             width='icon32'
             color='gray-dark'
             onClick={handleCancelShipping}
-            >
-                
-            </Button>
-       
+        />
     )
 }
 

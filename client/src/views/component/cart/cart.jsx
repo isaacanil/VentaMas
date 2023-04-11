@@ -34,7 +34,7 @@ export const Cart = () => {
   const dispatch = useDispatch()
   const selectMode = useSelector(selectAppMode)
   const componentToPrintRef = useRef(null);
-  const bill = useSelector(state => state.cart.data)
+  const bill = useSelector(({ cart }) => cart.data)
   const taxReceiptDataRef = useSelector(selectTaxReceiptData)
   const clientSelected = useSelector(SelectClient)
   const ncfStatus = useSelector(selectNcfStatus)
@@ -55,7 +55,7 @@ export const Cart = () => {
     }
   }, [ncfCode])
 
-  const handleTaxReceipt = async () => {
+  const increaseTaxReceipt = async () => {
     try {
       switch (ncfStatus) {
         case true:
@@ -82,6 +82,7 @@ export const Cart = () => {
       console.log(error)
     }
   }
+
   const savingDataToFirebase = async (bill) => {
     dispatch(addTaxReceiptInState(ncfCode))
     try {
@@ -97,6 +98,7 @@ export const Cart = () => {
       console.log(err)
     }
   }
+
   const clearDataFromState = async () => {
     try {
       dispatch(CancelShipping())
@@ -109,14 +111,14 @@ export const Cart = () => {
     try {
       handlePrint()
     } catch (error) {
+      dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     }
   }
   const handlePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
-
-
   })
+
   const TIME_TO_WAIT = 1000;
 
   const handleInvoice = async () => {
@@ -125,19 +127,12 @@ export const Cart = () => {
       dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
       return;
     }
-
     try {
-      await handleTaxReceipt().then(() => {
-        return esperar(TIME_TO_WAIT);
-      }).then(() => {
-        return createOrUpdateClient();
-      }).then(() => {
-        return showPrintPreview();
-      }).then(() => {
-        return esperar(TIME_TO_WAIT);
-      }).catch((error) => {
-        handleInvoiceError(error);
-      });
+      await increaseTaxReceipt();
+      await esperar(TIME_TO_WAIT);
+      await createOrUpdateClient();
+      await showPrintPreview();
+      await esperar(TIME_TO_WAIT);
     } catch (error) {
       handleInvoiceError(error);
     }
@@ -153,13 +148,14 @@ export const Cart = () => {
     dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     console.error(error);
   }
+
   useEffect(() => {
     if (ncfCartSelected !== null && submittable === false && printed === true) {
       savingDataToFirebase(billData)
-      console.log('=> => => => =>', ncfCartSelected)
       setSubmittable(true)
     }
   }, [ncfCartSelected, submittable, printed])
+
   useEffect(() => {
     if (submittable === true) {
       clearDataFromState()
@@ -167,6 +163,7 @@ export const Cart = () => {
       setPrinted(false)
     }
   }, [submittable])
+
   return (
     <Container isOpen={isOpen ? true : false}>
       <ClientControl></ClientControl>
@@ -215,7 +212,7 @@ const Container = styled.div`
    padding: 0 ;
    margin: 0;
    gap: 10px;
-   transition: width 600ms 200ms ease;
+   transition: width 600ms 0ms linear;
    @media(max-width: 800px){
     height: calc(100vh);
       width: 100%;
@@ -233,8 +230,8 @@ const Container = styled.div`
     switch (props.isOpen) {
       case true:
         return `
-        width: 0;
-        
+       // width: 0;
+       z-index: 1;
         `
         break;
 

@@ -6,19 +6,19 @@ import { selectLoaderMessage, selectLoaderShow } from '../../../../features/load
 
 
 
-const Loader = () => {
-  const show = useSelector(selectLoaderShow)
-  const message = useSelector(selectLoaderMessage)
+const Loader = ({ useRedux = true, show: propsShow, message: propsMessage, theme = 'dark' }) => {
+  const show = useRedux ? useSelector(selectLoaderShow) : propsShow;
+  const message = useRedux ? useSelector(selectLoaderMessage) : propsMessage;
+
   return (
-    <Container show={show}>
-    <LoaderWrapper>
-      <Spinner />
-      {message && <Message>{message}</Message>}
-    </LoaderWrapper>
+    <Container show={show} theme={theme}>
+      <LoaderWrapper>
+        <Spinner theme={theme} />
+        {message && <Message theme={theme}>{message}</Message>}
+      </LoaderWrapper>
     </Container>
   );
 };
-
 export default Loader;
 
 const SpinnerAnimation = keyframes`
@@ -30,7 +30,7 @@ const SpinnerAnimation = keyframes`
   }
 `;
 const Container = styled.div`
-position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -38,11 +38,28 @@ position: fixed;
   display: grid;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  ${({ theme }) => {
+    switch (theme) {
+      case 'dark':
+        return `
+          background-color: rgba(0, 0, 0, 0.5);
+        `
+      case 'light':
+        return `
+          background-color: rgba(255, 255, 255, 0.719);
+        `
+      default:
+        `
+          background-color: rgba(0, 0, 0, 0.5);
+        `
+        break;
+    }
+  }}
+ 
   z-index: 9999;
   opacity: ${({ show }) => (show ? 1 : 0)};
   pointer-events: ${({ show }) => (show ? 'all' : 'none')};
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 1000ms ease-in-out;
 `
 const LoaderWrapper = styled.div`
   display: grid;
@@ -54,8 +71,28 @@ const LoaderWrapper = styled.div`
 `;
 
 const Spinner = styled.div`
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+${({ theme }) => {
+    switch (theme) {
+      case 'light':
+        return `
+        border: 4px solid rgba(0, 0, 0, 0.3);
+        border-top-color: #000;
+      `
+      case 'dark':
+        return `
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+      `
+      default:
+        `
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+      `
+        break;
+
+    }
+  }}
+
   border-radius: 50%;
   width: 44px;
   height: 44px;
@@ -68,5 +105,21 @@ const Message = styled.p`
   text-align: center;
   letter-spacing: 0.5px;
   font-weight: bold;
+  ${({ theme }) => {
+    switch (theme) {
+      case 'light':
+        return `
+          color: #000;
+        `
+      case 'dark':
+        return `
   color: #fff;
+        `
+      default:
+        `
+  color: #fff;
+        `
+        break;
+    }
+  }}
 `;

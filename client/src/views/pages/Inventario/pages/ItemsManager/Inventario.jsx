@@ -1,32 +1,42 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import React, { Fragment, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import {
   MenuApp as Menu,
-} from '../../../../index'
+} from '../../../../index';
 
-import { openModalUpdateProd } from '../../../../../features/modals/modalSlice'
-import { ChangeProductData } from '../../../../../features/updateProduct/updateProductSlice'
-import { handleDeleteProductAlert } from '../../../../../features/Alert/AlertSlice'
-import styled from 'styled-components'
-import { useSearchFilterX } from '../../../../../hooks/useSearchFilter'
-import { PaginationBar } from './PaginationBar/PaginationBar'
-import { PendingItemsTable } from './PendingItemsTable'
-import { fbGetProducts } from '../../../../../firebase/products/fbGetProducts.js'
+import { openModalUpdateProd } from '../../../../../features/modals/modalSlice';
+import { ChangeProductData } from '../../../../../features/updateProduct/updateProductSlice';
+import { handleDeleteProductAlert } from '../../../../../features/Alert/AlertSlice';
+import styled from 'styled-components';
+import { useSearchFilterX } from '../../../../../hooks/useSearchFilter';
+import { PendingItemsTable } from './PendingItemsTable';
+import { fbGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
+import { Pagination } from '@mui/material';
+import { filterData } from '../../../../../hooks/search/useSearch';
+
 
 export const Inventario = () => {
   const dispatch = useDispatch();
   const [products, setProducts] = useState([]);
   const [searchData, setSearchData] = useState('');
   const [currentProducts, setCurrentProducts] = useState([]);
-  const productsFiltered = useSearchFilterX(products, searchData, 'product.productName');
+  const productsFiltered = filterData(products, searchData,);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
 
   useEffect(() => {
     fbGetProducts(setProducts);
   }, []);
 
   useEffect(() => {
-    setCurrentProducts(productsFiltered.slice(0, 10));
-  }, [productsFiltered]);
+    const start = (currentPage - 1) * productsPerPage;
+    const end = start + productsPerPage;
+    setCurrentProducts(productsFiltered.slice(start, end));
+  }, [productsFiltered, currentPage]);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const handleDeleteProduct = (id) => {
     dispatch(handleDeleteProductAlert(id));
@@ -42,11 +52,22 @@ export const Inventario = () => {
       <Menu searchData={searchData} setSearchData={setSearchData} />
       <Container>
         <PendingItemsTable productsArray={currentProducts} />
-        <PaginationBar products={productsFiltered} setFilteredProducts={setCurrentProducts} productsPerPage={10} />
+        <Footer>
+        <Pagination
+          count={Math.ceil((productsFiltered.length / productsPerPage))}
+          page={currentPage}
+          onChange={handlePageChange}
+          siblingCount={1}
+          boundaryCount={1}
+          color="primary"
+          style={{ marginTop: '16px' }}
+        />
+        </Footer>
       </Container>
     </Fragment>
   );
 };
+
         {/* <ProductsList>
           {
             products.length > 0 ?
@@ -86,4 +107,11 @@ const ProductsList = styled.div`
         list-style: none;
         padding: 1em;
         margin: 0;
+`
+const Footer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 4px;
+
 `

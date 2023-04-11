@@ -5,6 +5,7 @@ import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
 import { cardData } from './cardData'
+import { ChatBox } from '../../component/ChatBox/ChatBox'
 
 export const Home = () => {
   const user = useSelector(selectUser)
@@ -17,6 +18,7 @@ export const Home = () => {
         <MenuWebsite></MenuWebsite>
         <div className={Style.welcomeSection_container}>
           <div className={Style.welcomeSection_inner}>
+            {/* <ChatBox/> */}
             {user === null ? null : <h2 className={Style.welcomeSection_title}>¡Bienvenido de nuevo <span>{user.displayName}</span>!</h2>}
             <ul className={Style.WelcomeSection_items}>
               {cardData.map(card => (

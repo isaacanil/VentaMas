@@ -37,8 +37,6 @@ export const SearchProductBar = ({ searchData, setSearchData }) => {
         //     )}
         // />
         <SearchClient
-        //name='name'
-        //onFocus={OpenClientList}
         title={searchData}
         label={'Buscar Producto'}
         fn={handleClearInput}

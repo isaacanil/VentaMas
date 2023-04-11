@@ -13,7 +13,7 @@ import { useRef } from 'react'
 import { ClientDetails } from './ClientDetails/ClientDetails.jsx'
 import { SearchClient } from '../../../templates/system/Inputs/SearchClient.jsx'
 import { ClientSelector } from './ClientSelector.jsx'
-import { useSearchFilter } from '../../../../hooks/useSearchFilter.js'
+import { filtrarDatos, useSearchFilter } from '../../../../hooks/useSearchFilter.js'
 import { Tooltip } from '../../../templates/system/Button/Tooltip.jsx'
 
 export const ClientControl = () => {
@@ -41,7 +41,7 @@ export const ClientControl = () => {
   const [clients, setClients] = useState('')
   const SelectedClientMode = useSelector(SelectClientMode)
   const [searchTerm, setSearchTerm] = useState('')
-  const filteredClients = useSearchFilter(clients, searchTerm)
+  const filteredClients = filtrarDatos(clients, searchTerm)
   const [searchClientLabel, setSearchClientLabel] = useState('Buscar Cliente')
   const clientSelected = useSelector(SelectClient)
   const [MODE, setMODE] = useState(SelectedClientMode)
@@ -91,6 +91,7 @@ export const ClientControl = () => {
   useEffect(()=>{
     setMODE(SelectedClientMode)
   }, [SelectedClientMode])
+
   useEffect(()=>{
     switch (MODE) {
       case CLIENT_MODE.SEARCH.mode:

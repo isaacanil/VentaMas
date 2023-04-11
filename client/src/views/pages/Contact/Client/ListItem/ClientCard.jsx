@@ -13,10 +13,11 @@ import { Message } from '../../../../templates/system/message/Message'
 import { useDispatch } from 'react-redux'
 import { toggleClientModal } from '../../../../../features/modals/modalSlice'
 import { modes } from '../../../../../constants/modes'
+import { icons } from '../../../../../constants/icons/icons'
 export const OrderItem = ({ e, index, Row, Col }) => {
     const {updateMode} = modes.operationModes
     const noData = <Message title='(vacio)' fontSize='small' bgColor='error'/>
-    const dispatch= useDispatch()
+    const dispatch = useDispatch()
     const handleDeleteClient = (id) => {
         deleteClient(id)
     }
@@ -33,8 +34,6 @@ export const OrderItem = ({ e, index, Row, Col }) => {
             <Col>
                 {e.personalID ? e.personalID : noData}
             </Col>
-
-
             <Col size='limit'>
                 {e.address ? e.address : noData}
             </Col>
@@ -42,16 +41,16 @@ export const OrderItem = ({ e, index, Row, Col }) => {
                 <ButtonGroup>
                     <Button
                         borderRadius='normal'
-                        title={<TbEdit />}
+                        title={icons.operationModes.edit}
                         width='icon32'
                         color='gray-dark'
                         onClick={openModalUpdateMode}
                     />
                     <Button
                         borderRadius='normal'
-                        title={<IoTrashSharp />}
+                        title={icons.operationModes.delete}
                         width='icon32'
-                        bgcolor='error'
+                        color='gray-dark'
                         onClick={() => handleDeleteClient(e.id)}
                     />
                 </ButtonGroup>

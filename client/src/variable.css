@@ -1,99 +1,100 @@
-:root{
-    --White: rgb(255, 255, 255);
-    --White1: rgb(250, 250, 250);
-    --White2: rgb(245, 245, 245);
-    --White3: rgb(240, 240, 240);
-    --White4: rgb(235, 235, 235);
-    --White5: rgb(230, 230, 230);
-    --Gray: rgb(220, 220, 220);
-    --Gray1: rgb( 210, 210, 210);
-    --Gray2: rgb( 200, 200, 200);
-    --Gray3: rgb(180, 180, 180);
-    --Gray4: rgb(160, 160, 160);
-    --Gray5: rgb(140, 140, 140);
-    --Gray6: rgb(120, 120, 120);
-    --Gray7: rgb(100, 100, 100);
-    --Gray8: rgb( 80, 80, 80);
-    --Gray9: rgb(70, 70, 70);
-    --Gray10: rgb(60, 60, 60);
-    --Black5: rgb(50, 50, 50);
-    --Black4: rgb(40, 40, 40);
-    --Black3: rgb( 30, 30, 30);
-    --Black2: rgb( 20, 20, 20);
-    --Black1: rgb( 10, 10, 10);
-    --Black: rgb( 0, 0, 0);
-    
-    --BlackOp: rgba(0, 0, 0, 0.200);
-    --BlackOp1: rgba(0, 0, 0, 0.300);
-    --BlackOp2: rgba(0, 0, 0, 0.400);
-    /*color primarios*/
-    --color: #42a5f5;
-    --color-dark: #1D69A8;
-    --color-main: #1976d2;
-    /*color secundario*/
-    --color1: #67B8DE;
-    /*color terciario*/
-    --color2: #f2f7fa;
-    /*color cuaternario*/
-    --color3:  #d4e3f1 ;
-    --color4: rgba(202, 214, 230, 0.274);
-    --color-error: #cf5555;
-    --color-warning: #ff9800;
-    --color-success: #7adf7d;
-    --color-info: #2196f3;
-    --color-light-yellow: #FFFF99;
+:root {
+  --White: rgb(255, 255, 255);
+  --White1: rgb(250, 250, 250);
+  --White2: rgb(245, 245, 245);
+  --White3: rgb(240, 240, 240);
+  --White4: rgb(235, 235, 235);
+  --White5: rgb(230, 230, 230);
+  --Gray: rgb(220, 220, 220);
+  --Gray1: rgb(210, 210, 210);
+  --Gray2: rgb(200, 200, 200);
+  --Gray3: rgb(180, 180, 180);
+  --Gray4: rgb(160, 160, 160);
+  --Gray5: rgb(140, 140, 140);
+  --Gray6: rgb(120, 120, 120);
+  --Gray7: rgb(100, 100, 100);
+  --Gray8: rgb(80, 80, 80);
+  --Gray9: rgb(70, 70, 70);
+  --Gray10: rgb(60, 60, 60);
+  --Black5: rgb(50, 50, 50);
+  --Black4: rgb(40, 40, 40);
+  --Black3: rgb(30, 30, 30);
+  --Black2: rgb(20, 20, 20);
+  --Black1: rgb(10, 10, 10);
+  --Black: rgb(0, 0, 0);
+
+  --BlackOp: rgba(0, 0, 0, 0.200);
+  --BlackOp1: rgba(0, 0, 0, 0.300);
+  --BlackOp2: rgba(0, 0, 0, 0.400);
+  /*color primarios*/
+  --color: #42a5f5;
+  --color-dark: #1D69A8;
+  --color-main: #007bff;
+
+
+  /*color secundario*/
+  --color1: #67B8DE;
+  /*color terciario*/
+  --color2: #f2f7fa;
+  /*color cuaternario*/
+  --color3: #d4e3f1;
+  --color4: rgba(202, 214, 230, 0.274);
+  --color-error: #cf5555;
+  --color-warning: #ff9800;
+  --color-success: #7adf7d;
+  --color-info: #2196f3;
+  --color-light-yellow: #FFFF99;
   --color-pale-pink: #FFB6C1;
   --color-pale-green: #98FB98;
   --color-pale-orange: #FFDAB9;
   --color-sky-blue: #87CEEB;
   --color-pale-lilac: #E6E6FA;
-  --color-pale-pink-2: #FFC0CB;
   --color-pale-turquoise: #AFEEEE;
 
-    /*border*/
-    --border-radius-light: 4px;
-    --border-radius: 7px;
-    --border-radius-total: 100px;
-    --border-primary: 1px solid rgba(0, 0, 0, 0.100);
-    --border-color: rgba(0, 0, 0, 0.100);
+  /*border*/
+  --border-radius-light: 4px;
+  --border-radius: 7px;
+  --border-radius-total: 100px;
+  --border-primary: 1px solid rgba(0, 0, 0, 0.100);
+  --border-color: rgba(0, 0, 0, 0.100);
 
-    /*font*/
-    --font-color-dark: var(--Black4);
-    --font-color-dark-medium: var(--Black4);
-    --font-color-dark-slightly: var(--Gray8);
-    --font-color4: var(--Gray8);
-    --font-color5: var(--Gray6);
-    /*padding*/
-    --box-shadow: 0px 15px 25px rgba(0,0,0,0.2);
-    
-    --padding: 0.4em;
-    --padding1: 1em;
-  
- 
-    /*gap*/
-    --gap: 0.5em;
-    --gap1: 1em;
-    --gap2: 1.5em;
-    --gap3: 2em;
- 
-    /*blur*/
-    --blur: 5px;
- 
-    /*Media Querys*/
-    --WdMedium: 800px;
-    --max-width: 1000px;
+  /*font*/
+  --font-color-dark: var(--Black4);
+  --font-color-dark-medium: var(--Black4);
+  --font-color-dark-slightly: var(--Gray8);
+  --font-color4: var(--Gray8);
+  --font-color5: var(--Gray6);
+  /*padding*/
+  --box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2);
+
+  --padding: 0.4em;
+  --padding1: 1em;
 
 
-  --typografy: 
+  /*gap*/
+  --gap: 0.5em;
+  --gap1: 1em;
+  --gap2: 1.5em;
+  --gap3: 2em;
+
+  /*blur*/
+  --blur: 5px;
+
+  /*Media Querys*/
+  --WdMedium: 800px;
+  --max-width: 1000px;
 
 
+  --typografy:
 
 
 
- }
 
 
- /* @media (prefers-color-scheme: light) {
+}
+
+
+/* @media (prefers-color-scheme: light) {
     :root {
       --bg1: var(--White);
       --bg2: var(--White1);

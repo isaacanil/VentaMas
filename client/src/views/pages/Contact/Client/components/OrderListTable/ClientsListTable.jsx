@@ -1,13 +1,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { getClients, getOrders } from '../../../../../../firebase/firebaseconfig'
-import { useEffect } from 'react'
+
 import { OrderItem } from '../../ListItem/ClientCard'
 
-export const ClientsListTable = () => {
-  const [clients, setClients] = useState([])
-
-  useEffect(() => { getClients(setClients) }, [])
+export const ClientsListTable = ({clients}) => {
   
   return (
     <Container>
@@ -27,7 +23,7 @@ export const ClientsListTable = () => {
 
           <TableBody>
             {
-              Array(clients).length > 0 ? (
+               clients.length > 0 ? (
                 clients.map(({client}, index) => (
                   <OrderItem Row={Row} Col={Col} key={index} e={client} index={index} />
                 ))

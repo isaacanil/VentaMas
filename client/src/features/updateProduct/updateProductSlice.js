@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const emptyProduct = {
-    status: false,
-    lastProduct: {
+    status: 'create',
+    product: {
         productName: '',
         productImageURL: '',
         category: '',
@@ -22,7 +22,7 @@ const emptyProduct = {
 
 const initialState = {
     status: false,
-    lastProduct: {
+    product: {
         productName: '',
         productImageURL: '',
         category: '',
@@ -45,23 +45,28 @@ export const updateProductSlice = createSlice({
     initialState,
     reducers: {
         ChangeProductData: (state, action) => {
-            console.log(action.payload)
-            state.status = true
-            state.lastProduct = {
-                ...state.lastProduct,
-                ...action.payload,
+           const {status, product} = action.payload
+            state.status = status
+            state.product = {
+                ...state.product,
+                ...product,
             };
         },
+        setProduct: (state, action) => {
+            const product = action.payload
+            state.product = product
+        },
         ChangeProductImage: (state, action) => {
-            state.lastProduct.productImageURL = action.payload
+            state.product.productImageURL = action.payload
         },
         clearUpdateProductData: (state) => {
-            state.lastProduct = emptyProduct.lastProduct
+            state.product = emptyProduct.product
+            state.status = emptyProduct.status
         }
     }
 })
 
-export const { ChangeProductData, clearUpdateProductData, ChangeProductImage } = updateProductSlice.actions;
+export const { ChangeProductData, clearUpdateProductData, ChangeProductImage, setProduct } = updateProductSlice.actions;
 
 //selectors
 export const selectUpdateProductData = (state) => state.updateProduct;

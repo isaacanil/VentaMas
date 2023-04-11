@@ -1,24 +1,24 @@
 
-import React from 'react'
+import React, { useState } from 'react'
+import { FaSearch } from 'react-icons/fa'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import { modes } from '../../../../constants/modes'
 import { toggleClientModal } from '../../../../features/modals/modalSlice'
 import { Button } from '../../../templates/system/Button/Button'
+import { InputV4 } from '../../../templates/system/Inputs/InputV4'
 import { OrderFilter } from './components/OrderFilter/OrderFilter'
 
-export const ToolBar = () => {
+export const ToolBar = ({searchTerm, setSearchTerm}) => {
     const {createMode} = modes.operationModes
     const dispatch = useDispatch()
-    
+
     const openModal = () => dispatch(toggleClientModal({mode: createMode, data: null}))
     
     return (
         <Container>
-            <Wrapper>
-                
-                <OrderFilter></OrderFilter>
-
+            <Wrapper>   
+               <InputV4 placeholder={'Buscar Cliente ...'} deleteBtn icon={<FaSearch/>} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
                 <Button
                     borderRadius='normal'
                     bgcolor='primary'

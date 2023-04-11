@@ -1,15 +1,20 @@
-export function useFormatNumber(numero) {
-  let numeroAbsoluto = Math.abs(numero);
-  let numeroFormateado = numeroAbsoluto.toString().padStart(2, "0");
-  if (numero >= -10 && numero < 0) {
-    return "-" + numeroFormateado;
-  } 
-  if(numero === 0 ){
-    return "0"
+export function useFormatNumber(numero, type = "string", round = false) {
+  if (isNaN(numero)) {
+    return null;
   }
-  if (numero >= 0 && numero < 10) {
-    return numeroFormateado;
-  } 
-  return numero.toString();
-  
+
+  if (type === "number") {
+    return round ? parseFloat(numero.toFixed(2)) : numero;
+  }
+
+  const signo = Math.sign(numero) === -1 ? "-" : "";
+  const numeroAbsoluto = Math.abs(numero);
+  const esDecimal = !Number.isInteger(numeroAbsoluto);
+  const numeroFormateado = new Intl.NumberFormat("en-US", {
+    minimumIntegerDigits: 1,
+    minimumFractionDigits: esDecimal ? 1 : 0,
+    maximumFractionDigits: esDecimal ? 2 : 0,
+  }).format(numeroAbsoluto);
+
+  return signo + (numeroAbsoluto < 10 ? "0" : "") + numeroFormateado;
 }

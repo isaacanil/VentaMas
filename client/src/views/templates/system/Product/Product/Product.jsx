@@ -10,18 +10,20 @@ import noImg from '../../../../../assets/producto/noimg.png'
 import { IsProductSelected } from './IsProductSelected'
 import { IoMdClose, IoMdTrash } from 'react-icons/io'
 import { Button } from '../../Button/Button'
+import { icons } from '../../../../../constants/icons/icons'
+import { useCheckForInternetConnection } from '../../../../../hooks/useCheckForInternetConnection'
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
     const ProductsSelected = useSelector(SelectProduct)
     const deliverySelected = useSelector(SelectDelivery)
     useEffect(() => {
-            dispatch(totalShoppingItems())
-            dispatch(totalPurchase())
-            dispatch(addPaymentMethodAutoValue())
-            dispatch(totalTaxes())
-            dispatch(setChange())
-           // dispatch(addTaxReceiptInState(NCF_code))
+        dispatch(totalShoppingItems())
+        dispatch(totalPurchase())
+        dispatch(addPaymentMethodAutoValue())
+        dispatch(totalTaxes())
+        dispatch(setChange())
+        // dispatch(addTaxReceiptInState(NCF_code))
     }, [ProductsSelected, deliverySelected])
 
 
@@ -39,21 +41,16 @@ export const Product = ({ product, }) => {
     const deleteProductFromCart = (e, id) => {
         e.stopPropagation()
         dispatch(deleteProduct(id))
-
     }
-
+    const isConnected = useCheckForInternetConnection()
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id)
     return (
-        <Container onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
+        <Container onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status}>
             {
                 <Head imageHiddenRef={imageHiddenRef ? true : false}>
                     <ImageContainer imageHiddenRef={imageHiddenRef}>
-                        <img src={product.productImageURL} alt=""
-                        // onError={({ currentTarget }) => {
-                        //     currentTarget.onerror = null;
-                        //     currentTarget.src = noImg;
-                        //     currentTarget.style.objectFit = 'contain'
-                        // }}
+                        <img
+                            src={(isConnected && product?.productImageURL )|| noImg}
                         />
                     </ImageContainer>
                 </Head>
@@ -63,16 +60,16 @@ export const Product = ({ product, }) => {
                     {product.productName}
                 </Title>
                 {ProductCheckInCart.status ? (
-                            <Button
-                                startIcon={<IoMdTrash />}
-                                width='icon24'
-                                color={'danger'}
-                                borderRadius='normal'
-                                // bgcolor='error'
-                                variant='contained'
-                                onClick={(e) => deleteProductFromCart(e, product.id)}
-                            />
-                        ) : null}
+                    <Button
+                        startIcon={icons.operationModes.discard}
+                        width='icon32'
+                        color={'danger'}
+                        borderRadius='normal'
+                        // bgcolor='error'
+                        variant='contained'
+                        onClick={(e) => deleteProductFromCart(e, product.id)}
+                    />
+                ) : null}
                 <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
 
                     {ProductCheckInCart.status ? (
@@ -83,7 +80,7 @@ export const Product = ({ product, }) => {
                     ) : <Group />}
 
                     <Group>
-                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product.price.total)}</Price>        
+                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product.price.total)}</Price>
                     </Group>
                 </Footer>
             </Body>
@@ -112,7 +109,7 @@ const Container = styled.div`
         switch (props.isSelected) {
             case true:
                 return `
-                outline: 2.9px solid var(--color1);                
+                outline: 2.9px solid var(--color);                
                 `
             default:
                 break;
@@ -251,9 +248,9 @@ const Price = styled.h4`
     ${(props) => {
         switch (props.isSelected) {
             case true:
-                return`
+                return `
                     color: var(--color)
-                ` 
+                `
             default:
                 break;
         }

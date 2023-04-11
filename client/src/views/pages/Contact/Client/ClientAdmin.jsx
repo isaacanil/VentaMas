@@ -1,20 +1,28 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import {
   MenuApp,
   Button,
 } from '../../../'
+import { getClients } from '../../../../firebase/firebaseconfig'
+import { filterData} from '../../../../hooks/search/useSearch'
+import {  searchAndFilter, useSearchFilter, useSearchFilterX } from '../../../../hooks/useSearchFilter'
 import { CreateContact } from './components/ClientForm/ClientForm'
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
 import { ToolBar } from './ToolBar'
 export const ClientAdmin = () => { 
+  const [clients, setClients] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  useEffect(() => { getClients(setClients) }, [])
+  const clientsFiltered = filterData(clients, searchTerm)
+  console.log(clientsFiltered)
   return (
     <Fragment>
       <MenuApp></MenuApp>
       <Container>
-        <ToolBar></ToolBar>
-        <ClientsListTable />
+        <ToolBar searchTerm={searchTerm} setSearchTerm={setSearchTerm}></ToolBar>
+        <ClientsListTable clients={clientsFiltered}/>
       </Container>
     </Fragment>
   )

@@ -1,5 +1,6 @@
 
 import React, { Fragment, useEffect, useState } from 'react'
+import { GrEdit, GrTrash } from 'react-icons/gr'
 import { IoCartSharp, IoTrashSharp } from 'react-icons/io5'
 import { MdOutlineCheck, MdOutlineClear, MdOutlineDelete } from 'react-icons/md'
 import { TbEdit } from 'react-icons/tb'
@@ -114,8 +115,9 @@ export const ActionsButtonsGroup = ({ purchaseData, activeId, setActiveId }) => 
                         Children={
                             <Button
                                 borderRadius='normal'
-                                title={<TbEdit />}
-                                width='icon32'
+                                title={<GrEdit />}
+                            
+                                width='icon24'
                                 color='gray-dark'
                                 onClick={() => handleEditMode(purchaseData.id)}
                             />
@@ -127,9 +129,10 @@ export const ActionsButtonsGroup = ({ purchaseData, activeId, setActiveId }) => 
                         Children={
                             <Button
                                 borderRadius='normal'
-                                title={<IoTrashSharp />}
-                                width='icon32'
-                                bgcolor='error'
+                                title={<GrTrash />}
+
+                                width='icon24'
+                                color='gray-dark'
                                 onClick={() => handleDeleteMode(purchaseData.id)}
                             />
                         }

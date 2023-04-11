@@ -13,6 +13,7 @@ import { Message } from '../../../../templates/system/message/Message'
 import { toggleProviderModal } from '../../../../../features/modals/modalSlice'
 import { modes } from '../../../../../constants/modes'
 import { useDispatch } from 'react-redux'
+import { icons } from '../../../../../constants/icons/icons'
 export const ProviderCard
  = ({ e, Row, Col }) => {
     const {updateMode} = modes.operationModes
@@ -38,16 +39,16 @@ export const ProviderCard
                 <ButtonGroup>
                     <Button
                         borderRadius='normal'
-                        title={<TbEdit />}
+                        title={icons.operationModes.edit}
                         width='icon32'
                         color='gray-dark'
                         onClick={openModalUpdateMode}
                     />
                     <Button
                         borderRadius='normal'
-                        title={<IoTrashSharp />}
+                        title={icons.operationModes.delete}
                         width='icon32'
-                        bgcolor='error'
+                        color='gray-dark'
                         onClick={() => handleDeleteProvider(e.id)}
                     />
                 </ButtonGroup>

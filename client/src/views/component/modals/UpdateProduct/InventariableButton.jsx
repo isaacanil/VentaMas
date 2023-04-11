@@ -1,27 +1,25 @@
 
 import React, { useEffect, useState } from 'react'
 import { MdRadioButtonChecked, MdRadioButtonUnchecked } from 'react-icons/md'
+import { useDispatch } from 'react-redux'
 import { Button } from '../../../templates/system/Button/Button'
 
 export const InventariableButton = ({ product, setProduct }) => {
-    const [isActive, setIsActive] = useState(false)
-    useEffect(() => {
-        setIsActive('trackInventory' in product && product.trackInventory || false);
-      }, [product]);
-   
 
+    const dispatch = useDispatch();
+
+    const handleToggle = () => {
+        dispatch(setProduct({...product, trackInventory: !product?.trackInventory}))
+    };
 
     return (
         <Button
             borderRadius={'normal'}
             title={'Invetariable'}
-            isActivated={isActive === true ? true : false}
+            isActivated={product?.trackInventory}
             iconOn={<MdRadioButtonChecked />}
             iconOff={<MdRadioButtonUnchecked />}
-            onClick={() => setProduct({
-                ...product,
-                trackInventory: !product.trackInventory
-            })}
+            onClick={handleToggle}
         />
     )
 }

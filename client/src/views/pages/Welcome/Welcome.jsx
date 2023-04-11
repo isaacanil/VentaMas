@@ -40,7 +40,7 @@ export const Welcome = () => {
             borderRadius='normal'
             title='Register'
             onClick={() => {
-              Navigate('/register')
+              Navigate('/app/sign-up')
             }
             }
           />

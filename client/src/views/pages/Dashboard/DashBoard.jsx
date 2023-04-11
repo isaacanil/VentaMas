@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from "react"
 import { SiMicrosoftexcel } from "react-icons/si"
 import styled from "styled-components"
 import { getBills } from "../../../firebase/firebaseconfig"
-import formatBill from "../../../hooks/exportToExcel/formatBill"
+import {formatBill} from "../../../hooks/exportToExcel/formatBill"
 import exportToExcel from "../../../hooks/exportToExcel/useExportToExcel"
 import { MenuApp } from "../../templates/MenuApp/MenuApp"
 import { Button } from "../../templates/system/Button/Button"
@@ -10,52 +10,52 @@ import SaleBarChart from "../../templates/system/ChartsAndBars/SaleChart"
 import { DatePicker } from "../../templates/system/DatePicker/DatePicker"
 
 export const DashBoard = () => {
-  const [bills, setBills] = useState([])
-  const [client, setClient] = useState('')
-  const [datesSelected, setDatesSelected] = useState({})
+  // const [bills, setBills] = useState([])
+  // const [client, setClient] = useState('')
+  // const [datesSelected, setDatesSelected] = useState({})
 
-  useEffect(() => {
-    getBills(setBills, datesSelected)
-  }, [datesSelected])
-  console.log(datesSelected)
+  // useEffect(() => {
+  //   getBills(setBills, datesSelected)
+  // }, [datesSelected])
+  // console.log(datesSelected)
   
-  const transformedData = bills.map((bill) => {
-    return formatBill(bill.data);
-  });
-  const handleExportButtonClick = () => {
-    exportToExcel(transformedData, 'Registros', 'Registro.xlsx');
-  };
+  // const transformedData = bills.map((bill) => {
+  //   return formatBill(bill.data);
+  // });
+  // const handleExportButtonClick = () => {
+  //   exportToExcel(transformedData, 'Registros', 'Registro.xlsx');
+  // };
 
 
-  console.log(bills)
-  return (
-    <Fragment>
-      <Container>
-        <MenuApp></MenuApp>
-        <FilterBar>
-          <span>
-            <DatePicker dates={setDatesSelected}></DatePicker>
-            <Button
-              title={'export'}
-              borderRadius='normal'
-              bgcolor={'success'}
-              onClick={() => handleExportButtonClick()}
-              startIcon={<SiMicrosoftexcel />}
-            />
-            <input type="datetime-local" />
-            {/* <SelectCategory /> */}
-          </span>
-        </FilterBar>
-        <BillsContainer>
-          <Layer>
-            <SaleBarChart bills={bills}/>
-          </Layer>
+  // console.log(bills)
+  // return (
+  //   <Fragment>
+  //     <Container>
+  //       <MenuApp></MenuApp>
+  //       <FilterBar>
+  //         <span>
+  //           <DatePicker dates={setDatesSelected}></DatePicker>
+  //           <Button
+  //             title={'export'}
+  //             borderRadius='normal'
+  //             bgcolor={'success'}
+  //             onClick={() => handleExportButtonClick()}
+  //             startIcon={<SiMicrosoftexcel />}
+  //           />
+  //           <input type="datetime-local" />
+  //           {/* <SelectCategory /> */}
+  //         </span>
+  //       </FilterBar>
+  //       <BillsContainer>
+  //         <Layer>
+  //           <SaleBarChart bills={bills}/>
+  //         </Layer>
         
        
-        </BillsContainer>
-      </Container>
-    </Fragment>
-  )
+  //       </BillsContainer>
+  //     </Container>
+  //   </Fragment>
+  // )
 }
 const Container = styled.div`
   max-height: calc(100vh);

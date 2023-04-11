@@ -95,9 +95,9 @@ export const PaymentArea = () => {
             </Row>
             <Area>
                 <Group className='paymentMethod'>
-                    {paymentMethod.map((method) => {
+                    {paymentMethod.map((method, index) => {
                         return (
-                            <Group grow='2'>
+                            <Group grow='2' key={index}>
                                 <input type="radio" name="payment-method" id={method.method}
                                     defaultChecked={method.status}
                                     onChange={(e) => { SelectPaymentMethod(method.method, e.target.checked) }}
@@ -109,29 +109,6 @@ export const PaymentArea = () => {
                     )}                 
                 </Group>
             </Area>
-            {/* <Area>
-                <Group className='paymentMethod'>
-                    <Group grow='2'>
-                        <input type="radio" name="payment-method" id="cash"
-                            defaultChecked
-                            onChange={(e) => { SelectPaymentMethod("cash", e.target.checked) }}
-                        />
-                        <label htmlFor='cash'>Efectivo</label>
-                    </Group>
-                    <Group grow='2'>
-                        <input type="radio" name="payment-method" id="card"
-                            onChange={(e) => { SelectPaymentMethod("card", e.target.checked) }}
-                        />
-                        <label htmlFor='card'>Tarjeta</label>
-                    </Group>
-                    <Group>
-                        <input type="radio" name="payment-method" id="transfer"
-                            onChange={(e) => { SelectPaymentMethod("transfer", e.target.checked) }}
-                        />
-                        <label htmlFor='transfer'>Transferencia</label>
-                    </Group>
-                </Group>
-            </Area> */}
             <Row margin='bottom'>
                 <Group className='option1'>
                     <span><span>ITBIS:</span>  {useFormatPrice(TaxesRef)}</span>
@@ -149,10 +126,6 @@ export const PaymentArea = () => {
                 <Group className='option1'>
                     <span><span>Delivery:</span> {useFormatPrice(DeliveryRef.value)}</span>
                     <span><span>Cambio:</span> {useFormatPrice(ChangeRef)}</span>
-                    {/* <Item>
-                        <label htmlFor="">Cambio {monetarySymbols.dollarSign}</label>
-                        <input type="text" value={useRoundedNumber(ChangeRef)} readOnly />
-                    </Item> */}
                 </Group>
             </Row>
         </Container>

@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectOrderItemSelected, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
 import { Tooltip } from '../../../templates/system/Button/Tooltip'
-import { correctDate } from '../../../../hooks/correctDate'
+import { correctDate } from '../../../../hooks/time/correctDate'
 
 export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId }) => {
     const dispatch = useDispatch()

@@ -2,127 +2,80 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { closeModalUpdateProd } from '../../../../features/modals/modalSlice'
-import { ChangeProductImage, clearUpdateProductData, selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice'
+import { ChangeProductData, ChangeProductImage, clearUpdateProductData, selectUpdateProductData, setProduct } from '../../../../features/updateProduct/updateProductSlice'
 import { getCat, getTaxes } from '../../../../firebase/firebaseconfig'
-import { parseToString } from '../../../../hooks/parseToString'
 import { Button } from '../../../templates/system/Button/Button'
 import { Input } from '../../../templates/system/Inputs/InputV2'
-import { UploadImg } from '../../UploadImg'
-import { Modal } from '../modal'
+import { UploadImg } from '../../UploadImg/UploadImg'
+import { Modal } from '../Modal'
 import { quitarCeros } from '../../../../hooks/quitarCeros'
-import { MdRadioButtonChecked, MdRadioButtonUnchecked } from 'react-icons/md'
 import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct'
 import { InventariableButton } from './InventariableButton'
-const EmptyProduct = {
-    productName: "",
-    cost: {
-        unit: 0,
-        total: 0
-    },
-    amountToBuy: { unit: 1, total: 1 },
-    productImageURL: undefined,
-    category: undefined,
-    stock: "",
-    type: "",
-    size: "",
-    netContent: "",
-    tax: {
-        unit: 0,
-        ref: 'Excento',
-        value: 0,
-        total: 0
-    },
-    available: "", // disponibilidad producto
-    initialCost: "", // costo producción
-    surcharge: "", // recargo adicional
-    salePrice: "", // precio venta
-    profit: "", // ganancia neta
-    profitMargin: "", // margen ganancia
-    description: "", // descripción producto
-    rating: "", // valoración producto
-    reviews: "", // reseñas producto
-    shipping: "", // envío producto
-    seller: "", // vendedor producto
-    warranty: "", // garantía producto
-    barcode: "", // código barras
-    id: "",
-    trackInventory: false,
-    order: 0,
-    margin: "",
-    price: {
-        unit: 0,
-        total: 0
-    }
-}
+import { productDataTypeCorrection } from '../../../../features/updateProduct/validateProductDataType'
+import { addNotification } from '../../../../features/notification/NotificationSlice'
+import { productSchema } from '../../../../features/updateProduct/productSchema'
+import { toggleLoader } from '../../../../features/loader/loaderSlice'
+import { InputV4 } from '../../../templates/system/Inputs/InputV4'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import { useFormatNumber } from '../../../../hooks/useFormatNumber'
+import noImage from '../../../../assets/producto/noImg.png'
+import { modes } from '../../../../constants/modes'
+import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
 export const UpdateProductModal = ({ isOpen }) => {
-    const { status, lastProduct } = useSelector(selectUpdateProductData)
+    const { status, product } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState([])
-    const [taxRef, setTaxRef] = useState('')
     const [catList, setCatList] = useState([])
     const [imgController, setImgController] = useState(false)
-    const [product, setProduct] = useState(EmptyProduct)
-    const dispatch = useDispatch()
 
+    const dispatch = useDispatch()
+    const updateMode = modes.operationModes.updateMode
     const handleImgController = (e) => {
         e.preventDefault()
         setImgController(!imgController)
     }
 
     useEffect(() => {
-        setProduct(
-            {
-                ...product,
-                id: lastProduct.id,
-                productName: lastProduct.productName,
-                cost: lastProduct.cost,
-                productImageURL: parseToString(lastProduct.productImageURL),
-                category: parseToString(lastProduct.category),
-                stock: parseToString(lastProduct.stock),
-                netContent: parseToString(lastProduct.netContent),
-                tax: lastProduct.tax,
-                price: lastProduct.price,
-                trackInventory: lastProduct.trackInventory || false,
-                order: parseToString(lastProduct.order) || 0,
-                size: parseToString(lastProduct.size) || '',
-                type: parseToString(lastProduct.type) || '',
-                amountToBuy: { unit: 1, total: 1 } || lastProduct.amountToBuy,
-                margin: parseToString(lastProduct.margin) || '',
-                available: parseToString(lastProduct.available) || '',
-                initialCost: parseToString(lastProduct.initialCost) || '',
-                surcharge: parseToString(lastProduct.surcharge) || '',
-                salePrice: parseToString(lastProduct.salePrice) || '',
-                profit: parseToString(lastProduct.profit) || '',
-                profitMargin: parseToString(lastProduct.profitMargin) || '',
-                description: parseToString(lastProduct.description) || '',
-                rating: parseToString(lastProduct.rating) || '',
-                reviews: parseToString(lastProduct.reviews) || '',
-                shipping: parseToString(lastProduct.shipping) || '',
-                seller: parseToString(lastProduct.seller) || '',
-
-            }
-        )
-    }, [lastProduct])
-
-    useEffect(() => {
         getTaxes(setTaxesList)
         getCat(setCatList)
     }, [])
+
     const calculatePrice = () => {
         const { cost, tax } = product;
-        if (typeof cost.unit !== 'number' || typeof tax.value !== 'number') { return }
+        let result = (Number(cost.unit) * Number(tax.value) + Number(cost.unit))
         const price = {
-           unit: cost.unit * tax.value + cost.unit,
-           total: cost.unit * tax.value + cost.unit,
+            unit: useFormatNumber(result, 'number', true),
+            total: useFormatNumber(result, 'number', true),
         }
-        setProduct({ ...product, price })
+        dispatch(setProduct({ ...product, price }))
     }
 
     useEffect(calculatePrice, [product.cost, product.tax])
 
-    const handleSubmitAddProducts = () => {
-        fbUpdateProduct(product)
-        closeModal()
-        dispatch(clearUpdateProductData())
+    const productDataTypeCorrected = new productDataTypeCorrection(product);
+    
+    const handleUpdateProduct = () => {
+        dispatch(addNotification({ title: 'Producto Actualizado', message: 'Espere un momento', type: 'success' }))
+        fbUpdateProduct(productDataTypeCorrected, dispatch)
+    }
+    
+    const handleAddProduct = () => {
+        dispatch(addNotification({ title: 'Producto Creado', message: 'Espere un momento', type: 'success' }))
+        fbAddProduct(productDataTypeCorrected, dispatch)
+    }
+    
+    const handleSubmit = async () => {
+        try {
+            await productSchema.validate(productDataTypeCorrected);
+            if (status === 'update') {
+                handleUpdateProduct()
+            }
+            if (status === 'create') {
+                handleAddProduct()
+            }
+        } catch(error) {
+            console.error('____________________________________________________',error)
+            dispatch(addNotification({ title: 'error', message: 'Looking this...', type: 'error' }))
+        }
     }
 
     const closeModal = () => {
@@ -130,18 +83,15 @@ export const UpdateProductModal = ({ isOpen }) => {
         dispatch(clearUpdateProductData())
     }
 
-    const localUpdateImage = (url) => {
-        dispatch(ChangeProductImage(url))
-    }
-    console.log(product)
+    const localUpdateImage = (url) => dispatch(ChangeProductImage(url));
 
     return (
         <Modal
-            nameRef={`Actualizar ${product.id} `}
+            nameRef={updateMode === status ? `Actualizar ${product.id} ` : 'Agregar Producto'}
             isOpen={isOpen}
             close={closeModal}
             btnSubmitName='Guardar'
-            handleSubmit={handleSubmitAddProducts}
+            handleSubmit={handleSubmit}
             subModal={
                 <UploadImg
                     fnAddImg={localUpdateImage}
@@ -151,53 +101,52 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         >
             <Container>
-                <Group column='2'>
-                    <Input
+                <FormGroup column='2'>
+                    <InputV4
+                        name='productName'
+                        label={'Nombre del producto:'}
                         required
-                        title={'Nombre del producto'}
                         type="text"
-                        value={status ? product.productName : undefined}
-                        placeholder='Nombre del Producto:'
-                        onChange={(e) => setProduct({
-                            ...product,
-                            productName: e.target.value
-                        })} />
-                </Group>
-                <Group orientation='vertical'>
-                    <Input
-                        title={'Tipo de Producto'}
-                        type="text"
-                        value={status ? product.type : undefined}
-                        onChange={(e) => setProduct({
-                            ...product,
-                            type: e.target.value
-                        })}
+                        onClear={() => dispatch(setProduct({ ...product, productName: '' }))}
+                        errorMessage={'El nombre del producto es requerido'}
+                        validate={product?.productName === ''}
+                        value={product?.productName || ''}
+                        onChange={(e) => dispatch(setProduct({ ...product, productName: e.target.value }))}
                     />
-                    <Input
-                        title={'Stock'}
-                        type="number"
-                        placeholder='stock'
-                        value={status ? product.stock : undefined}
-                        onChange={(e) => setProduct({
-                            ...product,
-                            stock: e.target.value
-                        })} />
-                </Group>
-                <Group orientation='vertical'>
-                    <Input
-                        title={'Contenido neto'}
+                </FormGroup>
+                <FormGroup orientation='vertical'>
+                    <InputV4
+                        label={'Tipo de Producto:'}
                         type="text"
+                        name='type'
+                        required
+                        value={product?.type || ''}
+                        onChange={(e) => dispatch(setProduct({ ...product, type: e.target.value }))}
+                    />
+                    <InputV4
+                        size='small'
+                        type="text"
+                        label={'Ordenar por'}
+                        name='order'
+                        required
+                        value={product?.order}
+                        onChange={(e) => dispatch(setProduct({ ...product, order: e.target.value }))}
+                    />
+
+                </FormGroup>
+                <FormGroup orientation='vertical'>
+                    <InputV4
+                        label={'Tamaño'}
+                        type="text"
+                        name="size"
                         placeholder='Contenido Neto:'
-                        value={status ? product.netContent : undefined}
-                        onChange={(e) => setProduct({
-                            ...product,
-                            netContent: e.target.value
-                        })} />
-                    <select name="select" id="" onChange={(e) => setProduct({
-                        ...product,
-                        category: e.target.value
-                    })}>
-                        <option value="">Categoría</option>
+                        value={product?.size}
+                        onChange={(e) => dispatch(setProduct({ ...product, size: e.target.value }))}
+                    />
+                    <select
+                        name="category"
+                        id=""
+                        onChange={(e) => dispatch(setProduct({ ...product, category: e.target.value }))}>                        <option value="">Categoría</option>
                         {
                             catList.length > 0 ? (
                                 catList.map((item, index) => (
@@ -212,62 +161,60 @@ export const UpdateProductModal = ({ isOpen }) => {
                             ) : null
                         }
                     </select>
-                </Group>
-                <Group>
-                    <Img>
-                        <img src={status ? product.productImageURL : undefined} alt="" />
-                    </Img>
-                    <Button
-                        borderRadius='normal'
-                        width='w100'
-                        title='Agregar Imagen'
-                        bgcolor='primary'
-                        titlePosition='center'
-                        onClick={handleImgController}
-                    />
-                </Group>
-                <Group orientation='vertical'>
-                    <Input
-                        title={'Tamaño'}
+                    <InputV4
+                        label={'Contenido neto'}
                         type="text"
                         placeholder='Contenido Neto:'
-                        value={status ? product.size : undefined}
-                        onChange={(e) => setProduct({
-                            ...product,
-                            size: e.target.value
-                        })}
+                        name='netContent'
+                        value={product?.netContent || undefined}
+                        onChange={(e) => dispatch(setProduct({ ...product, netContent: e.target.value }))}
                     />
-                    <Input
-                        size='small'
-                        type="text"
-                        title={'Order'}
-                        value={status ? product.order : undefined}
-                        onChange={(e) => setProduct({
-                            ...product,
-                            order: Number(e.target.value)
-                        })}
-                    />
+                </FormGroup>
+                <FormGroup>
+                    <ImgContainer>
+                        <Img>
+                            <img
+                                src={product?.productImageURL || noImage}
+                                style={product?.productImageURL ? null : { objectFit: "contain" }} alt="" />
+                        </Img>
+                        <Align position='center'>
+                            <Button
+                                borderRadius='normal'
+                                title={status === "update" ? 'Actualizar' : 'Agregar Imagen'}
+                                bgcolor='primary'
+                                titlePosition='center'
+                                onClick={handleImgController}
+                            />
+                        </Align>
+                    </ImgContainer>
+                </FormGroup>
+                <FormGroup orientation='vertical' >
                     <InventariableButton
                         setProduct={setProduct}
-                        product={ product }
+                        product={product}
                     />
-                </Group>
-                <Group orientation='vertical'>
-                    <Input
-                        title={'Costo'}
+                    <InputV4
+                        label={'Stock:'}
                         type="number"
-                        value={status ? quitarCeros(product.cost.unit) : undefined}
-                        onChange={(e) => setProduct({
+                        placeholder='stock'
+                        name='stock'
+                        value={product?.stock}
+                        onChange={(e) => dispatch(setProduct({ ...product, stock: e.target.value }))}
+                    />
+
+                </FormGroup>
+                <FormGroup orientation='vertical'>
+                    <InputV4
+                        label={'Costo'}
+                        type="number"
+                        value={product?.cost?.unit}
+                        onChange={(e) => dispatch(setProduct({ ...product, cost: { ...product.cost, unit: e.target.value, total: e.target.value } }))}
+                    />
+                    <select id=""
+                        onChange={(e) => dispatch(setProduct({
                             ...product,
-                            cost: {
-                                unit: Number(e.target.value),
-                                total: Number(e.target.value)
-                            }
-                        })} />
-                    <select id="" onChange={(e) => setProduct({
-                        ...product,
-                        tax: JSON.parse(e.target.value)
-                    })}>
+                            tax: JSON.parse(e.target.value)
+                        }))}>
                         <option value="">Impuesto</option>
                         {
                             taxesList.length > 0 ? (
@@ -281,13 +228,13 @@ export const UpdateProductModal = ({ isOpen }) => {
                             ) : null
                         }
                     </select>
-                    <Input
+                    <InputV4
                         type="number"
-                        title={'Precio + ITBIS'}
+                        label={'Precio + ITBIS'}
                         value={status ? product.price.unit : undefined}
                         readOnly
                         placeholder='Precio de Venta' />
-                </Group>
+                </FormGroup>
             </Container>
         </Modal>
     )
@@ -296,61 +243,63 @@ export const UpdateProductModal = ({ isOpen }) => {
 const Container = styled.div`
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    padding: 2em 1em 1em;
-    background-color: #fff;
+    padding: 1em 1em 1em;
+    background-color: var(--White2);
     height: 100%;
     width: 100%;
-    gap: 1.7em;
+    gap: 0.6em;
     align-content: flex-start;
     @media (max-width: 768px) {
         grid-template-columns: 1fr;
     }    
 `
-const Group = styled.div`
-
+const FormGroup = styled.div`
+    align-items: end;
+    background-color: var(--White);
+    border-radius: var(--border-radius-light);
+    padding: 0.4em;
+ 
     select{
          padding: 0 0.4em;
          border-radius: var(--border-radius-light);
-         border: none;
-         outline: 1px solid rgb(145, 145, 145);
+         border: var(--border-primary);
+         height: 2em;       
+         
       }
     &:nth-child(1){
         grid-column: 2 span;
+      
     }
     &:nth-child(2){
         grid-column: 1 / 3;
+        display: grid;
+         grid-template-columns: repeat(2, 1fr);
     }
     &:nth-child(3){ 
-        grid-column: 1 / 3;
+        grid-column: 1 / 4;
+        display: grid;
+         grid-template-columns: repeat(3, 1fr);
     }
     &:nth-child(4){
-        //background-color: #cce1e9;
-        //padding: 6px;
-        padding: 0;
-        border-radius: var(--border-radius-light);
-        //border: 1px solid rgba(2, 2, 2, 0.100);
-        img{
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: var(--border-radius-light);
-        }
+      
+        display: grid;
+
         grid-column: 3 / 4;
-        grid-row: 1 / 4;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        grid-row: 1 / 3;
        
-        
-       // justify-content: center;
-        justify-items: center;
     }
     &:nth-child(5){
         grid-column: 1 / 4;
+        display: grid;
+         grid-template-columns: repeat(3, 1fr);
     }
     &:nth-child(6){
        grid-column: 1 / 4;
+       display: grid;
+         grid-template-columns: repeat(3, 1fr);
+     
    }
+   
     ${(props) => {
         switch (props.orientation) {
             case 'vertical':
@@ -369,10 +318,16 @@ const Group = styled.div`
     }}
   
 `
+const ImgContainer = styled.div`
+    display: grid;
+    width: 100%;
+    gap: 0.4em;
+`
 const Img = styled.div`
 background-color: white;
 border-radius: 8px;
 overflow: hidden;
+display: block;
 width: 100%;
 height: 100px;
 img{
@@ -409,3 +364,30 @@ const InvetoryCheckContainer = styled.div`
         
     }
 `
+const Align = styled.div`
+width: 100%;
+    ${props => {
+        switch (props.position) {
+            case 'left':
+                return `
+                    display: flex;
+                    justify-content: flex-start;
+                `
+            case 'right':
+                return `
+                    display: flex;
+                    justify-content: flex-end;
+                `
+            case 'center':
+                return `
+                    display: flex;
+                    justify-content: center;
+                `
+            default:
+                break;
+        }
+
+
+
+    }}
+    `

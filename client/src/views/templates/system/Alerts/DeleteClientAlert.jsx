@@ -6,7 +6,10 @@ import { useSelector } from 'react-redux'
 import { selectDeleteProductAlert, handleDeleteProductAlertSuccess, handleDeleteProductAlert } from '../../../../features/Alert/AlertSlice'
 import { useDispatch } from 'react-redux'
 import { GoAlert } from 'react-icons/go'
-export const DeleteClientAlert = ({ success }) => {
+export const DeleteClientAlert = ({ 
+    success, 
+    title = 'Eliminar Producto', 
+    message='Esta acción borrara permanentemente todos los datos' }) => {
     const dispatch = useDispatch()
     const isOpen = useSelector(selectDeleteProductAlert)
 
@@ -22,11 +25,11 @@ export const DeleteClientAlert = ({ success }) => {
             <Backdrop>
                 <Container>
                     <Head>
-                        <h1>Eliminar Producto</h1>
+                        <h1>{title}</h1>
                     </Head>
                     <Body>
                         <Message>
-                           <GoAlert/> <p>Esta acción borrara permanentemente todos los datos</p>
+                           <GoAlert/> <p>{message}</p>
                         </Message>
                     </Body>
                     <Footer>

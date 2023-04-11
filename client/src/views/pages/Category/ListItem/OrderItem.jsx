@@ -4,13 +4,15 @@ import { TbEdit } from 'react-icons/tb'
 import styled from 'styled-components'
 import { Message } from '../../../templates/system/message/Message'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
-import { GrRevert, GrEdit, GrClear, GrCheckmark, GrClose } from 'react-icons/gr'
+import { GrRevert, GrEdit, GrClear, GrCheckmark, GrClose, GrTrash } from 'react-icons/gr'
 import { useClickOutSide } from '../../../../hooks/useClickOutSide'
 import { fbDeleteCategory, updateCategoryDataBD } from '../../../../firebase/firebaseconfig'
 import { Tooltip } from '../../../templates/system/Button/Tooltip'
 import { useDispatch } from 'react-redux'
 import { toggleAddCategory } from '../../../../features/modals/modalSlice'
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckCircle, faEdit, faPencil, faPenToSquare, faTrash, faTrashAlt, faTrashCan, faTrashCanArrowUp, faTrashRestore, faTrashRestoreAlt } from '@fortawesome/free-solid-svg-icons'
+import { icons } from '../../../../constants/icons/icons'
 export const OrderItem = ({ cat, index, Row, Col, activeCategory, setActiveCategory }) => {
 
   const [category, setCategory] = useState({
@@ -110,17 +112,13 @@ export const OrderItem = ({ cat, index, Row, Col, activeCategory, setActiveCateg
         onChange={(e) => setCategory({ ...category, name: e.target.value })}
         readOnly={!showConfirmBtn}
       />
-      {/* <CategoryName>
-        {category.name}
-      </CategoryName> */}
-
       <Col>
         {showConfirmBtn ? (
           <ButtonGroup>
             <Button
               borderRadius='normal'
-              title={<GrClose />}
-              width='icon24'
+              title={icons.operationModes.cancel}
+              width='icon32'
               color='gray-dark'
               onClick={handleReject}
               tooltipDescription='Cancelar'
@@ -128,8 +126,8 @@ export const OrderItem = ({ cat, index, Row, Col, activeCategory, setActiveCateg
             />
             <Button
               borderRadius='normal'
-              title={<GrCheckmark />}
-              width='icon24'
+              title={icons.operationModes.accept}
+              width='icon32'
               color='gray-dark'
               onClick={handleAccept}
             />
@@ -139,22 +137,16 @@ export const OrderItem = ({ cat, index, Row, Col, activeCategory, setActiveCateg
 
             <Button
               borderRadius='normal'
-              title={<GrEdit />}
-              width='icon24'
+              title={icons.operationModes.edit}
+              width='icon32' 
               color='gray-dark'
               onClick={handleEdit}
             />
-            {/* <Button
-              borderRadius='normal'
-              title={<GrRevert />}
-              width='icon24'
-              color='gray-dark'
-              onClick={handleRevert}
-            /> */}
+
             <Button
               borderRadius='normal'
-              title={<GrClear />}
-              width='icon24'
+              title={icons.operationModes.delete}  
+              width='icon32'
               color='gray-dark'
               onClick={() => handleDelete(cat.id)}
             />

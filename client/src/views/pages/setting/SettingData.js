@@ -14,11 +14,12 @@ export const settingData = [
         description: 'Información de la Aplicacion.',
         path: '/app/setting/app-info'
     },
-    {
-        title: 'Enviar Feedback',
-        description: 'Envíanos tus comentarios o sugerencias para mejorar la aplicación.',
-        path: '/app/feedback',
-      }
+    // {
+    //     title: 'Enviar Feedback',
+    //     description: 'Envíanos tus comentarios o sugerencias para mejorar la aplicación.',
+    //     path: '/app/feedback',
+    //   },
+   
    
    
 ]

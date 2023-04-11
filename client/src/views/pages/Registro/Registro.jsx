@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react'
-import { MenuApp, InputText, Button } from '../../'
+import { MenuApp, InputText, Button, ButtonGroup } from '../../'
 import styled from 'styled-components'
 import { getBills } from '../../../firebase/firebaseconfig.jsx'
 import { useEffect } from 'react'
@@ -8,32 +8,59 @@ import { Bill } from './Bill'
 import { SiMicrosoftexcel } from 'react-icons/si'
 import useExcelExport from '../../../hooks/exportToExcel/useExportToExcel'
 import exportToExcel from '../../../hooks/exportToExcel/useExportToExcel'
-import formatBill from '../../../hooks/exportToExcel/formatBill'
+import { formatBill } from '../../../hooks/exportToExcel/formatBill'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import Clock from '../../../hooks/Clock'
-import { CenteredText } from './CentredText'
+import Clock from '../../../hooks/time/Clock'
+import { CenteredText } from '../../templates/system/CentredText'
 import TimeFilterButton from '../../templates/system/Button/TimeFilterButton/TimeFilterButton'
 import { salesReportData } from './sales_register_data'
-import { SaleReportTable } from './SaleReportTable'
+import { SaleReportTable } from './SaleReportTable/SaleReportTable'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
+import { ComponentTagger } from '../../templates/system/ComponentTagger/ComponentTagger'
+import { useDispatch } from 'react-redux'
+import { addNotification } from '../../../features/notification/NotificationSlice'
+
 export const Registro = () => {
   const [bills, setBills] = useState([])
   const [client, setClient] = useState('')
   const [datesSelected, setDatesSelected] = useState({})
- const data = salesReportData
+  const data = salesReportData
+  const dispatch = useDispatch()
   useEffect(() => {
     getBills(setBills, datesSelected)
   }, [datesSelected])
-  console.log(datesSelected)
-  const total = () => bills.reduce((total, { data }) => total + data.totalPurchase.value, 0)
-    
-  
 
-  const transformedData = bills.map((bill) => {
-    return formatBill(bill.data);
+  const total = () => bills.reduce((total, { data }) => total + data.totalPurchase.value, 0)
+
+  const transformedResumenBillsData = () => bills.map((bill) => {
+    return formatBill({ data: bill.data, type: 'Resumen' });
   });
-  const handleExportButtonClick = () => {
-    exportToExcel(transformedData, 'Registros', 'Registro.xlsx');
+
+  const transformedDetailedBillsData = () => {
+    return formatBill({ data: bills, type: 'Detailed' });
   };
+
+
+  const handleExportButton = (type) => {
+    if (bills.length === 0 ){
+      dispatch(addNotification({ title: 'Error al exportar' ,message: 'No hay Facturas para exportar', type: 'error' }))
+      return
+    } 
+    switch (type) {
+      case 'Resumen':
+        console.log('----------------------------', transformedResumenBillsData())
+         exportToExcel(transformedResumenBillsData(), 'Registros', 'Registro.xlsx');
+        break;
+      case 'Detailed':
+     console.log('----------------------------', transformedDetailedBillsData())
+        exportToExcel(transformedDetailedBillsData(), 'Registros', 'Registro.xlsx');
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleTimeChange = (start, end) => {
     setDatesSelected({ startDate: start.toMillis(), endDate: end.toMillis() })
   }
@@ -45,18 +72,29 @@ export const Registro = () => {
         <MenuApp></MenuApp>
         <FilterBar>
           <span>
-            <DatePicker dates={setDatesSelected} data={datesSelected}></DatePicker>
+            <DatePicker dates={setDatesSelected} data={datesSelected} />
             <TimeFilterButton onTimeFilterSelected={handleTimeChange} />
-            <Button
-              title={'export'}
-              borderRadius='normal'
-              onClick={() => handleExportButtonClick()}
-              startIcon={<SiMicrosoftexcel />}
-            />
-            {/* <SelectCategory /> */}
+            <ComponentTagger text={'Exportar excel:'} children={
+              <ButtonGroup>
+                <Button
+                  bgcolor={'gray'}
+                  title={'Resumen'}
+                  borderRadius='normal'
+                  onClick={() => handleExportButton('Resumen')}
+                  startIcon={<SiMicrosoftexcel />}
+                />
+                <Button
+                  bgcolor={'gray'}
+                  title={'Detalle'}
+                  borderRadius='normal'
+                  onClick={() => handleExportButton('Detailed')}
+                  startIcon={<SiMicrosoftexcel />}
+                />
+              </ButtonGroup>
+            } />
           </span>
         </FilterBar>
-        <SaleReportTable data={data} bills={bills} total={total}/>
+        <SaleReportTable data={data} bills={bills} total={total} />
       </Container>
     </Fragment>
   )
@@ -66,7 +104,7 @@ const Container = styled.div`
   height: 100vh;
   overflow: hidden;
   display: grid;
-  background-color: #ffffff;
+  background-color: var(--color2);
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
  
@@ -75,6 +113,7 @@ const FilterBar = styled.div`
   width: 100%;
   display: flex;
   justify-items: center;
+  background-color: var(--White);
   span{
     max-width: 1000px;
     width: 100%;

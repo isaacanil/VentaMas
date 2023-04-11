@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { TbTarget } from 'react-icons/tb'
 import styled from 'styled-components'
 
-export const Input = ({ type, text, size, title, clearInputWhen, required, focusColor, labelColor, value, onChange, readOnly, onFocus}) => {
+export const Input = ({ type, name, text, size, title, clearInputWhen, required, focusColor, labelColor, value, onChange, readOnly, onFocus}) => {
     const [focus, setFocus] = useState({
         color: focusColor,
     })
@@ -14,7 +14,7 @@ export const Input = ({ type, text, size, title, clearInputWhen, required, focus
         <Container focusColor={focus.color} size={size} text={text} labelColor={labelColor}>
             <input
                 id=""
-                name=""
+                name={name}
                 value={clearInputWhen ? undefined : value}
                 type={type}
                 required={required}

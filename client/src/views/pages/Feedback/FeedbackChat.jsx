@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FiSend } from "react-icons/fi";
+import { generateResponse } from "./generateResponse";
+import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   position: fixed;
@@ -87,55 +89,64 @@ const SubmitButton = styled.button`
 
 
 export const FeedbackChat = () => {
-    const [messages, setMessages] = useState([
-        { text: "Hola!", senderId: 1 },
-        { text: "Hola, ¿cómo estás?", senderId: 2 },
-        { text: "Bien, gracias!", senderId: 1 },
-        { text: "Me alegro!", senderId: 2 },]);
+    const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-
+    const navigate = useNavigate()
     useEffect(() => {
-        document.body.style.overflow = "hidden";
-        return () => {
-            document.body.style.overflow = "visible";
-        };
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "visible";
+      };
     }, []);
-
+  
     const handleSubmit = (event) => {
         event.preventDefault();
         if (newMessage.trim()) {
-            setMessages([...messages, { text: newMessage.trim(), senderId: user.id }]);
-            setNewMessage("");
+          setMessages([...messages, { text: newMessage.trim(), senderId: 1 }]);
+          setNewMessage("");
+    
+          // Genera una respuesta utilizando la función generateResponse.
+          const botResponse = generateResponse(newMessage);
+    
+          setTimeout(() => {
+            setMessages([...messages, { text: newMessage.trim(), senderId: 1 }, { text: botResponse.text, senderId: 2 }]);
+            if (botResponse.route) {
+                setTimeout(() => {
+                    
+              navigate(botResponse.route);
+                }, 3000);
+            }
+          }, 1000);
         }
-    };
-
+      };
+  
     const handleClose = () => {
-        document.body.style.overflow = "visible";
-        setMessages([]);
+      document.body.style.overflow = "visible";
+      setMessages([]);
     };
-
+  
     return (
-        <Container>
-            <Header>
-                <Title>Feedback</Title>
-                <FiSend onClick={handleClose} />
-            </Header>
-            <MessageList>
-                {messages.map((message, index) => (
-                    <MessageItem key={index} message={message}>
-                        <MessageText message={message}>{message.text}</MessageText>
-                    </MessageItem>
-                ))}
-            </MessageList>
-            <Form onSubmit={handleSubmit}>
-                <Input
-                    type="text"
-                    placeholder="Type your message here"
-                    value={newMessage}
-                    onChange={(event) => setNewMessage(event.target.value)}
-                />
-                <SubmitButton type="submit">Send</SubmitButton>
-            </Form>
-        </Container>
+      <Container>
+        <Header>
+          <Title>Feedback</Title>
+          <FiSend onClick={handleClose} />
+        </Header>
+        <MessageList>
+          {messages.map((message, index) => (
+            <MessageItem key={index} message={message}>
+              <MessageText message={message}>{message.text}</MessageText>
+            </MessageItem>
+          ))}
+        </MessageList>
+        <Form onSubmit={handleSubmit}>
+          <Input
+            type="text"
+            placeholder="Type your message here"
+            value={newMessage}
+            onChange={(event) => setNewMessage(event.target.value)}
+          />
+          <SubmitButton type="submit">Send</SubmitButton>
+        </Form>
+      </Container>
     );
-};
+  };

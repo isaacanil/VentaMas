@@ -20,7 +20,6 @@ export const AddPurchaseModal = ({ isOpen }) => {
     const [provider, setProvider] = useState(null)
     const [orderToPurchase, setOrderToPurchase] = useState(null)
     const [reset, setReset] = useState()
-    const OrderSelected = useSelector(SelectOrder)
     const productSelected = useSelector(SelectProductSelected)
     const productsSelected = useSelector(selectProducts)
     const [prevProvider, setPrevProvider] = useState(null)
@@ -51,7 +50,6 @@ export const AddPurchaseModal = ({ isOpen }) => {
             dispatch(getOrderData(orderToPurchase));
         }
     }, [orderToPurchase]);
-    console.log(orderToPurchase)
 
     useEffect(() => {
         const order = SELECTED_PURCHASE;
@@ -69,26 +67,30 @@ export const AddPurchaseModal = ({ isOpen }) => {
         setReset(true);
         dispatch(cleanPurchase());
     }
+
     const handleSubmit = () => {
         dispatch(toggleAddPurchaseModal());
         PassDataToPurchaseList(SELECTED_PURCHASE);
         setReset(true);
         dispatch(cleanPurchase());
     }
+
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
     const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
     let pendingOrders = useSelector(selectOrderList);
     pendingOrders = pendingOrders[0]
-    console.log(provider)
+ 
 
     const handleAddProduct = ({ stock, initialCost, cost }) => {
         dispatch(updateStock({ stock }))
         dispatch(getInitialCost({ initialCost, cost }))
         dispatch(AddProductToPurchase())
     }
+
     const handleSelectProduct = (data) => {
         dispatch(SelectProduct(data))
     }
+    
     const handleDeleteProduct = (product) => {
         dispatch(deleteProductFromPurchase(product.id))
     }
@@ -110,7 +112,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
                 </Header>
                 <BodyContainer>
                     <Body>
-                        <div>
+                        <ToolBar>
                             <Select
                                 setReset={setReset}
                                 reset={reset}
@@ -120,8 +122,6 @@ export const AddPurchaseModal = ({ isOpen }) => {
                                 value={orderToPurchase}
                                 setValue={setOrderToPurchase}
                             />
-                        </div>
-                        <header >
                             <Select
                                 setReset={setReset}
                                 reset={reset}
@@ -138,12 +138,17 @@ export const AddPurchaseModal = ({ isOpen }) => {
                                 width={'icon32'}
                                 bgcolor='gray'
                             />
-                        </header>
-                        <StockedProductPicker fn={handleAddProduct} handleSelectProduct={handleSelectProduct} productSelected={productSelected} />
+                        </ToolBar>
+                        <StockedProductPicker
+                            fn={handleAddProduct}
+                            handleSelectProduct={handleSelectProduct}
+                            productSelected={productSelected}
+                        />
                         <ProductListSelected
                             productsSelected={SELECTED_PURCHASE.products}
                             productsTotalPrice={SELECTED_PURCHASE.totalPurchase}
-                            handleDeleteProduct={handleDeleteProduct} />
+                            handleDeleteProduct={handleDeleteProduct}
+                        />
                         <OrderDetails
                             reset={reset}
                             setReset={setReset}
@@ -211,7 +216,16 @@ const Modal = styled.div`
     display: grid;
     grid-template-rows: min-content 1fr;
 `
+const ToolBar = styled.div`
+    width: 100%;
+    display: flex;
+    gap: 10px;
 
+`
+const Group = styled.div`
+    display: flex;
+    gap: 0.4em;
+`
 
 const Header = styled.div`
      width: 100%;

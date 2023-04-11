@@ -17,6 +17,7 @@ import { orderAndDataState, selectItemByName } from "../constants/orderAndPurcha
 import { SaveImg, UploadImgLoading, UploadProgress } from "../features/uploadImg/uploadImageSlice";
 import { selectAppMode } from '../features/appModes/appModeSlice'
 import { DynamicConfig } from "./DynamicConfig";
+import { updateStock } from "../features/Purchase/addPurchaseSlice";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -27,8 +28,9 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
+import.meta.env.MODE
 
-const adminConfig = <DynamicConfig/>
+const adminConfig = <DynamicConfig />
 const auxApp = initializeApp(adminConfig, 'alt');
 const app = initializeApp(firebaseConfig);
 console.log(app)
@@ -36,6 +38,14 @@ console.log(auxApp)
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
+
+// enableIndexedDbPersistence(db)
+//   .then(() => {
+//     console.log("La persistencia se ha habilitado correctamente.");
+//   })
+//   .catch((err) => {
+//     console.error("Error al habilitar la persistencia: ", err);
+//   });
 
 //Todo Product **************************************************************************
 export const AuthStateChanged = (dispatch) => {
@@ -55,7 +65,7 @@ export const AuthStateChanged = (dispatch) => {
   })
 }
 export const HandleRegister = (name, email, pass, confirmPass, Navigate) => {
-  
+
   if (pass === confirmPass) {
     createUserWithEmailAndPassword(auth, email, pass)
       .then(userAuth => {
@@ -99,6 +109,7 @@ export const watchingUserState = (setUserDisplayName) => {
   })
 }
 export const UploadProdImgData = async (id, url) => {
+  id = nanoid(10)
   const imgRef = doc(db, "prodImages", id);
   try {
     await setDoc(imgRef, {
@@ -223,7 +234,7 @@ export const deleteMultipleClients = (array) => {
 }
 export const getCat = async (setCategories) => {
   const categoriesRef = collection(db, "categorys")
-  const q = query(categoriesRef, orderBy("category.name" , "desc"))
+  const q = query(categoriesRef, orderBy("category.name", "desc"))
   onSnapshot(q, (snapshot) => {
     let categoriesArray = snapshot.docs.map(item => item.data())
     setCategories(categoriesArray)
@@ -282,16 +293,16 @@ export const UploadCat = async (path, category) => {
   const id = nanoid(10)
   let categoryRef = doc(db, `${path}`, id);
   await setDoc(categoryRef, {
-    category : {
+    category: {
       ...category,
       id
     }
-  }).then(()=>{
+  }).then(() => {
     console.log('category uploaded')
-  }).catch((error)=>{
+  }).catch((error) => {
     console.log(error)
   })
-  
+
 }
 export const deleteProduct = (id) => {
   deleteDoc(doc(db, `products`, id))
@@ -302,7 +313,7 @@ export const getBills = async (setBills, time) => {
 
   const Ref = collection(db, `bills`);
   const q = query(Ref, where("data.date", ">=", start), where("data.date", "<=", end), orderBy("data.date", "desc"));
- 
+
   onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map(item => item.data())
     setBills(data)
@@ -325,13 +336,9 @@ export const AddBills = (data) => {
 export const UpdateMultipleDocs = (products) => {
   products.forEach((productData) => {
     const productRef = doc(db, "products", productData.id);
+    const stockUpdateValue = productData?.trackInventory ? increment(-Number(productData?.amountToBuy?.total)) : increment(0);
     updateDoc(productRef, {
-      product: {
-        ...productData,
-        amountToBuy: { unit: 1, total: 1 },
-        price: { unit: productData.price.unit, total: productData.price.unit },
-        cost: { unit: productData.cost.unit, total: productData.cost.unit },
-      },
+      "product.stock": stockUpdateValue,
     })
       .then(() => {
         console.log("Document successfully updated!");
@@ -501,7 +508,7 @@ export const updateTaxReceiptDataBD = async (taxReceipt) => {
   }
 }
 export const updateCategoryDataBD = async (category) => {
- 
+
   const counterRef = doc(db, "categorys", category.id)
   try {
     updateDoc(counterRef,

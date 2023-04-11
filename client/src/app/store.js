@@ -23,6 +23,7 @@ import appReducer from "../features/appModes/appModeSlice";
 import loaderReducer from "../features/loader/loaderSlice";
 import viewerImageReducer from "../features/imageViewer/imageViewerSlice";
 import customPizzaReducer from "../features/customProducts/customPizzaSlice";
+import productOutflowReducer from "../features/productOutflow/productOutflow";
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -48,5 +49,7 @@ export const store = configureStore({
         loader: loaderReducer,
         imageViewer: viewerImageReducer,
         customPizza: customPizzaReducer,
+        productOutflow: productOutflowReducer,
+
     },
 })

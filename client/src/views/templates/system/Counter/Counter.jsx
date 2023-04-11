@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import { CgMathMinus, CgMathPlus } from 'react-icons/cg';
 import { useDispatch } from 'react-redux';
+import { icons } from '../../../../constants/icons/icons';
 import {
     setChange,
     totalTaxes,
@@ -58,12 +59,11 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
         <Fragment>
             <div className={`${Style.Counter_container}`}>
                 <button className={Style.Couter_button} onClick={handleDiminishCounter}>
-                    <span><CgMathMinus /></span>
+                    <span>{icons.mathOperations.subtract}</span>
                 </button>
-
                 <input className={Style.CounterDisplay} type="number" name="" id="" value={amountToBuyTotal} onChange={e => setCounter({ ...counter, value: Number(e.target.value) })} />
                 <button className={Style.Couter_button} onClick={handleIncreaseCounter}>
-                    <span><CgMathPlus /></span>
+                    <span>{icons.mathOperations.add}</span>
                 </button>
             </div>
             <Alert

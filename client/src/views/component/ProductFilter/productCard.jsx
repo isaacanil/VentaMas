@@ -4,11 +4,18 @@ import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
 import {SelectProduct} from '../../../features/addOrder/addOrderModalSlice'
 
-export const ProductCard = ({data, setShowProductList, fn}) => {
+export const ProductCard = ({data, setShowProductList, fn, close}) => {
 
- 
+ const handleProductSelected = async () => {
+  try {
+    await fn(data);
+    close();
+  } catch (error) {
+    
+  }
+ }
   return (
-    <Container onClick={() => fn(data)}>
+    <Container onClick={handleProductSelected}>
         <span>
             {data.product.productName}
         </span>       

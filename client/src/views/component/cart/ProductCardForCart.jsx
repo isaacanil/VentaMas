@@ -6,6 +6,8 @@ import { separator } from '../../../hooks/separator'
 import { Counter } from '../../templates/system/Counter/Counter'
 import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurchaseWithoutTaxes, addPaymentMethodAutoValue } from '../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import { icons } from '../../../constants/icons/icons'
+import { Button } from '../../templates/system/Button/Button'
 export const ProductCardForCart = ({ item }) => {
     const dispatch = useDispatch()
     const deleteProductFromCart = (id) => {
@@ -33,9 +35,13 @@ export const ProductCardForCart = ({ item }) => {
                             id={item.id}
                             product={item}
                         ></Counter>
-                        <BtnClose onClick={() => deleteProductFromCart(item.id)}>
-                            <IoMdClose />
-                        </BtnClose>
+                        <Button 
+                        title={icons.operationModes.discard} 
+                        onClick={() => deleteProductFromCart(item.id)} 
+                        width='icon24'
+                        borderRadius={'normal'}
+                        color='danger'
+                        />
                     </Group>
                 </Group>
             </Row>
@@ -85,9 +91,9 @@ const BtnClose = styled.div`
     justify-content: center;
     align-items: center;
     background-color: #ce4d4d;
-    color: white;
+    color: var(--color-error);
     border-radius: 6px;
-    padding: 0.1em;
+  
 `
 const Title = styled.span`
     font-weight: 500;

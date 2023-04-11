@@ -16,7 +16,11 @@ import { SearchProductBar } from './SearchProductBar'
 import { Tooltip } from '../system/Button/Tooltip'
 import { colorPalette } from '../../../features/theme/themeSlice'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
-import { CgMathPlus } from 'react-icons/cg'
+import { FaSearch } from 'react-icons/fa'
+import { SearchInput } from '../system/Inputs/SearchInput'
+import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 
 export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const { color } = colorPalette()
@@ -24,7 +28,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const [isOpenMenu, setIsOpenMenu] = useState(false)
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
-  const handledMenu = () => { 
+  const handledMenu = () => {
     setIsOpenMenu(!isOpenMenu)
   };
   useEffect(() => {
@@ -54,113 +58,122 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
   const handleCategoryGroupedFN = () => {
     dispatch(toggleCategoryGrouped())
   }
+
   return (
     <Fragment>
       <Backdrop isOpen={isOpenMenu ? true : false} />
       <Container bgColor={color} borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
 
-          <div className={Style.MenuBtn} onClick={handledMenu}>
-            <div className={!isOpenMenu ? Style.MenuBtn_icon : `${Style.MenuBtn_icon} ${Style.MenuBtn_icon_closed}`}></div>
-          </div>
+          <OpenMenuButton isOpenMenu={isOpenMenu} onClick={handledMenu}/>
+
+          {(!matchWithVenta && !matchWithInventory) && <WebName></WebName>}
 
           {
-            !matchWithVenta && !matchWithInventory ? (
-              <div>
-                <WebName></WebName>
-              </div>
-            ) : null
+          matchWithVenta && (
+                <SearchInput
+                  search
+                  deleteBtn
+                  icon={<FaSearch />}
+                  placeholder='Buscar Producto...'
+                  bgColor={'white'}
+                  value={searchData}
+                  onChange={(e) => setSearchData(e.target.value)}
+                />
+            ) 
           }
           {
-            matchWithVenta ? (
-              <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar>
+            matchWithInventory ? (
+              <Fragment>
+                <Group>
+                  <SearchInput
+                    deleteBtn
+                    icon={<FaSearch />}
+                    placeholder='Buscar ...'
+                    bgColor={'white'}
+                    value={searchData}
+                    onChange={(e) => setSearchData(e.target.value)}
+                  />
+                  {/* <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar> */}
+                </Group>
+              </Fragment>
             ) : null
-          }
-          {
-              matchWithInventory ? (
-                <Fragment>
-                  <Group>
-                  <SearchProductBar searchData={searchData} setSearchData={setSearchData}></SearchProductBar>
-                  </Group>
-                </Fragment>
-              ) : null
           }
         </Group>
         {
           matchWithVenta ? (
-            
-            <Group>
+              <Group >
                 <Tooltip
-                placement='bottom'
-                description={'Cambiar vista'}
-                Children={
-                  <Button
-                    width={'icon32'}
-                    borderRadius='normal'
-                    iconOff={<MdSubtitlesOff />}
-                    iconOn={<MdSubtitles />}
-                    isActivated={categoryGrouped ? true : false}
-                    isActivatedColors='style1'
-                    onClick={() => handleCategoryGroupedFN()}
-                  />}
-              />
-              <Tooltip
-                placement='bottom'
-                description={'Cambiar vista'}
-                Children={
-                  <Button
-                    width={'icon32'}
-                    borderRadius='normal'
-                    iconOff={<TbColumns />}
-                    iconOn={<BsList />}
-                    isActivated={viewRowModeRef ? true : false}
-                    isActivatedColors='style1'
-                    onClick={() => handleRowModeFN()}
-                  />}
-              />
-              
-              <Tooltip
-                placement='bottom-end'
-                description={ImageHidden ? 'Mostrar Imagen' : 'Ocultar Imagen'}
-                Children={
-                  <Button
-                    width={'icon32'}
-                    borderRadius='normal'
-                    isActivated={ImageHidden ? true : false}
-                    isActivatedColors='style1'
-                    iconOff={<MdOutlineImage />}
-                    iconOn={<MdOutlineHideImage />}
-                    onClick={() => handleImageHiddenFN()}
-                  />}
-              />
-               <Tooltip
-                placement='bottom-end'
-                description={FullScreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
-                Children={
-                  <Button
+                  placement='bottom'
+                  description={'Cambiar vista'}
+                  Children={
+                    <Button
+                      width={'icon32'}
+                      borderRadius='normal'
+                      iconOff={<FontAwesomeIcon icon={faHeading} />}
+                      iconOn={<FontAwesomeIcon icon={faHeading} />}
+                      isActivated={categoryGrouped ? true : false}
+                      isActivatedColors='style1'
+                      onClick={() => handleCategoryGroupedFN()}
+                    />}
+                />
+                <Tooltip
+                  placement='bottom'
+                  description={'Cambiar vista'}
+                  Children={
+                    <Button
+                      width={'icon32'}
+                      borderRadius='normal'
+                      iconOff={<FontAwesomeIcon icon={faGrip} />}
+                      iconOn={<FontAwesomeIcon icon={faGripLines} />}
+                      isActivated={viewRowModeRef ? true : false}
+                      isActivatedColors='style1'
+                      onClick={() => handleRowModeFN()}
+                    />}
+                />
 
-                    width={'icon32'}
-                    borderRadius='normal'
-                    isActivated={FullScreen ? true : false}
-                    isActivatedColors='style1'
-                    iconOff={< MdOutlineFullscreenExit/>}
-                    iconOn={<MdFullscreen />}
-                    onClick={() => handleFullScreenFN()}
-                  />}
-              />
-            </Group>
+                <Tooltip
+                  placement='bottom-end'
+                  description={ImageHidden ? 'Mostrar Imagen' : 'Ocultar Imagen'}
+                  Children={
+                    <Button
+                      width={'icon32'}
+                      borderRadius='normal'
+                      isActivated={ImageHidden ? true : false}
+                      isActivatedColors='style1'
+                      iconOff={<FontAwesomeIcon icon={faImage} />}
+                      iconOn={<FontAwesomeIcon icon={faImage} />}
+                      onClick={() => handleImageHiddenFN()}
+                    />}
+                />
+                <Tooltip
+                  placement='bottom-end'
+                  description={FullScreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
+                  Children={
+                    <Button
+
+                      width={'icon32'}
+                      borderRadius='normal'
+                      isActivated={FullScreen ? true : false}
+                      isActivatedColors='style1'
+                      iconOff={<FontAwesomeIcon icon={faCompress} />}
+                      iconOn={<FontAwesomeIcon icon={faExpand} />}
+                      onClick={() => handleFullScreenFN()}
+                    />}
+                />
+              </Group>
           ) : null
         }
         {
           matchWithInventory ? (
             <Fragment>
               <Group>
-              <AddProductButton/>
+                <AddProductButton />
               </Group>
             </Fragment>
           ) : null
         }
-        <SideBar links={MenuData} isOpen={isOpenMenu} />
+        <SideBar links={MenuData} isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
       </Container>
     </Fragment>
 
@@ -171,20 +184,21 @@ const Backdrop = styled.div`
   width: 100%;
   position: absolute;
   left: 0;
+  right: 0;
   backdrop-filter: blur(0px);
-        z-index: 10;
+        z-index: 1000;
         pointer-events: none;
         transition: all 1s  ease;
    ${props => {
     switch (props.isOpen) {
       case true:
         return `
-        z-index: 999999;
+        z-index: 10;
         display: block;
         pointer-events: visible;
         backdrop-filter: blur(2px);
         webkit-backdrop-filter: blur(6px);
-       // background-color: rgba(0, 0, 0, 0.200);
+        background-color: rgba(0, 0, 0, 0.100);
         `
       default:
         break;
@@ -192,7 +206,7 @@ const Backdrop = styled.div`
   }}
 `
 const Container = styled.div`
-  position: relative;
+
    user-select: none;
    background-color: ${props => props.bgColor};
    width: 100%;
@@ -202,16 +216,16 @@ const Container = styled.div`
    align-content: center;
    justify-content: space-between;
    padding: 0 1em;
-   z-index: 10;
+  // z-index: 9;
   ${props => {
     switch (props.isOpen) {
       case true:
         return `
-          z-index: 999999;
+          //z-index: 9;
         `
       case false:
         return `
-        z-index: 10;
+       // z-index: 10;
         transition-property: z-index;
         transition-delay: 400ms;
       `
@@ -239,5 +253,24 @@ const Group = styled.div`
   display: flex;
   align-items: center;
   gap: 0.8em;
+ 
+`
+const AutoHidden = styled.div`
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: opacity 1s linear;
+  ${props => {
+    switch (props.menuIsOpen) {
+      case true:
+        return `  
+        opacity: 0; 
+        `
+      default:
+        break;
+    }
+  }}
+  
+    
 `
 

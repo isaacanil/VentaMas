@@ -3,23 +3,28 @@ import styled from 'styled-components'
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import {Card} from './Components/Card'
 import { settingData } from './SettingData'
+
+import { Transition } from '../../templates/system/Transition'
 export const Setting = () => {
     const numbers = [1, 2, 3, 4, 5, 6, 7]
   return (
-    <Container>
+    <Transition >
+      <Container>
       <MenuApp></MenuApp>
       <Body>
         <Cards>
           {
            settingData.length > 0 ? (
              settingData.map((item, index) => (
-                <Card data={item}></Card>
+                <Card data={item} key={index}></Card>
               ))
             ) : null
           }
         </Cards>
       </Body>
     </Container>
+   </Transition>
+  
   )
 }
 

@@ -1,7 +1,12 @@
 import { doc, setDoc } from "firebase/firestore";
+import { nanoid } from "nanoid";
 import { db } from "../firebaseconfig";
 
-export const fbAddProduct = (product) => {
+export const fbAddProduct = (data) => {
+    const product = {
+        ...data,
+        id:  nanoid(10)
+    }
     return new Promise((resolve, reject) => {
         const productRef = doc(db, "products", product.id)
         setDoc(productRef, { product })

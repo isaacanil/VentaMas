@@ -8,10 +8,12 @@ import { ProductCardRow } from './ProductCard/ProductCardRow'
 export const PendingItemsTable = ({ productsArray }) => {
   // const [ products, setProducts ] = useState([])
   // useEffect(() => setProducts(productsArray), [productsArray])
+  
   return (
     <Container>
       <Body>
         <Table>
+        
           <Row fill='fill'>
             <Col>Image</Col>
             <Col>Nombre</Col>
@@ -25,7 +27,7 @@ export const PendingItemsTable = ({ productsArray }) => {
             {productsArray.length > 0 ? (
             productsArray.map(({product}, index)=>(
               // <ProductItem  product={product} Row={Row} Col={Col} key={index}/>
-              <ProductCardRow product={product} Col={Col} Row={Row}/>
+              <ProductCardRow product={product} Col={Col} Row={Row} key={index}/>
             ))
            ) : null}
           </TableBody>

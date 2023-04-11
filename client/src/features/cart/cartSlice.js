@@ -1,13 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { separator } from "../../hooks/separator";
-import { Product } from "../../views";
-import { v4 } from "uuid";
 import { nanoid } from "nanoid";
-import { IoFemaleSharp } from "react-icons/io5";
 import { AddBills, createClient, updateClient } from "../../firebase/firebaseconfig";
 import { useCompareObjectsInState } from "../../hooks/useCompareObject";
+
 const DefaultDelivery = {
     status: false,
     value: ""
@@ -40,14 +35,12 @@ const DefaultPaymentMethod = [
         status: false
     }
 ];
-
-
 const defaultValue = {
     data: {
         id: '',
         client: DefaultClient,
         products: [],
-        change: {//cambio
+        change: {
             value: 0
         },
         delivery: DefaultDelivery,
@@ -96,7 +89,6 @@ const cartSlice = createSlice({
                 return
             }
             if (state.handleClient.UPDATED_CLIENT !== null && state.handleClient.UPDATED_CLIENT.id === state.data.client.id && !useCompareObjectsInState(state.data.client, state.handleClient.UPDATED_CLIENT)) {
-                console.log(state.handleClient.UPDATED_CLIENT)
                 updateClient(state.handleClient.UPDATED_CLIENT)
                 state.client = state.handleClient.UPDATED_CLIENT
                 return
@@ -205,23 +197,10 @@ const cartSlice = createSlice({
                 checkingID.amountToBuy.total = checkingID.amountToBuy.total + checkingID.amountToBuy.unit;
                 checkingID.price.total = checkingID.price.unit * checkingID.amountToBuy.total;
                 checkingID.tax.total = checkingID.tax.unit * checkingID.amountToBuy.total;
-
-                if(checkingID.trackInventory === true){
-                    checkingID.stock = checkingID.stock - checkingID.amountToBuy.unit;
-                }
             } else {
                 const product = action.payload
                 const products = state.data.products
-                if(product.trackInventory){
-                    const newProduct = Object.assign({}, product, { stock: product.stock - product.amountToBuy.unit })
-                    state.data.products = [...products, newProduct]
-                    return
-                }
-                if(!product.trackInventory){
-                    const newProduct = Object.assign({}, product, { stock: 0 })
-                    state.data.products = [...products, newProduct]
-                    return
-                }
+                state.data.products = [...products, product]
             }
         },
         deleteProduct: (state, action) => {
@@ -239,11 +218,9 @@ const cartSlice = createSlice({
             const productFound = state.data.products.find(product => product.id === id)
             if (productFound) {
                 productFound.amountToBuy.total = Number(value)
-                //console.log(Number(value))
                 productFound.price.total = Number(productFound.amountToBuy.total) * productFound.price.unit;
                 productFound.tax.total = productFound.amountToBuy * productFound.tax.unit;
                 productFound.cost.total = productFound.amountToBuy * productFound.cost.unit;
-                productFound.stock = productFound.stock + productFound.amountToBuy.unit
             }
         },
         addAmountToProduct: (state, action) => {
@@ -251,9 +228,6 @@ const cartSlice = createSlice({
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total + productFound.amountToBuy.unit
-                if(productFound.trackInventory === true){
-                    productFound.stock = productFound.stock - productFound.amountToBuy.unit;
-                }
                 productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
                 productFound.tax.total = productFound.amountToBuy.total * productFound.tax.unit + productFound.tax.unit;
                 productFound.cost.total = productFound.amountToBuy.total * productFound.cost.unit + productFound.cost.unit;
@@ -262,19 +236,17 @@ const cartSlice = createSlice({
         diminishAmountToProduct: (state, action) => {
             const { id } = action.payload
             const productFound = state.data.products.find((product) => product.id === id)
-            const originalStock = productFound.stock
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total - productFound.amountToBuy.unit
                 productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
                 if(productFound.trackInventory === true){
-                    productFound.stock = productFound.stock + productFound.amountToBuy.unit
                 }
                 if (productFound.amountToBuy.total === 0) {
                     state.data.products.splice(state.data.products.indexOf(productFound), 1)
                 }
             }
         },
-        CancelShipping: state => state = defaultValue,
+        CancelShipping: (state) => state = defaultValue,
         totalTaxes: (state) => {
             const productSelected = state.data.products
             const total = productSelected.reduce((total, product) => total + (product.tax.value * product.cost.unit) * product.amountToBuy.total, 0)
@@ -298,7 +270,6 @@ const cartSlice = createSlice({
             const totalWithDiscount = total - discount;
             const Delivery = state.data.delivery.value;
             state.data.totalPurchase.value = (Number(Delivery) + Number(totalWithDiscount))
-
         },
         setChange: (state) => {
             const totalPurchase = state.data.totalPurchase.value;
@@ -314,8 +285,7 @@ const cartSlice = createSlice({
         addSourceOfPurchase: (state, actions) => {
             const source = actions.payload
             state.data.sourceOfPurchase = source
-        },
-        
+        },  
     }
 })
 

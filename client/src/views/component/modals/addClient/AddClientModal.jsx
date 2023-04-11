@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Modal } from '../modal'
+import { Modal } from '../Modal'
 import { InputText } from '../../..'
 import { db } from '../../../../firebase/firebaseconfig.jsx'
 import { setDoc, doc } from 'firebase/firestore'

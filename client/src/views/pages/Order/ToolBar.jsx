@@ -12,11 +12,7 @@ import { OrderFilter } from './components/OrderFilter/OrderFilter'
 
 export const ToolBar = () => {
     const dispatch = useDispatch()
-    const openModal = () => {
-        dispatch(
-            openModalAddOrder()
-        )
-    }
+    const openModal = () => dispatch(openModalAddOrder());
     return (
         <Container>
             <Wrapper>

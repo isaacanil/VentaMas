@@ -1,71 +1,74 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useRef } from 'react'
 import { Product, Grid } from '../../'
 import { useSelector } from "react-redux";
 import { CustomProduct } from '../../templates/system/Product/CustomProduct'
 import { selectIsRow } from '../../../features/setting/settingSlice';
 import { Carrusel } from '../../component/Carrusel/Carrusel';
 import styled from 'styled-components';
+import Loader from '../../templates/system/loader/Loader';
+import useScroll from '../../../hooks/useScroll';
+import { CenteredText } from '../../templates/system/CentredText';
 
-export const ProductControl = ({ products, isProductGrouped }) => {
-    const viewRowModeRef = useSelector(selectIsRow)
-    if (isProductGrouped) {
-      // Agrupar los productos por categoría
-      const productsByCategory = products.reduce((result, { product }) => {
-        const category = product.category
-        if (!result[category]) {
-          result[category] = []
-        }
-        result[category].push(product)
-        return result
-      }, {})
-  
-      return (
-        <Fragment>
-        
-          <Carrusel />
-          <Container>
-            <Wrapper>
-              {
+export const ProductControl = ({ products, isProductGrouped, productsLoading, setProductsLoading }) => {
+  const viewRowModeRef = useSelector(selectIsRow)
+  const loadingMessage = 'Cargando los Productos'
+  const productsContainerRef = useRef(null);
+  const isScrolled = useScroll(productsContainerRef);
+
+  // Agrupar los productos por categoría
+  const productsByCategory = products.reduce((result, { product }) => {
+    const category = product.category
+    if (!result[category]) {result[category] = []}
+    result[category].push(product)
+    return result
+  }, {})
+
+  useEffect(() => {
+    setProductsLoading(true)
+    setTimeout(() => {
+      setProductsLoading(false)
+    }
+      , 1000)
+  }, [isProductGrouped])
+
+  return (
+    <Fragment>
+      <Carrusel />
+      <Container>
+        <Wrapper ref={productsContainerRef} isScrolled={isScrolled}>
+          <Loader useRedux={false} show={productsLoading} message={loadingMessage} theme={'light'} />
+          {
+            productsLoading ? null : (
+              isProductGrouped ? (
                 Object.keys(productsByCategory)
-                .sort((a, b) => a < b ? 1 : -1)
-                .map((category) => (
-                  <CategoryGroup key={category}>
-                    <h2>{category}</h2>
-                    <Grid padding='bottom' columns='4' isRow={viewRowModeRef ? true : false} onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}>
-                      {productsByCategory[category].map((product, index) => (
-                        product.custom ?
-                          (
-                            <CustomProduct key={index} product={product}></CustomProduct>
-                          ) : (
-                            <Product
-                              key={index}
-                              view='row'
-                              product={product}
-                            />
-                          )
-                      ))}
-                    </Grid>
-                  </CategoryGroup>
-                ))
-              }
-            </Wrapper>
-          </Container>
-        </Fragment>
-      )
-    } else {
-      return (
-        <Fragment>
-          <Carrusel />
-          <Container>
-            <Wrapper>
-              {
+                  .sort((a, b) => a < b ? 1 : -1)
+                  .map((category) => (
+                    <CategoryGroup key={category}>
+                      <h2>{category}</h2>
+                      <Grid padding='bottom' columns='4' isRow={viewRowModeRef ? true : false} onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}>
+                        { productsByCategory[category].map((product, index) => (
+                          product.custom ?
+                            (
+                              <CustomProduct key={index} product={product}></CustomProduct>
+                            ) : (
+                              <Product
+                                key={index}
+                                view='row'
+                                product={product}
+                              />
+                            )
+                        ))}
+                      </Grid>
+                    </CategoryGroup>
+                  ))
+              ) : (
                 products.length > 0 ?
                   (
                     <Grid padding='bottom' columns='4' isRow={viewRowModeRef ? true : false} onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}>
                       {products.map(({ product }, index) => (
                         product.custom ?
                           (
-                            <CustomProduct key={index} product={product}></CustomProduct>
+                            <CustomProduct key={index} product={product} />
                           ) : (
                             <Product
                               key={index}
@@ -76,14 +79,21 @@ export const ProductControl = ({ products, isProductGrouped }) => {
                       ))}
                     </Grid>
                   ) : null
-              }
-            </Wrapper>
-          </Container>
-        </Fragment>
-      )
-    }
-  }
-  
+              )
+            )
+          }
+          {
+            
+            (products.length === 0 ||  Object.keys(productsByCategory).length === 0) && !productsLoading ? (
+                <CenteredText text='No hay Productos' showAfter={1000}/>
+            ) : null
+          }
+        </Wrapper>
+      </Container>
+    </Fragment>
+  )
+}
+
 
 const Container = styled.div`
 height: 100%;
@@ -97,8 +107,19 @@ border-bottom-left-radius: 0;
 const Wrapper = styled.div`
  height: 100%;
  padding: 0.5em;
+
  //padding-top: 1em;
- overflow: auto;
+ overflow-y: scroll;
+ position: relative;
+ 
+ ${({ isScrolled }) => isScrolled ? `
+    border-top: 1px solid #e0e0e08b;
+    box-shadow: 0 0 10px 0 rgba(0,0,0,0.2);
+    border-radius: var(--border-radius-light);
+    
+   
+    ` : null
+  }
 `
 const CategoryGroup = styled.div`
 :first-child{

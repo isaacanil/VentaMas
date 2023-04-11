@@ -47,6 +47,9 @@ const initialState = {
         isOpen: false,
         data: null
     },
+    modalToggleAddProductOutflow:{
+        isOpen: false,
+    }
 }
 const modalSlice = createSlice({
     name: 'modal',
@@ -158,6 +161,10 @@ const modalSlice = createSlice({
                 state.modalToggleAddCategory.data = null;
             }
            
+        },
+        toggleAddProductOutflow: (state, actions) => {
+            const isOpen = state.modalToggleAddProductOutflow.isOpen;
+            state.modalToggleAddProductOutflow.isOpen = !isOpen;
         }
     }
 })
@@ -181,7 +188,8 @@ export const {
     toggleProviderModal,
     toggleClientModal,
     toggleViewOrdersNotes,
-    toggleAddCategory
+    toggleAddCategory,
+    toggleAddProductOutflow
 } = modalSlice.actions
 
 export const SelectBillingModal = state => state.modal.modalBilling.isOpen;
@@ -196,6 +204,7 @@ export const SelectClientModalData = state => state.modal.modalToggleClient;
 export const SelectProviderModalData = state => state.modal.modalToggleProvider;
 export const SelectViewOrdersNotesModalData = state => state.modal.modalToggleOrderNote;
 export const SelectAddCategoryModal = state => state.modal.modalToggleAddCategory;
+export const SelectAddProductOutflowModal = state => state.modal.modalToggleAddProductOutflow;
 
 
 export default modalSlice.reducer

@@ -32,7 +32,7 @@ export { ClientControl } from './component/contact/ClientControl/ClienteControl'
 
 export { ProductModal } from './component/modals/Product/ProductModal'
 export { AddClientModal } from './component/modals/AddClient/AddClientModal'
-export { Modal } from './component/modals/modal'
+export { Modal } from './component/modals/Modal'
 export { ModalManager } from './component/modals/ModalManager'
  
 //Todo ******Templates**********************************************

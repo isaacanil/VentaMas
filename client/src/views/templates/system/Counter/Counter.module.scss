@@ -14,18 +14,15 @@
        outline: none;
        font-weight: 700;
        line-height: 10px;
-       width: 1.2em;
-       height: 1.2em;
        display: flex;
        align-items: center;
        justify-content: center;
-       padding: none;
+   
+       max-width: 1.4em;
+       width: 100%;
        border-radius: 4px;
        background-color: var(--White);
        color: var(--Gray6);
-       span{
-         
-       }
        &:focus{
          outline: none;
        }

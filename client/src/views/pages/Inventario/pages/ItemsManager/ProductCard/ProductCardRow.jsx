@@ -2,6 +2,7 @@ import React from 'react'
 import { BsDot } from 'react-icons/bs';
 import { FaBoxOpen, FaTag } from 'react-icons/fa';
 import { FiShoppingBag } from 'react-icons/fi';
+import { GrClear, GrClose, GrEdit, GrTrash } from 'react-icons/gr';
 import { IoMdTrash } from 'react-icons/io';
 import { TbEdit } from 'react-icons/tb';
 import { useDispatch } from 'react-redux';
@@ -13,30 +14,32 @@ import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button';
 import StockIndicator from '../../../../../templates/system/labels/StockIndicator';
-
+import noImg from '../../../../../../assets/producto/noImg.png'
+import {icons} from '../../../../../../constants/icons/icons'
+import { modes } from '../../../../../../constants/modes';
+import { useCheckForInternetConnection } from '../../../../../../hooks/useCheckForInternetConnection';
 export const ProductCardRow = ({ product, Col, Row }) => {
     const dispatch = useDispatch();
     const handleDeleteProduct = (id) => {
         dispatch(handleDeleteProductAlert(id));
       };
-    
       const handleUpdateProduct = (product) => {
         dispatch(openModalUpdateProd());
-        dispatch(ChangeProductData(product));
+        dispatch(ChangeProductData({product: product, status: modes.operationModes.updateMode}));
       };
+      const isConnected = useCheckForInternetConnection()
     return (
         <Container>
             <Row>
                 <Col>
-                    <Img>
-                        <img
-                            src={product.productImageURL} alt=""
-                            onError={({ currentTarget }) => {
-                                currentTarget.onerror = null;
-                                currentTarget.src = noImg;
-                                currentTarget.style.objectFit = 'contain'
-                            }} />
-                    </Img>
+                    <ImgContainer>
+                        <Img
+                            src={(isConnected && product?.productImageURL) || noImg} 
+                            noFound={product?.productImageURL ? false : true}
+                            alt=""
+                            style={product?.productImage || isConnected  ?  null : {objectFit: 'contain'}} 
+                            />
+                    </ImgContainer>
                 </Col>
                 <Col>
                     <ProductName>
@@ -69,20 +72,18 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                 <Head>
                     <ButtonGroup>
                         <Button
-                            startIcon={<TbEdit />}
+                            startIcon={icons.operationModes.edit}
                             borderRadius='normal'
-                            // variant='contained'
                             color={'gray-dark'}
                             width='icon32'
                             bgcolor='editar'
                             onClick={() => handleUpdateProduct(product)}
                         />
                         <Button
-                            startIcon={<IoMdTrash />}
+                            startIcon={icons.operationModes.delete}
                             width='icon32'
                             color={'gray-dark'}
                             borderRadius='normal'
-                            // bgcolor='error'
                             onClick={() => handleDeleteProduct(product.id)}
                         />
                     </ButtonGroup>
@@ -104,8 +105,7 @@ const Head = styled.div`
    justify-content: space-between;
    height: min-content;
 `
-const Img = styled.div`
-  
+const ImgContainer = styled.div`
     width: 100%;
     max-height: 2.75em;
     height: 100%;
@@ -113,12 +113,23 @@ const Img = styled.div`
     overflow: hidden;
     display: flex;
     border-radius: var(--border-radius-light);
-    img{
-        object-fit: cover;
-        width: 100%;
-        height: 100%;
-    }
+    
 `
+const Img = styled.img`
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+  height: 100%;
+  ${props => {
+    switch (props.noFound) {
+      case true:
+        return `
+        object-fit: contain;`;
+      default:
+        return ``;
+    }
+  }}
+`;
 const Body = styled.div`
     display: grid;
     grid-template-columns: 

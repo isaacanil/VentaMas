@@ -1,61 +1,73 @@
 export const salesReportData = {
-    title: 'Reporte de ventas',
-    dateRange: {
-      start: /*datesSelected.startDate*/ '',
-      end: /*datesSelected.endDate*/ '',
-    },
-    table: {
-      headers: [
-        {
-          id: 1,
-          name: 'Client',
-          align: 'left',
-          description: 'Nombre del cliente que realizó la compra'
-        },
-        {
-          id: 2,
-          name: 'Fecha',
-          align: 'left',
-          description: 'Fecha en que se realizó la compra'
-        },
-        {
-          id: 3,
-          name: 'TOTAL',
-          align: 'right',
-          description: 'Monto total de la compra'
-        },
-        {
-          id: 4,
-          name: 'ITBIS',
-          align: 'right',
-          description: 'Impuesto sobre las ventas'
-        },
-        {
-          id: 5,
-          name: 'Pago con',
-          align: 'right',
-          description: 'Forma de pago utilizada'
-        },
-        {
-          id: 6,
-          name: 'Cambio',
-          align: 'right',
-          description: 'Cambio entregado al cliente'
-        },
-      ],
-    //   rows: bills.map((bill) => {
-    //     const formattedBill = formatBill(bill.data);
-    //     return {
-    //       id: bill.id,
-    //       customer: formattedBill.customer,
-    //       date: formattedBill.date,
-    //       total: formattedBill.totalPurchase.value,
-    //       itbis: formattedBill.itbis,
-    //       paymentMethod: formattedBill.paymentMethod,
-    //       change: formattedBill.change.value,
-    //     }
-    //   }),
+  title: 'Reporte de ventas',
+  dateRange: {
+    start: /*datesSelected.startDate*/ '',
+    end: /*datesSelected.endDate*/ '',
+  },
+  table: {
+    headers: [
+      {
+        name: 'RNC',
+        align: 'left',
+        description: 'Nombre del vendedor que realizó la venta',
+        minWidth: '10%',
+        width: '10%'
+      },
+      {
+        name: 'Cliente',
+        align: 'left',
+        description: 'Nombre del cliente que realizó la compra',
+        minWidth: '10%',
+        width: '10%'
+      },
+      {
+        name: 'Fecha',
+        align: 'left',
+        description: 'Fecha en que se realizó la compra',
+        minWidth: '10%',
+        width: '10%'
+      },
+
+      {
+        name: 'ITBIS',
+        align: 'right',
+        description: 'Impuesto sobre las ventas',
+        minWidth: '10%',
+        width: '10%'
+      },
+      {
+        name: 'Pago con',
+        align: 'right',
+        description: 'Forma de pago utilizada',
+        minWidth: '10%',
+        width: '10%'
+      },
+      {
+        name: 'Cambio',
+        align: 'right',
+        description: 'Cambio entregado al cliente',
+        minWidth: '10%',
+        width: '10%'
+      },
+      {
+        name: 'TOTAL',
+        align: 'right',
+        description: 'Monto total de la compra',
+        minWidth: '10%',
+        width: '10%'
+      },
      
-    },
-  };
-  
+      // {
+      //   id: 7,
+      //   name: 'ver',
+      //   align: 'right',
+      //   description: 'Nombre del vendedor que realizó la venta',
+      //   minWidth: '10%',
+      //   width: '10%'
+
+      // }
+    ],
+  },
+};
+
+

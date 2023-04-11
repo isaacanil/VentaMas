@@ -20,3 +20,7 @@ export function getTimeElapsed(timestamp) {
     return `${date.toLocaleString(DateTime.DATETIME_SHORT)}`;
   }
 }
+export function useFormatDate(timestamp) {
+  const date = DateTime.fromMillis(timestamp);
+  return `${date.toLocaleString(DateTime.DATETIME_SHORT)}`;
+}

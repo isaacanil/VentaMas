@@ -2,14 +2,10 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
 import style from './AddOrderModalStyle.module.scss'
-import { SelectAddOrderModal, openModalAddOrder } from '../../../../features/modals/modalSlice'
+import { openModalAddOrder } from '../../../../features/modals/modalSlice'
 import { Select } from '../../..'
 import { ProductListSelected } from '../../ProductListSelected/ProductListSelected'
-import {
-    PlusIconButton,
-    Button,
-    InputText,
-} from '../../../'
+import { Button} from '../../../'
 
 import { StockedProductPicker } from '../../StockedProductPicker/StockedProductPicker'
 import { OrderDetails } from './OrderDetails/OrderDetails'
@@ -120,16 +116,16 @@ export const AddOrderModal = ({ isOpen }) => {
                             reset={reset}
                             setReset={setReset}
                         />
-                        <div className={style.ModaFooter}>
-                            <div className={style.ModalWrapperFooter}>
+                        <Footer>
+                            <FooterWrapper>
                                 <Button
                                     title='Crear Pedido'
                                     borderRadius={'normal'}
                                     bgcolor='primary'
                                     onClick={HandleSubmit}
                                 />
-                            </div>
-                        </div>
+                            </FooterWrapper>
+                        </Footer>
                     </Body>
                 </BodyContainer>
             </Modal>
@@ -183,6 +179,18 @@ const Modal = styled.div`
     overflow-y: hidden;
     display: grid;
     grid-template-rows: min-content 1fr;
+`
+const Footer = styled.div`
+width: 100%;
+
+`
+const FooterWrapper = styled.div`
+height: 100%;
+max-width: var(--max-width);
+width: 100%;
+margin: 0 auto;
+display: flex;
+align-items: center;
 `
 
 const BodyContainer = styled.div`

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import styled from 'styled-components'
 import { getCustomProduct, QueryByType } from '../../../../../firebase/firebaseconfig.jsx'
 import { separator } from '../../../../../hooks/separator'
-import { Modal } from '../../modal'
+import { Modal } from '../../Modal'
 import { IngredientCard } from '../../../../templates/system/customProduct/typePizza/ingredientCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { SelectSetCustomPizzaModal, handleModalSetCustomPizza } from '../../../../../features/modals/modalSlice'
@@ -105,6 +105,9 @@ const Container = styled.div`
 const Body = styled.div`
  padding: 1em;
  display: grid;
+ width: 100%;
+    height: 100%;
+  background-color: #f1ebeb;
  grid-template-rows: min-content min-content min-content 1fr min-content;
  gap: 0.2em 0.4em;
 `
