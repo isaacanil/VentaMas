@@ -14,61 +14,65 @@ import { fbGetProducts } from '../../../../../firebase/products/fbGetProducts.js
 import { Pagination } from '@mui/material';
 import { filterData } from '../../../../../hooks/search/useSearch';
 
-
 export const Inventario = () => {
   const dispatch = useDispatch();
   const [products, setProducts] = useState([]);
   const [searchData, setSearchData] = useState('');
   const [currentProducts, setCurrentProducts] = useState([]);
-  const productsFiltered = filterData(products, searchData,);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 10;
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
     fbGetProducts(setProducts);
   }, []);
 
   useEffect(() => {
+    const productsFiltered = filterData(products, searchData);
+    setFilteredProducts(productsFiltered);
+  }, [products, searchData]);
+
+  useEffect(() => {
     const start = (currentPage - 1) * productsPerPage;
     const end = start + productsPerPage;
-    setCurrentProducts(productsFiltered.slice(start, end));
-  }, [productsFiltered, currentPage]);
+    setCurrentProducts(filteredProducts.slice(start, end));
+  }, [filteredProducts, currentPage]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
-  const handleDeleteProduct = (id) => {
-    dispatch(handleDeleteProductAlert(id));
-  };
+  // const handleDeleteProduct = (id) => {
+  //   dispatch(handleDeleteProductAlert(id));
+  // };
 
-  const handleUpdateProduct = (product) => {
-    dispatch(openModalUpdateProd());
-    dispatch(ChangeProductData(product));
-  };
-  
+  // const handleUpdateProduct = (product) => {
+  //   dispatch(openModalUpdateProd());
+  //   dispatch(ChangeProductData(product));
+  // };
+
   return (
     <Fragment>
       <Menu searchData={searchData} setSearchData={setSearchData} />
       <Container>
         <PendingItemsTable productsArray={currentProducts} />
         <Footer>
-        <Pagination
-          count={Math.ceil((productsFiltered.length / productsPerPage))}
-          page={currentPage}
-          onChange={handlePageChange}
-          siblingCount={1}
-          boundaryCount={1}
-          color="primary"
-          style={{ marginTop: '16px' }}
-        />
+          <Pagination
+            count={Math.ceil((filteredProducts.length / productsPerPage))}
+            page={currentPage}
+            onChange={handlePageChange}
+            siblingCount={1}
+            boundaryCount={1}
+            color="primary"
+            style={{ marginTop: '16px' }}
+          />
         </Footer>
       </Container>
     </Fragment>
   );
 };
 
-        {/* <ProductsList>
+{/* <ProductsList>
           {
             products.length > 0 ?
               (

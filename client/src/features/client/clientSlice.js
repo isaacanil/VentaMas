@@ -8,9 +8,12 @@ const initialState = {
         tel: '',
         address: '',
         personalID: '',
-        delivery: '',
+        delivery: {
+
+        },
         id: '',
     }
+    
 }
 
 export const clientSlice = createSlice({

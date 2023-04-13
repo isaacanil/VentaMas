@@ -39,15 +39,6 @@ export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
 
-// enableIndexedDbPersistence(db)
-//   .then(() => {
-//     console.log("La persistencia se ha habilitado correctamente.");
-//   })
-//   .catch((err) => {
-//     console.error("Error al habilitar la persistencia: ", err);
-//   });
-
-//Todo Product **************************************************************************
 export const AuthStateChanged = (dispatch) => {
   onAuthStateChanged(auth, (userAuth) => {
     setTimeout(() => {
@@ -108,8 +99,8 @@ export const watchingUserState = (setUserDisplayName) => {
     }
   })
 }
-export const UploadProdImgData = async (id, url) => {
-  id = nanoid(10)
+export const UploadProdImgData = async (url) => {
+  let id = nanoid(10)
   const imgRef = doc(db, "prodImages", id);
   try {
     await setDoc(imgRef, {
@@ -254,11 +245,12 @@ export const fbDeleteCategory = async (id) => {
 export const getProduct = async (id) => {
   getDoc(doc(db, 'products', id))
 }
-export const getTaxes = async (setTaxe) => {
-  const taxeRef = collection(db, "taxes")
-  const { docs } = await getDocs(taxeRef)
-  const taxeArray = docs.map(item => item.data())
-  setTaxe(taxeArray)
+export const getTaxes = async (setTaxes) => {
+  const taxesRef = collection(db, "taxes")
+  const { docs } = await getDocs(taxesRef)
+  const taxesArray = docs.map(item => item.data())
+   if(taxesArray.length === 0 ) return;
+   if(taxesArray.length > 0 ) return setTaxes(taxesArray)
 }
 export const addIngredientTypePizza = async (ingredient) => {
   const IngredientRef = doc(db, "products", "6dssod");
@@ -466,43 +458,27 @@ export const getOrders = (setOrder) => {
 export const deleteOrderFromDB = async (id) => {
   deleteDoc(doc(db, `orders`, id))
 }
-export const createTaxReceiptDataBD = async () => {
-  const counterRef = doc(db, "counter", "c1")
-  const taxReceipts = {
-    data: [
-      {
-        name: 'CONSUMIDOR FINAL',
-        type: 'B',
-        serie: 2,
-        sequence: 1,
-        increase: 1,
-        quantity: 2000
-      },
-      {
-        name: 'CREDITO FISCAL',
-        type: 'B',
-        serie: 1,
-        sequence: 1,
-        increase: 1,
-        quantity: 2000
-      }
-    ]
-  }
+export const createTaxReceiptDataBD = async (taxReceipts) => {
+  const taxReceiptRef = doc(db, "taxTypeSetting", "c1")
+
   try {
-    await setDoc(counterRef, taxReceipts)
-    console.log(counterRef)
+    await setDoc(taxReceiptRef, {data: taxReceipts})
+    console.log(taxReceiptRef)
   } catch (err) {
     console.log(err)
   }
 }
-export const updateTaxReceiptDataBD = async (taxReceipt) => {
+export const updateTaxReceiptDataBD = async (taxReceipts) => {
   console.log('entrando......................................')
-  const counterRef = doc(db, "counter", "c1")
+  const taxReceiptRef = doc(db, "taxTypeSetting", "c1")
   try {
-    updateDoc(counterRef,
-      { data: taxReceipt }
-    );
-    console.log('listo, to bien')
+    updateDoc(taxReceiptRef,
+      { data: taxReceipts}
+    )
+    .catch(async (error) => {
+      await createTaxReceiptDataBD(taxReceipts)
+    })
+    console.log('listo, todo bien')
   } catch (err) {
     console.log('todo mal')
   }
@@ -520,11 +496,11 @@ export const updateCategoryDataBD = async (category) => {
   }
 }
 export const deleteTaxReceiptDataBD = () => {
-  const counterRef = doc(db, "counter", "c1")
+  const counterRef = doc(db, "taxTypeSetting", "c1")
   deleteDoc(counterRef);
 }
 export const readTaxReceiptDataBD = (setTaxReceiptDataBD) => {
-  const countersRef = collection(db, "counter")
+  const countersRef = collection(db, "taxTypeSetting")
   onSnapshot(countersRef, (data) => {
     let counterArray = data.docs.map(item => item.data())
     let [obj] = counterArray

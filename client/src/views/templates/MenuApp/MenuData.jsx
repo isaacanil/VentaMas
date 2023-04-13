@@ -102,19 +102,6 @@ export const MenuData = [
         iconActive: icons.menu.selected.register,
         path: '/app/registro'
     },
-    // {
-    //     title: 'Reportes',
-    //     path: null,
-    //     submenuIconOpen: <ChevronLeft/>,
-    //     submenuIconClose: <ChevronRight/>,
-    //     submenu: [
-    //         {
-    //             title: 'Ventas',
-    //             path: '/app/report/sales'                    
-    //         }
-    //     ]
-
-    // },
     {
         title: 'Configuración',
         icon: icons.menu.unSelected.settings,

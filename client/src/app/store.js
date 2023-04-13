@@ -24,11 +24,13 @@ import loaderReducer from "../features/loader/loaderSlice";
 import viewerImageReducer from "../features/imageViewer/imageViewerSlice";
 import customPizzaReducer from "../features/customProducts/customPizzaSlice";
 import productOutflowReducer from "../features/productOutflow/productOutflow";
+import clientCartReducer from "../features/clientCart/clientCartSlice";
 export const store = configureStore({
     reducer: {
         user: userReducer,
         search: searchReducer,
         cart: cartReducer,
+        clientCart: clientCartReducer,
         modal: modalReducer,
         category: categoryReducer,
         customProduct: customProductReducer,

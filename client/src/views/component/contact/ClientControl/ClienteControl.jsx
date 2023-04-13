@@ -64,7 +64,7 @@ export const ClientControl = () => {
 
   const updateClientMode = () => dispatch(setClientModeInState(CLIENT_MODE.UPDATE.mode))
 
-  const searchClientMode = () => dispatch(setClientModeInState(CLIENT_MODE.SEARCH.mode))
+  const searchClientMode = () => dispatch(setClientModeInState(CLIENT_MODE.SEARCH.mode));
 
   const handleDeleteData = () => {
     searchClientMode()
@@ -88,11 +88,11 @@ export const ClientControl = () => {
     })
     setSearchTerm(e.target.value)
   }
-  useEffect(()=>{
+  useEffect(() => {
     setMODE(SelectedClientMode)
   }, [SelectedClientMode])
 
-  useEffect(()=>{
+  useEffect(() => {
     switch (MODE) {
       case CLIENT_MODE.SEARCH.mode:
         // dispatch(deleteClientInState())
@@ -100,7 +100,7 @@ export const ClientControl = () => {
         setSearchClientLabel(`${CLIENT_MODE.SEARCH.label}`)
         break;
 
-      case CLIENT_MODE.UPDATE.mode: 
+      case CLIENT_MODE.UPDATE.mode:
         setSearchTerm(clientSelected.name === '' ? clientSelected.name : client.name)
         setSearchClientLabel(`${CLIENT_MODE.UPDATE.label} (${clientSelected.name})`)
         closeMenu()
@@ -117,7 +117,7 @@ export const ClientControl = () => {
             delivery: 0
           }
         )
-    
+
         setSearchClientLabel(CLIENT_MODE.CREATE.label)
         closeMenu()
         break;
@@ -137,12 +137,12 @@ export const ClientControl = () => {
         dispatch(updateClientInState(client))
         dispatch(totalPurchase())
         dispatch(setChange())
-    
+
         break;
 
       case CLIENT_MODE.CREATE.mode:
         dispatch(createClientInState(client))
- 
+
         break;
 
       default:
@@ -184,7 +184,7 @@ export const ClientControl = () => {
             onChange={(e) => handleChangeClient(e)}
           />
           <ButtonGroup>
-            <Tooltip placement='bottom-end' description='Cancelar Venta' Children={<CancelPurchaseBtn/>}/>
+            <Tooltip placement='bottom-end' description='Cancelar Venta' Children={<CancelPurchaseBtn />} />
           </ButtonGroup>
         </div>
       </div>

@@ -85,9 +85,13 @@
   --max-width: 1000px;
 
 
-  --typografy:
+  /*Menu*/
 
+  --menu-items: rgb(241, 241, 241);
 
+  --btnMenuItem-bg-color: var(--menu-items);
+  --btnMenuItem-width: 1.6em;
+  --btnMenuItem-height: 2px;
 
 
 

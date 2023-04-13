@@ -7,11 +7,11 @@ import './index.css'
 import './variable.css'
 import './styles/normalize/normalize.css'
 
-Sentry.init({
-  dsn: "https://b983bf1b536544d0b397d762e9a73f79@o4504832588054528.ingest.sentry.io/4504832611778560",
-  integrations: [new BrowserTracing()],
-  tracesSampleRate: 1.0,
-});
+// Sentry.init({
+//   dsn: "https://b983bf1b536544d0b397d762e9a73f79@o4504832588054528.ingest.sentry.io/4504832611778560",
+//   integrations: [new BrowserTracing()],
+//   tracesSampleRate: 1.0,
+// });
 
 //redux
 import { Provider } from 'react-redux'

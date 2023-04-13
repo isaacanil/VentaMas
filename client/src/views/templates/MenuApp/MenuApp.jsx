@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useRef, useEffect } from 'react'
-import Style from './Menu.module.scss'
+
 import { MenuData } from './MenuData'
 import { AddProductButton, WebName } from '../../'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'

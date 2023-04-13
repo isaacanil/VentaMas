@@ -26,7 +26,7 @@ export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
             <Backdrop>
                 <Container>
                     <Header setIsOpen={setIsOpen} />
-                    <Body images={images} ImgToUpload={ImgToUpload} />
+                    <Body images={images} ImgToUpload={ImgToUpload} setImgToUpload={setImgToUpload} />
                 </Container>
             </Backdrop>
         ) : null

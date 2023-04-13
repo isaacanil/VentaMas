@@ -9,6 +9,14 @@ export const OpenMenuButton = ({ onClick, isOpenMenu, zIndex }) => {
   )
 }
 const Container = styled.div`
+:root {
+   --menu-items: rgb(241, 241, 241);
+   //btnMenuItem
+   --btnMenuItem-bg-color: var(--menu-items);
+   --btnMenuItem-width: 1.6em;
+   --btnMenuItem-height: 2px;
+
+}
       justify-self: start;
   max-height: 2em;
   min-width: 2em;

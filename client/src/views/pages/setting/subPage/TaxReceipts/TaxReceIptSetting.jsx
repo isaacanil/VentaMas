@@ -11,7 +11,25 @@ import { TableTaxReceipt } from './TableTaxReceipt'
 
 export const TaxReceiptSetting = () => {
   const dispatch = useDispatch()
-  const [taxReceiptData, setTaxReceiptData] = useState([])
+  const [mode, setMode] = useState('default')
+  const [taxReceiptData, setTaxReceiptData] = useState([
+    {
+      name: 'CONSUMIDOR FINAL',
+      type: 'B',
+      serie: 2,
+      sequence: 1,
+      increase: 1,
+      quantity: 2000
+    },
+    {
+      name: 'CREDITO FISCAL',
+      type: 'B',
+      serie: 1,
+      sequence: 1,
+      increase: 1,
+      quantity: 2000
+    }
+  ])
   const [taxReceipt, setTaxReceipt] = useState([])
 
   console.log(taxReceipt)
@@ -20,15 +38,18 @@ export const TaxReceiptSetting = () => {
   }, [])
   useEffect(() => {
     if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
+      setMode('update')
       dispatch(getTaxReceiptData(taxReceiptData))
       setTaxReceipt(taxReceiptData)
       dispatch(IncreaseEndConsumer())
     }
   }, [taxReceiptData])
   console.log(taxReceiptData, 'taxReceiptData')
+
+
   const handleSubmit = (e) => {
     e.preventDefault()
-    updateTaxReceiptDataBD(taxReceipt)
+    mode === 'update' && updateTaxReceiptDataBD(taxReceipt)
     //createCounter()
     //deleteCounter()
   }

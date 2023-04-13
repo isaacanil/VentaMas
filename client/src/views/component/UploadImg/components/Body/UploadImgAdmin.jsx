@@ -14,7 +14,7 @@ export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
     const handleSubmit = () => {
         fbAddProductImg(ImgToUpload)
             .then((url) => {
-                UploadProdImgData(id, url)
+                UploadProdImgData(url)
                 setImgToUpload(null)
             })
     }
@@ -37,7 +37,6 @@ export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
                     }
                     <AddFileBtn
                         title="Agregar"
-                        fn={() => handleUploadImg()}
                         setFile={setImgToUpload}
                         file={ImgToUpload}
                         startIcon={<MdOutlineFileUpload />}

@@ -21,9 +21,10 @@ import { useFormatNumber } from '../../../../hooks/useFormatNumber'
 import noImage from '../../../../assets/producto/noImg.png'
 import { modes } from '../../../../constants/modes'
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
+import { initTaxes } from './InitializeData'
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, product } = useSelector(selectUpdateProductData)
-    const [taxesList, setTaxesList] = useState([])
+    const [taxesList, setTaxesList] = useState(initTaxes)
     const [catList, setCatList] = useState([])
     const [imgController, setImgController] = useState(false)
 
@@ -35,6 +36,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     }
 
     useEffect(() => {
+        
         getTaxes(setTaxesList)
         getCat(setCatList)
     }, [])
@@ -52,17 +54,17 @@ export const UpdateProductModal = ({ isOpen }) => {
     useEffect(calculatePrice, [product.cost, product.tax])
 
     const productDataTypeCorrected = new productDataTypeCorrection(product);
-    
+
     const handleUpdateProduct = () => {
         dispatch(addNotification({ title: 'Producto Actualizado', message: 'Espere un momento', type: 'success' }))
         fbUpdateProduct(productDataTypeCorrected, dispatch)
     }
-    
+
     const handleAddProduct = () => {
         dispatch(addNotification({ title: 'Producto Creado', message: 'Espere un momento', type: 'success' }))
         fbAddProduct(productDataTypeCorrected, dispatch)
     }
-    
+
     const handleSubmit = async () => {
         try {
             await productSchema.validate(productDataTypeCorrected);
@@ -72,8 +74,8 @@ export const UpdateProductModal = ({ isOpen }) => {
             if (status === 'create') {
                 handleAddProduct()
             }
-        } catch(error) {
-            console.error('____________________________________________________',error)
+        } catch (error) {
+            console.error('____________________________________________________', error)
             dispatch(addNotification({ title: 'error', message: 'Looking this...', type: 'error' }))
         }
     }
