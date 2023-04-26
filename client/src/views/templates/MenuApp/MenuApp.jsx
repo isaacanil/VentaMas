@@ -108,7 +108,7 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
                   description={'Cambiar vista'}
                   Children={
                     <Button
-                      width={'icon32'}
+                      width={'icon24'}
                       borderRadius='normal'
                       iconOff={<FontAwesomeIcon icon={faHeading} />}
                       iconOn={<FontAwesomeIcon icon={faHeading} />}
