@@ -3,6 +3,10 @@ import React, { Fragment } from 'react'
 import style from './ReceiptStyle.module.scss'
 import { separator } from '../../../hooks/separator'
 import styled from 'styled-components'
+import { ProductList } from './components/ProductList'
+import { PaymentArea } from './components/PaymentArea'
+import { Row } from './components/Table/Row'
+import { Col } from './components/Table/Col'
 
 let today = new Date()
 let [month, day, year] = [today.getMonth() + 1, today.getDate(), today.getFullYear()]
@@ -10,20 +14,9 @@ let [hour, minute, second] = [today.getHours(), today.getMinutes(), today.getSec
 
 export const Receipt = React.forwardRef(({ data }, ref) => {
     //const {paymentMethod} = data
-    const paymentMethodActivated = data.paymentMethod.find((payment) => payment.status === true)
+
     //console.log(paymentMethodActivated)
-    const paymentMethodLabel = (value) => {
-        switch (value) {
-            case 'cash':
-                return 'EFECTIVO'
-            case 'card':
-                return 'TARJETA'
-            case 'transfer':
-                return 'TRANSFERENCIA'
-            default:
-                break;
-        }
-    }
+
     return (data ? (
         <div className={style.Container} ref={ref}>
             <h3 className={style.center} style={{ margin: 0, fontSize: '18px' }}>Hi Pizza</h3>
@@ -53,91 +46,25 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                     </Fragment>
                 ) : null
             }
-
             <hr className={style.line} />
-            <h4 className={style.center}>FACTURA PARA CONSUMIDOR FINAL</h4>
+            <Col>
+                <Title> FACTURA PARA CONSUMIDOR FINAL</Title>
+            </Col>
             <hr className={style.line} />
-            <div>
-                <Row>
-                    <div className={style.left}>DESCRIPCION</div>
-                    <div className={style.right}>ITBIS</div>
-                    <div className={style.right}>VALOR</div>
-                </Row>
-                <hr className={style.line} />
-                <div className={style.product_list}>
-                    {
-                        data.products.length > 0 ? (
-                            data.products.map((product, index) => (
-                                <Fragment key={index}>
-                                    <li className={style.product} key={index}>
-                                        <div className={style.row3}>
-                                            <div>{product.amountToBuy.total} x {separator(product.price.unit)}</div>
-                                            <div className={style.right}>{separator((product.tax.value * product.cost.total) * product.amountToBuy.total)}</div>
-                                            <div className={style.right}>{separator(product.price.total)}</div>
-                                        </div>
-                                        <div className={style.row1}>
-                                            <div className={`${style.productName}`}>{product.productName}</div>
-                                        </div>
-                                    </li>
-                                </Fragment>
-                            ))
-                        ) : null
-                    }
-                </div>
-                <hr className={style.line} />
-
-                {
-                    data.delivery.status ? (
-                        <Row>
-                            <div className={style.title}>ENVIO :</div>
-                            <div></div>
-                            <div className={style.right}>{separator(data.delivery.value)}</div>
-                        </Row>
-                    ) : null
-                }
-                {/* <Row>
-                    <div className={style.title}>TOTAL ITBIS</div>
-                    <div className={style.right}></div>
-                    <div className={style.right}>{separator(data.totalTaxes.value)}</div>
-                </Row> */}
-                <Row>
-                    <div className={style.title}>TOTAL A PAGAR</div>
-                    <div className={style.right}>{separator(data.totalTaxes.value)}</div>
-                    <div className={style.right}>{separator(data.totalPurchase.value)}</div>
-                </Row>
-                {
-
-                    <Row>
-                        <div className={style.title}>{paymentMethodLabel(paymentMethodActivated.method)}</div>
-                        <div></div>
-                        <div className={style.right}>{separator(paymentMethodActivated.value)}</div>
-                    </Row>
-
-                }
-                <Row>
-                    <div className={style.title}>CAMBIO</div>
-                    <div></div>
-                    <div className={style.right}>{separator(data.change.value)}</div>
-                </Row>
-            </div>
+            <Row cols='3'>
+                <div className={style.left}>DESCRIPCION</div>
+                <div className={style.right}>ITBIS</div>
+                <div className={style.right}>VALOR</div>
+            </Row>
+            <hr className={style.line} />
+            <ProductList data={data} />
+            <hr className={style.line} />
+            <PaymentArea data={data} />
         </div>
     ) : null)
 });
 
-const Row = styled.div`
-display: grid;
-grid-template-columns: 1fr 0.8fr 0.8fr;
-/* ${(props) => {
-        switch (props.border) {
-            case 'bottom-dashed':
-                return `
-            border-bottom: 1px dashed rgba(0, 0, 0, 0.200);
 
-            `
-                break;
-
-            default:
-                break;
-        }
-    }} */
+export const Title = styled.h4`
+    font-size: 14px;
 `

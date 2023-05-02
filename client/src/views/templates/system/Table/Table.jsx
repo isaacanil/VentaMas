@@ -10,8 +10,8 @@ export const Table = ({
     header,
     footer,
     body,
-    bodyMessage,
-    col
+    messageNoData,
+    colWidth
 
 }) => {
     const tableRef = useRef(null)
@@ -21,12 +21,12 @@ export const Table = ({
             <Container ref={tableRef}>
                 <Header
                     children={header}
-                    col={col}
+                    colWidth={colWidth}
                     scrolled={scrolled}
                 />
                 <Body
                     children={body}
-                    message={bodyMessage}
+                    messageNoData={messageNoData}
                 />
                 <Footer
                     children={footer}
@@ -45,6 +45,7 @@ const Container = styled.div`
     // border: 1px solid rgba(14, 14, 14, 0.100);
     overflow-y: scroll;
     display: grid;
+    border-radius: 1em;
     grid-template-rows: min-content 1fr min-content;
     
     `

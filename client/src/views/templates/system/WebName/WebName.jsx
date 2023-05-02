@@ -21,8 +21,7 @@ const WebNameItem = styled('span')`
     switch (props.size) {
       case "large":
         return `
-        font-size: 1.3em;
-        display: block;
+       display: block;
         width: 100%;
         font-weight: 600;
         text-align: center;
@@ -34,7 +33,8 @@ const WebNameItem = styled('span')`
         color: #f3f3f3;
         &:hover {
           color: #f1f1f1;
-        }
+        } font-size: 1.3em;
+        
       `
     }
   }}

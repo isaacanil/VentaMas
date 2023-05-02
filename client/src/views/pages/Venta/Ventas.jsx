@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect } from 'react'
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 //import component
 import {
@@ -20,6 +20,8 @@ import { motion } from 'framer-motion'
 //import { useBilling } from '../../../hooks/useBilling'
 import Style from './Venta.module.scss'
 import { Transition } from '../../templates/system/Transition'
+import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../features/cart/cartSlice'
+import useBarcodeScanner from '../../../hooks/barcode/usebarcodescanner'
 export const Ventas = () => {
 
   const [queryByCategoryList, setQueryByCategory] = useState([])
@@ -29,7 +31,7 @@ export const Ventas = () => {
   const [productsLoading, setProductsLoading] = useState(true)
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
-
+  const dispatch = useDispatch()
   useEffect(() => {
     if (categoryStatus) {
       QueryByCategory(setProducts, categoryArrayData, categoryStatus)
@@ -38,32 +40,50 @@ export const Ventas = () => {
       fbGetProducts(setProducts, false, setProductsLoading)
     }
   }, [categoryArrayData, categoryStatus])
+  const checkBarcode = (products, barcode) => {
+  
+    if (products.length <= 0) return;
+    const product = products.find(({ product }) => product?.barCode === barcode);
+
+   
+    if (product?.product?.barCode === barcode) {
+      dispatch(addProduct(product.product))
+      dispatch(totalShoppingItems())
+      dispatch(totalPurchaseWithoutTaxes())
+      dispatch(totalShoppingItems())
+      dispatch(totalTaxes())
+      dispatch(totalPurchase())
+      // dispatch(addPaymentMethodAutoValue())
+      dispatch(setChange())
+    }
+  }
+  useBarcodeScanner(products, checkBarcode);
 
   const productFiltered = filterData(products, searchData)
 
   return (
-   <Transition>
-    <Container>
-      {/* <MultiDisplayControl></MultiDisplayControl> */}
-      <ProductContainer>
-        <MenuApp
-          borderRadius={'bottom-right'}
-          searchData={searchData}
-          setSearchData={setSearchData}
-        />
-        <ProductControl
-          setProductsLoading={setProductsLoading}
-          productsLoading={productsLoading}
-          products={productFiltered}
-          isProductGrouped={categoryGrouped}
-        />
-        <MenuComponents />
-        <ShoppingItemsCounter />
-      </ProductContainer>
-      <Cart></Cart>
-    </Container>
-   </Transition>
-   
+    <Transition>
+      <Container>
+        {/* <MultiDisplayControl></MultiDisplayControl> */}
+        <ProductContainer>
+          <MenuApp
+            borderRadius={'bottom-right'}
+            searchData={searchData}
+            setSearchData={setSearchData}
+          />
+          <ProductControl
+            setProductsLoading={setProductsLoading}
+            productsLoading={productsLoading}
+            products={productFiltered}
+            isProductGrouped={categoryGrouped}
+          />
+          <MenuComponents />
+          <ShoppingItemsCounter />
+        </ProductContainer>
+        <Cart></Cart>
+      </Container>
+    </Transition>
+
   )
 }
 

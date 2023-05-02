@@ -19,9 +19,8 @@ export const Inventario = () => {
   const [products, setProducts] = useState([]);
   const [searchData, setSearchData] = useState('');
   const [currentProducts, setCurrentProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 10;
   const [filteredProducts, setFilteredProducts] = useState([]);
+
 
   useEffect(() => {
     fbGetProducts(setProducts);
@@ -32,15 +31,7 @@ export const Inventario = () => {
     setFilteredProducts(productsFiltered);
   }, [products, searchData]);
 
-  useEffect(() => {
-    const start = (currentPage - 1) * productsPerPage;
-    const end = start + productsPerPage;
-    setCurrentProducts(filteredProducts.slice(start, end));
-  }, [filteredProducts, currentPage]);
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
 
   // const handleDeleteProduct = (id) => {
   //   dispatch(handleDeleteProductAlert(id));
@@ -55,18 +46,12 @@ export const Inventario = () => {
     <Fragment>
       <Menu searchData={searchData} setSearchData={setSearchData} />
       <Container>
-        <PendingItemsTable productsArray={currentProducts} />
-        <Footer>
-          <Pagination
-            count={Math.ceil((filteredProducts.length / productsPerPage))}
-            page={currentPage}
-            onChange={handlePageChange}
-            siblingCount={1}
-            boundaryCount={1}
-            color="primary"
-            style={{ marginTop: '16px' }}
-          />
-        </Footer>
+        <PendingItemsTable
+          productsArray={currentProducts}
+          setCurrentProducts={setCurrentProducts}
+          filteredProducts={filteredProducts}
+        />
+
       </Container>
     </Fragment>
   );
@@ -111,11 +96,4 @@ const ProductsList = styled.div`
         list-style: none;
         padding: 1em;
         margin: 0;
-`
-const Footer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 4px;
-
 `

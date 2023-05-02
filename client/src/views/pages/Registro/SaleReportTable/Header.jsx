@@ -3,8 +3,7 @@ import styled from 'styled-components'
 
 export const Header = ({ data }) => {
     return (
-        data?.table?.headers
-            .map(({ align, name }, index) => (
+        data.map(({ align, name }, index) => (
                 <ITEMS text={align} key={index}>
                     <h3>{name}</h3>
                 </ITEMS>

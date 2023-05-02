@@ -1,20 +1,34 @@
 export class productDataTypeCorrection {
     constructor({
-        productName, productImageURL, category,
-        cost, price, size, type, tax, stock,
-        netContent, order, amountToBuy, id, trackInventory
+        productName, 
+        productImageURL, 
+        category,
+        cost, 
+        price, 
+        size, 
+        type, 
+        tax, 
+        stock,
+        netContent, 
+        order, 
+        barCode,
+        amountToBuy, 
+        id, 
+
+        trackInventory
     }) {
         this.productName = String(productName);
         this.productImageURL = String(productImageURL);
         this.category = String(category);
         this.cost = {
-            unit: Number(cost.unit),
-            total: Number(cost.total)
+            unit: Number(cost?.unit),
+            total: Number(cost?.total)
         };
         this.price = {
-            total: Number(price.total),
-            unit: Number(price.unit)
+            total: Number(price?.total),
+            unit: Number(price?.unit)
         };
+        this.barCode = String(barCode)
         this.size = String(size);
         this.type = String(type);
         this.tax = {

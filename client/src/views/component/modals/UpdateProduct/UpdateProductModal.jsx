@@ -22,6 +22,10 @@ import noImage from '../../../../assets/producto/noImg.png'
 import { modes } from '../../../../constants/modes'
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
 import { initTaxes } from './InitializeData'
+import QRCode from 'react-qr-code'
+import Barcode from 'react-barcode'
+import { BarCodeControl } from './components/BarCodeControl'
+import { QRCodeControl } from './components/QRCodeControl'
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, product } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState(initTaxes)
@@ -36,7 +40,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     }
 
     useEffect(() => {
-        
+
         getTaxes(setTaxesList)
         getCat(setCatList)
     }, [])
@@ -94,6 +98,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             close={closeModal}
             btnSubmitName='Guardar'
             handleSubmit={handleSubmit}
+            width={'large'}
             subModal={
                 <UploadImg
                     fnAddImg={localUpdateImage}
@@ -103,7 +108,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         >
             <Container>
-                <FormGroup column='2'>
+                <FormGroup column='1'>
                     <InputV4
                         name='productName'
                         label={'Nombre del producto:'}
@@ -116,7 +121,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         onChange={(e) => dispatch(setProduct({ ...product, productName: e.target.value }))}
                     />
                 </FormGroup>
-                <FormGroup orientation='vertical'>
+                <FormGroup column='2'>
                     <InputV4
                         label={'Tipo de Producto:'}
                         type="text"
@@ -136,7 +141,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                     />
 
                 </FormGroup>
-                <FormGroup orientation='vertical'>
+                <FormGroup column='3'>
                     <InputV4
                         label={'Tamaño'}
                         type="text"
@@ -190,7 +195,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         </Align>
                     </ImgContainer>
                 </FormGroup>
-                <FormGroup orientation='vertical' >
+                <FormGroup column='3' >
                     <InventariableButton
                         setProduct={setProduct}
                         product={product}
@@ -205,7 +210,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                     />
 
                 </FormGroup>
-                <FormGroup orientation='vertical'>
+                <FormGroup column='3'>
                     <InputV4
                         label={'Costo'}
                         type="number"
@@ -237,14 +242,24 @@ export const UpdateProductModal = ({ isOpen }) => {
                         readOnly
                         placeholder='Precio de Venta' />
                 </FormGroup>
+                <FormGroup >
+                    <BarCodeControl
+                        product={product}
+                        value={product?.barCode || '1234567890'}
+                    />
+                </FormGroup>
+                <FormGroup >
+                    <QRCodeControl value={product?.id || ''} />
+                </FormGroup>
             </Container>
+
         </Modal>
     )
 }
 
 const Container = styled.div`
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr) 240px;
     padding: 1em 1em 1em;
     background-color: var(--White2);
     height: 100%;
@@ -260,7 +275,8 @@ const FormGroup = styled.div`
     background-color: var(--White);
     border-radius: var(--border-radius-light);
     padding: 0.4em;
- 
+    width: 100%;
+    display: grid;
     select{
          padding: 0 0.4em;
          border-radius: var(--border-radius-light);
@@ -268,51 +284,37 @@ const FormGroup = styled.div`
          height: 2em;       
          
       }
-    &:nth-child(1){
-        grid-column: 2 span;
-      
-    }
-    &:nth-child(2){
-        grid-column: 1 / 3;
-        display: grid;
-         grid-template-columns: repeat(2, 1fr);
-    }
-    &:nth-child(3){ 
-        grid-column: 1 / 4;
-        display: grid;
-         grid-template-columns: repeat(3, 1fr);
-    }
+ 
     &:nth-child(4){
-      
-        display: grid;
-
         grid-column: 3 / 4;
-        grid-row: 1 / 3;
-       
+        grid-row: 1 / 3; 
     }
-    &:nth-child(5){
-        grid-column: 1 / 4;
-        display: grid;
-         grid-template-columns: repeat(3, 1fr);
-    }
-    &:nth-child(6){
-       grid-column: 1 / 4;
-       display: grid;
-         grid-template-columns: repeat(3, 1fr);
-     
-   }
-   
-    ${(props) => {
-        switch (props.orientation) {
-            case 'vertical':
-                return `
-                    display: flex;
-                    gap: 1em;
-                `
 
-            case 'horizontal':
+   &:nth-child(7){
+       grid-column: 3 / 4;
+       grid-row: 3 / 5; 
+   }
+   &:nth-child(8){
+       grid-column: 3 / 4;
+   }
+    ${(props) => {
+        switch (props.column) {
+            case '1':
                 return `
-                    display: grid
+                grid-template-columns: repeat(1, 1fr);
+                grid-column: 1 / 3;
+                `
+            case '2':
+                return `
+                grid-template-columns: repeat(2, 1fr);
+                grid-column: 1 / 3;
+                gap: 0.4em;
+                `
+            case '3':
+                return `
+                grid-column: 1 / 3;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.4em;
                 `
             default:
                 break;
@@ -393,3 +395,4 @@ width: 100%;
 
     }}
     `
+

@@ -60,6 +60,8 @@ import { ChatBox } from './views/component/ChatBox/ChatBox';
 import { AddProductAndServicesModal } from './views/component/modals/AddProduct&Services/AddProduct&Services';
 import { OrderDetails } from './views/component/modals/OrderDetailModal/OrderDetailModal';
 import { ProductOutflow } from './views/pages/Inventario/pages/ProductOutflow/ProductOutflow';
+import { BarcodeParser } from 'barcode-parser';
+import useBarcodeScanner from './hooks/barcode/usebarcodescanner';
 
 function App() {
   const dispatch = useDispatch();
@@ -71,8 +73,6 @@ function App() {
     AuthStateChanged(dispatch)
     dispatch(ReloadImageHiddenSetting())
   }, [])
-
-  useFullScreen()
 
   const isConnected = useCheckForInternetConnection()
   console.log(isConnected)

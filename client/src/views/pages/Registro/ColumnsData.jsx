@@ -34,9 +34,10 @@ export const ColData = [
         min: '100px',
         align: 'left'
     },
-    // {
-    //     max: '0.5fr',
-    //     min: '50px',
-    //     align: 'left'
-    // },
+    {
+        max: '0.5fr',
+        min: '50px',
+        align: 'left'
+    },
+    
 ]

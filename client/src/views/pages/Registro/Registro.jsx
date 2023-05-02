@@ -13,7 +13,7 @@ import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import Clock from '../../../hooks/time/Clock'
 import { CenteredText } from '../../templates/system/CentredText'
 import TimeFilterButton from '../../templates/system/Button/TimeFilterButton/TimeFilterButton'
-import { salesReportData } from './sales_register_data'
+import { tableData } from './tableData'
 import { SaleReportTable } from './SaleReportTable/SaleReportTable'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
@@ -25,7 +25,6 @@ export const Registro = () => {
   const [bills, setBills] = useState([])
   const [client, setClient] = useState('')
   const [datesSelected, setDatesSelected] = useState({})
-  const data = salesReportData
   const dispatch = useDispatch()
   useEffect(() => {
     getBills(setBills, datesSelected)
@@ -43,17 +42,17 @@ export const Registro = () => {
 
 
   const handleExportButton = (type) => {
-    if (bills.length === 0 ){
-      dispatch(addNotification({ title: 'Error al exportar' ,message: 'No hay Facturas para exportar', type: 'error' }))
+    if (bills.length === 0) {
+      dispatch(addNotification({ title: 'Error al exportar', message: 'No hay Facturas para exportar', type: 'error' }))
       return
-    } 
+    }
     switch (type) {
       case 'Resumen':
         console.log('----------------------------', transformedResumenBillsData())
-         exportToExcel(transformedResumenBillsData(), 'Registros', 'Registro.xlsx');
+        exportToExcel(transformedResumenBillsData(), 'Registros', 'Registro.xlsx');
         break;
       case 'Detailed':
-     console.log('----------------------------', transformedDetailedBillsData())
+        console.log('----------------------------', transformedDetailedBillsData())
         exportToExcel(transformedDetailedBillsData(), 'Registros', 'Registro.xlsx');
         break;
       default:
@@ -94,7 +93,11 @@ export const Registro = () => {
             } />
           </span>
         </FilterBar>
-        <SaleReportTable data={data} bills={bills} total={total} />
+        <SaleReportTable
+          data={tableData}
+          bills={bills}
+          total={total}
+        />
       </Container>
     </Fragment>
   )
@@ -107,7 +110,6 @@ const Container = styled.div`
   background-color: var(--color2);
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
- 
 `
 const FilterBar = styled.div`
   width: 100%;

@@ -91,6 +91,7 @@ export const Carrusel = () => {
     )
 }
 const Container = styled.div`
+background-color: #ffffff;
     width: 100%;
     display: grid;
     grid-template-columns: min-content 1fr min-content;

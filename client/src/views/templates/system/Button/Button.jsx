@@ -30,28 +30,35 @@ export const Button = ({
 }) => {
 
   return (
-    <Container
-      bgcolor={bgcolor}
-      color={color}
-      onClick={onClick}
-      width={width}
-      height={height}
-      variant={variant}
-      disabled={disabled}
-      borderRadius={borderRadius}
-      isActivated={isActivated}
-      titlePosition={titlePosition}
-      border={border}
-      iconColor={iconColor}
-      isActivatedColors={isActivatedColors}
-    >
+    <Tooltip
+    placement={tooltipPlacement}
+    description={tooltipDescription}
+      Children={
+        <Container
+          bgcolor={bgcolor}
+          color={color}
+          onClick={onClick}
+          width={width}
+          height={height}
+          variant={variant}
+          disabled={disabled}
+          borderRadius={borderRadius}
+          isActivated={isActivated}
+          titlePosition={titlePosition}
+          border={border}
+          iconColor={iconColor}
+          isActivatedColors={isActivatedColors}
+        >
 
-      {isActivated ? iconOn : iconOff}
-      {startIcon ? startIcon : null}
-      {title ? title : null}
-      {endIcon ? endIcon : null}
+          {isActivated ? iconOn : iconOff}
+          {startIcon ? startIcon : null}
+          {title ? title : null}
+          {endIcon ? endIcon : null}
 
-    </Container>
+        </Container>
+      } />
+
+
   )
 }
 

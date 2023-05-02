@@ -56,7 +56,7 @@
   --border-radius: 7px;
   --border-radius-total: 100px;
   --border-primary: 1px solid rgba(0, 0, 0, 0.100);
-  --border-color: rgba(0, 0, 0, 0.100);
+
 
   /*font*/
   --font-color-dark: var(--Black4);
@@ -64,9 +64,9 @@
   --font-color-dark-slightly: var(--Gray8);
   --font-color4: var(--Gray8);
   --font-color5: var(--Gray6);
+
   /*padding*/
   --box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2);
-
   --padding: 0.4em;
   --padding1: 1em;
 
