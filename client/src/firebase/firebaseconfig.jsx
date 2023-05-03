@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
 import { SaveImg, UploadImgLoading, UploadProgress } from "../features/uploadImg/uploadImageSlice";
 import { selectAppMode } from '../features/appModes/appModeSlice'
-import { DynamicConfig } from "./DynamicConfig";
 import { updateStock } from "../features/Purchase/addPurchaseSlice";
 
 const firebaseConfig = {
@@ -30,11 +29,10 @@ const firebaseConfig = {
 }
 import.meta.env.MODE
 
-const adminConfig = <DynamicConfig />
-const auxApp = initializeApp(adminConfig, 'alt');
+
 const app = initializeApp(firebaseConfig);
 console.log(app)
-console.log(auxApp)
+
 export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
@@ -56,7 +54,6 @@ export const AuthStateChanged = (dispatch) => {
   })
 }
 export const HandleRegister = (name, email, pass, confirmPass, Navigate) => {
-
   if (pass === confirmPass) {
     createUserWithEmailAndPassword(auth, email, pass)
       .then(userAuth => {

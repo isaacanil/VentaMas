@@ -22,12 +22,13 @@ import noImage from '../../../../assets/producto/noImg.png'
 import { modes } from '../../../../constants/modes'
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
 import { initTaxes } from './InitializeData'
+import { selectUser } from '../../../../features/auth/userSlice'
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, product } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState(initTaxes)
     const [catList, setCatList] = useState([])
     const [imgController, setImgController] = useState(false)
-
+    const user = useSelector(selectUser);
     const dispatch = useDispatch()
     const updateMode = modes.operationModes.updateMode
     const handleImgController = (e) => {
@@ -57,12 +58,12 @@ export const UpdateProductModal = ({ isOpen }) => {
 
     const handleUpdateProduct = () => {
         dispatch(addNotification({ title: 'Producto Actualizado', message: 'Espere un momento', type: 'success' }))
-        fbUpdateProduct(productDataTypeCorrected, dispatch)
+        fbUpdateProduct(productDataTypeCorrected, dispatch, user)
     }
 
     const handleAddProduct = () => {
         dispatch(addNotification({ title: 'Producto Creado', message: 'Espere un momento', type: 'success' }))
-        fbAddProduct(productDataTypeCorrected, dispatch)
+        fbAddProduct(productDataTypeCorrected, dispatch, user)
     }
 
     const handleSubmit = async () => {
@@ -75,8 +76,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                 handleAddProduct()
             }
         } catch (error) {
-            console.error('____________________________________________________', error)
-            dispatch(addNotification({ title: 'error', message: 'Looking this...', type: 'error' }))
+            console.error(error)
+            dispatch(addNotification({ title: 'error', message: 'Favor Informar a Soporte Técnico', type: 'error' }))
         }
     }
 

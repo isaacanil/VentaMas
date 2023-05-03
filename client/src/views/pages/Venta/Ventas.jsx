@@ -11,7 +11,7 @@ import {
 import { SelectCategoryList, SelectCategoryStatus } from '../../../features/category/categorySlicer'
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { QueryByCategory } from '../../../firebase/firebaseconfig'
-import { fbGetProducts } from '../../../firebase/products/fbGetProducts'
+import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { filterData } from '../../../hooks/search/useSearch'
 import { searchAndFilter, useSearchFilterX } from '../../../hooks/useSearchFilter'
 import { ProductControl } from './ProductControl.jsx'
@@ -22,22 +22,15 @@ import Style from './Venta.module.scss'
 import { Transition } from '../../templates/system/Transition'
 export const Ventas = () => {
 
-  const [queryByCategoryList, setQueryByCategory] = useState([])
-  const categoryStatus = useSelector(SelectCategoryStatus)
-  const categoryArrayData = useSelector(SelectCategoryList)
-  const [products, setProducts] = useState([])
-  const [productsLoading, setProductsLoading] = useState(true)
+
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
 
-  useEffect(() => {
-    if (categoryStatus) {
-      QueryByCategory(setProducts, categoryArrayData, categoryStatus)
-    }
-    if (categoryStatus === false) {
-      fbGetProducts(setProducts, false, setProductsLoading)
-    }
-  }, [categoryArrayData, categoryStatus])
+ 
+   
+  const {products, loading, setLoading} = useGetProducts()
+    
+ console.log(products, 'products-------------------------------')
 
   const productFiltered = filterData(products, searchData)
 
@@ -52,8 +45,8 @@ export const Ventas = () => {
           setSearchData={setSearchData}
         />
         <ProductControl
-          setProductsLoading={setProductsLoading}
-          productsLoading={productsLoading}
+         setProductsLoading={setLoading}
+          productsLoading={loading}
           products={productFiltered}
           isProductGrouped={categoryGrouped}
         />

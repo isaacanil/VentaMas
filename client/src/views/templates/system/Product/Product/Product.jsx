@@ -17,6 +17,7 @@ export const Product = ({ product, }) => {
     const dispatch = useDispatch();
     const ProductsSelected = useSelector(SelectProduct)
     const deliverySelected = useSelector(SelectDelivery)
+    
     useEffect(() => {
         dispatch(totalShoppingItems())
         dispatch(totalPurchase())
@@ -67,7 +68,7 @@ export const Product = ({ product, }) => {
                         borderRadius='normal'
                         // bgcolor='error'
                         variant='contained'
-                        onClick={(e) => deleteProductFromCart(e, product.id)}
+                        onClick={(e) => deleteProductFromCart(e, product?.id)}
                     />
                 ) : null}
                 <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
@@ -80,7 +81,7 @@ export const Product = ({ product, }) => {
                     ) : <Group />}
 
                     <Group>
-                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product.price.total)}</Price>
+                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product?.price?.total)}</Price>
                     </Group>
                 </Footer>
             </Body>

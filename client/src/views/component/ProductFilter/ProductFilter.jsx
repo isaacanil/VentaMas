@@ -4,16 +4,16 @@ import { InputText } from '../../templates/system/Inputs/Input'
 import { IoClose } from 'react-icons/io5'
 import { ProductCard } from './ProductCard'
 import { SelectProductSelected } from '../../../features/addOrder/addOrderModalSlice'
-import { fbGetProducts } from '../../../firebase/products/fbGetProducts'
+import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProduct }) => {
-  const [products, setProducts] = useState([])
+  
   const [value, setValue] = useState(undefined)
   const close = () => {
     setIsOpen(false)
   }
-  useEffect(() => {
-    fbGetProducts(setProducts, true)
-  }, [])
+
+  const {products} =  useGetProducts(true)
+ 
   useEffect(() => {
     if (!productName) {
       setValue('')

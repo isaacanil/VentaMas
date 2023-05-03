@@ -60,18 +60,25 @@ import { ChatBox } from './views/component/ChatBox/ChatBox';
 import { AddProductAndServicesModal } from './views/component/modals/AddProduct&Services/AddProduct&Services';
 import { OrderDetails } from './views/component/modals/OrderDetailModal/OrderDetailModal';
 import { ProductOutflow } from './views/pages/Inventario/pages/ProductOutflow/ProductOutflow';
+import useGetUserData from './firebase/Auth/useGetUserData';
+ './firebase/Auth/useGetUserData';
 
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser)
+  const [businessID, setBusinessID] = useState(null)
   const products = useSelector(SelectProduct)
   const cart = useSelector((state) => state.cart)
   //Todo ******detectando si hay usuarios logueados******
+  
   useEffect(() => {
     AuthStateChanged(dispatch)
     dispatch(ReloadImageHiddenSetting())
   }, [])
 
+  useGetUserData(user?.uid)
+  
+  
   useFullScreen()
 
   const isConnected = useCheckForInternetConnection()

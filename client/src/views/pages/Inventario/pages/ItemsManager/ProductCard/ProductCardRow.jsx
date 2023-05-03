@@ -43,17 +43,17 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                 </Col>
                 <Col>
                     <ProductName>
-                        {product.productName}
+                        {product?.productName}
                     </ProductName>
                 </Col>
                 <Col position='right'>
                     <Item position='right'>
-                        <StockIndicator stock={product.stock} trackInventory={product.trackInventory}></StockIndicator>
+                        <StockIndicator stock={product?.stock} trackInventory={product?.trackInventory}></StockIndicator>
                     </Item>
                 </Col>
                 <Col position='right'>
                     <Item position='right'>
-                        <span>{useFormatPrice(product.cost.unit)}</span>
+                        <span>{useFormatPrice(product?.cost?.unit)}</span>
                     </Item>
                 </Col>
                 {/* <Item>
@@ -61,18 +61,18 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                 </Item> */}
                 <Col position='right'>
                     <Item position='right'>
-                        <span>{useFormatPrice(product.tax.value * product.cost.unit)}</span>
+                        <span>{useFormatPrice(product?.tax?.value * product?.cost?.unit)}</span>
                     </Item>
                 </Col>
                 <Col position='right'>
                     <Item position='right'>
-                        <span>{useFormatPrice(product.price.unit)}</span>
+                        <span>{useFormatPrice(product?.price?.unit)}</span>
                     </Item>
                 </Col>
                 <Head>
                     <ButtonGroup>
                         <Button
-                            startIcon={icons.operationModes.edit}
+                            startIcon={icons?.operationModes?.edit}
                             borderRadius='normal'
                             color={'gray-dark'}
                             width='icon32'
@@ -84,7 +84,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                             width='icon32'
                             color={'gray-dark'}
                             borderRadius='normal'
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleDeleteProduct(product?.id)}
                         />
                     </ButtonGroup>
                 </Head>

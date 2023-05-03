@@ -77,6 +77,7 @@ export const SignUp = () => {
     email: '',
     password: '',
     verifyPassword: '',
+    active: true
   });
   const { name, email, password, verifyPassword } = user;
 

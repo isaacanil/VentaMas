@@ -10,22 +10,21 @@ import { handleDeleteProductAlert } from '../../../../../features/Alert/AlertSli
 import styled from 'styled-components';
 import { useSearchFilterX } from '../../../../../hooks/useSearchFilter';
 import { PendingItemsTable } from './PendingItemsTable';
-import { fbGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
+import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 import { Pagination } from '@mui/material';
 import { filterData } from '../../../../../hooks/search/useSearch';
 
 export const Inventario = () => {
   const dispatch = useDispatch();
-  const [products, setProducts] = useState([]);
   const [searchData, setSearchData] = useState('');
   const [currentProducts, setCurrentProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 10;
   const [filteredProducts, setFilteredProducts] = useState([]);
 
-  useEffect(() => {
-    fbGetProducts(setProducts);
-  }, []);
+ 
+    const {products} = useGetProducts();
+
 
   useEffect(() => {
     const productsFiltered = filterData(products, searchData);

@@ -23,6 +23,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
     return result
   }, {})
 
+
   useEffect(() => {
     setProductsLoading(true)
     setTimeout(() => {
