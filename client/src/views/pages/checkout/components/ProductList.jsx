@@ -1,9 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
-import { Col, Row } from './Table'
+import { Col } from './Table/Col'
+import { Row } from './Table/Row'
 export const ProductList = ({ data }) => {
-    const {products} = data
+    const { products } = data
     return (
         <Products>
             {
@@ -27,26 +28,27 @@ export const ProductList = ({ data }) => {
 }
 
 const Products = styled.div`
-    display: block;
+      display: block;
     border: none;
     padding: 0;
     list-style: none;
 `
 const Product = styled.div`
     width: 100%;
+
     &:nth-child(1n) {
-        border-bottom: 1px dashed black;
-    }
-    
-    &:last-child {
-        border-bottom: none;
-    }
+            border-bottom: 1px dashed black;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
 `
 const ProductName = styled.div`
-    text-transform: lowercase;
         width: 100%;
         grid-column: 1 / 4;
         line-height: 1.4pc;
+        text-transform: uppercase;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;

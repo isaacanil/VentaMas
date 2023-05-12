@@ -15,7 +15,7 @@ export const AddProductButton = () => {
     }
     return (
         <Button
-            borderRadius='normal'
+            borderRadius='light'
             startIcon={<CgMathPlus />}
             title="Producto"
             onClick={Open}>

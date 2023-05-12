@@ -23,6 +23,6 @@ export const cardData = [
     id: 4,
     title: 'Inventario',
     img: InventarioImg,
-    path: '/app/inventario'
+    path: '/app/inventario/items'
   }
 ]

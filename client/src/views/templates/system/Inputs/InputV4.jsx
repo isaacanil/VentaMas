@@ -18,16 +18,10 @@ import { faAsterisk } from '@fortawesome/free-solid-svg-icons';
  * @param {InputV4} props
  * @returns {JSX.Element}
  */
-export const InputV4 = ({ icon, label, type, search, onClear, validate, errorMessage, bgColor, clearButton, ...props }) => {
-  const [showClearButton, setShowClearButton] = useState(false);
-
-  useEffect(()=>{setShowClearButton(Boolean(props.value))},[props.value])
-
-  const handleClearInput = () => {
-  
-      onClear();
-   
-  };
+export const InputV4 = ({ icon, label, type, search, onClear, validate, errorMessage, bgColor, clearButton = false, ...props }) => {
+  const showClearButton = clearButton && props.value;
+  const inputRef = useRef(null);
+  const inputValue = props.value
 
   return (
     <div>
@@ -37,13 +31,13 @@ export const InputV4 = ({ icon, label, type, search, onClear, validate, errorMes
       </Fragment> }
       <InputWrapper bgColor={bgColor} search={search} validate={validate}>
         {icon}
-        <StyledInput {...props} />
-        { (onClear && showClearButton) && (
+        <StyledInput {...props} ref={inputRef} />
+     
           <MdClose
-            onClick={handleClearInput}
-            style={{ cursor: 'pointer', marginLeft: '8px', color: '#999' }}
+            onClick={() => onClear()}
+            style={{ cursor: 'pointer', marginLeft: '8px', color: `${props.value ? "#999" : "transparent"}` }}
           />
-        )}
+        
       </InputWrapper>
       {(validate && errorMessage) && <ErrorMessage show>{errorMessage}</ErrorMessage>}
     </div>
@@ -66,7 +60,7 @@ const InputWrapper = styled.div.attrs(() => ({
   max-width: ${props => props.search ? '280px' : null};
   background: ${props => props.bgColor || 'white'};
   svg {
-    font-size: 14px;
+    font-size: 18px;
     color: #999;
     
   }

@@ -3,10 +3,11 @@ import { nanoid } from "nanoid";
 import { db } from "../firebaseconfig";
 
 export const fbAddProduct = (data, dispatch, user) => {
+    if (!user && !user.businessID) return
     const { businessID } = user
     const product = {
         ...data,
-        id:  nanoid(10)
+        id: nanoid(10)
     }
     return new Promise((resolve, reject) => {
         const productRef = doc(db, "businesses", businessID, "products", product.id)

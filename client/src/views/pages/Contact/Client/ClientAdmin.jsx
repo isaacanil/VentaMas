@@ -5,16 +5,17 @@ import {
   MenuApp,
   Button,
 } from '../../../'
-import { getClients } from '../../../../firebase/firebaseconfig'
+
+
 import { filterData} from '../../../../hooks/search/useSearch'
 import {  searchAndFilter, useSearchFilter, useSearchFilterX } from '../../../../hooks/useSearchFilter'
 import { CreateContact } from './components/ClientForm/ClientForm'
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
 import { ToolBar } from './ToolBar'
+import { useFbGetClients } from '../../../../firebase/client/useFbGetClients'
 export const ClientAdmin = () => { 
-  const [clients, setClients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  useEffect(() => { getClients(setClients) }, [])
+  const {clients} = useFbGetClients()
   const clientsFiltered = filterData(clients, searchTerm)
   console.log(clientsFiltered)
   return (

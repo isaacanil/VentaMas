@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import { useDispatch, useSelector } from 'react-redux';
 import { addDelivery, selectClientInState, SelectFacturaData } from "../../../../features/cart/cartSlice";
-import { deleteClient, deleteMultipleClients } from "../../../../firebase/firebaseconfig";
 import { highlightSearch } from "../highlight/Highlight";
 const Container = styled.li`
     list-style: none;

@@ -4,17 +4,20 @@ import { MdOutlineFileUpload } from 'react-icons/md'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice'
-import { UploadProdImgData } from '../../../../../firebase/firebaseconfig'
+
 import { fbAddProductImg } from '../../../../../firebase/products/fbAddProductImg'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
 import noImg from '../../../../../assets/producto/noImg.png'
+import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
+import { selectUser } from '../../../../../features/auth/userSlice'
 export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
-   
+   const user = useSelector(selectUser)
     const handleSubmit = () => {
-        fbAddProductImg(ImgToUpload)
+        console.log('handleSubmit--------------------------')
+        fbAddProductImg(user, ImgToUpload)
             .then((url) => {
-                UploadProdImgData(url)
+                fbAddProductImgData(user, url)
                 setImgToUpload(null)
             })
     }

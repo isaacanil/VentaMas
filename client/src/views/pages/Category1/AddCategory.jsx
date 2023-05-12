@@ -5,7 +5,10 @@ import styled from 'styled-components'
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import { InputText, Textarea } from '../../templates/system/Inputs/Input'
 import { v4 } from 'uuid'
-import { UploadCat } from '../../../firebase/firebaseconfig.jsx'
+
+import { useSelector } from 'react-redux'
+import { selectUser } from '../../../features/auth/userSlice'
+import { fbAddCategory } from '../../../firebase/categories/fbAddCategory'
 export const AddCategory = () => {
   
     const [catName, setCatName] = useState('')
@@ -15,9 +18,10 @@ export const AddCategory = () => {
     }
     console.log(Category)
     
+    const user = useSelector(selectUser)
     
     const handleSubmit = (e) => {
-        UploadCat('categorys', Category, Category.id)
+        fbAddCategory( Category, user )
         e.preventDefault()
         console.log('click')
         setCatName('')

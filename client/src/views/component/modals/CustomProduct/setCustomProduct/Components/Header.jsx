@@ -5,12 +5,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { SelectIngredientsListName, selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice'
 import { addNotification } from '../../../../../../features/notification/NotificationSlice'
-import { QueryByType } from '../../../../../../firebase/firebaseconfig'
+
 import { removeMatchesString } from '../../../../../../hooks/removeMatchesString'
 import { separator } from '../../../../../../hooks/separator'
 import { getPizzaType } from '../../getPizzaType'
 import customPizzaData  from '../customPizza.json'
 import { getPrice } from './getPrice'
+
+import { fbGetProductsQueryByType } from '../../../../../../firebase/products/customProduct/fbGetCustomProductByType'
+import { selectUser } from '../../../../../../features/auth/userSlice'
 
 const EmptyProduct = {
     id: '',
@@ -32,7 +35,7 @@ const EmptyNewProduct = {
 }
 const EmptyProductSelected = { a: '', b: '' }
 export const Header = ({Row, Group, newProduct, setNewProduct, initialState, setInitialState}) => {
-    
+    const user = useSelector(selectUser)
     const [products, setProducts] = useState([])
     const { pizzaSlices, sizeList } = customPizzaData
     const [isComplete, setIsComplete] = useState('complete')
@@ -65,9 +68,9 @@ export const Header = ({Row, Group, newProduct, setNewProduct, initialState, set
    
     useEffect(() => {
         if (size !== '') {
-            QueryByType(setProducts, type, size)
+            fbGetProductsQueryByType(setProducts, type, size, user)
         }
-    }, [size])
+    }, [size, user])
 
     useEffect(() => {
         if (isComplete === 'complete' && productSelected.a !== '') {

@@ -10,13 +10,10 @@ import { deleteObject, getDownloadURL, getStorage, listAll, ref, uploadBytes, up
 import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
 import { v4 } from 'uuid'
-import { useDispatch } from "react-redux";
-import { login, logout } from "../features/auth/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { login, logout, selectUser } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
-import { SaveImg, UploadImgLoading, UploadProgress } from "../features/uploadImg/uploadImageSlice";
-import { selectAppMode } from '../features/appModes/appModeSlice'
-import { updateStock } from "../features/Purchase/addPurchaseSlice";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -27,11 +24,8 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
-import.meta.env.MODE
-
 
 const app = initializeApp(firebaseConfig);
-console.log(app)
 
 export const storage = getStorage(app);
 export const db = getFirestore(app);
@@ -96,28 +90,8 @@ export const watchingUserState = (setUserDisplayName) => {
     }
   })
 }
-export const UploadProdImgData = async (url) => {
-  let id = nanoid(10)
-  const imgRef = doc(db, "prodImages", id);
-  try {
-    await setDoc(imgRef, {
-      id: id,
-      url: url
 
-    });
-  } catch (error) {
-    console.log(error)
-  }
-}
-export const deleteImgFromUrl = async (url) => {
-  const fileRef = ref(storage, url)
-  try {
-    await deleteObject(fileRef)
-    console.log(id)
-  } catch (error) {
-    console.log(error)
-  }
-}
+
 export const fbAddImgReceiptData = async (id, url) => {
   const imgRef = doc(db, "receiptImages", id);
   try {
@@ -138,17 +112,7 @@ export const fbDeletePurchaseReceiptImg = async (data) => {
     console.log(error)
   }
 }
-export const ProductsImg = (SetAllImg) => {
-  const imageRef = collection(db, "prodImages");
-  const q = query(imageRef);
-  onSnapshot(q, (querySnapshot) => {
-    const img = [];
-    querySnapshot.forEach((doc) => {
-      img.push(doc.data());
-    });
-    SetAllImg(img)
-  });
-}
+
 export const createProvider = async (provider) => {
   console.log(provider)
   try {
@@ -180,65 +144,8 @@ export const getProviders = async (setProviders) => {
     setProviders(providersArray)
   })
 }
-export const updateClient = async (client) => {
-  console.log('product from firebase', client)
-  const clientRef = doc(db, 'client', client.id)
-  await updateDoc(clientRef, { client })
-    .then(() => { console.log('product from firebase', client) })
-}
-export const createClient = async (client) => {
-  console.log(client)
-  try {
-    const clientRef = doc(db, 'client', client.id)
-    await setDoc(clientRef, { client })
-  } catch (error) {
-    console.error("Error adding document: ", error)
-  }
-}
-export const getClients = async (setClients) => {
-  const clientRef = collection(db, "client")
-  const q = query(clientRef, orderBy("client.name", "asc"))
-  onSnapshot(q, (snapshot) => {
-    let clientArray = snapshot.docs.map(item => item.data())
-    console.log(clientArray)
-    setClients(clientArray)
-  })
-}
-export const deleteClient = async (id) => {
-  console.log(id)
-  const counterRef = doc(db, "client", id)
-  try {
-    await deleteDoc(counterRef)
-    //deleteDoc(doc(db, `products`, id))
-    console.log(id)
-  } catch (error) {
-    console.log(error)
-  }
-}
-export const deleteMultipleClients = (array) => {
-  array.forEach((id) => {
-    deleteClient(id)
-  })
-}
-export const getCat = async (setCategories) => {
-  const categoriesRef = collection(db, "categorys")
-  const q = query(categoriesRef, orderBy("category.name", "desc"))
-  onSnapshot(q, (snapshot) => {
-    let categoriesArray = snapshot.docs.map(item => item.data())
-    setCategories(categoriesArray)
-    console.log(categoriesArray)
-  })
-}
-export const fbDeleteCategory = async (id) => {
-  const counterRef = doc(db, "categorys", id)
-  try {
-    await deleteDoc(counterRef)
-    //deleteDoc(doc(db, `products`, id))
-    console.log(id)
-  } catch (error) {
-    console.log(error)
-  }
-}
+
+
 export const getProduct = async (id) => {
   getDoc(doc(db, 'products', id))
 }
@@ -246,8 +153,8 @@ export const getTaxes = async (setTaxes) => {
   const taxesRef = collection(db, "taxes")
   const { docs } = await getDocs(taxesRef)
   const taxesArray = docs.map(item => item.data())
-   if(taxesArray.length === 0 ) return;
-   if(taxesArray.length > 0 ) return setTaxes(taxesArray)
+  if (taxesArray.length === 0) return;
+  if (taxesArray.length > 0) return setTaxes(taxesArray)
 }
 export const addIngredientTypePizza = async (ingredient) => {
   const IngredientRef = doc(db, "products", "6dssod");
@@ -271,90 +178,13 @@ export const deleteIngredientTypePizza = async (ingredient) => {
     console.log("Lo sentimos Ocurrió un error: ", error)
   }
 }
-export const getCustomProduct = async (setProduct) => {
-  const customProductRef = doc(db, "products", "6dssod")
-  onSnapshot(customProductRef, (snapshot) => {
-    const data = snapshot.data()
-    setProduct(data)
-  })
-}
-export const UploadCat = async (path, category) => {
-  const id = nanoid(10)
-  let categoryRef = doc(db, `${path}`, id);
-  await setDoc(categoryRef, {
-    category: {
-      ...category,
-      id
-    }
-  }).then(() => {
-    console.log('category uploaded')
-  }).catch((error) => {
-    console.log(error)
-  })
 
+export const deleteProduct = (id, user) => {
+  if (user || user?.businessID) { return }
+  deleteDoc(doc(db, "businesses", user.businessID, `products`, id))
 }
-export const deleteProduct = (id) => {
-  deleteDoc(doc(db, `products`, id))
-}
-export const getBills = async (setBills, time) => {
-  const start = new Date(time.startDate);
-  const end = new Date(time.endDate);
 
-  const Ref = collection(db, `bills`);
-  const q = query(Ref, where("data.date", ">=", start), where("data.date", "<=", end), orderBy("data.date", "desc"));
 
-  onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map(item => item.data())
-    setBills(data)
-  })
-}
-export const AddBills = (data) => {
-  //const clientRef = doc(db, "client", "4O-0")
-  const billsRef = doc(db, "bills", data.id)
-  try {
-    setDoc((billsRef), {
-      data: {
-        ...data,
-        date: new Date(),
-      }
-    });
-  } catch (error) {
-    console.log(error)
-  }
-}
-export const UpdateMultipleDocs = (products) => {
-  products.forEach((productData) => {
-    const productRef = doc(db, "products", productData.id);
-    const stockUpdateValue = productData?.trackInventory ? increment(-Number(productData?.amountToBuy?.total)) : increment(0);
-    updateDoc(productRef, {
-      "product.stock": stockUpdateValue,
-    })
-      .then(() => {
-        console.log("Document successfully updated!");
-      })
-      .catch((error) => {
-        // The document probably doesn't exist.
-        console.error("Error updating document: ", error);
-      });
-  })
-}
-export const QueryByCategory = async (setProductArray, categoryArrayData, categoryStatus) => {
-  const productsRef = collection(db, "products")
-  const q = query(productsRef, where("product.category", "in", categoryArrayData), orderBy("product.productName", "desc"), orderBy("product.order", "asc"));
-  const { docs } = await getDocs(q);
-  const array = docs.map((doc) => doc.data());
-  if (categoryStatus) {
-    setProductArray(array);
-  }
-}
-export const QueryByType = async (setProducts, type, size) => {
-  const productsRef = collection(db, "products")
-  const q = query(productsRef, where("product.type", "==", type), where("product.size", "==", size), orderBy("product.productName", "asc"));
-  const { docs } = await getDocs(q);
-  const array = docs.map((item) => item.data());
-  console.log(array)
-  setProducts(array)
-}
 export const AddOrder = async (value) => {
   const providerRef = doc(db, 'providers', value.provider.id)
   let data = {
@@ -455,57 +285,7 @@ export const getOrders = (setOrder) => {
 export const deleteOrderFromDB = async (id) => {
   deleteDoc(doc(db, `orders`, id))
 }
-export const createTaxReceiptDataBD = async (taxReceipts) => {
-  const taxReceiptRef = doc(db, "taxTypeSetting", "c1")
 
-  try {
-    await setDoc(taxReceiptRef, {data: taxReceipts})
-    console.log(taxReceiptRef)
-  } catch (err) {
-    console.log(err)
-  }
-}
-export const updateTaxReceiptDataBD = async (taxReceipts) => {
-  console.log('entrando......................................')
-  const taxReceiptRef = doc(db, "taxTypeSetting", "c1")
-  try {
-    updateDoc(taxReceiptRef,
-      { data: taxReceipts}
-    )
-    .catch(async (error) => {
-      await createTaxReceiptDataBD(taxReceipts)
-    })
-    console.log('listo, todo bien')
-  } catch (err) {
-    console.log('todo mal')
-  }
-}
-export const updateCategoryDataBD = async (category) => {
-
-  const counterRef = doc(db, "categorys", category.id)
-  try {
-    updateDoc(counterRef,
-      { category }
-    );
-    console.log('listo, todo bien')
-  } catch (err) {
-    console.log('todo mal')
-  }
-}
-export const deleteTaxReceiptDataBD = () => {
-  const counterRef = doc(db, "taxTypeSetting", "c1")
-  deleteDoc(counterRef);
-}
-export const readTaxReceiptDataBD = (setTaxReceiptDataBD) => {
-  const countersRef = collection(db, "taxTypeSetting")
-  onSnapshot(countersRef, (data) => {
-    let counterArray = data.docs.map(item => item.data())
-    let [obj] = counterArray
-    console.log(obj.data)
-    setTaxReceiptDataBD(obj.data)
-  });
-
-}
 export const getUsers = (setUsers) => {
   const usersRef = collection(db, "users")
   onSnapshot(usersRef, (snapshot) => {

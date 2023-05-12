@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { getClients } from '../../../../firebase/firebaseconfig.jsx'
+import { useFbGetClients } from '../../../../firebase/client/useFbGetClients'
 import { addDelivery, createClientInState, deleteClientInState, handleClient, isNewClient, ORIGINAL_CLIENT, SelectClient, selectClientInState, SelectClientMode, setChange, setClientModeInState, totalPurchase, updateClientInState } from '../../../../features/cart/cartSlice'
 import style from './ClientControlStyle.module.scss'
 import {
@@ -38,7 +38,8 @@ export const ClientControl = () => {
     }
   }
   const dispatch = useDispatch()
-  const [clients, setClients] = useState('')
+  const {clients} = useFbGetClients()
+
   const SelectedClientMode = useSelector(SelectClientMode)
   const [searchTerm, setSearchTerm] = useState('')
   const filteredClients = filtrarDatos(clients, searchTerm)
@@ -58,7 +59,7 @@ export const ClientControl = () => {
   })
   const closeMenu = () => setShowClientList(false)
 
-  useEffect(() => { getClients(setClients) }, [])
+
 
   const createClientMode = () => dispatch(setClientModeInState(CLIENT_MODE.CREATE.mode))
 

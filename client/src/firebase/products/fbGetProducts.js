@@ -10,19 +10,19 @@ export function useGetProducts(trackInventory = false) {
     const [products, setProducts] = useState([]);
   
     const user = useSelector(selectUser);
-    const { businessID } = user;
-  console.log("businessID--------------", businessID)
+
     const categoriesArray = useSelector(SelectCategoryList);
     const categoriesStatus = useSelector(SelectCategoryStatus)
-    
+   
     useEffect(() => {
-      if (!businessID) {
+      setLoading(true)
+      if (!user || !user?.businessID) {
         console.log("No business ID found. Please contact support."); //TODO: replace with toast
         return;
       }
   
       //const productsRef = collection(db,`businesses/${user.businessID}/products`);
-      const productsRef = collection(db, "businesses", String(user.businessID), "products");
+      const productsRef = collection(db, "businesses", String(user?.businessID), "products");
   
       //filtros por defecto
       const constraints = [
@@ -39,7 +39,7 @@ export function useGetProducts(trackInventory = false) {
       /*----------------------------------------------------------------------------------------------- */
       const q = query(productsRef, ...constraints);
   
-      const unsubscribe = onSnapshot(productsRef, (snapshot) => {
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         if (snapshot.empty) {
           setProducts([]);
           setLoading(false);
@@ -47,13 +47,13 @@ export function useGetProducts(trackInventory = false) {
         }
         let productsArray = snapshot.docs.map((item) => item.data());
         setProducts(productsArray);
-        setLoading(false);
+      setLoading(false)
       });
   
       return () => {
         unsubscribe();
       };
-    }, [businessID, trackInventory]);
+    }, [user?.businessID, trackInventory, categoriesArray, categoriesStatus]);
   
     return { products, loading, setLoading };
   }

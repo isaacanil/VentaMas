@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { nanoid } from "nanoid";
-import { AddBills, createClient, updateClient } from "../../firebase/firebaseconfig";
+import { fbAddClient } from "../../firebase/client/fbAddClient";
+import { fbUpdateClient } from "../../firebase/client/fbUpdateClient";
 import { useCompareObjectsInState } from "../../hooks/useCompareObject";
 
 const DefaultDelivery = {
@@ -89,7 +90,7 @@ const cartSlice = createSlice({
                 return
             }
             if (state.handleClient.UPDATED_CLIENT !== null && state.handleClient.UPDATED_CLIENT.id === state.data.client.id && !useCompareObjectsInState(state.data.client, state.handleClient.UPDATED_CLIENT)) {
-                updateClient(state.handleClient.UPDATED_CLIENT)
+                fbUpdateClient(state.handleClient.UPDATED_CLIENT)
                 state.client = state.handleClient.UPDATED_CLIENT
                 return
             }
@@ -97,7 +98,7 @@ const cartSlice = createSlice({
                 const id = nanoid(8)
                 const client = state.data.client;
                 state.data.client = { ...client, id }
-                createClient(state.data.client)
+                fbAddClient(state.data.client)
                 return
             }
             return

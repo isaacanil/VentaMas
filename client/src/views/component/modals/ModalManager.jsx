@@ -1,6 +1,6 @@
 import { Fragment } from "react"
 import { AddClientModal } from "./AddClient/AddClientModal"
-import { ProductModal } from "./Product/ProductModal"
+
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
 import { SetCustomProduct } from "./CustomProduct/SetCustomProduct/SetCustomProduct"
@@ -59,12 +59,12 @@ export const ModalManager = () => {
       <AddPurchaseModal
         isOpen={AddPurchaseModalSelected}
       />
-      <ProductModal
+      {/* <ProductModal
         btnSubmitName='Guardar'
         title='Agregar Producto'
         isOpen={AddProdModalSelected}
         closeModal={closeModalAddProducts}
-      />
+      /> */}
       <UpdateProductModal
         isOpen={UpdateProdModalSelected}
       />

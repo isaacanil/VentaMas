@@ -19,9 +19,7 @@ export const useGetUserData = (uid) => {
         }
     };
     useEffect(() => {
-        if (uid) {
-            fbGetUserData();
-        }
+        if (uid) {fbGetUserData();}
     }, [uid]);
 };
 

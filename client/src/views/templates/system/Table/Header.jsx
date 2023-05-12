@@ -3,10 +3,10 @@ import styled from 'styled-components'
 import { Row } from './Row'
 
 
-export const Header = ({ children, col, scrolled }) => {
+export const Header = ({ children, colWidth, scrolled }) => {
     return (
         <Container scrolled={scrolled}>
-            <Row element='header' col={col}>
+            <Row element='header' col={colWidth}>
                 {children}
             </Row>
         </Container>

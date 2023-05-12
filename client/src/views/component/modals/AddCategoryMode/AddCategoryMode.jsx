@@ -1,11 +1,15 @@
 import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { toggleAddCategory } from '../../../../features/modals/modalSlice';
-import { updateCategoryDataBD, UploadCat } from '../../../../firebase/firebaseconfig';
+import { selectUser } from '../../../../features/auth/userSlice';
+import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
+import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
+
+
 const EmptyCategory = { id: '', name: '' };
-const AddCategoryModal = ({ isOpen, categoryToUpdate}) => {
+const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
   const [category, setCategory] = useState(categoryToUpdate || EmptyCategory);
   const [categoryHaveName, setCategoryHaveName] = useState(false);
   const dispatch = useDispatch();
@@ -16,25 +20,20 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate}) => {
     }
   }, [categoryToUpdate]);
 
+  const user = useSelector(selectUser)
 
   const onClose = () => {
-    dispatch(toggleAddCategory({ isOpen: false, data: null}));
+    dispatch(toggleAddCategory({ isOpen: false, data: null }));
     setCategory(EmptyCategory);
-  };
-
-  const handleUpdate = (category) => {
-    updateCategoryDataBD(category)
-    .then(()=>{
-      onClose();
-    })  
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     if (categoryToUpdate) {
-      handleUpdate(category);
-    } else {  
-      UploadCat('categorys', category);
+      fbUpdateCategory(category, user)
+        .then(() => { onClose(); })
+    } else {
+      fbAddCategory(category, user);
       onClose();
     }
 

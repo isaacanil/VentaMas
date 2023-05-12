@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 //A*******************pruyeba************************
- 
+
 //importando componentes de react-router-dom
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, HashRouter } from 'react-router-dom';
 
@@ -60,35 +60,34 @@ import { ChatBox } from './views/component/ChatBox/ChatBox';
 import { AddProductAndServicesModal } from './views/component/modals/AddProduct&Services/AddProduct&Services';
 import { OrderDetails } from './views/component/modals/OrderDetailModal/OrderDetailModal';
 import { ProductOutflow } from './views/pages/Inventario/pages/ProductOutflow/ProductOutflow';
+
 import useGetUserData from './firebase/Auth/useGetUserData';
- './firebase/Auth/useGetUserData';
+import { fbGetTaxReceipt } from './firebase/taxReceipt/fbGetTaxReceipt';
+import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreateDefaultReceipt';
+'./firebase/Auth/useGetUserData';
 
 function App() {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser)
-  const [businessID, setBusinessID] = useState(null)
-  const products = useSelector(SelectProduct)
-  const cart = useSelector((state) => state.cart)
-  //Todo ******detectando si hay usuarios logueados******
-  
+
   useEffect(() => {
     AuthStateChanged(dispatch)
     dispatch(ReloadImageHiddenSetting())
   }, [])
 
+  const user = useSelector(selectUser)
+
   useGetUserData(user?.uid)
-  
-  
+
+  fbAutoCreateDefaultTaxReceipt()
+
   useFullScreen()
 
-  const isConnected = useCheckForInternetConnection()
-  console.log(isConnected)
-  if (user === false || user === !null) {
+  //const isConnected = useCheckForInternetConnection()
+  if (user === false) {
     return <GenericLoader></GenericLoader>
   }
-
-
   return (
+
     <Fragment>
       <Router>
         <ModalManager></ModalManager>
@@ -149,18 +148,18 @@ function App() {
             <RequireAuth>
               <InventarioPage></InventarioPage>
             </RequireAuth>
-          }/>
-           <Route path='/app/inventario/product-outflow' element={
+          } />
+          <Route path='/app/inventario/product-outflow' element={
             <RequireAuth>
               <ProductOutflow />
             </RequireAuth>
-          }/> 
+          } />
           <Route path='/app/inventario/multimedia_manager' element={<MultimediaManager />}>
           </Route>
           <Route e></Route>
           <Route path='/app/sign-up' element={
             // <RequireAuth>
-              <SignUp></SignUp>
+            <SignUp></SignUp>
             // </RequireAuth>
           }>
           </Route>
@@ -168,7 +167,8 @@ function App() {
       </Router>
       <AlertHandler></AlertHandler>
     </Fragment>
-  );
+  )
+
 }
 
 export default App;

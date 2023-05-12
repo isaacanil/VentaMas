@@ -1,8 +1,10 @@
+import { motion } from "framer-motion";
 import styled from "styled-components";
 
-export const Grid = styled('div')`
+export const Grid = styled(motion.ul)`
     position: relative;
     display: grid; 
+    padding: 0;
     gap: 0.7em;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 

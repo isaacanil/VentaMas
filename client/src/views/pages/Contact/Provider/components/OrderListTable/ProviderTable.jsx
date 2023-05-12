@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { getClients, getOrders, getProviders } from '../../../../../../firebase/firebaseconfig'
+import { getProviders } from '../../../../../../firebase/firebaseconfig'
 import { useEffect } from 'react'
 import { ProviderCard } from '../../ListItem/ProviderCard'
 

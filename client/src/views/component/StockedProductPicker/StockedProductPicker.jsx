@@ -108,7 +108,7 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
                     <InputNumber
                         bgColor='gray-light'
                         border
-                        value={productSelected ? (product !== null ? (product.product.stock.newStock) : null) : ''}
+                        value={productSelected ? (product !== null ? (product.product.stock.newStock) : '') : ''}
                         onChange={(e) => setProduct({
                             ...product,
                             product: {
@@ -122,7 +122,7 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? (product !== null ? (product.product.initialCost) : null) : null}
+                        value={productSelected ? (product !== null ? (product.product.initialCost) : '') : null}
                         placeholder='Costo'
                         onChange={(e) => setProduct({
                             ...product,
@@ -137,7 +137,7 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? subTotal : null}
+                        value={productSelected ? subTotal : ''}
                         placeholder='SubTotal'
                         readOnly
                         border

@@ -2,43 +2,45 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice';
-import { getCustomProduct } from '../../../../../../firebase/firebaseconfig';
+
 import { separator } from '../../../../../../hooks/separator';
 import { IngredientCard } from '../../../../../templates/system/customProduct/typePizza/ingredientCard';
 import { isEmpty } from '@firebase/util'
 import { Button } from '../../../../../templates/system/Button/Button';
-export const IngredientList = ({handleIngredientOpen}) => {
-    const [customProduct, setCustomProduct] = useState({
-        ingredientList: []
-    })
+import { fbGetCustomProduct } from '../../../../../../firebase/products/customProduct/fbGetCustomProductTypePizza';
+import { selectUser } from '../../../../../../features/auth/userSlice';
+export const IngredientList = ({ handleIngredientOpen }) => {
+    const user = useSelector(selectUser)
+    const [customProduct, setCustomProduct] = useState('')
+    useEffect(() => {
+        fbGetCustomProduct(user, setCustomProduct)
+    }, [])
     const totalIngredientPrice = useSelector(selectTotalIngredientPrice)
-
-    useEffect(() => { getCustomProduct(setCustomProduct) }, [])
-  return (
-    <Container>
-    <Ingredients>
-        <IngredientsWrapper>
-            {
-                customProduct ? (
-                    customProduct.ingredientList.length > 0 ? (
-                        customProduct.ingredientList
-                            .sort((a, b) => {
-                                return a.name > b.name ? 1 : -1;
-                            })
-                            .map((item, index) => (
-                                <IngredientCard key={index} item={item} index={index} />
-                            ))
-                    ) : null
-                ) : null
-            }
-        </IngredientsWrapper>
-        <IngredientPriceBar>
-            <Button borderRadius='normal' title={'Editar Ingredientes'} onClick={handleIngredientOpen} />
-            <span>Total: RD$ {separator(totalIngredientPrice)}</span>
-        </IngredientPriceBar>
-    </Ingredients>
-</Container>
-  )
+    return (
+        <Container>
+            <Ingredients>
+                <IngredientsWrapper>
+                    {
+                        customProduct ? (
+                            customProduct.ingredientList.length > 0 ? (
+                                customProduct.ingredientList
+                                    .sort((a, b) => {
+                                        return a.name > b.name ? 1 : -1;
+                                    })
+                                    .map((item, index) => (
+                                        <IngredientCard key={index} item={item} index={index} />
+                                    ))
+                            ) : null
+                        ) : null
+                    }
+                </IngredientsWrapper>
+                <IngredientPriceBar>
+                    <Button borderRadius='normal' title={'Editar Ingredientes'} onClick={handleIngredientOpen} />
+                    <span>Total: RD$ {separator(totalIngredientPrice)}</span>
+                </IngredientPriceBar>
+            </Ingredients>
+        </Container>
+    )
 }
 
 const Container = styled.div`

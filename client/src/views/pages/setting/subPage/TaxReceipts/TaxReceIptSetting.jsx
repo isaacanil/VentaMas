@@ -1,61 +1,37 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { getTaxReceiptData, IncreaseEndConsumer,  } from '../../../../../features/taxReceipt/taxReceiptSlice'
+import { getTaxReceiptData, IncreaseEndConsumer, } from '../../../../../features/taxReceipt/taxReceiptSlice'
 import { ChangeProductData } from '../../../../../features/updateProduct/updateProductSlice'
-import { updateTaxReceiptDataBD, readTaxReceiptDataBD, createTaxReceiptDataBD, deleteTaxReceiptDataBD } from '../../../../../firebase/firebaseconfig'
 import { useCompareArrays } from '../../../../../hooks/useCompareArrays'
 import { Button, MenuApp } from '../../../../index'
 import { TableTaxReceipt } from './TableTaxReceipt'
+import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt'
+import { fbUpdateTaxReceipt } from '../../../../../firebase/taxReceipt/fbUpdateTaxReceipt'
+import { selectUser } from '../../../../../features/auth/userSlice'
 
 export const TaxReceiptSetting = () => {
   const dispatch = useDispatch()
-  const [mode, setMode] = useState('default')
-  const [taxReceiptData, setTaxReceiptData] = useState([
-    {
-      name: 'CONSUMIDOR FINAL',
-      type: 'B',
-      serie: 2,
-      sequence: 1,
-      increase: 1,
-      quantity: 2000
-    },
-    {
-      name: 'CREDITO FISCAL',
-      type: 'B',
-      serie: 1,
-      sequence: 1,
-      increase: 1,
-      quantity: 2000
-    }
-  ])
-  const [taxReceipt, setTaxReceipt] = useState([])
-
+  const [taxReceiptLocal, setTaxReceiptLocal] = useState([])
+  const user = useSelector(selectUser)
+  const { taxReceipt } = fbGetTaxReceipt()
   console.log(taxReceipt)
-  useEffect(() => {
-    readTaxReceiptDataBD(setTaxReceiptData)
-  }, [])
-  useEffect(() => {
-    if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
-      setMode('update')
-      dispatch(getTaxReceiptData(taxReceiptData))
-      setTaxReceipt(taxReceiptData)
-      dispatch(IncreaseEndConsumer())
-    }
-  }, [taxReceiptData])
-  console.log(taxReceiptData, 'taxReceiptData')
 
+  useEffect(() => {
+    dispatch(getTaxReceiptData(taxReceipt))
+    setTaxReceiptLocal(taxReceipt)
+   // dispatch(IncreaseEndConsumer())
+  }, [taxReceipt])
 
+  // console.log(taxReceiptData, 'taxReceiptData')
   const handleSubmit = (e) => {
     e.preventDefault()
-    mode === 'update' && updateTaxReceiptDataBD(taxReceipt)
-    //createCounter()
-    //deleteCounter()
+    fbUpdateTaxReceipt(taxReceiptLocal, user)
   }
-  const arrayAreEqual = useCompareArrays(taxReceiptData, taxReceipt)
+  // const arrayAreEqual = useCompareArrays(taxReceiptData, taxReceipt)
 
-  console.log(arrayAreEqual, 'arratAreEqual...........................')
+  // console.log(arrayAreEqual, 'arratAreEqual...........................')
   return (
     <Container>
       <MenuApp></MenuApp>
@@ -64,7 +40,7 @@ export const TaxReceiptSetting = () => {
           <h4>CONFIGURACION DE COMPROBANTES</h4>
         </Head>
         <Body>
-          <TableTaxReceipt data={taxReceipt} setData={setTaxReceipt}></TableTaxReceipt>
+          <TableTaxReceipt array={taxReceiptLocal} setData={setTaxReceiptLocal}></TableTaxReceipt>
         </Body>
         <Footer>
           <Button
@@ -72,7 +48,7 @@ export const TaxReceiptSetting = () => {
             borderRadius={'normal'}
             onClick={handleSubmit}
             bgcolor={'primary'}
-            disabled={arrayAreEqual ? true : false}
+          //  disabled={arrayAreEqual ? true : false}
           />
         </Footer>
       </Main>

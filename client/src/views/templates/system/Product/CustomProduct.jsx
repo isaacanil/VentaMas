@@ -156,7 +156,7 @@ const Body = styled.div`
 const Main = styled.div`
    
 `
-const Title = styled.h5`
+const Title = styled.div`
     color: var(--Gray6);
     width: 100%;
     font-size: 13.5px;

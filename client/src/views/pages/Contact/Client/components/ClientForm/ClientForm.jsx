@@ -8,7 +8,10 @@ import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumb
 import { useFormatRNC } from '../../../../../../hooks/useFormatRNC'
 import { Button } from '../../../../../templates/system/Button/Button'
 import { Message } from '../../../../../templates/system/message/Message'
-import { createClient, updateClient } from '../../../../../../firebase/firebaseconfig'
+import { fbAddClient } from '../../../../../../firebase/client/fbAddClient'
+import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient'
+
+
 export const CreateContact = ({ isOpen, mode, data }) => {
     const dispatch = useDispatch()
     const [newClient, setNewClient] = useState({
@@ -56,7 +59,7 @@ export const CreateContact = ({ isOpen, mode, data }) => {
     const handleCreateClient = async () => {
         if (validateNewClient(newClient)) {
             try {
-                createClient(newClient)
+                fbAddClient(newClient)
             } catch (error) {
                 console.log(error)
             }
@@ -64,7 +67,7 @@ export const CreateContact = ({ isOpen, mode, data }) => {
     }
     const handleUpdateClient = async () => {
             try {
-                updateClient(newClient)
+                fbUpdateClient(newClient)
             } catch (error) {
                 console.log(error)
             }  

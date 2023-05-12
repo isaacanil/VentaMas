@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { closeModalUpdateProd } from '../../../../features/modals/modalSlice'
 import { ChangeProductData, ChangeProductImage, clearUpdateProductData, selectUpdateProductData, setProduct } from '../../../../features/updateProduct/updateProductSlice'
-import { getCat, getTaxes } from '../../../../firebase/firebaseconfig'
+import { getTaxes } from '../../../../firebase/firebaseconfig'
 import { Button } from '../../../templates/system/Button/Button'
 import { Input } from '../../../templates/system/Inputs/InputV2'
 import { UploadImg } from '../../UploadImg/UploadImg'
@@ -23,10 +23,14 @@ import { modes } from '../../../../constants/modes'
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
 import { initTaxes } from './InitializeData'
 import { selectUser } from '../../../../features/auth/userSlice'
+import { BarCodeControl } from './components/BarCodeControl'
+import { QRCodeControl } from './components/QRCodeControl'
+import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCategories'
+import useImageFallback from '../../../../hooks/image/useImageFallback'
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, product } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState(initTaxes)
-    const [catList, setCatList] = useState([])
+
     const [imgController, setImgController] = useState(false)
     const user = useSelector(selectUser);
     const dispatch = useDispatch()
@@ -37,10 +41,10 @@ export const UpdateProductModal = ({ isOpen }) => {
     }
 
     useEffect(() => {
-        
         getTaxes(setTaxesList)
-        getCat(setCatList)
     }, [])
+
+    const { categories } = useFbGetCategories()
 
     const calculatePrice = () => {
         const { cost, tax } = product;
@@ -88,6 +92,8 @@ export const UpdateProductModal = ({ isOpen }) => {
 
     const localUpdateImage = (url) => dispatch(ChangeProductImage(url));
 
+    const [image] = useImageFallback(product?.productImageURL, noImage)
+
     return (
         <Modal
             nameRef={updateMode === status ? `Actualizar ${product.id} ` : 'Agregar Producto'}
@@ -95,6 +101,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             close={closeModal}
             btnSubmitName='Guardar'
             handleSubmit={handleSubmit}
+            width={'large'}
             subModal={
                 <UploadImg
                     fnAddImg={localUpdateImage}
@@ -104,7 +111,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         >
             <Container>
-                <FormGroup column='2'>
+                <FormGroup column='1'>
                     <InputV4
                         name='productName'
                         label={'Nombre del producto:'}
@@ -117,7 +124,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         onChange={(e) => dispatch(setProduct({ ...product, productName: e.target.value }))}
                     />
                 </FormGroup>
-                <FormGroup orientation='vertical'>
+                <FormGroup column='2'>
                     <InputV4
                         label={'Tipo de Producto:'}
                         type="text"
@@ -137,7 +144,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                     />
 
                 </FormGroup>
-                <FormGroup orientation='vertical'>
+                <FormGroup column='3'>
                     <InputV4
                         label={'Tamaño'}
                         type="text"
@@ -151,8 +158,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                         id=""
                         onChange={(e) => dispatch(setProduct({ ...product, category: e.target.value }))}>                        <option value="">Categoría</option>
                         {
-                            catList.length > 0 ? (
-                                catList.map((item, index) => (
+                            categories.length > 0 ? (
+                                categories.map((item, index) => (
                                     <option
                                         key={index}
                                         value={item.category.name}
@@ -177,8 +184,10 @@ export const UpdateProductModal = ({ isOpen }) => {
                     <ImgContainer>
                         <Img>
                             <img
-                                src={product?.productImageURL || noImage}
-                                style={product?.productImageURL ? null : { objectFit: "contain" }} alt="" />
+                                src={image}
+
+                                style={product?.productImageURL === image ? { objectFit: "cover" } : { objectFit: "contain" }} alt=""
+                            />
                         </Img>
                         <Align position='center'>
                             <Button
@@ -191,7 +200,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         </Align>
                     </ImgContainer>
                 </FormGroup>
-                <FormGroup orientation='vertical' >
+                <FormGroup column='3' >
                     <InventariableButton
                         setProduct={setProduct}
                         product={product}
@@ -206,7 +215,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                     />
 
                 </FormGroup>
-                <FormGroup orientation='vertical'>
+                <FormGroup column='3'>
                     <InputV4
                         label={'Costo'}
                         type="number"
@@ -238,14 +247,24 @@ export const UpdateProductModal = ({ isOpen }) => {
                         readOnly
                         placeholder='Precio de Venta' />
                 </FormGroup>
+                <FormGroup >
+                    <BarCodeControl
+                        product={product}
+                        value={product?.barCode || '1234567890'}
+                    />
+                </FormGroup>
+                <FormGroup >
+                    <QRCodeControl value={product?.id || ''} />
+                </FormGroup>
             </Container>
+
         </Modal>
     )
 }
 
 const Container = styled.div`
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr) 240px;
     padding: 1em 1em 1em;
     background-color: var(--White2);
     height: 100%;
@@ -261,7 +280,8 @@ const FormGroup = styled.div`
     background-color: var(--White);
     border-radius: var(--border-radius-light);
     padding: 0.4em;
- 
+    width: 100%;
+    display: grid;
     select{
          padding: 0 0.4em;
          border-radius: var(--border-radius-light);
@@ -269,51 +289,42 @@ const FormGroup = styled.div`
          height: 2em;       
          
       }
-    &:nth-child(1){
-        grid-column: 2 span;
-      
-    }
-    &:nth-child(2){
-        grid-column: 1 / 3;
-        display: grid;
-         grid-template-columns: repeat(2, 1fr);
-    }
-    &:nth-child(3){ 
-        grid-column: 1 / 4;
-        display: grid;
-         grid-template-columns: repeat(3, 1fr);
-    }
+ 
     &:nth-child(4){
-      
-        display: grid;
-
         grid-column: 3 / 4;
-        grid-row: 1 / 3;
-       
+        grid-row: 1 / 3; 
     }
-    &:nth-child(5){
-        grid-column: 1 / 4;
-        display: grid;
-         grid-template-columns: repeat(3, 1fr);
-    }
-    &:nth-child(6){
-       grid-column: 1 / 4;
-       display: grid;
-         grid-template-columns: repeat(3, 1fr);
+    /* &:nth-child(6){
+      
+        grid-row: 5 / 5; 
+    } */
+   &:nth-child(7){
+       grid-column: 3 / 4;
+       grid-row: 3 / 5; 
+   }
+   &:nth-child(8){
+       grid-column: 3 / 4;
+       grid-row: 5 / 7; 
      
    }
-   
     ${(props) => {
-        switch (props.orientation) {
-            case 'vertical':
+        switch (props.column) {
+            case '1':
                 return `
-                    display: flex;
-                    gap: 1em;
+                grid-template-columns: repeat(1, 1fr);
+                grid-column: 1 / 3;
                 `
-
-            case 'horizontal':
+            case '2':
                 return `
-                    display: grid
+                grid-template-columns: repeat(2, 1fr);
+                grid-column: 1 / 3;
+                gap: 0.4em;
+                `
+            case '3':
+                return `
+                grid-column: 1 / 3;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.4em;
                 `
             default:
                 break;
@@ -394,3 +405,4 @@ width: 100%;
 
     }}
     `
+

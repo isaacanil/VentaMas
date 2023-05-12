@@ -7,13 +7,15 @@ import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import { getTaxReceiptData, handleNCFStatus, selectNcfStatus } from '../../../features/taxReceipt/taxReceiptSlice'
-import { readTaxReceiptDataBD } from '../../../firebase/firebaseconfig'
+
+
 import { quitarCeros } from '../../../hooks/quitarCeros'
 import CustomInput from '../../templates/system/Inputs/CustomInput'
 import { useRoundedNumber } from '../../../hooks/useRoundedNumber'
+import { fbGetTaxReceipt } from '../../../firebase/taxReceipt/fbGetTaxReceipt'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
-    const [taxReceiptData, setTaxReceiptData] = useState()
+
     const selectedNcfStatus = useSelector(selectNcfStatus)
     const TaxesRef = useSelector(SelectTotalTaxes)
     const PaymentValue = useSelector(SelectPaymentValue)
@@ -21,6 +23,9 @@ export const PaymentArea = () => {
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
     const [NCFStatus, setNCFStatus] = useState(false)
+
+    const taxReceiptData = fbGetTaxReceipt()
+
     const [paymentMethod, setPaymentMethod] = useState([
         {
             status: true,
@@ -69,9 +74,9 @@ export const PaymentArea = () => {
         console.log(paymentMethod)
     }, [paymentMethod])
 
-    useEffect(() => {
-        readTaxReceiptDataBD(setTaxReceiptData)
-    }, [])
+
+
+
     useEffect(() => {
         if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
             dispatch(getTaxReceiptData(taxReceiptData))
@@ -85,7 +90,7 @@ export const PaymentArea = () => {
             <Row>
                 <Group className='tax-discount'>
                     <Group>
-                        <Switch checked={selectedNcfStatus ? true : false}  onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
+                        <Switch checked={selectedNcfStatus ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
                         <STitle>Comp. Fiscal.</STitle>
                     </Group>
                     <Group>
@@ -106,7 +111,7 @@ export const PaymentArea = () => {
                             </Group>
                         )
                     }
-                    )}                 
+                    )}
                 </Group>
             </Area>
             <Row margin='bottom'>

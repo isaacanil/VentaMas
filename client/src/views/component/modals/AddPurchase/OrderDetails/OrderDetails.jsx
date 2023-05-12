@@ -11,9 +11,7 @@ import { Button } from '../../../../templates/system/Button/Button'
 import { IoReceipt } from 'react-icons/io5'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { SaveImg, selectUploadImageUrl } from '../../../../../features/uploadImg/uploadImageSlice'
-import { fbAddReceiptPurchaseImg } from '../../../../../firebase/products/fbAddProductImg'
-import { fbDeleteProductImg } from '../../../../../firebase/products/fbDeleteProductImg'
-import { fbDeletePurchaseReceiptImg } from '../../../../../firebase/firebaseconfig'
+
 import { fbAddPurchaseReceiptImg } from '../../../../../firebase/purchase/addPurchaseImg'
 import { toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
 export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {

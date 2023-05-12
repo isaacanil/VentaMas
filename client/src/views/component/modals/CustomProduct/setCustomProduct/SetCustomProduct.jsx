@@ -2,7 +2,6 @@
 import React, { useState } from 'react'
 import { useEffect } from 'react'
 import styled from 'styled-components'
-import { getCustomProduct, QueryByType } from '../../../../../firebase/firebaseconfig.jsx'
 import { separator } from '../../../../../hooks/separator'
 import { Modal } from '../../Modal'
 import { IngredientCard } from '../../../../templates/system/customProduct/typePizza/ingredientCard'

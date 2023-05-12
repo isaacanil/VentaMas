@@ -1,25 +1,19 @@
 import React, { useState } from 'react'
-import { IoIosArrowBack, IoMdClose } from 'react-icons/io'
-import { MdClose, MdOutlineFileUpload } from 'react-icons/md'
 import styled from 'styled-components'
-import { Button, ButtonGroup } from '../../templates/system/Button/Button'
-
-import { AddFileBtn } from '../../templates/system/Button/AddFileBtn'
-import { ProductsImg, UploadProdImgData } from '../../../firebase/firebaseconfig'
-import { nanoid } from 'nanoid'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChangeProductImage, selectUpdateProductData } from '../../../features/updateProduct/updateProductSlice'
-import { fbAddProductImg } from '../../../firebase/products/fbAddProductImg'
 import { Header } from './components/Header/Header'
 import { Body } from './components/Body/Body'
+import { fbGetProductsImg } from '../../../firebase/products/productsImg/fbGetProductsImg'
+import { selectUser } from '../../../features/auth/userSlice'
 export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
     const { status, product } = useSelector(selectUpdateProductData)
     const [img, setImg] = useState(product?.productImageURL)
     const [ImgToUpload, setImgToUpload] = useState(null)
     const [images, setImages] = useState([])
-  
-    useEffect(() => { ProductsImg(setImages) }, [])
+    const user = useSelector(selectUser)
+    useEffect(() => { fbGetProductsImg(user, setImages) }, [])
 
     return (
         isOpen ? (
@@ -50,6 +44,7 @@ const Container = styled.div`
     width: 100%;
     padding: 0.6em 1em ;
     overflow: hidden;
+    z-index: 1;
     grid-template-rows: min-content 1fr;
 `
 

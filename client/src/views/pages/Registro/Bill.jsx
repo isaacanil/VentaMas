@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../hooks/separator'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
@@ -8,16 +8,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faReceipt } from '@fortawesome/free-solid-svg-icons'
 import { Row } from '../../templates/system/Table/Row'
 import { ColData } from './ColumnsData'
+import ReciboCompras  from '../../pages/checkout/Receipt2.jsx'
 import useScroll from '../../../hooks/useScroll'
 import { FormattedValue } from '../../templates/system/FormattedValue/FormattedValue'
+import { Receipt } from '../checkout/Receipt'
+import { useReactToPrint } from 'react-to-print'
 
 export const Bill = ({ data }) => {
   const totalTax = data?.products?.reduce((total, product) => total + (product?.tax?.value * product?.cost?.unit) * product?.amountToBuy?.total, 0)
-
+  const componentToPrintRef = useRef(null)
+  const handleRePrint = useReactToPrint({
+    content: () => componentToPrintRef.current,
+    onAfterPrint: () => setPrinted(true),
+  })
   return (
     <Container>
       <Row col={ColData}>
-      <ITEMS text='left'>
+        <ITEMS text='left'>
           <FormattedValue
             type='number'
             transformValue={false}
@@ -36,15 +43,14 @@ export const Bill = ({ data }) => {
               getTimeElapsed(data?.date?.seconds * 1000)
             } />
         </ITEMS>
-       
         <ITEMS text={'right'}>
-        <FormattedValue
+          <FormattedValue
             type='price'
             value={totalTax}
           />
         </ITEMS>
         <ITEMS text={'right'}>
-        <FormattedValue
+          <FormattedValue
             type='price'
             value={
               data?.cashPaymentMethod?.value || data?.paymentMethod?.find((bill) => bill.status === true).value
@@ -52,7 +58,7 @@ export const Bill = ({ data }) => {
           />
         </ITEMS>
         <ITEMS text={'right'}>
-        <FormattedValue
+          <FormattedValue
             type='price'
             value={
               data?.change?.value
@@ -65,17 +71,20 @@ export const Bill = ({ data }) => {
             value={data?.totalPurchase?.value}
           />
         </ITEMS>
-        {/* <ITEMS align={'right'}>
+        <ITEMS align={'right'}>
+          <Receipt ref={componentToPrintRef} data={data}/>
+         
           <Button
             width='icon32'
             color='gray-dark'
             variant='container'
             borderRadius='light'
+            onClick={handleRePrint}
             title={
               <FontAwesomeIcon icon={faReceipt} />
             }
           />
-        </ITEMS> */}
+        </ITEMS>
       </Row>
 
     </Container>

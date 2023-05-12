@@ -18,6 +18,7 @@ import noImg from '../../../../../../assets/producto/noImg.png'
 import {icons} from '../../../../../../constants/icons/icons'
 import { modes } from '../../../../../../constants/modes';
 import { useCheckForInternetConnection } from '../../../../../../hooks/useCheckForInternetConnection';
+import useImageFallback from '../../../../../../hooks/image/useImageFallback';
 export const ProductCardRow = ({ product, Col, Row }) => {
     const dispatch = useDispatch();
     const handleDeleteProduct = (id) => {
@@ -28,16 +29,18 @@ export const ProductCardRow = ({ product, Col, Row }) => {
         dispatch(ChangeProductData({product: product, status: modes.operationModes.updateMode}));
       };
       const isConnected = useCheckForInternetConnection()
+      const [imageFallback] = useImageFallback(product?.productImageURL, noImg)
     return (
         <Container>
             <Row>
                 <Col>
                     <ImgContainer>
                         <Img
-                            src={(isConnected && product?.productImageURL) || noImg} 
+                            src={(isConnected && imageFallback) || noImg} 
                             noFound={product?.productImageURL ? false : true}
                             alt=""
-                            style={product?.productImage || isConnected  ?  null : {objectFit: 'contain'}} 
+                            style={product?.productImageURL === imageFallback ? {objectFit: "cover"} : {objectFit: 'contain'}} 
+
                             />
                     </ImgContainer>
                 </Col>

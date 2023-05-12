@@ -91,7 +91,7 @@ export const SignUp = () => {
     if(verifyPassword === '') return dispatch(addNotification({type: 'error', message: 'La contraseña no puede estar vacía'}));
     if(password !== verifyPassword) return dispatch(addNotification({type: 'error', message: 'Las contraseñas no coinciden'}));
 
-    //HandleRegister(name, email, password, verifyPassword, navigate)
+    HandleRegister(name, email, password, verifyPassword, navigate)
   };
 console.log(name, email, password, verifyPassword)
   return (

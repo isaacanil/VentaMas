@@ -8,18 +8,19 @@ import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
 import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
 import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
-import { deleteClient } from '../../../../../firebase/firebaseconfig'
+
 import { Message } from '../../../../templates/system/message/Message'
 import { useDispatch } from 'react-redux'
 import { toggleClientModal } from '../../../../../features/modals/modalSlice'
 import { modes } from '../../../../../constants/modes'
 import { icons } from '../../../../../constants/icons/icons'
+import { fbDeleteClient } from '../../../../../firebase/client/fbDeleteClient'
 export const OrderItem = ({ e, index, Row, Col }) => {
     const {updateMode} = modes.operationModes
     const noData = <Message title='(vacio)' fontSize='small' bgColor='error'/>
     const dispatch = useDispatch()
     const handleDeleteClient = (id) => {
-        deleteClient(id)
+        fbDeleteClient(id)
     }
     const openModalUpdateMode = (e) => {dispatch(toggleClientModal({mode: updateMode, data: e}))}
     return (

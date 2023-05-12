@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { diminishSequence } from './diminishSequence'
 import { increaseSequence } from './increaseSequence'
-import { updateTaxReceiptDataBD } from '../../firebase/firebaseconfig'
+import { fbUpdateTaxReceipt } from '../../firebase/taxReceipt/fbUpdateTaxReceipt'
+
 const initialState = {
     data: [],
     ncfCode: null,
@@ -16,26 +17,28 @@ export const taxReceiptSlice = createSlice({
             state.data = action.payload
         },
         IncreaseEndConsumer: (state) => {
-            const endConsumer = state.data.find((item) => item.name === 'CONSUMIDOR FINAL')
+            const endConsumer = state.data.find((item) => item.data.name === 'CONSUMIDOR FINAL')
+            
             if (state.data.length > 0 && endConsumer) {
-                const {type, serie, sequence, increase, quantity} = endConsumer 
-                endConsumer.quantity = String(Number(quantity) - 1)
-                endConsumer.sequence = increaseSequence(sequence, increase, 10)
+                const {type, serie, sequence, increase, quantity} = endConsumer.data
+                endConsumer.data.quantity = String(Number(quantity) - 1)
+                endConsumer.data.sequence = increaseSequence(sequence, increase, 10)
                 state.ncfCode = type + serie + increaseSequence(sequence, increase, 10) 
+              
             }
         },
         IncreaseTaxCredit: (state) => {
-            const taxCredit = state.data.find((item) => item.name === 'CREDITO FISCAL')
+            const taxCredit = state.data.find((item) => item.data.name === 'CREDITO FISCAL')
             if (state.data.length > 0 && taxCredit) {
-                const {type, serie, sequence, increase, quantity} = taxCredit 
-                taxCredit.quantity = String(Number(quantity) - 1)
-                taxCredit.sequence = increaseSequence(sequence, increase, 10)
+                const {type, serie, sequence, increase, quantity} = taxCredit.data
+                taxCredit.data.quantity = String(Number(quantity) - 1)
+                taxCredit.data.sequence = increaseSequence(sequence, increase, 10)
                 state.ncfCode = type + serie + increaseSequence(sequence, increase, 10) 
             }
         },
         updateTaxCreditInFirebase: (state) => {
             const taxReceipt = state.data
-            updateTaxReceiptDataBD(taxReceipt)
+            fbUpdateTaxReceipt(taxReceipt)
         },
         handleNCFStatus: (state, actions) => {
             state.ncfStatus = actions.payload

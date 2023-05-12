@@ -1,17 +1,20 @@
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useScreenSize } from '../../../hooks/useScreenSize'
-import { getCat } from '../../../firebase/firebaseconfig'
+
 import { useEffect } from 'react'
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md'
 import { addCategory, deleteCategorySelected } from '../../../features/category/categorySlicer'
 import { useDispatch } from 'react-redux'
 import { Tooltip } from '../../templates/system/Button/Tooltip'
+import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
 
 export const Carrusel = () => {
     const categoriesRef = useRef(null)
     const { width } = useScreenSize(categoriesRef)
-    const [categories, setCategories] = useState([])
+    const {categories} = useFbGetCategories()
+
+    
     const categoryCardRef = useRef(null)
     const MoveScroll = (direction) => {
         const toStart = () => {
@@ -63,9 +66,7 @@ export const Carrusel = () => {
         }
     }
     
-    useEffect(() => {
-        getCat(setCategories)
-    }, [])
+ 
     return (
         <>
             <Container>
@@ -91,6 +92,7 @@ export const Carrusel = () => {
     )
 }
 const Container = styled.div`
+background-color: #ffffff;
     width: 100%;
     display: grid;
     grid-template-columns: min-content 1fr min-content;
@@ -185,7 +187,6 @@ const Category = ({ category, ref }) => {
             )
         }
         setTimeout(()=>{
-
             ref.current.scrollTo(0, 0)
         }, 100)
 

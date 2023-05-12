@@ -1,8 +1,6 @@
 import React, { Fragment, useState } from 'react'
-import { MenuApp, InputText, Button, ButtonGroup } from '../../'
+import { MenuApp, Button, ButtonGroup } from '../../'
 import styled from 'styled-components'
-import { getBills } from '../../../firebase/firebaseconfig.jsx'
-import { useEffect } from 'react'
 import { DatePicker } from '../../templates/system/DatePicker/DatePicker'
 import { Bill } from './Bill'
 import { SiMicrosoftexcel } from 'react-icons/si'
@@ -13,47 +11,44 @@ import { useFormatPrice } from '../../../hooks/useFormatPrice'
 import Clock from '../../../hooks/time/Clock'
 import { CenteredText } from '../../templates/system/CentredText'
 import TimeFilterButton from '../../templates/system/Button/TimeFilterButton/TimeFilterButton'
-import { salesReportData } from './sales_register_data'
+import { tableData } from './tableData'
 import { SaleReportTable } from './SaleReportTable/SaleReportTable'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileExcel } from '@fortawesome/free-solid-svg-icons'
+
 import { ComponentTagger } from '../../templates/system/ComponentTagger/ComponentTagger'
 import { useDispatch } from 'react-redux'
 import { addNotification } from '../../../features/notification/NotificationSlice'
+import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 
 export const Registro = () => {
-  const [bills, setBills] = useState([])
-  const [client, setClient] = useState('')
-  const [datesSelected, setDatesSelected] = useState({})
-  const data = salesReportData
   const dispatch = useDispatch()
-  useEffect(() => {
-    getBills(setBills, datesSelected)
-  }, [datesSelected])
 
-  const total = () => bills.reduce((total, { data }) => total + data.totalPurchase.value, 0)
+  const [datesSelected, setDatesSelected] = useState({})
+ 
+  const {invoices} = fbGetInvoices(datesSelected)
 
-  const transformedResumenBillsData = () => bills.map((bill) => {
-    return formatBill({ data: bill.data, type: 'Resumen' });
+  const total = () => invoices.reduce((total, { data }) => total + data.totalPurchase.value, 0)
+
+  const transformedResumenBillsData = () => invoices.map((invoice) => {
+    return formatBill({ data: invoice.data, type: 'Resumen' });
   });
 
   const transformedDetailedBillsData = () => {
-    return formatBill({ data: bills, type: 'Detailed' });
+    return formatBill({ data: invoices, type: 'Detailed' });
   };
 
 
   const handleExportButton = (type) => {
-    if (bills.length === 0 ){
-      dispatch(addNotification({ title: 'Error al exportar' ,message: 'No hay Facturas para exportar', type: 'error' }))
+    if (invoices.length === 0) {
+      dispatch(addNotification({ title: 'Error al exportar', message: 'No hay Facturas para exportar', type: 'error' }))
       return
-    } 
+    }
     switch (type) {
       case 'Resumen':
         console.log('----------------------------', transformedResumenBillsData())
-         exportToExcel(transformedResumenBillsData(), 'Registros', 'Registro.xlsx');
+        exportToExcel(transformedResumenBillsData(), 'Registros', 'Registro.xlsx');
         break;
       case 'Detailed':
-     console.log('----------------------------', transformedDetailedBillsData())
+        console.log('----------------------------', transformedDetailedBillsData())
         exportToExcel(transformedDetailedBillsData(), 'Registros', 'Registro.xlsx');
         break;
       default:
@@ -65,7 +60,6 @@ export const Registro = () => {
     setDatesSelected({ startDate: start.toMillis(), endDate: end.toMillis() })
   }
 
-  console.log(bills)
   return (
     <Fragment>
       <Container>
@@ -94,7 +88,11 @@ export const Registro = () => {
             } />
           </span>
         </FilterBar>
-        <SaleReportTable data={data} bills={bills} total={total} />
+        <SaleReportTable
+          data={tableData}
+          bills={invoices}
+          total={total}
+        />
       </Container>
     </Fragment>
   )
@@ -107,7 +105,6 @@ const Container = styled.div`
   background-color: var(--color2);
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
- 
 `
 const FilterBar = styled.div`
   width: 100%;

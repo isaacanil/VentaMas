@@ -20,7 +20,7 @@ export const Body = ({images, ImgToUpload, setImgToUpload}) => {
 
 const Container = styled.div`
     overflow: hidden;
-    padding: 0 0;
+    padding: 0 ;
     display: grid;
     grid-template-rows: 1fr;
 `
@@ -29,5 +29,5 @@ const BodyWrapper = styled.div`
     gap: 1em; // gap between rows
     margin-bottom: 1em;
     grid-template-rows: min-content 1fr; // this was missing
-    overflow-y: hidden;
+    overflow: hidden;
 `

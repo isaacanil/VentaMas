@@ -13,20 +13,20 @@ import { Body } from './Body'
 import { Footer } from './Footer'
 
 
-export const SaleReportTable = ({ data, bills, total, }) => {
+export const SaleReportTable = ({ data, bills, total }) => {
   // Agrupar las facturas por fecha usando reduce()
   const tableRef = useRef(null)
   const scrolled = useScroll(tableRef)
 
   return (
     <Table
-      col={ColData}
-      header={<Header data={data} />}
-      body={<Body bills={bills} />}
-      bodyMessage={
+      colWidth={data.headers}
+      header={<Header data={data.headers} />}
+      body={bills.length > 0 && <Body bills={bills} />}
+      messageNoData={
         bills?.length === 0 && (
           <CenteredText
-            text='Actualmente no hay facturas registradas para el día de hoy.'
+            text='No se encontraron facturas para la fecha seleccionada. Realice ventas y aparecerán en esta sección'
             showAfter={0}
           />
         )

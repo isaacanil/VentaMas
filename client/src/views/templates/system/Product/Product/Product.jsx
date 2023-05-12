@@ -12,12 +12,14 @@ import { IoMdClose, IoMdTrash } from 'react-icons/io'
 import { Button } from '../../Button/Button'
 import { icons } from '../../../../../constants/icons/icons'
 import { useCheckForInternetConnection } from '../../../../../hooks/useCheckForInternetConnection'
+import useImageFallback from '../../../../../hooks/image/useImageFallback'
+import { motion } from 'framer-motion'
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
     const ProductsSelected = useSelector(SelectProduct)
     const deliverySelected = useSelector(SelectDelivery)
-    
+
     useEffect(() => {
         dispatch(totalShoppingItems())
         dispatch(totalPurchase())
@@ -43,15 +45,30 @@ export const Product = ({ product, }) => {
         e.stopPropagation()
         dispatch(deleteProduct(id))
     }
+
     const isConnected = useCheckForInternetConnection()
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id)
+    const [imageFallback] = useImageFallback(product?.productImageURL, noImg)
+    const effectProduct = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1
+        }
+    }
     return (
-        <Container onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status}>
+        <Container
+            onClick={() => handleGetThisProduct(product)}
+            imageHiddenRef={imageHiddenRef}
+            isSelected={ProductCheckInCart.status}
+            variants={effectProduct}
+        >
             {
                 <Head imageHiddenRef={imageHiddenRef ? true : false}>
                     <ImageContainer imageHiddenRef={imageHiddenRef}>
                         <img
-                            src={(isConnected && product?.productImageURL )|| noImg}
+                            src={(isConnected && imageFallback) || noImg}
+
                         />
                     </ImageContainer>
                 </Head>
@@ -88,7 +105,7 @@ export const Product = ({ product, }) => {
         </Container>
     )
 }
-const Container = styled.div`
+const Container = styled(motion.li)`
     box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.020);
     height: 80px;
     width: 100%;
@@ -222,7 +239,7 @@ const Group = styled.div`
     align-items: center;
     gap: 1em;
 `
-const Title = styled.h5`
+const Title = styled.div`
     color: var(--Gray6);
     width: 100%;
     font-size: 13.4px;

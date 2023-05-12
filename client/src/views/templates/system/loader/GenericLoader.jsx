@@ -7,7 +7,6 @@ import logo from './ventamax.svg'
 
 export const GenericLoader = () => {
   const ventamaxLogo = logo;
-
   return (
     <Wrapper>
       <img src={ventamaxLogo} alt="" />
@@ -18,7 +17,6 @@ export const GenericLoader = () => {
 const Wrapper = styled.div`
      @keyframes back {
       0% {
-       
         clip-path: circle(2.9% at 50% 50%);
       }
       80% {clip-path: circle(100% at 50% 50%);}
@@ -47,7 +45,4 @@ const Wrapper = styled.div`
       80% {transform: scale(4);}
       100%{transform: scale(2)}
     }
-   
-
-    
 `

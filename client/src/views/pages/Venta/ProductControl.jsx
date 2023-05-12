@@ -18,7 +18,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
   // Agrupar los productos por categoría
   const productsByCategory = products.reduce((result, { product }) => {
     const category = product.category
-    if (!result[category]) {result[category] = []}
+    if (!result[category]) { result[category] = [] }
     result[category].push(product)
     return result
   }, {})
@@ -31,7 +31,17 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
     }
       , 1000)
   }, [isProductGrouped])
-
+  const effectProductContainer = {
+    hidden: { opacity: 1, scale: 0 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delayChildren: 0.3,
+        staggerChildren: 0.2
+      }
+    }
+  }
   return (
     <Fragment>
       <Carrusel />
@@ -46,8 +56,14 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
                   .map((category) => (
                     <CategoryGroup key={category}>
                       <h2>{category}</h2>
-                      <Grid padding='bottom' columns='4' isRow={viewRowModeRef ? true : false} onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}>
-                        { productsByCategory[category].map((product, index) => (
+                      <Grid
+                        padding='bottom'
+                        columns='4'
+                        isRow={viewRowModeRef ? true : false}
+                        onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}
+                        variants={effectProductContainer}
+                      >
+                        {productsByCategory[category].map((product, index) => (
                           product.custom ?
                             (
                               <CustomProduct key={index} product={product}></CustomProduct>
@@ -84,9 +100,9 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
             )
           }
           {
-            
-            (products.length === 0 ||  Object.keys(productsByCategory).length === 0) && !productsLoading ? (
-                <CenteredText text='No hay Productos' showAfter={1000}/>
+
+            (products.length === 0 || Object.keys(productsByCategory).length === 0) && !productsLoading ? (
+              <CenteredText text='No hay Productos' showAfter={1000} />
             ) : null
           }
         </Wrapper>

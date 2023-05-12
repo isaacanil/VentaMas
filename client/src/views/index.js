@@ -23,14 +23,13 @@ export { ProviderAdmin } from './pages/Contact/Provider/ProviderAdmin'
 //Todo ***********Components*************************************************
 export { ControlSearchProduct } from './component/ControlSearchProduct/ControlSearchProduct'
 export { SearchList } from './component/ControlSearchProduct/SearchList'
-export { CategoryBar } from './component/CategoryBar/CategoryBar'
 export { Cart } from './component/cart/Cart'
 export { MultiDisplayControl } from './component/MultiDisplayControl/MultiDisplayControl'
 export { RequireAuth } from './component/RequireAuth'
 export { ClientControl } from './component/contact/ClientControl/ClienteControl'
 /* modals */
 
-export { ProductModal } from './component/modals/Product/ProductModal'
+// export { ProductModal } from './component/modals/Product/ProductModal'
 export { AddClientModal } from './component/modals/AddClient/AddClientModal'
 export { Modal } from './component/modals/Modal'
 export { ModalManager } from './component/modals/ModalManager'

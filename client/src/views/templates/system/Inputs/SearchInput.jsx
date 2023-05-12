@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { InputV4 } from './InputV4'
 
-export const SearchInput = ({...props}) => {
+export const SearchInput = ({onClear, ...props}) => {
   const handleFocus = () => {
     if (search && inputRef.current === document.activeElement) {
       setPlaceholderText('¿Que desea buscar? ');
@@ -15,7 +15,9 @@ export const SearchInput = ({...props}) => {
   };
   return (
     <Input 
-    {...props}    
+    {...props}  
+    onClear={onClear}
+    clearButton={true}
     onFocus={handleFocus}
     onBlur={handleBlur} 
     

@@ -1,11 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-export const Body = ({ children, message  }) => {
+export const Body = ({ children, messageNoData  }) => {
     return (
         <Container>
             {children}
-            {message}
+            {messageNoData}
         </Container>
     )
 }

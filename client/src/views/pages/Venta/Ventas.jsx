@@ -1,62 +1,79 @@
-import React, { Fragment, useEffect } from 'react'
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import React, { Fragment, useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-//import component
+
 import {
   MenuApp,
   MenuComponents,
-  Cart
+  Cart,
+  MultiDisplayControl
 } from '../../'
-import { SelectCategoryList, SelectCategoryStatus } from '../../../features/category/categorySlicer'
+
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
-import { QueryByCategory } from '../../../firebase/firebaseconfig'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { filterData } from '../../../hooks/search/useSearch'
-import { searchAndFilter, useSearchFilterX } from '../../../hooks/useSearchFilter'
 import { ProductControl } from './ProductControl.jsx'
 import { ShoppingItemsCounter } from './ShoppingItemsCounter'
-import { motion } from 'framer-motion'
-//import { useBilling } from '../../../hooks/useBilling'
-import Style from './Venta.module.scss'
 import { Transition } from '../../templates/system/Transition'
+import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../features/cart/cartSlice'
+import useBarcodeScanner from '../../../hooks/barcode/usebarcodescanner'
 export const Ventas = () => {
-
 
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
 
- 
-   
-  const {products, loading, setLoading} = useGetProducts()
-    
- console.log(products, 'products-------------------------------')
+  const { products, loading, setLoading } = useGetProducts()
+
+  console.log(products, 'products-------------------------------')
+
+  const dispatch = useDispatch()
+
+  const checkBarcode = (products, barcode) => {
+
+    if (products.length <= 0) return;
+    const product = products.find(({ product }) => product?.barCode === barcode);
+
+
+    if (product?.product?.barCode === barcode) {
+      dispatch(addProduct(product.product))
+      dispatch(totalShoppingItems())
+      dispatch(totalPurchaseWithoutTaxes())
+      dispatch(totalShoppingItems())
+      dispatch(totalTaxes())
+      dispatch(totalPurchase())
+      // dispatch(addPaymentMethodAutoValue())
+      dispatch(setChange())
+    }
+  }
+  useBarcodeScanner(products, checkBarcode);
 
   const productFiltered = filterData(products, searchData)
 
   return (
-   <Transition>
-    <Container>
-      {/* <MultiDisplayControl></MultiDisplayControl> */}
-      <ProductContainer>
-        <MenuApp
-          borderRadius={'bottom-right'}
-          searchData={searchData}
-          setSearchData={setSearchData}
-        />
-        <ProductControl
-         setProductsLoading={setLoading}
-          productsLoading={loading}
-          products={productFiltered}
-          isProductGrouped={categoryGrouped}
-        />
-        <MenuComponents />
-        <ShoppingItemsCounter />
-      </ProductContainer>
-      <Cart></Cart>
-    </Container>
-   </Transition>
-   
+    <Transition>
+      <Container>
+        {/* <MultiDisplayControl></MultiDisplayControl> */}
+        <ProductContainer>
+          <MenuApp
+            borderRadius={'bottom-right'}
+            searchData={searchData}
+            setSearchData={setSearchData}
+          />
+          <ProductControl
+            setProductsLoading={setLoading}
+            productsLoading={loading}
+            products={productFiltered}
+            isProductGrouped={categoryGrouped}
+          />
+          <MenuComponents />
+          <ShoppingItemsCounter />
+        </ProductContainer>
+        <Cart></Cart>
+      </Container>
+    </Transition>
+
+
+
   )
 }
 

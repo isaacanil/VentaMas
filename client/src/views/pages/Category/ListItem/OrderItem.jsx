@@ -6,13 +6,15 @@ import { Message } from '../../../templates/system/message/Message'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
 import { GrRevert, GrEdit, GrClear, GrCheckmark, GrClose, GrTrash } from 'react-icons/gr'
 import { useClickOutSide } from '../../../../hooks/useClickOutSide'
-import { fbDeleteCategory, updateCategoryDataBD } from '../../../../firebase/firebaseconfig'
 import { Tooltip } from '../../../templates/system/Button/Tooltip'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { toggleAddCategory } from '../../../../features/modals/modalSlice'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheckCircle, faEdit, faPencil, faPenToSquare, faTrash, faTrashAlt, faTrashCan, faTrashCanArrowUp, faTrashRestore, faTrashRestoreAlt } from '@fortawesome/free-solid-svg-icons'
 import { icons } from '../../../../constants/icons/icons'
+import { selectUser } from '../../../../features/auth/userSlice'
+import { fbDeleteCategory } from '../../../../firebase/categories/fbDeleteCategory'
+import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory'
 export const OrderItem = ({ cat, index, Row, Col, activeCategory, setActiveCategory }) => {
 
   const [category, setCategory] = useState({
@@ -23,6 +25,7 @@ export const OrderItem = ({ cat, index, Row, Col, activeCategory, setActiveCateg
   const [mode, setMode] = useState(null);
   const [showConfirmBtn, setShowConfirmBtn] = useState(false);
   const EditRef = useRef(null);
+  const user = useSelector(selectUser)
   const dispatch = useDispatch();
   useEffect(() => {
     setCategory({
@@ -70,12 +73,12 @@ export const OrderItem = ({ cat, index, Row, Col, activeCategory, setActiveCateg
     switch (mode) {
       case 'DELETE':
         console.log('delete');
-        fbDeleteCategory(cat.id);
+        fbDeleteCategory(cat.id, user);
 
         break;
       case 'EDIT':
         console.log('edit');
-        updateCategoryDataBD(category)
+        fbUpdateCategory(category, user)
 
         //  dispatch(toggleAddCategory({ isOpen: true, data: category }))
     

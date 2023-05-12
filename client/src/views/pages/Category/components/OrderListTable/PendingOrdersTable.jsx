@@ -2,14 +2,13 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useEffect } from 'react'
 import { OrderItem } from '../../ListItem/OrderItem'
-import { getCat } from '../../../../../firebase/firebaseconfig'
+import { useFbGetCategories } from '../../../../../firebase/categories/useFbGetCategories'
 
 export const PendingOrdersTable = () => {
-  const [categories, setCategories] = useState([])
   const [activeCategory, setActiveCategory] = useState(null)
-  useEffect(() => {
-    getCat(setCategories)
-  }, [])
+
+    const {categories} = useFbGetCategories()
+  
   console.log(categories)
   return (
     <Container>

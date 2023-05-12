@@ -43,9 +43,10 @@ const Container = styled.div`
     background-color: #fafafa;
     border-radius: 8px;
     display: grid;
+    grid-template-rows: min-content 1fr;
     align-items: stretch;
     gap: 0.8em;
-    overflow-y: hidden;
+    overflow: hidden;
     padding: 0.4em;
     `
 const Header = styled.div`

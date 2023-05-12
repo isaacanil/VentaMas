@@ -1,5 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit'
-import { deleteClient, deleteProduct } from '../../firebase/firebaseconfig'
+import {  deleteProduct } from '../../firebase/firebaseconfig'
+import { fbDeleteClient } from '../../firebase/client/fbDeleteClient'
+
 
 const initialState = {
     deleteProduct: {
@@ -37,7 +39,7 @@ export const alertSlice = createSlice({
         },
         handleDeleteClientAlertSuccess: (state) => {
             const id = state.deleteClient.id
-            deleteClient(id)
+            fbDeleteClient(id)
           
         }
        

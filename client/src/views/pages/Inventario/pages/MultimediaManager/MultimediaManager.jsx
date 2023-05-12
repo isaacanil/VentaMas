@@ -4,33 +4,33 @@ import { useEffect } from 'react'
 import { IoMdClose, IoMdTrash } from 'react-icons/io'
 import { MdClose, MdOutlineFileUpload } from 'react-icons/md'
 import styled from 'styled-components'
-import { ProductsImg, UploadProdImgData } from '../../../../../firebase/firebaseconfig'
 import { fbAddProductImg } from '../../../../../firebase/products/fbAddProductImg'
-import { useDeleteImgFBStorage } from '../../../../../hooks/useDeleteImgFBStorage'
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
+import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg'
+import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
+import { useSelector } from 'react-redux'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { fbDeleteProductImg } from '../../../../../firebase/products/productsImg/fbDeleteProductImg'
 
 export const MultimediaManager = () => {
   const [allImg, setAllImg] = useState([])
   const [ImgToUpload, setImgToUpload] = useState(null)
+  const user = useSelector(selectUser)
   useEffect(() => {
-    ProductsImg(setAllImg)
-  }, [])
-  const setId = () => {
-    return new Promise((resolve, reject) => {
-      resolve(nanoid(7))
-    })
-  }
-  console.log(ImgToUpload)
+    fbGetProductsImg(user, setAllImg)
+  }, [user])
+  
+  console.log(allImg)
 
   const handleSubmit = () => {
-    setId().then((id) => {
-      fbAddProductImg(ImgToUpload).then((url) => {
-        UploadProdImgData(id, url)
-        setImgToUpload(null)
-      })
+
+    fbAddProductImg(user,ImgToUpload).then((url) => {
+      fbAddProductImgData(user, url)
+      setImgToUpload(null)
     })
+
   }
 
   return (
@@ -77,8 +77,8 @@ export const MultimediaManager = () => {
                       borderRadius='normal'
                       width='icon24'
                       bgcolor={'error'}
-                      onClick={() => useDeleteImgFBStorage(img)}
-                   
+                      onClick={() => fbDeleteProductImg(user, img)}
+
                     />
                   </div>
                   <img src={img.url} alt="" onClick={() => useDeleteImgFBStorage(img)} />

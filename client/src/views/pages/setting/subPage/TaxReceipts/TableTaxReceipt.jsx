@@ -3,90 +3,95 @@ import styled from 'styled-components'
 import { useCompareObjects } from '../../../../../hooks/useCompareObject';
 import { Data } from './taxConfigTable'
 import { UpdateObjectProperty } from './UpdateTaxReceipt';
-export const TableTaxReceipt = ({ data, setData }) => {
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../../../../features/auth/userSlice';
+export const TableTaxReceipt = ({ array, setData }) => {
   
-    const updateTaxReceipt = (array, setArray, index, key, newValue, dataType, maxCharacters = null) => {
-        switch (dataType) {
-          case 'string':
-            newValue = String(newValue);
-            break;
-          case 'number':
-            newValue = Number(newValue);
-            break;
-          default:
-            break;
+  const updateTaxReceipt = (array, setArray, index, e, maxCharacters = false) => {
+    let key = e.target.name
+    let newValue = e.target.value
+
+    newValue = String(newValue);
+
+    if (newValue.length > 0 && maxCharacters) {
+      newValue = newValue.slice(-maxCharacters);
+      newValue = newValue.substring(0, maxCharacters);
+      newValue = newValue.padStart(maxCharacters, "0")
+    }
+
+    const newArray = array.map(({ data }, i) => i === index ? { "data": { ...data, [key]: newValue } } : { data })
+    setArray(newArray)
+  }
+  console.log(array, 'array')
+
+  return (
+    <Container>
+      <Row>
+        {
+          Data().settingDataTaxTable.map((item, index) => (
+            <Col key={index}><h4>{item.name}</h4></Col>
+          ))
         }
-        if (newValue.length > 0 && maxCharacters !== null) {
-          newValue = newValue.slice(-maxCharacters);
-          newValue = newValue.substring(0, maxCharacters);
-          newValue = newValue.padStart(maxCharacters, "0")
-        }
-        const newArray = array.map((item, i) => i === index ? {...item, [key]: newValue} : item)
-        setArray(newArray)
-      }
-      console.log(data, '..........................data')
-    return (
-        <Container>
-            <Row>
-                {
-                    Data().settingDataTaxTable.map((item, index) => (
-                        <Col key={index}><h4>{item.name}</h4></Col>
-                    ))
-                }
-            </Row>
-            {data ? (
-                 data.map((item, index) => (
-                    <Row key={index}>
-                      <Col>
-                        <input
-                          type="text"
-                          value={item.name}
-                          onChange={(e) => updateTaxReceipt(data, setData, index, 'name', e.target.value, 'string')}
-                        />
-                      </Col>
-                      <Col>
-                        <input
-                          type="text"
-                          value={item.type}
-                          onChange={(e) => updateTaxReceipt(data, setData, index, 'type', e.target.value, 'string')}
-                        />
-        
-                      </Col>
-                      <Col>
-                        <input
-                          type="number"
-                          value={item.serie}
-                          onChange={(e) => updateTaxReceipt(data, setData, index, 'serie', e.target.value, 'string', 2)}
-                        />
-                      </Col>
-                      <Col>
-                        <input
-                          type="number"
-                          value={item.sequence}
-                          onChange={(e) => updateTaxReceipt(data, setData, index, 'sequence', e.target.value, 'string', 10)}
-                        />
-                      </Col>
-                      <Col>
-                        <input
-                          type="number"
-                          value={item.increase}
-                          onChange={(e) => updateTaxReceipt(data, setData, index, 'increase', e.target.value, 'string')}
-                        />
-                      </Col>
-                      <Col>
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateTaxReceipt(data, setData, index, 'quantity', e.target.value, 'string')}
-                        />
-                      </Col>
-                    </Row>
-                    
-                  ))
-            ) : null}
-            
-        </Container>
-    )
+      </Row>
+      {array ? (
+        array.map(({ data }, index) => (
+          data &&
+          <Row key={index}>
+            <Col>
+              <input
+                type="text"
+                value={data?.name}
+                name='name'
+                onChange={(e) => updateTaxReceipt(array, setData, index, e)}
+              />
+            </Col>
+            <Col>
+              <input
+                type="text"
+                value={data?.type}
+                name='type'
+                onChange={(e) => updateTaxReceipt(array, setData, index, e)}
+              />
+
+            </Col>
+            <Col>
+              <input
+                type="number"
+                value={data?.serie}
+                name='serie'
+                onChange={(e) => updateTaxReceipt(array, setData, index, e, 2)}
+              />
+            </Col>
+            <Col>
+              <input
+                type="number"
+                value={data?.sequence}
+                name='sequence'
+                onChange={(e) => updateTaxReceipt(array, setData, index, e, 10)}
+              />
+            </Col>
+            <Col>
+              <input
+                type="number"
+                name='increase'
+                value={data?.increase}
+                onChange={(e) => updateTaxReceipt(array, setData, index, e)}
+              />
+            </Col>
+            <Col>
+              <input
+                type="number"
+                name='quantity'
+                value={data?.quantity}
+                onChange={(e) => updateTaxReceipt(array, setData, index, e)}
+              />
+            </Col>
+          </Row>
+        ))
+      ) : null}
+
+    </Container>
+  )
 }
 const Container = styled.div`
         border: 1px solid var(--Gray1);

@@ -22,12 +22,16 @@ import { ProductCardForCart } from './ProductCardForCart'
 import { PaymentArea } from './PaymentArea'
 import { useReactToPrint } from 'react-to-print'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import { AddBills, UpdateMultipleDocs } from '../../../firebase/firebaseconfig'
+
 import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectNcfStatus, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice'
 import styled from 'styled-components'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { selectMenuOpenStatus } from '../../../features/nav/navSlice'
 import { selectAppMode } from '../../../features/appModes/appModeSlice'
+import { fbAddInvoice } from '../../../firebase/invoices/fbAddInvoice'
+import { fbUpdateProductsStock } from '../../../firebase/products/fbUpdateProductStock'
+import { selectUser } from '../../../features/auth/userSlice'
+import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxReceipt'
 
 export const Cart = () => {
   const isOpen = useSelector(selectMenuOpenStatus)
@@ -35,7 +39,7 @@ export const Cart = () => {
   const selectMode = useSelector(selectAppMode)
   const componentToPrintRef = useRef(null);
   const bill = useSelector(({ cart }) => cart.data)
-  const taxReceiptDataRef = useSelector(selectTaxReceiptData)
+  const taxReceiptDataSelected = useSelector(selectTaxReceiptData)
   const clientSelected = useSelector(SelectClient)
   const ncfStatus = useSelector(selectNcfStatus)
   const ncfCode = useSelector(selectNcfCode)
@@ -45,6 +49,7 @@ export const Cart = () => {
   const ProductSelected = useSelector(SelectProduct)
   const billData = useSelector(SelectFacturaData)
   const [printed, setPrinted] = useState(false)
+  const user = useSelector(selectUser)
 
   useEffect(() => {
     if (ncfCode !== null) {
@@ -75,6 +80,7 @@ export const Cart = () => {
       console.log(error)
     }
   }
+
   const createOrUpdateClient = async () => {
     try {
       dispatch(isNewClient())
@@ -83,13 +89,13 @@ export const Cart = () => {
     }
   }
 
-  const savingDataToFirebase = async (bill) => {
+  const savingDataToFirebase = async (bill, taxReceipt) => {
     dispatch(addTaxReceiptInState(ncfCode))
     try {
       if (selectMode === true) {
-        AddBills(bill)
-        dispatch(updateTaxCreditInFirebase())
-        UpdateMultipleDocs(ProductSelected);
+        fbAddInvoice(bill, user)
+        fbUpdateTaxReceipt(taxReceipt, user)
+        fbUpdateProductsStock(ProductSelected, user);
         dispatch(addNotification({ message: "Venta Realizada", type: 'success', title: 'Completada' }))
       } else {
         dispatch(addNotification({ message: "No se puede Facturar en Modo Demo", type: 'error' }))
@@ -107,6 +113,7 @@ export const Cart = () => {
       console.log('error al borrar los datos del state de factura')
     }
   }
+
   const showPrintPreview = async () => {
     try {
       handlePrint()
@@ -114,6 +121,7 @@ export const Cart = () => {
       dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     }
   }
+  
   const handlePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
@@ -151,7 +159,7 @@ export const Cart = () => {
 
   useEffect(() => {
     if (ncfCartSelected !== null && submittable === false && printed === true) {
-      savingDataToFirebase(billData)
+      savingDataToFirebase(billData, taxReceiptDataSelected)
       setSubmittable(true)
     }
   }, [ncfCartSelected, submittable, printed])

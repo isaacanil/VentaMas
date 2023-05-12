@@ -7,19 +7,24 @@ import { PlusIconButton } from '../../../templates/system/Button/PlusIconButton'
 import { InputText, InputNumber } from '../../../templates/system/Inputs/Input'
 import { separator } from '../../../../hooks/separator'
 import { v4 } from 'uuid'
-import { addIngredientTypePizza, getCustomProduct } from '../../../../firebase/firebaseconfig.jsx'
+import { addIngredientTypePizza } from '../../../../firebase/firebaseconfig.jsx'
+import { fbGetCustomProduct } from '../../../../firebase/products/customProduct/fbGetCustomProductTypePizza'
 import { useEffect } from 'react'
 import { isEmpty } from '@firebase/util'
 import { nanoid } from 'nanoid'
 import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard'
 import { IoIosArrowBack, IoMdClose } from 'react-icons/io'
-export const AddCustomProductModal = ({isOpen, handleOpen}) => {
+import { selectUser } from '../../../../features/auth/userSlice'
+import { useSelector } from 'react-redux'
+export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
+    const user = useSelector(selectUser)
+    const [product, setProduct] = useState('')
     
-    const [product, setProduct] = useState([])
     useEffect(() => {
-        getCustomProduct(setProduct)
+        fbGetCustomProduct(user, setProduct)
     }, [])
-    console.log(product)
+
+
     const [ingredient, setIngredient] = useState({
         name: '',
         cost: 0,
@@ -34,14 +39,14 @@ export const AddCustomProductModal = ({isOpen, handleOpen}) => {
                     id: v4()
                 })
             )
-            
+
         })
     }
     console.log(ingredient)
 
     const handleOnChange = () => {
         settingIngredientId().then(() => {
-            if(ingredient.cost && ingredient.id && ingredient.name !== ''){
+            if (ingredient.cost && ingredient.id && ingredient.name !== '') {
                 addIngredientTypePizza(ingredient)
                 console.log('done')
                 setIngredient({
@@ -57,70 +62,70 @@ export const AddCustomProductModal = ({isOpen, handleOpen}) => {
     return (
         isOpen ? (
             <Modal>
-            <Head>
-                <Container>
-                    <Button 
-                    bgcolor='error' 
-                    startIcon={<IoIosArrowBack />} 
-                    title='atrás'
-                    onClick={handleOpen}
-                    ></Button>
-                </Container>
-            </Head>
-            <Body>
-                <TitleSection>
-                    <h4>Características del Producto</h4>
-                </TitleSection>
+                <Head>
+                    <Container>
+                        <Button
+                            bgcolor='error'
+                            startIcon={<IoIosArrowBack />}
+                            title='atrás'
+                            onClick={handleOpen}
+                        ></Button>
+                    </Container>
+                </Head>
+                <Body>
+                    <TitleSection>
+                        <h4>Características del Producto</h4>
+                    </TitleSection>
 
-              
-                <Flex
-                    alignItems='center'
-                    justifyContent='space-between'
-                >
-                    <Group>
-                        <Col>
-                            <InputText
-                                value={ingredient.name}
-                                placeholder='Agregar Ingrediente'
-                                onChange={(e) => setIngredient({ ...ingredient, name: e.target.value })} />
+
+                    <Flex
+                        alignItems='center'
+                        justifyContent='space-between'
+                    >
+                        <Group>
+                            <Col>
+                                <InputText
+                                    value={ingredient.name}
+                                    placeholder='Agregar Ingrediente'
+                                    onChange={(e) => setIngredient({ ...ingredient, name: e.target.value })} />
+                            </Col>
+                            <Col>
+                                <InputNumber
+                                    value={ingredient.cost}
+                                    size='small'
+                                    placeholder='Precio'
+                                    onChange={(e) => setIngredient(
+                                        { ...ingredient, cost: e.target.value }
+                                    )} />
+                            </Col>
+                        </Group>
+                        <Col justifySelf='right'>
+                            <PlusIconButton fn={handleOnChange}></PlusIconButton>
                         </Col>
-                        <Col>
-                            <InputNumber
-                                value={ingredient.cost}
-                                size='small'
-                                placeholder='Precio'
-                                onChange={(e) => setIngredient(
-                                    { ...ingredient, cost: e.target.value }
-                                )} />
-                        </Col>
-                    </Group>
-                    <Col justifySelf='right'>
-                        <PlusIconButton fn={handleOnChange}></PlusIconButton>
-                    </Col>
 
-                </Flex>
-                <Box>
-                    <List>
-                        {
-                            !isEmpty(product) ? (
-                                product.ingredientList.length > 0 ? (
-                                    product.ingredientList
-                                    .sort((a, b) => a.name > b.name ? 1 : -1)
-                                    .map((item, index) => (
-                                        <IngredientCard key={index} item={item} ></IngredientCard>
+                    </Flex>
+                    <Box>
+                        <List>
+                            {
+                                !isEmpty(product) ? (
+                                    product.ingredientList.length > 0 ? (
+                                        product.ingredientList
+                                            .sort((a, b) => a.name > b.name ? 1 : -1)
+                                            .map((item, index) => (
+                                                <IngredientCard key={index} item={item} ></IngredientCard>
 
-                                    ))
+                                            ))
+                                    ) : null
                                 ) : null
-                            ) : null
-                        }
+                            }
 
-                    </List>
-                </Box>
-            </Body>
-        </Modal>
+                        </List>
+                    </Box>
+                </Body>
+            </Modal>
         ) : null
-          
-     
+
+
     )
 }
 const Backdrop = styled.div`
