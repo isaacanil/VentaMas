@@ -8,27 +8,28 @@ import { addCategory, deleteCategorySelected } from '../../../features/category/
 import { useDispatch } from 'react-redux'
 import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
+import { motion } from 'framer-motion'
 
 export const Carrusel = () => {
     const categoriesRef = useRef(null)
     const { width } = useScreenSize(categoriesRef)
-    const {categories} = useFbGetCategories()
+    const { categories } = useFbGetCategories()
 
-    
+
     const categoryCardRef = useRef(null)
     const MoveScroll = (direction) => {
         const toStart = () => {
             if (categoriesRef.current.scrollLeft > 0) {
                 categoriesRef.current.scrollTo({
-                  top: 0,
-                  left: 0,
-                  behavior: 'smooth',
+                    top: 0,
+                    left: 0,
+                    behavior: 'smooth',
                 });
-              }
-          
+            }
+
         }
         const toEnd = () => {
-            if(categoriesRef.current.scrollLeft < categoriesRef.current.scrollWidth - categoriesRef.current.clientWidth ){
+            if (categoriesRef.current.scrollLeft < categoriesRef.current.scrollWidth - categoriesRef.current.clientWidth) {
                 categoriesRef.current.scrollTo({
                     top: 0,
                     left: categoriesRef.current.scrollWidth,
@@ -52,33 +53,51 @@ export const Carrusel = () => {
                 behavior: 'smooth'
             })
         }
-        if(direction == 'start'){
+        if (direction == 'start') {
             toStart()
         }
-        if(direction == 'end'){
+        if (direction == 'end') {
             toEnd()
         }
-        if(direction == 'right'){
+        if (direction == 'right') {
             toRight()
         }
-        if(direction == 'left'){
+        if (direction == 'left') {
             toLeft()
         }
     }
-    
- 
+
+    const effectCategoriesContainer = {
+        hidden: { opacity: 1, scale: 0 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            transition: {
+                delayChildren: 0.3,
+                staggerChildren: 0.2
+            }
+        }
+    }
+
     return (
         <>
             <Container>
-              
-                    <Button onClick={() => MoveScroll('left')} onDoubleClick={() => MoveScroll('start')}><MdKeyboardArrowLeft /></Button>
 
-              
-                <Categories ref={categoriesRef}>
+                <Button onClick={() => MoveScroll('left')} onDoubleClick={() => MoveScroll('start')}><MdKeyboardArrowLeft /></Button>
+
+
+                <Categories
+                    variants={effectCategoriesContainer}
+                    ref={categoriesRef}
+                >
                     {
                         categories.length > 0 ? (
                             categories.map(({ category }, index) => (
-                                <Category category={category} key={index}></Category>
+                                <Category
+                                    category={category}
+                                    key={index}
+                                    va
+                                />
                             ))
                         ) : null
 
@@ -119,12 +138,13 @@ const Button = styled.button`
         background-color: rgba(0, 0, 0, 0.200);
     }
 `
-const Categories = styled.div`
+const Categories = styled(motion.ul)`
     border-radius: var(--border-radius-light);
     overflow-x: hidden;
     overflow-x: scroll;
      -webkit-overflow-scrolling: touch;
      scrollbar-width: none; 
+     padding: 0;
     display: flex;
     flex-wrap: nowrap;
     gap: 0.6em;
@@ -133,7 +153,7 @@ const Categories = styled.div`
   display: none; /* Oculta la barra de scroll */
 }
 `
-const CategoryContainer = styled.div`
+const CategoryContainer = styled(motion.li)`
 //font & text
 font-size: 14px;
 letter-spacing: 0.2px;
@@ -186,14 +206,26 @@ const Category = ({ category, ref }) => {
                 deleteCategorySelected(category.name)
             )
         }
-        setTimeout(()=>{
+        setTimeout(() => {
             ref.current.scrollTo(0, 0)
         }, 100)
 
 
     }
+    const effectCategory = {
+        hidden: { y: 0, opacity: 0,},
+        visible: {
+            y: 0,
+            opacity: 1,
+          
+        }
+    }
     return (
-        <CategoryContainer selected={isSelected ? true : false} onClick={(e) => start(category, ref)}>
+        <CategoryContainer
+            selected={isSelected ? true : false}
+            onClick={(e) => start(category, ref)}
+            variants={effectCategory}
+        >
             {category.name}
         </CategoryContainer>
     )

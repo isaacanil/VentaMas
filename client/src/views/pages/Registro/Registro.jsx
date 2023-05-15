@@ -18,13 +18,15 @@ import { ComponentTagger } from '../../templates/system/ComponentTagger/Componen
 import { useDispatch } from 'react-redux'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
+import { motion } from 'framer-motion'
+import { pageVariants } from '../../../constants/framerMotion/pageVariants'
 
 export const Registro = () => {
   const dispatch = useDispatch()
 
   const [datesSelected, setDatesSelected] = useState({})
- 
-  const {invoices} = fbGetInvoices(datesSelected)
+
+  const { invoices } = fbGetInvoices(datesSelected)
 
   const total = () => invoices.reduce((total, { data }) => total + data.totalPurchase.value, 0)
 
@@ -62,7 +64,10 @@ export const Registro = () => {
 
   return (
     <Fragment>
-      <Container>
+      <Container
+         animate={{ x: 0 }}
+         transition={{ type: "spring", stiffness: 0 }}
+      >
         <MenuApp></MenuApp>
         <FilterBar>
           <span>
@@ -97,7 +102,7 @@ export const Registro = () => {
     </Fragment>
   )
 }
-const Container = styled.div`
+const Container = styled(motion.div)`
   max-height: calc(100vh);
   height: 100vh;
   overflow: hidden;

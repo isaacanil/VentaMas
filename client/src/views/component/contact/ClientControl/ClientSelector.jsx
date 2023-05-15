@@ -3,57 +3,61 @@ import { MdClose, MdPersonAdd } from 'react-icons/md'
 import styled from 'styled-components'
 import { Button } from '../../../templates/system/Button/Button'
 import { Client } from '../../../templates/system/client/Client'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectIsOpen, setIsOpen } from '../../../../features/clientCart/clientCartSlice'
 
-export const ClientSelector = ({ showClientList, setShowClientList, filteredClients, client, mode, searchTerm, createClientMode, updateClientMode}) => {
+export const ClientSelector = ({  filteredClients, searchTerm, createClientMode, updateClientMode }) => {
     const [clients, setClients] = useState([])
-    useEffect(()=>{
+    const isOpen = useSelector(selectIsOpen)
+    const dispatch = useDispatch()
+    useEffect(() => {
         setClients(filteredClients)
     }, [filteredClients])
-    return (  
-            <Container isOpen={showClientList ? true : false}>
-                <Head>
-                    <Group>
-                        <Button
-                            startIcon={<MdPersonAdd />}
-                            borderRadius='normal'
-                            width='icon24'
-                            onClick={createClientMode}
-                        />
-                    </Group>
-                    <Group>
-                        <Button
-                            title={<MdClose />}
-                            width='icon24'
-                            bgcolor='op1'
-                            borderRadius='normal'
-                            onClick={(e)=> setShowClientList(false)}
-                        
-                        />
-                    </Group>
-                    
-                </Head>
-                <Body isEmpty={clients.length > 0 ? true : false}>
-                    {
-                        clients.length > 0 ? (
-                            clients.map(({client}, index) => (
-                                <Client
-                                    updateClientMode={updateClientMode}
-                                    key={index}
-                                    client={client}
-                                    Close={setShowClientList}
-                                    searchTerm={searchTerm}
-                                />
-                            ))
-                        ) : null
-                        
-                    }
-                    {
-                        clients.length === 0 ? (<h3>cliente no encontrado</h3>) : null
-                    }
-                </Body>
-            </Container >
-      
-      
+    return (
+        <Container isOpen={isOpen}>
+            <Head>
+                <Group>
+                    <Button
+                        startIcon={<MdPersonAdd />}
+                        borderRadius='normal'
+                        width='icon24'
+                        onClick={createClientMode}
+                    />
+                </Group>
+                <Group>
+                    <Button
+                        title={<MdClose />}
+                        width='icon24'
+                        bgcolor='op1'
+                        borderRadius='normal'
+                        onClick={(e) => dispatch(setIsOpen(false))}
+
+                    />
+                </Group>
+
+            </Head>
+            <Body isEmpty={clients.length > 0 ? true : false}>
+                {
+                    clients.length > 0 ? (
+                        clients.map(({ client }, index) => (
+                            <Client
+                                updateClientMode={updateClientMode}
+                                key={index}
+                                client={client}
+                                Close={() => dispatch(setIsOpen(false))}
+                                searchTerm={searchTerm}
+                            />
+                        ))
+                    ) : null
+
+                }
+                {
+                    clients.length === 0 ? (<h3>cliente no encontrado</h3>) : null
+                }
+            </Body>
+        </Container >
+
+
 
 
     )
@@ -77,13 +81,13 @@ const Container = styled.div`
     ${props => {
         switch (props.isOpen) {
             case true:
-                return`
+                return `
                     
                     transform: translateY(0px) scaleY(1);
                     
                 `
-         
-        
+
+
             default:
                 break;
         }
@@ -115,15 +119,15 @@ const Body = styled.div`
    align-items: center;
    align-content: flex-start;
    ${props => {
-    switch (props.isEmpty) {
-        case false:
-            return`
+        switch (props.isEmpty) {
+            case false:
+                return `
                 grid-template-columns: 1fr;
             `
-        default:
-            break;
-    }
-   }}
+            default:
+                break;
+        }
+    }}
    h3{
     color: white;
    }

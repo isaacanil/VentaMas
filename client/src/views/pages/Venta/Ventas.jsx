@@ -17,6 +17,8 @@ import { ShoppingItemsCounter } from './ShoppingItemsCounter'
 import { Transition } from '../../templates/system/Transition'
 import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../features/cart/cartSlice'
 import useBarcodeScanner from '../../../hooks/barcode/usebarcodescanner'
+import { motion } from 'framer-motion'
+import { pageVariants } from '../../../constants/framerMotion/pageVariants'
 export const Ventas = () => {
 
   const [searchData, setSearchData] = useState('')
@@ -50,34 +52,37 @@ export const Ventas = () => {
   const productFiltered = filterData(products, searchData)
 
   return (
-    <Transition>
-      <Container>
-        {/* <MultiDisplayControl></MultiDisplayControl> */}
-        <ProductContainer>
-          <MenuApp
-            borderRadius={'bottom-right'}
-            searchData={searchData}
-            setSearchData={setSearchData}
-          />
-          <ProductControl
-            setProductsLoading={setLoading}
-            productsLoading={loading}
-            products={productFiltered}
-            isProductGrouped={categoryGrouped}
-          />
-          <MenuComponents />
-          <ShoppingItemsCounter />
-        </ProductContainer>
-        <Cart></Cart>
-      </Container>
-    </Transition>
+
+    <Container
+      animate={{ x: 0 }}
+      transition={{ type: "spring", stiffness: 0 }}
+    >
+      {/* <MultiDisplayControl></MultiDisplayControl> */}
+      <ProductContainer>
+        <MenuApp
+          borderRadius={'bottom-right'}
+          searchData={searchData}
+          setSearchData={setSearchData}
+        />
+        <ProductControl
+          setProductsLoading={setLoading}
+          productsLoading={loading}
+          products={productFiltered}
+          isProductGrouped={categoryGrouped}
+        />
+        <MenuComponents />
+        <ShoppingItemsCounter />
+      </ProductContainer>
+      <Cart></Cart>
+    </Container>
+
 
 
 
   )
 }
 
-const Container = styled.div`
+const Container = styled(motion.div)`
    width: 100vw;
   height: 100vh;
   display: grid;

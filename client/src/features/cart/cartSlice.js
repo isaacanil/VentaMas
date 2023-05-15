@@ -67,11 +67,7 @@ const defaultValue = {
         },
         sourceOfPurchase: 'Presencial'
     },
-    handleClient: {
-        mode: 'search',
-        modeLabel: 'search',
-        UPDATED_CLIENT: null,
-    }
+
 }
 export let ORIGINAL_CLIENT = null;
 const initialState = defaultValue
@@ -79,69 +75,14 @@ const cartSlice = createSlice({
     name: 'factura',
     initialState,
     reducers: {
-        setClientModeInState: (state, actions) => {
-            state.handleClient.mode = actions.payload
-            state.handleClient.modeLabel = actions.payload
-        },
-        isNewClient: (state) => {
-            if (state.data.client.name === '') {
-                console.log('no cliente')
-                state.data.client = GenericClient
-                return
+        getClient: (state, actions) => {
+            const client = actions.payload
+            state.data.client = client
+            if (client?.delivery?.status === true) {
+                state.data.delivery = client?.delivery
+            }else{
+                state.data.delivery = DefaultDelivery
             }
-            if (state.handleClient.UPDATED_CLIENT !== null && state.handleClient.UPDATED_CLIENT.id === state.data.client.id && !useCompareObjectsInState(state.data.client, state.handleClient.UPDATED_CLIENT)) {
-                fbUpdateClient(state.handleClient.UPDATED_CLIENT)
-                state.client = state.handleClient.UPDATED_CLIENT
-                return
-            }
-            if (!("id" in state.data.client) && state.data.client.name.length > 0 && state.data.client.name !== 'Cliente Genérico') {
-                const id = nanoid(8)
-                const client = state.data.client;
-                state.data.client = { ...client, id }
-                fbAddClient(state.data.client)
-                return
-            }
-            return
-        },
-        updateClientInState: (state, action) => {
-            const updatedClient = action.payload
-            const clientSelected = state.data.client
-            if (updatedClient.id === clientSelected.id) {
-                state.handleClient.UPDATED_CLIENT = updatedClient
-                let updatedClientCopy = { ...updatedClient };
-
-                if (!('delivery' in updatedClientCopy) ||
-                    typeof updatedClientCopy.delivery === 'number' ||
-                    typeof updatedClientCopy.delivery === 'string') {
-                    updatedClientCopy.delivery = { value: 0, status: false };
-                    state.data = { ...state.data, delivery: updatedClientCopy.delivery };
-                        
-                   
-                }
-
-                if (!('value' in updatedClientCopy.delivery) && !('status' in updatedClientCopy.delivery)) {
-                    const newDelivery = { ...updatedClientCopy.delivery, value: 0, status: false };
-                    state.data = { ...state.data, delivery: newDelivery };
-                    return
-                }
-
-                state.handleClient.UPDATED_CLIENT = updatedClientCopy
-                state.data.client.delivery = updatedClientCopy.delivery
-                state.data.delivery = updatedClientCopy.delivery
-
-            }
-        },
-        createClientInState: (state, action) => {
-            state.handleClient.UPDATED_CLIENT = null
-            state.data.client = action.payload
-        },
-        selectClientInState: (state, action) => {
-            state.data.client = action.payload
-        },
-        deleteClientInState: (state) => {
-            state.data.client = DefaultClient
-            state.data.delivery = DefaultDelivery
-            state.handleClient.UPDATED_CLIENT = null
         },
         addPaymentValue: (state, actions) => {
             const paymentValue = actions.payload
@@ -153,24 +94,6 @@ const cartSlice = createSlice({
         },
         addTaxReceiptInState: (state, actions) => {
             state.data.NCF = actions.payload
-        },
-        addDelivery: (state) => {
-            const clientDeliveryData = state.data.client.delivery;
-            const updateClientDeliveryData = state.handleClient.UPDATED_CLIENT ? state.handleClient.UPDATED_CLIENT.delivery : null;
-
-            if (updateClientDeliveryData) {
-                if (!("status" in updateClientDeliveryData) && !("value" in updateClientDeliveryData)) {
-                    updateClientDeliveryData.status = false
-                    updateClientDeliveryData.value = 0
-                    return
-                }
-                if (updateClientDeliveryData.status === true && updateClientDeliveryData.value !== '') {
-                    updateClientDeliveryData.status = clientDeliveryData.status || false
-                    updateClientDeliveryData.value = clientDeliveryData.value || 0
-                }
-                state.data.delivery = updateClientDeliveryData
-            }
-
         },
         addPaymentMethod: (state, actions) => {
             const data = actions.payload
@@ -240,7 +163,7 @@ const cartSlice = createSlice({
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total - productFound.amountToBuy.unit
                 productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
-                if(productFound.trackInventory === true){
+                if (productFound.trackInventory === true) {
                 }
                 if (productFound.amountToBuy.total === 0) {
                     state.data.products.splice(state.data.products.indexOf(productFound), 1)
@@ -269,7 +192,7 @@ const cartSlice = createSlice({
             const total = Number(productSelected.reduce((total, product) => total + product.price.total, 0))
             const discount = total * discountPercentage;
             const totalWithDiscount = total - discount;
-            const Delivery = state.data.delivery.value;
+            const Delivery = state.data.delivery.status ? state.data.delivery.value : 0;
             state.data.totalPurchase.value = (Number(Delivery) + Number(totalWithDiscount))
         },
         setChange: (state) => {
@@ -286,15 +209,13 @@ const cartSlice = createSlice({
         addSourceOfPurchase: (state, actions) => {
             const source = actions.payload
             state.data.sourceOfPurchase = source
-        },  
+        },
     }
 })
 
 export const {
     addAmountToProduct,
-    setClientModeInState,
-    addClientInState,
-    addDelivery,
+    getClient,
     addPaymentValue,
     addPaymentMethod,
     addDiscount,
@@ -303,12 +224,8 @@ export const {
     addSourceOfPurchase,
     addTaxReceiptInState,
     CancelShipping,
-    createClientInState,
-    deleteClientInState,
     deleteProduct,
     diminishAmountToProduct,
-    handleClient,
-    isNewClient,
     onChangeValueAmountToProduct,
     selectClientInState,
     setChange,
@@ -331,7 +248,7 @@ export const SelectTotalShoppingItems = (state) => state.cart.data.totalShopping
 export const SelectChange = (state) => state.cart.data.change.value;
 export const SelectSourceOfPurchase = (state) => state.cart.data.sourceOfPurchase;
 export const SelectPaymentValue = (state) => state.cart.data.payment.value;
-export const SelectClientMode = (state) => state.cart.handleClient.mode;
+
 export const SelectDiscount = (state) => state.cart.data.discount.value;
 export const SelectNCF = (state) => state.cart.data.NCF;
 

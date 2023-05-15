@@ -10,7 +10,7 @@ import {
   SelectProduct,
   CancelShipping,
   SelectTotalPurchase,
-  isNewClient,
+
   SelectClient,
   SelectFacturaData,
   addTaxReceiptInState,
@@ -32,6 +32,8 @@ import { fbAddInvoice } from '../../../firebase/invoices/fbAddInvoice'
 import { fbUpdateProductsStock } from '../../../firebase/products/fbUpdateProductStock'
 import { selectUser } from '../../../features/auth/userSlice'
 import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxReceipt'
+import { ButtonGroup } from '../../templates/system/Button/Button'
+import { deleteClient, handleClient } from '../../../features/clientCart/clientCartSlice'
 
 export const Cart = () => {
   const isOpen = useSelector(selectMenuOpenStatus)
@@ -60,6 +62,10 @@ export const Cart = () => {
     }
   }, [ncfCode])
 
+  const getActualClient = () => {
+
+  }
+
   const increaseTaxReceipt = async () => {
     try {
       switch (ncfStatus) {
@@ -83,9 +89,10 @@ export const Cart = () => {
 
   const createOrUpdateClient = async () => {
     try {
-      dispatch(isNewClient())
+      dispatch(handleClient({user}))
     } catch (error) {
       console.log(error)
+      dispatch(addNotification({ message: "Ocurrió un Error con el cliente, Intente de Nuevo", type: 'error' }));
     }
   }
 
@@ -121,7 +128,7 @@ export const Cart = () => {
       dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     }
   }
-  
+
   const handlePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
@@ -167,10 +174,17 @@ export const Cart = () => {
   useEffect(() => {
     if (submittable === true) {
       clearDataFromState()
+      dispatch(deleteClient())
       setSubmittable(false)
       setPrinted(false)
     }
   }, [submittable])
+
+  const handleCancelShipping = () => {
+    dispatch(CancelShipping())
+    dispatch(clearTaxReceiptData())
+    dispatch(deleteClient())
+  }
 
   return (
     <Container isOpen={isOpen ? true : false}>
@@ -192,16 +206,24 @@ export const Cart = () => {
         <PaymentArea></PaymentArea>
         <div className={style.resultBar}>
 
-          <h3><span>Total :</span><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
+          <h3><span></span><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
 
           <Receipt ref={componentToPrintRef} data={bill}></Receipt>
-          <Button
-            borderRadius='normal'
-            title='Facturar'
-            onClick={handleInvoice}
-            bgcolor='primary'
-            disabled={ProductSelected.length >= 1 ? false : true}
-          />
+          <ButtonGroup>
+            <Button
+              borderRadius='normal'
+              title='Cancelar'
+              onClick={handleCancelShipping}
+            />
+            <Button
+              borderRadius='normal'
+              title='Facturar'
+              onClick={handleInvoice}
+              bgcolor='primary'
+              disabled={ProductSelected.length >= 1 ? false : true}
+            />
+          </ButtonGroup>
+
         </div>
       </div>
     </Container>

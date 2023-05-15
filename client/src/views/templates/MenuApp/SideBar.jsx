@@ -36,7 +36,7 @@ const Container = styled.nav`
     top: 0;
     left: 0;
 
-    max-width: 500px;
+    max-width: 400px;
     width: 100%;
     height: 100vh;
 

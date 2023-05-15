@@ -13,7 +13,7 @@ export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
     const [ImgToUpload, setImgToUpload] = useState(null)
     const [images, setImages] = useState([])
     const user = useSelector(selectUser)
-    useEffect(() => { fbGetProductsImg(user, setImages) }, [])
+    useEffect(() => { fbGetProductsImg(user, setImages) }, [user])
 
     return (
         isOpen ? (

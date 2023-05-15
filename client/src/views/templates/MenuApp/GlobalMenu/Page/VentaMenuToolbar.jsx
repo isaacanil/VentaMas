@@ -112,6 +112,6 @@ const Container = styled.div`
 const Group = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.8em;
+  gap: 0.4em;
  
 `

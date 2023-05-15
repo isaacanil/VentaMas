@@ -14,7 +14,7 @@ export const IngredientList = ({ handleIngredientOpen }) => {
     const [customProduct, setCustomProduct] = useState('')
     useEffect(() => {
         fbGetCustomProduct(user, setCustomProduct)
-    }, [])
+    }, [user])
     const totalIngredientPrice = useSelector(selectTotalIngredientPrice)
     return (
         <Container>

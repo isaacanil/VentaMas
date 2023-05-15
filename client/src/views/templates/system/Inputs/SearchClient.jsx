@@ -1,16 +1,19 @@
+import { faXmark } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useState } from "react"
 import { MdClose } from "react-icons/md"
 import { useDispatch } from "react-redux"
 import styled from "styled-components"
 
-export const SearchClient = ({ name, type, text, ref, size, title, label, clearInputWhen, required, focusColor, labelColor, value, onChange, fn, readOnly, onFocus }) => {
-   const dispatch = useDispatch()
+export const SearchClient = ({ name, icon, type, text, ref, size, title, label, clearInputWhen, required, focusColor, labelColor, value, onChange, fn, readOnly, onFocus }) => {
+    const dispatch = useDispatch()
     const handleReset = () => {
-         fn ? fn() : null
+        fn ? fn() : null
     }
-    
+
     return (
         <Container ref={ref}>
+            <Icon>{icon}</Icon>
             <InputContainer>
                 <input
                     name={name}
@@ -26,7 +29,7 @@ export const SearchClient = ({ name, type, text, ref, size, title, label, clearI
             </InputContainer>
             <ButtonContainer>
                 <Button onClick={handleReset}>
-                    <MdClose />
+                    <FontAwesomeIcon icon={faXmark} />
                 </Button>
             </ButtonContainer>
         </Container>
@@ -35,22 +38,25 @@ export const SearchClient = ({ name, type, text, ref, size, title, label, clearI
 const Container = styled.div`
     //border: 2px solid black;
     border-radius: 4px;
-    display: flex;
+    display: grid;
+    grid-template-columns: min-content 1fr min-content;
     align-items: center;
+    align-content: center;
     gap: 0 10px;
     width: 100%;
-    max-width: 225px;
+    height: 2em;
+ 
     min-width: 180px;
-    padding: 0 6px 2px;
+    padding: 2px 6px ;
     background-color: white;
     position: relative;
     border: 1px solid #41414140;
-    height: 2em;
-    display: grid;
-    align-items: center;
+   
+   
 
 `
 const Button = styled.button`
+
     height: 1.2em;
     width: 1.2em;
     display: flex;
@@ -60,6 +66,8 @@ const Button = styled.button`
     padding: 0;
     pointer-events: painted;
     border: 0;
+    color: #464646;
+    background-color: transparent;
     z-index: 1000000;
     cursor: pointer;
     
@@ -87,9 +95,9 @@ display: grid;
     input{
         border: 0;
         outline: 0;
-        width: calc(100% - 2.2em);
-        position: absolute;
-        bottom: 4px;
+        max-width: 100%;
+        width: calc(100% - 0.2em);
+    
         font-size: 16px;
         padding: 0;
         background-color: transparent;
@@ -101,4 +109,20 @@ display: grid;
 `
 const ButtonContainer = styled.div`
     justify-self: end;
+    align-self: center;
+`
+const Icon = styled.div`
+  
+    height: 1.2em;
+    width: 1.2em;
+    display: flex;
+    font-size: 16px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    align-self: flex-end;
+    pointer-events: painted;
+    border: 0;
+    color: #464646;
+    
 `

@@ -1,49 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
-import { handleClient, addDelivery, SelectClient, setChange, totalPurchase, addSourceOfPurchase, SelectDelivery } from '../../../../../features/cart/cartSlice'
+import { setChange, totalPurchase, addSourceOfPurchase  } from '../../../../../features/cart/cartSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { monetarySymbols } from '../../../../../constants/monetarySymbols'
-import { quitarCeros } from '../../../../../hooks/quitarCeros'
 import { sourceOfSaleList } from '../../../../../constants/sourceOfSaleList'
+import { selectClient, setClient } from '../../../../../features/clientCart/clientCartSlice'
+import { updateObject } from '../../../../../utils/object/updateObject'
 
-
-
-export const ClientDetails = ({ createClientMode, clientSelected, client, setClient }) => {
+export const ClientDetails = () => {
     const dispatch = useDispatch()
     const deliveryStatusInput = useRef(null)
-    const [deliveryData, setDeliveryData] = useState({value: "", status: false})
-    const focusOnDeliveryInput = () => {
-        clientSelected ? (
-            deliveryStatusInput.current.focus()
-        ) : null
-    }
+    const [deliveryData, setDeliveryData] = useState({ value: "", status: false })
+
+    const client = useSelector(selectClient)
+
     const updateClient = (e) => {
-        setClient({
-            ...client,
-            [e.target.name]: e.target.value
-        })
+        dispatch(setClient(updateObject(client, e)))
     }
+
     useEffect(() => {
-        console.log('deliveryData', deliveryData)  
-        setClient({ ...client, delivery: deliveryData})
-        dispatch(addDelivery())
+       
         dispatch(totalPurchase())
         dispatch(setChange())
     }, [deliveryData])
-    useEffect(()=>{
-        if(clientSelected){
-            if(clientSelected.delivery){
-                deliveryData.status ? focusOnDeliveryInput() : null
-                setDeliveryData(clientSelected.delivery)
-                dispatch(totalPurchase())
-            }
-        }
-    }, [clientSelected])
+
+    useEffect(() => {
+        client?.delivery && dispatch(totalPurchase())
+    }, [client])
+
     const handleSetSourceOfPurchase = (value) => {
         dispatch(addSourceOfPurchase(value))
     }
-    console.log(deliveryData)
+
     return (
         <Container>
             <Row>
@@ -77,9 +66,7 @@ export const ClientDetails = ({ createClientMode, clientSelected, client, setCli
                         type="text"
                         name="address"
                         value={client.address}
-                        onChange={(e) => updateClient(e)
-                            
-                        }
+                        onChange={(e) => updateClient(e)}
                         autocomplete="off"
                     />
                 </Item>
@@ -87,42 +74,17 @@ export const ClientDetails = ({ createClientMode, clientSelected, client, setCli
             <Row>
                 <Group>
                     <Switch
-                        checked={deliveryData.status ? true : false}
-                        name='delivery'
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setDeliveryData({
-                                    ...deliveryData,
-                                    status: e.target.checked,
-                                })
-                            }
-                            if (e.target.checked === false) {
-                                setDeliveryData({
-                                    ...deliveryData,
-                                    status: e.target.checked,
-                                    value: ''
-                                })
-                            }
-
-                        }} />
+                        checked={client?.delivery?.status ? true : false}
+                        name='delivery.status'
+                        onChange={(e) => updateClient(e)} />
                     <Item>
                         <label htmlFor="">Delivery: {monetarySymbols.dollarSign}</label>
                         <input
                             type="number"
-                            value={quitarCeros(Number(deliveryData.value))}
+                            name='delivery.value'
+                            value={client?.delivery?.value}
                             ref={deliveryStatusInput}
-                            onClick={(e) => {
-                                setDeliveryData({
-                                    ...deliveryData,
-                                    status: true
-                                })
-                            }}
-                            onChange={(e) => {
-                                setDeliveryData({
-                                    ...deliveryData,
-                                    value: Number(e.target.value)
-                                })
-                            }}
+                            onChange={(e) => updateClient(e)}
                         />
                     </Item>
                     <select name="" id="" onChange={(e) => handleSetSourceOfPurchase(e.target.value)}>
@@ -133,7 +95,6 @@ export const ClientDetails = ({ createClientMode, clientSelected, client, setCli
                         }
                     </select>
                 </Group>
-
             </Row>
         </Container>
     )

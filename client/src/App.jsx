@@ -64,6 +64,7 @@ import { ProductOutflow } from './views/pages/Inventario/pages/ProductOutflow/Pr
 import useGetUserData from './firebase/Auth/useGetUserData';
 import { fbGetTaxReceipt } from './firebase/taxReceipt/fbGetTaxReceipt';
 import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreateDefaultReceipt';
+import { AnimatePresence } from 'framer-motion';
 './firebase/Auth/useGetUserData';
 
 function App() {
@@ -91,79 +92,81 @@ function App() {
     <Fragment>
       <Router>
         <ModalManager></ModalManager>
-        <Routes >
-          {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
-          <Route path='/app/freeSpace/' element={<FreeSpace />} />
-          {/* <Route path='/app/feedback' element={<ChatBox  />}/> */}
-          {/* <Route path='/app/feedback' element={<HomeScreen />} /> */}
-          <Route path='/app/receipt/' element={<Receipt />} />
-          <Route path='/app/setting/business-info' element={<BusinessInfo />} />
-          <Route path='/app/settings/' element={<Setting />} />
-          <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting />} />
-          <Route path='/app/setting/app-info' element={<AppInfo />} />
-          <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
-          {/* <Route path='/register' element={<Register />}></Route> */}
-          <Route path='/login' element={<Login />}></Route>
-          <Route path='/' element={<Welcome />} ></Route>
-          <Route path='/collection' element={<Collection />}></Route>
-          <Route path='*' element={<NotFound />}></Route>
-          <Route path='/app/compra' element={
-            <RequireAuth>
-              <CompraPage></CompraPage>
-            </RequireAuth>
-          }>
-          </Route>
-          <Route path='/app/' element={
-            <RequireAuth>
-              <Home></Home>
-            </RequireAuth>
-          }>
-          </Route>
-          <Route path='/app/pedido/' element={<Orders />}>
-          </Route>
-          <Route path='/app/contact/client' element={<ClientAdmin />} />
-          <Route path='/app/contact/provider' element={<ProviderAdmin />} />
-          <Route path='/app/sale/1' element={
-            <RequireAuth>
-              <VentaPage />
-            </RequireAuth>
-          } />
-          <Route path='/app/registro' element={
-            <RequireAuth>
-              <Registro />
-            </RequireAuth>
-          } />
-          <Route path='/app/report/sales' element={
-            <RequireAuth>
-              <SalesReport />
-            </RequireAuth>
-          } />
-          <Route path='/app/category' element={
-            <RequireAuth>
-              <CategoryAdmin></CategoryAdmin>
-            </RequireAuth>
-          }>
-          </Route>
-          <Route path='/app/inventario/items' element={
-            <RequireAuth>
-              <InventarioPage></InventarioPage>
-            </RequireAuth>
-          } />
-          <Route path='/app/inventario/product-outflow' element={
-            <RequireAuth>
-              <ProductOutflow />
-            </RequireAuth>
-          } />
-          <Route path='/app/inventario/multimedia_manager' element={<MultimediaManager />}>
-          </Route>
-          <Route e></Route>
-          <Route path='/app/sign-up' element={
-            // <RequireAuth>
-            <SignUp></SignUp>
-            // </RequireAuth>
-          }>
-          </Route>
-        </Routes>
+        <AnimatePresence mode="wait" initial={false}>
+          <Routes >
+            {/* <Route  path='/app/set-custom-product-modal/' element={<SetCustomProduct />}/> */}
+            <Route path='/app/freeSpace/' element={<FreeSpace />} />
+            {/* <Route path='/app/feedback' element={<ChatBox  />}/> */}
+            {/* <Route path='/app/feedback' element={<HomeScreen />} /> */}
+            <Route path='/app/receipt/' element={<Receipt />} />
+            <Route path='/app/setting/business-info' element={<BusinessInfo />} />
+            <Route path='/app/settings/' element={<Setting />} />
+            <Route path='/app/setting/tax-receipt' element={<TaxReceiptSetting />} />
+            <Route path='/app/setting/app-info' element={<AppInfo />} />
+            <Route path='/app/create-custom-product-modal/' element={<AddCustomProductModal />} />
+            {/* <Route path='/register' element={<Register />}></Route> */}
+            <Route path='/login' element={<Login />}></Route>
+            <Route path='/' element={<Welcome />} ></Route>
+            <Route path='/collection' element={<Collection />}></Route>
+            <Route path='*' element={<NotFound />}></Route>
+            <Route path='/app/compra' element={
+              <RequireAuth>
+                <CompraPage></CompraPage>
+              </RequireAuth>
+            }>
+            </Route>
+            <Route path='/app/' element={
+              <RequireAuth>
+                <Home></Home>
+              </RequireAuth>
+            }>
+            </Route>
+            <Route path='/app/pedido/' element={<Orders />}>
+            </Route>
+            <Route path='/app/contact/client' element={<ClientAdmin />} />
+            <Route path='/app/contact/provider' element={<ProviderAdmin />} />
+            <Route path='/app/sale/1' element={
+              <RequireAuth>
+                <VentaPage />
+              </RequireAuth>
+            } />
+            <Route path='/app/registro' element={
+              <RequireAuth>
+                <Registro />
+              </RequireAuth>
+            } />
+            <Route path='/app/report/sales' element={
+              <RequireAuth>
+                <SalesReport />
+              </RequireAuth>
+            } />
+            <Route path='/app/category' element={
+              <RequireAuth>
+                <CategoryAdmin></CategoryAdmin>
+              </RequireAuth>
+            }>
+            </Route>
+            <Route path='/app/inventario/items' element={
+              <RequireAuth>
+                <InventarioPage></InventarioPage>
+              </RequireAuth>
+            } />
+            <Route path='/app/inventario/product-outflow' element={
+              <RequireAuth>
+                <ProductOutflow />
+              </RequireAuth>
+            } />
+            <Route path='/app/inventario/multimedia_manager' element={<MultimediaManager />}>
+            </Route>
+            <Route e></Route>
+            <Route path='/app/sign-up' element={
+              // <RequireAuth>
+              <SignUp></SignUp>
+              // </RequireAuth>
+            }>
+            </Route>
+          </Routes>
+        </AnimatePresence>
       </Router>
       <AlertHandler></AlertHandler>
     </Fragment>

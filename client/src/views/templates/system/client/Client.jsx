@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import { useDispatch, useSelector } from 'react-redux';
-import { addDelivery, selectClientInState, SelectFacturaData } from "../../../../features/cart/cartSlice";
+import { SelectFacturaData } from "../../../../features/cart/cartSlice";
 import { highlightSearch } from "../highlight/Highlight";
+import { addClient } from "../../../../features/clientCart/clientCartSlice";
 const Container = styled.li`
     list-style: none;
     border: 1px solid rgba(0, 0, 0, 0.200);
@@ -25,8 +26,7 @@ export const Client = ({ client, Close, updateClientMode, searchTerm}) => {
     const dispatch = useDispatch()
     const BillingData = useSelector(SelectFacturaData)
     const handleSubmit = (client) => {
-        dispatch(selectClientInState(client))
-        dispatch(addDelivery())
+        dispatch(addClient(client))
         updateClientMode()
         Close()
     }

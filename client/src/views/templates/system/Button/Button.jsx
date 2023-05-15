@@ -412,6 +412,6 @@ export const Container = styled.button`
 `
 export const ButtonGroup = styled.div`
   display: flex;
-  gap: 0.4em;
+  gap: 0.2em;
 `
 

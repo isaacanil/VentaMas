@@ -55,6 +55,7 @@ export const Product = ({ product, }) => {
             y: 0,
             opacity: 1
         }
+        
     }
     return (
         <Container
@@ -62,13 +63,15 @@ export const Product = ({ product, }) => {
             imageHiddenRef={imageHiddenRef}
             isSelected={ProductCheckInCart.status}
             variants={effectProduct}
+            initial="offscreen"
+            whileInView="onscreen"
+            viewport={{ once: true, amount: 0.8 }}
         >
             {
                 <Head imageHiddenRef={imageHiddenRef ? true : false}>
                     <ImageContainer imageHiddenRef={imageHiddenRef}>
                         <img
                             src={(isConnected && imageFallback) || noImg}
-
                         />
                     </ImageContainer>
                 </Head>
