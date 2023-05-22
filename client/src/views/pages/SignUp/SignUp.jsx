@@ -66,12 +66,13 @@ import { confirmPasswordReset } from 'firebase/auth';
 import styled from 'styled-components';
 import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import { InputV4 } from '../../templates/system/Inputs/InputV4.jsx';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addNotification } from '../../../features/notification/NotificationSlice';
 import { validationRules } from '../../templates/system/Inputs/validationRules';
 
 export const SignUp = () => {
   const navigate = useNavigate();
+
   const [user, setUser] = useState({
     name: '',
     email: '',
@@ -110,7 +111,7 @@ console.log(name, email, password, verifyPassword)
         </FormGroup>
         <FormGroup>
           <InputV4
-          label='Email'
+            label='Email'
             icon={<FaEnvelope />}
             type="email"
             placeholder="Email"
@@ -142,7 +143,6 @@ console.log(name, email, password, verifyPassword)
             onChange={(e)=> setUser({...user, verifyPassword: e.target.value})}
             validate={password === verifyPassword ? "pass" : "fail"}
             validationRules={validationRules}
-            
             alertMessage="Las contraseñas no coinciden"
           />
         </FormGroup>

@@ -31,10 +31,10 @@ export const FormattedValue = ({ type, value, size, bold, color, transformValue 
 };
 
 const Text = styled.div`
-
-  ${({ type }) => type === 'title' && 'font-size: 24px;font-weight: bold;'}
-  ${({ type }) => type === 'subtitle' && 'font-size: 20px;font-weight: bold;'}
-  ${({ type }) => type === 'paragraph' && 'font-size: 16px'}
+${({ type }) => type === 'title-large' && 'font-size: 28px; font-weight: 700; line-height: 1.4; color: #222222;'}
+${({ type }) => type === 'title' && 'font-size: 22px; font-weight: 600; line-height: 1.4; color: #333333;'}
+${({ type }) => type === 'subtitle' && 'font-size: 18px; font-weight: 500; line-height: 1.4; color: #333333;'}
+${({ type }) => type === 'paragraph' && 'font-size: 16px; font-weight: 400; line-height: 1.6; letter-spacing: 0.02em; color: #555555;'}
 
   ${({ type }) => type === 'title-table' && 'font-size: 18px;font-weight: bold;color: var(--color);'}
   ${({ type }) => type === 'subtitle-table' && "font-size: 14px;font-weight: bold;text-transform: capitalize;font-family: 'Montserrat', sans-serif;"}

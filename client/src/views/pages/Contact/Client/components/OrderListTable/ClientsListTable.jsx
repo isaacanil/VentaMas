@@ -25,7 +25,7 @@ export const ClientsListTable = ({clients}) => {
             {
                clients.length > 0 ? (
                 clients.map(({client}, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} e={client} index={index} />
+                  <OrderItem Row={Row} Col={Col} key={index} client={client} index={index} />
                 ))
               ) : null
 

@@ -17,7 +17,6 @@ export function useGetProducts(trackInventory = false) {
     useEffect(() => {
       setLoading(true)
       if (!user || !user?.businessID) {
-        console.log("No business ID found. Please contact support."); //TODO: replace with toast
         return;
       }
   

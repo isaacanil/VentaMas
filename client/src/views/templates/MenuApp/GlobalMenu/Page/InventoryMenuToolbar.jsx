@@ -6,9 +6,13 @@ import { FaSearch } from 'react-icons/fa'
 import { AddProductButton } from '../../../system/Button/AddProductButton'
 import { ExportProductsButton } from '../../../system/Button/ExportProductsButton'
 import { ButtonGroup } from '../../../system/Button/Button'
+import findRouteByName from '../../findRouteByName'
+import ROUTES_NAME from '../../../../../routes/routesName'
+import { useMatchRouteByName } from '../useMatchRouterByName'
 
 export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
-    const matchWithInventory = useMatch('/app/inventario/items')
+    const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
+    const matchWithInventory = useMatch('/inventory/items')
     return (
         matchWithInventory && (
             <Container>

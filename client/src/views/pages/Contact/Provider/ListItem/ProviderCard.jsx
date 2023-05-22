@@ -8,19 +8,20 @@ import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
 import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
 import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
-import { deleteProvider } from '../../../../../firebase/firebaseconfig'
 import { Message } from '../../../../templates/system/message/Message'
 import { toggleProviderModal } from '../../../../../features/modals/modalSlice'
-import { modes } from '../../../../../constants/modes'
-import { useDispatch } from 'react-redux'
+import { OPERATION_MODES } from '../../../../../constants/modes'
+import { useDispatch, useSelector } from 'react-redux'
 import { icons } from '../../../../../constants/icons/icons'
-export const ProviderCard
- = ({ e, Row, Col }) => {
-    const {updateMode} = modes.operationModes
+import { fbDeleteProvider } from '../../../../../firebase/provider/fbDeleteProvider'
+import { selectUser } from '../../../../../features/auth/userSlice'
+export const ProviderCard = ({ e, Row, Col }) => {
+    const updateMode = OPERATION_MODES.UPDATE.id
+    const user = useSelector(selectUser)
     const noData = <Message title='(vacio)' fontSize='small' bgColor='error'/>
     const dispatch = useDispatch()
     const handleDeleteProvider = (id) => {
-        deleteProvider(id)
+        fbDeleteProvider(id, user)
     }
     const openModalUpdateMode = () => {dispatch(toggleProviderModal({mode: updateMode, data: e}))}
     return (

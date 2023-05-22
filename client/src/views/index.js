@@ -1,13 +1,13 @@
 
 //Todo **************Pages*************************************************
-export { Compras } from './pages/Compra/Compras'
+export { Purchases } from './pages/Compra/Purchases'
 export { Home } from './pages/Home/Home'
-export { Inventario } from './pages/Inventario/pages/ItemsManager/Inventario'
+export { Inventory } from './pages/Inventario/pages/ItemsManager/Inventario'
 export { MultimediaManager } from './pages/Inventario/pages/MultimediaManager/MultimediaManager'
 export { Login } from './pages/Login/Login'
 export { NotFound } from './pages/NotFound/NotFound'
 export { Registro } from './pages/Registro/Registro'
-export { Ventas } from './pages/Venta/Ventas'
+export { Sales } from './pages/Venta/Ventas'
 export { SignUp } from './pages/SignUp/SignUp'
 export { Welcome } from './pages/Welcome/Welcome'
 export { Contact } from './pages/Contact.jsx'
@@ -20,6 +20,9 @@ export { Setting } from './pages/setting/Setting'
 export { TaxReceiptSetting } from './pages/setting/subPage/TaxReceipts/TaxReceIptSetting'
 export { CategoryAdmin } from './pages/Category/CategoryAdmin'
 export { ProviderAdmin } from './pages/Contact/Provider/ProviderAdmin'
+export { ClientAdmin } from './pages/Contact/Client/ClientAdmin'
+export { UserAdmin } from './pages/setting/subPage/Users/UserAdmin'
+
 //Todo ***********Components*************************************************
 export { ControlSearchProduct } from './component/ControlSearchProduct/ControlSearchProduct'
 export { SearchList } from './component/ControlSearchProduct/SearchList'
@@ -33,7 +36,7 @@ export { ClientControl } from './component/contact/ClientControl/ClienteControl'
 export { AddClientModal } from './component/modals/AddClient/AddClientModal'
 export { Modal } from './component/modals/Modal'
 export { ModalManager } from './component/modals/ModalManager'
- 
+
 //Todo ******Templates**********************************************
 export { StatusIndicatorDot } from './pages/Order/components/StatusIndicatorDot/StatusIndicatorDot'
 export { Counter } from './templates/system/Counter/Counter'
@@ -59,9 +62,9 @@ export { CancelPurchaseBtn } from './templates/system/Button/CancelPurchaseBtn'
 export { Select } from './templates/system/Select/Select.jsx'
 export { Product } from './templates/system/Product/Product/Product'
 export { Client } from './templates/system/client/Client'
-export {Grid} from './templates/system/Grid/Grid'
+export { Grid } from './templates/system/Grid/Grid'
 export { WebName } from './templates/system/WebName/WebName'
-export {Account} from './templates/Account/Account'
-export {ErrorMessage} from './templates/ErrorMassage/ErrorMassage'
-export {AlertHandler} from  './templates/system/Alerts/AlertHandler'
-//groups 
+export { Account } from './templates/Account/Account'
+export { ErrorMessage } from './templates/ErrorMassage/ErrorMassage'
+export { AlertHandler } from './templates/system/Alerts/AlertHandler'
+//groups

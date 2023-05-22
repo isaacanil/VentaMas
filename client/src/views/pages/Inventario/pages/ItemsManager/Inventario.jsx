@@ -14,7 +14,7 @@ import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.j
 import { Pagination } from '@mui/material';
 import { filterData } from '../../../../../hooks/search/useSearch';
 
-export const Inventario = () => {
+export const Inventory = () => {
   const dispatch = useDispatch();
   const [searchData, setSearchData] = useState('');
   const [currentProducts, setCurrentProducts] = useState([]);

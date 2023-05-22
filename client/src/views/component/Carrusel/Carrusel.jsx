@@ -217,7 +217,6 @@ const Category = ({ category, ref }) => {
         visible: {
             y: 0,
             opacity: 1,
-          
         }
     }
     return (

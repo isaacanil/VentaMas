@@ -19,8 +19,8 @@ import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalS
 import useBarcodeScanner from '../../../hooks/barcode/usebarcodescanner'
 import { motion } from 'framer-motion'
 import { pageVariants } from '../../../constants/framerMotion/pageVariants'
-export const Ventas = () => {
-
+export const Sales = () => {
+ 
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
 

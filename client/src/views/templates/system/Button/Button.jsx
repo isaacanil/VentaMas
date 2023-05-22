@@ -211,8 +211,9 @@ export const Container = styled.button`
     switch (props.width) {
       case "w100":
         return `
-        width: 100%;
-        min-width: 100%;
+        
+        width: 100% !important;
+        
           `;
       case "auto":
         return `

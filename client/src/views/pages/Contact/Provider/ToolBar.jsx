@@ -4,13 +4,14 @@ import React from 'react'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { modes } from '../../../../constants/modes'
+import { OPERATION_MODES } from '../../../../constants/modes'
 import { toggleProviderModal } from '../../../../features/modals/modalSlice'
 import { Button } from '../../../templates/system/Button/Button'
 import { OrderFilter } from './components/OrderFilter/OrderFilter'
 
 export const ToolBar = () => {
-    const {createMode, deleteMode, updateMode} = modes.operationModes
+    
+    const createMode = OPERATION_MODES.CREATE.id
     const dispatch = useDispatch()
     
     const openModal = () => {dispatch(toggleProviderModal({mode: createMode, data: null}))}

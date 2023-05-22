@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Inventario } from './views'
+import { Button} from './views'
 import { selectUser } from './features/auth/userSlice'
 import { fbAddMultiCategories } from './constants/firebase/categories/fbAddMultiCategories'
 import { categories } from './constants/firebase/categories/categories'

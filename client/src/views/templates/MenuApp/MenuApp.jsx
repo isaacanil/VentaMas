@@ -1,6 +1,5 @@
 import React, { useState, Fragment, useRef, useEffect } from 'react'
 
-import { MenuData } from './MenuData'
 import { AddProductButton, WebName } from '../../'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
@@ -49,10 +48,10 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
       <Backdrop isOpen={isOpenMenu ? true : false} />
       <Container bgColor={color} borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
-          <OpenMenuButton isOpenMenu={isOpenMenu} onClick={handledMenu}/>
+          <OpenMenuButton isOpenMenu={isOpenMenu} onClick={handledMenu} />
         </Group>
-          <GlobalMenu setSearchData={setSearchData} searchData={searchData} />
-        <SideBar links={MenuData} isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
+        <GlobalMenu setSearchData={setSearchData} searchData={searchData} />
+        <SideBar  isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
       </Container>
     </Fragment>
 

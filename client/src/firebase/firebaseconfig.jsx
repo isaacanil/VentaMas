@@ -31,21 +31,51 @@ export const storage = getStorage(app);
 export const db = getFirestore(app);
 export const auth = getAuth(app)
 
-export const AuthStateChanged = (dispatch) => {
-  onAuthStateChanged(auth, (userAuth) => {
-    setTimeout(() => {
-      if (userAuth) {
-        const { email, uid, displayName } = userAuth
-        dispatch(
-          login({
-            email,
-            uid,
-            displayName,
-          })
-        );
-      } else { dispatch(logout()) }
-    }, 1000)
+enableIndexedDbPersistence(db)
+  .then(() => {
+    console.log("La persistencia de datos IndexedDB está habilitada");
   })
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.error("Probablemente múltiples pestañas abiertas a la vez.");
+    } else if (err.code === 'unimplemented') {
+      console.error("El navegador actual no admite todas las características necesarias.");
+    }
+  });
+
+
+
+
+
+export const AuthStateChanged = () => {
+  const dispatch = useDispatch()
+  const handleLogin = (userAuth) => {
+    const { email, uid, displayName } = userAuth;
+    dispatch(
+      login({
+        email,
+        uid,
+        displayName,
+      })
+    );
+  };
+
+  const handleLogout = () => { dispatch(logout()); };
+
+  const AuthStateChangedLogic = () => {
+    onAuthStateChanged(auth, (userAuth) => {
+      if (userAuth) {
+        setTimeout(() => {
+          handleLogin(userAuth);
+        }, 1000);
+      } else {
+        handleLogout();
+      }
+    })
+  }
+  useEffect(() => {
+    AuthStateChangedLogic()
+  }, [])
 }
 export const HandleRegister = (name, email, pass, confirmPass, Navigate) => {
   if (pass === confirmPass) {
@@ -112,37 +142,8 @@ export const fbDeletePurchaseReceiptImg = async (data) => {
   }
 }
 
-export const createProvider = async (provider) => {
-  console.log(provider)
-  try {
-    const providerRef = doc(db, 'providers', provider.id)
-    await setDoc(providerRef, { provider })
-  } catch (error) {
-    console.error("Error adding document: ", error)
-  }
-}
-export const updateProvider = async (provider) => {
-  const providerRef = doc(db, 'providers', provider.id)
-  await updateDoc(providerRef, { provider })
-    .then(() => { console.log('product from firebase', provider) })
-}
-export const deleteProvider = async (id) => {
-  const providerRef = doc(db, "providers", id)
-  try {
-    await deleteDoc(providerRef)
-    console.log(id)
-  } catch (error) {
-    console.log(error)
-  }
-}
-export const getProviders = async (setProviders) => {
-  const providersRef = collection(db, "providers")
-  const q = query(providersRef, orderBy("provider.name", "asc"))
-  onSnapshot(q, (snapshot) => {
-    let providersArray = snapshot.docs.map(item => item.data())
-    setProviders(providersArray)
-  })
-}
+
+
 const fbAddReceiptPurchaseImg = (file) => {
   const today = new Date();
   const hour = `${today.getHours()}:${today.getMinutes()}`

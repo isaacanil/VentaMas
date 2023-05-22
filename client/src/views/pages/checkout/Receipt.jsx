@@ -9,19 +9,23 @@ import { Row } from './components/Table/Row'
 import { Col } from './components/Table/Col'
 import { DateTime } from 'luxon'
 import { useFormatPhoneNumber } from '../../../hooks/useFormatPhoneNumber'
+import { useSelector } from 'react-redux'
+import { selectBusinessData } from '../../../features/auth/businessSlice'
 
 let today = new Date()
 let [month, day, year] = [today.getMonth() + 1, today.getDate(), today.getFullYear()]
 let [hour, minute, second] = [today.getHours(), today.getMinutes(), today.getSeconds()]
 const fechaActual = DateTime.now().toFormat('dd/MM/yyyy HH:mm');
 export const Receipt = React.forwardRef(({ data }, ref) => {
+    const business = useSelector(selectBusinessData)
+    
 
     return (
-        data ? (
+        business && data ? (
             <div className={style.Container} ref={ref}>
-                <Title>Hi Pizza</Title>
-                <P align="center">Plaza Ana Rocio 1er nivel</P>
-                <P align="center">809-761-9082</P>
+                <Title>{business?.name}</Title>
+                <P align="center">{business?.address}</P>
+                <P align="center">{useFormatPhoneNumber(business?.tel)}</P>
                 <P>{fechaActual}</P>
                 <P>NCF: {data.NCF}</P>
                 {
@@ -40,19 +44,19 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                         </Fragment>
                     ) : null
                 }
-                <Line/>
+                <Line />
                 <Row space>
-                <SubTitle> FACTURA PARA CONSUMIDOR FINAL</SubTitle>
+                    <SubTitle> FACTURA PARA CONSUMIDOR FINAL</SubTitle>
 
                 </Row>
 
-                <Line/>
+                <Line />
                 <Row cols='3' space>
                     <P>DESCRIPCION</P>
                     <P align="right">ITBIS</P>
                     <P align="right">VALOR</P>
                 </Row>
-                <Line/>
+                <Line />
                 <ProductList data={data} />
                 <hr className={style.line} />
                 <PaymentArea data={data} />

@@ -1,28 +1,39 @@
+import { faCartShopping, faReceipt } from '@fortawesome/free-solid-svg-icons'
 import { CompraImg, InventarioImg, RegistroImg, VentaImg } from '../../../assets/index'
+import ROUTES_NAME from '../../../routes/routesName'
+import findRouteByName from '../../templates/MenuApp/findRouteByName'
+import { icons } from '../../../constants/icons/icons'
 
-export const cardData = [
+const {BILLS, SALES} = ROUTES_NAME.SALES_TERM
+const {INVENTORY_ITEMS} = ROUTES_NAME.INVENTORY_TERM
+const {PURCHASES} = ROUTES_NAME.PURCHASE_TERM
+
+
+const {inventory, purchase, register, sale} = icons.menu.unSelected
+export const getCardData = () => {
+  return[
   {
     id: 1,
-    title: 'Venta',
-    img: VentaImg,
-    path: '/app/sale/1'
+    title: 'Ventas',
+    icon: sale,
+    route: findRouteByName(SALES)
   },
   {
     id: 2,
-    title: 'Comprar',
-    img: CompraImg,
-    path: '/app/compra/'
+    title: 'Compras',
+    icon: purchase,
+    route: findRouteByName(PURCHASES)
   },
   {
     id: 3,
-    title: 'Registro',
-    img: RegistroImg,
-    path: '/app/registro'
+    title: 'Facturas',
+    icon: register,
+    route: findRouteByName(BILLS)
   },
   {
     id: 4,
     title: 'Inventario',
-    img: InventarioImg,
-    path: '/app/inventario/items'
+    icon: inventory,
+    route: findRouteByName(INVENTORY_ITEMS)
   }
-]
+]}

@@ -1,111 +1,112 @@
 import { faChevronLeft, faChevronRight, faClipboard, faClipboardCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { icons } from '../../../constants/icons/icons'
+import findRouteByName from './findRouteByName'
+import ROUTES_NAME from '../../../routes/routesName'
 const ChevronRight = <FontAwesomeIcon icon={faChevronRight} />
 const ChevronLeft = <FontAwesomeIcon icon={faChevronLeft} />
-export const MenuData = [
-    {
-        title: 'Inicio',
-        icon: icons.menu.unSelected.home,
-        iconActive: icons.menu.selected.home,
-        path: '/app/',    
-    },
-    {
-        title: 'Venta',
-        icon: icons.menu.unSelected.sale,
+const { LOGIN, SIGNUP } = ROUTES_NAME.AUTH_TERM
+const { HOME, WELCOME } = ROUTES_NAME.BASIC_TERM
+const { SALES, BILLS } = ROUTES_NAME.SALES_TERM
+const { CLIENTS, SUPPLIERS } = ROUTES_NAME.CONTACT_TERM
+const { SETTINGS } = ROUTES_NAME.SETTING_TERM
+const { ORDERS, PURCHASES } = ROUTES_NAME.PURCHASE_TERM
+const { INVENTORY_ITEMS, CATEGORIES, INVENTORY_SERVICES, PRODUCT_IMAGES_MANAGER, PRODUCT_OUTFLOW } = ROUTES_NAME.INVENTORY_TERM
 
-        path: '/app/sale/1'
-    },
-    {
-        title: 'Compras y Pedidos',
-        icon: icons.menu.unSelected.purchase,
-        path: false,
-        submenuIconOpen: ChevronLeft,
-        submenuIconClose: ChevronRight,
-        submenu: [
-            {
-                title: 'Pedidos Pendientes',
-                path: '/app/pedido',
-                icon: <FontAwesomeIcon icon={faClipboard} />,  
-                
-            },
-            {
-                title: 'Compras',
-                path: '/app/compra',
-                icon: <FontAwesomeIcon icon={faClipboardCheck} />
-            }
-        ]
-    },
-    {
-        title: 'Inventario',
-        icon: icons.menu.unSelected.inventory,
-        iconActive: icons.menu.selected.inventory,
-        path: false,
-        submenuIconOpen: ChevronLeft,
-        submenuIconClose: ChevronRight,
-        submenu: [
-            {
-                title: 'Administrar Productos',
-                path: '/app/inventario/items',
-                icon: icons.inventory.items
-            },
-            {
-                title: 'Administrador de Imágenes',
-                path: '/app/inventario/multimedia_manager',
-                icon: icons.inventory.multimediaManager
-            },
-            {
-                title: 'Administrar Servicios',
-                path: '/app/inventario/services',
-                icon: icons.inventory.services
-            },
-            {
-                title: 'Salidas de Productos',
-                path: '/app/inventario/product-outflow',  
-                icon: icons.inventory.productOutFlow
-            }
-           
+export const getMenuData = () => {
+    return [
+        {
+            title: 'Inicio',
+            icon: icons.menu.unSelected.home,
+            route: findRouteByName(HOME)
+        },
+        {
+            title: 'Venta',
+            icon: icons.menu.unSelected.sale,
+            route: findRouteByName(SALES)
+        },
+        {
+            title: 'Facturas',
+            icon: icons.menu.unSelected.register,
+            route: findRouteByName(BILLS)
+        },
+        {
+            title: 'Compras y Pedidos',
+            icon: icons.menu.unSelected.purchase,
+            submenuIconOpen: ChevronLeft,
+            submenuIconClose: ChevronRight,
+            submenu: [
+                {
+                    title: 'Pedidos Pendientes',
+                    icon: <FontAwesomeIcon icon={faClipboard} />,
+                    route: findRouteByName(ORDERS)
 
-        ]
-    },
-    {
-        title: 'Contacto',
-        icon: icons.menu.unSelected.contacts,
-        iconActive: icons.menu.selected.contacts,
-        submenuIconOpen: ChevronLeft,
-        submenuIconClose: ChevronRight,
-        path: false,
-        submenu: [
-            {
-                title: 'Clientes',
-                path: '/app/contact/client',
-                icon: icons.users.client
-            },
-            {
-                title: 'Proveedores',
-                path: '/app/contact/provider',
-                icon: icons.users.provider
-            },
+                },
+                {
+                    title: 'Compras',
+                    route: findRouteByName(PURCHASES),
+                    icon: <FontAwesomeIcon icon={faClipboardCheck} />
+                }
+            ]
+        },
+        {
+            title: 'Inventario',
+            icon: icons.menu.unSelected.inventory,
+            submenuIconOpen: ChevronLeft,
+            submenuIconClose: ChevronRight,
+            submenu: [
+                {
+                    title: 'Administrar Productos',
+                    route: findRouteByName(INVENTORY_ITEMS),
+                    icon: icons.inventory.items
+                },
+                {
+                    title: 'Categoría',
+                    icon: icons.menu.unSelected.category,
+                    route: findRouteByName(CATEGORIES)
 
-        ]
-    },
-    {
-        title: 'Categoría',
-        icon: icons.menu.unSelected.category,
-        iconActive: icons.menu.selected.category,
-        path: '/app/category',
-        
-    },
-    {
-        title: 'Registro',  
-        icon: icons.menu.unSelected.register,
-        iconActive: icons.menu.selected.register,
-        path: '/app/registro'
-    },
-    {
-        title: 'Configuración',
-        icon: icons.menu.unSelected.settings,
-        iconActive: icons.menu.selected.settings,
-        path: '/app/settings'
-    }
-]
+                },
+                {
+                    title: 'Administrador de Imágenes',
+                    route: findRouteByName(PRODUCT_IMAGES_MANAGER),
+                    icon: icons.inventory.multimediaManager
+                },
+                {
+                    title: 'Administrar Servicios',
+                    route: findRouteByName(INVENTORY_SERVICES),
+                    icon: icons.inventory.services
+                },
+                {
+                    title: 'Salidas de Productos',
+                    route: findRouteByName(PRODUCT_OUTFLOW),
+                    icon: icons.inventory.productOutFlow
+                }
+            ]
+        },
+        {
+            title: 'Contacto',
+            icon: icons.menu.unSelected.contacts,
+            submenuIconOpen: ChevronLeft,
+            submenuIconClose: ChevronRight,
+            path: false,
+            submenu: [
+                {
+                    title: 'Clientes',
+                    route: findRouteByName(CLIENTS),
+                    icon: icons.users.client
+                },
+                {
+                    title: 'Proveedores',
+                    route: findRouteByName(SUPPLIERS),
+                    icon: icons.users.provider
+                },
+
+            ]
+        },
+        {
+            title: 'Configuración',
+            icon: icons.menu.unSelected.settings,
+            route: findRouteByName(SETTINGS)
+        }
+    ]
+}

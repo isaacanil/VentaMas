@@ -20,7 +20,7 @@ const Container = styled.div`
     align-items: center;
     z-index: 1;
     background-color: var(--White);
-    color: var(--Gray7);
+    color: #5f6368;
     font-family: 'montserrat', sans-serif ;
 
                 border-bottom: 1px solid var(--Gray-300);

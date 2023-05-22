@@ -1,10 +1,4 @@
 import React from 'react'
-import { BsDot } from 'react-icons/bs';
-import { FaBoxOpen, FaTag } from 'react-icons/fa';
-import { FiShoppingBag } from 'react-icons/fi';
-import { GrClear, GrClose, GrEdit, GrTrash } from 'react-icons/gr';
-import { IoMdTrash } from 'react-icons/io';
-import { TbEdit } from 'react-icons/tb';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { handleDeleteProductAlert } from '../../../../../../features/Alert/AlertSlice';
@@ -16,7 +10,8 @@ import { Button, ButtonGroup } from '../../../../../templates/system/Button/Butt
 import StockIndicator from '../../../../../templates/system/labels/StockIndicator';
 import noImg from '../../../../../../assets/producto/noImg.png'
 import {icons} from '../../../../../../constants/icons/icons'
-import { modes } from '../../../../../../constants/modes';
+import { OPERATION_MODES } from '../../../../../../constants/modes';
+
 import { useCheckForInternetConnection } from '../../../../../../hooks/useCheckForInternetConnection';
 import useImageFallback from '../../../../../../hooks/image/useImageFallback';
 export const ProductCardRow = ({ product, Col, Row }) => {
@@ -26,7 +21,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
       };
       const handleUpdateProduct = (product) => {
         dispatch(openModalUpdateProd());
-        dispatch(ChangeProductData({product: product, status: modes.operationModes.updateMode}));
+        dispatch(ChangeProductData({product: product}));
       };
       const isConnected = useCheckForInternetConnection()
       const [imageFallback] = useImageFallback(product?.productImageURL, noImg)

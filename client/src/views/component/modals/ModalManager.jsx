@@ -34,7 +34,10 @@ import ImageViewer from "../../templates/system/ImageViewer/ImageViewer"
 import AddCategoryModal from "./AddCategoryMode/AddCategoryMode"
 import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
+import { OPERATION_MODES } from "../../../constants/modes"
 export const ModalManager = () => {
+  const update = OPERATION_MODES.UPDATE.id;
+
   const dispatch = useDispatch()
   const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
   const AddClientModalSelected = useSelector(SelectAddClientModal)
@@ -72,15 +75,20 @@ export const ModalManager = () => {
         isOpen={SetCustomPizzaSelected}
         handleOpen={handleModalSetCustomPizza}
       />
-      <MessageAlert isOpen={ViewOrdersNotesModalDataSelected.isOpen} data={ViewOrdersNotesModalDataSelected.data}></MessageAlert>
+      <MessageAlert
+        isOpen={ViewOrdersNotesModalDataSelected.isOpen}
+        data={ViewOrdersNotesModalDataSelected.data}
+      />
       <CreateContact
         isOpen={ClientModalDataSelected.isOpen}
         mode={ClientModalDataSelected.mode}
-        data={ClientModalDataSelected.mode === 'update' ? ClientModalDataSelected.data : null} />
+        data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
+      />
       <ProviderForm
         isOpen={ProviderModalDataSelected.isOpen}
         mode={ProviderModalDataSelected.mode}
-        data={ProviderModalDataSelected.mode === 'update' ? ProviderModalDataSelected.data : null} />
+        data={ProviderModalDataSelected.mode === update ? ProviderModalDataSelected.data : null}
+      />
       <AddOrderModal isOpen={AddOrderModalSelected} />
       {/* <AddProvider /> */}
       <Notification />
@@ -90,7 +98,7 @@ export const ModalManager = () => {
       />
       <ProductOutflowModal
         isOpen={AddProductOutflowModalSelected.isOpen}
-        mode={ProductOutflowSelected.mode} 
+        mode={ProductOutflowSelected.mode}
       />
       <Loader />
       <ImageViewer />

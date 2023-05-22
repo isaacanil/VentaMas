@@ -52,8 +52,8 @@ const Container = styled.div`
 const Backdrop = styled.div`
 border-radius: 8px;
 position: relative;
-background-color: #fff;
-height: calc(100vh - 2.75em - 2.75em - 3em);
+background-color: #ffffff;
+height: 100% - 2em;
 max-width: 1000px;
   width: 100%;
   margin: 1em auto;

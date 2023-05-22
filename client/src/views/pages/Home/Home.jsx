@@ -4,14 +4,13 @@ import Style from './Home.module.scss'
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
-import { cardData } from './cardData'
+import { getCardData } from './cardData'
 import { ChatBox } from '../../component/ChatBox/ChatBox'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 export const Home = () => {
   const user = useSelector(selectUser)
-  const match = useMatch('/app/')
-  match ? console.log('match') : console.log('no match')
-
+  const cardData = getCardData()
   return (
     <Fragment>
       <div className={Style.App_container}>
@@ -23,9 +22,11 @@ export const Home = () => {
             <ul className={Style.WelcomeSection_items}>
               {cardData.map(card => (
                 <li className={Style.card} key={card.id}>
-                  <Link className={Style.card_inner} to={card.path}>
+                  <Link className={Style.card_inner} to={card?.route?.path}>
                     <div className={Style.card_img_container}>
-                      <img className={Style.card_img} src={card.img} alt={card.title} />
+                      <div className={Style.card_img}>
+                        {card.icon}
+                      </div>
                     </div>
                     <h3 className={Style.card_title}>{card.title}</h3>
                   </Link>

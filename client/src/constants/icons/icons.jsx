@@ -1,7 +1,17 @@
-import { faAddressBook, faBagShopping, faBarsStaggered, faBox, faBoxesStacked, faCartFlatbed, faCartShopping, faChartPie, faCheck, faCloudArrowUp, faCompress, faDivide, faDolly, faExpand, faGear, faGrip, faGripLines, faHome, faImage, faMagnifyingGlass, faMultiply, faPencil, faPlus, faRectangleList, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUser, faUserTie, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faBagShopping, faBarsStaggered, faBox, faBoxesStacked, faCartFlatbed, faCartShopping, faChartPie, faCheck, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faGear, faGrip, faGripLines, faHome, faImage, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faReceipt, faRectangleList, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUser, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
+    forms: {
+        user: <FontAwesomeIcon icon={faUser} />,
+        email: <FontAwesomeIcon icon={faEnvelope} />,
+        password: <FontAwesomeIcon icon={faLock} />,
+
+    },
+    user: {
+        create: <FontAwesomeIcon icon={faUserPlus} />,
+        users: <FontAwesomeIcon icon={faUsers} />
+    },
     operationModes: {
         edit: <FontAwesomeIcon icon={faPencil} />,
         add: <FontAwesomeIcon icon={faPlus} />,
@@ -33,7 +43,7 @@ export const icons = {
             inventory: <FontAwesomeIcon icon={faCartFlatbed} />,
             contacts: <FontAwesomeIcon icon={faAddressBook} />,
             category:<FontAwesomeIcon icon={faRectangleList} />,
-            register: <FontAwesomeIcon icon={faChartPie} />,
+            register: <FontAwesomeIcon icon={faReceipt} />,
             settings:<FontAwesomeIcon icon={faGear} />,
         },
         unSelected: {
@@ -43,7 +53,7 @@ export const icons = {
             inventory: <FontAwesomeIcon icon={faCartFlatbed} />,
             contacts: <FontAwesomeIcon icon={faAddressBook} />,
             category:<FontAwesomeIcon icon={faRectangleList} />,
-            register: <FontAwesomeIcon icon={faChartPie} />,
+            register: <FontAwesomeIcon icon={faReceipt} />,
             settings:<FontAwesomeIcon icon={faGear} />,
         }
     },

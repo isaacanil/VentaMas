@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { nanoid } from 'nanoid';
 import { orderAndDataCondition, orderAndDataState } from '../../constants/orderAndPurchaseState';
-import { getProviders } from '../../firebase/firebaseconfig';
+
 
 const initialState = {
     orderFilterOptions: [

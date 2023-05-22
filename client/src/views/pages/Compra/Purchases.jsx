@@ -7,7 +7,7 @@ import { ProvidersData, SetProvidersInFilterOptionsMenu } from '../../../firebas
 import { OrdersData, SetPendingOrdersInState } from '../../../firebase/OrderConfig'
 
 
-export const Compras = () => { 
+export const Purchases = () => { 
   const providers = ProvidersData();
   SetProvidersInFilterOptionsMenu(providers);
   const orders = OrdersData()  

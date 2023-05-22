@@ -1,25 +1,46 @@
-export const settingData = [
-    {
-        title: 'Empresa',
-        description: 'Complete los datos de su organización.',
-        path: '/app/setting/business-info'
-    },
-    {
-        title: 'Comprobante Fiscal',
-        description: 'Configurar comprobante fiscal.',
-        path: '/app/setting/tax-receipt'
-    },
-    {
-        title: 'Información de la Aplicación',
-        description: 'Información de la Aplicacion.',
-        path: '/app/setting/app-info'
-    },
-    // {
-    //     title: 'Enviar Feedback',
-    //     description: 'Envíanos tus comentarios o sugerencias para mejorar la aplicación.',
-    //     path: '/app/feedback',
-    //   },
-   
-   
-   
-]
+import ROUTES_NAME from "../../../routes/routesName";
+import findRouteByName from "../../templates/MenuApp/findRouteByName";
+const { TAX_RECEIPT, BUSINESS_INFO, APP_INFO,USERS,  USERS_LIST } = ROUTES_NAME.SETTING_TERM
+export const getSettingData = () => {
+    return [
+        {
+            title: 'Datos de la Empresa',
+            description: 'Completa los datos de tu organización.',
+            type: 'empresa',
+            category: 'Configuración de la Empresa',
+            route: findRouteByName(BUSINESS_INFO),
+
+        },
+        {
+            title: 'Comprobante Fiscal',
+            description: 'Configuración de comprobante fiscal.',
+            type: 'fiscal',
+            category: 'Configuración de la Empresa',
+            route: findRouteByName(TAX_RECEIPT),
+
+        },
+        {
+            title: 'Administración de Usuarios',
+            description: 'Gestiona los usuarios de tu cuenta.',
+            type: 'usuarios',
+            category: 'Configuración de la Empresa',
+            route: {path: '/users/list'},
+        },
+        // {
+        //     title: 'Enviar Comentarios',
+        //     description: 'Enviar Reporte de Errores y Sugerencias',
+        //     type: 'feedback',
+        //     category: 'Aplicación',
+        //     path: '/app/feedback',
+        // },
+        {
+            title: 'Información de la Aplicación',
+            description: 'Consulta detalles sobre la aplicación.',
+            type: 'aplicación',
+            category: 'Aplicación',
+            route: findRouteByName(APP_INFO),
+        },
+
+
+    ];
+}

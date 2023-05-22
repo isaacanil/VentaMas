@@ -23,7 +23,8 @@ export const Bill = ({ data }) => {
   })
   return (
     <Container>
-      <Row col={ColData}>
+      <Row 
+      col={ColData}>
         <ITEMS text='left'>
           <FormattedValue
             type='number'

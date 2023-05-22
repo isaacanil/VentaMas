@@ -1,10 +1,8 @@
 {
-    "webName": "VENTAMAX",
+    "webName": "Ventamax",
     "logo": "./ventamax.svg",
     "section": {
-        "description": "VENTAMAX es el software de punto de venta perfecto para administrar tu negocio de manera eficiente y efectiva. Con VENTAMAX, puedes manejar las compras y ventas desde un solo lugar, lo que te permite tener un control más completo de tus operaciones diarias." 
-    },
-    "section1": {
-        "description": "Pero eso no es todo. VENTAMAX es una aplicación web, lo que significa que puedes acceder a ella desde cualquier dispositivo con conexión a internet, ya sea una computadora, móvil o tablet. De esta manera, tendrás la flexibilidad necesaria para gestionar tu negocio en cualquier momento y lugar." 
+        "description": "Ventamax es el software de punto de venta perfecto para administrar tu negocio de manera eficiente y efectiva. Con Ventamax, puedes manejar las compras y ventas desde un solo lugar, lo que te permite tener un control más completo de tus operaciones diarias." 
     }
 }
+

@@ -5,17 +5,14 @@ import { SubMenu } from './SubMenu/SubMenu'
 export const MenuLink = ({ item, Items }) => {
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
-  const location = useLocation();
-  const isActiveRoute = (path) => {
-    return location.pathname === path;
-  };
+ 
+  const Component = item?.route?.path ? MenuItemLink : MenuItemDiv;
+ 
   return (
     <Fragment>
-      <MenuItemLink
+      <Component
         onClick={item.submenu && showSubMenu}
-        to={item.path}
-        path={item?.path}
-        active={isActiveRoute(item?.path)}
+        to={item?.route?.path || "#"}
       >
         <Group>
           <Icon color={item.color}>
@@ -32,7 +29,7 @@ export const MenuLink = ({ item, Items }) => {
               : null
         }
 
-      </MenuItemLink>
+      </Component>
       <SubMenu showSubMenu={showSubMenu} isOpen={isOpenSubMenu} item={item} Items={MenuItemLink}/>
     </Fragment>
   )
@@ -42,7 +39,7 @@ const MenuItemLink = styled(NavLink)`
   display: flex;
   justify-content: space-between;
   padding: 0 0.8em;
-  height: 2.5rem;
+  height: 2.4em;
   align-items: center;
   color: var(--Gray6);
   margin: 0 0.8em;
@@ -58,17 +55,40 @@ const MenuItemLink = styled(NavLink)`
   svg{
     color: var(--Gray6);
   }
-  ${({ active }) => active && `
-  color: white;
+  &.active {
+    color: white;
   background-color:var(--color);
   svg{
     color: white;
   }
+  }`
+  const MenuItemDiv = styled.div`
+    display: flex;
+  justify-content: space-between;
+  padding: 0 0.8em;
+  height: 2.4em;
+  align-items: center;
+  color: var(--Gray6);
+  margin: 0 0.8em;
+  border-radius: 0.5rem;
+  :hover{
+    color: var(--color);
+    background-color: var(--color2);
+    transition: background-color 400ms ease;
+    svg{
+      color: var(--color);
+    }
+  }
+  svg{
+    color: var(--Gray6);
+  }
+  `
+  
 
-  `}
+  
   
  
-      `
+      
 const Group = styled.div`
   display: flex;
   gap: 1rem;

@@ -5,12 +5,14 @@ import { useSelector } from "react-redux"
 import { selectUser } from '../../features/auth/userSlice'
 
 export const RequireAuth = ({ children }) => {
-    const user = useSelector(selectUser)
-    const Navigate = useNavigate()
-    useEffect(() => {  
+    const user = useSelector(selectUser);
+    const navigate = useNavigate();
 
-       if(!user){Navigate('/')}
-   
-    }, [user])
-    return children
-}
+    useEffect(() => {
+        if (!user) {
+            navigate('/', { replace: true }); // Redirige al usuario a la ruta principal
+        }
+    }, [user, navigate]);
+
+    return user ? children : null;
+};

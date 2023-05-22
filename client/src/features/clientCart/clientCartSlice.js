@@ -57,6 +57,7 @@ export const clientSlice = createSlice({
                     break;
                 case state.mode === CREATE.id:
                     state.labelClientMode = CREATE.label;
+                    state.client = EmptyClient;
                     state.showClientList = CREATE.showClientList;
                     state.isOpen = true;
                     break;

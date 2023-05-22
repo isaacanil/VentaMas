@@ -10,14 +10,16 @@ import { useDispatch, useSelector } from 'react-redux'
 import { SearchInput } from '../../../system/Inputs/SearchInput'
 import { FaSearch } from 'react-icons/fa'
 import { Tooltip } from '../../../system/Button/Tooltip'
+import { useMatchRouteByName } from '../useMatchRouterByName'
+import ROUTES_NAME from '../../../../../routes/routesName'
 
 export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const ImageHidden = useSelector(selectImageHidden)
     const viewRowModeRef = useSelector(selectIsRow)
     const categoryGrouped = useSelector(selectCategoryGrouped)
     const FullScreen = useSelector(selectFullScreen)
-
-    const matchWithVenta = useMatch('/app/sale/:id')
+    const {SALES} = ROUTES_NAME.SALES_TERM
+    const matchWithVenta = useMatchRouteByName(SALES)
     const dispatch = useDispatch()
     const handleImageHiddenFN = () => {
         dispatch(handleImageHidden())

@@ -1,15 +1,12 @@
-export const modes = {
-    operationModes: {
-        createMode: 'create',
-        updateMode: 'update',
-        deleteMode: 'delete'
-    },
-    appMode: {
-        pruebas: true
-    },
-    themeMode: {
-        oscuro: 'dark',
-        claro: 'light'
+import { nanoid } from "nanoid";
+const createMode = (label) => {
+    return {
+        id: nanoid(),
+        label: label
     }
-
 }
+export const OPERATION_MODES = Object.freeze({
+    CREATE: createMode('create'),
+    UPDATE: createMode('update'),
+    DELETE: createMode('delete'),
+})

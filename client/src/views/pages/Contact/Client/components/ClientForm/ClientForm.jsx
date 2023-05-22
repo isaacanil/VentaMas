@@ -10,11 +10,14 @@ import { Button } from '../../../../../templates/system/Button/Button'
 import { Message } from '../../../../../templates/system/message/Message'
 import { fbAddClient } from '../../../../../../firebase/client/fbAddClient'
 import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient'
-
+import { OPERATION_MODES } from '../../../../../../constants/modes'
 
 export const CreateContact = ({ isOpen, mode, data }) => {
+
     const dispatch = useDispatch()
-    const [newClient, setNewClient] = useState({
+    const create = OPERATION_MODES.CREATE.id
+    const update = OPERATION_MODES.UPDATE.id
+    const [client, setClient] = useState({
         name: '',
         address: '',
         tel: '',
@@ -24,12 +27,13 @@ export const CreateContact = ({ isOpen, mode, data }) => {
             value: ''
         }
     })
+    console.log(client)
     useEffect(() => {
-        if (mode === 'update' && data !== null) {
-            setNewClient(data);
+        if (mode === update && data) {
+            setClient(data);
         }
-        if (data === null) {
-            setNewClient({
+        if (mode === create && !data) {
+            setClient({
                 id: nanoid(8),
                 name: '',
                 address: '',
@@ -37,18 +41,18 @@ export const CreateContact = ({ isOpen, mode, data }) => {
             })
         }
     }, [mode, data])
-    console.log(newClient)
-    function validateNewClient(client) {
+    console.log(client)
+    function validateClient(client) {
         if (client.name === '' || client.personalID === '') {
             alert("El nombre y el ID personal son obligatorios");
             return false;
         }
         return true;
     }
-    const addIdToNewClient = async (callback) => {
+    const addIdToClient = async (callback) => {
         try {
-            setNewClient({
-                ...newClient,
+            setClient({
+                ...client,
                 id: nanoid(8)
             })
             callback()
@@ -57,25 +61,25 @@ export const CreateContact = ({ isOpen, mode, data }) => {
         }
     }
     const handleCreateClient = async () => {
-        if (validateNewClient(newClient)) {
+        if (validateClient(client)) {
             try {
-                fbAddClient(newClient)
+                fbAddClient(client)
             } catch (error) {
                 console.log(error)
             }
         }
     }
     const handleUpdateClient = async () => {
-            try {
-                fbUpdateClient(newClient)
-            } catch (error) {
-                console.log(error)
-            }  
+        try {
+            fbUpdateClient(client)
+        } catch (error) {
+            console.log(error)
+        }
     }
     const handleOpenModal = async () => {
-        try {      
-            dispatch(toggleClientModal({ mode: 'create' }))
-            setNewClient({
+        try {
+            dispatch(toggleClientModal({ mode: create }))
+            setClient({
                 id: '',
                 name: '',
                 address: '',
@@ -87,24 +91,24 @@ export const CreateContact = ({ isOpen, mode, data }) => {
                 }
             })
         } catch (error) {
-           console.log(error) 
+            console.log(error)
         }
     }
     const handleSubmit = async () => {
-        if (mode === 'create') {
-            try{
-                await addIdToNewClient(handleCreateClient)
-                
-            }catch(err){
+        if (mode === create) {
+            try {
+                await addIdToClient(handleCreateClient)
+
+            } catch (err) {
                 console.log(err)
             }
-        } else if (mode === 'update') {
+        } else if (mode === update) {
             await handleUpdateClient();
         }
-        await handleOpenModal() 
+        await handleOpenModal()
     }
-    
-    console.log(newClient)
+
+    console.log(client)
     return (
         <Container>
             <SideBar isOpen={isOpen ? true : false}>
@@ -117,7 +121,7 @@ export const CreateContact = ({ isOpen, mode, data }) => {
                         title={<MdClose />}
                         onClick={handleOpenModal}
                     ></Button>
-                    <h3>{mode === 'create' ? 'Nuevo Cliente' : 'Editar Cliente'}</h3>
+                    <h3>{mode === create ? 'Nuevo Cliente' : 'Editar Cliente'}</h3>
                 </ToolBar>
 
                 <Body>
@@ -126,10 +130,10 @@ export const CreateContact = ({ isOpen, mode, data }) => {
                         <input
                             name='name'
                             type="text"
-                            value={newClient.name}
+                            value={client.name}
                             onChange={(e) =>
-                                setNewClient({
-                                    ...newClient,
+                                setClient({
+                                    ...client,
                                     [e.target.name]: e.target.value
                                 })}
                             placeholder='Juan Pérez.'
@@ -142,17 +146,17 @@ export const CreateContact = ({ isOpen, mode, data }) => {
                                 bgColor='primary'
                                 fontSize='small'
                                 width='auto'
-                                title={(useFormatPhoneNumber(newClient.tel, true))}
+                                title={(useFormatPhoneNumber(client.tel, true))}
                             >
                             </Message></label>
                         <input
                             type="text"
                             name='tel'
                             placeholder='8496503586'
-                            value={newClient.tel}
+                            value={client.tel}
                             onChange={(e) =>
-                                setNewClient({
-                                    ...newClient,
+                                setClient({
+                                    ...client,
                                     [e.target.name]: e.target.value
                                 })}
                         />
@@ -163,7 +167,7 @@ export const CreateContact = ({ isOpen, mode, data }) => {
                                 bgColor='primary'
                                 fontSize='small'
                                 width='auto'
-                                title={(useFormatRNC(newClient.personalID))}
+                                title={(useFormatRNC(client.personalID))}
 
                             >
                             </Message>
@@ -172,10 +176,10 @@ export const CreateContact = ({ isOpen, mode, data }) => {
                             type="text"
                             placeholder='110056007'
                             name='personalID'
-                            value={newClient.personalID}
+                            value={client.personalID}
                             onChange={(e) =>
-                                setNewClient({
-                                    ...newClient,
+                                setClient({
+                                    ...client,
                                     [e.target.name]: e.target.value
                                 })}
                         />
@@ -184,26 +188,26 @@ export const CreateContact = ({ isOpen, mode, data }) => {
                         <label htmlFor="">Dirección</label>
 
                         <textarea
-                        value={newClient.address}
+                            value={client.address}
                             name="address"
                             id=""
                             cols="20"
                             rows="5"
                             placeholder='27 de Febrero #12, Ensanche Ozama, Santo Domingo'
-                            onChange={(e) => setNewClient({
-                                ...newClient,
+                            onChange={(e) => setClient({
+                                ...client,
                                 [e.target.name]: e.target.value
                             })}
                         ></textarea>
                     </Group>
                 </Body>
                 <Footer>
-                <Button
-                    borderRadius='normal'
-                    title={mode === 'create' ? 'Crear' : 'Actualizar'}
-                    bgcolor='primary'
-                    onClick={handleSubmit}
-                />
+                    <Button
+                        borderRadius='normal'
+                        title={mode === create ? 'Crear' : 'Actualizar'}
+                        bgcolor='primary'
+                        onClick={handleSubmit}
+                    />
                 </Footer>
             </SideBar>
         </Container>

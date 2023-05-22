@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MdDelete, MdEdit } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { modes } from '../../../../../constants/modes';
+import { OPERATION_MODES } from '../../../../../constants/modes';
 import { toggleAddProductOutflow } from '../../../../../features/modals/modalSlice';
 import { addNotification } from '../../../../../features/notification/NotificationSlice';
 import { SelectProductOutflow, setProductOutflowData } from '../../../../../features/productOutflow/productOutflow';
@@ -18,7 +18,7 @@ import { FormattedValue } from '../../../../templates/system/FormattedValue/Form
 import Loader from '../../../../templates/system/loader/Loader';
 import { CenteredText } from '../../../../templates/system/CentredText';
 import { ProductOutflowDataFormatter, toggleProductOutflowModal } from './toggleProductOutflowModal';
-import { connectStorageEmulator } from 'firebase/storage';
+
 
 export const ProductOutflow = () => {
   const dispatch = useDispatch()
@@ -43,14 +43,13 @@ export const ProductOutflow = () => {
   
   useEffect(()=>{
     const productOutflowList = outflowList.find((item) => item?.productList.length === 0)
-    console.log(productOutflowList, '///////"""#"22219')
+   
     if(productOutflowList){
-    // console.log(JSON.stringify(productOutflowList, '///////"""#"222'))
     fbDeleteProductOutflow(productOutflowList.id )
     }
   }, [outflowList])
   useEffect(() => {
-    if (outflowProduct.mode === 'update') {
+    if (outflowProduct.mode === OPERATION_MODES.UPDATE.id) {
       outflowList.forEach((doc) => {
         if (doc.id === outflowProduct.data.id) {
           dispatch(setProductOutflowData({ data: doc }))
@@ -140,7 +139,7 @@ export const ProductOutflow = () => {
                             borderRadius={'normal'}
                             onClick={() =>
                               toggleProductOutflowModal({
-                                mode: modes.operationModes.updateMode,
+                                mode: OPERATION_MODES.UPDATE.id,
                                 data: new ProductOutflowDataFormatter(item),
                                 dispatch
                               })

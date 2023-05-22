@@ -19,7 +19,7 @@ import { InputV4 } from '../../../templates/system/Inputs/InputV4'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useFormatNumber } from '../../../../hooks/useFormatNumber'
 import noImage from '../../../../assets/producto/noImg.png'
-import { modes } from '../../../../constants/modes'
+import { OPERATION_MODES } from '../../../../constants/modes'
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
 import { initTaxes } from './InitializeData'
 import { selectUser } from '../../../../features/auth/userSlice'
@@ -34,7 +34,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     const [imgController, setImgController] = useState(false)
     const user = useSelector(selectUser);
     const dispatch = useDispatch()
-    const updateMode = modes.operationModes.updateMode
+    const updateMode =  OPERATION_MODES.UPDATE.id
     const handleImgController = (e) => {
         e.preventDefault()
         setImgController(!imgController)

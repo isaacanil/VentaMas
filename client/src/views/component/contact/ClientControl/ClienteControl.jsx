@@ -14,23 +14,7 @@ import { deleteClient, selectClient, selectClientMode, selectIsOpen, selectLabel
 import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode'
 
 export const ClientControl = () => {
-  const CLIENT_MODE = {
-    SEARCH: {
-      label: 'Buscar Cliente',
-      mode: 'search',
-      showClientList: true
-    },
-    UPDATE: {
-      label: 'Actualizar',
-      mode: 'update',
-      showClientList: false
-    },
-    CREATE: {
-      label: 'Crear Cliente',
-      mode: 'create',
-      showClientList: false
-    }
-  }
+  
   const dispatch = useDispatch()
 
   const { clients } = useFbGetClients()
@@ -60,7 +44,7 @@ export const ClientControl = () => {
     if (mode === CLIENT_MODE_BAR.SEARCH.id) {
       setSearchTerm(e.target.value)
     }
-    if (mode === CLIENT_MODE_BAR.UPDATE.id) {
+    if (mode === CLIENT_MODE_BAR.UPDATE.id || mode === CLIENT_MODE_BAR.CREATE.id) {
       dispatch(setClient(updateObject(client, e)))
     }
   }
@@ -69,13 +53,11 @@ export const ClientControl = () => {
     switch (mode) {
       case CLIENT_MODE_BAR.SEARCH.id:
         setInputIcon(CLIENT_MODE_BAR.SEARCH.icon)
-        // dispatch(deleteClientInState())
         setSearchTerm('')
         break;
 
       case CLIENT_MODE_BAR.UPDATE.id:
         setInputIcon(CLIENT_MODE_BAR.UPDATE.icon)
-
         dispatch(totalPurchase())
         dispatch(setChange())
         closeMenu()
@@ -83,12 +65,10 @@ export const ClientControl = () => {
 
       case CLIENT_MODE_BAR.CREATE.id:
         setInputIcon(CLIENT_MODE_BAR.CREATE.icon)
-       
         closeMenu()
         break;
 
       default:
-
         break;
     }
   }, [mode])
@@ -117,7 +97,7 @@ export const ClientControl = () => {
 
   return (
     <div className={style.ClientBarContainer} ref={searchClientRef}>
-      <div className={style.row}>
+
         <div className={style.ClientBar}>
           <SearchClient
             icon={inputIcon}
@@ -130,7 +110,7 @@ export const ClientControl = () => {
           />
 
         </div>
-      </div>
+      
       <ClientDetails />
       {
         <ClientSelector

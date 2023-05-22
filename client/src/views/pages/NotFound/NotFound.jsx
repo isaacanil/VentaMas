@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import ROUTES_NAME from '../../../routes/routesName';
+import { useMatchRouteByName } from '../../templates/MenuApp/GlobalMenu/useMatchRouterByName';
 
 const Container = styled.div`
   display: flex;
@@ -49,12 +51,14 @@ const Button = styled(Link)`
 `;
 
 export const NotFound = () => {
+  const {HOME} = ROUTES_NAME.BASIC_TERM
+  const goHome = useMatchRouteByName(HOME)
   return (
     <Container>
       <Icon />
       <Title>¡Vaya!</Title>
       <Subtitle>No pudimos encontrar la página que estás buscando.</Subtitle>
-      <Button to="/app/">Volver al inicio</Button>
+      <Button to={"/home"}>Volver al inicio</Button>
     </Container>
   );
 };

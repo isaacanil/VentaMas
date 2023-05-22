@@ -1,7 +1,7 @@
 .App_container{
   
     min-height: 100vh;
-    background-color: var(--White2);
+    background-color: var(--color2);
   }
   .welcomeSection_container{
     display: grid;
@@ -11,7 +11,7 @@
     
     .welcomeSection_inner{
       margin-top: 1em;
-      max-width: 768px;
+      max-width: 1200px;
       width: 100vw;
       
       padding: var(--padding1);
@@ -22,7 +22,7 @@
      .WelcomeSection_items{
         text-decoration: none;
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 1em;
         list-style: none;
         padding: 0;
@@ -32,25 +32,26 @@
         overflow: hidden;
         
         .card_inner{
-          background-color: var(--White4);
+          background-color: var(--White);
           width: 100%;
           padding: var(--padding);
           display: block;
           text-decoration: none;
           .card_img_container{
             border-radius: var(--border-radius1);
-            background-color: var(--White1);
+            background-color: var(--White);
             display: grid;
             justify-content: center;
             align-items: center;
             padding: 1.5em;
-            min-height: 128px;
+            min-height: 120px;
             
   
             
             .card_img{
-              max-width: 80px;
-              
+          
+              font-size: 3em;
+              color: var(--color);
               display: block;
               
             }

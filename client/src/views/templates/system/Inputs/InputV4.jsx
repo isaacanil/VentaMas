@@ -18,7 +18,7 @@ import { faAsterisk } from '@fortawesome/free-solid-svg-icons';
  * @param {InputV4} props
  * @returns {JSX.Element}
  */
-export const InputV4 = ({ icon, label, type, search, onClear, validate, errorMessage, bgColor, clearButton = false, ...props }) => {
+export const InputV4 = ({ icon, label, search, onClear, validate, errorMessage, bgColor, clearButton = false, ...props }) => {
   const showClearButton = clearButton && props.value;
   const inputRef = useRef(null);
   const inputValue = props.value
@@ -33,10 +33,10 @@ export const InputV4 = ({ icon, label, type, search, onClear, validate, errorMes
         {icon}
         <StyledInput {...props} ref={inputRef} />
      
-          <MdClose
+       {onClear && <MdClose
             onClick={() => onClear()}
             style={{ cursor: 'pointer', marginLeft: '8px', color: `${props.value ? "#999" : "transparent"}` }}
-          />
+          />}
         
       </InputWrapper>
       {(validate && errorMessage) && <ErrorMessage show>{errorMessage}</ErrorMessage>}

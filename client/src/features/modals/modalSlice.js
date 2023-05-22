@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { OPERATION_MODES } from "../../constants/modes";
 
 const initialState = {
     modalAddClient: {
@@ -47,7 +48,10 @@ const initialState = {
         isOpen: false,
         data: null
     },
-    modalToggleAddProductOutflow:{
+    modalToggleAddProductOutflow: {
+        isOpen: false,
+    },
+    modalToggleSignUp: {
         isOpen: false,
     }
 }
@@ -95,51 +99,54 @@ const modalSlice = createSlice({
             let isOpen = state.modalToggleClient.isOpen;
             state.modalToggleClient.isOpen = !isOpen;
             if (isOpen === false) {
-                state.modalToggleClient.mode = 'create'
+                state.modalToggleClient.mode = OPERATION_MODES.CREATE.id
                 state.modalToggleClient.data = null
             }
-            if (mode === 'create') {
+            if (mode === OPERATION_MODES.CREATE.id) {
                 state.modalToggleClient.mode = mode
                 state.modalToggleClient.data = null
                 return
             }
-            if (mode === 'update') {
+            if (mode === OPERATION_MODES.UPDATE.id) {
                 state.modalToggleClient.mode = mode
                 state.modalToggleClient.data = actions.payload.data
                 return
             }
         },
         toggleProviderModal: (state, actions) => {
+            const create = OPERATION_MODES.CREATE.id;
+            const update = OPERATION_MODES.UPDATE.id;
+
             const mode = actions.payload.mode
             let isOpen = state.modalToggleProvider.isOpen;
             state.modalToggleProvider.isOpen = !isOpen;
             if (isOpen === false) {
-                state.modalToggleProvider.mode = 'create'
+                state.modalToggleProvider.mode = create
                 state.modalToggleProvider.data = null
             }
-            if (mode === 'create') {
+            if (mode === create) {
                 state.modalToggleProvider.mode = mode
                 state.modalToggleProvider.data = null
                 return
             }
-            if (mode === 'update') {
+            if (mode === update) {
                 state.modalToggleProvider.mode = mode
                 state.modalToggleProvider.data = actions.payload.data
                 return
             }
         },
         toggleViewOrdersNotes: (state, actions) => {
-            const {data, isOpen} = actions.payload;
+            const { data, isOpen } = actions.payload;
             state.modalToggleOrderNote.isOpen = !isOpen;
 
-            if(isOpen === false){
+            if (isOpen === false) {
                 state.modalToggleOrderNote.data = null;
                 return
-            }  
-            if(data !== null && data !== false && isOpen === true){
+            }
+            if (data !== null && data !== false && isOpen === true) {
                 state.modalToggleOrderNote.data = data;
                 state.modalToggleOrderNote.isOpen = true;
-                if(data == null || data == false){
+                if (data == null || data == false) {
                     state.modalToggleOrderNote.isOpen = false;
                     state.modalToggleOrderNote.data = null;
                     return
@@ -148,23 +155,40 @@ const modalSlice = createSlice({
             }
         },
         toggleAddCategory: (state, actions) => {
-            const {isOpen, data} = actions.payload;
+            const { isOpen, data } = actions.payload;
             state.modalToggleAddCategory.isOpen = isOpen;
 
-            if(isOpen === 'close'){
+            if (isOpen === 'close') {
                 state.modalToggleAddCategory.isOpen = false;
-            }  
-            if(data){
-                state.modalToggleAddCategory.data = data;                
             }
-            if(data === null){
+            if (data) {
+                state.modalToggleAddCategory.data = data;
+            }
+            if (data === null) {
                 state.modalToggleAddCategory.data = null;
             }
-           
+
         },
         toggleAddProductOutflow: (state, actions) => {
             const isOpen = state.modalToggleAddProductOutflow.isOpen;
             state.modalToggleAddProductOutflow.isOpen = !isOpen;
+        },
+        toggleSignUpUser: (state, action) => {
+          
+            if (action.payload?.isOpen === undefined) {
+                const isOpen = state.modalToggleSignUp.isOpen;
+                state.modalToggleSignUp.isOpen = !isOpen;
+                return
+            }
+            if (action.payload?.isOpen === false) {
+                state.modalToggleSignUp.isOpen = false;
+                return
+            }
+            if (action.payload?.isOpen === true) {
+                state.modalToggleSignUp.isOpen = true;
+                return
+            }
+
         }
     }
 })
@@ -189,7 +213,9 @@ export const {
     toggleClientModal,
     toggleViewOrdersNotes,
     toggleAddCategory,
-    toggleAddProductOutflow
+    toggleAddProductOutflow,
+    toggleSignUpUser,
+
 } = modalSlice.actions
 
 export const SelectBillingModal = state => state.modal.modalBilling.isOpen;
@@ -205,6 +231,6 @@ export const SelectProviderModalData = state => state.modal.modalToggleProvider;
 export const SelectViewOrdersNotesModalData = state => state.modal.modalToggleOrderNote;
 export const SelectAddCategoryModal = state => state.modal.modalToggleAddCategory;
 export const SelectAddProductOutflowModal = state => state.modal.modalToggleAddProductOutflow;
-
+export const SelectSignUpUserModal = state => state.modal.modalToggleSignUp;
 
 export default modalSlice.reducer

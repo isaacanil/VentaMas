@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { getProviders } from '../../../../../../firebase/firebaseconfig'
+
 import { useEffect } from 'react'
 import { ProviderCard } from '../../ListItem/ProviderCard'
+import { useSelector } from 'react-redux'
+import { fbGetProviders } from '../../../../../../firebase/provider/fbGetProvider'
+import { selectUser } from '../../../../../../features/auth/userSlice'
 
 export const ProviderTable = () => {
   const [providers, setProviders] = useState([])
-
-  useEffect(() => { getProviders(setProviders) }, [])
+  const user = useSelector(selectUser)
+  useEffect(() => { fbGetProviders(setProviders, user) }, [user])
   
   return (
     <Container>

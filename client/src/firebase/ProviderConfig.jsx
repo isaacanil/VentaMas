@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { handleSetOptions } from "../features/order/ordersSlice"
-import { getProviders } from "./firebaseconfig"
+import { fbGetProviders } from "./provider/fbGetProvider"
+import { selectUser } from "../features/auth/userSlice"
 
 export const ProvidersData = () => {
     const [providers, setProviders] = useState([])
-    useEffect(() => { getProviders(setProviders) }, [])
+    const user = useSelector(selectUser)
+    useEffect(() => { fbGetProviders(setProviders, user) }, [])
     return providers
 }
 export const SetProvidersInFilterOptionsMenu = (providers) => {

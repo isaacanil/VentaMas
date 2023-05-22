@@ -13,7 +13,7 @@ export const CLIENT_MODE_BAR = Object.freeze(
         },
         CREATE: {
             id: nanoid(),
-            label: 'Crear Client',
+            label: 'Nombre',
             icon: <FontAwesomeIcon icon={faUserPlus} />,
             showClientList: false,
         },

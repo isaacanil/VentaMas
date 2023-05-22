@@ -1,13 +1,13 @@
 import {createSlice} from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
-import {modes} from '../../constants/modes';
 import { addNotification } from '../notification/NotificationSlice';
+import { CONFIG } from '../../constants/appConfig';
 
 const appModeSlice = createSlice({
     name: 'appMode',
     initialState: {
         mode: true,
-        notificationMode: modes.appMode.pruebas
+        notificationMode: CONFIG.APP_MODE.TEST_MODE
     },
     reducers: {
         toggleMode: (state) => {

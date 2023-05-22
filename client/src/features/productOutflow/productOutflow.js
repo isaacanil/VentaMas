@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { DateTime } from 'luxon'
 import { nanoid } from 'nanoid'
-import { modes } from '../../constants/modes'
+import { OPERATION_MODES } from '../../constants/modes'
 
 const EmptyProductsOutflow = []
 
@@ -20,7 +20,7 @@ const EmptyProductOutflow = {
     date: null, // Fecha de la salida del producto
 }
 const initialState = {
-    mode: modes.operationModes.createMode,
+    mode: OPERATION_MODES.CREATE.id,
     productSelected: EmptyProduct,
     data: {
         id: null,
@@ -69,7 +69,7 @@ export const productOutflowSlice = createSlice({
               }
         },
         deleteData: (state) => {
-            state.mode = modes.operationModes.createMode
+            state.mode = OPERATION_MODES.CREATE.id
             state.productSelected = EmptyProduct
             state.data = EmptyProductOutflow 
         }

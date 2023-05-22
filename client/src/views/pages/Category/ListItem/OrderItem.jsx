@@ -1,16 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { IoTrashSharp } from 'react-icons/io5'
-import { TbEdit } from 'react-icons/tb'
+
 import styled from 'styled-components'
-import { Message } from '../../../templates/system/message/Message'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
-import { GrRevert, GrEdit, GrClear, GrCheckmark, GrClose, GrTrash } from 'react-icons/gr'
-import { useClickOutSide } from '../../../../hooks/useClickOutSide'
-import { Tooltip } from '../../../templates/system/Button/Tooltip'
+
 import { useDispatch, useSelector } from 'react-redux'
-import { toggleAddCategory } from '../../../../features/modals/modalSlice'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheckCircle, faEdit, faPencil, faPenToSquare, faTrash, faTrashAlt, faTrashCan, faTrashCanArrowUp, faTrashRestore, faTrashRestoreAlt } from '@fortawesome/free-solid-svg-icons'
+
 import { icons } from '../../../../constants/icons/icons'
 import { selectUser } from '../../../../features/auth/userSlice'
 import { fbDeleteCategory } from '../../../../firebase/categories/fbDeleteCategory'

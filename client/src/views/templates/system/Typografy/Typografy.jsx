@@ -1,161 +1,163 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import PropTypes from 'prop-types';
+import styled, { css } from 'styled-components';
 
-const StyledH1 = styled.h1`
-  font-family: Roboto, sans-serif;
-  font-weight: 300;
-  line-height: 1;
-  margin: 0;
-  padding: 0;
-  color: ${props => props.color };
-  font-size: ${props => {
-        switch (props.size) {
-            case 'small':
-                return '24px'
-            case 'medium':
-                return '36px'
-            case 'big':
-                return '48px'
-            default:
-                return '36px'
-        }
-    }};
-`
+/**
+ * Componente Typography para renderizar texto con estilos personalizados.
+ * @param {Object} props - Las propiedades del componente.
+ * @param {string} props.variant - El estilo de tipografía deseado.
+ * @param {string} [props.color] - El color del texto.
+ * @param {string} [props.align='left'] - La alineación del texto.
+ * @param {string} [props.display='initial'] - La propiedad CSS `display` del elemento.
+ * @param {boolean} [props.gutterBottom=false] - Indica si se debe agregar un margen inferior al elemento de texto.
+ * @param {boolean} [props.noWrap=false] - Indica si el texto debe tener ajuste de línea o no.
+ * @param {boolean} [props.paragraph=false] - Indica si el texto es parte de un párrafo.
+ * @param {string|function} [props.component='div'] - El tipo de componente que se debe renderizar.
+ * @param {string} [props.className] - Una clase CSS adicional a aplicar al elemento de texto.
+ * @param {ReactNode} props.children - El contenido del elemento de texto.
+ * @returns {JSX.Element} El componente Typography renderizado.
+ */
+const variants = {
+  h1: css`
+    font-size: 2.125rem;
+    margin: 0.5rem 0;
+    line-height: 1.2;
+    font-weight: 600;
+  `,
+  h2: css`
+    font-size: 1.5rem;
+    margin: 0.45rem 0;
+    line-height: 1.3;
+    font-weight: 500;
+  `,
+  h3: css`
+    font-size: 1.25rem;
+    margin: 0.4rem 0;
+    line-height: 1.4;
+    font-weight: 500;
+  `,
+  h4: css`
+    font-size: 1rem;
+    margin: 0.35rem 0;
+    line-height: 1.5;
+    font-weight: 400;
+  `,
+  h5: css`
+    font-size: 0.875rem;
+    margin: 0.3rem 0;
+    line-height: 1.6;
+    font-weight: 400;
+  `,
+  h6: css`
+    font-size: 0.75rem;
+    margin: 0.25rem 0;
+    line-height: 1.7;
+    font-weight: 400;
+  `,
+  subtitle1: css`
+    font-size: 1rem;
+    margin: 0.35rem 0;
+    line-height: 1.5;
+    font-weight: 400;
+  `,
+  subtitle2: css`
+    font-size: 0.875rem;
+    margin: 0.3rem 0;
+    line-height: 1.6;
+    font-weight: 400;
+  `,
+  body1: css`
+    font-size: 1rem;
+    margin: 0.35rem 0;
+    line-height: 1.5;
+    font-weight: 400;
+  `,
+  body2: css`
+    font-size: 1rem;
+    margin: 0.3rem 0;
+    line-height: 1.6;
+    font-weight: 400;
+  `,
+  caption: css`
+    font-size: 0.75rem;
+    margin: 0.25rem 0;
+    line-height: 1.7;
+    font-weight: 300;
+  `,
+  overline: css`
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin: 0.25rem 0;
+    line-height: 1.7;
+    font-weight: 300;
+  `,
+};
+const colors = {
+  primary: css`
+    color: #007BFF;
+  `,
+  secondary: css`
+    color: #6C757D;
+  `,
+  success: css`
+    color: #28A745;
+  `,
+  danger: css`
+    color: #DC3545;
+  `,
+  warning: css`
+    color: #FFC107;
+  `,
+  info: css`
+    color: #17A2B8;
+  `,
+  light: css`
+    color: #F8F9FA;
+  `,
+  dark: css`
+    color: #343A40;
+  `,
+};
 
-const StyledH2 = styled.h2`
-  font-family: Roboto, sans-serif;
-  font-weight: 300;
-  line-height: 1;
-  margin: 0;
-  padding: 0;
-  color: ${props => props.color };
-  font-size: ${props => {
-        switch (props.size) {
-            case 'small':
-                return '20px'
-            case 'medium':
-                return '32px'
-            case 'big':
-                return '44px'
-            default:
-                return '32px'
-        }
-    }};
-`
+const Typography = ({
+  variant,
+  color,
+  align,
+  display,
+  gutterBottom,
+  noWrap,
+  paragraph,
+  component: Component = 'div',
+  className,
+  children
+}) => {
+  const TypographyStyle = styled(Component)`
+    margin: 0;
+    text-align: ${align};
+    display: ${display};
+    margin-bottom: ${gutterBottom ? '1rem' : '0'};
+    white-space: ${noWrap ? 'nowrap' : 'normal'};
+   ${colors[color] || colors.dark};
+    ${variants[variant]};
+  `;
 
-const StyledH3 = styled.h3`
-  font-family: Roboto, sans-serif;
-  font-weight: 400;
-  line-height: 1;
-  margin: 0;
-  padding: 0;
-  color: ${props => props.color };
-  font-size: ${props => {
-        switch (props.size) {
-            case 'small':
-                return '20px'
-            case 'medium':
-                return '32px'
-            case 'big':
-                return '44px'
-            default:
-                return '32px'
-        }
-    }};
-`
+  return (
+    <TypographyStyle className={className}>
+      {children}
+    </TypographyStyle>
+  );
+};
 
-const StyledH4 = styled.h4`
-  font-weight: 400;
-  line-height: 1;
-  margin: 0;
-  padding: 0;
-  color: ${props => props.color };
-  font-size: ${props => {
-        switch (props.size) {
-            case 'small':
-                return '14px'
-            case 'medium':
-                return '24px'
-            case 'big':
-                return '36px'
-            default:
-                return '24px'
-        }
-    }};
-`
+Typography.propTypes = {
+  variant: PropTypes.oneOf(Object.keys(variants)),
+  color: PropTypes.string,
+  align: PropTypes.oneOf(['left', 'right', 'center', 'justify']),
+  display: PropTypes.oneOf(['initial', 'block', 'inline']),
+  gutterBottom: PropTypes.bool,
+  noWrap: PropTypes.bool,
+  paragraph: PropTypes.bool,
+  component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+  className: PropTypes.string,
+};
 
-const StyledH5 = styled.h5`
-  font-weight: 400;
-  line-height: 1;
-  margin: 0;
-  color: ${props => props.color };
-  font-size: ${props => {
-        switch (props.size) {
-            case 'small':
-                return '12px'
-            case 'medium':
-                return '20px'
-            case 'big':
-                return '32px'
-            default:
-                return '20px'
-        }
-    }};
-  
-`
-
-const StyledH6 = styled.h6`
-  font-weight: 500;
-  line-height: 1;
-  color: ${props => props.color };
-  font-size: ${props => {
-        switch (props.size) {
-            case 'small':
-                return '10px'
-            case 'medium':
-                return '16px'
-            case 'big':
-                return '28px'
-            default:
-                return '16px'
-        }
-    }};
-`
-
-const StyledP = styled.p`
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${props => props.color };
-  font-size: ${props => {
-        switch (props.size) {
-            case 'small':
-                return '12px'
-            case 'medium':
-                return '14px'
-            case 'big':
-                return '20px'
-            default:
-                return '16px'
-        }
-    }};
-`
-
-export const Typography = ({ children, variant = 'body1', color, size }) => {
-    switch (variant) {
-        case 'h1':
-            return <StyledH1 color={color} size={size}>{children}</StyledH1>
-        case 'h2':
-            return <StyledH2 color={color} size={size}>{children}</StyledH2>
-        case 'h3':
-            return <StyledH3 color={color} size={size}>{children}</StyledH3>
-        case 'h4':
-            return <StyledH4 color={color} size={size}>{children}</StyledH4>
-        case 'h5':
-            return <StyledH5 color={color} size={size}>{children}</StyledH5>
-        case 'h6':
-            return <StyledH6 color={color} size={size}>{children}</StyledH6>
-        default:
-            return <StyledP color={color} size={size}>{children}</StyledP>
-    }
-}
-
+export default Typography;

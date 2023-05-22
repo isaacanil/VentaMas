@@ -25,6 +25,7 @@ import viewerImageReducer from "../features/imageViewer/imageViewerSlice";
 import customPizzaReducer from "../features/customProducts/customPizzaSlice";
 import productOutflowReducer from "../features/productOutflow/productOutflow";
 import clientCartReducer from "../features/clientCart/clientCartSlice";
+import businessReducer from "../features/auth/businessSlice"
 export const store = configureStore({
     reducer: {
         user: userReducer,
@@ -52,6 +53,6 @@ export const store = configureStore({
         imageViewer: viewerImageReducer,
         customPizza: customPizzaReducer,
         productOutflow: productOutflowReducer,
-
+        business: businessReducer
     },
 })

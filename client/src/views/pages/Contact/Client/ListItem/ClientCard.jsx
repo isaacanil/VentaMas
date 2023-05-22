@@ -12,31 +12,32 @@ import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
 import { Message } from '../../../../templates/system/message/Message'
 import { useDispatch } from 'react-redux'
 import { toggleClientModal } from '../../../../../features/modals/modalSlice'
-import { modes } from '../../../../../constants/modes'
+import { OPERATION_MODES } from '../../../../../constants/modes'
 import { icons } from '../../../../../constants/icons/icons'
 import { fbDeleteClient } from '../../../../../firebase/client/fbDeleteClient'
-export const OrderItem = ({ e, index, Row, Col }) => {
-    const {updateMode} = modes.operationModes
+import { ClientAdmin } from '../ClientAdmin'
+export const OrderItem = ({ client, index, Row, Col }) => {
+    const updateMode = OPERATION_MODES.UPDATE.id
     const noData = <Message title='(vacio)' fontSize='small' bgColor='error'/>
     const dispatch = useDispatch()
     const handleDeleteClient = (id) => {
         fbDeleteClient(id)
     }
-    const openModalUpdateMode = (e) => {dispatch(toggleClientModal({mode: updateMode, data: e}))}
+    const openModalUpdateMode = () => {dispatch(toggleClientModal({mode: updateMode, data: client}))}
     return (
         <Row>
-            <Col>{e.id}</Col>
+            <Col>{client.id}</Col>
             <Col>
-                {e.name}
+                {client.name}
             </Col>
             <Col size='limit'>
-                { e.tel ? useFormatPhoneNumber(e.tel) : noData}
+                { client.tel ? useFormatPhoneNumber(client.tel) : noData}
             </Col>
             <Col>
-                {e.personalID ? e.personalID : noData}
+                {client.personalID ? client.personalID : noData}
             </Col>
             <Col size='limit'>
-                {e.address ? e.address : noData}
+                {client.address ? client.address : noData}
             </Col>
             <Col>
                 <ButtonGroup>
@@ -52,7 +53,7 @@ export const OrderItem = ({ e, index, Row, Col }) => {
                         title={icons.operationModes.delete}
                         width='icon32'
                         color='gray-dark'
-                        onClick={() => handleDeleteClient(e.id)}
+                        onClick={() => handleDeleteClient(client.id)}
                     />
                 </ButtonGroup>
             </Col>

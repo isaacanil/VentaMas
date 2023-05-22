@@ -19,6 +19,8 @@ import {
    auth,
  }from '../../../firebase/firebaseconfig.jsx'
 import { signInWithEmailAndPassword } from 'firebase/auth'
+import findRouteByName from '../../templates/MenuApp/findRouteByName'
+import ROUTES_NAME from '../../../routes/routesName'
 
 //APP
 export const Login = () => {
@@ -29,6 +31,8 @@ export const Login = () => {
 
    const [email, setEmail] = useState('')
    const [password, setPassword] = useState('')
+   const {HOME} = ROUTES_NAME.BASIC_TERM
+   const homePath = findRouteByName(HOME).path
    const loginToApp = (e) => {
       e.preventDefault();
   
@@ -41,7 +45,7 @@ export const Login = () => {
           uid: user.uid,
           displayName: user.displayName
         }))
-        Navigate('/app/')
+        Navigate(homePath)
       })
       .catch((error)=>{
         const errorCode = error.code;

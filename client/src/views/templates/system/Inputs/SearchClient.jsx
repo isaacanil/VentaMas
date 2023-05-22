@@ -24,8 +24,9 @@ export const SearchClient = ({ name, icon, type, text, ref, size, title, label, 
                     readOnly={readOnly}
                     onFocus={onFocus}
                     autocomplete="off"
+                    placeholder={label}
                 />
-                <label htmlFor="">{label}</label>
+                {/* <label htmlFor="">{label}</label> */}
             </InputContainer>
             <ButtonContainer>
                 <Button onClick={handleReset}>
@@ -47,7 +48,7 @@ const Container = styled.div`
     height: 2em;
  
     min-width: 180px;
-    padding: 2px 6px ;
+    padding: 0px 6px ;
     background-color: white;
     position: relative;
     border: 1px solid #41414140;
@@ -120,7 +121,7 @@ const Icon = styled.div`
     align-items: center;
     justify-content: center;
     padding: 0;
-    align-self: flex-end;
+
     pointer-events: painted;
     border: 0;
     color: #464646;

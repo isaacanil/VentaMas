@@ -1,5 +1,5 @@
 import React from 'react'
-import { modes } from '../../../../../constants/modes';
+import { OPERATION_MODES } from '../../../../../constants/modes';
 const EmptyProductsOutflow = []
 
 const EmptyProduct = {
@@ -18,7 +18,7 @@ const EmptyProductOutflow = {
 
 export class OutflowData {
     constructor({ mode, productSelected, data }) {
-        this.mode = mode || modes.operationModes.createMode;
+        this.mode = mode || OPERATION_MODES.CREATE.id;
         this.productSelected = productSelected || EmptyProduct;
         this.data = {
             id: (data && data?.id != null) ? data.id : null,

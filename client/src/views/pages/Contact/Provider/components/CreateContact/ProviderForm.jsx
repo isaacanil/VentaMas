@@ -1,33 +1,37 @@
 import { nanoid } from 'nanoid'
 import React, { useEffect, useState } from 'react'
 import { MdClose } from 'react-icons/md'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { modes } from '../../../../../../constants/modes'
+import { OPERATION_MODES } from '../../../../../../constants/modes'
 import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
-import { createProvider, updateProvider } from '../../../../../../firebase/firebaseconfig'
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber'
 
-import { useFormatRNC } from '../../../../../../hooks/useFormatRNC'
+
 import { Button } from '../../../../../templates/system/Button/Button'
 import { Message } from '../../../../../templates/system/message/Message'
+import { fbAddProvider } from '../../../../../../firebase/provider/fbAddProvider'
+import { fbUpdateProvider } from '../../../../../../firebase/provider/fbUpdateProvider'
+import { selectUser } from '../../../../../../features/auth/userSlice'
 
-const { createMode, deleteMode, updateMode } = modes.operationModes
+const createMode = OPERATION_MODES.CREATE.id
+const updateMode = OPERATION_MODES.UPDATE.id
+
 export const ProviderForm = ({ isOpen, mode, data }) => {
     const dispatch = useDispatch()
-    const [newProvider, setNewProvider] = useState({
+    const user = useSelector(selectUser)
+    const [provider, setProvider] = useState({
         name: '',
         address: '',
         tel: '',
     });
-    const [executed, setExecuted] = useState(false)
     // use the existingProvider data to pre-populate the form fields in update mode
     useEffect(() => {
-        if (mode === 'update' && data !== null) {
-            setNewProvider(data);
+        if (mode === updateMode && data !== null) {
+            setProvider(data);
         }
         if (data === null) {
-            setNewProvider({
+            setProvider({
                 name: '',
                 address: '',
                 tel: '',
@@ -35,79 +39,34 @@ export const ProviderForm = ({ isOpen, mode, data }) => {
         }
     }, [mode, data])
 
-    function validateNewProvider(provider) {
-        if (provider.name === '' || provider.id === '') {
-            alert("El nombre y el ID personal son obligatorios");
-            return false;
-        }
-        return true;
-    }
-
-    const addIdToNewProvider = async () => {
-        try {
-            setNewProvider({
-                ...newProvider,
-                id: nanoid(8)
-            });
-
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    const handleCreateProvider = async () => {
-        if (validateNewProvider(newProvider)) {
-            try {
-                createProvider(newProvider);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
-    const handleUpdateProvider = async () => {
-        if (validateNewProvider(newProvider)) {
-            try {
-                updateProvider(newProvider);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
     const handleOpenModal = async () => {
         try {
-            dispatch(toggleProviderModal({ mode: 'create' }))
-            setNewProvider({
+            dispatch(toggleProviderModal({ mode: createMode }))
+            setProvider({
                 id: '',
                 name: '',
                 address: '',
                 tel: '',
 
             })
-            setExecuted(false)
         } catch (error) {
             console.log(error)
         }
     }
-    const handleSubmit = async () => {
-        if (mode === 'create') {
-            try {
-                    await addIdToNewProvider()
-                    .catch(err => console.log(err));
-            } catch (err) {
-                console.log(err)
-            }
-        } else if (mode === 'update') {
-            await handleUpdateProvider();
+    
+    const handleSubmit = () => {
+        console.log('handleSubmit--------------------------------------')
+        if (mode === createMode && provider) {
+            fbAddProvider(provider, user);
         }
-        await handleOpenModal()
+        if (mode === updateMode) {
+            fbUpdateProvider(provider, user);
+        }
+        handleOpenModal()
     }
-    console.log(newProvider)
 
-    useEffect(() => {
-        if (mode === 'create' && newProvider.id && executed === false) {
-            handleCreateProvider()
-            setExecuted(true);
-        }
-    }, [mode, newProvider.id, executed])
+
+
 
     return (
         <Container>
@@ -121,7 +80,7 @@ export const ProviderForm = ({ isOpen, mode, data }) => {
                         title={<MdClose />}
                         onClick={handleOpenModal}
                     ></Button>
-                    <h3>{mode === 'create' ? 'Nuevo Proveedor' : 'Editar Proveedor'}</h3>
+                    <h3>{mode === createMode ? 'Nuevo Proveedor' : 'Editar Proveedor'}</h3>
                 </ToolBar>
 
                 <Body>
@@ -130,10 +89,10 @@ export const ProviderForm = ({ isOpen, mode, data }) => {
                         <input
                             name='name'
                             type="text"
-                            value={newProvider.name}
+                            value={provider.name}
                             onChange={(e) =>
-                                setNewProvider({
-                                    ...newProvider,
+                                setProvider({
+                                    ...provider,
                                     [e.target.name]: e.target.value
                                 })}
                             placeholder='Juan Pérez.'
@@ -145,17 +104,17 @@ export const ProviderForm = ({ isOpen, mode, data }) => {
                                 bgColor='primary'
                                 fontSize='small'
                                 width='auto'
-                                title={(useFormatPhoneNumber(newProvider.tel))}
+                                title={(useFormatPhoneNumber(provider.tel || '8095555555'))}
                             >
                             </Message></label>
                         <input
                             type="text"
                             name='tel'
-                            placeholder='8496503586'
-                            value={newProvider.tel}
+                            placeholder='809-555-5555'
+                            value={provider.tel}
                             onChange={(e) =>
-                                setNewProvider({
-                                    ...newProvider,
+                                setProvider({
+                                    ...provider,
                                     [e.target.name]: e.target.value
                                 })}
                         />
@@ -168,10 +127,10 @@ export const ProviderForm = ({ isOpen, mode, data }) => {
                             id=""
                             cols="20"
                             rows="5"
-                            value={newProvider.address}
+                            value={provider.address}
                             placeholder='27 de Febrero #12, Ensanche Ozama, Santo Domingo'
-                            onChange={(e) => setNewProvider({
-                                ...newProvider,
+                            onChange={(e) => setProvider({
+                                ...provider,
                                 [e.target.name]: e.target.value
                             })}
                         ></textarea>
@@ -182,7 +141,7 @@ export const ProviderForm = ({ isOpen, mode, data }) => {
                 <Footer>
                     <Button
                         borderRadius='normal'
-                        title={mode === 'create' ? 'Crear' : 'Actualizar'}
+                        title={mode === createMode ? 'Crear' : 'Actualizar'}
                         bgcolor='primary'
                         onClick={handleSubmit}
                     />
