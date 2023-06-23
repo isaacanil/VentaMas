@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from "framer-motion";
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 
 const itemVariants = {
-  open: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 600, damping: 44 }
-  },
-  closed: { opacity: 0, y: 20, transition: { duration: 0.2 } }
+    open: {
+        opacity: 1,
+        y: 0,
+        transition: { type: "spring", stiffness: 600, damping: 44 }
+    },
+    closed: { opacity: 0, y: 20, transition: { duration: 0.2 } }
 };
 
 const getPropertyByPath = (obj, path) => {
@@ -20,31 +21,39 @@ const getPropertyByPath = (obj, path) => {
     return result;
 };
 
-const Select = ({ title, options, value, onChange, optionsLabel }) => {
+const Select = ({label, title, options, value, onChange, optionsLabel, maxWidth = null }) => {
     const [isOpen, setIsOpen] = useState(false);
-
+    const SelectRef = useRef(null);
     const handleSelect = (selectedItem) => {
         onChange(selectedItem);
         setIsOpen(false);
     };
- 
+
     const getOptionLabel = (option) => {
         if (!optionsLabel) {
-            return option.name;
+            return option;
         }
         return getPropertyByPath(option, optionsLabel);
     };
-
+    const closeDropdown = () => setIsOpen(false);
+    useClickOutSide(SelectRef, !isOpen, closeDropdown)
     return (
-        <Container>
-            <SelectHeader onClick={() => setIsOpen(!isOpen)}>
-                <SelectTitle>{value ? getOptionLabel(value) : title}</SelectTitle>
-            </SelectHeader>
-            <motion.div 
-                initial={false}
-                animate={isOpen ? "open" : "closed"}>
-                <DropdownWrapper isOpen={isOpen}>
-                    <motion.div
+        <Backdrop>
+            {label && (
+                <Label>
+                    {label = title}
+                </Label>
+            )}
+            <Container ref={SelectRef} maxWidth={maxWidth}>
+                <SelectHeader onClick={() => setIsOpen(!isOpen)}>
+                    <SelectTitle value={value}>{value ? getOptionLabel(value) : title}</SelectTitle>
+                </SelectHeader>
+                <DropdownWrapper
+                    isOpen={isOpen}
+                    initial={false}
+                    animate={isOpen ? "open" : "closed"}
+                >
+                    <Dropdown
                         variants={{
                             open: {
                                 clipPath: "inset(0% 0% 0% 0% round 4px)",
@@ -65,33 +74,66 @@ const Select = ({ title, options, value, onChange, optionsLabel }) => {
                                 }
                             }
                         }}
-                        style={{ pointerEvents: isOpen ? "auto" : "none" }}>
-                        <Dropdown >
-                            {options.map((item) => (
-                                <motion.div variants={itemVariants}>
-                                    <Option
-                                        key={item.id}
-                                        onClick={() => handleSelect(item)}
-                                        isSelected={getOptionLabel(value) === getOptionLabel(item)}
-                                    >
-                                        {getOptionLabel(item)}
-                                    </Option>
-                                </motion.div>
-                            ))}
-                        </Dropdown>
-                    </motion.div>
+                        style={{ pointerEvents: isOpen ? "auto" : "none" }}
+                    >
+                        {options.map((item) => (
+
+                            <Option
+                                value={value}
+                                key={item.id}
+                                variants={itemVariants}
+                                onClick={() => handleSelect(item)}
+                                isSelected={getOptionLabel(value) === getOptionLabel(item)}
+                            >
+                                {getOptionLabel(item)}
+                            </Option>
+
+                        ))}
+                    </Dropdown>
+
                 </DropdownWrapper>
-            </motion.div>
-        </Container>
+
+            </Container>
+        </Backdrop>
     );
 };
 
 export default Select;
-
+const Backdrop = styled.div`
+    display: grid;
+    align-items: center;
+    gap: 0.2em;
+    width: min-content;
+`;
 const Container = styled.div`
   position: relative;
+  min-width: 200px;
   width: 100%;
-
+    ${({ maxWidth }) => {
+        switch (maxWidth) {
+            case 'small':
+                return `
+                max-width: 200px;
+                `
+            case 'medium':
+                return `
+                max-width: 300px;
+`
+            case 'large':
+                return `
+                max-width: 400px;
+                                `
+            case 'xl':
+                return `
+                max-width: 500px;
+                `
+            default:
+                return `
+                max-width: 100%;
+                `
+        }
+    }}
+                                                
 `;
 
 const SelectHeader = styled.div`
@@ -100,22 +142,33 @@ const SelectHeader = styled.div`
   cursor: pointer;
   background-color: #ffffff;
     height: 2em;
-    padding: 0 1em;
+    max-height: calc(2em - 2px);
+    width: 100%;
+    padding: 0 0.4em;
     border: var(--border2);
     border-radius: var(--border-radius-light);
+    :hover {
+        background-color: var(--color2);
+    }
 `;
 
 const SelectTitle = styled.p`
   margin: 0;
   color: var(--Gray4);
+
+  ${({ value }) => value && (`
+    color: var(--color-dark);
+    font-weight: 500;
+    
+    `)}
   
 `;
-const DropdownWrapper = styled.div`
+const DropdownWrapper = styled(motion.div)`
     position: absolute;
     top: 110%;
     left: 0;
     width: 100%;
-    z-index: 1;
+    z-index: 10;
     min-height: 200px;
     height: 100%;
     border: var(--border-primary);
@@ -125,20 +178,26 @@ const DropdownWrapper = styled.div`
     overflow: hidden;
 display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
 `
-const Dropdown = styled.div`
+const Dropdown = styled(motion.div)`
 height: 100%;
   width: 100%;
     overflow-y: auto;
+    padding: 0.4em ;
+    gap: 0.2em;
     display: grid;
-    gap: 0.5em;
+    align-content: flex-start;
+  
 `;
 
-const Option = styled.div`
+const Option = styled(motion.div)`
   padding: 0 1em;
-  height: 2em;
+  height: 2.4em;
   display: flex;
     align-items: center;
-
+    font-size: 14px;
+    border-radius: var(--border-radius);
+    /* border-bottom: var(--border2); */
+    
   cursor: pointer;
 
   &:hover {
@@ -154,4 +213,14 @@ const Option = styled.div`
         background-color: blue;
         color: white;
   `}
+ 
+  
 `;
+
+const Label = styled.label`
+    font-size: 13px;
+    color: var(--Gray5);
+    line-height: 14px;
+  
+
+  `

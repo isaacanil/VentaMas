@@ -53,6 +53,9 @@ const initialState = {
     },
     modalToggleSignUp: {
         isOpen: false,
+    },
+    modalConfirmOpenCashReconciliation: {
+        isOpen: false,
     }
 }
 const modalSlice = createSlice({
@@ -189,6 +192,10 @@ const modalSlice = createSlice({
                 return
             }
 
+        },
+        toggleConfirmOpenCashReconciliation: (state, action) => {
+            const isOpen = state.modalConfirmOpenCashReconciliation.isOpen;
+            state.modalConfirmOpenCashReconciliation.isOpen = !isOpen;
         }
     }
 })
@@ -215,6 +222,7 @@ export const {
     toggleAddCategory,
     toggleAddProductOutflow,
     toggleSignUpUser,
+    toggleConfirmOpenCashReconciliation
 
 } = modalSlice.actions
 
@@ -232,5 +240,6 @@ export const SelectViewOrdersNotesModalData = state => state.modal.modalToggleOr
 export const SelectAddCategoryModal = state => state.modal.modalToggleAddCategory;
 export const SelectAddProductOutflowModal = state => state.modal.modalToggleAddProductOutflow;
 export const SelectSignUpUserModal = state => state.modal.modalToggleSignUp;
+export const SelectConfirmOpenCashReconciliationModal = state => state.modal.modalConfirmOpenCashReconciliation;
 
 export default modalSlice.reducer

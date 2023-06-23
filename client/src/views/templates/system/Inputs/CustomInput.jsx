@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { addDiscount, totalPurchase } from "../../../../features/cart/cartSlice";
 import { quitarCeros } from "../../../../hooks/quitarCeros";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
+import { InputV4 } from "./InputV4";
 
 const CustomInput = ({ options }) => {
 
@@ -14,11 +15,11 @@ const CustomInput = ({ options }) => {
   const handleChange = (e) => {
     setValue(Number(e.target.value));
   };
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(addDiscount(value))
     dispatch(totalPurchase())
-    
-  }, [value]) 
+
+  }, [value])
   const handleClick = () => {
     setShowMenu(!showMenu);
   };
@@ -32,14 +33,18 @@ const CustomInput = ({ options }) => {
 
   return (
     <Container>
-      <StyledInput
+
+      <InputV4
         type="number"
+        label='Descuento'
+        labelVariant='primary'
+        size='small'
         value={quitarCeros(value)}
         onChange={handleChange}
         onClick={handleClick}
 
       />
-      <label htmlFor=""> Descuento</label>
+    
       {showMenu && (
         <StyledMenu>
           {options.map((option) => (
@@ -94,7 +99,8 @@ const StyledInput = styled.input`
 const StyledMenu = styled.ul`
   border: 1px solid #ccc;
   padding: 10px;
-  width: 200px;
+  width: 100%;
+  max-width: 400px;
   background: white;
   position: absolute;
   z-index: 10;

@@ -18,7 +18,7 @@ const Routes = [
         children: [
             {
                 path: `list`,
-                element: validateRouteAccess(<UserList />),
+                element: validateRouteAccess(<UserList />, 'read', 'User'),
                 name: USERS_LIST
             }, 
             {

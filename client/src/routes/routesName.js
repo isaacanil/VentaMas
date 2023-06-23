@@ -2,6 +2,12 @@ const SALES_TERM = {
     SALES: 'sales',
     BILLS: 'sale_bills',
 }
+const CASH_RECONCILIATION_TERM = {
+    CASH_RECONCILIATION_LIST: 'cash_reconciliation_list',
+    CASH_RECONCILIATION_OPENING: 'cash_reconciliation_opening',
+    CASH_RECONCILIATION_CLOSURE: 'cash_reconciliation_closure',
+    CASH_RECONCILIATION_INVOICE_OVERVIEW: 'cash_reconciliation_invoice_overview',
+}
 const BASIC_TERM = {
     HOME: 'home',
     WELCOME: 'welcome',
@@ -39,6 +45,7 @@ const PURCHASE_TERM = {
 const ROUTES_NAME = {
     BASIC_TERM,
     AUTH_TERM,
+    CASH_RECONCILIATION_TERM,
     SALES_TERM,
     INVENTORY_TERM,
     CONTACT_TERM,

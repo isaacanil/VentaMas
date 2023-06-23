@@ -1,5 +1,5 @@
 
-import {configureStore} from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
 import userReducer from '../features/auth/userSlice'
 import searchReducer from '../features/search/searchSlice'
 import cartReducer from '../features/cart/cartSlice'
@@ -25,34 +25,42 @@ import viewerImageReducer from "../features/imageViewer/imageViewerSlice";
 import customPizzaReducer from "../features/customProducts/customPizzaSlice";
 import productOutflowReducer from "../features/productOutflow/productOutflow";
 import clientCartReducer from "../features/clientCart/clientCartSlice";
-import businessReducer from "../features/auth/businessSlice"
+import businessReducer from "../features/auth/businessSlice";
+import abilitiesReducer from "../features/abilities/abilitiesSlice";
+import cashReconciliationReducer from "../features/cashCount/cashCountSlide";
+import UserNotificationReducer from "../features/UserNotification/UserNotificationSlice";
 export const store = configureStore({
-    reducer: {
-        user: userReducer,
-        search: searchReducer,
-        cart: cartReducer,
-        clientCart: clientCartReducer,
-        modal: modalReducer,
-        category: categoryReducer,
-        customProduct: customProductReducer,
-        addProduct: addProductReducer,
-        addOrder: addOrderReducer,
-        order: orderReducer,
-        updateProduct: updateProductReducer,
-        uploadImg: uploadImgReducer,
-        alert: alertReducer,
-        setting: settingReducer,
-        taxReceipt: taxReceiptReducer, 
-        purchase: purchaseReducer,
-        theme: themeReducer,
-        addPurchase: addPurchaseReducer, 
-        notification: notificationReducer,
-        nav: navReducer,
-        app: appReducer,
-        loader: loaderReducer,
-        imageViewer: viewerImageReducer,
-        customPizza: customPizzaReducer,
-        productOutflow: productOutflowReducer,
-        business: businessReducer
-    },
+  reducer: {
+    app: appReducer,
+    user: userReducer,
+    cart: cartReducer,
+    abilities: abilitiesReducer,
+    order: orderReducer,
+    clientCart: clientCartReducer,
+    purchase: purchaseReducer,
+    addPurchase: addPurchaseReducer,
+    addOrder: addOrderReducer,
+    productOutflow: productOutflowReducer,
+    business: businessReducer,
+    search: searchReducer,
+    category: categoryReducer,
+    customProduct: customProductReducer,
+    addProduct: addProductReducer,
+    updateProduct: updateProductReducer,
+    customPizza: customPizzaReducer,
+    modal: modalReducer,
+    alert: alertReducer,
+    notification: notificationReducer,
+    setting: settingReducer,
+    theme: themeReducer,
+    nav: navReducer,
+    uploadImg: uploadImgReducer,
+    imageViewer: viewerImageReducer,
+    taxReceipt: taxReceiptReducer,
+    loader: loaderReducer,
+    cashCount: cashReconciliationReducer,
+    userNotification: UserNotificationReducer,
+  
+  }
+  ,
 })

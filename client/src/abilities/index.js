@@ -1,26 +1,42 @@
-// src/abilities/index.js
-
+import { defineAbilitiesForManager } from './roles/gerente';
+import { defineAbilitiesForCashier } from './roles/cajero';
+import { defineAbilitiesForBuyer } from './roles/comprador';
 import { defineAbilitiesForAdmin } from './roles/admin';
-import { defineAbilitiesForGerente } from './roles/gerente';
-import { defineAbilitiesForCajero } from './roles/cajero';
-import { defineAbilitiesForComprador } from './roles/comprador';
-
-import { createMongoAbility, defineAbility } from '@casl/ability';
+import { defineAbilitiesForOwner } from './roles/owner';
 
 const ROLE_ABILITIES = {
-    admin: defineAbilitiesForAdmin,
-    gerente: defineAbilitiesForGerente,
-    cajero: defineAbilitiesForCajero,
-    comprador: defineAbilitiesForComprador,
+  ownerAbilities: defineAbilitiesForOwner,  //dueño
+  adminAbilities: defineAbilitiesForAdmin, //administrador
+  managerAbilities: defineAbilitiesForManager, //gerente
+  cashierAbilities: defineAbilitiesForCashier, //cajero
+  buyerAbilities: defineAbilitiesForBuyer,//comprador
 };
 
-export function defineAbilitiesFor(role) {
-    const defineAbilities = ROLE_ABILITIES[role];
-
-    if (typeof defineAbilities !== 'function') {
-        // Rol no reconocido, devuelve una Ability vacía
-        return createMongoAbility(() => { });
-    }
-
-    return defineAbility();
+export function defineAbilitiesFor(user) {
+  const { adminAbilities, cashierAbilities, buyerAbilities, managerAbilities, ownerAbilities } = ROLE_ABILITIES
+  switch (user.role) {
+    case 'owner':
+      return ownerAbilities(user);
+    case 'admin':
+      return adminAbilities(user);
+    case 'cashier':
+      return cashierAbilities(user);
+    case 'buyer':
+      return buyerAbilities(user);
+    case 'manager':
+      return managerAbilities(user);
+    default:
+      return []; // si no se reconoce el rol, no se dan habilidades
+  }
 }
+
+
+
+
+
+
+
+
+
+
+

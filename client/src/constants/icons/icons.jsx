@@ -1,4 +1,4 @@
-import { faAddressBook, faBagShopping, faBarsStaggered, faBox, faBoxesStacked, faCartFlatbed, faCartShopping, faChartPie, faCheck, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faGear, faGrip, faGripLines, faHome, faImage, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faReceipt, faRectangleList, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUser, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faBagShopping, faBarsStaggered, faBox, faBoxesStacked, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faReceipt, faRectangleList, faSign, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -10,9 +10,25 @@ export const icons = {
     },
     user: {
         create: <FontAwesomeIcon icon={faUserPlus} />,
-        users: <FontAwesomeIcon icon={faUsers} />
+        users: <FontAwesomeIcon icon={faUsers} />,
+        user: <FontAwesomeIcon icon={faUser} />,
+        userCheck: <FontAwesomeIcon icon={faUserCheck} />,
+    },
+    input: {
+        password: {
+            show: <FontAwesomeIcon icon={faEye} />,
+            hide: <FontAwesomeIcon icon={faEyeSlash} />,
+        }
+    },
+    arrows: {
+        chevronDown: <FontAwesomeIcon icon={faChevronDown} />,
+        chevronUp: <FontAwesomeIcon icon={faChevronUp} />,
+        chevronLeft: <FontAwesomeIcon icon={faChevronLeft} />,
+        chevronRight: <FontAwesomeIcon icon={faChevronRight} />,
+        UpRightAndDownLeftFromCenter: <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} />,
     },
     operationModes: {
+        filter: <FontAwesomeIcon icon={faFilter} />,
         edit: <FontAwesomeIcon icon={faPencil} />,
         add: <FontAwesomeIcon icon={faPlus} />,
         delete: <FontAwesomeIcon icon={faTrash}  />,
@@ -45,8 +61,10 @@ export const icons = {
             category:<FontAwesomeIcon icon={faRectangleList} />,
             register: <FontAwesomeIcon icon={faReceipt} />,
             settings:<FontAwesomeIcon icon={faGear} />,
+
         },
         unSelected: {
+            cashReconciliation: <FontAwesomeIcon icon={faSign} />,
             home: <FontAwesomeIcon icon={faHome} />,
             sale: <FontAwesomeIcon icon={faBagShopping} />,
             purchase: <FontAwesomeIcon icon={faCartShopping} />,
@@ -60,6 +78,7 @@ export const icons = {
     users:{
         provider: <FontAwesomeIcon icon={faUserTie} />,
         client: <FontAwesomeIcon icon={faUser} />,
+
     },
     inventory: {
         items: <FontAwesomeIcon icon={faBoxesStacked} />,

@@ -7,13 +7,18 @@ import { useDispatch } from 'react-redux'
 import { logout } from '../../../features/auth/userSlice'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRightFromBracket, faUser } from '@fortawesome/free-solid-svg-icons'
+import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
+import { useNavigate } from 'react-router-dom'
 
 export const UserSection = ({ user }) => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const logoutOfApp = () => {
     // dispatch to the store with the logout action
     dispatch(logout());
+    fbSignOut();
     auth.signOut();
+    navigate('/', { replace: true });
   }
   return (
     <Container>

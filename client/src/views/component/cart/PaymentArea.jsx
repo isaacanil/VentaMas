@@ -13,6 +13,7 @@ import { quitarCeros } from '../../../hooks/quitarCeros'
 import CustomInput from '../../templates/system/Inputs/CustomInput'
 import { useRoundedNumber } from '../../../hooks/useRoundedNumber'
 import { fbGetTaxReceipt } from '../../../firebase/taxReceipt/fbGetTaxReceipt'
+import { InputV4 } from '../../templates/system/Inputs/InputV4'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
 
@@ -117,14 +118,22 @@ export const PaymentArea = () => {
             <Row margin='bottom'>
                 <Group className='option1'>
                     <span><span>ITBIS:</span>  {useFormatPrice(TaxesRef)}</span>
-                    <Item>
+                    <InputV4
+                            label='Pago con'
+                            labelVariant='primary'
+                        
+                            type="number"
+                            value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
+                            onChange={(e) => setPaymentValue(e.target.value)}
+                        />
+                    {/* <Item>
                         <label htmlFor="">Pago con {monetarySymbols.dollarSign}</label>
                         <input
                             type="number"
                             value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
                             onChange={(e) => setPaymentValue(e.target.value)}
                         />
-                    </Item>
+                    </Item> */}
                 </Group>
             </Row>
             <Row margin='bottom'>
@@ -158,7 +167,7 @@ const Group = styled.div`
     align-items: center;
 
     flex-grow: 1;
-    gap: 0.8em;
+    gap: 0.6em;
     span{
         display: flex;
         justify-content: space-between;
@@ -187,6 +196,28 @@ const Group = styled.div`
                 return `
                 display: grid;
                 grid-template-columns: 1fr 1fr 1fr;
+
+                input[type="radio"]:checked + label{  
+                    background-color: var(--color);
+                    color: black;
+                    font-weight: 500;
+                    color: white;
+        
+                }
+                input[type="radio"]{
+                    display:none;
+                }
+                label{
+                    flex-grow: 1;
+                    border-radius: 4px;
+                    transition: background-color, 400ms ease-in-out, color 400ms ease-in-out;
+                    background-color: #ccd7e6;
+                    font-weight: 500;
+                    text-align: center;
+                    :hover{
+                        background-color: var(--color3)
+                    }
+                }
                 `
             case 'tax-discount':
                 return `
@@ -199,27 +230,7 @@ const Group = styled.div`
 
     }}
    
-    input[type="radio"]:checked + label{  
-      background-color: var(--color);
-      color: black;
-      font-weight: 500;
-      color: white;
-        
-    }
-    input[type="radio"]{
-        display:none;
-    }
-    label{
-        flex-grow: 1;
-        border-radius: 4px;
-        transition: background-color, 400ms ease-in-out, color 400ms ease-in-out;
-        background-color: #ccd7e6;
-        font-weight: 500;
-        text-align: center;
-        :hover{
-            background-color: var(--color3)
-        }
-    }
+  
     
     
     
@@ -291,7 +302,7 @@ const Area = styled.div`
         padding: 0 0.2em;
     }
     position: relative;
-    padding: 0.3em 0.5em;
+    padding: 0em 0.5em 0.3em;
     //border: 1px solid #0000003d;
     color: #292929;
     background-color: var(--icolor4);

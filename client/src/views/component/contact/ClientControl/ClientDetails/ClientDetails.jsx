@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
-import { setChange, totalPurchase, addSourceOfPurchase  } from '../../../../../features/cart/cartSlice'
+import { setChange, totalPurchase, addSourceOfPurchase } from '../../../../../features/cart/cartSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { monetarySymbols } from '../../../../../constants/monetarySymbols'
 import { sourceOfSaleList } from '../../../../../constants/sourceOfSaleList'
 import { selectClient, setClient } from '../../../../../features/clientCart/clientCartSlice'
 import { updateObject } from '../../../../../utils/object/updateObject'
+import { InputV4 } from '../../../../templates/system/Inputs/InputV4'
 
 export const ClientDetails = () => {
     const dispatch = useDispatch()
@@ -20,7 +21,7 @@ export const ClientDetails = () => {
     }
 
     useEffect(() => {
-       
+
         dispatch(totalPurchase())
         dispatch(setChange())
     }, [deliveryData])
@@ -37,39 +38,44 @@ export const ClientDetails = () => {
         <Container>
             <Row>
                 <Group>
-                    <Item>
-                        <label htmlFor="">Teléfono :</label>
-                        <input
-                            type="text"
-                            name='tel'
-                            value={client.tel}
-                            onChange={e => updateClient(e)}
-                            autocomplete='off'
-                        />
-                    </Item>
-                    <Item>
-                        <label htmlFor="">RNC/Cédula :</label>
-                        <input
+                    <InputV4
+                        size='small'
+                        type="text"
+                        name='tel'
+                        label='Teléfono'
+                        labelVariant='primary'
+                        value={client.tel}
+                        onChange={e => updateClient(e)}
+                        autoComplete='off'
+                    />
+                    
+                 
+                        <InputV4
                             type="text"
                             name='personalID'
+                            label='Cédula/RNC'
+                            size='small'
+                            labelVariant='primary'
                             value={client.personalID}
                             onChange={e => updateClient(e)}
-                            autocomplete='off'
+                            autoComplete='off'
                         />
-                    </Item>
+                  
                 </Group>
             </Row>
             <Row>
-                <Item>
-                    <label htmlFor="">Dirección :</label>
-                    <input
+                
+                    <InputV4
                         type="text"
                         name="address"
+                        label='Dirección'
+                        labelVariant='primary'
+                        size='small'
                         value={client.address}
                         onChange={(e) => updateClient(e)}
-                        autocomplete="off"
+                        autoComplete="off"
                     />
-                </Item>
+              
             </Row>
             <Row>
                 <Group>
@@ -77,16 +83,18 @@ export const ClientDetails = () => {
                         checked={client?.delivery?.status ? true : false}
                         name='delivery.status'
                         onChange={(e) => updateClient(e)} />
-                    <Item>
-                        <label htmlFor="">Delivery: {monetarySymbols.dollarSign}</label>
-                        <input
+                  
+                        <InputV4
+                            label='Delivery'
+                            labelVariant='primary'
+                            size='small'
                             type="number"
                             name='delivery.value'
                             value={client?.delivery?.value}
                             ref={deliveryStatusInput}
                             onChange={(e) => updateClient(e)}
                         />
-                    </Item>
+                    
                     <select name="" id="" onChange={(e) => handleSetSourceOfPurchase(e.target.value)}>
                         {
                             sourceOfSaleList.map((item, index) => (
@@ -103,8 +111,8 @@ export const ClientDetails = () => {
 
 const Container = styled.div`
    display: grid;
-   gap: 0.4em;
-   padding: 0.6em 0.4em 0.2em;
+   gap: 0.6em;
+   padding: 0.6em 0.4em 0em;
    border-bottom-left-radius: 6px;
    border-bottom-right-radius: 6px;
 `
@@ -115,37 +123,4 @@ align-items: center;
 `
 const Row = styled.div`
 
-`
-const Item = styled.div`
-flex-shrink: 1;
-height: 2em;
-display: flex;
-align-items: center;
-position: relative;
-padding: 0;
-label{
-    height: 12px;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0 0.4em;
-    position: absolute;
-    top: -4px;
-    display: flex;
-    align-items: center;
-    background-color: white;
-    color: #353535;
-    font-weight: 600;
-    border-radius: 3px;
-    font-size: 11px;
-}
-input{
-    border-radius: 6px;
-    outline: none;
-    border: 1px solid rgba(0, 0, 0, 0.100);
-    padding: 0.2em 0.4em;
-    height: 2em;
-    font-size: 14px;
-    color: var(--Gray5);
-    width: 100%;
-    }
 `

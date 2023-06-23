@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 
 export const useGetUserData = (uid) => {
+   
     const dispatch = useDispatch();
     const fbGetUserData = async () => {
         const userRef = doc(db, "users", uid);
@@ -13,13 +14,16 @@ export const useGetUserData = (uid) => {
 
         if (userSnap.exists()) {
             const businessRef = userSnap.data();
-            dispatch(addUserData({ businessID: businessRef.user.businessID }));
+            dispatch(addUserData({
+                businessID: businessRef.user.businessID,
+                role: businessRef.user.role
+            }));
         } else {
             console.log("No such document!");
         }
     };
     useEffect(() => {
-        if (uid) {fbGetUserData();}
+        if (uid) { fbGetUserData(); }
     }, [uid]);
 };
 

@@ -8,13 +8,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faReceipt } from '@fortawesome/free-solid-svg-icons'
 import { Row } from '../../templates/system/Table/Row'
 import { ColData } from './ColumnsData'
-import ReciboCompras  from '../../pages/checkout/Receipt2.jsx'
+import ReciboCompras from '../../pages/checkout/Receipt2.jsx'
 import useScroll from '../../../hooks/useScroll'
 import { FormattedValue } from '../../templates/system/FormattedValue/FormattedValue'
 import { Receipt } from '../checkout/Receipt'
 import { useReactToPrint } from 'react-to-print'
 
-export const Bill = ({ data }) => {
+export const Bill = ({ data, colData }) => {
   const totalTax = data?.products?.reduce((total, product) => total + (product?.tax?.value * product?.cost?.unit) * product?.amountToBuy?.total, 0)
   const componentToPrintRef = useRef(null)
   const handleRePrint = useReactToPrint({
@@ -23,8 +23,8 @@ export const Bill = ({ data }) => {
   })
   return (
     <Container>
-      <Row 
-      col={ColData}>
+      <Row
+        col={colData}>
         <ITEMS text='left'>
           <FormattedValue
             type='number'
@@ -73,8 +73,8 @@ export const Bill = ({ data }) => {
           />
         </ITEMS>
         <ITEMS align={'right'}>
-          <Receipt ref={componentToPrintRef} data={data}/>
-         
+          <Receipt ref={componentToPrintRef} data={data} />
+
           <Button
             width='icon32'
             color='gray-dark'
@@ -104,6 +104,7 @@ const Container = styled.div`
  
 `
 const ITEMS = styled.div`
+
   h3{
     text-transform: uppercase;
     font-size: 0.8em;
@@ -118,10 +119,12 @@ const ITEMS = styled.div`
       case 'right':
         return `
           text-align: right;
+          justify-content: flex-end;  
         `
       case 'left':
         return `
           text-align: left;
+          justify-content: flex-start;
           `
       default:
         break;

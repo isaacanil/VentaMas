@@ -3,12 +3,20 @@ import styled from 'styled-components'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 
 export const Footer = ({total, bills}) => {
+  const handleTotal = () => {
+    if(typeof total === 'function'){
+      return total()
+    }
+    if(typeof total === 'string' || typeof total === 'number'){
+      return total
+    }
+  }
   return (
     <Container>
          <PriceBox>
           <Group>
             <h3>
-              Total: {useFormatPrice(total())}
+              Total: {useFormatPrice(handleTotal())}
             </h3>
             <h3>
               {bills.length} Facturas

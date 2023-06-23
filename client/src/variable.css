@@ -40,8 +40,20 @@
   --color3: #d4e3f1;
   --color4: rgba(202, 214, 230, 0.274);
   --color-error: #cf5555;
-  --color-warning: #ff9800;
-  --color-success: #7adf7d;
+
+  --color-warning-light: #ffecb3;
+  --color-warning-main: #ff9800;
+  --color-warning-dark: #b26a00;
+
+  --color-danger-light: #ffcbca;
+  --color-danger-main: #fa584d;
+  --color-danger-dark: #b71c1c;
+
+
+  --color-success-light: #ceeccf;
+  --color-success-main: #4caf50;
+  --color-success-dark: #053d1d;
+
   --color-info: #2196f3;
   --color-light-yellow: #FFFF99;
   --color-pale-pink: #FFB6C1;

@@ -1,26 +1,21 @@
-import { useEffect, useState } from 'react';
-
-//A*******************pruyeba************************
+import { Fragment, useEffect, useState } from 'react';
 
 //importando componentes de react-router-dom
-import { createBrowserRouter, Routes, Route, useNavigate, Navigate, HashRouter, useRoutes, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 //redux config
 import { useDispatch, useSelector } from 'react-redux'
 
 // todo ***user*********
-import { login, logout, selectUser } from './features/auth/userSlice'
+import { selectUser } from './features/auth/userSlice'
 
 import { AuthStateChanged } from './firebase/firebaseconfig'
 
-import { Fragment } from 'react';
-import { useModal } from './hooks/useModal'
 import { GenericLoader } from './views/templates/system/loader/GenericLoader';
 import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
 
 import { useFullScreen } from './hooks/useFullScreen';
-
 
 import useGetUserData from './firebase/Auth/useGetUserData';
 import { fbGetTaxReceipt } from './firebase/taxReceipt/fbGetTaxReceipt';
@@ -28,21 +23,29 @@ import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreat
 
 import { useBusinessDataConfig } from './features/auth/useBusinessDataConfig';
 import { routes } from './routes/routes';
+import { useAbilities } from './hooks/abilities/useAbilities';
+import { useAutomaticLogin } from './firebase/Auth/fbAuthV2/fbSignIn/checkSession';
+import { ModalManager } from './views';
 
-'./firebase/Auth/useGetUserData';
+//const router = createBrowserRouter(routes)
 
 function App() {
   const dispatch = useDispatch();
 
-  AuthStateChanged()
+  useAutomaticLogin();
+
+  AuthStateChanged();
 
   useEffect(() => {
     dispatch(ReloadImageHiddenSetting())
   }, [])
 
   const user = useSelector(selectUser)
+  const sessionToken = localStorage.getItem('sessionToken');
 
   useGetUserData(user?.uid)
+
+  useAbilities()// establece la abilidad que puede usar el usuario actual
 
   fbAutoCreateDefaultTaxReceipt()
 
@@ -50,18 +53,27 @@ function App() {
 
   useFullScreen()
 
-  //const isConnected = useCheckForInternetConnection()
-  if (user === false) {
-    return <GenericLoader></GenericLoader>
-  }
-  const router = createBrowserRouter(routes)
-  return (
+  useCheckForInternetConnection()
 
+  if (user === false) { return <GenericLoader /> }
+
+  return (
     <Fragment>
-      <RouterProvider router={router} />
+      <Router>
+        <Routes>
+          {routes.map((route, index) => (
+            <Route key={index} path={route.path} element={route.element }>
+              {route.children && route.children.map((childRoute, childIndex) => (
+                <Route key={childIndex} path={childRoute.path} element={childRoute.element} />
+              ))}
+            </Route>
+          ))}
+        </Routes>
+        <ModalManager />
+      </Router>
+
     </Fragment>
   )
-
 }
 
 export default App;

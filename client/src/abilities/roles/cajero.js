@@ -1,10 +1,15 @@
+import { AbilityBuilder, createMongoAbility, PureAbility } from '@casl/ability';
 
-  
-  function defineAbilitiesForCajero() {
-    return createMongoAbility((can) => {
-      can([ACTIONS.READ, ACTIONS.CREATE], [SUBJECTS.PRODUCTS, SUBJECTS.SALES, SUBJECTS.INVOICES]);
-    });
-  }
-  
+export function defineAbilitiesForCashier() {
+  const { can, rules } = new AbilityBuilder(PureAbility);
 
-    export default defineAbilitiesForCajero;
+  can('manage', 'Bill');
+  can('manage', 'Product');
+  can(['read', 'create', 'update'], 'Client');
+  can(['read', 'create', 'update'], 'Provider');
+  can(['read', 'create', 'update'], 'Category');
+
+  return rules;
+}
+
+

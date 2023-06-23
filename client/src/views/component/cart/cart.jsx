@@ -34,6 +34,12 @@ import { selectUser } from '../../../features/auth/userSlice'
 import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxReceipt'
 import { ButtonGroup } from '../../templates/system/Button/Button'
 import { deleteClient, handleClient } from '../../../features/clientCart/clientCartSlice'
+import { closeUserNotification, setUserNotification } from '../../../features/UserNotification/UserNotificationSlice'
+import { useNavigate } from 'react-router-dom'
+import { useIsOpenCashReconciliation } from '../../../firebase/cashCount/useIsOpenCashReconciliation'
+import { createAction } from '@reduxjs/toolkit'
+import { CONFIRMATION_TASK_TYPE } from '../modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction'
+import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
 
 export const Cart = () => {
   const isOpen = useSelector(selectMenuOpenStatus)
@@ -43,6 +49,24 @@ export const Cart = () => {
   const bill = useSelector(({ cart }) => cart.data)
   const taxReceiptDataSelected = useSelector(selectTaxReceiptData)
   const clientSelected = useSelector(SelectClient)
+  const navigate = useNavigate()
+  const handleCloseCashReconciliation = () => {
+    dispatch(closeUserNotification())
+  }
+
+  const handleSubmitCashReconciliation = () => {
+    handleCloseCashReconciliation()
+    navigate('/cash-register-opening')
+  }
+
+  const checkCashCountStatus = useIsOpenCashReconciliation()
+
+  const handleCashReconciliationConfirm = () => {
+    const cashCountStrategy = getCashCountStrategy(checkCashCountStatus, dispatch)
+    cashCountStrategy.handleConfirm()
+  } 
+
+
   const ncfStatus = useSelector(selectNcfStatus)
   const ncfCode = useSelector(selectNcfCode)
   const [submittable, setSubmittable] = useState(false)
@@ -62,9 +86,6 @@ export const Cart = () => {
     }
   }, [ncfCode])
 
-  const getActualClient = () => {
-
-  }
 
   const increaseTaxReceipt = async () => {
     try {
@@ -89,7 +110,7 @@ export const Cart = () => {
 
   const createOrUpdateClient = async () => {
     try {
-      dispatch(handleClient({user}))
+      dispatch(handleClient({ user }))
     } catch (error) {
       console.log(error)
       dispatch(addNotification({ message: "Ocurrió un Error con el cliente, Intente de Nuevo", type: 'error' }));
@@ -137,11 +158,19 @@ export const Cart = () => {
   const TIME_TO_WAIT = 1000;
 
   const handleInvoice = async () => {
+
+    if (checkCashCountStatus === 'closed' || checkCashCountStatus === 'closing') {
+      handleCashReconciliationConfirm()
+      return;
+    };
+
     dispatch(addTaxReceiptInState(ncfCode))
+
     if (ProductSelected.length === 0) {
       dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
       return;
     }
+
     try {
       await increaseTaxReceipt();
       await esperar(TIME_TO_WAIT);
@@ -198,7 +227,7 @@ export const Cart = () => {
               ))
             )
             :
-            (<h4 style={{ margin: '1em' }}>Seleccione un producto</h4>)
+            (<h4 style={{ margin: '1em' }}>Los productos seleccionados aparecerán aquí</h4>)
         }
 
       </ProductsList>
@@ -226,6 +255,7 @@ export const Cart = () => {
 
         </div>
       </div>
+
     </Container>
   )
 }

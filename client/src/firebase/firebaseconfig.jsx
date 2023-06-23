@@ -69,7 +69,12 @@ export const AuthStateChanged = () => {
           handleLogin(userAuth);
         }, 1000);
       } else {
-        handleLogout();
+        const sessionToken = localStorage.getItem('sessionToken');
+        if (sessionToken) {
+          return;
+        } else {
+          handleLogout();
+        }
       }
     })
   }
@@ -163,6 +168,7 @@ const fbAddReceiptPurchaseImg = (file) => {
 export const getProduct = async (id) => {
   getDoc(doc(db, 'products', id))
 }
+
 export const getTaxes = async (setTaxes) => {
   const taxesRef = collection(db, "taxes")
   const { docs } = await getDocs(taxesRef)

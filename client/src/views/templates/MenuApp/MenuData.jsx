@@ -7,7 +7,8 @@ const ChevronRight = <FontAwesomeIcon icon={faChevronRight} />
 const ChevronLeft = <FontAwesomeIcon icon={faChevronLeft} />
 const { LOGIN, SIGNUP } = ROUTES_NAME.AUTH_TERM
 const { HOME, WELCOME } = ROUTES_NAME.BASIC_TERM
-const { SALES, BILLS } = ROUTES_NAME.SALES_TERM
+const { SALES, BILLS} = ROUTES_NAME.SALES_TERM
+const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM
 const { CLIENTS, SUPPLIERS } = ROUTES_NAME.CONTACT_TERM
 const { SETTINGS } = ROUTES_NAME.SETTING_TERM
 const { ORDERS, PURCHASES } = ROUTES_NAME.PURCHASE_TERM
@@ -48,6 +49,11 @@ export const getMenuData = () => {
                     icon: <FontAwesomeIcon icon={faClipboardCheck} />
                 }
             ]
+        },
+        {
+            title: 'Cuadre de caja',
+            icon: icons.menu.unSelected.cashReconciliation,
+            route: findRouteByName(CASH_RECONCILIATION_LIST)
         },
         {
             title: 'Inventario',

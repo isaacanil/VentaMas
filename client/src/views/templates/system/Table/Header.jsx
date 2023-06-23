@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Row } from './Row'
 
 
-export const Header = ({ children, colWidth, scrolled }) => {
+export const Header = ({ children, colWidth, scrolled = false }) => {
     return (
         <Container scrolled={scrolled}>
             <Row element='header' col={colWidth}>

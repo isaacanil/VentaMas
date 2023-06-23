@@ -21,6 +21,7 @@ import {
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import findRouteByName from '../../templates/MenuApp/findRouteByName'
 import ROUTES_NAME from '../../../routes/routesName'
+import styled from 'styled-components'
 
 //APP
 export const Login = () => {
@@ -33,10 +34,11 @@ export const Login = () => {
    const [password, setPassword] = useState('')
    const {HOME} = ROUTES_NAME.BASIC_TERM
    const homePath = findRouteByName(HOME).path
+
    const loginToApp = (e) => {
-      e.preventDefault();
-  
-      // Sign in an existing user with Firebase
+     e.preventDefault()
+      console.log(email, password)
+      //Sign in an existing user with Firebase
       signInWithEmailAndPassword(auth, email, password)
       .then((userCredencial)=>{
         const user = userCredencial.user
@@ -48,35 +50,32 @@ export const Login = () => {
         Navigate(homePath)
       })
       .catch((error)=>{
+         alert(error.message)
         const errorCode = error.code;
         const errorMessage = error.message;
         console.log(errorCode, errorMessage)
       })
-      // returns  an auth object after a successful authentication
-      // userAuth.user contains all our user details
+      //returns  an auth object after a successful authentication
+      //userAuth.user contains all our user details
         
     };
+    console.log(email, password)
    
 
 
    return (
       <div className={LoginStyle.Container_app}>
          <section className={LoginStyle.Login_Wrapper}>
-
             <div className={LoginStyle.Login_header}>
                <div className={LoginStyle.WebName}>
-                  <span>VentaMAX</span>
-
+                  <span>Ventamax</span>
                </div>
-               
                <span className={LoginStyle.Title}>Acceder</span>
             </div>
             <div className={LoginStyle.LoginControl_Container}>
-
                <form className={LoginStyle.FormControl}>
                   <div className={LoginStyle.FormItemGroup}>
                      <label htmlFor="" className={LoginStyle.FormLabel}>Usuario:</label>
-
                      <input 
                      className={LoginStyle.FormInput} 
                      type="text"
@@ -84,14 +83,11 @@ export const Login = () => {
                      onChange={(e)=>setEmail(e.target.value)}
                       />
                   </div>
-
                   <div className={LoginStyle.FormItemGroup}>
                      <label
                         className={LoginStyle.FormLabel}
-                        htmlFor=""
-                       
-                        >
-                        Contraseña:
+                        htmlFor=""  
+                        >Contraseña:
                      </label>
 
                      <input 
@@ -103,17 +99,17 @@ export const Login = () => {
 
                      <Link  className={LoginStyle.FormForgetPasswordInput} to='/'>¿Olvidaste la Contraseña?</Link>
                   </div >
-
                   <div>
                      <Button onClick={loginToApp} title={'Entrar'}/>
                   </div>
-
-
                </form>
             </div>
-
          </section>
       </div>
    )
 }
-
+const Backdrop = styled.div`
+`
+const Container = styled.div`
+   
+`

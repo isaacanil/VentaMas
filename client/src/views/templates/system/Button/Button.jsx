@@ -28,7 +28,10 @@ export const Button = ({
   tooltipPlacement,
 
 }) => {
-
+  const handleClick = (e) => {
+    e.stopPropagation()
+    onClick()
+  }
   return (
     <Tooltip
     placement={tooltipPlacement}
@@ -37,7 +40,7 @@ export const Button = ({
         <Container
           bgcolor={bgcolor}
           color={color}
-          onClick={onClick}
+          onClick={onClick && handleClick}
           width={width}
           height={height}
           variant={variant}
@@ -413,6 +416,6 @@ export const Container = styled.button`
 `
 export const ButtonGroup = styled.div`
   display: flex;
-  gap: 0.2em;
+  gap: 0.4em;
 `
 

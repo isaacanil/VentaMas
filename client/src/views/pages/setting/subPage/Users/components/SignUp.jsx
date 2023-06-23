@@ -14,29 +14,34 @@ import { fbSignUpUserAccount } from '../../../../../../firebase/Auth/fbSignUpWit
 import { validationRules } from '../../../../../templates/system/Inputs/validationRules'
 import PasswordStrengthIndicator from '../../../../../templates/system/Form/PasswordStrengthIndicator'
 import { useNavigate } from 'react-router-dom'
-import { SelectSignUpUserModal,  toggleSignUpUser } from '../../../../../../features/modals/modalSlice'
+import { SelectSignUpUserModal, toggleSignUpUser } from '../../../../../../features/modals/modalSlice'
 import { Button } from '../../../../../templates/system/Button/Button'
 import { DateTime } from 'luxon'
+import { fbSignUp } from '../../../../../../firebase/Auth/fbAuthV2/fbSignUp'
+import { Timestamp } from 'firebase/firestore'
+
+const formIcon = icons.forms
 
 const SignUp = () => {
-    const formIcon = icons.forms
+
     const userInfo = useSelector(selectUser)
-    
+
     const signUpModal = useSelector(SelectSignUpUserModal)
-    const {isOpen } = signUpModal;
+    const { isOpen } = signUpModal;
     const navigate = useNavigate()
 
     console.log(userInfo.businessID)
     const [user, setUser] = useState({
         name: '',
-        email: undefined,
         password: '',
-        rol: '',
+        role: '',
+        id: '',
         businessID: undefined,
         createAt: ""
     })
- 
-   
+
+    const [rol, setRol] = useState('')
+
     const rolOptions = [
         { id: 'role_admin', label: 'Admin' },
         { id: 'role_manager', label: 'Gerente' },
@@ -50,82 +55,97 @@ const SignUp = () => {
             ...user,
             [name]: value,
         })
-      
+
     }
-   
+  
     const handleSubmit = async () => {
         // Verifica si businessID está disponible.
         if (!userInfo.businessID) {
             alert("Business ID is missing");  // Mostrar algún mensaje al usuario o manejar de otra manera.
             return;  // Detén la función si businessID no está presente.
         }
-    
-        // Genera el email
-        const generatedEmail = generateEmail();  // Reemplaza esto con tu función real de generación de email.
-       
+        const createAt = Timestamp.now();
+
         // Crea un nuevo objeto user con los datos actualizados.
+
         let updatedUser = {
             ...user,
-            email: generatedEmail,
             businessID: userInfo.businessID,
+            role: rol.id,
+            createAt,
+            id: nanoid(10),
         };
-     
-    
-        // Ahora que tenemos los datos actualizados, procedemos con la llamada a fbSignUpUserAccount.
+
+        // Crea un nuevo usuario con los datos actualizados.
+
         try {
-            await fbSignUpUserAccount(updatedUser, navigate);
+            await fbSignUp(updatedUser, navigate);
         } catch (error) {
             console.error(error)
         }
+
+
+        setUser({
+            name: '',
+            password: '',
+            role: '',
+            id: '',
+            businessID: undefined,
+            createAt: ""
+        });
+        setRol('');
+
     }
-    
- 
+
+
     return (
-      
-            <Container>
-                <Header>
-                </Header>
-                <Body>
-                    <InputV4
-                        icon={formIcon.user}
-                        label='Nombre de Usuario'
-                        type='text'
-                        placeholder='Nombre de Usuario'
-                        name='name'
-                        errorMessage={'Nombre de usuario es requerido'}
-                        validate={user.name === ''}
-                        onChange={handleInputChange}
+
+        <Container>
+            <Header>
+            </Header>
+            <Body>
+                <InputV4
+                    icon={formIcon.user}
+                    value={user.name}
+                    label='Nombre de Usuario'
+                    type='text'
+                    placeholder='Nombre de Usuario'
+                    name='name'
+                    errorMessage={'Nombre de usuario es requerido'}
+                    validate={user.name === ''}
+                    onChange={handleInputChange}
+                />
+                <ElemLabel label={'Rol'}>
+                    <Select
+                        title="Seleccionar opción"
+                        options={rolOptions}
+                        optionsLabel="label"
+                        value={rol}
+                        onChange={setRol}
                     />
-                    <ElemLabel label={'Rol'}>
-                        <Select
-                            title="Seleccionar opción"
-                            options={rolOptions}
-                            optionsLabel="label"
-                            value={user.rol}
-                            onChange={(value) => setUser({...user, rol: value})}
-                        />
-                    </ElemLabel>
-                    <InputV4
-                        icon={formIcon.password}
-                        label='Password'
-                        type='password'
-                        placeholder='Password'
-                        name='password'
-                        onChange={handleInputChange}
-                    />
-                  
-                    <PasswordStrengthIndicator password={user.password} confirmPassword={user.confirmPassword} />
-                </Body>
-                <Footer>
-                    <Button 
-                    title={'Guardar'} 
-                    bgcolor={'primary'} 
+                </ElemLabel>
+                <InputV4
+                    icon={formIcon.password}
+                    label='Password'
+                    value={user.password}
+                    type='password'
+                    placeholder='Password'
+                    name='password'
+                    onChange={handleInputChange}
+                />
+                <PasswordStrengthIndicator password={user.password} confirmPassword={user.confirmPassword} />
+            </Body>
+            <Footer>
+                <Button
+                    title={'Guardar'}
+                    bgcolor={'primary'}
                     borderRadius={'light'}
                     onClick={handleSubmit}
-                    />
-                </Footer>
-            </Container>
-   
+                />
+            </Footer>
+            {JSON.stringify(user)}
+        </Container>
+
 
     )
 }

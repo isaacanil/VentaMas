@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Table } from '../../../../../../templates/system/Table/Table'
 import { Footer } from '../../../../../../templates/system/Table/Footer'
-import { Body } from './Body'
-import { Header } from './Header'
+import { Body } from './Table/Body'
+import { Header } from './Table/Header'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers'
-import { Item } from './Item'
+import { Item } from './Table/Item/Item'
+import { inspectUserAccess } from '../../../../../../../hooks/abilities/useAbilities'
 
 const tableConfig = {
   headers: [
@@ -15,8 +16,8 @@ const tableConfig = {
       name: '#',
       align: 'left',
       description: 'número',
-      max: '1fr',
-      min: '150px',
+      max: '0.2fr',
+      min: '60px',
     },
     {
       name: 'Nombre',
@@ -29,29 +30,24 @@ const tableConfig = {
       name: 'Rol',
       align: 'left',
       description: 'Rol',
-      max: '1fr',
-      min: '150px',
+      max: '0.4fr',
+      min: '80px',
     },
     {
       name: 'Estado',
       align: 'left',
       description: '¿Esta Activo?',
-      max: '1fr',
-      min: '150px',
+      max: '0.4fr',
+      min: '100px',
     },
-    {
-      name: '',
-      align: 'right',
-      description: '¿Esta Activo?',
-      max: '1fr',
-      min: '150px',
-    }
+
   ]
 }
 
 export const UserList = () => {
   const [users, setUsers] = useState([])
   const userActual = useSelector(selectUser)
+  const { abilities } = inspectUserAccess();
 
   useEffect(() => {
     fbGetUsers(setUsers, userActual)
@@ -63,11 +59,13 @@ export const UserList = () => {
         colWidth={tableConfig.headers}
         header={<Header data={tableConfig.headers} />}
         body={
-          <Body
-            data={users}
-            Item={Item}
-            colWidth={tableConfig.headers}
-          />
+          abilities.can("read", "User") && (
+            <Body
+              data={users}
+              Item={Item}
+              colWidth={tableConfig.headers}
+            />
+          )
         }
       />
     </Container>

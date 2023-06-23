@@ -97,9 +97,11 @@ const Group = styled.div`
 const Label = styled.label`
     line-height: 14px;
     font-size: 13px;
+    color: var(--Gray5);
 `
 const Col = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.2em;
+    
 `

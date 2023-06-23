@@ -12,6 +12,8 @@ import { filtrarDatos, useSearchFilter } from '../../../../hooks/useSearchFilter
 import { updateObject } from '../../../../utils/object/updateObject'
 import { deleteClient, selectClient, selectClientMode, selectIsOpen, selectLabelClientMode, setClient, setClientMode, setIsOpen } from '../../../../features/clientCart/clientCartSlice'
 import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode'
+import { Button } from '../../../templates/system/Button/Button'
+import { MdPersonAdd } from 'react-icons/md'
 
 export const ClientControl = () => {
   
@@ -108,6 +110,12 @@ export const ClientControl = () => {
             fn={handleDeleteData}
             onChange={(e) => handleChangeClient(e)}
           />
+          <Button 
+          title={<MdPersonAdd />}
+          width={'icon32'}
+          borderRadius={'light'}
+          onClick={createClientMode}
+           />
 
         </div>
       

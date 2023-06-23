@@ -35,6 +35,7 @@ import AddCategoryModal from "./AddCategoryMode/AddCategoryMode"
 import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
 import { OPERATION_MODES } from "../../../constants/modes"
+import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
 
@@ -103,6 +104,7 @@ export const ModalManager = () => {
       <Loader />
       <ImageViewer />
       <SmallNotification />
+      <ConfirmationDialog />
     </Fragment>
   )
 

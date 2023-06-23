@@ -3,7 +3,6 @@ import styled from 'styled-components'
 
 export const Header = ({ data }) => {
     return (
-
         data.map(({ align, name }, index) => (
             <ITEMS text={align} key={index}>
                 {name}
@@ -12,11 +11,7 @@ export const Header = ({ data }) => {
 
     )
 }
-const Container = styled.div`
-    width: 100%;
-    background-color: red;
 
-`
 const ITEMS = styled.div`
   h3{
     text-transform: uppercase;

@@ -2,24 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { FaExclamationCircle, FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { removeNotification, SelectNotification } from '../../../../features/notification/NotificationSlice';
-
-
+import { removeNotification, selectCurrentNotification } from '../../../../features/notification/NotificationSlice';
+import { motion } from 'framer-motion';
+import { isArray } from 'lodash';
 
 export const Notification = () => {
     const [icon, setIcon] = useState(null)
 
-    const selectedNotification = useSelector(SelectNotification)
-    const { title, message, type, visible } = selectedNotification
+    const currentNotification = useSelector(selectCurrentNotification)
+    const { title, message, type, visible } = currentNotification
 
     const dispatch = useDispatch()
     useEffect(() => {
         if (visible) {
-            setTimeout(() => {
+            const timeout = setTimeout(() => {
                 dispatch(removeNotification())
             }, 6000);
+            return () => clearTimeout(timeout);
         }
-    }, [visible]);
+    }, [visible, dispatch]);
     useEffect(() => {
         if (type) {
             switch (type) {
@@ -36,19 +37,42 @@ export const Notification = () => {
             }
         }
     }, [type])
+    const notificationVariants = {
+        hidden: {
+            opacity: 0,
+            y: -100,
+            transition: {
+                duration: 0.5,
+                ease: 'easeInOut'
+            }
+        },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.5,
+                ease: 'easeInOut'
+            }
+        }
+    }
 
     return (
-        <Container type={type} visible={visible}>
+        <Container
+            type={type}
+            variants={notificationVariants}
+            initial="hidden"
+            animate={visible ? "visible" : "hidden"}
+            exit="hidden"
+        >
             {icon ? <Icon type={type}>{icon}</Icon> : null}
             <Body>
                 {title ? <Title>{title}</Title> : null}
                 {message ? <Message>{message}</Message> : null}
             </Body>
         </Container>
-    )
+    );
 };
-
-const Container = styled.div`
+const Container = styled(motion.div)`
  max-width: 24em;
   width: 100%;
   min-height: 4em;
@@ -61,6 +85,7 @@ background-color: var(--White);
 backdrop-filter: blur(20px);
 display: flex;
 align-items: center;
+
 svg{
     width: 1.4em;
     height: 1.4em;
@@ -79,16 +104,7 @@ transition: transform 1s ease-in-out;
 @media (max-width: 600px){
     width: 96%;
 }
- ${props => {
-        switch (props.visible) {
-            case true:
-                return `
-                transform: translateY(0px); 
-                `
-            default:
-                break;
-        }
-    }}
+
 ${props => {
         switch (props.type) {
             case 'error':
@@ -129,6 +145,7 @@ ${props => {
         }
     }};
 `;
+
 const Title = styled.h2`
 font-weight: 600;
 font-size: 14px;

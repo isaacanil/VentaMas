@@ -47,14 +47,15 @@ const Container = styled.div`
     display: grid;
     border-radius: 1em;
     grid-template-rows: min-content 1fr min-content;
+
     
     `
 const Backdrop = styled.div`
 border-radius: 8px;
 position: relative;
 background-color: #ffffff;
-height: 100% - 2em;
-max-width: 1000px;
+
+max-width: 1300px;
   width: 100%;
   margin: 1em auto;
   overflow: hidden;

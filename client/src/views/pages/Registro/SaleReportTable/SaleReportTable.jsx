@@ -15,14 +15,12 @@ import { Footer } from './Footer'
 
 export const SaleReportTable = ({ data, bills, total }) => {
   // Agrupar las facturas por fecha usando reduce()
-  const tableRef = useRef(null)
-  const scrolled = useScroll(tableRef)
 
   return (
     <Table
       colWidth={data.headers}
       header={<Header data={data.headers} />}
-      body={bills.length > 0 && <Body bills={bills} />}
+      body={bills.length > 0 && <Body tableConfig={data} bills={bills} />}
       messageNoData={
         bills?.length === 0 && (
           <CenteredText

@@ -7,6 +7,9 @@ import contacts from "./paths/Contact";
 import settings from "./paths/Setting";
 import sales from "./paths/Sales";
 import purchases from "./paths/Purchases";
+import lab from "./paths/Lab";
+import cashReconciliation from "./paths/CashReconciliztion";
+
 export const routes = [
     ...basic,
     ...auth,
@@ -15,6 +18,8 @@ export const routes = [
     ...settings,
     ...sales,
     ...purchases,
+    ...lab,
+    ...cashReconciliation,
     {
         path: "*",
         element: <NotFound />

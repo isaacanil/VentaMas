@@ -11,7 +11,6 @@ export const fbUpdateStock = async (array, addMode = false) => {
         // Actualiza el valor de stock en el objeto product
             await updateDoc(miDocRef, {
                 "product.stock": increment(Number(addMode ? quantity : -quantity)),
-          
             }); 
     })
 

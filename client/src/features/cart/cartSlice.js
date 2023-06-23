@@ -37,6 +37,9 @@ const DefaultPaymentMethod = [
     }
 ];
 const defaultValue = {
+    permission: {
+        openCashReconciliation: false
+    },
     data: {
         id: '',
         client: DefaultClient,
@@ -251,6 +254,7 @@ export const SelectPaymentValue = (state) => state.cart.data.payment.value;
 
 export const SelectDiscount = (state) => state.cart.data.discount.value;
 export const SelectNCF = (state) => state.cart.data.NCF;
+export const SelectCartPermission = () => state.cart.permission
 
 export default cartSlice.reducer
 

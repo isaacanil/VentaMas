@@ -16,5 +16,5 @@ export function useFormatNumber(numero, type = "string", round = false) {
     maximumFractionDigits: esDecimal ? 2 : 0,
   }).format(numeroAbsoluto);
 
-  return signo + (numeroAbsoluto < 10 ? "0" : "") + numeroFormateado;
+  return signo + (numeroAbsoluto < 10 && numeroAbsoluto > 0 ? "0" : "") + numeroFormateado;
 }

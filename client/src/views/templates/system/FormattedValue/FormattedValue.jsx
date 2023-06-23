@@ -16,7 +16,7 @@ const formatValue = (type, value) => {
   }
 };
 
-export const FormattedValue = ({ type, value, size, bold, color, transformValue = true }) => {
+export const FormattedValue = ({ type, value, size, bold, color, transformValue = true, align }) => {
   const formattedValue = transformValue ? formatValue(type, value) : value;
 
   if (type === 'text') {
@@ -24,13 +24,14 @@ export const FormattedValue = ({ type, value, size, bold, color, transformValue 
   }
 
   return (
-    <Text size={size} bold={bold} color={color} type={type}>
+    <Text size={size} bold={bold} color={color} type={type} align={align}>
       {formattedValue}
     </Text>
   );
 };
 
 const Text = styled.div`
+height:min-content;
 ${({ type }) => type === 'title-large' && 'font-size: 28px; font-weight: 700; line-height: 1.4; color: #222222;'}
 ${({ type }) => type === 'title' && 'font-size: 22px; font-weight: 600; line-height: 1.4; color: #333333;'}
 ${({ type }) => type === 'subtitle' && 'font-size: 18px; font-weight: 500; line-height: 1.4; color: #333333;'}
@@ -48,7 +49,16 @@ ${({ type }) => type === 'paragraph' && 'font-size: 16px; font-weight: 400; line
   ${({ size }) => size === 'xlarge' && 'font-size: 22px;'}
 
   ${({ bold }) => bold && 'font-weight: bold;'}
-
+  ${({ align }) => {
+    switch (align) {
+      case 'center':
+        return 'text-align: center;';
+      case 'right':
+        return 'text-align: right;';
+      default:
+        return 'text-align: left;';
+    }
+  }}
   ${({ color }) => color && `color: ${color};`}
   ${({ color }) => color === 'primary-main' && 'color: var(--color-main);'}
   ${({ color }) => color === 'secondary' && 'color: var(--color1);'}

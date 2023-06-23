@@ -42,7 +42,10 @@ export const Product = ({ product, }) => {
     }
 
     const deleteProductFromCart = (e, id) => {
-        e.stopPropagation()
+        if(e){
+            e.stopPropagation()
+
+        }
         dispatch(deleteProduct(id))
     }
 

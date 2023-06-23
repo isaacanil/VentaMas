@@ -1,7 +1,9 @@
-function defineAbilitiesForGerente() {
-    return createMongoAbility((can) => {
-      can([ACTIONS.READ, ACTIONS.UPDATE, ACTIONS.CREATE], [SUBJECTS.PRODUCTS, SUBJECTS.CATEGORIES, SUBJECTS.ORDERS, SUBJECTS.PURCHASES, SUBJECTS.SALES, SUBJECTS.INVOICES]);
-    });
-  }
+import { AbilityBuilder, createMongoAbility, PureAbility } from '@casl/ability';
 
-    export default defineAbilitiesForGerente;
+export function defineAbilitiesForManager() {
+ const { can, rules } = new AbilityBuilder(PureAbility);
+
+  return rules;
+  
+}
+
