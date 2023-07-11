@@ -1,13 +1,16 @@
-import {createSlice} from '@reduxjs/toolkit'
-import {  deleteProduct } from '../../firebase/firebaseconfig'
+import { createSlice } from '@reduxjs/toolkit'
+import { deleteProduct } from '../../firebase/firebaseconfig'
 import { fbDeleteClient } from '../../firebase/client/fbDeleteClient'
+import { useSelector } from 'react-redux'
+import { selectUser } from '../auth/userSlice'
 
 
 const initialState = {
     deleteProduct: {
         isOpen: false,
         isSuccess: false,
-        id: null
+        id: null,
+        user: null
     },
     deleteClient: {
         isOpen: false,
@@ -20,16 +23,22 @@ export const alertSlice = createSlice({
     initialState,
     reducers: {
         handleDeleteProductAlert: (state, actions) => {
-            const id = actions.payload
-            const isOpen = state.deleteProduct.isOpen
-            state.deleteProduct.isOpen = !isOpen
-            state.deleteProduct.id = id
-            
+            const
+                id = actions.payload?.id,
+                user = actions.payload?.user,
+                isOpen = state.deleteProduct.isOpen;
+
+            state.deleteProduct.isOpen = !isOpen;
+            state.deleteProduct.id = id;
+            state.deleteProduct.user = user;
+
         },
         handleDeleteProductAlertSuccess: (state) => {
-            const id = state.deleteProduct.id
-            deleteProduct(id)
-          
+           
+            const id = state.deleteProduct.id;
+            const user = state.deleteProduct.user;
+            deleteProduct(id, user)
+
         },
         handleDeleteClientAlert: (state, actions) => {
             const id = actions.payload
@@ -40,16 +49,16 @@ export const alertSlice = createSlice({
         handleDeleteClientAlertSuccess: (state) => {
             const id = state.deleteClient.id
             fbDeleteClient(id)
-          
+
         }
-       
+
     }
 })
 
-export const {handleDeleteProductAlert, handleDeleteProductAlertSuccess, handleDeleteClientAlert, handleDeleteClientAlertSuccess } = alertSlice.actions;
+export const { handleDeleteProductAlert, handleDeleteProductAlertSuccess, handleDeleteClientAlert, handleDeleteClientAlertSuccess } = alertSlice.actions;
 
 //selectors
-export const selectDeleteProductAlert = (state) => state.alert.deleteProduct.isOpen;
+export const selectDeleteProductAlert = (state) => state.alert.deleteProduct;
 export const selectDeleteClientAlert = (state) => state.alert.deleteClient.isOpen;
 
 export default alertSlice.reducer

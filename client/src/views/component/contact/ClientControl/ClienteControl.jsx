@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useFbGetClients } from '../../../../firebase/client/useFbGetClients'
-import {getClient, setChange, totalPurchase } from '../../../../features/cart/cartSlice'
-import style from './ClientControlStyle.module.scss'
+import { getClient, setChange, toggleCart, totalPurchase } from '../../../../features/cart/cartSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useClickOutSide } from '../../../../hooks/useClickOutSide.jsx'
 import { useRef } from 'react'
@@ -14,9 +13,11 @@ import { deleteClient, selectClient, selectClientMode, selectIsOpen, selectLabel
 import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode'
 import { Button } from '../../../templates/system/Button/Button'
 import { MdPersonAdd } from 'react-icons/md'
+import styled from 'styled-components'
+import { useWindowWidth } from '../../../../hooks/useWindowWidth'
 
 export const ClientControl = () => {
-  
+
   const dispatch = useDispatch()
 
   const { clients } = useFbGetClients()
@@ -78,7 +79,7 @@ export const ClientControl = () => {
   useEffect(() => { dispatch(getClient(client)) }, [client])
 
   const searchClientRef = useRef(null)
-  useClickOutSide(searchClientRef, !isOpen, closeMenu)
+  useClickOutSide(searchClientRef, isOpen === true, closeMenu)
 
   const OpenClientList = () => {
     switch (mode) {
@@ -96,29 +97,43 @@ export const ClientControl = () => {
         break;
     }
   }
-
+  const handleCloseCart = () => {
+    dispatch(toggleCart())
+  }
+  const limitByWindowWidth = useWindowWidth()
   return (
-    <div className={style.ClientBarContainer} ref={searchClientRef}>
+    <Container ref={searchClientRef}>
 
-        <div className={style.ClientBar}>
-          <SearchClient
-            icon={inputIcon}
-            name='name'
-            title={mode === CLIENT_MODE_BAR.SEARCH.id ? searchTerm : client.name}
-            onFocus={OpenClientList}
-            label={clientLabel}
-            fn={handleDeleteData}
-            onChange={(e) => handleChangeClient(e)}
-          />
-          <Button 
+      <Header>
+        <SearchClient
+          icon={inputIcon}
+          name='name'
+          title={mode === CLIENT_MODE_BAR.SEARCH.id ? searchTerm : client.name}
+          onFocus={OpenClientList}
+          label={clientLabel}
+          fn={handleDeleteData}
+          onChange={(e) => handleChangeClient(e)}
+        />
+        <Button
           title={<MdPersonAdd />}
           width={'icon32'}
-          borderRadius={'light'}
+          borderRadius={'normal'}
+          bgcolor={'warning'}
           onClick={createClientMode}
-           />
+          
+        />
+        {!limitByWindowWidth && (
+           <Button
+           title={'volver'}
+           onClick={handleCloseCart}
+           borderRadius={'normal'}
+           bgcolor={'gray'}
+           
+         />
+        )}
+       
+      </Header>
 
-        </div>
-      
       <ClientDetails />
       {
         <ClientSelector
@@ -129,6 +144,26 @@ export const ClientControl = () => {
           filteredClients={filteredClients}
         />
       }
-    </div>
+    </Container>
   )
 }
+
+const Container = styled.div`
+    position: relative;
+    margin: 0;
+    border: 0;
+    width: 100%;
+`
+const Header = styled.div`
+   width: 100%;
+       gap: 10px;
+       display: flex;
+       align-items: center; 
+       justify-content: space-between;
+      height: 2.75em;
+      position: relative;
+      z-index: 2000;
+      background-color: var(--Gray8);
+      border-bottom-left-radius: var(--border-radius-light);
+      padding: 0 0.3em;
+      `

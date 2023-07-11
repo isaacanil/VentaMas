@@ -140,7 +140,7 @@ input[type="number"] {
                 `
       default:
         return `
-                    height: 2.4em;
+                    height: 2.3em;
                     font-size: 14px;
                     padding: 0 8px;
                 `
@@ -190,7 +190,7 @@ const Label = styled.label`
         z-index: 1;
         background-color: white;
         padding: 0 4px;
-        top: -8px;
+        top: -5px;
         line-height: 1;
         height: min-content;
         color: #353535;

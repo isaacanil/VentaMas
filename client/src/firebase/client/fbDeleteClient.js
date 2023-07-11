@@ -1,6 +1,6 @@
 export const fbDeleteClient = async (id) => {
     console.log(id)
-    const counterRef = doc(db, "client", id)
+    const counterRef = doc(db, "businesses", id)
     try {
         await deleteDoc(counterRef)
         //deleteDoc(doc(db, `products`, id))

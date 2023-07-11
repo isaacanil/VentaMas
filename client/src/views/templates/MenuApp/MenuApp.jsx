@@ -23,32 +23,31 @@ import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 
 export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
-  const { color } = colorPalette()
+  const ref = useRef(null)
   const dispatch = useDispatch()
+  
+  const { color } = colorPalette()
+
   const [isOpenMenu, setIsOpenMenu] = useState(false)
-  const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
-  const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
+
   const handledMenu = () => {
     setIsOpenMenu(!isOpenMenu)
   };
   useEffect(() => {
     dispatch(toggleOpenMenu(isOpenMenu))
   }, [isOpenMenu])
-  const ref = useRef(null)
-  const anotherRef = useRef(null)
 
   const closeMenu = () => {
     setIsOpenMenu(false)
   }
+
   useClickOutSide(ref, !isOpenMenu, closeMenu)
-
-
   return (
     <Fragment>
-      <Backdrop isOpen={isOpenMenu ? true : false} />
+      <Backdrop isOpen={isOpenMenu ? true : false} onClick={closeMenu} />
       <Container bgColor={color} borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
-          <OpenMenuButton isOpenMenu={isOpenMenu} onClick={handledMenu} />
+          <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
         </Group>
         <GlobalMenu setSearchData={setSearchData} searchData={searchData} />
         <SideBar  isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
@@ -64,9 +63,9 @@ const Backdrop = styled.div`
   left: 0;
   right: 0;
   backdrop-filter: blur(0px);
-        z-index: 1000;
-        pointer-events: none;
-        transition: all 1s  ease;
+    z-index: 1000;
+    pointer-events: none;
+    transition: all 1s  ease;
    ${props => {
     switch (props.isOpen) {
       case true:
@@ -151,4 +150,3 @@ const AutoHidden = styled.div`
   
     
 `
-

@@ -1,25 +1,22 @@
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { selectCashCount, setClosingCashTotalAndDiscrepancy } from '../../../../../../../../features/cashCount/cashCountSlide';
 
-export const CashCountMetaData = (cashCount) => {
+export const CashCountMetaData = (cashCount, invoices = []) => {
   
    if(!cashCount){return null}
    
     const {sales, opening, closing} = cashCount;
     const totalOpeningBanknotes = opening.banknotesTotal;
     const totalClosingBanknotes = closing.banknotesTotal;
-   
-    let totalCard = sales.reduce((total, sale) => {
+
+    let totalCard = invoices.reduce((total, sale) => {
       return total + (sale.data.paymentMethod.filter(payment => payment.method === "card" && payment.status).length > 0 ? sale.data.totalPurchase.value : 0);
     }, 0);
   
-    let totalTransfer = sales.reduce((total, sale) => {
+    let totalTransfer = invoices.reduce((total, sale) => {
       return total + (sale.data.paymentMethod.filter(payment => payment.method === "transfer" && payment.status).length > 0 ? sale.data.totalPurchase.value : 0);
     }, 0);
   
     const totalRegister = totalClosingBanknotes + totalOpeningBanknotes + totalCard + totalTransfer;
-    const totalCharged = sales.reduce((total, sale) => {
+    const totalCharged = invoices.reduce((total, sale) => {
       return total + sale?.data?.totalPurchase?.value;
     }, 0);
 

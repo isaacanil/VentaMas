@@ -34,7 +34,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     const [imgController, setImgController] = useState(false)
     const user = useSelector(selectUser);
     const dispatch = useDispatch()
-    const updateMode =  OPERATION_MODES.UPDATE.id
+    const updateMode = OPERATION_MODES.UPDATE.label
     const handleImgController = (e) => {
         e.preventDefault()
         setImgController(!imgController)
@@ -71,6 +71,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     }
 
     const handleSubmit = async () => {
+
         try {
             await productSchema.validate(productDataTypeCorrected);
             if (status === 'update') {
@@ -81,7 +82,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         } catch (error) {
             console.error(error)
-            dispatch(addNotification({ title: 'error', message: 'Favor Informar a Soporte Técnico', type: 'error' }))
+            dispatch(addNotification({ title: 'error', message: '', type: 'error' }))
         }
     }
 
@@ -250,11 +251,14 @@ export const UpdateProductModal = ({ isOpen }) => {
                 <FormGroup >
                     <BarCodeControl
                         product={product}
-                        value={product?.barCode || '1234567890'}
+                        value={product?.barCode}
                     />
                 </FormGroup>
                 <FormGroup >
-                    <QRCodeControl value={product?.id || ''} />
+                    <QRCodeControl
+                        product={product}
+                        value={product?.qrCode}
+                    />
                 </FormGroup>
             </Container>
 

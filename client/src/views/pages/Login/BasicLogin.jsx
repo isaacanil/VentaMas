@@ -7,6 +7,7 @@ import findRouteByName from "../../templates/MenuApp/findRouteByName";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { fbSignIn } from "../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
+import { addNotification } from "../../../features/notification/NotificationSlice";
 
 const Backdrop = styled.div`
   display: grid;
@@ -33,7 +34,8 @@ const Container = styled.div`
   }
 `
 const Titulo = styled.h1`
-
+    margin-left: 0;
+    margin-right: 0;
 `
 const Head = styled.div``
 const Body = styled.div``
@@ -55,25 +57,43 @@ const Button = styled.button`
   border: var(--border-primary);
 `;
 
-export const BasicLogin = () => {  
+export const BasicLogin = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
+
     const [user, setUser] = useState({
         name: "",
         password: "",
     })
-    
+
     const homePath = "/home"
-const handleSubmit = (e) => {
-    e.preventDefault()
-    fbSignIn(user, dispatch, navigate, homePath)
-}
-console.log(user)
+
+  
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        if (user.name === "") {
+            dispatch(addNotification({
+                message: "El nombre de usuario no puede estar vacio",
+                type: "error"
+            }))
+            return 
+        }
+        if (user.password === "") {
+            dispatch(addNotification({
+                message: "El password no puede estar vacio",
+                type: "error"
+            }))
+            return 
+        }
+       
+        fbSignIn(user, dispatch, navigate, homePath)
+    }
+    console.log(user)
     return (
         <Backdrop>
             <Container>
                 <Head>
-                    <Titulo>Login</Titulo>
+                    <Titulo>Iniciar Sección</Titulo>
                 </Head>
                 <form onSubmit={handleSubmit}>
                     <Body>
@@ -91,8 +111,8 @@ console.log(user)
                         < Group>
                             <InputV4
                                 type="password"
-                                placeholder="Password"
-                                label="Password"
+                                placeholder="Contraseña"
+                                label="Contraseña"
                                 value={user.password}
                                 onChange={(e) => setUser({ ...user, password: e.target.value })}
                             />
@@ -101,7 +121,7 @@ console.log(user)
                     <Footer>
 
                         <Group>
-                            <Button>Login</Button>
+                            <Button>Continuar</Button>
                         </Group>
                     </Footer>
                 </form>

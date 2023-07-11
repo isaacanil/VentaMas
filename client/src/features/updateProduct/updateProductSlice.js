@@ -17,6 +17,8 @@ const emptyProduct = {
         amountToBuy: { unit: 1, total: 1 },
         id: '',
         trackInventory: false,
+        qrCode: '',
+        barCode: '',
     }
 }
 
@@ -33,6 +35,8 @@ const initialState = {
         tax: { unit: 0, total: 0 },
         stock: 0,
         netContent: 0,
+        qrCode: '',
+        barCode: '',
         order: 1,
         amountToBuy: { unit: 1, total: 1 },
         id: '',

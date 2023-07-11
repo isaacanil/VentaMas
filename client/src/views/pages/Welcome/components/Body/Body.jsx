@@ -2,20 +2,27 @@ import React from 'react'
 import styled from 'styled-components'
 import WelcomeData from '../../WelcomeData.json'
 import Typography from '../../../../templates/system/Typografy/Typografy'
+import { Logo } from '../../../../../assets/logo/Logo'
 
 const Body = () => {
   return (
     <Container>
       <Description>
         <Section>
-          <Typography variant={"body1"}  >
-            {WelcomeData.section.description}
-          </Typography>
+          <Group>
+            <Typography variant={"body1"}  >
+              {WelcomeData.section.description}
+            </Typography>
+            <LogoContainer>
+            <Logo size='xlarge' src={WelcomeData.logo} alt="" />
+
+            </LogoContainer>
+          </Group>
         </Section>
         <Section>
           <Typography>
 
-       
+
           </Typography>
         </Section>
       </Description>
@@ -26,9 +33,19 @@ const Body = () => {
 export default Body
 const Container = styled.div`
  padding: 1em 2em;
- background: linear-gradient(to bottom, #000000 , #ffffff );
 
 `
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  width: 600px;
+  padding: 2em;
+  background-image: radial-gradient(circle, #0a53b3 0%, #ffffff 50%,  white 100%);
+  
+ `
+
 const Description = styled.div`
   display: flex;
   flex-direction: column;
@@ -37,9 +54,9 @@ const Description = styled.div`
   /* justify-content: center; */
   width: 90%;
   background-color: var(--White);
+ 
   color: #fff;
   padding: 1em 2em;
-  border-radius: var(--border-radius);
   margin-bottom: 2em;
 
 `
@@ -47,6 +64,7 @@ const Section = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+ 
   justify-content: center;
   p {
     font-size: 1.15rem;
@@ -61,3 +79,7 @@ const Section = styled.div`
   
 `
 
+const Group = styled.div`
+  display: flex;
+  align-items: start;
+`

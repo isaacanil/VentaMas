@@ -9,7 +9,7 @@ async function getUserFromFirestore(user) {
 
     if (userSnapshot.empty) {
         //throw new Error('Authentication failed');
-        throw new Error('User not found');
+        throw new Error('Usuario no encontrado');
     }
 
     return userSnapshot.docs[0];
@@ -20,24 +20,26 @@ async function checkPassword(user, userData) {
 
     if (!correctPassword) {
         //throw new Error('Authentication failed');
-        throw new Error('Incorrect password');
+        throw new Error('Contraseña incorrecta');
     }
 
     return correctPassword;
 }
 
 export const fbValidateUser = async (user, uid) => {
-
+    let response = { error: null };
     try {
         const userDoc = await getUserFromFirestore(user);
         const userData = userDoc.data().user;
 
         const correctPassword = await checkPassword(user, userData);
         uid = userDoc.id;
-        console.log('User validation successful');
+
 
     } catch (error) {
         console.error('An error occurred during user validation');
+
+        response.error = error.message;
     }
-    return{uid}
+    return{userData: {uid}, response}
 };

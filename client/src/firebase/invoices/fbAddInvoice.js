@@ -6,6 +6,7 @@ export const fbAddInvoice = (data, user) => {
   if(!user || !user.businessID) return
 
     const billRef = doc(db, 'businesses', user.businessID, "invoices", data.id)
+    
     try {
       setDoc(billRef, {
         data: {

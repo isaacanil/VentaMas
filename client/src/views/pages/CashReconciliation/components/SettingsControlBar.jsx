@@ -41,7 +41,7 @@ export const SettingsControlBar = () => {
                 value={settings.status}
                 optionsLabel={'name'}
                 title={'Usuario'}
-                maxWidth={'large'}
+               
                 label
             />
             <DatePicker dates={setDatesSelected} data={datesSelected}  />

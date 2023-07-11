@@ -21,7 +21,7 @@ const Header = () => {
         <Head>
             <Group>
                 <WebName>{WelcomeData.webName}</WebName>
-                <p>{JSON.stringify(signupPath.path)}</p>
+                
                 {/* <Logo src={WelcomeData.logo} alt="" /> */}
             </Group>
             <Group>
@@ -34,14 +34,14 @@ const Header = () => {
                         }
                         }
                     />
-                    <Button
+                    {/* <Button
                         borderRadius='normal'
                         title='Sign up'
                         onClick={() => {
                             handleNavigate(signupPath.path)
                         }
                         }
-                    />
+                    /> */}
                 </ButtonGroup>
             </Group>
         </Head>

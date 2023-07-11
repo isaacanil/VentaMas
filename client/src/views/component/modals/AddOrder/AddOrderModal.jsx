@@ -137,6 +137,7 @@ export const AddOrderModal = ({ isOpen }) => {
 const Backdrop = styled.div`
     z-index: 20;
     position: absolute;
+    top: 0;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.200);
     backdrop-filter: blur(10px);

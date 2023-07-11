@@ -11,6 +11,7 @@ const notificationSlice = createSlice({
   reducers: {
     addNotification: (state, action) => {
       const { message, title, type, actionButton } = action.payload;
+      
       const newNotification = { message, title, type, actionButton, visible: true };
       state.notifications.push(newNotification);
       if (!state.currentNotification.visible) {

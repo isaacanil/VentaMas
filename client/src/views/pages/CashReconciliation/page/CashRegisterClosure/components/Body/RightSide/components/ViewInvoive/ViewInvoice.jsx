@@ -3,8 +3,7 @@ import styled from 'styled-components'
 import { Button } from '../../../../../../../../../templates/system/Button/Button'
 import { useNavigate } from 'react-router-dom'
 
-export const ViewInvoice = ({invoices = []}) => {
-    console.log(invoices)
+export const ViewInvoice = ({invoices}) => {
     const navigate = useNavigate()
     const handleRedirect = () => {
         navigate('/cash-register-invoices-overview')

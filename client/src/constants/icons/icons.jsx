@@ -1,4 +1,4 @@
-import { faAddressBook, faBagShopping, faBarsStaggered, faBox, faBoxesStacked, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faReceipt, faRectangleList, faSign, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faSign, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -85,6 +85,8 @@ export const icons = {
         services: <FontAwesomeIcon icon={faBarsStaggered} />,
         productOutFlow: <FontAwesomeIcon icon={faSquareCaretDown} />,
         multimediaManager: <FontAwesomeIcon icon={faImage} />,
+        barcode: <FontAwesomeIcon icon={faBarcode} />,
+        qrcode: <FontAwesomeIcon icon={faQrcode} />,
     }
   
   

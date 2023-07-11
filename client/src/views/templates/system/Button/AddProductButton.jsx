@@ -9,7 +9,7 @@ export const AddProductButton = () => {
     const {product} = useSelector(selectUpdateProductData)
     const Open = () => {
         dispatch(openModalUpdateProd());
-        dispatch(ChangeProductData({ product, status: OPERATION_MODES.CREATE.id }));
+        dispatch(ChangeProductData({ product, status: OPERATION_MODES.CREATE.label }));
     }
     return (
         <Button

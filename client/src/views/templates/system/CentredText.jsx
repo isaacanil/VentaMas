@@ -2,27 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Button } from './Button/Button';
 
-const Container = styled.div`
-  display: grid;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  top: 0;
-  left: 0;
-  position:absolute;
-`;
-
-const Text = styled.p`
-  text-align: center;
-  width: 100%;
-  padding: 0 1em;
-  max-width: 500px;
-`;
-
-export const CenteredText = ({ text, buttonText, handleAction, showAfter = 0 }) => {
+export const CenteredText = ({ text, buttonText, handleAction, showAfter = 0, ...props }) => {
   const [show, setShow] = useState(false);
   const handleButton = (e) => {
     e.preventDefault();
@@ -38,32 +18,61 @@ export const CenteredText = ({ text, buttonText, handleAction, showAfter = 0 }) 
   return (
     show && (
       <Container onContextMenu={handleButton}>
-        <Content>
+        <Wrapper>
+          <Content>
+            <Text>{text}</Text>
+            {(handleAction && buttonText) && (
+              <Button
+                
+                title={buttonText}
+                titlePosition={'center'}
+                width='auto'
+                bgcolor='primary'
+                borderRadius={'normal'}
+                onClick={handleAction}
+                {...props}
+              />
+            )}
+          </Content>
+        </Wrapper>
 
-        <Text>{text}</Text>
-        {buttonText && (
-          <Button 
-          title={buttonText} 
-          titlePosition={'center'}
-          width='auto'
-          bgcolor='primary'
-          borderRadius={'normal'}
-          onClick={handleAction}
-          />
-        )}
-        </Content>
       </Container>)
   );
 };
+const Container = styled.div`
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 
+  position:absolute;
+  top: 0;
+  left: 0;
+`;
+
+const Text = styled.p`
+  text-align: center;
+  width: 100%;
+  padding: 0 1em;
+  max-width: 500px;
+`;
+const Wrapper = styled.div`
+position: relative;
+  display: grid;
+  align-items: center;
+  margin: 0;
+  padding: 10px;
+`;
 
 const Content = styled.div`
   display: grid;
-  gap: 2em;
-  justify-content: center;
   justify-items: center;
-  align-items: center;
+  gap: 2em;
   
   margin: 0;
+  width: 100%;
   padding: 0;
 `

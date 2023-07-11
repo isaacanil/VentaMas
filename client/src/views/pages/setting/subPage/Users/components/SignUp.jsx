@@ -121,6 +121,7 @@ const SignUp = () => {
                         options={rolOptions}
                         optionsLabel="label"
                         value={rol}
+                        maxWidth='full'
                         onChange={setRol}
                     />
                 </ElemLabel>
@@ -143,7 +144,7 @@ const SignUp = () => {
                     onClick={handleSubmit}
                 />
             </Footer>
-            {JSON.stringify(user)}
+           
         </Container>
 
 

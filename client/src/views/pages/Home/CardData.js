@@ -7,9 +7,10 @@ import { icons } from '../../../constants/icons/icons'
 const {BILLS, SALES} = ROUTES_NAME.SALES_TERM
 const {INVENTORY_ITEMS} = ROUTES_NAME.INVENTORY_TERM
 const {PURCHASES} = ROUTES_NAME.PURCHASE_TERM
+const {CASH_RECONCILIATION_LIST} = ROUTES_NAME.CASH_RECONCILIATION_TERM
 
 
-const {inventory, purchase, register, sale} = icons.menu.unSelected
+const {inventory, purchase, register, sale, cashReconciliation} = icons.menu.unSelected
 export const getCardData = () => {
   return[
   {
@@ -35,5 +36,12 @@ export const getCardData = () => {
     title: 'Inventario',
     icon: inventory,
     route: findRouteByName(INVENTORY_ITEMS)
+  },
+  {
+    id: 5,
+    title: 'Cuadre de Caja',
+    icon: cashReconciliation,
+    route: findRouteByName(CASH_RECONCILIATION_LIST)
+
   }
 ]}

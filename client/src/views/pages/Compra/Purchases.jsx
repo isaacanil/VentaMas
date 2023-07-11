@@ -1,10 +1,11 @@
 import React, { Fragment} from 'react'
 import styled from 'styled-components'
-import {MenuApp} from '../..'
+
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
 import { ToolBar } from './ToolBar'
 import { ProvidersData, SetProvidersInFilterOptionsMenu } from '../../../firebase/ProviderConfig'
 import { OrdersData, SetPendingOrdersInState } from '../../../firebase/OrderConfig'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
 
 
 export const Purchases = () => { 
@@ -15,8 +16,8 @@ export const Purchases = () => {
 
   return (
     <Fragment>
-      <MenuApp></MenuApp>
       <Container>
+      <MenuApp></MenuApp>
         <ToolBar></ToolBar>
         <PendingOrdersTable />
       </Container>
@@ -25,10 +26,12 @@ export const Purchases = () => {
 }
 const Container = styled.div`
   width: 100%;
-    height: 100%;
+    height: 100vh;
+    overflow: hidden;
     background-color: var(--color2);
     display: grid;
     grid-auto-rows: min-content;
+    grid-template-rows: min-content 1fr;
     justify-content: center;
     align-items: flex-start;
 `

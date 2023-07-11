@@ -6,6 +6,8 @@ import { Header } from './components/Header/Header'
 import { fbValidateUser } from '../../../../firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { clearCashCount } from '../../../../features/cashCount/cashCountManagementSlice'
+import { useDispatch } from 'react-redux'
 
 export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
 
@@ -16,6 +18,8 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
+    const dispatch = useDispatch()
+
     const navigate = useNavigate()
     const clearUser = () => {
         setUser({
@@ -25,15 +29,20 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
     }
     const handleSubmit = async (user) => {
         if (user.name.trim() === '' || user.password.trim() === '') { 
-            setError('Asegurate de que los campos no este vacios'); return 
+            setError('Asegurate de que los campos no este vacios'); 
+            return 
         }
         try {
-            const userData = await fbValidateUser(user)
-
+            const {userData, response } = await fbValidateUser(user)
+            if(response?.error){
+                setError(response.error)
+                return
+            }
+            onSubmit(userData)
             setTimeout(() => {
-                onSubmit(userData)
                 navigate('/cash-reconciliation')
-            }, 300)
+                dispatch(clearCashCount())
+            }, 1000)
         } catch (error) {
             setLoading(false);
             setError('An error occurred. Please try again.');
@@ -87,7 +96,7 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
                 {loading ? <p>Loading...</p> : (
                     <>
                         <Body user={user} setUser={setUser} />
-                        {error && <p>{error}</p>}
+                        { <Error error={error}>{error && error}</Error>}
                         <Footer
                             onCancel={handleCancel}
                             onSubmit={() => handleSubmit(user)}
@@ -100,6 +109,22 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
 
     )
 }
+const Error = styled.p`
+    font-size: 1em;
+    height: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    ${({ error }) => error && `
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-dark);
+    border-radius: var(--border-radius);
+    border: var(--border-danger);
+    `}
+   
+    margin: 0;
+    padding: 0;
+`
 const Backdrop = styled(motion.div)`
     background-color: rgba(0,0,0,0.5);
     position: absolute;

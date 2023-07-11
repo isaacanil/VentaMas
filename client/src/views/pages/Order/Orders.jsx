@@ -10,8 +10,8 @@ export const Orders = () => {
   SetProvidersInFilterOptionsMenu(providers);
   return (
     <Fragment>
-      <MenuApp></MenuApp>
       <Container>
+        <MenuApp></MenuApp>
         <ToolBar></ToolBar>
         <PendingOrdersTable />
       </Container>
@@ -20,8 +20,8 @@ export const Orders = () => {
 }
 const Container = styled.div`
   width: 100%;
-    height: 100%;
-    background-color: var(--color2);
+    height: 100vh;
+    overflow: hidden;
     display: grid;
     grid-auto-rows: min-content;
     justify-content: center;

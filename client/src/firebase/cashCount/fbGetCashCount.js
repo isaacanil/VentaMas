@@ -1,74 +1,23 @@
-import { collection, getDoc, onSnapshot, orderBy, query } from "firebase/firestore"
-import { db } from "../firebaseconfig"
-import { DateTime } from "luxon"
-import { date } from "yup"
+import { doc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { db } from "../firebaseconfig";
+import { selectUser } from "../../features/auth/userSlice";
 
-export const fbGetCashCounts = async (user, setCashCounts) => {
-    if (!user || !user?.businessID) { return }
-    const cashCountsRef = collection(db, 'businesses', user?.businessID, 'cashCounts')
-    const q = query(cashCountsRef, orderBy('cashCount.opening.date', 'desc'))
-    onSnapshot(q, (snapshot) => {
-        const cashCountsArray = snapshot.docs.map(async doc => {
-            let { cashCount } = doc.data()
-            let data = cashCount
+export const useFbGetCashCount = (id) => {
+    if(!id) { return null }
+    const [cashCount, setCashCount] = useState(null)
+    const user = useSelector(selectUser)
+    const cashCountRef = doc(db, 'businesses', user.businessID, "cashCounts", id);
 
-            const employeeRef = data.opening.employee;
-            const employeeDoc = (await getDoc(employeeRef)).data()
-            const employeeUser = employeeDoc.user;
-            console.log(employeeUser)
-            const employeeData = {
-                id: employeeUser.id,
-                name: employeeUser.name,
-            }
-
-            const approvalEmployeeRef = data.opening.approvalEmployee;
-            const approvalEmployeeDoc = (await getDoc(approvalEmployeeRef)).data()
-            const approvalEmployeeUser = approvalEmployeeDoc.user;
-            const approvalEmployeeData = {
-                id: approvalEmployeeUser.id,
-                name: approvalEmployeeUser.name,
-            }
-
-            const invoiceRef = data.sales.map(ref => ref);
-            console.log(invoiceRef)
-
-            // const invoices = await Promise.all(invoiceRef.map(async (ref) => {
-            //     const invoiceDoc = (await getDoc(ref)).data()
-            //     let invoiceData = invoiceDoc;
-
-            //     // invoiceData = {
-            //     //     ...invoiceData,
-            //     //     ['data']: {
-            //     //         ...invoiceData.data,
-            //     //         ['date']: DateTime.fromMillis(invoiceData.data.date.seconds * 1000 + invoiceData.data.date.nanoseconds / 1e6).toFormat('yyyy-MM-dd HH:mm:ss')
-            //     //     }
-            //     // }
-            //     return invoiceData
-            // }));
-
-            delete data.sales
-            delete data.stateHistory
-
-            data = {
-                ...data,
-                opening: {
-                    ...data.opening,
-                    employee: employeeData,
-                    approvalEmployee: approvalEmployeeData,
-
-                },
-                sales: []
-            }
-            console.log(data)
-            return data
+    useEffect(() => {
+        if (!user || !user?.businessID) { return }
+        const unsubscribe = onSnapshot(cashCountRef, (doc) => {
+            const data = doc.data()
+            setCashCount(data)
         })
-
-        Promise.all(cashCountsArray)
-            .then((cashCounts) => {
-                setCashCounts(cashCounts)
-            }).catch((error) => {
-                console.log(error)
-            })
-
-    })
+        return unsubscribe
+    }, [id])
+    console.log(cashCount)
+    return cashCount
 }

@@ -1,18 +1,24 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { useMatch } from 'react-router-dom'
+import { useMatch, useNavigate } from 'react-router-dom'
 import { SearchInput } from '../../../system/Inputs/SearchInput'
 import { FaSearch } from 'react-icons/fa'
 import { AddProductButton } from '../../../system/Button/AddProductButton'
 import { ExportProductsButton } from '../../../system/Button/ExportProductsButton'
-import { ButtonGroup } from '../../../system/Button/Button'
+import { Button, ButtonGroup } from '../../../system/Button/Button'
 import findRouteByName from '../../findRouteByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { useMatchRouteByName } from '../useMatchRouterByName'
+import { icons } from '../../../../../constants/icons/icons'
+import { useDispatch } from 'react-redux'
+import { toggleAddCategory } from '../../../../../features/modals/modalSlice'
 
 export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
-    const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
+    const dispatch = useDispatch()
+    const { INVENTORY_ITEMS, CATEGORIES } = ROUTES_NAME.INVENTORY_TERM
     const matchWithInventory = useMatch('/inventory/items')
+    const navigate = useNavigate()
+ 
     return (
         matchWithInventory && (
             <Container>
@@ -27,7 +33,6 @@ export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData 
                     />
                 )}
                 {side === 'right' && (
-
                     <Fragment>
                         <ButtonGroup>
                             <ExportProductsButton />

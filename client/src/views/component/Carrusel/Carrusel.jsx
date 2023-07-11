@@ -9,12 +9,15 @@ import { useDispatch } from 'react-redux'
 import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
 import { motion } from 'framer-motion'
+import { Category } from './Category'
+import { toggleAddCategory } from '../../../features/modals/modalSlice'
+import { icons } from '../../../constants/icons/icons'
 
-export const Carrusel = () => {
+export const Carrusel = ({themeColor}) => {
     const categoriesRef = useRef(null)
     const { width } = useScreenSize(categoriesRef)
     const { categories } = useFbGetCategories()
-
+    const dispatch = useDispatch()
 
     const categoryCardRef = useRef(null)
     const MoveScroll = (direction) => {
@@ -78,22 +81,35 @@ export const Carrusel = () => {
             }
         }
     }
-
+    const handleCreateCategory = () => {
+        dispatch(toggleAddCategory({isOpen: true}))
+    }
     return (
         <>
-            <Container>
+            <Container themeColor={themeColor}>
 
-                <Button onClick={() => MoveScroll('left')} onDoubleClick={() => MoveScroll('start')}><MdKeyboardArrowLeft /></Button>
-
+                <Button
+                    onClick={() => MoveScroll('left')}
+                    onDoubleClick={() => MoveScroll('start')}
+                >
+                    <MdKeyboardArrowLeft />
+                </Button>
 
                 <Categories
                     variants={effectCategoriesContainer}
                     ref={categoriesRef}
                 >
+                    <Category
+                        category={{ name: 'Crear' }}
+                        onClick={handleCreateCategory}
+                        type='create'
+                        icon={icons.operationModes.add}
+                    />
                     {
                         categories.length > 0 ? (
                             categories.map(({ category }, index) => (
                                 <Category
+                                    themeColor={themeColor ? themeColor : null}
                                     category={category}
                                     key={index}
                                     va
@@ -119,6 +135,15 @@ background-color: #ffffff;
     height: 2.6em;
     padding: 0 1em;
     gap: 0.4em;
+    ${props => {
+        switch(props.themeColor){
+            case 'transparent':
+                return `
+                    background-color: var(--color2);
+                `
+            
+        }
+    }}
 `
 const Button = styled.button`
     height: 1.5em;
@@ -148,84 +173,8 @@ const Categories = styled(motion.ul)`
     display: flex;
     flex-wrap: nowrap;
     gap: 0.6em;
-    background-color: white;
     ::-webkit-scrollbar {
   display: none; /* Oculta la barra de scroll */
 }
 `
-const CategoryContainer = styled(motion.li)`
-//font & text
-font-size: 14px;
-letter-spacing: 0.2px;
-white-space: nowrap;
-//box
-height: 2em;
-display: flex;
-align-items: center;
-padding: 0 0.75em;
-//color & Ground
-background-color: var(--color2);
-    border-radius: var(--border-radius);
-    text-transform: capitalize;
-    font-weight: 500;
-    color: rgb(109, 108, 108);
-    transition: 300ms ease-in-out;
-    :hover{
-        background-color: #e7f0fa;
-        color: rgb(83, 83, 83);
-    }
-    ${props => {
-        switch (props.selected) {
-            case true:
-                return `
-                    background-color: rgb(111, 185, 245);
-                    color: #132241;
-                    //order: -1;  
-                    // :hover{
-                    //     background-color: rgb(111, 185, 245);
-                    //     color: white;
-                    // }
-                `
 
-            default:
-                break;
-        }
-    }}
-`
-const Category = ({ category, ref }) => {
-    const [isSelected, setIsSelected] = useState(false)
-    const dispatch = useDispatch()
-    const start = (category, ref) => {
-        if (isSelected === false) {
-            setIsSelected(!isSelected)
-            dispatch(addCategory(category))
-        }
-        if (isSelected) {
-            setIsSelected(!isSelected)
-            dispatch(
-                deleteCategorySelected(category.name)
-            )
-        }
-        setTimeout(() => {
-            ref.current.scrollTo(0, 0)
-        }, 100)
-
-
-    }
-    const effectCategory = {
-        hidden: { y: 0, opacity: 0,},
-        visible: {
-            y: 0,
-            opacity: 1,
-        }
-    }
-    return (
-        <CategoryContainer
-            selected={isSelected ? true : false}
-            onClick={(e) => start(category, ref)}
-            variants={effectCategory}
-        >
-            {category.name}
-        </CategoryContainer>
-    )
-}

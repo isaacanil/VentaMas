@@ -27,13 +27,14 @@ export const Footer = ({total, bills}) => {
   )
 }
 const Container = styled.div`
-
+ width: 100%;
+ height: 2.8em;
+background-color: rgb(255, 255, 255);
 `
 const PriceBox = styled.div`
-  height: 2.8em;
   width: 100%;
   max-width: 1000px;
-  background-color: rgb(255, 255, 255);
+  height: 100%;
   padding: 0 1em;
   position: sticky;
   bottom: 0;

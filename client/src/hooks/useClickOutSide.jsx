@@ -4,13 +4,13 @@ export const useClickOutSide = (ref, executedWhenIsTrue, fn, eventType = 'moused
         if(executedWhenIsTrue && ref.current) {
             const handleClickOutSide = (e) => {
                 if (!ref.current.contains(e.target)) {
-                    fn()
+                    fn();
                 }
-            }
+            };
             document.addEventListener(eventType, handleClickOutSide);
             return () => {
-                document.removeEventListener(eventType, handleClickOutSide)
-            }
+                document.removeEventListener(eventType, handleClickOutSide);
+            };
         }
-    }, [ref])
+    }, [ref, executedWhenIsTrue, fn, eventType]);
 }

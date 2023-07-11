@@ -6,6 +6,19 @@ import { removeNotification, selectCurrentNotification } from '../../../../featu
 import { motion } from 'framer-motion';
 import { isArray } from 'lodash';
 
+const getTimerByType = (type) => {
+    switch (type) {
+        case 'success':
+            return 5000;
+        case 'error':
+            return 15000;
+        case 'warning':
+            return 12000;
+        default:
+            return 5000;
+    }
+}
+
 export const Notification = () => {
     const [icon, setIcon] = useState(null)
 
@@ -17,7 +30,7 @@ export const Notification = () => {
         if (visible) {
             const timeout = setTimeout(() => {
                 dispatch(removeNotification())
-            }, 6000);
+            }, getTimerByType(type))
             return () => clearTimeout(timeout);
         }
     }, [visible, dispatch]);
@@ -66,25 +79,25 @@ export const Notification = () => {
         >
             {icon ? <Icon type={type}>{icon}</Icon> : null}
             <Body>
-                {title ? <Title>{title}</Title> : null}
+                {title ? <Title>{title}</Title> : <Title>{type}</Title>}
                 {message ? <Message>{message}</Message> : null}
             </Body>
         </Container>
     );
 };
 const Container = styled(motion.div)`
- max-width: 24em;
-  width: 100%;
-  min-height: 4em;
-  height: auto;
-color: #fff;
-padding: 0.8em 1em;
-border-radius: 4px;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-background-color: var(--White);
-backdrop-filter: blur(20px);
-display: flex;
-align-items: center;
+    max-width: 24em;
+    width: 100%;
+    min-height: 4em;
+    height: auto;
+    color: #fff;
+    padding: 0.8em 1em;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background-color: var(--White);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
 
 svg{
     width: 1.4em;
@@ -97,7 +110,7 @@ top: 2px;
 margin: 0 auto;
 left: 0;
 right: 0;
-z-index: 10000;
+z-index: 1000000000;
 transform: translateY(-100px);
 transition: transform 1s ease-in-out;
 
@@ -148,43 +161,62 @@ ${props => {
 
 const Title = styled.h2`
 font-weight: 600;
-font-size: 14px;
+font-size: 16px;
 line-height: 14px;
 margin: 0;
+text-transform: capitalize;
 `
 const Body = styled.div`
     display: grid;
     align-items: center;
-    gap: 0.2em;
+    gap: 0.4em;
 `
 const Icon = styled.div`
-    height: 2.4em;
+     height: 2.4em;
     width: 2.8em;
+    /*
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius); */
+    height: 100%;
+    display: flex;
+    align-items: center;
     svg{
         fill: white;
+        font-size: 1.4em;
+        
     }
   
     ${props => {
         switch (props.type) {
             case 'error':
-                return `               
-                background-color: #f18f8f;
+                return `  
+                svg{
+
+                    fill: #f18f8f;
+                }             
                 `
             case 'success':
                 return `
-                background-color: #8cd88c;
+                svg{
+                    fill: #8cd88c;
+                } 
+           
                 `
             case 'info':
                 return `
+                svg{
+                    fill: #8cbcd8;
+                }
                 background-color: #8cbcd8;
                 `
             case 'warning':
                 return `
-                background-color: #FFCC00;
+                svg{
+                    fill: #FFCC00;
+                }
+              
                 `
             default:
                 return `

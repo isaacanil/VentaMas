@@ -13,7 +13,7 @@ export const ProductList = ({ data }) => {
                         <Product key={index}>
                             <Row cols='3'>
                                 <Col>{product.amountToBuy.total} x {separator(product.price.unit)}</Col>
-                                <Col textAlign='right'>{separator(product.tax.total)}</Col>
+                                <Col textAlign='right'>{separator((product.price.unit * product.tax.value) * product.amountToBuy.total )}</Col>
                                 <Col textAlign='right'>{separator(product.price.total)}</Col>
                             </Row>
                             <Row>
@@ -32,6 +32,7 @@ const Products = styled.div`
     border: none;
     padding: 0;
     list-style: none;
+    line-height: 30px;
 `
 const Product = styled.div`
     width: 100%;
@@ -48,7 +49,8 @@ const ProductName = styled.div`
         width: 100%;
         grid-column: 1 / 4;
         line-height: 1.4pc;
-        text-transform: uppercase;
+        text-transform: capitalize;
+     
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;

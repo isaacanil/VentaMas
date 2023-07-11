@@ -2,10 +2,6 @@ import React, { useState } from 'react'
 import { LeftSide } from './LeftSide/LeftSide'
 import { RightSide } from './RightSide/RightSide'
 import styled from 'styled-components'
-import { useSelector } from 'react-redux'
-import { selectCashCount } from '../../../../../../../features/cashCount/cashCountSlide'
-import { ConfirmCancelButtons } from '../../../../global/ConfirmCancelButtons/ConfirmCancelButtons'
-import { DateTime } from 'luxon'
 
 export const Body = ({closingDate}) => {
   const [calculationIsOpen, setCalculationIsOpen] = useState(true)

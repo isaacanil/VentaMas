@@ -10,16 +10,17 @@ import {
   SelectProduct,
   CancelShipping,
   SelectTotalPurchase,
-
   SelectClient,
   SelectFacturaData,
   addTaxReceiptInState,
   SelectNCF,
+  SelectCartIsOpen,
+  toggleCart,
 } from '../../../features/cart/cartSlice'
 
 import { useSelector, useDispatch } from 'react-redux'
-import { ProductCardForCart } from './ProductCardForCart'
-import { PaymentArea } from './PaymentArea'
+import { ProductCardForCart } from './components/ProductCardForCart'
+import { PaymentArea } from './components/PaymentArea'
 import { useReactToPrint } from 'react-to-print'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 
@@ -40,9 +41,10 @@ import { useIsOpenCashReconciliation } from '../../../firebase/cashCount/useIsOp
 import { createAction } from '@reduxjs/toolkit'
 import { CONFIRMATION_TASK_TYPE } from '../modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction'
 import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
+import { ProductsList } from './components/ProductsList/ProductsLit'
 
 export const Cart = () => {
-  const isOpen = useSelector(selectMenuOpenStatus)
+  const isOpen = useSelector(SelectCartIsOpen)
   const dispatch = useDispatch()
   const selectMode = useSelector(selectAppMode)
   const componentToPrintRef = useRef(null);
@@ -64,8 +66,7 @@ export const Cart = () => {
   const handleCashReconciliationConfirm = () => {
     const cashCountStrategy = getCashCountStrategy(checkCashCountStatus, dispatch)
     cashCountStrategy.handleConfirm()
-  } 
-
+  }
 
   const ncfStatus = useSelector(selectNcfStatus)
   const ncfCode = useSelector(selectNcfCode)
@@ -85,7 +86,6 @@ export const Cart = () => {
       dispatch(addTaxReceiptInState(ncfCode))
     }
   }, [ncfCode])
-
 
   const increaseTaxReceipt = async () => {
     try {
@@ -210,34 +210,24 @@ export const Cart = () => {
   }, [submittable])
 
   const handleCancelShipping = () => {
+    dispatch(toggleCart())
     dispatch(CancelShipping())
     dispatch(clearTaxReceiptData())
     dispatch(deleteClient())
   }
 
   return (
-    <Container isOpen={isOpen ? true : false}>
-      <ClientControl></ClientControl>
-      <ProductsList>
-        {
-          ProductSelected.length > 0 ?
-            (
-              ProductSelected.map((item, Index) => (
-                <ProductCardForCart item={item} key={Index} />
-              ))
-            )
-            :
-            (<h4 style={{ margin: '1em' }}>Los productos seleccionados aparecerán aquí</h4>)
-        }
-
-      </ProductsList>
-      <div className={style.billing}>
+    <Container isOpen={isOpen}>
+      <ClientControl />
+      <ProductsList />
+      <div>
         <PaymentArea></PaymentArea>
         <div className={style.resultBar}>
 
-          <h3><span></span><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
-
+          <h3><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
+          
           <Receipt ref={componentToPrintRef} data={bill}></Receipt>
+
           <ButtonGroup>
             <Button
               borderRadius='normal'
@@ -255,10 +245,10 @@ export const Cart = () => {
 
         </div>
       </div>
-
     </Container>
   )
 }
+
 const Container = styled.div`
   position: relative;
    height: calc(100%);
@@ -274,47 +264,34 @@ const Container = styled.div`
    gap: 10px;
    transition: width 600ms 0ms linear;
    @media(max-width: 800px){
-    height: calc(100vh);
+      height: calc(100vh);
       width: 100%;
-      max-width: none;
+      max-width: 100%;
       border: 1px solid rgba(0, 0, 0, 0.121);
       border-top: 0;
       border-bottom: 0;
       position: absolute;
       top: 0;
-      z-index: 1;
+      z-index: 100000;
       background-color: white;
-      display: none;
-   }
-   ${props => {
+      ${props => {
     switch (props.isOpen) {
-      case true:
+      case false:
         return `
-       // width: 0;
-       z-index: 1;
-        `
-        break;
+              width: 0;
+              position: absolute;
+              z-index: 1;
+            `
 
       default:
         break;
     }
   }}
+   
+   }
+   
 `
-const ProductsList = styled.ul`
-  background-color: var(--color2);
-      display: grid;
-      gap: 0.4em;
-      align-items: flex-start;
-      align-content: flex-start;
-      width: 100%;
-      margin: 0;
-      padding: 0.4em;
-      overflow-y: scroll;
-      position: relative;
-      //border-radius: 10px;
-      border-top-left-radius: 8px;
-      border-bottom-left-radius: 8px;
-`
+
 const PaymentSection = styled.div`
   
 `

@@ -48,42 +48,43 @@ export const ClientDetails = () => {
                         onChange={e => updateClient(e)}
                         autoComplete='off'
                     />
-                    
-                 
-                        <InputV4
-                            type="text"
-                            name='personalID'
-                            label='Cédula/RNC'
-                            size='small'
-                            labelVariant='primary'
-                            value={client.personalID}
-                            onChange={e => updateClient(e)}
-                            autoComplete='off'
-                        />
-                  
+
+
+                    <InputV4
+                        type="text"
+                        name='personalID'
+                        label='Cédula/RNC'
+                        size='small'
+                        labelVariant='primary'
+                        value={client.personalID}
+                        onChange={e => updateClient(e)}
+                        autoComplete='off'
+                    />
+
                 </Group>
             </Row>
             <Row>
-                
-                    <InputV4
-                        type="text"
-                        name="address"
-                        label='Dirección'
-                        labelVariant='primary'
-                        size='small'
-                        value={client.address}
-                        onChange={(e) => updateClient(e)}
-                        autoComplete="off"
-                    />
-              
+
+                <InputV4
+                    type="text"
+                    name="address"
+                    label='Dirección'
+                    labelVariant='primary'
+                    size='small'
+                    value={client.address}
+                    onChange={(e) => updateClient(e)}
+                    autoComplete="off"
+                />
+
             </Row>
             <Row>
                 <Group>
-                    <Switch
-                        checked={client?.delivery?.status ? true : false}
-                        name='delivery.status'
-                        onChange={(e) => updateClient(e)} />
-                  
+                    <Group space={'small'}>
+                        <Switch
+                            checked={client?.delivery?.status ? true : false}
+                            name='delivery.status'
+                            onChange={(e) => updateClient(e)} />
+
                         <InputV4
                             label='Delivery'
                             labelVariant='primary'
@@ -94,7 +95,9 @@ export const ClientDetails = () => {
                             ref={deliveryStatusInput}
                             onChange={(e) => updateClient(e)}
                         />
-                    
+                    </Group>
+
+
                     <select name="" id="" onChange={(e) => handleSetSourceOfPurchase(e.target.value)}>
                         {
                             sourceOfSaleList.map((item, index) => (
@@ -120,7 +123,29 @@ const Group = styled.div`
 display: flex;
 gap: 1em;
 align-items: center;
-`
+    ${props => {
+        switch (props.space) {
+            case 'small':
+                return `
+                gap: 0.2em; 
+                `
+            case 'medium':
+                return `
+                gap: 0.8em;
+                `
+            case 'large':
+                return `
+                gap: 1em;
+                `
+            default:
+                return `
+                    gap: 1em;
+                `
+        }
+    }
+    }
+                
+    `
 const Row = styled.div`
 
-`
+    `

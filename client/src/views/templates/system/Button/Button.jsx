@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { Tooltip } from './Tooltip'
+import { useWindowWidth } from '../../../../hooks/useWindowWidth'
 
 
 export const Button = ({
@@ -15,6 +16,7 @@ export const Button = ({
   onClick,
   width,
   height,
+  hidden,
   variant,
   disabled,
   borderRadius,
@@ -32,7 +34,9 @@ export const Button = ({
     e.stopPropagation()
     onClick()
   }
+  
   return (
+    
     <Tooltip
     placement={tooltipPlacement}
     description={tooltipDescription}
@@ -51,6 +55,7 @@ export const Button = ({
           border={border}
           iconColor={iconColor}
           isActivatedColors={isActivatedColors}
+          hidden={hidden}
         >
 
           {isActivated ? iconOn : iconOff}
@@ -112,7 +117,7 @@ export const Container = styled.button`
         break;
     }
   }}
-
+ 
  ${(props) => {
     switch (props.borderRadius) {
       case 'normal':
@@ -188,8 +193,9 @@ export const Container = styled.button`
             `
       case "warning":
         return `
-        background-color: var(--color-warning);
-        color: white;
+        background-color: var(--color-warning-main);
+        
+        color: White;
         :hover{
           background-color: #f5a742;
         }
@@ -411,7 +417,11 @@ export const Container = styled.button`
         break;
     }
   }}
-  
+
+ //${props => props.hidden === true ? `@media (max-width: 800px) {display: none;}` : ''}
+  @media (max-width: 800px) {
+    display: ${props => props.hidden === true ? 'none' : 'flex'};
+  }
   
 `
 export const ButtonGroup = styled.div`

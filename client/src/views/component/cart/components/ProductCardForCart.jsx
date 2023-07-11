@@ -2,12 +2,12 @@ import React from 'react'
 import { IoMdClose } from 'react-icons/io'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { separator } from '../../../hooks/separator'
-import { Counter } from '../../templates/system/Counter/Counter'
-import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurchaseWithoutTaxes, addPaymentMethodAutoValue } from '../../../features/cart/cartSlice'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import { icons } from '../../../constants/icons/icons'
-import { Button } from '../../templates/system/Button/Button'
+import { separator } from '../../../../hooks/separator'
+import { Counter } from '../../../templates/system/Counter/Counter'
+import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurchaseWithoutTaxes, addPaymentMethodAutoValue } from '../../../../features/cart/cartSlice'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import { icons } from '../../../../constants/icons/icons'
+import { Button } from '../../../templates/system/Button/Button'
 export const ProductCardForCart = ({ item }) => {
     const dispatch = useDispatch()
     const deleteProductFromCart = (id) => {

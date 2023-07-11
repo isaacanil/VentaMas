@@ -6,6 +6,7 @@ import { toggleAddCategory } from '../../../../features/modals/modalSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
 import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
+import { addNotification } from '../../../../features/notification/NotificationSlice';
 
 
 const EmptyCategory = { id: '', name: '' };
@@ -29,12 +30,35 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (category.name === '') {
+      dispatch(addNotification({
+        message: 'El nombre de la categoría no puede estar vacío',
+        type: 'error',
+
+      }))
+      return
+    }
+
     if (categoryToUpdate) {
       fbUpdateCategory(category, user)
         .then(() => { onClose(); })
+        .then(() => {
+          dispatch(addNotification({
+            message: 'Categoría actualizada con éxito',
+            type: 'success',
+          }))
+          return
+        })
     } else {
-      fbAddCategory(category, user);
-      onClose();
+      fbAddCategory(category, user)
+      .then(() => { onClose(); })
+      .then(() => {
+        dispatch(addNotification({
+          message: 'Categoría creada con éxito',
+          type: 'success',
+        }))
+
+      });
     }
 
   };
@@ -43,23 +67,23 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
   return (
     <ModalOverlay isOpen={isOpen}>
       <ModalContainer>
-        <h2>{categoryToUpdate ? 'Update Category' : 'Create Category'}</h2>
+        <h2>{categoryToUpdate ? 'Actualizar Categoría' : 'Crear Categoría'}</h2>
         <Form onSubmit={handleSubmit}>
           <Input
             type="text"
             name="name"
-            placeholder="Category Name"
+            placeholder="Nombre de la categoría"
             value={category.name}
             onChange={(e) => setCategory({ ...category, name: e.target.value })}
           />
           <ButtonGroup>
             <Button type="button" onClick={onClose}>
-              Cancel
+              Cancelar
             </Button>
             {categoryToUpdate ? (
-              <Button type="submit">{'Update'}</Button>
+              <Button type="submit">{'Actualizar'}</Button>
             ) : (
-              <Button type="submit">{'Create'}</Button>
+              <Button type="submit">{'Crear'}</Button>
             )}
           </ButtonGroup>
         </Form>
@@ -77,10 +101,11 @@ const ModalOverlay = styled.div`
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1000000;
   opacity: ${(props) => (props.isOpen ? 1 : 0)};
   visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
   transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
@@ -95,6 +120,8 @@ const ModalContainer = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   h2{
     margin-top: 0;
+    padding: 0;
+    margin: 0;
     margin-bottom: 1em;
   }
 `;

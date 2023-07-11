@@ -23,9 +23,10 @@ const Container = styled.div`
     color: #5f6368;
     font-family: 'montserrat', sans-serif ;
 
-                border-bottom: 1px solid var(--Gray-300);
-                padding: 0em 1em;
-                font-weight: 500;
+    border-bottom: 1px solid var(--Gray-300);
+    padding: 0em 1em;
+    font-weight: 500;
+    border-bottom: var(--border-primary);
     ${props => props.scrolled && `
         background-color: var(--White); 
         box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.249);

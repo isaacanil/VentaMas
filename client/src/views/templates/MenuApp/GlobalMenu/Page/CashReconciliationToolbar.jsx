@@ -13,12 +13,23 @@ export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearch
     const isOpenCashReconciliation = useIsOpenCashReconciliation()
     const handleSwitchToCashRegisterOpening = () => {
         
-        if(isOpenCashReconciliation === 'open'){
+        if(isOpenCashReconciliation === 'open' ){
             dispatch(setUserNotification(
                 {
                     isOpen: true,
                     title: 'Caja abierta',
                     description: 'No se puede abrir un cuadre de caja si ya existe uno abierto',
+                    onConfirm: null,
+                }
+            ))
+            return
+        }
+        if(isOpenCashReconciliation === 'closing' ){
+            dispatch(setUserNotification(
+                {
+                    isOpen: true,
+                    title: 'Caja en proceso de cierre',
+                    description: 'No se puede abrir un cuadre de caja si ya existe uno en proceso de cierre',
                     onConfirm: null,
                 }
             ))

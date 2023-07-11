@@ -33,10 +33,10 @@ export const Sales = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const handleSubmitCashReconciliation = () => {
-    handleCloseCashReconciliation()
-    navigate('/cash-register-opening')
-  }
+  // const handleSubmitCashReconciliation = () => {
+  //   handleCloseCashReconciliation()
+  //   navigate('/cash-register-opening')
+  // }
   const checkBarcode = (products, barcode) => {
 
     if (products.length <= 0) return;

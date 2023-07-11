@@ -6,7 +6,7 @@ import { Header } from '../../../setting/subPage/Users/components/UsersList/Tabl
 import { Body } from '../../../setting/subPage/Users/components/UsersList/Table/Body'
 import { Item } from './Item'
 import { SettingsControlBar } from '../SettingsControlBar'
-import { fbGetCashCounts } from '../../../../../firebase/cashCount/fbGetCashCount'
+import { fbGetCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
 

@@ -1,6 +1,5 @@
 
 import React from 'react'
-import { useMatch } from 'react-router-dom'
 import { Button } from '../../../system/Button/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage } from '@fortawesome/free-solid-svg-icons'
@@ -8,10 +7,9 @@ import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScre
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { SearchInput } from '../../../system/Inputs/SearchInput'
-import { FaSearch } from 'react-icons/fa'
-import { Tooltip } from '../../../system/Button/Tooltip'
 import { useMatchRouteByName } from '../useMatchRouterByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
+import { icons } from '../../../../../constants/icons/icons'
 
 export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const ImageHidden = useSelector(selectImageHidden)
@@ -43,7 +41,7 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
                             <SearchInput
                                 search
                                 deleteBtn
-                                icon={<FaSearch />}
+                                icon={icons.operationModes.search}
                                 placeholder='Buscar Producto...'
                                 bgColor={'white'}
                                 value={searchData}

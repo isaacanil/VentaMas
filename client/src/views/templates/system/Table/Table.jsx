@@ -36,29 +36,24 @@ export const Table = ({
     )
 }
 
-
-
-
 const Container = styled.div`
     height: 100%;
     width: 100%;
-    // border: 1px solid rgba(14, 14, 14, 0.100);
-    overflow-y: scroll;
+    background-color: #ffffff;
     display: grid;
-    border-radius: 1em;
-    grid-template-rows: min-content 1fr min-content;
-
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
     
     `
 const Backdrop = styled.div`
-border-radius: 8px;
-position: relative;
-background-color: #ffffff;
-
-max-width: 1300px;
-  width: 100%;
-  margin: 1em auto;
-  overflow: hidden;
+    border-radius: 8px;
+    position: relative;
+    background-color: #ffffff;
+    
+    max-width: 1300px;
+    width: 100%;
+    margin: 0.4em auto;
+    overflow: hidden;
 
 `
 

@@ -65,10 +65,12 @@ export const Registro = () => {
   return (
     <Fragment>
       <Container
-         animate={{ x: 0 }}
-         transition={{ type: "spring", stiffness: 0 }}
+        animate={{ x: 0 }}
+        transition={{ type: "spring", stiffness: 0 }}
       >
-        <MenuApp></MenuApp>
+        <MenuApp
+    
+        />
         <FilterBar>
           <span>
             <DatePicker dates={setDatesSelected} data={datesSelected} />

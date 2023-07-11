@@ -6,22 +6,31 @@ import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import { InputText, Textarea } from '../../templates/system/Inputs/Input'
 import { v4 } from 'uuid'
 
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
 import { fbAddCategory } from '../../../firebase/categories/fbAddCategory'
+import { addNotification } from '../../../features/notification/NotificationSlice'
 export const AddCategory = () => {
-  
+
     const [catName, setCatName] = useState('')
     let Category = {
         id: v4(),
         name: catName
     }
     console.log(Category)
-    
+    const dispatch = useDispatch()
     const user = useSelector(selectUser)
-    
+
     const handleSubmit = (e) => {
-        fbAddCategory( Category, user )
+        if (catName === '') {
+            dispatch(addNotification({
+                message: 'El nombre de la categoría no puede estar vacío',
+                type: 'error',
+                visible: true
+            }))
+            return
+        }
+        fbAddCategory(Category, user)
         e.preventDefault()
         console.log('click')
         setCatName('')
@@ -35,8 +44,8 @@ export const AddCategory = () => {
                     <InputText
                         name='name'
                         placeholder='Nombre de la Categoría'
-                        onChange={(e) => setCatName(e.target.value)} 
-                        value={catName}/>
+                        onChange={(e) => setCatName(e.target.value)}
+                        value={catName} />
                 </Group>
             </FormBody>
             <FormFooter>

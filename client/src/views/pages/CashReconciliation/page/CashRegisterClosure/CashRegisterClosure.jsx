@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from './../../../../../features/auth/userSlice'
 import { Header } from './components/Header/Header'
 import styled from 'styled-components'
 import { Body } from './components/Body/Body'
 import { Footer } from './components/Footer/Footer'
 import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
-import { selectCashCount } from '../../../../../features/cashCount/cashCountSlide'
+import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { useNavigate } from 'react-router-dom'
 import { fbAddBillToOpenCashCount } from '../../../../../firebase/cashCount/fbAddBillToOpenCashCount'
 import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
 import { DateTime } from 'luxon'
 import { fbCashCountChangeState } from '../../../../../firebase/cashCount/closing/fbCashCountClosing'
+import { useFbGetCashCount } from '../../../../../firebase/cashCount/fbGetCashCount'
 
 export const CashRegisterClosure = () => {
 
@@ -36,12 +37,13 @@ export const CashRegisterClosure = () => {
   }, [cashCount])
 
   const handleOpenPeerReviewAuthorization = () => setPeerReviewAuthorizationIsOpen(true);
-
+  const dispatch = useDispatch()
   const handleCancel = async () => {
     //if the user cancel and the status is open or closing, the status will be open
     if (cashCount.state === 'closing' || cashCount.state === 'open') {
       fbCashCountChangeState(cashCount, actualUser, 'open')
     }
+    dispatch(clearCashCount())
     navigate('/cash-reconciliation')
   }
   const handleSubmit = async (approvalEmployee) => {
@@ -51,11 +53,14 @@ export const CashRegisterClosure = () => {
       console.log(error)
     }
   }
+  
+  const cashCountActual = cashCount?.id ? useFbGetCashCount(cashCount.id) : null
+  
 
   return (
     <Backdrop>
       <Container>
-        <Header state={cashCount.state}/>
+        <Header state={cashCountActual?.cashCount?.state} />
         <Body closingDate={closingDate} />
         <Footer
           onSubmit={handleOpenPeerReviewAuthorization}

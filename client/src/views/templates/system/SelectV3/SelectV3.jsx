@@ -36,15 +36,15 @@ const Select = ({label, title, options, value, onChange, optionsLabel, maxWidth 
         return getPropertyByPath(option, optionsLabel);
     };
     const closeDropdown = () => setIsOpen(false);
-    useClickOutSide(SelectRef, !isOpen, closeDropdown)
+    useClickOutSide(SelectRef, isOpen === true, closeDropdown)
     return (
-        <Backdrop>
+        <Backdrop maxWidth={maxWidth} ref={SelectRef}>
             {label && (
                 <Label>
                     {label = title}
                 </Label>
             )}
-            <Container ref={SelectRef} maxWidth={maxWidth}>
+            <Container  >
                 <SelectHeader onClick={() => setIsOpen(!isOpen)}>
                     <SelectTitle value={value}>{value ? getOptionLabel(value) : title}</SelectTitle>
                 </SelectHeader>
@@ -104,11 +104,8 @@ const Backdrop = styled.div`
     align-items: center;
     gap: 0.2em;
     width: min-content;
-`;
-const Container = styled.div`
-  position: relative;
-  min-width: 200px;
-  width: 100%;
+    width: 100%;
+    max-width: 200px;
     ${({ maxWidth }) => {
         switch (maxWidth) {
             case 'small':
@@ -127,12 +124,22 @@ const Container = styled.div`
                 return `
                 max-width: 500px;
                 `
-            default:
+            case 'full':
                 return `
                 max-width: 100%;
                 `
+            default:
+                return `
+                max-width: 200px;
+                `
         }
     }}
+`;
+const Container = styled.div`
+  position: relative;
+  min-width: 200px;
+  width: 100%;
+  
                                                 
 `;
 

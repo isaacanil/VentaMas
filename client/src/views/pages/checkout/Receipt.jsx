@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react'
 
 import style from './ReceiptStyle.module.scss'
-import { separator } from '../../../hooks/separator'
 import styled from 'styled-components'
 import { ProductList } from './components/ProductList'
 import { PaymentArea } from './components/PaymentArea'
@@ -11,45 +10,28 @@ import { DateTime } from 'luxon'
 import { useFormatPhoneNumber } from '../../../hooks/useFormatPhoneNumber'
 import { useSelector } from 'react-redux'
 import { selectBusinessData } from '../../../features/auth/businessSlice'
+import { Header } from './components/Header/Header'
 
-let today = new Date()
-let [month, day, year] = [today.getMonth() + 1, today.getDate(), today.getFullYear()]
-let [hour, minute, second] = [today.getHours(), today.getMinutes(), today.getSeconds()]
-const fechaActual = DateTime.now().toFormat('dd/MM/yyyy HH:mm');
+
 export const Receipt = React.forwardRef(({ data }, ref) => {
-    const business = useSelector(selectBusinessData)
-    
+    let business = useSelector(selectBusinessData)
 
+    console.log(data)
     return (
         business && data ? (
-            <div className={style.Container} ref={ref}>
-                <Title>{business?.name}</Title>
-                <P align="center">{business?.address}</P>
-                <P align="center">{useFormatPhoneNumber(business?.tel)}</P>
-                <P>{fechaActual}</P>
-                <P>NCF: {data.NCF}</P>
-                {
-                    data.client ? (
-                        <Fragment>
-                            <P>CLIENTE: <span className={style.capital}>{data.client.name ? data.client.name : 'CLIENTE GENERICO'}</span></P>
-                            {
-                                data.client.tel ? <P>TEL: {useFormatPhoneNumber(data.client.tel)}</P> : null
-                            }
-                            {
-                                data.client.personalID ? <P>CEDULA/RNC: {data.client.personalID}</P> : null
-                            }
-                            {
-                                data.client.address ? <P>DIR: {data.client.address}</P> : null
-                            }
-                        </Fragment>
-                    ) : null
-                }
+            <Container ref={ref}>
+                <Header
+                    data={data}
+                    business={business}
+                    Space={Space}
+                    SubTitle={SubTitle}
+                    P={P}
+                />
+                <Space  />
                 <Line />
                 <Row space>
-                    <SubTitle> FACTURA PARA CONSUMIDOR FINAL</SubTitle>
-
+                    <SubTitle align='center'> FACTURA PARA CONSUMIDOR FINAL</SubTitle>
                 </Row>
-
                 <Line />
                 <Row cols='3' space>
                     <P>DESCRIPCION</P>
@@ -58,26 +40,51 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                 </Row>
                 <Line />
                 <ProductList data={data} />
-                <hr className={style.line} />
-                <PaymentArea data={data} />
-            </div>
+                <Line />
+                <PaymentArea P={P} data={data} />
+            </Container>
         ) : null
     )
 });
 
+const Container = styled.div`
+    * {
+        margin: 0;
+    }
 
-export const Title = styled.p`
-    font-size: 18px;
-    font-weight: 600;
-    padding: 0.2em 0;
-    text-align: center;
-    margin: 0;
-`
+    line-height: 24px;
+    
+    width: 100%;
+//cuanto seria el maximo de ancho de la factura 80mm = 226.772px
+    font-size: 14px;
+    text-transform: uppercase;
+    font-family:'Lato', sans-serif;
+    position: absolute;
+    pointer-events: none;
+    z-index: -100000000;
+    p {
+        line-height: 16px;
+    }
+    `
+
 export const SubTitle = styled.p`
     font-size: 13px;
-    font-weight: 500;
-    padding: 0.2em 0;
+    font-weight: 600;
+    line-height: 12px;
+    padding: 0 0;
     margin: 0;
+    ${props => {
+        switch (props.align) {
+            case 'center':
+                return 'text-align: center;'
+            case 'right':
+                return 'text-align: right;'
+            default:
+                return 'text-align: left;'
+        }
+
+    }
+    }
 `
 export const P = styled.p`
     font-size: 13px;
@@ -99,4 +106,20 @@ export const P = styled.p`
 export const Line = styled.div`
     border: none;
     border-top: 1px dashed black;
+`
+const Space = styled.div`
+ margin-bottom: 0.6em;
+ ${props => {
+    switch (props.size) {
+        case 'small':
+            return 'margin-bottom: 0.2em;'
+        case 'medium':
+            return 'margin-bottom: 0.8em;'
+        case 'large':
+            return 'margin-bottom: 1.6em;'
+        default:
+            return 'margin-bottom: 0.8em;'
+    }
+}}
+
 `

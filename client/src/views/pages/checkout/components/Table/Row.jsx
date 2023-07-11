@@ -9,7 +9,7 @@ export const Row = ({ cols, space, children }) => {
 }
 const Container = styled.div`
   display: grid;
- 
+ align-items: center;
   grid-template-columns: 1fr;
   ${props => {
         switch (props.space) {

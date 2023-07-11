@@ -1,5 +1,7 @@
 import { Lab } from "../../Lab";
+import { Receipt } from "../../views";
 import { CashRegisterClosure } from "../../views/pages/CashReconciliation/page/CashRegisterClosure/CashRegisterClosure";
+import ReceiptLab from "../../views/pages/checkout/ReceiptLab";
 
 const routes = [
     {
@@ -7,8 +9,8 @@ const routes = [
         element: <Lab/>,
         children: [
             {
-                path: "cierre-caja",
-                element: <CashRegisterClosure />
+                path: "receipt",
+                element: <ReceiptLab />
             }
         ]
 

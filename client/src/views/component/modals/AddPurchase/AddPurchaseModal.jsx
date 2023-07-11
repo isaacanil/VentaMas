@@ -173,6 +173,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
 const Container = styled.div`
     z-index: 20;
     position: absolute;
+    top: 0px;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.200);
     backdrop-filter: blur(10px);

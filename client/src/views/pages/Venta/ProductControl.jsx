@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react'
 import { Product, Grid } from '../../'
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { CustomProduct } from '../../templates/system/Product/CustomProduct'
 import { selectIsRow } from '../../../features/setting/settingSlice';
 import { Carrusel } from '../../component/Carrusel/Carrusel';
@@ -8,8 +8,15 @@ import styled from 'styled-components';
 import Loader from '../../templates/system/loader/Loader';
 import useScroll from '../../../hooks/useScroll';
 import { CenteredText } from '../../templates/system/CentredText';
+import { motion } from 'framer-motion';
+import { icons } from '../../../constants/icons/icons';
+import { openModalUpdateProd } from '../../../features/modals/modalSlice';
+import { OPERATION_MODES } from '../../../constants/modes';
+import { ChangeProductData } from '../../../features/updateProduct/updateProductSlice';
 
 export const ProductControl = ({ products, isProductGrouped, productsLoading, setProductsLoading }) => {
+  const dispatch = useDispatch()
+  
   const viewRowModeRef = useSelector(selectIsRow)
   const loadingMessage = 'Cargando los Productos'
   const productsContainerRef = useRef(null);
@@ -31,6 +38,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
     }
       , 1000)
   }, [isProductGrouped])
+
   const effectProductContainer = {
     hidden: { opacity: 1, scale: 0 },
     visible: {
@@ -42,6 +50,11 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
       }
     }
   }
+  const handlerProductModal = () => {
+    dispatch(openModalUpdateProd());
+    dispatch(ChangeProductData({ products, status: OPERATION_MODES.CREATE.label }));
+
+}
   return (
     <Fragment>
       <Carrusel />
@@ -100,9 +113,13 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
             )
           }
           {
-
             (products.length === 0 || Object.keys(productsByCategory).length === 0) && !productsLoading ? (
-              <CenteredText text='No hay Productos' showAfter={1000} />
+              <CenteredText
+                text='No hay Productos'
+                buttonText={'Crear Producto'}
+                handleAction={handlerProductModal}
+                startIcon={icons.operationModes.add}
+              />
             ) : null
           }
         </Wrapper>
@@ -120,14 +137,16 @@ border-radius: var(--border-radius-light);
 border-top-left-radius: 0;
 border-bottom-right-radius: 0;
 border-bottom-left-radius: 0;
+  position: relative;
 `
-const Wrapper = styled.div`
+const Wrapper = styled(motion.div)`
  height: 100%;
  padding: 0.5em;
-
+  width: 100%;
+  position: relative;
  //padding-top: 1em;
  overflow-y: scroll;
- position: relative;
+
  
  ${({ isScrolled }) => isScrolled ? `
     border-top: 1px solid #e0e0e08b;

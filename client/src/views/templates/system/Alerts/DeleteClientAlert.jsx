@@ -6,18 +6,20 @@ import { useSelector } from 'react-redux'
 import { selectDeleteProductAlert, handleDeleteProductAlertSuccess, handleDeleteProductAlert } from '../../../../features/Alert/AlertSlice'
 import { useDispatch } from 'react-redux'
 import { GoAlert } from 'react-icons/go'
+import { deleteProduct } from '../../../../firebase/firebaseconfig'
+import { selectUser } from '../../../../features/auth/userSlice'
 export const DeleteClientAlert = ({ 
     success, 
     title = 'Eliminar Producto', 
     message='Esta acción borrara permanentemente todos los datos' }) => {
     const dispatch = useDispatch()
-    const isOpen = useSelector(selectDeleteProductAlert)
-
+    const {isOpen, id} = useSelector(selectDeleteProductAlert)
+    const user = useSelector(selectUser);
     const handleCancel = () => {
         dispatch(handleDeleteProductAlert())
     }
     const handleSuccess = () => {
-        dispatch(handleDeleteProductAlertSuccess())
+        deleteProduct(id, user)
         dispatch(handleDeleteProductAlert())
     }
     return (

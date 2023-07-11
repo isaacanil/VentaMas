@@ -6,7 +6,7 @@ import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBo
 import { TextareaV2 } from '../../../Comments/TextareaV2'
 import { ViewInvoice } from './components/ViewInvoive/ViewInvoice'
 import { Comments } from '../../../Comments/Comments'
-import { selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, } from '../../../../../../../../features/cashCount/cashCountSlide'
+import { selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { DateSection } from '../../Header/DateSection'
 import { selectUser } from '../../../../../../../../features/auth/userSlice'
@@ -15,8 +15,11 @@ import { fbLoadInvoicesForCashCount } from '../../../../../../../../firebase/cas
 export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => {
   const CashReconciliation = useSelector(selectCashCount)
   const { sales, id, state } = CashReconciliation
-  const { banknotes } = CashReconciliation.closing;
-  const [invoices, setInvoices] = useState([])
+  const { banknotes, comments } = CashReconciliation.closing;
+  const [invoices, setInvoices] = useState({
+    count: '',
+    invoices: []
+  })
   const dispatch = useDispatch()
   const user = useSelector(selectUser)
   const handleChangesComments = (comments) => {
@@ -28,7 +31,7 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
   }
   useEffect(() => {
     const fetchData = async () => {
-      const invoicesData = await fbLoadInvoicesForCashCount(user, id, 'count')
+      const invoicesData = await fbLoadInvoicesForCashCount(user, id, 'all')
       setInvoices(invoicesData)
     }
     fetchData()
@@ -49,11 +52,12 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
         label='Comentarios de cierre'
         placeholder='Escribe aquí ...'
         disabled={state === 'closed'}
+        value={comments}
         onChange={e => handleChangesComments(e.target.value)}
       />
       <TransactionSummary />
-      <ViewInvoice invoices={invoices} />
-      <CashBoxClosureDetails />
+      <ViewInvoice invoices={invoices.count} />
+      <CashBoxClosureDetails invoices={invoices.invoices} />
     </Container>
   )
 }

@@ -1,19 +1,19 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import Switch from '@mui/material/Switch'
-import { monetarySymbols } from '../../../constants/monetarySymbols'
+import { monetarySymbols } from '../../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
-import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../features/cart/cartSlice'
+import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../../features/cart/cartSlice'
 import { useEffect } from 'react'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import { getTaxReceiptData, handleNCFStatus, selectNcfStatus } from '../../../features/taxReceipt/taxReceiptSlice'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import { getTaxReceiptData, handleNCFStatus, selectNcfStatus } from '../../../../features/taxReceipt/taxReceiptSlice'
 
 
-import { quitarCeros } from '../../../hooks/quitarCeros'
-import CustomInput from '../../templates/system/Inputs/CustomInput'
-import { useRoundedNumber } from '../../../hooks/useRoundedNumber'
-import { fbGetTaxReceipt } from '../../../firebase/taxReceipt/fbGetTaxReceipt'
-import { InputV4 } from '../../templates/system/Inputs/InputV4'
+import { quitarCeros } from '../../../../hooks/quitarCeros'
+import CustomInput from '../../../templates/system/Inputs/CustomInput'
+import { useRoundedNumber } from '../../../../hooks/useRoundedNumber'
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt'
+import { InputV4 } from '../../../templates/system/Inputs/InputV4'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
 
@@ -90,7 +90,7 @@ export const PaymentArea = () => {
         <Container>
             <Row>
                 <Group className='tax-discount'>
-                    <Group>
+                    <Group space={'small'}>
                         <Switch checked={selectedNcfStatus ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
                         <STitle>Comp. Fiscal.</STitle>
                     </Group>
@@ -119,7 +119,7 @@ export const PaymentArea = () => {
                 <Group className='option1'>
                     <span><span>ITBIS:</span>  {useFormatPrice(TaxesRef)}</span>
                     <InputV4
-                            label='Pago con'
+                            label={`Pago con (${monetarySymbols.dollarSign})`}
                             labelVariant='primary'
                         
                             type="number"
@@ -229,6 +229,27 @@ const Group = styled.div`
         }
 
     }}
+     ${props => {
+        switch (props.space) {
+            case 'small':
+                return `
+                gap: 0.2em; 
+                `
+            case 'medium':
+                return `
+                gap: 0.8em;
+                `
+            case 'large':
+                return `
+                gap: 1em;
+                `
+            default:
+                return `
+                    gap: 1em;
+                `
+        }
+    }
+    }
    
   
     

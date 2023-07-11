@@ -74,7 +74,7 @@ const handleSubmit = (e) => {
                     <Titulo>Login</Titulo>
                 </Head>
                 <form onSubmit={handleSubmit}>
-                    <Body>
+                    <Body>npm run
                         <Group>
                         </Group>
                         <Group>

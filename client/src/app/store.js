@@ -1,19 +1,19 @@
 
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from '../features/auth/userSlice'
-import searchReducer from '../features/search/searchSlice'
-import cartReducer from '../features/cart/cartSlice'
-import modalReducer from '../features/modals/modalSlice'
-import categoryReducer from '../features/category/categorySlicer'
-import customProductReducer from '../features/customProducts/customProductSlice'
+import userReducer from '../features/auth/userSlice';
+import searchReducer from '../features/search/searchSlice';
+import cartReducer from '../features/cart/cartSlice';
+import modalReducer from '../features/modals/modalSlice';
+import categoryReducer from '../features/category/categorySlicer';
+import customProductReducer from '../features/customProducts/customProductSlice';
 import addProductReducer from "../features/Firestore/products/addProductSlice";
 import addOrderReducer from "../features/addOrder/addOrderModalSlice";
 import updateProductReducer from "../features/updateProduct/updateProductSlice";
 import alertReducer from "../features/Alert/AlertSlice";
 import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
-import settingReducer from '../features/setting/settingSlice'
+import settingReducer from '../features/setting/settingSlice';
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
-import orderReducer from '../features/order/ordersSlice'
+import orderReducer from '../features/order/ordersSlice';
 import purchaseReducer from '../features/Purchase/purchaseSlice'
 import themeReducer from "../features/theme/themeSlice";
 import addPurchaseReducer from "../features/Purchase/addPurchaseSlice";
@@ -27,8 +27,9 @@ import productOutflowReducer from "../features/productOutflow/productOutflow";
 import clientCartReducer from "../features/clientCart/clientCartSlice";
 import businessReducer from "../features/auth/businessSlice";
 import abilitiesReducer from "../features/abilities/abilitiesSlice";
-import cashReconciliationReducer from "../features/cashCount/cashCountSlide";
+import cashCountManagementReducer from "../features/cashCount/cashCountManagementSlice";
 import UserNotificationReducer from "../features/UserNotification/UserNotificationSlice";
+
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -58,7 +59,7 @@ export const store = configureStore({
     imageViewer: viewerImageReducer,
     taxReceipt: taxReceiptReducer,
     loader: loaderReducer,
-    cashCount: cashReconciliationReducer,
+    cashCountManagement: cashCountManagementReducer,
     userNotification: UserNotificationReducer,
   
   }

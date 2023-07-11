@@ -6,14 +6,18 @@ import { ProductCardRow } from './ProductCard/ProductCardRow'
 import { Pagination } from '@mui/material'
 import { Carrusel } from '../../../../component/Carrusel/Carrusel'
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue'
+import { CenteredText } from '../../../../templates/system/CentredText'
+import { icons } from '../../../../../constants/icons/icons'
+import { openModalUpdateProd } from '../../../../../features/modals/modalSlice'
+import { ChangeProductData, selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice'
+import { OPERATION_MODES } from '../../../../../constants/modes'
 
 
 export const PendingItemsTable = ({ productsArray, setCurrentProducts, filteredProducts }) => {
-  // const [ products, setProducts ] = useState([])
-  // useEffect(() => setProducts(productsArray), [productsArray])
-
+  const {products} = useSelector(selectUpdateProductData)
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 16;
+  const dispatch = useDispatch();
   useEffect(() => {
     const start = (currentPage - 1) * productsPerPage;
     const end = start + productsPerPage;
@@ -23,6 +27,13 @@ export const PendingItemsTable = ({ productsArray, setCurrentProducts, filteredP
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
+
+  const handlerProductModal = () => {
+      dispatch(openModalUpdateProd());
+      dispatch(ChangeProductData({ products, status: OPERATION_MODES.CREATE.label }));
+  
+  }
+
   return (
     <Container>
       <TableWrapper>
@@ -61,6 +72,16 @@ export const PendingItemsTable = ({ productsArray, setCurrentProducts, filteredP
                 <ProductCardRow product={product} Col={Col} Row={Row} key={index} />
               ))
             ) : null}
+            {
+              productsArray.length === 0 /*|| Object.keys(productsByCategory).length === 0) */ /*&& !productsLoading*/ ? (
+                <CenteredText
+                  text='No se encontraron productos, ¿Desea agregar uno?'
+                  buttonText={'Crear'}
+                  handleAction={handlerProductModal}
+                  startIcon={icons.operationModes.add}
+                />
+              ) : null
+            }
           </TableBody>
 
           <Footer>
@@ -93,7 +114,7 @@ const TableWrapper = styled.header`
   grid-template-rows: 1fr; 
   height: calc(100vh - 5.5em);
   width: 100%;
-  max-width: 1200px;
+  
   overflow: hidden;
   border-radius: 0.5em;
   margin: 0; /* nuevo estilo */
@@ -143,7 +164,7 @@ const Row = styled.div`
   minmax(70px, 0.4fr) //stock
   minmax(70px, 0.5fr) //precio
   minmax(70px, 0.5fr) //precio
-  minmax(80px, 0.1fr); //acción
+  minmax(100px, 0.1fr); //acción
   @media (max-width: 800px){
     gap: 0;
   }

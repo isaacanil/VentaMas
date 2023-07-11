@@ -200,7 +200,8 @@ export const deleteIngredientTypePizza = async (ingredient) => {
 }
 
 export const deleteProduct = (id, user) => {
-  if (user || user?.businessID) { return }
+  console.log({ id, user })
+  if (!user || !user?.businessID) { return }
   deleteDoc(doc(db, "businesses", user.businessID, `products`, id))
 }
 

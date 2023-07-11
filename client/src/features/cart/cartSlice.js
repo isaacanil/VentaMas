@@ -40,6 +40,7 @@ const defaultValue = {
     permission: {
         openCashReconciliation: false
     },
+    isOpen: false,
     data: {
         id: '',
         client: DefaultClient,
@@ -78,9 +79,15 @@ const cartSlice = createSlice({
     name: 'factura',
     initialState,
     reducers: {
+        toggleCart: (state) => {
+            const isOpen = state.isOpen;
+            state.isOpen = !isOpen;
+            console.log(state.isOpen)
+        },
         getClient: (state, actions) => {
-            const client = actions.payload
-            state.data.client = client
+            const client = actions.payload;
+            state.data.client = client;
+            console.log("estado del delivery: ", client.delivery.status);
             if (client?.delivery?.status === true) {
                 state.data.delivery = client?.delivery
             }else{
@@ -176,7 +183,7 @@ const cartSlice = createSlice({
         CancelShipping: (state) => state = defaultValue,
         totalTaxes: (state) => {
             const productSelected = state.data.products
-            const total = productSelected.reduce((total, product) => total + (product.tax.value * product.cost.unit) * product.amountToBuy.total, 0)
+            const total = productSelected.reduce((total, product) => total + (product.price.unit * product.tax.value) * product.amountToBuy.total, 0)
             state.data.totalTaxes.value = total
         },
         totalPurchaseWithoutTaxes: (state) => {
@@ -237,7 +244,8 @@ export const {
     totalShoppingItems,
     totalTaxes,
     updateClientInState,
-    saveBillInFirebase
+    saveBillInFirebase,
+    toggleCart
 } = cartSlice.actions
 
 export const SelectProduct = (state) => state.cart.data.products;
@@ -255,6 +263,8 @@ export const SelectPaymentValue = (state) => state.cart.data.payment.value;
 export const SelectDiscount = (state) => state.cart.data.discount.value;
 export const SelectNCF = (state) => state.cart.data.NCF;
 export const SelectCartPermission = () => state.cart.permission
+
+export const SelectCartIsOpen = (state) => state.cart.isOpen
 
 export default cartSlice.reducer
 

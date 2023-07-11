@@ -36,6 +36,7 @@ import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
 import { OPERATION_MODES } from "../../../constants/modes"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
+import { DeleteClientAlert } from "../../templates/system/Alerts/DeleteClientAlert"
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
 
@@ -105,6 +106,7 @@ export const ModalManager = () => {
       <ImageViewer />
       <SmallNotification />
       <ConfirmationDialog />
+      <DeleteClientAlert/>
     </Fragment>
   )
 

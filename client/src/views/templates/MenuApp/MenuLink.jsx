@@ -5,9 +5,9 @@ import { SubMenu } from './SubMenu/SubMenu'
 export const MenuLink = ({ item, Items }) => {
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
- 
+
   const Component = item?.route?.path ? MenuItemLink : MenuItemDiv;
- 
+
   return (
     <Fragment>
       <Component
@@ -30,18 +30,19 @@ export const MenuLink = ({ item, Items }) => {
         }
 
       </Component>
-      <SubMenu showSubMenu={showSubMenu} isOpen={isOpenSubMenu} item={item} Items={MenuItemLink}/>
+      <SubMenu showSubMenu={showSubMenu} isOpen={isOpenSubMenu} item={item} Items={MenuItemLink} />
     </Fragment>
   )
 }
 
-const MenuItemLink = styled(NavLink)`
-  display: flex;
+const MenuItem = styled.div`
+ display: flex;
   justify-content: space-between;
   padding: 0 0.8em;
   height: 2.4em;
   align-items: center;
   color: var(--Gray6);
+ 
   margin: 0 0.8em;
   border-radius: 0.5rem;
   :hover{
@@ -55,40 +56,32 @@ const MenuItemLink = styled(NavLink)`
   svg{
     color: var(--Gray6);
   }
-  &.active {
+ 
+`
+const MenuItemLink = styled(MenuItem).attrs({
+  as: NavLink,
+  activeClassName: 'active'
+})`
+font-weight: 450;
+   &.active {
     color: white;
+    font-weight: 600;
   background-color:var(--color);
   svg{
     color: white;
   }
-  }`
-  const MenuItemDiv = styled.div`
-    display: flex;
-  justify-content: space-between;
-  padding: 0 0.8em;
-  height: 2.4em;
-  align-items: center;
-  color: var(--Gray6);
-  margin: 0 0.8em;
-  border-radius: 0.5rem;
-  :hover{
-    color: var(--color);
-    background-color: var(--color2);
-    transition: background-color 400ms ease;
-    svg{
-      color: var(--color);
-    }
   }
-  svg{
-    color: var(--Gray6);
-  }
-  `
-  
 
-  
-  
- 
-      
+ `
+const MenuItemDiv = styled(MenuItem)`
+    font-weight: 450;
+  `
+
+
+
+
+
+
 const Group = styled.div`
   display: flex;
   gap: 1rem;
@@ -105,8 +98,3 @@ justify-content: center;
  
 
 `
-const EmptyBox = styled.div`
-    height: 2.75em;
-    width:4em;
-    background-color: var(--color);
-    `

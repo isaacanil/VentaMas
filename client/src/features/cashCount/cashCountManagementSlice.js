@@ -18,8 +18,8 @@ const initialCashCount = {
 }
 
 
-const cashCountSlice = createSlice({
-    name: 'cashCount',
+const cashCountManagementSlice = createSlice({
+    name: 'cashCountManagement',
     initialState: {
         state: null,
         opening: { ...initialCashBoxStatus },
@@ -86,9 +86,10 @@ export const {
     setCashCountClosingComments,
     setCashCountSales,
     setCashCount,
+    clearCashCount,
     setClosingCashTotalAndDiscrepancy
-} = cashCountSlice.actions;
+} = cashCountManagementSlice.actions;
 
-export default cashCountSlice.reducer;
+export default cashCountManagementSlice.reducer;
 
-export const selectCashCount = state => state.cashCount;
+export const selectCashCount = state => state.cashCountManagement;

@@ -26,7 +26,6 @@ export function useGetProducts(trackInventory = false) {
       //filtros por defecto
       const constraints = [
         orderBy("product.productName", "desc"),
-        orderBy("product.order", "asc"),
       ];
       /*--------------------------------------------------------------------------------------------- */
       if (trackInventory) {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { handleDeleteProductAlert } from '../../../../../../features/Alert/AlertSlice';
 import { openModalUpdateProd } from '../../../../../../features/modals/modalSlice';
@@ -9,34 +9,36 @@ import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button';
 import StockIndicator from '../../../../../templates/system/labels/StockIndicator';
 import noImg from '../../../../../../assets/producto/noImg.png'
-import {icons} from '../../../../../../constants/icons/icons'
+import { icons } from '../../../../../../constants/icons/icons'
 import { OPERATION_MODES } from '../../../../../../constants/modes';
 
 import { useCheckForInternetConnection } from '../../../../../../hooks/useCheckForInternetConnection';
 import useImageFallback from '../../../../../../hooks/image/useImageFallback';
+import { selectUser } from '../../../../../../features/auth/userSlice';
 export const ProductCardRow = ({ product, Col, Row }) => {
+  
     const dispatch = useDispatch();
     const handleDeleteProduct = (id) => {
-        dispatch(handleDeleteProductAlert(id));
-      };
-      const handleUpdateProduct = (product) => {
+        dispatch(handleDeleteProductAlert({id}));
+    };
+    const handleUpdateProduct = (product) => {
         dispatch(openModalUpdateProd());
-        dispatch(ChangeProductData({product: product}));
-      };
-      const isConnected = useCheckForInternetConnection()
-      const [imageFallback] = useImageFallback(product?.productImageURL, noImg)
+        dispatch(ChangeProductData({ product: product, status: OPERATION_MODES.UPDATE.label }));
+    };
+    const isConnected = useCheckForInternetConnection()
+    const [imageFallback] = useImageFallback(product?.productImageURL, noImg)
     return (
         <Container>
             <Row>
                 <Col>
                     <ImgContainer>
                         <Img
-                            src={(isConnected && imageFallback) || noImg} 
+                            src={(isConnected && imageFallback) || noImg}
                             noFound={product?.productImageURL ? false : true}
                             alt=""
-                            style={product?.productImageURL === imageFallback ? {objectFit: "cover"} : {objectFit: 'contain'}} 
+                            style={product?.productImageURL === imageFallback ? { objectFit: "cover" } : { objectFit: 'contain' }}
 
-                            />
+                        />
                     </ImgContainer>
                 </Col>
                 <Col>
@@ -67,7 +69,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                         <span>{useFormatPrice(product?.price?.unit)}</span>
                     </Item>
                 </Col>
-                <Head>
+                <Col position='right'>
                     <ButtonGroup>
                         <Button
                             startIcon={icons?.operationModes?.edit}
@@ -85,7 +87,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                             onClick={() => handleDeleteProduct(product?.id)}
                         />
                     </ButtonGroup>
-                </Head>
+                </Col>
             </Row>
         </Container>
     )
@@ -119,14 +121,14 @@ const Img = styled.img`
   width: 100%;
   height: 100%;
   ${props => {
-    switch (props.noFound) {
-      case true:
-        return `
+        switch (props.noFound) {
+            case true:
+                return `
         object-fit: contain;`;
-      default:
-        return ``;
-    }
-  }}
+            default:
+                return ``;
+        }
+    }}
 `;
 const Body = styled.div`
     display: grid;

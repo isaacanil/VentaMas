@@ -1,10 +1,17 @@
 import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+import { selectMenuOpenStatus, toggleOpenMenu } from '../../../../features/nav/navSlice'
 
-export const OpenMenuButton = ({ onClick, isOpenMenu, zIndex }) => {
+export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
+ // const isOpen = useSelector(selectMenuOpenStatus)
+  const dispatch = useDispatch()
+  const handleOpenMenu = () => {
+    dispatch(toggleOpenMenu())
+  }
   return (
-    <Container onClick={onClick} zIndex={zIndex}>
-      <MenuIcon isOpen={isOpenMenu}></MenuIcon>
+    <Container onClick={onClick || handleOpenMenu} zIndex={zIndex}>
+      <MenuIcon isOpen={isOpen}></MenuIcon>
     </Container>
   )
 }
@@ -30,7 +37,7 @@ const Container = styled.div`
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: var(--border-radius);
   cursor: pointer;
-  z-index: 10000000;
+  z-index: 10000;
 `
 const MenuIcon = styled.div`
   position: relative;

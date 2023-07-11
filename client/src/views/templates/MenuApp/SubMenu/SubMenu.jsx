@@ -6,8 +6,7 @@ import { MenuLink } from '../MenuLink'
 
 export const SubMenu = ({ isOpen, item, Items, showSubMenu }) => {
     return (
-        <Container isOpen={isOpen}>
-           
+        <Container isOpen={isOpen}>        
             <Header>
                 <Button
                     startIcon={<IoIosArrowBack />}
@@ -17,7 +16,6 @@ export const SubMenu = ({ isOpen, item, Items, showSubMenu }) => {
                 />
                 <span>{item.title}</span>
             </Header>
-         
             {
                 isOpen ? (item.submenu.map((submenu, index) => (
                     <MenuLink item={submenu} key={index}></MenuLink>

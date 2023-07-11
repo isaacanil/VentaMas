@@ -16,14 +16,7 @@ export const ClientSelector = ({  filteredClients, searchTerm, createClientMode,
     return (
         <Container isOpen={isOpen}>
             <Head>
-                <Group>
-                    <Button
-                        startIcon={<MdPersonAdd />}
-                        borderRadius='normal'
-                        width='icon24'
-                        onClick={createClientMode}
-                    />
-                </Group>
+           
                 <Group>
                     <Button
                         title={<MdClose />}
@@ -98,7 +91,7 @@ const Head = styled.div`
     background-color: #7a7a7a;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: end;
     padding: 0 0.4em;
 `
 const Body = styled.div`
@@ -114,7 +107,7 @@ const Body = styled.div`
    overflow-y: scroll;
    padding: 0.5em;
    display: grid;
-   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
    gap: 0.5em;
    align-items: center;
    align-content: flex-start;
