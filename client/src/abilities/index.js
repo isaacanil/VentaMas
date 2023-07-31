@@ -3,6 +3,8 @@ import { defineAbilitiesForCashier } from './roles/cajero';
 import { defineAbilitiesForBuyer } from './roles/comprador';
 import { defineAbilitiesForAdmin } from './roles/admin';
 import { defineAbilitiesForOwner } from './roles/owner';
+import { defineAbilitiesForDev } from './roles/dev';
+
 
 const ROLE_ABILITIES = {
   ownerAbilities: defineAbilitiesForOwner,  //dueño
@@ -10,10 +12,11 @@ const ROLE_ABILITIES = {
   managerAbilities: defineAbilitiesForManager, //gerente
   cashierAbilities: defineAbilitiesForCashier, //cajero
   buyerAbilities: defineAbilitiesForBuyer,//comprador
+  devAbilities: defineAbilitiesForDev, //desarrollador
 };
 
 export function defineAbilitiesFor(user) {
-  const { adminAbilities, cashierAbilities, buyerAbilities, managerAbilities, ownerAbilities } = ROLE_ABILITIES
+  const { adminAbilities, cashierAbilities, buyerAbilities, managerAbilities, ownerAbilities, devAbilities } = ROLE_ABILITIES
   switch (user.role) {
     case 'owner':
       return ownerAbilities(user);
@@ -23,6 +26,8 @@ export function defineAbilitiesFor(user) {
       return cashierAbilities(user);
     case 'buyer':
       return buyerAbilities(user);
+    case 'dev':
+      return defineAbilitiesForDev(user);
     case 'manager':
       return managerAbilities(user);
     default:

@@ -46,7 +46,7 @@ const Icon = styled(AiOutlineSetting)`
 
 export const Card = ({ data }) => {
   const { title, route, description } = data;
-  const path = route?.path || '#';
+  const path = route || '#';
   return (
     <CardWrapper  to={path}>
       <Title>{title}</Title>

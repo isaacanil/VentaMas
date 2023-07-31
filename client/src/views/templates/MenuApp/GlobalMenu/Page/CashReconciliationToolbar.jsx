@@ -3,33 +3,38 @@ import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { Button } from '../../../system/Button/Button'
 import { useIsOpenCashReconciliation } from '../../../../../firebase/cashCount/useIsOpenCashReconciliation'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setUserNotification } from '../../../../../features/UserNotification/UserNotificationSlice'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { inspectUserAccess } from '../../../../../hooks/abilities/useAbilities'
 
 export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const matchWithCashReconciliation = useMatch("/cash-reconciliation")
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const isOpenCashReconciliation = useIsOpenCashReconciliation()
+    const { status, cashReconciliation } = useIsOpenCashReconciliation()
+    const { abilities } = inspectUserAccess();
+    const user = useSelector(selectUser)
+
     const handleSwitchToCashRegisterOpening = () => {
-        
-        if(isOpenCashReconciliation === 'open' ){
+    
+        if (status === 'open' ) {
             dispatch(setUserNotification(
                 {
                     isOpen: true,
-                    title: 'Caja abierta',
-                    description: 'No se puede abrir un cuadre de caja si ya existe uno abierto',
+                    title: 'Operación no permitida: Caja actualmente abierta',
+                    description: 'No se puede iniciar un nuevo proceso de cuadre de caja mientras haya uno en curso. Por favor, cierre la caja actual antes de intentar abrir una nueva.',
                     onConfirm: null,
                 }
             ))
             return
         }
-        if(isOpenCashReconciliation === 'closing' ){
+        if (status === 'closing') {
             dispatch(setUserNotification(
                 {
                     isOpen: true,
-                    title: 'Caja en proceso de cierre',
-                    description: 'No se puede abrir un cuadre de caja si ya existe uno en proceso de cierre',
+                    title: 'Operación no permitida: Cierre de caja en proceso',
+                    description: 'No se puede iniciar un nuevo proceso de cuadre de caja mientras uno anterior esté en proceso de cierre. Por favor, espere a que el proceso de cierre actual se complete antes de intentar abrir una nueva caja.',
                     onConfirm: null,
                 }
             ))
@@ -42,14 +47,14 @@ export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearch
             <Container>
                 {
                     side === 'right' && (
-                        <Button 
-                        onClick={handleSwitchToCashRegisterOpening}
-                            title={'Abrir Cuadre'} 
+                        <Button
+                            onClick={handleSwitchToCashRegisterOpening}
+                            title={'Abrir Cuadre'}
                             borderRadius={'light'}
                         />
                     )
                 }
-                </Container>
+            </Container>
         ) : null
     )
 }

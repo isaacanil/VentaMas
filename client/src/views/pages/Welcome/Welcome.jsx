@@ -1,13 +1,8 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useMatch, useNavigate } from 'react-router-dom'
-import { Button, ButtonGroup } from '../..'
 import { selectUser } from '../../../features/auth/userSlice'
 import styled from 'styled-components'
-import logo from './ventamax.svg'
-import WelcomeData from './WelcomeData.json'
-import { useMatchRouteByName } from '../../templates/MenuApp/GlobalMenu/useMatchRouterByName'
-import ROUTES_NAME from '../../../routes/routesName'
 import Header from './components/Header'
 import Body from './components/Body/Body'
 export const Welcome = () => {

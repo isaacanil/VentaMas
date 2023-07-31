@@ -83,9 +83,11 @@ export const Header = ({Row, Group, newProduct, setNewProduct, initialState, set
                     unit: getPrice({productSelected, setProduct, isComplete}) + totalIngredientPrice,
                     total: getPrice({productSelected, setProduct, isComplete}) + totalIngredientPrice
                 },
+
                 size: size,
                 id: nanoid(8)
             })
+            
         }
         if (isComplete === 'half' && (productSelected.a !== '' && productSelected.b !== '')) {
             const a = JSON.parse(productSelected.a)
@@ -133,8 +135,7 @@ export const Header = ({Row, Group, newProduct, setNewProduct, initialState, set
             })
         }
     }, [product.price.total])
-    console.log('product => => ', isComplete)
-
+ 
   return (
     <Container>
               <Row>

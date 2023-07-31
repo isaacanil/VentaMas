@@ -16,7 +16,8 @@ export const CashCountMetaData = (cashCount, invoices = []) => {
     }, 0);
   
     const totalRegister = totalClosingBanknotes + totalOpeningBanknotes + totalCard + totalTransfer;
-    const totalCharged = invoices.reduce((total, sale) => {
+    
+    const totalCharged = invoices.reduce((total, sale) => { 
       return total + sale?.data?.totalPurchase?.value;
     }, 0);
 

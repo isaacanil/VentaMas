@@ -17,7 +17,9 @@ export const CustomProduct = ({ product }) => {
     const dispatch = useDispatch();
     const ProductSelected = useSelector(SelectProduct);
     const imageHiddenRef = useSelector(selectImageHidden)
-    const handleGetThisProduct = (product) => dispatch(handleModalSetCustomPizza());
+    const handleGetThisProduct = () => {
+        dispatch(handleModalSetCustomPizza())
+    };
     return (
         <ProductContainer  onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef ? true : false}>
             <ProductImgWrapper imageHiddenRef={imageHiddenRef ? true : false}>

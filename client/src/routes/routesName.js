@@ -1,48 +1,56 @@
 const SALES_TERM = {
-    SALES: 'sales',
-    BILLS: 'sale_bills',
+    SALES: '/sales',
+    BILLS: '/bills',
 }
 const CASH_RECONCILIATION_TERM = {
-    CASH_RECONCILIATION_LIST: 'cash_reconciliation_list',
-    CASH_RECONCILIATION_OPENING: 'cash_reconciliation_opening',
-    CASH_RECONCILIATION_CLOSURE: 'cash_reconciliation_closure',
-    CASH_RECONCILIATION_INVOICE_OVERVIEW: 'cash_reconciliation_invoice_overview',
+    CASH_RECONCILIATION_LIST: '/cash-reconciliation',
+    CASH_RECONCILIATION_OPENING: '/cash-register-opening',
+    CASH_RECONCILIATION_CLOSURE: '/cash-register-closure/:id',
+    CASH_RECONCILIATION_INVOICE_OVERVIEW: '/cash-register-invoices-overview',
+}
+const DEV_VIEW_TERM = {
+    CREATE_BUSINESS: '/create-business',
+    MANAGE_BUSINESS: '/manage-business',
+
 }
 const BASIC_TERM = {
-    HOME: 'home',
-    WELCOME: 'welcome',
+    HOME: '/home',
+    WELCOME: '/',
 }
 const AUTH_TERM = {
-    LOGIN: 'login',
-    SIGNUP: 'signup',
+    LOGIN: '/login',
+    SIGNUP: '/signup',
 }
 const INVENTORY_TERM = {
-    INVENTORY_ITEMS: 'products_admin',
-    CATEGORIES: 'categories_admin',
-    INVENTORY_SERVICES: 'services_admin',
-    PRODUCT_IMAGES_MANAGER: 'product_images_manager',
-    PRODUCT_OUTFLOW: 'product_outflow',
-    SERVICE_OUTFLOW: 'service_outflow',
+    INVENTORY_ITEMS: '/inventory-items',
+    CATEGORIES: '/categories',
+    INVENTORY_SERVICES: '/inventory-services',
+    PRODUCT_IMAGES_MANAGER: '/product-images-manager',
+    PRODUCT_OUTFLOW: '/product_outflow',
+    SERVICE_OUTFLOW: '/service_outflow',
 }
 const CONTACT_TERM = {
-    CLIENTS: 'contact',
-    SUPPLIERS: 'suppliers',
+    CLIENTS: '/contact',
+    SUPPLIERS: '/suppliers',
 }
 const SETTING_TERM = {
-    SETTINGS: 'settings',
-    USERS: 'users',
-    USERS_LIST: 'users_list',
-    CREATE_USER: 'create_user',
-    APP_INFO: 'app_info',
-    BUSINESS_INFO: 'business_info',
-    TAX_RECEIPT: 'tax_receipt',
+    SETTINGS: '/settings',
+    USERS: '/users',
+    USERS_LIST: 'list',
+    CREATE_USER: 'create-user/',
+    UPDATE_USER: 'update-user/:id',
+    APP_INFO: '/app-info',
+    BUSINESS_INFO: '/business-info',
+    TAX_RECEIPT: '/tax-receipt',
 }
 const PURCHASE_TERM = {
-    PURCHASES: 'purchases',
-    ORDERS: 'purchase_orders',
+    PURCHASES: '/purchases',
+    ORDERS: '/orders',
 }
 
-const ROUTES_NAME = {
+
+
+const ROUTES_PATH = {
     BASIC_TERM,
     AUTH_TERM,
     CASH_RECONCILIATION_TERM,
@@ -51,5 +59,8 @@ const ROUTES_NAME = {
     CONTACT_TERM,
     SETTING_TERM,
     PURCHASE_TERM,
+    DEV_VIEW_TERM
+
 }
-export default ROUTES_NAME
+
+export default ROUTES_PATH 

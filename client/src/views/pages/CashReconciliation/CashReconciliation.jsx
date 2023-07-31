@@ -10,8 +10,7 @@ export const CashReconciliation = () => {
   return (
     <Container>
         <Header />
-        <CashReconciliationTable />
-      
+        <CashReconciliationTable /> 
     </Container>
   )
 }

@@ -2,16 +2,16 @@ import { doc, setDoc } from "firebase/firestore"
 import { addNotification } from "../../features/notification/NotificationSlice"
 import { db } from "../firebaseconfig"
 
-export const fbAddProductOutFlow = (productOutflow, dispatch) => {
+export const fbAddProductOutFlow = (user, productOutflow, dispatch) => {
+    if (!user?.businessID) return
     productOutflow = {
         ...productOutflow,
         productList: productOutflow.productList.map((item) => ({
             ...item,
             currentRemovedQuantity: 0,
-            totalRemovedQuantity: item.currentRemovedQuantity,
         }))
     }
-    const productOutFlowRef = doc(db, "productOutflow", productOutflow.id)
+    const productOutFlowRef = doc(db, "businesses", user.businessID,  'productOutflow', productOutflow.id)
     try {
         setDoc(productOutFlowRef, productOutflow)
     } catch (error) {

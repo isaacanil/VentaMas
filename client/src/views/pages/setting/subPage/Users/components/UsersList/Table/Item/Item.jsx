@@ -7,17 +7,18 @@ import { fbDeleteUser } from '../../../../../../../../../firebase/users/fbDelete
 import { useNavigate } from 'react-router-dom'
 import { inspectUserAccess } from '../../../../../../../../../hooks/abilities/useAbilities'
 import { selectAbilities } from '../../../../../../../../../features/abilities/abilitiesSlice'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice'
 
 export const Item = ({ data, num, colWidth }) => {
   const navigate = useNavigate()
   const { abilities } = inspectUserAccess();
 
-  const handleDeleteUser = () => {
-    fbDeleteUser(data.user.id)
-  }
+  const dispatch = useDispatch()
+  const handleDeleteUser = () => {fbDeleteUser(data.user.id)}
   const handleEditUser = () => {
-    navigate('/users/create')
+    navigate('/users/update-user/' + data.user.id)
+    dispatch(updateUser(data.user))
   }
   const renamedAbilities = (abilities) => {
     switch (abilities) {
@@ -31,6 +32,8 @@ export const Item = ({ data, num, colWidth }) => {
         return 'Cajero'
       case 'manager':
         return 'Gerente'
+      case 'dev':
+        return 'Desarrollador'
     }
   }
   return (
@@ -87,6 +90,8 @@ const Role = styled.div`
         return `#F5A524;`
       case 'manager':
         return `#F31260;`
+      case 'dev':
+        return `#f312bb;`
       default:
     }
   }};

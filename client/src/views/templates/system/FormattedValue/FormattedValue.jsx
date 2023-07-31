@@ -37,9 +37,28 @@ ${({ type }) => type === 'title' && 'font-size: 22px; font-weight: 600; line-hei
 ${({ type }) => type === 'subtitle' && 'font-size: 18px; font-weight: 500; line-height: 1.4; color: #333333;'}
 ${({ type }) => type === 'paragraph' && 'font-size: 16px; font-weight: 400; line-height: 1.6; letter-spacing: 0.02em; color: #555555;'}
 
-  ${({ type }) => type === 'title-table' && 'font-size: 18px;font-weight: bold;color: var(--color);'}
-  ${({ type }) => type === 'subtitle-table' && "font-size: 14px;font-weight: bold;text-transform: capitalize;font-family: 'Montserrat', sans-serif;"}
-  ${({ type }) => type === 'paragraph-table' && 'font-size: 14px;'}
+  ${({ type }) => {
+    switch (type) {
+      case 'title-table':
+        return 'font-size: 18px;font-weight: bold;color: var(--color);'
+      case 'subtitle-table':
+        return `
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: capitalize;
+        font-family: 'Montserrat', sans-serif;
+        `
+      case 'paragraph-table':
+        return `
+        font-size: 14px;
+        font-weight: 400;
+        text-transform: capitalize;
+        font-family: 'Azeret Mono', monospace;
+        `
+      default:
+        return ''
+    }
+  }}
 
   ${({ size }) => size === 'xsmall' && 'font-size: 12px;'}
   ${({ size }) => size === 'small' && 'font-size: 14px;'}

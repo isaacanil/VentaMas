@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { selectUser } from "../../features/auth/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 
-export function useIsOpenCashReconciliation(getData) {
+export function useIsOpenCashReconciliation() {
     const [value, setValue] = useState(false);
     const [cashReconciliation, setCashReconciliation] = useState(null);
     const user = useSelector(selectUser);
@@ -19,14 +19,11 @@ export function useIsOpenCashReconciliation(getData) {
             const isOpen = querySnapshot.docs.some(doc => doc.data().cashCount.state === 'open');
            
             const isClosing = querySnapshot.docs.some(doc => doc.data().cashCount.state === 'closing');
-            if (isOpen) {
+            const isSameUser = querySnapshot.docs.some(doc => doc.data().cashCount.opening.employee.id === user.uid)
+           
+            if (isOpen && isSameUser ) {
                 setValue('open');
-                const data = q.docs.map(doc => doc.data());
-                if(getData){
-
-                    setCashReconciliation(getData);
-                }
-            } else if (isClosing) {
+            } else if (isOpen && isClosing) {
                 setValue('closing');
             } else {
                 setValue('closed');
@@ -37,5 +34,5 @@ export function useIsOpenCashReconciliation(getData) {
         return () => unsubscribe();
     }, [user]);
 
-    return value;
+    return {status: value, cashCount: cashReconciliation};
 }

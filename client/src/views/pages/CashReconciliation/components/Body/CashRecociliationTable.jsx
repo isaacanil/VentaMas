@@ -9,36 +9,45 @@ import { SettingsControlBar } from '../SettingsControlBar'
 import { fbGetCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
+import { CenteredText } from '../../../../templates/system/CentredText'
 
 export const CashReconciliationTable = () => {
   const [cashCount, setCashCount] = useState(0)
   const user = useSelector(selectUser)
-  useEffect(()=>{
+  useEffect(() => {
     fbGetCashCounts(user, setCashCount)
-  },[user])
+  }, [user])
   console.log(cashCount)
-    return (
-        <Container>
-            <SettingsControlBar />
-            <Table  
-                 colWidth={tableConfig.headers}
-                 header={<Header data={tableConfig.headers} />}
-                 body={
-                   <Body
-                     Item={Item}
-                     colWidth={tableConfig.headers}
-                      data={cashCount}
-                      
-                   />
-                 }
+  return (
+    <Container>
+      <SettingsControlBar />
+      <Table
+        colWidth={tableConfig.headers}
+        header={<Header data={tableConfig.headers} />}
+        body={
+          <Body
+            Item={Item}
+            colWidth={tableConfig.headers}
+            data={cashCount}
+          />
+        }
+        messageNoData={
+          cashCount?.length === 0 && (
+            <CenteredText
+              text='No se encontraron cuadres de caja para la fecha seleccionada. '
+              showAfter={0}
             />
-        </Container>
-    )
+          )
+        }
+
+      />
+    </Container>
+  )
 }
 
 const Container = styled.div`
   display: grid;
-  padding: 0.4em;
+
   grid-template-rows: min-content 1fr;
   overflow: scroll;
 `

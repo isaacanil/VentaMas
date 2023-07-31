@@ -10,6 +10,7 @@ import { SearchInput } from '../../../system/Inputs/SearchInput'
 import { useMatchRouteByName } from '../useMatchRouterByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { icons } from '../../../../../constants/icons/icons'
+import { useMatch } from 'react-router-dom'
 
 export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const ImageHidden = useSelector(selectImageHidden)
@@ -17,7 +18,7 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
     const categoryGrouped = useSelector(selectCategoryGrouped)
     const FullScreen = useSelector(selectFullScreen)
     const {SALES} = ROUTES_NAME.SALES_TERM
-    const matchWithVenta = useMatchRouteByName(SALES)
+    const matchWithVenta = useMatch(SALES)
     const dispatch = useDispatch()
     const handleImageHiddenFN = () => {
         dispatch(handleImageHidden())

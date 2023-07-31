@@ -8,8 +8,17 @@ import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurch
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { icons } from '../../../../constants/icons/icons'
 import { Button } from '../../../templates/system/Button/Button'
+import { motion } from 'framer-motion'
+
+const variants = {
+    initial: { opacity: 0, y: -90 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 150, transition: { duration: 0.5 } },  // nueva propiedad
+};
+
 export const ProductCardForCart = ({ item }) => {
     const dispatch = useDispatch()
+
     const deleteProductFromCart = (id) => {
         dispatch(totalPurchase())
         dispatch(deleteProduct(id))
@@ -18,10 +27,16 @@ export const ProductCardForCart = ({ item }) => {
         dispatch(totalShoppingItems())
         dispatch(setChange())
         dispatch(addPaymentMethodAutoValue())
-       
     }
+
     return (
-        <Container>
+        <Container
+            variants={variants}
+            initial='initial'
+            animate='animate'
+            transition={{ duration: 0.6 }}
+
+        >
             <Row>
                 <Title>{item.productName}</Title>
             </Row>
@@ -35,12 +50,12 @@ export const ProductCardForCart = ({ item }) => {
                             id={item.id}
                             product={item}
                         ></Counter>
-                        <Button 
-                        title={icons.operationModes.discard} 
-                        onClick={() => deleteProductFromCart(item.id)} 
-                        width='icon24'
-                        borderRadius={'normal'}
-                        color='danger'
+                        <Button
+                            title={icons.operationModes.discard}
+                            onClick={() => deleteProductFromCart(item.id)}
+                            width='icon24'
+                            borderRadius={'normal'}
+                            color='danger'
                         />
                     </Group>
                 </Group>
@@ -48,7 +63,7 @@ export const ProductCardForCart = ({ item }) => {
         </Container>
     )
 }
-const Container = styled.div`
+const Container = styled(motion.div)`
     width: 100%;
     height: min-content;
     position: relative;

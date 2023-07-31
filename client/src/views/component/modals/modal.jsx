@@ -1,18 +1,17 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 //component and pages
 import { Button } from '../../index'
 import { MdClose } from 'react-icons/md'
 import styled from 'styled-components'
 import { ButtonGroup } from '../../templates/system/Button/Button'
-
-//hooks
-//import { useModal } from '../../../hooks/useModal'
-
-
+import { motion } from 'framer-motion'
+import { nanoid } from 'nanoid'
+import { set } from 'lodash'
+import { MotionWrapper } from '../base/animation/MotionWrapper'
 
 export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, isOpen, subModal, width }) => {
-
+    const [modalContent, setModalContent] = useState(false)
     const done = async () => {
         try {
             await handleSubmit()
@@ -23,15 +22,53 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
         }
 
     }
+    useEffect(() => {
+        if (isOpen) {
+            setTimeout(() => {
+                setModalContent(true);
+            }, 300);
+        } else {
+            setModalContent(false);
+        }
+    }, [isOpen]);
+    const backdropVariants = {
+        open: {
+            opacity: 1,
+            pointerEvents: 'all',
+        },
+        closed: {
+            opacity: 0,
+            pointerEvents: 'none',
+        }
+    }
+    const containerVariants = {
+        open: { scale: 1 },
+        closed: { scale: 0 }
+    }
     return (
-        <Backdrop isOpen={isOpen}>
-            <Container width={width}>
+        <Backdrop
+            variants={backdropVariants}
+            initial="closed"
+            animate={isOpen ? "open" : "closed"}
+            exit="closed"
+            transition={{ duration: 0.3 }}
+            isOpen={isOpen}
+        >
+            <Container
+                variants={containerVariants}
+                initial="closed"
+                animate={isOpen ? "open" : "closed"}
+                exit="closed"
+                width={width}>
                 <Header>
                     <h3>{nameRef}</h3>
                     <Button title={<MdClose />} width='icon24' borderRadius='normal' bgcolor='error' onClick={close} />
                 </Header>
                 <Body>
-                    {children}
+                    {modalContent && (<MotionWrapper>
+                        {children}
+                    </MotionWrapper>)
+                    }
                     {subModal ? subModal : null}
                 </Body>
                 <Footer>
@@ -48,16 +85,16 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
                             onClick={close}
                         />
                     </ButtonGroup>
-                 
+
                 </Footer>
             </Container>
         </Backdrop>
     )
 }
-const Backdrop = styled.div`
+const Backdrop = styled(motion.div)`
      width: 100%;
     height: 100vh;
-    background-color: var(--BlackOp2);
+    background-color: var(--BlackOp);
     backdrop-filter: blur(var(--blur));
     display: flex;
     justify-content: center;
@@ -67,23 +104,10 @@ const Backdrop = styled.div`
     overflow-y: hidden;
     top: 0;
     left: 0;
-   transform: scale(0);
-    opacity: 0;
     transition: opacity 400ms ease-in-out;
-    ${props => {
-        switch (props.isOpen) {
-            case true:
-                return `
-                transform: scale(1);
-                opacity: 1;
-                `
-            default:
-                break;
-        }
-    }}
-
+   
 `
-const Container = styled.div`
+const Container = styled(motion.div)`
  width: 100vw;
  max-width: 720px;
  height: 100%;
@@ -95,29 +119,29 @@ const Container = styled.div`
  overflow: hidden;
  position: relative;
  ${props => {
-    switch (props.width) {
-        case 'small':
-            return `
+        switch (props.width) {
+            case 'small':
+                return `
             width: 100vw;
             max-width: 600px;
             `
-        case 'medium':
-            return `
+            case 'medium':
+                return `
             width: 100vw;
             max-width: 800px;
             `
-        case 'large':
-            return `
+            case 'large':
+                return `
             width: 100vw;
             max-width: 1000px;
             `
-        case 'extra-large':
-            return `
+            case 'extra-large':
+                return `
             width: 100vw;
             max-width: 1200px;
             `
-    }
- }}
+        }
+    }}
         `
 const Header = styled.div`
 display: flex;

@@ -29,6 +29,7 @@ import businessReducer from "../features/auth/businessSlice";
 import abilitiesReducer from "../features/abilities/abilitiesSlice";
 import cashCountManagementReducer from "../features/cashCount/cashCountManagementSlice";
 import UserNotificationReducer from "../features/UserNotification/UserNotificationSlice";
+import usersManagementSlice from "../features/usersManagement/usersManagementSlice";
 
 export const store = configureStore({
   reducer: {
@@ -61,7 +62,7 @@ export const store = configureStore({
     loader: loaderReducer,
     cashCountManagement: cashCountManagementReducer,
     userNotification: UserNotificationReducer,
-  
+    usersManagement: usersManagementSlice,
   }
   ,
 })

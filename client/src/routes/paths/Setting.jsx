@@ -1,37 +1,40 @@
 import { Setting, TaxReceiptSetting, UserAdmin } from "../../views";
 import AppInfo from "../../views/pages/setting/subPage/AppInfo/AppInfo";
 import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
+import EditUser from "../../views/pages/setting/subPage/Users/components/EditUser";
 import SignUp from "../../views/pages/setting/subPage/Users/components/SignUp";
 import { UserList } from "../../views/pages/setting/subPage/Users/components/UsersList/UserList";
 import validateRouteAccess from "../requiereAuthProvider";
 import ROUTES_NAME from "../routesName";
 
 const { SETTING_TERM } = ROUTES_NAME;
-const { SETTINGS, USERS, USERS_LIST, TAX_RECEIPT, APP_INFO, BUSINESS_INFO, CREATE_USER } = SETTING_TERM;
-const basePath = "settings";
+const { SETTINGS, USERS, UPDATE_USER, USERS_LIST, TAX_RECEIPT, APP_INFO, BUSINESS_INFO, CREATE_USER } = SETTING_TERM;
+const basePath = SETTINGS;
 const Routes = [
-    { path: `/${basePath}`, element: validateRouteAccess(<Setting />), name: SETTINGS },
+    { path: SETTINGS, element: validateRouteAccess(<Setting />), },
     {
-        path: `/users`,
+        path: USERS,
         element: validateRouteAccess(<UserAdmin />),
         name: USERS,
         children: [
             {
-                path: `list`,
+                path: USERS_LIST,
                 element: validateRouteAccess(<UserList />, 'read', 'User'),
-                name: USERS_LIST
-            }, 
+            },
             {
-                path: `create`,
+                path: CREATE_USER,
                 element: validateRouteAccess(<SignUp />),
-                name: CREATE_USER
-            },   
+            },
+            {
+                path: UPDATE_USER,
+                element: validateRouteAccess(<EditUser/>),
+            }
 
         ]
     },
-    { path: `/${basePath}/tax-receipt`, element: validateRouteAccess(<TaxReceiptSetting />), name: TAX_RECEIPT },
-    { path: `/${basePath}/business`, element: validateRouteAccess(<BusinessInfo />), name: BUSINESS_INFO },
-    { path: `/${basePath}/app-info`, element: validateRouteAccess(<AppInfo />), name: APP_INFO }
+    { path: `${basePath}${TAX_RECEIPT}`, element: validateRouteAccess(<TaxReceiptSetting />), name: TAX_RECEIPT },
+    { path: `${basePath}${BUSINESS_INFO}`, element: validateRouteAccess(<BusinessInfo />), name: BUSINESS_INFO },
+    { path: `${basePath}${APP_INFO}`, element: validateRouteAccess(<AppInfo />), name: APP_INFO }
 ]
 
 export default Routes;

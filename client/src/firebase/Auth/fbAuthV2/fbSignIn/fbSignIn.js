@@ -16,7 +16,8 @@ async function getUserFromFirestore(user) {
     const userSnapshot = await getDocs(q);
 
     if (userSnapshot.empty) {
-        throw new Error('Authentication failed');
+       // throw new Error('Authentication failed');
+       throw new Error('Error: No se encontró el usuario')
     }
     return userSnapshot.docs[0];
 }
@@ -31,7 +32,8 @@ async function checkPassword(user, userData) {
     const correctPassword = await compare(user.password, userData.password);
 
     if (!correctPassword) {
-        throw new Error('Authentication failed');
+       // throw new Error('Authentication failed');
+         throw new Error('Error: Contraseña incorrecta')
     }
 
     return correctPassword;
@@ -63,7 +65,7 @@ async function updateAppState(dispatch, userData, userDoc) {
     }));
 }
 
-export const fbSignIn = async (user, dispatch, navigate, homePath) => {
+export const fbSignIn = async (user, dispatch, navigate, homePath, setError) => {
     try {
         const userDoc = await getUserFromFirestore(user);
         const userData = userDoc.data().user;
@@ -84,6 +86,7 @@ export const fbSignIn = async (user, dispatch, navigate, homePath) => {
         console.log('User logged in successfully');
 
     } catch (error) {
+        setError(error.message);
         console.error('An error occurred during sign in'); // No revela detalles del error
     }
 };

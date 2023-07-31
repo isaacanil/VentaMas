@@ -9,7 +9,6 @@ import { SelectProductOutflow, setProductOutflowData } from '../../../../../feat
 import { fbDeleteProductOutflow } from '../../../../../firebase/ProductOutflow/fbDeleteProductOutflow';
 import { fbGetProductOutflow } from '../../../../../firebase/ProductOutflow/fbGetProductOutflow';
 import { fbUpdateStock } from '../../../../../firebase/ProductOutflow/fbUpdateStock';
-import { useFormatNumber } from '../../../../../hooks/useFormatNumber';
 import useScroll from '../../../../../hooks/useScroll';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import { Button } from '../../../../templates/system/Button/Button';
@@ -18,6 +17,8 @@ import { FormattedValue } from '../../../../templates/system/FormattedValue/Form
 import Loader from '../../../../templates/system/loader/Loader';
 import { CenteredText } from '../../../../templates/system/CentredText';
 import { ProductOutflowDataFormatter, toggleProductOutflowModal } from './toggleProductOutflowModal';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { Header } from './components/Header/Header';
 
 
 export const ProductOutflow = () => {
@@ -27,25 +28,28 @@ export const ProductOutflow = () => {
   const outflowProduct = useSelector(SelectProductOutflow)
   const [outflowListLoader, setOutflowListLoader] = useState(true)
   const isScrolled = useScroll(tableRef)
+  const user = useSelector(selectUser)
+
   const handleClick = () => {
     dispatch(toggleAddProductOutflow())
   };
+
   const handleDeleteProductOutflow = async (item) => {
 
     try {
-      await fbUpdateStock(item.productList, true)
-      await fbDeleteProductOutflow(item.id)
+      await fbUpdateStock(user, item.productList, true)
+      await fbDeleteProductOutflow(user, item.id)
       dispatch(addNotification({ type: 'success', message: 'Salida de producto eliminada' }))
     } catch (err) {
       dispatch(addNotification({ type: 'error', message: 'Error al eliminar la salida de producto' }))
     }
   }
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     const productOutflowList = outflowList.find((item) => item?.productList.length === 0)
-   
-    if(productOutflowList){
-    fbDeleteProductOutflow(productOutflowList.id )
+
+    if (productOutflowList) {
+      fbDeleteProductOutflow(productOutflowList.id)
     }
   }, [outflowList])
   useEffect(() => {
@@ -59,25 +63,14 @@ export const ProductOutflow = () => {
   }, [outflowList])
   console.log(outflowList)
   useEffect(() => {
-    fbGetProductOutflow({ setOutflowList, setOutflowListLoader, dispatch })
-  }, [])
+    fbGetProductOutflow({ user, setOutflowList, setOutflowListLoader, dispatch })
+  }, [user])
 
   console.log(outflowList)
   return (
     <Container>
-      <MenuApp></MenuApp>
-      <Header>
-        <HeaderWrapper>
-          <Title>Registro de salida de productos</Title>
-          <Button
-            bgcolor={'primary'}
-            title={'Nueva Salida'}
-            borderRadius={'normal'}
-            onClick={handleClick}
-          />
-        </HeaderWrapper>
-      </Header>
-      <Table ref={tableRef} >
+      <Header />
+      <Table ref={tableRef}>
         <TableHeader isScrolled={isScrolled}>
           <FormattedValue
             type={'subtitle-table'}
@@ -139,7 +132,7 @@ export const ProductOutflow = () => {
                             borderRadius={'normal'}
                             onClick={() =>
                               toggleProductOutflowModal({
-                                mode: OPERATION_MODES.UPDATE.id,
+                                mode: OPERATION_MODES.UPDATE.label,
                                 data: new ProductOutflowDataFormatter(item),
                                 dispatch
                               })
@@ -165,7 +158,6 @@ export const ProductOutflow = () => {
           }
         </TableItems>
       </Table>
-
     </Container>
   );
 };
@@ -176,38 +168,7 @@ const Container = styled.div`
   height: 100vh;
   background-color: var(--color2);
 `;
-const Header = styled.div`
-  background-color: var(--White);
 
-  width: 100%;
-  padding: 16px;
-`;
-const HeaderWrapper = styled.div`
-max-width: 1000px;
-width: 100%;
-margin: 0 auto;
-
-display: grid;
-align-items: center;
-grid-template-columns: 1fr auto;
-`
-const Title = styled.h2`
-  margin: 0;
-    font-size: 1.1rem;
-`;
-const NewButton = styled.button`
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #0069d9;
-  }
-`;
 const Table = styled.div`
 max-width: 1000px;
 width: 100%;

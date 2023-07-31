@@ -5,7 +5,6 @@ import { closeModalUpdateProd } from '../../../../features/modals/modalSlice'
 import { ChangeProductData, ChangeProductImage, clearUpdateProductData, selectUpdateProductData, setProduct } from '../../../../features/updateProduct/updateProductSlice'
 import { getTaxes } from '../../../../firebase/firebaseconfig'
 import { Button } from '../../../templates/system/Button/Button'
-import { Input } from '../../../templates/system/Inputs/InputV2'
 import { UploadImg } from '../../UploadImg/UploadImg'
 import { Modal } from '../Modal'
 import { quitarCeros } from '../../../../hooks/quitarCeros'
@@ -27,6 +26,26 @@ import { BarCodeControl } from './components/BarCodeControl'
 import { QRCodeControl } from './components/QRCodeControl'
 import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCategories'
 import useImageFallback from '../../../../hooks/image/useImageFallback'
+
+const validateProduct = (product) => {
+    let errors = {};
+    if (!product.productName) {
+        console.log("***************** entrando " )
+        errors.productName = 'Nombre del producto es requerido';
+        console.log(errors, "***************** error productname")
+    }
+    if (!product.type) {
+        errors.type = 'Tipo de producto es requerido';
+    }
+    if (!product.tax) {
+        errors.tax = 'Impuesto es requerido';
+    }
+    if (!product.cost.unit) {
+        errors.cost = 'Costo es requerido';
+    }
+    return errors;
+}
+
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, product } = useSelector(selectUpdateProductData)
     const [taxesList, setTaxesList] = useState(initTaxes)
@@ -35,10 +54,12 @@ export const UpdateProductModal = ({ isOpen }) => {
     const user = useSelector(selectUser);
     const dispatch = useDispatch()
     const updateMode = OPERATION_MODES.UPDATE.label
-    const handleImgController = (e) => {
-        e.preventDefault()
+    const handleImgController = () => {
+      
         setImgController(!imgController)
     }
+    const [errors, setErrors] = useState({
+    })
 
     useEffect(() => {
         getTaxes(setTaxesList)
@@ -64,28 +85,35 @@ export const UpdateProductModal = ({ isOpen }) => {
         dispatch(addNotification({ title: 'Producto Actualizado', message: 'Espere un momento', type: 'success' }))
         fbUpdateProduct(productDataTypeCorrected, dispatch, user)
     }
-
     const handleAddProduct = () => {
         dispatch(addNotification({ title: 'Producto Creado', message: 'Espere un momento', type: 'success' }))
         fbAddProduct(productDataTypeCorrected, dispatch, user)
     }
-
+    
     const handleSubmit = async () => {
-
+        const errors = validateProduct(product);
         try {
-            await productSchema.validate(productDataTypeCorrected);
-            if (status === 'update') {
-                handleUpdateProduct()
-            }
-            if (status === 'create') {
-                handleAddProduct()
+
+            if (Object.keys(errors).length === 0) {
+                await productSchema.validate(productDataTypeCorrected);
+                if (status === 'update') {
+                    handleUpdateProduct()
+                }
+                if (status === 'create') {
+                    handleAddProduct()
+                }
+            } else {
+                setErrors(errors)
+                dispatch(addNotification({ title: 'error', message: 'Ocurrio un errorr', type: 'error' }))
+                return Promise.reject(new Error('error'))
             }
         } catch (error) {
-            console.error(error)
-            dispatch(addNotification({ title: 'error', message: '', type: 'error' }))
+            setErrors(errors)
+            dispatch(addNotification({ title: 'error', message: 'Error 2c', type: 'error' }))
+            return Promise.reject(new Error('error'))
         }
     }
-
+    
     const closeModal = () => {
         dispatch(closeModalUpdateProd())
         dispatch(clearUpdateProductData())
@@ -94,7 +122,6 @@ export const UpdateProductModal = ({ isOpen }) => {
     const localUpdateImage = (url) => dispatch(ChangeProductImage(url));
 
     const [image] = useImageFallback(product?.productImageURL, noImage)
-
     return (
         <Modal
             nameRef={updateMode === status ? `Actualizar ${product.id} ` : 'Agregar Producto'}
@@ -119,8 +146,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                         required
                         type="text"
                         onClear={() => dispatch(setProduct({ ...product, productName: '' }))}
-                        errorMessage={'El nombre del producto es requerido'}
-                        validate={product?.productName === ''}
+                        errorMessage={errors?.productName}
+                        validate={errors?.productName}
                         value={product?.productName || ''}
                         onChange={(e) => dispatch(setProduct({ ...product, productName: e.target.value }))}
                     />
@@ -137,7 +164,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                     <InputV4
                         size='small'
                         type="text"
-                        label={'Ordenar por'}
+                        label={'Ordenar por: '}
                         name='order'
                         required
                         value={product?.order}
@@ -147,7 +174,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                 </FormGroup>
                 <FormGroup column='3'>
                     <InputV4
-                        label={'Tamaño'}
+                        label={'Tamaño: '}
                         type="text"
                         name="size"
                         placeholder='Contenido Neto:'
@@ -155,7 +182,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         onChange={(e) => dispatch(setProduct({ ...product, size: e.target.value }))}
                     />
                     <select
-                        name="category"
+                        name="category: "
                         id=""
                         onChange={(e) => dispatch(setProduct({ ...product, category: e.target.value }))}>                        <option value="">Categoría</option>
                         {
@@ -173,7 +200,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         }
                     </select>
                     <InputV4
-                        label={'Contenido neto'}
+                        label={'Contenido neto: '}
                         type="text"
                         placeholder='Contenido Neto:'
                         name='netContent'
@@ -186,7 +213,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                         <Img>
                             <img
                                 src={image}
-
                                 style={product?.productImageURL === image ? { objectFit: "cover" } : { objectFit: "contain" }} alt=""
                             />
                         </Img>

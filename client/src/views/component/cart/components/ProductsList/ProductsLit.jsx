@@ -3,20 +3,32 @@ import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { SelectProduct } from '../../../../../features/cart/cartSlice'
 import { ProductCardForCart } from '../ProductCardForCart'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export const ProductsList = () => {
     const ProductSelected = useSelector(SelectProduct)
+    const EMPTY_CART_MESSAGE = "Los productos seleccionados aparecerán aquí";
     return (
         <Container>
             {
                 ProductSelected.length > 0 ?
                     (
-                        ProductSelected.map((item, Index) => (
-                            <ProductCardForCart item={item} key={Index} />
-                        ))
+                        <AnimatePresence>
+                            {ProductSelected.map((item, Index) => (
+                                <ProductCardForCart item={item} key={Index} />
+                            ))}
+                        </AnimatePresence>
                     )
                     :
-                    (<h4 style={{ margin: '1em' }}>Los productos seleccionados aparecerán aquí</h4>)
+                    (
+                    <EmptyCartMessage
+                        key="empty-message"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        {EMPTY_CART_MESSAGE}
+                    </EmptyCartMessage>)
             }
         </Container>
     )
@@ -36,3 +48,6 @@ const Container = styled.ul`
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
 `
+const EmptyCartMessage = styled(motion.div)`
+  margin: 1em;
+`;

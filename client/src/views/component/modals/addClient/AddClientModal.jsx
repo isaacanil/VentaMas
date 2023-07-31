@@ -22,9 +22,6 @@ export const AddClientModal = ({ isOpen }) => {
 
     })
  
-
-
-
     const HandleChange = (e) => {
         setClient(
             {

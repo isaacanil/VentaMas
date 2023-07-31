@@ -24,10 +24,21 @@ const getPropertyByPath = (obj, path) => {
 const Select = ({label, title, options, value, onChange, optionsLabel, maxWidth = null }) => {
     const [isOpen, setIsOpen] = useState(false);
     const SelectRef = useRef(null);
+
     const handleSelect = (selectedItem) => {
-        onChange(selectedItem);
+        // Crear un evento simulado
+        const event = {
+            target: {
+                name: label, // o cualquier otro nombre que quieras darle al select
+                value: selectedItem
+            }
+        };
+    
+        // Llamar a onChange con el evento simulado
+        onChange(event);
         setIsOpen(false);
     };
+    
 
     const getOptionLabel = (option) => {
         if (!optionsLabel) {
@@ -41,7 +52,7 @@ const Select = ({label, title, options, value, onChange, optionsLabel, maxWidth 
         <Backdrop maxWidth={maxWidth} ref={SelectRef}>
             {label && (
                 <Label>
-                    {label = title}
+                    {label || title}
                 </Label>
             )}
             <Container  >
@@ -187,7 +198,7 @@ display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
 `
 const Dropdown = styled(motion.div)`
 height: 100%;
-  width: 100%;
+  width: min-content;
     overflow-y: auto;
     padding: 0.4em ;
     gap: 0.2em;
@@ -201,8 +212,10 @@ const Option = styled(motion.div)`
   height: 2.4em;
   display: flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 16px;
+    width: 100%;
     border-radius: var(--border-radius);
+    white-space: nowrap;
     /* border-bottom: var(--border2); */
     
   cursor: pointer;

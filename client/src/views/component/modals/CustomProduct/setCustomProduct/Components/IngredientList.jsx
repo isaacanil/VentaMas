@@ -18,7 +18,6 @@ export const IngredientList = ({ handleIngredientOpen }) => {
     const totalIngredientPrice = useSelector(selectTotalIngredientPrice)
     return (
         <Container>
-            <Ingredients>
                 <IngredientsWrapper>
                     {
                         customProduct ? (
@@ -38,7 +37,7 @@ export const IngredientList = ({ handleIngredientOpen }) => {
                     <Button borderRadius='normal' title={'Editar Ingredientes'} onClick={handleIngredientOpen} />
                     <span>Total: RD$ {separator(totalIngredientPrice)}</span>
                 </IngredientPriceBar>
-            </Ingredients>
+          
         </Container>
     )
 }
@@ -47,27 +46,18 @@ const Container = styled.div`
     margin: 0;
     padding: 0;
     border-radius: 10px;
-    height: auto;
-    position: relative;
-    `
-
-const Ingredients = styled.div`
+    height: 100%;
     display: grid;
-    height: auto;
     grid-template-rows: 1fr min-content;
-    background-color: rgb(217, 217, 217);
+    background-color: rgb(218, 217, 217);
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
-
-
     `
 const IngredientsWrapper = styled.ul`
     overflow-y: scroll;
-    height: 15em;
+   
     width: 100%;
     background-color: #D9D9D9;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.137);
     padding: 0.6em;
     display: grid;
     grid-auto-rows: min-content;
@@ -83,4 +73,6 @@ const IngredientPriceBar = styled.div`
     align-items: center;
     padding: 0 1em;
     justify-content: space-between;
+    border-top: var(--border-primary);
+   
 `

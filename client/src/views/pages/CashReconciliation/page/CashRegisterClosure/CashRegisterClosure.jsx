@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from './../../../../../features/auth/userSlice'
+import userSlice, { selectUser } from './../../../../../features/auth/userSlice'
 import { Header } from './components/Header/Header'
 import styled from 'styled-components'
 import { Body } from './components/Body/Body'
@@ -13,9 +13,11 @@ import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbC
 import { DateTime } from 'luxon'
 import { fbCashCountChangeState } from '../../../../../firebase/cashCount/closing/fbCashCountClosing'
 import { useFbGetCashCount } from '../../../../../firebase/cashCount/fbGetCashCount'
+import { inspectUserAccess } from '../../../../../hooks/abilities/useAbilities'
+import { addNotification } from '../../../../../features/notification/NotificationSlice'
 
 export const CashRegisterClosure = () => {
-
+  const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const [peerReviewAuthorizationIsOpen, setPeerReviewAuthorizationIsOpen] = useState(false)
@@ -25,8 +27,9 @@ export const CashRegisterClosure = () => {
   const cashCount = useSelector(selectCashCount)
 
   const cashCountIsOpen = cashCount?.state === 'open';
-
-  // this if for the user cant make a bill if the cash count is not open or when is in closing process
+  const cashCountIsClosed = cashCount?.state === 'closed'
+  //const { abilities } = inspectUserAccess();
+  // this change the cashCount state for the user cant make a bill if the cash count is not open or when is in closing process
   useEffect(() => {
     if (cashCountIsOpen) fbCashCountChangeState(cashCount, actualUser, 'closing');
   }, [])
@@ -36,8 +39,17 @@ export const CashRegisterClosure = () => {
     if (!cashCount.opening.initialized) navigate('/cash-reconciliation');
   }, [cashCount])
 
-  const handleOpenPeerReviewAuthorization = () => setPeerReviewAuthorizationIsOpen(true);
-  const dispatch = useDispatch()
+  const handleOpenPeerReviewAuthorization = () => {
+    if ((cashCount.opening.employee.id !== actualUser.uid) && actualUser.role !== "admin") {
+      dispatch(addNotification({
+        message: 'No tienes permisos para realizar esta acción',
+        type: 'error'
+      }))
+      return
+    }
+    setPeerReviewAuthorizationIsOpen(true)
+  };
+  // (cashCount.opening.employee.id === actualUser.uid) || actualUser.role === 'admin'
   const handleCancel = async () => {
     //if the user cancel and the status is open or closing, the status will be open
     if (cashCount.state === 'closing' || cashCount.state === 'open') {
@@ -47,15 +59,16 @@ export const CashRegisterClosure = () => {
     navigate('/cash-reconciliation')
   }
   const handleSubmit = async (approvalEmployee) => {
+
     try {
       await fbCashCountClosed(actualUser, cashCount, actualUser.uid, approvalEmployee.uid, closingDate.toMillis())
     } catch (error) {
       console.log(error)
     }
   }
-  
+
   const cashCountActual = cashCount?.id ? useFbGetCashCount(cashCount.id) : null
-  
+
 
   return (
     <Backdrop>
@@ -63,7 +76,7 @@ export const CashRegisterClosure = () => {
         <Header state={cashCountActual?.cashCount?.state} />
         <Body closingDate={closingDate} />
         <Footer
-          onSubmit={handleOpenPeerReviewAuthorization}
+          onSubmit={!cashCountIsClosed ? handleOpenPeerReviewAuthorization : null}
           onCancel={handleCancel}
         />
       </Container>

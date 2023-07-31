@@ -10,9 +10,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
 import { fbAddCategory } from '../../../firebase/categories/fbAddCategory'
 import { addNotification } from '../../../features/notification/NotificationSlice'
+import { InputV4 } from '../../templates/system/Inputs/InputV4'
 export const AddCategory = () => {
 
     const [catName, setCatName] = useState('')
+    const [error, setError] = useState({})
     let Category = {
         id: v4(),
         name: catName
@@ -20,15 +22,24 @@ export const AddCategory = () => {
     console.log(Category)
     const dispatch = useDispatch()
     const user = useSelector(selectUser)
-
-    const handleSubmit = (e) => {
+    const validate = () => {
+        let errors = {}
         if (catName === '') {
+            errors.catName = 'El nombre de la categoría no puede estar vacío'
+        }
+        return errors
+    }
+    const handleSubmit = (e) => {
+        const errors = validate()
+        if (Object.keys(errors).length > 0) {
             dispatch(addNotification({
                 message: 'El nombre de la categoría no puede estar vacío',
                 type: 'error',
                 visible: true
             }))
             return
+        } else {
+            setError(errors)
         }
         fbAddCategory(Category, user)
         e.preventDefault()
@@ -41,11 +52,13 @@ export const AddCategory = () => {
             <FormBody>
                 <Group>
                     <label htmlFor="">Nombre:</label>
-                    <InputText
+                    <InputV4
                         name='name'
                         placeholder='Nombre de la Categoría'
                         onChange={(e) => setCatName(e.target.value)}
-                        value={catName} />
+                        value={catName}
+                        error={error.catName}
+                    />
                 </Group>
             </FormBody>
             <FormFooter>
@@ -54,11 +67,6 @@ export const AddCategory = () => {
         </Form>
     )
 }
-const Container = styled.div`
-   // background-color: rgb(200, 209, 221);
- 
-`
-
 
 const Form = styled.div`
     background-color: rgb(218, 216, 216);
@@ -68,7 +76,7 @@ const Form = styled.div`
     width: 100%;
     
     gap: 1em;
-    border-radius: 10px;
+    border-radius: var(--border-radius);
 `
 
 const FormBody = styled.form`

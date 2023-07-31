@@ -5,7 +5,7 @@ import { db } from "../../firebaseconfig";
 // Función para verificar si el nombre de usuario ya existe
 async function checkIfUserExists(name) {
     const userCollection = collection(db, "users");
-    const nameQuery = query(userCollection, where("name", "==", name));
+    const nameQuery = query(userCollection, where("user.name", "==", name));
     const matchingUsersSnapshot = await getDocs(nameQuery);
 
     return !matchingUsersSnapshot.empty;
@@ -13,15 +13,15 @@ async function checkIfUserExists(name) {
 
 // Función para validar la entrada del usuario
 function validateUserInput({ id, name, password, businessID, role }) {
-    if(!id) { throw new Error('User ID is required'); }
-    if(!name) { throw new Error('User name is required'); };
-    if(!password) { throw new Error('Password is required') }
-    if(!businessID) { throw new Error('Business ID is required') }
-    if(!role) { throw new Error('Role is required') }
+    if(!id) { throw new Error('Error: Es obligatorio proporcionar una identificación de usuario.'); }
+    if(!name) { throw new Error('Error: Es obligatorio proporcionar un nombre de usuario.'); };
+    if(!password) { throw new Error('Error: Es obligatorio proporcionar una contraseña.') }
+    if(!businessID) { throw new Error('Error: Es obligatorio proporcionar un ID de negocio.') }
+    if(!role) { throw new Error('Error: Es obligatorio seleccionar un rol.') }
 }
 
 export const fbSignUp = async (userData) => {
-    try {
+    
         // Validar la entrada del usuario
         validateUserInput(userData);
 
@@ -29,7 +29,7 @@ export const fbSignUp = async (userData) => {
         const userExists = await checkIfUserExists(userData.name);
 
         if (userExists) {
-            throw new Error('A user with this name already exists');
+            throw new Error('Error: Ya existe un usuario con este nombre.');
         }
 
         // Hash password
@@ -47,9 +47,5 @@ export const fbSignUp = async (userData) => {
             }
         });
         console.log('User created successfully');
-    } catch (error) {
-        // Maneja el error de forma segura
-        console.error('An error occurred during sign up'); // No revela detalles del error
-        console.error(error);
-    }
+    
 };

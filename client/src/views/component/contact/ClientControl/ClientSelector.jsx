@@ -64,7 +64,7 @@ const Container = styled.div`
     background-color: rgb(80, 80, 80);
     display: grid;
     grid-template-rows: 2em 1fr;
-    z-index: 1000;
+    z-index: 100;
     transform: translateY(-600px) scaleY(0);
     transition: transform 4s ease-in-out;
     transition-property: transform, z-index;

@@ -5,13 +5,11 @@ const { BASIC_TERM } = ROUTES_NAME;
 const { HOME, WELCOME } = BASIC_TERM;
 const Routes = [
     {
-        path: '/',
-        name: WELCOME,
+        path: WELCOME,
         element: <Welcome />,
     },
     {
-        path: '/home',
-        name: HOME,
+        path: HOME,
         element: (
             validateRouteAccess(<Home />)  
         ),

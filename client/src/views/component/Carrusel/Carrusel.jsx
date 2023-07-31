@@ -1,24 +1,21 @@
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useScreenSize } from '../../../hooks/useScreenSize'
-
-import { useEffect } from 'react'
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md'
-import { addCategory, deleteCategorySelected } from '../../../features/category/categorySlicer'
-import { useDispatch } from 'react-redux'
-import { Tooltip } from '../../templates/system/Button/Tooltip'
+import { useDispatch, useSelector } from 'react-redux'
 import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
 import { motion } from 'framer-motion'
 import { Category } from './Category'
 import { toggleAddCategory } from '../../../features/modals/modalSlice'
 import { icons } from '../../../constants/icons/icons'
+import { SelectCategoryList } from '../../../features/category/categorySlicer'
 
-export const Carrusel = ({themeColor}) => {
+export const Carrusel = ({ themeColor }) => {
     const categoriesRef = useRef(null)
     const { width } = useScreenSize(categoriesRef)
     const { categories } = useFbGetCategories()
     const dispatch = useDispatch()
-
+    const categorySelected = useSelector(SelectCategoryList)
     const categoryCardRef = useRef(null)
     const MoveScroll = (direction) => {
         const toStart = () => {
@@ -82,7 +79,13 @@ export const Carrusel = ({themeColor}) => {
         }
     }
     const handleCreateCategory = () => {
-        dispatch(toggleAddCategory({isOpen: true}))
+        dispatch(toggleAddCategory({ isOpen: true }))
+    }
+    const findElementInArray = (array, element) => {
+        const result = array.find((category) => category === element)
+        if (result) {
+            return true
+        }
     }
     return (
         <>
@@ -100,7 +103,7 @@ export const Carrusel = ({themeColor}) => {
                     ref={categoriesRef}
                 >
                     <Category
-                        category={{ name: 'Crear' }}
+                        category={{ name: 'Categoría' }}
                         onClick={handleCreateCategory}
                         type='create'
                         icon={icons.operationModes.add}
@@ -112,7 +115,7 @@ export const Carrusel = ({themeColor}) => {
                                     themeColor={themeColor ? themeColor : null}
                                     category={category}
                                     key={index}
-                                    va
+                                    selected={findElementInArray(categorySelected, category.name)}
                                 />
                             ))
                         ) : null
@@ -136,12 +139,12 @@ background-color: #ffffff;
     padding: 0 1em;
     gap: 0.4em;
     ${props => {
-        switch(props.themeColor){
+        switch (props.themeColor) {
             case 'transparent':
                 return `
                     background-color: var(--color2);
                 `
-            
+
         }
     }}
 `

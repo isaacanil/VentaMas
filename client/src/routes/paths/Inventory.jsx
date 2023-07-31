@@ -10,29 +10,24 @@ const basePath = "inventory"
 
 const Routes = [
     {
-        path: `/${basePath}/items`,
+        path: INVENTORY_ITEMS,
         element: validateRouteAccess(<Inventory />),
-        name: INVENTORY_ITEMS
     },
     {
-        path: `/${basePath}/categories`,
+        path: CATEGORIES,
         element: validateRouteAccess(<CategoryAdmin />),
-        name: CATEGORIES
     },
     {
-        path: `/${basePath}/multimedia-manager`,
+        path: PRODUCT_IMAGES_MANAGER,
         element: validateRouteAccess(<Inventory />),
-        name: PRODUCT_IMAGES_MANAGER
     },
     {
-        path: `/${basePath}/services`,
+        path: INVENTORY_SERVICES,
         element: validateRouteAccess(<Inventory />),
-        name: INVENTORY_SERVICES
     },
     {
-        path: `/${basePath}/product-outflow`,
+        path: PRODUCT_OUTFLOW,
         element: validateRouteAccess(<ProductOutflow />),
-        name: PRODUCT_OUTFLOW
     },
 ]
 

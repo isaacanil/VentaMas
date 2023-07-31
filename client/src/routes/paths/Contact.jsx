@@ -4,8 +4,8 @@ import ROUTES_NAME from "../routesName";
 const {CONTACT_TERM} = ROUTES_NAME;
 const {CLIENTS, SUPPLIERS} = CONTACT_TERM;
 const Routes = [
-    { path: "/client", element: validateRouteAccess(<ClientAdmin />), name: CLIENTS } ,
-    { path: "/provider/",element: validateRouteAccess(<ProviderAdmin />), name: SUPPLIERS}
+    { path: CLIENTS, element: validateRouteAccess(<ClientAdmin />) } ,
+    { path: SUPPLIERS, element: validateRouteAccess(<ProviderAdmin />)}
 ]
 
 export default Routes;

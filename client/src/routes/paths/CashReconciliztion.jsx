@@ -5,28 +5,24 @@ import { CashupInvoicesOverview } from "../../views/pages/CashReconciliation/pag
 import validateRouteAccess from "../requiereAuthProvider";
 import ROUTES_NAME from "../routesName";
 
-const {CASH_RECONCILIATION_CLOSING, CASH_RECONCILIATION_LIST, CASH_RECONCILIATION_OPENING, CASH_RECONCILIATION_INVOICE_OVERVIEW} = ROUTES_NAME.CASH_RECONCILIATION_TERM;
+const {CASH_RECONCILIATION_CLOSURE, CASH_RECONCILIATION_LIST, CASH_RECONCILIATION_OPENING, CASH_RECONCILIATION_INVOICE_OVERVIEW} = ROUTES_NAME.CASH_RECONCILIATION_TERM;
 
 const routes = [
     {
-        path: "/cash-reconciliation",
+        path: CASH_RECONCILIATION_LIST,
         element: validateRouteAccess(<CashReconciliation />),
-        name: CASH_RECONCILIATION_LIST
     },
     {
-        path: "/cash-register-closure/:id",
+        path:  CASH_RECONCILIATION_CLOSURE,
         element: validateRouteAccess(<CashRegisterClosure />),
-        name: CASH_RECONCILIATION_CLOSING
     },
     {
-        path: "/cash-register-opening",
+        path: CASH_RECONCILIATION_OPENING,
         element: validateRouteAccess(<CashRegisterOpening />),
-        name: CASH_RECONCILIATION_OPENING
     },
     {
-        path: "/cash-register-invoices-overview",
-        element: validateRouteAccess(<CashupInvoicesOverview />),
-        name:  CASH_RECONCILIATION_INVOICE_OVERVIEW
+        path: CASH_RECONCILIATION_INVOICE_OVERVIEW,
+        element: validateRouteAccess(<CashupInvoicesOverview />), 
     }
 ]
 

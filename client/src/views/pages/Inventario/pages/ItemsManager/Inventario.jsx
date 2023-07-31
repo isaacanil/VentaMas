@@ -4,9 +4,6 @@ import {
   MenuApp as Menu,
 } from '../../../../index';
 
-import { openModalUpdateProd } from '../../../../../features/modals/modalSlice';
-import { ChangeProductData } from '../../../../../features/updateProduct/updateProductSlice';
-import { handleDeleteProductAlert } from '../../../../../features/Alert/AlertSlice';
 import styled from 'styled-components';
 import { useSearchFilterX } from '../../../../../hooks/useSearchFilter';
 import { PendingItemsTable } from './PendingItemsTable';
@@ -29,17 +26,6 @@ export const Inventory = () => {
     setFilteredProducts(productsFiltered);
   }, [products, searchData]);
 
-
-
-  // const handleDeleteProduct = (id) => {
-  //   dispatch(handleDeleteProductAlert(id));
-  // };
-
-  // const handleUpdateProduct = (product) => {
-  //   dispatch(openModalUpdateProd());
-  //   dispatch(ChangeProductData(product));
-  // };
-
   return (
     <Fragment>
       <Menu searchData={searchData} setSearchData={setSearchData} />
@@ -55,24 +41,6 @@ export const Inventory = () => {
   );
 };
 
-{/* <ProductsList>
-          {
-            products.length > 0 ?
-              (
-                filteredProducts.map(({ product }, index) => (
-                  <ProductInventoryCard
-                    key={index}
-                    product={product}
-                    setFilteredProducts={setFilteredProducts}
-                    handleUpdateProduct={handleUpdateProduct}
-                    handleDeleteProduct={handleDeleteProduct}
-                  />
-                ))
-              )
-              :
-              (<h2>No Hay Productos</h2>)
-          }
-        </ProductsList> */}
 const Container = styled.div`
    display: grid;
     position: relative;
@@ -82,16 +50,4 @@ const Container = styled.div`
     max-height: calc(100vh - 2.75em);
     height: calc(100vh - 2.75em);
    overflow: hidden;
-`
-const ProductsList = styled.div`
-  display: grid;
-        //grid-template-columns: repeat( auto-fill, minmax(200px, 1fr));     
-          
-        grid-auto-rows: min-content;
-        gap: 0.3em;
-        overflow-y: auto;
-        
-        list-style: none;
-        padding: 1em;
-        margin: 0;
 `

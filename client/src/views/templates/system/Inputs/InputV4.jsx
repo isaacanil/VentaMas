@@ -46,9 +46,19 @@ export const InputV4 = ({ icon, label, labelVariant, size, search, onClear, vali
           onClick={() => onClear()}
           style={{ cursor: 'pointer', marginLeft: '8px', color: `${props.value ? "#999" : "transparent"}` }}
         />}
-
       </InputWrapper>
-      {(validate && errorMessage) && <ErrorMessage show>{errorMessage}</ErrorMessage>}
+      {(validate && errorMessage) && (
+        <ErrorContainer>
+          {
+            Array.isArray(errorMessage) ?
+              errorMessage.map((message, index) =>
+                <ErrorMessage key={index} show>{message}</ErrorMessage>
+              )
+              : <ErrorMessage show>{errorMessage}</ErrorMessage>
+          }
+        </ErrorContainer>
+      )}
+
     </Backdrop>
   );
 };
@@ -94,9 +104,9 @@ input[type="number"] {
 }
 
   border: ${props => {
-    if (props.validate === 'pass') {
+    if (props.validate === true) {
       return '1px solid #00c853';
-    } else if (props.validate === 'fail') {
+    } else if (props.validate === false) {
       return '1px solid #ff3547';
     } else {
       return '1px solid #ccc';
@@ -126,17 +136,22 @@ input[type="number"] {
   ${props => {
     switch (props.size) {
       case 'small':
+        return `   
+            height: 2.4em;
+            font-size: 12px;  
+            padding: 0.2em 0.4em;
+      `
+      case 'medium':
         return `
-                   
-                    height: 2.4em;
-                    font-size: 12px;  
-                    padding: 0.2em 0.4em;
-                `
+            height: 2.6em;
+            font-size: 14px;
+            padding: 0 10px;
+        `
       case 'large':
         return `
-                    height: 3em;
+                    height: 2.8em;
                     font-size: 16px;
-                    padding: 0 16px;
+                    padding: 0 10px;
                 `
       default:
         return `
@@ -169,19 +184,14 @@ const StyledInput = styled.input`
   `}
 `;
 
-const ErrorMessage = styled.span`
-  color: #ff3547;
-  font-size: 12px;
-  margin-left: 8px;
-  display: ${props => props.show ? 'inline' : 'hidden'};
-`;
+
 
 const Label = styled.label`
   font-size: 13px;
  color: var(--Gray5);
   margin-bottom: 4px;
   ${props => {
-    switch(props.labelVariant){
+    switch (props.labelVariant) {
       case 'primary':
         return `
         font-size: 11px;
@@ -214,3 +224,30 @@ width: 2em;
 justify-content: center;
  align-items: center;
 `
+const ErrorContainer = styled.ul`
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 0;
+  margin-bottom: 4px;
+  list-style-type: circle !important;
+  list-style-position: inside !important;
+  background-color: var(--color-danger-light);
+  border-radius: var(--border-radius-light);
+`;
+
+const ErrorMessage = styled.li`
+  color: #ff3547;
+
+  font-size: 14px;
+  margin-left: 8px;
+  display: ${props => props.show ? 'inline' : 'hidden'};
+  ::before {
+    content: '• ';
+    font-size: large;
+    color: #ff3547;
+    font-weight: bold;
+    height: 100%;
+    
+  }
+`;

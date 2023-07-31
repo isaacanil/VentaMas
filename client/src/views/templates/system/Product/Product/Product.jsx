@@ -8,12 +8,12 @@ import { addPaymentMethodAutoValue, addProduct, addTaxReceiptInState, deleteProd
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import noImg from '../../../../../assets/producto/noimg.png'
 import { IsProductSelected } from './IsProductSelected'
-import { IoMdClose, IoMdTrash } from 'react-icons/io'
 import { Button } from '../../Button/Button'
 import { icons } from '../../../../../constants/icons/icons'
 import { useCheckForInternetConnection } from '../../../../../hooks/useCheckForInternetConnection'
 import useImageFallback from '../../../../../hooks/image/useImageFallback'
 import { motion } from 'framer-motion'
+
 export const Product = ({ product, }) => {
     const imageHiddenRef = useSelector(selectImageHidden)
     const dispatch = useDispatch();
@@ -42,10 +42,7 @@ export const Product = ({ product, }) => {
     }
 
     const deleteProductFromCart = (e, id) => {
-        if(e){
-            e.stopPropagation()
-
-        }
+        if(e){e.stopPropagation()}
         dispatch(deleteProduct(id))
     }
 
@@ -57,8 +54,7 @@ export const Product = ({ product, }) => {
         visible: {
             y: 0,
             opacity: 1
-        }
-        
+        }   
     }
     return (
         <Container
@@ -66,6 +62,7 @@ export const Product = ({ product, }) => {
             imageHiddenRef={imageHiddenRef}
             isSelected={ProductCheckInCart.status}
             variants={effectProduct}
+            
             initial="offscreen"
             whileInView="onscreen"
             viewport={{ once: true, amount: 0.8 }}
@@ -80,7 +77,7 @@ export const Product = ({ product, }) => {
                 </Head>
             }
             <Body>
-                <Title>
+                <Title isOpen={ProductCheckInCart.status}>
                     {product.productName}
                 </Title>
                 {ProductCheckInCart.status ? (
@@ -250,20 +247,31 @@ const Title = styled.div`
     width: 100%;
     font-size: 13.4px;
     line-height: 1pc;
-    padding: 0 1em;
-    padding-top: 0.4em;
-    padding-right: 2em;
+    padding: 0.4em 0.4em 0;  
     display: -webkit-box;
     font-weight: 600;
     letter-spacing: 0.4px;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  
-    //white-space: nowrap;
     text-transform: capitalize;
-    text-overflow: ellipsis;
     overflow: hidden;
-    
-`
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto; 
+    text-overflow: ellipsis;
+
+    ${(props) => {
+        switch (props.isOpen) {
+            case false:
+                return `
+                    padding: 0.4em 1em 0 0.4em;
+
+                `
+            default:
+                break;
+        }
+    }}
+`;
 const Price = styled.h4`
     line-height: 0;
     font-weight: 550;

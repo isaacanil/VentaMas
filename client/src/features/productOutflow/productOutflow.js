@@ -20,7 +20,7 @@ const EmptyProductOutflow = {
     date: null, // Fecha de la salida del producto
 }
 const initialState = {
-    mode: OPERATION_MODES.CREATE.id,
+    mode: OPERATION_MODES.CREATE.label,
     productSelected: EmptyProduct,
     data: {
         id: null,
@@ -38,13 +38,20 @@ export const productOutflowSlice = createSlice({
             state.productSelected = {
                 ...(state.productSelected || {}),
                 ...(newData || {}),
+                currentRemovedQuantity: newData.currentRemovedQuantity || 0,
+                totalRemovedQuantity: newData.totalRemovedQuantity || 0,
                 id: state.productSelected?.id || nanoid(10),
               };
             state.data.date = state.data.date || new Date().getTime()
             state.data.id = state.data.id || nanoid(10)    
         },
         addProductToProductOutflow: (state, actions) => {
-            const data = actions.payload
+            console.log('addProductToProductOutflow', actions.payload)
+            let data = actions.payload
+            data = {
+                ...data,
+                totalRemovedQuantity: data.currentRemovedQuantity + data.totalRemovedQuantity,
+            }
             state.data.productList = [...state.data.productList, data]
             state.productSelected = EmptyProduct
         },
@@ -69,7 +76,7 @@ export const productOutflowSlice = createSlice({
               }
         },
         deleteData: (state) => {
-            state.mode = OPERATION_MODES.CREATE.id
+            state.mode = OPERATION_MODES.CREATE.label
             state.productSelected = EmptyProduct
             state.data = EmptyProductOutflow 
         }

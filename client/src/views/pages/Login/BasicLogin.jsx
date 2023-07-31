@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { fbSignIn } from "../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
 import { addNotification } from "../../../features/notification/NotificationSlice";
+import { ErrorComponent } from "../../templates/system/ErrorComponent/ErrorComponent";
 
 const Backdrop = styled.div`
   display: grid;
@@ -56,7 +57,13 @@ const Button = styled.button`
   border-radius: var(--border-radius-light);
   border: var(--border-primary);
 `;
-
+const errors = {
+    nameEmpty: "El nombre de usuario no puede estar vacío",
+    passwordEmpty: "El password no puede estar vacío",
+    userNotFound: "El usuario no existe",
+    passwordIncorrect: "El contraseña es incorrecto",
+    nameEmptyAndPasswordEmpty: "El nombre de usuario y la contraseña no pueden estar vacíos",
+}
 export const BasicLogin = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -65,30 +72,32 @@ export const BasicLogin = () => {
         name: "",
         password: "",
     })
+    const [error, setError] = useState(null)
 
     const homePath = "/home"
 
-  
+    const handleChange = (e) => {
+        const lowercasedValue = e.target.value.toLowerCase();
+        setUser({ ...user, [e.target.name]: lowercasedValue });
+    };
     const handleSubmit = (e) => {
         e.preventDefault()
+        if (user.name === "" && user.password === "") {
+            setError(errors.nameEmptyAndPasswordEmpty)
+            return
+        }
         if (user.name === "") {
-            dispatch(addNotification({
-                message: "El nombre de usuario no puede estar vacio",
-                type: "error"
-            }))
-            return 
+            //quiero que pueda guardar varios errores entonce seria un array
+            setError(errors.nameEmpty)
+            return
         }
         if (user.password === "") {
-            dispatch(addNotification({
-                message: "El password no puede estar vacio",
-                type: "error"
-            }))
-            return 
+            setError(errors.passwordEmpty)
+            return
         }
-       
-        fbSignIn(user, dispatch, navigate, homePath)
+        fbSignIn(user, dispatch, navigate, homePath, setError)
     }
-    console.log(user)
+
     return (
         <Backdrop>
             <Container>
@@ -104,8 +113,9 @@ export const BasicLogin = () => {
                                 type="text"
                                 placeholder="Nombre de usuario"
                                 label="Nombre de usuario"
+                                name="name"
                                 value={user.name}
-                                onChange={(e) => setUser({ ...user, name: e.target.value })}
+                                onChange={handleChange}
                             />
                         </Group>
                         < Group>
@@ -118,8 +128,8 @@ export const BasicLogin = () => {
                             />
                         </Group>
                     </Body>
+                    <ErrorComponent errors={error} />
                     <Footer>
-
                         <Group>
                             <Button>Continuar</Button>
                         </Group>

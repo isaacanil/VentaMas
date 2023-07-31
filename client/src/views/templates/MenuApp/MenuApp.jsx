@@ -63,14 +63,14 @@ const Backdrop = styled.div`
   left: 0;
   right: 0;
   backdrop-filter: blur(0px);
-    z-index: 1000;
+    z-index: 10;
     pointer-events: none;
     transition: all 1s  ease;
    ${props => {
     switch (props.isOpen) {
       case true:
         return `
-        z-index: 10;
+        z-index: 1000;
         display: block;
         pointer-events: visible;
         backdrop-filter: blur(2px);

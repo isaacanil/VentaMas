@@ -7,7 +7,24 @@ import { selectUser } from '../../../../features/auth/userSlice';
 import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
 import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
 import { addNotification } from '../../../../features/notification/NotificationSlice';
+import { InputV4 } from '../../../templates/system/Inputs/InputV4';
+import { motion } from 'framer-motion';
 
+const OverlayVariants = {
+  open: {
+    opacity: 1,
+    pointerEvents: 'all',
+  },
+  closed: {
+    opacity: 0,
+    pointerEvents: 'none',
+  }
+}
+
+const ContainerVariants = {
+  open: { scale: 1 },
+  closed: { scale: 0 }
+}
 
 const EmptyCategory = { id: '', name: '' };
 const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
@@ -51,30 +68,44 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
         })
     } else {
       fbAddCategory(category, user)
-      .then(() => { onClose(); })
-      .then(() => {
-        dispatch(addNotification({
-          message: 'Categoría creada con éxito',
-          type: 'success',
-        }))
+        .then(() => { onClose(); })
+        .then(() => {
+          dispatch(addNotification({
+            message: 'Categoría creada con éxito',
+            type: 'success',
+          }))
 
-      });
+        });
     }
 
   };
   console.log(category);
 
   return (
-    <ModalOverlay isOpen={isOpen}>
-      <ModalContainer>
+    <ModalOverlay
+      variants={OverlayVariants}
+      initial="closed"
+      animate={isOpen ? "open" : "closed"}
+      exit="closed"
+      transition={{ duration: 0.3 }}
+      isOpen={isOpen}
+    >
+      <ModalContainer
+        variants={ContainerVariants}
+        initial="closed"
+        animate={isOpen ? "open" : "closed"}
+        exit="closed"
+      >
         <h2>{categoryToUpdate ? 'Actualizar Categoría' : 'Crear Categoría'}</h2>
         <Form onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            name="name"
-            placeholder="Nombre de la categoría"
-            value={category.name}
+          <InputV4
+            name='name'
+            placeholder='Nombre de la Categoría'
             onChange={(e) => setCategory({ ...category, name: e.target.value })}
+            size='medium'
+            value={category.name}
+            error={categoryHaveName}
+
           />
           <ButtonGroup>
             <Button type="button" onClick={onClose}>
@@ -94,25 +125,25 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
 
 export default AddCategoryModal;
 
-const ModalOverlay = styled.div`
+const ModalOverlay = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000000;
-  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  /* opacity: ${(props) => (props.isOpen ? 1 : 0)};
   visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; */
 
 `;
 
-const ModalContainer = styled.div`
+const ModalContainer = styled(motion.div)`
   width: 400px;
   background-color: white;
   padding: 1em;
@@ -129,15 +160,10 @@ const ModalContainer = styled.div`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
+  gap: 1em;
 `;
 
-const Input = styled.input`
-  padding: 8px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-`;
+
 
 const ButtonGroup = styled.div`
   display: flex;

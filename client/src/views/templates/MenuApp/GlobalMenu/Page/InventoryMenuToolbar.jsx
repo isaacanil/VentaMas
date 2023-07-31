@@ -6,18 +6,14 @@ import { FaSearch } from 'react-icons/fa'
 import { AddProductButton } from '../../../system/Button/AddProductButton'
 import { ExportProductsButton } from '../../../system/Button/ExportProductsButton'
 import { Button, ButtonGroup } from '../../../system/Button/Button'
-import findRouteByName from '../../findRouteByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
-import { useMatchRouteByName } from '../useMatchRouterByName'
-import { icons } from '../../../../../constants/icons/icons'
 import { useDispatch } from 'react-redux'
-import { toggleAddCategory } from '../../../../../features/modals/modalSlice'
 
 export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
-    const dispatch = useDispatch()
+
     const { INVENTORY_ITEMS, CATEGORIES } = ROUTES_NAME.INVENTORY_TERM
-    const matchWithInventory = useMatch('/inventory/items')
-    const navigate = useNavigate()
+    const matchWithInventory = useMatch(INVENTORY_ITEMS)
+  
  
     return (
         matchWithInventory && (

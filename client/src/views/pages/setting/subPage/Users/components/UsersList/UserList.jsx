@@ -31,7 +31,7 @@ const tableConfig = {
       align: 'left',
       description: 'Rol',
       max: '0.4fr',
-      min: '80px',
+      min: '90px',
     },
     {
       name: 'Estado',

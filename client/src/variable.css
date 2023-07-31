@@ -23,9 +23,9 @@
   --Black1: rgb(10, 10, 10);
   --Black: rgb(0, 0, 0);
 
-  --BlackOp: rgba(0, 0, 0, 0.200);
-  --BlackOp1: rgba(0, 0, 0, 0.300);
-  --BlackOp2: rgba(0, 0, 0, 0.400);
+  --BlackOp: rgba(0, 0, 0, 0.300);
+  --BlackOp1: rgba(0, 0, 0, 0.200);
+  --BlackOp2: rgba(0, 0, 0, 0.300);
   /*color primarios*/
   --color: #42a5f5;
   --color-dark: #1D69A8;
@@ -109,7 +109,7 @@
   --gap3: 2em;
 
   /*blur*/
-  --blur: 5px;
+  --blur: 2px;
 
   /*Media Querys*/
   --WdMedium: 800px;

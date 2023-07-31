@@ -37,6 +37,7 @@ export const icons = {
         cancel: <FontAwesomeIcon icon={faXmark} />,
         accept: <FontAwesomeIcon icon={faCheck} />,
         search: <FontAwesomeIcon icon={faMagnifyingGlass} />,
+        close: <FontAwesomeIcon icon={faXmark} />,
     },
     mathOperations: {
         add: <FontAwesomeIcon icon={faPlus} />,
@@ -87,7 +88,7 @@ export const icons = {
         multimediaManager: <FontAwesomeIcon icon={faImage} />,
         barcode: <FontAwesomeIcon icon={faBarcode} />,
         qrcode: <FontAwesomeIcon icon={faQrcode} />,
-    }
+    },
   
   
 }

@@ -37,6 +37,7 @@ import { SelectProductOutflow } from "../../../features/productOutflow/productOu
 import { OPERATION_MODES } from "../../../constants/modes"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
 import { DeleteClientAlert } from "../../templates/system/Alerts/DeleteClientAlert"
+import { AnimatePresence } from "framer-motion"
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
 
@@ -44,7 +45,6 @@ export const ModalManager = () => {
   const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
   const AddClientModalSelected = useSelector(SelectAddClientModal)
   const AddOrderModalSelected = useSelector(SelectAddOrderModal)
-  const AddProdModalSelected = useSelector(SelectAddProdModal)
   const UpdateProdModalSelected = useSelector(SelectUpdateProdModal)
   const SetCustomPizzaSelected = useSelector(SelectSetCustomPizzaModal)
   const ClientModalDataSelected = useSelector(SelectClientModalData)
@@ -54,59 +54,60 @@ export const ModalManager = () => {
   const AddProductOutflowModalSelected = useSelector(SelectAddProductOutflowModal)
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
   //console.log(AddClientModalSelected)
-
-  const closeModalAddProducts = () => { dispatch(closeModalAddProd()) }
   return (
     <Fragment>
-      <AddClientModal
-        isOpen={AddClientModalSelected}
-      />
-      <AddPurchaseModal
-        isOpen={AddPurchaseModalSelected}
-      />
-      {/* <ProductModal
-        btnSubmitName='Guardar'
-        title='Agregar Producto'
-        isOpen={AddProdModalSelected}
-        closeModal={closeModalAddProducts}
-      /> */}
-      <UpdateProductModal
-        isOpen={UpdateProdModalSelected}
-      />
-      <SetCustomProduct
-        isOpen={SetCustomPizzaSelected}
-        handleOpen={handleModalSetCustomPizza}
-      />
-      <MessageAlert
-        isOpen={ViewOrdersNotesModalDataSelected.isOpen}
-        data={ViewOrdersNotesModalDataSelected.data}
-      />
-      <CreateContact
-        isOpen={ClientModalDataSelected.isOpen}
-        mode={ClientModalDataSelected.mode}
-        data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
-      />
-      <ProviderForm
-        isOpen={ProviderModalDataSelected.isOpen}
-        mode={ProviderModalDataSelected.mode}
-        data={ProviderModalDataSelected.mode === update ? ProviderModalDataSelected.data : null}
-      />
-      <AddOrderModal isOpen={AddOrderModalSelected} />
-      {/* <AddProvider /> */}
-      <Notification />
-      <AddCategoryModal
-        isOpen={AddCategoryModalSelected.isOpen}
-        categoryToUpdate={AddCategoryModalSelected.data}
-      />
-      <ProductOutflowModal
-        isOpen={AddProductOutflowModalSelected.isOpen}
-        mode={ProductOutflowSelected.mode}
-      />
-      <Loader />
-      <ImageViewer />
-      <SmallNotification />
-      <ConfirmationDialog />
-      <DeleteClientAlert/>
+      <AnimatePresence>
+        <AddClientModal
+          isOpen={AddClientModalSelected}
+        />
+        <AddPurchaseModal
+          isOpen={AddPurchaseModalSelected}
+        />
+        
+      
+            <UpdateProductModal
+              key='modal-update-product'
+              isOpen={UpdateProdModalSelected}
+            />
+          
+        
+
+        <SetCustomProduct
+          isOpen={SetCustomPizzaSelected}
+          handleOpen={handleModalSetCustomPizza}
+        />
+
+        <MessageAlert
+          isOpen={ViewOrdersNotesModalDataSelected.isOpen}
+          data={ViewOrdersNotesModalDataSelected.data}
+        />
+        <CreateContact
+          isOpen={ClientModalDataSelected.isOpen}
+          mode={ClientModalDataSelected.mode}
+          data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
+        />
+        <ProviderForm
+          isOpen={ProviderModalDataSelected.isOpen}
+          mode={ProviderModalDataSelected.mode}
+          data={ProviderModalDataSelected.mode === update ? ProviderModalDataSelected.data : null}
+        />
+        <AddOrderModal isOpen={AddOrderModalSelected} />
+        {/* <AddProvider /> */}
+        <Notification />
+        <AddCategoryModal
+          isOpen={AddCategoryModalSelected.isOpen}
+          categoryToUpdate={AddCategoryModalSelected.data}
+        />
+        <ProductOutflowModal
+          isOpen={AddProductOutflowModalSelected.isOpen}
+          mode={ProductOutflowSelected.mode}
+        />
+        <Loader />
+        <ImageViewer />
+        <SmallNotification />
+        <ConfirmationDialog />
+        <DeleteClientAlert />
+      </AnimatePresence>
     </Fragment>
   )
 

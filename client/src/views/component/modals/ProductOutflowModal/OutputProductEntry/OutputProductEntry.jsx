@@ -1,53 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { TbPlus } from 'react-icons/tb'
-
-
-
 import { useDispatch, useSelector } from 'react-redux'
-
-
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { addNotification } from '../../../../../features/notification/NotificationSlice'
 import { ProductFilter } from '../../../ProductFilter/ProductFilter'
-import { AddProductButton } from '../../AddOrder/Button'
 import { InputNumber, InputText } from '../../../../templates/system/Inputs/Input'
 import { Button } from '../../../../templates/system/Button/Button'
-import { Tooltip } from '../../../../templates/system/Button/Tooltip'
 import { addProductToProductOutflow, selectProduct, SelectProductSelected } from '../../../../../features/productOutflow/productOutflow'
 import { tableHeaderColumns } from './tableConfig/tableHeaderConfig'
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
 
-export const OutputProductEntry = ({ fn }) => {
+export const OutputProductEntry = () => {
 
     const dispatch = useDispatch();
     const [showProductList, setShowProductList] = useState(false)
     const productSelected = useSelector(SelectProductSelected)
-    const clickOutside = useClickOutSide()
+
     const handleAddToProductOutflow = () => dispatch(addProductToProductOutflow(productSelected))
 
-    const inputProductNameRef = useRef(null);
     const inputQuantityRef = useRef(null);
-    const inputMotiveRef = useRef(null);
-    const inputObservationsRef = useRef(null);
+
     const inputStockFocus = () => inputQuantityRef.current.focus();
+
     const handleSelectProduct = async (product) => {
         inputStockFocus()
         dispatch(selectProduct({ ...productSelected, product: product.product }))
     }
-
+    console.log('---productSelected, ,,,,,,, ', productSelected)
     const handleInputChange = (e, type = false) => {
         switch (type) {
             case false:
-                return dispatch(selectProduct({ ...productSelected, [e.target.name]: e.target.value })) 
+                return dispatch(selectProduct({ ...productSelected, [e.target.name]: e.target.value }))
             case 'number':
                 return dispatch(selectProduct({ ...productSelected, [e.target.name]: Number(e.target.value) }))
             default:
-                return
+                return dispatch(selectProduct({ ...productSelected, [e.target.name]: e.target.value }))
         }
-        dispatch(selectProduct({ ...productSelected, [e.target.name]: e.target.value }))
+
     }
-    const tableColumns = tableHeaderColumns({Group})
+
+    const tableColumns = tableHeaderColumns({ Group })
+
     return (
         <Container>
             <Row columns={tableColumns}>
@@ -55,7 +47,7 @@ export const OutputProductEntry = ({ fn }) => {
                     <Col key={index}>
                         {col.render(col.subtitle)}
                     </Col>
-                ))}     
+                ))}
             </Row>
             <Row columns={tableColumns}>
                 <ProductFilter

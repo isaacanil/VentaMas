@@ -5,15 +5,17 @@ import styled from 'styled-components';
 import { removeNotification, selectCurrentNotification } from '../../../../features/notification/NotificationSlice';
 import { motion } from 'framer-motion';
 import { isArray } from 'lodash';
+import { Button } from '../Button/Button';
+import { icons } from '../../../../constants/icons/icons';
 
 const getTimerByType = (type) => {
     switch (type) {
         case 'success':
-            return 5000;
+            return 4000;
         case 'error':
-            return 15000;
+            return 10000;
         case 'warning':
-            return 12000;
+            return 7000;
         default:
             return 5000;
     }
@@ -23,17 +25,20 @@ export const Notification = () => {
     const [icon, setIcon] = useState(null)
 
     const currentNotification = useSelector(selectCurrentNotification)
-    const { title, message, type, visible } = currentNotification
+    const { title, message, type, visible } = currentNotification;
 
     const dispatch = useDispatch()
+
+    const handleClose = () => { dispatch(removeNotification()) }
+
     useEffect(() => {
         if (visible) {
-            const timeout = setTimeout(() => {
-                dispatch(removeNotification())
-            }, getTimerByType(type))
-            return () => clearTimeout(timeout);
+            setTimeout(() => {
+                handleClose()
+            }, getTimerByType(6000))
         }
     }, [visible, dispatch]);
+
     useEffect(() => {
         if (type) {
             switch (type) {
@@ -50,14 +55,22 @@ export const Notification = () => {
             }
         }
     }, [type])
+
     const notificationVariants = {
         hidden: {
-            opacity: 0,
             y: -100,
+            opacity: 0,
             transition: {
-                duration: 0.5,
-                ease: 'easeInOut'
-            }
+                y: {
+                    duration: 0.1,
+                    ease: 'easeInOut'
+                },
+                opacity: {
+                    delay: 0.8,
+                    duration: 0.5, // Tiempo que desees para la opacidad
+                    ease: 'easeInOut'
+                }
+            },
         },
         visible: {
             opacity: 1,
@@ -76,12 +89,19 @@ export const Notification = () => {
             initial="hidden"
             animate={visible ? "visible" : "hidden"}
             exit="hidden"
+
         >
             {icon ? <Icon type={type}>{icon}</Icon> : null}
             <Body>
                 {title ? <Title>{title}</Title> : <Title>{type}</Title>}
                 {message ? <Message>{message}</Message> : null}
             </Body>
+            <Button
+                borderRadius={'light'}
+                width={'icon24'}
+                startIcon={icons.operationModes.close}
+                onClick={handleClose}
+            />
         </Container>
     );
 };
@@ -91,12 +111,13 @@ const Container = styled(motion.div)`
     min-height: 4em;
     height: auto;
     color: #fff;
-    padding: 0.8em 1em;
+    padding: 0.8em 0.4em 0.8em 1em;
     border-radius: 4px;
+    display: grid;
+    grid-template-columns: min-content 1fr min-content;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     background-color: var(--White);
     backdrop-filter: blur(20px);
-    display: flex;
     align-items: center;
 
 svg{

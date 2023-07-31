@@ -28,35 +28,32 @@ export const SettingsControlBar = () => {
             {/* {icons.operationModes.filter} */}
             <Select
                 options={cashReconciliationStatus}
-                onChange={ (selectedItem) => setSettings({...settings, status: selectedItem})}
+                onChange={(selectedItem) => setSettings({ ...settings, status: selectedItem })}
                 value={settings.status}
                 optionsLabel={'name'}
                 label
                 title={'Estado'}
                 maxWidth={'small'}
             />
-             <Select
+            <Select
                 options={cashReconciliationStatus}
-                onChange={ (selectedItem) => setSettings({...settings, status: selectedItem})}
+                onChange={(selectedItem) => setSettings({ ...settings, status: selectedItem })}
                 value={settings.status}
                 optionsLabel={'name'}
                 title={'Usuario'}
-               
+
                 label
             />
-            <DatePicker dates={setDatesSelected} data={datesSelected}  />
+            <DatePicker dates={setDatesSelected} data={datesSelected} />
         </Container>
     )
 }
 const Container = styled.div`
-max-width: 1300px;
 width: 100%;
-border-radius: var(--border-radius);
-margin: 0 auto;
 height: 3.6em;
 align-items: center;
-padding: 0 0.5em;
     display: flex;
+    padding: 1em;
     gap: 1em;
     background-color: var(--White);
 `

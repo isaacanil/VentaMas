@@ -1,6 +1,8 @@
-import { AbilityBuilder, createMongoAbility, PureAbility } from '@casl/ability';
+import { AbilityBuilder, PureAbility } from '@casl/ability';
 
-export function defineAbilitiesForCashier() {
+
+
+export function defineAbilitiesForCashier(user) {
   const { can, rules } = new AbilityBuilder(PureAbility);
 
   can('manage', 'Bill');
@@ -8,8 +10,9 @@ export function defineAbilitiesForCashier() {
   can(['read', 'create', 'update'], 'Client');
   can(['read', 'create', 'update'], 'Provider');
   can(['read', 'create', 'update'], 'Category');
+  can('manage', 'CashCount');
 
-  return rules;
+  return rules
 }
 
 

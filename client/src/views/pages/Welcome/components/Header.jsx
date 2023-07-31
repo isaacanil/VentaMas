@@ -10,8 +10,8 @@ import findRouteByName from '../../../templates/MenuApp/findRouteByName'
 const Header = () => {
     const {LOGIN, SIGNUP} = ROUTES_NAME.AUTH_TERM
 
-    const loginPath = findRouteByName(LOGIN)
-    const signupPath = findRouteByName(SIGNUP)  
+    const loginPath = LOGIN
+    const signupPath = SIGNUP
     const navigate = useNavigate()
     const handleNavigate = (path) => {
         navigate(path)
@@ -30,7 +30,7 @@ const Header = () => {
                         borderRadius='normal'
                         title='Login'
                         onClick={() => {
-                            handleNavigate(loginPath.path)
+                            handleNavigate(loginPath)
                         }
                         }
                     />

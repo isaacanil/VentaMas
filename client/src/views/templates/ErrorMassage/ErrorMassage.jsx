@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import Style from './ErrorMassage.module.scss'
-export const ErrorMessage = (props) => {
+export const ErrorMessage = ({text}) => {
   return (
     <Fragment>
       <Container>
-        <label htmlFor="">{props.text}</label>
+        <label htmlFor="">{text}</label>
       </Container>
     </Fragment>
   )

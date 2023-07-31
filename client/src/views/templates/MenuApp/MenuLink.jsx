@@ -6,13 +6,13 @@ export const MenuLink = ({ item, Items }) => {
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
 
-  const Component = item?.route?.path ? MenuItemLink : MenuItemDiv;
+  const Component = item?.route ? MenuItemLink : MenuItemDiv;
 
   return (
     <Fragment>
       <Component
-        onClick={item.submenu && showSubMenu}
-        to={item?.route?.path || "#"}
+        onClick={item.submenu ? showSubMenu : null}
+        to={item?.route || "#"}
       >
         <Group>
           <Icon color={item.color}>

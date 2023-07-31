@@ -18,12 +18,13 @@ import { ProductFilter } from '../../ProductFilter/ProductFilter'
 import { Modal } from '../Modal'
 import { OutputProductEntry } from './OutputProductEntry/OutputProductEntry'
 import { fbRemoveOutputRestoreQuantity } from '../../../../firebase/ProductOutflow/fbRemoveOutputRestoreQuantity'
+import { selectUser } from '../../../../features/auth/userSlice'
 
 export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
   const outFlowList = useSelector(SelectProductList)
   const outFlowProduct = useSelector(SelectProductOutflow)
   const dispatch = useDispatch()
-  const [open, setOpen] = useState(false)
+  const user = useSelector(selectUser)
 
   const onClose = () => {
     dispatch(toggleAddProductOutflow())
@@ -32,18 +33,18 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
 
   const handleDeleteProductOutflow = (item, idDoc) => {
     console.log(item.id)
-    fbRemoveOutputRestoreQuantity(item)
+    fbRemoveOutputRestoreQuantity(user, item)
     dispatch(deleteProductFromProductOutflow({ id: item.id }))
   }
   
   const handleUpdateProductOutflow = () => {
-    fbUpdateProductOutflow(outFlowProduct.data)
-    fbUpdateStock(outFlowProduct.data.productList)
+    fbUpdateProductOutflow(user, outFlowProduct.data)
+    fbUpdateStock(user, outFlowProduct.data.productList)
   }
 
   const handleAddOutflow = () => {
-    fbAddProductOutFlow(outFlowProduct.data, dispatch)
-    fbUpdateStock(outFlowProduct.data.productList)
+    fbAddProductOutFlow(user, outFlowProduct.data, dispatch)
+    fbUpdateStock(user, outFlowProduct.data.productList)
   }
 
   const handleSubmit = () => {
@@ -91,7 +92,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
                       <Row key={index}>
                         <FormattedValue type={'number'} value={outFlowList?.length - index} />
                         <FormattedValue type={'text'} value={item?.product?.productName} />
-                        <FormattedValue type={'number'} value={mode === 'create'? item?.currentRemovedQuantity : item?.totalRemovedQuantity} />
+                        <FormattedValue type={'number'} value={item?.totalRemovedQuantity} />
                         <FormattedValue type={'text'} value={item?.motive} />
                         <FormattedValue type={'text'} value={item?.observations} />
                         <ButtonGroup>
@@ -111,9 +112,6 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
                           'Seleccione un producto para agregar una salida de producto, y rellene los campos de cantidad, motivo y observaciones'
                           : 'No hay registros de salida de productos'
                       }
-                      
-                      
-
                     />
                   )
                 )}

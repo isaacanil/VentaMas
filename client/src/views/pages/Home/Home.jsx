@@ -4,38 +4,46 @@ import Style from './Home.module.scss'
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
-import { getCardData } from './cardData'
+import { getCardData } from './CardData'
 import { ChatBox } from '../../component/ChatBox/ChatBox'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import styled from 'styled-components'
+import { FeatureCardList } from './components/FeatureCardList/FeatureCardList'
+import PersonalizedGreeting from './components/PersonalizedGreeting/PersonalizedGreeting'
 
 export const Home = () => {
   const user = useSelector(selectUser)
-  const cardData = getCardData()
+  const cardData = getCardData(user)
   return (
     <Fragment>
-      <div className={Style.App_container}>
+      <Container>
         <MenuWebsite></MenuWebsite>
         <div className={Style.welcomeSection_container}>
           <div className={Style.welcomeSection_inner}>
             {/* <ChatBox/> */}
-            {user === null ? null : <h2 className={Style.welcomeSection_title}>¡Bienvenido de nuevo <span>{user.displayName}</span>!</h2>}
-            <ul className={Style.WelcomeSection_items}>
-              {cardData.map(card => (
-                <li className={Style.card} key={card.id}>
-                  <Link className={Style.card_inner} to={card?.route?.path}>
-                    <div className={Style.card_img_container}>
-                      <div className={Style.card_img}>
-                        {card.icon}
-                      </div>
-                    </div>
-                    <h3 className={Style.card_title}>{card.title}</h3>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {user && <PersonalizedGreeting name={user.displayName} />}
+            <FeatureCardList  cardData={cardData} />
+            
           </div>
         </div>
-      </div>
+      </Container>
     </Fragment>
   )
 }
+
+const Container = styled.div`
+   min-height: 100vh;
+  background-color: var(--color2);
+`
+const UserName = styled.span`
+  color:var(--color1);
+  font-weight: 600;
+  
+  div{
+    ::first-letter {
+      text-transform: capitalize;
+    }
+  }
+
+
+`

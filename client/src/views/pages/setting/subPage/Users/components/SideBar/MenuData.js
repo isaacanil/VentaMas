@@ -9,12 +9,12 @@ export const getMenuData = () => {
         {
             title: 'Crear Usuario',
             icon: icons.user.create,
-            route: findRouteByName(CREATE_USER)
+            route: CREATE_USER
         },
         {
             title: 'Usuarios',
             icon: icons.user.users,
-            route: findRouteByName(USERS_LIST)
+            route: USERS_LIST
         },
     ]
 }

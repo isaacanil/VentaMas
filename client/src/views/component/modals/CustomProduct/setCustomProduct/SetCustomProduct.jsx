@@ -40,24 +40,37 @@ export const SetCustomProduct = ({ isOpen }) => {
         dispatch(handleModalSetCustomPizza())
         dispatch(formatData())
         setNewProduct(EmptyNewProduct)
-        setInitialState(true)    
+        setInitialState(true)
     }
-    console.log('initialize' + initialState)
 
     const HandleSubmit = async () => {
-        try{
+        
+        try {
+        
+            if(newProduct.productName === ''){
+                dispatch(
+                    addNotification({ 
+                            message: 'Debe seleccionar un producto', 
+                            type: 'error' 
+                        })
+                        )
+                return Promise.reject(new Error('Debe seleccionar un producto'))
+            }
+            
             dispatch(addProduct(newProduct))
             dispatch(totalPurchaseWithoutTaxes())
             dispatch(totalShoppingItems())
             dispatch(totalTaxes())
             dispatch(totalPurchase())
             dispatch(setChange())
-        }catch(error){
+            return Promise.resolve();
+        } catch (error) {
             console.log(error)
-            dispatch(addNotification({id: nanoid(), message: 'Error al agregar producto', type: 'error'}))
+            dispatch(addNotification({ id: nanoid(), message: 'Error al agregar producto', type: 'error' }))
         }
-       
+
     }
+    
 
     return (
         <Modal
@@ -107,7 +120,7 @@ const Body = styled.div`
  width: 100%;
     height: 100%;
   background-color: #f1ebeb;
- grid-template-rows: min-content min-content min-content 1fr min-content;
+ grid-template-rows: min-content 1fr min-content;
  gap: 0.2em 0.4em;
 `
 const Row = styled.div`

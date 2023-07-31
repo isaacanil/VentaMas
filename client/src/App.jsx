@@ -26,6 +26,7 @@ import { routes } from './routes/routes';
 import { useAbilities } from './hooks/abilities/useAbilities';
 import { useAutomaticLogin } from './firebase/Auth/fbAuthV2/fbSignIn/checkSession';
 import { ModalManager } from './views';
+import { AnimatePresence } from 'framer-motion';
 
 //const router = createBrowserRouter(routes)
 
@@ -58,18 +59,21 @@ function App() {
   if (user === false) { return <GenericLoader /> }
 
   return (
+
     <Fragment>
       <Router>
         <Routes>
           {routes.map((route, index) => (
-            <Route key={index} path={route.path} element={route.element }>
+            <Route key={index} path={route.path} element={route.element}>
               {route.children && route.children.map((childRoute, childIndex) => (
                 <Route key={childIndex} path={childRoute.path} element={childRoute.element} />
               ))}
             </Route>
           ))}
         </Routes>
-        <ModalManager />
+        <AnimatePresence>
+          <ModalManager />
+        </AnimatePresence>
       </Router>
 
     </Fragment>

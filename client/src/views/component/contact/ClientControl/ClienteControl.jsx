@@ -134,7 +134,9 @@ export const ClientControl = () => {
        
       </Header>
 
-      <ClientDetails />
+      <ClientDetails
+        mode={mode === CLIENT_MODE_BAR.CREATE.id}
+      />
       {
         <ClientSelector
           updateClientMode={updateClientMode}
@@ -162,7 +164,7 @@ const Header = styled.div`
        justify-content: space-between;
       height: 2.75em;
       position: relative;
-      z-index: 2000;
+      z-index: 200;
       background-color: var(--Gray8);
       border-bottom-left-radius: var(--border-radius-light);
       padding: 0 0.3em;

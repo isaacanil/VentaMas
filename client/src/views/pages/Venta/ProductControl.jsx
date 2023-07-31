@@ -13,10 +13,14 @@ import { icons } from '../../../constants/icons/icons';
 import { openModalUpdateProd } from '../../../features/modals/modalSlice';
 import { OPERATION_MODES } from '../../../constants/modes';
 import { ChangeProductData } from '../../../features/updateProduct/updateProductSlice';
+import { useNavigate } from 'react-router-dom';
+import findRouteByName from '../../templates/MenuApp/findRouteByName';
+import ROUTES_NAME from '../../../routes/routesName';
 
 export const ProductControl = ({ products, isProductGrouped, productsLoading, setProductsLoading }) => {
   const dispatch = useDispatch()
-  
+  const navigate = useNavigate()
+
   const viewRowModeRef = useSelector(selectIsRow)
   const loadingMessage = 'Cargando los Productos'
   const productsContainerRef = useRef(null);
@@ -50,11 +54,12 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
       }
     }
   }
-  const handlerProductModal = () => {
-    dispatch(openModalUpdateProd());
-    dispatch(ChangeProductData({ products, status: OPERATION_MODES.CREATE.label }));
+  const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
+  const handlerProducts = () => {
+    const inventoryItemsPath = findRouteByName(INVENTORY_ITEMS).path
+    navigate(inventoryItemsPath)
 
-}
+  }
   return (
     <Fragment>
       <Carrusel />
@@ -116,9 +121,8 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
             (products.length === 0 || Object.keys(productsByCategory).length === 0) && !productsLoading ? (
               <CenteredText
                 text='No hay Productos'
-                buttonText={'Crear Producto'}
-                handleAction={handlerProductModal}
-                startIcon={icons.operationModes.add}
+                buttonText={'Gestionar Productos'}
+                handleAction={handlerProducts}
               />
             ) : null
           }

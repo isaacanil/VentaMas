@@ -76,7 +76,7 @@ export const PendingItemsTable = ({ productsArray, setCurrentProducts, filteredP
               productsArray.length === 0 /*|| Object.keys(productsByCategory).length === 0) */ /*&& !productsLoading*/ ? (
                 <CenteredText
                   text='No se encontraron productos, ¿Desea agregar uno?'
-                  buttonText={'Crear'}
+                  buttonText={'Producto'}
                   handleAction={handlerProductModal}
                   startIcon={icons.operationModes.add}
                 />
@@ -94,8 +94,6 @@ export const PendingItemsTable = ({ productsArray, setCurrentProducts, filteredP
               color="primary"
             />
           </Footer>
-
-
         </Table>
       </TableWrapper>
     </Container>
@@ -103,7 +101,6 @@ export const PendingItemsTable = ({ productsArray, setCurrentProducts, filteredP
 }
 const Container = styled.div`
     width: 100%;
-    padding: 1em 1em;
     display: flex;
     background-color: var(--color2);
     justify-content: center;
@@ -112,11 +109,11 @@ const TableWrapper = styled.header`
   position: relative;
   display: grid;
   grid-template-rows: 1fr; 
-  height: calc(100vh - 5.5em);
+  height: calc(100vh - 3em);
   width: 100%;
   
   overflow: hidden;
-  border-radius: 0.5em;
+  //border-radius: 0.5em;
   margin: 0; /* nuevo estilo */
   @media (max-width: 800px) {
     max-height: 100%;

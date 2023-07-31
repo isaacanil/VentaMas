@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { icons } from '../../../constants/icons/icons'
 import findRouteByName from './findRouteByName'
 import ROUTES_NAME from '../../../routes/routesName'
+
 const ChevronRight = <FontAwesomeIcon icon={faChevronRight} />
 const ChevronLeft = <FontAwesomeIcon icon={faChevronLeft} />
 const { LOGIN, SIGNUP } = ROUTES_NAME.AUTH_TERM
@@ -19,17 +20,17 @@ export const getMenuData = () => {
         {
             title: 'Inicio',
             icon: icons.menu.unSelected.home,
-            route: findRouteByName(HOME)
+            route: HOME
         },
         {
             title: 'Venta',
             icon: icons.menu.unSelected.sale,
-            route: findRouteByName(SALES)
+            route: SALES
         },
         {
             title: 'Facturas',
             icon: icons.menu.unSelected.register,
-            route: findRouteByName(BILLS)
+            route: BILLS
         },
         {
             title: 'Compras y Pedidos',
@@ -40,12 +41,12 @@ export const getMenuData = () => {
                 {
                     title: 'Pedidos Pendientes',
                     icon: <FontAwesomeIcon icon={faClipboard} />,
-                    route: findRouteByName(ORDERS)
+                    route: ORDERS
 
                 },
                 {
                     title: 'Compras',
-                    route: findRouteByName(PURCHASES),
+                    route: PURCHASES,
                     icon: <FontAwesomeIcon icon={faClipboardCheck} />
                 }
             ]
@@ -53,7 +54,7 @@ export const getMenuData = () => {
         {
             title: 'Cuadre de caja',
             icon: icons.menu.unSelected.cashReconciliation,
-            route: findRouteByName(CASH_RECONCILIATION_LIST)
+            route: CASH_RECONCILIATION_LIST
         },
         {
             title: 'Inventario',
@@ -63,28 +64,28 @@ export const getMenuData = () => {
             submenu: [
                 {
                     title: 'Administrar Productos',
-                    route: findRouteByName(INVENTORY_ITEMS),
+                    route: INVENTORY_ITEMS,
                     icon: icons.inventory.items
                 },
                 {
                     title: 'Categoría',
                     icon: icons.menu.unSelected.category,
-                    route: findRouteByName(CATEGORIES)
+                    route: CATEGORIES
 
                 },
                 {
                     title: 'Administrador de Imágenes',
-                    route: findRouteByName(PRODUCT_IMAGES_MANAGER),
+                    route: PRODUCT_IMAGES_MANAGER,
                     icon: icons.inventory.multimediaManager
                 },
                 {
                     title: 'Administrar Servicios',
-                    route: findRouteByName(INVENTORY_SERVICES),
+                    route: INVENTORY_SERVICES,
                     icon: icons.inventory.services
                 },
                 {
                     title: 'Salidas de Productos',
-                    route: findRouteByName(PRODUCT_OUTFLOW),
+                    route: PRODUCT_OUTFLOW,
                     icon: icons.inventory.productOutFlow
                 }
             ]
@@ -98,12 +99,12 @@ export const getMenuData = () => {
             submenu: [
                 {
                     title: 'Clientes',
-                    route: findRouteByName(CLIENTS),
+                    route: CLIENTS,
                     icon: icons.users.client
                 },
                 {
                     title: 'Proveedores',
-                    route: findRouteByName(SUPPLIERS),
+                    route: SUPPLIERS,
                     icon: icons.users.provider
                 },
 
@@ -112,7 +113,7 @@ export const getMenuData = () => {
         {
             title: 'Configuración',
             icon: icons.menu.unSelected.settings,
-            route: findRouteByName(SETTINGS)
+            route: SETTINGS
         }
     ]
 }

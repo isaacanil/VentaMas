@@ -61,10 +61,10 @@ export const Cart = () => {
     navigate('/cash-register-opening')
   }
 
-  const checkCashCountStatus = useIsOpenCashReconciliation()
+  const checkCashCount = useIsOpenCashReconciliation()
 
   const handleCashReconciliationConfirm = () => {
-    const cashCountStrategy = getCashCountStrategy(checkCashCountStatus, dispatch)
+    const cashCountStrategy = getCashCountStrategy(checkCashCount, dispatch)
     cashCountStrategy.handleConfirm()
   }
 
@@ -158,8 +158,8 @@ export const Cart = () => {
   const TIME_TO_WAIT = 1000;
 
   const handleInvoice = async () => {
-
-    if (checkCashCountStatus === 'closed' || checkCashCountStatus === 'closing') {
+   
+    if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
       handleCashReconciliationConfirm()
       return;
     };
@@ -223,11 +223,8 @@ export const Cart = () => {
       <div>
         <PaymentArea></PaymentArea>
         <div className={style.resultBar}>
-
-          <h3><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
-          
+          <h3><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>   
           <Receipt ref={componentToPrintRef} data={bill}></Receipt>
-
           <ButtonGroup>
             <Button
               borderRadius='normal'

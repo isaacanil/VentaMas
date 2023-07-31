@@ -11,6 +11,9 @@ const routes = [
             {
                 path: "receipt",
                 element: <ReceiptLab />
+            },
+            {
+                
             }
         ]
 

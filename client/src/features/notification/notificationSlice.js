@@ -19,8 +19,13 @@ const notificationSlice = createSlice({
       }
     },
     removeNotification: (state) => {
-      state.notifications.shift();
-      state.currentNotification = state.notifications.length > 0 ? state.notifications[0] : { title: '', message: '', visible: false, type: null, actionButton: null };
+      if (state.notifications.length > 0) {
+        state.currentNotification.visible = false;
+        setTimeout(() => {
+          state.notifications.shift();
+          state.currentNotification = state.notifications.length > 0 ? state.notifications[0] : { title: '', message: '', visible: false, type: null, actionButton: null };
+        }, 2000); // Cambia el valor a la cantidad de segundos que desees
+      }
     }
   }
 });

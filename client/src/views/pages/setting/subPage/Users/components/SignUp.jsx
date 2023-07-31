@@ -19,13 +19,26 @@ import { Button } from '../../../../../templates/system/Button/Button'
 import { DateTime } from 'luxon'
 import { fbSignUp } from '../../../../../../firebase/Auth/fbAuthV2/fbSignUp'
 import { Timestamp } from 'firebase/firestore'
+import { ErrorMessage } from '../../../../../templates/ErrorMassage/ErrorMassage'
+import { ErrorComponent } from '../../../../../templates/system/ErrorComponent/ErrorComponent'
 
 const formIcon = icons.forms
+const EmptyUser = {
+    name: '',
+    password: '',
+    role: '',
+    id: '',
+    businessID: undefined,
+    createAt: ""
+}
+const EmptyRol = {
+    id: '',
+    label: ''
+}
 
 const SignUp = () => {
-
-    const userInfo = useSelector(selectUser)
-
+    const userInfo = useSelector(selectUser);
+    const [errors, setErrors] = useState({});
     const signUpModal = useSelector(SelectSignUpUserModal)
     const { isOpen } = signUpModal;
     const navigate = useNavigate()
@@ -43,12 +56,45 @@ const SignUp = () => {
     const [rol, setRol] = useState('')
 
     const rolOptions = [
-        { id: 'role_admin', label: 'Admin' },
-        { id: 'role_manager', label: 'Gerente' },
-        { id: 'role_cashier', label: 'Cajero' },
-        { id: 'role_buyer', label: 'Comprador' },
+        { id: 'admin', label: 'Admin' },
+        { id: 'manager', label: 'Gerente' },
+        { id: 'cashier', label: 'Cajero' },
+        { id: 'buyer', label: 'Comprador' },
     ]
+    const validateUser = (user) => {
+        let errors = {};
+        let passwordErrors = [];
+        if (!user.name) {
+            errors.name = 'Nombre de usuario es requerido';
+        }
+        if (!user.password) {
+            passwordErrors.push('Password es requerido');
+        } else {
+            if (user.password.length < 8) {
+                passwordErrors.push('La contraseña debe tener al menos 8 caracteres.');
+            }
+            if (!/[A-Z]/.test(user.password)) {
+                passwordErrors.push('La contraseña debe tener al menos una letra mayúscula.');
+            }
+            if (!/[a-z]/.test(user.password)) {
+                passwordErrors.push('La contraseña debe tener al menos una letra minúscula.');
+            }
+            if (!/\d/.test(user.password)) {
+                passwordErrors.push('La contraseña debe tener al menos un número.');
+            }
+        }
 
+        if (!rol.id) {
+            errors.role = 'Rol es requerido';
+        }
+        if (passwordErrors.length > 0) {
+            errors.password = passwordErrors;
+
+        } else {
+
+        }
+        return errors;
+    };
     const handleInputChange = (e) => {
         const { name, value } = e.target
         setUser({
@@ -57,13 +103,15 @@ const SignUp = () => {
         })
 
     }
-  
+    const handleClear = () => {
+        setUser(EmptyUser)
+        setRol(EmptyRol)
+        setErrors({})
+
+    }
+
     const handleSubmit = async () => {
-        // Verifica si businessID está disponible.
-        if (!userInfo.businessID) {
-            alert("Business ID is missing");  // Mostrar algún mensaje al usuario o manejar de otra manera.
-            return;  // Detén la función si businessID no está presente.
-        }
+        const errors = validateUser(user);
         const createAt = Timestamp.now();
 
         // Crea un nuevo objeto user con los datos actualizados.
@@ -76,24 +124,23 @@ const SignUp = () => {
             id: nanoid(10),
         };
 
-        // Crea un nuevo usuario con los datos actualizados.
+        if (Object.keys(errors).length === 0) {
+            // Crea un nuevo usuario con los datos actualizados.
+            try {
+                await fbSignUp(updatedUser);
+                handleClear();
+                navigate('/users/list')
+            } catch (error) {
+                console.error(error)
+                setErrors({ firebase: error.message })
 
-        try {
-            await fbSignUp(updatedUser, navigate);
-        } catch (error) {
-            console.error(error)
+                return;
+            }
+
+
+        } else {
+            setErrors(errors);
         }
-
-
-        setUser({
-            name: '',
-            password: '',
-            role: '',
-            id: '',
-            businessID: undefined,
-            createAt: ""
-        });
-        setRol('');
 
     }
 
@@ -104,6 +151,7 @@ const SignUp = () => {
             <Header>
             </Header>
             <Body>
+
                 <InputV4
                     icon={formIcon.user}
                     value={user.name}
@@ -111,8 +159,8 @@ const SignUp = () => {
                     type='text'
                     placeholder='Nombre de Usuario'
                     name='name'
-                    errorMessage={'Nombre de usuario es requerido'}
-                    validate={user.name === ''}
+                    errorMessage={errors.name}
+                    validate={errors.name}
                     onChange={handleInputChange}
                 />
                 <ElemLabel label={'Rol'}>
@@ -129,12 +177,18 @@ const SignUp = () => {
                     icon={formIcon.password}
                     label='Password'
                     value={user.password}
+                    size='medium'
                     type='password'
                     placeholder='Password'
                     name='password'
+                    errorMessage={errors.password}
+                    validate={errors.password}
                     onChange={handleInputChange}
                 />
-                <PasswordStrengthIndicator password={user.password} confirmPassword={user.confirmPassword} />
+                {/* <PasswordStrengthIndicator password={user.password} confirmPassword={user.confirmPassword} /> */}
+
+                <ErrorComponent errors={errors.firebase}></ErrorComponent>
+
             </Body>
             <Footer>
                 <Button
@@ -144,7 +198,7 @@ const SignUp = () => {
                     onClick={handleSubmit}
                 />
             </Footer>
-           
+
         </Container>
 
 
@@ -159,7 +213,11 @@ const Header = styled.div``
 const Body = styled.div`
 padding: 1.8em 1.5em;
 display: grid;
+grid-template-columns: 1fr;
 gap: 1em;
+min-height: 340px;
+align-items: start;
+align-content: start;
 `
 const Footer = styled.div`
     display: flex;

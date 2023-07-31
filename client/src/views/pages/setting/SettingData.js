@@ -8,7 +8,7 @@ export const getSettingData = () => {
             description: 'Completa los datos de tu organización.',
             type: 'empresa',
             category: 'Configuración de la Empresa',
-            route: findRouteByName(BUSINESS_INFO),
+            route: BUSINESS_INFO,
 
         },
         {
@@ -16,7 +16,7 @@ export const getSettingData = () => {
             description: 'Configuración de comprobante fiscal.',
             type: 'fiscal',
             category: 'Configuración de la Empresa',
-            route: findRouteByName(TAX_RECEIPT),
+            route: TAX_RECEIPT,
 
         },
         {
@@ -24,7 +24,7 @@ export const getSettingData = () => {
             description: 'Gestiona los usuarios de tu cuenta.',
             type: 'usuarios',
             category: 'Configuración de la Empresa',
-            route: {path: '/users/list'},
+            route: '/users/list',
         },
         // {
         //     title: 'Enviar Comentarios',
@@ -38,7 +38,7 @@ export const getSettingData = () => {
             description: 'Consulta detalles sobre la aplicación.',
             type: 'aplicación',
             category: 'Aplicación',
-            route: findRouteByName(APP_INFO),
+            route: APP_INFO,
         },
 
 

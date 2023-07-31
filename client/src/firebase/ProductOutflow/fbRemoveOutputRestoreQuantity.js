@@ -19,10 +19,11 @@ const getProduct = async (product) => {
     }
   };
 
-export const fbRemoveOutputRestoreQuantity = (item) => {
+export const fbRemoveOutputRestoreQuantity = (user, item) => {
+    if (!user?.businessID) return
     const {product, totalRemovedQuantity} = item
     const restoredQuantity = product.stock + totalRemovedQuantity
-    const productRef = doc(db, "products", product.id);
+    const productRef = doc(db,"businesses", user.businessID, "products", product.id);
   //getProduct(product.id)
     console.log(product.stock, '========', totalRemovedQuantity, '========', restoredQuantity)
     try {

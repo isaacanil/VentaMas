@@ -38,6 +38,7 @@ export const Bill = ({ data, colData }) => {
         </ITEMS>
         <ITEMS text='left'>
           <FormattedValue
+
             type='number'
             transformValue={false}
             value={
@@ -98,6 +99,7 @@ const Container = styled.div`
  background-color: white;
  border-bottom: 1px solid rgba(0, 0, 0, 0.100);
  padding: 0;
+
  :last-child{
     border-bottom: none;
  }

@@ -8,15 +8,40 @@ import { MenuLink } from "./MenuLink"
 import { UserSection } from "./UserSection"
 import { WebName } from "../system/WebName/WebName"
 import { getMenuData } from "./MenuData"
+import { motion } from "framer-motion"
 
 export const SideBar = ({ isOpen }) => {
     const user = useSelector(selectUser)
     const links = getMenuData()
+    const sidebarVariant = {
+        open: {
+            x: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 350,
+              damping: 30,
+              restDelta: 2
+            }
+          },
+          closed: {
+            x: '-100%',
+            transition: {
+              type: 'spring',
+              stiffness: 350,
+              damping: 30,
+              restDelta: 2
+            }
+          }
+    };
     return (
-        <Container isOpen={isOpen}>
+        <Container
+            variants={sidebarVariant}
+            initial='closed'
+            animate={isOpen ? 'open' : 'closed'}
+        >
             <Head>
-            <EmptyBox/>
-               <WebName></WebName>
+                <EmptyBox />
+                <WebName></WebName>
             </Head>
             <UserSection user={user}></UserSection>
             <Body>
@@ -31,7 +56,7 @@ export const SideBar = ({ isOpen }) => {
         </Container>
     )
 }
-const Container = styled.nav`
+const Container = styled(motion.div)`
    
     position: fixed;
     z-index: 9999;
@@ -52,17 +77,7 @@ const Container = styled.nav`
             max-width: 500px;
             resize: none;
     }
-    ${props => {
-        switch (props.isOpen) {
-            case true:
-                return `
-                transform: translateX(0px);
-                z-index: 9999;
-                `
-            default:
-                break;
-        }
-    }}
+   
 `
 const Body = styled.div`
     /* position: relative; */

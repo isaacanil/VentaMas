@@ -28,7 +28,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
     const isConnected = useCheckForInternetConnection()
     const [imageFallback] = useImageFallback(product?.productImageURL, noImg)
     return (
-        <Container>
+        <Container onClick={() => handleUpdateProduct(product)}>
             <Row>
                 <Col>
                     <ImgContainer>

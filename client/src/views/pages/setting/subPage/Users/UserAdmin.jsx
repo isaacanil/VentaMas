@@ -12,10 +12,9 @@ export const UserAdmin = () => {
         <Container>
             <MenuApp></MenuApp>
             <Wrapper>
-                <SideBar/>   
-               <Outlet />
+                <SideBar />
+                <Outlet />
             </Wrapper>
-          
         </Container>
     )
 }

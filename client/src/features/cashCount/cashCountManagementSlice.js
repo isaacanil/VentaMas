@@ -14,7 +14,8 @@ const initialCashBoxStatus = {
 const initialCashCount = {
     state: null,
     opening: { ...initialCashBoxStatus },
-    closing: { ...initialCashBoxStatus }
+    closing: { ...initialCashBoxStatus },
+    sales: []
 }
 
 

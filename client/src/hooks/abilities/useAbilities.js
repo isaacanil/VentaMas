@@ -10,9 +10,7 @@ export const useAbilities = () => {
     const abilities = useSelector(selectAbilities);
     const dispatch = useDispatch();
     useEffect(() => {
-        if (user) {
-            dispatch(setAbilities(user));
-        }
+        if (user) {dispatch(setAbilities(user));}
     }, [user]);
 
     return abilities;

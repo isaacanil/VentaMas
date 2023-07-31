@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { icons } from "../../../constants/icons/icons"
 import getIconFromText from "../../../utils/text/getIconFromText"
 
-export const Category = ({ category, ref, onClick, type, icon, themeColor }) => {
+export const Category = ({ category, ref, onClick, type, icon, themeColor, selected }) => {
     const [isSelected, setIsSelected] = useState(false)
     const dispatch = useDispatch()
     const start = (category, ref) => {
@@ -35,7 +35,7 @@ export const Category = ({ category, ref, onClick, type, icon, themeColor }) => 
         <Container
             themeColor={themeColor}
             type={type}
-            selected={isSelected ? true : false}
+            selected={selected ? true : false}
             onClick={(e) => onClick ? onClick() : start(category, ref)}
             variants={effectCategory}
         >
@@ -75,10 +75,16 @@ background-color: var(--color2);
                 return `
                     background-color: var(--color-success-light);
                     color: var(--color-success-dark);
-                    :hover{
+                    ${!props.selected && (
+                        `
+                        :hover{
                         background-color: var(--color-success-light);
                         color: var(--color-success-dark);
+                    }`
+                    )
+
                     }
+                    
                     `
             default:
                 break;
@@ -89,13 +95,9 @@ background-color: var(--color2);
         switch (props.selected) {
             case true:
                 return `
-                    background-color: rgb(111, 185, 245);
-                    color: #132241;
-                    //order: -1;  
-                    // :hover{
-                    //     background-color: rgb(111, 185, 245);
-                    //     color: white;
-                    // }
+                    background-color: var(--color-info-light);
+                    color: var(--color-info-dark);
+                   
                 `
 
             default:

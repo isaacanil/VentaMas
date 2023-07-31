@@ -52,13 +52,12 @@ const Button = styled(Link)`
 
 export const NotFound = () => {
   const {HOME} = ROUTES_NAME.BASIC_TERM
-  const goHome = useMatchRouteByName(HOME)
   return (
     <Container>
       <Icon />
       <Title>¡Vaya!</Title>
       <Subtitle>No pudimos encontrar la página que estás buscando.</Subtitle>
-      <Button to={"/home"}>Volver al inicio</Button>
+      <Button to={HOME}>Volver al inicio</Button>
     </Container>
   );
 };

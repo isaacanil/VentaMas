@@ -11,6 +11,6 @@ export const Body = ({ children, messageNoData  }) => {
 }
 const Container = styled.div`
     overflow-y: auto;
-    
+   
  
 `

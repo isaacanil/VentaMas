@@ -9,6 +9,7 @@ import sales from "./paths/Sales";
 import purchases from "./paths/Purchases";
 import lab from "./paths/Lab";
 import cashReconciliation from "./paths/CashReconciliztion";
+import dev from "./paths/Dev";
 
 export const routes = [
     ...basic,
@@ -20,6 +21,7 @@ export const routes = [
     ...purchases,
     ...lab,
     ...cashReconciliation,
+    ...dev,
     {
         path: "*",
         element: <NotFound />

@@ -10,8 +10,8 @@ const Item = ({item}) => {
     };
     return (
         <Container
-            to={item?.route?.path || null}
-            active={isActiveRoute(item?.route?.path)}
+            to={item?.route || null}
+            active={isActiveRoute(item?.route)}
         >
             <span>
                 {item?.icon}

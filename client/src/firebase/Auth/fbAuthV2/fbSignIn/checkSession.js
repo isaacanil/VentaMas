@@ -31,6 +31,7 @@ export function useAutomaticLogin() {
      
                     console.log('User logged in successfully');
                 } catch (error) {
+                    dispatch(logout())
                     console.error('An error occurred during automatic sign in'); 
                 }
             })();
