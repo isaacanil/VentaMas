@@ -7,21 +7,16 @@ import {
   MenuComponents,
   Cart,
   MultiDisplayControl,
-  ModalManager
 } from '../../'
 
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { filterData } from '../../../hooks/search/useSearch'
-import { ProductControl } from './ProductControl.jsx'
-import { ShoppingItemsCounter } from './ShoppingItemsCounter'
-import { Transition } from '../../templates/system/Transition'
+import { ProductControl } from './components/ProductControl.jsx/ProductControl.jsx'
+import { ShoppingItemsCounter } from './components/ShoppingItemsCounter/ShoppingItemsCounter'
 import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../features/cart/cartSlice'
 import useBarcodeScanner from '../../../hooks/barcode/usebarcodescanner'
 import { motion } from 'framer-motion'
-import { pageVariants } from '../../../constants/framerMotion/pageVariants'
-import {  ConfirmationDialog} from '../../component/modals/UserNotification/components/ConfirmationDialog/ConfirmationDialog'
-import { closeUserNotification } from '../../../features/UserNotification/UserNotificationSlice'
 import { useNavigate } from 'react-router-dom'
 export const Sales = () => {
 
@@ -33,10 +28,6 @@ export const Sales = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  // const handleSubmitCashReconciliation = () => {
-  //   handleCloseCashReconciliation()
-  //   navigate('/cash-register-opening')
-  // }
   const checkBarcode = (products, barcode) => {
 
     if (products.length <= 0) return;

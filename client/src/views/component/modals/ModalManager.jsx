@@ -57,25 +57,33 @@ export const ModalManager = () => {
   return (
     <Fragment>
       <AnimatePresence>
-        <AddClientModal
-          isOpen={AddClientModalSelected}
-        />
-        <AddPurchaseModal
-          isOpen={AddPurchaseModalSelected}
-        />
-        
-      
-            <UpdateProductModal
-              key='modal-update-product'
-              isOpen={UpdateProdModalSelected}
+        {
+          AddClientModalSelected && (
+            <AddClientModal
+              isOpen={AddClientModalSelected}
             />
-          
-        
-
-        <SetCustomProduct
-          isOpen={SetCustomPizzaSelected}
-          handleOpen={handleModalSetCustomPizza}
-        />
+          )
+        }
+        {
+          AddPurchaseModalSelected && (
+            <AddPurchaseModal
+              isOpen={AddPurchaseModalSelected}
+            />
+          )
+        }
+        {UpdateProdModalSelected && (
+          <UpdateProductModal
+            key='modal-update-product'
+            isOpen={UpdateProdModalSelected}
+          />
+        )}
+        {SetCustomPizzaSelected && (
+          <SetCustomProduct
+            key={'modal-set-custom-pizza'}
+            isOpen={SetCustomPizzaSelected}
+            handleOpen={handleModalSetCustomPizza}
+          />
+        )}
 
         <MessageAlert
           isOpen={ViewOrdersNotesModalDataSelected.isOpen}

@@ -8,10 +8,11 @@ import { ExportProductsButton } from '../../../system/Button/ExportProductsButto
 import { Button, ButtonGroup } from '../../../system/Button/Button'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { useDispatch } from 'react-redux'
+import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
 
 export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
 
-    const { INVENTORY_ITEMS, CATEGORIES } = ROUTES_NAME.INVENTORY_TERM
+    const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
     const matchWithInventory = useMatch(INVENTORY_ITEMS)
   
  
@@ -33,6 +34,8 @@ export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData 
                         <ButtonGroup>
                             <ExportProductsButton />
                             <AddProductButton />
+                            <InventoryFilterAndSort/>
+
                         </ButtonGroup>
                     </Fragment>
                 )}

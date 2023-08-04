@@ -25,10 +25,10 @@ export const Category = ({ category, ref, onClick, type, icon, themeColor, selec
 
     }
     const effectCategory = {
-        hidden: { y: 0, opacity: 0, },
+        hidden: { y: 20, opacity: 0 },
         visible: {
-            y: 0,
-            opacity: 1,
+          y: 0,
+          opacity: 1
         }
     }
     return (

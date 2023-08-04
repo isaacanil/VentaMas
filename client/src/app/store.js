@@ -1,4 +1,3 @@
-
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from '../features/auth/userSlice';
 import searchReducer from '../features/search/searchSlice';
@@ -30,7 +29,7 @@ import abilitiesReducer from "../features/abilities/abilitiesSlice";
 import cashCountManagementReducer from "../features/cashCount/cashCountManagementSlice";
 import UserNotificationReducer from "../features/UserNotification/UserNotificationSlice";
 import usersManagementSlice from "../features/usersManagement/usersManagementSlice";
-
+import filterProductsSliceReducer from "../features/filterProduct/filterProductsSlice";
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -38,6 +37,7 @@ export const store = configureStore({
     cart: cartReducer,
     abilities: abilitiesReducer,
     order: orderReducer,
+    filterProducts: filterProductsSliceReducer,
     clientCart: clientCartReducer,
     purchase: purchaseReducer,
     addPurchase: addPurchaseReducer,

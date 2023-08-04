@@ -25,12 +25,6 @@ export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
         isExpanded={calculationIsOpen}
         setIsExpanded={setCalculationIsOpen}
       />
-      <Comments
-        label='Comentarios de apertura'
-        placeholder='Escribe aquí ...'
-        disabled
-        value={CashReconciliation.opening.comments}
-      />
       <UserView
         user={CashReconciliation.opening?.employee}
         label='Entregado por'
@@ -38,6 +32,7 @@ export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
         label2='Recibido por'
         title={'Autorización de Apertura'}
       />
+
       {
         CashReconciliation.closing.initialized === true ? (
           <UserView
@@ -49,7 +44,12 @@ export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
           />
         ) : null
       }
-
+      <Comments
+        label='Comentarios de apertura'
+        placeholder='Escribe aquí ...'
+        disabled
+        value={CashReconciliation.opening.comments}
+      />
 
     </Container>
   )

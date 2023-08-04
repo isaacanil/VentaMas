@@ -159,12 +159,12 @@ const Container = styled.div`
 const Header = styled.div`
    width: 100%;
        gap: 10px;
-       display: flex;
-       align-items: center; 
-       justify-content: space-between;
+      display: flex;
+      align-items: center; 
+      justify-content: space-between;
       height: 2.75em;
       position: relative;
-      z-index: 200;
+      z-index: 20;
       background-color: var(--Gray8);
       border-bottom-left-radius: var(--border-radius-light);
       padding: 0 0.3em;

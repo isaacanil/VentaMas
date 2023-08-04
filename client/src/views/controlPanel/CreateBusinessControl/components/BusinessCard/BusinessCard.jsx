@@ -1,11 +1,11 @@
 import styled from "styled-components"
+import { FormattedValue } from "../../../../templates/system/FormattedValue/FormattedValue"
 
 export const BusinessCard = ({business}) => {
     return (
         <Container>
             <Head>
-
-                 <h1>{business.name}</h1>
+                 <FormattedValue type={'subtitle'} value={business.name}>{business.name}</FormattedValue>
             </Head>
             <Body>
                 <p>{business.description}</p>
@@ -22,19 +22,20 @@ export const BusinessCard = ({business}) => {
 
 const Container = styled.div`
     padding: 10px;
-    border: 1px solid black;
+    border: var(--border-primary);
     border-radius: 10px;
-    background-color: #cfe2e6;
+    background-color: #ffffff;
   
 `
 const Head = styled.div`
     text-align: center;
-    color: white;
+    color: black;
     font-size: 20px;
     font-weight: bold;
+    margin-bottom: 10px;
+
 `
 const Body = styled.div`
-    color: white;
+    color: black;
     font-size: 15px;
-    font-weight: bold;
 `

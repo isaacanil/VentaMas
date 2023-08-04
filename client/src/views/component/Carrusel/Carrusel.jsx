@@ -17,6 +17,7 @@ export const Carrusel = ({ themeColor }) => {
     const dispatch = useDispatch()
     const categorySelected = useSelector(SelectCategoryList)
     const categoryCardRef = useRef(null)
+
     const MoveScroll = (direction) => {
         const toStart = () => {
             if (categoriesRef.current.scrollLeft > 0) {
@@ -68,14 +69,16 @@ export const Carrusel = ({ themeColor }) => {
     }
 
     const effectCategoriesContainer = {
+
         hidden: { opacity: 1, scale: 0 },
         visible: {
             opacity: 1,
             scale: 1,
             transition: {
-                delayChildren: 0.3,
-                staggerChildren: 0.2
+                delayChildren: 0.9,
+                staggerChildren: 0.9
             }
+
         }
     }
     const handleCreateCategory = () => {
@@ -100,9 +103,12 @@ export const Carrusel = ({ themeColor }) => {
 
                 <Categories
                     variants={effectCategoriesContainer}
+                    initial="hidden"
+                    animate="visible"
                     ref={categoriesRef}
                 >
                     <Category
+                        
                         category={{ name: 'Categoría' }}
                         onClick={handleCreateCategory}
                         type='create'

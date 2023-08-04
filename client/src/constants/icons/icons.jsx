@@ -1,4 +1,4 @@
-import { faAddressBook, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faSign, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownZA, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faSign, faSortDown, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -29,6 +29,11 @@ export const icons = {
     },
     operationModes: {
         filter: <FontAwesomeIcon icon={faFilter} />,
+        sortDown: <FontAwesomeIcon icon={faSortDown} />,
+        sortAsc: <FontAwesomeIcon icon={faArrowDownAZ} />,
+        sortDesc: <FontAwesomeIcon icon={faArrowDownZA} />,
+        sortAscNum: <FontAwesomeIcon icon={faArrowDown19} />,
+        sortDescNum: <FontAwesomeIcon icon={faArrowDown91} />,
         edit: <FontAwesomeIcon icon={faPencil} />,
         add: <FontAwesomeIcon icon={faPlus} />,
         delete: <FontAwesomeIcon icon={faTrash}  />,
@@ -80,6 +85,12 @@ export const icons = {
         provider: <FontAwesomeIcon icon={faUserTie} />,
         client: <FontAwesomeIcon icon={faUser} />,
 
+    },
+    settings:{
+        businessInfo: <FontAwesomeIcon icon={faBuilding} />,
+        taxReceipt: <FontAwesomeIcon icon={faReceipt} />,
+        appInfo: <FontAwesomeIcon icon={faInfo} />,
+        users: <FontAwesomeIcon icon={faUserCog} />,
     },
     inventory: {
         items: <FontAwesomeIcon icon={faBoxesStacked} />,

@@ -6,12 +6,13 @@ import { selectCashCount } from '../../../../../../../../../../features/cashCoun
 import { CashCountMetaData } from '../../CashCountMetaData'
 import { useFormatPrice } from '../../../../../../../../../../hooks/useFormatPrice'
 
-export const TransactionSummary = () => {
+export const TransactionSummary = ({invoices}) => {
   const cashCount = useSelector(selectCashCount)
-  const { totalCard, totalRegister, totalTransfer } = CashCountMetaData(cashCount)
+  const { totalCard, totalRegister, totalTransfer } = CashCountMetaData(cashCount, invoices)
   
  
   return (
+  
     <Container>
       <InputWithHorizontalLabel
         label={'Total Tarjeta'}

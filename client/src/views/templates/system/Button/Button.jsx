@@ -79,7 +79,7 @@ export const Container = styled.button`
   display: flex;
   align-items: center;
   white-space: nowrap;
-  gap: 0.4em;
+  gap: 0.6em;
   padding: 0 0.8em;
   outline: none;
   color: black;

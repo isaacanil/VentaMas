@@ -57,12 +57,12 @@ const Categories = styled.div`
   display: grid;
   gap: 1em;
   padding: 1em;
-
 `
 const CategoryContainer = styled.div`
   padding: 10px;
   margin: 0 auto;
   max-width: 1000px;
+  width: 100%;
   background-color: var(--color2);
   border-radius: var(--border-radius);
 `

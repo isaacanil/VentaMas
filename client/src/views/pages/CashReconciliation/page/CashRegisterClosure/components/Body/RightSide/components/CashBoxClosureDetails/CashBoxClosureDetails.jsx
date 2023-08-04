@@ -12,18 +12,7 @@ export const CashBoxClosureDetails = ({invoices}) => {
   const cashCount = useSelector(selectCashCount)
   const {totalSystem, totalCharged, totalDiscrepancy} = CashCountMetaData(cashCount, invoices)
   console.log(invoices)
-  // const handleLabelDiscrepancy = () => {
-  
-    
-  //   if (cashDiscrepancy > 0) {
-  //     return 'Sobrante'
-  //   } else if (cashDiscrepancy < 0) {
-  //     return 'Faltante'
-  //   } else if (cashDiscrepancy === 0) {
-  //     return null
-  //   }
-  // }
-
+ 
   return (
     <Container>
       <InputWithHorizontalLabel

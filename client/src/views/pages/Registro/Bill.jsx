@@ -21,6 +21,17 @@ export const Bill = ({ data, colData }) => {
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
   })
+  const handlePaymentMethodValue = () => {
+    if (data?.payment?.value) {
+        return data?.payment.value
+    } else if (data?.cardPaymentMethod.status) {
+        return data?.cardPaymentMethod.value
+    } else if (data?.cashPaymentMethod.status) {
+        return data?.cashPaymentMethod.value
+    } else if (data?.transferPaymentMethod.status) {
+        return data?.transferPaymentMethod.value
+    }
+}
   return (
     <Container>
       <Row
@@ -54,9 +65,7 @@ export const Bill = ({ data, colData }) => {
         <ITEMS text={'right'}>
           <FormattedValue
             type='price'
-            value={
-              data?.cashPaymentMethod?.value || data?.paymentMethod?.find((bill) => bill.status === true).value
-            }
+            value={data?.payment.value}
           />
         </ITEMS>
         <ITEMS text={'right'}>

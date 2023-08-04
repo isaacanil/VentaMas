@@ -16,7 +16,7 @@ const formatValue = (type, value) => {
   }
 };
 
-export const FormattedValue = ({ type, value, size, bold, color, transformValue = true, align }) => {
+export const FormattedValue = ({ type, value, size, bold, noWrap, color, transformValue = true, align }) => {
   const formattedValue = transformValue ? formatValue(type, value) : value;
 
   if (type === 'text') {
@@ -24,7 +24,7 @@ export const FormattedValue = ({ type, value, size, bold, color, transformValue 
   }
 
   return (
-    <Text size={size} bold={bold} color={color} type={type} align={align}>
+    <Text size={size} bold={bold} color={color} noWrap={noWrap} type={type} align={align}>
       {formattedValue}
     </Text>
   );
@@ -66,6 +66,8 @@ ${({ type }) => type === 'paragraph' && 'font-size: 16px; font-weight: 400; line
   ${({ size }) => size === 'xmedium' && 'font-size: 18px;'}
   ${({ size }) => size === 'large' && 'font-size: 20px;'}
   ${({ size }) => size === 'xlarge' && 'font-size: 22px;'}
+
+  ${({ noWrap }) => noWrap && `white-space: nowrap;`}
 
   ${({ bold }) => bold && 'font-weight: bold;'}
   ${({ align }) => {

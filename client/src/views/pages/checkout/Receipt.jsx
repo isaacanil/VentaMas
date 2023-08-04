@@ -73,6 +73,8 @@ export const SubTitle = styled.p`
     line-height: 12px;
     padding: 0 0;
     margin: 0;
+    white-space: nowrap;
+    
     ${props => {
         switch (props.align) {
             case 'center':

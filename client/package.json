@@ -8,7 +8,7 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint --max-warnings=0"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@casl/ability": "^6.5.0",
@@ -22,6 +22,7 @@
     "@reduxjs/toolkit": "^1.9.1",
     "@sentry/react": "^7.43.0",
     "@sentry/tracing": "^7.43.0",
+    "@tanstack/react-table": "^8.9.3",
     "barcode-parser": "^2.3.0",
     "bcryptjs": "^2.4.3",
     "botbuilder": "^4.19.2",
@@ -45,6 +46,7 @@
     "react-qr-code": "^2.0.11",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.4.5",
+    "react-table": "^7.8.0",
     "react-to-print": "^2.14.10",
     "sass": "^1.56.2",
     "spacy-js": "^0.0.5",

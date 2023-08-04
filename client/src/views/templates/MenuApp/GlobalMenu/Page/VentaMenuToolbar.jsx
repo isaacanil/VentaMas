@@ -11,6 +11,7 @@ import { useMatchRouteByName } from '../useMatchRouterByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { icons } from '../../../../../constants/icons/icons'
 import { useMatch } from 'react-router-dom'
+import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
 
 export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const ImageHidden = useSelector(selectImageHidden)
@@ -99,6 +100,7 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
                                 iconOn={<FontAwesomeIcon icon={faExpand} />}
                                 onClick={() => handleFullScreenFN()}
                             />
+                               <InventoryFilterAndSort/>
                         </Group>
                     )
                 }

@@ -48,6 +48,9 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
         setIsExpanded={setCalculationIsOpen}
         inputDisabled={state === 'closed'}
       />
+      <TransactionSummary invoices={invoices.invoices} />
+      <ViewInvoice invoices={invoices.count} />
+      <CashBoxClosureDetails invoices={invoices.invoices} />
       <Comments
         label='Comentarios de cierre'
         placeholder='Escribe aquí ...'
@@ -55,9 +58,6 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
         value={comments}
         onChange={e => handleChangesComments(e.target.value)}
       />
-      <TransactionSummary />
-      <ViewInvoice invoices={invoices.count} />
-      <CashBoxClosureDetails invoices={invoices.invoices} />
     </Container>
   )
 }

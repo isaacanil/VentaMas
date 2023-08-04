@@ -3,13 +3,10 @@ import { useDispatch } from 'react-redux';
 import {
   MenuApp as Menu,
 } from '../../../../index';
-
 import styled from 'styled-components';
-import { useSearchFilterX } from '../../../../../hooks/useSearchFilter';
-import { PendingItemsTable } from './PendingItemsTable';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
-import { Pagination } from '@mui/material';
 import { filterData } from '../../../../../hooks/search/useSearch';
+import { PendingItemsTable } from './components/ProductTable/ProductsTable';
 
 export const Inventory = () => {
   const dispatch = useDispatch();
@@ -17,14 +14,14 @@ export const Inventory = () => {
   const [currentProducts, setCurrentProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
- 
-    const {products} = useGetProducts();
-
+  const { products } = useGetProducts();
 
   useEffect(() => {
     const productsFiltered = filterData(products, searchData);
     setFilteredProducts(productsFiltered);
   }, [products, searchData]);
+
+  const totalProductsCount = products.length
 
   return (
     <Fragment>
@@ -34,8 +31,8 @@ export const Inventory = () => {
           productsArray={currentProducts}
           setCurrentProducts={setCurrentProducts}
           filteredProducts={filteredProducts}
+          totalProductsCount={totalProductsCount}
         />
-
       </Container>
     </Fragment>
   );

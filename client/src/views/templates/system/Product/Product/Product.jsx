@@ -42,30 +42,28 @@ export const Product = ({ product, }) => {
     }
 
     const deleteProductFromCart = (e, id) => {
-        if(e){e.stopPropagation()}
+        if (e) { e.stopPropagation() }
         dispatch(deleteProduct(id))
     }
+
 
     const isConnected = useCheckForInternetConnection()
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id)
     const [imageFallback] = useImageFallback(product?.productImageURL, noImg)
-    const effectProduct = {
+    const item = {
         hidden: { y: 20, opacity: 0 },
         visible: {
             y: 0,
             opacity: 1
-        }   
+        }
     }
+
     return (
         <Container
             onClick={() => handleGetThisProduct(product)}
             imageHiddenRef={imageHiddenRef}
             isSelected={ProductCheckInCart.status}
-            variants={effectProduct}
-            
-            initial="offscreen"
-            whileInView="onscreen"
-            viewport={{ once: true, amount: 0.8 }}
+            variants={item}
         >
             {
                 <Head imageHiddenRef={imageHiddenRef ? true : false}>
@@ -185,6 +183,7 @@ const Body = styled.div`
     transition: 4000ms all ease-in-out;
     display: grid;
     grid-template-columns: 1fr min-content;
+    transition: all 400ms ease-in-out;
    
 `
 const ImageContainer = styled.div`

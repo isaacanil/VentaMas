@@ -23,7 +23,6 @@ export const Home = () => {
             {/* <ChatBox/> */}
             {user && <PersonalizedGreeting name={user.displayName} />}
             <FeatureCardList  cardData={cardData} />
-            
           </div>
         </div>
       </Container>
