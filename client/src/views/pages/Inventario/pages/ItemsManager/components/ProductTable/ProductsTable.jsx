@@ -11,7 +11,7 @@ import { icons } from '../../../../../../../constants/icons/icons'
 import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
 import { ChangeProductData, selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
 import { OPERATION_MODES } from '../../../../../../../constants/modes'
-import { AdvancedTable, Img, ImgContainer } from '../../../../../../controlPanel/Table/AdvancedTable'
+import { AdvancedTable } from '../../../../../../controlPanel/Table/AdvancedTable'
 import { handleDeleteProductAlert } from '../../../../../../../features/Alert/AlertSlice'
 import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
 import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
@@ -108,7 +108,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
               width='icon32'
               color={'gray-dark'}
               borderRadius='normal'
-              onClick={() => handleDeleteProduct(value.id)}
+              onClick={(value) => handleDeleteProduct(value)}
             />
           </ButtonGroup>
         )
@@ -117,6 +117,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
   ];
 
   const data = products.map(({ product }) => ({
+    id: product.id,
     image: product.productImageURL,
     name: product.productName,
     stock: { stock: product.stock, trackInventory: product.trackInventory },
@@ -136,6 +137,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           searchTerm={searchTerm}
           headerComponent={<Carrusel />}
           tableName={'inventory_items_table'}
+          onRowClick={(row) => handleUpdateProduct(row.action)}
         />
       </TableWrapper>
     </Container>
