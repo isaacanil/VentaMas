@@ -12,7 +12,7 @@ export { SignUp } from './pages/SignUp/SignUp'
 export { Welcome } from './pages/Welcome/Welcome'
 export { Contact } from './pages/Contact.jsx'
 export { Receipt } from './pages/checkout/Receipt'
-export { AddCategory } from './pages/Category1/AddCategory'
+
 export { Orders } from './pages/Order/Orders'
 export { AddCustomProductModal } from './component/modals/AddCustomProductModal/AddCustomProductModal'
 export { SetCustomProduct } from './component/modals/CustomProduct/SetCustomProduct/SetCustomProduct'

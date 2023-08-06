@@ -11,82 +11,132 @@ import { icons } from '../../../../../../../constants/icons/icons'
 import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
 import { ChangeProductData, selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
 import { OPERATION_MODES } from '../../../../../../../constants/modes'
+import { AdvancedTable, Img, ImgContainer } from '../../../../../../controlPanel/Table/AdvancedTable'
+import { handleDeleteProductAlert } from '../../../../../../../features/Alert/AlertSlice'
+import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
+import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
+import { ImgCell } from '../../../../../../controlPanel/Table/components/Cells/Img/ImgCell'
 
-const columnas = [
-  { type: 'subtitle-table', value: 'Imagen', position: null },
-  { type: 'subtitle-table', value: 'Nombre', position: null },
-  { type: 'subtitle-table', value: 'Stock', position: 'right' },
-  { type: 'subtitle-table', value: 'Costo', position: 'right' },
-  { type: 'subtitle-table', value: 'Impuesto', position: 'right' },
-  { type: 'subtitle-table', value: 'Total', position: 'right' },
-  { type: 'subtitle-table', value: 'Acción', position: 'right' }
-];
 
-export const PendingItemsTable = ({ productsArray, setCurrentProducts, filteredProducts, totalProductsCount }) => {
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 16;
+export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
-  useEffect(() => {
-    const start = (currentPage - 1) * productsPerPage;
-    const end = start + productsPerPage;
-    setCurrentProducts(filteredProducts.slice(start, end));
-  }, [filteredProducts, currentPage]);
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
+  const handleDeleteProduct = (id) => {
+    dispatch(handleDeleteProductAlert({ id }));
   };
 
-  const handlerProductModal = () => {
+  const handleUpdateProduct = (product) => {
     dispatch(openModalUpdateProd());
-    dispatch(ChangeProductData({ status: OPERATION_MODES.CREATE.label }));
-  }
+    dispatch(ChangeProductData({ product: product, status: OPERATION_MODES.UPDATE.label }));
+  };
+
+  const columns = [
+    {
+      Header: 'Imagen',
+      reorderable: false,
+      accessor: 'image',
+      minWidth: '90px',
+      maxWidth: '90px',
+      cell: ({ value }) => <ImgCell img={value}  />
+    },
+    {
+      Header: 'Nombre',
+      accessor: 'name',
+      minWidth: '200px',
+      maxWidth: '1fr',
+      sortable: true,
+    },
+    {
+      Header: 'Stock',
+      accessor: 'stock',
+      align: 'right',
+      sortable: true,
+      sortableValue: (value) => value.stock,
+      minWidth: '80px',
+      maxWidth: '80px',
+      cell: ({ value }) => <StockIndicator stock={value.stock} trackInventory={value.trackInventory}></StockIndicator>
+    },
+    {
+      Header: 'Costo',
+      align: 'right',
+      sortable: true,
+      accessor: 'cost',
+      minWidth: '120px',
+      maxWidth: '0.6fr',
+      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+    },
+    {
+      Header: 'Impuesto',
+      sortable: true,
+      align: 'right',
+      minWidth: '120px',
+      maxWidth: '0.6fr',
+      accessor: 'tax',
+      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+    },
+    {
+      Header: 'Precio',
+      sortable: true,
+      accessor: 'price',
+      minWidth: '120px',
+      maxWidth: '0.6fr',
+      align: 'right',
+      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+    },
+    {
+      Header: 'Acción',
+      accessor: 'action',
+      reorderable: false,
+      minWidth: '100px',
+      maxWidth: '100px',
+      align: 'right',
+      cell: ({ value }) => {
+        return (
+          <ButtonGroup>
+            <Button
+              startIcon={icons?.operationModes?.edit}
+              borderRadius='normal'
+              color={'gray-dark'}
+              width='icon32'
+              bgcolor='editar'
+              onClick={() => handleUpdateProduct(value)}
+            />
+            <Button
+              startIcon={icons.operationModes.delete}
+              width='icon32'
+              color={'gray-dark'}
+              borderRadius='normal'
+              onClick={() => handleDeleteProduct(value.id)}
+            />
+          </ButtonGroup>
+        )
+      }
+    }
+  ];
+
+  const data = products.map(({ product }) => ({
+    image: product.productImageURL,
+    name: product.productName,
+    stock: { stock: product.stock, trackInventory: product.trackInventory },
+    trackInventory: product.trackInventory,
+    cost: product.cost.unit,
+    price: product.price.unit,
+    tax: product.tax.value * product.cost.unit,
+    action: product
+  }));
 
   return (
     <Container>
       <TableWrapper>
-        <Table>
-          <Categories>
-            <Carrusel />
-          </Categories>
-          <Row type='header'>
-            {columnas.map(columna => (
-              <Col position={columna.position}>
-                <FormattedValue type={columna.type} value={columna.value} />
-              </Col>
-            ))}
-          </Row>
-          <TableBody>
-            {productsArray.length > 0 ? (
-              productsArray.map(({ product }, index) => (
-                <ProductCardRow product={product} Col={Col} Row={Row} key={index} />
-              ))
-            ) : null}
-            {
-              productsArray.length === 0 ? (
-                <CenteredText
-                  text='No se encontraron productos, ¿Desea agregar uno?'
-                  buttonText={'Producto'}
-                  handleAction={handlerProductModal}
-                  startIcon={icons.operationModes.add}
-                />
-              ) : null
-            }
-          </TableBody>
-          <Footer>
-            <ProductCountDisplay>
-              {`${productsArray.length} / ${totalProductsCount} Resultados`}
-            </ProductCountDisplay>
-            <Pagination
-              count={Math.ceil((filteredProducts.length / productsPerPage))}
-              page={currentPage}
-              onChange={handlePageChange}
-              siblingCount={1}
-              boundaryCount={1}
-              color="primary"
-            />
-          </Footer>
-        </Table>
+        <AdvancedTable
+          data={data}
+          columns={columns}
+          searchTerm={searchTerm}
+          headerComponent={<Carrusel />}
+          tableName={'inventory_items_table'}
+        />
       </TableWrapper>
     </Container>
   )

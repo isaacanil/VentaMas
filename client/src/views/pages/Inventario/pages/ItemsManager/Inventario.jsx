@@ -1,38 +1,36 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
+  Button,
+  ButtonGroup,
   MenuApp as Menu,
 } from '../../../../index';
 import styled from 'styled-components';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
-import { filterData } from '../../../../../hooks/search/useSearch';
-import { PendingItemsTable } from './components/ProductTable/ProductsTable';
+import { ProductsTable } from './components/ProductTable/ProductsTable';
+import { AdvancedTable, Img, ImgContainer } from '../../../../controlPanel/Table/AdvancedTable';
+import { Carrusel } from '../../../../component/Carrusel/Carrusel';
+import StockIndicator from '../../../../templates/system/labels/StockIndicator';
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import { handleDeleteProductAlert } from '../../../../../features/Alert/AlertSlice';
+import { ChangeProductData } from '../../../../../features/updateProduct/updateProductSlice';
+import { openModalUpdateProd } from '../../../../../features/modals/modalSlice';
+import { icons } from '../../../../../constants/icons/icons';
+import { OPERATION_MODES } from '../../../../../constants/modes';
 
 export const Inventory = () => {
   const dispatch = useDispatch();
-  const [searchData, setSearchData] = useState('');
-  const [currentProducts, setCurrentProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-
+  const [searchTerm, setSearchTerm] = useState('');
   const { products } = useGetProducts();
-
-  useEffect(() => {
-    const productsFiltered = filterData(products, searchData);
-    setFilteredProducts(productsFiltered);
-  }, [products, searchData]);
-
-  const totalProductsCount = products.length
 
   return (
     <Fragment>
-      <Menu searchData={searchData} setSearchData={setSearchData} />
+      <Menu searchData={searchTerm} setSearchData={setSearchTerm} />
       <Container>
-        <PendingItemsTable
-          productsArray={currentProducts}
-          setCurrentProducts={setCurrentProducts}
-          filteredProducts={filteredProducts}
-          totalProductsCount={totalProductsCount}
+        <ProductsTable
+          products={products}
         />
+     
       </Container>
     </Fragment>
   );

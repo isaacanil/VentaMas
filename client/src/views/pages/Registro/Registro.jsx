@@ -68,9 +68,7 @@ export const Registro = () => {
         animate={{ x: 0 }}
         transition={{ type: "spring", stiffness: 0 }}
       >
-        <MenuApp
-    
-        />
+        <MenuApp/>
         <FilterBar>
           <span>
             <DatePicker dates={setDatesSelected} data={datesSelected} />
@@ -119,7 +117,7 @@ const FilterBar = styled.div`
   justify-items: center;
   background-color: var(--White);
   span{
-    max-width: 1000px;
+
     width: 100%;
     display: flex;
     align-items: end;

@@ -9,7 +9,6 @@ import { Tooltip } from '../Button/Tooltip';
 
 function StockIndicator({ stock, trackInventory }) {
 
-
     if (trackInventory) {
 
         return (

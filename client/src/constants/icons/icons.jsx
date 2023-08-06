@@ -1,4 +1,4 @@
-import { faAddressBook, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownZA, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faSign, faSortDown, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCaretDown, faCaretUp, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -26,6 +26,20 @@ export const icons = {
         chevronLeft: <FontAwesomeIcon icon={faChevronLeft} />,
         chevronRight: <FontAwesomeIcon icon={faChevronRight} />,
         UpRightAndDownLeftFromCenter: <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} />,
+        arrowDownWideShort :<FontAwesomeIcon icon={faArrowDownWideShort} />,
+        arrowDownShortWide: <FontAwesomeIcon icon={faArrowDownShortWide} />,
+        caretUp: <FontAwesomeIcon icon={faCaretUp} />,
+        caretDown: <FontAwesomeIcon icon={faCaretDown} />,
+        AnglesLeft: <FontAwesomeIcon icon={faAnglesLeft} />,
+        AnglesRight: <FontAwesomeIcon icon={faAnglesRight} />
+    },
+    sort:{
+        sortDown: <FontAwesomeIcon icon={faSortDown} />,
+        sortUp: <FontAwesomeIcon icon={faSortUp} />,
+        sortAsc: <FontAwesomeIcon icon={faArrowDownAZ} />,
+        sortDesc: <FontAwesomeIcon icon={faArrowDownZA} />,
+        sortAscNum: <FontAwesomeIcon icon={faArrowDown19} />,
+        sortDescNum: <FontAwesomeIcon icon={faArrowDown91} />,
     },
     operationModes: {
         filter: <FontAwesomeIcon icon={faFilter} />,
@@ -43,10 +57,14 @@ export const icons = {
         accept: <FontAwesomeIcon icon={faCheck} />,
         search: <FontAwesomeIcon icon={faMagnifyingGlass} />,
         close: <FontAwesomeIcon icon={faXmark} />,
+        setting: <FontAwesomeIcon icon={faGear} />,
+        setting2: <FontAwesomeIcon icon={faEllipsisVertical} />,
+        setting3: <FontAwesomeIcon icon={faWrench} />,
     },
     mathOperations: {
         add: <FontAwesomeIcon icon={faPlus} />,
         subtract: <FontAwesomeIcon icon={faSubtract} />,
+        squareMinus: <FontAwesomeIcon icon={faSquareMinus} />,
         multiply: <FontAwesomeIcon icon={faMultiply} />,
         divide: <FontAwesomeIcon icon={faDivide} />,
     },

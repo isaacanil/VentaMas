@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { AdvancedTable, Img, ImgContainer } from './AdvancedTable';
+import { AdvancedTable } from './AdvancedTable';
 import { useGetProducts } from '../../../firebase/products/fbGetProducts';
 import { useFormatPrice } from '../../../hooks/useFormatPrice';
 import StockIndicator from '../../templates/system/labels/StockIndicator';
@@ -16,30 +16,28 @@ import { OPERATION_MODES } from '../../../constants/modes';
 export const Table = () => {
   const dispatch = useDispatch();
   const handleDeleteProduct = (id) => {
-      dispatch(handleDeleteProductAlert({id}));
+    dispatch(handleDeleteProductAlert({ id }));
   };
   const handleUpdateProduct = (product) => {
- 
-      dispatch(openModalUpdateProd());
-      dispatch(ChangeProductData({ product: product, status: OPERATION_MODES.UPDATE.label }));
+
+    dispatch(openModalUpdateProd());
+    dispatch(ChangeProductData({ product: product, status: OPERATION_MODES.UPDATE.label }));
   };
   const columns = [
     {
       Header: 'Imagen',
       accessor: 'image',
-      minWidth: '60px',
-      
+      minWidth: '90px',
+
       maxWidth: '90px',
-      cell: ({ value }) => <ImgContainer>
-        <Img src={value} ></Img>
-      </ImgContainer>,
+    
     },
     {
       Header: 'Nombre',
       accessor: 'name',
       minWidth: '200px',
+      maxWidth: '1fr',
       sortable: true,
-      maxWidth: '300px',
     },
     {
       Header: 'Stock',
@@ -53,12 +51,16 @@ export const Table = () => {
       align: 'right',
       sortable: true,
       accessor: 'cost',
+      minWidth: '120px',
+      maxWidth: '150px',
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
     {
       Header: 'Precio',
       sortable: true,
       accessor: 'price',
+      minWidth: '120px',
+      maxWidth: '150px',
       align: 'right',
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
@@ -66,6 +68,8 @@ export const Table = () => {
       Header: 'Impuesto',
       sortable: true,
       align: 'right',
+      minWidth: '120px',
+      maxWidth: '150px',
       accessor: 'tax',
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
@@ -77,24 +81,25 @@ export const Table = () => {
       align: 'right',
       cell: ({ value }) => {
         return (
-        <ButtonGroup>
-          <Button
-            startIcon={icons?.operationModes?.edit}
-            borderRadius='normal'
-            color={'gray-dark'}
-            width='icon32'
-            bgcolor='editar'
-            onClick={() => handleUpdateProduct(value)}
-          />
-          <Button
-            startIcon={icons.operationModes.delete}
-            width='icon32'
-            color={'gray-dark'}
-            borderRadius='normal'
-            onClick={() => handleDeleteProduct(value.id)}
-          />
-        </ButtonGroup>
-      )}
+          <ButtonGroup>
+            <Button
+              startIcon={icons?.operationModes?.edit}
+              borderRadius='normal'
+              color={'gray-dark'}
+              width='icon32'
+              bgcolor='editar'
+              onClick={() => handleUpdateProduct(value)}
+            />
+            <Button
+              startIcon={icons.operationModes.delete}
+              width='icon32'
+              color={'gray-dark'}
+              borderRadius='normal'
+              onClick={() => handleDeleteProduct(value.id)}
+            />
+          </ButtonGroup>
+        )
+      }
     }
   ];
 
@@ -109,12 +114,15 @@ export const Table = () => {
     price: product.price.unit,
     tax: product.tax.value * product.cost.unit,
     action: product
-
   }));
 
   return (
     <div>
-      <AdvancedTable headerComponent={<Carrusel />} columns={columns} data={data} />
+      <AdvancedTable
+        headerComponent={<Carrusel />}
+        columns={columns} data={data}
+        tableName={'inventory_items_table'}
+      />
     </div>
   )
 }
