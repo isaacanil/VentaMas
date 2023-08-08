@@ -1,11 +1,14 @@
 import { icons } from "../../../constants/icons/icons";
 import ROUTES_NAME from "../../../routes/routesName";
 import findRouteByName from "../../templates/MenuApp/findRouteByName";
-const { TAX_RECEIPT, BUSINESS_INFO, APP_INFO,USERS,  USERS_LIST } = ROUTES_NAME.SETTING_TERM
+const { TAX_RECEIPT, BUSINESS_INFO, APP_INFO,USERS,  USERS_LIST, SETTINGS } = ROUTES_NAME.SETTING_TERM
 const category = {
     BUSINESS_INFO: 'Configuración de la Empresa',
     APP_INFO: 'Aplicación',
 }
+
+const getRoute = (routeName) => SETTINGS + routeName;
+
 export const getSettingData = () => {
     return [
         {
@@ -14,7 +17,7 @@ export const getSettingData = () => {
             type: 'empresa',
             icon: icons.settings.businessInfo,
             category: category.BUSINESS_INFO,
-            route: BUSINESS_INFO,
+            route: getRoute(BUSINESS_INFO), 
 
         },
         {
@@ -23,7 +26,7 @@ export const getSettingData = () => {
             type: 'fiscal',
             icon: icons.settings.taxReceipt,
             category: category.BUSINESS_INFO,
-            route: TAX_RECEIPT,
+            route: getRoute(TAX_RECEIPT),
 
         },
         {
@@ -32,7 +35,7 @@ export const getSettingData = () => {
             type: 'usuarios',
             icon: icons.settings.users,
             category: category.BUSINESS_INFO,
-            route: '/users/list',
+            route: USERS_LIST,
         },
         // {
         //     title: 'Enviar Comentarios',
@@ -47,7 +50,7 @@ export const getSettingData = () => {
             type: 'aplicación',
             icon: icons.settings.appInfo,
             category: category.APP_INFO,
-            route: APP_INFO,
+            route: getRoute(APP_INFO),
         },
 
 

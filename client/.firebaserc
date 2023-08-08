@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "ventamaxpos"
-  }
+    "default": "ventamaxpos",
+    "ventamaxpos": "ventamaxpos"
+  },
+  "targets": {},
+  "etags": {}
 }

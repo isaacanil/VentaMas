@@ -13,7 +13,7 @@ export const InventoryFilterAndSort = () => {
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(false);
 
-    const handleOpen = () => {setIsOpen(!isOpen)};
+    const handleOpen = () => { setIsOpen(!isOpen) };
 
     const MenuVariant = {
         hidden: {
@@ -31,7 +31,7 @@ export const InventoryFilterAndSort = () => {
             }
         }
     }
-    
+
     return (
         <Container>
             <Button
