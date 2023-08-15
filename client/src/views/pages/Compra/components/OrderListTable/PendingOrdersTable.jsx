@@ -5,6 +5,8 @@ import { useEffect } from 'react'
 import { PurchaseCard } from '../../ListItem/PurchaseCard'
 import { useDispatch } from 'react-redux'
 import { getPendingPurchaseFromDB } from '../../../../../features/Purchase/purchaseSlice'
+import { AdvancedTable } from '../../../../controlPanel/Table/AdvancedTable'
+import { ToolBar } from '../../ToolBar'
 
 export const PendingOrdersTable = () => {
   const dispatch = useDispatch()
@@ -13,49 +15,103 @@ export const PendingOrdersTable = () => {
   useEffect(() => {
     getPurchaseFromDB(setPurchases)
   }, [])
- 
-  useMemo(()=>{
-    if(purchases.length > 0) dispatch(getPendingPurchaseFromDB(purchases))
+
+  useMemo(() => {
+    if (purchases.length > 0) dispatch(getPendingPurchaseFromDB(purchases))
   }, [purchases])
+  const columns = [
+    {
+      Header: 'Número',
+      accessor: 'number'
+    },
+    {
+      Header: 'Proveedor',
+      accessor: 'provider'
+    },
+    {
+      Header: 'Nota',
+      accessor: 'note'
+    },
+    {
+      Header: 'Fecha',
+      accessor: 'date'
+    },
+    {
+      Header: 'F. Pago',
+      accessor: 'paymentDate'
+    },
+    {
+      Header: 'Total',
+      accessor: 'total'
+    },
+    {
+      Header: 'Acción',
+      accessor: 'action'
+    }
+  ]
+  const data = purchases.map(({ data }, index) => {
+    return {
+      number: index,
+      provider: data.provider,
+      note: data.note,
+      date: data.date,
+      paymentDate: data.paymentDate,
+      total: data.total,
+      action: data
+    }
+  })
 
   return (
+    // <Container>
+    //   <Body>
+    //     <TitleContainer>
+    //       <h3>Lista de Compras</h3>
+    //     </TitleContainer>
+    //     <Table>
+    //       <Row fill='fill'>
+    //         <Col>#</Col>
+    //         <Col>Proveedor</Col>
+    //         <Col>Nota</Col>
+    //         <Col>Fecha</Col>
+    //         <Col>F. Pago</Col>
+    //         <Col position='right'>Total</Col>
+    //         <Col>Acción</Col>
+    //       </Row>
+    //       <TableBody>
+    //         {
+    //           purchases.length > 0 ? (
+    //             purchases.map((purchaseData, index) => (
+    //               <PurchaseCard Row={Row} Col={Col} key={index} purchaseData={purchaseData} index={index} activeId={activeId} setActiveId={setActiveId}/>
+    //             ))
+    //           ) : null
+
+    //         }
+    //       </TableBody>
+    //     </Table>
+    //   </Body>
+    // </Container>
     <Container>
-      <Body>
-        <TitleContainer>
-          <h3>Lista de Compras</h3>
-        </TitleContainer>
-        <Table>
-          <Row fill='fill'>
-            <Col>#</Col>
-            <Col>Proveedor</Col>
-            <Col>Nota</Col>
-            <Col>Fecha</Col>
-            <Col>F. Pago</Col>
-            <Col position='right'>Total</Col>
-            <Col>Acción</Col>
-          </Row>
-          <TableBody>
-            {
-              purchases.length > 0 ? (
-                purchases.map((purchaseData, index) => (
-                  <PurchaseCard Row={Row} Col={Col} key={index} purchaseData={purchaseData} index={index} activeId={activeId} setActiveId={setActiveId}/>
-                ))
-              ) : null
-
-            }
-          </TableBody>
-        </Table>
-      </Body>
+      <AdvancedTable
+        tableName={'Lista de Compras'}
+        columns={columns}
+        data={data}
+        headerComponent={<ToolBar></ToolBar>}
+      />
     </Container>
-
   )
 }
 const Container = styled.div`
-    width: 100%;
-    padding: 0 1em;
-    display: flex;
-    justify-content: center;
+  width: 100vw;
+  padding: 0 1em;
+  height: 100%;
+
 `
+// const Container = styled.div`
+//     width: 100%;
+//     padding: 0 1em;
+//     display: flex;
+//     justify-content: center;
+// `
 const Body = styled.header`
     justify-self: center;
     border: 1px solid rgba(0, 0, 0, 0.100);
@@ -239,10 +295,10 @@ const Col = styled.div`
   ${props => {
     switch (props.position) {
       case 'right':
-        return`
+        return `
           text-align: right;
         `;
-    
+
       default:
         break;
     }

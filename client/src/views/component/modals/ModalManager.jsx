@@ -4,7 +4,7 @@ import { AddClientModal } from "./AddClient/AddClientModal"
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { AddOrderModal } from "./AddOrder/AddOrderModal"
 import { SetCustomProduct } from "./CustomProduct/SetCustomProduct/SetCustomProduct"
-import { AddProvider } from "./AddProvider/AddProvider"
+
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
 import {
@@ -23,7 +23,7 @@ import {
   SelectAddProductOutflowModal,
 
 } from "../../../features/modals/modalSlice"
-import { CreateContact } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
+import { ClientForm } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
 import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
 import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
 import { AddPurchaseModal } from "./AddPurchase/AddPurchaseModal"
@@ -38,6 +38,7 @@ import { OPERATION_MODES } from "../../../constants/modes"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
 import { DeleteClientAlert } from "../../templates/system/Alerts/DeleteClientAlert"
 import { AnimatePresence } from "framer-motion"
+import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
 
@@ -53,24 +54,22 @@ export const ModalManager = () => {
   const ViewOrdersNotesModalDataSelected = useSelector(SelectViewOrdersNotesModalData)
   const AddProductOutflowModalSelected = useSelector(SelectAddProductOutflowModal)
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
+  const currentNotification = useSelector(selectCurrentNotification)
   //console.log(AddClientModalSelected)
   return (
     <Fragment>
       <AnimatePresence>
-        {
-          AddClientModalSelected && (
-            <AddClientModal
-              isOpen={AddClientModalSelected}
-            />
-          )
-        }
-        {
-          AddPurchaseModalSelected && (
-            <AddPurchaseModal
-              isOpen={AddPurchaseModalSelected}
-            />
-          )
-        }
+        {AddClientModalSelected && (
+          <AddClientModal
+            isOpen={AddClientModalSelected}
+          />
+        )}
+        {AddPurchaseModalSelected && (
+          <AddPurchaseModal
+            key={'modal-add-purchase'}
+            isOpen={AddPurchaseModalSelected}
+          />
+        )}
         {UpdateProdModalSelected && (
           <UpdateProductModal
             key='modal-update-product'
@@ -89,27 +88,48 @@ export const ModalManager = () => {
           isOpen={ViewOrdersNotesModalDataSelected.isOpen}
           data={ViewOrdersNotesModalDataSelected.data}
         />
-        <CreateContact
-          isOpen={ClientModalDataSelected.isOpen}
-          mode={ClientModalDataSelected.mode}
-          data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
-        />
-        <ProviderForm
-          isOpen={ProviderModalDataSelected.isOpen}
-          mode={ProviderModalDataSelected.mode}
-          data={ProviderModalDataSelected.mode === update ? ProviderModalDataSelected.data : null}
-        />
-        <AddOrderModal isOpen={AddOrderModalSelected} />
+        {ClientModalDataSelected.isOpen && (
+          <ClientForm
+            key={'modal-client'}
+            isOpen={ClientModalDataSelected.isOpen}
+            mode={ClientModalDataSelected.mode}
+            data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
+          />
+        )}
+        {ProviderModalDataSelected.isOpen && (
+          <ProviderForm
+            key={'modal-provider'}
+            isOpen={ProviderModalDataSelected.isOpen}
+            mode={ProviderModalDataSelected.mode}
+            data={ProviderModalDataSelected.mode === update ? ProviderModalDataSelected.data : null}
+          />
+        )}
+        {AddOrderModalSelected && (
+          <AddOrderModal
+            key={'modal-add-order'}
+            isOpen={AddOrderModalSelected}
+          />
+        )}
         {/* <AddProvider /> */}
-        <Notification />
-        <AddCategoryModal
-          isOpen={AddCategoryModalSelected.isOpen}
-          categoryToUpdate={AddCategoryModalSelected.data}
-        />
-        <ProductOutflowModal
-          isOpen={AddProductOutflowModalSelected.isOpen}
-          mode={ProductOutflowSelected.mode}
-        />
+        {currentNotification.visible && (
+          <Notification
+            key={'notification'}
+          />
+        )}
+        {AddCategoryModalSelected.isOpen && (
+          <AddCategoryModal
+            key={'modal-add-category'}
+            isOpen={AddCategoryModalSelected.isOpen}
+            categoryToUpdate={AddCategoryModalSelected.data}
+          />
+        )}
+        {AddProductOutflowModalSelected.isOpen && (
+          <ProductOutflowModal
+            key={'modal-product-outflow'}
+            isOpen={AddProductOutflowModalSelected.isOpen}
+            mode={ProductOutflowSelected.mode}
+          />
+        )}
         <Loader />
         <ImageViewer />
         <SmallNotification />

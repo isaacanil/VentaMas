@@ -44,8 +44,10 @@ const SETTING_TERM = {
     TAX_RECEIPT: '/tax-receipt',
 }
 const PURCHASE_TERM = {
-    PURCHASES: '/purchases',
-    ORDERS: '/orders',
+    PURCHASES: '/purchases-list',
+    PURCHASES_CREATE: '/purchases-create',
+    ORDERS: '/orders-list',
+    ORDERS_CREATE: '/orders-create',
 }
 
 

@@ -8,8 +8,6 @@ import {
 
 
 import { filterData} from '../../../../hooks/search/useSearch'
-import {  searchAndFilter, useSearchFilter, useSearchFilterX } from '../../../../hooks/useSearchFilter'
-import { CreateContact } from './components/ClientForm/ClientForm'
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
 import { ToolBar } from './ToolBar'
 import { useFbGetClients } from '../../../../firebase/client/useFbGetClients'

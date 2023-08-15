@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { MdRadioButtonChecked, MdRadioButtonUnchecked } from 'react-icons/md'
 import { useDispatch } from 'react-redux'
-import { Button } from '../../../templates/system/Button/Button'
+import { Button } from '../../../../../templates/system/Button/Button'
 
 export const InventariableButton = ({ product, setProduct }) => {
 

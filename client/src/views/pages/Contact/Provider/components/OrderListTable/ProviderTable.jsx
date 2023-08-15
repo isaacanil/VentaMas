@@ -4,14 +4,14 @@ import styled from 'styled-components'
 import { useEffect } from 'react'
 import { ProviderCard } from '../../ListItem/ProviderCard'
 import { useSelector } from 'react-redux'
-import { fbGetProviders } from '../../../../../../firebase/provider/fbGetProvider'
+import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
 import { selectUser } from '../../../../../../features/auth/userSlice'
 
 export const ProviderTable = () => {
-  const [providers, setProviders] = useState([])
-  const user = useSelector(selectUser)
-  useEffect(() => { fbGetProviders(setProviders, user) }, [user])
-  
+
+  const user = useSelector(selectUser);
+  const {providers} = useFbGetProviders(user);
+
   return (
     <Container>
       <Body>
@@ -34,6 +34,7 @@ export const ProviderTable = () => {
                   <ProviderCard Row={Row} Col={Col} key={index} e={provider} index={index} />
                 ))
               ) : null
+              
 
             }
           </TableBody>

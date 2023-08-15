@@ -7,8 +7,17 @@ import { UserList } from "../../views/pages/setting/subPage/Users/components/Use
 import validateRouteAccess from "../requiereAuthProvider";
 import ROUTES_NAME from "../routesName";
 
-const { SETTING_TERM } = ROUTES_NAME;
-const { SETTINGS, USERS, UPDATE_USER, USERS_LIST, TAX_RECEIPT, APP_INFO, BUSINESS_INFO, CREATE_USER } = SETTING_TERM;
+const {
+    SETTINGS,
+    USERS,
+    UPDATE_USER,
+    USERS_LIST,
+    TAX_RECEIPT,
+    APP_INFO,
+    BUSINESS_INFO,
+    CREATE_USER
+} = ROUTES_NAME.SETTING_TERM;
+
 const basePath = SETTINGS;
 const Routes = [
     { path: SETTINGS, element: validateRouteAccess(<Setting />), },
@@ -27,14 +36,14 @@ const Routes = [
             },
             {
                 path: UPDATE_USER,
-                element: validateRouteAccess(<EditUser/>),
+                element: validateRouteAccess(<EditUser />),
             }
 
         ]
     },
-    { path: `${basePath}${TAX_RECEIPT}`, element: validateRouteAccess(<TaxReceiptSetting />), name: TAX_RECEIPT },
-    { path: `${basePath}${BUSINESS_INFO}`, element: validateRouteAccess(<BusinessInfo />), name: BUSINESS_INFO },
-    { path: `${basePath}${APP_INFO}`, element: validateRouteAccess(<AppInfo />), name: APP_INFO }
+    { path: `${basePath}${TAX_RECEIPT}`, element: validateRouteAccess(<TaxReceiptSetting />) },
+    { path: `${basePath}${BUSINESS_INFO}`, element: validateRouteAccess(<BusinessInfo />) },
+    { path: `${basePath}${APP_INFO}`, element: validateRouteAccess(<AppInfo />) }
 ]
 
 export default Routes;

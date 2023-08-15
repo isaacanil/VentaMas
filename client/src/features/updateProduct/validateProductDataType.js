@@ -12,8 +12,10 @@ export class productDataTypeCorrection {
         netContent, 
         order, 
         barCode,
+        qrCode,
         amountToBuy, 
         id, 
+        isVisible,
 
         trackInventory
     }) {
@@ -29,6 +31,7 @@ export class productDataTypeCorrection {
             unit: Number(price?.unit)
         };
         this.barCode = String(barCode)
+        this.qrCode = String(qrCode)
         this.size = String(size);
         this.type = String(type);
         this.tax = {
@@ -46,5 +49,6 @@ export class productDataTypeCorrection {
         };
         this.id = id;
         this.trackInventory = Boolean(trackInventory);
+        this.isVisible = Boolean(isVisible)
     }
 }

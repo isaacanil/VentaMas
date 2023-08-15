@@ -9,7 +9,7 @@ export const Card = ({ data }) => {
     <Container to={path}>
       <Head>
         <Icon>{icon}</Icon>
-        <Title>{route}</Title>
+        <Title>{title}</Title>
       </Head>
       <CardWrapper>
         <Description>{description}</Description>

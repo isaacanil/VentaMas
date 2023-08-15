@@ -9,18 +9,8 @@ const EmptyOrder = {
   note: "",
   createdAt: "",
   updatedAt: "",
-  state: {
-  },
-  provider: {
-    id: "",
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    createdAt: "",
-    updatedAt: "",
-
-  }
+  state: {},
+  provider: {}
 }
 const EmptyProductSelected =  {
   product: {
@@ -83,9 +73,23 @@ const addOrderSlice = createSlice({
       const {initialCost} = actions.payload
       state.productSelected.product.initialCost = initialCost 
     },
-    updateStock: (state, actions) => {
-      const {stock } = actions.payload
-      state.productSelected.product.stock = stock
+    addNewStock: (state, actions) => {
+      const {stock} = actions.payload
+      state.productSelected.product.stock = stock;
+    },
+    updateNewStock: (state, actions) => {
+      const {stock, productID} = actions.payload
+      const product = state.order.products.find(({product})=> product.id === productID);
+      if(product !== undefined){
+        product.product.stock.newStock = stock;
+      }
+    },
+    updateInitialCost: (state, actions) => {
+      const {initialCost, productID} = actions.payload
+      const product = state.order.products.find(({product})=> product.id === productID);
+      if(product !== undefined){
+        product.product.initialCost = initialCost;
+      }
     },
     AddNote: (state, actions) => {
       state.order.note = actions.payload
@@ -118,6 +122,8 @@ export const {
   SelectProduct,
   AddProductToOrder,
   getInitialCost,
+  updateNewStock,
+  updateInitialCost,
   AddNote,
   AddCondition,
   AddCreatedDate,
@@ -125,7 +131,7 @@ export const {
   AddIdToOrder,
   cleanOrder,
   AddProvider,
-  updateStock,
+  addNewStock,
   DeleteProduct
 } = addOrderSlice.actions
 

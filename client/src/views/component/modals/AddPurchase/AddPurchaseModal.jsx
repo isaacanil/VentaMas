@@ -11,40 +11,25 @@ import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { selectOrderFilterOptions, selectOrderList, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
-import { getOrderData, AddProvider, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts } from '../../../../features/Purchase/addPurchaseSlice'
+import { getOrderData, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts, addProvider } from '../../../../features/Purchase/addPurchaseSlice'
 import { StockedProductPicker } from '../../StockedProductPicker/StockedProductPicker'
 import { ProductListSelected } from '../../ProductListSelected/ProductListSelected'
+import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
+import { selectUser } from '../../../../features/auth/userSlice'
+import { fbGetPendingOrders } from '../../../../firebase/order/fbGetPedingOrder'
 
 export const AddPurchaseModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-    const [provider, setProvider] = useState(null)
     const [orderToPurchase, setOrderToPurchase] = useState(null)
-    const [reset, setReset] = useState()
-    const productSelected = useSelector(SelectProductSelected)
+    const selectedProduct = useSelector(SelectProductSelected)
     const productsSelected = useSelector(selectProducts)
-    const [prevProvider, setPrevProvider] = useState(null)
-    const now = new Date()
-    const day = now.getDate()
-    const SELECTED_PURCHASE = useSelector(selectPurchase)
+    const user = useSelector(selectUser);
+    const provider = useSelector(selectPurchase).provider;
+    const { providers } = useFbGetProviders(user);
+    const [order, setOrder] = useState(null);
 
-    useEffect(() => {
-        const provider = SELECTED_PURCHASE.provider;
-        if (!provider) return;
-        if (provider.id !== null && provider.name !== null) {
-            setProvider({
-                name: provider.name,
-                id: provider.id
-            });
-        }
-    }, [SELECTED_PURCHASE.provider]);
-
-    useEffect(() => {
-        if (provider !== null && provider !== prevProvider) {
-            dispatch(AddProvider(provider))
-        }
-        setPrevProvider(provider);
-    }, [provider]);
-
+    const SELECTED_PURCHASE = useSelector(selectPurchase);
+    
     useEffect(() => {
         if (orderToPurchase) {
             dispatch(getOrderData(orderToPurchase));
@@ -70,24 +55,23 @@ export const AddPurchaseModal = ({ isOpen }) => {
 
     const handleSubmit = () => {
         dispatch(toggleAddPurchaseModal());
-        PassDataToPurchaseList(SELECTED_PURCHASE);
+        PassDataToPurchaseList(user, SELECTED_PURCHASE);
         setReset(true);
         dispatch(cleanPurchase());
     }
 
-    const orderFilterOptions = useSelector(selectOrderFilterOptions)
-    const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
-    let pendingOrders = useSelector(selectOrderList);
-    pendingOrders = pendingOrders[0]
- 
+    const orderFilterOptions = useSelector(selectOrderFilterOptions);
+   // const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
+    const {pendingOrders} = fbGetPendingOrders(user);
 
-    const handleAddProduct = ({ stock, initialCost, cost }) => {
+ 
+    const addProduct = ({ stock, initialCost, cost }) => {
         dispatch(updateStock({ stock }))
         dispatch(getInitialCost({ initialCost, cost }))
         dispatch(AddProductToPurchase())
     }
 
-    const handleSelectProduct = (data) => {
+    const selectProduct = (data) => {
         dispatch(SelectProduct(data))
     }
     
@@ -114,22 +98,18 @@ export const AddPurchaseModal = ({ isOpen }) => {
                     <Body>
                         <ToolBar>
                             <Select
-                                setReset={setReset}
-                                reset={reset}
-                                property='id'
                                 title='Pedidos'
                                 data={pendingOrders}
-                                value={orderToPurchase}
-                                setValue={setOrderToPurchase}
+                                value={orderToPurchase?.id}
+                                displayKey={'orderToPurchase.id'}
+                                onChange={e => setOrderToPurchase(e.target.value)}
                             />
                             <Select
-                                setReset={setReset}
-                                reset={reset}
-                                property='name'
                                 title='Proveedor'
                                 data={providers}
-                                value={provider}
-                                setValue={setProvider}
+                                value={provider?.name}
+                                displayKey={'provider.name'}
+                                onChange={(e) => dispatch(addProvider(e.target.value))}
                             />
                             <Button
                                 title={<CgMathPlus />}
@@ -140,9 +120,9 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             />
                         </ToolBar>
                         <StockedProductPicker
-                            fn={handleAddProduct}
-                            handleSelectProduct={handleSelectProduct}
-                            productSelected={productSelected}
+                            addProduct={addProduct}
+                            selectProduct={selectProduct}
+                            selectedProduct={selectedProduct}
                         />
                         <ProductListSelected
                             productsSelected={SELECTED_PURCHASE.products}
@@ -150,8 +130,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             handleDeleteProduct={handleDeleteProduct}
                         />
                         <OrderDetails
-                            reset={reset}
-                            setReset={setReset}
+                        
                             SELECTED_PURCHASE={SELECTED_PURCHASE}
                         />
                         <WrapperFooter>

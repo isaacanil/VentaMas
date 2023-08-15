@@ -3,87 +3,116 @@ import styled from 'styled-components'
 import { IoIosArrowDown } from 'react-icons/io'
 import { MdClear } from 'react-icons/md'
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import { icons } from '../../../../constants/icons/icons';
 
-export const Select = ({ title, data, value, setValue, placement = 'bottom', property = 'name', reset, setReset }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [showSelectTitle, setShowSelectTitle] = useState(title);
-    const [selectedId, setSelectedId] = useState('');
-    const SelectRef = useRef(null)
+import { usePopper } from 'react-popper';
 
-    useEffect(() => {
-      if (reset) {
-        setSelectedId('');
-        setShowSelectTitle(title);
-        setReset(false);
-      }
-    }, [reset, title]);
-  
-    useEffect(() => {
-      if (value && data && data.Items) {
-        setShowSelectTitle(value[property] || title);
-        const selectedItem = data.Items.find(item => item.id === value.id);
-        setSelectedId(selectedItem?.id || '');
-      }
-    }, [value, property, data]);
+const getValueByKeyOrPath = (obj, keyOrPath) => {
+  if (typeof keyOrPath === 'string' && keyOrPath.includes('.')) {
+    return keyOrPath.split('.').reduce((o, key) => o && o[key], obj);
+  }
+  return obj[keyOrPath];
+}
 
-    const handleSelect = select => {
-      setSelectedId(select.id);
-      setValue(select);
-      setShowSelectTitle(select[property]);
-      setIsOpen(false);
-    };
+export const Select = ({
+  title,
+  data,
+  value,
+  onChange,
+  displayKey
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  //referencia al contenedor del select
+  const SelectRef = useRef(null) 
+  //termino de busqueda
+  const [searchTerm, setSearchTerm] = useState('');
+  // Popper
+  const [referenceElement, setReferenceElement] = useState(null);
+  const [popperElement, setPopperElement] = useState(null);
+  //estilos de popper
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [{ name: 'arrow' }],
+  });
 
-    const handleReset = () => {
-      setSelectedId('');
-        setShowSelectTitle(title);
-        setReset(false);
-        setIsOpen(false);
-    }
-    useClickOutSide(SelectRef, isOpen, ()=>{setIsOpen(false)})
-    return (
-      <Container ref={SelectRef}>
-        <Head>
-          {!isOpen ? (
-            <Group onClick={() => setIsOpen(true)}>
-              <h3>{showSelectTitle}</h3>
-              <IoIosArrowDown />
-            </Group>
-          ) : null}
-          {isOpen ? (
-            <Group>
-              <InputText size="s" placeholder={`Buscar ${data.name}`} />
-              <Button onClick={() => setIsOpen(false)}>
-                <MdClear />
-              </Button>
-            </Group>
-          ) : null}
-        </Head>
-        {isOpen ? (
-      <Body placement={placement}>
-        {data.Items.length > 0 ? (
-          <List>
-            <Item
-              style={selectedId === '' ? { backgroundColor: 'blue', color: 'white' } : null}
-              onClick={() => handleReset()}
-            >
-              Ninguno
-            </Item>
-            {data.Items.map((item, index) => (
-              <Item
-                key={index}
-                style={selectedId === item.id ? { backgroundColor: 'blue', color: 'white' } : null}
-                onClick={() => handleSelect(item)}
-              >
-                {item[property]}
-              </Item>
-            ))}
-          </List>
-        ) : null}
-      </Body>
-    ) : null}
-      </Container>
-    );
+  const handleSelect = select => {
+    setIsOpen(false);
+    onChange({ target: { value: select } });
   };
+
+  const filteredItems = Array.isArray(data)
+    ? data.filter((item) => item && getValueByKeyOrPath(item, displayKey)?.toLowerCase().includes(searchTerm.toLowerCase()))
+    : [];
+
+  const handleReset = () => {
+    setSearchTerm(''); // Si quieres reiniciar el término de búsqueda también
+    setIsOpen(false);
+    onChange({ target: { value: null } }); // Aquí puedes enviar un valor nulo para indicar que se ha reseteado
+  }
+
+  useEffect(() => {
+    if (!value) {
+      setSearchTerm(''); // Si quieres reiniciar el término de búsqueda también
+      setIsOpen(false);
+      onChange({ target: { value: null } }); // Aquí puedes enviar un valor nulo para indicar que se ha reseteado
+    }
+  }, [])
+
+  useClickOutSide(SelectRef, isOpen, () => { setIsOpen(false) })
+
+  return (
+    <Container ref={SelectRef}>
+      <Head ref={setReferenceElement}>
+        {!isOpen ? (
+          <Group onClick={() => setIsOpen(true)}>
+            <h3>{value ? value : title}</h3>
+            <Icon>
+              {icons.arrows.chevronDown}
+            </Icon>
+          </Group>
+        ) : null}
+        {isOpen ? (
+          <Group>
+            <InputText
+              size="s"
+              placeholder={`Buscar ${title}`}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Button onClick={() => setIsOpen(false)}>
+              {icons.operationModes.close}
+            </Button>
+          </Group>
+        ) : null}
+      </Head>
+      {isOpen ? (
+        <Body
+          ref={setPopperElement}
+          style={styles.popper}
+          {...attributes.popper}
+        >
+          {data?.length > 0 ? (
+            <List>
+              <Item
+                style={!value ? { backgroundColor: 'blue', color: 'white' } : null}
+                onClick={() => handleReset()}
+              >
+                Ninguno
+              </Item>
+              {filteredItems.map((item, index) => (
+                <Item
+                  key={index}
+                  style={value === getValueByKeyOrPath(item, displayKey) ? { backgroundColor: 'blue', color: 'white' } : null}
+                  onClick={() => handleSelect(item)}
+                >
+                  {getValueByKeyOrPath(item, displayKey)}
+                </Item>
+              ))}
+            </List>
+          ) : null}
+        </Body>
+      ) : null}
+    </Container>
+  );
+};
 const Container = styled.div`
     position: relative;
     max-width: 200px;
@@ -107,7 +136,8 @@ const Body = styled.div`
 
     min-width: 300px;
     width: 100%;
-    max-height: 200px;
+    max-height: 300px;
+    height: 300px;
     position: absolute;
     top: 2.3em;
     z-index: 3;
@@ -116,16 +146,7 @@ const Body = styled.div`
     border-radius: 6px;
     border: 1px solid rgba(0, 0, 0, 0.200);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.200);
-    ${(props) => {
-        switch (props.placement) {
-            case 'top':
-                return `
-                top: -600%;
-            `
-            default:
-                return null
-        }
-    }}
+   
 `
 const List = styled.ul`
     z-index: 1;
@@ -135,7 +156,7 @@ const List = styled.ul`
     overflow-y: scroll;
 `
 const Group = styled.div`
-    height: 2em;
+    height: 2.2em;
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -175,18 +196,18 @@ const Item = styled.p`
     }
 
     ${(props) => {
-        if (props.selected) {
-            return `
+    if (props.selected) {
+      return `
                 background-color: #4081d6;
                 color: white;
             `
-        }
-    }}
+    }
+  }}
 
     
 `
 const InputText = styled.input.attrs({
-    type: 'text'
+  type: 'text'
 })`
    
     border: 1px solid rgba(0, 0, 0, 0);
@@ -208,4 +229,10 @@ const Button = styled.button`
     align-items: center;
     padding: 0;
     justify-content: right;
+`
+const Icon = styled.div`
+ height: 1em;
+ width: 0.8em;
+ display: flex;
+ align-items: center;
 `

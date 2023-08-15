@@ -1,31 +1,35 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
-import style from './AddOrderModalStyle.module.scss'
 import { openModalAddOrder } from '../../../../features/modals/modalSlice'
 import { Select } from '../../..'
 import { ProductListSelected } from '../../ProductListSelected/ProductListSelected'
-import { Button} from '../../../'
+import { Button } from '../../../'
 
 import { StockedProductPicker } from '../../StockedProductPicker/StockedProductPicker'
 import { OrderDetails } from './OrderDetails/OrderDetails'
-import { SelectOrder, AddProvider, cleanOrder, AddProductToOrder, getInitialCost, updateStock, SelectProductSelected, SelectProduct, SelectProducts, SelectTotalPurchase, DeleteProduct } from '../../../../features/addOrder/addOrderModalSlice'
+import { SelectOrder, AddProvider, cleanOrder,  SelectProductSelected, SelectProduct, SelectProducts, SelectTotalPurchase, DeleteProduct, getInitialCost, addNewStock, AddProductToOrder } from '../../../../features/addOrder/addOrderModalSlice'
 import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { useEffect } from 'react'
-import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
-import { selectOrderFilterOptions } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { addNotification } from '../../../../features/notification/NotificationSlice'
 import ModalHeader from './Modal/ModalHeader'
+import { selectUser } from '../../../../features/auth/userSlice'
+import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
 
 export const AddOrderModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-    const [provider, setProvider] = useState(null);
+
     const OrderSelected = useSelector(SelectOrder);
     const [reset, setReset] = useState(false);
-    const productSelected = useSelector(SelectProductSelected);
+    const selectedProduct = useSelector(SelectProductSelected);
     const productsSelected = useSelector(SelectProducts);
+    const provider = OrderSelected.provider;
+    const [orders, setOrders] = useState()
+    const user = useSelector(selectUser);
+
+    const { providers } = useFbGetProviders(user);
 
     const productTotalPurchasePrice = useSelector(SelectTotalPurchase)
     useEffect(() => {
@@ -55,12 +59,13 @@ export const AddOrderModal = ({ isOpen }) => {
             return
         }
         try {
-            AddOrder(OrderSelected).then(() => {
-                dispatch(addNotification({ message: 'Pedido Creado', type: 'success' }))
-                setReset(true);
-                dispatch(closeModalAddOrder());
-                dispatch(cleanOrder());
-            })
+            AddOrder(user, OrderSelected)
+                .then(() => {
+                    dispatch(addNotification({ message: 'Pedido Creado', type: 'success' }))
+                    setReset(true);
+                    dispatch(closeModalAddOrder());
+                    dispatch(cleanOrder());
+                })
         } catch (error) {
             setTimeout(() => {
                 dispatch(addNotification({ title: 'Error', message: `${error}`, type: 'error' }))
@@ -68,21 +73,14 @@ export const AddOrderModal = ({ isOpen }) => {
         }
 
     }
-    const orderFilterOptions = useSelector(selectOrderFilterOptions)
-    const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
-
-    const handleAddProductToOrder = ({ stock, initialCost, cost }) => {
-        dispatch(updateStock({ stock }))
+    const selectProduct = (product) => dispatch(SelectProduct(product));
+    const addProduct = ({stock, initialCost, cost}) => {
+        dispatch(addNewStock({ stock }))
         dispatch(getInitialCost({ initialCost, cost }))
         dispatch(AddProductToOrder())
     }
-    const handleSelectProduct = (product) => {
-        dispatch(SelectProduct(product))
-    }
-    const handleDeleteProduct = (product) => {
-        dispatch(DeleteProduct(product.id))
-    }
-
+    const handleDeleteProduct = (product) => dispatch(DeleteProduct(product.id));
+    console.log(providers)
     return (
         <Backdrop isOpen={isOpen === true ? true : false}>
             <Modal>
@@ -91,14 +89,12 @@ export const AddOrderModal = ({ isOpen }) => {
                     <Body>
                         <header >
                             <Select
-                                setReset={setReset}
-                                reset={reset}
-                                property='name'
                                 title='Proveedor'
                                 data={providers}
-                                setValue={setProvider}
-                                value={provider}
-                            ></Select>
+                                onChange={(e) => dispatch(AddProvider(e.target.value?.provider))}
+                                displayKey={'provider.name'}
+                                value={provider?.name}
+                            />
                             <Button
                                 title={<CgMathPlus />}
                                 borderRadius={'normal'}
@@ -106,7 +102,11 @@ export const AddOrderModal = ({ isOpen }) => {
                                 width={'icon32'}
                             />
                         </header>
-                        <StockedProductPicker fn={handleAddProductToOrder} handleSelectProduct={handleSelectProduct} productSelected={productSelected}></StockedProductPicker>
+                        <StockedProductPicker
+                            addProduct={addProduct}
+                            selectProduct={selectProduct}
+                            selectedProduct={selectedProduct}
+                        />
                         <ProductListSelected
                             productsSelected={productsSelected}
                             productsTotalPrice={productTotalPurchasePrice}

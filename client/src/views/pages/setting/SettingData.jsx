@@ -7,7 +7,16 @@ const category = {
     APP_INFO: 'Aplicación',
 }
 
-const getRoute = (routeName) => SETTINGS + routeName;
+const getRoute = (routeName, alt) => {
+    switch (alt) {
+        case 'users':
+            return USERS+ "/" + routeName
+        default:
+            return SETTINGS + routeName
+    }
+
+};
+
 
 export const getSettingData = () => {
     return [
@@ -18,7 +27,6 @@ export const getSettingData = () => {
             icon: icons.settings.businessInfo,
             category: category.BUSINESS_INFO,
             route: getRoute(BUSINESS_INFO), 
-
         },
         {
             title: 'Comprobante Fiscal',
@@ -27,7 +35,6 @@ export const getSettingData = () => {
             icon: icons.settings.taxReceipt,
             category: category.BUSINESS_INFO,
             route: getRoute(TAX_RECEIPT),
-
         },
         {
             title: 'Administración de Usuarios',
@@ -35,7 +42,7 @@ export const getSettingData = () => {
             type: 'usuarios',
             icon: icons.settings.users,
             category: category.BUSINESS_INFO,
-            route: USERS_LIST,
+            route: getRoute(USERS_LIST, "users"),
         },
         // {
         //     title: 'Enviar Comentarios',

@@ -1,10 +1,10 @@
 import React from 'react'
 import QRCode from 'react-qr-code';
 import styled from 'styled-components';
-import { InputV4 } from '../../../../templates/system/Inputs/InputV4';
-import { setProduct } from '../../../../../features/updateProduct/updateProductSlice';
+import { InputV4 } from '../../../../../templates/system/Inputs/InputV4';
+import { setProduct } from '../../../../../../features/updateProduct/updateProductSlice';
 import { useDispatch } from 'react-redux';
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '../../../../../../constants/icons/icons';
 
 
 export const QRCodeControl = ({ product, value }) => {
@@ -12,7 +12,7 @@ export const QRCodeControl = ({ product, value }) => {
     return (
         <Container>
             <InputV4
-                label={'Codigo de Barra'}
+                label={'Codigo QR'}
                 type="number"
                 value={value}
                 onChange={(e) => dispatch(setProduct({ ...product, qrCode: e.target.value }))}

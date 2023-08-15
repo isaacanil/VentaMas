@@ -28,13 +28,14 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
   const isScrolled = useScroll(productsContainerRef);
 
   // Agrupar los productos por categoría
-  const productsByCategory = products.reduce((result, { product }) => {
+  const filterProductsByVisibility = products.filter(({ product }) => product.isVisible !== false);
+
+  const productsByCategory = filterProductsByVisibility.reduce((result, { product }) => {
     const category = product.category
     if (!result[category]) { result[category] = [] }
     result[category].push(product)
     return result
   }, {})
-
 
   useEffect(() => {
     setProductsLoading(true)
@@ -44,22 +45,10 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
       , 1000)
   }, [isProductGrouped])
 
-  const effectProductContainer = {
-    hidden: { opacity: 1, scale: 0 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        delayChildren: 0.3,
-        staggerChildren: 0.2
-      }
-    }
-  }
-  const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
-  const handlerProducts = () => {
-    const inventoryItemsPath = findRouteByName(INVENTORY_ITEMS).path
-    navigate(inventoryItemsPath)
 
+  const handlerProducts = () => {
+    const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
+    navigate(INVENTORY_ITEMS);
   }
   return (
     <Fragment>

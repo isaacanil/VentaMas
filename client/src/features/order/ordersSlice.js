@@ -119,4 +119,4 @@ export const selectOrderFilterOptions = (state) => state.order.orderFilterOption
 export const selectOrderList = (state) => state.order.pendingOrders;
 export const selectOrderItemSelected = (state) => state.order.pendingOrders;
 
-export default orderSlice.reducer
+export default orderSlice.reducer;

@@ -9,6 +9,8 @@ import useTableSorting from './hooks/useTableSorting';
 import { useTablePagination } from './hooks/usePagination';
 import { Pagination } from './components/Pagination/Pagination';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../../features/auth/userSlice';
 /**
  * AdvancedTable es un componente de tabla personalizado que acepta los siguientes props:
  *
@@ -20,10 +22,10 @@ import { AnimatePresence, motion } from 'framer-motion';
  * - onRowClick: Una función que se ejecuta cuando se hace clic en una fila de la tabla. Esta función recibe los datos de la fila en la que se hizo clic.
  */
 export const AdvancedTable = ({ headerComponent, columns, data, tableName, searchTerm, onRowClick }) => {
-
+  const user = useSelector(selectUser)
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
-
-  let localStorageName = `tableColumnsOrder_${tableName}`;
+  
+  let localStorageName = `tableColumnsOrder_${user.uid}_${tableName}`;
 
   const [columnOrder, setColumnOrder] = useState(() => {
     if (!tableName) return columns;
@@ -69,7 +71,7 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
     setColumnOrder(columns); // Restablecer el orden de las columnas al estado predeterminado
   };
   return (
-    <Container>
+    <Container headerComponent={headerComponent}>
       {headerComponent && <div>{headerComponent}</div>}
       <TableContainer columns={columns}>
         <Wrapper>
@@ -143,24 +145,38 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
 
 const Container = styled.div`
   border: 1px solid #ccc;
-  height:calc(100vh - 2.7em);
+  height: 100%;
   display: grid;
-  grid-template-rows: min-content 1fr;
+  
+  grid-template-rows: 1fr;
+  border-radius: 0.4em;
+  overflow: hidden;
+  ${props => {
+    if (props?.headerComponent) {
+      return `
+      grid-template-rows: min-content 1fr;
+      `
+    }
+  }}
+
 `
 const TableContainer = styled.div`
   display: grid;
   grid-template-rows: 1fr min-content;
  overflow-y: hidden;
   position: relative;
+
   width: 100%;
 `;
 
 const Wrapper = styled.div`
   display: grid;
   width: 100%;
+  height: 100%;
   grid-template-rows: min-content 1fr;
   overflow-y: scroll;
   overflow-x: auto;
+  background-color: #ffffff;
 `
 
 const HeaderCell = styled.div`
@@ -249,9 +265,9 @@ const Row = styled.div`
 `;
 
 const Footer = styled.div`
-   position: sticky;
+  
    padding: 0 1em;
-    bottom: 0;
+  
     z-index: 2;
     grid-template-columns: 1fr 1fr 1fr;
     display: grid;

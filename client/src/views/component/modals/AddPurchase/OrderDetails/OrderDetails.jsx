@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Select } from '../../../../templates/system/Select/Select'
 
-import { AddCondition, AddNote, AddDate, SelectProducts } from '../../../../../features/addOrder/addOrderModalSlice'
+
+
 import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
@@ -14,40 +15,18 @@ import { SaveImg, selectUploadImageUrl } from '../../../../../features/uploadImg
 
 import { fbAddPurchaseReceiptImg } from '../../../../../firebase/purchase/addPurchaseImg'
 import { toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
-export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
+import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
+import { AddCondition, selectProducts } from '../../../../../features/Purchase/addPurchaseSlice'
+export const OrderDetails = ({  SELECTED_PURCHASE }) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions)
-    const productList = useSelector(SelectProducts)
+    const productList = useSelector(selectProducts)
     const dispatch = useDispatch()
-    const [condition, setCondition] = useState(null)
     const [imgReceipt, setImgReceipt] = useState(null)
-    const [note, setNote] = useState(null)
+  
     const [date, setDate] = useState(null)
     const urlPurchaseImg = useSelector(selectUploadImageUrl)
-    useEffect(() => {
-        if (SELECTED_PURCHASE.condition !== '') {
-            setCondition(
-                {
-                    name: SELECTED_PURCHASE.condition.name,
-                    id: SELECTED_PURCHASE.condition.id
-                }
-            )
-        }
-    }, [SELECTED_PURCHASE])
-    console.log(imgReceipt, "=> imgReceipt")
-    useEffect(() => {
-        if (SELECTED_PURCHASE && SELECTED_PURCHASE.note) {
-            setNote(SELECTED_PURCHASE.note)
-        } else {
-            setNote('')
-        }
-        if (SELECTED_PURCHASE && SELECTED_PURCHASE.date) {
-            setDate(SELECTED_PURCHASE.date)
-        } else {
-            setDate('')
-        }
-    }, [SELECTED_PURCHASE])
+ 
 
-    console.log(imgReceipt)
     const handleReceiptImg = async () => {
         try {     
             fbAddPurchaseReceiptImg(dispatch, imgReceipt)
@@ -59,19 +38,17 @@ export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
     const handleImgView = () => dispatch(toggleImageViewer({ show: true, url: urlPurchaseImg }));
     const beforeToday = new Date()
     const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
+    console.log(data)
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" id="" value={date} min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)} />
+                <input type="date" name="" id="" value={SELECTED_PURCHASE?.date} min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)} />
                 <Select
-                    setReset={setReset}
-                    reset={reset}
-                    property='name'
                     title='Condición'
-                    data={data}
-                    setValue={setCondition}
-                    value={condition}
-                    placement='top'
+                    data={orderAndDataCondition}
+                    displayKey={'name'}
+                    onChange={(e)=> dispatch(AddCondition(e.target.value?.id))}
+                    value={getOrderConditionByID(SELECTED_PURCHASE?.condition)}
                 />
                 <AddFileBtn
                     startIcon={<IoReceipt />}
@@ -90,9 +67,9 @@ export const OrderDetails = ({ reset, setReset, SELECTED_PURCHASE }) => {
                 <h5>Nota</h5>
                 <Textarea
                     height='4em'
-                    value={note}
+                    value={SELECTED_PURCHASE.note}
                     placeholder='Escriba una Nota...'
-                    onChange={(e) => setNote(e.target.value)}
+                    onChange={(e) => dispatch(setNote(e.target.value))}
                 />
             </Section>
 

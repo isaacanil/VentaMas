@@ -29,6 +29,8 @@ export const productSchema = object().shape({
     cost: costSchema.nullable(false),
     price: priceSchema.nullable(false),
     size: string().nullable(false),
+    qrCode: string().nullable(false),
+    barCode: string().nullable(false),
     type: string().nullable(false),
     tax: taxSchema.nullable(false),
     stock: number().nullable(false),

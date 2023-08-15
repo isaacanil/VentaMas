@@ -12,7 +12,7 @@ import { fbAddClient } from '../../../../../../firebase/client/fbAddClient'
 import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient'
 import { OPERATION_MODES } from '../../../../../../constants/modes'
 
-export const CreateContact = ({ isOpen, mode, data }) => {
+export const ClientForm = ({ isOpen, mode, data }) => {
 
     const dispatch = useDispatch()
     const create = OPERATION_MODES.CREATE.id

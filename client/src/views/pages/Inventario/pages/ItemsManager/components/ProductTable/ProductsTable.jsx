@@ -153,7 +153,7 @@ const TableWrapper = styled.header`
   position: relative;
   display: grid;
   grid-template-rows: 1fr; 
-  height: calc(100vh - 3em);
+  height: calc(100vh - 2.75em);
   width: 100%;
   
   overflow: hidden;

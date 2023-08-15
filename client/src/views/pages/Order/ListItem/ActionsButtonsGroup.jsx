@@ -55,7 +55,7 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                 setShowConfirmButtons(false)
                 // PassDataToPurchaseList(orderData)
                 dispatch(getOrderData(orderData))
-                navigate('/app/compra')
+                navigate('/purchases-list')
                 dispatch(toggleAddPurchaseModal())
 
                 setIsAccept(null) // reset the state variable

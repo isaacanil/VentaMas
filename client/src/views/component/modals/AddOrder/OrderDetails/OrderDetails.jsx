@@ -1,54 +1,38 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Select } from '../../../../templates/system/Select/Select'
-
-import { AddCondition, AddNote, AddDate, SelectProducts } from '../../../../../features/addOrder/addOrderModalSlice'
+import { AddCondition, AddNote, AddDate, SelectProducts, SelectOrder } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
-import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
-import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
-import { Button } from '../../../../templates/system/Button/Button'
-import { IoReceipt } from 'react-icons/io5'
-export const OrderDetails = ({setReset, reset}) => {
-    const orderFilterOptions = useSelector(selectOrderFilterOptions)
-    const productList = useSelector(SelectProducts)
+import { orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
+import { DateTime } from 'luxon'
+
+export const OrderDetails = () => {
     const dispatch = useDispatch()
-    const [condition, setCondition] = useState(null)
-    const [note, setNote] = useState(null)
-    const [date, setDate] = useState(null)
-    console.log(orderFilterOptions)
-    useEffect(() => {
-        if(condition !== ''){
-            dispatch(AddCondition(condition))       
-        }
-        if(note !== ''){
-            dispatch(AddNote(note))
-        }    
-        dispatch(AddDate(date))
-    }, [condition, note, date])
-    useEffect(()=>{
-        if(reset){
-            setNote('')
-            setDate('')
-        }
-    },[reset])
-    
-    const beforeToday = new Date()
-    const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
+    const conditions = orderAndDataCondition;
+    const order = useSelector(SelectOrder);
+    const { note, condition, date } = order;
+
+    const minDate = DateTime.now().toISODate();
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" value={date} id="" min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)}/>
-                <Select
-                    property='name'
-                    title='Condición'
-                    data={data}
-                    setValue={setCondition}
-                    value={condition}
-                    placement='top'
-                    setReset={setReset}
-                    reset={reset}
+                <input
+                    type="date"
+                    name=""
+                    value={date}
+                    id=""
+                    min={minDate}
+                    onChange={(e) => dispatch(AddDate(e.target.value))}
                 />
+                <Select
+                    title='Condición'
+                    data={conditions}
+                    onChange={e => dispatch(AddCondition(e.target.value))}
+                    displayKey={'name'}
+                    value={condition?.name}
+                />
+                {/* {JSON.stringify(data)} */}
             </Section>
             <Section>
                 <h5>Nota</h5>
@@ -56,7 +40,7 @@ export const OrderDetails = ({setReset, reset}) => {
                     height='4em'
                     value={note}
                     placeholder='Agrega una nota al pedido ...'
-                    onChange={(e) => setNote(e.target.value)}
+                    onChange={(e) => dispatch(AddNote(e.target.value))}
                 />
             </Section>
 

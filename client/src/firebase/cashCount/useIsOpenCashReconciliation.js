@@ -23,7 +23,7 @@ export function useIsOpenCashReconciliation() {
            
             if (isOpen && isSameUser ) {
                 setValue('open');
-            } else if (isOpen && isClosing) {
+            } else if (isClosing && isSameUser) {
                 setValue('closing');
             } else {
                 setValue('closed');

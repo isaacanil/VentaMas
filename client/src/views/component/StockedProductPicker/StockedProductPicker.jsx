@@ -9,7 +9,7 @@ import { Button } from '../../templates/system/Button/Button'
 import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
 import { addNotification } from '../../../features/notification/NotificationSlice'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import { useFormatPrice } from '../../../hooks/useFormatPrice';
 /**
 * Este componente recibe la funcion de agregar el producto y devuelve el componente.
 *
@@ -17,17 +17,18 @@ import { useFormatPrice } from '../../../hooks/useFormatPrice'
 * @param {number} productSelected pasar el producto seleccionado.
 * @returns {number} el componente de seleccionar y agregar producto.
 */
-export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct }) => {
+export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduct }) => {
     const dispatch = useDispatch();
     const [product, setProduct] = useState(null)
-    const [showProductList, setShowProductList] = useState(false)
+    const [showProductList, setShowProductList] = useState(false);
 
-    const actualStock = product ? Number(productSelected.product.stock) : null;
+    
+    const actualStock = product ? Number(selectedProduct.product.stock) : null;
     const newStock = product ? Number(product.product.stock.newStock) : null;
     const stock = { newStock, actualStock };
-    const totalStock = productSelected ? `${actualStock + newStock}` : null;
+    const totalStock = selectedProduct ? `${actualStock + newStock}` : null;
 
-    const cost = productSelected && product ? { unit: productSelected.product.cost.unit } : null;
+    const cost = selectedProduct && product ? { unit: selectedProduct.product.cost.unit } : null;
     const initialCost = product ? Number(product.product.initialCost) : null;
     const subTotal = product ? Number(product.product.initialCost) * Number(product.product.stock.newStock) : null;
 
@@ -44,34 +45,34 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
             dispatch(addNotification({ title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error' }))
             return
         }
-        if (productSelected && newStock > 0) {
-            fn({ stock, cost, initialCost })
+        if (selectedProduct && newStock > 0) {
+            addProduct({ stock, cost, initialCost })
         }
-    } 
+    }
     useEffect(() => {
-        productSelected ? (
-            setProduct({ ...productSelected, product: { stock: { actualStock: '', newStock: '' }, cost: { unit: '' }, initialCost: '' } })
+        selectedProduct ? (
+            setProduct({ ...selectedProduct, product: { stock: { actualStock: '', newStock: '' }, cost: { unit: '' }, initialCost: '' } })
         ) : null
-    }, [productSelected])
+    }, [selectedProduct])
 
     useEffect(() => {
-        if (product && (productSelected.product.productName) && Number(product.product.initialCost) > Number(productSelected.product.cost.unit)) {
+        if (product && (selectedProduct.product.productName) && Number(product.product.initialCost) > Number(selectedProduct.product.cost.unit)) {
             dispatch(addNotification({ title: 'Advertencia', message: 'El costo inicial es mayor al costo unitario', type: 'error' }))
         }
     }, [initialCost])
 
     useEffect(() => {
-        if (productSelected.product.productName === "" && initialCost > 0) {
+        if (selectedProduct.product.productName === "" && initialCost > 0) {
             dispatch(addNotification({ title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'error' }))
             setShowProductList(true)
         }
-        if (productSelected.product.productName === "" && newStock > 0) {
+        if (selectedProduct.product.productName === "" && newStock > 0) {
             dispatch(addNotification({ title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'warning' }))
             setShowProductList(true)
         }
     }, [initialCost, newStock])
 
-    console.log(product)
+ 
     return (
         <Container>
             <Group>
@@ -86,10 +87,10 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
                     </ProductName>
                 </Col>
                 <Col>
-                    <span>{`Cantidad ${productSelected ? `(${totalStock})` : null}`}</span>
+                    <span>{`Cantidad ${selectedProduct ? `(${totalStock})` : null}`}</span>
                 </Col>
                 <Col>
-                    <span>Costo {`(${productSelected ? (cost ? useFormatPrice(cost.unit) : null) : null})`}</span>
+                    <span>Costo {`(${selectedProduct ? (cost ? useFormatPrice(cost.unit) : null) : null})`}</span>
                 </Col>
                 <Col>
                     <span>Subtotal</span>
@@ -99,16 +100,16 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
             </Group>
             <Group>
                 <ProductFilter
-                    handleSelectProduct={handleSelectProduct}
+                    handleSelectProduct={selectProduct}
                     isOpen={showProductList}
                     setIsOpen={setShowProductList}
-                    productName={productSelected ? productSelected.product.productName : ''}
+                    productName={selectedProduct ? selectedProduct.product.productName : ''}
                 />
                 <div>
                     <InputNumber
                         bgColor='gray-light'
                         border
-                        value={productSelected ? (product !== null ? (product.product.stock.newStock) : '') : ''}
+                        value={selectedProduct ? (product !== null ? (product.product.stock.newStock) : '') : ''}
                         onChange={(e) => setProduct({
                             ...product,
                             product: {
@@ -122,7 +123,7 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? (product !== null ? (product.product.initialCost) : '') : null}
+                        value={selectedProduct ? (product !== null ? (product.product.initialCost) : '') : null}
                         placeholder='Costo'
                         onChange={(e) => setProduct({
                             ...product,
@@ -137,7 +138,7 @@ export const StockedProductPicker = ({ fn, productSelected, handleSelectProduct 
                 </div>
                 <div>
                     <InputText
-                        value={productSelected ? subTotal : ''}
+                        value={selectedProduct ? subTotal : ''}
                         placeholder='SubTotal'
                         readOnly
                         border

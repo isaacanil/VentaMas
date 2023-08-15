@@ -1,12 +1,16 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { IoMdTrash } from 'react-icons/io'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { DeleteProduct } from '../../../features/addOrder/addOrderModalSlice'
+import { DeleteProduct, updateInitialCost, updateNewStock, } from '../../../features/addOrder/addOrderModalSlice'
 import { separator } from '../../../hooks/separator'
 import { Button } from '../../templates/system/Button/Button'
+import { InputV4 } from '../../templates/system/Inputs/InputV4'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
 
 export const ProductCard = ({ product, handleDeleteProduct }) => {
+    const dispatch = useDispatch()
+
     return (
         <Container>
             <Col>
@@ -16,12 +20,19 @@ export const ProductCard = ({ product, handleDeleteProduct }) => {
             </Col>
             <Col>
                 <span>
-                    {product.stock.newStock}
+                    <Input value={product.stock.newStock} onChange={e => dispatch(updateNewStock({ stock: e.target.value, productID: product.id }))} />
                 </span>
             </Col>
             <Col>
                 <span>
-                    RD${separator(product.initialCost)}
+                    <Input
+                        value={product.initialCost}
+                        handleBlur={(value) => useFormatPrice(value)}
+                        onChange={e => dispatch(updateInitialCost(
+                            { initialCost: e.target.value, productID: product.id }
+                        ))}
+                    />
+                    {/* RD${separator(product.initialCost)} */}
                 </span>
             </Col>
             <Col>
@@ -42,7 +53,7 @@ export const ProductCard = ({ product, handleDeleteProduct }) => {
 }
 const Container = styled.div`
     display: grid;
-    grid-template-columns: 250px 30px 1fr 1fr min-content;
+    grid-template-columns: 250px 1fr 1fr 1fr min-content;
     height: 2.75em;
     align-items: center;
     align-content: center;
@@ -92,3 +103,31 @@ color: var(--Gray6);
         
     }
 `
+const Input = ({ value, onChange, handleBlur, handleFocus }) => {
+    const [isFocus, setIsFocus] = useState(false)
+
+    const displayedValue = useMemo(() => {
+        if (!isFocus && handleBlur) return handleBlur(value);
+        if (isFocus && handleFocus) return handleFocus(value);
+        return value;
+    }, [isFocus, handleBlur, handleFocus, value]);
+
+    return (
+        <InputContainer
+            value={displayedValue}
+            onChange={onChange}
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+        />
+    )
+}
+const InputContainer = styled.input`
+            outline: none;
+            border: none;
+            height: 100%;
+            border: 1px solid transparent;
+            width: 100%;
+        :focus{
+            border: 1px solid black;
+        }
+    `

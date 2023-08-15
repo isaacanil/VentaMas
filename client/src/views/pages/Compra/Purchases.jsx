@@ -1,24 +1,19 @@
-import React, { Fragment} from 'react'
+import React, { Fragment } from 'react'
 import styled from 'styled-components'
-
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
-import { ToolBar } from './ToolBar'
 import { ProvidersData, SetProvidersInFilterOptionsMenu } from '../../../firebase/ProviderConfig'
-import { OrdersData, SetPendingOrdersInState } from '../../../firebase/OrderConfig'
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
 
-
-export const Purchases = () => { 
+export const Purchases = () => {
   const providers = ProvidersData();
   SetProvidersInFilterOptionsMenu(providers);
-  const orders = OrdersData()  
-  SetPendingOrdersInState(orders)
+
+
 
   return (
     <Fragment>
       <Container>
-      <MenuApp></MenuApp>
-        <ToolBar></ToolBar>
+        <MenuApp></MenuApp>
         <PendingOrdersTable />
       </Container>
     </Fragment>
@@ -31,7 +26,7 @@ const Container = styled.div`
     background-color: var(--color2);
     display: grid;
     grid-auto-rows: min-content;
-    grid-template-rows: min-content 1fr;
+    grid-template-rows: min-content  1fr;
     justify-content: center;
     align-items: flex-start;
 `

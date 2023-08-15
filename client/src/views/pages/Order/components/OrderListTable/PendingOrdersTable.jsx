@@ -1,23 +1,14 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
-
-import { getOrders } from '../../../../../firebase/firebaseconfig'
-import { useEffect } from 'react'
 import { OrderCard } from '../../ListItem/OrderCard'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectOrderList } from '../../../../../features/order/ordersSlice'
-import { OrdersData, SetPendingOrdersInState } from '../../../../../firebase/OrderConfig'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { useFbGetOrders } from '../../../../../firebase/order/usefbGetOrders'
 
 export const PendingOrdersTable = () => {
-  const [activeId, setActiveID] = useState(null) //id global for btns"
-  const [orders, setOrders] = useState([])
-  const ordersFromBD = OrdersData()
-  SetPendingOrdersInState(ordersFromBD)
-  let pendingOrderList = useSelector(selectOrderList)
-  const Items = pendingOrderList.length > 0 ? ( pendingOrderList[0].Items ? pendingOrderList[0].Items : null) : null
-  useEffect(()=>{
-    getOrders(setOrders)
-  },[])
+  const [activeId, setActiveID] = useState(null);
+  const user = useSelector(selectUser);
+  const {orders} = useFbGetOrders(user);
 
   return (
     <Container>
@@ -35,12 +26,12 @@ export const PendingOrdersTable = () => {
             <Col>F. Entrega</Col>
             <Col position='right'>Total</Col>
             <Col>Acción</Col>
-          </Row> 
+          </Row>
           <TableBody>
             {
               orders.length > 0 ? (
                 orders.map((orderData, index) => (
-                  <OrderCard Row={Row} Col={Col} key={index} orderData={orderData} index={index} activeId={activeId} setActiveId={setActiveID}/>
+                  <OrderCard Row={Row} Col={Col} key={index} orderData={orderData} index={index} activeId={activeId} setActiveId={setActiveID} />
                 ))
               ) : null
             }
@@ -241,10 +232,10 @@ const Col = styled.div`
   ${props => {
     switch (props.position) {
       case 'right':
-        return`
+        return `
           text-align: right;
         `;
-    
+
       default:
         break;
     }

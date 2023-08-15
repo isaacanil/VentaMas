@@ -20,15 +20,16 @@ export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId })
         setIsOpen(!isOpen)
         dispatch(toggleViewOrdersNotes({data, isOpen: 'open'}))   
     }
-   
+   console.log(data, 'data.......................................')
     return (
         <Row>
+            
             <Col>{index + 1}</Col>
             <Col>
-                <StatusIndicatorDot color={data.state ? data.state.color : null}></StatusIndicatorDot>
+                <StatusIndicatorDot color={data?.state?.color || null}></StatusIndicatorDot>
             </Col>
             <Col size='limit'>
-                <div>{data.provider ? data.provider.name : null}</div>
+                <div>{data?.provider?.name || null}</div>
             </Col>
             <Col>
             <Tooltip
@@ -47,15 +48,15 @@ export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId })
             />
             </Col>
             <Col>
-                <div>{ correctDate(data.createdAt).toLocaleDateString()}</div></Col>
+                <div>{ correctDate(data?.createdAt).toLocaleDateString()}</div></Col>
             <Col>
-                <div>{ correctDate(data.date).toLocaleDateString()}</div>
+                <div>{ correctDate(data?.date).toLocaleDateString()}</div>
             </Col>
             <Col position='right'>
-                <div>{useFormatPrice(data.totalPurchase)}</div>
+                <div>{useFormatPrice(data?.totalPurchase)}</div>
             </Col>
             <Col>
-                <ActionsButtonsGroup orderData={data} activeId={activeId} setActiveId={setActiveId}/>
+            {data && <ActionsButtonsGroup orderData={data} activeId={activeId} setActiveId={setActiveId}/>}
             </Col>
 
         </Row>

@@ -24,7 +24,7 @@ import { PaymentArea } from './components/PaymentArea'
 import { useReactToPrint } from 'react-to-print'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 
-import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectNcfStatus, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice'
+import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectNcfStatus, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData, selectTaxReceipt } from '../../../features/taxReceipt/taxReceiptSlice'
 import styled from 'styled-components'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { selectMenuOpenStatus } from '../../../features/nav/navSlice'
@@ -42,52 +42,40 @@ import { createAction } from '@reduxjs/toolkit'
 import { CONFIRMATION_TASK_TYPE } from '../modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction'
 import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
 import { ProductsList } from './components/ProductsList/ProductsLit'
+import { set } from 'lodash'
 
 export const Cart = () => {
-  const isOpen = useSelector(SelectCartIsOpen)
   const dispatch = useDispatch()
-  const selectMode = useSelector(selectAppMode)
+
   const componentToPrintRef = useRef(null);
+
+  const isOpen = useSelector(SelectCartIsOpen)
+  const selectMode = useSelector(selectAppMode)
   const bill = useSelector(({ cart }) => cart.data)
   const taxReceiptDataSelected = useSelector(selectTaxReceiptData)
-  const clientSelected = useSelector(SelectClient)
-  const navigate = useNavigate()
-  const handleCloseCashReconciliation = () => {
-    dispatch(closeUserNotification())
-  }
-
-  const handleSubmitCashReconciliation = () => {
-    handleCloseCashReconciliation()
-    navigate('/cash-register-opening')
-  }
 
   const checkCashCount = useIsOpenCashReconciliation()
 
   const handleCashReconciliationConfirm = () => {
-    const cashCountStrategy = getCashCountStrategy(checkCashCount, dispatch)
+    const cashCountStrategy = getCashCountStrategy(checkCashCount.status, dispatch)
     cashCountStrategy.handleConfirm()
   }
 
   const ncfStatus = useSelector(selectNcfStatus)
+  const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt)
   const ncfCode = useSelector(selectNcfCode)
-  const [submittable, setSubmittable] = useState(false)
   const TotalPurchaseRef = useSelector(SelectTotalPurchase)
   const ncfCartSelected = useSelector(SelectNCF)
   const ProductSelected = useSelector(SelectProduct)
   const billData = useSelector(SelectFacturaData)
-  const [printed, setPrinted] = useState(false)
   const user = useSelector(selectUser)
 
-  useEffect(() => {
-    if (ncfCode !== null) {
-      dispatch(addTaxReceiptInState(ncfCode))
-    }
-    if (ncfCode) {
-      dispatch(addTaxReceiptInState(ncfCode))
-    }
-  }, [ncfCode])
+  const [step, setStep] = useState(0)
+  const [submittable, setSubmittable] = useState(false)
+  const [printed, setPrinted] = useState(false)
 
   const increaseTaxReceipt = async () => {
+    if (!taxReceiptEnabled) return;
     try {
       switch (ncfStatus) {
         case true:
@@ -118,11 +106,11 @@ export const Cart = () => {
   }
 
   const savingDataToFirebase = async (bill, taxReceipt) => {
-    dispatch(addTaxReceiptInState(ncfCode))
+
     try {
       if (selectMode === true) {
         fbAddInvoice(bill, user)
-        fbUpdateTaxReceipt(taxReceipt, user)
+        { taxReceiptEnabled && fbUpdateTaxReceipt(user, taxReceipt) }
         fbUpdateProductsStock(ProductSelected, user);
         dispatch(addNotification({ message: "Venta Realizada", type: 'success', title: 'Completada' }))
       } else {
@@ -152,40 +140,50 @@ export const Cart = () => {
 
   const handlePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
-    onAfterPrint: () => setPrinted(true),
+    onAfterPrint: () => setStep(4),
   })
 
-  const TIME_TO_WAIT = 1000;
+  useEffect(() => {
+    if (step === 1) {
+      { taxReceiptEnabled && increaseTaxReceipt() }
+      setStep(2)
+    }
+  }, [step])
+
+  useEffect(() => {
+    if (step === 2) {
+      if (taxReceiptEnabled && ncfCode === null) {
+        dispatch(addNotification({ message: "No hay comprobante fiscal seleccionado", type: 'error' }));
+        return;
+      }
+      if (taxReceiptEnabled) dispatch(addTaxReceiptInState(ncfCode));
+      setStep(3)
+    }
+  }, [step])
+
+  useEffect(() => {
+    if (step === 3) {
+      try {
+        createOrUpdateClient();
+        showPrintPreview();
+
+      } catch (error) {
+        handleInvoiceError(error);
+      }
+    }
+  }, [step])
 
   const handleInvoice = async () => {
-   
-    if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
-      handleCashReconciliationConfirm()
-      return;
-    };
-
-    dispatch(addTaxReceiptInState(ncfCode))
-
     if (ProductSelected.length === 0) {
       dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
       return;
     }
 
-    try {
-      await increaseTaxReceipt();
-      await esperar(TIME_TO_WAIT);
-      await createOrUpdateClient();
-      await showPrintPreview();
-      await esperar(TIME_TO_WAIT);
-    } catch (error) {
-      handleInvoiceError(error);
-    }
-  }
-
-  function esperar(tiempo) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, tiempo);
-    });
+    if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
+      handleCashReconciliationConfirm();
+      return;
+    };
+    setStep(1)
   }
 
   function handleInvoiceError(error) {
@@ -194,18 +192,18 @@ export const Cart = () => {
   }
 
   useEffect(() => {
-    if (ncfCartSelected !== null && submittable === false && printed === true) {
-      savingDataToFirebase(billData, taxReceiptDataSelected)
+    if (step === 4) {
+      savingDataToFirebase(billData, taxReceiptDataSelected);
       setSubmittable(true)
     }
-  }, [ncfCartSelected, submittable, printed])
+  }, [step])
 
   useEffect(() => {
     if (submittable === true) {
       clearDataFromState()
       dispatch(deleteClient())
       setSubmittable(false)
-      setPrinted(false)
+      setStep(0)
     }
   }, [submittable])
 
@@ -223,7 +221,7 @@ export const Cart = () => {
       <div>
         <PaymentArea></PaymentArea>
         <div className={style.resultBar}>
-          <h3><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>   
+          <h3><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
           <Receipt ref={componentToPrintRef} data={bill}></Receipt>
           <ButtonGroup>
             <Button

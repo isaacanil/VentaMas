@@ -9,7 +9,7 @@ import { UploadImg } from '../../UploadImg/UploadImg'
 import { Modal } from '../Modal'
 import { quitarCeros } from '../../../../hooks/quitarCeros'
 import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct'
-import { InventariableButton } from './InventariableButton'
+import { InventariableButton } from './components/Buttons/InventariableButton'
 import { productDataTypeCorrection } from '../../../../features/updateProduct/validateProductDataType'
 import { addNotification } from '../../../../features/notification/NotificationSlice'
 import { productSchema } from '../../../../features/updateProduct/productSchema'
@@ -22,17 +22,16 @@ import { OPERATION_MODES } from '../../../../constants/modes'
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
 import { initTaxes } from './InitializeData'
 import { selectUser } from '../../../../features/auth/userSlice'
-import { BarCodeControl } from './components/BarCodeControl'
-import { QRCodeControl } from './components/QRCodeControl'
+import { BarCodeControl } from './components/BarCodeControl/BarCodeControl'
+import { QRCodeControl } from './components/QRCodeControl/QRCodeControl'
 import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCategories'
 import useImageFallback from '../../../../hooks/image/useImageFallback'
+import { ProductVisibilityButton } from './components/Buttons/ProductVisibilityButton'
 
 const validateProduct = (product) => {
     let errors = {};
     if (!product.productName) {
-        console.log("***************** entrando " )
         errors.productName = 'Nombre del producto es requerido';
-        console.log(errors, "***************** error productname")
     }
     if (!product.type) {
         errors.type = 'Tipo de producto es requerido';
@@ -55,7 +54,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     const dispatch = useDispatch()
     const updateMode = OPERATION_MODES.UPDATE.label
     const handleImgController = () => {
-      
+
         setImgController(!imgController)
     }
     const [errors, setErrors] = useState({
@@ -81,15 +80,17 @@ export const UpdateProductModal = ({ isOpen }) => {
 
     const productDataTypeCorrected = new productDataTypeCorrection(product);
 
-    const handleUpdateProduct = () => {
-        dispatch(addNotification({ title: 'Producto Actualizado', message: 'Espere un momento', type: 'success' }))
-        fbUpdateProduct(productDataTypeCorrected, dispatch, user)
+    const handleUpdateProduct = async () => {
+
+        await fbUpdateProduct(productDataTypeCorrected, dispatch, user);
+
     }
+
     const handleAddProduct = () => {
         dispatch(addNotification({ title: 'Producto Creado', message: 'Espere un momento', type: 'success' }))
         fbAddProduct(productDataTypeCorrected, dispatch, user)
     }
-    
+
     const handleSubmit = async () => {
         const errors = validateProduct(product);
         try {
@@ -104,16 +105,16 @@ export const UpdateProductModal = ({ isOpen }) => {
                 }
             } else {
                 setErrors(errors)
-                dispatch(addNotification({ title: 'error', message: 'Ocurrio un errorr', type: 'error' }))
+                dispatch(addNotification({ title: 'error', message: 'Ocurrió un error', type: 'error' }))
                 return Promise.reject(new Error('error'))
             }
         } catch (error) {
             setErrors(errors)
-            dispatch(addNotification({ title: 'error', message: 'Error 2c', type: 'error' }))
+            dispatch(addNotification({ title: 'error', message: 'Error', type: 'error' }))
             return Promise.reject(new Error('error'))
         }
     }
-    
+
     const closeModal = () => {
         dispatch(closeModalUpdateProd())
         dispatch(clearUpdateProductData())
@@ -240,6 +241,11 @@ export const UpdateProductModal = ({ isOpen }) => {
                         value={product?.stock}
                         onChange={(e) => dispatch(setProduct({ ...product, stock: e.target.value }))}
                     />
+
+                <ProductVisibilityButton 
+                    product={product}
+                    setProduct={setProduct}
+                />
 
                 </FormGroup>
                 <FormGroup column='3'>

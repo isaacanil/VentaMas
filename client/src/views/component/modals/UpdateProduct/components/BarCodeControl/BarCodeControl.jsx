@@ -1,10 +1,10 @@
 import React from 'react'
 import Barcode from 'react-barcode'
 import styled from 'styled-components'
-import { InputV4 } from '../../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../../../templates/system/Inputs/InputV4'
 import { useDispatch } from 'react-redux'
-import { setProduct } from '../../../../../features/updateProduct/updateProductSlice'
-import { icons } from '../../../../../constants/icons/icons'
+import { setProduct } from '../../../../../../features/updateProduct/updateProductSlice'
+import { icons } from '../../../../../../constants/icons/icons'
 
 export const BarCodeControl = ({ product, value }) => {
     const dispatch = useDispatch()

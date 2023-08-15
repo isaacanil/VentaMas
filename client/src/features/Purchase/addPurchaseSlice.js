@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { nanoid } from 'nanoid'
+import { orderAndDataCondition, orderAndDataState } from '../../constants/orderAndPurchaseState'
 
 const EmptyPurchase = {
     id: null,
@@ -10,25 +11,15 @@ const EmptyPurchase = {
     note: "",
     createdAt: "",
     updatedAt: "",
-    state: {
-        name: 'solicitado',
-        color: 'yellow'
-    },
+    state: "",
     imageReceiptURL: null,
-    provider: {
-        id: null,
-        name: "",
-        tel: "",
-        address: "",
-        createdAt: "",
-        updatedAt: "",
-    }
+    provider: {}
 }
 const EmptyProduct = {
     product: {
         productName: "",
         cost: {
-            unit: 0, 
+            unit: 0,
             total: 0
         },
         stock: 0,
@@ -48,10 +39,10 @@ export const addPurchaseSlice = createSlice({
     reducers: {
         getOrderData: (state, actions) => {
             const data = actions.payload
-            if(state.purchase.id == null){
+            if (state.purchase.id == null) {
                 state.purchase = data
             }
-            if(data.id !== null && data.id !== state.purchase.id){
+            if (data.id !== null && data.id !== state.purchase.id) {
                 state.purchase = data
 
             }
@@ -74,39 +65,34 @@ export const addPurchaseSlice = createSlice({
             state.productSelected.product.stock = stock
         },
         AddNote: (state, actions) => {
-            state.order.note = actions.payload
+            state.purchase.note = actions.payload
         },
         AddCondition: (state, actions) => {
-            state.order.condition = actions.payload
+            state.purchase.condition = actions.payload
         },
         AddDate: (state, actions) => {
-            state.order.date = actions.payload
+            state.purchase.date = actions.payload
         },
         AddCreatedDate: (state) => {
-            state.order.createdAt = Date.now()
+            state.purchase.createdAt = Date.now()
         },
         AddIdToOrder: (state) => {
-            state.order.id = nanoid(6)
+            state.purchase.id = nanoid(6)
         },
         getInitialCost: (state, actions) => {
-            const {initialCost} = actions.payload
-            state.productSelected.product.initialCost = initialCost 
-          },
+            const { initialCost } = actions.payload
+            state.productSelected.product.initialCost = initialCost
+        },
         cleanPurchase: (state) => {
-            state.productSelected = EmptyProduct 
+            state.productSelected = EmptyProduct
             state.purchase = EmptyPurchase
         },
         AddReceiptImage: (state, actions) => {
             state.purchase.imageReceiptURL = actions.payload
         },
-        AddProvider: (state, actions) => {
-            const provider = actions.payload
-            const providerInState = state.purchase.provider
-            if(providerInState.id == null){
-                if(providerInState.id !== provider.id && provider.name !== providerInState.name){
-                    state.purchase.provider = provider
-                }
-            }
+        addProvider: (state, actions) => {
+            const provider = actions.payload;
+            state.purchase.provider = provider
         },
         deleteProductFromPurchase: (state, actions) => {
             const { id } = actions.payload
@@ -117,17 +103,17 @@ export const addPurchaseSlice = createSlice({
             const productList = state.purchase.products
             const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock.newStock), 0)
             state.purchase.totalPurchase = totalPurchase
-      
-          },
+
+        },
     }
 })
 
-export const { addNote,deleteProductFromPurchase, SelectProduct, updateStock, getInitialCost, AddProductToPurchase, cleanPurchase, AddProvider, getOrderData, getPendingPurchaseFromDB, handleSetFilterOptions } = addPurchaseSlice.actions;
+export const { addNote, deleteProductFromPurchase, SelectProduct, updateStock, getInitialCost, AddProductToPurchase, cleanPurchase, addProvider, getOrderData, getPendingPurchaseFromDB, handleSetFilterOptions, AddCondition } = addPurchaseSlice.actions;
 
 //selectors
 export const SelectProductSelected = (state) => state.addPurchase.productSelected;
 export const selectAddPurchaseList = (state) => state.addPurchase.pendingOrders;
 export const selectProducts = (state) => state.addPurchase.products;
-export const selectPurchase = (state) => state.addPurchase.purchase
+export const selectPurchase = (state) => state.addPurchase.purchase;
 
 export default addPurchaseSlice.reducer

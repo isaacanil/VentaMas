@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../../features/cart/cartSlice'
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { getTaxReceiptData, handleNCFStatus, selectNcfStatus } from '../../../../features/taxReceipt/taxReceiptSlice'
+import { getTaxReceiptData, handleNCFStatus, selectNcfStatus, selectTaxReceipt } from '../../../../features/taxReceipt/taxReceiptSlice'
 
 
 import { quitarCeros } from '../../../../hooks/quitarCeros'
@@ -24,7 +24,7 @@ export const PaymentArea = () => {
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
     const [NCFStatus, setNCFStatus] = useState(false)
-
+    const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt)
     const taxReceiptData = fbGetTaxReceipt()
 
     const [paymentMethod, setPaymentMethod] = useState([
@@ -90,10 +90,16 @@ export const PaymentArea = () => {
         <Container>
             <Row>
                 <Group className='tax-discount'>
-                    <Group space={'small'}>
-                        <Switch checked={selectedNcfStatus ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
-                        <STitle>Comp. Fiscal.</STitle>
-                    </Group>
+                    {
+                        taxReceiptEnabled && (
+
+                            <Group space={'small'}>
+                                <Switch checked={selectedNcfStatus ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
+                                <STitle>Comp. Fiscal.</STitle>
+                            </Group>
+                        )
+                    }
+
                     <Group>
                         <CustomInput options={["10", "20", "30"]} />
                     </Group>
@@ -119,21 +125,14 @@ export const PaymentArea = () => {
                 <Group className='option1'>
                     <span><span>ITBIS:</span>  {useFormatPrice(TaxesRef)}</span>
                     <InputV4
-                            label={`Pago con (${monetarySymbols.dollarSign})`}
-                            labelVariant='primary'
-                        
-                            type="number"
-                            value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
-                            onChange={(e) => setPaymentValue(e.target.value)}
-                        />
-                    {/* <Item>
-                        <label htmlFor="">Pago con {monetarySymbols.dollarSign}</label>
-                        <input
-                            type="number"
-                            value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
-                            onChange={(e) => setPaymentValue(e.target.value)}
-                        />
-                    </Item> */}
+                        label={`Pago con (${monetarySymbols.dollarSign})`}
+                        labelVariant='primary'
+
+                        type="number"
+                        value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
+                        onChange={(e) => setPaymentValue(e.target.value)}
+                    />
+
                 </Group>
             </Row>
             <Row margin='bottom'>

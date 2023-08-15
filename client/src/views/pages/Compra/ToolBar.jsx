@@ -32,15 +32,14 @@ export const ToolBar = () => {
 }
 const Container = styled.div`
     height: 2.50em;
-    width: 100vw;
+    width: 100%;
     background-color: rgb(255, 255, 255);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1em;
+   
 `
 const Wrapper = styled.div`
-    max-width: 1000px;
     width: 100%;
     padding: 0 1em;
     display: flex;

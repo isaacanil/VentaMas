@@ -27,6 +27,7 @@ import { useAbilities } from './hooks/abilities/useAbilities';
 import { useAutomaticLogin } from './firebase/Auth/fbAuthV2/fbSignIn/checkSession';
 import { ModalManager } from './views';
 import { AnimatePresence } from 'framer-motion';
+import { usefbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 
 //const router = createBrowserRouter(routes)
 
@@ -42,19 +43,22 @@ function App() {
   }, [])
 
   const user = useSelector(selectUser)
+
   const sessionToken = localStorage.getItem('sessionToken');
 
-  useGetUserData(user?.uid)
+  useGetUserData(user?.uid) // obtiene los datos del usuario actual
 
   useAbilities()// establece la abilidad que puede usar el usuario actual
 
-  fbAutoCreateDefaultTaxReceipt()
+  fbAutoCreateDefaultTaxReceipt()// crea el comprobante fiscal por defecto
 
-  useBusinessDataConfig()
+  usefbTaxReceiptToggleStatus()// obtiene el estado del comprobante fiscal
 
-  useFullScreen()
+  useBusinessDataConfig()// obtiene la configuración de la empresa
 
-  useCheckForInternetConnection()
+  useFullScreen()// establece el modo pantalla completa
+
+  useCheckForInternetConnection()// verifica la conexión a internet
 
   if (user === false) { return <GenericLoader /> }
 

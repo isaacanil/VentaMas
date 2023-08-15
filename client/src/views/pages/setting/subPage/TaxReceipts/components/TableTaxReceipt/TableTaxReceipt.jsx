@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { useCompareObjects } from '../../../../../hooks/useCompareObject';
-import { Data } from './taxConfigTable'
-import { UpdateObjectProperty } from './UpdateTaxReceipt';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { Data } from '../../taxConfigTable'
+
 export const TableTaxReceipt = ({ array, setData }) => {
-  
+
   const updateTaxReceipt = (array, setArray, index, e, maxCharacters = false) => {
     let key = e.target.name
     let newValue = e.target.value
@@ -22,15 +19,13 @@ export const TableTaxReceipt = ({ array, setData }) => {
     const newArray = array.map(({ data }, i) => i === index ? { "data": { ...data, [key]: newValue } } : { data })
     setArray(newArray)
   }
-  console.log(array, 'array')
 
   return (
     <Container>
       <Row>
-        {
-          Data().settingDataTaxTable.map((item, index) => (
-            <Col key={index}><h4>{item.name}</h4></Col>
-          ))
+        {Data().settingDataTaxTable.map((item, index) => (
+          <Col key={index}><h4>{item.name}</h4></Col>
+        ))
         }
       </Row>
       {array ? (
@@ -103,7 +98,7 @@ display: grid;
 align-items: center;
 grid-template-columns: minmax(150px, 0.7fr) minmax(60px, 0.4fr) minmax(52px, 0.4fr) minmax(90px, 0.8fr) minmax(100px, 0.5fr) minmax(85px, 0.4fr);
 border-bottom: 1px solid var(--Gray1);
-height: 2em;
+height: 2.75em;
     :last-child{
         border-bottom:0px;
     }

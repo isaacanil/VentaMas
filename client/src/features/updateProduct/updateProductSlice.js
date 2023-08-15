@@ -10,6 +10,7 @@ const emptyProduct = {
         price: { unit: 0, total: 0 },
         size: '',
         type: '',
+        isVisible: true,
         tax: { unit: 0, total: 0 },
         stock: 0,
         netContent: 0,

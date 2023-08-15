@@ -206,8 +206,9 @@ export const deleteProduct = (id, user) => {
 }
 
 
-export const AddOrder = async (value) => {
-  const providerRef = doc(db, 'providers', value.provider.id)
+export const AddOrder = async (user, value) => {
+  if (!user || !user.businessID) return;
+  const providerRef = doc(db, "businesses", user.businessID, 'providers', value.provider.id);
   let data = {
     ...value,
     id: nanoid(6),
@@ -215,7 +216,7 @@ export const AddOrder = async (value) => {
     provider: providerRef,
     state: selectItemByName(orderAndDataState, 'Solicitado')
   }
-  const OrderRef = doc(db, "orders", data.id)
+  const OrderRef = doc(db, "businesses", user.businessID, "orders", data.id)
   console.log(data)
   try {
     await setDoc(OrderRef, { data })
@@ -248,9 +249,10 @@ const UpdateOrder = async (order) => {
     updateDoc(orderRef, newChange)
   } catch (error) { console.log(error) }
 }
-export const PassDataToPurchaseList = async (data) => {
-  const providerRef = doc(db, 'providers', data.provider.id)
-  const purchaseRef = doc(db, 'purchases', data.id)
+export const PassDataToPurchaseList = async (user, data) => {
+  if (!user || !user.businessID) return;
+  const providerRef = doc(db, 'businesses', user.businessID, 'providers', data.provider.id)
+  const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.id)
   await UpdateProducts(data.products)
   await UpdateOrder(data)
   try {
@@ -265,14 +267,19 @@ export const PassDataToPurchaseList = async (data) => {
     console.error("Error adding purchase: ", error)
   }
 }
-export const getPurchaseFromDB = async (setPurchases) => {
-  const purchasesRef = collection(db, 'purchases')
+export const getPurchaseFromDB = async (user, setPurchases) => {
+  if (!user || !user.businessID) return;
+  const purchasesRef = collection(db, 'businesses', user?.businessID, 'purchases')
   onSnapshot(purchasesRef, (snapshot) => {
     let purchaseArray = snapshot.docs.map(async (item) => {
       let purchaseData = item.data();
       let providerRef = purchaseData.data.provider;
       let providerDoc = (await getDoc(providerRef)).data();
-      purchaseData.data.provider = providerDoc.provider;
+      if (providerDoc) { // Asegúrate de que providerDoc esté definido
+        purchaseData.data.provider = providerDoc.provider;
+      } else {
+        console.log('providerRef no se pudo obtener:', providerRef);
+      }
       return purchaseData
     })
     Promise.all(purchaseArray).then((result) => {
@@ -285,24 +292,8 @@ export const getPurchaseFromDB = async (setPurchases) => {
 export const deletePurchase = async (id) => {
   deleteDoc(doc(db, 'purchases', id))
 }
-export const getOrders = (setOrder) => {
-  const orderRef = collection(db, "orders")
-  const q = query(orderRef, where("data.state.name", "==", "Solicitado"))
-  onSnapshot(q, (snapshot) => {
-    let orderArray = snapshot.docs.map(async (item) => {
-      let orderData = item.data()
-      let providerRef = orderData.data.provider;
-      let providerDoc = (await getDoc(providerRef)).data()
-      orderData.data.provider = providerDoc.provider
-      return orderData
-    })
-    Promise.all(orderArray).then(result => {
-      setOrder(result)
-    }).catch(error => {
-      console.log(error)
-    });
-  })
-}
+
+
 export const deleteOrderFromDB = async (id) => {
   deleteDoc(doc(db, `orders`, id))
 }

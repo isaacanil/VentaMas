@@ -14,7 +14,7 @@ export const Header = ({ business, data, SubTitle, P, Space }) => {
                 <P align="center">{useFormatPhoneNumber(business?.tel)}</P>
                 <Space size={'large'}  />
                 <P><Group>Fecha:  <span>{fechaActual}</span></Group></P>
-                <P><Group> NCF: <span> {data.NCF} </span></Group></P>
+                {data.NCF && <P><Group> NCF: <span> {data.NCF} </span></Group></P>}
                 <Space />
             </div>
 
