@@ -84,4 +84,5 @@ export const SortPanel = ({ Label, Group }) => {
 const Container = styled.div`
     display: grid;
     gap: 0.6em;
+    overflow: hidden;
 `

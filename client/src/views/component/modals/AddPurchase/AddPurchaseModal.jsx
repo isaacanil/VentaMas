@@ -63,7 +63,7 @@ export const AddPurchaseModal = ({ isOpen }) => {
     const orderFilterOptions = useSelector(selectOrderFilterOptions);
    // const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
     const {pendingOrders} = fbGetPendingOrders(user);
-
+    console.log(pendingOrders)
  
     const addProduct = ({ stock, initialCost, cost }) => {
         dispatch(updateStock({ stock }))
@@ -101,8 +101,8 @@ export const AddPurchaseModal = ({ isOpen }) => {
                                 title='Pedidos'
                                 data={pendingOrders}
                                 value={orderToPurchase?.id}
-                                displayKey={'orderToPurchase.id'}
-                                onChange={e => setOrderToPurchase(e.target.value)}
+                                displayKey={'data.id'}
+                                onChange={e => setOrderToPurchase(e.target.value?.data)}
                             />
                             <Select
                                 title='Proveedor'

@@ -20,9 +20,11 @@ export const ImgCell = ({img}) => {
 }
 
 const ImgContainer = styled.div`
-    width: 100%;
-    max-height: 2.75em;
-    height: 100%;
+    max-height: 3em;
+    height: 3em;
+    min-width: 2.75em;
+    max-width: 2.75em;
+    width: 2.75em;
     position: relative;
     overflow: hidden;
     display: flex;

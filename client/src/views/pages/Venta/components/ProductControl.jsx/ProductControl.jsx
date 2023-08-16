@@ -28,9 +28,9 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
   const isScrolled = useScroll(productsContainerRef);
 
   // Agrupar los productos por categoría
-  const filterProductsByVisibility = products.filter(({ product }) => product.isVisible !== false);
+  
 
-  const productsByCategory = filterProductsByVisibility.reduce((result, { product }) => {
+  const productsByCategory = products.reduce((result, { product }) => {
     const category = product.category
     if (!result[category]) { result[category] = [] }
     result[category].push(product)
@@ -50,6 +50,17 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
     const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
     navigate(INVENTORY_ITEMS);
   }
+  const containerVariants = {
+    hidden: { opacity: 1, scale: 0 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: {
+            delayChildren: 0.3,
+            staggerChildren: 0.2
+        }
+    }
+}
   return (
     <Fragment>
       <Carrusel />
@@ -71,6 +82,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
                       columns='4'
                       isRow={viewRowModeRef ? true : false}
                       onScroll={(e) => e.currentTarget.style.scrollBehavior = 'smooth'}
+                      variants={containerVariants}
                     >
                       {products.map(({ product }, index) => (
                         product.custom ?

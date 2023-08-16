@@ -34,19 +34,19 @@ export const ProductsTable = ({ products, searchTerm }) => {
 
   const columns = [
     {
-      Header: 'Imagen',
-      reorderable: false,
-      accessor: 'image',
-      minWidth: '90px',
-      maxWidth: '90px',
-      cell: ({ value }) => <ImgCell img={value}  />
-    },
-    {
       Header: 'Nombre',
       accessor: 'name',
-      minWidth: '200px',
+      reorderable: false,
+      minWidth: '300px',
       maxWidth: '1fr',
       sortable: true,
+      sortableValue: (value) => value.name,
+      cell: ({ value }) => (
+        <ProductName>
+          <ImgCell img={value.img} />
+          <span>{value.name}</span>
+        </ProductName>
+      )
     },
     {
       Header: 'Stock',
@@ -86,6 +86,14 @@ export const ProductsTable = ({ products, searchTerm }) => {
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
     {
+      Header: 'Visible',
+      accessor: 'isVisible',
+      minWidth: '80px',
+      maxWidth: '80px',
+      align: 'center',
+      cell: ({ value }) => <div>{value === false && icons.operationModes.hide}</div>
+    },
+    {
       Header: 'Acción',
       accessor: 'action',
       reorderable: false,
@@ -119,12 +127,13 @@ export const ProductsTable = ({ products, searchTerm }) => {
   const data = products.map(({ product }) => ({
     id: product.id,
     image: product.productImageURL,
-    name: product.productName,
-    stock: { stock: product.stock, trackInventory: product.trackInventory },
+    name: {name: product.productName, img: product.productImageURL} ,
+    stock: {stock: product.stock, trackInventory: product.trackInventory},
     trackInventory: product.trackInventory,
     cost: product.cost.unit,
     price: product.price.unit,
     tax: product.tax.value * product.cost.unit,
+    isVisible: product.isVisible,
     action: product
   }));
 
@@ -143,6 +152,12 @@ export const ProductsTable = ({ products, searchTerm }) => {
     </Container>
   )
 }
+const ProductName = styled.div`
+  display: flex;
+  align-items: center;
+  height: 100%;                     
+  gap: 1.2em;
+`
 const Container = styled.div`
     width: 100%;
     display: flex;

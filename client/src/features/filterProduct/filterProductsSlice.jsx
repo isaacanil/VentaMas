@@ -5,6 +5,7 @@ const initialState = {
   orden: localStorage.getItem('filterOrden') || 'asc',
   inventariable: localStorage.getItem('filterInventariable') || 'todos',
   itbis: localStorage.getItem('filterItbis') || 'todos',
+  
 };
 
 export const filterProductsSlice = createSlice({

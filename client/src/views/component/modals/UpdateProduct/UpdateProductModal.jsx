@@ -81,9 +81,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     const productDataTypeCorrected = new productDataTypeCorrection(product);
 
     const handleUpdateProduct = async () => {
-
         await fbUpdateProduct(productDataTypeCorrected, dispatch, user);
-
     }
 
     const handleAddProduct = () => {
@@ -110,8 +108,8 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         } catch (error) {
             setErrors(errors)
-            dispatch(addNotification({ title: 'error', message: 'Error', type: 'error' }))
-            return Promise.reject(new Error('error'))
+            dispatch(addNotification({ title: 'error', message: 'Error: '+error, type: 'error' }));
+            return Promise.reject(new Error('error'));
         }
     }
 
@@ -242,10 +240,10 @@ export const UpdateProductModal = ({ isOpen }) => {
                         onChange={(e) => dispatch(setProduct({ ...product, stock: e.target.value }))}
                     />
 
-                <ProductVisibilityButton 
-                    product={product}
-                    setProduct={setProduct}
-                />
+                    <ProductVisibilityButton
+                        product={product}
+                        setProduct={setProduct}
+                    />
 
                 </FormGroup>
                 <FormGroup column='3'>

@@ -47,3 +47,9 @@ export const opcionesItbis = [
     { valor: '0.16', etiqueta: '16%' },
     { valor: '0', etiqueta: 'Exento' }
 ];
+
+export const opcionesVisible = [
+    { valor: 'todos', etiqueta: 'Todos' },
+    { valor: 'si', etiqueta: 'Sí' },
+    { valor: 'no', etiqueta: 'No' },
+];

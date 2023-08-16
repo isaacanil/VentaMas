@@ -9,12 +9,12 @@ export const Body = ({ }) => {
     const [mode, setMode] = useState('ordenar');
     return (
         <Container>
-            <div>
+            <OptionsContainer>
                 <SubTitle>Opciones:</SubTitle>
-                <Group
+                <OptionGroup
                     fillBtn
                 >
-                    <Label
+                    <OptionLabel
                         selected={mode === 'ordenar'}
                         displayInput={'hidden'}
                         onClick={() => setMode('ordenar')}
@@ -22,8 +22,8 @@ export const Body = ({ }) => {
                     >
                         <input type="radio" value="ordenar" checked={mode === 'ordenar'} onChange={() => setMode('ordenar')} />
                         Ordenar
-                    </Label>
-                    <Label
+                    </OptionLabel>
+                    <OptionLabel
 
                         selected={mode === 'filtrar'}
                         displayInput={'hidden'}
@@ -31,32 +31,37 @@ export const Body = ({ }) => {
                     >
                         <input type="radio" value="filtrar" checked={mode === 'filtrar'} onChange={() => setMode('filtrar')} />
                         Filtrar
-                    </Label>
-                </Group>
-            </div>
-
-            {mode === 'ordenar' && (
-                <SortPanel
-                    Label={Label}
-                    Group={Group}
-                />
-            )}
-            {mode === 'filtrar' && (
-                <FilterPanel 
-                    Label={Label}
-                    Group={Group}
-                />
-            )}
-
+                    </OptionLabel>
+                </OptionGroup>
+            </OptionsContainer>
+            <SectionsWrapper>
+                {mode === 'ordenar' && (
+                    <SortPanel
+                        Label={OptionLabel}
+                        Group={OptionGroup}
+                    />
+                )}
+                {mode === 'filtrar' && (
+                    <FilterPanel
+                        Label={OptionLabel}
+                        Group={OptionGroup}
+                    />
+                )}
+            </SectionsWrapper>
         </Container>
     );
 }
 const Container = styled.div`
     display: grid;
+    grid-template-rows: min-content 1fr;
     gap: 0.6em;
+    overflow: hidden;
 `
 // Puedes reutilizar los estilos ya definidos si están en el mismo archivo, o importarlos si están en archivos separados.
-const Group = styled.div`
+const OptionsContainer = styled.div`
+    padding: 0.4em;
+`
+const OptionGroup = styled.div`
   background-color: var(--color2);
   border-radius: var(--border-radius);
   padding: 0.6em;
@@ -101,8 +106,14 @@ const Group = styled.div`
         }
     }}
 `;
+const SectionsWrapper = styled.div`
+    overflow: scroll;
+    height: 100%;
+    padding: 1em 0.4em;
+    border-top: 1px solid #ccc;
+`
 
-const Label = styled.label`
+const OptionLabel = styled.label`
     margin-right: 10px;
     display: flex;
     align-items: center;

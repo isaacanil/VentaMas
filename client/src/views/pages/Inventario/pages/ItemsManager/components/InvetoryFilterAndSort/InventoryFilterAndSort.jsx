@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Button } from '../../../../../../templates/system/Button/Button'
 import { icons } from '../../../../../../../constants/icons/icons'
@@ -8,11 +8,12 @@ import { Header } from './components/Header/Header'
 import { motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { Body } from './components/Body/Body'
+import { useClickOutSide } from '../../../../../../../hooks/useClickOutSide'
 
 export const InventoryFilterAndSort = () => {
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(false);
-
+    const menuFlotanteRef = useRef(null);
     const handleOpen = () => { setIsOpen(!isOpen) };
 
     const MenuVariant = {
@@ -31,7 +32,7 @@ export const InventoryFilterAndSort = () => {
             }
         }
     }
-
+    useClickOutSide(menuFlotanteRef, isOpen,  handleOpen)
     return (
         <Container>
             <Button
@@ -44,6 +45,7 @@ export const InventoryFilterAndSort = () => {
             />
             <MenuFlotante
                 variants={MenuVariant}
+                ref={menuFlotanteRef}
                 initial='hidden'
                 animate={isOpen ? 'visible' : 'hidden'}
                 exit='hidden'
@@ -66,13 +68,14 @@ const MenuFlotante = styled(motion.div)`
   right: 10px;
   background-color: white;
   border: 1px solid #ccc;
-  padding: 10px;
+
   border-radius: 5px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.20);
   display: grid;
-  align-content: start;
+  grid-template-rows: min-content 1fr;
+ 
   gap:1em;
-  overflow-y: auto;
+  overflow: hidden;
 `;
 
 

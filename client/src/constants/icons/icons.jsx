@@ -60,6 +60,7 @@ export const icons = {
         setting: <FontAwesomeIcon icon={faGear} />,
         setting2: <FontAwesomeIcon icon={faEllipsisVertical} />,
         setting3: <FontAwesomeIcon icon={faWrench} />,
+        hide: <FontAwesomeIcon icon={faEyeSlash} />
     },
     mathOperations: {
         add: <FontAwesomeIcon icon={faPlus} />,

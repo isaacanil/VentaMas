@@ -19,11 +19,12 @@ export const Select = ({
   data,
   value,
   onChange,
-  displayKey
+  displayKey,
+  isLoading = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   //referencia al contenedor del select
-  const SelectRef = useRef(null) 
+  const SelectRef = useRef(null)
   //termino de busqueda
   const [searchTerm, setSearchTerm] = useState('');
   // Popper
@@ -62,15 +63,22 @@ export const Select = ({
   return (
     <Container ref={SelectRef}>
       <Head ref={setReferenceElement}>
-        {!isOpen ? (
-          <Group onClick={() => setIsOpen(true)}>
-            <h3>{value ? value : title}</h3>
+        {isLoading === true ? (
+          <Group>
+            <h3>{'cargando ...'}</h3>
             <Icon>
               {icons.arrows.chevronDown}
             </Icon>
           </Group>
-        ) : null}
-        {isOpen ? (
+        ) : !isOpen && (
+          <Group onClick={() => setIsOpen(true)}>
+            <h3>{value ? value : title ? title : ''}</h3>
+            <Icon>
+              {icons.arrows.chevronDown}
+            </Icon>
+          </Group>
+        )}
+        {isOpen && (
           <Group>
             <InputText
               size="s"
@@ -81,7 +89,7 @@ export const Select = ({
               {icons.operationModes.close}
             </Button>
           </Group>
-        ) : null}
+        )}
       </Head>
       {isOpen ? (
         <Body

@@ -1,5 +1,5 @@
 import React from 'react'
-import { opcionesInventariable, opcionesItbis } from '../../../../InventoryFilterAndSortMetadata'
+import { opcionesInventariable, opcionesItbis, opcionesVisible } from '../../../../InventoryFilterAndSortMetadata'
 import { useDispatch, useSelector } from 'react-redux';
 import { selectInventariable, selectItbis, setInventariable, setItbis } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
 import { SubTitle } from '../../../../../../../../../checkout/Receipt';
@@ -49,10 +49,27 @@ export const FilterPanel = ({ Group, Label }) => {
                     ))}
                 </Group>
             </div>
+            {/* <div>
+                <SubTitle>Visible:</SubTitle>
+                <Group column>
+                    {opcionesVisible.map((opcion, index) => (
+                        <Label
+                            key={index}
+                            themeColor={'neutral'}
+                            selected={itbis === opcion.valor}
+                        >
+                            <input type="radio" value={opcion.valor} checked={itbis === opcion.valor} onChange={() => handleItbisChange(opcion.valor)} />
+                            {opcion.etiqueta}
+                        </Label>
+                    ))}
+                </Group>
+            </div> */}
         </Container>
     )
 }
 const Container = styled.div`
     display: grid;
     gap: 0.6em;
+   
+
 `

@@ -34,13 +34,7 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
       const parsedColumns = JSON.parse(savedColumns);
       return parsedColumns.map(savedCol => {
         const originalCol = columns.find(col => col.accessor === savedCol.accessor);
-        return {
-          ...savedCol,
-          cell: originalCol.cell,
-          sortable: originalCol.sortable,
-          sortableValue: originalCol.sortableValue,
-
-        };
+        return { ...originalCol };
       });
     } else {
       return columns || [];

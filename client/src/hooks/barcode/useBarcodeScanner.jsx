@@ -8,15 +8,11 @@ const useBarcodeScanner = (products, fn) => {
     useEffect(() => {
       const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
-          // Procesar el código de barras escaneado
-          console.log('---------------------Código de barras: ', barcode);
-          
+          // Procesar el código de barras escaneado          
             fn(products, barcode)
-
           barcode = '';
         } else {
           barcode += event.key;
-
         }
       };
   

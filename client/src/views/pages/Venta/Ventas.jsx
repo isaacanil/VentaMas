@@ -23,13 +23,12 @@ export const Sales = () => {
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
   const [cashCountConfirmation, setCashCountConfirmation] = useState(false)
-  const { products, loading, setLoading } = useGetProducts()
+  const { products, loading, setLoading, error } = useGetProducts()
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const checkBarcode = (products, barcode) => {
-
     if (products.length <= 0) return;
     const product = products.find(({ product }) => product?.barCode === barcode);
 
@@ -47,7 +46,7 @@ export const Sales = () => {
   useBarcodeScanner(products, checkBarcode);
 
   const productFiltered = filterData(products, searchData)
-
+  const filterProductsByVisibility = productFiltered.filter(({ product }) => product.isVisible !== false);
   return (
     <Container
       animate={{ x: 0 }}
@@ -63,7 +62,7 @@ export const Sales = () => {
         <ProductControl
           setProductsLoading={setLoading}
           productsLoading={loading}
-          products={productFiltered}
+          products={filterProductsByVisibility}
           isProductGrouped={categoryGrouped}
         />
         <MenuComponents />
