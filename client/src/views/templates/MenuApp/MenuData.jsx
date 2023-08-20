@@ -12,7 +12,7 @@ const { SALES, BILLS} = ROUTES_NAME.SALES_TERM
 const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM
 const { CLIENTS, SUPPLIERS } = ROUTES_NAME.CONTACT_TERM
 const { SETTINGS } = ROUTES_NAME.SETTING_TERM
-const { ORDERS, PURCHASES } = ROUTES_NAME.PURCHASE_TERM
+const { ORDERS, PURCHASES, PURCHASES_CREATE, ORDERS_CREATE } = ROUTES_NAME.PURCHASE_TERM
 const { INVENTORY_ITEMS, CATEGORIES, INVENTORY_SERVICES, PRODUCT_IMAGES_MANAGER, PRODUCT_OUTFLOW } = ROUTES_NAME.INVENTORY_TERM
 
 export const getMenuData = () => {
@@ -44,11 +44,22 @@ export const getMenuData = () => {
                     route: ORDERS
 
                 },
+               {
+                    title: 'Crear Pedido',
+                    route: ORDERS_CREATE,
+                    icon: <FontAwesomeIcon icon={faClipboard} />
+
+               },
                 {
                     title: 'Compras',
                     route: PURCHASES,
                     icon: <FontAwesomeIcon icon={faClipboardCheck} />
-                }
+                },
+                {
+                    title: 'Crear Compra',
+                    route: PURCHASES_CREATE,
+                    icon: <FontAwesomeIcon icon={faClipboardCheck} />
+                },
             ]
         },
         {

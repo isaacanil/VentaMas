@@ -1,30 +1,30 @@
 import React, { useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { selectOrderFilterOptions } from '../../../../../../features/order/ordersSlice'
+
 import { Item } from './Item'
 
 export const OrderMenuFilter = ({ MenuIsOpen }) => {
-  const OrderFilterOptionsSelected = useSelector(selectOrderFilterOptions)
+ 
  
   return (
-    <Container isOpen={MenuIsOpen ? true : false} >
-      <Wrapper>
-        <Head>
-          <h3>Filtros</h3>
-        </Head>
-        <Body>
-          {
-            OrderFilterOptionsSelected.length > 0 ? (
-              OrderFilterOptionsSelected.map((item, index) => (
-                <Item data={item} index={index} key={index} />
-              ))
-            ) : null
-          }
-        </Body>
-      </Wrapper>
-
-    </Container>
+    // <Container isOpen={MenuIsOpen ? true : false} >
+    //   <Wrapper>
+    //     <Head>
+    //       <h3>Filtros</h3>
+    //     </Head>
+    //     <Body>
+    //       {
+    //         OrderFilterOptionsSelected.length > 0 ? (
+    //           OrderFilterOptionsSelected.map((item, index) => (
+    //             <Item data={item} index={index} key={index} />
+    //           ))
+    //         ) : null
+    //       }
+    //     </Body>
+    //   </Wrapper>
+<div></div>
+    // </Container>
   )
 }
 

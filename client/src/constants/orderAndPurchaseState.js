@@ -20,6 +20,13 @@ export const getOrderConditionByID = (conditionID) => {
     }
     return conditionID || '';
 }
+export const getOrderStateByID = (stateID) => {
+    if(stateID){
+        const state = orderAndDataState.find(s => s.id === stateID);
+        return state;
+    }
+    return stateID || '';
+}
 export const selectItemByName = (array, name) => {
     const item = array.find(i => i.name === name);
     return item.id;

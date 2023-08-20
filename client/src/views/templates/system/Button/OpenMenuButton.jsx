@@ -10,7 +10,7 @@ export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
     dispatch(toggleOpenMenu())
   }
   return (
-    <Container onClick={onClick || handleOpenMenu} zIndex={zIndex}>
+    <Container isOpen={isOpen} onClick={onClick || handleOpenMenu} zIndex={zIndex}>
       <MenuIcon isOpen={isOpen}></MenuIcon>
     </Container>
   )
@@ -37,7 +37,9 @@ const Container = styled.div`
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: var(--border-radius);
   cursor: pointer;
-  z-index: 10000;
+
+  z-index: ${props => props.isOpen ? 10000 : 0};
+
 `
 const MenuIcon = styled.div`
   position: relative;
@@ -105,6 +107,7 @@ const MenuIcon = styled.div`
         break;
     }
   }}
+  
   
 `
 

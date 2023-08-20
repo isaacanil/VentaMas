@@ -1,52 +1,136 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { OrderCard } from '../../ListItem/OrderCard'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { useFbGetOrders } from '../../../../../firebase/order/usefbGetOrders'
+import { getPurchaseFromDB } from '../../../../../../firebase/firebaseconfig'
+import { AdvancedTable } from '../../../../../controlPanel/Table/AdvancedTable'
+import { selectUser } from '../../../../../../features/auth/userSlice'
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
+import { toggleViewOrdersNotes } from '../../../../../../features/modals/modalSlice'
+import { Button } from '../../../../../templates/system/Button/Button'
+import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 
 export const PendingOrdersTable = () => {
-  const [activeId, setActiveID] = useState(null);
-  const user = useSelector(selectUser);
-  const {orders} = useFbGetOrders(user);
+  const dispatch = useDispatch()
+  const [activeId, setActiveId] = useState()
+  const [purchases, setPurchases] = useState([])
+  const user = useSelector(selectUser)
+  useEffect(() => {
+    getPurchaseFromDB(user, setPurchases)
+  }, [user])
 
+  const handleViewNotes = (note) => {
+    dispatch(toggleViewOrdersNotes({ note, isOpen: 'open' }))
+  }
+  const columns = [
+    {
+      Header: 'Número',
+      accessor: 'number'
+    },
+    {
+      Header: 'Proveedor',
+      accessor: 'provider'
+    },
+    {
+      Header: 'Nota',
+      accessor: 'note',
+      cell: (value) => <Button
+        title='ver'
+        borderRadius='normal'
+        color='gray-dark'
+        border='light'
+        onClick={() => handleViewNotes(value)}
+      />
+    },
+    {
+      Header: 'Fecha',
+      accessor: 'date',
+      cell: ({ value }) => {
+        return <div>{value?.deliveryDate}</div>
+      }
+    },
+    {
+      Header: 'F. Pago',
+      accessor: 'paymentDate'
+    },
+    {
+      Header: 'Total',
+      accessor: 'total',
+      align: 'right',
+      cell: ({ value }) => {
+        return <div>{useFormatPrice(value)}</div>
+      }
+    },
+    {
+      Header: 'Acción',
+      accessor: 'action',
+      align: 'right',
+      cell: (value) => <ActionsButtonsGroup purchaseData={value} activeId={activeId} setActiveId={setActiveId}></ActionsButtonsGroup>
+    }
+
+  ]
+  const data = purchases.map(({ data }, index) => {
+    return {
+      number: index + 1,
+      provider: data?.provider.name,
+      note: data?.note,
+      date: data?.dates,
+      paymentDate: data?.paymentDate,
+      total: data?.total,
+      action: data
+    }
+  })
   return (
+    // <Container>
+    //   <Body>
+    //     <TitleContainer>
+    //       <h3>Lista de Compras</h3>
+    //     </TitleContainer>
+    //     <Table>
+    //       <Row fill='fill'>
+    //         <Col>#</Col>
+    //         <Col>Proveedor</Col>
+    //         <Col>Nota</Col>
+    //         <Col>Fecha</Col>
+    //         <Col>F. Pago</Col>
+    //         <Col position='right'>Total</Col>
+    //         <Col>Acción</Col>
+    //       </Row>
+    //       <TableBody>
+    //         {
+    //           purchases.length > 0 ? (
+    //             purchases.map((purchaseData, index) => (
+         //   <PurchaseCard Row={Row} Col={Col} key={index} purchaseData={purchaseData} index={index} activeId={activeId} setActiveId={setActiveId}/>
+    //             ))
+    //           ) : null
+
+    //         }
+    //       </TableBody>
+    //     </Table>
+    //   </Body>
+    // </Container>
     <Container>
-      <Body>
-        <TitleContainer>
-          <h3>Lista de Pedidos Pendientes</h3>
-        </TitleContainer>
-        <Table>
-          <Row fill='fill'>
-            <Col>#</Col>
-            <Col>Est</Col>
-            <Col>Proveedor</Col>
-            <Col>Nota</Col>
-            <Col>F. Pedido</Col>
-            <Col>F. Entrega</Col>
-            <Col position='right'>Total</Col>
-            <Col>Acción</Col>
-          </Row>
-          <TableBody>
-            {
-              orders.length > 0 ? (
-                orders.map((orderData, index) => (
-                  <OrderCard Row={Row} Col={Col} key={index} orderData={orderData} index={index} activeId={activeId} setActiveId={setActiveID} />
-                ))
-              ) : null
-            }
-          </TableBody>
-        </Table>
-      </Body>
+      <AdvancedTable
+        tableName={'Lista de Compras'}
+        columns={columns}
+        data={data}
+       
+      />
     </Container>
+
   )
 }
 const Container = styled.div`
-    width: 100%;
-    padding: 0 1em;
-    display: flex;
-    justify-content: center;
+  width: 100vw;
+  padding: 0.6em 1em;
+  height: 100%;
+
 `
+// const Container = styled.div`
+//     width: 100%;
+//     padding: 0 1em;
+//     display: flex;
+//     justify-content: center;
+// `
 const Body = styled.header`
     justify-self: center;
     border: 1px solid rgba(0, 0, 0, 0.100);
@@ -70,7 +154,6 @@ const Table = styled.div`
   position: relative;
   width: 100%;
   overflow: hidden;
-  overflow-x: auto;
   display: grid;
   grid-template-rows: min-content 1fr;
   
@@ -108,14 +191,13 @@ const Row = styled.div`
   height: 3em;
   gap: 1em;
   grid-template-columns: 
-  minmax(44px, 0.1fr) //numero
-  minmax(38px, 38px) //estado
-  minmax(120px, 1fr) //proveedor
+  minmax(100px, 0.3fr) //numero
+  minmax(120px, 0.5fr) //proveedor
   minmax(64px, 0.1fr) //nota
-  minmax(104px, 0.3fr) //f. pedido
-  minmax(104px, 0.3fr) //f. entrega
-  minmax(110px, 0.5fr) //total
-  minmax(126px, 0.3fr); //acción
+  minmax(104px, 0.4fr) //f. pedido
+  minmax(104px, 0.4fr) //f. entrega
+  minmax(110px, 0.4fr) //total
+  minmax(106px, 0.15fr); //acción
   @media (max-width: 800px){
     gap: 0;
   }

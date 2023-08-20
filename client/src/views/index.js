@@ -1,6 +1,9 @@
 
 //Todo **************Pages*************************************************
-export { Purchases } from './pages/Compra/Purchases'
+
+export { Orders } from './pages/OrderAndPurchase/Order/Orders'
+export { Purchases } from './pages/OrderAndPurchase/Compra/Purchases'
+export { AddPurchase } from './pages/OrderAndPurchase/CreatePurchase/CreatePurchase'
 export { Home } from './pages/Home/Home'
 export { Inventory } from './pages/Inventario/pages/ItemsManager/Inventario'
 export { MultimediaManager } from './pages/Inventario/pages/MultimediaManager/MultimediaManager'
@@ -13,7 +16,6 @@ export { Welcome } from './pages/Welcome/Welcome'
 export { Contact } from './pages/Contact.jsx'
 export { Receipt } from './pages/checkout/Receipt'
 
-export { Orders } from './pages/Order/Orders'
 export { AddCustomProductModal } from './component/modals/AddCustomProductModal/AddCustomProductModal'
 export { SetCustomProduct } from './component/modals/CustomProduct/SetCustomProduct/SetCustomProduct'
 export { Setting } from './pages/setting/Setting'
@@ -30,15 +32,13 @@ export { Cart } from './component/cart/Cart'
 export { MultiDisplayControl } from './component/MultiDisplayControl/MultiDisplayControl'
 export { RequireAuth } from './component/RequireAuth'
 export { ClientControl } from './component/contact/ClientControl/ClienteControl'
-/* modals */
-
 // export { ProductModal } from './component/modals/Product/ProductModal'
 export { AddClientModal } from './component/modals/AddClient/AddClientModal'
 export { Modal } from './component/modals/Modal'
 export { ModalManager } from './component/modals/ModalManager'
 
 //Todo ******Templates**********************************************
-export { StatusIndicatorDot } from './pages/Order/components/StatusIndicatorDot/StatusIndicatorDot'
+export { StatusIndicatorDot } from './pages/OrderAndPurchase/Order/components/StatusIndicatorDot/StatusIndicatorDot'
 export { Counter } from './templates/system/Counter/Counter'
 export { FloatingMessage } from './templates/system/FloatingMessage/FloatingMessage'
 export { MenuApp } from './templates/MenuApp/MenuApp'

@@ -1,4 +1,4 @@
-import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCaretDown, faCaretUp, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCaretDown, faCaretUp, faCartFlatbed, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faRightToBracket, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -51,6 +51,8 @@ export const icons = {
         edit: <FontAwesomeIcon icon={faPencil} />,
         add: <FontAwesomeIcon icon={faPlus} />,
         delete: <FontAwesomeIcon icon={faTrash}  />,
+        upload: <FontAwesomeIcon icon={faCloudArrowUp} />,
+        logout: <FontAwesomeIcon icon={faRightToBracket} />,
         discard: <FontAwesomeIcon icon={faSquareMinus} />,
         save: <FontAwesomeIcon icon={faCloudArrowUp} />,
         cancel: <FontAwesomeIcon icon={faXmark} />,

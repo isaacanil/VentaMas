@@ -12,7 +12,6 @@ import alertReducer from "../features/Alert/AlertSlice";
 import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
 import settingReducer from '../features/setting/settingSlice';
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
-import orderReducer from '../features/order/ordersSlice';
 import purchaseReducer from '../features/Purchase/purchaseSlice'
 import themeReducer from "../features/theme/themeSlice";
 import addPurchaseReducer from "../features/Purchase/addPurchaseSlice";
@@ -36,7 +35,6 @@ export const store = configureStore({
     user: userReducer,
     cart: cartReducer,
     abilities: abilitiesReducer,
-    order: orderReducer,
     filterProducts: filterProductsSliceReducer,
     clientCart: clientCartReducer,
     purchase: purchaseReducer,

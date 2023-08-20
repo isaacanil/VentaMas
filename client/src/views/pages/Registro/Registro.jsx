@@ -68,7 +68,9 @@ export const Registro = () => {
         animate={{ x: 0 }}
         transition={{ type: "spring", stiffness: 0 }}
       >
-        <MenuApp/>
+        <MenuApp
+          sectionName={'Recibos de Venta'}
+        />
         <FilterBar>
           <span>
             <DatePicker dates={setDatesSelected} data={datesSelected} />

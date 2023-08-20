@@ -10,7 +10,9 @@ import { ToolBar } from './ToolBar'
 export const CategoryAdmin = () => { 
   return (
     <Fragment>
-      <MenuApp></MenuApp>
+      <MenuApp
+        sectionName={'Categorías'}
+      />
       <Container>
         <ToolBar></ToolBar>
         <PendingOrdersTable />

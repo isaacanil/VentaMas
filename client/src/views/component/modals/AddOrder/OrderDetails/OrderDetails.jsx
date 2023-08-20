@@ -4,7 +4,7 @@ import { Select } from '../../../../templates/system/Select/Select'
 import { AddCondition, AddNote, AddDate, SelectProducts, SelectOrder } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
-import { orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
+import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
 import { DateTime } from 'luxon'
 
 export const OrderDetails = () => {
@@ -14,6 +14,12 @@ export const OrderDetails = () => {
     const { note, condition, date } = order;
 
     const minDate = DateTime.now().toISODate();
+    const handleDateChange = (value) => {
+        const selectedDate = DateTime.fromISO(value);
+        const timestamp = selectedDate.toJSDate().getTime();
+        return timestamp;
+        // Ahora puedes guardar 'timestamp' en Firestore o donde quieras
+      };
     return (
         <Container>
             <Section flex>
@@ -23,14 +29,14 @@ export const OrderDetails = () => {
                     value={date}
                     id=""
                     min={minDate}
-                    onChange={(e) => dispatch(AddDate(e.target.value))}
+                    onChange={(e) => dispatch(AddDate(handleDateChange(e.target.value)))}
                 />
                 <Select
                     title='Condición'
                     data={conditions}
-                    onChange={e => dispatch(AddCondition(e.target.value))}
+                    onChange={e => dispatch(AddCondition(e.target.value?.id))}
                     displayKey={'name'}
-                    value={condition?.name}
+                    value={condition ? getOrderConditionByID(condition) : ''}
                 />
                 {/* {JSON.stringify(data)} */}
             </Section>

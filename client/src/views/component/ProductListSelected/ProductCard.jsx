@@ -2,42 +2,43 @@ import React, { useMemo, useState } from 'react'
 import { IoMdTrash } from 'react-icons/io'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { DeleteProduct, updateInitialCost, updateNewStock, } from '../../../features/addOrder/addOrderModalSlice'
+import { DeleteProduct, updateInitialCost, updateProduct, } from '../../../features/addOrder/addOrderModalSlice'
 import { separator } from '../../../hooks/separator'
 import { Button } from '../../templates/system/Button/Button'
 import { InputV4 } from '../../templates/system/Inputs/InputV4'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 
-export const ProductCard = ({ product, handleDeleteProduct }) => {
+export const ProductCard = ({ item, handleDeleteProduct, handleUpdateProduct }) => {
     const dispatch = useDispatch()
 
     return (
         <Container>
             <Col>
                 <span>
-                    {product.productName}
-                </span>
-            </Col>
-            <Col>
-                <span>
-                    <Input value={product.stock.newStock} onChange={e => dispatch(updateNewStock({ stock: e.target.value, productID: product.id }))} />
+                    {item.productName}
                 </span>
             </Col>
             <Col>
                 <span>
                     <Input
-                        value={product.initialCost}
-                        handleBlur={(value) => useFormatPrice(value)}
-                        onChange={e => dispatch(updateInitialCost(
-                            { initialCost: e.target.value, productID: product.id }
-                        ))}
+                    
+                        value={item.newStock}
+                        onChange={e => handleUpdateProduct({ value: {newStock: e.target.value}, productID: item.id })}
                     />
-                    {/* RD${separator(product.initialCost)} */}
                 </span>
             </Col>
             <Col>
                 <span>
-                    RD${separator(product.initialCost * product.stock.newStock)}
+                    <Input
+                        value={item.initialCost}
+                        handleBlur={(value) => useFormatPrice(value)}
+                        onChange={e => handleUpdateProduct({ value: {initialCost: e.target.value}, productID: item.id })}
+                    />
+                </span>
+            </Col>
+            <Col>
+                <span>
+                    {useFormatPrice(item.initialCost * item.newStock)}
                 </span>
             </Col>
             <Button
@@ -45,7 +46,7 @@ export const ProductCard = ({ product, handleDeleteProduct }) => {
                 width='icon24'
                 border='light'
                 borderRadius='normal'
-                onClick={() => handleDeleteProduct(product)}
+                onClick={() => handleDeleteProduct(item)}
             />
 
         </Container>

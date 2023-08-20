@@ -1,13 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export function NoteViewer({title, content}) {
+export function NoteViewer({ title, content }) {
 
-  
+
   return (
 
-      <NotaWrapper>
-      <TituloNota>{title}</TituloNota>
+    <NotaWrapper>
+      {title && <TituloNota>{title}</TituloNota>}
       <ContenidoNota>{content}</ContenidoNota>
     </NotaWrapper>
 

@@ -14,10 +14,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 
-export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
+export const MenuApp = ({ sectionName, borderRadius, setSearchData, searchData }) => {
   const ref = useRef(null)
   const dispatch = useDispatch()
-  
+
   const { color } = colorPalette()
 
   const [isOpenMenu, setIsOpenMenu] = useState(false)
@@ -40,9 +40,12 @@ export const MenuApp = ({ borderRadius, setSearchData, searchData }) => {
       <Container bgColor={color} borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
+          {sectionName && (
+            <SectionName>{sectionName}</SectionName>
+          )}
         </Group>
         <GlobalMenu setSearchData={setSearchData} searchData={searchData} />
-        <SideBar  isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
+        <SideBar isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
       </Container>
     </Fragment>
 
@@ -141,4 +144,17 @@ const AutoHidden = styled.div`
   }}
   
     
+`
+const SectionName = styled.div`
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.2em;
+  color: white;
+  height: 1.8em;
+  border-radius: 100px;
+  white-space: nowrap;
+  background-color: rgba(0, 0, 0, 0.200);
+  padding: 0 0.8em;
+
 `

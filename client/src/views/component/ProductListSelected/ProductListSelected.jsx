@@ -5,7 +5,7 @@ import { SelectProducts, SelectTotalPurchase } from '../../../features/addOrder/
 import { useSelector } from 'react-redux'
 import { separator } from '../../../hooks/separator'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
-export const ProductListSelected = ({ productsSelected, productsTotalPrice, handleDeleteProduct }) => {
+export const ProductListSelected = ({ productsSelected, productsTotalPrice, handleDeleteProduct, handleUpdateProduct }) => {
     return (
         <Container>
             <Head>
@@ -15,11 +15,12 @@ export const ProductListSelected = ({ productsSelected, productsTotalPrice, hand
             <Body>
                 {
                     Array(productsSelected).length > 0 && productsSelected ?
-                        (productsSelected.map(({ product }, index) => (
+                        (productsSelected.map((item, index) => (
                             <ProductCard
                                 key={index}
-                                product={product}
+                                item={item}
                                 handleDeleteProduct={handleDeleteProduct}
+                                handleUpdateProduct={handleUpdateProduct}
                             />
                         ))) : null
                 }
@@ -31,7 +32,7 @@ const Container = styled.div`
     border: var(--border-primary);
     background-color: var(--White1);
     border-radius: 6px;
-    height: 12em;
+    height: 100%;
     position: relative;
     display: grid;
     grid-template-rows: min-content 1fr;
@@ -44,7 +45,7 @@ const Head = styled.div`
     color: #303030;
     height: 2em;
     display: grid;
-    grid-template-columns: 1fr 10em;
+    grid-template-columns: 1fr min-content;
     align-items: center;
     align-content: center;
     padding: 0 1em;
@@ -55,6 +56,7 @@ const Head = styled.div`
     span{
         color: #131313;
         text-align: right;
+        white-space: nowrap;
     }
 `
 const Body = styled.div`

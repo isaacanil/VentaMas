@@ -9,7 +9,6 @@ import { Button } from './Button'
 
 export const AddFileBtn = ({ title, startIcon, endIcon, id, setFile, file, fn }) => {
     const process = useSelector(selectUploadImageStatus)
-    const [execute, setExecute] = useState(false)
     const loading = useSelector(selectUploadImageLoading)
     const url = useSelector(selectUploadImageUrl)
     const [progress, setProgress] = useState(0)
@@ -18,54 +17,56 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, setFile, file, fn })
     const [endIconBtn, setEndIconBtn] = useState(endIcon)
     const dispatch = useDispatch()
     const handleOnchange = async (e) => {
-            setFile(e.target.files[0])
+        fn(e.target.files[0])
     }
-    useEffect(()=>{
-        file
+    useEffect(() => {
+        
     }, [file])
-   
-    useEffect(()=>{
+
+    useEffect(() => {
         setProgress(process)
     }, [process])
-    useEffect(()=>{
-        if(progress === 0 && loading === true){
-            dispatch(toggleLoader({show: true, message: '0'}))
+    useEffect(() => {
+        if (progress === 0 && loading === true) {
+            dispatch(toggleLoader({ show: true, message: '0' }))
             setTitleBtn(title)
         }
-        if(progress > 0 && progress < 100){
-            dispatch(toggleLoader({ show: true, message: `cargando... ${(progress.toFixed(1))}%`}))
+        if (progress > 0 && progress < 100) {
+            dispatch(toggleLoader({ show: true, message: `cargando... ${(progress.toFixed(1))}%` }))
             setTitleBtn(`cargando...`)
-            setStartIconBtn(<CgSpinner/>)
+            setStartIconBtn(<CgSpinner />)
             endIcon = null
         }
-        if(progress === 100){
+        if (progress === 100) {
             startIcon = null
             setStartIconBtn(null)
             setTitleBtn('Listo')
-            dispatch(toggleLoader({show: true, message: `Listo`}))
-            
+            dispatch(toggleLoader({ show: true, message: `Listo` }))
+
             setTimeout(() => {
-                dispatch(toggleLoader({show: false, message: ''}))
+                dispatch(toggleLoader({ show: false, message: '' }))
                 setTitleBtn('Cambiar')
-                setTimeout(() => {
-                    dispatch(toggleImageViewer({ show: true, url }))
-                }, 1000);
+                // setTimeout(() => {
+                   dispatch(toggleImageViewer({ show: true, url }))
+                // }, 1000);
             }
-            , 2500);
+                , 2500);
         }
     }, [progress, url])
 
     
+
+
     return (
         <Container spin={progress > 0 && progress < 100}>
             <Progress progressStatus={progress}>
             </Progress>
-                <label htmlFor={id}>
-                    {startIconBtn}
-                    {titleBtn}
-                    {endIconBtn}
-                    <input type="file" name="" id={id} onChange={(e) => handleOnchange(e)} accept="/imagen/*a" />
-                </label>
+            <label htmlFor={id}>
+                {startIconBtn}
+                {titleBtn}
+                {endIconBtn}
+                <input type="file" name="" id={id} onChange={(e) => handleOnchange(e)} accept="/imagen/*a" />
+            </label>
         </Container>
     )
 }

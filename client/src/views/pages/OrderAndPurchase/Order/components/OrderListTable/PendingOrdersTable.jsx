@@ -1,28 +1,34 @@
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { getPurchaseFromDB } from '../../../../../firebase/firebaseconfig'
-import { useEffect } from 'react'
-import { PurchaseCard } from '../../ListItem/PurchaseCard'
-import { useDispatch } from 'react-redux'
-import { getPendingPurchaseFromDB } from '../../../../../features/Purchase/purchaseSlice'
-import { AdvancedTable } from '../../../../controlPanel/Table/AdvancedTable'
-import { ToolBar } from '../../ToolBar'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { OrderCard } from '../../ListItem/OrderCard'
+import { selectUser } from '../../../../../../features/auth/userSlice'
+import { useFbGetOrders } from '../../../../../../firebase/order/usefbGetOrders'
+import { fbGetPendingOrders } from '../../../../../../firebase/order/fbGetPedingOrder'
+import { AdvancedTable } from '../../../../../controlPanel/Table/AdvancedTable'
+import { convertMillisToDate, getTimeElapsed, useFormatDate } from '../../../../../../hooks/useFormatTime'
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
+import { getOrderStateByID } from '../../../../../../constants/orderAndPurchaseState'
+import { StatusIndicatorDot } from '../StatusIndicatorDot/StatusIndicatorDot'
+import { Button } from '../../../../../templates/system/Button/Button'
+import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 
 export const PendingOrdersTable = () => {
-  const dispatch = useDispatch()
-  const [activeId, setActiveId] = useState()
-  const [purchases, setPurchases] = useState([])
-  useEffect(() => {
-    getPurchaseFromDB(setPurchases)
-  }, [])
-
-  useMemo(() => {
-    if (purchases.length > 0) dispatch(getPendingPurchaseFromDB(purchases))
-  }, [purchases])
+  const [activeId, setActiveID] = useState(null);
   const columns = [
     {
-      Header: 'Número',
-      accessor: 'number'
+      Header: '#',
+      accessor: 'number',
+      minWidth: '50px',
+      maxWidth: '50px',
+    },
+    {
+      Header: 'Est',
+      accessor: 'state',
+      minWidth: '50px',
+      maxWidth: '50px',
+      cell: ({value}) =>  <StatusIndicatorDot color={value ? getOrderStateByID(value)?.color : null} />
     },
     {
       Header: 'Proveedor',
@@ -30,88 +36,68 @@ export const PendingOrdersTable = () => {
     },
     {
       Header: 'Nota',
-      accessor: 'note'
+      accessor: 'note',
+      cell: ({value}) => <Button
+      title='ver'
+      />
     },
     {
-      Header: 'Fecha',
-      accessor: 'date'
+      Header: 'F. Pedido',
+      accessor: 'createdAt',
+      cell: ({value}) => <div>{convertMillisToDate(value)}</div>
     },
     {
-      Header: 'F. Pago',
-      accessor: 'paymentDate'
+      Header: 'F. Entrega',
+      accessor: 'deliveryDate',
+      cell: ({value}) => <div>{convertMillisToDate(value)}</div>
     },
     {
       Header: 'Total',
-      accessor: 'total'
+      accessor: 'total',
+      align: 'right',
+      minWidth: '120px',
+      maxWidth: '120px',
+
+      cell: ({value}) => <div>{useFormatPrice(value)}</div>
     },
     {
       Header: 'Acción',
-      accessor: 'action'
+      accessor: 'action',
+      align: 'right',
+      cell: ({value}) => <ActionsButtonsGroup orderData={value} activeId={activeId} setActiveId={setActiveID}/>
     }
   ]
-  const data = purchases.map(({ data }, index) => {
+  const user = useSelector(selectUser);
+  const { pendingOrders } = fbGetPendingOrders(user);
+  const data = pendingOrders.map(({data}) => {
     return {
-      number: index,
-      provider: data.provider,
-      note: data.note,
-      date: data.date,
-      paymentDate: data.paymentDate,
-      total: data.total,
+      number: data?.id,
+      state: data?.state,
+      provider: data?.provider?.name,
+      note: '',
+      createdAt: data?.dates?.createdAt,
+      deliveryDate: data?.dates?.deliveryDate,
+      total: data?.total,
       action: data
     }
   })
-
+  
   return (
-    // <Container>
-    //   <Body>
-    //     <TitleContainer>
-    //       <h3>Lista de Compras</h3>
-    //     </TitleContainer>
-    //     <Table>
-    //       <Row fill='fill'>
-    //         <Col>#</Col>
-    //         <Col>Proveedor</Col>
-    //         <Col>Nota</Col>
-    //         <Col>Fecha</Col>
-    //         <Col>F. Pago</Col>
-    //         <Col position='right'>Total</Col>
-    //         <Col>Acción</Col>
-    //       </Row>
-    //       <TableBody>
-    //         {
-    //           purchases.length > 0 ? (
-    //             purchases.map((purchaseData, index) => (
-    //               <PurchaseCard Row={Row} Col={Col} key={index} purchaseData={purchaseData} index={index} activeId={activeId} setActiveId={setActiveId}/>
-    //             ))
-    //           ) : null
-
-    //         }
-    //       </TableBody>
-    //     </Table>
-    //   </Body>
-    // </Container>
     <Container>
+
       <AdvancedTable
-        tableName={'Lista de Compras'}
+        tableName={'Lista de Pedidos Pendientes'}
         columns={columns}
         data={data}
-        headerComponent={<ToolBar></ToolBar>}
       />
     </Container>
   )
 }
 const Container = styled.div`
-  width: 100vw;
-  padding: 0 1em;
+    width: 100vw;
+  padding: 0.4em 1em;
   height: 100%;
-
 `
-// const Container = styled.div`
-//     width: 100%;
-//     padding: 0 1em;
-//     display: flex;
-//     justify-content: center;
-// `
 const Body = styled.header`
     justify-self: center;
     border: 1px solid rgba(0, 0, 0, 0.100);
@@ -135,6 +121,7 @@ const Table = styled.div`
   position: relative;
   width: 100%;
   overflow: hidden;
+  overflow-x: auto;
   display: grid;
   grid-template-rows: min-content 1fr;
   
@@ -172,13 +159,14 @@ const Row = styled.div`
   height: 3em;
   gap: 1em;
   grid-template-columns: 
-  minmax(100px, 0.3fr) //numero
-  minmax(120px, 0.5fr) //proveedor
+  minmax(44px, 0.1fr) //numero
+  minmax(38px, 38px) //estado
+  minmax(120px, 1fr) //proveedor
   minmax(64px, 0.1fr) //nota
-  minmax(104px, 0.4fr) //f. pedido
-  minmax(104px, 0.4fr) //f. entrega
-  minmax(110px, 0.4fr) //total
-  minmax(106px, 0.15fr); //acción
+  minmax(104px, 0.3fr) //f. pedido
+  minmax(104px, 0.3fr) //f. entrega
+  minmax(110px, 0.5fr) //total
+  minmax(126px, 0.3fr); //acción
   @media (max-width: 800px){
     gap: 0;
   }

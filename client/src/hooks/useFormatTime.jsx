@@ -24,3 +24,21 @@ export function useFormatDate(timestamp) {
   const date = DateTime.fromMillis(timestamp);
   return `${date.toLocaleString(DateTime.DATETIME_SHORT)}`;
 }
+
+
+export const convertMillisToDate = (milliseconds, format = 'default', locale = 'es') => {
+  //const date = DateTime.fromMillis(milliseconds).setLocale(locale);
+  const dateFormatted = DateTime.fromMillis(milliseconds).toFormat('dd/MM/yyyy');
+  return dateFormatted; 
+  // Aquí puedes definir tus propios formatos personalizados
+  // const formats = {
+  //   default: DateTime.DATETIME_MED,
+  //   short: DateTime.DATETIME_SHORT,
+  //   full: DateTime.DATETIME_FULL,
+  //   dateOnly: DateTime.DATE_MED,
+  //   timeOnly: DateTime.TIME_MED,
+  //   // ... otros formatos personalizados que desees
+  // };
+
+  // return date.toLocaleString(formats[format] || format);
+};

@@ -1,32 +1,33 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { Button } from '../../../templates/system/Button/Button'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
+import { Button } from '../../../../templates/system/Button/Button'
 import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
 import { ActionsButtonsGroup } from './ActionsButtonsGroup'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectOrderItemSelected, selectPendingOrder } from '../../../../features/order/ordersSlice'
-import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
-import { Tooltip } from '../../../templates/system/Button/Tooltip'
-import { correctDate } from '../../../../hooks/time/correctDate'
+import { toggleViewOrdersNotes } from '../../../../../features/modals/modalSlice'
+import { Tooltip } from '../../../../templates/system/Button/Tooltip'
+import { correctDate } from '../../../../../hooks/time/correctDate'
+import { getOrderStateByID } from '../../../../../constants/orderAndPurchaseState'
 
 export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId }) => {
     const dispatch = useDispatch()
-    const [isOpen, setIsOpen] = useState(false)
+  
     const [showNote, setShowNote] = useState(false)
-    const orderItemSelectedRef = useSelector(selectOrderItemSelected)
+    //const orderItemSelectedRef = useSelector(selectOrderItemSelected)
     const {data} = orderData
     const handleViewNotes = () => {  
-        setIsOpen(!isOpen)
+      
         dispatch(toggleViewOrdersNotes({data, isOpen: 'open'}))   
     }
    console.log(data, 'data.......................................')
     return (
         <Row>
             
-            <Col>{index + 1}</Col>
+            <Col>{data?.id}</Col>
             <Col>
-                <StatusIndicatorDot color={data?.state?.color || null}></StatusIndicatorDot>
+                <StatusIndicatorDot color={data.state ? getOrderStateByID(data?.state)?.color : null}></StatusIndicatorDot>
             </Col>
             <Col size='limit'>
                 <div>{data?.provider?.name || null}</div>
@@ -48,12 +49,12 @@ export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId })
             />
             </Col>
             <Col>
-                <div>{ correctDate(data?.createdAt).toLocaleDateString()}</div></Col>
+                <div>{ correctDate(data?.dates?.createdAt).toLocaleDateString()}</div></Col>
             <Col>
-                <div>{ correctDate(data?.date).toLocaleDateString()}</div>
+                <div>{ correctDate(data?.dates?.deliveryDate).toLocaleDateString()}</div>
             </Col>
             <Col position='right'>
-                <div>{useFormatPrice(data?.totalPurchase)}</div>
+                <div>{useFormatPrice(data?.total)}</div>
             </Col>
             <Col>
             {data && <ActionsButtonsGroup orderData={data} activeId={activeId} setActiveId={setActiveId}/>}

@@ -5,13 +5,13 @@ import { MdOutlineCheck, MdOutlineClear, MdOutlineDelete } from 'react-icons/md'
 import { TbEdit } from 'react-icons/tb'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
-import { selectOrderList, selectPendingOrder, } from '../../../../features/order/ordersSlice'
-import { getOrderData } from '../../../../features/Purchase/addPurchaseSlice'
-import { deleteOrderFromDB, PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
-import { Button } from '../../../templates/system/Button/Button'
-import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
-import { Tooltip } from '../../../templates/system/Button/Tooltip'
+
+import { toggleAddPurchaseModal } from '../../../../../features/modals/modalSlice'
+import { getOrderData } from '../../../../../features/Purchase/addPurchaseSlice'
+import { deleteOrderFromDB, PassDataToPurchaseList } from '../../../../../firebase/firebaseconfig'
+import { Button } from '../../../../templates/system/Button/Button'
+import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
+import { Tooltip } from '../../../../templates/system/Button/Tooltip'
 
 export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
     const modes = {
@@ -55,8 +55,8 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                 setShowConfirmButtons(false)
                 // PassDataToPurchaseList(orderData)
                 dispatch(getOrderData(orderData))
-                navigate('/purchases-list')
-                dispatch(toggleAddPurchaseModal())
+                navigate('/purchases-create')
+                // dispatch(toggleAddPurchaseModal())
 
                 setIsAccept(null) // reset the state variable
             },

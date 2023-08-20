@@ -8,7 +8,7 @@ const Container = styled('div')`
   padding: 0 0.8em;
   height: 2em;
   width: min-content;
-  border-radius: 10px;
+  border-radius: 100px;
 `
 const WebNameItem = styled('span')`
   font-size: 1.2em;

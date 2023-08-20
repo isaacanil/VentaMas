@@ -89,18 +89,18 @@ input{
 
 
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   width: 11px;
   background-color: transparent;
-}
+}*/
 
-::-webkit-scrollbar-thumb {
+/* ::-webkit-scrollbar-thumb {
   background-color: #b3b3b3;
   
 }
 
 ::-webkit-scrollbar-track {
   background-color: transparent;
-}
+}  */
 
 

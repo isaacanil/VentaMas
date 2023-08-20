@@ -16,7 +16,7 @@ export const ToolBar = () => {
     return (
         <Container>
             <Wrapper>
-                <OrderFilter></OrderFilter>
+                {/* <OrderFilter></OrderFilter> */}
                 <Button
                     borderRadius='normal'
                     bgcolor='primary'
@@ -30,7 +30,7 @@ export const ToolBar = () => {
 }
 const Container = styled.div`
     height: 2.50em;
-    width: 100vw;
+    width: 100%;
     background-color: rgb(255, 255, 255);
     display: flex;
     align-items: center;
@@ -38,9 +38,9 @@ const Container = styled.div`
     margin-bottom: 1em;
 `
 const Wrapper = styled.div`
-    max-width: 1000px;
+   
     width: 100%;
-    
+    padding: 0 1em;
     display: flex;
     justify-content: space-between;
     align-items: center;

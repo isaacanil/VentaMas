@@ -1,22 +1,16 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
-import { ProvidersData, SetProvidersInFilterOptionsMenu } from '../../../firebase/ProviderConfig'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
+
+import { MenuApp } from '../../../'
 
 export const Purchases = () => {
-  const providers = ProvidersData();
-  SetProvidersInFilterOptionsMenu(providers);
-
-
 
   return (
-    <Fragment>
       <Container>
-        <MenuApp></MenuApp>
+        <MenuApp sectionName={'Compras'}></MenuApp>
         <PendingOrdersTable />
       </Container>
-    </Fragment>
   )
 }
 const Container = styled.div`
@@ -25,7 +19,6 @@ const Container = styled.div`
     overflow: hidden;
     background-color: var(--color2);
     display: grid;
-    grid-auto-rows: min-content;
     grid-template-rows: min-content  1fr;
     justify-content: center;
     align-items: flex-start;

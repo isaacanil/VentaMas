@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 //TODO ***AUTH**************************************
 import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 //TODO ***FIRESTORE***********************************
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore, runTransaction } from "firebase/firestore";
 //TODO ***STORAGE***********************************
 import { deleteObject, getDownloadURL, getStorage, listAll, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"
 
@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login, logout, selectUser } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
+import { fbGetDocFromReference } from "./provider/fbGetProviderFromReference";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -198,25 +199,47 @@ export const deleteIngredientTypePizza = async (ingredient) => {
     console.log("Lo sentimos Ocurrió un error: ", error)
   }
 }
-
 export const deleteProduct = (id, user) => {
   console.log({ id, user })
   if (!user || !user?.businessID) { return }
   deleteDoc(doc(db, "businesses", user.businessID, `products`, id))
 }
+async function getNextID(user, name) {
+  // Referencia al documento en la ubicación configurada por el nombre
+  if (!user || !user.businessID) return;
+  const counterRef = doc(db, "businesses", user.businessID, 'metadata', name);
 
+  // Obtener el documento
+  const counterSnap = await getDoc(counterRef);
+
+  let nextID = 1;
+  if (counterSnap.exists()) {
+    // Si el documento existe, incrementar el valor
+    nextID = counterSnap.data().currentID + 1;
+    await updateDoc(counterRef, { currentID: nextID }); // Usar updateDoc ya que no estamos en una transacción
+  } else {
+    // Si el documento no existe, crearlo con el valor inicial
+    await setDoc(counterRef, { currentID: nextID }); // Usar setDoc ya que no estamos en una transacción
+  }
+  return nextID;
+}
 
 export const AddOrder = async (user, value) => {
   if (!user || !user.businessID) return;
+  const nextID = await getNextID(user, 'lastOrdersId');
   const providerRef = doc(db, "businesses", user.businessID, 'providers', value.provider.id);
   let data = {
     ...value,
-    id: nanoid(6),
-    createdAt: Date.now(),
+    orderId: nanoid(12),
+    id: nextID,
+    dates: {
+      ...value.dates,
+      createdAt: Date.now()
+    },
     provider: providerRef,
-    state: selectItemByName(orderAndDataState, 'Solicitado')
+    state: 'state_2'
   }
-  const OrderRef = doc(db, "businesses", user.businessID, "orders", data.id)
+  const OrderRef = doc(db, "businesses", user.businessID, "orders", data.orderId)
   console.log(data)
   try {
     await setDoc(OrderRef, { data })
@@ -226,73 +249,85 @@ export const AddOrder = async (user, value) => {
   }
 
 }
-const UpdateProducts = async (products) => {
+const UpdateProducts = async (user, replenishments) => {
   try {
-    products.forEach((productData) => {
-      productData = productData.product
-      const productRef = doc(db, 'products', productData.id)
-      const updatedStock = productData.stock.newStock + productData.stock.actualStock
-      productData = { ...productData, stock: updatedStock }
-      const product = productData
-
-      updateDoc(productRef, { product })
+    replenishments.forEach((item) => {
+      const productRef = doc(db, "businesses", user.businessID, 'products', item.id)
+      const updatedStock = item.newStock + item.stock;
+      updateDoc(productRef, {
+        "product.stock": updatedStock,
+      })
     })
+    return { success: true, error: null, message: '' }
   } catch (error) {
     console.log(error)
+    return { success: false, error: true, message: error }
   }
 }
-const UpdateOrder = async (order) => {
-  const orderRef = doc(db, 'orders', order.id)
-  const providerRef = doc(db, 'providers', order.provider.id)
-  const newChange = { data: { ...order, state: selectItemByName(orderAndDataState, 'Entregado'), provider: providerRef } }
+const UpdateOrder = async (user, order) => {
+  const orderRef = doc(db, "businesses", user.businessID, 'orders', order.orderId)
+  const providerRef = doc(db, "businesses", user.businessID, 'providers', order.provider.id)
+  const newChange = { data: { ...order, state: 'state_3', provider: providerRef } }
   try {
-    updateDoc(orderRef, newChange)
-  } catch (error) { console.log(error) }
+    updateDoc(orderRef, {
+      "data.state": 'state_3',
+      "data.provider": providerRef
+    })
+    return { success: true, error: null, message: '' }
+  } catch (error) {
+    return { success: false, error: true, message: error }
+  }
 }
 export const PassDataToPurchaseList = async (user, data) => {
   if (!user || !user.businessID) return;
+  console.log(user, data)
   const providerRef = doc(db, 'businesses', user.businessID, 'providers', data.provider.id)
-  const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.id)
-  await UpdateProducts(data.products)
-  await UpdateOrder(data)
+  const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.orderId)
   try {
-    await setDoc(purchaseRef, {
-      data: {
-        ...data,
-        provider: providerRef,
-        state: selectItemByName(orderAndDataState, 'Entregado')
-      }
-    })
+    const updateProductResult = await UpdateProducts(user, data.replenishments);
+    const updateOrderResult = await UpdateOrder(user, data);
+    if (updateProductResult.success === true && updateOrderResult.success === true) {
+      await setDoc(purchaseRef, {
+        data: {
+          ...data,
+          provider: providerRef,
+          state: 'state_3'
+        }
+      })
+      return { success: true, error: null, message: '' };
+    }
   } catch (error) {
-    console.error("Error adding purchase: ", error)
+    return { success: false, error: true, message: error }
   }
 }
+
 export const getPurchaseFromDB = async (user, setPurchases) => {
   if (!user || !user.businessID) return;
   const purchasesRef = collection(db, 'businesses', user?.businessID, 'purchases')
-  onSnapshot(purchasesRef, (snapshot) => {
-    let purchaseArray = snapshot.docs.map(async (item) => {
-      let purchaseData = item.data();
-      let providerRef = purchaseData.data.provider;
-      let providerDoc = (await getDoc(providerRef)).data();
-      if (providerDoc) { // Asegúrate de que providerDoc esté definido
-        purchaseData.data.provider = providerDoc.provider;
-      } else {
-        console.log('providerRef no se pudo obtener:', providerRef);
-      }
-      return purchaseData
-    })
-    Promise.all(purchaseArray).then((result) => {
-      setPurchases(result)
-    }).catch((error) => {
-      console.log(error)
-    });
+  onSnapshot(purchasesRef, async (snapshot) => {
+    const purchasePromises = snapshot.docs
+      .map((item) => item.data())
+      .sort((a, b) => a.data.id - b.data.id)
+      .map(async (item) => {
+        let purchaseData = item;
+        const providerDoc = await fbGetDocFromReference(purchaseData.data.provider)
+
+        if (providerDoc) { // Asegúrate de que providerDoc esté definido
+          purchaseData.data.provider = providerDoc.provider;
+        } else {
+          console.log('providerRef no se pudo obtener:');
+        }
+        return purchaseData;
+      })
+
+    const purchaseArray = await Promise.all(purchasePromises);
+    setPurchases(purchaseArray);
+    console.log(purchaseArray);
   })
 }
 export const deletePurchase = async (id) => {
   deleteDoc(doc(db, 'purchases', id))
 }
-
 
 export const deleteOrderFromDB = async (id) => {
   deleteDoc(doc(db, `orders`, id))

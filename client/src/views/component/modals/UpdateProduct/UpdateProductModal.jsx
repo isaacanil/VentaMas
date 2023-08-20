@@ -11,7 +11,7 @@ import { quitarCeros } from '../../../../hooks/quitarCeros'
 import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct'
 import { InventariableButton } from './components/Buttons/InventariableButton'
 import { productDataTypeCorrection } from '../../../../features/updateProduct/validateProductDataType'
-import { addNotification } from '../../../../features/notification/NotificationSlice'
+
 import { productSchema } from '../../../../features/updateProduct/productSchema'
 import { toggleLoader } from '../../../../features/loader/loaderSlice'
 import { InputV4 } from '../../../templates/system/Inputs/InputV4'
@@ -27,6 +27,7 @@ import { QRCodeControl } from './components/QRCodeControl/QRCodeControl'
 import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCategories'
 import useImageFallback from '../../../../hooks/image/useImageFallback'
 import { ProductVisibilityButton } from './components/Buttons/ProductVisibilityButton'
+import { addNotification } from '../../../../features/notification/notificationSlice'
 
 const validateProduct = (product) => {
     let errors = {};

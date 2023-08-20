@@ -10,6 +10,7 @@ import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { useFormatPrice } from '../../../hooks/useFormatPrice';
+import { Select } from '@mui/material'
 /**
 * Este componente recibe la funcion de agregar el producto y devuelve el componente.
 *
@@ -17,62 +18,66 @@ import { useFormatPrice } from '../../../hooks/useFormatPrice';
 * @param {number} productSelected pasar el producto seleccionado.
 * @returns {number} el componente de seleccionar y agregar producto.
 */
-export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduct }) => {
+export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduct, setProductSelected }) => {
     const dispatch = useDispatch();
-    const [product, setProduct] = useState(null)
     const [showProductList, setShowProductList] = useState(false);
 
-    
-    const actualStock = product ? Number(selectedProduct.product.stock) : null;
-    const newStock = product ? Number(product.product.stock.newStock) : null;
-    const stock = { newStock, actualStock };
-    const totalStock = selectedProduct ? `${actualStock + newStock}` : null;
+    const newStock = selectedProduct?.newStock;
+    const stock = selectedProduct?.stock;
+    const totalStock = stock + newStock || 0;
 
-    const cost = selectedProduct && product ? { unit: selectedProduct.product.cost.unit } : null;
-    const initialCost = product ? Number(product.product.initialCost) : null;
-    const subTotal = product ? Number(product.product.initialCost) * Number(product.product.stock.newStock) : null;
+    const cost = Number(selectedProduct.cost);
+    const initialCost = Number(selectedProduct.initialCost);
+    const subTotal = Number(selectedProduct.initialCost) * Number(selectedProduct?.newStock);
 
     const AddToProductList = () => {
-        if (product === 0) {
-            dispatch(addNotification({ title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error' }))
+        if (selectedProduct.productName === '') {
+            dispatch(addNotification({
+                title: 'Error',
+                message: ` Antes de continuar, por favor seleccioné un producto`,
+                type: 'error'
+            }))
             return
         }
-        if (newStock === 0) {
-            dispatch(addNotification({ title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error' }))
+        if (newStock <= 0) {
+            dispatch(addNotification({
+                title: 'Error',
+                message: ` Antes de continuar, por favor introduzca la cantidad de producto que desea agregar. `,
+                type: 'error'
+            }))
             return
         }
-        if (product.initialCost === '') {
-            dispatch(addNotification({ title: 'Error', message: 'Introduzca una cantidad para sumar al inventario', type: 'error' }))
+        if (!initialCost) {
+            dispatch(addNotification({
+                title: 'Error',
+                message: ` Antes de continuar, por favor introduzca el costo inicial del producto. `,
+                type: 'error'
+            }))
             return
         }
-        if (selectedProduct && newStock > 0) {
-            addProduct({ stock, cost, initialCost })
+        if (selectedProduct) {
+            addProduct()
         }
     }
-    useEffect(() => {
-        selectedProduct ? (
-            setProduct({ ...selectedProduct, product: { stock: { actualStock: '', newStock: '' }, cost: { unit: '' }, initialCost: '' } })
-        ) : null
-    }, [selectedProduct])
 
     useEffect(() => {
-        if (product && (selectedProduct.product.productName) && Number(product.product.initialCost) > Number(selectedProduct.product.cost.unit)) {
+        if ((selectedProduct.productName) && Number(initialCost) > Number(cost)) {
             dispatch(addNotification({ title: 'Advertencia', message: 'El costo inicial es mayor al costo unitario', type: 'error' }))
         }
     }, [initialCost])
 
     useEffect(() => {
-        if (selectedProduct.product.productName === "" && initialCost > 0) {
+        if (selectedProduct?.productName === "" && initialCost > 0) {
             dispatch(addNotification({ title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'error' }))
             setShowProductList(true)
         }
-        if (selectedProduct.product.productName === "" && newStock > 0) {
+        if (selectedProduct?.productName === "" && newStock > 0) {
             dispatch(addNotification({ title: 'Advertencia', message: 'Antes de continuar, por favor seleccioné un producto', type: 'warning' }))
             setShowProductList(true)
         }
     }, [initialCost, newStock])
 
- 
+
     return (
         <Container>
             <Group>
@@ -87,10 +92,10 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
                     </ProductName>
                 </Col>
                 <Col>
-                    <span>{`Cantidad ${selectedProduct ? `(${totalStock})` : null}`}</span>
+                    <span>{`cantidad: ${`(${stock || 0}`} / ${totalStock || 0})`}</span>
                 </Col>
                 <Col>
-                    <span>Costo {`(${selectedProduct ? (cost ? useFormatPrice(cost.unit) : null) : null})`}</span>
+                    <span>Costo {`(${useFormatPrice(cost || 0)})`}</span>
                 </Col>
                 <Col>
                     <span>Subtotal</span>
@@ -103,42 +108,28 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
                     handleSelectProduct={selectProduct}
                     isOpen={showProductList}
                     setIsOpen={setShowProductList}
-                    productName={selectedProduct ? selectedProduct.product.productName : ''}
+                    productName={selectedProduct?.productName || ''}
                 />
                 <div>
                     <InputNumber
                         bgColor='gray-light'
                         border
-                        value={selectedProduct ? (product !== null ? (product.product.stock.newStock) : '') : ''}
-                        onChange={(e) => setProduct({
-                            ...product,
-                            product: {
-                                ...product.product,
-                                stock: {
-                                    newStock: e.target.value
-                                }
-                            }
-                        })}
+                        value={selectedProduct.newStock || ''}
+                        onChange={(e) => setProductSelected({ newStock: Number(e.target.value) })}
                     />
                 </div>
                 <div>
                     <InputText
-                        value={selectedProduct ? (product !== null ? (product.product.initialCost) : '') : null}
+                        value={initialCost || ''}
                         placeholder='Costo'
-                        onChange={(e) => setProduct({
-                            ...product,
-                            product: {
-                                ...product.product,
-                                initialCost: e.target.value
-                            }
-                        })}
+                        onChange={(e) => setProductSelected({ initialCost: Number(e.target.value) })}
                         border
                         bgColor='gray-light'
                     />
                 </div>
                 <div>
                     <InputText
-                        value={selectedProduct ? subTotal : ''}
+                        value={useFormatPrice(subTotal || 0)}
                         placeholder='SubTotal'
                         readOnly
                         border
@@ -155,11 +146,12 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
 }
 const Container = styled.div`
     background-color: var(--White);
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     display: grid;
+    
     gap: 0.2em;
     padding: 0.2em 1em 0.4em;
-    //border: var(--border-primary);
+    border: var(--border-primary);
 `
 const Group = styled.div`
      color: rgb(37, 37, 37);

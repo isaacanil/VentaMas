@@ -42,7 +42,7 @@ const CloseButton = styled(Button)`
 `;
 
 export const OrderDetails = ({ order, onClose }) => {
-  const { products, totalPurchase, id, note, provider, condition, state, updatedAt }  = order;
+  const { note, }  = order;
 
   return (
     <ModalWrapper>

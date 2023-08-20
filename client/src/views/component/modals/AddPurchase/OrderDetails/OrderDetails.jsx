@@ -1,67 +1,106 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Select } from '../../../../templates/system/Select/Select'
-
-
-
 import { useDispatch, useSelector } from 'react-redux'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
-import { selectOrderFilterOptions } from '../../../../../features/order/ordersSlice'
 import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
-import { Button } from '../../../../templates/system/Button/Button'
+import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
 import { IoReceipt } from 'react-icons/io5'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { SaveImg, selectUploadImageUrl } from '../../../../../features/uploadImg/uploadImageSlice'
-
 import { fbAddPurchaseReceiptImg } from '../../../../../firebase/purchase/addPurchaseImg'
-import { toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
+import { clearImageViewer, toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
-import { AddCondition, selectProducts } from '../../../../../features/Purchase/addPurchaseSlice'
-export const OrderDetails = ({  SELECTED_PURCHASE }) => {
-    const orderFilterOptions = useSelector(selectOrderFilterOptions)
-    const productList = useSelector(selectProducts)
+import { AddCondition, deleteReceiptImageFromPurchase, selectProducts, setDate, setNote } from '../../../../../features/Purchase/addPurchaseSlice'
+import { DateTime } from 'luxon'
+import { convertMillisToDate } from '../../../../../hooks/useFormatTime'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { icons } from '../../../../../constants/icons/icons'
+
+
+export const OrderDetails = ({ SELECTED_PURCHASE }) => {
+
     const dispatch = useDispatch()
     const [imgReceipt, setImgReceipt] = useState(null)
-  
-    const [date, setDate] = useState(null)
-    const urlPurchaseImg = useSelector(selectUploadImageUrl)
- 
+    const user = useSelector(selectUser)
+    const handleReceiptImg = async (img) => {
+        if (!SELECTED_PURCHASE?.orderId) {
 
-    const handleReceiptImg = async () => {
-        try {     
-            fbAddPurchaseReceiptImg(dispatch, imgReceipt)
+            return;
+        }
+        try {
+            fbAddPurchaseReceiptImg(user, dispatch, img, SELECTED_PURCHASE?.orderId)
         } catch (error) {
-            
+
         }
         // fbDeletePurchaseReceiptImg({url: 'https://firebasestorage.googleapis.com/v0/b/hipizza-1b9cc.appspot.com/o/receiptPurchaseImg%2Fc1a61eb1-afdf-44a3-b904-0969b6ed637a.jpg?alt=media&token=c283a281-62b4-468b-b3aa-3a6af65477c7'})¿
     }
-    const handleImgView = () => dispatch(toggleImageViewer({ show: true, url: urlPurchaseImg }));
+    const handleImgView = () => dispatch(toggleImageViewer({ show: true, url: SELECTED_PURCHASE.receiptImgUrl }));
     const beforeToday = new Date()
-    const data = SelectDataFromOrder(orderFilterOptions, 'Condición')
-    console.log(data)
+    const handleDateChange = (value) => {
+        const selectedDate = DateTime.fromISO(value);
+        const timestamp = selectedDate.toJSDate().getTime();
+        return timestamp;
+    };
+    const handleDeleteReceiptImageFromPurchase = () => {
+        dispatch(deleteReceiptImageFromPurchase())
+    }
+    const dateValue = typeof SELECTED_PURCHASE?.dates?.deliveryDate === 'number' && SELECTED_PURCHASE?.dates?.deliveryDate;
+    const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : '';
+    useEffect(() => {
+        if (SELECTED_PURCHASE.orderId) {
+            dispatch(clearImageViewer())
+        }
+    }, [SELECTED_PURCHASE])
+
     return (
         <Container>
             <Section flex>
-                <input type="date" name="" id="" value={SELECTED_PURCHASE?.date} min={beforeToday.toISOString().substring(0, 10)} onChange={(e) => setDate(e.target.value)} />
+                <input
+                    type="date"
+                    name="" id=""
+                    value={formattedDate}
+                    // value={SELECTED_PURCHASE?.dates?.deliveryDate}
+                    min={beforeToday.toISOString().substring(0, 10)}
+                    onChange={(e) => dispatch(setDate(handleDateChange(e.target.value)))}
+                />
                 <Select
                     title='Condición'
                     data={orderAndDataCondition}
                     displayKey={'name'}
-                    onChange={(e)=> dispatch(AddCondition(e.target.value?.id))}
+                    onChange={(e) => dispatch(AddCondition(e.target.value?.id))}
                     value={getOrderConditionByID(SELECTED_PURCHASE?.condition)}
                 />
-                <AddFileBtn
-                    startIcon={<IoReceipt />}
-                    title='Subir recibo'
-                    id='receipt'
-                    file={imgReceipt}
-                    setFile={setImgReceipt}
-                    fn={() => handleReceiptImg()}
-                />
+
                 {
-                    urlPurchaseImg && <Button onClick={handleImgView} title='ver imagen' borderRadius='normal'/>
+                    SELECTED_PURCHASE?.receiptImgUrl ? (
+                        <ButtonGroup>
+                            <Button
+                                onClick={handleImgView}
+                                title='Ver recibo'
+                                borderRadius='normal'
+                            />
+                            <Button
+                                title={'Imagen Recibo'}
+                                borderRadius='normal'
+                                bgcolor={'error'}
+                                startIcon={icons.operationModes.delete}
+                                onClick={handleDeleteReceiptImageFromPurchase}
+                            />
+
+                        </ButtonGroup>
+                    ) : (
+                        SELECTED_PURCHASE?.orderId  && (
+                            <AddFileBtn
+                                startIcon={icons.operationModes.upload}
+                                title='Subir recibo'
+                                id='receipt'
+                                file={imgReceipt}
+                                setFile={setImgReceipt}
+                                fn={handleReceiptImg}
+                            />)
+                    )
                 }
-           
             </Section>
             <Section>
                 <h5>Nota</h5>
@@ -72,7 +111,6 @@ export const OrderDetails = ({  SELECTED_PURCHASE }) => {
                     onChange={(e) => dispatch(setNote(e.target.value))}
                 />
             </Section>
-
         </Container>
     )
 }

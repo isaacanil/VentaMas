@@ -96,7 +96,11 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
             {
               currentData.length > 0 ? (
                 currentData.map((row, rowIndex) => (
-                  <Row columns={columnOrder} onClick={onRowClick ? () => onRowClick(row) : null}> {/* Puedes reemplazar este div con un componente de fila estilizado si lo prefieres */}
+                  <Row 
+                  key={rowIndex}
+                  columns={columnOrder} 
+                  onClick={onRowClick ? () => onRowClick(row) : null}
+                  > {/* Puedes reemplazar este div con un componente de fila estilizado si lo prefieres */}
                     {columnOrder.map((col, colIndex) => (
                       <BodyCell key={colIndex} align={col.align} columns={columnOrder}>
                         {col.cell ? col.cell({ value: row[col.accessor] }) : row[col.accessor]}

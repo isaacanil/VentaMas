@@ -64,7 +64,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       sortable: true,
       accessor: 'cost',
       minWidth: '120px',
-      maxWidth: '0.6fr',
+      maxWidth: '0.4fr',
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
     {
@@ -72,7 +72,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       sortable: true,
       align: 'right',
       minWidth: '120px',
-      maxWidth: '0.6fr',
+      maxWidth: '0.4fr',
       accessor: 'tax',
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
@@ -81,15 +81,15 @@ export const ProductsTable = ({ products, searchTerm }) => {
       sortable: true,
       accessor: 'price',
       minWidth: '120px',
-      maxWidth: '0.6fr',
+      maxWidth: '0.4fr',
       align: 'right',
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
     {
-      Header: 'Visible',
+      Header: 'Facturable',
       accessor: 'isVisible',
-      minWidth: '80px',
-      maxWidth: '80px',
+      minWidth: '100px',
+      maxWidth: '100px',
       align: 'center',
       cell: ({ value }) => <div>{value === false && icons.operationModes.hide}</div>
     },

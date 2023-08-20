@@ -15,9 +15,7 @@ import { Footer } from './Footer'
 
 export const SaleReportTable = ({ data, bills, total }) => {
   // Agrupar las facturas por fecha usando reduce()
-
   return (
-  
       <Table
         colWidth={data.headers}
         header={<Header data={data.headers} />}

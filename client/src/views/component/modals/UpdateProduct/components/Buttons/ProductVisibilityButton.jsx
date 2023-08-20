@@ -11,7 +11,7 @@ export const ProductVisibilityButton = ({product, setProduct}) => {
     return (
         <Button
             borderRadius={'normal'}
-            title={product?.isVisible !== false ? 'Visible' : 'Oculto'}
+            title={product?.isVisible !== false ? 'Facturable' : 'No facturable'}
             isActivated={product?.isVisible !== false }
             iconOn={<MdRadioButtonChecked />}
             iconOff={<MdRadioButtonUnchecked />}

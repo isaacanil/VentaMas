@@ -14,10 +14,13 @@ const imageViewerSlice = createSlice({
       state.show = show;
       state.url = url || "";
     },
+    clearImageViewer: (state) =>{
+     state = initialState;
+    }
   },
 });
 
-export const { toggleImageViewer } = imageViewerSlice.actions;
+export const { toggleImageViewer, clearImageViewer } = imageViewerSlice.actions;
 export default imageViewerSlice.reducer;
 export const selectImageViewerShow = (state) => state.imageViewer.show;
 export const selectImageViewerURL = (state) => state.imageViewer.url;

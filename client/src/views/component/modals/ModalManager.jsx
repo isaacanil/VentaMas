@@ -41,8 +41,6 @@ import { AnimatePresence } from "framer-motion"
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
-
-  const dispatch = useDispatch()
   const AddPurchaseModalSelected = useSelector(SelectAddPurchaseModal)
   const AddClientModalSelected = useSelector(SelectAddClientModal)
   const AddOrderModalSelected = useSelector(SelectAddOrderModal)
@@ -55,12 +53,13 @@ export const ModalManager = () => {
   const AddProductOutflowModalSelected = useSelector(SelectAddProductOutflowModal)
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
   const currentNotification = useSelector(selectCurrentNotification)
-  //console.log(AddClientModalSelected)
+
   return (
     <Fragment>
       <AnimatePresence>
         {AddClientModalSelected && (
           <AddClientModal
+            key={'modal-add-client'}
             isOpen={AddClientModalSelected}
           />
         )}
@@ -84,10 +83,7 @@ export const ModalManager = () => {
           />
         )}
 
-        <MessageAlert
-          isOpen={ViewOrdersNotesModalDataSelected.isOpen}
-          data={ViewOrdersNotesModalDataSelected.data}
-        />
+
         {ClientModalDataSelected.isOpen && (
           <ClientForm
             key={'modal-client'}
@@ -130,12 +126,19 @@ export const ModalManager = () => {
             mode={ProductOutflowSelected.mode}
           />
         )}
-        <Loader />
-        <ImageViewer />
-        <SmallNotification />
-        <ConfirmationDialog />
-        <DeleteClientAlert />
+        {ViewOrdersNotesModalDataSelected.isOpen && (
+          <MessageAlert
+            key={'modal-view-orders-notes'}
+            isOpen={ViewOrdersNotesModalDataSelected.isOpen}
+            data={ViewOrdersNotesModalDataSelected.data}
+          />
+        )}
       </AnimatePresence>
+      <Loader />
+      <ImageViewer />
+      <SmallNotification />
+      <ConfirmationDialog />
+      <DeleteClientAlert />
     </Fragment>
   )
 

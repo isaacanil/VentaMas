@@ -1,30 +1,29 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { nanoid } from "nanoid";
 const EmptyOrder = {
-  id: "",
-  products: [],
-  totalPurchase: 0.00,
   condition: "",
-  date: "",
+  dates: {
+    createdAt: "",
+    deletedAt: "",
+    completedAt: "",
+    deliveryDate: "",
+  },
   note: "",
-  createdAt: "",
-  updatedAt: "",
+  id: "",
+  orderId: "",
+  provider: {},
+  replenishments: [],
   state: {},
-  provider: {}
+  receiptImgUrl: "",
+  total: 0,
 }
-const EmptyProductSelected =  {
-  product: {
-    productName: "",
-    cost: {
-      unit: 0
-    },
-    initialCost:'',
-    stock: 0,
-    price: {
-      unit: 0
-    },
-
-  }
+const EmptyProductSelected = {
+  productName: "",
+  id: "",
+  cost: 0,
+  initialCost: '',
+  stock: '',
+  newStock: '',
 }
 const initialState = {
   productSelected: EmptyProductSelected,
@@ -35,60 +34,59 @@ const addOrderSlice = createSlice({
   initialState,
   reducers: {
     SelectProduct: (state, actions) => {
-      state.productSelected = actions.payload
-      console.log(state.productSelected)
-      //const purchase = state.order.products.reduce((item)=>)
+      const product = actions.payload.product;
+      state.productSelected.stock = product.stock;
+      state.productSelected.newStock = 0;
+      state.productSelected.initialCost = 0;
+      state.productSelected.id = product.id;
+      state.productSelected.cost = product.cost.unit;
+      state.productSelected.productName = product.productName;
     },
     DeleteProduct: (state, actions) => {
       const { id } = actions.payload
-      const productSelected = state.order.products.filter((item) => item.product.id === id)
-      const index = state.order.products.indexOf(productSelected)
-      state.order.products.splice(index, 1)
+      const productSelected = state.order.replenishments.filter((item) => item.id === id)
+      const index = state.order.replenishments.indexOf(productSelected)
+      state.order.replenishments.splice(index, 1)
       //total Precio del pedido
-      const productList = state.order.products
-      const totalPurchase = productList.reduce((total, item) => total + (item.product.initialCost * item.product.stock.newStock), 0)
-      state.order.totalPurchase = totalPurchase
-
+      const productList = state.order.replenishments;
+      const totalPurchase = productList.reduce((total, item) => total + (item.initialCost * item.newStock), 0)
+      state.order.total = totalPurchase
     },
     AddProductToOrder: (state) => {
-      state.order.products.push(state.productSelected)
-      console.log(state.order.products)
-      state.productSelected = {
-        product: {
-          productName: undefined,
-          cost: {
-            unit: 0
-          },
-          stock: 0,
-          price: {
-            unit: 0
-          },
-        }
-      }
-      const productList = state.order.products
-      const totalPurchase = productList.reduce((total, item) => total + (item.product.initialCost * item.product.stock.newStock), 0)
-      state.order.totalPurchase = totalPurchase
+      state.order.replenishments.push(state.productSelected)
+      state.productSelected = EmptyProductSelected;
+      const productList = state.order.replenishments;
+      const total = productList.reduce((total, item) => total + (item.initialCost * item.newStock), 0)
+      state.order.total = total;
+    },
+    setProductSelected: (state, actions) => {
+      const newValue = actions.payload
+      state.productSelected = { ...state.productSelected, ...newValue }
     },
     getInitialCost: (state, actions) => {
-      const {initialCost} = actions.payload
-      state.productSelected.product.initialCost = initialCost 
+      const { initialCost } = actions.payload
+      state.productSelected.initialCost = initialCost
     },
     addNewStock: (state, actions) => {
-      const {stock} = actions.payload
-      state.productSelected.product.stock = stock;
+      const { stock } = actions.payload
+      state.productSelected.stock = stock;
+
     },
-    updateNewStock: (state, actions) => {
-      const {stock, productID} = actions.payload
-      const product = state.order.products.find(({product})=> product.id === productID);
-      if(product !== undefined){
-        product.product.stock.newStock = stock;
+    updateProduct: (state, actions) => {
+      const { value, productID } = actions.payload;
+      const index = state.order.replenishments.findIndex((item) => item.id === productID);
+      if (index !== -1) {
+        state.order.replenishments[index] = {
+          ...state.order.replenishments[index],
+          ...value,
+        };
       }
     },
     updateInitialCost: (state, actions) => {
-      const {initialCost, productID} = actions.payload
-      const product = state.order.products.find(({product})=> product.id === productID);
-      if(product !== undefined){
-        product.product.initialCost = initialCost;
+      const { initialCost, productID } = actions.payload
+      const product = state.order.replenishments.find(({ product }) => product.id === productID);
+      if (product !== undefined) {
+        product.initialCost = initialCost;
       }
     },
     AddNote: (state, actions) => {
@@ -98,13 +96,13 @@ const addOrderSlice = createSlice({
       state.order.condition = actions.payload
     },
     AddDate: (state, actions) => {
-      state.order.date = actions.payload
+      state.order.dates.deliveryDate = actions.payload
     },
     AddCreatedDate: (state) => {
-      state.order.createdAt = Date.now()
+      state.order.dates.createdAt = Date.now()
     },
     AddIdToOrder: (state) => {
-      state.order.id = nanoid(6)
+      state.order.orderId = nanoid(6)
     },
     cleanOrder: (state) => {
       state.productSelected = EmptyProductSelected
@@ -112,7 +110,7 @@ const addOrderSlice = createSlice({
     },
     AddProvider: (state, actions) => {
       const provider = actions.payload
-      if(provider !== null){
+      if (provider !== null) {
         state.order.provider = provider
       }
     },
@@ -122,7 +120,7 @@ export const {
   SelectProduct,
   AddProductToOrder,
   getInitialCost,
-  updateNewStock,
+  updateProduct,
   updateInitialCost,
   AddNote,
   AddCondition,
@@ -132,12 +130,13 @@ export const {
   cleanOrder,
   AddProvider,
   addNewStock,
+  setProductSelected,
   DeleteProduct
 } = addOrderSlice.actions
 
 export const SelectProductSelected = state => state.addOrder.productSelected;
-export const SelectProducts = state => state.addOrder.order.products;
+export const SelectProducts = state => state.addOrder.order.replenishments;
 export const SelectOrder = state => state.addOrder.order;
-export const SelectTotalPurchase = state => state.addOrder.order.totalPurchase;
+export const SelectTotalPurchase = state => state.addOrder.order.total;
 
 export default addOrderSlice.reducer

@@ -20,6 +20,7 @@ export const Select = ({
   value,
   onChange,
   displayKey,
+  onNoneOptionSelected,
   isLoading = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,13 +42,17 @@ export const Select = ({
   };
 
   const filteredItems = Array.isArray(data)
-    ? data.filter((item) => item && getValueByKeyOrPath(item, displayKey)?.toLowerCase().includes(searchTerm.toLowerCase()))
-    : [];
+  ? data.filter((item) => {
+      const value = getValueByKeyOrPath(item, displayKey);
+      return value && (typeof value === 'string' || typeof value === 'number') && value.toString().toLowerCase().includes(searchTerm.toLowerCase());
+    })
+  : [];
 
   const handleReset = () => {
     setSearchTerm(''); // Si quieres reiniciar el término de búsqueda también
     setIsOpen(false);
     onChange({ target: { value: null } }); // Aquí puedes enviar un valor nulo para indicar que se ha reseteado
+    onNoneOptionSelected && onNoneOptionSelected();
   }
 
   useEffect(() => {
@@ -147,7 +152,7 @@ const Body = styled.div`
     max-height: 300px;
     height: 300px;
     position: absolute;
-    top: 2.3em;
+   
     z-index: 3;
     background-color: #ffffff;
     overflow: hidden;
@@ -161,7 +166,7 @@ const List = styled.ul`
     display: block;
     padding: 0;
     height: 200px;
-    overflow-y: scroll;
+    overflow-y: auto;
 `
 const Group = styled.div`
     height: 2.2em;

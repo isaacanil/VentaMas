@@ -1,9 +1,9 @@
 import { Button } from "./Button";
 import { useDispatch, useSelector } from "react-redux";
 import { openModalAddProd, openModalUpdateProd } from "../../../../features/modals/modalSlice";
-import { CgMathPlus } from "react-icons/cg";
 import { ChangeProductData, selectUpdateProductData } from "../../../../features/updateProduct/updateProductSlice";
 import { OPERATION_MODES } from "../../../../constants/modes";
+import { icons } from "../../../../constants/icons/icons";
 export const AddProductButton = () => {
     const dispatch = useDispatch()
     const {product} = useSelector(selectUpdateProductData)
@@ -14,7 +14,7 @@ export const AddProductButton = () => {
     return (
         <Button
             borderRadius='light'
-            startIcon={<CgMathPlus />}
+            startIcon={icons.operationModes.add}
             title="Producto"
             onClick={Open}>
         </Button>

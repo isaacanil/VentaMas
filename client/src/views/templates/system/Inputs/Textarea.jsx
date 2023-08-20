@@ -25,7 +25,7 @@ const Container = styled.div`
         border-radius: 10px;
         border: 1px solid rgba(0, 0, 0, 0.100);
         resize: none;
-        height: 6em;
+        height: 5em;
         padding: 0.5em;
         width: 100%;
         &:focus{

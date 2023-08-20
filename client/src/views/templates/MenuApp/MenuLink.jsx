@@ -1,11 +1,16 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { NavLink, useLocation, useMatch } from 'react-router-dom'
 import styled from 'styled-components'
 import { SubMenu } from './SubMenu/SubMenu'
 export const MenuLink = ({ item, Items }) => {
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
-
+  const isCurrentRoute = item?.submenu?.some(subItem => subItem.route === location.pathname);
+  useEffect(() => {
+    if (isCurrentRoute) {
+      setIsOpenSubMenu(true);
+    }
+  }, [isCurrentRoute]);
   const Component = item?.route ? MenuItemLink : MenuItemDiv;
 
   return (
@@ -60,7 +65,7 @@ const MenuItem = styled.div`
 `
 const MenuItemLink = styled(MenuItem).attrs({
   as: NavLink,
-  activeClassName: 'active'
+  activeclassname: 'active'
 })`
 font-weight: 450;
    &.active {

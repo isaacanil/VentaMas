@@ -5,80 +5,53 @@ import { Select } from '../../..'
 import { Button } from '../../../'
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { IoMdClose } from 'react-icons/io'
-import { SelectOrder } from '../../../../features/addOrder/addOrderModalSlice'
 import { PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
-import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
-import { selectOrderFilterOptions, selectOrderList, selectPendingOrder } from '../../../../features/order/ordersSlice'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
-import { getOrderData, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts, addProvider } from '../../../../features/Purchase/addPurchaseSlice'
+import { getOrderData, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts, addProvider, setProductSelected, updateProduct } from '../../../../features/Purchase/addPurchaseSlice'
 import { StockedProductPicker } from '../../StockedProductPicker/StockedProductPicker'
 import { ProductListSelected } from '../../ProductListSelected/ProductListSelected'
 import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
 import { selectUser } from '../../../../features/auth/userSlice'
 import { fbGetPendingOrders } from '../../../../firebase/order/fbGetPedingOrder'
 
+
 export const AddPurchaseModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-    const [orderToPurchase, setOrderToPurchase] = useState(null)
     const selectedProduct = useSelector(SelectProductSelected)
-    const productsSelected = useSelector(selectProducts)
     const user = useSelector(selectUser);
     const provider = useSelector(selectPurchase).provider;
     const { providers } = useFbGetProviders(user);
-    const [order, setOrder] = useState(null);
-
+    const [success, setSuccess] = useState(false);
     const SELECTED_PURCHASE = useSelector(selectPurchase);
-    
-    useEffect(() => {
-        if (orderToPurchase) {
-            dispatch(getOrderData(orderToPurchase));
-        }
-    }, [orderToPurchase]);
 
-    useEffect(() => {
-        const order = SELECTED_PURCHASE;
-        if (!order) return;
-        if (order.id !== null) {
-            setOrderToPurchase({
-                ...orderToPurchase,
-                id: order.id
-            });
-        }
-    }, [SELECTED_PURCHASE]);
-
+    const handleClear = () => dispatch(cleanPurchase());
+ 
     const handleModal = () => {
         dispatch(toggleAddPurchaseModal());
-        setReset(true);
-        dispatch(cleanPurchase());
+        handleClear();
     }
+  
 
-    const handleSubmit = () => {
-        dispatch(toggleAddPurchaseModal());
-        PassDataToPurchaseList(user, SELECTED_PURCHASE);
-        setReset(true);
-        dispatch(cleanPurchase());
+    const handleSubmit = async () => {
+        const { success, error, message } = await PassDataToPurchaseList(user, SELECTED_PURCHASE);
+        setSuccess(success)
+        console.log(error, message)
     }
+    useEffect(() => {
+        if (success === true) {
+            dispatch(toggleAddPurchaseModal());
+            dispatch(cleanPurchase());
+        }
+    }, [success]);
 
-    const orderFilterOptions = useSelector(selectOrderFilterOptions);
-   // const providers = SelectDataFromOrder(orderFilterOptions, 'Proveedores')
-    const {pendingOrders} = fbGetPendingOrders(user);
-    console.log(pendingOrders)
- 
-    const addProduct = ({ stock, initialCost, cost }) => {
-        dispatch(updateStock({ stock }))
-        dispatch(getInitialCost({ initialCost, cost }))
-        dispatch(AddProductToPurchase())
-    }
+    const { pendingOrders } = fbGetPendingOrders(user);
 
-    const selectProduct = (data) => {
-        dispatch(SelectProduct(data))
-    }
-    
-    const handleDeleteProduct = (product) => {
-        dispatch(deleteProductFromPurchase(product.id))
-    }
-
+    const selectProduct = (product) => dispatch(SelectProduct(product));
+    const handleSetSelectedProduct = (obj) => dispatch(setProductSelected(obj));
+    const addProduct = () => dispatch(AddProductToPurchase());
+    const handleDeleteProduct = (product) => dispatch(deleteProductFromPurchase(product.id));
+    const handleUpdateProduct = (product) => dispatch(updateProduct(product));
     return (
         <Container isOpen={isOpen === true ? true : false}>
             <Modal >
@@ -100,9 +73,10 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             <Select
                                 title='Pedidos'
                                 data={pendingOrders}
-                                value={orderToPurchase?.id}
+                                value={SELECTED_PURCHASE.id}
                                 displayKey={'data.id'}
-                                onChange={e => setOrderToPurchase(e.target.value?.data)}
+                                onNoneOptionSelected={handleClear}
+                                onChange={(e) => dispatch(getOrderData(e.target.value?.data))}
                             />
                             <Select
                                 title='Proveedor'
@@ -123,14 +97,16 @@ export const AddPurchaseModal = ({ isOpen }) => {
                             addProduct={addProduct}
                             selectProduct={selectProduct}
                             selectedProduct={selectedProduct}
+                            setProductSelected={handleSetSelectedProduct}
                         />
                         <ProductListSelected
-                            productsSelected={SELECTED_PURCHASE.products}
-                            productsTotalPrice={SELECTED_PURCHASE.totalPurchase}
+                            productsSelected={SELECTED_PURCHASE.replenishments}
+                            productsTotalPrice={SELECTED_PURCHASE.total}
                             handleDeleteProduct={handleDeleteProduct}
+                            handleUpdateProduct={handleUpdateProduct}
                         />
                         <OrderDetails
-                        
+
                             SELECTED_PURCHASE={SELECTED_PURCHASE}
                         />
                         <WrapperFooter>

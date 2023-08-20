@@ -5,10 +5,9 @@ import { openModalAddOrder } from '../../../../features/modals/modalSlice'
 import { Select } from '../../..'
 import { ProductListSelected } from '../../ProductListSelected/ProductListSelected'
 import { Button } from '../../../'
-
 import { StockedProductPicker } from '../../StockedProductPicker/StockedProductPicker'
 import { OrderDetails } from './OrderDetails/OrderDetails'
-import { SelectOrder, AddProvider, cleanOrder,  SelectProductSelected, SelectProduct, SelectProducts, SelectTotalPurchase, DeleteProduct, getInitialCost, addNewStock, AddProductToOrder } from '../../../../features/addOrder/addOrderModalSlice'
+import { SelectOrder, AddProvider, cleanOrder,  SelectProductSelected, SelectProduct, SelectProducts, SelectTotalPurchase, DeleteProduct, getInitialCost, addNewStock, AddProductToOrder, setProductSelected, updateProduct } from '../../../../features/addOrder/addOrderModalSlice'
 import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { useEffect } from 'react'
@@ -20,7 +19,6 @@ import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvide
 
 export const AddOrderModal = ({ isOpen }) => {
     const dispatch = useDispatch();
-
     const OrderSelected = useSelector(SelectOrder);
     const [reset, setReset] = useState(false);
     const selectedProduct = useSelector(SelectProductSelected);
@@ -28,9 +26,7 @@ export const AddOrderModal = ({ isOpen }) => {
     const provider = OrderSelected.provider;
     const [orders, setOrders] = useState()
     const user = useSelector(selectUser);
-
     const { providers } = useFbGetProviders(user);
-
     const productTotalPurchasePrice = useSelector(SelectTotalPurchase)
     useEffect(() => {
         if (provider) { dispatch(AddProvider(provider)) }
@@ -59,7 +55,7 @@ export const AddOrderModal = ({ isOpen }) => {
             return
         }
         try {
-            AddOrder(user, OrderSelected)
+            await AddOrder(user, OrderSelected)
                 .then(() => {
                     dispatch(addNotification({ message: 'Pedido Creado', type: 'success' }))
                     setReset(true);
@@ -74,13 +70,11 @@ export const AddOrderModal = ({ isOpen }) => {
 
     }
     const selectProduct = (product) => dispatch(SelectProduct(product));
-    const addProduct = ({stock, initialCost, cost}) => {
-        dispatch(addNewStock({ stock }))
-        dispatch(getInitialCost({ initialCost, cost }))
-        dispatch(AddProductToOrder())
-    }
+    const handleSetSelectedProduct = (obj) => dispatch(setProductSelected(obj));
+    const addProduct = () => dispatch(AddProductToOrder());
     const handleDeleteProduct = (product) => dispatch(DeleteProduct(product.id));
-    console.log(providers)
+    const handleUpdateProduct = (product) => dispatch(updateProduct(product));
+
     return (
         <Backdrop isOpen={isOpen === true ? true : false}>
             <Modal>
@@ -106,11 +100,13 @@ export const AddOrderModal = ({ isOpen }) => {
                             addProduct={addProduct}
                             selectProduct={selectProduct}
                             selectedProduct={selectedProduct}
+                            setProductSelected={handleSetSelectedProduct}
                         />
                         <ProductListSelected
                             productsSelected={productsSelected}
                             productsTotalPrice={productTotalPurchasePrice}
                             handleDeleteProduct={handleDeleteProduct}
+                            handleUpdateProduct={handleUpdateProduct}
                         />
                         <OrderDetails
                             reset={reset}

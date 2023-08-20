@@ -4,15 +4,18 @@ import { orderAndDataCondition, orderAndDataState } from '../../constants/orderA
 
 const EmptyPurchase = {
     id: null,
-    products: [],
-    totalPurchase: 0.00,
+    replenishments: [],
+    total: 0,
     condition: "",
-    date: "",
     note: "",
-    createdAt: "",
-    updatedAt: "",
+    dates: {
+        createdAt: "",
+        deletedAt: "",
+        completedAt: "",
+        deliveryDate: "",
+    },
     state: "",
-    imageReceiptURL: null,
+    receiptImgUrl: "",
     provider: {}
 }
 const EmptyProduct = {
@@ -39,39 +42,42 @@ export const addPurchaseSlice = createSlice({
     reducers: {
         getOrderData: (state, actions) => {
             const data = actions.payload
-            if (state.purchase.id == null) {
-                state.purchase = data
-            }
-            if (data.id !== null && data.id !== state.purchase.id) {
-                state.purchase = data
+            data ? state.purchase = data : null
 
-            }
+        },
+        setProductSelected: (state, actions) => {
+            const newValue = actions.payload
+            state.productSelected = { ...state.productSelected, ...newValue }
         },
         SelectProduct: (state, actions) => {
-            state.productSelected = actions.payload
+            const product = actions.payload.product;
+            state.productSelected.stock = product.stock;
+            state.productSelected.newStock = '';
+            state.productSelected.initialCost = '';
+            state.productSelected.id = product.id;
+            state.productSelected.cost = product.cost.unit;
+            state.productSelected.productName = product.productName;
         },
         AddProductToPurchase: (state) => {
-            state.purchase.products.push(state.productSelected)
-            console.log(state.purchase.products)
-            state.productSelected = EmptyProduct
-
+            state.purchase.replenishments.push(state.productSelected);
+            state.productSelected = EmptyProduct;
             //total Precio de la compra
-            const productList = state.purchase.products
-            const totalPurchase = productList.reduce((total, item) => total + (item.product.initialCost * item.product.stock.newStock), 0)
-            state.purchase.totalPurchase = totalPurchase
+            const productList = state.purchase.replenishments;
+            const totalPurchase = productList.reduce((total, item) => total + (item.initialCost * item.newStock), 0)
+            state.purchase.total = totalPurchase
         },
         updateStock: (state, actions) => {
             const { stock } = actions.payload
             state.productSelected.product.stock = stock
         },
-        AddNote: (state, actions) => {
+        setNote: (state, actions) => {
             state.purchase.note = actions.payload
         },
         AddCondition: (state, actions) => {
             state.purchase.condition = actions.payload
         },
-        AddDate: (state, actions) => {
-            state.purchase.date = actions.payload
+        setDate: (state, actions) => {
+            state.purchase.dates.deliveryDate = actions.payload
         },
         AddCreatedDate: (state) => {
             state.purchase.createdAt = Date.now()
@@ -87,28 +93,42 @@ export const addPurchaseSlice = createSlice({
             state.productSelected = EmptyProduct
             state.purchase = EmptyPurchase
         },
-        AddReceiptImage: (state, actions) => {
-            state.purchase.imageReceiptURL = actions.payload
+        updateProduct: (state, actions) => {
+            const { value, productID } = actions.payload;
+            const index = state.purchase.replenishments.findIndex((item) => item.id === productID);
+            if (index !== -1) {
+                state.purchase.replenishments[index] = {
+                    ...state.purchase.replenishments[index],
+                    ...value,
+                };
+            }
+        },
+        addReceiptImageToPurchase: (state, actions) => {
+            state.purchase.receiptImgUrl = actions.payload
+        },
+        deleteReceiptImageFromPurchase: (state) => {
+            state.purchase.receiptImgUrl = "";
         },
         addProvider: (state, actions) => {
             const provider = actions.payload;
             state.purchase.provider = provider
         },
+
         deleteProductFromPurchase: (state, actions) => {
             const { id } = actions.payload
-            const productSelected = state.purchase.products.filter((item) => item.product.id === id)
-            const index = state.purchase.products.indexOf(productSelected)
-            state.purchase.products.splice(index, 1)
+            const productSelected = state.purchase.replenishments.filter((item) => item.id === id)
+            const index = state.purchase.replenishments.indexOf(productSelected)
+            state.purchase.replenishments.splice(index, 1)
             //total Precio del pedido
-            const productList = state.purchase.products
-            const totalPurchase = productList.reduce((total, item) => total + (item.product.price.unit * item.product.stock.newStock), 0)
-            state.purchase.totalPurchase = totalPurchase
+            const productList = state.purchase.replenishments
+            const totalPurchase = productList.reduce((total, item) => total + (item.initialCost * item.newStock), 0)
+            state.purchase.total = totalPurchase
 
         },
     }
 })
 
-export const { addNote, deleteProductFromPurchase, SelectProduct, updateStock, getInitialCost, AddProductToPurchase, cleanPurchase, addProvider, getOrderData, getPendingPurchaseFromDB, handleSetFilterOptions, AddCondition } = addPurchaseSlice.actions;
+export const { setNote, setDate, updateProduct, deleteReceiptImageFromPurchase, addReceiptImageToPurchase, setProductSelected, deleteProductFromPurchase, SelectProduct, updateStock, getInitialCost, AddProductToPurchase, cleanPurchase, addProvider, getOrderData, getPendingPurchaseFromDB, handleSetFilterOptions, AddCondition } = addPurchaseSlice.actions;
 
 //selectors
 export const SelectProductSelected = (state) => state.addPurchase.productSelected;

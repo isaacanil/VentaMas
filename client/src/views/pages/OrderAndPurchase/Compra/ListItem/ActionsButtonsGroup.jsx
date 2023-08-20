@@ -1,18 +1,14 @@
 
 import React, { Fragment, useEffect, useState } from 'react'
-import { GrEdit, GrTrash } from 'react-icons/gr'
-import { IoCartSharp, IoTrashSharp } from 'react-icons/io5'
-import { MdOutlineCheck, MdOutlineClear, MdOutlineDelete } from 'react-icons/md'
-import { TbEdit } from 'react-icons/tb'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
-import { selectOrderList, selectPendingOrder, } from '../../../../features/order/ordersSlice'
-import { getOrderData } from '../../../../features/Purchase/addPurchaseSlice'
-import { deleteOrderFromDB, deletePurchase, PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
-import { Button } from '../../../templates/system/Button/Button'
-import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
-import { Tooltip } from '../../../templates/system/Button/Tooltip'
+import { toggleAddPurchaseModal } from '../../../../../features/modals/modalSlice'
+import { getOrderData } from '../../../../../features/Purchase/addPurchaseSlice'
+import { deleteOrderFromDB, deletePurchase, PassDataToPurchaseList } from '../../../../../firebase/firebaseconfig'
+import { Button } from '../../../../templates/system/Button/Button'
+import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
+
+import { icons } from '../../../../../constants/icons/icons'
 
 export const ActionsButtonsGroup = ({ purchaseData, activeId, setActiveId }) => {
     const modes = {
@@ -107,55 +103,22 @@ export const ActionsButtonsGroup = ({ purchaseData, activeId, setActiveId }) => 
 
     return (
         <ButtonGroup position={showConfirmButtons === true ? 'right' : null}>
-            {showConfirmButtons === false ? (
-                <Fragment>
-                    <Tooltip
-                        description='Editar'
-                        placement='bottom-start'
-                        Children={
-                            <Button
-                                borderRadius='normal'
-                                title={<GrEdit />}
-                            
-                                width='icon24'
-                                color='gray-dark'
-                                onClick={() => handleEditMode(purchaseData.id)}
-                            />
-                        }
-                    />
-                    <Tooltip
-                        description='Eliminar'
-                        placement='bottom'
-                        Children={
-                            <Button
-                                borderRadius='normal'
-                                title={<GrTrash />}
 
-                                width='icon24'
-                                color='gray-dark'
-                                onClick={() => handleDeleteMode(purchaseData.id)}
-                            />
-                        }
-                    />
-                   
-                </Fragment>
-            ) : (
-                <Fragment>
-                    <Button
-                        borderRadius='normal'
-                        title={<MdOutlineCheck />}
-                        width='icon32'
-                        bgcolor='success'
-                        onClick={() => setIsAccept(true)}
-                    />
-                    <Button
-                        borderRadius='normal'
-                        title={<MdOutlineClear />}
-                        width='icon32'
-                        onClick={() => setIsAccept(false)}
-                    />
-                </Fragment>
-            )}
+            <Button
+                borderRadius='normal'
+                title={icons.operationModes.edit}
+                width='icon24'
+                color='gray-dark'
+                onClick={() => handleEditMode(purchaseData.id)}
+            />
+            <Button
+                borderRadius='normal'
+                title={icons.operationModes.delete}
+
+                width='icon24'
+                color='gray-dark'
+                onClick={() => handleDeleteMode(purchaseData.id)}
+            />
         </ButtonGroup>
     )
 }
