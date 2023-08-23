@@ -20,84 +20,96 @@ export const getMenuData = () => {
         {
             title: 'Inicio',
             icon: icons.menu.unSelected.home,
-            route: HOME
+            route: HOME,
+            group: 'basic'
         },
         {
             title: 'Venta',
             icon: icons.menu.unSelected.sale,
-            route: SALES
+            route: SALES,
+            group: 'sales'
         },
         {
             title: 'Facturas',
             icon: icons.menu.unSelected.register,
-            route: BILLS
+            route: BILLS,
+            group: 'sales'
         },
         {
             title: 'Compras y Pedidos',
             icon: icons.menu.unSelected.purchase,
             submenuIconOpen: ChevronLeft,
             submenuIconClose: ChevronRight,
+            group: 'purchaseAndOrders',
             submenu: [
                 {
                     title: 'Pedidos Pendientes',
                     icon: <FontAwesomeIcon icon={faClipboard} />,
-                    route: ORDERS
-
+                    route: ORDERS,
+                    group: 'orders'
                 },
                {
                     title: 'Crear Pedido',
                     route: ORDERS_CREATE,
-                    icon: <FontAwesomeIcon icon={faClipboard} />
-
+                    icon: icons.operationModes.add,
+                    group: 'orders'
                },
                 {
                     title: 'Compras',
                     route: PURCHASES,
-                    icon: <FontAwesomeIcon icon={faClipboardCheck} />
+                    icon: <FontAwesomeIcon icon={faClipboardCheck} />,
+                    group: 'purchases'
                 },
                 {
                     title: 'Crear Compra',
                     route: PURCHASES_CREATE,
-                    icon: <FontAwesomeIcon icon={faClipboardCheck} />
+                    icon: icons.operationModes.add,
+                    group: 'purchases'
                 },
             ]
         },
         {
             title: 'Cuadre de caja',
             icon: icons.menu.unSelected.cashReconciliation,
-            route: CASH_RECONCILIATION_LIST
+            route: CASH_RECONCILIATION_LIST,
+            group: 'cashReconciliation'
         },
         {
             title: 'Inventario',
             icon: icons.menu.unSelected.inventory,
             submenuIconOpen: ChevronLeft,
             submenuIconClose: ChevronRight,
+            group: 'inventory',
             submenu: [
                 {
                     title: 'Administrar Productos',
                     route: INVENTORY_ITEMS,
-                    icon: icons.inventory.items
+                    icon: icons.inventory.items,
+                    group: 'inventoryItems'
                 },
                 {
                     title: 'Categoría',
                     icon: icons.menu.unSelected.category,
-                    route: CATEGORIES
-
+                    route: CATEGORIES,
+                    group: 'inventoryItems'
                 },
                 {
                     title: 'Administrador de Imágenes',
                     route: PRODUCT_IMAGES_MANAGER,
-                    icon: icons.inventory.multimediaManager
+                    icon: icons.inventory.multimediaManager,
+                    group: 'inventoryItems'
                 },
                 {
                     title: 'Administrar Servicios',
                     route: INVENTORY_SERVICES,
-                    icon: icons.inventory.services
+                    icon: icons.inventory.services,
+                    group: 'inventoryServices'
                 },
                 {
                     title: 'Salidas de Productos',
                     route: PRODUCT_OUTFLOW,
-                    icon: icons.inventory.productOutFlow
+                    icon: icons.inventory.productOutFlow,
+                    group: 'inventoryItems'
                 }
             ]
         },
@@ -107,16 +119,19 @@ export const getMenuData = () => {
             submenuIconOpen: ChevronLeft,
             submenuIconClose: ChevronRight,
             path: false,
+            group: 'contacts',
             submenu: [
                 {
                     title: 'Clientes',
                     route: CLIENTS,
-                    icon: icons.users.client
+                    icon: icons.users.client,
+                    group: 'clients'
                 },
                 {
                     title: 'Proveedores',
                     route: SUPPLIERS,
-                    icon: icons.users.provider
+                    icon: icons.users.provider,
+                    group: 'suppliers'
                 },
 
             ]
@@ -124,7 +139,8 @@ export const getMenuData = () => {
         {
             title: 'Configuración',
             icon: icons.menu.unSelected.settings,
-            route: SETTINGS
+            route: SETTINGS,
+            group: 'settings'
         }
     ]
 }

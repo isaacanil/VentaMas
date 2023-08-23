@@ -5,7 +5,9 @@ import { MenuApp } from '../../../..'
 export const Header = () => {
   return (
     <Container>
-        <MenuApp />
+        <MenuApp
+          sectionName={'Cuadre de Caja'}
+        />
     </Container>
   )
 }

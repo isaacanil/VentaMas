@@ -7,7 +7,6 @@ import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
 import { IoReceipt } from 'react-icons/io5'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
-import { SaveImg, selectUploadImageUrl } from '../../../../../features/uploadImg/uploadImageSlice'
 import { fbAddPurchaseReceiptImg } from '../../../../../firebase/purchase/addPurchaseImg'
 import { clearImageViewer, toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
@@ -56,7 +55,7 @@ export const OrderDetails = ({ SELECTED_PURCHASE }) => {
     return (
         <Container>
             <Section flex>
-                <input
+                <InputDate
                     type="date"
                     name="" id=""
                     value={formattedDate}
@@ -71,26 +70,24 @@ export const OrderDetails = ({ SELECTED_PURCHASE }) => {
                     onChange={(e) => dispatch(AddCondition(e.target.value?.id))}
                     value={getOrderConditionByID(SELECTED_PURCHASE?.condition)}
                 />
-
                 {
                     SELECTED_PURCHASE?.receiptImgUrl ? (
                         <ButtonGroup>
                             <Button
                                 onClick={handleImgView}
                                 title='Ver recibo'
-                                borderRadius='normal'
+                                borderRadius='light'
                             />
                             <Button
                                 title={'Imagen Recibo'}
-                                borderRadius='normal'
+                                borderRadius='light'
                                 bgcolor={'error'}
                                 startIcon={icons.operationModes.delete}
                                 onClick={handleDeleteReceiptImageFromPurchase}
                             />
-
                         </ButtonGroup>
                     ) : (
-                        SELECTED_PURCHASE?.orderId  && (
+                        SELECTED_PURCHASE?.orderId && (
                             <AddFileBtn
                                 startIcon={icons.operationModes.upload}
                                 title='Subir recibo'
@@ -116,40 +113,41 @@ export const OrderDetails = ({ SELECTED_PURCHASE }) => {
 }
 const Container = styled.div`
 display: grid;
-gap: 1em;
+gap: 0.4em;
 `
 const Section = styled.section`
     ${props => props.flex ? `
         display: flex;
         gap: 1em;
     ` : ''}
-    input[type='date']{
-        width: 140px;
-        height: 2em;
-        padding: 0 0.4em;
-        border: 1px solid rgba(0, 0, 0, 0.200);
-        border-radius: 8px;
-        position: relative;
-        &::-webkit-calendar-picker-indicator{
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: transparent;
-            background: 0 0;
-            margin: 0;
-            opacity: 0;
-            pointer-events: auto;
-        }
-      
-        &::-webkit-inner-spin-button,
-        &::-webkit-outer-spin-button,
-        &::-webkit-clear-button {
-            display: none;
-        }
-        &:focus{
-            outline: 1px solid #00000081;
-        }
+   
+`
+const InputDate = styled.input`
+    width: 140px;
+    height: 2.2em;
+    padding: 0 0.4em;
+    border: 1px solid rgba(0, 0, 0, 0.200);
+    border-radius: var(--border-radius-light);
+    position: relative;
+    &::-webkit-calendar-picker-indicator{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        color: transparent;
+        background: 0 0;
+        margin: 0;
+        opacity: 0;
+        pointer-events: auto;
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button,
+    &::-webkit-clear-button {
+        display: none;
+    }
+    &:focus{
+        outline: 1px solid #00000081;
     }
 `

@@ -3,11 +3,11 @@ import styled from 'styled-components'
 import { IoMdClose } from 'react-icons/io'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
-import { MenuApp, Select } from '../../..'
+import { ButtonGroup, MenuApp, Select } from '../../..'
 import { Button } from '../../..'
 import { toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
 import { PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
-import { getOrderData, addProvider, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts, setProductSelected } from '../../../../features/Purchase/addPurchaseSlice'
+import { getOrderData, addProvider, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts, setProductSelected, updateProduct } from '../../../../features/Purchase/addPurchaseSlice'
 import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { StockedProductPicker } from '../../../component/StockedProductPicker/StockedProductPicker'
 import { ProductListSelected } from '../../../component/ProductListSelected/ProductListSelected'
@@ -38,7 +38,7 @@ export const AddPurchase = () => {
     }
 
     const handleSubmit = async () => {
-        if (!SELECTED_PURCHASE?.provider  || SELECTED_PURCHASE?.provider?.id == "") {
+        if (!SELECTED_PURCHASE?.provider || SELECTED_PURCHASE?.provider?.id == "") {
             dispatch(addNotification({ title: 'Error', message: 'Agregue el proveedor', type: 'error' }))
             return
         }
@@ -46,7 +46,7 @@ export const AddPurchase = () => {
             dispatch(addNotification({ title: 'Error', message: 'Agregue un producto', type: 'error' }))
             return
         }
-        if (!SELECTED_PURCHASE.date) {
+        if (!SELECTED_PURCHASE.dates.deliveryDate) {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Fecha de entrega', type: 'error' }))
             return
         }
@@ -54,18 +54,17 @@ export const AddPurchase = () => {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Condición', type: 'error' }))
             return
         }
-            const { success, error, message } = await PassDataToPurchaseList(user, SELECTED_PURCHASE);
-            setSuccess(success)
-            console.log(error, message)
-
-       
+        const { success, error, message } = await PassDataToPurchaseList(user, SELECTED_PURCHASE);
+        setSuccess(success)
+        console.log(error, message)
+    }
+    const handleCancel = () => {
+        navigate(PURCHASES);
+        handleClear();
     }
     useEffect(() => {
         if (success === true) {
-            // dispatch(toggleAddPurchaseModal());
-
             handleClose();
-
         }
     }, [success]);
 
@@ -76,8 +75,8 @@ export const AddPurchase = () => {
     const addProduct = () => dispatch(AddProductToPurchase());
     const handleDeleteProduct = (product) => dispatch(deleteProductFromPurchase(product.id));
     const handleUpdateProduct = (product) => dispatch(updateProduct(product));
-    return (
 
+    return (
         <Modal >
             <Header>
                 <MenuApp
@@ -118,14 +117,24 @@ export const AddPurchase = () => {
                     <OrderDetails
                         SELECTED_PURCHASE={SELECTED_PURCHASE}
                     />
-                    <WrapperFooter>
-                        <Button
-                            title='Realizar Comprar'
-                            borderRadius={'normal'}
-                            bgcolor='primary'
-                            onClick={handleSubmit}
-                        />
-                    </WrapperFooter>
+                    <Footer>
+                        <ButtonGroup>
+                            <Button
+                                title='Cancelar'
+                                borderRadius={'normal'}
+                                bgcolor='gray'
+                                height={'large'}
+                                onClick={handleCancel}
+                            />
+                            <Button
+                                title='Guardar'
+                                borderRadius={'normal'}
+                                bgcolor='primary'
+                                height={'medium'}
+                                onClick={handleSubmit}
+                            />
+                        </ButtonGroup>
+                    </Footer>
                 </Body>
             </BodyContainer>
 
@@ -135,43 +144,6 @@ export const AddPurchase = () => {
     )
 }
 
-const Container = styled.div`
-    z-index: 20;
-    position: absolute;
-    top: 0px;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.200);
-    backdrop-filter: blur(10px);
-    width: 100vw;
-    display: flex;
-    transform: scale(0);
-    clip-path: circle(20.9% at 50% 50%);
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition-property: transform, clip-path, opacity;
-    transition-duration: 400ms, 1000ms, 300ms;
-    transition-delay: 100ms, 400ms, 0ms;
-    transition-timing-function: ease-in-out, ease-in-out;
-    ${props => {
-        switch (props.isOpen) {
-            case true:
-                return `
-                transform: scaleY(1);
-                opacity: 1;
-                clip-path: circle(100% at 50% 50%);
-                transition-property: transform, clip-path, opacity;
-                transition-timing-function: ease-in-out, ease-in-out;
-                transition-duration: 400ms, 500ms, 500ms;
-                transition-delay: 0ms, 0ms, 0ms;
-         
-                `
-
-            default:
-                break;
-        }
-    }}
-`
 const Modal = styled.div`
     max-width: 100%;
     width: 100%;
@@ -180,7 +152,7 @@ const Modal = styled.div`
     overflow: hidden;
  
     display: grid;
-    gap: 1em;
+    gap: 0.6em;
     grid-template-rows: min-content 1fr;
 `
 const ToolBar = styled.div`
@@ -189,23 +161,9 @@ const ToolBar = styled.div`
     gap: 10px;
 
 `
-const Group = styled.div`
-    display: flex;
-    gap: 0.4em;
-`
 
 const Header = styled.div`
     
-`
-const WrapperHeader = styled.div`
-    max-width: var(--max-width);
-    margin: 0 auto;
-    width: 100%;
-    background-color: var(--color2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
 `
 const BodyContainer = styled.div`
 
@@ -225,7 +183,7 @@ const Body = styled.div`
         display: grid;
         grid-template-rows: min-content min-content minmax(200px, 1fr) min-content min-content;
         align-items: start;
-        gap: 1em;
+        gap: 0.6em;
        
         header {
             display: flex;
@@ -233,10 +191,6 @@ const Body = styled.div`
         }
 `
 const Footer = styled.div`
-     width: 100%;
-    background-color: #494949;
-`
-const WrapperFooter = styled.div`
     height: 3em;
     max-width: var(--max-width);
     background-color: #ffffff;
@@ -246,6 +200,7 @@ const WrapperFooter = styled.div`
     border: var(--border-primary);
     border-radius: var(--border-radius);
     position: sticky;
+    z-index: 5;
     bottom: 0;
     margin: 0 auto;
     display: flex;

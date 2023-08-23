@@ -35,7 +35,8 @@ export const MenuLink = ({ item, Items }) => {
         }
 
       </Component>
-      <SubMenu showSubMenu={showSubMenu} isOpen={isOpenSubMenu} item={item} Items={MenuItemLink} />
+      {isOpenSubMenu && 
+      <SubMenu showSubMenu={showSubMenu} isOpen={isOpenSubMenu} item={item} MenuItemsLink={MenuItemLink} />}
     </Fragment>
   )
 }
@@ -44,15 +45,19 @@ const MenuItem = styled.div`
  display: flex;
   justify-content: space-between;
   padding: 0 0.8em;
-  height: 2.4em;
+  height: 2.8em;
   align-items: center;
   color: var(--Gray6);
- 
-  margin: 0 0.8em;
-  border-radius: 0.5rem;
+
+  margin: 0em;
+  border-bottom: var(--border-primary);
+  :last-child{
+    border-bottom: none;
+  }
+  
   :hover{
     color: var(--color);
-    background-color: var(--color2);
+    /* background-color: var(--color2); */
     transition: background-color 400ms ease;
     svg{
       color: var(--color);

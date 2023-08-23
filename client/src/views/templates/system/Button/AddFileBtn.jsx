@@ -75,7 +75,7 @@ const Container = styled.div`
     height: 2em;
     border: 1px solid rgba(0, 0, 0, 0.226);
     position: relative;
-    border-radius: 8px;
+    border-radius: 4px;
     transition: width 600ms ease-in-out;
     
     input{

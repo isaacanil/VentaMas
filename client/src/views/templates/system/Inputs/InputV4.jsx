@@ -9,6 +9,32 @@ import { icons } from '../../../../constants/icons/icons';
  * @typedef {Object} InputV4
  * @property {string} label - The value for MiComponente.
  * @property {string} [opcion] - An optional property for MiComponente.
+ * @property {string} [size] - An optional property for MiComponente.
+ * @property {string} [themeColor] - An optional property for MiComponente.
+ * @property {string} [labelVariant] - An optional property for MiComponente.
+ * @property {string} [bgColor] - An optional property for MiComponente.
+ * @property {string} [type] - An optional property for MiComponente.
+ * @property {string} [value] - An optional property for MiComponente.
+ * @property {string} [placeholder] - An optional property for MiComponente.
+ * @property {string} [onChange] - An optional property for MiComponente.
+ * @property {string} [onClear] - An optional property for MiComponente.
+ * @property {string} [validate] - An optional property for MiComponente.
+ * @property {string} [errorMessage] - An optional property for MiComponente.
+ * @property {string} [search] - An optional property for MiComponente.
+ * @property {string} [clearButton] - An optional property for MiComponente.
+ * @property {string} [icon] - An optional property for MiComponente.
+ * @property {string} [disabled] - An optional property for MiComponente.
+ * @property {string} [onFocus] - An optional property for MiComponente.
+ * @property {string} [onBlur] - An optional property for MiComponente.
+ * @property {string} [onKeyDown] - An optional property for MiComponente.
+ * @property {string} [onKeyUp] - An optional property for MiComponente.
+ * @property {string} [onKeyPress] - An optional property for MiComponente.
+ * @property {string} [onPaste] - An optional property for MiComponente.
+ * @property {string} [onCopy] - An optional property for MiComponente.
+ * @property {string} [onCut] - An optional property for MiComponente.
+ * @property {string} [onCompositionStart] - An optional property for MiComponente.
+ * @property {string} [onCompositionEnd] - An optional property for MiComponente.
+ * @property {string} [onCompositionUpdate] - An optional property for MiComponente.
  */
 
 /**

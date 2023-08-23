@@ -51,7 +51,7 @@ export const fbGetInvoices = (time) => {
           };
         } catch (error) {
           if (error instanceof UserValidationError) {
-            console.log('ssdsdddddddddddddd', error.message); //TODO: replace with toast
+          
           } else {
             throw error;
           }
@@ -60,6 +60,6 @@ export const fbGetInvoices = (time) => {
   
       fetchInvoices();
     }, [time, user]);
-  
+    console.log(invoices)
     return { invoices, loading, setLoading };
   };

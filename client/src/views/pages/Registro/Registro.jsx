@@ -15,11 +15,17 @@ import { tableData } from './tableData'
 import { SaleReportTable } from './SaleReportTable/SaleReportTable'
 
 import { ComponentTagger } from '../../templates/system/ComponentTagger/ComponentTagger'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import { motion } from 'framer-motion'
 import { pageVariants } from '../../../constants/framerMotion/pageVariants'
+import { fbDeleteMultipleInvoices } from '../../../firebase/invoices/fbDeleteMultipleInvoices'
+import { icons } from '../../../constants/icons/icons'
+import { selectUser } from '../../../features/auth/userSlice'
+import { fbAddMultipleInvoices } from '../../../firebase/invoices/fbAddMultipleInvoices'
+import { invoicesData } from '../../../firebase/invoices/invoices'
+import { fbUpdateNCFInvoices } from '../../../firebase/invoices/fbUpdateMultipleInvoices'
 
 export const Registro = () => {
   const dispatch = useDispatch()
@@ -27,7 +33,7 @@ export const Registro = () => {
   const [datesSelected, setDatesSelected] = useState({})
 
   const { invoices } = fbGetInvoices(datesSelected)
-
+  const user = useSelector(selectUser);
   const total = () => invoices.reduce((total, { data }) => total + data.totalPurchase.value, 0)
 
   const transformedResumenBillsData = () => invoices.map((invoice) => {
@@ -61,7 +67,21 @@ export const Registro = () => {
   const handleTimeChange = (start, end) => {
     setDatesSelected({ startDate: start.toMillis(), endDate: end.toMillis() })
   }
-
+  const handleDeleteMultipleInvoices = () => {
+    fbDeleteMultipleInvoices(user, invoices)
+  }
+  const data = invoicesData;
+  const handleButtonClick = async () => {
+    try {
+      await fbUpdateNCFInvoices(user, data);
+      // Aquí podrías mostrar una notificación de éxito o actualizar la UI como necesites
+      console.log("Facturas agregadas exitosamente");
+    } catch (error) {
+      // Aquí manejas cualquier error que pueda surgir
+      console.error("Ocurrió un error al agregar las facturas:", error);
+    }
+  };
+  
   return (
     <Fragment>
       <Container
@@ -86,10 +106,13 @@ export const Registro = () => {
                 />
                 <Button
                   bgcolor={'gray'}
-                  title={'Detalle'}
+                  //title={'Detalle'}
                   borderRadius='normal'
-                  onClick={() => handleExportButton('Detailed')}
-                  startIcon={<SiMicrosoftexcel />}
+                 // onClick={() => handleExportButton('Detailed')}
+                  //startIcon={<SiMicrosoftexcel />}
+                  startIcon={icons.operationModes.delete}
+                  title={'Eliminar'}
+                  onClick={handleButtonClick}
                 />
               </ButtonGroup>
             } />
@@ -97,7 +120,9 @@ export const Registro = () => {
         </FilterBar>
         <SaleReportTable
           data={tableData}
-          bills={invoices}
+          bills={
+            invoices
+          }
           total={total}
         />
       </Container>

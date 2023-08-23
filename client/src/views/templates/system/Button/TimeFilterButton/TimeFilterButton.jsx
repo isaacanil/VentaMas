@@ -22,9 +22,7 @@ const TimeFilterButton = ({ onTimeFilterSelected }) => {
     const today = DateTime.local().startOf('day');
     const yesterday = DateTime.local().minus({ days: 1 }).startOf('day');
     const thisWeek = DateTime.local().startOf('week');
-    const lastWeek = DateTime.local()
-        .minus({ weeks: 1 })
-        .startOf('week');
+    const lastWeek = DateTime.local().minus({ weeks: 1 }).startOf('week');
     const thisMonth = DateTime.local().startOf('month');
     const lastMonth = DateTime.local().minus({ months: 1 }).startOf('month');
     const thisYear = DateTime.local().startOf('year');
@@ -38,10 +36,9 @@ const TimeFilterButton = ({ onTimeFilterSelected }) => {
     const thirdQuarterEnd = DateTime.local(currentYear, 9, DateTime.local(currentYear, 9, 1).daysInMonth).endOf('month').endOf('day');
     const fourthQuarterStart = DateTime.local(currentYear, 10, 1).startOf('day');
     const fourthQuarterEnd = DateTime.local(currentYear, 12, DateTime.local(currentYear, 12, 1).daysInMonth).endOf('month').endOf('day');
-    
 
     const menuOptions = [
-        { label: 'Hoy', start: today, end: DateTime.local().endOf('day'), category: 'General'},
+        { label: 'Hoy', start: today, end: DateTime.local().endOf('day'), category: 'General' },
         { label: 'Ayer', start: yesterday, end: today, category: 'General' },
         { label: 'Esta semana', start: thisWeek, end: DateTime.local().endOf('day'), category: 'Semana' },
         { label: 'La semana pasada', start: lastWeek, end: thisWeek, category: 'Semana' },
@@ -63,33 +60,20 @@ const TimeFilterButton = ({ onTimeFilterSelected }) => {
         acc[category].push(option);
         return acc;
     }, {});
+    
     useClickOutSide(menuRef, isMenuOpen === true, () => setIsMenuOpen(false));
     const sections = Object.keys(groupedOptions);
     return (
         <div>
             <StyledButton onClick={handleButtonClick} >
-             
                 <Button
-                borderRadius='light'
+                    borderRadius='light'
                     startIcon={<BiCalendar />}
                     title={'filtrar Tiempo'}
                     onClick={handleButtonClick}
                 />
-       
-
-                {/*Menu*/}
-           
-                    <StyledMenu isMenuOpen={isMenuOpen} ref={menuRef}>
-                        {/* {
-                            menuOptions.map((option, index) => {
-                                return (
-                                    <StyledMenuItem key={index} onClick={() => handleMenuItemClick(option.start, option.end, option.label)}>
-                                        {option.label}
-                                    </StyledMenuItem>
-                                )
-                            })
-                        } */}
-                        {sections
+                <StyledMenu isMenuOpen={isMenuOpen} ref={menuRef}>
+                    {sections
                         .map((section) => (
                             <OptionsGroup>
                                 <h3>{section}</h3>
@@ -105,43 +89,13 @@ const TimeFilterButton = ({ onTimeFilterSelected }) => {
                                 ))}
                             </OptionsGroup>
                         ))}
-                    </StyledMenu>
-                
-                {/* {isMenuOpen && (
-                    <StyledMenu>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(today, DateTime.local().endOf('day'), 'today')}>
-                            Hoy
-                        </StyledMenuItem>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(yesterday, today, 'Ayer')}>
-                            Ayer
-                        </StyledMenuItem>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(thisWeek, DateTime.local().endOf('day'), 'Esta Mes')}>
-                            Esta semana
-                        </StyledMenuItem>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(lastWeek, thisWeek, 'Esta Semana')}>
-                            La semana pasada
-                        </StyledMenuItem>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(thisMonth, DateTime.local().endOf('day'))}>
-                            Este mes
-                        </StyledMenuItem>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(lastMonth, thisMonth)}>
-                            El mes pasado
-                        </StyledMenuItem>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(thisYear, DateTime.local().endOf('day'))}>
-                            Este año
-                        </StyledMenuItem>
-                        <StyledMenuItem onClick={() => handleMenuItemClick(lastYear, thisYear)}>
-                            El año pasado
-                        </StyledMenuItem>
-                    </StyledMenu>
-                )} */}
+                </StyledMenu>
             </StyledButton>
             {today == ! null && (
                 <div>
                     <p>Desde: {today.toISODate()}</p>
                 </div>
             )}
-
         </div>
     )
 };
@@ -171,18 +125,18 @@ const StyledMenu = styled.ul`
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
   ${props => {
-    switch (props.isMenuOpen) {
-        case true:
-            return `
+        switch (props.isMenuOpen) {
+            case true:
+                return `
                 opacity: 1;  
                 transform: translateX(-50%) scale(1);
             `
-            break;
-    
-        default:
-            break;
-    }
-  }}
+                break;
+
+            default:
+                break;
+        }
+    }}
 `;
 
 const StyledMenuItem = styled.li`

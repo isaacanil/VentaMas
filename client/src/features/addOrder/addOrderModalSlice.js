@@ -80,6 +80,7 @@ const addOrderSlice = createSlice({
           ...state.order.replenishments[index],
           ...value,
         };
+        state.order.total = state.order.replenishments.reduce((total, item) => total + (item.initialCost * item.newStock), 0);
       }
     },
     updateInitialCost: (state, actions) => {

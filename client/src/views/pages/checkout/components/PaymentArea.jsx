@@ -41,7 +41,7 @@ export const PaymentArea = ({ data, P }) => {
             return separator(data?.transferPaymentMethod.value)
         }
     }
-    console.log(" Datos de la factura ", data)
+
     return (
         <Container>
           

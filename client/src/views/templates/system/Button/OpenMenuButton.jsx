@@ -39,6 +39,7 @@ const Container = styled.div`
   cursor: pointer;
 
   z-index: ${props => props.isOpen ? 10000 : 0};
+  transition-delay: ${props => !props.isOpen && '1s'};
 
 `
 const MenuIcon = styled.div`
@@ -48,6 +49,7 @@ const MenuIcon = styled.div`
   height: 2px;
   background-color: var(--menu-items);
   transition: all 1s ease-in-out;
+ 
 
   &:after {
     content: '';

@@ -1,23 +1,14 @@
 import { useDispatch, useSelector } from "react-redux"
 import { selectUser } from "./userSlice"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { fbGetBusinessInfo } from "../../firebase/businessInfo/fbGetBusinessInfo"
-import { setBusiness } from "./businessSlice"
 
 export const useBusinessDataConfig = () => {
-    const user = useSelector(selectUser)
-    const [businessDataStatus, setBusinessDataStatus] = useState(false)
-    const [businessData, setBusinessData] = useState()
-    const dispatch = useDispatch()
+    const user = useSelector(selectUser);
+    const dispatch = useDispatch();
     useEffect(() => {
-        fbGetBusinessInfo(setBusinessData, user)
-    }, [user])
+        if (!user || !user?.businessID) return;
+        fbGetBusinessInfo(user, dispatch)
 
-    useEffect(() => {
-        if (businessData && !businessDataStatus) {
-            console.log(businessData)
-            dispatch(setBusiness(businessData))
-            setBusinessDataStatus(true)
-        }
-    }, [businessData])
+    }, [user])
 }

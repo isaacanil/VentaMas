@@ -5,9 +5,7 @@ import styled from 'styled-components';
 
 export const Body = ({bills, tableConfig}) => {
     const billsByDate = bills.reduce((acc, { data }) => {
-      console.log(data.date)
         const date = DateTime.fromMillis(data.date.seconds * 1000).toLocaleString(DateTime.DATE_FULL);
-    
         if (!acc[date]) {
           acc[date] = [];
         }

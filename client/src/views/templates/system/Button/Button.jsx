@@ -264,6 +264,22 @@ export const Container = styled.button`
            padding: 0 0.4em;
 
           `;
+      case "medium":
+        return `  
+          height: 30px;
+          display: flex;
+          align-items: center;
+          font-size: 16px;
+          padding: 0 0.8em;
+          `;
+      case "large":
+        return `
+          height: 2em;
+          display: flex;
+          align-items: center;
+          font-size: 16px;
+          padding: 0 1.2em;
+          `;
 
     }
   }}

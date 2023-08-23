@@ -21,7 +21,6 @@ export const ProductCard = ({ item, handleDeleteProduct, handleUpdateProduct }) 
             <Col>
                 <span>
                     <Input
-                    
                         value={item.newStock}
                         onChange={e => handleUpdateProduct({ value: {newStock: e.target.value}, productID: item.id })}
                     />
@@ -61,12 +60,13 @@ const Container = styled.div`
     padding: 0 0.8em;
     background-color: #fff;
     color: #353535;
-    border: var(--border-primary);
+    border-bottom: var(--border-primary);
     border-radius: var(--border-radius-light);
     gap: 1em;
-    &:last-child{
+    :last-child{
         border-bottom: none;
     }
+   
     
 `
 const Col = styled.div`

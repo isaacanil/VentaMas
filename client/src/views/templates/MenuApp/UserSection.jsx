@@ -1,6 +1,5 @@
 import { Button } from '../system/Button/Button'
 import React from 'react'
-import { FaUser } from 'react-icons/fa'
 import styled from 'styled-components'
 import { auth } from '../../../firebase/firebaseconfig'
 import { useDispatch } from 'react-redux'
@@ -49,9 +48,6 @@ const Container = styled.div`
     align-items: center;
     justify-content: space-between;
     padding: 1em;
-    margin-bottom: 0.6em;
-    
-    
     span{
       font-weight: 600;
       color: #636262;

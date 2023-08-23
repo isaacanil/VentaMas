@@ -15,8 +15,6 @@ import { Header } from './components/Header/Header'
 
 export const Receipt = React.forwardRef(({ data }, ref) => {
     let business = useSelector(selectBusinessData)
-
-    console.log(data)
     return (
         business && data ? (
             <Container ref={ref}>

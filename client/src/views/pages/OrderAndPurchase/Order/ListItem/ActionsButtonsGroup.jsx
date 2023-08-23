@@ -12,6 +12,9 @@ import { deleteOrderFromDB, PassDataToPurchaseList } from '../../../../../fireba
 import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
 import { Tooltip } from '../../../../templates/system/Button/Tooltip'
+import { faPencil } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { icons } from '../../../../../constants/icons/icons'
 
 export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
     const modes = {
@@ -150,7 +153,7 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                         Children={
                             <Button
                                 borderRadius='normal'
-                                title={<IoCartSharp />}
+                                title={icons.operationModes.buy}
                                 width='icon32'
                                 color='gray-dark'
                                 onClick={() => handlePurchasingMode(orderData.id)}
@@ -164,7 +167,7 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                         Children={
                             <Button
                                 borderRadius='normal'
-                                title={<TbEdit />}
+                                title={icons.operationModes.edit}
                                 width='icon32'
                                 color='gray-dark'
                                 onClick={() => handleEditMode(orderData.id)}
@@ -177,7 +180,7 @@ export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
                         Children={
                             <Button
                                 borderRadius='normal'
-                                title={<IoTrashSharp />}
+                                title={icons.operationModes.delete}
                                 width='icon32'
                                 bgcolor='error'
                                 onClick={() => handleDeleteMode(orderData.id)}

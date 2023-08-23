@@ -18,12 +18,11 @@ export const OrderDetails = () => {
         const selectedDate = DateTime.fromISO(value);
         const timestamp = selectedDate.toJSDate().getTime();
         return timestamp;
-        // Ahora puedes guardar 'timestamp' en Firestore o donde quieras
       };
     return (
         <Container>
             <Section flex>
-                <input
+                <InputDate
                     type="date"
                     name=""
                     value={date}
@@ -38,7 +37,6 @@ export const OrderDetails = () => {
                     displayKey={'name'}
                     value={condition ? getOrderConditionByID(condition) : ''}
                 />
-                {/* {JSON.stringify(data)} */}
             </Section>
             <Section>
                 <h5>Nota</h5>
@@ -49,46 +47,45 @@ export const OrderDetails = () => {
                     onChange={(e) => dispatch(AddNote(e.target.value))}
                 />
             </Section>
-
         </Container>
     )
 }
 const Container = styled.div`
 display: grid;
-gap: 1em;
+gap: 0.4em;
 `
 const Section = styled.section`
     ${props => props.flex ? `
         display: flex;
         gap: 1em;
     ` : ''}
-    input[type='date']{
-        width: 140px;
-        height: 2em;
-        padding: 0 0.4em;
-        border: 1px solid rgba(0, 0, 0, 0.200);
-        border-radius: 8px;
-        position: relative;
-        &::-webkit-calendar-picker-indicator{
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: transparent;
-            background: 0 0;
-            margin: 0;
-            opacity: 0;
-            pointer-events: auto;
-        }
-      
-        &::-webkit-inner-spin-button,
-        &::-webkit-outer-spin-button,
-        &::-webkit-clear-button {
-            display: none;
-        }
-        &:focus{
-            outline: 1px solid #00000081;
-        }
+`
+const InputDate = styled.input`
+    width: 140px;
+    height: 2.2em;
+    padding: 0 0.4em;
+    border: 1px solid rgba(0, 0, 0, 0.200);
+    border-radius: var(--border-radius-light);
+    position: relative;
+    &::-webkit-calendar-picker-indicator{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        color: transparent;
+        background: 0 0;
+        margin: 0;
+        opacity: 0;
+        pointer-events: auto;
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button,
+    &::-webkit-clear-button {
+        display: none;
+    }
+    &:focus{
+        outline: 1px solid #00000081;
     }
 `

@@ -101,7 +101,9 @@ export const addPurchaseSlice = createSlice({
                     ...state.purchase.replenishments[index],
                     ...value,
                 };
+                state.purchase.total = state.purchase.replenishments.reduce((total, item) => total + (item.initialCost * item.newStock), 0);
             }
+
         },
         addReceiptImageToPurchase: (state, actions) => {
             state.purchase.receiptImgUrl = actions.payload

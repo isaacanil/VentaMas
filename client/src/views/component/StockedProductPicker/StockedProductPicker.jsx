@@ -82,23 +82,16 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
         <Container>
             <Group>
                 <Col>
-                    <ProductName>
-                        <span>Product</span>
-                        <Tooltip
-                            description='Crear Producto'
-                            placement='bottom'
-                            Children={<AddProductButton />}
-                        />
-                    </ProductName>
+                    <span>Product</span>
                 </Col>
                 <Col>
-                    <span>{`cantidad: ${`(${stock || 0}`} / ${totalStock || 0})`}</span>
+                    <span>{`Cantidad: ${`(${stock || 0}`} / ${totalStock || 0})`}</span>
                 </Col>
                 <Col>
                     <span>Costo {`(${useFormatPrice(cost || 0)})`}</span>
                 </Col>
                 <Col>
-                    <span>Subtotal</span>
+                    <span>Subtotal $</span>
                 </Col>
                 <Col>
                 </Col>
@@ -150,8 +143,8 @@ const Container = styled.div`
     display: grid;
     
     gap: 0.2em;
-    padding: 0.2em 1em 0.4em;
-    border: var(--border-primary);
+    padding: 0.2em 0em 0.2em;
+    //border: var(--border-primary);
 `
 const Group = styled.div`
      color: rgb(37, 37, 37);
@@ -164,7 +157,9 @@ const Col = styled.div`
        display: flex;
        font-weight: 500;
        min-width: 2em;
-       align-items: center;
+       height: 1em;
+       padding: 0em 0em 0em 0.4em;
+       align-items: end;
        span{
         
     font-size: 12px;

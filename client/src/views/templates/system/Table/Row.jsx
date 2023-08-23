@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 export const Row = ({ children, col, element }) => {
-    console.log(col)
+    
     return (
         <Container col={col} element={element}>
             {children}

@@ -12,6 +12,7 @@ import ROUTES_NAME from '../../../../../routes/routesName'
 import { icons } from '../../../../../constants/icons/icons'
 import { useMatch } from 'react-router-dom'
 import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
+import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 
 export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const ImageHidden = useSelector(selectImageHidden)
@@ -56,6 +57,7 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
                 {
                     side === 'right' && (
                         <Group >
+                            {/* <DropdownMenu /> */}
                             <Button
                                 tooltipDescription={'Cambiar vista 8'}
                                 tooltipPlacement={'bottom'}

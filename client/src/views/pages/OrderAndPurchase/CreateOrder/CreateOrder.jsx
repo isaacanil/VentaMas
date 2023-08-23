@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { MenuApp, Select } from '../../..'
+import { ButtonGroup, MenuApp, Select } from '../../..'
 import { Button } from '../../..'
 
 import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
@@ -34,16 +34,14 @@ import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { useNavigate } from 'react-router-dom'
 import ROUTES_PATH from '../../../../routes/routesName'
 
-export const CreateOrder = ({ isOpen }) => {
+export const CreateOrder = () => {
     const dispatch = useDispatch();
     const OrderSelected = useSelector(SelectOrder);
-    const [reset, setReset] = useState(false);
     const selectedProduct = useSelector(SelectProductSelected);
     const productsSelected = useSelector(SelectProducts);
     const provider = OrderSelected.provider;
     const {ORDERS} = ROUTES_PATH.PURCHASE_TERM
     const navigate = useNavigate()
-    const [orders, setOrders] = useState()
     const user = useSelector(selectUser);
     const { providers } = useFbGetProviders(user);
     const productTotalPurchasePrice = useSelector(SelectTotalPurchase)
@@ -61,7 +59,7 @@ export const CreateOrder = ({ isOpen }) => {
             dispatch(addNotification({ title: 'Error', message: 'Agregue un producto', type: 'error' }))
             return
         }
-        if (!OrderSelected.date) {
+        if (!OrderSelected.dates.deliveryDate) {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Fecha de entrega', type: 'error' }))
             return
         }
@@ -83,6 +81,11 @@ export const CreateOrder = ({ isOpen }) => {
             }, 1000)
         }
 
+    }
+    const handleCancel = () => {
+        dispatch(cleanOrder());
+       // dispatch(closeModalAddOrder());
+        navigate(ORDERS)
     }
     const selectProduct = (product) => dispatch(SelectProduct(product));
     const handleSetSelectedProduct = (obj) => dispatch(setProductSelected(obj));
@@ -121,18 +124,25 @@ export const CreateOrder = ({ isOpen }) => {
                         handleDeleteProduct={handleDeleteProduct}
                         handleUpdateProduct={handleUpdateProduct}
                     />
-                    <OrderDetails
-                        reset={reset}
-                        setReset={setReset}
-                    />
-                    <FooterWrapper>
-                        <Button
-                            title='Crear Pedido'
-                            borderRadius={'normal'}
-                            bgcolor='primary'
-                            onClick={HandleSubmit}
-                        />
-                    </FooterWrapper>
+                    <OrderDetails/>
+                    <WrapperFooter>
+                    <ButtonGroup>
+                            <Button
+                                title='Cancelar'
+                                borderRadius={'normal'}
+                                bgcolor='gray'
+                                height={'large'}
+                                onClick={handleCancel}
+                            />
+                            <Button
+                                title='Guardar'
+                                borderRadius={'normal'}
+                                bgcolor='primary'
+                                height={'medium'}
+                                onClick={HandleSubmit}
+                            />
+                        </ButtonGroup>
+                    </WrapperFooter>
 
                 </Body>
             </BodyContainer>
@@ -142,43 +152,6 @@ export const CreateOrder = ({ isOpen }) => {
     )
 }
 
-const Container = styled.div`
-    z-index: 20;
-    position: absolute;
-    top: 0px;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.200);
-    backdrop-filter: blur(10px);
-    width: 100vw;
-    display: flex;
-    transform: scale(0);
-    clip-path: circle(20.9% at 50% 50%);
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition-property: transform, clip-path, opacity;
-    transition-duration: 400ms, 1000ms, 300ms;
-    transition-delay: 100ms, 400ms, 0ms;
-    transition-timing-function: ease-in-out, ease-in-out;
-    ${props => {
-        switch (props.isOpen) {
-            case true:
-                return `
-                transform: scaleY(1);
-                opacity: 1;
-                clip-path: circle(100% at 50% 50%);
-                transition-property: transform, clip-path, opacity;
-                transition-timing-function: ease-in-out, ease-in-out;
-                transition-duration: 400ms, 500ms, 500ms;
-                transition-delay: 0ms, 0ms, 0ms;
-         
-                `
-
-            default:
-                break;
-        }
-    }}
-`
 const Modal = styled.div`
     max-width: 100%;
     width: 100%;
@@ -187,7 +160,7 @@ const Modal = styled.div`
     overflow: hidden;
  
     display: grid;
-    gap: 1em;
+    gap: 0.6em;
     grid-template-rows: min-content 1fr;
 `
 const ToolBar = styled.div`
@@ -230,9 +203,9 @@ const Body = styled.div`
         padding: 0.6em;
         overflow-y: scroll;
         display: grid;
-        grid-template-rows: min-content min-content minmax(200px, 1fr) min-content min-content;
+        grid-template-rows: min-content min-content minmax(270px, 1fr) min-content min-content;
         align-items: start;
-        gap: 1em;
+        gap: 0.6em;
        
         header {
             display: flex;
@@ -243,7 +216,7 @@ const Footer = styled.div`
      width: 100%;
     background-color: #494949;
 `
-const FooterWrapper = styled.div`
+const WrapperFooter = styled.div`
     height: 3em;
     max-width: var(--max-width);
     background-color: #ffffff;
@@ -253,6 +226,7 @@ const FooterWrapper = styled.div`
     border: var(--border-primary);
     border-radius: var(--border-radius);
     position: sticky;
+    z-index: 5;
     bottom: 0;
     margin: 0 auto;
     display: flex;

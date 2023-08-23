@@ -12,7 +12,8 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
     setIsOpen(false)
   }
 
-  const {products} =  useGetProducts(true)
+  const {products} =  useGetProducts(true);
+  const productsWithStockTracking = products.filter(({product}) => product.trackInventory === true ) || [];
  
   useEffect(() => {
     if (!productName) {
@@ -37,7 +38,7 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
       {isOpen ? (
         <ProductsList>
           <ProductsListHead>
-            <span>Lista de Producto</span>
+            <span>Lista de Productos Inventariables</span>
             <span>
               <Button onClick={close}>
                 <IoClose />
@@ -46,7 +47,7 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
           </ProductsListHead>
           <ProductsListBody>
             {
-              products.map((data, index) => (
+              productsWithStockTracking.map((data, index) => (
                 <ProductCard
                   fn={handleSelectProduct}
                   key={index}

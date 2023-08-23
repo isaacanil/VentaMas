@@ -6,6 +6,8 @@ import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { icons } from '../../../../constants/icons/icons';
 
 import { usePopper } from 'react-popper';
+import { InputV4 } from '../Inputs/InputV4';
+import { CenteredText } from '../CentredText';
 
 const getValueByKeyOrPath = (obj, keyOrPath) => {
   if (typeof keyOrPath === 'string' && keyOrPath.includes('.')) {
@@ -13,6 +15,28 @@ const getValueByKeyOrPath = (obj, keyOrPath) => {
   }
   return obj[keyOrPath];
 }
+
+const containerVariants = {
+  open: {
+      clipPath: "inset(0% 0% 0% 0% round 4px)",
+      transition: {
+          type: "spring",
+          bounce: 0,
+          duration: 0.7,
+          delayChildren: 0.3,
+          staggerChildren: 0.05
+      }
+  },
+  closed: {
+      clipPath: "inset(100% 0% 0% 0% round 10px)",
+      transition: {
+          type: "spring",
+          bounce: 0,
+          duration: 0.3
+      }
+  }
+}
+
 
 export const Select = ({
   title,
@@ -42,11 +66,11 @@ export const Select = ({
   };
 
   const filteredItems = Array.isArray(data)
-  ? data.filter((item) => {
+    ? data.filter((item) => {
       const value = getValueByKeyOrPath(item, displayKey);
       return value && (typeof value === 'string' || typeof value === 'number') && value.toString().toLowerCase().includes(searchTerm.toLowerCase());
     })
-  : [];
+    : [];
 
   const handleReset = () => {
     setSearchTerm(''); // Si quieres reiniciar el término de búsqueda también
@@ -67,6 +91,16 @@ export const Select = ({
 
   return (
     <Container ref={SelectRef}>
+      {
+        value && (
+          <Label
+            labelVariant="primary"
+          >
+            {title}
+          </Label>
+        )
+      }
+
       <Head ref={setReferenceElement}>
         {isLoading === true ? (
           <Group>
@@ -75,24 +109,12 @@ export const Select = ({
               {icons.arrows.chevronDown}
             </Icon>
           </Group>
-        ) : !isOpen && (
-          <Group onClick={() => setIsOpen(true)}>
+        ) : (
+          <Group onClick={() => setIsOpen(!isOpen)}>
             <h3>{value ? value : title ? title : ''}</h3>
             <Icon>
-              {icons.arrows.chevronDown}
+              {!isOpen ? icons.arrows.chevronDown : icons.arrows.chevronUp}
             </Icon>
-          </Group>
-        )}
-        {isOpen && (
-          <Group>
-            <InputText
-              size="s"
-              placeholder={`Buscar ${title}`}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button onClick={() => setIsOpen(false)}>
-              {icons.operationModes.close}
-            </Button>
           </Group>
         )}
       </Head>
@@ -104,6 +126,14 @@ export const Select = ({
         >
           {data?.length > 0 ? (
             <List>
+              <SearchSection>
+                <InputV4
+                  placeholder={`Buscar ${title}`}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  size="medium"
+
+                />
+              </SearchSection>
               <Item
                 style={!value ? { backgroundColor: 'blue', color: 'white' } : null}
                 onClick={() => handleReset()}
@@ -120,7 +150,17 @@ export const Select = ({
                 </Item>
               ))}
             </List>
-          ) : null}
+          ) : (
+            filteredItems.length === 0 && (
+              <NoneItemMessageContainer>
+                {
+                  console.log('no hay resultados')
+                }
+                No hay {title}.
+              </NoneItemMessageContainer>
+
+            )
+          )}
         </Body>
       ) : null}
     </Container>
@@ -130,8 +170,8 @@ const Container = styled.div`
     position: relative;
     max-width: 200px;
     width: 100%;
-    
 `
+
 const Head = styled.div`
     width: 100%;
     display: flex;
@@ -146,7 +186,6 @@ const Head = styled.div`
     transition-property: all; 
 `
 const Body = styled.div`
-
     min-width: 300px;
     width: 100%;
     max-height: 300px;
@@ -165,7 +204,7 @@ const List = styled.ul`
     z-index: 1;
     display: block;
     padding: 0;
-    height: 200px;
+    height: 100%;
     overflow-y: auto;
 `
 const Group = styled.div`
@@ -223,9 +262,8 @@ const InputText = styled.input.attrs({
   type: 'text'
 })`
    
-    border: 1px solid rgba(0, 0, 0, 0);
-    height: 1.6em;
-    border-radius: 6px;
+    height: 2.75em;
+   border: none;
     width: 100%;
     padding: 0 0.4em;
     &:focus{
@@ -248,4 +286,43 @@ const Icon = styled.div`
  width: 0.8em;
  display: flex;
  align-items: center;
+`
+const SearchSection = styled.div`
+    padding: 0.2em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.100);
+`
+const NoneItemMessageContainer = styled.div`
+    padding: 1em;
+`
+const Label = styled.label`
+  font-size: 13px;
+ color: var(--Gray5);
+  margin-bottom: 4px;
+  ${props => {
+    switch (props.labelVariant) {
+      case 'primary':
+        return `
+        font-size: 11px;
+        color: var(--Gray5);
+        position: absolute;
+        z-index: 1;
+        background-color: white;
+        padding: 0 4px;
+        top: -5px;
+        line-height: 1;
+        height: min-content;
+        color: #353535;
+    font-weight: 600;
+    ::after {
+      content: ' :';
+    }
+        `
+      default:
+        return `
+        font-size: 13px;
+        color: var(--Gray5);
+        margin-bottom: 4px;
+        `
+    }
+  }}
 `

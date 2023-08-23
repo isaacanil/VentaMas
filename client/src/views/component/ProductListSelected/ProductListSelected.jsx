@@ -34,6 +34,7 @@ const Container = styled.div`
     border-radius: 6px;
     height: 100%;
     position: relative;
+    
     display: grid;
     grid-template-rows: min-content 1fr;
     overflow: hidden;
@@ -60,7 +61,7 @@ const Head = styled.div`
     }
 `
 const Body = styled.div`
-   padding: 0.4em;
+   padding: 0em;
     
     overflow-y: scroll;
 `
