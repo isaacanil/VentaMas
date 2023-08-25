@@ -1,7 +1,6 @@
 import { TbPlus } from "react-icons/tb"
 import { Button } from "../../../../../templates/system/Button/Button"
 import { Tooltip } from "../../../../../templates/system/Button/Tooltip"
-import { AddProductButton } from "../../../AddOrder/Button"
 import { useSelector } from "react-redux"
 import { SelectProductSelected } from "../../../../../../features/productOutflow/productOutflow"
 
@@ -24,11 +23,6 @@ export const tableHeaderColumns = ({Group }) => {
             render: (subtitle) => (
                 <Group>
                     <span>{subtitle}</span>
-                    <Tooltip
-                        description='Crear Producto'
-                        placement='bottom'
-                        Children={<AddProductButton />}
-                    />
                 </Group>
             )
         },

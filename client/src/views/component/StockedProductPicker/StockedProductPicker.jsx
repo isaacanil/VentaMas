@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { TbPlus } from 'react-icons/tb'
 import { InputNumber, InputText } from '../../templates/system/Inputs/Input'
-import { AddProductButton } from '../modals/AddOrder/Button'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
 import { useDispatch, useSelector } from 'react-redux'
 import { Button } from '../../templates/system/Button/Button'
@@ -10,7 +9,7 @@ import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { useFormatPrice } from '../../../hooks/useFormatPrice';
-import { Select } from '@mui/material'
+
 /**
 * Este componente recibe la funcion de agregar el producto y devuelve el componente.
 *

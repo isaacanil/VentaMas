@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-
-import { CgMathPlus } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ButtonGroup, MenuApp, Select } from '../../..'
@@ -27,7 +25,7 @@ import {
     setProductSelected,
     updateProduct
 } from '../../../../features/addOrder/addOrderModalSlice'
-import { OrderDetails } from '../../../component/modals/AddOrder/OrderDetails/OrderDetails'
+import { OrderDetails } from './OrderDetails/OrderDetails'
 import { addNotification } from '../../../../features/notification/NotificationSlice'
 import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { AddOrder } from '../../../../firebase/firebaseconfig'

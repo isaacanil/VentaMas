@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Select } from '../../../../templates/system/Select/Select'
-import { AddCondition, AddNote, AddDate, SelectProducts, SelectOrder } from '../../../../../features/addOrder/addOrderModalSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import { Textarea } from '../../../../templates/system/Inputs/Textarea'
-import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
+import { Select } from '../../../../templates/system/Select/Select'
+import { Textarea } from '../../../../templates/system/Inputs/Input'
+import {  AddCondition, AddNote, AddDate, SelectProducts, SelectOrder } from '../../../../../features/addOrder/addOrderModalSlice'
 import { DateTime } from 'luxon'
+import { getOrderConditionByID,  orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
 
 export const OrderDetails = () => {
     const dispatch = useDispatch()

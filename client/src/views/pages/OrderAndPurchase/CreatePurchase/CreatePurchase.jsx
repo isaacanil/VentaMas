@@ -8,16 +8,15 @@ import { Button } from '../../..'
 import { toggleAddPurchaseModal } from '../../../../features/modals/modalSlice'
 import { PassDataToPurchaseList } from '../../../../firebase/firebaseconfig'
 import { getOrderData, addProvider, selectPurchase, cleanPurchase, updateStock, AddProductToPurchase, getInitialCost, SelectProductSelected, SelectProduct, deleteProductFromPurchase, selectProducts, setProductSelected, updateProduct } from '../../../../features/Purchase/addPurchaseSlice'
-import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { StockedProductPicker } from '../../../component/StockedProductPicker/StockedProductPicker'
 import { ProductListSelected } from '../../../component/ProductListSelected/ProductListSelected'
-import { OrderDetails } from '../../../component/modals/AddPurchase/OrderDetails/OrderDetails'
 import { selectUser } from '../../../../features/auth/userSlice'
 import { fbGetPendingOrders } from '../../../../firebase/order/fbGetPedingOrder'
 import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
 import { useNavigate } from 'react-router-dom'
 import ROUTES_PATH from '../../../../routes/routesName'
 import { addNotification } from '../../../../features/notification/NotificationSlice'
+import { PurchaseDetails } from './PurchaseDetails/PurchaseDetails'
 
 export const AddPurchase = () => {
     const dispatch = useDispatch();
@@ -114,7 +113,7 @@ export const AddPurchase = () => {
                         handleDeleteProduct={handleDeleteProduct}
                         handleUpdateProduct={handleUpdateProduct}
                     />
-                    <OrderDetails
+                    <PurchaseDetails
                         SELECTED_PURCHASE={SELECTED_PURCHASE}
                     />
                     <Footer>

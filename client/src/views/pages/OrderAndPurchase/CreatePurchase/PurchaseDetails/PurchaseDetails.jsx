@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Select } from '../../../../templates/system/Select/Select'
 import { useDispatch, useSelector } from 'react-redux'
+import { Select } from '../../../../templates/system/Select/Select'
+import { DateTime } from 'luxon'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
@@ -11,13 +12,12 @@ import { fbAddPurchaseReceiptImg } from '../../../../../firebase/purchase/addPur
 import { clearImageViewer, toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
 import { AddCondition, deleteReceiptImageFromPurchase, selectProducts, setDate, setNote } from '../../../../../features/Purchase/addPurchaseSlice'
-import { DateTime } from 'luxon'
 import { convertMillisToDate } from '../../../../../hooks/useFormatTime'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { icons } from '../../../../../constants/icons/icons'
 
 
-export const OrderDetails = ({ SELECTED_PURCHASE }) => {
+export const PurchaseDetails = ({ SELECTED_PURCHASE }) => {
 
     const dispatch = useDispatch()
     const [imgReceipt, setImgReceipt] = useState(null)
