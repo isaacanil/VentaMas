@@ -69,12 +69,6 @@ export const getMenuData = () => {
             ]
         },
         {
-            title: 'Cuadre de caja',
-            icon: icons.menu.unSelected.cashReconciliation,
-            route: CASH_RECONCILIATION_LIST,
-            group: 'cashReconciliation'
-        },
-        {
             title: 'Inventario',
             icon: icons.menu.unSelected.inventory,
             submenuIconOpen: ChevronLeft,
@@ -113,6 +107,13 @@ export const getMenuData = () => {
                 }
             ]
         },
+        {
+            title: 'Cuadre de caja',
+            icon: icons.menu.unSelected.cashReconciliation,
+            route: CASH_RECONCILIATION_LIST,
+            group: 'cashReconciliation'
+        },
+     
         {
             title: 'Contacto',
             icon: icons.menu.unSelected.contacts,

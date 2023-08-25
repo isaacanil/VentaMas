@@ -26,6 +26,11 @@ import { selectUser } from '../../../features/auth/userSlice'
 import { fbAddMultipleInvoices } from '../../../firebase/invoices/fbAddMultipleInvoices'
 import { invoicesData } from '../../../firebase/invoices/invoices'
 import { fbUpdateNCFInvoices } from '../../../firebase/invoices/fbUpdateMultipleInvoices'
+import { DropdownMenu } from '../../templates/system/DropdownMenu/DropdowMenu'
+import { faListAlt, faTable } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+
 
 export const Registro = () => {
   const dispatch = useDispatch()
@@ -81,7 +86,22 @@ export const Registro = () => {
       console.error("Ocurrió un error al agregar las facturas:", error);
     }
   };
-  
+
+  const options = [
+    {
+      text: 'Resumen de Factura',
+      description: 'Obtén un resumen consolidado que incluye información general del cliente, totales y métodos de pago.',
+      icon: <FontAwesomeIcon icon={faListAlt} />,
+      action: () => handleExportButton('Resumen')
+    },
+    {
+      text: 'Detalle de Factura',
+      description: 'Accede a un desglose detallado con información de cada producto vendido, categorías, precios y cantidades.',
+      icon: <FontAwesomeIcon icon={faTable} />,
+      action: () => handleExportButton('Detailed')
+    },
+  ];
+
   return (
     <Fragment>
       <Container
@@ -90,14 +110,15 @@ export const Registro = () => {
       >
         <MenuApp
           sectionName={'Recibos de Venta'}
+          data={invoices}
         />
         <FilterBar>
           <span>
             <DatePicker dates={setDatesSelected} data={datesSelected} />
             <TimeFilterButton onTimeFilterSelected={handleTimeChange} />
-            <ComponentTagger text={'Exportar excel:'} children={
+            {/* <ComponentTagger text={'Exportar excel:'} children={ */}
               <ButtonGroup>
-                <Button
+                {/* <Button
                   bgcolor={'gray'}
                   title={'Resumen'}
                   borderRadius='normal'
@@ -106,16 +127,17 @@ export const Registro = () => {
                 />
                 <Button
                   bgcolor={'gray'}
-                  //title={'Detalle'}
+                  title={'Detalle'}
                   borderRadius='normal'
-                 // onClick={() => handleExportButton('Detailed')}
-                  //startIcon={<SiMicrosoftexcel />}
-                  startIcon={icons.operationModes.delete}
-                  title={'Eliminar'}
-                  onClick={handleButtonClick}
-                />
+                  onClick={() => handleExportButton('Detailed')}
+                  startIcon={<SiMicrosoftexcel />}
+                /> */}
+                {/* <DropdownMenu
+                  title={'Exportar excel'}
+                  options={options}
+                /> */}
               </ButtonGroup>
-            } />
+            {/* } /> */}
           </span>
         </FilterBar>
         <SaleReportTable

@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 
-export const MenuApp = ({ sectionName, borderRadius, setSearchData, searchData }) => {
+export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, searchData }) => {
   const ref = useRef(null)
   const dispatch = useDispatch()
 
@@ -44,7 +44,7 @@ export const MenuApp = ({ sectionName, borderRadius, setSearchData, searchData }
             <SectionName>{sectionName}</SectionName>
           )}
         </Group>
-        <GlobalMenu setSearchData={setSearchData} searchData={searchData} />
+        <GlobalMenu data={data} setSearchData={setSearchData} searchData={searchData} />
         <SideBar isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
       </Container>
     </Fragment>

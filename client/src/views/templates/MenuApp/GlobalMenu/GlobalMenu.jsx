@@ -4,11 +4,11 @@ import { InventoryMenuToolbar } from './Page/InventoryMenuToolbar'
 import { toolbarConfig } from './GlobalMenuConfig'
 import styled from 'styled-components'
 
-export const GlobalMenu = ({ searchData, setSearchData }) => {
+export const GlobalMenu = ({ data, searchData, setSearchData }) => {
     const renderToolbarComponents = (side) => {
         return toolbarConfig[side].map((config) => {
             const MenuComponent = config.component;
-            return <MenuComponent key={config.id} side={config.side} searchData={searchData} setSearchData={setSearchData} />;
+            return <MenuComponent key={config.id} side={config.side} data={data} searchData={searchData} setSearchData={setSearchData} />;
         })
     };
     return (

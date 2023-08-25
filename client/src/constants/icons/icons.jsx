@@ -20,6 +20,7 @@ export const icons = {
             hide: <FontAwesomeIcon icon={faEyeSlash} />,
         }
     },
+   
     arrows: {
         chevronDown: <FontAwesomeIcon icon={faChevronDown} />,
         chevronUp: <FontAwesomeIcon icon={faChevronUp} />,

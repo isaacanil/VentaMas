@@ -1,63 +1,66 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-
-const MenuButton = styled.button`
-  /* Estilos para el botón del menú */
-`;
-
-const Option = styled.div`
-width: 100%;
-height: 2.75em;
-padding: 0 1em;
-display: flex;
-align-items: center;
-:hover {
-  background-color: #f2f2f2;
-}
-  /* Estilos para los botones de las opciones */
-`;
-
-const OptionsContainer = styled.div`
-  width: 100%;
-  max-width: 200px;
-  background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, .3);
-  padding: 0em 0;
-  position: absolute;
-  z-index: 5;
-  overflow: hidden;
+import { Button } from '../Button/Button';
+import { Option } from './Option';
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import { usePopper } from 'react-popper';
 
 
-  
-`;
-
-export const DropdownMenu = () => {
+export const DropdownMenu = ({ title = 'Opciones', options = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const options = [
-    { text: 'Opción 1', action: () => alert('Has seleccionado la Opción 1') },
-    { text: 'Opción 2', action: () => alert('Has seleccionado la Opción 2') },
-    { text: 'Opción 3', action: () => alert('Has seleccionado la Opción 3') },
-  ];
-
+  const DropDownMenuRef = useRef(null);
+ // Popper
+ const [referenceElement, setReferenceElement] = useState(null);
+ const [popperElement, setPopperElement] = useState(null);
+ //estilos de popper
+ const { styles, attributes } = usePopper(referenceElement, popperElement, {
+  modifiers: [{ name: 'arrow' }],
+});
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
-
+  useClickOutSide(DropDownMenuRef,  isOpen, toggleMenu,);
   return (
-    <div>
-      <MenuButton onClick={toggleMenu}>Menú</MenuButton>
+    <div  ref={DropDownMenuRef}>
+      <Button
+        ref={setReferenceElement}
+        title={title}
+        onClick={toggleMenu}
+      />
+      {/* <button
+        ref={setReferenceElement}
+        onClick={toggleMenu}
+
+      >
+        {title}
+      </button> */}
       {isOpen && (
-        <OptionsContainer>
+        <Container
+          
+          ref={setPopperElement}
+          style={styles.popper}
+          {...attributes.popper}
+        >
           {options.map((option, index) => (
-            <Option key={index} onClick={option.action}>
-              {option.text}
-            </Option>
+            <Option key={index} option={option} />
           ))}
-        </OptionsContainer>
+        </Container>
       )}
     </div>
   );
 };
 
+
+const Container = styled.div`
+  width: 100%;
+  min-width: 350px;
+  max-width: 500px;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, .3);
+  padding: 0em 0;
+  z-index: 5;
+  overflow: hidden;
+  
+`;
 

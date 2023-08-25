@@ -1,12 +1,12 @@
 
-import { useState } from 'react'
+import { forwardRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { Tooltip } from './Tooltip'
 import { useWindowWidth } from '../../../../hooks/useWindowWidth'
 
 
-export const Button = ({
+export const Button = forwardRef(({
   bgcolor,
   border,
   color,
@@ -29,7 +29,8 @@ export const Button = ({
   tooltipDescription,
   tooltipPlacement,
 
-}) => {
+
+}, ref ) => {
   const handleClick = (e) => {
     e.stopPropagation()
     onClick()
@@ -38,6 +39,7 @@ export const Button = ({
   return (
     
     <Tooltip
+
     placement={tooltipPlacement}
     description={tooltipDescription}
       Children={
@@ -56,6 +58,7 @@ export const Button = ({
           iconColor={iconColor}
           isActivatedColors={isActivatedColors}
           hidden={hidden}
+          ref={ref}
         >
 
           {isActivated ? iconOn : iconOff}
@@ -68,7 +71,7 @@ export const Button = ({
 
 
   )
-}
+});
 
 export const Container = styled.button`
   //border

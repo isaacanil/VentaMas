@@ -5,6 +5,7 @@ import { CreatePurchaseToolbar } from "./Page/CreatePurchaseToolbar";
 import { InventoryMenuToolbar } from "./Page/InventoryMenuToolbar";
 import { OrderToolbar } from "./Page/OrderToolbar";
 import { PurchaseToolbar } from "./Page/PurchaseToolbar";
+import { RegistroToolbar } from "./Page/RegistroToolbar";
 import UsersAdminToolbar from "./Page/UsersAdminToolbar";
 import { VentaMenuToolbar } from "./Page/VentaMenuToolBar";
 
@@ -40,6 +41,10 @@ const componentsConfig = [
   {
     id: 'createPurchaseToolBar',
     component: CreatePurchaseToolbar
+  },
+  {
+    id: 'billToolBar',
+    component: RegistroToolbar
   }
 ];
 

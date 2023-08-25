@@ -14,6 +14,7 @@ import { CgMathPlus } from 'react-icons/cg'
 import { icons } from '../../../../../constants/icons/icons'
 import { AddProductButton } from '../../../system/Button/AddProductButton'
 import { OPERATION_MODES } from '../../../../../constants/modes'
+
 export const CreatePurchaseToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const {  PURCHASES_CREATE  } = routesName.PURCHASE_TERM;
     const matchWithCashReconciliation = useMatch(PURCHASES_CREATE)
