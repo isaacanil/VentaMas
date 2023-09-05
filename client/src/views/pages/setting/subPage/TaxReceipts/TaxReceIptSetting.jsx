@@ -12,6 +12,7 @@ import { FormattedValue } from '../../../../templates/system/FormattedValue/Form
 import { useCompareArrays } from '../../../../../hooks/useCompareArrays'
 import { ButtonGroup } from '../../../../templates/system/Button/Button'
 import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt'
+import Typography from '../../../../templates/system/Typografy/Typografy'
 // Aquí separamos los botones en sus propios componentes
 const UpdateButton = ({ arrayAreEqual, handleSubmit }) => (
   <Button
@@ -45,8 +46,14 @@ const ToggleReceiptButton = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) => 
 const ReceiptSettingsSection = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) => (
   <DisabledSettingContainer>
     <div>
-      <FormattedValue value={'Opción para Deshabilitar Comprobantes'} type={'title'} size={'small'} />
-      <FormattedValue value={'Activa o desactiva los comprobantes en el punto de venta'} type={'paragraph'} />
+      <Typography variant='h5' bold={'true'} >
+        Opción para Deshabilitar Comprobantes
+      </Typography>
+      <Typography variant='body2' size='small' >
+        Activa o desactiva los comprobantes en el punto de venta
+      </Typography>
+      {/* <FormattedValue value={'Opción para Deshabilitar Comprobantes'} type={'title'} size={'small'} /> */}
+      {/* <FormattedValue value={'Activa o desactiva los comprobantes en el punto de venta'} type={'paragraph'} /> */}
     </div>
     <div>
       <ToggleReceiptButton taxReceiptEnabled={taxReceiptEnabled} handleTaxReceiptEnabled={handleTaxReceiptEnabled} />
@@ -56,13 +63,13 @@ const ReceiptSettingsSection = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) 
 
 const ReceiptTableSection = ({ taxReceiptEnabled, taxReceiptLocal, setTaxReceiptLocal, handleSubmit, handleCancel, arrayAreEqual }) => (
   taxReceiptEnabled && (
-    <div>
+    <Container>
       <TableTaxReceipt array={taxReceiptLocal} setData={setTaxReceiptLocal} />
       <ButtonGroup>
         <UpdateButton arrayAreEqual={arrayAreEqual} handleSubmit={handleSubmit} />
         <CancelButton arrayAreEqual={arrayAreEqual} handleCancel={handleCancel} />
       </ButtonGroup>
-    </div>
+    </Container>
   )
 );
 
@@ -90,41 +97,45 @@ export const TaxReceiptSetting = () => {
 
   return (
     <Container>
-      <MenuApp></MenuApp>
+      <MenuApp sectionName={'Comprobantes'}></MenuApp>
       <Main>
         <Head>
-          <FormattedValue value={'Configuración de Comprobantes'} type={'title'} />
+          <Typography variant='h2'>
+            Configuración de Comprobantes
+          </Typography>
+          {/* <FormattedValue value={'Configuración de Comprobantes'} type={'title'} /> */}
           <FormattedValue value={'Ajusta cómo se generan y muestran los comprobantes en el punto de venta.'} type={'paragraph'} />
         </Head>
-        <Body>
-          <ReceiptSettingsSection taxReceiptEnabled={taxReceiptEnabled} handleTaxReceiptEnabled={handleTaxReceiptEnabled} />
-          <ReceiptTableSection taxReceiptEnabled={taxReceiptEnabled} taxReceiptLocal={taxReceiptLocal} setTaxReceiptLocal={setTaxReceiptLocal} handleSubmit={handleSubmit} handleCancel={handleCancel} arrayAreEqual={arrayAreEqual} />
-        </Body>
+
+        <ReceiptSettingsSection taxReceiptEnabled={taxReceiptEnabled} handleTaxReceiptEnabled={handleTaxReceiptEnabled} />
+        <ReceiptTableSection taxReceiptEnabled={taxReceiptEnabled} taxReceiptLocal={taxReceiptLocal} setTaxReceiptLocal={setTaxReceiptLocal} handleSubmit={handleSubmit} handleCancel={handleCancel} arrayAreEqual={arrayAreEqual} />
+
 
       </Main>
     </Container>
   )
 }
 const Container = styled.div`
-  
+  display: grid;
+  gap: 1.6em;
 `
 const Footer = styled.div``
 const Head = styled.div`
-
+  display: grid;
+ 
   width: 100%;
 
 `
 const DisabledSettingContainer = styled.div`
-display: grid;
+display: flex;
+justify-content: space-between;
+align-items: center;
 gap: 1em;
 `
-const Body = styled.div`
-  display: grid;
-  gap: 1em;
-`
+
 const Main = styled.div`
   display: grid;
-  gap: 1em;
+  gap: 2.6em;
   margin: 0 auto;
   max-width: 800px;
   width: 100%;

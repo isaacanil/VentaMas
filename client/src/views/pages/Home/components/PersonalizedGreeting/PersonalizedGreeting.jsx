@@ -11,10 +11,7 @@ const Name = styled.span`
   font-weight: bold;
 `;
 
-const PersonalizedGreeting = ({ name, greetingText = '¡Bienvenido de nuevo' }) => {
-  if (!name) {
-    throw new Error('Se requiere un nombre para el saludo personalizado');
-  }
+const PersonalizedGreeting = ({ name = 'Anónimo', greetingText = '¡Bienvenido de nuevo' }) => {
 
   const capitalizedFirstName = name.charAt(0).toUpperCase() + name.slice(1);
 

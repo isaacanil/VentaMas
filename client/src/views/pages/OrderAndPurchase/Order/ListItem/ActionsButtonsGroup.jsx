@@ -11,200 +11,70 @@ import { getOrderData } from '../../../../../features/Purchase/addPurchaseSlice'
 import { deleteOrderFromDB, PassDataToPurchaseList } from '../../../../../firebase/firebaseconfig'
 import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
+import { getOrderData as getOrderDataToOrder} from '../../../../../features/addOrder/addOrderModalSlice'
 import { Tooltip } from '../../../../templates/system/Button/Tooltip'
 import { faPencil } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { icons } from '../../../../../constants/icons/icons'
+import { setUserNotification } from '../../../../../features/UserNotification/UserNotificationSlice'
+import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { OPERATION_MODES } from '../../../../../constants/modes'
 
-export const ActionsButtonsGroup = ({ orderData, activeId, setActiveId }) => {
-    const modes = {
-        purchase: 'purchase',
-        delete: 'delete',
-        edit: 'edit'
-    }
-    const dispatch = useDispatch()
-    const [showConfirmButtons, setShowConfirmButtons] = useState(false)
-    const [isAccept, setIsAccept] = useState(null)
-    const [mode, setMode] = useState(null)
-    const navigate = useNavigate()
-    useEffect(()=>{
-        if(!activeId || orderData.id !== activeId) {
-            setShowConfirmButtons(false)
-        }
-        if(activeId && orderData.id === activeId && mode !== null){
-            setShowConfirmButtons(true)
-        }
-    }, [activeId, orderData.id ])
+export const ActionsButtonsGroup = ({ orderData }) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const user = useSelector(selectUser)
+    
+    const { dialog, setDialogConfirm, onClose } = useDialog();
+
     const handleEditMode = (id) => {
-        setMode(modes.edit)
-        setActiveId(id)
-        setShowConfirmButtons(true)
+       navigate(`/orders-create/`)
+       dispatch( getOrderDataToOrder({data: orderData, mode: OPERATION_MODES.UPDATE.id}))
     }
     const handlePurchasingMode = async (id) => {
-        setMode(modes.purchase)
-        setActiveId(id)
-        setShowConfirmButtons(true)
-     
+        // PassDataToPurchaseList(orderData)
+        dispatch(getOrderData( orderData));
+        navigate('/purchases-create');
     }
     const handleDeleteMode = (id) => {
-        setMode(modes.delete)
-        setActiveId(id)
-        setShowConfirmButtons(true)
+        // deleteOrderFromDB(orderData.id)
+        console.log('eliminación completada');
+        setDialogConfirm({
+            ...dialog,
+            isOpen: true,
+            title: 'Eliminar orden',
+            type: 'error',
+            message: '¿Está seguro que desea eliminar esta orden?',
+            onCancel: () => onClose()
+        })
     }
-    const confirmationHandlers = {
-        purchase: {
-            accept: () => {
-                console.log('compra aceptada')
-                setShowConfirmButtons(false)
-                // PassDataToPurchaseList(orderData)
-                dispatch(getOrderData(orderData))
-                navigate('/purchases-create')
-                // dispatch(toggleAddPurchaseModal())
-
-                setIsAccept(null) // reset the state variable
-            },
-            reject: () => {
-                console.log('compra rechazada')
-                setShowConfirmButtons(false)
-                setMode(null)
-                setIsAccept(null) // reset the state variable
-            }
-        },
-        edit: {
-            accept: () => {
-                console.log('editar aceptada')
-                setShowConfirmButtons(false)
-                setMode(null)
-                setIsAccept(null) // reset the state variable
-            },
-            reject: () => {
-                console.log('editar rechazada')
-                setShowConfirmButtons(false)
-                setIsAccept(null) // reset the state variable
-            }
-        },
-        delete: {
-            accept: () => {
-                deleteOrderFromDB(orderData.id)
-                console.log('eliminación completada')
-                setShowConfirmButtons(false)
-                setIsAccept(null) // reset the state variable
-            },
-            reject: () => {
-                console.log('eliminación rechazada')
-                setShowConfirmButtons(false)
-                setIsAccept(null) // reset the state variable
-            }
-        },
-
-    }
-    const reset = () => {
-        setShowConfirmButtons(false)
-        setMode(null)
-        setIsAccept(null) // reset the state variable
-    }
-    useEffect(() => {
-        switch (mode) {
-            case modes.purchase:
-                if (isAccept === true) {
-                    confirmationHandlers.purchase.accept()
-                    return
-                }
-                if (isAccept === false) {
-                    confirmationHandlers.purchase.reject()
-                    return
-                }
-                if (isAccept === null) {
-                    reset()
-                    return
-                }
-            case modes.edit:
-                if (isAccept === true) {
-                    confirmationHandlers.edit.accept()
-                    return
-                } else if (isAccept === false) {
-                    confirmationHandlers.edit.reject()
-                    return
-                } else if (isAccept === null) {
-                    reset()
-                    return
-                }
-            case modes.delete:
-                if (isAccept === true) {
-                    confirmationHandlers.delete.accept()
-                    return
-                } else if (isAccept === false) {
-                    confirmationHandlers.delete.reject()
-                    return
-                } else if (isAccept === null) {
-                    reset()
-                    return
-                }
-        }
-    }, [isAccept])
 
     return (
-        <ButtonGroup position={showConfirmButtons === true ? 'right' : null}>
-            {showConfirmButtons === false ? (
-                <Fragment>
-                    <Tooltip
-                        description='Comprar'
-                        placement='bottom-start'
-                        Children={
-                            <Button
-                                borderRadius='normal'
-                                title={icons.operationModes.buy}
-                                width='icon32'
-                                color='gray-dark'
-                                onClick={() => handlePurchasingMode(orderData.id)}
-
-                            />
-                        }
-                    />
-                    <Tooltip
-                        description='Editar'
-                        placement='bottom'
-                        Children={
-                            <Button
-                                borderRadius='normal'
-                                title={icons.operationModes.edit}
-                                width='icon32'
-                                color='gray-dark'
-                                onClick={() => handleEditMode(orderData.id)}
-                            />
-                        }
-                    />
-                    <Tooltip
-                        description='Eliminar'
-                        placement='bottom-end'
-                        Children={
-                            <Button
-                                borderRadius='normal'
-                                title={icons.operationModes.delete}
-                                width='icon32'
-                                bgcolor='error'
-                                onClick={() => handleDeleteMode(orderData.id)}
-                            />
-                        }
-                    />
-                </Fragment>
-            ) : (
-                <Fragment>
-                    <Button
-                        borderRadius='normal'
-                        title={<MdOutlineCheck />}
-                        width='icon32'
-                        bgcolor='success'
-                        onClick={() => setIsAccept(true)}
-                    />
-                    <Button
-                        borderRadius='normal'
-                        title={<MdOutlineClear />}
-                        width='icon32'
-                        onClick={() => setIsAccept(false)}
-                    />
-                </Fragment>
-            ) }
+        <ButtonGroup >
+            <Fragment>
+                <Button
+                    borderRadius='normal'
+                    title={icons.operationModes.buy}
+                    width='icon32'
+                    color='gray-dark'
+                    onClick={() => handlePurchasingMode(orderData.id)}
+                />
+                <Button
+                    borderRadius='normal'
+                    title={icons.operationModes.edit}
+                    width='icon32'
+                    color='gray-dark'
+                    onClick={() => handleEditMode(orderData.id)}
+                />
+                <Button
+                    borderRadius='normal'
+                    title={icons.operationModes.delete}
+                    width='icon32'
+                    color='gray-dark'
+                    onClick={() => handleDeleteMode(orderData.id)}
+                />
+            </Fragment>
         </ButtonGroup>
     )
 }

@@ -2,14 +2,6 @@ import React, { Fragment, useState } from 'react'
 import { MenuApp, Button, ButtonGroup } from '../../'
 import styled from 'styled-components'
 import { DatePicker } from '../../templates/system/DatePicker/DatePicker'
-import { Bill } from './Bill'
-import { SiMicrosoftexcel } from 'react-icons/si'
-import useExcelExport from '../../../hooks/exportToExcel/useExportToExcel'
-import exportToExcel from '../../../hooks/exportToExcel/useExportToExcel'
-import { formatBill } from '../../../hooks/exportToExcel/formatBill'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import Clock from '../../../hooks/time/Clock'
-import { CenteredText } from '../../templates/system/CentredText'
 import TimeFilterButton from '../../templates/system/Button/TimeFilterButton/TimeFilterButton'
 import { tableData } from './tableData'
 import { SaleReportTable } from './SaleReportTable/SaleReportTable'
@@ -19,16 +11,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import { motion } from 'framer-motion'
-import { pageVariants } from '../../../constants/framerMotion/pageVariants'
-import { fbDeleteMultipleInvoices } from '../../../firebase/invoices/fbDeleteMultipleInvoices'
-import { icons } from '../../../constants/icons/icons'
 import { selectUser } from '../../../features/auth/userSlice'
-import { fbAddMultipleInvoices } from '../../../firebase/invoices/fbAddMultipleInvoices'
-import { invoicesData } from '../../../firebase/invoices/invoices'
-import { fbUpdateNCFInvoices } from '../../../firebase/invoices/fbUpdateMultipleInvoices'
-import { DropdownMenu } from '../../templates/system/DropdownMenu/DropdowMenu'
-import { faListAlt, faTable } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 
 
 
@@ -36,71 +20,13 @@ export const Registro = () => {
   const dispatch = useDispatch()
 
   const [datesSelected, setDatesSelected] = useState({})
-
+  const [searchTerm, setSearchTerm] = useState('')
   const { invoices } = fbGetInvoices(datesSelected)
   const user = useSelector(selectUser);
-  const total = () => invoices.reduce((total, { data }) => total + data.totalPurchase.value, 0)
-
-  const transformedResumenBillsData = () => invoices.map((invoice) => {
-    return formatBill({ data: invoice.data, type: 'Resumen' });
-  });
-
-  const transformedDetailedBillsData = () => {
-    return formatBill({ data: invoices, type: 'Detailed' });
-  };
-
-
-  const handleExportButton = (type) => {
-    if (invoices.length === 0) {
-      dispatch(addNotification({ title: 'Error al exportar', message: 'No hay Facturas para exportar', type: 'error' }))
-      return
-    }
-    switch (type) {
-      case 'Resumen':
-        console.log('----------------------------', transformedResumenBillsData())
-        exportToExcel(transformedResumenBillsData(), 'Registros', 'Registro.xlsx');
-        break;
-      case 'Detailed':
-        console.log('----------------------------', transformedDetailedBillsData())
-        exportToExcel(transformedDetailedBillsData(), 'Registros', 'Registro.xlsx');
-        break;
-      default:
-        break;
-    }
-  };
 
   const handleTimeChange = (start, end) => {
     setDatesSelected({ startDate: start.toMillis(), endDate: end.toMillis() })
   }
-  const handleDeleteMultipleInvoices = () => {
-    fbDeleteMultipleInvoices(user, invoices)
-  }
-  const data = invoicesData;
-  const handleButtonClick = async () => {
-    try {
-      await fbUpdateNCFInvoices(user, data);
-      // Aquí podrías mostrar una notificación de éxito o actualizar la UI como necesites
-      console.log("Facturas agregadas exitosamente");
-    } catch (error) {
-      // Aquí manejas cualquier error que pueda surgir
-      console.error("Ocurrió un error al agregar las facturas:", error);
-    }
-  };
-
-  const options = [
-    {
-      text: 'Resumen de Factura',
-      description: 'Obtén un resumen consolidado que incluye información general del cliente, totales y métodos de pago.',
-      icon: <FontAwesomeIcon icon={faListAlt} />,
-      action: () => handleExportButton('Resumen')
-    },
-    {
-      text: 'Detalle de Factura',
-      description: 'Accede a un desglose detallado con información de cada producto vendido, categorías, precios y cantidades.',
-      icon: <FontAwesomeIcon icon={faTable} />,
-      action: () => handleExportButton('Detailed')
-    },
-  ];
 
   return (
     <Fragment>
@@ -109,43 +35,23 @@ export const Registro = () => {
         transition={{ type: "spring", stiffness: 0 }}
       >
         <MenuApp
-          sectionName={'Recibos de Venta'}
+         
           data={invoices}
+          searchData={searchTerm}
+          setSearchData={setSearchTerm}
         />
         <FilterBar>
           <span>
             <DatePicker dates={setDatesSelected} data={datesSelected} />
             <TimeFilterButton onTimeFilterSelected={handleTimeChange} />
             {/* <ComponentTagger text={'Exportar excel:'} children={ */}
-              <ButtonGroup>
-                {/* <Button
-                  bgcolor={'gray'}
-                  title={'Resumen'}
-                  borderRadius='normal'
-                  onClick={() => handleExportButton('Resumen')}
-                  startIcon={<SiMicrosoftexcel />}
-                />
-                <Button
-                  bgcolor={'gray'}
-                  title={'Detalle'}
-                  borderRadius='normal'
-                  onClick={() => handleExportButton('Detailed')}
-                  startIcon={<SiMicrosoftexcel />}
-                /> */}
-                {/* <DropdownMenu
-                  title={'Exportar excel'}
-                  options={options}
-                /> */}
-              </ButtonGroup>
+
             {/* } /> */}
           </span>
         </FilterBar>
         <SaleReportTable
-          data={tableData}
-          bills={
-            invoices
-          }
-          total={total}
+          bills={invoices}
+          searchTerm={searchTerm}
         />
       </Container>
     </Fragment>

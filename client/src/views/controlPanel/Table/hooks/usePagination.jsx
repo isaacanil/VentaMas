@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
-
-export const useTablePagination = (data, sortedData, filteredData, itemsPerPage = 10) => {
+const scrollToTopOfWrapper = (wrapperRef) => {
+  if (wrapperRef.current) {
+    wrapperRef.current.scrollTop = 0;
+  }
+};
+export const useTablePagination = (data, sortedData, filteredData, itemsPerPage = 15, wrapperRef) => {
   const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
@@ -13,10 +17,21 @@ export const useTablePagination = (data, sortedData, filteredData, itemsPerPage 
   const end = start + itemsPerPage;
   const currentData = sortedData.slice(start, end);
 
-  const nextPage = () => setCurrentPage((prev) => Math.min(prev + 1, pageCount - 1));
-  const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 0));
-  const firstPage = () => setCurrentPage(0);
-  const lastPage = () => setCurrentPage(pageCount - 1);
+  const nextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, pageCount - 1))
+    scrollToTopOfWrapper(wrapperRef);
+  };
+  const prevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 0));
+    scrollToTopOfWrapper(wrapperRef);
+  };
+  const firstPage = () => {
+    setCurrentPage(0);
+    scrollToTopOfWrapper(wrapperRef);
+  };
+  const lastPage = () =>{ 
+    setCurrentPage(pageCount - 1)
+    scrollToTopOfWrapper(wrapperRef);};
 
   return { currentData, nextPage, prevPage, firstPage, lastPage, currentPage, pageCount };
 };

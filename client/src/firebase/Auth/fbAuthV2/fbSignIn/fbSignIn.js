@@ -1,5 +1,5 @@
 import { getDocs, updateDoc, where, collection, query, setDoc, doc, increment } from "firebase/firestore";
-import { hash, compare } from 'bcryptjs'; 
+import { hash, compare } from 'bcryptjs';
 import { db } from "../../../firebaseconfig";
 import { login } from "../../../../features/auth/userSlice";
 
@@ -15,10 +15,8 @@ async function getUserFromFirestore(user) {
     const q = query(userRef, where("user.name", "==", user.name));
     const userSnapshot = await getDocs(q);
 
-    if (userSnapshot.empty) {
-       // throw new Error('Authentication failed');
-       throw new Error('Error: No se encontró el usuario')
-    }
+    if (userSnapshot.empty) { throw new Error('Error: No se encontró el usuario')}
+
     return userSnapshot.docs[0];
 }
 
@@ -32,10 +30,9 @@ async function checkPassword(user, userData) {
     const correctPassword = await compare(user.password, userData.password);
 
     if (!correctPassword) {
-       // throw new Error('Authentication failed');
-         throw new Error('Error: Contraseña incorrecta')
+        throw new Error('Error: Contraseña incorrecta')
     }
-
+    
     return correctPassword;
 }
 
@@ -61,7 +58,7 @@ async function updateAppState(dispatch, userData, userDoc) {
     dispatch(login({
         uid: userDoc.id,
         displayName: userData.name,
-       
+
     }));
 }
 

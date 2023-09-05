@@ -4,10 +4,11 @@ import styled from 'styled-components'
 import { SelectProduct } from '../../../../../features/cart/cartSlice'
 import { ProductCardForCart } from '../ProductCardForCart'
 import { AnimatePresence, motion } from 'framer-motion'
+import Typography from '../../../../templates/system/Typografy/Typografy'
 
 export const ProductsList = () => {
     const ProductSelected = useSelector(SelectProduct)
-    const EMPTY_CART_MESSAGE = "Los productos seleccionados aparecerán aquí";
+    const EMPTY_CART_MESSAGE = "Los productos seleccionados aparecerán aquí...";
     return (
         <Container>
             {
@@ -27,14 +28,17 @@ export const ProductsList = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
+                        <Typography variant='body1'>
+
                         {EMPTY_CART_MESSAGE}
+                        </Typography>
                     </EmptyCartMessage>)
             }
         </Container>
     )
 }
 const Container = styled.ul`
-    background-color: var(--color2);
+    background-color: ${props => props.theme.bg.color2}; 
     display: grid;
     gap: 0.4em;
     align-items: flex-start;

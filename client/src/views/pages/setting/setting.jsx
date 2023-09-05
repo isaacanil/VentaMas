@@ -20,7 +20,7 @@ export const Setting = () => {
   return (
     <Transition>
       <Container>
-        <MenuApp />
+        <MenuApp sectionName={'Configuración'} />
         <Body>
           <Categories>
             {Object.keys(groupedSettings).map((category, index) => (

@@ -1,26 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue'
-import { Modal } from '../../../../../component/modals/Modal'
 import { InputV4 } from '../../../../../templates/system/Inputs/InputV4'
-import Select from '../../../../../templates/system/SelectV3/SelectV3'
 import { nanoid } from 'nanoid'
 import ElemLabel from '../../../../../templates/system/ElemLabel/ElemLabel'
 import { icons } from '../../../../../../constants/icons/icons'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../../../../features/auth/userSlice'
-import { generateEmail } from '../../../../../../firebase/Auth/fbSignUpWithUsernameAndPassoword/functions/randomEmail'
-import { fbSignUpUserAccount } from '../../../../../../firebase/Auth/fbSignUpWithUsernameAndPassoword/fbSignUpWithUsernameAndPassword'
-import { validationRules } from '../../../../../templates/system/Inputs/validationRules'
-import PasswordStrengthIndicator from '../../../../../templates/system/Form/PasswordStrengthIndicator'
 import { useNavigate } from 'react-router-dom'
 import { SelectSignUpUserModal, toggleSignUpUser } from '../../../../../../features/modals/modalSlice'
 import { Button } from '../../../../../templates/system/Button/Button'
-import { DateTime } from 'luxon'
 import { fbSignUp } from '../../../../../../firebase/Auth/fbAuthV2/fbSignUp'
 import { Timestamp } from 'firebase/firestore'
-import { ErrorMessage } from '../../../../../templates/ErrorMassage/ErrorMassage'
 import { ErrorComponent } from '../../../../../templates/system/ErrorComponent/ErrorComponent'
+import { Select } from '../../../../../templates/system/Select/Select'
+import { each } from 'lodash'
 
 const formIcon = icons.forms
 const EmptyUser = {
@@ -43,7 +36,6 @@ const SignUp = () => {
     const { isOpen } = signUpModal;
     const navigate = useNavigate()
 
-    console.log(userInfo.businessID)
     const [user, setUser] = useState({
         name: '',
         password: '',
@@ -53,14 +45,13 @@ const SignUp = () => {
         createAt: ""
     })
 
-    const [rol, setRol] = useState('')
-
     const rolOptions = [
         { id: 'admin', label: 'Admin' },
         { id: 'manager', label: 'Gerente' },
         { id: 'cashier', label: 'Cajero' },
         { id: 'buyer', label: 'Comprador' },
     ]
+
     const validateUser = (user) => {
         let errors = {};
         let passwordErrors = [];
@@ -84,12 +75,11 @@ const SignUp = () => {
             }
         }
 
-        if (!rol.id) {
+        if (!user.role) {
             errors.role = 'Rol es requerido';
         }
         if (passwordErrors.length > 0) {
             errors.password = passwordErrors;
-
         } else {
 
         }
@@ -105,23 +95,15 @@ const SignUp = () => {
     }
     const handleClear = () => {
         setUser(EmptyUser)
-        setRol(EmptyRol)
         setErrors({})
-
     }
-
     const handleSubmit = async () => {
         const errors = validateUser(user);
-        const createAt = Timestamp.now();
-
         // Crea un nuevo objeto user con los datos actualizados.
 
         let updatedUser = {
             ...user,
-            businessID: userInfo.businessID,
-            role: rol.id,
-            createAt,
-            id: nanoid(10),
+            businessID: userInfo.businessID,  
         };
 
         if (Object.keys(errors).length === 0) {
@@ -133,25 +115,38 @@ const SignUp = () => {
             } catch (error) {
                 console.error(error)
                 setErrors({ firebase: error.message })
-
                 return;
             }
-
-
         } else {
             setErrors(errors);
         }
 
     }
-
-
+    const getRol = (id) => {
+        switch (id) {
+            case 'admin':
+                return 'Administrador'
+            case 'manager':
+                return 'Gerente'
+            case 'cashier':
+                return 'Cajero'
+            case 'buyer':
+                return 'Comprador'
+            default:
+                return ''
+        }
+    }
+    const role = getRol(user.role);
+    console.log(errors)
     return (
-
         <Container>
             <Header>
+            <div>
+                <h2>Crear Usuario</h2>
+                <p>Crear un nuevo usuario</p>
+            </div>
             </Header>
             <Body>
-
                 <InputV4
                     icon={formIcon.user}
                     value={user.name}
@@ -161,16 +156,19 @@ const SignUp = () => {
                     name='name'
                     errorMessage={errors.name}
                     validate={errors.name}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                        e.target.value = e.target.value.toLowerCase()
+                        handleInputChange(e)
+                    }}
                 />
                 <ElemLabel label={'Rol'}>
                     <Select
                         title="Seleccionar opción"
-                        options={rolOptions}
-                        optionsLabel="label"
-                        value={rol}
+                        data={rolOptions}
+                        displayKey="label"
+                        value={role}
                         maxWidth='full'
-                        onChange={setRol}
+                        onChange={(e) => setUser({...user, role: e.target.value?.id})}
                     />
                 </ElemLabel>
                 <InputV4
@@ -209,7 +207,9 @@ export default SignUp
 const Container = styled.div`
 max-width: 600px;
 `
-const Header = styled.div``
+const Header = styled.div`
+    padding: 1.6em;
+`
 const Body = styled.div`
 padding: 1.8em 1.5em;
 display: grid;

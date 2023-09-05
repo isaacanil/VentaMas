@@ -10,8 +10,9 @@ const Body = () => {
       <Description>
         <Section>
           <Group>
-            <Typography variant={"body1"}  >
+            <Typography variant={"body1"}>
               {WelcomeData.section.description}
+              Hollaaa
             </Typography>
             <LogoContainer>
             <Logo size='xlarge' src={WelcomeData.logo} alt="" />
@@ -53,9 +54,6 @@ const Description = styled.div`
   height: auto;
   /* justify-content: center; */
   width: 90%;
-  background-color: var(--White);
- 
-  color: #fff;
   padding: 1em 2em;
   margin-bottom: 2em;
 
@@ -71,7 +69,7 @@ const Section = styled.div`
     text-align: justify;
   }
   
-  color: #fff;
+
   margin-bottom: 1em;
   :last-child{
     margin-bottom: 0;

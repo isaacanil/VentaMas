@@ -58,7 +58,7 @@ export const AddPurchase = () => {
         console.log(error, message)
     }
     const handleCancel = () => {
-        navigate(PURCHASES);
+        navigate(-1);
         handleClear();
     }
     useEffect(() => {

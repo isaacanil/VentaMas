@@ -1,157 +1,108 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io'
-import { MdArrowForward } from 'react-icons/md'
-import { useDispatch } from 'react-redux'
+import React, { Fragment, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
+import { useClickOutSide } from '../../../../../../../hooks/useClickOutSide'
+import { Button } from '../../../../../../templates/system/Button/Button';
+import { icons } from '../../../../../../../constants/icons/icons';
 
-import { useSearchFilter, useSearchFilterOrderMenuOption } from '../../../../../../hooks/useSearchFilter'
-import { Button } from '../../../../../templates/system/Button/Button'
-import { Input } from './Input'
-import { modifyOrderMenuData } from './modifyOrderMenuData'
-import { Toolbar } from './Toolbar'
-
-export const Item = ({ data, index, propertyName, }) => {
-    const [searchTerm, setSearchTerm] = useState('')
-    const dispatch = useDispatch()
-    const { Items } = data
-    console.log(propertyName)
-    const optionsFiltered = useSearchFilterOrderMenuOption(Items, searchTerm)
-    // const handleOpenItem = () => setIsItemOpen(!isItemOpen)
-    const handleOpenItem = (id) => dispatch(handleOpenOptions({ id }))
+export const Item = ({ name, data, option, onClick, value,}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selected, setSelected] = useState(null);
+    const handleOpen = () => setIsOpen(!isOpen);
+    const handleSelect = () => {
+        setIsOpen(false)
+    }
+    const MenuRef = useRef(null);
+    useClickOutSide(MenuRef, isOpen, () => setIsOpen(false));
+  
     return (
-        <Container>  
-            <Head isOpen={data.isOpen ? true : false} onClick={() => handleOpenItem(data.id)}>
-                <IoIosArrowForward /> <span>{data.name}</span>
-            </Head>
-            <Body isOpen={data.isOpen ? true : false} index={index}>
-                <Toolbar data={data} handleOpen={() => handleOpenItem(data.id)}></Toolbar>
-                <Input data={data} onChange={(e) => setSearchTerm(e.target.value)} fn={() => setSearchTerm('')} />
-                <OptionFilterList>
-                    {
-                        optionsFiltered.map((item, subIndex) => (
-                            subIndex <= 5 ? (
-                                <FilterOption key={subIndex} isSelected={item.selected ? true : false}>
-                                    <input type="checkbox" name="selected" id={subIndex} />
-                                    <label htmlFor={subIndex}>
-                                        {item.name}
-                                    </label>
-                                </FilterOption>
-                            ) : null
+        <Container>
+            <Header onClick={handleOpen}>
+                {name}
+         
+               {isOpen ? icons.arrows.caretUp : icons.arrows.caretDown}
+            </Header>
+            {
+                isOpen &&
+                <Menu>
+                    <Body ref={MenuRef}>
+                        {data.map((item, index) => (
+                            <OptionItem
+                                isSelected={value === item.id}
+                                onClick={() => onClick({ value: item })}
+                            >
+                                {option({ value: item })}
+                            </OptionItem>
+                        ))}
+                    </Body>
+                    <Footer>
+                        <button>
+                            Limpiar
+                        </button>
 
-                        ))
-                    }
-                    {optionsFiltered.length === 0 ? <span>No se encontraron resultados.</span> : null}
-                    {optionsFiltered.length !== 0 && data.Items.length > 3 && <Button title='ver más' borderRadius='normal' titlePosition='center'/>}
-
-                </OptionFilterList>
-            </Body>
+                    </Footer>
+                </Menu>
+            }
         </Container>
     )
 }
 const Container = styled.div`
-    
+    background-color: ${props => props.theme.bg.color2};
+    padding: 0 1em;
+    display: flex;
+    position: relative;
 `
+const Header = styled.div`
+    height: 2.4em;
+    justify-content: space-between;
+    gap:1em;
+    display: flex;
+    align-items: center;
+    background-color: ${props => props.theme.bg.color2};
+    padding: 0 0.4em;
+`
+
+const Menu = styled.div`
+     position: absolute;
+    height: 300px;
+    display: grid;
+    grid-template-rows: 1fr min-content;
+    min-width: 200px;
+    top: 100%;
+    background-color: rgb(242, 242, 242);
+    z-index: 100;
+    `
 
 
 const Body = styled.div`
+    top: 100%;
+    background-color: rgb(242, 242, 242);
+    z-index: 100;
+    overflow-y: scroll;
+    padding: 1em;
 
-height: 100%;
-background-color: rgb(242, 242, 242);
-padding: 0.4em 1em;
-gap: 1em;
-display: grid;
-align-items: flex-start;
-align-content: flex-start;
-transform: translate(0, 0px);
-padding: 0.4em 1em;
-position: absolute;
-top: 0px;
-width: 100%;
-height: 100%;
-z-index: 1;
-gap: 1em;
-transition-property: transform;
-transition-duration: 300ms;
-transition-delay: 0ms;
-transition-timing-function: linear;
-
-    ${props => {
-        switch (props.isOpen) {
-          
-            case false:
-                return `   
-                transform: translate(600px, 0px);  
-                position: absolute; 
-                top: 0;
-                width: 100%;   
-                transition-property: transform;
-                transition-duration: 400ms;
-                transition-delay: 0ms;
-                transition-timing-function: linear;
-        `
-
-            default:
-                break;
-        }
-    }}
 `
-
-
-const Head = styled.div`
-height: 2.7em;
-    display: grid;
+const OptionItem = styled.div`
+    border-bottom: 1px solid #cccccc;
+    height: 2.4em;
+    display: flex;
     align-items: center;
-    gap: 1em;
-    grid-template-columns: min-content 1fr;
-    background-color: var(--White);
-    padding: 0 1em;
-    ${props => {
-        switch (props.isOpen) {
-            case true:
-                return`
-                background-color: #dbe7ff;
-                `
-              
-        
-            default:
-                break;
-        }
-    }}
+    :last-child{
+        border-bottom: none;
+    }
+    :hover{
+        background-color: #5e5e5e + cc;
+    }
+   ${props => props.isSelected && `
+        background-color: #e00d0d + cc;
+    `}
 `
-const OptionFilterList = styled.ul`
-    list-style: none;
-    padding: 0;
-    display: grid;
-    
-    gap: 0.4em;
-   
-    
-`
-const FilterOption = styled.li`
-        display: grid;
-        grid-template-columns: min-content 1fr;
-        align-items: center;
-        height: 2.4em;
-        gap: 1em;
-        padding: 0em 0.6em;
-        border-radius: 0.4em;
-        background-color: rgb(254, 254, 254);
-        position: relative;
-        ${props => {
-        switch (props.isSelected) {
-            case true:
-                return `
-                    background-color: rgb(34, 106, 201);
-                    
-                    `
-            case false:
-                return `
-                    background-color: rgb(254, 254, 254);
-                  
-                    `
 
-            default:
-                break;
-        }
-    }}
+
+const Footer = styled.div`
+    display: flex;
+    
+    height: 2.2em;
+    button{
+        flex-grow: 1;
+    }
 `

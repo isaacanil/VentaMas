@@ -15,7 +15,7 @@ export const Item = ({ data, num, colWidth }) => {
   const { abilities } = inspectUserAccess();
 
   const dispatch = useDispatch()
-  const handleDeleteUser = () => {fbDeleteUser(data.user.id)}
+  const handleDeleteUser = () => { fbDeleteUser(data.user.id) }
   const handleEditUser = () => {
     navigate('/users/update-user/' + data.user.id)
     dispatch(updateUser(data.user))
@@ -71,14 +71,13 @@ export const Item = ({ data, num, colWidth }) => {
 const Role = styled.div`
     height: 2em;
     max-width: 120px;
-    border-radius: var(--border-radius);
+    border-radius: 100px;
     width: 100%;
   display: flex;
   text-transform: capitalize;
   align-items: center;
   padding: 0 1em;
-  color: white;
-    background-color: ${(props) => {
+ color: ${(props) => {
     switch (props.role) {
       case 'owner':
         return `#0072F5`
@@ -92,6 +91,41 @@ const Role = styled.div`
         return `#F31260;`
       case 'dev':
         return `#f312bb;`
+      default:
+    }
+  }};
+    border: 2px solid ${(props) => {
+    switch (props.role) {
+      case 'owner':
+        return `#0072F5`
+      case 'admin':
+        return `#9750DD;`
+      case 'buyer':
+        return `#17C964;`
+      case 'cashier':
+        return `#F5A524;`
+      case 'manager':
+        return `#F31260;`
+      case 'dev':
+        return `#f312bb;`
+      default:
+    }
+  }};
+  font-weight: 600;
+    background-color: ${(props) => {
+    switch (props.role) {
+      case 'owner':
+        return `#d1dfee`
+      case 'admin':
+        return `#ddd4e7;`
+      case 'buyer':
+        return `#cfe7da;`
+      case 'cashier':
+        return `#e2d1b5;`
+      case 'manager':
+        return `#e9c8d3;`
+      case 'dev':
+        return `#ecd8e8;`
       default:
     }
   }};

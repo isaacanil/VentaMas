@@ -22,7 +22,7 @@ export const ProductCard = ({ item, handleDeleteProduct, handleUpdateProduct }) 
                 <span>
                     <Input
                         value={item.newStock}
-                        onChange={e => handleUpdateProduct({ value: {newStock: e.target.value}, productID: item.id })}
+                        onChange={e => handleUpdateProduct({ value: {newStock: Number(e.target.value)}, productID: item.id })}
                     />
                 </span>
             </Col>
@@ -31,7 +31,7 @@ export const ProductCard = ({ item, handleDeleteProduct, handleUpdateProduct }) 
                     <Input
                         value={item.initialCost}
                         handleBlur={(value) => useFormatPrice(value)}
-                        onChange={e => handleUpdateProduct({ value: {initialCost: e.target.value}, productID: item.id })}
+                        onChange={e => handleUpdateProduct({ value: {initialCost: Number(e.target.value)}, productID: item.id })}
                     />
                 </span>
             </Col>

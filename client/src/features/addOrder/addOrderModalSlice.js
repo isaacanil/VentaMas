@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { nanoid } from "nanoid";
+import { OPERATION_MODES } from "../../constants/modes";
 const EmptyOrder = {
   condition: "",
   dates: {
@@ -26,6 +27,7 @@ const EmptyProductSelected = {
   newStock: '',
 }
 const initialState = {
+  mode: OPERATION_MODES.CREATE.id,
   productSelected: EmptyProductSelected,
   order: EmptyOrder
 }
@@ -33,6 +35,12 @@ const addOrderSlice = createSlice({
   name: 'addOrder',
   initialState,
   reducers: {
+    getOrderData: (state, actions) => {
+      const {data, mode = OPERATION_MODES.CREATE.id} = actions.payload
+      state.mode = mode
+      data ? state.order = data : null
+
+    },
     SelectProduct: (state, actions) => {
       const product = actions.payload.product;
       state.productSelected.stock = product.stock;
@@ -108,6 +116,7 @@ const addOrderSlice = createSlice({
     cleanOrder: (state) => {
       state.productSelected = EmptyProductSelected
       state.order = EmptyOrder
+      state.mode = OPERATION_MODES.CREATE.id
     },
     AddProvider: (state, actions) => {
       const provider = actions.payload
@@ -118,6 +127,7 @@ const addOrderSlice = createSlice({
   }
 })
 export const {
+  getOrderData,
   SelectProduct,
   AddProductToOrder,
   getInitialCost,
@@ -138,6 +148,7 @@ export const {
 export const SelectProductSelected = state => state.addOrder.productSelected;
 export const SelectProducts = state => state.addOrder.order.replenishments;
 export const SelectOrder = state => state.addOrder.order;
+export const SelectOrderState = state => state.addOrder;
 export const SelectTotalPurchase = state => state.addOrder.order.total;
 
 export default addOrderSlice.reducer

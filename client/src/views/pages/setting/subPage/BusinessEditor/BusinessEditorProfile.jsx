@@ -6,88 +6,101 @@ import { fbUpdateBusinessInfo } from '../../../../../firebase/businessInfo/fbAdd
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
 import { fbGetBusinessInfo } from '../../../../../firebase/businessInfo/fbGetBusinessInfo';
+import { MenuApp } from '../../../..';
+import { selectBusinessData } from '../../../../../features/auth/businessSlice';
+import { set } from 'lodash';
+import Typography from '../../../../templates/system/Typografy/Typografy';
+import { fbAAddMultipleClients } from '../../../../../firebase/client/fbAddMultipleClients';
 
 const BusinessInfo = () => {
 
-  const [businessInfo, setBusinessInfo] = useState({
-    previousInfo: {
-      name: '',
-      address: '',
-      tel: '',
-    },
-    currentInfo: {
-      name: '',
-      address: '',
-      tel: '',
-    }
+  const business = useSelector(selectBusinessData)
+  const [businessInfo, setBusinessInfo] = useState(business || {
+    name: '',
+    address: '',
+    tel: '',
   });
 
   const user = useSelector(selectUser);
-  useEffect(() => {
-    fbGetBusinessInfo(setBusinessInfo, user)
-  }, [user])
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBusinessInfo({
-      ...previousInfo,
-      currentInfo: {
-        ...businessInfo.currentInfo,
-        [name]: value,
-      }
+      ...businessInfo,
+      [name]: value,
     });
   };
-
+  useEffect(() => {
+    setBusinessInfo(business)
+  }, [business])
   const handleSubmit = (event) => {
     event.preventDefault();
-    fbUpdateBusinessInfo(businessInfo.currentInfo, user);
+    if(!businessInfo?.name || !businessInfo?.address || !businessInfo?.tel) return alert('Completa todos los campos')
+    fbUpdateBusinessInfo(user, businessInfo);
   };
+  const metadata = {
+    title: 'Información del negocio',
+    description: 'Agrega la información de tu negocio, como nombre, dirección y teléfono. Esta información se utilizará en tus facturas.',
+  }
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Wrapper>
-        <Group>
-          <InputV4
-            id="name"
-            label='Nombre'
-            placeholder="Nombre del negocio"
-            type="text"
-            name="name"
-            value={businessInfo.name}
-            onChange={handleChange}
-          />
-        </Group>
-        <Group>
-          <InputV4
-            id="address"
-            label='Dirección'
-            type="text"
-            name="address"
-            placeholder="Calle 123, Colonia, Ciudad, Estado"
-            value={businessInfo.address}
-            onChange={handleChange}
-          />
-        </Group>
-        <Group>
-          <InputV4
-            id="tel"
-            label='Teléfono'
-            type="text"
-            name="tel"
-            placeholder="55 1234 5678"
-            value={businessInfo.tel}
-            onChange={handleChange}
-          />
-        </Group>
-        <Button type="submit">Guardar</Button>
-      </Wrapper>
-    </Form>
+    <Container>
+      <MenuApp />
+      <Form onSubmit={handleSubmit}>
+        <Header>
+          <Typography variant='h2'>Información del negocio</Typography>
+          <Typography variant='p'>{metadata.description} </Typography>
+         
+        </Header>
+        <Wrapper>
+          <Group>
+            <InputV4
+              id="name"
+              label='Nombre'
+              placeholder="Nombre del negocio"
+              type="text"
+              name="name"
+              value={businessInfo?.name}
+              onChange={handleChange}
+            />
+
+          </Group>
+          <Group>
+            <InputV4
+              id="address"
+              label='Dirección'
+              type="text"
+              name="address"
+              placeholder="Calle 123, Colonia, Ciudad, Estado"
+              value={businessInfo?.address}
+              onChange={handleChange}
+            />
+          </Group>
+          <Group>
+            <InputV4
+              id="tel"
+              label='Teléfono'
+              type="text"
+              name="tel"
+              placeholder="55 1234 5678"
+              value={businessInfo?.tel}
+              onChange={handleChange}
+            />
+          </Group>
+          <Button type="submit">Guardar</Button>
+        </Wrapper>
+      </Form>
+    </Container>
   );
 };
 
 export default BusinessInfo;
 
-
+const Container = styled.div``
+const Header = styled.div`
+max-width: 600px;
+`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -124,5 +137,6 @@ max-width: 500px;
 width: 100%;
 display: grid;
 gap: 1em;
+margin-top: 3em;
 
 `

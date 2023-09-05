@@ -56,11 +56,12 @@ const MenuItem = styled.div`
   }
   
   :hover{
-    color: var(--color);
+ 
+    color: ${props => props.theme.bg.color};
     /* background-color: var(--color2); */
     transition: background-color 400ms ease;
     svg{
-      color: var(--color);
+      color: ${props => props.theme.bg.color};
     }
   }
   svg{
@@ -70,13 +71,14 @@ const MenuItem = styled.div`
 `
 const MenuItemLink = styled(MenuItem).attrs({
   as: NavLink,
-  activeclassname: 'active'
+  activeClassName: 'active'
 })`
 font-weight: 450;
    &.active {
     color: white;
     font-weight: 600;
-  background-color:var(--color);
+    
+    background-color: ${props => props.theme.bg.color};
   svg{
     color: white;
   }

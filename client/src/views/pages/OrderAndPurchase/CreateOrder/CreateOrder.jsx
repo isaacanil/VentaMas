@@ -17,6 +17,7 @@ import {
     AddProvider,
     DeleteProduct,
     SelectOrder,
+    SelectOrderState,
     SelectProduct,
     SelectProductSelected,
     SelectProducts,
@@ -31,25 +32,34 @@ import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
 import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { useNavigate } from 'react-router-dom'
 import ROUTES_PATH from '../../../../routes/routesName'
+import { OPERATION_MODES } from '../../../../constants/modes'
+import { fbUpdateOrder } from '../../../../firebase/order/fbUpdateOrder'
+import { fbAddOrder } from '../../../../firebase/order/fbAddOrder'
 
 export const CreateOrder = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const UpdateRef = OPERATION_MODES.UPDATE.id;
+    const CreateRef = OPERATION_MODES.CREATE.id;
+
     const OrderSelected = useSelector(SelectOrder);
+    const OrderState = useSelector(SelectOrderState);
     const selectedProduct = useSelector(SelectProductSelected);
     const productsSelected = useSelector(SelectProducts);
     const provider = OrderSelected.provider;
-    const {ORDERS} = ROUTES_PATH.PURCHASE_TERM
-    const navigate = useNavigate()
+    const { ORDERS } = ROUTES_PATH.PURCHASE_TERM
     const user = useSelector(selectUser);
     const { providers } = useFbGetProviders(user);
     const productTotalPurchasePrice = useSelector(SelectTotalPurchase)
-
+    console.log('OrderSelected', OrderSelected);
     const handleClose = () => {
         dispatch(cleanOrder());
-        navigate(ORDERS)
+        navigate(ORDERS);
     }
+
     const HandleSubmit = async () => {
-        if (!OrderSelected?.provider  || OrderSelected?.provider?.id == "") {
+        if (!OrderSelected?.provider || OrderSelected?.provider?.id == "") {
             dispatch(addNotification({ title: 'Error', message: 'Agregue el proveedor', type: 'error' }))
             return
         }
@@ -65,14 +75,23 @@ export const CreateOrder = () => {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Condición', type: 'error' }))
             return
         }
+
         try {
-            await AddOrder(user, OrderSelected)
-                .then(() => {
-                    dispatch(addNotification({ message: 'Pedido Creado', type: 'success' }))
-                    dispatch(closeModalAddOrder());
-                    handleClose();
-                
-                })
+            if (OrderState.mode === CreateRef) {
+                // Lógica para crear la orden
+                await fbAddOrder(user, OrderSelected)
+                    .then(() => {
+                        dispatch(addNotification({ message: 'Pedido Creado', type: 'success' }));
+                        handleClose();
+                    });
+            } else if (OrderState.mode === UpdateRef) {
+                // Lógica para editar la orden
+                await fbUpdateOrder(user, OrderSelected)
+                    .then(() => {
+                        dispatch(addNotification({ message: 'Pedido Actualizado', type: 'success' }));
+                        handleClose();
+                    });
+            }
         } catch (error) {
             setTimeout(() => {
                 dispatch(addNotification({ title: 'Error', message: `${error}`, type: 'error' }))
@@ -82,34 +101,36 @@ export const CreateOrder = () => {
     }
     const handleCancel = () => {
         dispatch(cleanOrder());
-       // dispatch(closeModalAddOrder());
-        navigate(ORDERS)
+        navigate(-1)
     }
+
     const selectProduct = (product) => dispatch(SelectProduct(product));
     const handleSetSelectedProduct = (obj) => dispatch(setProductSelected(obj));
     const addProduct = () => dispatch(AddProductToOrder());
     const handleDeleteProduct = (product) => dispatch(DeleteProduct(product.id));
     const handleUpdateProduct = (product) => dispatch(updateProduct(product));
+    const title = {
+        [CreateRef]: 'Nuevo Pedido',
+        [UpdateRef]: 'Editar Pedido'
+    }
 
     return (
 
         <Modal>
             <Header>
                 <MenuApp
-                    sectionName='Nuevo Pedido'
+                    sectionName={title[OrderState.mode]}
                 />
             </Header>
             <BodyContainer>
                 <Body>
-                    <ToolBar >
-                        <Select
-                            title='Proveedor'
-                            data={providers}
-                            onChange={(e) => dispatch(AddProvider(e.target.value?.provider))}
-                            displayKey={'provider.name'}
-                            value={provider?.name}
-                        />
-                    </ToolBar>
+                    <Select
+                        title='Proveedor'
+                        data={providers}
+                        onChange={(e) => dispatch(AddProvider(e.target.value?.provider))}
+                        displayKey={'provider.name'}
+                        value={provider?.name}
+                    />
                     <StockedProductPicker
                         addProduct={addProduct}
                         selectProduct={selectProduct}
@@ -122,9 +143,9 @@ export const CreateOrder = () => {
                         handleDeleteProduct={handleDeleteProduct}
                         handleUpdateProduct={handleUpdateProduct}
                     />
-                    <OrderDetails/>
+                    <OrderDetails />
                     <WrapperFooter>
-                    <ButtonGroup>
+                        <ButtonGroup>
                             <Button
                                 title='Cancelar'
                                 borderRadius={'normal'}
@@ -133,7 +154,7 @@ export const CreateOrder = () => {
                                 onClick={handleCancel}
                             />
                             <Button
-                                title='Guardar'
+                                title={OrderState.mode === CreateRef ? 'Crear' : 'Actualizar'}
                                 borderRadius={'normal'}
                                 bgcolor='primary'
                                 height={'medium'}
@@ -141,7 +162,6 @@ export const CreateOrder = () => {
                             />
                         </ButtonGroup>
                     </WrapperFooter>
-
                 </Body>
             </BodyContainer>
         </Modal>

@@ -19,7 +19,7 @@ export const Button = forwardRef(({
   hidden,
   variant,
   disabled,
-  borderRadius,
+  borderRadius = 'normal',
   isActivated,
   isActivatedColors,
   iconOn,
@@ -30,44 +30,40 @@ export const Button = forwardRef(({
   tooltipPlacement,
 
 
-}, ref ) => {
+}, ref) => {
   const handleClick = (e) => {
     e.stopPropagation()
     onClick()
   }
-  
+
   return (
-    
-    <Tooltip
 
-    placement={tooltipPlacement}
-    description={tooltipDescription}
-      Children={
-        <Container
-          bgcolor={bgcolor}
-          color={color}
-          onClick={onClick && handleClick}
-          width={width}
-          height={height}
-          variant={variant}
-          disabled={disabled}
-          borderRadius={borderRadius}
-          isActivated={isActivated}
-          titlePosition={titlePosition}
-          border={border}
-          iconColor={iconColor}
-          isActivatedColors={isActivatedColors}
-          hidden={hidden}
-          ref={ref}
-        >
 
-          {isActivated ? iconOn : iconOff}
-          {startIcon ? startIcon : null}
-          {title ? title : null}
-          {endIcon ? endIcon : null}
+    <Container
+      bgcolor={bgcolor}
+      color={color}
+      onClick={onClick && handleClick}
+      width={width}
+      height={height}
+      variant={variant}
+      disabled={disabled}
+      borderRadius={borderRadius}
+      isActivated={isActivated}
+      titlePosition={titlePosition}
+      border={border}
+      iconColor={iconColor}
+      isActivatedColors={isActivatedColors}
+      hidden={hidden}
+      ref={ref}
+    >
 
-        </Container>
-      } />
+      {isActivated ? iconOn : iconOff}
+      {startIcon ? startIcon : null}
+      {title ? title : null}
+      {endIcon ? endIcon : null}
+
+    </Container>
+
 
 
   )
@@ -131,12 +127,31 @@ export const Container = styled.button`
         return `
         border-radius: var(--border-radius-light);
       `
+      case 'none':
+        return `
+        border-radius: 0;
+      `
+      case 'round':
+        return `
+        border-radius: 100px;
+      `
       default:
         break;
     }
   }}
  ${(props) => {
     switch (props.bgcolor) {
+      case "neutral":
+        return `
+        background-color: ${props.theme.colors.neutral.light};
+        color: ${props.theme.colors.neutral.main};
+        &:hover{
+          background-color: ${props.theme.colors.neutral.main};
+          color: ${props.theme.colors.neutral.light};
+        }
+        `
+
+
       case "error":
         return `
             background-color: #d34343;
@@ -223,7 +238,8 @@ export const Container = styled.button`
     switch (props.width) {
       case "w100":
         return `
-        
+        max-width: 100%;
+        min-width: 100%;
         width: 100% !important;
         
           `;

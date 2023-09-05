@@ -40,7 +40,7 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
             }
             onSubmit(userData)
             setTimeout(() => {
-                navigate('/cash-reconciliation')
+                navigate(-1)
                 dispatch(clearCashCount())
             }, 1000)
         } catch (error) {

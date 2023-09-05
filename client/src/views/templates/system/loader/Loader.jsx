@@ -56,7 +56,7 @@ const Container = styled.div`
     }
   }}
  
-  z-index: 9999;
+  z-index: 999;
   opacity: ${({ show }) => (show ? 1 : 0)};
   pointer-events: ${({ show }) => (show ? 'all' : 'none')};
   transition: opacity 1000ms ease-in-out;

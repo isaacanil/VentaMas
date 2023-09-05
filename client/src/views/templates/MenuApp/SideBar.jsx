@@ -73,7 +73,7 @@ const Container = styled(motion.div)`
     max-width: 400px;
     width: 100%;
     height: 100vh;
-    background-color: rgb(255, 255, 255);
+    background-color: ${props => props.theme.bg.shade}; 
     transform: translateX(-100%);  
     transition: transform 400ms ease;
     overflow-y: auto;
@@ -89,7 +89,7 @@ const Container = styled(motion.div)`
 `
 const Body = styled.div`
     /* position: relative; */
-    background-color: var(--color2);
+    background-color: ${props => props.theme.bg.color2}; 
     padding: 0.8em;
 `
 
@@ -101,7 +101,7 @@ const Links = styled.ul`
 
     `
 const Group = styled.div`
-    background-color: white;
+    background-color: ${props => props.theme.bg.shade};
     border-radius: var(--border-radius);
     overflow: hidden;
 `
@@ -113,7 +113,7 @@ const Head = styled.div`
     width: 100%;
     display: flex;
     align-items: center;
-    background-color: var(--color);
+    background-color: ${props => props.theme.bg.color}; 
     position: sticky;
     top: 0;
      
@@ -121,5 +121,5 @@ const Head = styled.div`
 const EmptyBox = styled.div`
     height: 2.75em;
     width:4em;
-    background-color: var(--color);
+    background-color: ${props => props.theme.bg.color}; 
     `

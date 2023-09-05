@@ -1,75 +1,34 @@
 import React, { useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-
+import { orderAndDataCondition, orderAndDataState } from '../../../../../../../constants/orderAndPurchaseState'
 import { Item } from './Item'
 
-export const OrderMenuFilter = ({ MenuIsOpen }) => {
- 
- 
+
+export const OrderMenuFilter = ({ options = [] }) => {
+
   return (
-    // <Container isOpen={MenuIsOpen ? true : false} >
-    //   <Wrapper>
-    //     <Head>
-    //       <h3>Filtros</h3>
-    //     </Head>
-    //     <Body>
-    //       {
-    //         OrderFilterOptionsSelected.length > 0 ? (
-    //           OrderFilterOptionsSelected.map((item, index) => (
-    //             <Item data={item} index={index} key={index} />
-    //           ))
-    //         ) : null
-    //       }
-    //     </Body>
-    //   </Wrapper>
-<div></div>
-    // </Container>
+    <Container>
+      {
+        options.map((item, index) => (
+          <Item
+            key={index}
+            name={item.name}
+            data={item.data}
+            option={item.option}
+            onClick={item.onClick}
+            value={item.value}
+            default={item.default}
+          />
+        ))
+      }
+    </Container>
+
   )
 }
 
 const Container = styled.div`
-  overflow: hidden;
-  
-  height: calc(100vh - 9em);
-  max-width: 500px;
-  width: 100%;
-  border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.150);
-  
-  top: 5.2em;
-  position: absolute;
-  z-index: 1;
-  background-color: #ffffff;
-  transform: scale(1);
-  transition: transform 400ms ease-in-out;
-  box-shadow: 10px 10px 10px 2px rgba(0, 0, 0, 0.150);
-  @media (max-width: 600px){
-    left: 0;
-    max-width: none;
-    border-radius: 0;
-    width: 100%;
-    max-height: none;
-    height: calc(100vh - 5.3em);
-    margin: 0;
-    border: 0;
-  }
-  ${props => {
-    switch (props.isOpen) {
-      case true:
-        return `
-        transform: scaleX(1) translateX(0px) translateY(0px);
-        `
-
-      case false:
-        return `   
-        transform: scale(0) translateX(-400px) translateY(-100px);
-        `
-
-      default:
-        break;
-    }
-  }}
+  display: flex;
+  padding: 0.2em;
 `
 const Wrapper = styled.div`
   height: 100%;

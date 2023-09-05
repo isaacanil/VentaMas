@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { icons } from "../../../constants/icons/icons"
 import getIconFromText from "../../../utils/text/getIconFromText"
 
-export const Category = ({ category, ref, onClick, type, icon, themeColor, selected }) => {
+export const Category = ({ category, ref, onClick, type, icon, themeColor, selected, index }) => {
     const [isSelected, setIsSelected] = useState(false)
     const dispatch = useDispatch()
     const start = (category, ref) => {
@@ -27,8 +27,8 @@ export const Category = ({ category, ref, onClick, type, icon, themeColor, selec
     const effectCategory = {
         hidden: { y: 20, opacity: 0 },
         visible: {
-          y: 0,
-          opacity: 1
+            y: 0,
+            opacity: 1
         }
     }
     return (
@@ -37,7 +37,11 @@ export const Category = ({ category, ref, onClick, type, icon, themeColor, selec
             type={type}
             selected={selected ? true : false}
             onClick={(e) => onClick ? onClick() : start(category, ref)}
-            variants={effectCategory}
+            // variants={effectCategory}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ delay: index * 0.4 }}
         >
             {icon && icon}
             {getIconFromText(category.name)}
@@ -58,11 +62,11 @@ align-items: center;
 padding: 0 0.75em;
 gap: 0.5em;
 //color & Ground
-background-color: var(--color2);
+background-color: ${({ theme }) => theme.bg.color2};
     border-radius: var(--border-radius);
     text-transform: capitalize;
     font-weight: 500;
-    color: rgb(109, 108, 108);
+    color: #585858;
     transition: 300ms ease-in-out;
     :hover{
         background-color: #e7f0fa;

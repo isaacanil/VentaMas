@@ -8,12 +8,15 @@ import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 import { toggleViewOrdersNotes } from '../../../../../../features/modals/modalSlice'
 import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
+import { convertMillisToDate } from '../../../../../../hooks/useFormatTime'
+import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
 
 export const PendingOrdersTable = () => {
-  const dispatch = useDispatch()
-  const [activeId, setActiveId] = useState()
-  const [purchases, setPurchases] = useState([])
-  const user = useSelector(selectUser)
+  const dispatch = useDispatch();
+
+  const [purchases, setPurchases] = useState([]);
+  const user = useSelector(selectUser);
+
   useEffect(() => {
     getPurchaseFromDB(user, setPurchases)
   }, [user])
@@ -33,38 +36,38 @@ export const PendingOrdersTable = () => {
     {
       Header: 'Nota',
       accessor: 'note',
-      cell: (value) => <Button
-        title='ver'
-        borderRadius='normal'
-        color='gray-dark'
-        border='light'
-        onClick={() => handleViewNotes(value)}
-      />
+      cell: ({ value }) => (
+        <Button
+          title='ver'
+          borderRadius='normal'
+          color='gray-dark'
+          border='light'
+          onClick={() => dispatch(setNote({ note: value, isOpen: true }))}
+        />
+      )
     },
     {
       Header: 'Fecha',
       accessor: 'date',
-      cell: ({ value }) => {
-        return <div>{value?.deliveryDate}</div>
-      }
+      cell: ({ value }) => <div>{convertMillisToDate(value?.deliveryDate)}</div>
     },
     {
       Header: 'F. Pago',
-      accessor: 'paymentDate'
+      accessor: 'paymentDate',
+      cell: ({ value }) => <div>{convertMillisToDate(value?.paymentDate)}</div>
     },
     {
       Header: 'Total',
       accessor: 'total',
       align: 'right',
-      cell: ({ value }) => {
-        return <div>{useFormatPrice(value)}</div>
-      }
+      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+
     },
     {
       Header: 'Acción',
       accessor: 'action',
       align: 'right',
-      cell: (value) => <ActionsButtonsGroup purchaseData={value} activeId={activeId} setActiveId={setActiveId}></ActionsButtonsGroup>
+      cell: (value) => <ActionsButtonsGroup purchaseData={value} />
     }
 
   ]
@@ -80,40 +83,11 @@ export const PendingOrdersTable = () => {
     }
   })
   return (
-    // <Container>
-    //   <Body>
-    //     <TitleContainer>
-    //       <h3>Lista de Compras</h3>
-    //     </TitleContainer>
-    //     <Table>
-    //       <Row fill='fill'>
-    //         <Col>#</Col>
-    //         <Col>Proveedor</Col>
-    //         <Col>Nota</Col>
-    //         <Col>Fecha</Col>
-    //         <Col>F. Pago</Col>
-    //         <Col position='right'>Total</Col>
-    //         <Col>Acción</Col>
-    //       </Row>
-    //       <TableBody>
-    //         {
-    //           purchases.length > 0 ? (
-    //             purchases.map((purchaseData, index) => (
-         //   <PurchaseCard Row={Row} Col={Col} key={index} purchaseData={purchaseData} index={index} activeId={activeId} setActiveId={setActiveId}/>
-    //             ))
-    //           ) : null
-
-    //         }
-    //       </TableBody>
-    //     </Table>
-    //   </Body>
-    // </Container>
     <Container>
       <AdvancedTable
         tableName={'Lista de Compras'}
         columns={columns}
         data={data}
-       
       />
     </Container>
 

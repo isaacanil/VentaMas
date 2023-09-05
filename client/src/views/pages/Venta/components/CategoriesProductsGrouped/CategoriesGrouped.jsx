@@ -55,7 +55,7 @@ const CategoryGroup = styled(motion.div)`
 }
 margin-bottom: 2em;
     h2{
-        font-size: 1.15em;
+        font-size: 1em;
         font-weight: 550;
         color: var(--Gray8);
         

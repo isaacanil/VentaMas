@@ -175,7 +175,7 @@ input[type="number"] {
         `
       case 'large':
         return `
-                    height: 2.8em;
+                    height: 2.4em;
                     font-size: 16px;
                     padding: 0 10px;
                 `

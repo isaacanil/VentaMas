@@ -18,11 +18,8 @@ import StockIndicator from '../../../../../../templates/system/labels/StockIndic
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
 import { ImgCell } from '../../../../../../controlPanel/Table/components/Cells/Img/ImgCell'
 
-
-
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
-
   const handleDeleteProduct = (id) => {
     dispatch(handleDeleteProductAlert({ id }));
   };
@@ -134,7 +131,8 @@ export const ProductsTable = ({ products, searchTerm }) => {
     price: product.price.unit,
     tax: product.tax.value * product.cost.unit,
     isVisible: product.isVisible,
-    action: product
+    action: product,
+    category: product.category,
   }));
 
   return (
@@ -147,6 +145,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           headerComponent={<Carrusel />}
           tableName={'inventory_items_table'}
           onRowClick={(row) => handleUpdateProduct(row.action)}
+          groupBy={'category'}
         />
       </TableWrapper>
     </Container>

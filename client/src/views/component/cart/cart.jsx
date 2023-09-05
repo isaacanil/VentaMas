@@ -35,8 +35,6 @@ import { selectUser } from '../../../features/auth/userSlice'
 import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxReceipt'
 import { ButtonGroup } from '../../templates/system/Button/Button'
 import { deleteClient, handleClient } from '../../../features/clientCart/clientCartSlice'
-import { closeUserNotification, setUserNotification } from '../../../features/UserNotification/UserNotificationSlice'
-import { useNavigate } from 'react-router-dom'
 import { useIsOpenCashReconciliation } from '../../../firebase/cashCount/useIsOpenCashReconciliation'
 import { createAction } from '@reduxjs/toolkit'
 import { CONFIRMATION_TASK_TYPE } from '../modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction'
@@ -106,7 +104,6 @@ export const Cart = () => {
   }
 
   const savingDataToFirebase = async (bill, taxReceipt) => {
-
     try {
       if (selectMode === true) {
         fbAddInvoice(bill, user)
@@ -228,6 +225,7 @@ export const Cart = () => {
               borderRadius='normal'
               title='Cancelar'
               onClick={handleCancelShipping}
+              disabled={ProductSelected.length >= 1 ? false : true}
             />
             <Button
               borderRadius='normal'
@@ -247,7 +245,7 @@ export const Cart = () => {
 const Container = styled.div`
   position: relative;
    height: calc(100%);
-   background-color: rgb(255, 255, 255);
+   background-color: ${({ theme }) => theme.bg.shade};
    max-width: 30em;
    width: 24em;
    overflow: hidden;
@@ -268,7 +266,7 @@ const Container = styled.div`
       position: absolute;
       top: 0;
       z-index: 100000;
-      background-color: white;
+ 
       ${props => {
     switch (props.isOpen) {
       case false:

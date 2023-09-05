@@ -29,6 +29,7 @@ import cashCountManagementReducer from "../features/cashCount/cashCountManagemen
 import UserNotificationReducer from "../features/UserNotification/UserNotificationSlice";
 import usersManagementSlice from "../features/usersManagement/usersManagementSlice";
 import filterProductsSliceReducer from "../features/filterProduct/filterProductsSlice";
+import noteModalReducer from "../features/noteModal/noteModalSlice";
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -61,6 +62,7 @@ export const store = configureStore({
     cashCountManagement: cashCountManagementReducer,
     userNotification: UserNotificationReducer,
     usersManagement: usersManagementSlice,
+    note: noteModalReducer,
   }
   ,
 })

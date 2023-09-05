@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { icons } from '../../../constants/icons/icons';
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
@@ -21,10 +21,30 @@ import { selectUser } from '../../../features/auth/userSlice';
  * - tableName: Una cadena de texto que se utiliza como el nombre de la tabla.
  * - onRowClick: Una función que se ejecuta cuando se hace clic en una fila de la tabla. Esta función recibe los datos de la fila en la que se hizo clic.
  */
-export const AdvancedTable = ({ headerComponent, columns, data, tableName, searchTerm, onRowClick }) => {
+const groupDataByField = (data, field) => {
+  return data.reduce((acc, item) => {
+    (acc[item[field]] = acc[item[field]] || []).push(item);
+    return acc;
+  }, {});
+};
+
+export const AdvancedTable = ({
+  groupBy,
+  elementName,
+  headerComponent,
+  emptyText = 'No hay datos para mostrar',
+  columns = [],
+  data = [],
+  tableName,
+  searchTerm,
+  onRowClick,
+  footerLeftSide,
+  footerRightSide,
+  numberOfElementsPerPage = 15
+}) => {
   const user = useSelector(selectUser)
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
-  
+  const wrapperRef = useRef(null);
   let localStorageName = `tableColumnsOrder_${user.uid}_${tableName}`;
 
   const [columnOrder, setColumnOrder] = useState(() => {
@@ -49,13 +69,16 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
 
   const toggleReorderMenu = () => { setIsReorderMenuOpen(!isReorderMenuOpen); };
 
-  const filteredData = searchTerm ? filterData(data, searchTerm) : data;
+  const searchTermFilteredData = searchTerm ? filterData(data, searchTerm) : data;
 
-  const { handleSort, sortedData, sortConfig } = useTableSorting(filteredData, columns)
-  const { currentData, nextPage, prevPage, firstPage, lastPage, currentPage, pageCount } = useTablePagination(data, sortedData, filteredData, 10);
+  const { handleSort, sortedData, sortConfig } = useTableSorting(searchTermFilteredData, columns)
+  const { currentData, nextPage, prevPage, firstPage, lastPage, currentPage, pageCount } = useTablePagination(data, sortedData, searchTermFilteredData,  numberOfElementsPerPage, wrapperRef);
 
-  const totalElements = data.length;
-  const elementsShown = currentData.length;
+  const shouldGroup = (sortConfig.direction === 'none' || sortConfig.key === null) && groupBy;
+  const groupedData = shouldGroup ? groupDataByField(currentData, groupBy) : sortedData;
+
+  const totalElements = data?.length;
+  const elementsShown = currentData?.length;
 
   const resetColumnOrder = () => {
     if (tableName) {
@@ -68,7 +91,9 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
     <Container headerComponent={headerComponent}>
       {headerComponent && <div>{headerComponent}</div>}
       <TableContainer columns={columns}>
-        <Wrapper>
+        <Wrapper
+          ref={wrapperRef}
+        >
           <Head columns={columnOrder}>
             <Row columns={columnOrder}>
               {columnOrder.map((col, index) => (
@@ -79,7 +104,6 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
                 >
                   {col.Header}
                   {/* {(col.sortable && sortConfig.direction !== 'asc' && sortConfig.direction !== 'desc') ? <span>{icons.mathOperations.subtract}</span> : ''}  */}
-
                   {sortConfig.key === col.accessor
                     ? (sortConfig.direction === 'asc'
                       ? <MotionIcon key="up" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>{icons.arrows.caretUp}</MotionIcon>
@@ -94,13 +118,23 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
           </Head>
           <Body columns={columnOrder}>
             {
-              currentData.length > 0 ? (
-                currentData.map((row, rowIndex) => (
-                  <Row 
-                  key={rowIndex}
-                  columns={columnOrder} 
-                  onClick={onRowClick ? () => onRowClick(row) : null}
-                  > {/* Puedes reemplazar este div con un componente de fila estilizado si lo prefieres */}
+              shouldGroup
+                ? Object.entries(groupedData).map(([groupKey, groupItems]) => (
+                  <>
+                    <GroupHeader>{groupKey}</GroupHeader>
+                    {groupItems.map((row, rowIndex) => (
+                      <Row key={rowIndex} columns={columnOrder} onClick={onRowClick ? () => onRowClick(row) : null}>
+                        {columnOrder.map((col, colIndex) => (
+                          <BodyCell key={colIndex} align={col.align} columns={columnOrder}>
+                            {col.cell ? col.cell({ value: row[col.accessor] }) : row[col.accessor]}
+                          </BodyCell>
+                        ))}
+                      </Row>
+                    ))}
+                  </>
+                ))
+                : currentData.map((row, rowIndex) => (
+                  <Row key={rowIndex} columns={columnOrder} onClick={onRowClick ? () => onRowClick(row) : null}>
                     {columnOrder.map((col, colIndex) => (
                       <BodyCell key={colIndex} align={col.align} columns={columnOrder}>
                         {col.cell ? col.cell({ value: row[col.accessor] }) : row[col.accessor]}
@@ -108,13 +142,19 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
                     ))}
                   </Row>
                 ))
-              ) : <CenteredText text={'No se encontraron elementos'} />
+            }
+            {
+              !currentData.length && <CenteredText text={emptyText} />
             }
           </Body>
         </Wrapper>
         <Footer>
           <FooterLeftSide>
-            {elementsShown} / {totalElements}
+            <Counter>
+              {elementsShown} / {totalElements}
+              {elementName && <span>{elementName}</span>}
+            </Counter>
+            {footerLeftSide ? footerLeftSide : ''}
           </FooterLeftSide>
           <Pagination
             currentPage={currentPage}
@@ -125,9 +165,11 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
             lastPage={lastPage}
           />
           <FooterRightSide>
+            {footerRightSide && footerRightSide}
             <Button startIcon={icons.operationModes.setting3} title={'columnas'} onClick={toggleReorderMenu} />
           </FooterRightSide>
         </Footer>
+
         <ColumnMenu
           resetColumnOrder={resetColumnOrder}
           isOpen={isReorderMenuOpen}
@@ -140,12 +182,22 @@ export const AdvancedTable = ({ headerComponent, columns, data, tableName, searc
     </Container>
   )
 };
-
+const Counter = styled.div`
+  display: flex;
+  align-items: center;
+  border-radius: var(--border-radius);
+  gap: 0.5em;
+  padding: 0.2em 1em;
+  font-weight: 600;
+  font-size: 0.9em;
+  background-color: #d3d3d3;
+`
 const Container = styled.div`
-  border: 1px solid #ccc;
+  border: var(--border-primary);
   height: 100%;
   display: grid;
-  
+  background-color: ${props => props.theme.bg.shade};
+ 
   grid-template-rows: 1fr;
   border-radius: 0.4em;
   overflow: hidden;
@@ -161,7 +213,7 @@ const Container = styled.div`
 const TableContainer = styled.div`
   display: grid;
   grid-template-rows: 1fr min-content;
- overflow-y: hidden;
+ overflow: hidden;
   position: relative;
 
   width: 100%;
@@ -200,6 +252,13 @@ const HeaderCell = styled.div`
       `
     }
   }}
+`;
+
+const GroupHeader = styled.div`
+  background-color: #f0f0f09e;
+  padding: 10px;
+  font-weight: bold;
+  // Otros estilos que desees agregar
 `;
 
 const MotionIcon = styled(motion.div)`
@@ -246,7 +305,7 @@ const Head = styled.div`
     background-color: white;
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 1;
     `
 const Body = styled.div`
    display: grid;
@@ -275,7 +334,12 @@ const Footer = styled.div`
   border-top: var(--border-primary);
 `;
 
-const FooterLeftSide = styled.div``
+const FooterLeftSide = styled.div`
+  justify-self: start;
+  display: flex;
+  gap: 1em;
+  align-items: center;
+`
 
 const FooterRightSide = styled.div`
   justify-self: end;

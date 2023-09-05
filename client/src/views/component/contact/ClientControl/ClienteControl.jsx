@@ -120,20 +120,16 @@ export const ClientControl = () => {
           borderRadius={'normal'}
           bgcolor={'warning'}
           onClick={createClientMode}
-          
         />
         {!limitByWindowWidth && (
-           <Button
-           title={'volver'}
-           onClick={handleCloseCart}
-           borderRadius={'normal'}
-           bgcolor={'gray'}
-           
-         />
+          <Button
+            title={'volver'}
+            onClick={handleCloseCart}
+            borderRadius={'normal'}
+            bgcolor={'gray'}
+          />
         )}
-       
       </Header>
-
       <ClientDetails
         mode={mode === CLIENT_MODE_BAR.CREATE.id}
       />
@@ -164,7 +160,7 @@ const Header = styled.div`
       justify-content: space-between;
       height: 2.75em;
       position: relative;
-      z-index: 20;
+      z-index: 10;
       background-color: var(--Gray8);
       border-bottom-left-radius: var(--border-radius-light);
       padding: 0 0.3em;

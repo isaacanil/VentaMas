@@ -119,7 +119,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
 
 const Container = styled.div`
 height: 100%;
-background-color: var(--color2);
+background-color: ${props => props.theme.bg.color2}; 
 overflow: hidden;
 border-radius: var(--border-radius-light);
 border-top-left-radius: 0;

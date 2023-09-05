@@ -11,6 +11,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faListAlt, faTable } from '@fortawesome/free-solid-svg-icons'
 import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 import { formatBill } from '../../../../../hooks/exportToExcel/formatBill'
+import { SearchInput } from '../../../system/Inputs/SearchInput'
+import { icons } from '../../../../../constants/icons/icons'
+import { DateTime } from 'luxon'
 
 export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData }) => {
 
@@ -26,6 +29,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
   const transformedDetailedBillsData = () => {
     return formatBill({ data: invoices, type: 'Detailed' });
   };
+  const currentDate = DateTime.now().toFormat('ddMMyyyy');
   const handleExportButton = (type) => {
     if (invoices.length === 0) {
       dispatch(addNotification({ title: 'Error al exportar', message: 'No hay Facturas para exportar', type: 'error' }))
@@ -33,10 +37,10 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
     }
     switch (type) {
       case 'Resumen':
-        exportToExcel(transformedResumenBillsData(), 'Registros', 'Registro.xlsx');
+        exportToExcel(transformedResumenBillsData(), 'Registros', `resumen_facturas_${currentDate}.xlsx`);
         break;
       case 'Detailed':
-        exportToExcel(transformedDetailedBillsData(), 'Registros', 'Registro.xlsx');
+        exportToExcel(transformedDetailedBillsData(), 'Registros', `detalle_facturas_${currentDate}.xlsx`);
         break;
       default:
         break;
@@ -61,6 +65,23 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
   return (
     matchWithCashReconciliation ? (
       <Container>
+          {
+                    side === 'left' && (
+
+
+                        <SearchInput
+                            search
+                            deleteBtn
+                            icon={icons.operationModes.search}
+                            placeholder='Buscar Factura...'
+                            bgColor={'white'}
+                            value={searchData}
+                            onClear={() => setSearchData('')}
+                            onChange={(e) => setSearchData(e.target.value)}
+                        />
+                    )
+
+                }
         {
           side === 'right' && (
             <DropdownMenu

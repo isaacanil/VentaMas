@@ -1,11 +1,10 @@
 import React, { useState, Fragment, useRef, useEffect } from 'react'
 
-import { AddProductButton, WebName } from '../../'
+import { AddProductButton, Button, WebName } from '../../'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './SideBar'
 import { useDispatch, useSelector } from 'react-redux'
-import { colorPalette } from '../../../features/theme/themeSlice'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
 import { FaSearch } from 'react-icons/fa'
 import { SearchInput } from '../system/Inputs/SearchInput'
@@ -13,14 +12,15 @@ import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage } from '@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
+import { icons } from '../../../constants/icons/icons'
+import { useNavigate } from 'react-router-dom'
 
 export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, searchData }) => {
   const ref = useRef(null)
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const { color } = colorPalette()
-
-  const [isOpenMenu, setIsOpenMenu] = useState(false)
+  const [isOpenMenu, setIsOpenMenu] = useState(false);
 
   const handledMenu = () => {
     setIsOpenMenu(!isOpenMenu)
@@ -33,13 +33,23 @@ export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, search
     setIsOpenMenu(false)
   }
 
+  const goBack = () => {
+    navigate(-1)
+  }
   useClickOutSide(ref, !isOpenMenu, closeMenu)
+
   return (
     <Fragment>
       <Backdrop isOpen={isOpenMenu ? true : false} onClick={closeMenu} />
-      <Container bgColor={color} borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
+      <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
+          {/* <Button
+            title={icons.arrows.arrowLeft}
+            borderRadius='normal'
+            onClick={goBack}
+            width='icon32'
+          /> */}
           {sectionName && (
             <SectionName>{sectionName}</SectionName>
           )}
@@ -79,15 +89,16 @@ const Backdrop = styled.div`
 `
 const Container = styled.div`
 
-   user-select: none;
-   background-color: ${props => props.bgColor};
-   width: 100%;
-   height: 2.75em;
-   display: flex;
-   align-items: center;
-   align-content: center;
-   padding: 0 1em;
-   gap: 1em;
+  user-select: none;
+  background-color: ${props => props.theme.bg.color}; 
+  
+  width: 100%;
+  height: 2.75em;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  padding: 0 1em;
+  gap: 1em;
   // z-index: 9;
   ${props => {
     switch (props.isOpen) {
@@ -149,7 +160,7 @@ const SectionName = styled.div`
   display: flex;
   align-items: center;
   font-weight: 600;
-  font-size: 1.2em;
+  font-size: 1.1em;
   color: white;
   height: 1.8em;
   border-radius: 100px;

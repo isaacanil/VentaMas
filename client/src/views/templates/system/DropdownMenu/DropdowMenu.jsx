@@ -6,7 +6,7 @@ import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { usePopper } from 'react-popper';
 
 
-export const DropdownMenu = ({ title = 'Opciones', options = [] }) => {
+export const DropdownMenu = ({ title = 'Opciones', options = [], ...props }) => {
   const [isOpen, setIsOpen] = useState(false);
   const DropDownMenuRef = useRef(null);
  // Popper
@@ -26,6 +26,7 @@ export const DropdownMenu = ({ title = 'Opciones', options = [] }) => {
         ref={setReferenceElement}
         title={title}
         onClick={toggleMenu}
+        {...props}
       />
       {/* <button
         ref={setReferenceElement}
@@ -54,13 +55,14 @@ export const DropdownMenu = ({ title = 'Opciones', options = [] }) => {
 const Container = styled.div`
   width: 100%;
   min-width: 350px;
-  max-width: 500px;
+  max-width: 400px;
   background-color: white;
   border-radius: 5px;
   box-shadow: 0 0 5px rgba(0, 0, 0, .3);
   padding: 0em 0;
-  z-index: 5;
+  z-index: 55;
   overflow: hidden;
+
   
 `;
 

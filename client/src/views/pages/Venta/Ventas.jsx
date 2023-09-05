@@ -5,10 +5,10 @@ import styled from 'styled-components'
 import {
   MenuApp,
   MenuComponents,
-  Cart,
+
   MultiDisplayControl,
 } from '../../'
-
+import { Cart } from '../../component/cart/Cart'
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { filterData } from '../../../hooks/search/useSearch'
@@ -71,10 +71,6 @@ export const Sales = () => {
       <Cart></Cart>
       {/* <ModalManager /> */}
     </Container>
-
-
-
-
   )
 }
 
@@ -83,6 +79,7 @@ const Container = styled(motion.div)`
   height: 100vh;
   display: grid;
   grid-template-columns: 1fr min-content;
+  background-color: ${props => props.theme.bg.shade}; 
   grid-template-rows: 1fr;
   gap: 0.6em;
   margin-right: 0;

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { CashDenominationCalculator } from '../../global/CashDenominationCalculator/CashDenominationCalculator'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectCashCount, setCashCountOpeningBanknotes, setCashCountOpeningComments, setCashCountOpeningDate, setCashCountOpeningEmployee,  } from '../../../../../features/cashCount/cashCountManagementSlice'
+import { clearCashCount, selectCashCount, setCashCountOpeningBanknotes, setCashCountOpeningComments, setCashCountOpeningDate, setCashCountOpeningEmployee, } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { Comments } from '../CashRegisterClosure/Comments/Comments'
 import { Header } from './components/headers/header'
 import { ConfirmCancelButtons } from '../../global/ConfirmCancelButtons/ConfirmCancelButtons'
@@ -27,26 +27,27 @@ export const CashRegisterOpening = () => {
   const location = useLocation();
 
   const dispatch = useDispatch()
-  
+
   const handleChangesBanknotes = (banknotes) => {
     dispatch(setCashCountOpeningBanknotes(banknotes))
   }
   const handleChangesComments = (comments) => {
     dispatch(setCashCountOpeningComments(comments))
   }
-  const handleOpenPeerReviewAuthorization = () => {setPeerReviewAuthorizationIsOpen(true)}
+  const handleOpenPeerReviewAuthorization = () => { setPeerReviewAuthorizationIsOpen(true) }
 
   const actualUser = useSelector(selectUser)
-  
+
   const handleSubmit = (approvalEmployee) => {
-    fbCashCountOpening( actualUser, cashCount, actualUser.uid, approvalEmployee.uid, openingDate.toMillis() )
+    fbCashCountOpening(actualUser, cashCount, actualUser.uid, approvalEmployee.uid, openingDate.toMillis())
   }
   const handleCancel = () => {
-    if(location.state?.from === 'factura'){
-      navigate('/sales')
-    }else{
-      navigate(-1)
+    if (location.state?.from === 'factura') {
+      navigate('/sales');
+    } else {
+      navigate(-1);
     }
+    dispatch(clearCashCount())
   }
 
   console.log(openingDate)

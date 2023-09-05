@@ -28,6 +28,7 @@ export function useFormatDate(timestamp) {
 
 export const convertMillisToDate = (milliseconds, format = 'default', locale = 'es') => {
   //const date = DateTime.fromMillis(milliseconds).setLocale(locale);
+  if (!milliseconds || !typeof milliseconds === 'number') return null;
   const dateFormatted = DateTime.fromMillis(milliseconds).toFormat('dd/MM/yyyy');
   return dateFormatted; 
   // Aquí puedes definir tus propios formatos personalizados

@@ -2,7 +2,7 @@ import React from 'react'
 
 import { useState } from 'react';
 
-const useTableSorting = ( filteredData, columns, config = { key: null, direction: 'asc' }) => {
+const useTableSorting = (filteredData, columns, config = { key: null, direction: 'asc' }) => {
   const [sortConfig, setSortConfig] = useState(config);
 
   const sortedData = [...filteredData].sort((a, b) => {
@@ -10,7 +10,7 @@ const useTableSorting = ( filteredData, columns, config = { key: null, direction
 
     const key = sortConfig.key;
     const column = columns.find(col => col.accessor === key);
-    
+
     const aValue = column.sortableValue ? column.sortableValue(a[key]) : a[key];
     const bValue = column.sortableValue ? column.sortableValue(b[key]) : b[key];
 

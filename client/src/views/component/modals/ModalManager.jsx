@@ -32,6 +32,8 @@ import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDi
 import { DeleteClientAlert } from "../../templates/system/Alerts/DeleteClientAlert"
 import { AnimatePresence } from "framer-motion"
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
+import Dialog from "../../templates/system/Dialog/Dialog"
+import NoteModal from "../../templates/system/NoteModal/NoteModal"
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
   const AddClientModalSelected = useSelector(SelectAddClientModal)
@@ -111,7 +113,9 @@ export const ModalManager = () => {
           />
         )}
       </AnimatePresence>
+      <NoteModal />
       <Loader />
+      <Dialog />
       <ImageViewer />
       <SmallNotification />
       <ConfirmationDialog />

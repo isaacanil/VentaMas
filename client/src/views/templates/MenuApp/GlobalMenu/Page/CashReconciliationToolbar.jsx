@@ -17,7 +17,6 @@ export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearch
     const user = useSelector(selectUser)
 
     const handleSwitchToCashRegisterOpening = () => {
-
         if (status === 'open') {
             dispatch(setUserNotification(
                 {
@@ -49,7 +48,7 @@ export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearch
                     side === 'right' && (
                         <Button
                             onClick={handleSwitchToCashRegisterOpening}
-                            title={`Abrir Cuadre ${status}`}
+                            title={`Abrir Cuadre`}
                             borderRadius={'light'}
                         />
                     )

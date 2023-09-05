@@ -29,8 +29,8 @@ const handleSetting = () => {
     )
 }
 const Container = styled.div`
-grid-column: 12 span;
-    min-height: 2.75em;
+
+    height: 2.75em;
     color: white;
     background-color: var(--color);
     margin: 0;

@@ -11,7 +11,7 @@ export const Orders = () => {
         sectionName={'Pedidos'}
       />
       {/* <ToolBar></ToolBar> */}
-      <PendingOrdersTable />
+      <PendingOrdersTable  />
     </Container>
   )
 }

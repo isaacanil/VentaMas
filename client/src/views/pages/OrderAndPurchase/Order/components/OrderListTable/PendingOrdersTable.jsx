@@ -9,13 +9,23 @@ import { fbGetPendingOrders } from '../../../../../../firebase/order/fbGetPeding
 import { AdvancedTable } from '../../../../../controlPanel/Table/AdvancedTable'
 import { convertMillisToDate, getTimeElapsed, useFormatDate } from '../../../../../../hooks/useFormatTime'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
-import { getOrderStateByID } from '../../../../../../constants/orderAndPurchaseState'
+import { getOrderStateByID, orderAndDataCondition, orderAndDataState } from '../../../../../../constants/orderAndPurchaseState'
 import { StatusIndicatorDot } from '../StatusIndicatorDot/StatusIndicatorDot'
 import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
+import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
+import { date } from 'yup'
+import { OrderMenuFilter } from '../OrderFilter/OrderMenuFilter/OrderMenuFilter'
 
+const [filter, setFilter] = useState({
+  provider: 'all',
+  condition: 'all',
+  state: 'state_2'
+})
 export const PendingOrdersTable = () => {
-  const [activeId, setActiveID] = useState(null);
+  const dispatch = useDispatch()
+
+  
   const columns = [
     {
       Header: '#',
@@ -28,7 +38,7 @@ export const PendingOrdersTable = () => {
       accessor: 'state',
       minWidth: '50px',
       maxWidth: '50px',
-      cell: ({value}) =>  <StatusIndicatorDot color={value ? getOrderStateByID(value)?.color : null} />
+      cell: ({ value }) => <StatusIndicatorDot color={value ? getOrderStateByID(value)?.color : null} />
     },
     {
       Header: 'Proveedor',
@@ -37,19 +47,25 @@ export const PendingOrdersTable = () => {
     {
       Header: 'Nota',
       accessor: 'note',
-      cell: ({value}) => <Button
-      title='ver'
-      />
+      cell: ({ value }) => (
+        <Button
+          title='ver'
+          borderRadius='normal'
+          color='gray-dark'
+          border='light'
+          onClick={() => dispatch(setNote({ note: value, isOpen: true }))}
+        />
+      )
     },
     {
       Header: 'F. Pedido',
       accessor: 'createdAt',
-      cell: ({value}) => <div>{convertMillisToDate(value)}</div>
+      cell: ({ value }) => <div>{convertMillisToDate(value)}</div>
     },
     {
       Header: 'F. Entrega',
       accessor: 'deliveryDate',
-      cell: ({value}) => <div>{convertMillisToDate(value)}</div>
+      cell: ({ value }) => <div>{convertMillisToDate(value)}</div>
     },
     {
       Header: 'Total',
@@ -57,31 +73,58 @@ export const PendingOrdersTable = () => {
       align: 'right',
       minWidth: '120px',
       maxWidth: '120px',
-
-      cell: ({value}) => <div>{useFormatPrice(value)}</div>
+      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
     {
       Header: 'Acción',
       accessor: 'action',
       align: 'right',
-      cell: ({value}) => <ActionsButtonsGroup orderData={value} activeId={activeId} setActiveId={setActiveID}/>
+      cell: ({ value }) => <ActionsButtonsGroup orderData={value} />
+    }
+  ]
+
+  const menu = [
+    {
+      name: 'Proveedores',
+      data: [],
+      option: ({ value }) => <div>{value.name}</div>,
+      onClick: ({ value }) => setFilter({...filter, provider: value.id}),
+      default: 'none',
+      value: filter.provider
+    },
+    {
+      name: 'Condiciones',
+      data: orderAndDataCondition,
+      option: ({ value }) => <div>{value.name}</div>,
+      onClick: ({ value }) => setFilter({...filter, condition: value.id}),
+      default: 'none',
+      value: filter.condition
+    },
+    {
+      name: 'Estados',
+      data: orderAndDataState,
+      option: ({ value }) => <div>{value.name}</div>,
+      onClick: ({ value }) => setFilter({...filter, state: value.id}),
+      default : 'state_2',
+      value: filter.state
     }
   ]
   const user = useSelector(selectUser);
   const { pendingOrders } = fbGetPendingOrders(user);
-  const data = pendingOrders.map(({data}) => {
+
+  const data = pendingOrders.map(({ data }) => {
     return {
       number: data?.id,
       state: data?.state,
       provider: data?.provider?.name,
-      note: '',
+      note: data?.note,
       createdAt: data?.dates?.createdAt,
       deliveryDate: data?.dates?.deliveryDate,
       total: data?.total,
       action: data
     }
   })
-  
+
   return (
     <Container>
 
@@ -89,10 +132,12 @@ export const PendingOrdersTable = () => {
         tableName={'Lista de Pedidos Pendientes'}
         columns={columns}
         data={data}
+        
       />
     </Container>
   )
 }
+//headerComponent={<OrderMenuFilter options={menu} />}
 const Container = styled.div`
     width: 100vw;
   padding: 0.4em 1em;

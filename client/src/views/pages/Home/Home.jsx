@@ -1,48 +1,52 @@
 import React, { Fragment } from 'react'
-import { Link, useMatch } from 'react-router-dom'
-import Style from './Home.module.scss'
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
 import { getCardData } from './CardData'
 import { ChatBox } from '../../component/ChatBox/ChatBox'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import { FeatureCardList } from './components/FeatureCardList/FeatureCardList'
 import PersonalizedGreeting from './components/PersonalizedGreeting/PersonalizedGreeting'
+import Footer from './Footer/Footer'
 
 export const Home = () => {
   const user = useSelector(selectUser)
   const cardData = getCardData(user)
   return (
-    <Fragment>
-      <Container>
-        <MenuWebsite></MenuWebsite>
-        <div className={Style.welcomeSection_container}>
-          <div className={Style.welcomeSection_inner}>
-            {/* <ChatBox/> */}
-            {user && <PersonalizedGreeting name={user.displayName} />}
-            <FeatureCardList  cardData={cardData} />
-          </div>
-        </div>
-      </Container>
-    </Fragment>
+    <Container>
+      <MenuWebsite />
+      <WelcomeSection>
+        <WelcomeSectionInner>
+          {/* <ChatBox/> */}
+          {user && <PersonalizedGreeting name={user.displayName} />}
+          <FeatureCardList cardData={cardData} />
+        </WelcomeSectionInner>
+      </WelcomeSection>
+      <Footer />
+    </Container>
   )
 }
 
 const Container = styled.div`
-   min-height: 100vh;
+  height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+
+ 
   background-color: var(--color2);
 `
-const UserName = styled.span`
-  color:var(--color1);
-  font-weight: 600;
-  
-  div{
-    ::first-letter {
-      text-transform: capitalize;
-    }
-  }
 
+const WelcomeSection = styled.div`
+  display: grid;
+  width: 100%;
+  justify-content: center;
 
+`
+const WelcomeSectionInner = styled.div`
+
+  max-width: 1200px;
+  width: 100vw;  
+  padding: var(--padding1);
+  border-radius: var(--border-radius1);
 `

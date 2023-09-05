@@ -40,7 +40,7 @@ export const InventoryFilterAndSort = () => {
                 size='small'
                 width={'icon32'}
                 startIcon={icons.operationModes.filter}
-                borderRadius={'light'}
+                borderRadius={'normal'}
                 onClick={handleOpen}
             />
             <MenuFlotante

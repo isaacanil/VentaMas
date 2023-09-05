@@ -102,13 +102,11 @@ export const Carrusel = ({ themeColor }) => {
                 </Button>
 
                 <Categories
-                    variants={effectCategoriesContainer}
-                    initial="hidden"
-                    animate="visible"
+
                     ref={categoriesRef}
                 >
                     <Category
-                        
+
                         category={{ name: 'Categoría' }}
                         onClick={handleCreateCategory}
                         type='create'
@@ -120,8 +118,9 @@ export const Carrusel = ({ themeColor }) => {
                                 <Category
                                     themeColor={themeColor ? themeColor : null}
                                     category={category}
-                                    key={index}
                                     selected={findElementInArray(categorySelected, category.name)}
+                                    key={category.name}
+                                    index={index}
                                 />
                             ))
                         ) : null
@@ -136,7 +135,7 @@ export const Carrusel = ({ themeColor }) => {
     )
 }
 const Container = styled.div`
-background-color: #ffffff;
+     background-color: ${props => props.theme.bg.shade}; 
     width: 100%;
     display: grid;
     grid-template-columns: min-content 1fr min-content;
@@ -164,6 +163,7 @@ const Button = styled.button`
     justify-content: center;
     font-size: 1.3em;
     border: 0;
+    color: ${({ theme }) => theme.text.primary};
     background-color: transparent;
     border-radius: var(--border-radius-light);
     outline: 0;

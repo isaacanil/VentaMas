@@ -8,7 +8,7 @@ export const Purchases = () => {
 
   return (
       <Container>
-        <MenuApp sectionName={'Compras'}></MenuApp>
+        <MenuApp sectionName={'Compras'}/>
         <PendingOrdersTable />
       </Container>
   )

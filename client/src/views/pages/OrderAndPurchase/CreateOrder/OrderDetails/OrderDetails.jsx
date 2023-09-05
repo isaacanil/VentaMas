@@ -11,7 +11,7 @@ export const OrderDetails = () => {
     const dispatch = useDispatch()
     const conditions = orderAndDataCondition;
     const order = useSelector(SelectOrder);
-    const { note, condition, date } = order;
+    const { note, condition, dates } = order;
 
     const minDate = DateTime.now().toISODate();
     const handleDateChange = (value) => {
@@ -19,13 +19,16 @@ export const OrderDetails = () => {
         const timestamp = selectedDate.toJSDate().getTime();
         return timestamp;
       };
+
+      const dateValue = typeof order?.dates?.deliveryDate === 'number' && order?.dates?.deliveryDate;
+      const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : '';
     return (
         <Container>
             <Section flex>
                 <InputDate
                     type="date"
                     name=""
-                    value={date}
+                    value={formattedDate}
                     id=""
                     min={minDate}
                     onChange={(e) => dispatch(AddDate(handleDateChange(e.target.value)))}

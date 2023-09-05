@@ -123,6 +123,7 @@ const StyledMenu = styled.ul`
     background-color: #575757;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     opacity: 0;
+    z-index: 100000;
     transition: opacity 0.2s ease-in-out;
   ${props => {
         switch (props.isMenuOpen) {

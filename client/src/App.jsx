@@ -28,6 +28,7 @@ import { useAutomaticLogin } from './firebase/Auth/fbAuthV2/fbSignIn/checkSessio
 import { ModalManager } from './views';
 import { AnimatePresence } from 'framer-motion';
 import { usefbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
+import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
 
 //const router = createBrowserRouter(routes)
 
@@ -36,16 +37,13 @@ function App() {
 
   useAutomaticLogin();
 
-  AuthStateChanged();
-
   useEffect(() => {
     dispatch(ReloadImageHiddenSetting())
   }, [])
 
   const user = useSelector(selectUser)
 
-  const sessionToken = localStorage.getItem('sessionToken');
-
+  useUserDocListener(user?.uid)
   useGetUserData(user?.uid) // obtiene los datos del usuario actual
 
   useAbilities()// establece la abilidad que puede usar el usuario actual

@@ -1,6 +1,7 @@
-import { doc, setDoc, getDocs, query, collection, where } from "firebase/firestore";
+import { doc, setDoc, getDocs, query, collection, where, Timestamp } from "firebase/firestore";
 import { hash } from "bcryptjs";
 import { db } from "../../firebaseconfig";
+import { nanoid } from "nanoid";
 
 // Función para verificar si el nombre de usuario ya existe
 async function checkIfUserExists(name) {
@@ -13,7 +14,6 @@ async function checkIfUserExists(name) {
 
 // Función para validar la entrada del usuario
 function validateUserInput({ id, name, password, businessID, role }) {
-    if(!id) { throw new Error('Error: Es obligatorio proporcionar una identificación de usuario.'); }
     if(!name) { throw new Error('Error: Es obligatorio proporcionar un nombre de usuario.'); };
     if(!password) { throw new Error('Error: Es obligatorio proporcionar una contraseña.') }
     if(!businessID) { throw new Error('Error: Es obligatorio proporcionar un ID de negocio.') }
@@ -24,7 +24,8 @@ export const fbSignUp = async (userData) => {
     
         // Validar la entrada del usuario
         validateUserInput(userData);
-
+   
+        userData.id = nanoid(10);
         // Verificar si el nombre de usuario ya existe
         const userExists = await checkIfUserExists(userData.name);
 
@@ -41,7 +42,10 @@ export const fbSignUp = async (userData) => {
         await setDoc(userRef, {
             user: {
                 ...userData,
+                name: userData.name.toLowerCase(),
                 password: hashedPassword,
+                active: true,
+                createAt: Timestamp.now(),
                 loginAttempts: 0,
                 lockUntil: null,
             }

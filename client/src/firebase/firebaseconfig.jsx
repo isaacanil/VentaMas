@@ -234,7 +234,7 @@ export const AddOrder = async (user, value) => {
     id: nextID,
     dates: {
       ...value.dates,
-      createdAt: Date.now()
+      createdAt: Timestamp.now(),
     },
     provider: providerRef,
     state: 'state_2'
@@ -255,7 +255,7 @@ const UpdateProducts = async (user, replenishments) => {
       const productRef = doc(db, "businesses", user.businessID, 'products', item.id)
       const updatedStock = item.newStock + item.stock;
       updateDoc(productRef, {
-        "product.stock": updatedStock,
+        "product.stock": Number(updatedStock),
       })
     })
     return { success: true, error: null, message: '' }
@@ -271,7 +271,8 @@ const UpdateOrder = async (user, order) => {
   try {
     updateDoc(orderRef, {
       "data.state": 'state_3',
-      "data.provider": providerRef
+      "data.provider": providerRef,
+
     })
     return { success: true, error: null, message: '' }
   } catch (error) {
@@ -280,6 +281,15 @@ const UpdateOrder = async (user, order) => {
 }
 export const PassDataToPurchaseList = async (user, data) => {
   if (!user || !user.businessID) return;
+  data = {
+    ...data,
+    dates: {
+      ...data.dates,
+      createdAt: Timestamp.fromMillis(data.dates.createdAt),
+      deliveryDate: Timestamp.fromMillis(data.dates.deliveryDate),
+      updatedAt: Timestamp.now(),
+    }
+  }
   console.log(user, data)
   const providerRef = doc(db, 'businesses', user.businessID, 'providers', data.provider.id)
   const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.orderId)
@@ -314,8 +324,12 @@ export const getPurchaseFromDB = async (user, setPurchases) => {
 
         if (providerDoc) { // Asegúrate de que providerDoc esté definido
           purchaseData.data.provider = providerDoc.provider;
-        } else {
-          console.log('providerRef no se pudo obtener:');
+        } 
+        if(purchaseData.data.dates.createdAt){
+          purchaseData.data.dates.createdAt = purchaseData.data.dates.createdAt.toDate().getTime()
+        }
+        if(purchaseData.data.dates.deliveryDate){
+          purchaseData.data.dates.deliveryDate = purchaseData.data.dates.deliveryDate.toDate().getTime()
         }
         return purchaseData;
       })
@@ -329,8 +343,10 @@ export const deletePurchase = async (id) => {
   deleteDoc(doc(db, 'purchases', id))
 }
 
-export const deleteOrderFromDB = async (id) => {
-  deleteDoc(doc(db, `orders`, id))
+export const deleteOrderFromDB = async (user, id) => {
+  if (!user || !user.businessID) return;
+  const orderRef = doc(db, 'businesses', user.businessID, 'orders', id)
+  'state_5'
 }
 
 export const getUsers = (setUsers) => {

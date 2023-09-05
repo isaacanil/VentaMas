@@ -31,7 +31,8 @@ export const UserSection = ({ user }) => {
       <Group>
         <Button
         startIcon={icons.operationModes.logout}
-          bgcolor={'primary'}
+        color={'info'}
+
           title={'Cerrar Sección'}
           borderRadius='normal' 
           onClick={logoutOfApp}

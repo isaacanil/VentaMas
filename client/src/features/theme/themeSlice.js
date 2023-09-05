@@ -1,27 +1,33 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { useSelector } from 'react-redux';
-import { colorTheme } from './colorTheme';
-import { style } from './style';
+
+const theme = localStorage.getItem('theme') || 'light';
 
 const themeSlice = createSlice({
   name: 'theme',
   initialState: {
-    mode: 'light',
-    color: colorTheme.light,
-    style
+    mode: theme,
   },
   reducers: {
     toggleTheme: (state) => {
       state.mode = state.mode === 'light' ? 'dark' : 'light';
-      state.color = state.mode === 'light' ? colorTheme.light : colorTheme.dark;
+      localStorage.setItem('theme', state.mode);
     },
+    setTheme: (state, action) => {
+      state.mode = action.payload;
+      if (state.mode === 'dark') {
+        localStorage.setItem('theme', 'light');
+      }
+      else {
+        localStorage.setItem('theme', 'dark');
+      }
+
+    }
   },
 });
 
-export const { toggleTheme } = themeSlice.actions;
+export const { toggleTheme, setTheme } = themeSlice.actions;
 export default themeSlice.reducer;
 
-
-export const colorPalette = () => useSelector(state => state.theme.color);
+export const selectThemeMode = (state) => state.theme.mode;
 
 

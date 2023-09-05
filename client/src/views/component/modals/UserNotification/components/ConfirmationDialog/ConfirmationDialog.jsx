@@ -65,7 +65,6 @@ export const ConfirmationDialog = ( ) => {
             variants={BackdropVariants}
             initial={'hidden'}
             animate={isOpen ? 'visible' : 'hidden'}
-
         >
             <Container
                 variants={ContainerVariants}

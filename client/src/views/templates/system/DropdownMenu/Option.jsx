@@ -38,7 +38,11 @@ const Header = styled.div`
     height: 2em;
 `
 const Icon = styled.div`
-    width: 1em;
+    width: 1.6em;
+    svg{
+        color: #3f3f3f;
+        font-size: 1.4em;
+    }
 `
 const Description = styled.div`
     font-size: 13px;
