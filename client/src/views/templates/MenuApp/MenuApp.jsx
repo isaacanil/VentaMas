@@ -3,7 +3,7 @@ import React, { useState, Fragment, useRef, useEffect } from 'react'
 import { AddProductButton, Button, WebName } from '../../'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
-import { SideBar } from './SideBar'
+import { SideBar } from './Components/SideBar'
 import { useDispatch, useSelector } from 'react-redux'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
 import { FaSearch } from 'react-icons/fa'
@@ -135,7 +135,7 @@ const Container = styled.div`
 const Group = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.8em;
+  gap: 0.4em;
  
 `
 const AutoHidden = styled.div`
@@ -163,7 +163,7 @@ const SectionName = styled.div`
   font-size: 1.1em;
   color: white;
   height: 1.8em;
-  border-radius: 100px;
+  border-radius: 4px;
   white-space: nowrap;
   background-color: rgba(0, 0, 0, 0.200);
   padding: 0 0.8em;

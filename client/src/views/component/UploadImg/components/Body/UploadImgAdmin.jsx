@@ -12,10 +12,10 @@ import noImg from '../../../../../assets/producto/noImg.png'
 import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
 import { selectUser } from '../../../../../features/auth/userSlice'
 export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
-   const user = useSelector(selectUser)
-    const handleSubmit = () => {
-        console.log('handleSubmit--------------------------')
-        fbAddProductImg(user, ImgToUpload)
+   const user = useSelector(selectUser);
+
+    const handleSubmit = (img) => {   
+        fbAddProductImg(user, img)
             .then((url) => {
                 fbAddProductImgData(user, url)
                 setImgToUpload(null)
@@ -44,6 +44,7 @@ export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
                         file={ImgToUpload}
                         startIcon={<MdOutlineFileUpload />}
                         id="addImg"
+                        fn={handleSubmit}
                     />
                     <Button
                         title='subir'

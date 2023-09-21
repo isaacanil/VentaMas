@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { InputV4 } from '../../../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4'
 
 export const Body = ({ user, setUser }) => {
 

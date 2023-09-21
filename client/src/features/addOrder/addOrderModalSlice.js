@@ -8,10 +8,11 @@ const EmptyOrder = {
     deletedAt: "",
     completedAt: "",
     deliveryDate: "",
+    paymentDate: "",
   },
   note: "",
+  numberId: "",
   id: "",
-  orderId: "",
   provider: {},
   replenishments: [],
   state: {},
@@ -36,10 +37,9 @@ const addOrderSlice = createSlice({
   initialState,
   reducers: {
     getOrderData: (state, actions) => {
-      const {data, mode = OPERATION_MODES.CREATE.id} = actions.payload
-      state.mode = mode
-      data ? state.order = data : null
-
+      const { data, mode = OPERATION_MODES.CREATE.id } = actions.payload;
+      state.mode = mode;
+      data ? state.order = data : null;
     },
     SelectProduct: (state, actions) => {
       const product = actions.payload.product;
@@ -98,51 +98,30 @@ const addOrderSlice = createSlice({
         product.initialCost = initialCost;
       }
     },
-    AddNote: (state, actions) => {
-      state.order.note = actions.payload
+    setOrder: (state, actions) => {
+      state.order = { ...state.order, ...actions.payload }
     },
-    AddCondition: (state, actions) => {
-      state.order.condition = actions.payload
-    },
-    AddDate: (state, actions) => {
-      state.order.dates.deliveryDate = actions.payload
-    },
-    AddCreatedDate: (state) => {
-      state.order.dates.createdAt = Date.now()
-    },
-    AddIdToOrder: (state) => {
-      state.order.orderId = nanoid(6)
-    },
+ 
     cleanOrder: (state) => {
       state.productSelected = EmptyProductSelected
       state.order = EmptyOrder
       state.mode = OPERATION_MODES.CREATE.id
     },
-    AddProvider: (state, actions) => {
-      const provider = actions.payload
-      if (provider !== null) {
-        state.order.provider = provider
-      }
-    },
+
   }
 })
 export const {
+  setOrder,
+  cleanOrder,
+  addNewStock,
   getOrderData,
   SelectProduct,
-  AddProductToOrder,
-  getInitialCost,
   updateProduct,
+  DeleteProduct,
+  getInitialCost,
+  AddProductToOrder,
   updateInitialCost,
-  AddNote,
-  AddCondition,
-  AddCreatedDate,
-  AddDate,
-  AddIdToOrder,
-  cleanOrder,
-  AddProvider,
-  addNewStock,
   setProductSelected,
-  DeleteProduct
 } = addOrderSlice.actions
 
 export const SelectProductSelected = state => state.addOrder.productSelected;

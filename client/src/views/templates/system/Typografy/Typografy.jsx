@@ -105,33 +105,8 @@ const baseTypography = css`
 const TypographyStyle = styled.div`
   ${({ variant }) => variants[variant] || variants.body1}
   ${baseTypography}
-  ${({ color }) => {
-    if (color) {
-      switch (color) {
-        case 'primary':
-          return `color: ${colors.primary};`;
-        case 'secondary':
-          return `color: ${colors.secondary};`;
-        case 'dark':
-          return `color: ${colors.dark};`;
-        case 'light':
-          return `color: ${colors.light};`;
-        case 'error':
-          return `color: ${colors.error};`;
-        case 'warning':
-          return `color: ${colors.warning};`;
-        case 'success':
-          return `color: ${colors.success};`;
-        case 'info':
-          return `color: ${colors.info};`;
-        default:
-          return `color: ${colors};`;
-      }
-    } else {
-      return `color: ${colors.dark};`;
-    }
-  }}
-    
+  ${({ color }) => colors[color] || colors.dark}
+      
   ${({ strikethrough }) => strikethrough && 'text-decoration: line-through;'}
   ${({ textShadow }) => textShadow && `text-shadow: ${textShadow};`}
   ${({ as }) => as === 'a' && `

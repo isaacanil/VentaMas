@@ -55,6 +55,7 @@ export const Sales = () => {
       {/* <MultiDisplayControl></MultiDisplayControl> */}
       <ProductContainer>
         <MenuApp
+          sectionName={'Ventas'}
           borderRadius={'bottom-right'}
           searchData={searchData}
           setSearchData={setSearchData}
@@ -66,7 +67,6 @@ export const Sales = () => {
           isProductGrouped={categoryGrouped}
         />
         <MenuComponents />
-        <ShoppingItemsCounter />
       </ProductContainer>
       <Cart></Cart>
       {/* <ModalManager /> */}

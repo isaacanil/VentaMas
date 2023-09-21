@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { DeleteProduct, updateInitialCost, updateProduct, } from '../../../features/addOrder/addOrderModalSlice'
 import { separator } from '../../../hooks/separator'
 import { Button } from '../../templates/system/Button/Button'
-import { InputV4 } from '../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4'
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
 
 export const ProductCard = ({ item, handleDeleteProduct, handleUpdateProduct }) => {

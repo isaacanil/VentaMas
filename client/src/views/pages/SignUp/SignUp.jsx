@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 import styled from 'styled-components';
 import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
-import { InputV4 } from '../../templates/system/Inputs/InputV4.jsx';
+import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { addNotification } from '../../../features/notification/NotificationSlice';
 import { validationRules } from '../../templates/system/Inputs/validationRules';

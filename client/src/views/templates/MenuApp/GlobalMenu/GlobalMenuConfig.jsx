@@ -2,8 +2,11 @@ import { CashReconciliation } from "../../../pages/CashReconciliation/CashReconc
 import { CashReconciliationToolbar } from "./Page/CashReconciliationToolbar";
 import { CreateOrderToolbar } from "./Page/CreateOrderToolbar";
 import { CreatePurchaseToolbar } from "./Page/CreatePurchaseToolbar";
+import { ExpensesCategoriesToolbar } from "./Page/ExpensesCategoriesToolbar";
+import { ExpensesListToolbar } from "./Page/ExpensesListToolbar";
 import { InventoryMenuToolbar } from "./Page/InventoryMenuToolbar";
 import { OrderToolbar } from "./Page/OrderToolbar";
+import { ProductCategoriesToolbar } from "./Page/ProductCategoriesToolbar";
 import { PurchaseToolbar } from "./Page/PurchaseToolbar";
 import { RegistroToolbar } from "./Page/RegistroToolbar";
 import UsersAdminToolbar from "./Page/UsersAdminToolbar";
@@ -45,6 +48,18 @@ const componentsConfig = [
   {
     id: 'billToolBar',
     component: RegistroToolbar
+  },
+  {
+    id: 'productsCategoriesToolBar',
+    component: ProductCategoriesToolbar
+  },
+  {
+    id: 'expensesCategoriesToolBar',
+    component: ExpensesCategoriesToolbar
+  },
+  {
+    id: 'expensesListToolBar',
+    component: ExpensesListToolbar
   }
 ];
 

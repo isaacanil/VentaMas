@@ -5,8 +5,11 @@ import { FeatureCard } from './FeatureCard'
 export const FeatureCardList = ({cardData}) => {
     return (
         <Container>
-            {cardData.map(card => (
-                <FeatureCard card={card} />
+            {cardData.map((card, index) => (
+                <FeatureCard 
+                    key={index}
+                card={card} 
+                />
             ))}
         </Container>
     )

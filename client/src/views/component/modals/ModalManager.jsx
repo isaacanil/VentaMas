@@ -24,7 +24,7 @@ import { Notification } from "../../templates/system/Notification/Notification"
 import { SmallNotification } from "../../templates/system/Notification/SmallNotification"
 import Loader from "../../templates/system/loader/Loader"
 import ImageViewer from "../../templates/system/ImageViewer/ImageViewer"
-import AddCategoryModal from "./AddCategoryMode/AddCategoryMode"
+import AddCategoryModal from "./AddCategory/AddCategory"
 import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
 import { OPERATION_MODES } from "../../../constants/modes"
@@ -56,7 +56,6 @@ export const ModalManager = () => {
             isOpen={AddClientModalSelected}
           />
         )}
-
         {UpdateProdModalSelected && (
           <UpdateProductModal
             key='modal-update-product'
@@ -91,13 +90,13 @@ export const ModalManager = () => {
             key={'notification'}
           />
         )}
-        {AddCategoryModalSelected.isOpen && (
+        
           <AddCategoryModal
             key={'modal-add-category'}
             isOpen={AddCategoryModalSelected.isOpen}
             categoryToUpdate={AddCategoryModalSelected.data}
           />
-        )}
+      
         {AddProductOutflowModalSelected.isOpen && (
           <ProductOutflowModal
             key={'modal-product-outflow'}

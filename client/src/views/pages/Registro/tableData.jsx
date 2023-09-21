@@ -11,6 +11,7 @@ import { Receipt } from "../checkout/Receipt";
 import { faReceipt } from "@fortawesome/free-solid-svg-icons";
 import { useReactToPrint } from "react-to-print";
 import { useRef } from "react";
+import { truncateString } from "../../../utils/text/truncateString";
 const PrintButton = ({ value }) => {
   const {data} = value;
   const componentToPrintRef = useRef(null)

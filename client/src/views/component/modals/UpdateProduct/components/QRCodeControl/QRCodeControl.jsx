@@ -1,7 +1,7 @@
 import React from 'react'
 import QRCode from 'react-qr-code';
 import styled from 'styled-components';
-import { InputV4 } from '../../../../../templates/system/Inputs/InputV4';
+import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4';
 import { setProduct } from '../../../../../../features/updateProduct/updateProductSlice';
 import { useDispatch } from 'react-redux';
 import { icons } from '../../../../../../constants/icons/icons';

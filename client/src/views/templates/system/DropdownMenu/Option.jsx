@@ -3,16 +3,16 @@ import styled from 'styled-components';
 
 export const Option = ({ option }) => {
     return (
-        <Container onClick={option.action}>
+        <Container onClick={option?.action}>
             <Header>
                 <Icon>
-                    {option?.icon && option.icon}
+                    {option?.icon && option?.icon}
                 </Icon>
-                {option.text}
+                {option?.text}
 
             </Header>
             <Description>
-                {option.description}
+                {option?.description}
             </Description>
         </Container>
     )

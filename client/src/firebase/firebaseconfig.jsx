@@ -15,6 +15,8 @@ import { login, logout, selectUser } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
 import { fbGetDocFromReference } from "./provider/fbGetProviderFromReference";
+import { fbUploadImageAndGetURL } from "./img/fbUploadImageAndGetURL";
+import { isImageFile } from "../utils/file/isValidFile";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -280,29 +282,34 @@ const UpdateOrder = async (user, order) => {
   }
 }
 export const PassDataToPurchaseList = async (user, data) => {
-  if (!user || !user.businessID) return;
-  data = {
-    ...data,
-    dates: {
-      ...data.dates,
-      createdAt: Timestamp.fromMillis(data.dates.createdAt),
-      deliveryDate: Timestamp.fromMillis(data.dates.deliveryDate),
-      updatedAt: Timestamp.now(),
-    }
-  }
-  console.log(user, data)
-  const providerRef = doc(db, 'businesses', user.businessID, 'providers', data.provider.id)
-  const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.orderId)
   try {
+    if (!user || !user.businessID) {
+      return { success: false, error: true, message: 'No user or businessID' }
+    };
+    const providerRef = doc(db, 'businesses', user.businessID, 'providers', data.provider.id);
+    const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.orderId);
+
+    let dataModified = {
+      ...data,
+      state: 'state_3',
+      provider: providerRef,
+      dates: {
+        ...data.dates,
+        createdAt: Timestamp.fromMillis(data.dates.createdAt),
+        deliveryDate: Timestamp.fromMillis(data.dates.deliveryDate),
+        updatedAt: Timestamp.now(),
+      }
+    }
+    console.log(user, data)
+
+    if (isImageFile(img)) {
+      dataModified.receiptImgUrl = await fbUploadImageAndGetURL(user, "orderReceiptImg", img);
+    }
     const updateProductResult = await UpdateProducts(user, data.replenishments);
     const updateOrderResult = await UpdateOrder(user, data);
     if (updateProductResult.success === true && updateOrderResult.success === true) {
       await setDoc(purchaseRef, {
-        data: {
-          ...data,
-          provider: providerRef,
-          state: 'state_3'
-        }
+        data: dataModified
       })
       return { success: true, error: null, message: '' };
     }
@@ -324,12 +331,15 @@ export const getPurchaseFromDB = async (user, setPurchases) => {
 
         if (providerDoc) { // Asegúrate de que providerDoc esté definido
           purchaseData.data.provider = providerDoc.provider;
-        } 
-        if(purchaseData.data.dates.createdAt){
+        }
+        if (purchaseData.data.dates.createdAt) {
           purchaseData.data.dates.createdAt = purchaseData.data.dates.createdAt.toDate().getTime()
         }
-        if(purchaseData.data.dates.deliveryDate){
+        if (purchaseData.data.dates.deliveryDate) {
           purchaseData.data.dates.deliveryDate = purchaseData.data.dates.deliveryDate.toDate().getTime()
+        }
+        if(purchaseData.data.dates.paymentDate){
+          purchaseData.data.dates.paymentDate = purchaseData.data.dates.paymentDate.toDate().getTime()
         }
         return purchaseData;
       })

@@ -1,13 +1,13 @@
 import { Timestamp, doc, setDoc } from 'firebase/firestore'
 import { db } from '../../firebaseconfig'
 import { nanoid } from 'nanoid'
-import { getNextIdCashCount } from '../getNextIDCashCount'
+import { getNextID } from '../../Tools/getNextID'
 
 // Función para abrir un nuevo 'cashCount'
 export const fbCashCountOpening = async (user, cashCount, employeeID, approvalEmployeeID, openingDate) => {
-  
+
   // Verificamos que el objeto 'user' y 'businessID' existen
-  if(!user || !user?.businessID) { return null }
+  if (!user || !user?.businessID) { return null }
 
   // Creación de las referencias de los documentos de los usuarios
   const userRefPath = doc(db, 'users', employeeID);
@@ -15,17 +15,18 @@ export const fbCashCountOpening = async (user, cashCount, employeeID, approvalEm
 
   // Generamos un nuevo ID
   const id = nanoid(10)
-  const incrementNumber = await getNextIdCashCount(user);
+  const incrementNumber = await getNextID(user, 'lastCashCountId');
 
   // Creamos un nuevo 'cashCount' extendiendo el original con los nuevos IDs y número de incremento
   cashCount = {
     ...cashCount,
     id: id,
-    incrementNumber: incrementNumber, 
+    incrementNumber: incrementNumber,
   }
+  
 
   // Creamos una referencia al documento 'cashCount'
-  const cashCountRef = doc(db, 'businesses', user?.businessID, 'cashCounts', id )
+  const cashCountRef = doc(db, 'businesses', user?.businessID, 'cashCounts', id)
 
   // Intentamos escribir el documento 'cashCount' en Firestore
   try {

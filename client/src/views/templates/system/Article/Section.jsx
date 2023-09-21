@@ -4,11 +4,11 @@ import parseText from "./parseText";
 import renderText from "./renderText";
 import Typography from "../Typografy/Typografy";
 
-const Section = ({ title, rawText }) => {
+const Section = ({title, rawText}) => {
     const parsedText = parseText(rawText);
     return (
         <Container >
-            <Typography variant="h3" >{title}</Typography>
+            {title && <Typography variant="h3" >{title}</Typography>}
             {renderText(parsedText)}
         </Container>
     );

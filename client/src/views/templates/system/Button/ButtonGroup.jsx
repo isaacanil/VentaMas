@@ -11,6 +11,7 @@ export const ButtonGroup = ({children, position}) => {
 
 const Container = styled.div`
     display: flex;
+    align-items: center;
     gap: 0.4em;
     ${(props) => {
       switch (props.position) {

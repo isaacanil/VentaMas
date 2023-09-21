@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { addDiscount, totalPurchase } from "../../../../features/cart/cartSlice";
 import { quitarCeros } from "../../../../hooks/quitarCeros";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
-import { InputV4 } from "./InputV4";
+import { InputV4 } from "./GeneralInput/InputV4";
 
 const CustomInput = ({ options }) => {
 

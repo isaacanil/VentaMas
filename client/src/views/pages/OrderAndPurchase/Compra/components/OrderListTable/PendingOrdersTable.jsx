@@ -2,7 +2,6 @@ import React, { useMemo, useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { getPurchaseFromDB } from '../../../../../../firebase/firebaseconfig'
-import { AdvancedTable } from '../../../../../controlPanel/Table/AdvancedTable'
 import { selectUser } from '../../../../../../features/auth/userSlice'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 import { toggleViewOrdersNotes } from '../../../../../../features/modals/modalSlice'
@@ -10,6 +9,8 @@ import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 import { convertMillisToDate } from '../../../../../../hooks/useFormatTime'
 import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
+import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { getOrderConditionByID, getOrderStateByID } from '../../../../../../constants/orderAndPurchaseState'
 
 export const PendingOrdersTable = () => {
   const dispatch = useDispatch();
@@ -54,7 +55,7 @@ export const PendingOrdersTable = () => {
     {
       Header: 'F. Pago',
       accessor: 'paymentDate',
-      cell: ({ value }) => <div>{convertMillisToDate(value?.paymentDate)}</div>
+      cell: ({ value }) => <div>{convertMillisToDate(value)}</div>
     },
     {
       Header: 'Total',
@@ -71,13 +72,32 @@ export const PendingOrdersTable = () => {
     }
 
   ]
+  const filterConfig = [
+    {
+      label: 'Proveedor',
+      accessor: 'provider',
+    },
+    {
+      label: 'Estado',
+      accessor: 'state',
+      format: (value) => `${getOrderStateByID(value)?.name}`,
+     
+    },
+    {
+      label: 'Condición',
+      accessor: 'condition',
+      format: (value) => `${getOrderConditionByID(value)}`
+    }
+  ];
   const data = purchases.map(({ data }, index) => {
     return {
-      number: index + 1,
+      state: data?.state,
+      condition: data?.condition,
+      number: data?.numberId,
       provider: data?.provider.name,
       note: data?.note,
       date: data?.dates,
-      paymentDate: data?.paymentDate,
+      paymentDate: data?.dates?.paymentDate,
       total: data?.total,
       action: data
     }
@@ -88,6 +108,8 @@ export const PendingOrdersTable = () => {
         tableName={'Lista de Compras'}
         columns={columns}
         data={data}
+        filterUI
+        filterConfig={filterConfig}
       />
     </Container>
 

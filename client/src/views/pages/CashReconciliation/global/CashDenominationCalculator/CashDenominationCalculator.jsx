@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
-import { InputV4 } from '../../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue'
 import { OpenControllerSmall } from './OpenControllerSmall'

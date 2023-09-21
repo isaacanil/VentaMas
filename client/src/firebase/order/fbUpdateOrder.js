@@ -16,7 +16,7 @@ export const fbUpdateOrder = async (user, order) => {
         provider: providerRef
     }
     try {
-        const orderRef = doc(db, 'businesses', user.businessID, 'orders', order.orderId)
+        const orderRef = doc(db, 'businesses', user.businessID, 'orders', order.id)
         await updateDoc(orderRef, { data: order })
     }
     catch (error) {

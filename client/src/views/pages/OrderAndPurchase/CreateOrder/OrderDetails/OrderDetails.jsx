@@ -3,9 +3,9 @@ import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { Select } from '../../../../templates/system/Select/Select'
 import { Textarea } from '../../../../templates/system/Inputs/Input'
-import {  AddCondition, AddNote, AddDate, SelectProducts, SelectOrder } from '../../../../../features/addOrder/addOrderModalSlice'
+import { SelectOrder, setOrder } from '../../../../../features/addOrder/addOrderModalSlice'
 import { DateTime } from 'luxon'
-import { getOrderConditionByID,  orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
+import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
 
 export const OrderDetails = () => {
     const dispatch = useDispatch()
@@ -18,10 +18,10 @@ export const OrderDetails = () => {
         const selectedDate = DateTime.fromISO(value);
         const timestamp = selectedDate.toJSDate().getTime();
         return timestamp;
-      };
+    };
 
-      const dateValue = typeof order?.dates?.deliveryDate === 'number' && order?.dates?.deliveryDate;
-      const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : '';
+    const dateValue = typeof order?.dates?.deliveryDate === 'number' && order?.dates?.deliveryDate;
+    const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : '';
     return (
         <Container>
             <Section flex>
@@ -31,12 +31,17 @@ export const OrderDetails = () => {
                     value={formattedDate}
                     id=""
                     min={minDate}
-                    onChange={(e) => dispatch(AddDate(handleDateChange(e.target.value)))}
+                    onChange={(e) => dispatch(setOrder({
+                        dates: {
+                            ...dates,
+                            deliveryDate: handleDateChange(e.target.value)
+                        }
+                    }))}
                 />
                 <Select
                     title='Condición'
                     data={conditions}
-                    onChange={e => dispatch(AddCondition(e.target.value?.id))}
+                    onChange={e => dispatch(setOrder({ condition: e.target.value?.id }))}
                     displayKey={'name'}
                     value={condition ? getOrderConditionByID(condition) : ''}
                 />
@@ -47,7 +52,7 @@ export const OrderDetails = () => {
                     height='4em'
                     value={note}
                     placeholder='Agrega una nota al pedido ...'
-                    onChange={(e) => dispatch(AddNote(e.target.value))}
+                    onChange={(e) => dispatch(setOrder({ note: e.target.value }))}
                 />
             </Section>
         </Container>

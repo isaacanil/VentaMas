@@ -2,8 +2,8 @@ import { DateTime } from 'luxon'
 import React, { useRef } from 'react'
 import styled from 'styled-components'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { AdvancedTable } from '../../../controlPanel/Table/AdvancedTable'
 import { columns } from '../tableData'
+import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable'
 
 
 

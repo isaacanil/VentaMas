@@ -11,7 +11,8 @@ const CASH_RECONCILIATION_TERM = {
 const DEV_VIEW_TERM = {
     CREATE_BUSINESS: '/create-business',
     MANAGE_BUSINESS: '/manage-business',
-
+    CHANGELOG_CREATE: '/changelog/create',
+    CHANGELOG_MANAGE: '/changelog/manage',
 }
 const BASIC_TERM = {
     HOME: '/home',
@@ -49,6 +50,13 @@ const PURCHASE_TERM = {
     ORDERS: '/orders-list',
     ORDERS_CREATE: '/orders-create',
 }
+const EXPENSES_TERM = {
+    EXPENSES: '/expenses',
+    EXPENSES_CREATE: '/expenses/new',
+    EXPENSES_UPDATE: '/expenses/update/:id',
+    EXPENSES_LIST: '/expenses/list',
+    EXPENSES_CATEGORY: '/expenses/categories',
+}
 
 
 
@@ -56,6 +64,7 @@ const ROUTES_PATH = {
     BASIC_TERM,
     AUTH_TERM,
     CASH_RECONCILIATION_TERM,
+    EXPENSES_TERM,
     SALES_TERM,
     INVENTORY_TERM,
     CONTACT_TERM,

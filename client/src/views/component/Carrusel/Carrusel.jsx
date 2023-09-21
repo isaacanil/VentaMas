@@ -9,6 +9,7 @@ import { Category } from './Category'
 import { toggleAddCategory } from '../../../features/modals/modalSlice'
 import { icons } from '../../../constants/icons/icons'
 import { SelectCategoryList } from '../../../features/category/categorySlicer'
+import { useCategoryState } from '../../../Context/CategoryContext/CategoryContext'
 
 export const Carrusel = ({ themeColor }) => {
     const categoriesRef = useRef(null)
@@ -69,7 +70,6 @@ export const Carrusel = ({ themeColor }) => {
     }
 
     const effectCategoriesContainer = {
-
         hidden: { opacity: 1, scale: 0 },
         visible: {
             opacity: 1,
@@ -81,9 +81,8 @@ export const Carrusel = ({ themeColor }) => {
 
         }
     }
-    const handleCreateCategory = () => {
-        dispatch(toggleAddCategory({ isOpen: true }))
-    }
+
+    const { configureAddProductCategoryModal } = useCategoryState();
     const findElementInArray = (array, element) => {
         const result = array.find((category) => category === element)
         if (result) {
@@ -93,7 +92,6 @@ export const Carrusel = ({ themeColor }) => {
     return (
         <>
             <Container themeColor={themeColor}>
-
                 <Button
                     onClick={() => MoveScroll('left')}
                     onDoubleClick={() => MoveScroll('start')}
@@ -102,13 +100,11 @@ export const Carrusel = ({ themeColor }) => {
                 </Button>
 
                 <Categories
-
                     ref={categoriesRef}
                 >
                     <Category
-
                         category={{ name: 'Categoría' }}
-                        onClick={handleCreateCategory}
+                        onClick={configureAddProductCategoryModal}
                         type='create'
                         icon={icons.operationModes.add}
                     />
@@ -130,7 +126,6 @@ export const Carrusel = ({ themeColor }) => {
                 </Categories>
                 <Button onClick={() => MoveScroll('right')} onDoubleClick={() => MoveScroll('end')} ><MdKeyboardArrowRight /></Button>
             </Container>
-
         </>
     )
 }

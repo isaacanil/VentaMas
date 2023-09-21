@@ -4,9 +4,36 @@ import { BiCalendar } from 'react-icons/bi';
 import styled from 'styled-components';
 import { Button } from '../Button';
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
+import { usePopper } from 'react-popper';
+
+const menuVariant = {
+    hidden: {
+        opacity: 0,
+        scale: 0.9,
+        transition: {
+            duration: 0.1,
+        },
+    },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: {
+            duration: 0.1,
+        },
+    },
+};
 
 const TimeFilterButton = ({ onTimeFilterSelected }) => {
+    // Popper
+    const [referenceElement, setReferenceElement] = useState(null);
+    const [popperElement, setPopperElement] = useState(null);
+    const [arrowElement, setArrowElement] = useState(null);
+    const { styles, attributes } = usePopper(referenceElement, popperElement, {
+        modifiers: [{ name: 'arrow' }],
+      });
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const menuRef = useRef(null);
     const handleButtonClick = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -60,19 +87,20 @@ const TimeFilterButton = ({ onTimeFilterSelected }) => {
         acc[category].push(option);
         return acc;
     }, {});
-    
-    useClickOutSide(menuRef, isMenuOpen === true, () => setIsMenuOpen(false));
+
+    useClickOutSide(menuRef, isMenuOpen, () => setIsMenuOpen(false));
     const sections = Object.keys(groupedOptions);
     return (
         <div>
-            <StyledButton onClick={handleButtonClick} >
+            <StyledButton ref={menuRef} >
                 <Button
+                    ref={setReferenceElement}
                     borderRadius='light'
                     startIcon={<BiCalendar />}
                     title={'filtrar Tiempo'}
                     onClick={handleButtonClick}
                 />
-                <StyledMenu isMenuOpen={isMenuOpen} ref={menuRef}>
+                <StyledMenu isMenuOpen={isMenuOpen}  ref={setPopperElement} style={styles.popper} {...attributes.popper}>    
                     {sections
                         .map((section) => (
                             <OptionsGroup>
@@ -89,7 +117,9 @@ const TimeFilterButton = ({ onTimeFilterSelected }) => {
                                 ))}
                             </OptionsGroup>
                         ))}
+                        
                 </StyledMenu>
+                <div ref={setArrowElement} style={styles.arrow} />
             </StyledButton>
             {today == ! null && (
                 <div>
@@ -107,30 +137,30 @@ const StyledButton = styled.div``;
 const StyledMenu = styled.ul`
   position: absolute;
   top: 7em;
-  left: 50%;
-  max-width: 600px;
-  transform: translateX(-50%) scale(0);
- 
+  max-width: 500px;
+  max-height: 400px;
+  overflow-y: scroll;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: var(--border-radius);
   padding: 0.5em;
   list-style: none;
-  display: grid;
   gap: 0.5em;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));  
-    grid-auto-flow: column;
+
     background-color: #575757;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     opacity: 0;
     z-index: 100000;
     transition: opacity 0.2s ease-in-out;
+    display: none;
   ${props => {
         switch (props.isMenuOpen) {
             case true:
                 return `
                 opacity: 1;  
                 transform: translateX(-50%) scale(1);
+                display: grid;
             `
                 break;
 
@@ -159,8 +189,8 @@ const StyledMenuItem = styled.li`
     
 `;
 const OptionsGroup = styled.div`
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     text-align: left;
     gap: 0.5em;
     h3 {
@@ -169,13 +199,7 @@ const OptionsGroup = styled.div`
         color: var(--color-light-yellow);
         text-transform: uppercase;
     }
-    &:nth-child(1) {
-        grid-column: 1 / 2;
-        grid-row: 1 / 2;
-    }
-    :last-child{
-        grid-column: 3 / 4;
-        grid-row: 1 / 3;
-    }
+ 
+    
    
 `;

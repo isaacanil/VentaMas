@@ -13,8 +13,8 @@ import { selectUser } from '../../../../features/auth/userSlice'
 import { fbGetPendingOrders } from '../../../../firebase/order/fbGetPedingOrder'
 import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
 import {
+    setOrder,
     AddProductToOrder,
-    AddProvider,
     DeleteProduct,
     SelectOrder,
     SelectOrderState,
@@ -127,7 +127,7 @@ export const CreateOrder = () => {
                     <Select
                         title='Proveedor'
                         data={providers}
-                        onChange={(e) => dispatch(AddProvider(e.target.value?.provider))}
+                        onChange={(e) => dispatch(setOrder({provider: e.target.value?.provider}))}
                         displayKey={'provider.name'}
                         value={provider?.name}
                     />

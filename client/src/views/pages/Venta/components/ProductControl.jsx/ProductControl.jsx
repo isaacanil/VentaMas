@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import findRouteByName from '../../../../templates/MenuApp/findRouteByName';
 import ROUTES_NAME from '../../../../../routes/routesName';
 import { CategoriesGrouped } from '../CategoriesProductsGrouped/CategoriesGrouped';
+import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
 
 export const ProductControl = ({ products, isProductGrouped, productsLoading, setProductsLoading }) => {
   const dispatch = useDispatch()
@@ -111,7 +112,9 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
             ) : null
           }
         </Wrapper>
+        <ShoppingItemsCounter />
       </Container>
+
     </Fragment>
   )
 }

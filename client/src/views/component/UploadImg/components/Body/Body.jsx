@@ -5,14 +5,21 @@ import { selectUpdateProductData } from '../../../../../features/updateProduct/u
 import { GalleryAdmin } from './GalleryAdmin'
 import { UploadImgAdmin } from './UploadImgAdmin'
 
-export const Body = ({images, ImgToUpload, setImgToUpload}) => {
+export const Body = ({ images, ImgToUpload, setImgToUpload }) => {
     const { status, product } = useSelector(selectUpdateProductData)
-    const [img, setImg] = useState(product?.productImageURL)
+    const [img, setImg] = useState(product?.productImageURL);
     return (
         <Container>
             <BodyWrapper>
-                <UploadImgAdmin ImgToUpload={ImgToUpload} setImgToUpload={setImgToUpload} img={img} />
-                <GalleryAdmin images={images} setImg={setImg}/>
+                <UploadImgAdmin
+                    ImgToUpload={ImgToUpload}
+                    setImgToUpload={setImgToUpload}
+                    img={img}
+                />
+                <GalleryAdmin
+                    images={images}
+                    setImg={setImg}
+                />
             </BodyWrapper>
         </Container>
     )

@@ -14,7 +14,7 @@ import { productDataTypeCorrection } from '../../../../features/updateProduct/va
 
 import { productSchema } from '../../../../features/updateProduct/productSchema'
 import { toggleLoader } from '../../../../features/loader/loaderSlice'
-import { InputV4 } from '../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useFormatNumber } from '../../../../hooks/useFormatNumber'
 import noImage from '../../../../assets/producto/noImg.png'
@@ -47,23 +47,19 @@ const validateProduct = (product) => {
 }
 
 export const UpdateProductModal = ({ isOpen }) => {
-    const { status, product } = useSelector(selectUpdateProductData)
-    const [taxesList, setTaxesList] = useState(initTaxes)
+    const { status, product } = useSelector(selectUpdateProductData);
+    const [taxesList, setTaxesList] = useState(initTaxes);
 
     const [imgController, setImgController] = useState(false)
     const user = useSelector(selectUser);
-    const dispatch = useDispatch()
-    const updateMode = OPERATION_MODES.UPDATE.label
-    const handleImgController = () => {
+    const dispatch = useDispatch();
+    const updateMode = OPERATION_MODES.UPDATE.label;
 
-        setImgController(!imgController)
-    }
-    const [errors, setErrors] = useState({
-    })
+    const handleImgController = () => setImgController(!imgController);
 
-    useEffect(() => {
-        getTaxes(setTaxesList)
-    }, [])
+    const [errors, setErrors] = useState({})
+
+    useEffect(() => {getTaxes(setTaxesList)}, [])
 
     const { categories } = useFbGetCategories()
 
@@ -109,7 +105,7 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         } catch (error) {
             setErrors(errors)
-            dispatch(addNotification({ title: 'error', message: 'Error: '+error, type: 'error' }));
+            dispatch(addNotification({ title: 'error', message: 'Error: ' + error, type: 'error' }));
             return Promise.reject(new Error('error'));
         }
     }

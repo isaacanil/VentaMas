@@ -30,6 +30,7 @@ import UserNotificationReducer from "../features/UserNotification/UserNotificati
 import usersManagementSlice from "../features/usersManagement/usersManagementSlice";
 import filterProductsSliceReducer from "../features/filterProduct/filterProductsSlice";
 import noteModalReducer from "../features/noteModal/noteModalSlice";
+import expenseReducer from "../features/expense/expenseSlice";
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -63,6 +64,7 @@ export const store = configureStore({
     userNotification: UserNotificationReducer,
     usersManagement: usersManagementSlice,
     note: noteModalReducer,
+    expense: expenseReducer,
   }
   ,
 })

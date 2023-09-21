@@ -1,7 +1,7 @@
 
 import { forwardRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { Tooltip } from './Tooltip'
 import { useWindowWidth } from '../../../../hooks/useWindowWidth'
 
@@ -11,6 +11,7 @@ export const Button = forwardRef(({
   border,
   color,
   title,
+  size = 'small',
   startIcon,
   endIcon,
   onClick,
@@ -26,9 +27,7 @@ export const Button = forwardRef(({
   iconOff,
   iconColor,
   titlePosition,
-  tooltipDescription,
-  tooltipPlacement,
-
+  type = 'button'
 
 }, ref) => {
   const handleClick = (e) => {
@@ -37,9 +36,8 @@ export const Button = forwardRef(({
   }
 
   return (
-
-
     <Container
+      size={size}
       bgcolor={bgcolor}
       color={color}
       onClick={onClick && handleClick}
@@ -47,6 +45,7 @@ export const Button = forwardRef(({
       height={height}
       variant={variant}
       disabled={disabled}
+      type={type}
       borderRadius={borderRadius}
       isActivated={isActivated}
       titlePosition={titlePosition}
@@ -68,77 +67,111 @@ export const Button = forwardRef(({
 
   )
 });
-
-export const Container = styled.button`
-  //border
-  border-radius: 100px;
-  outline: none;
-  border: none;
-  height: 30px;
+const styleByDefault = css`
+  //align
   display: flex;
   align-items: center;
-  white-space: nowrap;
+  justify-content: center;
   gap: 0.6em;
-  padding: 0 0.8em;
-  outline: none;
+
+  //color
   color: black;
-  font-weight: 500;
-  font-size: 14px;
   
-  pointer-events: all;
-  font-family: inherit;
+  //text
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  text-transform: capitalize;
+  line-height: -10px;
+  white-space: nowrap;
+
+  //border
+  border: none;
+  outline: none;
+
+  //cursor
+  cursor: pointer;
+
+  //svg
   svg{
     font-size: 1.2em;
     margin: 0;
   }
-  cursor: pointer;
-  transition: border-color 0.25s;
-  
+
+  //transition
+  transition: border-color 0.25s, background-color 500ms;
+
+  //other
+  pointer-events: all;
+
+  &:focus, &:focus-visible{
+    outline: none;
+  }
+`
+const sizes = {
+  small: `
+    height: 2em;
+    padding: 0 0.4em;
+  `,
+  medium: `
+    height: 2.2em;
+    font-size: 16px;
+    padding: 0 0.8em;
+  `,
+  large: `
+    height: 2.4em;
+    font-size: 16px;
+    padding: 0 0.8em;
+  `,
+  icon24: `
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    svg{
+      font-size: 18px;
+    }
+  `,
+  icon32: `
+    width: 32px;
+    height: 32px;
+    svg{
+      font-size: 20px;
+    }
+  `,
+}
+const borderRadius = {
+  normal: `
+    border-radius: var(--border-radius);
+  `,
+  light: `
+    border-radius: var(--border-radius-light);
+  `,
+  none: `
+    border-radius: 0;
+  `,
+  round: `
+    border-radius: 100px;
+  `,
+}
+
+export const Container = styled.button`
+  ${styleByDefault}
+  ${props => props.size ? sizes[props.size] : sizes.medium}
+ 
   &:hover{
     ${props => !props.isActivated ? `
       background-color: #d6d6d6;
       backdrop-filter: opacity(10);
     ` : null}
   }
-  &:focus, &:focus-visible{
-    outline: none;
-  }
- 
-  transition: background-color 500ms;
-  ${(props) => {
-    switch (props.titlePosition) {
-      case 'center':
-        return `
-          justify-content: center;
-        `
 
-      default:
-        break;
-    }
-  }}
  
- ${(props) => {
-    switch (props.borderRadius) {
-      case 'normal':
-        return `
-        border-radius: var(--border-radius);
-      `
-      case 'light':
-        return `
-        border-radius: var(--border-radius-light);
-      `
-      case 'none':
-        return `
-        border-radius: 0;
-      `
-      case 'round':
-        return `
-        border-radius: 100px;
-      `
-      default:
-        break;
-    }
-  }}
+ 
+  ${props => props.borderRadius && borderRadius[props.borderRadius]}
+
  ${(props) => {
     switch (props.bgcolor) {
       case "neutral":
@@ -192,13 +225,11 @@ export const Container = styled.button`
           `
       case "gray":
         return `
-            background-color: var(--White3);
+            background-color: var(--White4);
             color: var(--font-color-dark-slightly);
             :hover{
              color: var(--font-color-dark-slightly);
             }
-            
-           
           `
       case "primary":
         return `
@@ -389,34 +420,7 @@ export const Container = styled.button`
           `
     }
   }}
-  /* ${(props) => {
-    switch (props.isActivated) {
-      case true:
-        return `
-          background-color: #ffffff;
-          color: black;
-          :hover{
-            background-color: #e9e9e9;
-            color: black;
-          }
-        `
-      case false:
-        return `
-          background-color: rgba(0, 0, 0, 0.26);
-          color: white;
-          :hover{
-            background-color: #e9e9e94b;
-            color: black;
-          }
-        `
-      case props.isActivated:
-        return `
-          background-color: ${props.isActivated};
-        `
-      default:
-        break;
-    }
-  }} */
+
   ${(props) => {
     switch (props.isActivatedColors) {
       case 'style1':
@@ -453,7 +457,6 @@ export const Container = styled.button`
     }
   }}
 
- //${props => props.hidden === true ? `@media (max-width: 800px) {display: none;}` : ''}
   @media (max-width: 800px) {
     display: ${props => props.hidden === true ? 'none' : 'flex'};
   }
@@ -462,5 +465,6 @@ export const Container = styled.button`
 export const ButtonGroup = styled.div`
   display: flex;
   gap: 0.4em;
+  align-items: center;
 `
 

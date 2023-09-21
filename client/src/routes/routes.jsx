@@ -10,6 +10,7 @@ import purchases from "./paths/Purchases";
 import lab from "./paths/Lab";
 import cashReconciliation from "./paths/CashReconciliztion";
 import dev from "./paths/Dev";
+import expenses from "./paths/Expenses";
 
 export const routes = [
     ...basic,
@@ -21,6 +22,7 @@ export const routes = [
     ...purchases,
     ...lab,
     ...cashReconciliation,
+    ...expenses,
     ...dev,
     {
         path: "*",

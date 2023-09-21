@@ -8,7 +8,7 @@ import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndic
 import { ActionsButtonsGroup } from './ActionsButtonsGroup'
 import { toggleViewOrdersNotes } from '../../../../../features/modals/modalSlice'
 import { Tooltip } from '../../../../templates/system/Button/Tooltip'
-import { correctDate } from '../../../../../hooks/time/correctDate'
+import { correctDate } from '../../../../../hooks/date/correctDate'
 import { getOrderStateByID } from '../../../../../constants/orderAndPurchaseState'
 
 export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId }) => {

@@ -6,26 +6,18 @@ import { OrderCard } from '../../ListItem/OrderCard'
 import { selectUser } from '../../../../../../features/auth/userSlice'
 import { useFbGetOrders } from '../../../../../../firebase/order/usefbGetOrders'
 import { fbGetPendingOrders } from '../../../../../../firebase/order/fbGetPedingOrder'
-import { AdvancedTable } from '../../../../../controlPanel/Table/AdvancedTable'
 import { convertMillisToDate, getTimeElapsed, useFormatDate } from '../../../../../../hooks/useFormatTime'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
-import { getOrderStateByID, orderAndDataCondition, orderAndDataState } from '../../../../../../constants/orderAndPurchaseState'
+import { getOrderConditionByID, getOrderStateByID, orderAndDataCondition, orderAndDataState } from '../../../../../../constants/orderAndPurchaseState'
 import { StatusIndicatorDot } from '../StatusIndicatorDot/StatusIndicatorDot'
 import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
-import { date } from 'yup'
-import { OrderMenuFilter } from '../OrderFilter/OrderMenuFilter/OrderMenuFilter'
+import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 
-const [filter, setFilter] = useState({
-  provider: 'all',
-  condition: 'all',
-  state: 'state_2'
-})
 export const PendingOrdersTable = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  
   const columns = [
     {
       Header: '#',
@@ -79,44 +71,37 @@ export const PendingOrdersTable = () => {
       Header: 'Acción',
       accessor: 'action',
       align: 'right',
-      cell: ({ value }) => <ActionsButtonsGroup orderData={value} />
+      cell: ({ value }) => <ActionsButtonsGroup orderData={value} />,
+     
     }
   ]
+  const filterConfig = [
+    {
+      label: 'Proveedor',
+      accessor: 'provider',
+    },
+    {
+      label: 'Estado',
+      accessor: 'state',
+      format: (value) => `${getOrderStateByID(value)?.name}`,
+      defaultValue: 'state_2'
+    },
+    {
+      label: 'Condición',
+      accessor: 'condition',
+      format: (value) => `${getOrderConditionByID(value)}`
+    }
+  ];
 
-  const menu = [
-    {
-      name: 'Proveedores',
-      data: [],
-      option: ({ value }) => <div>{value.name}</div>,
-      onClick: ({ value }) => setFilter({...filter, provider: value.id}),
-      default: 'none',
-      value: filter.provider
-    },
-    {
-      name: 'Condiciones',
-      data: orderAndDataCondition,
-      option: ({ value }) => <div>{value.name}</div>,
-      onClick: ({ value }) => setFilter({...filter, condition: value.id}),
-      default: 'none',
-      value: filter.condition
-    },
-    {
-      name: 'Estados',
-      data: orderAndDataState,
-      option: ({ value }) => <div>{value.name}</div>,
-      onClick: ({ value }) => setFilter({...filter, state: value.id}),
-      default : 'state_2',
-      value: filter.state
-    }
-  ]
   const user = useSelector(selectUser);
   const { pendingOrders } = fbGetPendingOrders(user);
 
   const data = pendingOrders.map(({ data }) => {
     return {
-      number: data?.id,
+      number: data?.numberId,
       state: data?.state,
       provider: data?.provider?.name,
+      condition: data?.condition,
       note: data?.note,
       createdAt: data?.dates?.createdAt,
       deliveryDate: data?.dates?.deliveryDate,
@@ -127,17 +112,17 @@ export const PendingOrdersTable = () => {
 
   return (
     <Container>
-
       <AdvancedTable
         tableName={'Lista de Pedidos Pendientes'}
         columns={columns}
         data={data}
-        
+        filterUI
+        filterConfig={filterConfig}
       />
     </Container>
   )
 }
-//headerComponent={<OrderMenuFilter options={menu} />}
+
 const Container = styled.div`
     width: 100vw;
   padding: 0.4em 1em;

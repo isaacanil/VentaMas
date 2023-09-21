@@ -42,7 +42,7 @@ export const Registro = () => {
         />
         <FilterBar>
           <span>
-            <DatePicker dates={setDatesSelected} data={datesSelected} />
+            <DatePicker setDates={setDatesSelected} dates={datesSelected} />
             <TimeFilterButton onTimeFilterSelected={handleTimeChange} />
             {/* <ComponentTagger text={'Exportar excel:'} children={ */}
 

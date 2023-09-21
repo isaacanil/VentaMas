@@ -9,12 +9,6 @@ export const MenuComponents = () => {
     return (
         <Container>
             <Items>
-                {/* <li className={Style.Item}>
-                    <Button 
-                    title='Display'>
-                        Displays
-                    </Button>
-                </li> */}
                 {
                     MenuConfig.map((item, index) => {
                         return (
@@ -30,15 +24,7 @@ export const MenuComponents = () => {
                         )
                     })
                 }
-                {/* <Item>
-                    <Button title='Productos'/>        
-                </Item>
-                <Item className={Style.Item}>
-                    <Button title='Factura'/>
-                </Item> */}
-
             </Items>
-
         </Container>
     )
 }
@@ -55,25 +41,17 @@ const Container = styled.div`
         z-index: 1;
       
         align-items: center;
-        padding: 0 2em;
-      
+        padding: 0 1em;
     }
 `
 const Items = styled.ul`
      display: flex;
         width: 100%;
         list-style: none;
-        justify-content: space-between;
+        justify-content: end;
         margin: 0;
         padding: 0;
-        @media(max-width: 800px) {
-            display: flex;
-            width: 100%;
-            list-style: none;
-            justify-content: space-between;
-            margin: 0;
-            padding: 0;
-    }
+    
 `
 const Item = styled.li`
 

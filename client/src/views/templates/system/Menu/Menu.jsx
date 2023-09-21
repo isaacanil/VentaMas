@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Modal from './Modal';
-import { ColumnMenu } from '../../../controlPanel/Table/components/ColumnMenu/ColumnMenu';
+
 import { Button } from '../Button/Button';
 import { icons } from '../../../../constants/icons/icons';
 // import Config1 from './Config1'; // Importa tus componentes de configuración
@@ -10,18 +10,18 @@ import { icons } from '../../../../constants/icons/icons';
 
 
 const options = [
-    {
-        id: 'config1', label: 'Columnas', component: (
-            <ColumnMenu
-                // resetColumnOrder={resetColumnOrder}
-                // isOpen={isReorderMenuOpen}
-                // toggleOpen={toggleReorderMenu}
-                // columns={columns}
-                // columnOrder={columnOrder}
-                // setColumnOrder={setColumnOrder}
-            />
-        )
-    },
+    // {
+    //     id: 'config1', label: 'Columnas', component: (
+    //         <ColumnMenu
+    //             // resetColumnOrder={resetColumnOrder}
+    //             // isOpen={isReorderMenuOpen}
+    //             // toggleOpen={toggleReorderMenu}
+    //             // columns={columns}
+    //             // columnOrder={columnOrder}
+    //             // setColumnOrder={setColumnOrder}
+    //         />
+    //     )
+    // },
     // Agregar más opciones de configuración aquí
 ];
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { InputV4 } from './InputV4'
+import { InputV4 } from './GeneralInput/InputV4'
 import { FormattedValue } from '../FormattedValue/FormattedValue'
 
 export const InputWithHorizontalLabel = ({ label = null, ...props }) => {

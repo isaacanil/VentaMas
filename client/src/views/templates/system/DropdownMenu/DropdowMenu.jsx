@@ -60,8 +60,9 @@ const Container = styled.div`
   border-radius: 5px;
   box-shadow: 0 0 5px rgba(0, 0, 0, .3);
   padding: 0em 0;
-  z-index: 55;
+  z-index: 555555;
   overflow: hidden;
+
 
   
 `;

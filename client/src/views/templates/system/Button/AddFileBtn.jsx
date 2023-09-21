@@ -7,7 +7,7 @@ import { toggleLoader } from '../../../../features/loader/loaderSlice'
 import { selectUploadImageLoading, selectUploadImageStatus, selectUploadImageUrl } from '../../../../features/uploadImg/uploadImageSlice'
 import { Button } from './Button'
 
-export const AddFileBtn = ({ title, startIcon, endIcon, id, setFile, file, fn }) => {
+export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
     const process = useSelector(selectUploadImageStatus)
     const loading = useSelector(selectUploadImageLoading)
     const url = useSelector(selectUploadImageUrl)
@@ -19,9 +19,7 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, setFile, file, fn })
     const handleOnchange = async (e) => {
         fn(e.target.files[0])
     }
-    useEffect(() => {
-        
-    }, [file])
+
 
     useEffect(() => {
         setProgress(process)

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { InputV4 } from "../../templates/system/Inputs/InputV4";
+import { InputV4 } from "../../templates/system/Inputs/GeneralInput/InputV4";
 import { fbLogin } from "../../../firebase/Auth/fbLogin";
 import ROUTES_NAME from "../../../routes/routesName";
 import findRouteByName from "../../templates/MenuApp/findRouteByName";

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { InputV4 } from '../../../../../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../../../../../templates/system/Inputs/GeneralInput/InputV4'
 import { icons } from '../../../../../../../../constants/icons/icons'
 import styled from 'styled-components'
 import { Button, ButtonGroup } from '../../../../../../../templates/system/Button/Button'

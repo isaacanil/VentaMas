@@ -13,7 +13,7 @@ import { quitarCeros } from '../../../../hooks/quitarCeros'
 import CustomInput from '../../../templates/system/Inputs/CustomInput'
 import { useRoundedNumber } from '../../../../hooks/useRoundedNumber'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt'
-import { InputV4 } from '../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
 

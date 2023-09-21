@@ -23,3 +23,4 @@ export const fbDeleteProductImg = (user, imgUrl) => {
             fbDeleteProductImgData(user, imgUrl.id);
         });
 }
+

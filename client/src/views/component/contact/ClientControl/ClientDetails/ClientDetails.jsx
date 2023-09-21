@@ -7,7 +7,7 @@ import { monetarySymbols } from '../../../../../constants/monetarySymbols'
 import { sourceOfSaleList } from '../../../../../constants/sourceOfSaleList'
 import { selectClient, setClient } from '../../../../../features/clientCart/clientCartSlice'
 import { updateObject } from '../../../../../utils/object/updateObject'
-import { InputV4 } from '../../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 import { AnimatePresence, motion } from 'framer-motion'
 
 export const ClientDetails = ({ mode }) => {

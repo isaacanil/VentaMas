@@ -65,13 +65,13 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
             icon: <FontAwesomeIcon icon={faImage} />,
             action: () => handleImageHiddenFN()
         },
-        user?.role === 'dev' ?
-            {
-                text: savedTheme ? 'Cambiar a modo Claro' : 'Cambiar a modo Oscuro',
-                description: savedTheme ? 'Cambiar a modo Claro' : 'Cambiar a modo Oscuro',
-                icon: <FontAwesomeIcon icon={faImage} />,
-                action: () => handleThemeModeFN()
-            } : null
+        // user?.role === 'dev' ?
+        //     {
+        //         text: savedTheme ? 'Cambiar a modo Claro' : 'Cambiar a modo Oscuro',
+        //         description: savedTheme ? 'Cambiar a modo Claro' : 'Cambiar a modo Oscuro',
+        //         icon: <FontAwesomeIcon icon={faImage} />,
+        //         action: () => handleThemeModeFN()
+        //     } : null
 
     ];
 

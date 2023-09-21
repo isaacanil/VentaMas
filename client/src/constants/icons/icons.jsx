@@ -1,4 +1,4 @@
-import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faArrowLeft, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCaretDown, faCaretUp, faCartFlatbed, faCartPlus, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faRightToBracket, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSubtract, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faArrowLeft, faAsterisk, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCalendar, faCaretDown, faCaretUp, faCartFlatbed, faCartPlus, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCloudArrowUp, faCompress, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHashtag, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMoneyBillWave, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faRightToBracket, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSquarePlus, faSubtract, faTags, faTrash, faTrashCan, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -6,7 +6,11 @@ export const icons = {
         user: <FontAwesomeIcon icon={faUser} />,
         email: <FontAwesomeIcon icon={faEnvelope} />,
         password: <FontAwesomeIcon icon={faLock} />,
-
+        asterisk: <FontAwesomeIcon icon={faAsterisk} />,
+        date: <FontAwesomeIcon icon={faCalendar} />,
+        search: <FontAwesomeIcon icon={faMagnifyingGlass} />,
+        number: <FontAwesomeIcon icon={faHashtag} />,
+        text: <FontAwesomeIcon icon={faSquareCaretDown} />,
     },
     user: {
         create: <FontAwesomeIcon icon={faUserPlus} />,
@@ -20,7 +24,7 @@ export const icons = {
             hide: <FontAwesomeIcon icon={faEyeSlash} />,
         }
     },
-   
+
     arrows: {
         arrowLeft: <FontAwesomeIcon icon={faArrowLeft} />,
         chevronDown: <FontAwesomeIcon icon={faChevronDown} />,
@@ -28,14 +32,14 @@ export const icons = {
         chevronLeft: <FontAwesomeIcon icon={faChevronLeft} />,
         chevronRight: <FontAwesomeIcon icon={faChevronRight} />,
         UpRightAndDownLeftFromCenter: <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} />,
-        arrowDownWideShort :<FontAwesomeIcon icon={faArrowDownWideShort} />,
+        arrowDownWideShort: <FontAwesomeIcon icon={faArrowDownWideShort} />,
         arrowDownShortWide: <FontAwesomeIcon icon={faArrowDownShortWide} />,
         caretUp: <FontAwesomeIcon icon={faCaretUp} />,
         caretDown: <FontAwesomeIcon icon={faCaretDown} />,
         AnglesLeft: <FontAwesomeIcon icon={faAnglesLeft} />,
         AnglesRight: <FontAwesomeIcon icon={faAnglesRight} />,
     },
-    sort:{
+    sort: {
         sortDown: <FontAwesomeIcon icon={faSortDown} />,
         sortUp: <FontAwesomeIcon icon={faSortUp} />,
         sortAsc: <FontAwesomeIcon icon={faArrowDownAZ} />,
@@ -59,7 +63,7 @@ export const icons = {
         edit: <FontAwesomeIcon icon={faPencil} />,
         add: <FontAwesomeIcon icon={faPlus} />,
         buy: <FontAwesomeIcon icon={faCartPlus} />,
-        delete: <FontAwesomeIcon icon={faTrash}  />,
+        delete: <FontAwesomeIcon icon={faTrash} />,
         upload: <FontAwesomeIcon icon={faCloudArrowUp} />,
         logout: <FontAwesomeIcon icon={faRightToBracket} />,
         discard: <FontAwesomeIcon icon={faSquareMinus} />,
@@ -80,43 +84,49 @@ export const icons = {
         multiply: <FontAwesomeIcon icon={faMultiply} />,
         divide: <FontAwesomeIcon icon={faDivide} />,
     },
-    view:{
+    view: {
         image: <FontAwesomeIcon icon={faImage} />,
         column: <FontAwesomeIcon icon={faGrip} />,
         row: <FontAwesomeIcon icon={faGripLines} />,
         fullScreenExpand: <FontAwesomeIcon icon={faExpand} />,
         fullScreenCompress: <FontAwesomeIcon icon={faCompress} />
     },
-    menu:{
+    menu: {
         selected: {
             home: <FontAwesomeIcon icon={faHome} />,
             sale: <FontAwesomeIcon icon={faBagShopping} />,
             purchase: <FontAwesomeIcon icon={faCartShopping} />,
             inventory: <FontAwesomeIcon icon={faCartFlatbed} />,
             contacts: <FontAwesomeIcon icon={faAddressBook} />,
-            category:<FontAwesomeIcon icon={faRectangleList} />,
+            category: <FontAwesomeIcon icon={faRectangleList} />,
             register: <FontAwesomeIcon icon={faReceipt} />,
-            settings:<FontAwesomeIcon icon={faGear} />,
+            settings: <FontAwesomeIcon icon={faGear} />,
 
         },
         unSelected: {
             cashReconciliation: <FontAwesomeIcon icon={faSign} />,
+            expenses: {
+                category: <FontAwesomeIcon icon={faTags} />,
+                register: <FontAwesomeIcon icon={faSquarePlus} />,
+                list: <FontAwesomeIcon icon={faSquarePen} />,
+                expenses: <FontAwesomeIcon icon={faMoneyBillWave} />,
+            },
             home: <FontAwesomeIcon icon={faHome} />,
             sale: <FontAwesomeIcon icon={faBagShopping} />,
             purchase: <FontAwesomeIcon icon={faCartShopping} />,
             inventory: <FontAwesomeIcon icon={faCartFlatbed} />,
             contacts: <FontAwesomeIcon icon={faAddressBook} />,
-            category:<FontAwesomeIcon icon={faRectangleList} />,
+            category: <FontAwesomeIcon icon={faTags} />,
             register: <FontAwesomeIcon icon={faReceipt} />,
-            settings:<FontAwesomeIcon icon={faGear} />,
+            settings: <FontAwesomeIcon icon={faGear} />,
         }
     },
-    users:{
+    users: {
         provider: <FontAwesomeIcon icon={faUserTie} />,
         client: <FontAwesomeIcon icon={faUser} />,
 
     },
-    settings:{
+    settings: {
         businessInfo: <FontAwesomeIcon icon={faBuilding} />,
         taxReceipt: <FontAwesomeIcon icon={faReceipt} />,
         appInfo: <FontAwesomeIcon icon={faInfo} />,
@@ -130,6 +140,6 @@ export const icons = {
         barcode: <FontAwesomeIcon icon={faBarcode} />,
         qrcode: <FontAwesomeIcon icon={faQrcode} />,
     },
-  
-  
+
+
 }

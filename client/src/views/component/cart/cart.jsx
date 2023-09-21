@@ -262,16 +262,20 @@ const Container = styled.div`
       max-width: 100%;
       border: 1px solid rgba(0, 0, 0, 0.121);
       border-top: 0;
+
       border-bottom: 0;
       position: absolute;
       top: 0;
       z-index: 100000;
  
+      transition: transform 600ms 0ms linear;
+      
       ${props => {
     switch (props.isOpen) {
       case false:
         return `
-              width: 0;
+             
+              transform: translateX(-100%);
               position: absolute;
               z-index: 1;
             `

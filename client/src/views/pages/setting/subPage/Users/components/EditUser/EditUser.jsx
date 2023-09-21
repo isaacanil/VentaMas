@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { InputV4 } from '../../../../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../../../../templates/system/Inputs/GeneralInput/InputV4'
 import { nanoid } from 'nanoid'
 import ElemLabel from '../../../../../../templates/system/ElemLabel/ElemLabel'
 import { icons } from '../../../../../../../constants/icons/icons'

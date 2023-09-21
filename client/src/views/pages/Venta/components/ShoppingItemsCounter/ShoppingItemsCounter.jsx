@@ -15,13 +15,16 @@ const Container = styled.div`
     padding: 0 1em;
     display: flex;
     align-items: center;
-    height: 2em;
+    height: 2.2em;
     position: absolute;
+    z-index: 100;
     border-radius: 100px;
     /* border-top-left-radius: 6px;
     border-top-right-radius: 6px; */
     color: white;
     bottom: 0.2em;
     right: 1.2em;
+
+   
  
 `

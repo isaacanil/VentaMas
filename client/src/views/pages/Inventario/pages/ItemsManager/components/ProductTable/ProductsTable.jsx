@@ -11,12 +11,12 @@ import { icons } from '../../../../../../../constants/icons/icons'
 import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
 import { ChangeProductData, selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
 import { OPERATION_MODES } from '../../../../../../../constants/modes'
-import { AdvancedTable } from '../../../../../../controlPanel/Table/AdvancedTable'
 import { handleDeleteProductAlert } from '../../../../../../../features/Alert/AlertSlice'
 import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
 import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { ImgCell } from '../../../../../../controlPanel/Table/components/Cells/Img/ImgCell'
+import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell'
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
@@ -144,6 +144,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           searchTerm={searchTerm}
           headerComponent={<Carrusel />}
           tableName={'inventory_items_table'}
+          elementName={'productos'}
           onRowClick={(row) => handleUpdateProduct(row.action)}
           groupBy={'category'}
         />

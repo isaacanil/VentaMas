@@ -6,7 +6,7 @@ import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { icons } from '../../../../constants/icons/icons';
 
 import { usePopper } from 'react-popper';
-import { InputV4 } from '../Inputs/InputV4';
+import { InputV4 } from '../Inputs/GeneralInput/InputV4';
 import { CenteredText } from '../CentredText';
 
 const getValueByKeyOrPath = (obj, keyOrPath) => {
@@ -18,22 +18,22 @@ const getValueByKeyOrPath = (obj, keyOrPath) => {
 
 const containerVariants = {
   open: {
-      clipPath: "inset(0% 0% 0% 0% round 4px)",
-      transition: {
-          type: "spring",
-          bounce: 0,
-          duration: 0.7,
-          delayChildren: 0.3,
-          staggerChildren: 0.05
-      }
+    clipPath: "inset(0% 0% 0% 0% round 4px)",
+    transition: {
+      type: "spring",
+      bounce: 0,
+      duration: 0.7,
+      delayChildren: 0.3,
+      staggerChildren: 0.05
+    }
   },
   closed: {
-      clipPath: "inset(100% 0% 0% 0% round 10px)",
-      transition: {
-          type: "spring",
-          bounce: 0,
-          duration: 0.3
-      }
+    clipPath: "inset(100% 0% 0% 0% round 10px)",
+    transition: {
+      type: "spring",
+      bounce: 0,
+      duration: 0.3
+    }
   }
 }
 
@@ -43,9 +43,12 @@ export const Select = ({
   data,
   value,
   onChange,
+  
   displayKey,
+  labelVariant = 'primary',
   onNoneOptionSelected,
-  isLoading = false
+  isLoading = false,
+  ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   //referencia al contenedor del select
@@ -91,15 +94,20 @@ export const Select = ({
 
   return (
     <Container ref={SelectRef}>
-      {
-        value && (
-          <Label
-            labelVariant="primary"
-          >
-            {title}
-          </Label>
-        )
-      }
+      <OtherContainer>
+        {
+          (value || labelVariant === 'label2') && (
+            <Label
+              labelVariant={labelVariant}
+            >
+              {title}:
+            </Label>
+          )
+        }
+        {
+          props.required && <Asterisk style={{ color: 'red', }}>{icons.forms.asterisk}</Asterisk>
+        }
+      </OtherContainer>
 
       <Head ref={setReferenceElement}>
         {isLoading === true ? (
@@ -128,10 +136,12 @@ export const Select = ({
             <List>
               <SearchSection>
                 <InputV4
+                  icon={icons.forms.search}
                   placeholder={`Buscar ${title}`}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   size="medium"
-
+                  value={searchTerm}
+                  onClear={() => setSearchTerm('')}
                 />
               </SearchSection>
               <Item
@@ -166,6 +176,17 @@ export const Select = ({
     </Container>
   );
 };
+const Asterisk = styled.span`
+  color: red;
+  svg{
+    font-size: 0.8em;
+  }
+  padding-left: 8px;
+
+`
+const OtherContainer = styled.div`
+    display: flex;
+    `
 const Container = styled.div`
     position: relative;
     max-width: 200px;
@@ -191,8 +212,9 @@ const Body = styled.div`
     max-height: 300px;
     height: 300px;
     position: absolute;
+    
    
-    z-index: 3;
+    z-index: 99999;
     background-color: #ffffff;
     overflow: hidden;
     border-radius: 6px;
@@ -240,7 +262,7 @@ const Item = styled.p`
         padding: 0 1em;
         display: flex;
         align-items: center;
-        height: 2em;
+        height: 2.4em;
         background-color: var(--White2);
     &:hover{
         background-color: var(--color);
@@ -288,7 +310,10 @@ const Icon = styled.div`
  align-items: center;
 `
 const SearchSection = styled.div`
+    position: sticky;
+    top: 0;
     padding: 0.2em;
+    background-color: var(--White2);
     border-bottom: 1px solid rgba(0, 0, 0, 0.100);
 `
 const NoneItemMessageContainer = styled.div`
@@ -316,6 +341,13 @@ const Label = styled.label`
     ::after {
       content: ' :';
     }
+        `
+      case 'label2':
+        return `
+          font-size: 16px;
+        color: black;
+        margin-bottom: 10px;
+        display: block;
         `
       default:
         return `

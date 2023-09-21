@@ -43,6 +43,7 @@ const filterDataWithTerms = (array, terms) => {
 };
 
 export const filterData = (array, searchTerm) => {
+    !array && (array = []);
     if (!Array.isArray(array)) {
         throw new Error('The first parameter must be an array');
     }

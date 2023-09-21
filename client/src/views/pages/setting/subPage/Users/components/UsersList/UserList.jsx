@@ -9,43 +9,11 @@ import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers'
 import { Item } from './Table/Item/Item'
 import { inspectUserAccess } from '../../../../../../../hooks/abilities/useAbilities'
-import { AdvancedTable } from '../../../../../../controlPanel/Table/AdvancedTable.jsx'
 import { useNavigate } from 'react-router-dom'
 import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
 import { DateTime } from 'luxon'
-// const tableConfig = {
-//   headers: [
-//     {
-//       name: '#',
-//       align: 'left',
-//       description: 'número',
-//       max: '0.2fr',
-//       min: '60px',
-//     },
-//     {
-//       name: 'Nombre',
-//       align: 'left',
-//       description: 'Nombre del usuario',
-//       max: '1fr',
-//       min: '150px',
-//     },
-//     {
-//       name: 'Rol',
-//       align: 'left',
-//       description: 'Rol',
-//       max: '0.4fr',
-//       min: '90px',
-//     },
-//     {
-//       name: 'Estado',
-//       align: 'left',
-//       description: '¿Esta Activo?',
-//       max: '0.4fr',
-//       min: '100px',
-//     },
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
 
-//   ]
-// }
 const renamedAbilities = (abilities) => {
   switch (abilities) {
     case 'owner':
@@ -139,21 +107,7 @@ export const UserList = () => {
   }
   return (
     <Container>
-      {/* <Table
-        colWidth={tableConfig.headers}
-        header={<Header data={tableConfig.headers} />}
-        body={
-          abilities.can("read", "User") && (
-            <Body
-              data={users}
-              Item={Item}
-              colWidth={tableConfig.headers}
-            />
-          )
-        }
-      /> */}
       <TableWrapper>
-
         <AdvancedTable
           tableName={'Usuarios'}
           data={data}

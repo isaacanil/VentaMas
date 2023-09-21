@@ -3,7 +3,7 @@ import Typography from "../Typografy/Typografy";
 import Section from "./Section";
 import PropTypes from 'prop-types';
 
-const Article = ({ title, sections }) => {
+const Article = ({ title, sections, }) => {
     return (
         <Container>
             <Typography variant="h1">{title}</Typography>

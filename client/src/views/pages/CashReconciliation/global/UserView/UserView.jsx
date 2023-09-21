@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { InputV4 } from '../../../../templates/system/Inputs/InputV4'
+import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 import { icons } from '../../../../../constants/icons/icons'
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue'
 export const UserView = ({user, user2, label='Entregado por', label2='', title}, ) => {

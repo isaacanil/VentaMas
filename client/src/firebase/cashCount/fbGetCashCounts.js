@@ -66,20 +66,6 @@ export const fbGetCashCounts = async (user, setCashCounts) => {
             const invoiceRef = data.sales.map(ref => ref);
             console.log(invoiceRef)
 
-            // const invoices = await Promise.all(invoiceRef.map(async (ref) => {
-            //     const invoiceDoc = (await getDoc(ref)).data()
-            //     let invoiceData = invoiceDoc;
-
-            //     // invoiceData = {
-            //     //     ...invoiceData,
-            //     //     ['data']: {
-            //     //         ...invoiceData.data,
-            //     //         ['date']: DateTime.fromMillis(invoiceData.data.date.seconds * 1000 + invoiceData.data.date.nanoseconds / 1e6).toFormat('yyyy-MM-dd HH:mm:ss')
-            //     //     }
-            //     // }
-            //     return invoiceData
-            // }));
-
             delete data.sales
             delete data.stateHistory
 

@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { InputText } from '../../templates/system/Inputs/Input'
 import { IoClose } from 'react-icons/io5'
 import { ProductCard } from './ProductCard'
 import { SelectProductSelected } from '../../../features/addOrder/addOrderModalSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
+import { useClickOutSide } from '../../../hooks/useClickOutSide'
 export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProduct }) => {
   
   const [value, setValue] = useState(undefined)
   const close = () => {
     setIsOpen(false)
   }
+  const productListRef = useRef(null);
 
   const {products} =  useGetProducts(true);
   const productsWithStockTracking = products.filter(({product}) => product.trackInventory === true ) || [];
@@ -24,6 +26,9 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
       setValue(productName)
     }
   }, [productName])
+
+  useClickOutSide(productListRef, isOpen, close);
+
   return (
     <Component>
       <InputText
@@ -36,7 +41,7 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
         bgColor='gray-light'
       />
       {isOpen ? (
-        <ProductsList>
+        <ProductsList ref={productListRef}>
           <ProductsListHead>
             <span>Lista de Productos Inventariables</span>
             <span>
@@ -68,19 +73,21 @@ const Component = styled.div`
   z-index: 1;
 `
 const ProductsList = styled.div`
-  max-width: 1000px;
   height: calc(100vh - 16em);
+  max-width: 1000px;
   width: 100%;
-  border: var(--border-primary);
+  
   position: absolute;
+  z-index: 9999;
   top: 2.8em;
-
+  
   margin: 0 auto;
   box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.400);
+  border: var(--border-primary);
   border-radius: 08px;
   overflow: hidden;
+
   display: grid;
-  
   grid-template-rows: min-content 1fr;
   background-color: #b4c4ce;
   

@@ -1,34 +1,56 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components"
 import { DateTime } from "luxon";
-const getDefaultDate = () => {
+import { Button } from "../Button/Button";
+import { icons } from "../../../../constants/icons/icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
+
+const getDefaultDates = () => {
     const today = DateTime.local().startOf('day');
-    const startDate = today.toMillis();
-    const endDate = DateTime.local().endOf('day').toMillis();
-    return { startDate, endDate };
+    return {
+        startDate: today.toMillis(),
+        endDate: today.endOf('day').toMillis()
+    };
 }
-const setTimeMorning = (date) => {
-    return DateTime.fromISO(date).set({ hour: 4 }).toMillis();
-  }
-const setTimeNight = (date) => {
-    return DateTime.fromISO(date).set({ hour: 23, minute: 59, second: 59 }).toMillis();
+
+const getEmptyDates = () => {
+    return {
+        startDate: null,
+        endDate: null
+    };
 }
-export const DatePicker = ({ dates, data }) => {
-    // Me tra el dia de hoy 
-    const getDefaultValue = getDefaultDate();
-    const [datesSelected, setDates] = useState(getDefaultValue);
+
+export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
+    const [currentDates, setCurrentDates] = useState(getDefaultDates());
+    const handleSelectDateByDefault = () => {
+        if (datesDefault === "today") {setCurrentDates(getDefaultDates());}
+        if (datesDefault === "empty") {setCurrentDates(getEmptyDates());} 
+        
+    }
 
     useEffect(() => {
-        dates(datesSelected);
-    }, [datesSelected]);
-    useEffect(() => {
-        setDates(getDefaultValue);
-    }, []);
-    useEffect(() => {
-        if(data.startDate && data.endDate){
-            setDates(data);
+        if (datesDefault === "today") {
+            if (!dates.startDate || !dates.endDate) {
+                setCurrentDates(getDefaultDates());
+            
+            } else {
+                setCurrentDates(dates);
+            }
         }
-    }, [data])
+        if (datesDefault === "empty") {
+            if (!dates.startDate || !dates.endDate) {
+                setCurrentDates(getEmptyDates());
+            } else {
+                setCurrentDates(dates);
+            }
+        }
+    }, []);
+
+    // useEffect para actualizar dates basado en currentDates
+    useEffect(() => {
+        setDates(currentDates);
+    }, [currentDates]);
 
     return (
         <Container>
@@ -36,27 +58,45 @@ export const DatePicker = ({ dates, data }) => {
                 <Col>
                     <Label>Fecha Inicio</Label>
                     <input
-                        value={DateTime.fromMillis(datesSelected.startDate).toISODate()}
+                        value={currentDates.startDate ? DateTime.fromMillis(currentDates.startDate).toISODate() : ""}
+                        max={currentDates.endDate ? DateTime.fromMillis(currentDates.endDate).toISODate() : undefined}
                         type="date"
                         name="startDate"
-                        onChange={(e) => setDates({ ...datesSelected, startDate: setTimeMorning(e.target.value) })}
+                        onChange={(e) => setCurrentDates({
+                            ...currentDates,
+                            startDate: DateTime.fromISO(e.target.value).startOf('day').toMillis()
+                        })}
                     />
                 </Col>
                 <Col>
                     <Label>Fecha Fin</Label>
                     <input
-                        value={DateTime.fromMillis(datesSelected.endDate).toISODate()}
-                        min={DateTime.fromMillis(datesSelected.startDate).toISODate()}
+                        value={currentDates.endDate ? DateTime.fromMillis(currentDates.endDate).toISODate() : ""}
+                        min={currentDates.startDate ? DateTime.fromMillis(currentDates.startDate).toISODate() : undefined}
                         max={DateTime.local().toISODate()}
                         type="date"
                         name="endDate"
-                        onChange={(e) => setDates({ ...datesSelected, endDate: setTimeNight(e.target.value) })}
+                        onChange={(e) => setCurrentDates({
+                            ...currentDates,
+                            endDate: DateTime.fromISO(e.target.value).endOf('day').toMillis()
+                        })}
                     />
+                </Col>
+                <Col>
+                    <Button
+                        startIcon={<FontAwesomeIcon icon={faCalendarXmark} />}
+                        title={'limpiar'}
+                        onClick={handleSelectDateByDefault}
+                    />
+
                 </Col>
             </Group>
         </Container>
     )
 }
+
+// ... (Estilos no modificados)
+
 
 const Container = styled.div`
 
@@ -101,6 +141,7 @@ const Label = styled.label`
 `
 const Col = styled.div`
     display: flex;
+    justify-content: end;
     flex-direction: column;
     gap: 0.2em;
     

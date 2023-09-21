@@ -17,12 +17,12 @@ export const fbGetPendingOrders = () => {
             const unsubscribe = onSnapshot(pendingOrdersRef, async (snapshot) => {
                 let pendingOrdersPromise = snapshot.docs
                     .map(doc => doc.data())
-                    .filter(order => order.data.state === 'state_2')
-                    .sort((a, b) => b.data.id - a.data.id)
+                    // .filter(order => order.data.state === 'state_2')
+                    .sort((a, b) => b.data.numberId - a.data.numberId)
                     .map(async (doc) => {
                         const ordersDocs = doc;
                         const providerDoc = await fbGetDocFromReference(doc.data.provider);
-                        console.log(ordersDocs)
+                       
                         if (providerDoc) {
                             ordersDocs.data.provider = providerDoc.provider;
                         }

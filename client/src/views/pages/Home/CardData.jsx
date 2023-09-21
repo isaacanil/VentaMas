@@ -8,8 +8,7 @@ const { BILLS, SALES } = ROUTES_NAME.SALES_TERM
 const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
 const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM
 const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM
-const { MANAGE_BUSINESS } = ROUTES_NAME.DEV_VIEW_TERM
-
+const { MANAGE_BUSINESS, CHANGELOG_MANAGE, CHANGELOG_CREATE} = ROUTES_NAME.DEV_VIEW_TERM
 
 const { inventory, purchase, register, sale, cashReconciliation } = icons.menu.unSelected
 export const getCardData = (user) => {
@@ -53,6 +52,22 @@ export const getCardData = (user) => {
         title: 'Gestionar Negocios',
         icon: icons.operationModes.add,
         route: MANAGE_BUSINESS
+      };
+    }
+    if (abilities?.can('developerAccess', 'all')) {
+      yield {
+        id: 'Gestionar Actualización',
+        title: 'Gestionar Actualización',
+        icon: icons.operationModes.add,
+        route: CHANGELOG_MANAGE
+      };
+    }
+    if (abilities?.can('developerAccess', 'all')) {
+      yield {
+        id: 'Documentar Actualización',
+        title: 'Documentar Actualización',
+        icon: icons.operationModes.add,
+        route: CHANGELOG_CREATE
       };
     }
   }

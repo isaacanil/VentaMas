@@ -1,12 +1,3 @@
-
-// export const getBills = async (setBills, time) => {
-//     const start = new Date(time.startDate);
-//     const end = new Date(time.endDate);
-//     const user = useSelector(selectUser);
-//     validateUser(user);
-//     const invoicesRef = collection(db, "businesses", `invoices`);
-//     const q = query(Ref, where("data.date", ">=", start), where("data.date", "<=", end), orderBy("data.date", "desc"));
-
 import { useEffect, useState } from "react";
 import { db } from "../firebaseconfig";
 import { useSelector } from "react-redux";
@@ -14,12 +5,6 @@ import { collection, onSnapshot, orderBy, query, where } from "firebase/firestor
 import { UserValidationError, validateUser } from "../../utils/userValidation";
 import { selectUser } from "../../features/auth/userSlice";
 
-
-//     onSnapshot(q, (snapshot) => {
-//       const data = snapshot.docs.map(item => item.data())
-//       setBills(data)
-//     })
-//   }
 export const fbGetInvoices = (time) => {
     const [loading, setLoading] = useState(true);
     const [invoices, setInvoices] = useState([]);

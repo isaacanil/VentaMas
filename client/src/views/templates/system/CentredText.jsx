@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Button } from './Button/Button';
+import Typography from './Typografy/Typografy';
 
-export const CenteredText = ({ text, buttonText, handleAction, showAfter = 0, ...props }) => {
+export const CenteredText = ({ textVariant = 'body1', containerVariant = 'text', text, buttonText, handleAction, showAfter = 0, ...props }) => {
   const [show, setShow] = useState(false);
   const handleButton = (e) => {
     e.preventDefault();
@@ -19,11 +20,10 @@ export const CenteredText = ({ text, buttonText, handleAction, showAfter = 0, ..
     show && (
       <Container onContextMenu={handleButton}>
         <Wrapper>
-          <Content>
-            <Text>{text}</Text>
+          <Content containerVariant={containerVariant}>
+            <Typography variant={textVariant} align='center'>{text}</Typography>
             {(handleAction && buttonText) && (
               <Button
-                
                 title={buttonText}
                 titlePosition={'center'}
                 width='auto'
@@ -68,11 +68,26 @@ position: relative;
 `;
 
 const Content = styled.div`
-  display: grid;
-  justify-items: center;
+height: 100%;
+width: 100%;
+max-width: 500px;
+padding: 1em;
+margin: 0;
+
+display: grid;
   gap: 2em;
+  justify-items: center;
+  align-items: center;
   
-  margin: 0;
-  width: 100%;
-  padding: 0;
+  
+  text-align: center;
+  
+  ${({ containerVariant }) => containerVariant === 'contained' && `
+  border-radius: 10px;
+  min-height: 200px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
+  `}
+
+
 `
