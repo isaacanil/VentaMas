@@ -1,4 +1,3 @@
-
 import { Home, Inventory, Login, Sales, Welcome, Purchases, NotFound } from "../views";
 import basic from "./paths/Basic";
 import auth from "./paths/Auth";
@@ -11,6 +10,7 @@ import lab from "./paths/Lab";
 import cashReconciliation from "./paths/CashReconciliztion";
 import dev from "./paths/Dev";
 import expenses from "./paths/Expenses";
+import changelogs from "./paths/Changelogs"
 
 export const routes = [
     ...basic,
@@ -24,6 +24,7 @@ export const routes = [
     ...cashReconciliation,
     ...expenses,
     ...dev,
+    ...changelogs,
     {
         path: "*",
         element: <NotFound />

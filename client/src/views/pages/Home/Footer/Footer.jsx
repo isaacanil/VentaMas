@@ -1,19 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const appMetadata = {
   name: 'Ventamax',
-  version: 'Versión 1 de Septiembre 2023',
+  version: 'Versión 21 de Septiembre 2023',
   copyright: "© 2023 GISYS. Todos los derechos reservados."
 }
 const Footer = () => {
+  const navigate = useNavigate()
+  const handleViewChangeLogs = () => {
+    navigate("/changelogs/list")
+  }
   return (
     <FooterContainer>
       <FooterWrapper>
         <Copyright>
           {appMetadata.copyright}
         </Copyright>
-        <Version>
+        <Version onClick={handleViewChangeLogs}>
           {appMetadata.version}
         </Version>
       </FooterWrapper>
@@ -54,6 +59,10 @@ const Version = styled.div`
   font-weight: 500;
   color: #575757;
   background-color: #ffffff;
+  :hover{
+    text-decoration: underline;
+    cursor: pointer;
+  }
 `;
 
 const Copyright = styled.div`

@@ -14,7 +14,7 @@ export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, 
       delete newFilter[accessor];
       newFilter[accessor] = defaultFilter[accessor];
     }
-    if(newFilter[accessor] && !defaultFilter[accessor]){
+    if (newFilter[accessor] && !defaultFilter[accessor]) {
       delete newFilter[accessor];
     }
     setFilter(newFilter);
@@ -29,7 +29,7 @@ export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, 
     <Container>
       <FilterLabel>
         <span>{icons.operationModes.filter}</span>
-        <span>Filtrar por:</span>
+        <div>Filtrar por:</div>
       </FilterLabel>
       <Filters>
         {
@@ -67,6 +67,13 @@ const FilterLabel = styled.div`
         color: #696969cc;
     
  }
+
+  div{
+    @media (max-width: 1000px ){
+      display: none;
+    }
+  }
+ 
   
 `
 const Filters = styled.div`

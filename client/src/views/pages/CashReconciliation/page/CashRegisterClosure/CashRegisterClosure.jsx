@@ -27,7 +27,7 @@ export const CashRegisterClosure = () => {
   const cashCount = useSelector(selectCashCount)
 
   const cashCountIsOpen = cashCount?.state === 'open';
-  const cashCountIsClosed = cashCount?.state === 'closed'
+  const cashCountIsClosed = cashCount?.state === 'closed';
   //const { abilities } = inspectUserAccess();
   // this change the cashCount state for the user cant make a bill if the cash count is not open or when is in closing process
   useEffect(() => {
@@ -49,6 +49,7 @@ export const CashRegisterClosure = () => {
     }
     setPeerReviewAuthorizationIsOpen(true)
   };
+
   // (cashCount.opening.employee.id === actualUser.uid) || actualUser.role === 'admin'
   const handleCancel = async () => {
     //if the user cancel and the status is open or closing, the status will be open
@@ -58,8 +59,8 @@ export const CashRegisterClosure = () => {
     dispatch(clearCashCount())
     navigate('/cash-reconciliation')
   }
-  const handleSubmit = async (approvalEmployee) => {
 
+  const handleSubmit = async (approvalEmployee) => {
     try {
       await fbCashCountClosed(actualUser, cashCount, actualUser.uid, approvalEmployee.uid, closingDate.toMillis())
     } catch (error) {
@@ -68,8 +69,6 @@ export const CashRegisterClosure = () => {
   }
 
   const cashCountActual = cashCount?.id ? useFbGetCashCount(cashCount.id) : null
-
-
   return (
     <Backdrop>
       <Container>

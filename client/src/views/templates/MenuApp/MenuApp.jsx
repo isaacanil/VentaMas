@@ -44,12 +44,6 @@ export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, search
       <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
-          {/* <Button
-            title={icons.arrows.arrowLeft}
-            borderRadius='normal'
-            onClick={goBack}
-            width='icon32'
-          /> */}
           {sectionName && (
             <SectionName>{sectionName}</SectionName>
           )}
@@ -166,6 +160,6 @@ const SectionName = styled.div`
   border-radius: 4px;
   white-space: nowrap;
   background-color: rgba(0, 0, 0, 0.200);
-  padding: 0 0.8em;
+  padding: 0 0.4em;
 
 `

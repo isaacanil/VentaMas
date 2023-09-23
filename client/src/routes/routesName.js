@@ -8,11 +8,16 @@ const CASH_RECONCILIATION_TERM = {
     CASH_RECONCILIATION_CLOSURE: '/cash-register-closure/:id',
     CASH_RECONCILIATION_INVOICE_OVERVIEW: '/cash-register-invoices-overview',
 }
+const CHANGELOG_TERM = {
+    CHANGELOG_CREATE: '/changelog/create',
+    CHANGELOG_MANAGE: '/changelog/manage',
+    CHANGELOG_LIST: '/changelogs/list'
+}
 const DEV_VIEW_TERM = {
     CREATE_BUSINESS: '/create-business',
     MANAGE_BUSINESS: '/manage-business',
-    CHANGELOG_CREATE: '/changelog/create',
-    CHANGELOG_MANAGE: '/changelog/manage',
+    CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
+    CHANGELOG_MANAGE: CHANGELOG_TERM.CHANGELOG_MANAGE,
 }
 const BASIC_TERM = {
     HOME: '/home',
@@ -70,8 +75,8 @@ const ROUTES_PATH = {
     CONTACT_TERM,
     SETTING_TERM,
     PURCHASE_TERM,
-    DEV_VIEW_TERM
-
+    DEV_VIEW_TERM,
+    CHANGELOG_TERM
 }
 
 export default ROUTES_PATH 

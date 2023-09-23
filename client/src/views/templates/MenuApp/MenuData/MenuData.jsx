@@ -9,6 +9,7 @@ import financialManagement from './items/financialManagement'
 import inventory from './items/inventory'
 import admin from './items/admin'
 import contacts from './items/contacts'
+import changelogs from './items/changelogs'
 
 export const ChevronRight = <FontAwesomeIcon icon={faChevronRight} />
 export const ChevronLeft = <FontAwesomeIcon icon={faChevronLeft} />
@@ -30,6 +31,7 @@ export const getMenuData = () => {
         ...inventory,
         ...financialManagement,
         ...contacts,
-        ...admin
+        ...admin,
+        ...changelogs
     ]
 }

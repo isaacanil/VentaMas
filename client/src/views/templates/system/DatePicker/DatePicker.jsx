@@ -24,16 +24,16 @@ const getEmptyDates = () => {
 export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
     const [currentDates, setCurrentDates] = useState(getDefaultDates());
     const handleSelectDateByDefault = () => {
-        if (datesDefault === "today") {setCurrentDates(getDefaultDates());}
-        if (datesDefault === "empty") {setCurrentDates(getEmptyDates());} 
-        
+        if (datesDefault === "today") { setCurrentDates(getDefaultDates()); }
+        if (datesDefault === "empty") { setCurrentDates(getEmptyDates()); }
+
     }
 
     useEffect(() => {
         if (datesDefault === "today") {
             if (!dates.startDate || !dates.endDate) {
                 setCurrentDates(getDefaultDates());
-            
+
             } else {
                 setCurrentDates(dates);
             }
@@ -49,7 +49,9 @@ export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
 
     // useEffect para actualizar dates basado en currentDates
     useEffect(() => {
-        setDates(currentDates);
+        if (typeof setDates === 'function') {
+            setDates(currentDates);
+        }
     }, [currentDates]);
 
     return (
@@ -82,14 +84,18 @@ export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
                         })}
                     />
                 </Col>
-                <Col>
-                    <Button
-                        startIcon={<FontAwesomeIcon icon={faCalendarXmark} />}
-                        title={'limpiar'}
-                        onClick={handleSelectDateByDefault}
-                    />
+                {
+                    datesDefault === "empty" &&
+                    <Col>
+                        <Button
+                            startIcon={<FontAwesomeIcon icon={faCalendarXmark} />}
+                            title={'limpiar'}
+                            onClick={handleSelectDateByDefault}
+                        />
 
-                </Col>
+                    </Col>
+                }
+
             </Group>
         </Container>
     )

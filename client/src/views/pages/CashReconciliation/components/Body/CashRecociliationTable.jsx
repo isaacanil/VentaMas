@@ -1,45 +1,81 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Table } from '../../../../templates/system/Table/Table'
 import { tableConfig } from './tableConfig'
-import { Header } from '../../../setting/subPage/Users/components/UsersList/Table/Header'
-import { Body } from '../../../setting/subPage/Users/components/UsersList/Table/Body'
-import { Item } from './Item'
-import { SettingsControlBar } from '../SettingsControlBar'
 import { fbGetCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
-import { CenteredText } from '../../../../templates/system/CentredText'
+import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
+import { useNavigate } from 'react-router-dom'
+import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 
 export const CashReconciliationTable = () => {
-  const [cashCount, setCashCount] = useState(0)
+  const [cashCounts, setCashCounts] = useState([])
   const user = useSelector(selectUser)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleClick = (cashCount) => {
+    let cashCountToUpdate = {
+      ...cashCount,
+      opening: {
+        ...cashCount.opening,
+        date: JSON.stringify(cashCount.opening.date)
+      }
+    }
+    
+    dispatch(setCashCount(cashCountToUpdate));
+    navigate(`/cash-register-closure/${cashCountToUpdate?.id}`);
+  }
+  
   useEffect(() => {
-    fbGetCashCounts(user, setCashCount)
+    fbGetCashCounts(user, setCashCounts)
   }, [user])
-  console.log(cashCount)
+
+  const data = cashCounts.map((cashCount) => {
+    return {
+      incrementNumber: cashCount?.incrementNumber,
+      status: cashCount?.state,
+      date: (cashCount?.updatedAt.seconds * 1000),
+      user: cashCount?.opening.employee.name,
+      total: cashCount,
+      discrepancy: cashCount,
+      action: cashCount,
+    }
+  })
+ 
+  const columns = tableConfig()
+  const handleLabelState = (state) => {
+    const stateLabels = {
+      open: 'Abierto',
+      closing: 'Cerrando Cuadre',
+      closed: 'Cerrado',
+      pending: 'Pendiente',
+    }
+    return stateLabels[state] || '';
+  }
+  const filtersConfig = [
+    {
+      label: 'Estado',
+      accessor: 'status',
+      format: (value) => `${handleLabelState(value)}`,
+    },
+    {
+      label: 'Usuarios',
+      accessor: 'user',
+    }
+  ]
   return (
     <Container>
-      <SettingsControlBar />
-      <Table
-        colWidth={tableConfig.headers}
-        header={<Header data={tableConfig.headers} />}
-        body={
-          <Body
-            Item={Item}
-            colWidth={tableConfig.headers}
-            data={cashCount}
-          />
-        }
-        messageNoData={
-          cashCount?.length === 0 && (
-            <CenteredText
-              text='No se encontraron cuadres de caja para la fecha seleccionada. '
-              showAfter={0}
-            />
-          )
-        }
-
+      
+      <AdvancedTable
+        columns={columns}
+        data={data}
+        elementName={'cuadre de caja'}
+        tableName={'cash_reconciliation_table'}
+        filterConfig={filtersConfig}
+        filterUI
+        datesFilter
+        datesKeyConfig='date'
+        onRowClick={(row) => handleClick(row.action)}
       />
     </Container>
   )
@@ -48,6 +84,6 @@ export const CashReconciliationTable = () => {
 const Container = styled.div`
   display: grid;
 
-  grid-template-rows: min-content 1fr;
-  overflow: scroll;
+  grid-template-rows: 1fr;
+  overflow: hidden;
 `
