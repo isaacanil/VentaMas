@@ -70,7 +70,7 @@ export const AdvancedTable = ({
   //Filtrado por fechas
   const datesEmpty = dates?.startDate && dates?.endDate;
   const filteredDataByDateRange = datesFilter && datesEmpty ? filterByDateRange(filteredData, dates?.startDate, dates?.endDate, datesKeyConfig) : filteredData;
-  console.log(filteredDataByDateRange, 'filteredDataByDateRange')
+
   // Filtrado de término de búsqueda
   const searchTermFilteredData = searchTerm ? filterData(filteredDataByDateRange, searchTerm) : filteredDataByDateRange;
 

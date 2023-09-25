@@ -1,5 +1,6 @@
 import { CashReconciliation } from "../../../pages/CashReconciliation/CashReconciliation";
 import { CashReconciliationToolbar } from "./Page/CashReconciliationToolbar";
+import { ClientControlToolbar } from "./Page/ClientControlToolbar";
 import { CreateOrderToolbar } from "./Page/CreateOrderToolbar";
 import { CreatePurchaseToolbar } from "./Page/CreatePurchaseToolbar";
 import { ExpensesCategoriesToolbar } from "./Page/ExpensesCategoriesToolbar";
@@ -60,6 +61,10 @@ const componentsConfig = [
   {
     id: 'expensesListToolBar',
     component: ExpensesListToolbar
+  },
+  {
+    id: 'clientControlToolBar',
+    component: ClientControlToolbar
   }
 ];
 

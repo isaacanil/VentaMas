@@ -55,7 +55,7 @@ export const Sales = () => {
       {/* <MultiDisplayControl></MultiDisplayControl> */}
       <ProductContainer>
         <MenuApp
-          sectionName={'Ventas'}
+          displayName='Productos'
           borderRadius={'bottom-right'}
           searchData={searchData}
           setSearchData={setSearchData}

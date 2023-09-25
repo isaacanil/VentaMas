@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-  MenuApp as Menu,
+  MenuApp,
 } from '../../../../index';
 import styled from 'styled-components';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
@@ -15,7 +15,11 @@ export const Inventory = () => {
 
   return (
     <Fragment>
-      <Menu searchData={searchTerm} setSearchData={setSearchTerm} />
+      <MenuApp
+      displayName='Productos'
+        searchData={searchTerm}
+        setSearchData={setSearchTerm}
+      />
       <Container>
         <ProductsTable
           products={products}

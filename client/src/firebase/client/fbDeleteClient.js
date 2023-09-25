@@ -1,17 +1,21 @@
-export const fbDeleteClient = async (id) => {
-    console.log(id)
-    const counterRef = doc(db, "businesses", id)
+import { db } from "../firebaseconfig"
+import { doc, deleteDoc } from "firebase/firestore"
+
+export const fbDeleteClient = async (user, id) => {
     try {
-        await deleteDoc(counterRef)
-        //deleteDoc(doc(db, `products`, id))
-        console.log(id)
+        console.log(id);
+        console.log(user);
+        if (!user || !user.businessID) throw new Error('No user or businessID');
+        const counterRef = doc(db, "businesses", user.businessID, "clients", id)
+        await deleteDoc(counterRef);
+   
     } catch (error) {
         console.log(error)
     }
 }
- 
+
 export const deleteMultipleClients = (array) => {
     array.forEach((id) => {
-        deleteClient(id)
+        fbDeleteClient(id)
     })
 }

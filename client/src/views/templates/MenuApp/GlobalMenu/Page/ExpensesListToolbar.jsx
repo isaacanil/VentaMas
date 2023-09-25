@@ -26,7 +26,7 @@ export const ExpensesListToolbar = ({ side = 'left', searchData, setSearchData }
     return (
         matchWithExpenseList && (
             <Container>
-                {
+                {/* {
                     side === 'left' && (
                         <SearchInput
                             search
@@ -39,7 +39,7 @@ export const ExpensesListToolbar = ({ side = 'left', searchData, setSearchData }
                             onChange={(e) => setSearchData(e.target.value)}
                         />
                     )
-                }
+                } */}
                 {
                     side === 'right' && (
                         <Group >

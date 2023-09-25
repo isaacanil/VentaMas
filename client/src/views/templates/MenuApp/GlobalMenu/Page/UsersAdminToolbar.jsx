@@ -14,7 +14,7 @@ const UsersAdminToolbar = ({ side = 'left', searchData, setSearchData }) => {
     return (
         matchWithUsers ? (
             <Container>
-                {side === 'left' && (
+                {/* {side === 'left' && (
                     <Group>
                         <SearchInput
                             deleteBtn
@@ -25,12 +25,10 @@ const UsersAdminToolbar = ({ side = 'left', searchData, setSearchData }) => {
                             onChange={(e) => setSearchData(e.target.value)}
                         />
                     </Group>
-                )}
+                )} */}
             </Container>
 
         ) : null
-
-
 
     )
 }

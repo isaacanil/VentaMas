@@ -30,4 +30,5 @@ export const SearchInput = ({ onClear, ...props }) => {
 }
 
 const Input = styled(InputV4)`
+
 `

@@ -1,41 +1,33 @@
 import React, { useState, Fragment, useRef, useEffect } from 'react'
 
-import { AddProductButton, Button, WebName } from '../../'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './Components/SideBar'
 import { useDispatch, useSelector } from 'react-redux'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
-import { FaSearch } from 'react-icons/fa'
 import { SearchInput } from '../system/Inputs/SearchInput'
-import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 import { icons } from '../../../constants/icons/icons'
 import { useNavigate } from 'react-router-dom'
 
-export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, searchData }) => {
+export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, searchData, displayName = "" }) => {
   const ref = useRef(null)
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
-  const handledMenu = () => {
-    setIsOpenMenu(!isOpenMenu)
-  };
+  const handledMenu = () => {setIsOpenMenu(!isOpenMenu)};
+
   useEffect(() => {
     dispatch(toggleOpenMenu(isOpenMenu))
   }, [isOpenMenu])
 
-  const closeMenu = () => {
-    setIsOpenMenu(false)
-  }
+  const closeMenu = () => {setIsOpenMenu(false)}
 
-  const goBack = () => {
-    navigate(-1)
-  }
+  const goBack = () => {navigate(-1)}
+
   useClickOutSide(ref, !isOpenMenu, closeMenu)
 
   return (
@@ -46,6 +38,18 @@ export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, search
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
           {sectionName && (
             <SectionName>{sectionName}</SectionName>
+          )}
+          {setSearchData && (
+            <SearchInput
+              search
+              deleteBtn
+              icon={icons.operationModes.search}
+              placeholder={`Buscar ${displayName || sectionName || ""}...`}
+              bgColor={'white'}
+              value={searchData}
+              onClear={() => setSearchData('')}
+              onChange={(e) => setSearchData(e.target.value)}
+            />
           )}
         </Group>
         <GlobalMenu data={data} setSearchData={setSearchData} searchData={searchData} />
@@ -127,9 +131,13 @@ const Container = styled.div`
   }}
 `
 const Group = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  width: 100%;
   align-items: center;
   gap: 0.4em;
+  justify-content: start;
+
  
 `
 const AutoHidden = styled.div`

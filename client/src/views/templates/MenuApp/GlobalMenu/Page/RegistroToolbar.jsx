@@ -65,7 +65,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
   return (
     matchWithCashReconciliation ? (
       <Container>
-          {
+          {/* {
                     side === 'left' && (
 
 
@@ -81,7 +81,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
                         />
                     )
 
-                }
+                } */}
         {
           side === 'right' && (
             <DropdownMenu

@@ -30,13 +30,13 @@ export const UserSection = ({ user }) => {
       </Group>
       <Group>
         <Button
-        startIcon={icons.operationModes.logout}
-        color={'info'}
-
-          title={'Cerrar Sección'}
-          borderRadius='normal' 
+          startIcon={icons.operationModes.logout}
+          color={'info'}
+          size="icon32"
+          
+          borderRadius='normal'
           onClick={logoutOfApp}
-          />
+        />
       </Group>
     </Container>
   )

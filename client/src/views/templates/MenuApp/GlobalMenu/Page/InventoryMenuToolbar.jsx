@@ -19,7 +19,7 @@ export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData 
     return (
         matchWithInventory && (
             <Container>
-                {side === 'left' && (
+                {/* {side === 'left' && (
                     <SearchInput
                         deleteBtn
                         icon={<FaSearch />}
@@ -28,7 +28,7 @@ export const InventoryMenuToolbar = ({ side = 'left', searchData, setSearchData 
                         value={searchData}
                         onChange={(e) => setSearchData(e.target.value)}
                     />
-                )}
+                )} */}
                 {side === 'right' && (
                     <Fragment>
                         <ButtonGroup>

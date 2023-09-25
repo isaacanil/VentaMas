@@ -13,9 +13,6 @@ import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import { motion } from 'framer-motion'
 import { selectUser } from '../../../features/auth/userSlice'
 
-
-
-
 export const Registro = () => {
   const dispatch = useDispatch()
 
@@ -35,7 +32,7 @@ export const Registro = () => {
         transition={{ type: "spring", stiffness: 0 }}
       >
         <MenuApp
-         
+          displayName='Facturas'
           data={invoices}
           searchData={searchTerm}
           setSearchData={setSearchTerm}

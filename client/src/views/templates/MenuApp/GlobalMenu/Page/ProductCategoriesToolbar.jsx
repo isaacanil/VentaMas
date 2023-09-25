@@ -29,7 +29,7 @@ export const ProductCategoriesToolbar = ({ side = 'left', searchData, setSearchD
     return (
         matchWithProductCategories && (
             <Container>
-                {
+                {/* {
                     side === 'left' && (
                         <SearchInput
                             search
@@ -42,7 +42,7 @@ export const ProductCategoriesToolbar = ({ side = 'left', searchData, setSearchD
                             onChange={(e) => setSearchData(e.target.value)}
                         />
                     )
-                }
+                } */}
                 {
                     side === 'right' && (
                         <Group >

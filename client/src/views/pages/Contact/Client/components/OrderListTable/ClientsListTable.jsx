@@ -2,46 +2,65 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { OrderItem } from '../../ListItem/ClientCard'
+import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { tableConfig } from './tableConfig'
+import { selectUser } from '../../../../../../features/auth/userSlice'
+import { useSelector } from 'react-redux'
 
-export const ClientsListTable = ({clients}) => {
+export const ClientsListTable = ({ clients = [] }) => {
   
+  const { columns, filterConfig } = tableConfig();
+  const data = clients.map(({ client }) => {
+    return {
+      id: client.id,
+      name: client.name,
+      phone: client.tel,
+      rnc: client.personalID,
+      address: client.address,
+      actions: client
+    }
+  })
+
   return (
-    <Container>
-      <Body>
-        <TitleContainer>
-          <h3>Administrar Clientes</h3>
-        </TitleContainer>
-        <Table>
-          <Row fill='fill'>
-            <Col>#</Col>
-            <Col>Nombre</Col>
-            <Col>Teléfono</Col>
-            <Col>RNC/Cédula</Col>
-            <Col>Dirección</Col>
-            <Col>Acción</Col>
-          </Row>
+      <AdvancedTable
+        data={data}
+        columns={columns}
+        filterUI
+        filterConfig={filterConfig}
+      /> 
+      )
+    }
+    {/* <Body>
+      <TitleContainer>
+        <h3>Administrar Clientes</h3>
+      </TitleContainer>
+      <Table>
+        <Row fill='fill'>
+          <Col>#</Col>
+          <Col>Nombre</Col>
+          <Col>Teléfono</Col>
+          <Col>RNC/Cédula</Col>
+          <Col>Dirección</Col>
+          <Col>Acción</Col>
+        </Row>
 
-          <TableBody>
-            {
-               clients.length > 0 ? (
-                clients.map(({client}, index) => (
-                  <OrderItem Row={Row} Col={Col} key={index} client={client} index={index} />
-                ))
-              ) : null
+        <TableBody>
+          {
+             clients.length > 0 ? (
+              clients.map(({client}, index) => ( */
+                // <OrderItem Row={Row} Col={Col} key={index} client={client} index={index} />
+                /*
+              ))
+            ) : null
 
-            }
-          </TableBody>
-        </Table>
-      </Body>
-    </Container>
-
-  )
-}
+          }
+        </TableBody>
+      </Table>
+    </Body> */}
 const Container = styled.div`
     width: 100%;
     padding: 0 1em;
-    display: flex;
-    justify-content: center;
+
 `
 const Body = styled.header`
     justify-self: center;
@@ -176,10 +195,10 @@ const Col = styled.div`
   ${props => {
     switch (props.position) {
       case 'right':
-        return`
+        return `
           text-align: right;
         `;
-    
+
       default:
         break;
     }

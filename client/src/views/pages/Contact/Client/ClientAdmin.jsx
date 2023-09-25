@@ -15,12 +15,15 @@ export const ClientAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const {clients} = useFbGetClients()
   const clientsFiltered = filterData(clients, searchTerm)
-  console.log(clientsFiltered)
   return (
     <Fragment>
-      <MenuApp></MenuApp>
+      <MenuApp
+        sectionName='Clientes' 
+        searchData={searchTerm}
+        setSearchData={setSearchTerm}
+      />
+  
       <Container>
-        <ToolBar searchTerm={searchTerm} setSearchTerm={setSearchTerm}></ToolBar>
         <ClientsListTable clients={clientsFiltered}/>
       </Container>
     </Fragment>
@@ -31,9 +34,6 @@ const Container = styled.div`
     height: calc(100vh - 2.75em);
     background-color: var(--color2);
     display: grid;
-    grid-auto-rows: min-content;
-    justify-content: center;
-    align-items: flex-start;
+
     overflow: hidden;
-    
 `

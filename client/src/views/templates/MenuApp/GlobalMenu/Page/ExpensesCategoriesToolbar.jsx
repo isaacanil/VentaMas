@@ -24,7 +24,7 @@ export const ExpensesCategoriesToolbar = ({ side = 'left', searchData, setSearch
     return (
         matchWithProductCategories && (
             <Container>
-                {
+                {/* {
                     side === 'left' && (
                         <SearchInput
                             search
@@ -37,7 +37,7 @@ export const ExpensesCategoriesToolbar = ({ side = 'left', searchData, setSearch
                             onChange={(e) => setSearchData(e.target.value)}
                         />
                     )
-                }
+                } */}
                 {
                     side === 'right' && (
                         <Group >

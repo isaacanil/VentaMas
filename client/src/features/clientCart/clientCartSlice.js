@@ -97,11 +97,11 @@ export const clientSlice = createSlice({
                 return
             }
             if ((state?.copyClient !== null && state?.copyClient?.id === state?.client?.id) && !useCompareObjectsInState(state?.client, state?.copyClient)) {
-                fbUpdateClient(state.client, user)
+                fbUpdateClient(user, state.client)
                 return
             }
             if (!state?.client?.id && state?.client?.name.length > 0 && state.client.name !== 'Cliente Genérico') {
-                fbAddClient(state.client, user)
+                fbAddClient(user, state.client)
                 return
             }
         }

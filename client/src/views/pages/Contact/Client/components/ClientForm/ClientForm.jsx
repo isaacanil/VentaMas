@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import React, { useEffect, useState } from 'react'
 import { MdClose } from 'react-icons/md'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { handleModalCreateClient, toggleClientModal } from '../../../../../../features/modals/modalSlice'
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber'
@@ -11,12 +11,15 @@ import { Message } from '../../../../../templates/system/message/Message'
 import { fbAddClient } from '../../../../../../firebase/client/fbAddClient'
 import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient'
 import { OPERATION_MODES } from '../../../../../../constants/modes'
+import { selectUser } from '../../../../../../features/auth/userSlice'
 
 export const ClientForm = ({ isOpen, mode, data }) => {
 
     const dispatch = useDispatch()
-    const create = OPERATION_MODES.CREATE.id
-    const update = OPERATION_MODES.UPDATE.id
+    const create = OPERATION_MODES.CREATE.id;
+    const update = OPERATION_MODES.UPDATE.id;
+    const user = useSelector(selectUser);
+
     const [client, setClient] = useState({
         name: '',
         address: '',
@@ -49,21 +52,11 @@ export const ClientForm = ({ isOpen, mode, data }) => {
         }
         return true;
     }
-    const addIdToClient = async (callback) => {
-        try {
-            setClient({
-                ...client,
-                id: nanoid(8)
-            })
-            callback()
-        } catch (error) {
 
-        }
-    }
     const handleCreateClient = async () => {
         if (validateClient(client)) {
             try {
-                fbAddClient(client)
+                fbAddClient(user, client)
             } catch (error) {
                 console.log(error)
             }
@@ -71,7 +64,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
     }
     const handleUpdateClient = async () => {
         try {
-            fbUpdateClient(client)
+            fbUpdateClient(user, client)
         } catch (error) {
             console.log(error)
         }
@@ -97,18 +90,18 @@ export const ClientForm = ({ isOpen, mode, data }) => {
     const handleSubmit = async () => {
         if (mode === create) {
             try {
-                await addIdToClient(handleCreateClient)
-
+                await handleCreateClient();
+                await handleOpenModal();
             } catch (err) {
                 console.log(err)
             }
         } else if (mode === update) {
             await handleUpdateClient();
+            await handleOpenModal();
         }
-        await handleOpenModal()
+
     }
 
-    console.log(client)
     return (
         <Container>
             <SideBar isOpen={isOpen ? true : false}>

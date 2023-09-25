@@ -40,10 +40,7 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
     }
     const savedTheme = localStorage.getItem('theme');
     const handleThemeModeFN = () => {
-
         dispatch(toggleTheme());
-
-
     }
 
     const options = [
@@ -65,6 +62,7 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
             icon: <FontAwesomeIcon icon={faImage} />,
             action: () => handleImageHiddenFN()
         },
+
         // user?.role === 'dev' ?
         //     {
         //         text: savedTheme ? 'Cambiar a modo Claro' : 'Cambiar a modo Oscuro',
@@ -72,16 +70,13 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
         //         icon: <FontAwesomeIcon icon={faImage} />,
         //         action: () => handleThemeModeFN()
         //     } : null
-
     ];
 
     return (
         matchWithVenta && (
             <Container>
-                {
+                {/* {
                     side === 'left' && (
-
-
                         <SearchInput
                             search
                             deleteBtn
@@ -94,44 +89,10 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
                         />
                     )
 
-                }
+                } */}
                 {
                     side === 'right' && (
                         <Group >
-
-                            {/* <Button
-                                tooltipDescription={'Cambiar vista 8'}
-                                tooltipPlacement={'bottom'}
-                                width={'icon32'}
-                                borderRadius='normal'
-                                iconOff={<FontAwesomeIcon icon={faHeading} />}
-                                iconOn={<FontAwesomeIcon icon={faHeading} />}
-                                isActivated={categoryGrouped ? true : false}
-                                isActivatedColors='style1'
-                                onClick={() => handleCategoryGroupedFN()}
-                            /> */}
-                            {/* <Button
-                                tooltipDescription={'Cambiar vista'}
-                                tooltipPlacement={'bottom'}
-                                width={'icon32'}
-                                borderRadius='normal'
-                                iconOff={<FontAwesomeIcon icon={faGrip} />}
-                                iconOn={<FontAwesomeIcon icon={faGripLines} />}
-                                isActivated={viewRowModeRef ? true : false}
-                                isActivatedColors='style1'
-                                onClick={() => handleRowModeFN()}
-                            /> */}
-                            {/* <Button
-                                tooltipDescription={ImageHidden ? 'Mostrar Imagen' : 'Ocultar Imagen'}
-                                tooltipPlacement={'bottom-end'}
-                                width={'icon32'}
-                                borderRadius='normal'
-                                isActivated={ImageHidden ? true : false}
-                                isActivatedColors='style1'
-                                iconOff={<FontAwesomeIcon icon={faImage} />}
-                                iconOn={<FontAwesomeIcon icon={faImage} />}
-                                onClick={() => handleImageHiddenFN()}
-                            /> */}
                             <Button
                                 tooltipDescription={FullScreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
                                 tooltipPlacement={'bottom-end'}
