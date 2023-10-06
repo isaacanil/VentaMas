@@ -12,7 +12,7 @@ import { TableBody } from './components/Table/TableBody/TableBody';
 import TableFooter from './components/Table/TableFooter/TableFooter';
 import { useColumnOrder } from './hooks/useColumnOrder';
 import { FilterUI } from './components/MenuFilter/MenuFilter';
-import { DatePicker } from '../DatePicker/DatePicker';
+import { DatePicker } from '../Dates/DatePicker/DatePicker';
 import filterByDateRange from '../../../../utils/date/filterByDateRange';
 /**
  * AdvancedTable es un componente de tabla personalizado que acepta los siguientes props:

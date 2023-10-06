@@ -31,6 +31,7 @@ import usersManagementSlice from "../features/usersManagement/usersManagementSli
 import filterProductsSliceReducer from "../features/filterProduct/filterProductsSlice";
 import noteModalReducer from "../features/noteModal/noteModalSlice";
 import expenseReducer from "../features/expense/expenseSlice";
+import cashCountState from "../features/cashCount/cashStateSlice";
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -65,6 +66,7 @@ export const store = configureStore({
     usersManagement: usersManagementSlice,
     note: noteModalReducer,
     expense: expenseReducer,
+    cashCountState: cashCountState,
   }
   ,
 })

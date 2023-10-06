@@ -24,7 +24,6 @@ export const useColumnOrder = (columns = [], tableName, userId) => {
   // Actualizar localStorage cuando columnOrder cambie
   useEffect(() => {
     if (tableName) {
-      console.log("Updating localStorage with columnOrder:", columnOrder);
       localStorage.setItem(localStorageName, JSON.stringify(columnOrder));
     }
   }, [columnOrder]);

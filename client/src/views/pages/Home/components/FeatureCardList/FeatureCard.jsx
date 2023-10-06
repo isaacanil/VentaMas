@@ -36,7 +36,7 @@ const FeatureCardIcon = styled.div`
               display: block;
 `;
 
-const FeatureCardTitle = styled.h3`
+const FeatureCardTitle = styled.span`
   /* Tus estilos para el título de la tarjeta de funciones aquí */
   color: rgb(32, 32, 32);
             text-align: center;

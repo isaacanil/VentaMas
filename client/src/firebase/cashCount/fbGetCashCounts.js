@@ -15,7 +15,7 @@ export const fbGetCashCounts = async (user, setCashCounts) => {
             const employeeRef = data.opening.employee;
             const employeeDoc = (await getDoc(employeeRef)).data()
             const employeeUser = employeeDoc.user;
-            console.log(employeeUser)
+          
             const employeeData = {
                 id: employeeUser.id,
                 name: employeeUser.name,
@@ -64,7 +64,7 @@ export const fbGetCashCounts = async (user, setCashCounts) => {
             
 
             const invoiceRef = data.sales.map(ref => ref);
-            console.log(invoiceRef)
+            
 
             delete data.sales
             delete data.stateHistory
@@ -79,7 +79,7 @@ export const fbGetCashCounts = async (user, setCashCounts) => {
                 },
                 sales: []
             }
-            console.log(data)
+          
             return data
         })
 

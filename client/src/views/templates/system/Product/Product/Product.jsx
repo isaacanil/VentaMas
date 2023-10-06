@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import styled from 'styled-components'
+import styled, { css, keyframes } from 'styled-components'
 import { separator } from '../../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -15,10 +15,11 @@ import useImageFallback from '../../../../../hooks/image/useImageFallback'
 import { motion } from 'framer-motion'
 
 export const Product = ({ product, }) => {
-    const imageHiddenRef = useSelector(selectImageHidden)
+    const imageHiddenRef = useSelector(selectImageHidden);
     const dispatch = useDispatch();
-    const ProductsSelected = useSelector(SelectProduct)
-    const deliverySelected = useSelector(SelectDelivery)
+    const ProductsSelected = useSelector(SelectProduct);
+    const deliverySelected = useSelector(SelectDelivery);
+    const [isImageLoaded, setImageLoaded] = useState(false);
 
     useEffect(() => {
         dispatch(totalShoppingItems())
@@ -67,10 +68,19 @@ export const Product = ({ product, }) => {
         >
             {
                 <Head imageHiddenRef={imageHiddenRef ? true : false}>
+
                     <ImageContainer imageHiddenRef={imageHiddenRef}>
-                        <img
+                        {!isImageLoaded && <Loader isImageLoaded={isImageLoaded} />}
+                        {
+                            <img
+                                src={(isConnected && imageFallback) || noImg}
+                                onLoad={() => setImageLoaded(true)}
+                            />
+                        }
+                        {/* <img
                             src={(isConnected && imageFallback) || noImg}
-                        />
+                            onLoad={() => setImageLoaded(true)}
+                        /> */}
                     </ImageContainer>
                 </Head>
             }
@@ -94,7 +104,6 @@ export const Product = ({ product, }) => {
                     {ProductCheckInCart.status ? (
                         <Group>
                             <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.total}</AmountToBuy>
-
                         </Group>
                     ) : <Group />}
 
@@ -190,6 +199,7 @@ const ImageContainer = styled.div`
     height: 80px;
     width: 80px;
     overflow: hidden;
+    position: relative;
     padding: 4px;
     transition: transform 400ms ease-in-out;
     img{
@@ -271,10 +281,12 @@ const Title = styled.div`
         }
     }}
 `;
-const Price = styled.h4`
-    line-height: 0;
+const Price = styled.div`
+  display: block;
+  height: 100%;
     font-weight: 550;
     color: #1D69A8;
+    font-size: 14px;
     transition: color 400ms ease-in-out;
     ${(props) => {
         switch (props.isSelected) {
@@ -286,4 +298,17 @@ const Price = styled.h4`
                 break;
         }
     }}
+`
+const loadingAnimation = keyframes`
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+`;
+
+const Loader = styled.div`
+position: absolute;
+top: 0;
+left: 0;
+    background-size: 200% 100%;
+    animation: ${props => props.isImageLoaded ? 'none' : css`${loadingAnimation} 1.5s infinite`};
+    background: ${props => props.isImageLoaded ? 'none' : 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)'};
 `

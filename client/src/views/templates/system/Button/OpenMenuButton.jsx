@@ -4,13 +4,18 @@ import styled from 'styled-components'
 import { selectMenuOpenStatus, toggleOpenMenu } from '../../../../features/nav/navSlice'
 
 export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
- // const isOpen = useSelector(selectMenuOpenStatus)
   const dispatch = useDispatch()
-  const handleOpenMenu = () => {
-    dispatch(toggleOpenMenu())
-  }
+  const toggleMenu = () => {
+    // alert("click")
+    dispatch(toggleOpenMenu());
+  };
+  
   return (
-    <Container isOpen={isOpen} onClick={onClick || handleOpenMenu} zIndex={zIndex}>
+    <Container
+      isOpen={isOpen}
+      // onMouseEnter={toggleMenu} // Se abre el menú
+      // onMouseLeave={toggleMenu} // Se cierra el menú
+      onClick={onClick || toggleMenu} zIndex={zIndex}>
       <MenuIcon isOpen={isOpen}></MenuIcon>
     </Container>
   )

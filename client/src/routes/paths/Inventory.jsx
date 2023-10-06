@@ -1,12 +1,18 @@
 
 
-import { Inventory, CategoryAdmin } from "../../views";
+import { Inventory, CategoryAdmin, MultimediaManager } from "../../views";
 import validateRouteAccess from "../requiereAuthProvider";
 import ROUTES_NAME from "../routesName";
 import {ProductOutflow} from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
-const { INVENTORY_ITEMS, CATEGORIES, INVENTORY_SERVICES, PRODUCT_IMAGES_MANAGER, PRODUCT_OUTFLOW } = ROUTES_NAME.INVENTORY_TERM;
-
-const basePath = "inventory"
+import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";
+const { 
+    INVENTORY_ITEMS, 
+    CATEGORIES, 
+    INVENTORY_SERVICES, 
+    PRODUCT_IMAGES_MANAGER, 
+    PRODUCT_OUTFLOW,
+    CREATE_PRODUCT,
+} = ROUTES_NAME.INVENTORY_TERM;
 
 const Routes = [
     {
@@ -19,7 +25,7 @@ const Routes = [
     },
     {
         path: PRODUCT_IMAGES_MANAGER,
-        element: validateRouteAccess(<Inventory />),
+        element: validateRouteAccess(<MultimediaManager />),
     },
     {
         path: INVENTORY_SERVICES,
@@ -29,6 +35,10 @@ const Routes = [
         path: PRODUCT_OUTFLOW,
         element: validateRouteAccess(<ProductOutflow />),
     },
+    {
+        path: CREATE_PRODUCT,
+        element: validateRouteAccess(<ProductForm />),
+    }
 ]
 
 export default Routes;

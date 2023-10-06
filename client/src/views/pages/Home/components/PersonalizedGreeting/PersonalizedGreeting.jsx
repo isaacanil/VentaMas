@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import Typography from '../../../../templates/system/Typografy/Typografy';
 
 const Greeting = styled.h1`
   font-size: 20px;
@@ -16,9 +17,9 @@ const PersonalizedGreeting = ({ name = 'Anónimo', greetingText = '¡Bienvenido 
   const capitalizedFirstName = name.charAt(0).toUpperCase() + name.slice(1);
 
   return (
-    <Greeting>
+    <Typography variant='h3'>
       {greetingText}, <Name>{capitalizedFirstName}</Name>!
-    </Greeting>
+    </Typography>
   );
 };
 

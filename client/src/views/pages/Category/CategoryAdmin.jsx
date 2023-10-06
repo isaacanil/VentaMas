@@ -7,7 +7,7 @@ import {
 import {  CategoriesTable } from './components/CategoriesTable/CategoriesTable'
 
 export const CategoryAdmin = () => {
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('');
   return (
     <Fragment>
       <MenuApp

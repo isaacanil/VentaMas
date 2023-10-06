@@ -7,11 +7,11 @@ import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedT
 
 
 
-export const SaleReportTable = ({ bills, searchTerm }) => {
+export const SaleReportTable = ({ bills = [], searchTerm }) => {
 
-  const data = bills.map(({ data }) => {
+  const data = bills?.map(({ data }) => {
     return {
-      ncf: data.NCF,
+      ncf: data?.NCF,
       client: data?.client?.name,
       date: data?.date?.seconds,
       itbis: data?.products?.reduce((total, product) => total + (product?.tax?.value * product?.cost?.unit) * product?.amountToBuy?.total, 0),
@@ -23,6 +23,7 @@ export const SaleReportTable = ({ bills, searchTerm }) => {
     }
   })
   const total = useFormatPrice((bills.reduce((total, { data }) => total + data?.totalPurchase?.value, 0)))
+  
   const handlePaymentMethodValue = () => {
     if (data?.payment?.value) {
         return data?.payment.value

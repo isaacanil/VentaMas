@@ -46,10 +46,10 @@ const ToggleReceiptButton = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) => 
 const ReceiptSettingsSection = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) => (
   <DisabledSettingContainer>
     <div>
-      <Typography variant='h5' bold={'true'} >
+      <Typography variant='h4'>
         Opción para Deshabilitar Comprobantes
       </Typography>
-      <Typography variant='body2' size='small' >
+      <Typography variant='body1' size='small' >
         Activa o desactiva los comprobantes en el punto de venta
       </Typography>
       {/* <FormattedValue value={'Opción para Deshabilitar Comprobantes'} type={'title'} size={'small'} /> */}
@@ -140,7 +140,5 @@ const Main = styled.div`
   max-width: 800px;
   width: 100%;
   padding: 1em;
-  h4{
-    padding: 0 1em;
-  }
+ 
 `

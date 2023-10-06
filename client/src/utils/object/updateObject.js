@@ -8,7 +8,7 @@ export const updateObject = (object, e) => {
             value = e.target.checked;
             break;
         case 'number':
-            value = e.target.valueAsNumber;  // Retorna el valor como un número
+            value = Number(e.target.value) || 0;  // Retorna el valor como un número
             break;
         // Añade más casos según sea necesario...
         default:

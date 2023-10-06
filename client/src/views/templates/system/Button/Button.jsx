@@ -11,6 +11,7 @@ export const Button = forwardRef(({
   border,
   color,
   title,
+  alignText = 'center',
   size = 'small',
   startIcon,
   endIcon,
@@ -53,25 +54,21 @@ export const Button = forwardRef(({
       iconColor={iconColor}
       isActivatedColors={isActivatedColors}
       hidden={hidden}
+      alignText={alignText}
       ref={ref}
     >
-
       {isActivated ? iconOn : iconOff}
       {startIcon ? startIcon : null}
       {title ? title : null}
       {endIcon ? endIcon : null}
-
     </Container>
-
-
-
   )
 });
 const styleByDefault = css`
   //align
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: ${props => props.alignText || 'center'};
   gap: 0.6em;
 
   //color
@@ -80,7 +77,7 @@ const styleByDefault = css`
   //text
   font-size: 16px;
   font-weight: 500;
-  text-align: center;
+  text-align: ${props => props.alignText || 'center'}};
   text-decoration: none;
   text-transform: capitalize;
   line-height: -10px;

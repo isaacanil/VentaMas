@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { CashDenominationCalculator } from '../../../../../global/CashDenominationCalculator/CashDenominationCalculator'
+import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator'
 import { TransactionSummary } from './components/TransactionSummary/TransactionSummary'
 import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails'
 import { TextareaV2 } from '../../../Comments/TextareaV2'

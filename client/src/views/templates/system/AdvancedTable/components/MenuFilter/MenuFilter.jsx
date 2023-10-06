@@ -19,8 +19,6 @@ export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, 
     }
     setFilter(newFilter);
   };
-  console.log(filter, 'filter');
-  console.log(defaultFilter, 'setDefaultFilter')
 
   const isDefaultFilter = () => {
     return Object.keys(filter).every(key => filter[key] === defaultFilter[key]);

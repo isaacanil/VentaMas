@@ -33,7 +33,7 @@ import { sizes } from './size';
  * @returns {JSX.Element} El componente Typography renderizado.
  */
 
-const { body1, body2, caption, h1, h2, h3, h4, h5, h6, overline, subtitle1, subtitle2 } = sizes
+const { body1, body2, caption, h1, h2, h3, h4, h5, h6, l1, l2, l3, overline, subtitle1, subtitle2 } = sizes
 
 const variantToSizeMap = {
   h1: h1,
@@ -42,6 +42,9 @@ const variantToSizeMap = {
   h4: h4,
   h5: h5,
   h6: h6,
+  l1: l1,
+  l2: l2,
+  l3: l3,
   subtitle1: subtitle1,
   subtitle2: subtitle2,
   body1: body1,
@@ -51,12 +54,16 @@ const variantToSizeMap = {
 };
 
 const variantToComponentMap = {
-  h1: 'h1',
+  h1: 'h1',/*Heading */
   h2: 'h2',
   h3: 'h3',
   h4: 'h4',
   h5: 'h5',
   h6: 'h6',
+  label: 'label',
+  l1: 'span',/*label */
+  l2: 'span',
+  l3: 'span',
   span: 'span',
   subtitle1: 'h6',
   subtitle2: 'h6',
@@ -64,6 +71,7 @@ const variantToComponentMap = {
   body2: 'p',
   caption: 'span',
   overline: 'span',
+  
 };
 const generalSize = {
   small: '0.875rem',
@@ -71,7 +79,6 @@ const generalSize = {
   large: '1.25rem',
   xlarge: '1.5rem',
   xxlarge: '2rem',
-
 }
 const boldScale = {
   small: '500',
@@ -87,7 +94,7 @@ const baseTypography = css`
   font-size: ${({ size, variant }) => variant && size ? (variantToSizeMap[variant] ? variantToSizeMap[variant][size] : "defaultSize") : generalSize[size]};
   
   text-align: ${({ align }) => align};
-  margin-bottom: ${({ gutterBottom }) => (gutterBottom ? '1rem' : '0')};
+  /* margin-bottom: ${({ gutterBottom }) => (gutterBottom ? '1rem' : '0')}; */
   ${({ disableMargins }) => disableMargins && 'margin: 0;'}
   /* font-weight: ${({ bold }) => boldScale[String(bold)] || 'normal'}; */
   ${({ bold }) => bold && `font-weight: ${boldScale[String(bold)]} ;`}

@@ -1,0 +1,126 @@
+@import "../mixin/breakpoint.scss";
+
+:root {
+    --font-primary: sans-serif;
+    --font-secondary: serif;
+
+    /* set base values */
+    --text-base-size: 1em;
+    --text-scale-ratio: 1.2;
+
+    /* set values based on base values */
+    --heading-line-height: calc(1em * var(--text-scale-ratio));
+    --body-line-height: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio));
+
+    /* set values based on base values and text scale */
+    --space-xxs: calc(1em / (var(--text-scale-ratio) * var(--text-scale-ratio) * var(--text-scale-ratio)));
+    --space-xs: calc(1em / (var(--text-scale-ratio) * var(--text-scale-ratio)));
+    --space-sm: calc(1em / var(--text-scale-ratio));
+    --space-md: calc(1em * var(--text-scale-ratio));
+    --space-lg: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio));
+
+    /* type scale */
+    --text-xs: calc(1em / (var(--text-scale-ratio) * var(--text-scale-ratio)));
+    --text-sm: calc(1em / var(--text-scale-ratio));
+    --text-md: calc(1em * var(--text-scale-ratio));
+    --text-lg: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio));
+    --text-xl: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio) * var(--text-scale-ratio));
+    --text-xxl: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio) * var(--text-scale-ratio) * var(--text-scale-ratio));
+    --text-xxxl: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio) * var(--text-scale-ratio) * var(--text-scale-ratio) * var(--text-scale-ratio));
+}
+
+body {
+    font-size: var(--text-base-size);
+    font-family: var(--font-primary);
+    color: var(--color-text);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+form legend {
+    color: var(--color-text-heading);
+    margin-bottom: var(--space-xxs);
+    line-height: var(--heading-line-height);
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* text size */
+.text--xxxl {
+    font-size: var(--text-xxxl);
+}
+
+h1,
+.text--xxl {
+    font-size: var(--text-xxl);
+
+    /*Box*/
+    margin: 0px 0 4px 0;
+}
+
+h2,
+.text--xl {
+    font-size: var(--text-xl);
+    color: "#1a1a1a";
+
+    /*Box*/
+    margin: 0px 0 12px 0;
+}
+
+h3,
+.text--lg {
+    font-size: var(--text-lg);
+    /*Box*/
+    margin: 0 0 10px 0;
+}
+
+// h4,
+// .text--md {
+//     font-size: var(--text-md);
+//     margin: 0px 0 14px 0;
+// }
+
+.text--sm,
+small {
+    font-size: var(--text-sm);
+}
+
+.text--xs {
+    font-size: var(--text-xs);
+}
+
+p {
+    line-height: var(--body-line-height);
+}
+
+// a {
+//     color: var(--color-link);
+//     &:visited {
+//         color: var(--color-link-visited);
+//     }
+// }
+
+
+
+@include breakpoint(md) {
+    :root {
+        --text-base-size: 1em;
+        --text-scale-ratio: 1.2;
+    }
+}
+@include breakpoint(lg) {
+    :root {
+        --text-base-size: 1em;
+        --text-scale-ratio: 1.2;
+    }
+}
+@include breakpoint(xl) {
+    :root {
+        --text-base-size: 1em;
+        --text-scale-ratio: 1.2;
+    }
+}

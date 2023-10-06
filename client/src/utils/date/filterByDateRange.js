@@ -12,8 +12,6 @@ import { DateTime } from "luxon";
 const filterByDateRange = (array, startDate, endDate, dateKey) => {
   // const start = DateTime.fromISO(startDate);
   // const end = DateTime.fromISO(endDate);
-  console.log(startDate, endDate);
-  console.log(array);
 
   return array.filter(item => {
     const itemDate = item[dateKey];

@@ -1,7 +1,7 @@
 import { useFormatPrice } from "../../../../../hooks/useFormatPrice"
 import { convertTimeStampToDate } from "../../../../../utils/date/convertTimeStampToDate"
 import { convertDate, convertMillisToFriendly, convertMillisToISO } from "../../../../../utils/date/formatDate"
-import { CashCountStateIndicator } from "../../global/CashCountStatusIndicator/CashCountStateIndicator"
+import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator/CashCountStateIndicator"
 import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData"
 import { DateSection } from "../../page/CashRegisterClosure/components/Header/DateSection"
 

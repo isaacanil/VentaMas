@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { UserSection } from '../../../../global/UserSection/UserSection'
+import { UserSection } from '../../../../resource/UserSection/UserSection'
 
 
 export const Header = () => {

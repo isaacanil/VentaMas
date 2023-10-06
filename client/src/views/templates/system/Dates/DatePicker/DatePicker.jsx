@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components"
 import { DateTime } from "luxon";
-import { Button } from "../Button/Button";
-import { icons } from "../../../../constants/icons/icons";
+import { Button } from "../../Button/Button";
+import { icons } from "../../../../../constants/icons/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
 
@@ -21,38 +21,24 @@ const getEmptyDates = () => {
     };
 }
 
-export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
-    const [currentDates, setCurrentDates] = useState(getDefaultDates());
-    const handleSelectDateByDefault = () => {
-        if (datesDefault === "today") { setCurrentDates(getDefaultDates()); }
-        if (datesDefault === "empty") { setCurrentDates(getEmptyDates()); }
 
+export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
+
+    const handleSelectDateByDefault = () => {
+        if (datesDefault === "today") { setDates(getDefaultDates()); }
+        if (datesDefault === "empty") { setDates(getEmptyDates()); }
     }
 
     useEffect(() => {
-        if (datesDefault === "today") {
-            if (!dates.startDate || !dates.endDate) {
-                setCurrentDates(getDefaultDates());
-
-            } else {
-                setCurrentDates(dates);
-            }
-        }
-        if (datesDefault === "empty") {
-            if (!dates.startDate || !dates.endDate) {
-                setCurrentDates(getEmptyDates());
-            } else {
-                setCurrentDates(dates);
-            }
+        switch (datesDefault) {
+            case "today":
+                setDates(getDefaultDates());
+                break;
+            case "empty":
+                setDates(getEmptyDates());
+                break;
         }
     }, []);
-
-    // useEffect para actualizar dates basado en currentDates
-    useEffect(() => {
-        if (typeof setDates === 'function') {
-            setDates(currentDates);
-        }
-    }, [currentDates]);
 
     return (
         <Container>
@@ -60,12 +46,12 @@ export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
                 <Col>
                     <Label>Fecha Inicio</Label>
                     <input
-                        value={currentDates.startDate ? DateTime.fromMillis(currentDates.startDate).toISODate() : ""}
-                        max={currentDates.endDate ? DateTime.fromMillis(currentDates.endDate).toISODate() : undefined}
+                        value={dates.startDate ? DateTime.fromMillis(dates.startDate).toISODate() : ""}
+                        max={dates.endDate ? DateTime.fromMillis(dates.endDate).toISODate() : undefined}
                         type="date"
                         name="startDate"
-                        onChange={(e) => setCurrentDates({
-                            ...currentDates,
+                        onChange={(e) => setDates({
+                            ...dates,
                             startDate: DateTime.fromISO(e.target.value).startOf('day').toMillis()
                         })}
                     />
@@ -73,13 +59,13 @@ export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
                 <Col>
                     <Label>Fecha Fin</Label>
                     <input
-                        value={currentDates.endDate ? DateTime.fromMillis(currentDates.endDate).toISODate() : ""}
-                        min={currentDates.startDate ? DateTime.fromMillis(currentDates.startDate).toISODate() : undefined}
+                        value={dates.endDate ? DateTime.fromMillis(dates.endDate).toISODate() : ""}
+                        min={dates.startDate ? DateTime.fromMillis(dates.startDate).toISODate() : undefined}
                         max={DateTime.local().toISODate()}
                         type="date"
                         name="endDate"
-                        onChange={(e) => setCurrentDates({
-                            ...currentDates,
+                        onChange={(e) => setDates({
+                            ...dates,
                             endDate: DateTime.fromISO(e.target.value).endOf('day').toMillis()
                         })}
                     />

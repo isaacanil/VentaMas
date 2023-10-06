@@ -123,9 +123,6 @@ const cartSlice = createSlice({
 
         },
         addProduct: (state, action) => {
-            if (state.data.id === null || state.data.id === undefined || state.data.id === '') {
-                state.data.id = nanoid(8)
-            }
             const checkingID = state.data.products.find((product) => product.id === action.payload.id)
             if (state.data.products.length > 0 && checkingID) {
                 checkingID.amountToBuy.total = checkingID.amountToBuy.total + checkingID.amountToBuy.unit;
@@ -209,8 +206,6 @@ const cartSlice = createSlice({
             const totalPurchase = state.data.totalPurchase.value;
             const payment = state.data.payment.value;
             state.data.change.value = Number(payment) - Number(totalPurchase)
-            // if (isTrue && isTrue.value !== false) {
-            // }
         },
         totalShoppingItems: (state) => {
             const Items = state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0)

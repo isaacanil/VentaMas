@@ -50,7 +50,7 @@ const TableFooter = ({
 export default TableFooter;
 const Footer = styled.div`
    padding: 0 1em;
-    z-index: 2;
+    z-index: 1;
     grid-template-columns: 1fr 1fr 1fr;
     display: grid;
     align-items: center;

@@ -13,6 +13,7 @@ import { fbAddProductImgData } from '../../../../../firebase/products/productsIm
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbDeleteProductImg } from '../../../../../firebase/products/productsImg/fbDeleteProductImg'
+import { icons } from '../../../../../constants/icons/icons'
 
 export const MultimediaManager = () => {
   const [allImg, setAllImg] = useState([])
@@ -35,7 +36,7 @@ export const MultimediaManager = () => {
 
   return (
     <Container>
-      <MenuApp></MenuApp>
+      <MenuApp sectionName={'Productos'} sectionNameIcon={icons.multimedia.image}></MenuApp>
       <Head>
         <h2>Multimedia Manager</h2>
         <ButtonGroup>

@@ -96,7 +96,7 @@ export const Select = ({
     <Container ref={SelectRef}>
       <OtherContainer>
         {
-          (value || labelVariant === 'label2') && (
+          (value || labelVariant === 'label2' || labelVariant === 'label1') && (
             <Label
               labelVariant={labelVariant}
             >
@@ -189,7 +189,7 @@ const OtherContainer = styled.div`
     `
 const Container = styled.div`
     position: relative;
-    max-width: 200px;
+    max-width: 300px;
     width: 100%;
 `
 
@@ -214,7 +214,7 @@ const Body = styled.div`
     position: absolute;
     
    
-    z-index: 99999;
+    z-index: 999999999999;
     background-color: #ffffff;
     overflow: hidden;
     border-radius: 6px;

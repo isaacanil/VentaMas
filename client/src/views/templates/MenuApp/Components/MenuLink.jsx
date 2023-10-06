@@ -53,7 +53,6 @@ const MenuItem = styled.div`
   }
   
   :hover{
- 
     color: ${props => props.theme.bg.color};
     /* background-color: var(--color2); */
     transition: background-color 400ms ease;
@@ -71,10 +70,11 @@ const MenuItemLink = styled(MenuItem).attrs({
   activeClassName: 'active'
 })`
 font-weight: 450;
+
+
    &.active {
     color: white;
     font-weight: 600;
-    
     background-color: ${props => props.theme.bg.color};
   svg{
     color: white;
@@ -84,12 +84,8 @@ font-weight: 450;
  `
 const MenuItemDiv = styled(MenuItem)`
     font-weight: 450;
+    color: var(--Gray6);
   `
-
-
-
-
-
 
 const Group = styled.div`
   display: flex;

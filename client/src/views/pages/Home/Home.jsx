@@ -44,9 +44,12 @@ const WelcomeSection = styled.div`
 
 `
 const WelcomeSectionInner = styled.div`
-
+  display: grid;
+  align-items: start;
+  align-content: start;
+  gap: 1em;
   max-width: 1200px;
   width: 100vw;  
-  padding: var(--padding1);
+  padding: 2em 1em;
   border-radius: var(--border-radius1);
 `

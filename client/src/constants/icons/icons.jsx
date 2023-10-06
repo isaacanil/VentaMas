@@ -12,6 +12,9 @@ export const icons = {
         number: <FontAwesomeIcon icon={faHashtag} />,
         text: <FontAwesomeIcon icon={faSquareCaretDown} />,
     },
+    multimedia: {
+        image: <FontAwesomeIcon icon={faImage} />,
+    },
     user: {
         create: <FontAwesomeIcon icon={faUserPlus} />,
         users: <FontAwesomeIcon icon={faUsers} />,

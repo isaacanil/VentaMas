@@ -1,21 +1,34 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const cashStateSlice = createSlice({
-  name: 'cashState',
-  initialState: {
-    estado: 'closed',
-    cuadreId: null,
-    // Puedes agregar aquí cualquier otra información que necesites
+let initialState = {
+  cashReconciliation: {
+    state: "closed",
+    cashCount:{}
   },
+}
+
+const cashCountStateSlice = createSlice({
+  name: 'cashCountState',
+  initialState,
   reducers: {
-    setCashState: (state, action) => {
-      state.estado = action.payload.estado;
-      state.cuadreId = action.payload.cuadreId;
-      // No olvides actualizar aquí cualquier otra información que hayas agregado
+    setCashReconciliation: (state, action) => {
+      if (action.payload && typeof action.payload === 'object') { // Validación básica, mejora según tus necesidades
+        state.cashReconciliation = action.payload;
+      } else {
+        state.cashReconciliation = null;
+      }
+    },
+    clearCashReconciliation: (state) => {
+      state.cashReconciliation = {
+        state: "closed",
+        cashCount:{}
+      };
     },
   },
 });
 
-export const { setCashState } = cashStateSlice.actions;
+export const { setCashReconciliation, clearCashReconciliation } = cashCountStateSlice.actions;
 
-export default cashStateSlice.reducer;
+export default cashCountStateSlice.reducer;
+
+export const selectCashReconciliation = (state) => state.cashCountState.cashReconciliation;

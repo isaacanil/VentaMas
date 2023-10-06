@@ -17,12 +17,24 @@ export const CategoriesGrouped = ({ productsByCategory, viewRowModeRef }) => {
             }
         }
     }
+    const categoryGroupVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+          
+        }
+    }
     return (
         Object.keys(productsByCategory)
             .sort((a, b) => a < b ? 1 : -1)
             .map((category, index) => (
-                <CategoryGroup key={index}>
-                    <h2>{category}</h2>
+                <CategoryGroup key={index}
+                    variants={categoryGroupVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ duration: 1, delay: index * 0.5 }}
+                >
+                    <Title>{category}</Title>
                     <Grid
                         variants={containerVariants}
                         initial="hidden"
@@ -53,11 +65,19 @@ const CategoryGroup = styled(motion.div)`
 :first-child{
     margin-top: 0;
 }
-margin-bottom: 2em;
-    h2{
+    margin-bottom: 2em;
+    span{
+        margin: 1em;
+        margin-bottom: 2em;
         font-size: 1em;
         font-weight: 550;
         color: var(--Gray8);
-        
     }
+`
+const Title = styled.div`
+        margin: 1em;
+        margin-bottom: 1em;
+        font-size: 1em;
+        font-weight: 550;
+        color: var(--Gray8);
 `

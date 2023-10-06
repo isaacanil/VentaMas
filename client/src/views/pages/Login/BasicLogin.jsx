@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { fbSignIn } from "../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
 import { addNotification } from "../../../features/notification/NotificationSlice";
 import { ErrorComponent } from "../../templates/system/ErrorComponent/ErrorComponent";
+import Typography from "../../templates/system/Typografy/Typografy";
 
 const Backdrop = styled.div`
   display: grid;
@@ -102,7 +103,8 @@ export const BasicLogin = () => {
         <Backdrop>
             <Container>
                 <Head>
-                    <Titulo>Iniciar Sección</Titulo>
+                    
+                    <Typography variant="h2">Iniciar Sección</Typography>
                 </Head>
                 <form onSubmit={handleSubmit}>
                     <Body>

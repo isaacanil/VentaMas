@@ -29,11 +29,14 @@ import { ModalManager } from './views';
 import { AnimatePresence } from 'framer-motion';
 import { usefbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
+import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer';
 
 //const router = createBrowserRouter(routes)
 
 function App() {
   const dispatch = useDispatch();
+  
+  const user = useSelector(selectUser);
 
   useAutomaticLogin();
 
@@ -41,10 +44,12 @@ function App() {
     dispatch(ReloadImageHiddenSetting())
   }, [])
 
-  const user = useSelector(selectUser)
 
-  useUserDocListener(user?.uid)
+  useUserDocListener(user?.uid); // escucha los cambios en el documento del usuario actual
+
   useGetUserData(user?.uid) // obtiene los datos del usuario actual
+
+  useCurrentCashDrawer();// obtiene el cajón actual
 
   useAbilities()// establece la abilidad que puede usar el usuario actual
 

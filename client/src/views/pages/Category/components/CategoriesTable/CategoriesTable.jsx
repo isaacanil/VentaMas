@@ -13,7 +13,7 @@ export const CategoriesTable = ({searchTerm}) => {
     <Container>
       <Body>
         <TitleContainer>
-          <h3>Administrar Categoría</h3>
+          <span>Administrar Categoría</span>
         </TitleContainer>
         <Table>
           <TableBody>
@@ -86,11 +86,10 @@ const TitleContainer = styled.div`
   justify-content: center;
   background: #3f3f3f;
   height: 2em;
-  h3{
-    margin: 0;
+ 
     color: white;
-    font-weight: 500;
-  }
+   
+  font-weight: 600;
   text-align: center;
 `
 const Row = styled.div`

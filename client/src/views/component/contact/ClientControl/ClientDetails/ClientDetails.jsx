@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import Switch from '@mui/material/Switch'
+// import Switch from '@mui/material/Switch'
 import { setChange, totalPurchase, addSourceOfPurchase } from '../../../../../features/cart/cartSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { monetarySymbols } from '../../../../../constants/monetarySymbols'
@@ -9,6 +9,7 @@ import { selectClient, setClient } from '../../../../../features/clientCart/clie
 import { updateObject } from '../../../../../utils/object/updateObject'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Switch } from '../../../../templates/system/Switch/Switch'
 
 export const ClientDetails = ({ mode }) => {
     const dispatch = useDispatch()
@@ -100,8 +101,9 @@ export const ClientDetails = ({ mode }) => {
             </AnimatePresence>
             <Row>
                 <Group>
-                    <Group space={'small'}>
+                    <Group space={'medium'}>
                         <Switch
+                        size='small'
                             checked={client?.delivery?.status ? true : false}
                             name='delivery.status'
                             onChange={(e) => updateClient(e)}
@@ -112,8 +114,11 @@ export const ClientDetails = ({ mode }) => {
                             size='small'
                             type="number"
                             name='delivery.value'
-                            value={client?.delivery?.value}
+
+                            value={  client?.delivery?.value || ''   }
+                            disabled={!client?.delivery?.status}
                             ref={deliveryStatusInput}
+                            focusWhen={client?.delivery?.status}
                             onChange={(e) => updateClient(e)}
                         />
                     </Group>
@@ -151,7 +156,7 @@ align-items: center;
         switch (props.space) {
             case 'small':
                 return `
-                gap: 0.2em; 
+                gap: 0.6em; 
                 `
             case 'medium':
                 return `

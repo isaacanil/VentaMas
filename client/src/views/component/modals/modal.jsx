@@ -61,7 +61,7 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
                 exit="closed"
                 width={width}>
                 <Header>
-                    <h3>{nameRef}</h3>
+                    <Title>{nameRef}</Title>
                     <Button title={<MdClose />} width='icon24' borderRadius='normal' bgcolor='error' onClick={close} />
                 </Header>
                 <Body>
@@ -145,7 +145,7 @@ const Container = styled(motion.div)`
         `
 const Header = styled.div`
 display: flex;
-color: rgb(255, 255, 255);
+
 background-color: rgb(48, 48, 48);
 align-items: center;
 padding: 0 1em;
@@ -158,7 +158,12 @@ overflow: auto;
 const Footer = styled.div`
 display: flex;
 padding: 0 1em;
+border-top: 1px solid var(--Gray);
 justify-content: flex-end;
 align-items: center;
 
+`
+const Title = styled.div`
+color: rgb(255, 255, 255);
+font-weight: 600;
 `

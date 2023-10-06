@@ -7,17 +7,19 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setUserNotification } from '../../../../../features/UserNotification/UserNotificationSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { inspectUserAccess } from '../../../../../hooks/abilities/useAbilities'
+import { selectCashReconciliation } from '../../../../../features/cashCount/cashStateSlice'
 
 export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const matchWithCashReconciliation = useMatch("/cash-reconciliation")
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const { status, cashReconciliation } = useIsOpenCashReconciliation()
+   // const { status, cashReconciliation } = useIsOpenCashReconciliation()
+    const { state, cashCount } = useSelector(selectCashReconciliation);
     const { abilities } = inspectUserAccess();
     const user = useSelector(selectUser)
 
     const handleSwitchToCashRegisterOpening = () => {
-        if (status === 'open') {
+        if (state === 'open') {
             dispatch(setUserNotification(
                 {
                     isOpen: true,
@@ -28,7 +30,7 @@ export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearch
             ))
             return
         }
-        if (status === 'closing') {
+        if (state === 'closing') {
             dispatch(setUserNotification(
                 {
                     isOpen: true,

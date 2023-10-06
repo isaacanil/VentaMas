@@ -17,7 +17,7 @@ const grey = {
 }
 
 // Paleta de colores para la aplicación
-const palette = {
+export const palette = {
     // Escala de grises utilizada en toda la aplicación
     grey,
     // Colores principales y secundarios, junto con sus variaciones
@@ -94,7 +94,11 @@ const palette = {
         color2: "#f2f7fa",
         color3: "#67B8DE",
     },
-
+    borders: {
+        basic: '1px solid #e2e8f0',
+        highlighted: '2px solid #a0aec0',
+        accent: '2px dashed #718096',
+    },
     // Colores para diferentes acciones e interacciones
     action: {
         active: 'rgba(0, 0, 0, 0.54)',

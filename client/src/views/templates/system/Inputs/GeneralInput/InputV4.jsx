@@ -49,7 +49,13 @@ const DEFAULT_ICONS = {
 
 };
 
-export const InputV4 = ({ id = "", icon, autoFocus, label, labelVariant, marginBottom, size, search, onClear, validate, errorMessage, bgColor, clearButton = false, ...props }) => {
+export const InputV4 = ({
+  focusWhen,
+  id = "", icon, autoFocus, 
+  label, labelVariant, marginBottom,
+  size, search, onClear, validate, errorMessage,
+  bgColor, clearButton = false, ...props
+}) => {
   const showClearButton = clearButton && props.value;
 
   const inputRef = useRef(null);
@@ -60,6 +66,12 @@ export const InputV4 = ({ id = "", icon, autoFocus, label, labelVariant, marginB
     }
   }, [autoFocus]);
 
+  useEffect(() => {
+    if (focusWhen) {
+      inputRef.current.focus();
+    }
+  }, [focusWhen]);
+  
   const [showPassword, setShowPassword] = useState(false);
   const defaultIcon = DEFAULT_ICONS[props.type] || null;
   const renderedIcon = icon || defaultIcon;
@@ -217,6 +229,7 @@ input[type="date"]{
   }};
    ${props => props.disabled && `
     background-color: #f8f8f8;
+    color: #999;
   `}
    ${props => {
     switch (props.themeColor) {

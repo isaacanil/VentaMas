@@ -41,6 +41,7 @@ import { CONFIRMATION_TASK_TYPE } from '../modals/UserNotification/components/Co
 import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
 import { ProductsList } from './components/ProductsList/ProductsLit'
 import { set } from 'lodash'
+import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
 
 export const Cart = () => {
   const dispatch = useDispatch()
@@ -217,7 +218,7 @@ export const Cart = () => {
       <ProductsList />
       <div>
         <PaymentArea></PaymentArea>
-        <div className={style.resultBar}>
+        {/* <div className={style.resultBar}>
           <h3><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
           <Receipt ref={componentToPrintRef} data={bill}></Receipt>
           <ButtonGroup>
@@ -235,8 +236,15 @@ export const Cart = () => {
               disabled={ProductSelected.length >= 1 ? false : true}
             />
           </ButtonGroup>
-
-        </div>
+        </div> */}
+        <CheckoutAction
+          ProductSelected={ProductSelected}
+          TotalPurchaseRef={TotalPurchaseRef}
+          handleCancelShipping={handleCancelShipping}
+          handleInvoice={handleInvoice}
+          componentToPrintRef={componentToPrintRef}
+          bill={bill}
+        />
       </div>
     </Container>
   )

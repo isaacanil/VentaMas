@@ -27,7 +27,7 @@
     "barcode-parser": "^2.3.0",
     "bcryptjs": "^2.4.3",
     "botbuilder": "^4.19.2",
-    "chart.js": "^4.2.1",
+    "chart.js": "^3.9.1",
     "compromise": "^14.8.2",
     "diacritic": "^0.0.2",
     "dotenv": "^16.0.3",

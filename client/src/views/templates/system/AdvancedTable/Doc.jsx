@@ -1,5 +1,8 @@
 
 import styled from 'styled-components';
+import Typography from '../Typografy/Typografy';
+import {Switch} from '../Switch/Switch';
+import { useState } from 'react';
 
 const Contenedor = styled.div`
   font-family: 'Arial', sans-serif;
@@ -18,7 +21,6 @@ const data = [
 export function Doc() {
   return (
     <div>
-      <h1>Actualizaciones de Ventamax</h1>
       {
         data.map((update) => (
           <Update
@@ -34,11 +36,46 @@ export function Doc() {
 
 
 function Update({ title, date, content }) {
+  const [open, setOpen] = useState(false);
   return (
     <UpdateContainer>
-      <h2>{title}</h2>
-      <p>{date}</p>
-      <p>{content}</p>
+      
+
+      <Typography variant='h1' >
+      h1. Heading
+      </Typography>
+      <Typography variant='h2' >
+      h2. Heading
+      </Typography>
+      <Typography variant='h3' >
+      h3. Heading
+      </Typography>
+      <Typography variant='h4' >
+      h4. Heading
+      </Typography>
+      <Typography variant='h5' >
+      h5. Heading
+      </Typography>
+      <Typography  >
+      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo voluptate obcaecati, sed eaque nihil ipsa, neque cumque accusamus totam cum rerum commodi in deserunt molestias! Magnam nisi modi mollitia tenetur.
+      </Typography>
+      <Typography variant='body2' >
+      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo voluptate obcaecati, sed eaque nihil ipsa, neque cumque accusamus totam cum rerum commodi in deserunt molestias! Magnam nisi modi mollitia tenetur.
+      </Typography>
+      <Typography variant='l1' >
+      l1. Label
+      </Typography>
+      <Typography variant='l2' >
+      l2. Label
+      </Typography>
+      <Typography variant='l3' >
+      l3. Label
+      </Typography>
+      <Switch
+        size='medium'
+        value={open}
+        onChange={() => setOpen(!open)}
+      />
     </UpdateContainer>
   );
 }
@@ -47,16 +84,6 @@ const UpdateContainer = styled.div`
 
   padding: 10px;
   margin: 10px;
-  *{
-    margin: 0;
-    padding: 0;
-  }
-h2 {
-  color: #333;
-}
 
- p {
-  color: #666;
-}
 `;
 

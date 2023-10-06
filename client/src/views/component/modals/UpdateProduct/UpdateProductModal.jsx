@@ -7,15 +7,11 @@ import { getTaxes } from '../../../../firebase/firebaseconfig'
 import { Button } from '../../../templates/system/Button/Button'
 import { UploadImg } from '../../UploadImg/UploadImg'
 import { Modal } from '../Modal'
-import { quitarCeros } from '../../../../hooks/quitarCeros'
 import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct'
 import { InventariableButton } from './components/Buttons/InventariableButton'
 import { productDataTypeCorrection } from '../../../../features/updateProduct/validateProductDataType'
-
 import { productSchema } from '../../../../features/updateProduct/productSchema'
-import { toggleLoader } from '../../../../features/loader/loaderSlice'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
-import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useFormatNumber } from '../../../../hooks/useFormatNumber'
 import noImage from '../../../../assets/producto/noImg.png'
 import { OPERATION_MODES } from '../../../../constants/modes'
@@ -28,6 +24,17 @@ import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCate
 import useImageFallback from '../../../../hooks/image/useImageFallback'
 import { ProductVisibilityButton } from './components/Buttons/ProductVisibilityButton'
 import { addNotification } from '../../../../features/notification/notificationSlice'
+import { Select } from '../../../templates/system/Select/Select'
+import Typography from '../../../templates/system/Typografy/Typografy'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+
+function interpretLayoutString(layoutString) {
+    if (!layoutString) return {};
+
+    return {
+        gridTemplateColumns: layoutString,
+    };
+}
 
 const validateProduct = (product) => {
     let errors = {};
@@ -59,7 +66,7 @@ export const UpdateProductModal = ({ isOpen }) => {
 
     const [errors, setErrors] = useState({})
 
-    useEffect(() => {getTaxes(setTaxesList)}, [])
+    useEffect(() => { getTaxes(setTaxesList) }, [])
 
     const { categories } = useFbGetCategories()
 
@@ -135,210 +142,225 @@ export const UpdateProductModal = ({ isOpen }) => {
             }
         >
             <Container>
-                <FormGroup column='1'>
-                    <InputV4
-                        name='productName'
-                        label={'Nombre del producto:'}
-                        required
-                        type="text"
-                        onClear={() => dispatch(setProduct({ ...product, productName: '' }))}
-                        errorMessage={errors?.productName}
-                        validate={errors?.productName}
-                        value={product?.productName || ''}
-                        onChange={(e) => dispatch(setProduct({ ...product, productName: e.target.value }))}
-                    />
-                </FormGroup>
-                <FormGroup column='2'>
-                    <InputV4
-                        label={'Tipo de Producto:'}
-                        type="text"
-                        name='type'
-                        required
-                        value={product?.type || ''}
-                        onChange={(e) => dispatch(setProduct({ ...product, type: e.target.value }))}
-                    />
-                    <InputV4
-                        size='small'
-                        type="text"
-                        label={'Ordenar por: '}
-                        name='order'
-                        required
-                        value={product?.order}
-                        onChange={(e) => dispatch(setProduct({ ...product, order: e.target.value }))}
-                    />
-
-                </FormGroup>
-                <FormGroup column='3'>
-                    <InputV4
-                        label={'Tamaño: '}
-                        type="text"
-                        name="size"
-                        placeholder='Contenido Neto:'
-                        value={product?.size}
-                        onChange={(e) => dispatch(setProduct({ ...product, size: e.target.value }))}
-                    />
-                    <select
-                        name="category: "
-                        id=""
-                        onChange={(e) => dispatch(setProduct({ ...product, category: e.target.value }))}>                        <option value="">Categoría</option>
-                        {
-                            categories.length > 0 ? (
-                                categories.map((item, index) => (
-                                    <option
-                                        key={index}
-                                        value={item.category.name}
-                                        selected={item.category.name === product.category}
-                                    >
-                                        {item.category.name}
-                                    </option>
-                                ))
-                            ) : null
-                        }
-                    </select>
-                    <InputV4
-                        label={'Contenido neto: '}
-                        type="text"
-                        placeholder='Contenido Neto:'
-                        name='netContent'
-                        value={product?.netContent || undefined}
-                        onChange={(e) => dispatch(setProduct({ ...product, netContent: e.target.value }))}
-                    />
-                </FormGroup>
-                <FormGroup>
-                    <ImgContainer>
-                        <Img>
-                            <img
-                                src={image}
-                                style={product?.productImageURL === image ? { objectFit: "cover" } : { objectFit: "contain" }} alt=""
+                <Main>
+                    <Section>
+                        <Typography
+                            variant='h3'
+                        >
+                            Información del producto
+                        </Typography>
+                        <FormGroup layout='1fr'>
+                            <InputV4
+                                name='productName'
+                                label={'Nombre del producto:'}
+                                required
+                                size={'medium'}
+                                type="text"
+                                onClear={() => dispatch(setProduct({ ...product, productName: '' }))}
+                                errorMessage={errors?.productName}
+                                validate={errors?.productName}
+                                value={product?.productName || ''}
+                                onChange={(e) => dispatch(setProduct({ ...product, productName: e.target.value }))}
                             />
-                        </Img>
-                        <Align position='center'>
-                            <Button
-                                borderRadius='normal'
-                                title={status === "update" ? 'Actualizar' : 'Agregar Imagen'}
-                                bgcolor='primary'
-                                titlePosition='center'
-                                onClick={handleImgController}
+
+                        </FormGroup>
+                        <FormGroup layout='1fr 1fr'>
+                            <InputV4
+                                label={'Tipo de Producto:'}
+                                type="text"
+                                name='type'
+                                size={'medium'}
+                                required
+                                value={product?.type || ''}
+                                onChange={(e) => dispatch(setProduct({ ...product, type: e.target.value }))}
                             />
-                        </Align>
-                    </ImgContainer>
-                </FormGroup>
-                <FormGroup column='3' >
-                    <InventariableButton
-                        setProduct={setProduct}
-                        product={product}
-                    />
-                    <InputV4
-                        label={'Stock:'}
-                        type="number"
-                        placeholder='stock'
-                        name='stock'
-                        value={product?.stock}
-                        onChange={(e) => dispatch(setProduct({ ...product, stock: e.target.value }))}
-                    />
+                            <InputV4
+                                label={'Contenido neto: '}
+                                type="text"
+                                placeholder='Contenido Neto:'
+                                name='netContent'
+                                size={'medium'}
+                                value={product?.netContent || undefined}
+                                onChange={(e) => dispatch(setProduct({ ...product, netContent: e.target.value }))}
+                            />
 
-                    <ProductVisibilityButton
-                        product={product}
-                        setProduct={setProduct}
-                    />
+                        </FormGroup>
+                        <FormGroup layout='1fr 1fr'>
+                            <InputV4
+                                label={'Tamaño: '}
+                                type="text"
+                                name="size"
+                                size={'medium'}
+                                placeholder='Contenido Neto:'
+                                value={product?.size}
+                                onChange={(e) => dispatch(setProduct({ ...product, size: e.target.value }))}
+                            />
+                            <Select
+                                labelVariant='label1'
+                                title={'Categoría'}
+                                data={categories}
+                                value={product?.category}
+                                onChange={(e) => dispatch(setProduct({ ...product, category: e.target.value?.category?.name }))}
+                                displayKey={'category.name'}
+                            />
+                        </FormGroup>
 
-                </FormGroup>
-                <FormGroup column='3'>
-                    <InputV4
-                        label={'Costo'}
-                        type="number"
-                        value={product?.cost?.unit}
-                        onChange={(e) => dispatch(setProduct({ ...product, cost: { ...product.cost, unit: e.target.value, total: e.target.value } }))}
-                    />
-                    <select id=""
-                        onChange={(e) => dispatch(setProduct({
-                            ...product,
-                            tax: JSON.parse(e.target.value)
-                        }))}>
-                        <option value="">Impuesto</option>
-                        {
-                            taxesList.length > 0 ? (
-                                taxesList.map(({ tax }, index) => (
-                                    <option
-                                        selected={tax.value === product.tax.value}
-                                        value={JSON.stringify(tax)}
-                                        key={index}
-                                    >ITBIS {tax.ref}</option>
-                                ))
-                            ) : null
-                        }
-                    </select>
-                    <InputV4
-                        type="number"
-                        label={'Precio + ITBIS'}
-                        value={status ? product.price.unit : undefined}
-                        readOnly
-                        placeholder='Precio de Venta' />
-                </FormGroup>
-                <FormGroup >
-                    <BarCodeControl
-                        product={product}
-                        value={product?.barCode}
-                    />
-                </FormGroup>
-                <FormGroup >
-                    <QRCodeControl
-                        product={product}
-                        value={product?.qrCode}
-                    />
-                </FormGroup>
+                    </Section>
+                    <Section>
+                        <Typography
+                            variant='h3'
+                        >
+                            Gestión Inventario
+                        </Typography>
+                        <FormGroup layout='1fr 1fr' >
+                            <InventariableButton
+                                setProduct={setProduct}
+                                product={product}
+                            />
+                            <InputV4
+                                label={'Stock:'}
+                                type="number"
+                                placeholder='stock'
+                                size={'medium'}
+                                name='stock'
+                                value={product?.stock}
+                                onChange={(e) => dispatch(setProduct({ ...product, stock: e.target.value }))}
+                            />
+                        </FormGroup>
+                    </Section>
+                    <Section>
+                        <Typography
+                            variant='h3'
+                        >
+                            Facturación y Precio
+                        </Typography>
+                        <FormGroup layout="1fr 1fr">
+                            <ProductVisibilityButton
+                                product={product}
+                                setProduct={setProduct}
+                            />
+                             <select id=""
+                                onChange={(e) => dispatch(setProduct({
+                                    ...product,
+                                    tax: JSON.parse(e.target.value)
+                                }))}>
+                                <option value="">Impuesto</option>
+                                {
+                                    taxesList.length > 0 ? (
+                                        taxesList.map(({ tax }, index) => (
+                                            <option
+                                                selected={tax.value === product.tax.value}
+                                                value={JSON.stringify(tax)}
+                                                key={index}
+                                            >ITBIS {tax.ref}</option>
+                                        ))
+                                    ) : null
+                                }
+                            </select>
+                        </FormGroup>
+                        <FormGroup layout='1fr 1fr'>
+                            <InputV4
+                                label={'Costo'}
+                                type="number"
+                                size={'medium'}
+                                value={product?.cost?.unit}
+                                onChange={(e) => dispatch(setProduct({ ...product, cost: { ...product.cost, unit: e.target.value, total: e.target.value } }))}
+                            />
+                           
+                            <InputV4
+                                type="number"
+                                size={'medium'}
+                                label={'Precio + ITBIS'}
+                                value={status ? useFormatPrice(product.price.unit) : undefined}
+                                readOnly
+                                placeholder='Precio de Venta' />
+                        </FormGroup>
+                    </Section>
+                </Main>
+                <Aside>
+                    <FormGroup>
+                        <ImgContainer>
+                            <Img>
+                                <img
+                                    src={image}
+                                    style={product?.productImageURL === image ? 
+                                        { objectFit: "cover" } : 
+                                        { objectFit: "contain", padding: "2em" }
+                                    } alt=""
+                                />
+                            </Img>
+                            <Align position='center'>
+                                <Button
+                                    borderRadius='normal'
+                                    title={status === "update" ? 'Actualizar' : 'Agregar Imagen'}
+                                    bgcolor='primary'
+                                    titlePosition='center'
+                                    onClick={handleImgController}
+                                />
+                            </Align>
+                        </ImgContainer>
+                    </FormGroup>
+                    <FormGroup >
+                        <BarCodeControl
+                            product={product}
+                            value={product?.barCode}
+                        />
+                    </FormGroup>
+                    <FormGroup >
+                        <QRCodeControl
+                            product={product}
+                            value={product?.qrCode}
+                        />
+                    </FormGroup>
+                </Aside>
             </Container>
-
         </Modal>
     )
 }
 
 const Container = styled.div`
     display: grid;
-    grid-template-columns: repeat(2, 1fr) 240px;
-    padding: 1em 1em 1em;
+    grid-template-columns: 1fr 300px;
+    padding: 1em;
     background-color: var(--White2);
     height: 100%;
     width: 100%;
     gap: 0.6em;
-    align-content: flex-start;
+   
     @media (max-width: 768px) {
         grid-template-columns: 1fr;
     }    
 `
+const Aside = styled.div`
+  display: grid;
+    gap: 2em;
+    background-color: white;
+    padding: 1em;
+  +
+    border-radius: var(--border-radius-light);
+`
+
+const Main = styled.div`
+    display: grid;
+    gap: 0.6em;
+`
+
+const Section = styled.div`
+    background-color: white;
+    padding: 1em;
+    border-radius: var(--border-radius-light);
+    display: grid;
+    gap: 0.6em;
+`
+
 const FormGroup = styled.div`
     align-items: end;
     background-color: var(--White);
     border-radius: var(--border-radius-light);
-    padding: 0.4em;
     width: 100%;
-    display: grid;
-    select{
-         padding: 0 0.4em;
-         border-radius: var(--border-radius-light);
-         border: var(--border-primary);
-         height: 2em;       
-         
-      }
+    display: flex;
  
-    &:nth-child(4){
-        grid-column: 3 / 4;
-        grid-row: 1 / 3; 
-    }
-    /* &:nth-child(6){
-      
-        grid-row: 5 / 5; 
-    } */
-   &:nth-child(7){
-       grid-column: 3 / 4;
-       grid-row: 3 / 5; 
-   }
-   &:nth-child(8){
-       grid-column: 3 / 4;
-       grid-row: 5 / 7; 
-     
-   }
-    ${(props) => {
+    /* ${(props) => {
         switch (props.column) {
             case '1':
                 return `
@@ -360,6 +382,16 @@ const FormGroup = styled.div`
             default:
                 break;
         }
+    }} */
+    ${(props) => {
+        const style = interpretLayoutString(props.layout);
+        return `
+            display: grid;
+            gap: 1em;
+            grid-template-columns: ${style.gridTemplateColumns || '1fr'};
+            jus
+          
+        `;
     }}
   
 `
@@ -374,10 +406,10 @@ border-radius: 8px;
 overflow: hidden;
 display: block;
 width: 100%;
-height: 100px;
+height: 160px;
 img{
     width: 100%;
-    height: 100px;
+    height: 100%;
     object-fit: cover;
     box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
 }

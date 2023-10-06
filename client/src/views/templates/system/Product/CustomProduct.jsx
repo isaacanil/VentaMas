@@ -23,11 +23,12 @@ export const CustomProduct = ({ product }) => {
     return (
         <ProductContainer  onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef ? true : false}>
             <ProductImgWrapper imageHiddenRef={imageHiddenRef ? true : false}>
-                <span>
-                    {/* {product.productName.charAt(0)} */}
+                <div>
+
                     {<FaPizzaSlice/>}
-               
-                </span>
+                </div>
+                    {/* {product.productName.charAt(0)} */}
+                
             </ProductImgWrapper>
             <Body>
                 <Main>
@@ -50,8 +51,7 @@ const ProductContainer = styled.div`
     gap: 10px;
     grid-template-columns: min-content 1fr;
     transition: 400ms all ease-in-out;
-    align-items: center;
-    align-content: center;
+   
     ${(props) => {
         switch (props.imageHiddenRef) {
             case true:
@@ -80,7 +80,6 @@ ${(props) => {
                 `;
             default:
                 return `
-            
           `
         }
     }}
@@ -88,26 +87,41 @@ ${(props) => {
 const ProductImgWrapper = styled.div`
     overflow: hidden;
     display: flex;
+    height: 100%;
+    width: 80px;
+    border-radius: 6px;
+   // background-color: green;
     padding: 4px;
-    justify-content: center;
-    align-items: center;
+    transition: all 400ms ease-in-out;
     ${(props) => {
         switch (props.imageHiddenRef) {
             case false:
                 return`
-                height: 80px;
-                width: 80px;
-                transition: all 400ms ease-in-out;
-                span{
-                    width: 100%;
+                
+                
+                div{
+                    display:flex;
+                    justify-content: center;
+                    align-items: center;
+                    border-radius: 6px;
                     height: 100%;
-                    font-size: 2.2em;
+                    width: 100%;
+                    background-color: var(--White3);
+                    svg{
+                        font-size: 2em;
+                        color: var(--Gray2);
+
+                    }
                 }
+                
                 `
                 case true:
                     return`
                     height: 60px;
-                    span{
+                    display:flex;
+                     justify-content: center;
+                    align-items: center;
+                    svg{
                         width: 60px;
                         font-size: 2em;
                     }

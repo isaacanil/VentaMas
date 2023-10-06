@@ -16,7 +16,6 @@ export function useUserDocListener(userId) {
                         uid: userSnapshot.id,
                         displayName: userData.name // Ajusta según tu estructura.
                     }));
-                    console.log('User data updated', userData);
                 } else {
                     dispatch(logout());
                     console.log('User data deleted');

@@ -31,7 +31,7 @@ const Container = styled.div`
     grid-template-rows: 1fr min-content;
   }
 `
-const Titulo = styled.h1`
+const Titulo = styled.h2`
 
 `
 const Head = styled.div``
@@ -71,7 +71,7 @@ const handleSubmit = (e) => {
         <Backdrop>
             <Container>
                 <Head>
-                    <Titulo>Login</Titulo>
+                    <Typography variant="h3">Login</Typography>
                 </Head>
                 <form onSubmit={handleSubmit}>
                     <Body>npm run

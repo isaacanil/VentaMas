@@ -49,6 +49,7 @@ export const taxReceiptSlice = createSlice({
         handleNCFStatus: (state, actions) => {
             state.ncfStatus = actions.payload
         },
+        
         clearTaxReceiptData: (state) => {
             state.ncfStatus = false
             state.ncfCode = null

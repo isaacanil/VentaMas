@@ -4,8 +4,9 @@ import './firebase/firebaseconfig';
 
 import App from './App';
 import './index.css';
-import './variable.css';
 import './styles/normalize/normalize.css';
+import './variable.css';
+import './styles/typography/typographyStyle.scss';
 
 import { Provider } from 'react-redux'
 import { store } from './app/store'

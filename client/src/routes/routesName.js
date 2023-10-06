@@ -27,13 +27,15 @@ const AUTH_TERM = {
     LOGIN: '/login',
     SIGNUP: '/signup',
 }
+const inventoryBasePath = '/inventory';
 const INVENTORY_TERM = {
-    INVENTORY_ITEMS: '/inventory-items',
-    CATEGORIES: '/categories',
-    INVENTORY_SERVICES: '/inventory-services',
-    PRODUCT_IMAGES_MANAGER: '/product-images-manager',
-    PRODUCT_OUTFLOW: '/product_outflow',
-    SERVICE_OUTFLOW: '/service_outflow',
+    CREATE_PRODUCT: `${inventoryBasePath}/create-product`,
+    INVENTORY_ITEMS: '/inventory/items',
+    CATEGORIES: '/inventory/categories',
+    INVENTORY_SERVICES: '/inventory/services',
+    PRODUCT_IMAGES_MANAGER: '/inventory/product-images-manager',
+    PRODUCT_OUTFLOW: '/inventory/product_outflow',
+    SERVICE_OUTFLOW: '/inventory/service_outflow',
 }
 const CONTACT_TERM = {
     CLIENTS: '/contact',

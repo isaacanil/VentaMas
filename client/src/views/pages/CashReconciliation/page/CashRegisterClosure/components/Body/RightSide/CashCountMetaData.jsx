@@ -6,7 +6,7 @@ export const CashCountMetaData = (cashCount, invoices = []) => {
     const {sales, opening, closing} = cashCount;
     const totalOpeningBanknotes = opening.banknotesTotal;
     const totalClosingBanknotes = closing.banknotesTotal;
-    console.log("totalOpeningBanknotes---------------", invoices)
+ 
     // let totalCard = invoices.reduce((total, sale) => {
     //   return total + (sale.data.paymentMethod.filter(payment => payment.method === "card" && payment.status).length > 0 ? sale.data.totalPurchase.value : 0);
     // }, 0);

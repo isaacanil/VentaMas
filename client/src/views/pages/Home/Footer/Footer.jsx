@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 const appMetadata = {
   name: 'Ventamax',
-  version: 'Versión 21 de Septiembre 2023',
+  version: 'Versión 02 de Octubre 2023',
   copyright: "© 2023 GISYS. Todos los derechos reservados."
 }
 const Footer = () => {

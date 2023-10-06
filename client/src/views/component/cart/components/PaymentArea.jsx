@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import Switch from '@mui/material/Switch'
+// import Switch from '@mui/material/Switch'
 import { monetarySymbols } from '../../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
 import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../../features/cart/cartSlice'
@@ -8,12 +8,12 @@ import { useEffect } from 'react'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { getTaxReceiptData, handleNCFStatus, selectNcfStatus, selectTaxReceipt } from '../../../../features/taxReceipt/taxReceiptSlice'
 
-
 import { quitarCeros } from '../../../../hooks/quitarCeros'
 import CustomInput from '../../../templates/system/Inputs/CustomInput'
 import { useRoundedNumber } from '../../../../hooks/useRoundedNumber'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
+import { Switch } from '../../../templates/system/Switch/Switch'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
 
@@ -24,6 +24,7 @@ export const PaymentArea = () => {
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
     const [NCFStatus, setNCFStatus] = useState(false)
+
     const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt)
     const taxReceiptData = fbGetTaxReceipt()
 
@@ -32,7 +33,6 @@ export const PaymentArea = () => {
             status: true,
             method: 'cash',
             name: 'Efectivo',
-
         },
         {
             status: false,
@@ -75,9 +75,6 @@ export const PaymentArea = () => {
         console.log(paymentMethod)
     }, [paymentMethod])
 
-
-
-
     useEffect(() => {
         if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
             dispatch(getTaxReceiptData(taxReceiptData))
@@ -92,14 +89,16 @@ export const PaymentArea = () => {
                 <Group className='tax-discount'>
                     {
                         taxReceiptEnabled && (
-
                             <Group space={'small'}>
-                                <Switch checked={selectedNcfStatus ? true : false} onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}></Switch>
+                                <Switch
+                                    size='small'
+                                    checked={selectedNcfStatus}
+                                    onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}
+                                />
                                 <STitle>Comp. Fiscal.</STitle>
                             </Group>
                         )
                     }
-
                     <Group>
                         <CustomInput options={["10", "20", "30"]} />
                     </Group>
@@ -110,7 +109,10 @@ export const PaymentArea = () => {
                     {paymentMethod.map((method, index) => {
                         return (
                             <Group grow='2' key={index}>
-                                <input type="radio" name="payment-method" id={method.method}
+                                <input
+                                    type="radio"
+                                    name="payment-method"
+                                    id={method.method}
                                     defaultChecked={method.status}
                                     onChange={(e) => { SelectPaymentMethod(method.method, e.target.checked) }}
                                 />
@@ -123,22 +125,30 @@ export const PaymentArea = () => {
             </Area>
             <Row margin='bottom'>
                 <Group className='option1'>
-                    <span><span>ITBIS:</span>  {useFormatPrice(TaxesRef)}</span>
-                    <InputV4
-                        label={`Pago con (${monetarySymbols.dollarSign})`}
-                        labelVariant='primary'
-
-                        type="number"
-                        value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
-                        onChange={(e) => setPaymentValue(e.target.value)}
-                    />
-
+                    <Wrapper>
+                        <Label>ITBIS:</Label>
+                        {useFormatPrice(TaxesRef)}
+                    </Wrapper>
+                    <Wrapper>
+                        <Label>Delivery:</Label>
+                        {useFormatPrice(DeliveryRef.value)}
+                    </Wrapper>
                 </Group>
             </Row>
             <Row margin='bottom'>
                 <Group className='option1'>
-                    <span><span>Delivery:</span> {useFormatPrice(DeliveryRef.value)}</span>
-                    <span><span>Cambio:</span> {useFormatPrice(ChangeRef)}</span>
+                    <Wrapper>
+                        <Label>Cambio:</Label>
+                        {useFormatPrice(ChangeRef)}
+                    </Wrapper>
+                    <InputV4
+                        label={`Pago con (${monetarySymbols.dollarSign})`}
+                        labelVariant='primary'
+                        size=""
+                        type="number"
+                        value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
+                        onChange={(e) => setPaymentValue(e.target.value)}
+                    />
                 </Group>
             </Row>
         </Container>
@@ -164,9 +174,8 @@ const Row = styled.div`
 const Group = styled.div`
     display: flex;
     align-items: center;
-
     flex-grow: 1;
-    gap: 0.6em;
+    gap: 1em;
     span{
         display: flex;
         justify-content: space-between;
@@ -197,7 +206,7 @@ const Group = styled.div`
                 grid-template-columns: 1fr 1fr 1fr;
 
                 input[type="radio"]:checked + label{  
-                    background-color: var(--color);
+                    background-color: #1976D2;
                     color: black;
                     font-weight: 500;
                     color: white;
@@ -232,7 +241,7 @@ const Group = styled.div`
         switch (props.space) {
             case 'small':
                 return `
-                gap: 0.2em; 
+                gap: 0.6em; 
                 `
             case 'medium':
                 return `
@@ -322,7 +331,7 @@ const Area = styled.div`
         padding: 0 0.2em;
     }
     position: relative;
-    padding: 0em 0.5em 0.3em;
+    padding: 0em 0.5em;
     //border: 1px solid #0000003d;
     color: #292929;
     background-color: var(--icolor4);
@@ -330,3 +339,14 @@ const Area = styled.div`
     margin: 0.4em 0;
 
 `
+const Wrapper = styled.span`
+   display: flex;
+    justify-content: space-between;
+`;
+
+const Label = styled.span`
+   display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+    font-size: 14px;
+`;

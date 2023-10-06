@@ -62,7 +62,6 @@ const darkPalette = {
         black: '#fff',
         white: '#000',
     },
-
     text: {
         primary: 'rgba(255,255,255,.87)',
         secondary: 'rgba(255,255,255,.54)',
@@ -77,6 +76,11 @@ const darkPalette = {
         color: "#1b415f",
         color2: "#525252",
         color3: "#444444"
+    },
+    borders: {
+        basic: '1px solid #e2e8f0',
+        highlighted: '2px solid #a0aec0',
+        accent: '2px dashed #718096',
     },
     action: {
         active: 'rgba(255, 255, 255, 0.54)',

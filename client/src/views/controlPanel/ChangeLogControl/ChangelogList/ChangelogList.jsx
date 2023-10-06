@@ -14,10 +14,13 @@ export const ChangelogList = () => {
             <Container>
                 <Wrapper>
 
-                <h1>Ventamax — Notas del lanzamiento</h1>
-                {changelogs.map(({ changelog }, index) => (
-                    <Editor key={index} editorState={rawToEditorState(changelog.content)} />
-                ))}
+                    <h1>Ventamax — Notas del lanzamiento</h1>
+                    {changelogs.map(({ changelog }, index) => (
+                        <EditorWrapper>
+                            <Editor key={index} editorState={rawToEditorState(changelog.content)} />
+
+                        </EditorWrapper>
+                    ))}
                 </Wrapper>
             </Container>
         </Fragment>
@@ -39,5 +42,11 @@ const Wrapper = styled.div`
     }
     h2{
         margin-left: 0;
+    }
+`
+const EditorWrapper = styled.div`
+    margin-bottom: 6em;
+    :last-child{
+        margin-bottom: 0;
     }
 `

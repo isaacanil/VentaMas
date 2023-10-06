@@ -11,11 +11,11 @@ import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 import { icons } from '../../../constants/icons/icons'
 import { useNavigate } from 'react-router-dom'
 
-export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, searchData, displayName = "" }) => {
+export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setSearchData, searchData, displayName = "" }) => {
   const ref = useRef(null)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+ 
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
   const handledMenu = () => {setIsOpenMenu(!isOpenMenu)};
@@ -37,7 +37,7 @@ export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, search
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
           {sectionName && (
-            <SectionName>{sectionName}</SectionName>
+            <SectionName>{sectionNameIcon}{sectionName}</SectionName>
           )}
           {setSearchData && (
             <SearchInput
@@ -50,7 +50,9 @@ export const MenuApp = ({ data, sectionName, borderRadius, setSearchData, search
               onClear={() => setSearchData('')}
               onChange={(e) => setSearchData(e.target.value)}
             />
+
           )}
+        
         </Group>
         <GlobalMenu data={data} setSearchData={setSearchData} searchData={searchData} />
         <SideBar isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
@@ -165,6 +167,7 @@ const SectionName = styled.div`
   font-size: 1.1em;
   color: white;
   height: 1.8em;
+  gap: 0.4em;
   border-radius: 4px;
   white-space: nowrap;
   background-color: rgba(0, 0, 0, 0.200);

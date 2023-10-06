@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react'
 import { MenuApp, Button, ButtonGroup } from '../../'
 import styled from 'styled-components'
-import { DatePicker } from '../../templates/system/DatePicker/DatePicker'
+import { DatePicker } from '../../templates/system/Dates/DatePicker/DatePicker'
 import TimeFilterButton from '../../templates/system/Button/TimeFilterButton/TimeFilterButton'
 import { tableData } from './tableData'
 import { SaleReportTable } from './SaleReportTable/SaleReportTable'
@@ -12,18 +12,24 @@ import { addNotification } from '../../../features/notification/NotificationSlic
 import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import { motion } from 'framer-motion'
 import { selectUser } from '../../../features/auth/userSlice'
+import  SalesReport  from './ReportsSale/ReportsSale'
+import { Calendar } from '../../templates/system/Dates/Calendar/Calendar'
 
 export const Registro = () => {
-  const dispatch = useDispatch()
-
-  const [datesSelected, setDatesSelected] = useState({})
-  const [searchTerm, setSearchTerm] = useState('')
-  const { invoices } = fbGetInvoices(datesSelected)
+  const dispatch = useDispatch();
+  const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
+  const [datesSelected, setDatesSelected] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const { invoices } = fbGetInvoices(datesSelected);
   const user = useSelector(selectUser);
 
+  const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
+
   const handleTimeChange = (start, end) => {
-    setDatesSelected({ startDate: start.toMillis(), endDate: end.toMillis() })
+    setDatesSelected({startDate: start.toMillis(), endDate: end.toMillis()})
   }
+
+  console.log(invoices)
 
   return (
     <Fragment>
@@ -39,8 +45,13 @@ export const Registro = () => {
         />
         <FilterBar>
           <span>
+            {/* <Calendar selectionType='range' /> */}
             <DatePicker setDates={setDatesSelected} dates={datesSelected} />
             <TimeFilterButton onTimeFilterSelected={handleTimeChange} />
+            <Button 
+            title={'Reporte de ventas'}
+            onClick={onReportSaleOpen}
+            />
             {/* <ComponentTagger text={'Exportar excel:'} children={ */}
 
             {/* } /> */}
@@ -50,6 +61,7 @@ export const Registro = () => {
           bills={invoices}
           searchTerm={searchTerm}
         />
+        <SalesReport isOpen={isReportSaleOpen} onOpen={onReportSaleOpen} sales={invoices} />
       </Container>
     </Fragment>
   )

@@ -15,6 +15,7 @@ export const InventariableButton = ({ product, setProduct }) => {
     return (
         <Button
             borderRadius={'normal'}
+            alignText={'left'}
             title={'Invetariable'}
             isActivated={product?.trackInventory}
             iconOn={<MdRadioButtonChecked />}

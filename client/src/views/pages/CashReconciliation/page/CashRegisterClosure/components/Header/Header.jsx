@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
-import { UserSection } from './../../../../global/UserSection/UserSection'
+import { UserSection } from './../../../../resource/UserSection/UserSection'
 import { DateSection } from './DateSection'
 import { CashReconciliationState } from './CashReconciliationState/CashReconciliationState'
 import { ViewInvoice } from '../Body/RightSide/components/ViewInvoive/ViewInvoice'
-import { CashCountStateIndicator } from '../../../../global/CashCountStatusIndicator/CashCountStateIndicator'
+import { CashCountStateIndicator } from '../../../../resource/CashCountStatusIndicator/CashCountStateIndicator'
 
 export const Header = ({state}) => {
     return (

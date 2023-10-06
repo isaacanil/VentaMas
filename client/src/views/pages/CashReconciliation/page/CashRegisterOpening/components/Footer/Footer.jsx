@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import { ConfirmCancelButtons } from "../../../../global/ConfirmCancelButtons/ConfirmCancelButtons"
+import { ConfirmCancelButtons } from "../../../../resource/ConfirmCancelButtons/ConfirmCancelButtons"
 
 export const Footer = ({onSubmit, onCancel}) => {
     return (
