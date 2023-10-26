@@ -1,8 +1,9 @@
 
 import styled from 'styled-components';
 import Typography from '../Typografy/Typografy';
-import {Switch} from '../Switch/Switch';
+import { Switch } from '../Switch/Switch';
 import { useState } from 'react';
+import { Container } from '../layout/Container/Container';
 
 const Contenedor = styled.div`
   font-family: 'Arial', sans-serif;
@@ -20,28 +21,34 @@ const data = [
 ]
 export function Doc() {
   return (
-    <div>
-      {
-        data.map((update) => (
-          <Update
-            content={update.content}
-            date={update.date}
-            title={update.title}
-          />
-        ))
-      }
-    </div>
+    <UpdateContainer>
+      <Switch
+        size='medium'
+        value={open}
+        onChange={() => setOpen(!open)}
+      />
+      <Container
+      >
+        <Typography variant='h2' >
+          h2. Heading
+        </Typography>
+        <Typography variant='h3' >
+          h3. Heading
+        </Typography>
+      </Container>
+    </UpdateContainer >
   );
 }
 
 
-function Update({ title, date, content }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <UpdateContainer>
-      
 
-      <Typography variant='h1' >
+
+const UpdateContainer = styled.div`
+  padding: 10px;
+  margin: 10px;
+`;
+
+/*     <Typography variant='h1' >
       h1. Heading
       </Typography>
       <Typography variant='h2' >
@@ -70,20 +77,4 @@ function Update({ title, date, content }) {
       </Typography>
       <Typography variant='l3' >
       l3. Label
-      </Typography>
-      <Switch
-        size='medium'
-        value={open}
-        onChange={() => setOpen(!open)}
-      />
-    </UpdateContainer>
-  );
-}
-
-const UpdateContainer = styled.div`
-
-  padding: 10px;
-  margin: 10px;
-
-`;
-
+      </Typography> */

@@ -4,7 +4,11 @@ import styled from 'styled-components'
 export const Logo = ({ size }) => {
   return (
     <Component>
-      <Img src={logo} size={size} alt="" />
+      <Img
+        src={logo}
+        size={size}
+        alt=""
+      />
     </Component>
   )
 }
@@ -14,38 +18,16 @@ display: flex;
 width: min-content;
 
 `
+const imgSize = {
+  xsmall: '1.5rem',
+  small: '2rem',
+  medium: '4rem',
+  large: '6rem',
+  xlarge: '10rem',
+  xxlarge: '12rem',
+}
 const Img = styled.img`
-   display: block;
-    ${(props) => {
-    switch (props.size) {
-      case 'small':
-        return `
-          height: 2em;
-          width: 2em;
-          `
-      case 'medium':
-        return `
-          height: 4em;
-          width: 4em;
-          `
-      case 'large':
-        return `
-          height: 6em;
-          width: 6em;
-          `
-
-      case 'xlarge':
-        return `
-          height: 10em;
-          width: 10em;
-          
-          `
-      default:
-        return `
-          height: 4em;
-          width: 4em;
-          `
-    }
-  }
-  }
+  display: block;
+  height: ${(props) => props.size ? imgSize[props.size ] : imgSize["medium"]};
+  width: ${(props) => props.size ? imgSize[props.size ] : imgSize["medium"]};
 `

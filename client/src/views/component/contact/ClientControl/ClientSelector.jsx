@@ -14,21 +14,7 @@ export const ClientSelector = ({  filteredClients, searchTerm, createClientMode,
         setClients(filteredClients)
     }, [filteredClients])
     return (
-        <Container isOpen={isOpen}>
-            <Head>
-           
-                <Group>
-                    <Button
-                        title={<MdClose />}
-                        width='icon24'
-                        bgcolor='op1'
-                        borderRadius='normal'
-                        onClick={(e) => dispatch(setIsOpen(false))}
-
-                    />
-                </Group>
-
-            </Head>
+        <Container isOpen={isOpen}> 
             <Body isEmpty={clients.length > 0 ? true : false}>
                 {
                     clients.length > 0 ? (
@@ -57,14 +43,20 @@ export const ClientSelector = ({  filteredClients, searchTerm, createClientMode,
 }
 const Container = styled.div`
     position: absolute;
-    border-radius: 10px;
+    z-index: 100;
     top: 3em;
+
     overflow: hidden;
+
+    /* box */
+  
+    height: calc(100vh - 7em);
+    display: grid;
+    border-radius: 10px;
     width: 100%;
     background-color: rgb(80, 80, 80);
-    display: grid;
-    grid-template-rows: 2em 1fr;
-    z-index: 100;
+
+    /*animation */
     transform: translateY(-600px) scaleY(0);
     transition: transform 4s ease-in-out;
     transition-property: transform, z-index;
@@ -79,38 +71,25 @@ const Container = styled.div`
                     transform: translateY(0px) scaleY(1);
                     
                 `
-
-
             default:
                 break;
         }
     }
     }
 `
-const Head = styled.div`
-    background-color: #7a7a7a;
-    display: flex;
-    align-items: center;
-    justify-content: end;
-    padding: 0 0.4em;
-`
-const Body = styled.div`
 
-   z-index: 1;
-   top: 3em;
-   left: 0;
-   width: 100%;
-   max-height: calc(100vh - 18em);
-   min-height: 300px;
-   width: 100%;
-   background-color: #575757;
-   overflow-y: scroll;
-   padding: 0.5em;
-   display: grid;
-   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-   gap: 0.5em;
-   align-items: center;
-   align-content: flex-start;
+const Body = styled.div`
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+  
+    overflow-y: scroll;
+    padding: 0.5em;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5em;
+    align-items: center;
+    align-content: flex-start;
    ${props => {
         switch (props.isEmpty) {
             case false:

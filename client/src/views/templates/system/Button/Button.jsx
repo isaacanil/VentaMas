@@ -77,7 +77,7 @@ const styleByDefault = css`
   //text
   font-size: 16px;
   font-weight: 500;
-  text-align: ${props => props.alignText || 'center'}};
+  text-align: ${props => props.alignText || 'center'};
   text-decoration: none;
   text-transform: capitalize;
   line-height: -10px;
@@ -121,12 +121,23 @@ const sizes = {
     font-size: 16px;
     padding: 0 0.8em;
   `,
+  icon16: `
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    svg{
+      font-size: 16px;
+    }
+  `,
   icon24: `
     width: 24px;
     height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
     svg{
       font-size: 18px;
     }
@@ -171,15 +182,16 @@ export const Container = styled.button`
 
  ${(props) => {
     switch (props.bgcolor) {
-      case "neutral":
+      case "neutro":
         return `
-        background-color: ${props.theme.colors.neutral.light};
-        color: ${props.theme.colors.neutral.main};
+        background-color: ${props.theme.colors.neutro.light};
+        color: ${props.theme.colors.neutro.main};
         &:hover{
-          background-color: ${props.theme.colors.neutral.main};
-          color: ${props.theme.colors.neutral.light};
+          background-color: ${props.theme.colors.neutro.main};
+          color: ${props.theme.colors.neutro.light};
         }
         `
+        
 
 
       case "error":

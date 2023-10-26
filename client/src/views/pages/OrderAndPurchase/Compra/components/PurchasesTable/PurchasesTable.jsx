@@ -11,20 +11,15 @@ import { convertMillisToDate } from '../../../../../../hooks/useFormatTime'
 import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 import { getOrderConditionByID, getOrderStateByID } from '../../../../../../constants/orderAndPurchaseState'
+import { useFbGetPurchase } from '../../../../../../firebase/purchase/fbGetPurchase'
+
 
 export const PendingOrdersTable = () => {
   const dispatch = useDispatch();
-
-  const [purchases, setPurchases] = useState([]);
   const user = useSelector(selectUser);
 
-  useEffect(() => {
-    getPurchaseFromDB(user, setPurchases)
-  }, [user])
-
-  const handleViewNotes = (note) => {
-    dispatch(toggleViewOrdersNotes({ note, isOpen: 'open' }))
-  }
+  const {purchases} = useFbGetPurchase();
+  
   const columns = [
     {
       Header: 'Número',
@@ -81,7 +76,7 @@ export const PendingOrdersTable = () => {
       label: 'Estado',
       accessor: 'state',
       format: (value) => `${getOrderStateByID(value)?.name}`,
-     
+
     },
     {
       label: 'Condición',

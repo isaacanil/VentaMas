@@ -1,28 +1,26 @@
 
 import React from 'react'
 import { Button } from '../../../system/Button/Button'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage, faListAlt } from '@fortawesome/free-solid-svg-icons'
 import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
 import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux'
-import { SearchInput } from '../../../system/Inputs/SearchInput'
-import { useMatchRouteByName } from '../useMatchRouterByName'
+
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { icons } from '../../../../../constants/icons/icons'
 import { useMatch, useNavigate } from 'react-router-dom'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { toggleAddCategory } from '../../../../../features/modals/modalSlice'
-import { useCategoryState } from '../../../../../Context/CategoryContext/CategoryContext'
+import { ExpenseChart } from '../../../../pages/Expenses/ExpensesList/components/ExpenseReport/ExpenseReport'
+import { toggleExpenseChartModal } from '../../../../../features/expense/expenseUISlice'
+import { useDispatch } from 'react-redux'
+
 
 export const ExpensesListToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const navigate = useNavigate();
-    const { EXPENSES_LIST, EXPENSES_CREATE } = ROUTES_NAME.EXPENSES_TERM
-    const matchWithExpenseList = useMatch(EXPENSES_LIST)
-    
+    const { EXPENSES_LIST, EXPENSES_CREATE } = ROUTES_NAME.EXPENSES_TERM;
+    const matchWithExpenseList = useMatch(EXPENSES_LIST);
+    const dispatch = useDispatch();
     const handleGoToCreateExpense = () => navigate(EXPENSES_CREATE);
-    
-
+    const handleOpenExpensesChart = () => {
+        dispatch(toggleExpenseChartModal())
+    }
     return (
         matchWithExpenseList && (
             <Container>
@@ -44,6 +42,10 @@ export const ExpensesListToolbar = ({ side = 'left', searchData, setSearchData }
                     side === 'right' && (
                         <Group >
                             <Button
+                                title='Ver Reporte'
+                                onClick={handleOpenExpensesChart}
+                                />
+                            <Button
                                 title='Gasto'
                                 startIcon={icons.operationModes.add}
                                 onClick={handleGoToCreateExpense}
@@ -51,6 +53,7 @@ export const ExpensesListToolbar = ({ side = 'left', searchData, setSearchData }
                         </Group>
                     )
                 }
+               
             </Container>
         )
     )

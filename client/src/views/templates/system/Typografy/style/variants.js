@@ -1,96 +1,89 @@
 import { css } from "styled-components";
-const boldScale = {
-    small: 400,
-    medium: 500,
-    large: 600,
-    xlarge: 700,
-    xxlarge: 800,
-    xxxlarge: 900,
-}
-export const variants = {  
-    h1: css`
+
+export const variants = {
+  h1: css`
       margin: 0;
       margin-bottom: 4px;
       line-height: 1.2;
       font-weight: 700;
     `,
-    h2: css`
+  h2: css`
       margin: 0;
       margin-bottom: 10px; 
       line-height: 1.3;
       font-weight: 700;
     `,
-    h3: css`
+  h3: css`
       margin: 0;
       margin-bottom: 10px;
       line-height: 1.4;
       font-weight: 700;
     `,
-    h4: css`
+  h4: css`
       margin: 0;
       margin-bottom: 10px;
       line-height: 1.5;
       font-weight: 700;
     `,
-    h5: css`
+  h5: css`
       margin: 0 0 0.3rem 0;
       line-height: 1.6;
       font-weight: 700;
     `,
-    
-    h6: css`
+
+  h6: css`
       margin: 0 0.25rem 0;
       line-height: 1.7;
       font-weight: 400;
     `,
-    l1: css`
+  l1: css`
       margin: 0;
       line-height: 0.8;
       font-weight: 600;
     `,
-    l2: css`
+  l2: css`
       margin: 0;
       line-height: 0.8;
       font-weight: 600;
     `,
-    l3: css`
+  l3: css`
       margin: 0;
       line-height: 0.8;
       font-weight: 600;
     `,
-    subtitle1: css`
+  subtitle1: css`
       margin: 0.35rem 0;
       line-height: 1.5;
       font-weight: 400;
     `,
-    subtitle2: css`
+  subtitle2: css`
       margin: 0.3rem 0;
       line-height: 1.6;
       font-weight: 400;
     `,
-    body1: css`
+  body1: css`
       font-size: 1rem;
       margin: 0;
       margin-bottom: 0.625em;
       line-height: 1.5;
       font-weight: 400;
     `,
-    body2: css`
+  body2: css`
       font-size: 0 0.9em;
       margin: 0;
       margin-bottom: 0.625em;
       line-height: 1.6;
       font-weight: 400;
     `,
-    caption: css`
+  caption: css`
       margin: 0.25rem 0;
       line-height: 1.7;
       font-weight: 300;
     `,
-    overline: css`
+  overline: css`
       text-transform: uppercase;
       margin: 0.25rem 0;
       line-height: 1.7;
       font-weight: 300;
     `,
-  };
+};

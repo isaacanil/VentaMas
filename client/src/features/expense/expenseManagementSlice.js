@@ -1,7 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-
-
 const initialState = {
     mode: 'add',
     expense: {
@@ -16,8 +14,8 @@ const initialState = {
     },
 };
 
-export const expenseSlice = createSlice({
-    name: 'expense',
+export const expenseManagementSlice = createSlice({
+    name: 'expenseManagement',
     initialState,
     reducers: {
         setExpense: (state, action) => {
@@ -30,11 +28,10 @@ export const expenseSlice = createSlice({
         setExpenseMode: (state, action) => {
             state.mode = action.payload;
         }
-    
     }
 });
 
-export const { setExpense,  resetExpense, setExpenseMode } = expenseSlice.actions;
-export default expenseSlice.reducer;
+export const { setExpense,  resetExpense, setExpenseMode } = expenseManagementSlice.actions;
+export default expenseManagementSlice.reducer;
 
-export const selectExpense = state => state.expense;
+export const selectExpense = state => state.expenseManagement;

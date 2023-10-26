@@ -5,7 +5,8 @@ import { Button } from "../../Button/Button";
 import { icons } from "../../../../../constants/icons/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
-
+import {DateRangeFilter} from "../../Button/TimeFilterButton/DateRangeFilter";
+import { getDateRange } from "../../../../../utils/date/getDateRange";
 const getDefaultDates = () => {
     const today = DateTime.local().startOf('day');
     return {
@@ -22,10 +23,15 @@ const getEmptyDates = () => {
 }
 
 
-export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
+export const DatePicker = ({
+    setDates,
+    dates,
+    datesDefault = "today",
+    dateOptionsMenu = false
+}) => {
 
     const handleSelectDateByDefault = () => {
-        if (datesDefault === "today") { setDates(getDefaultDates()); }
+        if (datesDefault) { setDates(getDatesRange(datesDefault)); }
         if (datesDefault === "empty") { setDates(getEmptyDates()); }
     }
 
@@ -81,7 +87,13 @@ export const DatePicker = ({ setDates, dates, datesDefault = "today" }) => {
 
                     </Col>
                 }
-
+                {
+                    dateOptionsMenu &&
+                    <DateRangeFilter
+                        setDates={setDates}
+                        dates={dates}
+                    />
+                }
             </Group>
         </Container>
     )
@@ -124,6 +136,7 @@ const Container = styled.div`
 const Group = styled.div`
     display: flex;
     gap: 1em;
+    align-items: end;
     
 `
 const Label = styled.label`

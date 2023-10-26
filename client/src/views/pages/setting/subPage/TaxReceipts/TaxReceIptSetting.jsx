@@ -13,6 +13,11 @@ import { useCompareArrays } from '../../../../../hooks/useCompareArrays'
 import { ButtonGroup } from '../../../../templates/system/Button/Button'
 import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt'
 import Typography from '../../../../templates/system/Typografy/Typografy'
+import { Switch } from '../../../../templates/system/Switch/Switch'
+import { Breadcrumb } from '../../../../templates/system/Breadcrumb/Breadcrumb'
+import { ConfirmationDialog } from '../../../../component/modals/UserNotification/components/ConfirmationDialog/ConfirmationDialog'
+import Dialog from '../../../../templates/system/Dialog/Dialog'
+import { useDialog } from '../../../../../Context/Dialog/DialogContext'
 // Aquí separamos los botones en sus propios componentes
 const UpdateButton = ({ arrayAreEqual, handleSubmit }) => (
   <Button
@@ -32,16 +37,6 @@ const CancelButton = ({ arrayAreEqual, handleCancel }) => (
   />
 );
 
-const ToggleReceiptButton = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) => (
-  <Button
-    title={taxReceiptEnabled ? 'Deshabilitar' : 'Habilitar'}
-    borderRadius={'normal'}
-    bgcolor={taxReceiptEnabled ? 'primary' : 'gray'}
-    isActivated={taxReceiptEnabled}
-    onClick={handleTaxReceiptEnabled}
-  />
-);
-
 // Aquí separamos las secciones en sus propios componentes
 const ReceiptSettingsSection = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) => (
   <DisabledSettingContainer>
@@ -56,7 +51,10 @@ const ReceiptSettingsSection = ({ taxReceiptEnabled, handleTaxReceiptEnabled }) 
       {/* <FormattedValue value={'Activa o desactiva los comprobantes en el punto de venta'} type={'paragraph'} /> */}
     </div>
     <div>
-      <ToggleReceiptButton taxReceiptEnabled={taxReceiptEnabled} handleTaxReceiptEnabled={handleTaxReceiptEnabled} />
+      <Switch
+        checked={taxReceiptEnabled}
+        onChange={handleTaxReceiptEnabled}
+      />
     </div>
   </DisabledSettingContainer>
 );
@@ -79,6 +77,7 @@ export const TaxReceiptSetting = () => {
   const user = useSelector(selectUser)
   const { taxReceipt } = fbGetTaxReceipt()
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled)
+  const { dialog, setDialogConfirm, onClose } = useDialog();
 
   useEffect(() => {
     dispatch(getTaxReceiptData(taxReceipt))
@@ -90,7 +89,24 @@ export const TaxReceiptSetting = () => {
   const handleCancel = () => setTaxReceiptLocal(taxReceipt);
 
   const handleTaxReceiptEnabled = () => {
-    fbEnabledTaxReceipt(user)
+    if (taxReceiptEnabled) {
+      setDialogConfirm({
+        title: '¿Deshabilitar comprobantes?',
+        isOpen: true,
+        type: 'warning',
+        message: 'Si deshabilitas los comprobantes, no se mostrarán en el punto de venta.',
+        onConfirm: () => {
+          fbEnabledTaxReceipt(user)
+          onClose()
+        },
+        
+        
+      })
+    } else {
+      fbEnabledTaxReceipt(user)
+    }
+
+
   };
 
   const arrayAreEqual = useCompareArrays(taxReceiptLocal, taxReceipt)
@@ -99,18 +115,20 @@ export const TaxReceiptSetting = () => {
     <Container>
       <MenuApp sectionName={'Comprobantes'}></MenuApp>
       <Main>
+        <Breadcrumb />
         <Head>
           <Typography variant='h2'>
             Configuración de Comprobantes
           </Typography>
-          {/* <FormattedValue value={'Configuración de Comprobantes'} type={'title'} /> */}
-          <FormattedValue value={'Ajusta cómo se generan y muestran los comprobantes en el punto de venta.'} type={'paragraph'} />
+          <Typography>
+            Ajusta cómo se generan y muestran los comprobantes en el punto de venta.
+          </Typography>
+
         </Head>
 
         <ReceiptSettingsSection taxReceiptEnabled={taxReceiptEnabled} handleTaxReceiptEnabled={handleTaxReceiptEnabled} />
         <ReceiptTableSection taxReceiptEnabled={taxReceiptEnabled} taxReceiptLocal={taxReceiptLocal} setTaxReceiptLocal={setTaxReceiptLocal} handleSubmit={handleSubmit} handleCancel={handleCancel} arrayAreEqual={arrayAreEqual} />
-
-
+   
       </Main>
     </Container>
   )
@@ -122,9 +140,7 @@ const Container = styled.div`
 const Footer = styled.div``
 const Head = styled.div`
   display: grid;
- 
   width: 100%;
-
 `
 const DisabledSettingContainer = styled.div`
 display: flex;
@@ -135,10 +151,10 @@ gap: 1em;
 
 const Main = styled.div`
   display: grid;
-  gap: 2.6em;
+  gap: 2.2em;
   margin: 0 auto;
-  max-width: 800px;
+  max-width: 1000px;
   width: 100%;
-  padding: 1em;
+  padding: 0 1em;
  
 `

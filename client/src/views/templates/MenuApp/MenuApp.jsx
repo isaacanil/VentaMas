@@ -1,5 +1,4 @@
 import React, { useState, Fragment, useRef, useEffect } from 'react'
-
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './Components/SideBar'
@@ -168,7 +167,7 @@ const SectionName = styled.div`
   color: white;
   height: 1.8em;
   gap: 0.4em;
-  border-radius: 4px;
+  border-radius: 6px;
   white-space: nowrap;
   background-color: rgba(0, 0, 0, 0.200);
   padding: 0 0.4em;

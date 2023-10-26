@@ -9,6 +9,12 @@ import { Button, ButtonGroup } from '../Button/Button';
 import Typography from '../Typografy/Typografy';
 import { icons } from '../../../../constants/icons/icons';
 import { Button as ButtonV2 } from '../Button/ButtonV2';
+const iconTypes = {
+    warning: icons.types.warning,
+    error: icons.types.error,
+    success: icons.types.success,
+    info: icons.types.info,
+}
 const Dialog = () => {
     const { dialog, setDialogConfirm, onClose } = useDialog();
 
@@ -16,17 +22,10 @@ const Dialog = () => {
 
     const { isOpen, title, type, message, onConfirm, onCancel } = dialog;
 
-    const handleCancel = () => {
+    const handleCancel = () => onCancel();
 
-        onCancel();
-    };
-
-    const handleConfirm = () => {
-
-        onConfirm();
-    };
-
-
+    const handleConfirm = () => onConfirm();
+   
     const handleCancelBtnName = () => {
         switch (onConfirm) {
             case null:
@@ -58,13 +57,11 @@ const Dialog = () => {
                         onClick={onClose}
                         bgcolor={'neutral'}
                     />
-
-
                 </Header>
                 <Body>
                     <Description type={type}>
                         <Icon>
-                            {icons.operationModes.delete}
+                            {iconTypes[type]}
                         </Icon>
                         <Typography variant='p' >
                             {message}
@@ -76,7 +73,7 @@ const Dialog = () => {
                         {
                             <Button
                                 title={handleCancelBtnName()}
-                                onClick={handleCancel || onClose}
+                                onClick={onCancel ? handleCancel : onClose}
                                 bgcolor={'gray'}
                                 borderRadius={'light'}
                             />
@@ -97,10 +94,11 @@ const Dialog = () => {
 };
 
 export default Dialog;
+
 const Backdrop = styled(motion.div)`
     height: 100vh;
     width: 100vw;
-    backdrop-filter: blur(5px) brightness(0.5) saturate(100%) contrast(100%);
+    backdrop-filter: blur(2px) brightness(0.8);
     position: absolute;
     display: flex;
     justify-content: center;

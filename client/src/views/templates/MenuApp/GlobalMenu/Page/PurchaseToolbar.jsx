@@ -11,34 +11,38 @@ import routesName from '../../../../../routes/routesName'
 import { toggleAddPurchaseModal } from '../../../../../features/modals/modalSlice'
 import { Tooltip } from '../../../system/Button/Tooltip'
 import { CgMathPlus } from 'react-icons/cg'
+import { ButtonGroup } from '../../../..'
+import { togglePurchaseChartModal } from '../../../../../features/purchase/purchaseUISlice'
 export const PurchaseToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const { PURCHASES, PURCHASES_CREATE } = routesName.PURCHASE_TERM;
     const matchWithCashReconciliation = useMatch(PURCHASES)
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
-   
-    const { abilities } = inspectUserAccess();
-    const user = useSelector(selectUser)
 
+ 
+    const handleOpenPurchaseChart = () => dispatch(togglePurchaseChartModal());
     // const openModal = () => {dispatch(toggleAddPurchaseModal())}
-    const openModal = () => navigate( PURCHASES_CREATE);
+    const openModal = () => navigate(PURCHASES_CREATE);
     return (
         matchWithCashReconciliation ? (
             <Container>
                 {
                     side === 'right' && (
-                        <Tooltip
-                            description='Realizar Comprar'
-                            Children={
-                                <Button
-                                    borderRadius='normal'
-                                    
-                                    startIcon={<CgMathPlus />}
-                                    title={`Comprar`}
-                                    onClick={openModal}
-                                />
-                            } />
+                        <ButtonGroup>
+                              <Button
+                                borderRadius='normal'
+                                title={`Ver Reporte`}
+                                onClick={handleOpenPurchaseChart}
+                            />
+                            <Button
+                                borderRadius='normal'
+
+                                startIcon={<CgMathPlus />}
+                                title={`Comprar`}
+                                onClick={openModal}
+                            />
+                        </ButtonGroup>
                     )
                 }
             </Container>

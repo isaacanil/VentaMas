@@ -18,6 +18,8 @@ import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalS
 import useBarcodeScanner from '../../../hooks/barcode/usebarcodescanner'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { ConfigMenu } from '../../component/modals/SettingsModal/components/Body/components/ConfigMenu.jsx'
+import { ConfigModal } from '../../component/modals/SettingsModal/ConfigModal.jsx'
 export const Sales = () => {
 
   const [searchData, setSearchData] = useState('')
@@ -69,6 +71,7 @@ export const Sales = () => {
         <MenuComponents />
       </ProductContainer>
       <Cart></Cart>
+      <ConfigModal />
       {/* <ModalManager /> */}
     </Container>
   )

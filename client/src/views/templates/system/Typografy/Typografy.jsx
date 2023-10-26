@@ -1,9 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import styled, { css } from 'styled-components';
-import { colors } from './color';
-import { variants } from './variants';
-import { sizes } from './size';
+import { TypographyStyle, variantToComponentMap } from './style/TypographyStyles';
 
 /**
  * Componente Typography para renderizar texto con estilos personalizados.
@@ -32,104 +28,9 @@ import { sizes } from './size';
  * @param {ReactNode} props.children - El contenido del elemento de texto.
  * @returns {JSX.Element} El componente Typography renderizado.
  */
-
-const { body1, body2, caption, h1, h2, h3, h4, h5, h6, l1, l2, l3, overline, subtitle1, subtitle2 } = sizes
-
-const variantToSizeMap = {
-  h1: h1,
-  h2: h2,
-  h3: h3,
-  h4: h4,
-  h5: h5,
-  h6: h6,
-  l1: l1,
-  l2: l2,
-  l3: l3,
-  subtitle1: subtitle1,
-  subtitle2: subtitle2,
-  body1: body1,
-  body2: body2,
-  caption: caption,
-  overline: overline,
-};
-
-const variantToComponentMap = {
-  h1: 'h1',/*Heading */
-  h2: 'h2',
-  h3: 'h3',
-  h4: 'h4',
-  h5: 'h5',
-  h6: 'h6',
-  label: 'label',
-  l1: 'span',/*label */
-  l2: 'span',
-  l3: 'span',
-  span: 'span',
-  subtitle1: 'h6',
-  subtitle2: 'h6',
-  body1: 'p',
-  body2: 'p',
-  caption: 'span',
-  overline: 'span',
-  
-};
-const generalSize = {
-  small: '0.875rem',
-  medium: '1rem',
-  large: '1.25rem',
-  xlarge: '1.5rem',
-  xxlarge: '2rem',
-}
-const boldScale = {
-  small: '500',
-  medium: '600',
-  large: '700',
-  xlarge: '800',
-  xxlarge: '900',
-  true: 'bold',
-  false: 'normal'
-}
-
-const baseTypography = css`
-  font-size: ${({ size, variant }) => variant && size ? (variantToSizeMap[variant] ? variantToSizeMap[variant][size] : "defaultSize") : generalSize[size]};
-  
-  text-align: ${({ align }) => align};
-  /* margin-bottom: ${({ gutterBottom }) => (gutterBottom ? '1rem' : '0')}; */
-  ${({ disableMargins }) => disableMargins && 'margin: 0;'}
-  /* font-weight: ${({ bold }) => boldScale[String(bold)] || 'normal'}; */
-  ${({ bold }) => bold && `font-weight: ${boldScale[String(bold)]} ;`}
-  ${({ italic }) => italic && 'font-style: italic;'}
-  ${({ underline }) => underline && 'text-decoration: underline;'}
-  ${({ uppercase }) => uppercase && 'text-transform: uppercase;'}
-  ${({ capitalize }) => capitalize && 'text-transform: capitalize;'}
-  ${({ lowercase }) => lowercase && 'text-transform: lowercase;'}
-  ${({ noWrap }) => noWrap && 'white-space: nowrap;'}
-  letter-spacing: ${({ letterSpacing }) => letterSpacing || 'normal'};
-  text-transform: ${({ textTransform }) => textTransform || 'none'};
-  ${({ display }) => display && `display: ${display};`}
-`;
-
-const TypographyStyle = styled.div`
-  ${({ variant }) => variants[variant] || variants.body1}
-  ${baseTypography}
-  ${({ color }) => colors[color] || colors.dark}
-      
-  ${({ strikethrough }) => strikethrough && 'text-decoration: line-through;'}
-  ${({ textShadow }) => textShadow && `text-shadow: ${textShadow};`}
-  ${({ as }) => as === 'a' && `
-    cursor: pointer;
-    color: #007bff;
-    font-weight: 500;
-    text-decoration: underline;
-    &:hover {
-      text-decoration: none;
-    }
-
-  `}
-`;
-
 const Typography = ({
   variant = 'body1',
+  context = 'app',
   color = 'dark',
   align = 'left',
   display = 'block',
@@ -138,21 +39,21 @@ const Typography = ({
   noWrap = false,
   component: ComponentProp,
   className,
-  size = 'medium', // Nueva propiedad para el tamaño
+  size = 'medium', 
   italic = false,
   strikethrough = false,
   textShadow = null,
   children,
-  bold = false, // Nueva propiedad para el negrita
-  underline = false, // Nueva propiedad para el subrayado
+  bold = false, 
+  underline = false, 
   ...rest
 }) => {
 
   const Component = ComponentProp || variantToComponentMap[variant] || 'span';
-
   return (
     <TypographyStyle
       as={Component}
+      context={context}
       variant={variant}
       color={color}
       align={align}
@@ -171,40 +72,8 @@ const Typography = ({
     >
       {children}
     </TypographyStyle>
+  
   );
 };
-
-Typography.propTypes = {
-  children: PropTypes.node.isRequired,
-  underline: PropTypes.bool,
-  italic: PropTypes.bool,
-  strikethrough: PropTypes.bool,
-  textShadow: PropTypes.string,
-  variant: PropTypes.oneOf(Object.keys(variants)).isRequired,
-  color: PropTypes.oneOf(Object.keys(colors)),
-  align: PropTypes.oneOf(['left', 'right', 'center', 'justify']),
-  display: PropTypes.oneOf(['initial', 'block', 'inline']),
-  gutterBottom: PropTypes.bool,
-  noWrap: PropTypes.bool,
-  disableMargins: PropTypes.bool,
-  component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-  className: PropTypes.string,
-};
-
-Typography.defaultProps = {
-  variant: 'body1',
-  color: 'dark',
-  align: 'left',
-  display: 'block',
-  gutterBottom: false,
-  disableMargins: false,
-  noWrap: false,
-  italic: false,
-  strikethrough: false,
-  textShadow: null,
-  bold: false,
-  underline: false,
-};
-
 
 export default Typography;

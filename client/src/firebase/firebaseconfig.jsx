@@ -341,6 +341,9 @@ export const getPurchaseFromDB = async (user, setPurchases) => {
         if(purchaseData.data.dates.paymentDate){
           purchaseData.data.dates.paymentDate = purchaseData.data.dates.paymentDate.toDate().getTime()
         }
+        if(purchaseData.data.dates.updatedAt){
+          purchaseData.data.dates.updatedAt = purchaseData.data.dates.updatedAt.toDate().getTime()
+        }
         return purchaseData;
       })
 

@@ -47,22 +47,22 @@ export const SideBar = ({ isOpen }) => {
 
     return (
         <Container
-        variants={sidebarVariant}
-        initial='closed'
-        animate={isOpen ? 'open' : 'closed'}
+            variants={sidebarVariant}
+            initial='closed'
+            animate={isOpen ? 'open' : 'closed'}
         >
             <Wrapper>
                 <Head>
-                    <div>
-                        <EmptyBox />
-                        <WebName></WebName>
-                    </div>
-                    <Button
-                        startIcon={icons.operationModes.setting}
-                        color='info'
-                        size='small'
-                        borderRadius='normal'
-                    />
+                        <div>
+                            <EmptyBox />
+                            <WebName></WebName>
+                        </div>
+                        <Button
+                            startIcon={icons.operationModes.setting}
+                            color='info'
+                            size='small'
+                            borderRadius='normal'
+                        />
                 </Head>
                 <UserSection user={user}></UserSection>
                 <Body>
@@ -86,6 +86,7 @@ export const SideBar = ({ isOpen }) => {
         </Container>
     )
 }
+
 const Container = styled(motion.div)`
     position: fixed;
     z-index: 9999;

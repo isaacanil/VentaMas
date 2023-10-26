@@ -43,7 +43,7 @@ const options = {
 const formatDate = (seconds, byMonth = false) => {
     const date = new Date(seconds * 1000);
     return byMonth
-        ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
+        ? date.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
         : date.toLocaleDateString();
 };
 

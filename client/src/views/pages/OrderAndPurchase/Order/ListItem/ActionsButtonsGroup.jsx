@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 import { toggleAddPurchaseModal } from '../../../../../features/modals/modalSlice'
-import { getOrderData } from '../../../../../features/Purchase/addPurchaseSlice'
+import { getOrderData } from '../../../../../features/purchase/addPurchaseSlice'
 import { deleteOrderFromDB, PassDataToPurchaseList } from '../../../../../firebase/firebaseconfig'
 import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'

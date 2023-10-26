@@ -10,7 +10,7 @@ import { fbSignIn } from "../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
 import { addNotification } from "../../../features/notification/NotificationSlice";
 import { ErrorComponent } from "../../templates/system/ErrorComponent/ErrorComponent";
 import Typography from "../../templates/system/Typografy/Typografy";
-
+import ROUTES_PATH from "../../../routes/routesName";
 const Backdrop = styled.div`
   display: grid;
     place-items: center;
@@ -74,8 +74,9 @@ export const BasicLogin = () => {
         password: "",
     })
     const [error, setError] = useState(null)
-
-    const homePath = "/home"
+    
+  
+    const homePath = ROUTES_NAME.BASIC_TERM.HOME
 
     const handleChange = (e) => {
         const lowercasedValue = e.target.value.toLowerCase();

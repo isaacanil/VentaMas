@@ -7,7 +7,7 @@ import { addNotification } from "../../features/notification/NotificationSlice"
 import { nanoid } from "nanoid"
 import { doc, updateDoc } from "firebase/firestore"
 import { update } from "lodash"
-import { addReceiptImageToPurchase } from "../../features/Purchase/addPurchaseSlice"
+import { addReceiptImageToPurchase } from "../../features/purchase/addPurchaseSlice"
 
 
 export const fbAddPurchaseReceiptImg = (user, dispatch, file, orderId) => {

@@ -23,15 +23,15 @@ export const getCardData = (user) => {
     };
     yield {
       id: 2,
-      title: 'Compras',
-      icon: purchase,
-      route: PURCHASES
-    };
-    yield {
-      id: 3,
       title: 'Facturas',
       icon: register,
       route: BILLS
+    };
+    yield {
+      id: 3,
+      title: 'Compras',
+      icon: purchase,
+      route: PURCHASES
     };
     yield {
       id: 4,
@@ -45,6 +45,7 @@ export const getCardData = (user) => {
       icon: cashReconciliation,
       route: CASH_RECONCILIATION_LIST
     };
+
 
     if (abilities?.can('developerAccess', 'all')) {
       yield {

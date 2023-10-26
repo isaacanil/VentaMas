@@ -1,80 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { nanoid } from "nanoid";
-import { fbAddClient } from "../../firebase/client/fbAddClient";
-import { fbUpdateClient } from "../../firebase/client/fbUpdateClient";
-import { useCompareObjectsInState } from "../../hooks/useCompareObject";
+import { initialState, defaultDelivery } from "./default/default";
 
-const DefaultDelivery = {
-    status: false,
-    value: ""
-}
-const DefaultClient = {
-    name: "",
-    tel: "",
-    address: "",
-    personalID: "",
-    delivery: DefaultDelivery
-};
-const GenericClient = {
-    ...DefaultClient,
-    name: "Cliente Genérico"
-}
-const DefaultPaymentMethod = [
-    {
-        method: "cash",
-        value: 0,
-        status: true
-    },
-    {
-        method: "card",
-        value: 0,
-        status: false
-    },
-    {
-        method: "transfer",
-        value: 0,
-        status: false
-    }
-];
-const defaultValue = {
-    permission: {
-        openCashReconciliation: false
-    },
-    isOpen: false,
-    data: {
-        id: '',
-        client: DefaultClient,
-        products: [],
-        change: {
-            value: 0
-        },
-        delivery: DefaultDelivery,
-        discount: {
-            value: 0
-        },
-        paymentMethod: DefaultPaymentMethod,
-        NCF: null,
-        totalShoppingItems: {
-            value: 0
-        },
-        totalPurchaseWithoutTaxes: {
-            value: 0
-        },
-        totalTaxes: {
-            value: 0
-        },
-        payment: {//pago realizado por el cliente
-            value: 0
-        },
-        totalPurchase: {
-            value: 0
-        },
-        sourceOfPurchase: 'Presencial'
-    },
 
-}
-export let ORIGINAL_CLIENT = null;
-const initialState = defaultValue
+
 const cartSlice = createSlice({
     name: 'factura',
     initialState,
@@ -82,16 +10,14 @@ const cartSlice = createSlice({
         toggleCart: (state) => {
             const isOpen = state.isOpen;
             state.isOpen = !isOpen;
-            console.log(state.isOpen)
         },
         getClient: (state, actions) => {
             const client = actions.payload;
             state.data.client = client;
-            console.log("estado del delivery: ", client.delivery.status);
             if (client?.delivery?.status === true) {
                 state.data.delivery = client?.delivery
             }else{
-                state.data.delivery = DefaultDelivery
+                state.data.delivery = defaultDelivery
             }
         },
         addPaymentValue: (state, actions) => {
@@ -177,7 +103,7 @@ const cartSlice = createSlice({
                 }
             }
         },
-        CancelShipping: (state) => state = defaultValue,
+        CancelShipping: (state) => state = initialState,
         totalTaxes: (state) => {
             const productSelected = state.data.products
             const total = productSelected.reduce((total, product) => total + (product.price.unit * product.tax.value) * product.amountToBuy.total, 0)
@@ -189,8 +115,8 @@ const cartSlice = createSlice({
             state.data.totalPurchaseWithoutTaxes.value = result;
         },
         addDiscount: (state, action) => {
-            const value = action.payload
-            state.data.discount.value = Number(value)
+            const value = action.payload;
+            state.data.discount.value = Number(value);
         },
         totalPurchase: (state) => {
             const productSelected = state.data.products
@@ -254,11 +180,9 @@ export const SelectTotalShoppingItems = (state) => state.cart.data.totalShopping
 export const SelectChange = (state) => state.cart.data.change.value;
 export const SelectSourceOfPurchase = (state) => state.cart.data.sourceOfPurchase;
 export const SelectPaymentValue = (state) => state.cart.data.payment.value;
-
 export const SelectDiscount = (state) => state.cart.data.discount.value;
 export const SelectNCF = (state) => state.cart.data.NCF;
 export const SelectCartPermission = () => state.cart.permission
-
 export const SelectCartIsOpen = (state) => state.cart.isOpen
 
 export default cartSlice.reducer

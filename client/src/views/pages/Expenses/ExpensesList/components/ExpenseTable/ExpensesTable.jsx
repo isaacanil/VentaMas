@@ -5,7 +5,7 @@
  * @since 0.1.0
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 import { useFbGetExpenses } from '../../../../../../firebase/expenses/Items/useFbGetExpenses'
@@ -18,23 +18,27 @@ import { convertMillisToDate } from '../../../../../../hooks/useFormatTime'
 import { EditDelBtns } from '../../../../../templates/system/Button/EditDelBtns/EditDelBtns'
 import { fbUpdateExpense } from '../../../../../../firebase/expenses/Items/fbUpdateExpense'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
-import { setExpense, setExpenseMode } from '../../../../../../features/expense/expenseSlice'
+import { setExpense, setExpenseMode } from '../../../../../../features/expense/expenseManagementSlice'
 import { useNavigate } from 'react-router-dom'
 import { DateTime } from 'luxon'
 import { fbDeleteExpense } from '../../../../../../firebase/expenses/Items/fbDeleteExpense'
 import { selectUser } from '../../../../../../features/auth/userSlice'
 import { useTranslation, initReactI18next } from "react-i18next";
+import { ExpenseChart } from '../ExpenseReport/ExpenseReport'
 /**
  * @function ExpensesTable
  * @desc A component that renders a table of expenses.
  * @returns {JSX.Element} The ExpensesTable component
  */
-export const ExpensesTable = ({ searchTerm }) => {
-    const { expenses } = useFbGetExpenses();
+export const ExpensesTable = ({ searchTerm, expenses }) => {
+   
     const { t } = useTranslation('status');
     const user = useSelector(selectUser);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const [reportIsOpen, setReportIsOpen] = useState(false);
+    const handleReportOpen = () => setReportIsOpen(!reportIsOpen);
     const data = expenses
         .map(({ expense }) => {
             return {
@@ -127,7 +131,7 @@ export const ExpensesTable = ({ searchTerm }) => {
             }
         }
     ]
-    console.log(data);
+    console.log("----------------", data);
 
     return (
         <Container>
@@ -155,6 +159,7 @@ export const ExpensesTable = ({ searchTerm }) => {
                 ]}
 
             />
+             <ExpenseChart expenses={expenses} isOpen={reportIsOpen} onOpen={handleReportOpen} />
         </Container>
     )
 }

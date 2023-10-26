@@ -1,7 +1,8 @@
 const h1Sizes = {
     small: '1.8rem', // 28px
     medium: '2.125rem',    // 34px
-    large: '2.5rem',   // 40px
+    large: '2.5rem',  
+    xlarge: '3rem' // 40px
 };
 
 const h2Sizes = {
@@ -98,7 +99,7 @@ const l3Sizes = {
 };
 
 
-export const sizes = {
+export const fontSizesWeb = {
     h1: h1Sizes,
     h2: h2Sizes,
     h3: h3Sizes,

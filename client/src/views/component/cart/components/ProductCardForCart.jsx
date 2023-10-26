@@ -74,6 +74,7 @@ const Container = styled(motion.div)`
     overflow: hidden;
     display: grid;
     border: none;
+    border: 1px solid rgba(0, 0, 0, 0.121);
     gap: 0.3em;
 
 `

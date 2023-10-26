@@ -21,6 +21,7 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
     const dispatch = useDispatch()
     const [DeletePrevent, setDeletePrevent] = useState(false)
     const [counter, setCounter] = useState({ id })
+    
     useEffect(() => {
         if (stock >= counter.value) {
             dispatch(totalShoppingItems())
@@ -31,6 +32,7 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
             dispatch(setChange())
         }
     }, [counter])
+
     const handleIncreaseCounter = () => {
         setCounter({ id })
         dispatch(addAmountToProduct(counter))

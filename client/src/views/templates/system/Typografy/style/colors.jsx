@@ -23,6 +23,6 @@ export const colors = {
       color: #F8F9FA;
     `,
     dark: css`
-      color: #1a1a1a;
+      color: #353535;
     `,
   };

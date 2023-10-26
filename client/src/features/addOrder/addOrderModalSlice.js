@@ -43,6 +43,7 @@ const addOrderSlice = createSlice({
     },
     SelectProduct: (state, actions) => {
       const product = actions.payload.product;
+      state.productSelected = { ...state.productSelected, ...product }
       state.productSelected.stock = product.stock;
       state.productSelected.newStock = 0;
       state.productSelected.initialCost = 0;

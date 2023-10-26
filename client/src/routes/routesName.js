@@ -19,6 +19,12 @@ const DEV_VIEW_TERM = {
     CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
     CHANGELOG_MANAGE: CHANGELOG_TERM.CHANGELOG_MANAGE,
 }
+
+const UTILITY_TERM = {
+    UTILITY: '/utility',
+    UTILITY_REPORT: '/utility/report',
+}
+ 
 const BASIC_TERM = {
     HOME: '/home',
     WELCOME: '/',
@@ -65,9 +71,8 @@ const EXPENSES_TERM = {
     EXPENSES_CATEGORY: '/expenses/categories',
 }
 
-
-
 const ROUTES_PATH = {
+    UTILITY_TERM,
     BASIC_TERM,
     AUTH_TERM,
     CASH_RECONCILIATION_TERM,

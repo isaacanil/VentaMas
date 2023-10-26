@@ -2,7 +2,7 @@ import React, { Fragment, useState } from 'react'
 import { MenuApp, Button, ButtonGroup } from '../../'
 import styled from 'styled-components'
 import { DatePicker } from '../../templates/system/Dates/DatePicker/DatePicker'
-import TimeFilterButton from '../../templates/system/Button/TimeFilterButton/TimeFilterButton'
+import { DateRangeFilter } from '../../templates/system/Button/TimeFilterButton/DateRangeFilter'
 import { tableData } from './tableData'
 import { SaleReportTable } from './SaleReportTable/SaleReportTable'
 
@@ -14,19 +14,22 @@ import { motion } from 'framer-motion'
 import { selectUser } from '../../../features/auth/userSlice'
 import  SalesReport  from './ReportsSale/ReportsSale'
 import { Calendar } from '../../templates/system/Dates/Calendar/Calendar'
+import { DateTime } from 'luxon'
+import { getDateRange } from '../../../utils/date/getDateRange'
 
 export const Registro = () => {
+ 
   const dispatch = useDispatch();
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
-  const [datesSelected, setDatesSelected] = useState({});
+  const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
   const [searchTerm, setSearchTerm] = useState('');
   const { invoices } = fbGetInvoices(datesSelected);
   const user = useSelector(selectUser);
 
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
 
-  const handleTimeChange = (start, end) => {
-    setDatesSelected({startDate: start.toMillis(), endDate: end.toMillis()})
+  const handleTimeChange = (dates) => {
+    setDatesSelected(dates)
   }
 
   console.log(invoices)
@@ -47,9 +50,9 @@ export const Registro = () => {
           <span>
             {/* <Calendar selectionType='range' /> */}
             <DatePicker setDates={setDatesSelected} dates={datesSelected} />
-            <TimeFilterButton onTimeFilterSelected={handleTimeChange} />
+            <DateRangeFilter setDates={handleTimeChange} dates={datesSelected} />
             <Button 
-            title={'Reporte de ventas'}
+            title={'Gráfico de ventas'}
             onClick={onReportSaleOpen}
             />
             {/* <ComponentTagger text={'Exportar excel:'} children={ */}

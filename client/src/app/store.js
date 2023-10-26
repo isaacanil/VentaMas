@@ -12,9 +12,7 @@ import alertReducer from "../features/Alert/AlertSlice";
 import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
 import settingReducer from '../features/setting/settingSlice';
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
-import purchaseReducer from '../features/Purchase/purchaseSlice'
 import themeReducer from "../features/theme/themeSlice";
-import addPurchaseReducer from "../features/Purchase/addPurchaseSlice";
 import notificationReducer from "../features/notification/notificationSlice";
 import navReducer from "../features/nav/navSlice";
 import appReducer from "../features/appModes/appModeSlice";
@@ -30,8 +28,10 @@ import UserNotificationReducer from "../features/UserNotification/UserNotificati
 import usersManagementSlice from "../features/usersManagement/usersManagementSlice";
 import filterProductsSliceReducer from "../features/filterProduct/filterProductsSlice";
 import noteModalReducer from "../features/noteModal/noteModalSlice";
-import expenseReducer from "../features/expense/expenseSlice";
 import cashCountState from "../features/cashCount/cashStateSlice";
+import * as expenseSlices from '../features/expense';
+import * as purchaseSlices from '../features/purchase';
+
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -40,8 +40,6 @@ export const store = configureStore({
     abilities: abilitiesReducer,
     filterProducts: filterProductsSliceReducer,
     clientCart: clientCartReducer,
-    purchase: purchaseReducer,
-    addPurchase: addPurchaseReducer,
     addOrder: addOrderReducer,
     productOutflow: productOutflowReducer,
     business: businessReducer,
@@ -65,7 +63,8 @@ export const store = configureStore({
     userNotification: UserNotificationReducer,
     usersManagement: usersManagementSlice,
     note: noteModalReducer,
-    expense: expenseReducer,
+    ...expenseSlices,
+    ...purchaseSlices,
     cashCountState: cashCountState,
   }
   ,

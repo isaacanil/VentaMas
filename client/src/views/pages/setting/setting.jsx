@@ -5,6 +5,7 @@ import { Card } from './Components/Card'
 import { getSettingData } from './SettingData'
 
 import { Transition } from '../../templates/system/Transition'
+import Typography from '../../templates/system/Typografy/Typografy'
 export const Setting = () => {
   // Agrupar configuraciones por categoría
   const settingData = getSettingData();
@@ -25,7 +26,10 @@ export const Setting = () => {
           <Categories>
             {Object.keys(groupedSettings).map((category, index) => (
               <CategoryContainer key={index}>
-                <h3>{category}</h3>
+                <Typography
+                variant='h3'
+            
+                >{category}</Typography>
                 <Cards>
                   {groupedSettings[category].map((item, index) => (
                     <Card data={item} key={index} />

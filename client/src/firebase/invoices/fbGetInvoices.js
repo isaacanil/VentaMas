@@ -15,6 +15,7 @@ export const fbGetInvoices = (time) => {
         try {
           validateUser(user);
           const { businessID } = user;
+
           const start = new Date(time.startDate);
           const end = new Date(time.endDate);
           const invoicesRef = collection(db, "businesses", businessID, "invoices");

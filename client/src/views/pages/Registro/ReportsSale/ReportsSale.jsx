@@ -69,7 +69,6 @@ const MyBarChart = ({ sales, isOpen, onOpen }) => {
           <Group>
             <PaymentMethodBarChart sales={sales} />
             <PurchaseTypeBarChart sales={sales} />
-
           </Group>
           <TaxedSalesStackedBarChart sales={sales} />
           <ProductCategorySalesBarChart sales={sales} />

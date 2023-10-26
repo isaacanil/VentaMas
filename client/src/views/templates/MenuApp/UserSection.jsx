@@ -9,16 +9,31 @@ import { faArrowRightFromBracket, faUser } from '@fortawesome/free-solid-svg-ico
 import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
 import { useNavigate } from 'react-router-dom'
 import { icons } from '../../../constants/icons/icons'
+import { useDialog } from '../../../Context/Dialog/DialogContext'
 
 export const UserSection = ({ user }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const logoutOfApp = () => {
-    // dispatch to the store with the logout action
+  const { dialog, onClose, setDialogConfirm } = useDialog();
+  const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
     auth.signOut();
     navigate('/', { replace: true });
+  }
+  const logoutOfApp = () => {
+    // dispatch to the store with the logout action
+    setDialogConfirm({
+      title: 'Cerrar sesión',
+      isOpen: true,
+      type: 'warning',
+      message: '¿Está seguro que desea cerrar sesión?',
+      onConfirm: () => {
+        handleLogout()
+        onClose()
+      }
+    })
+
   }
   return (
     <Container>

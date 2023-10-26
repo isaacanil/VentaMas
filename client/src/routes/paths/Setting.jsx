@@ -28,7 +28,7 @@ const Routes = [
         children: [
             {
                 path: USERS_LIST,
-                element: validateRouteAccess(<UserList />, 'read', 'User'),
+                element: validateRouteAccess(<UserList />),
             },
             {
                 path: CREATE_USER,
@@ -38,7 +38,6 @@ const Routes = [
                 path: UPDATE_USER,
                 element: validateRouteAccess(<EditUser />),
             }
-
         ]
     },
     { path: `${basePath}${TAX_RECEIPT}`, element: validateRouteAccess(<TaxReceiptSetting />) },

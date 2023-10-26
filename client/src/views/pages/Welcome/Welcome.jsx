@@ -10,7 +10,7 @@ export const Welcome = () => {
   const Navigate = useNavigate()
   useEffect(() => {
     if (user) {
-      Navigate('/home')
+      Navigate('/app')
     }
   }, [user])
 

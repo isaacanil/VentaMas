@@ -22,7 +22,7 @@ export const palette = {
     grey,
     // Colores principales y secundarios, junto con sus variaciones
     colors: {
-        neutral: {
+        neutro: {
             light: '#f5f5f5',
             main: '#9e9e9e',
             dark: '#616161',
@@ -47,7 +47,7 @@ export const palette = {
             contrastText: '#fff',
         },
         warning: {
-            light: '#ffb74d',
+            light: '#ffdfae',
             main: '#ff9800',
             dark: '#f57c00',
             contrastText: 'rgba(0, 0, 0, 0.87)',

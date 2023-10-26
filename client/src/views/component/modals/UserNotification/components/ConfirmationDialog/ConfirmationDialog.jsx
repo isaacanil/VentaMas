@@ -16,14 +16,15 @@ export const ConfirmationDialog = ( ) => {
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const isExistingOpenCR = useIsOpenCashReconciliation()
-    const resource = {
-        isExistingOpenCR
-    }
+
+    const isExistingOpenCR = useIsOpenCashReconciliation();
+
+    const resource = {isExistingOpenCR}
+
     const handleConfirm = () =>  HandleConfirmationAction(onConfirm, navigate, dispatch, resource);
-    const handleCloseConfirmation = () => {
-        dispatch(closeUserNotification())
-      }
+
+    const handleCloseConfirmation = () => dispatch(closeUserNotification());
+      
 
     const BackdropVariants = {
         hidden: {

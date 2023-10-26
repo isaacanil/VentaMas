@@ -25,32 +25,22 @@ export const Product = ({ product, }) => {
         dispatch(totalShoppingItems())
         dispatch(totalPurchase())
         dispatch(addPaymentMethodAutoValue())
+        dispatch(totalPurchaseWithoutTaxes())
         dispatch(totalTaxes())
         dispatch(setChange())
-        // dispatch(addTaxReceiptInState(NCF_code))
     }, [ProductsSelected, deliverySelected])
 
-
-    const handleGetThisProduct = (product) => {
-        dispatch(addProduct(product))
-        dispatch(totalShoppingItems())
-        dispatch(totalPurchaseWithoutTaxes())
-        dispatch(totalShoppingItems())
-        dispatch(totalTaxes())
-        dispatch(totalPurchase())
-        // dispatch(addPaymentMethodAutoValue())
-        dispatch(setChange())
-    }
+    const handleGetThisProduct = (product) => {dispatch(addProduct(product))}
 
     const deleteProductFromCart = (e, id) => {
         if (e) { e.stopPropagation() }
         dispatch(deleteProduct(id))
     }
 
-
-    const isConnected = useCheckForInternetConnection()
-    const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id)
-    const [imageFallback] = useImageFallback(product?.productImageURL, noImg)
+    const isConnected = useCheckForInternetConnection();
+    const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id);
+    const [imageFallback] = useImageFallback(product?.productImageURL, noImg);
+    
     const item = {
         hidden: { y: 20, opacity: 0 },
         visible: {
@@ -58,7 +48,6 @@ export const Product = ({ product, }) => {
             opacity: 1
         }
     }
-
     return (
         <Container
             onClick={() => handleGetThisProduct(product)}
@@ -77,10 +66,6 @@ export const Product = ({ product, }) => {
                                 onLoad={() => setImageLoaded(true)}
                             />
                         }
-                        {/* <img
-                            src={(isConnected && imageFallback) || noImg}
-                            onLoad={() => setImageLoaded(true)}
-                        /> */}
                     </ImageContainer>
                 </Head>
             }

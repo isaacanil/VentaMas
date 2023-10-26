@@ -11,6 +11,7 @@ import cashReconciliation from "./paths/CashReconciliztion";
 import dev from "./paths/Dev";
 import expenses from "./paths/Expenses";
 import changelogs from "./paths/Changelogs"
+import utility from "./paths/Utility";
 
 export const routes = [
     ...basic,
@@ -25,6 +26,7 @@ export const routes = [
     ...expenses,
     ...dev,
     ...changelogs,
+    ...utility,
     {
         path: "*",
         element: <NotFound />

@@ -13,7 +13,7 @@ import { fbAddExpense } from '../../../../firebase/expenses/Items/fbAddExpense';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { validateExpense } from '../../../../validates/expenseValidate';
-import { resetExpense, selectExpense, setExpense } from '../../../../features/expense/expenseSlice';
+import { resetExpense, selectExpense, setExpense } from '../../../../features/expense/expenseManagementSlice';
 import { convertMillisToISO } from '../../../../utils/date/formatDate';
 import { fbUpdateExpense } from '../../../../firebase/expenses/Items/fbUpdateExpense';
 import { useGoBack } from '../../../../hooks/path/useGoBack';
@@ -44,11 +44,12 @@ const ExpensesForm = () => {
     const updateExpense = (newExpense) => dispatch(setExpense(newExpense));
     // const [expense, setExpense] = useState(initExpense);
     const [errors, setErrors] = useState(initErrors);
+    
     const [loading, setLoading] = useState({
         isOpen: false,
         message: '',
     });
-    
+
     const goBack = () => navigate('/expenses/list');
     const [receiptImage, setReceiptImage] = useState(expense.receiptImageUrl ? expense.receiptImageUrl : null);
 

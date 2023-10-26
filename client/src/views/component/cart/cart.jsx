@@ -1,16 +1,14 @@
+import styled from 'styled-components'
+import { useReactToPrint } from 'react-to-print'
 import React, { useEffect, useRef, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 
-import style from './cartStyle.module.scss'
-import {
-  Button,
-  ClientControl,
-  Receipt,
-} from '../../index'
+import { ClientControl } from '../../index'
+
 import {
   SelectProduct,
   CancelShipping,
   SelectTotalPurchase,
-  SelectClient,
   SelectFacturaData,
   addTaxReceiptInState,
   SelectNCF,
@@ -18,30 +16,21 @@ import {
   toggleCart,
 } from '../../../features/cart/cartSlice'
 
-import { useSelector, useDispatch } from 'react-redux'
-import { ProductCardForCart } from './components/ProductCardForCart'
-import { PaymentArea } from './components/PaymentArea'
-import { useReactToPrint } from 'react-to-print'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
-
 import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectNcfStatus, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData, selectTaxReceipt } from '../../../features/taxReceipt/taxReceiptSlice'
-import styled from 'styled-components'
 import { addNotification } from '../../../features/notification/NotificationSlice'
-import { selectMenuOpenStatus } from '../../../features/nav/navSlice'
 import { selectAppMode } from '../../../features/appModes/appModeSlice'
 import { fbAddInvoice } from '../../../firebase/invoices/fbAddInvoice'
 import { fbUpdateProductsStock } from '../../../firebase/products/fbUpdateProductStock'
 import { selectUser } from '../../../features/auth/userSlice'
 import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxReceipt'
-import { ButtonGroup } from '../../templates/system/Button/Button'
 import { deleteClient, handleClient } from '../../../features/clientCart/clientCartSlice'
 import { useIsOpenCashReconciliation } from '../../../firebase/cashCount/useIsOpenCashReconciliation'
-import { createAction } from '@reduxjs/toolkit'
-import { CONFIRMATION_TASK_TYPE } from '../modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction'
 import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
+
+import { PaymentArea } from './components/PaymentArea'
 import { ProductsList } from './components/ProductsList/ProductsLit'
-import { set } from 'lodash'
 import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
+import useViewportWidth from '../../../hooks/windows/useViewportWidth'
 
 export const Cart = () => {
   const dispatch = useDispatch()
@@ -59,7 +48,7 @@ export const Cart = () => {
     const cashCountStrategy = getCashCountStrategy(checkCashCount.status, dispatch)
     cashCountStrategy.handleConfirm()
   }
-
+  const viewport = useViewportWidth();
   const ncfStatus = useSelector(selectNcfStatus)
   const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt)
   const ncfCode = useSelector(selectNcfCode)
@@ -71,7 +60,6 @@ export const Cart = () => {
 
   const [step, setStep] = useState(0)
   const [submittable, setSubmittable] = useState(false)
-  const [printed, setPrinted] = useState(false)
 
   const increaseTaxReceipt = async () => {
     if (!taxReceiptEnabled) return;
@@ -206,6 +194,7 @@ export const Cart = () => {
   }, [submittable])
 
   const handleCancelShipping = () => {
+    if(viewport)
     dispatch(toggleCart())
     dispatch(CancelShipping())
     dispatch(clearTaxReceiptData())
@@ -218,25 +207,6 @@ export const Cart = () => {
       <ProductsList />
       <div>
         <PaymentArea></PaymentArea>
-        {/* <div className={style.resultBar}>
-          <h3><span className={style.price}>{useFormatPrice(TotalPurchaseRef)}</span></h3>
-          <Receipt ref={componentToPrintRef} data={bill}></Receipt>
-          <ButtonGroup>
-            <Button
-              borderRadius='normal'
-              title='Cancelar'
-              onClick={handleCancelShipping}
-              disabled={ProductSelected.length >= 1 ? false : true}
-            />
-            <Button
-              borderRadius='normal'
-              title='Facturar'
-              onClick={handleInvoice}
-              bgcolor='primary'
-              disabled={ProductSelected.length >= 1 ? false : true}
-            />
-          </ButtonGroup>
-        </div> */}
         <CheckoutAction
           ProductSelected={ProductSelected}
           TotalPurchaseRef={TotalPurchaseRef}

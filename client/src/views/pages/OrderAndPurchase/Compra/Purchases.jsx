@@ -1,15 +1,19 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
+import { PendingOrdersTable } from './components/PurchasesTable/PurchasesTable'
 
 import { MenuApp } from '../../../'
+import { PurchasesReport } from './components/PurchasesReport/PurchasesReport'
+
 
 export const Purchases = () => {
-
+  
   return (
       <Container>
         <MenuApp sectionName={'Compras'}/>
         <PendingOrdersTable />
+        <PurchasesReport />
+        
       </Container>
   )
 }

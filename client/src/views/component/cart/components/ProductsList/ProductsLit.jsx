@@ -13,16 +13,13 @@ export const ProductsList = () => {
         <Container>
             {
                 ProductSelected.length > 0 ?
-                    (
-                        <AnimatePresence>
+                    (<AnimatePresence>
                             {ProductSelected.map((item, Index) => (
                                 <ProductCardForCart item={item} key={Index} />
                             ))}
-                        </AnimatePresence>
-                    )
+                        </AnimatePresence>)
                     :
-                    (
-                    <EmptyCartMessage
+                    (<EmptyCartMessage
                         key="empty-message"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -51,6 +48,7 @@ const Container = styled.ul`
     //border-radius: 10px;
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.121);
 `
 const EmptyCartMessage = styled(motion.div)`
   margin: 1em;
