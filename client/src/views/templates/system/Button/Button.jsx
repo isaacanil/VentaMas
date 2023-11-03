@@ -1,15 +1,13 @@
 
 import { forwardRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components'
-import { Tooltip } from './Tooltip'
-import { useWindowWidth } from '../../../../hooks/useWindowWidth'
+
 
 
 export const Button = forwardRef(({
-  bgcolor,
+
   border,
-  color,
+  color = "on-gray",
   title,
   alignText = 'center',
   size = 'small',
@@ -19,7 +17,7 @@ export const Button = forwardRef(({
   width,
   height,
   hidden,
-  variant,
+  variant = 'contained',
   disabled,
   borderRadius = 'normal',
   isActivated,
@@ -31,6 +29,7 @@ export const Button = forwardRef(({
   type = 'button'
 
 }, ref) => {
+
   const handleClick = (e) => {
     e.stopPropagation()
     onClick()
@@ -39,7 +38,6 @@ export const Button = forwardRef(({
   return (
     <Container
       size={size}
-      bgcolor={bgcolor}
       color={color}
       onClick={onClick && handleClick}
       width={width}
@@ -70,17 +68,14 @@ const styleByDefault = css`
   align-items: center;
   justify-content: ${props => props.alignText || 'center'};
   gap: 0.6em;
-
-  //color
-  color: black;
   
   //text
   font-size: 16px;
   font-weight: 500;
   text-align: ${props => props.alignText || 'center'};
   text-decoration: none;
-  text-transform: capitalize;
-  line-height: -10px;
+  text-transform: capitalize;   
+
   white-space: nowrap;
 
   //border
@@ -171,109 +166,48 @@ export const Container = styled.button`
  
   &:hover{
     ${props => !props.isActivated ? `
-      background-color: #d6d6d6;
-      backdrop-filter: opacity(10);
+      
+       opacity: 0.8;
     ` : null}
   }
 
  
  
   ${props => props.borderRadius && borderRadius[props.borderRadius]}
-
- ${(props) => {
-    switch (props.bgcolor) {
-      case "neutro":
+  ${props => {
+    switch (props.variant) {
+      case 'contained':
         return `
-        background-color: ${props.theme.colors.neutro.light};
-        color: ${props.theme.colors.neutro.main};
-        &:hover{
-          background-color: ${props.theme.colors.neutro.main};
-          color: ${props.theme.colors.neutro.light};
-        }
-        `
-        
-
-
-      case "error":
-        return `
-            background-color: #d34343;
-            color: white;
-            Justify-content: center;
-            &:hover{
-              background-color: #b10505;
-              color: white
-            }
-          `
-      case "success":
-        return `
-            background-color: ##B2DFDB;
-            color: #636363;
-            &:hover{
-              background-color: #B2DFDB;
-              color: white
-            }
-          `
-      case "black":
-        return `
-        background-color: #020202;
-            color: white;      
-            &:hover{
-              background-color: #1f1f1f;
-              color: white
-            }
-          
-        `
-      case "dark":
-        return `
-          background-color: #2a2b2b;
-          color: white;
-          &:hover{
-            background-color: #1f1f1f;
-            color: white
+        ${props.theme?.colors?.[props.color] && `
+          background-color: ${props.theme?.colors?.[props.color]["bg"]};
+          color: ${props.theme.colors[props.color]["text"]};
+          backdrop: blur(10px);
+          hover{
+            background-color: ${props.theme.colors[props.color]["bg"]};
+            color: ${props.theme.colors[props.color]["text"]};
           }
           `
-      case "gray":
-        return `
-            background-color: var(--White4);
-            color: var(--font-color-dark-slightly);
-            :hover{
-             color: var(--font-color-dark-slightly);
-            }
-          `
-      case "primary":
-        return `
-        background-color: #42a5f5;
-        color: white;
-        &:hover{
-                background-color: #4589d8;  
-              color: white
-            }
-            `
-      case "warning":
-        return `
-        background-color: var(--color-warning-main);
-        
-        color: White;
-        :hover{
-          background-color: #f5a742;
-        }
+          }
         `
-      case "op1":
+      case 'outlined':
         return `
-        background-color: rgba(0, 0, 0, 0.200);
-        color: white;
-        &:hover{
-                background-color: #bdbdbd;
-                outline: none;      
-              color: white
-            }
-            `
-      default:
-        return `
-            background-color: white;
+            background-color: transparent;
+            color: ${props.theme.colors[props.color]["bg"]};
+            border: 1px solid ${props.theme.colors[props.color]["bg"]};
           `
+      case 'text':
+        return `
+              background-color: transparent;
+              color: ${props.theme.colors[props.color]["bg"]};
+            `
+      case 'textContained':
+        return `
+              background-color: ${props.theme.colors[props.color]["bg"]};
+              color: ${props.theme.colors[props.color]["bg"]};
+              border: none;
+            `
     }
-  }} 
+  }}
   ${(props) => {
     switch (props.width) {
       case "w100":
@@ -352,88 +286,43 @@ export const Container = styled.button`
 
     }
   }}
-   ${(props) => {
-    switch (props.variant) {
-      case "contained":
-        return `
-           outline: none;
-            border: none;
-            padding: 0;
-            background-color: transparent;
-            &:hover{
-              background-color: transparent;
-            }
-
-          `;
-      case "auto":
-        return `
-              width: auto;
-            `
-      default:
-        return `
-            width: auto;
-          `
-    }
-  }}
-   ${(props) => {
-    switch (props.color) {
-      case "gray-dark":
-        return `
-           color: #4b4b4b;
-
-          `
-      case "primary":
-        return `
-          color: #1768c4;
-            :hover{
-              color: #1768c4;
-            }
-
-        `
-      case "danger":
-        return `
-          color: #cf1616;
-            :hover{
-              color: #c41d17;
-            }
-
-        `
-
-
-      default:
-        return
-    }
-  }}
   ${(props) => {
-    switch (props.disabled) {
-      case true:
-        return `
+    if (props.disabled) {
+      return `
            opacity: 0.4;
            cursor: not-allowed;
            pointer-events: none;
           `;
-      case 'style1':
-        return `
-          background-color: var(--color);
-          color: var(--White);
-          cursor: not-allowed;
-          pointer-events: none;
-          `
-      case false:
-        return `
-            
-            `
-      default:
-        return `
-           
-          `
     }
   }}
 
   ${(props) => {
     switch (props.isActivatedColors) {
       case 'style1':
+        switch (props.isActivated) {
+          case true:
+            return `
+              background-color: ${props.theme.colors[props.color]["bg"]};
+              color: ${props.theme.colors[props.color]["text"]};
+              :hover{
+                background-color: ${props.theme.colors[props.color]["bg"]};
+                color: ${props.theme.colors[props.color]["text"]};
+              }
+            `
+          case false:
+            return `
+              background-color: ${props.theme.colors[props.color]["bg"]};
+              color: ${props.theme.colors[props.color]["text"]};
+              :hover{
+                background-color: ${props.theme.colors[props.color]["bg"]};
+                color: ${props.theme.colors[props.color]["text"]};
+              }
+            `
+          default:
+            break;
+        }
         return `
+        
         ${props.isActivated === true ? `
         background-color: #ffffff;
           color: black;

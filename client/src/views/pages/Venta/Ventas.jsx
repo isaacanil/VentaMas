@@ -71,7 +71,7 @@ export const Sales = () => {
         <MenuComponents />
       </ProductContainer>
       <Cart></Cart>
-      <ConfigModal />
+      {/* <ConfigModal /> */}
       {/* <ModalManager /> */}
     </Container>
   )

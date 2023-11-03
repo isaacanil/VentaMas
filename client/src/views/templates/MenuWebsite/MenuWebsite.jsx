@@ -7,6 +7,7 @@ import { FaUserCog } from "react-icons/fa"
 import ROUTES_PATH from "../../../routes/routesName"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import { icons } from "../../../constants/icons/icons"
 export const MenuWebsite = () => {
     const navigate = useNavigate()
 const {SETTINGS} = ROUTES_PATH.SETTING_TERM
@@ -19,9 +20,9 @@ const handleSetting = () => {
             <UserSection>
                 <Button 
                     borderRadius={'normal'}
-                    color='gray-dark'
+                    
                     width={'icon32'}
-                    title={<MdSettings/>}
+                    title={icons.operationModes.setting}
                     onClick={handleSetting}
                 />
             </UserSection>

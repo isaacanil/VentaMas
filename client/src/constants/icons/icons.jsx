@@ -1,4 +1,4 @@
-import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faArrowLeft, faAsterisk, faBagShopping, faBarcode, faBarsStaggered, faBox, faBoxesStacked, faBuilding, faCalendar, faCaretDown, faCaretUp, faCartFlatbed, faCartPlus, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCircleCheck, faCircleInfo, faCloudArrowUp, faCompress, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHashtag, faHome, faImage, faInfo, faLock, faMagnifyingGlass, faMoneyBillWave, faMultiply, faPencil, faPlus, faQrcode, faReceipt, faRectangleList, faRightToBracket, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSquarePlus, faStar, faSubtract, faTags, faTrash, faTrashCan, faTriangleExclamation, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faArrowLeft, faAsterisk, faBagShopping, faBan, faBarcode, faBarsStaggered, faBold, faBox, faBoxesStacked, faBuilding, faCalendar, faCaretDown, faCaretUp, faCartFlatbed, faCartPlus, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCircleCheck, faCircleInfo, faCloudArrowUp, faCompress, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHashtag, faHeading, faHome, faImage, faInfo, faItalic, faListOl, faListUl, faLock, faMagnifyingGlass, faMoneyBillWave, faMultiply, faParagraph, faPencil, faPlus, faQrcode, faQuoteLeft, faReceipt, faRectangleList, faReplyAll, faRightToBracket, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSquarePlus, faStar, faStrikethrough, faSubscript, faSubtract, faSuperscript, faTags, faTrash, faTrashCan, faTriangleExclamation, faUnderline, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -48,6 +48,7 @@ export const icons = {
         caretDown: <FontAwesomeIcon icon={faCaretDown} />,
         AnglesLeft: <FontAwesomeIcon icon={faAnglesLeft} />,
         AnglesRight: <FontAwesomeIcon icon={faAnglesRight} />,
+        replyAll: <FontAwesomeIcon icon={faReplyAll} />
     },
     sort: {
         sortDown: <FontAwesomeIcon icon={faSortDown} />,
@@ -63,7 +64,29 @@ export const icons = {
         logout: <FontAwesomeIcon icon={faRightToBracket} />,
 
     },
+    fontStyles: {
+        bold: <FontAwesomeIcon icon={faBold} />,
+        italic: <FontAwesomeIcon icon={faItalic} />,
+        underline: <FontAwesomeIcon icon={faUnderline} />,
+        strikeThrough: <FontAwesomeIcon icon={faStrikethrough} />,
+        subscript: <FontAwesomeIcon icon={faSubscript} />,
+        superscript: <FontAwesomeIcon icon={faSuperscript} />,
+        ul: <FontAwesomeIcon icon={faListUl} />,
+        ol: <FontAwesomeIcon icon={faListOl} />,
+        quoteLeft: <FontAwesomeIcon icon={faQuoteLeft} />,
+        heading: <FontAwesomeIcon icon={faHeading} />,
+        paragraph: <FontAwesomeIcon icon={faParagraph} />
+    },
+    editingActions:{
+        create: <FontAwesomeIcon icon={faPlus} />,
+        edit: <FontAwesomeIcon icon={faPencil} />,
+        delete: <FontAwesomeIcon icon={faTrash} />,
+        save: <FontAwesomeIcon icon={faCloudArrowUp} />,
+        cancel: <FontAwesomeIcon icon={faXmark} />,
+        accept: <FontAwesomeIcon icon={faCheck} />,
+    },
     operationModes: {
+        ban: <FontAwesomeIcon icon={faBan} />,
         filter: <FontAwesomeIcon icon={faFilter} />,
         sortDown: <FontAwesomeIcon icon={faSortDown} />,
         sortAsc: <FontAwesomeIcon icon={faArrowDownAZ} />,

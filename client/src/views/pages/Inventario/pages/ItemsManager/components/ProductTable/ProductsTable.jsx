@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { ProductItem } from './ProductCard/ProductItem'
@@ -17,12 +17,24 @@ import StockIndicator from '../../../../../../templates/system/labels/StockIndic
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
 import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell'
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { useDialog } from '../../../../../../../Context/Dialog/DialogContext'
+import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct'
+import { selectUser } from '../../../../../../../features/auth/userSlice'
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
-  const handleDeleteProduct = (id) => {
-    dispatch(handleDeleteProductAlert({ id }));
-  };
+  const user = useSelector(selectUser);
+  console.log(user)
+  const { setDialogConfirm } = useDialog();
+  const handleDeleteProduct = useCallback((id) => {
+    setDialogConfirm({
+      title: 'Eliminar producto',
+      isOpen: true,
+      type: 'error',
+      message: '¿Está seguro que desea eliminar este producto?',
+      onConfirm: () => fbDeleteProduct(user, id),
+    })
+  }, [user])
 
   const handleUpdateProduct = (product) => {
     dispatch(openModalUpdateProd());
@@ -103,7 +115,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
             <Button
               startIcon={icons?.operationModes?.edit}
               borderRadius='normal'
-              color={'gray-dark'}
+
               width='icon32'
               bgcolor='editar'
               onClick={() => handleUpdateProduct(value)}
@@ -111,9 +123,9 @@ export const ProductsTable = ({ products, searchTerm }) => {
             <Button
               startIcon={icons.operationModes.delete}
               width='icon32'
-              color={'gray-dark'}
+
               borderRadius='normal'
-              onClick={(value) => handleDeleteProduct(value)}
+              onClick={() => handleDeleteProduct(value.id)}
             />
           </ButtonGroup>
         )
@@ -124,8 +136,8 @@ export const ProductsTable = ({ products, searchTerm }) => {
   const data = products.map(({ product }) => ({
     id: product.id,
     image: product.productImageURL,
-    name: {name: product.productName, img: product.productImageURL} ,
-    stock: {stock: product.stock, trackInventory: product.trackInventory},
+    name: { name: product.productName, img: product.productImageURL },
+    stock: { stock: product.stock, trackInventory: product.trackInventory },
     trackInventory: product.trackInventory,
     cost: product.cost.unit,
     price: product.price.unit,
@@ -142,7 +154,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           data={data}
           columns={columns}
           searchTerm={searchTerm}
-          headerComponent={<Carrusel />}
+          headerComponent={<Carrusel addCategoryBtn />}
           tableName={'inventory_items_table'}
           elementName={'productos'}
           onRowClick={(row) => handleUpdateProduct(row.action)}

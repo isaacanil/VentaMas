@@ -14,6 +14,8 @@ import { useRoundedNumber } from '../../../../hooks/useRoundedNumber'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
 import { Switch } from '../../../templates/system/Switch/Switch'
+import { Chip } from '../../../templates/system/Chip/Chip'
+import { icons } from '../../../../constants/icons/icons'
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
 
@@ -88,7 +90,7 @@ export const PaymentArea = () => {
             <Row>
                 <Group className='tax-discount'>
                     {
-                        taxReceiptEnabled && (
+                        taxReceiptEnabled ? (
                             <Group space={'small'}>
                                 <Switch
                                     size='small'
@@ -97,6 +99,14 @@ export const PaymentArea = () => {
                                 />
                                 <STitle>Comp. Fiscal.</STitle>
                             </Group>
+                        ) : (
+                            <Chip
+                                disabled
+                                size='small'
+                                icon={icons.operationModes.ban}
+                                label={"Comprobante"}
+                                color='primary'
+                            />
                         )
                     }
                     <Group>

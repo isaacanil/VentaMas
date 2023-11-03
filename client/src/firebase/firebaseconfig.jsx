@@ -201,11 +201,8 @@ export const deleteIngredientTypePizza = async (ingredient) => {
     console.log("Lo sentimos Ocurrió un error: ", error)
   }
 }
-export const deleteProduct = (id, user) => {
-  console.log({ id, user })
-  if (!user || !user?.businessID) { return }
-  deleteDoc(doc(db, "businesses", user.businessID, `products`, id))
-}
+
+
 async function getNextID(user, name) {
   // Referencia al documento en la ubicación configurada por el nombre
   if (!user || !user.businessID) return;

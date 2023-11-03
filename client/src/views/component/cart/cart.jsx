@@ -48,15 +48,16 @@ export const Cart = () => {
     const cashCountStrategy = getCashCountStrategy(checkCashCount.status, dispatch)
     cashCountStrategy.handleConfirm()
   }
+
   const viewport = useViewportWidth();
-  const ncfStatus = useSelector(selectNcfStatus)
-  const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt)
-  const ncfCode = useSelector(selectNcfCode)
-  const TotalPurchaseRef = useSelector(SelectTotalPurchase)
-  const ncfCartSelected = useSelector(SelectNCF)
-  const ProductSelected = useSelector(SelectProduct)
-  const billData = useSelector(SelectFacturaData)
-  const user = useSelector(selectUser)
+  const ncfStatus = useSelector(selectNcfStatus);
+  const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt);
+  const ncfCode = useSelector(selectNcfCode);
+  const TotalPurchaseRef = useSelector(SelectTotalPurchase);
+  const ncfCartSelected = useSelector(SelectNCF);
+  const ProductSelected = useSelector(SelectProduct);
+  const billData = useSelector(SelectFacturaData);
+  const user = useSelector(selectUser);
 
   const [step, setStep] = useState(0)
   const [submittable, setSubmittable] = useState(false)
@@ -159,6 +160,22 @@ export const Cart = () => {
     }
   }, [step])
 
+  useEffect(() => {
+    if (step === 4) {
+      savingDataToFirebase(billData, taxReceiptDataSelected);
+      setSubmittable(true)
+    }
+  }, [step])
+
+  useEffect(() => {
+    if (submittable === true) {
+      clearDataFromState()
+      dispatch(deleteClient())
+      setSubmittable(false)
+      setStep(0)
+    }
+  }, [submittable])
+
   const handleInvoice = async () => {
     if (ProductSelected.length === 0) {
       dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
@@ -176,26 +193,9 @@ export const Cart = () => {
     dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     console.error(error);
   }
-
-  useEffect(() => {
-    if (step === 4) {
-      savingDataToFirebase(billData, taxReceiptDataSelected);
-      setSubmittable(true)
-    }
-  }, [step])
-
-  useEffect(() => {
-    if (submittable === true) {
-      clearDataFromState()
-      dispatch(deleteClient())
-      setSubmittable(false)
-      setStep(0)
-    }
-  }, [submittable])
-
   const handleCancelShipping = () => {
-    if(viewport)
-    dispatch(toggleCart())
+    if (viewport)
+      dispatch(toggleCart())
     dispatch(CancelShipping())
     dispatch(clearTaxReceiptData())
     dispatch(deleteClient())
@@ -206,7 +206,7 @@ export const Cart = () => {
       <ClientControl />
       <ProductsList />
       <div>
-        <PaymentArea></PaymentArea>
+        <PaymentArea />
         <CheckoutAction
           ProductSelected={ProductSelected}
           TotalPurchaseRef={TotalPurchaseRef}

@@ -27,7 +27,7 @@ export const CenteredText = ({ textVariant = 'body1', containerVariant = 'text',
                 title={buttonText}
                 titlePosition={'center'}
                 width='auto'
-                bgcolor='primary'
+                color='primary'
                 borderRadius={'normal'}
                 onClick={handleAction}
                 {...props}

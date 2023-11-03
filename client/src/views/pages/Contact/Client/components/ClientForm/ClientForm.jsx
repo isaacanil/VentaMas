@@ -6,12 +6,13 @@ import styled from 'styled-components'
 import { handleModalCreateClient, toggleClientModal } from '../../../../../../features/modals/modalSlice'
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber'
 import { useFormatRNC } from '../../../../../../hooks/useFormatRNC'
-import { Button } from '../../../../../templates/system/Button/Button'
+import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
 import { Message } from '../../../../../templates/system/message/Message'
 import { fbAddClient } from '../../../../../../firebase/client/fbAddClient'
 import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient'
 import { OPERATION_MODES } from '../../../../../../constants/modes'
 import { selectUser } from '../../../../../../features/auth/userSlice'
+import Typography from '../../../../../templates/system/Typografy/Typografy'
 
 export const ClientForm = ({ isOpen, mode, data }) => {
 
@@ -103,169 +104,169 @@ export const ClientForm = ({ isOpen, mode, data }) => {
     }
 
     return (
-        <Container>
-            <SideBar isOpen={isOpen ? true : false}>
-                <ToolBar>
-                    <Button
-                        color='gray-dark'
-                        width='icon32'
-                        borderRadius='normal'
-                        variant='contained'
-                        title={<MdClose />}
-                        onClick={handleOpenModal}
-                    ></Button>
-                    <h3>{mode === create ? 'Nuevo Cliente' : 'Editar Cliente'}</h3>
-                </ToolBar>
+        <Backdrop>
+            <Container isOpen={isOpen ? true : false}>
+                    <ToolBar>
+                        <Button
+                            color='gray'
+                            width='icon32'
+                            borderRadius='normal'
+                            variant='text'
+                            title={<MdClose />}
+                            onClick={handleOpenModal}
+                        ></Button>
+                        <Typography
+                            variant='h4'
+                            disableMargins
+                        >
+                            {mode === create ? 'Nuevo Cliente' : 'Editar Cliente'}
+                        </Typography>
+                    </ToolBar>
 
-                <Body>
-                    <Group>
-                        <label htmlFor="">Nombre</label>
-                        <input
-                            name='name'
-                            type="text"
-                            value={client.name}
-                            onChange={(e) =>
-                                setClient({
+                    <Body>
+                        <Group>
+                            <label htmlFor="">Nombre</label>
+                            <input
+                                name='name'
+                                type="text"
+                                value={client.name}
+                                onChange={(e) =>
+                                    setClient({
+                                        ...client,
+                                        [e.target.name]: e.target.value
+                                    })}
+                                placeholder='Juan Pérez.'
+                            />
+
+                        </Group>
+                        <Group>
+                            <label htmlFor="">Teléfono
+                                <Message
+                                    bgColor='primary'
+                                    fontSize='small'
+                                    width='auto'
+                                    title={(useFormatPhoneNumber(client.tel, true))}
+                                >
+                                </Message></label>
+                            <input
+                                type="text"
+                                name='tel'
+                                placeholder='8496503586'
+                                value={client.tel}
+                                onChange={(e) =>
+                                    setClient({
+                                        ...client,
+                                        [e.target.name]: e.target.value
+                                    })}
+                            />
+                        </Group>
+                        <Group>
+                            <label htmlFor="">RNC/Cédula
+                                <Message
+                                    bgColor='primary'
+                                    fontSize='small'
+                                    width='auto'
+                                    title={(useFormatRNC(client.personalID))}
+
+                                >
+                                </Message>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder='110056007'
+                                name='personalID'
+                                value={client.personalID}
+                                onChange={(e) =>
+                                    setClient({
+                                        ...client,
+                                        [e.target.name]: e.target.value
+                                    })}
+                            />
+                        </Group>
+                        <Group>
+                            <label htmlFor="">Dirección</label>
+
+                            <textarea
+                                value={client.address}
+                                name="address"
+                                id=""
+                                cols="20"
+                                rows="5"
+                                placeholder='27 de Febrero #12, Ensanche Ozama, Santo Domingo'
+                                onChange={(e) => setClient({
                                     ...client,
                                     [e.target.name]: e.target.value
                                 })}
-                            placeholder='Juan Pérez.'
+                            ></textarea>
+                        </Group>
+                    </Body>
+                    <Footer>
+                        <Button
+                            borderRadius='normal'
+                            title={'Cerrar'}
+                            color='gray-contained'
+                            onClick={handleOpenModal}
                         />
-
-                    </Group>
-                    <Group>
-                        <label htmlFor="">Teléfono
-                            <Message
-                                bgColor='primary'
-                                fontSize='small'
-                                width='auto'
-                                title={(useFormatPhoneNumber(client.tel, true))}
-                            >
-                            </Message></label>
-                        <input
-                            type="text"
-                            name='tel'
-                            placeholder='8496503586'
-                            value={client.tel}
-                            onChange={(e) =>
-                                setClient({
-                                    ...client,
-                                    [e.target.name]: e.target.value
-                                })}
+                        <Button
+                            borderRadius='normal'
+                            title={mode === create ? 'Crear' : 'Actualizar'}
+                            color='primary'
+                            onClick={handleSubmit}
                         />
-                    </Group>
-                    <Group>
-                        <label htmlFor="">RNC/Cédula
-                            <Message
-                                bgColor='primary'
-                                fontSize='small'
-                                width='auto'
-                                title={(useFormatRNC(client.personalID))}
-
-                            >
-                            </Message>
-                        </label>
-                        <input
-                            type="text"
-                            placeholder='110056007'
-                            name='personalID'
-                            value={client.personalID}
-                            onChange={(e) =>
-                                setClient({
-                                    ...client,
-                                    [e.target.name]: e.target.value
-                                })}
-                        />
-                    </Group>
-                    <Group>
-                        <label htmlFor="">Dirección</label>
-
-                        <textarea
-                            value={client.address}
-                            name="address"
-                            id=""
-                            cols="20"
-                            rows="5"
-                            placeholder='27 de Febrero #12, Ensanche Ozama, Santo Domingo'
-                            onChange={(e) => setClient({
-                                ...client,
-                                [e.target.name]: e.target.value
-                            })}
-                        ></textarea>
-                    </Group>
-                </Body>
-                <Footer>
-                    <Button
-                        borderRadius='normal'
-                        title={mode === create ? 'Crear' : 'Actualizar'}
-                        bgcolor='primary'
-                        onClick={handleSubmit}
-                    />
-                </Footer>
-            </SideBar>
-        </Container>
+                    </Footer>
+               
+            </Container>
+        </Backdrop>
     )
 }
-const Container = styled.div`
-  position: absolute;
-  top: 0px;
-  right: 0px;
-   
+const Backdrop = styled.div`
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    top: 0px;
+    left: 0px;
     width: 100%;
     height: 100vh;
+    z-index: 10000;
     overflow: hidden;
     pointer-events: none;
-
-   
 `
-const SideBar = styled.div`
-    position: absolute;
-    max-width: 26em;
+const Container = styled.div`
+    max-width: 30em;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
     width: 100%;
-    height: 100vh;
-    box-shadow: none;
+    height: min-content;
     background-color: var(--White1);
     pointer-events: all;
-    top: 0;
-    right: 0;
-    z-index: 10000;
-    
     transform: translateX(600px);  
     transition-property: transform, box-shadow;
     transition-timing-function: ease-in-out, ease-in-out;
     transition-delay: 0s, 700ms;
     transition-duration: 800ms, 600ms;
 
-  
     ${(props) => {
         switch (props.isOpen) {
             case true:
                 return `
                 transform: translateX(0px); 
-                box-shadow: 10px 6px 20px 30px rgba(0, 0, 0, 0.200);
                 `
-
             default:
                 break;
         }
     }}
 `
 
-const Head = styled.div`
-    padding: 0 1em;
-    h3{
-        margin: 0 0 1em;
-        color: var(--Black4);
-    }
-`
 const ToolBar = styled.div`
 padding: 0 0.6em;
+height: 2.75em;
 display: flex;
-gap: 0.1em;
+align-items: center;
+gap: 0.4em;
 background-color: white;
-h3{
-    color: rgb(104, 104, 104);
-}
 `
 const Body = styled.div`
    padding: 1em;
@@ -273,6 +274,10 @@ const Body = styled.div`
 const Footer = styled.div`
     padding: 0 1em;
     display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5em;
+    height: 3em;
     
 `
 const Group = styled.div`

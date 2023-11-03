@@ -51,7 +51,7 @@ const DEFAULT_ICONS = {
 
 export const InputV4 = ({
   focusWhen,
-  id = "", icon, autoFocus, 
+  id = "", icon, autoFocus,
   label, labelVariant, marginBottom,
   size, search, onClear, validate, errorMessage,
   bgColor, clearButton = false, ...props
@@ -71,7 +71,7 @@ export const InputV4 = ({
       inputRef.current.focus();
     }
   }, [focusWhen]);
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const defaultIcon = DEFAULT_ICONS[props.type] || null;
   const renderedIcon = icon || defaultIcon;
@@ -112,15 +112,17 @@ export const InputV4 = ({
             e.target.setCustomValidity('Por favor, complete este campo.');
           }}
         />
+        {
+          (props.value && onClear) ? (
+            <Icon
+              onClick={(onClear && props.value) && onClear}
+              style={{ cursor: 'pointer', marginLeft: '8px', position: 'relative', zIndex: '100', color: `${props.value ? "#999" : "transparent"}` }}
+            >
+              {icons.operationModes.close}
+            </Icon>
+          ) : null
+        }
 
-        <Icon
-          onClick={(onClear && props.value) && onClear}
-          style={{ cursor: 'pointer', marginLeft: '8px', position: 'relative', zIndex: '100', color: `${props.value ? "#999" : "transparent"}` }}
-        >
-          {(onClear && props.value) && (
-            icons.operationModes.close
-          )}
-        </Icon>
         {props.type === 'password' ? (
           showPassword ? (
             <Button onClick={() => setShowPassword(!showPassword)}>

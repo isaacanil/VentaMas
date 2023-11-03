@@ -1,21 +1,17 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
-import { DeleteButton } from '../../../templates/system/Button/DeleteButton'
-import { EditButton } from '../../../templates/system/Button/EditButton'
 import { PlusIconButton } from '../../../templates/system/Button/PlusIconButton'
-import { InputText, InputNumber } from '../../../templates/system/Inputs/Input'
-import { separator } from '../../../../hooks/separator'
 import { v4 } from 'uuid'
 import { addIngredientTypePizza } from '../../../../firebase/firebaseconfig.jsx'
 import { fbGetCustomProduct } from '../../../../firebase/products/customProduct/fbGetCustomProductTypePizza'
 import { useEffect } from 'react'
 import { isEmpty } from '@firebase/util'
-import { nanoid } from 'nanoid'
 import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard'
 import { IoIosArrowBack, IoMdClose } from 'react-icons/io'
 import { selectUser } from '../../../../features/auth/userSlice'
 import { useSelector } from 'react-redux'
+import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4.jsx'
 export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
     const user = useSelector(selectUser)
     const [product, setProduct] = useState('')
@@ -24,13 +20,12 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
         fbGetCustomProduct(user, setProduct)
     }, [])
 
-
     const [ingredient, setIngredient] = useState({
         name: '',
         cost: 0,
         id: ''
     })
-    console.log(ingredient)
+
     const settingIngredientId = () => {
         return new Promise((resolve, reject) => {
             resolve(
@@ -42,8 +37,7 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
 
         })
     }
-    console.log(ingredient)
-
+   
     const handleOnChange = () => {
         settingIngredientId().then(() => {
             if (ingredient.cost && ingredient.id && ingredient.name !== '') {
@@ -56,9 +50,8 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
                 })
             }
         })
-
-
     }
+    
     return (
         isOpen ? (
             <Modal>
@@ -84,13 +77,13 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
                     >
                         <Group>
                             <Col>
-                                <InputText
+                                <InputV4
                                     value={ingredient.name}
                                     placeholder='Agregar Ingrediente'
                                     onChange={(e) => setIngredient({ ...ingredient, name: e.target.value })} />
                             </Col>
                             <Col>
-                                <InputNumber
+                                <InputV4
                                     value={ingredient.cost}
                                     size='small'
                                     placeholder='Precio'

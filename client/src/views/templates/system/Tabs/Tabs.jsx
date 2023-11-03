@@ -5,6 +5,7 @@ const TabsContainer = styled.div`
   height: 100%;
   width: 100%;
   display: grid;
+  overflow: hidden;
   grid-template-areas: ${props => {
     switch (props.tabPosition) {
       case 'bottom': return '"content" "tabs"';
@@ -46,9 +47,11 @@ const Tab = styled.li`
 `;
 
 const TabContent = styled.div`
-  padding: 20px;
+  padding: 10px;
   border-top: none;
   grid-area: content;
+  overflow: auto;
+  background-color: #fdfdfd;
 `;
 
 const Tabs = ({ tabs, tabPosition = 'top' }) => {

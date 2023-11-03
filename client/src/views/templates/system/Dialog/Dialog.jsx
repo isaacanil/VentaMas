@@ -24,17 +24,13 @@ const Dialog = () => {
 
     const handleCancel = () => onCancel();
 
-    const handleConfirm = () => onConfirm();
-   
-    const handleCancelBtnName = () => {
-        switch (onConfirm) {
-            case null:
-                return 'Aceptar'
-            default:
-                return 'Cancelar'
-        }
-    }
-
+    const handleConfirm = () => {
+        onConfirm()
+        onClose();
+    };
+    
+    const handleCancelBtnName = () => onConfirm === null ? 'Aceptar' : 'Cancelar';
+    
     return (
         <Backdrop
             variants={BackdropVariants}
@@ -59,11 +55,11 @@ const Dialog = () => {
                     />
                 </Header>
                 <Body>
-                    <Description type={type}>
+                    <Description type={`${type}-contained`}>
                         <Icon>
                             {iconTypes[type]}
                         </Icon>
-                        <Typography variant='p' >
+                        <Typography variant='p' color='inherit' disableMargins >
                             {message}
                         </Typography>
                     </Description>
@@ -74,7 +70,7 @@ const Dialog = () => {
                             <Button
                                 title={handleCancelBtnName()}
                                 onClick={onCancel ? handleCancel : onClose}
-                                bgcolor={'gray'}
+                                color={'gray-contained'}
                                 borderRadius={'light'}
                             />
                         }
@@ -82,7 +78,7 @@ const Dialog = () => {
                             <Button
                                 title={'Confirmar'}
                                 onClick={handleConfirm}
-                                bgcolor={type}
+                                color={type}
                                 borderRadius={'light'}
                             />
                         )}
@@ -134,14 +130,12 @@ const Footer = styled.div`
     justify-content: flex-end;
 `
 const Description = styled.div`
-    background-color: ${(props) => props?.type && props.theme.colors[props?.type].light};
-    color: ${(props) => props?.type && props.theme.colors[props?.type].dark};
+    background-color: ${(props) => props?.type && props.theme.colors[props?.type]["bg"]};
+    color: ${(props) => props?.type && props.theme.colors[props?.type]["text"]};
     padding: 1em;
     border-radius: var(--border-radius);
     display: flex;
     align-items: center;
-
-
 `
 const Icon = styled.div`
     width: 2em;

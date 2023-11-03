@@ -11,6 +11,8 @@ import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
 import { motion } from 'framer-motion';
 import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import Typography from '../../../templates/system/Typografy/Typografy';
+import { Button } from '../../../templates/system/Button/Button';
 
 const OverlayVariants = {
   open: {
@@ -35,9 +37,9 @@ const AddCategoryModal = () => {
   const inputRef = useRef(null);
 
   useEffect(() => {
-      if (inputRef.current) {
-          inputRef.current.focus();
-      }
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   }, []);
 
   const dispatch = useDispatch();
@@ -77,7 +79,9 @@ const AddCategoryModal = () => {
         animate={isOpen ? "open" : "closed"}
         exit="closed"
       >
-        <h2>{type === 'create' ? 'Crear Categoría' : 'Actualizar Categoría'}</h2>
+        <Typography variant='h3'>
+          {type === 'create' ? 'Crear Categoría' : 'Actualizar Categoría'}
+        </Typography>
         <Form onSubmit={handleSubmit}>
           <InputV4
             name='name'
@@ -89,10 +93,19 @@ const AddCategoryModal = () => {
             autoFocus={true}
           />
           <ButtonGroup>
-            <Button type="button" onClick={onClose}>
+            <Button
+              type="button"
+              title="Cancelar"
+              color="gray-contained"
+              onClick={onClose}
+            >
               Cancelar
             </Button>
-            <Button type="submit">{'Crear'}</Button>
+            <Button
+              color="primary"
+              type="submit"
+              title={type === 'create' ? 'Crear' : 'Actualizar'}
+            />
           </ButtonGroup>
         </Form>
       </ModalContainer>
@@ -144,16 +157,11 @@ const Form = styled.form`
 
 const ButtonGroup = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 0.5em;
 `;
 
-const Button = styled.button`
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-`;
+
 
 // if (categoryToUpdate) {
 //   fbUpdateCategory(category, user)

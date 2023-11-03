@@ -13,6 +13,7 @@ const changelogs = [
         route: CHANGELOG_LIST,
         group: 'admin'
     },
+    
   
     
 ]

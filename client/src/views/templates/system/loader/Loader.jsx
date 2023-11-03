@@ -42,7 +42,7 @@ const Container = styled.div`
     switch (theme) {
       case 'dark':
         return `
-          background-color: rgba(0, 0, 0, 0.5);
+          background-color: rgba(0, 0, 0, 0.39);
         `
       case 'light':
         return `
@@ -50,13 +50,13 @@ const Container = styled.div`
         `
       default:
         `
-          background-color: rgba(0, 0, 0, 0.5);
+          background-color: rgba(0, 0, 0, 0.37);
         `
         break;
     }
   }}
  
-  z-index: 999;
+  z-index: 99;
   opacity: ${({ show }) => (show ? 1 : 0)};
   pointer-events: ${({ show }) => (show ? 'all' : 'none')};
   transition: opacity 1000ms ease-in-out;

@@ -3,17 +3,27 @@ import styled from 'styled-components';
 
 export const Option = ({ option }) => {
     return (
-        <Container onClick={option?.action}>
+        <Container onClick={option?.action} isActive={option?.isActive}>
             <Header>
-                <Icon>
-                    {option?.icon && option?.icon}
-                </Icon>
+                {
+                    option?.icon && (
+                        <Icon>
+                            {option?.icon}
+                        </Icon>
+                    )
+                }
+
                 {option?.text}
 
             </Header>
-            <Description>
-                {option?.description}
-            </Description>
+            {
+                option?.description && (
+                    <Description>
+                        {option?.description}
+                    </Description>
+                )
+            }
+
         </Container>
     )
 }
@@ -30,6 +40,12 @@ padding: 0.5em 1em;
   background-color: #f2f2f2;
 }
   /* Estilos para los botones de las opciones */
+    ${(props) =>
+            props?.isActive &&
+            `
+        background-color: ${props.theme.colors["primary"]["bg"]};
+        color: ${props.theme.colors["primary"]["text"]};
+    `}
 `;
 const Header = styled.div`
     display: flex;

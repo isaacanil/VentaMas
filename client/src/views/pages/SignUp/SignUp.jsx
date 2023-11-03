@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { InputText, InputPassword, Button } from '../../index'
+import { Button } from '../../index'
 import { HandleRegister } from '../../../firebase/firebaseconfig.jsx'
 
 

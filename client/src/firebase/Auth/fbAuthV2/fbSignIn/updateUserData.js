@@ -14,7 +14,7 @@ export function useUserDocListener(userId) {
                     const userData = userSnapshot.data().user;
                     dispatch(login({
                         uid: userSnapshot.id,
-                        displayName: userData.name // Ajusta según tu estructura.
+                        displayName: userData.name 
                     }));
                 } else {
                     dispatch(logout());
@@ -22,7 +22,6 @@ export function useUserDocListener(userId) {
                 }
             });
 
-            // Devolver una función de limpieza para desuscribirse de onSnapshot
             return () => unsubscribe();
         }
     }, [userId]);

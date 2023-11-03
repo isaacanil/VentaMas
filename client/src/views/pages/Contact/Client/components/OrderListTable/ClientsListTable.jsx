@@ -30,33 +30,6 @@ export const ClientsListTable = ({ clients = [] }) => {
       /> 
       )
     }
-    {/* <Body>
-      <TitleContainer>
-        <h3>Administrar Clientes</h3>
-      </TitleContainer>
-      <Table>
-        <Row fill='fill'>
-          <Col>#</Col>
-          <Col>Nombre</Col>
-          <Col>Teléfono</Col>
-          <Col>RNC/Cédula</Col>
-          <Col>Dirección</Col>
-          <Col>Acción</Col>
-        </Row>
-
-        <TableBody>
-          {
-             clients.length > 0 ? (
-              clients.map(({client}, index) => ( */
-                // <OrderItem Row={Row} Col={Col} key={index} client={client} index={index} />
-                /*
-              ))
-            ) : null
-
-          }
-        </TableBody>
-      </Table>
-    </Body> */}
 const Container = styled.div`
     width: 100%;
     padding: 0 1em;

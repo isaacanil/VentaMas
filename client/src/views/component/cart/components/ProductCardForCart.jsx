@@ -41,9 +41,8 @@ export const ProductCardForCart = ({ item }) => {
                 <Title>{item.productName}</Title>
             </Row>
             <Row>
-                <Group justifyContent='space-between'>
+                <Group >
                     <Price>{useFormatPrice(item.price.total)}</Price>
-                    <Group>
                         <Counter
                             amountToBuyTotal={item.amountToBuy.total}
                             stock={item.stock}
@@ -55,9 +54,9 @@ export const ProductCardForCart = ({ item }) => {
                             onClick={() => deleteProductFromCart(item.id)}
                             width='icon24'
                             borderRadius={'normal'}
-                            color='danger'
+                            color='on-error'
                         />
-                    </Group>
+                    
                 </Group>
             </Row>
         </Container>
@@ -84,9 +83,10 @@ const Row = styled.div`
     align-items: center;
 `
 const Group = styled.div`
-    display: flex;
+    display: grid;
     align-items: center;
     gap: 1em;
+    grid-template-columns: 1fr 0.6fr min-content;
   
     ${props => {
         switch (props.justifyContent) {
@@ -101,16 +101,7 @@ const Group = styled.div`
         }
     }}
 `
-const BtnClose = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    align-items: center;
-    background-color: #ce4d4d;
-    color: var(--color-error);
-    border-radius: 6px;
-  
-`
+
 const Title = styled.span`
     font-weight: 500;
     line-height: 16px;
@@ -119,7 +110,7 @@ const Title = styled.span`
     text-transform: capitalize;
 `
 const Price = styled.span`
-    max-width: 130px;
+    
     width: 100%;
     font-size: 14px;
     font-weight: 600;

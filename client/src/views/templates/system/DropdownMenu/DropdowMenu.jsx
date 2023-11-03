@@ -6,38 +6,38 @@ import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { usePopper } from 'react-popper';
 
 
-export const DropdownMenu = ({ title = 'Opciones', options = [], ...props }) => {
+export const DropdownMenu = ({ title = 'Opciones', options = [], customButton, ...props }) => {
   const [isOpen, setIsOpen] = useState(false);
   const DropDownMenuRef = useRef(null);
- // Popper
- const [referenceElement, setReferenceElement] = useState(null);
- const [popperElement, setPopperElement] = useState(null);
- //estilos de popper
- const { styles, attributes } = usePopper(referenceElement, popperElement, {
-  modifiers: [{ name: 'arrow' }],
-});
+  // Popper
+  const [referenceElement, setReferenceElement] = useState(null);
+  const [popperElement, setPopperElement] = useState(null);
+  //estilos de popper
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [{ name: 'arrow' }],
+  });
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
-  useClickOutSide(DropDownMenuRef,  isOpen, toggleMenu,);
+  useClickOutSide(DropDownMenuRef, isOpen, toggleMenu,);
   return (
-    <div  ref={DropDownMenuRef}>
-      <Button
-        ref={setReferenceElement}
-        title={title}
-        onClick={toggleMenu}
-        {...props}
-      />
-      {/* <button
-        ref={setReferenceElement}
-        onClick={toggleMenu}
-
-      >
-        {title}
-      </button> */}
+    <div ref={DropDownMenuRef}>
+      {
+        customButton ? (
+          React.cloneElement(customButton, { onClick: toggleMenu, ref: setReferenceElement })
+        ) : (
+          <Button
+            ref={setReferenceElement}
+            title={title}
+            onClick={toggleMenu}
+            {...props}
+          />
+        )
+      }
+   
       {isOpen && (
         <Container
-          
+
           ref={setPopperElement}
           style={styles.popper}
           {...attributes.popper}

@@ -5,6 +5,7 @@ import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { SetCustomProduct } from "./CustomProduct/SetCustomProduct/SetCustomProduct"
 
 import { useSelector } from "react-redux"
+
 import {
   SelectAddClientModal,
   SelectUpdateProdModal,
@@ -15,8 +16,8 @@ import {
   SelectViewOrdersNotesModalData,
   SelectAddCategoryModal,
   SelectAddProductOutflowModal,
-
 } from "../../../features/modals/modalSlice"
+
 import { ClientForm } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
 import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
 import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
@@ -29,11 +30,11 @@ import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
 import { OPERATION_MODES } from "../../../constants/modes"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
-import { DeleteClientAlert } from "../../templates/system/Alerts/DeleteClientAlert"
 import { AnimatePresence } from "framer-motion"
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
 import Dialog from "../../templates/system/Dialog/Dialog"
 import NoteModal from "../../templates/system/NoteModal/NoteModal"
+
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
   const AddClientModalSelected = useSelector(SelectAddClientModal)
@@ -46,7 +47,6 @@ export const ModalManager = () => {
   const AddProductOutflowModalSelected = useSelector(SelectAddProductOutflowModal)
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
   const currentNotification = useSelector(selectCurrentNotification)
-
   return (
     <Fragment>
       <AnimatePresence>
@@ -90,13 +90,13 @@ export const ModalManager = () => {
             key={'notification'}
           />
         )}
-        
-          <AddCategoryModal
-            key={'modal-add-category'}
-            isOpen={AddCategoryModalSelected.isOpen}
-            categoryToUpdate={AddCategoryModalSelected.data}
-          />
-      
+
+        <AddCategoryModal
+          key={'modal-add-category'}
+          isOpen={AddCategoryModalSelected.isOpen}
+          categoryToUpdate={AddCategoryModalSelected.data}
+        />
+
         {AddProductOutflowModalSelected.isOpen && (
           <ProductOutflowModal
             key={'modal-product-outflow'}
@@ -118,7 +118,7 @@ export const ModalManager = () => {
       <ImageViewer />
       <SmallNotification />
       <ConfirmationDialog />
-      <DeleteClientAlert />
+ 
     </Fragment>
   )
 

@@ -76,11 +76,9 @@ export const Product = ({ product, }) => {
                 {ProductCheckInCart.status ? (
                     <Button
                         startIcon={icons.operationModes.discard}
-                        width='icon32'
-                        color={'danger'}
+                        width='icon24'
+                        color={'on-error'}
                         borderRadius='normal'
-                        // bgcolor='error'
-                        variant='contained'
                         onClick={(e) => deleteProductFromCart(e, product?.id)}
                     />
                 ) : null}

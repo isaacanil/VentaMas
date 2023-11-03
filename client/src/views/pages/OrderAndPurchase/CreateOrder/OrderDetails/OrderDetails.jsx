@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { Select } from '../../../../templates/system/Select/Select'
-import { Textarea } from '../../../../templates/system/Inputs/Input'
 import { SelectOrder, setOrder } from '../../../../../features/addOrder/addOrderModalSlice'
 import { DateTime } from 'luxon'
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
+import { Textarea } from '../../../../templates/system/Inputs/Textarea'
 
 export const OrderDetails = () => {
     const dispatch = useDispatch()

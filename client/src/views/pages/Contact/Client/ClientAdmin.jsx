@@ -7,24 +7,23 @@ import {
 } from '../../../'
 
 
-import { filterData} from '../../../../hooks/search/useSearch'
+import { filterData } from '../../../../hooks/search/useSearch'
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
 import { ToolBar } from './ToolBar'
 import { useFbGetClients } from '../../../../firebase/client/useFbGetClients'
-export const ClientAdmin = () => { 
+export const ClientAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('')
-  const {clients} = useFbGetClients()
+  const { clients } = useFbGetClients()
   const clientsFiltered = filterData(clients, searchTerm)
   return (
     <Fragment>
       <MenuApp
-        sectionName='Clientes' 
+        sectionName='Clientes'
         searchData={searchTerm}
         setSearchData={setSearchTerm}
       />
-  
       <Container>
-        <ClientsListTable clients={clientsFiltered}/>
+        <ClientsListTable clients={clientsFiltered} />
       </Container>
     </Fragment>
   )

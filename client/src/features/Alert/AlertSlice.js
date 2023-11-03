@@ -1,8 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { deleteProduct } from '../../firebase/firebaseconfig'
 import { fbDeleteClient } from '../../firebase/client/fbDeleteClient'
-import { useSelector } from 'react-redux'
-import { selectUser } from '../auth/userSlice'
+import { fbDeleteProduct } from '../../firebase/products/fbDeleteproduct'
 
 
 const initialState = {
@@ -37,7 +35,7 @@ export const alertSlice = createSlice({
            
             const id = state.deleteProduct.id;
             const user = state.deleteProduct.user;
-            deleteProduct(id, user)
+            fbDeleteProduct(id, user)
 
         },
         handleDeleteClientAlert: (state, actions) => {

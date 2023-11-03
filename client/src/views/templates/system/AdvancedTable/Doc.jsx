@@ -1,80 +1,82 @@
 
 import styled from 'styled-components';
-import Typography from '../Typografy/Typografy';
-import { Switch } from '../Switch/Switch';
-import { useState } from 'react';
-import { Container } from '../layout/Container/Container';
+import palette from '../../../../theme/colors/light/Palette';
 
-const Contenedor = styled.div`
-  font-family: 'Arial', sans-serif;
-  padding: 20px;
-  background-color: #f9f9f9;
-`;
-
-const data = [
-  {
-    "title": "Actualización 1",
-    "date": "12 de Julio",
-    "content": "Contenido de la actualización 1"
-  },
-  // Más actualizaciones aquí
-]
 export function Doc() {
+
+  const colors = ["primary", "error", "warning", "info", "success"];
+  const getTypes = (color) => {
+    return [
+      `${color}`,
+      `on-${color}`,
+      `${color}-contained`,
+      `on-${color}-contained`
+    ]
+  }
+
   return (
-    <UpdateContainer>
-      <Switch
-        size='medium'
-        value={open}
-        onChange={() => setOpen(!open)}
-      />
-      <Container
-      >
-        <Typography variant='h2' >
-          h2. Heading
-        </Typography>
-        <Typography variant='h3' >
-          h3. Heading
-        </Typography>
-      </Container>
-    </UpdateContainer >
+    <Container>
+      {
+        colors.map((color, index) => {
+          return (
+            <div>
+              {getTypes(color).map((type, index) => {
+                return (
+                  <ArrayList key={index} color={type} />
+                )
+              })}
+            </div>
+          )
+        })
+      }
+    </Container >
   );
 }
+const ArrayList = ({ color = "primary" }) => {
+  if (!color) { return }
+  if (!palette.colors[color]) { return }
+  const scale = palette.colors[color] || [];
+  const type = [
+    `${color}`,
+    `on ${color}`,
+    `container ${color}`,
+    `on container ${color}`
+  ]
+  return (
+    <ArrayListContainer >
+      <Item color={scale["text"]} bg={scale["bg"]}>
+        {scale.bg}
+        <br />
+      </Item>
+    </ArrayListContainer>
+  )
+}
+const ArrayListContainer = styled.div`
+  display: grid;
 
 
-
-
-const UpdateContainer = styled.div`
-  padding: 10px;
-  margin: 10px;
+`
+const Container = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  ${props => {
+    const color = props.color;
+    return `
+      background-color: ${color};
+    `;
+  }}
 `;
+const Item = styled.div`
+ height: 8em;
+  padding: 1em;
+  ${props => {
+    const color = props.color;
+    const bg = props.bg;
+    return `
+      background-color: ${bg};
+      color: ${color};
 
-/*     <Typography variant='h1' >
-      h1. Heading
-      </Typography>
-      <Typography variant='h2' >
-      h2. Heading
-      </Typography>
-      <Typography variant='h3' >
-      h3. Heading
-      </Typography>
-      <Typography variant='h4' >
-      h4. Heading
-      </Typography>
-      <Typography variant='h5' >
-      h5. Heading
-      </Typography>
-      <Typography  >
-      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo voluptate obcaecati, sed eaque nihil ipsa, neque cumque accusamus totam cum rerum commodi in deserunt molestias! Magnam nisi modi mollitia tenetur.
-      </Typography>
-      <Typography variant='body2' >
-      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo voluptate obcaecati, sed eaque nihil ipsa, neque cumque accusamus totam cum rerum commodi in deserunt molestias! Magnam nisi modi mollitia tenetur.
-      </Typography>
-      <Typography variant='l1' >
-      l1. Label
-      </Typography>
-      <Typography variant='l2' >
-      l2. Label
-      </Typography>
-      <Typography variant='l3' >
-      l3. Label
-      </Typography> */
+    `;
+  }}
+`
+

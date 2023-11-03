@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { TbPlus } from 'react-icons/tb'
-import { InputNumber, InputText } from '../../templates/system/Inputs/Input'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
 import { useDispatch, useSelector } from 'react-redux'
 import { Button } from '../../templates/system/Button/Button'
@@ -9,6 +8,7 @@ import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { useFormatPrice } from '../../../hooks/useFormatPrice';
+import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4'
 
 /**
 * Este componente recibe la funcion de agregar el producto y devuelve el componente.
@@ -103,7 +103,8 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
                     productName={selectedProduct?.productName || ''}
                 />
                 <div>
-                    <InputNumber
+                    <InputV4
+                        type='number'
                         bgColor='gray-light'
                         border
                         value={selectedProduct.newStock || ''}
@@ -111,7 +112,8 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
                     />
                 </div>
                 <div>
-                    <InputText
+                    <InputV4
+                        type='number'
                         value={initialCost || ''}
                         placeholder='Costo'
                         onChange={(e) => setProductSelected({ initialCost: Number(e.target.value) })}
@@ -120,7 +122,8 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
                     />
                 </div>
                 <div>
-                    <InputText
+                    <InputV4
+                        type='number'   
                         value={useFormatPrice(subTotal || 0)}
                         placeholder='SubTotal'
                         readOnly

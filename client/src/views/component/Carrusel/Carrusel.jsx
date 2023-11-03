@@ -11,7 +11,10 @@ import { icons } from '../../../constants/icons/icons'
 import { SelectCategoryList } from '../../../features/category/categorySlicer'
 import { useCategoryState } from '../../../Context/CategoryContext/CategoryContext'
 
-export const Carrusel = ({ themeColor }) => {
+export const Carrusel = ({
+    themeColor,
+    addCategoryBtn = false
+}) => {
     const categoriesRef = useRef(null)
     const { width } = useScreenSize(categoriesRef)
     const { categories } = useFbGetCategories()
@@ -102,12 +105,17 @@ export const Carrusel = ({ themeColor }) => {
                 <Categories
                     ref={categoriesRef}
                 >
-                    <Category
-                        category={{ name: 'Categoría' }}
-                        onClick={configureAddProductCategoryModal}
-                        type='create'
-                        icon={icons.operationModes.add}
-                    />
+                    {
+                        addCategoryBtn ? (
+                            <Category
+                                category={{ name: 'Categoría' }}
+                                onClick={configureAddProductCategoryModal}
+                                type='create'
+                                icon={icons.operationModes.add}
+                            />
+                        ) : null
+                    }
+
                     {
                         categories.length > 0 ? (
                             categories.map(({ category }, index) => (

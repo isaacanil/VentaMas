@@ -46,7 +46,8 @@ export const UserSection = ({ user }) => {
       <Group>
         <Button
           startIcon={icons.operationModes.logout}
-          color={'info'}
+          color={'gray-contained'}
+       
           title={'Salir'}
           size="medium"
           borderRadius='normal'

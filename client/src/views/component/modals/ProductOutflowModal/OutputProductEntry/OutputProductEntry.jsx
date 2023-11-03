@@ -3,11 +3,11 @@ import styled from 'styled-components'
 import { TbPlus } from 'react-icons/tb'
 import { useDispatch, useSelector } from 'react-redux'
 import { ProductFilter } from '../../../ProductFilter/ProductFilter'
-import { InputNumber, InputText } from '../../../../templates/system/Inputs/Input'
 import { Button } from '../../../../templates/system/Button/Button'
 import { addProductToProductOutflow, selectProduct, SelectProductSelected } from '../../../../../features/productOutflow/productOutflow'
 import { tableHeaderColumns } from './tableConfig/tableHeaderConfig'
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
+import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 
 export const OutputProductEntry = () => {
 
@@ -57,7 +57,8 @@ export const OutputProductEntry = () => {
                     productName={productSelected?.product?.productName || ''}
                 />
                 <div>
-                    <InputNumber
+                    <InputV4
+                        type='number'
                         bgColor='gray-light'
                         border
                         ref={inputQuantityRef}
@@ -68,7 +69,7 @@ export const OutputProductEntry = () => {
                     />
                 </div>
                 <div>
-                    <InputText
+                    <InputV4
                         value={productSelected?.motive || ""}
                         placeholder='Motivo'
                         name='motive'
@@ -78,7 +79,8 @@ export const OutputProductEntry = () => {
                     />
                 </div>
                 <div>
-                    <InputText
+                    <InputV4
+
                         value={productSelected?.observations || ""}
                         placeholder='Observaciones'
                         name='observations'

@@ -15,7 +15,6 @@ export { SignUp } from './pages/SignUp/SignUp'
 export { Welcome } from './pages/Welcome/Welcome'
 export { Contact } from './pages/Contact.jsx'
 export { Receipt } from './pages/checkout/Receipt'
-
 export { AddCustomProductModal } from './component/modals/AddCustomProductModal/AddCustomProductModal'
 export { SetCustomProduct } from './component/modals/CustomProduct/SetCustomProduct/SetCustomProduct'
 export { Setting } from './pages/setting/Setting'
@@ -44,7 +43,6 @@ export { FloatingMessage } from './templates/system/FloatingMessage/FloatingMess
 export { MenuApp } from './templates/MenuApp/MenuApp'
 export { MenuWebsite } from './templates/MenuWebsite/MenuWebsite'
 export { MenuComponents } from './templates/MenuComponents/MenuComponents'
-export { InputText, InputPassword } from './templates/system/Inputs/Input'
 export { FormControl, FormGroup, FormSubGroup, FormItemGroup } from './templates/system/Form/Form'
 export { Button } from './templates/system/Button/Button'
 export { ExpandButton } from './templates/system/Button/ExpandButton'
@@ -66,5 +64,5 @@ export { Grid } from './templates/system/Grid/Grid'
 export { WebName } from './templates/system/WebName/WebName'
 export { Account } from './templates/Account/Account'
 export { ErrorMessage } from './templates/ErrorMassage/ErrorMassage'
-export { AlertHandler } from './templates/system/Alerts/AlertHandler'
+
 

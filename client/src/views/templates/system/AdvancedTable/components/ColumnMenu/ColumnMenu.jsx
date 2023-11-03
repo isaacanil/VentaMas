@@ -128,7 +128,7 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
                                                         onClick={() => removeColumn(column.accessor)}
                                                         title={icons.operationModes.discard}
                                                         borderRadius={'light'}
-                                                        color={'danger'}
+                                                        color={'error'}
                                                         width={'icon24'}
                                                     />
                                                     {/* <button onClick={() => moveColumn(index, 'up')}>{icons.arrows.chevronUp}</button> */}
@@ -145,14 +145,23 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
                             {getDeletedColumns().map(column => (
                                 <MenuItem key={column.accessor}>
                                     <span>{column.Header} (eliminada)</span>
-                                    <Button title='Restaurar' onClick={() => restoreColumn(column.accessor)} />
+                                    <Button
+                                        title='Restaurar'
+                                        onClick={() => restoreColumn(column.accessor)}
+                                    />
                                 </MenuItem>
                             ))}
                         </MenuItems>
                     </Body>
                     <Footer>
-                        <Button title={'Restablecer orden de columnas'} onClick={resetColumnOrder} />
-                        <Button  title={'Recuperar columnas Eliminadas'} onClick={restoreAllColumns} />
+                        <Button
+                            title={'Restablecer orden de columnas'}
+                            onClick={resetColumnOrder}
+                        />
+                        <Button
+                            title={'Recuperar columnas Eliminadas'}
+                            onClick={restoreAllColumns}
+                        />
                     </Footer>
                 </Menu>
             </Backdrop>

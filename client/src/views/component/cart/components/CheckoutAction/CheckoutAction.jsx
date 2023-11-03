@@ -29,7 +29,7 @@ export const CheckoutAction = ({
                     borderRadius='normal'
                     title='Facturar'
                     onClick={handleInvoice}
-                    bgcolor='primary'
+                    color='primary'
                     disabled={ProductSelected.length >= 1 ? false : true}
                 />
             </ButtonGroup>

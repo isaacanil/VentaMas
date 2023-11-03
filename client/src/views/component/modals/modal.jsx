@@ -9,6 +9,7 @@ import { motion } from 'framer-motion'
 import { nanoid } from 'nanoid'
 import { set } from 'lodash'
 import { MotionWrapper } from '../base/animation/MotionWrapper'
+import { icons } from '../../../constants/icons/icons'
 
 export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, isOpen, subModal, width }) => {
     const [modalContent, setModalContent] = useState(false)
@@ -20,7 +21,6 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
             console.log(error)
         } finally {
         }
-
     }
     useEffect(() => {
         if (isOpen) {
@@ -62,7 +62,13 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
                 width={width}>
                 <Header>
                     <Title>{nameRef}</Title>
-                    <Button title={<MdClose />} width='icon24' borderRadius='normal' bgcolor='error' onClick={close} />
+                    <Button
+                        title={icons.operationModes.close}
+                        width='icon24'
+                        borderRadius='normal'
+                        color='error'
+                        onClick={close}
+                    />
                 </Header>
                 <Body>
                     {modalContent && (<MotionWrapper>

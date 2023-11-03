@@ -14,9 +14,8 @@ export const ConfigModal = () => {
   )
 }
 const Container = styled.div`
-
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   height: 100%;
   max-height: 520px;
   background-color: white;
@@ -24,8 +23,6 @@ const Container = styled.div`
   overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr;
-
-  
 `
 const Backdrop = styled.div`
     position: fixed;

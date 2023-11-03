@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { InputText } from '../../templates/system/Inputs/Input'
 import { IoClose } from 'react-icons/io5'
 import { ProductCard } from './ProductCard'
 import { SelectProductSelected } from '../../../features/addOrder/addOrderModalSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
+import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4'
 export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProduct }) => {
   
   const [value, setValue] = useState(undefined)
@@ -31,7 +31,7 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
 
   return (
     <Component>
-      <InputText
+      <InputV4
         size='small'
         border
         value={value}
