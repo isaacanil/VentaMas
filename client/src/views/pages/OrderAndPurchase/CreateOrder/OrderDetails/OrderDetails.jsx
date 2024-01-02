@@ -19,6 +19,16 @@ export const OrderDetails = () => {
         const timestamp = selectedDate.toJSDate().getTime();
         return timestamp;
     };
+    useEffect(() => {
+        setTimeout(() => {
+            dispatch(setOrder({
+                dates: {
+                    ...dates,
+                    deliveryDate: handleDateChange(new Date().toISOString())
+                }
+            }))
+        }, 1000)
+    }, [])
 
     const dateValue = typeof order?.dates?.deliveryDate === 'number' && order?.dates?.deliveryDate;
     const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : '';

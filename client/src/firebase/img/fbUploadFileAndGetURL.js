@@ -3,7 +3,7 @@ import { storage } from '../firebaseconfig';
 import { nanoid } from 'nanoid';
 
 
-export const fbUploadImageAndGetURL = async (user, sectionName, file) => {
+export const fbUploadFileAndGetURL = async (user, sectionName, file) => {
   if (!user.businessID) {
     throw new Error("No businessID provided");
   }

@@ -9,14 +9,10 @@ import { deleteObject, getDownloadURL, getStorage, listAll, ref, uploadBytes, up
 
 import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
-import { v4 } from 'uuid'
 import { useDispatch, useSelector } from "react-redux";
 import { login, logout, selectUser } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
-import { orderAndDataState, selectItemByName } from "../constants/orderAndPurchaseState";
 import { fbGetDocFromReference } from "./provider/fbGetProviderFromReference";
-import { fbUploadImageAndGetURL } from "./img/fbUploadImageAndGetURL";
-import { isImageFile } from "../utils/file/isValidFile";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -45,10 +41,6 @@ enableIndexedDbPersistence(db)
       console.error("El navegador actual no admite todas las características necesarias.");
     }
   });
-
-
-
-
 
 export const AuthStateChanged = () => {
   const dispatch = useDispatch()
@@ -150,24 +142,6 @@ export const fbDeletePurchaseReceiptImg = async (data) => {
   }
 }
 
-
-
-const fbAddReceiptPurchaseImg = (file) => {
-  const today = new Date();
-  const hour = `${today.getHours()}:${today.getMinutes()}`
-  const storageRef = ref(storage, `receiptPurchaseImg/${v4()}.jpg`)
-  return new Promise((resolve, reject) => {
-    uploadBytes(storageRef, file)
-      .then((snapshot) => {
-        getDownloadURL(storageRef)
-          .then((url) => {
-            console.log('File available at', url);
-            resolve(url);
-          });
-      })
-  })
-}
-
 export const getProduct = async (id) => {
   getDoc(doc(db, 'products', id))
 }
@@ -247,72 +221,6 @@ export const AddOrder = async (user, value) => {
     console.error("Error adding document: ", error)
   }
 
-}
-const UpdateProducts = async (user, replenishments) => {
-  try {
-    replenishments.forEach((item) => {
-      const productRef = doc(db, "businesses", user.businessID, 'products', item.id)
-      const updatedStock = item.newStock + item.stock;
-      updateDoc(productRef, {
-        "product.stock": Number(updatedStock),
-      })
-    })
-    return { success: true, error: null, message: '' }
-  } catch (error) {
-    console.log(error)
-    return { success: false, error: true, message: error }
-  }
-}
-const UpdateOrder = async (user, order) => {
-  const orderRef = doc(db, "businesses", user.businessID, 'orders', order.orderId)
-  const providerRef = doc(db, "businesses", user.businessID, 'providers', order.provider.id)
-  const newChange = { data: { ...order, state: 'state_3', provider: providerRef } }
-  try {
-    updateDoc(orderRef, {
-      "data.state": 'state_3',
-      "data.provider": providerRef,
-
-    })
-    return { success: true, error: null, message: '' }
-  } catch (error) {
-    return { success: false, error: true, message: error }
-  }
-}
-export const PassDataToPurchaseList = async (user, data) => {
-  try {
-    if (!user || !user.businessID) {
-      return { success: false, error: true, message: 'No user or businessID' }
-    };
-    const providerRef = doc(db, 'businesses', user.businessID, 'providers', data.provider.id);
-    const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.orderId);
-
-    let dataModified = {
-      ...data,
-      state: 'state_3',
-      provider: providerRef,
-      dates: {
-        ...data.dates,
-        createdAt: Timestamp.fromMillis(data.dates.createdAt),
-        deliveryDate: Timestamp.fromMillis(data.dates.deliveryDate),
-        updatedAt: Timestamp.now(),
-      }
-    }
-    console.log(user, data)
-
-    if (isImageFile(img)) {
-      dataModified.receiptImgUrl = await fbUploadImageAndGetURL(user, "orderReceiptImg", img);
-    }
-    const updateProductResult = await UpdateProducts(user, data.replenishments);
-    const updateOrderResult = await UpdateOrder(user, data);
-    if (updateProductResult.success === true && updateOrderResult.success === true) {
-      await setDoc(purchaseRef, {
-        data: dataModified
-      })
-      return { success: true, error: null, message: '' };
-    }
-  } catch (error) {
-    return { success: false, error: true, message: error }
-  }
 }
 
 export const getPurchaseFromDB = async (user, setPurchases) => {

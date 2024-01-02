@@ -23,7 +23,7 @@ import { fbAddInvoice } from '../../../firebase/invoices/fbAddInvoice'
 import { fbUpdateProductsStock } from '../../../firebase/products/fbUpdateProductStock'
 import { selectUser } from '../../../features/auth/userSlice'
 import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxReceipt'
-import { deleteClient, handleClient } from '../../../features/clientCart/clientCartSlice'
+import { deleteClient, handleClient, selectClient } from '../../../features/clientCart/clientCartSlice'
 import { useIsOpenCashReconciliation } from '../../../firebase/cashCount/useIsOpenCashReconciliation'
 import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
 
@@ -31,6 +31,7 @@ import { PaymentArea } from './components/PaymentArea'
 import { ProductsList } from './components/ProductsList/ProductsLit'
 import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
+import { useCallback } from 'react'
 
 export const Cart = () => {
   const dispatch = useDispatch()
@@ -58,8 +59,7 @@ export const Cart = () => {
   const ProductSelected = useSelector(SelectProduct);
   const billData = useSelector(SelectFacturaData);
   const user = useSelector(selectUser);
-
-  const [step, setStep] = useState(0)
+  const clientInCart = useSelector(selectClient)
   const [submittable, setSubmittable] = useState(false)
 
   const increaseTaxReceipt = async () => {
@@ -127,79 +127,61 @@ export const Cart = () => {
 
   const handlePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
-    onAfterPrint: () => setStep(4),
+    onAfterPrint: () => {
+      //paso #4 guardar los datos en firebase
+      savingDataToFirebase(billData, taxReceiptDataSelected);
+      setSubmittable(true);
+    },
   })
+  const handleInvoice = useCallback(async () => {
+    try {
+      if (ProductSelected.length === 0) {
+        dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
+        return;
+      }
 
-  useEffect(() => {
-    if (step === 1) {
+      if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
+        handleCashReconciliationConfirm();
+        return;
+      };
+      await createOrUpdateClient();
+      //paso #1 seleccionar el tipo de comprobante
       { taxReceiptEnabled && increaseTaxReceipt() }
-      setStep(2)
-    }
-  }, [step])
 
-  useEffect(() => {
-    if (step === 2) {
+      //paso #2 seleccionar el ncf
       if (taxReceiptEnabled && ncfCode === null) {
         dispatch(addNotification({ message: "No hay comprobante fiscal seleccionado", type: 'error' }));
         return;
       }
       if (taxReceiptEnabled) dispatch(addTaxReceiptInState(ncfCode));
-      setStep(3)
+      //paso #3 crear o actualizar el cliente
+
+
+      showPrintPreview();
+
+    } catch (error) {
+      handleInvoiceError(error);
     }
-  }, [step])
-
-  useEffect(() => {
-    if (step === 3) {
-      try {
-        createOrUpdateClient();
-        showPrintPreview();
-
-      } catch (error) {
-        handleInvoiceError(error);
-      }
-    }
-  }, [step])
-
-  useEffect(() => {
-    if (step === 4) {
-      savingDataToFirebase(billData, taxReceiptDataSelected);
-      setSubmittable(true)
-    }
-  }, [step])
-
-  useEffect(() => {
-    if (submittable === true) {
-      clearDataFromState()
-      dispatch(deleteClient())
-      setSubmittable(false)
-      setStep(0)
-    }
-  }, [submittable])
-
-  const handleInvoice = async () => {
-    if (ProductSelected.length === 0) {
-      dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
-      return;
-    }
-
-    if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
-      handleCashReconciliationConfirm();
-      return;
-    };
-    setStep(1)
-  }
+  }, [ProductSelected, checkCashCount, ncfCode, taxReceiptDataSelected, billData, submittable])
 
   function handleInvoiceError(error) {
     dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     console.error(error);
   }
   const handleCancelShipping = () => {
-    if (viewport)
-      dispatch(toggleCart())
+    if (viewport <= 800) dispatch(toggleCart());
     dispatch(CancelShipping())
     dispatch(clearTaxReceiptData())
     dispatch(deleteClient())
   }
+
+  useEffect(() => {
+    if (submittable === true) {
+      clearDataFromState()
+      dispatch(deleteClient())
+      setSubmittable(false)
+    }
+  }, [submittable])
 
   return (
     <Container isOpen={isOpen}>

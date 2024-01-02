@@ -12,14 +12,23 @@ import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 import { getOrderConditionByID, getOrderStateByID } from '../../../../../../constants/orderAndPurchaseState'
 import { useFbGetPurchase } from '../../../../../../firebase/purchase/fbGetPurchase'
+import { toggleImageViewer } from '../../../../../../features/imageViewer/imageViewerSlice'
 
+function ordenarPorNumberId(datos) {
+  // Crear una copia del arreglo para evitar modificar el original
+  if (!Array.isArray(datos)) return datos;
+  const datosCopia = [...datos];
 
-export const PendingOrdersTable = () => {
+  // Ordenar la copia del arreglo
+  return datosCopia.sort((a, b) => b.data.numberId - a.data.numberId);
+}
+
+export const PurchaseTable = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
-  const {purchases} = useFbGetPurchase();
-  
+  const { purchases } = useFbGetPurchase();
+  console.log('purchases', purchases)
   const columns = [
     {
       Header: 'Número',
@@ -42,6 +51,7 @@ export const PendingOrdersTable = () => {
         />
       )
     },
+
     {
       Header: 'Fecha',
       accessor: 'date',
@@ -57,7 +67,20 @@ export const PendingOrdersTable = () => {
       accessor: 'total',
       align: 'right',
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
-
+    },
+    {
+      Header: 'Recibo',
+      accessor: 'receipt',
+      align: 'right',
+      cell: ({ value }) => (
+        <Button
+          title='ver'
+          borderRadius='normal'
+          color='gray-dark'
+          border='light'
+          onClick={() => dispatch(toggleImageViewer({ show: true, url: value }))}
+        />
+      )
     },
     {
       Header: 'Acción',
@@ -84,25 +107,30 @@ export const PendingOrdersTable = () => {
       format: (value) => `${getOrderConditionByID(value)}`
     }
   ];
-  const data = purchases.map(({ data }, index) => {
-    return {
-      state: data?.state,
-      condition: data?.condition,
-      number: data?.numberId,
-      provider: data?.provider.name,
-      note: data?.note,
-      date: data?.dates,
-      paymentDate: data?.dates?.paymentDate,
-      total: data?.total,
-      action: data
-    }
-  })
+
+  const data = ordenarPorNumberId(purchases)
+    .map(({ data }, index) => {
+      return {
+        state: data?.state,
+        condition: data?.condition,
+        number: data?.numberId,
+        provider: data?.provider.name,
+        note: data?.note,
+        date: data?.dates,
+        receipt: data?.receipt,
+        paymentDate: data?.dates?.paymentDate,
+        total: data?.total,
+        action: data
+      }
+    })
+  console.log(purchases)
   return (
     <Container>
       <AdvancedTable
         tableName={'Lista de Compras'}
         columns={columns}
         data={data}
+
         filterUI
         filterConfig={filterConfig}
       />
@@ -116,271 +144,4 @@ const Container = styled.div`
   height: 100%;
 
 `
-// const Container = styled.div`
-//     width: 100%;
-//     padding: 0 1em;
-//     display: flex;
-//     justify-content: center;
-// `
-const Body = styled.header`
-    justify-self: center;
-    border: 1px solid rgba(0, 0, 0, 0.100);
-    border-radius: 10px;
-    position: relative;
-    height: calc(100vh - 2.75em - 2.5em - 1.5em);
-    overflow: hidden;
-    //max-height: 400px;
-    width: 100%;
-    max-width: 1000px;
-    
-    display: grid;
-    grid-template-rows: min-content 1fr; 
-    background-color: #ffffff;
-    @media (max-width: 800px){
-      max-height: 100%;
-      
-  }
-`
-const Table = styled.div`
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: min-content 1fr;
-  
- 
 
-`
-
-const TableBody = styled.div`
-  display: grid;
-  align-items: flex-start;
-  align-content: flex-start;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  width: 100%;
-  color: rgb(70, 70, 70);
-  
-
-`
-const TitleContainer = styled.div`
-  display: grid;
-  align-items: center;
-  justify-content: center;
-  background: #3f3f3f;
-  height: 2em;
-  h3{
-    margin: 0;
-    color: white;
-    font-weight: 500;
-  }
-  text-align: center;
-`
-const Row = styled.div`
-  display: grid;
-  align-items: center;
-  height: 3em;
-  gap: 1em;
-  grid-template-columns: 
-  minmax(100px, 0.3fr) //numero
-  minmax(120px, 0.5fr) //proveedor
-  minmax(64px, 0.1fr) //nota
-  minmax(104px, 0.4fr) //f. pedido
-  minmax(104px, 0.4fr) //f. entrega
-  minmax(110px, 0.4fr) //total
-  minmax(106px, 0.15fr); //acción
-  @media (max-width: 800px){
-    gap: 0;
-  }
-  ${(props) => {
-    switch (props.container) {
-      case 'first':
-        return `
-        @media (max-width: 800px){
-        display: grid;
-        grid-template-columns: min-content 1fr;
-        span{
-          display: block;
-          transform: rotate(90deg);
-          width: 
-        }
-      }
-      
-      `
-      default:
-
-    }
-  }}
-    ${(props) => {
-    switch (props.border) {
-      case 'border-bottom':
-        return `
-              border-bottom: 1px solid rgba(0, 0, 0, 0.200);
-              &:last-child{
-                border-bottom: none;
-              }
-              `
-      default:
-    }
-  }}
-  ${(props) => {
-    switch (props.color) {
-      case 'header':
-        return `
-        background-color: #9c0e0e;
-        `
-      case 'item':
-        return `
-        background-color: #ebebeb;
-        `
-      default:
-    }
-  }}
-  ${(props) => {
-    switch (props.fill) {
-      case 'fill':
-        return `
-          padding-right: 16px;
-          height: 2em;
-          background-color: var(--White1);
-        `
-
-      default:
-        break;
-    }
-  }}
-`
-// const Row = styled.div`
-//   display: grid;
-//   align-items: center;
-
-//   gap: 1em;
-//   ${(props) => {
-//     switch (props.container) {
-//       case 'first':
-//         return `
-//         @media (max-width: 800px){
-//         display: grid;
-//         grid-template-columns: min-content 1fr;
-//         span{
-//           display: block;
-//           transform: rotate(90deg);
-//           width: 
-//         }
-//       }
-
-//       `
-//       default:
-
-//     }
-//   }}
-//     ${(props) => {
-//     switch (props.border) {
-//       case 'border-bottom':
-//         return `
-//               border-bottom: 1px solid rgba(0, 0, 0, 0.200);
-//               &:last-child{
-//                 border-bottom: none;
-//               }
-//               `
-//       default:
-//     }
-//   }}
-//   ${(props) => {
-//     switch (props.color) {
-//       case 'header':
-//         return `
-//         background-color: #9c0e0e;
-//         `
-//       case 'item':
-//         return `
-//         background-color: #ebebeb;
-//         `
-//       default:
-//     }
-//   }}
-// `
-const Col = styled.div`
-  padding: 0 0.6em;
-  ${props => {
-    switch (props.position) {
-      case 'right':
-        return `
-          text-align: right;
-        `;
-
-      default:
-        break;
-    }
-  }}
-  ${(props) => {
-    switch (props.size) {
-      case 'limit':
-        return `
-          width: 100%;
-          
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;  
-          //white-space: nowrap;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          `
-
-      default:
-        break;
-    }
-  }}
-`
-const Group = styled.div`
-  display: grid;
-  gap: 1em;
-  label{
-    display: none;
-  }
-  ${(props) => {
-    switch (props.column) {
-      case "order-list":
-        return `
-        grid-template-columns: min-content min-content 100px 70px 0.7fr 0.7fr 1fr 110px;
-        align-items: center;
-        height: 3em;
-        padding: 0 1em;}
-        gap:1.6em;
-        @media (max-width: 811px ){
-            grid-template-columns: 1fr;
-            height: auto;
-            padding: 1em;
-          
-        }
-        `
-      default:
-        break;
-    }
-  }}
-  ${(props) => {
-    switch (props.name) {
-      case 'number':
-        return ` 
-        `
-      case 'items':
-        return `
-        grid-template-columns: min-content;
-        @media (max-width: 811px ){
-          display: grid;
-          grid-template-columns: 0.3fr 1fr;
-          label{
-            display: block;
-          }
-          display: none;
-          &:nth-child(1){
-            display: grid;
-          }  
-        }
-        `
-      default:
-        return ``
-    }
-  }}
-  align-items: center;
-`

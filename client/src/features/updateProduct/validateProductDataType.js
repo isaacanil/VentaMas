@@ -35,10 +35,10 @@ export class productDataTypeCorrection {
         this.size = String(size);
         this.type = String(type);
         this.tax = {
-            unit: Number(tax.unit),
-            total: Number(tax.total),
-            ref: tax.ref,  
-            value: Number(tax.value)  
+            unit: Number(tax?.unit),
+            total: Number(tax?.total),
+            ref: tax?.ref,  
+            value: Number(tax?.value)  
         };
         this.stock = Number(stock);
         this.netContent = String(netContent);

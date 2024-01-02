@@ -5,15 +5,17 @@ import { selectUser } from '../../../features/auth/userSlice'
 import styled from 'styled-components'
 import Header from './components/Header'
 import Body from './components/Body/Body'
+import ROUTES_PATH from '../../../routes/routesName'
 export const Welcome = () => {
+
   const user = useSelector(selectUser)
-  const Navigate = useNavigate()
+  const { HOME } = ROUTES_PATH.BASIC_TERM
+  const navigate = useNavigate();
   useEffect(() => {
     if (user) {
-      Navigate('/app')
+      navigate(HOME);
     }
-  }, [user])
-
+  }, [user]);
   return (
     <Container>
       <Header />
@@ -28,7 +30,7 @@ const Container = styled.div`
   display: grid;
   align-items: flex-start;
   align-content: flex-start;
-  justify-items: center;
+ 
   margin: 0;
   background-color: #ffffff;
   color: #fff;

@@ -5,7 +5,7 @@ import { fbUpdateClient } from '../../firebase/client/fbUpdateClient'
 import { useCompareObjectsInState } from '../../hooks/useCompareObject'
 import { useDispatch } from 'react-redux'
 
-const GenericClient = {
+export const GenericClient = {
     name: 'Generic Client',
     tel: '',
     address: '',
@@ -34,7 +34,6 @@ const initialState = {
     client: GenericClient,
     copyClient: null,
     isOpen: false,
-
 }
 
 export const clientSlice = createSlice({
@@ -43,7 +42,6 @@ export const clientSlice = createSlice({
     reducers: {
         setClient: (state, action) => {
             state.client = { ...state.client, ...action.payload }
-
         },
         setClientMode: (state, action) => {
             const { SEARCH, CREATE, UPDATE } = CLIENT_MODE_BAR
@@ -91,8 +89,8 @@ export const clientSlice = createSlice({
             state.labelClientMode = CLIENT_MODE_BAR.SEARCH.label
         },
         handleClient: (state, action) => {
-         const {user} = action.payload
-            if (state?.client?.name === '') {
+            const { user } = action.payload
+            if (!state.client.id) {
                 state.client = GenericClient
                 return
             }

@@ -32,6 +32,9 @@ import cashCountState from "../features/cashCount/cashStateSlice";
 import * as expenseSlices from '../features/expense';
 import * as purchaseSlices from '../features/purchase';
 
+
+
+
 export const store = configureStore({
   reducer: {
     app: appReducer,

@@ -35,8 +35,8 @@ import { baseColors } from './baseColors';
         color2: baseColors.blue[50],
         color3: "#67B8DE",
     },
-    borders: {
-        basic: '1px solid #e2e8f0',
+    border: {
+        base: '1px solid #ced2d6',
         highlighted: '2px solid #a0aec0',
         accent: '2px dashed #718096',
     },

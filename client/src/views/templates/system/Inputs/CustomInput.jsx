@@ -1,5 +1,5 @@
 // Este componente usa React y styled-components para crear un input personalizado con un menú
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
 import { addDiscount, totalPurchase } from "../../../../features/cart/cartSlice";
@@ -12,6 +12,7 @@ const CustomInput = ({ options }) => {
   const [value, setValue] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch()
+  const inputRef = useRef(null);
   const handleChange = (e) => {
     setValue(Number(e.target.value));
   };
@@ -29,10 +30,10 @@ const CustomInput = ({ options }) => {
     setShowMenu(false);
   };
 
-
-
+  useClickOutSide(inputRef, showMenu, handleClick)
+  
   return (
-    <Container>
+    <Container ref={inputRef}>
 
       <InputV4
         type="number"
@@ -42,7 +43,6 @@ const CustomInput = ({ options }) => {
         value={quitarCeros(value)}
         onChange={handleChange}
         onClick={handleClick}
-
       />
     
       {showMenu && (

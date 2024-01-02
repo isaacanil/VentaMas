@@ -11,7 +11,6 @@ const PurchaseRoutes = [
     { path: PURCHASES_CREATE, element: validateRouteAccess(<AddPurchase />) },
     { path: ORDERS, element: validateRouteAccess(<Orders />) },
     { path: ORDERS_CREATE, element: validateRouteAccess(<CreateOrder />)}
-
 ]
 
 export default PurchaseRoutes;

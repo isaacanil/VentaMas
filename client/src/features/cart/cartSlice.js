@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { initialState, defaultDelivery } from "./default/default";
+import { GenericClient } from "../clientCart/clientCartSlice";
 
 
 
@@ -13,12 +14,19 @@ const cartSlice = createSlice({
         },
         getClient: (state, actions) => {
             const client = actions.payload;
-            state.data.client = client;
-            if (client?.delivery?.status === true) {
-                state.data.delivery = client?.delivery
-            }else{
-                state.data.delivery = defaultDelivery
+            if (client?.id) {
+                state.data.client = client;
+
+                if (client?.delivery?.status === true) {
+                    state.data.delivery = client?.delivery
+                } else {
+                    state.data.delivery = defaultDelivery
+                }
             }
+
+        },
+        setDefaultClient: (state) => {
+            state.data.client = GenericClient
         },
         addPaymentValue: (state, actions) => {
             const paymentValue = actions.payload

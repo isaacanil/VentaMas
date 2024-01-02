@@ -24,9 +24,12 @@ import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCate
 import useImageFallback from '../../../../hooks/image/useImageFallback'
 import { ProductVisibilityButton } from './components/Buttons/ProductVisibilityButton'
 import { addNotification } from '../../../../features/notification/notificationSlice'
+
 import { Select } from '../../../templates/system/Select/Select'
 import Typography from '../../../templates/system/Typografy/Typografy'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import { useCallback } from 'react'
+import ProductPaymentDetails from './components/ProductPaymentdetails/ProductPaymentDetails'
 
 function interpretLayoutString(layoutString) {
     if (!layoutString) return {};
@@ -38,21 +41,29 @@ function interpretLayoutString(layoutString) {
 
 const validateProduct = (product) => {
     let errors = {};
+
+    const costUnit = Number(product.cost.unit);
+    const taxValue = Number(product.tax.value);
+    const priceUnit = Number(product.price.unit);
+    const taxAndCost = (costUnit * taxValue) + costUnit;
+
     if (!product.productName) {
-        errors.productName = 'Nombre del producto es requerido';
+        errors.productName = 'Nombre del producto es requerido.';
     }
     if (!product.type) {
-        errors.type = 'Tipo de producto es requerido';
+        errors.type = 'Tipo de producto es requerido.';
     }
-    if (!product.tax) {
-        errors.tax = 'Impuesto es requerido';
+    if (product.value && product.tax.value < 0) {
+        errors.tax = 'Impuesto es requerido.';
     }
     if (!product.cost.unit) {
-        errors.cost = 'Costo es requerido';
+        errors.cost = 'Costo es requerido.';
+    }
+    if (taxAndCost > priceUnit) {
+        errors.price = 'El precio no puede ser menor a la suma del (costo + impuesto).'
     }
     return errors;
 }
-
 export const UpdateProductModal = ({ isOpen }) => {
     const { status, product } = useSelector(selectUpdateProductData);
     const [taxesList, setTaxesList] = useState(initTaxes);
@@ -69,19 +80,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     useEffect(() => { getTaxes(setTaxesList) }, [])
 
     const { categories } = useFbGetCategories()
-
-    const calculatePrice = () => {
-        const { cost, tax } = product;
-        let result = (Number(cost.unit) * Number(tax.value) + Number(cost.unit))
-        const price = {
-            unit: useFormatNumber(result, 'number', true),
-            total: useFormatNumber(result, 'number', true),
-        }
-        dispatch(setProduct({ ...product, price }))
-    }
-
-    useEffect(calculatePrice, [product.cost, product.tax])
-
+    console.log(categories)
     const productDataTypeCorrected = new productDataTypeCorrection(product);
 
     const handleUpdateProduct = async () => {
@@ -93,21 +92,18 @@ export const UpdateProductModal = ({ isOpen }) => {
         fbAddProduct(productDataTypeCorrected, dispatch, user)
     }
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         const errors = validateProduct(product);
         try {
-
             if (Object.keys(errors).length === 0) {
                 await productSchema.validate(productDataTypeCorrected);
-                if (status === 'update') {
-                    handleUpdateProduct()
-                }
-                if (status === 'create') {
-                    handleAddProduct()
-                }
+                if (status === 'update') handleUpdateProduct();
+                if (status === 'create') handleAddProduct();
+                
             } else {
                 setErrors(errors)
-                dispatch(addNotification({ title: 'error', message: 'Ocurrió un error', type: 'error' }))
+                const getErrors = Object.values(errors);
+                dispatch(addNotification({ title: 'error', message: getErrors, type: 'error' }))
                 return Promise.reject(new Error('error'))
             }
         } catch (error) {
@@ -115,15 +111,13 @@ export const UpdateProductModal = ({ isOpen }) => {
             dispatch(addNotification({ title: 'error', message: 'Error: ' + error, type: 'error' }));
             return Promise.reject(new Error('error'));
         }
-    }
+    }, [product, status])
 
     const closeModal = () => {
         dispatch(closeModalUpdateProd())
         dispatch(clearUpdateProductData())
     }
-
     const localUpdateImage = (url) => dispatch(ChangeProductImage(url));
-
     const [image] = useImageFallback(product?.productImageURL, noImage)
     return (
         <Modal
@@ -162,7 +156,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                                 value={product?.productName || ''}
                                 onChange={(e) => dispatch(setProduct({ ...product, productName: e.target.value }))}
                             />
-
                         </FormGroup>
                         <FormGroup layout='1fr 1fr'>
                             <InputV4
@@ -183,7 +176,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                                 value={product?.netContent || undefined}
                                 onChange={(e) => dispatch(setProduct({ ...product, netContent: e.target.value }))}
                             />
-
                         </FormGroup>
                         <FormGroup layout='1fr 1fr'>
                             <InputV4
@@ -204,7 +196,6 @@ export const UpdateProductModal = ({ isOpen }) => {
                                 displayKey={'category.name'}
                             />
                         </FormGroup>
-
                     </Section>
                     <Section>
                         <Typography
@@ -224,7 +215,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                                 size={'medium'}
                                 name='stock'
                                 value={product?.stock}
-                                onChange={(e) => dispatch(setProduct({ ...product, stock: e.target.value }))}
+                                onChange={(e) => dispatch(setProduct({ ...product, stock: Number(e.target.value) }))}
                             />
                         </FormGroup>
                     </Section>
@@ -234,46 +225,55 @@ export const UpdateProductModal = ({ isOpen }) => {
                         >
                             Facturación y Precio
                         </Typography>
-                        <FormGroup layout="1fr 1fr">
-                            <ProductVisibilityButton
-                                product={product}
-                                setProduct={setProduct}
-                            />
-                             <select id=""
-                                onChange={(e) => dispatch(setProduct({
-                                    ...product,
-                                    tax: JSON.parse(e.target.value)
-                                }))}>
-                                <option value="">Impuesto</option>
-                                {
-                                    taxesList.length > 0 ? (
-                                        taxesList.map(({ tax }, index) => (
-                                            <option
-                                                selected={tax.value === product.tax.value}
-                                                value={JSON.stringify(tax)}
-                                                key={index}
-                                            >ITBIS {tax.ref}</option>
-                                        ))
-                                    ) : null
-                                }
-                            </select>
-                        </FormGroup>
+                    
                         <FormGroup layout='1fr 1fr'>
-                            <InputV4
-                                label={'Costo'}
-                                type="number"
-                                size={'medium'}
-                                value={product?.cost?.unit}
-                                onChange={(e) => dispatch(setProduct({ ...product, cost: { ...product.cost, unit: e.target.value, total: e.target.value } }))}
-                            />
-                           
-                            <InputV4
-                                type="number"
-                                size={'medium'}
-                                label={'Precio + ITBIS'}
-                                value={status ? useFormatPrice(product.price.unit) : undefined}
-                                readOnly
-                                placeholder='Precio de Venta' />
+                            <div>
+                                <ProductVisibilityButton
+                                    product={product}
+                                    setProduct={setProduct}
+                                />
+                                <Select
+                                    labelVariant='label1'
+                                    title={'Impuesto'}
+                                    data={taxesList}
+                                    required
+                                    value={"ITBIS " + product?.tax?.ref}
+                                    onNoneOptionSelected={() => dispatch(setProduct({
+                                        ...product,
+                                        tax: initTaxes[0].tax
+                                    }))
+                                    }
+                                    onChange={(e) => {
+                                        console.log(e.target.value)
+                                        dispatch(setProduct({
+                                            ...product,
+                                            tax: e.target.value?.tax
+                                        }))
+                                    }}
+                                    displayKey={'tax.ref'}
+                                />
+                                <InputV4
+                                    label={'Costo'}
+                                    type="number"
+                                    size={'medium'}
+                                    required
+                                    value={product?.cost?.unit}
+                                    onChange={(e) => dispatch(setProduct({ ...product, cost: { ...product.cost, unit: Number(e.target.value), total: Number(e.target.value) } }))}
+                                />
+                                <InputV4
+                                    size={'medium'}
+                                    required
+                                    label={'Precio + ITBIS'}
+                                    value={status ? product.price.unit : undefined}
+                                    type={"number"}
+                                    errorMessage={errors?.price}
+                                    validate={errors?.price}
+                                    onChange={(e) => dispatch(setProduct({ ...product, price: { ...product.price, unit: Number(e.target.value), total: Number(e.target.value) } }))}
+                                    placeholder='Precio de Venta'
+                                />
+                            </div>
+                            <ProductPaymentDetails product={product} />
+                         
                         </FormGroup>
                     </Section>
                 </Main>
@@ -283,8 +283,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                             <Img>
                                 <img
                                     src={image}
-                                    style={product?.productImageURL === image ? 
-                                        { objectFit: "cover" } : 
+                                    style={product?.productImageURL === image ?
+                                        { objectFit: "cover" } :
                                         { objectFit: "contain", padding: "2em" }
                                     } alt=""
                                 />
@@ -336,7 +336,6 @@ const Aside = styled.div`
     gap: 2em;
     background-color: white;
     padding: 1em;
-  +
     border-radius: var(--border-radius-light);
 `
 
@@ -354,7 +353,7 @@ const Section = styled.div`
 `
 
 const FormGroup = styled.div`
-    align-items: end;
+ 
     background-color: var(--White);
     border-radius: var(--border-radius-light);
     width: 100%;

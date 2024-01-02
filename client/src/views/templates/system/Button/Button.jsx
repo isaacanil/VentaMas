@@ -89,6 +89,8 @@ const styleByDefault = css`
   svg{
     font-size: 1.2em;
     margin: 0;
+    display: flex;
+    place-items: center;
   }
 
   //transition

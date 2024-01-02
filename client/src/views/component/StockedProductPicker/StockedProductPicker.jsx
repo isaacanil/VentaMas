@@ -76,7 +76,7 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
         }
     }, [initialCost, newStock])
 
-
+    console.log(subTotal)
     return (
         <Container>
             <Group>
@@ -123,7 +123,7 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
                 </div>
                 <div>
                     <InputV4
-                        type='number'   
+                      
                         value={useFormatPrice(subTotal || 0)}
                         placeholder='SubTotal'
                         readOnly

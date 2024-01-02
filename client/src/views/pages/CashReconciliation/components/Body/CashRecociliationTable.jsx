@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { tableConfig } from './tableConfig'
-import { fbGetCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts'
+import { fbGetCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
@@ -34,7 +34,11 @@ export const CashReconciliationTable = () => {
     return {
       incrementNumber: cashCount?.incrementNumber,
       status: cashCount?.state,
-      date: (cashCount?.updatedAt.seconds * 1000),
+      date: (
+        cashCount?.updatedAt?.seconds ? 
+        cashCount?.updatedAt?.seconds * 1000 : 
+        null
+        ),
       user: cashCount?.opening.employee.name,
       total: cashCount,
       discrepancy: cashCount,

@@ -32,7 +32,7 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
   return (
     <Component>
       <InputV4
-        size='small'
+        size='base'
         border
         value={value}
         placeholder='Buscar...'

@@ -4,22 +4,13 @@ import { ConfigMenu } from './components/ConfigMenu'
 import Tabs from '../../../../../templates/system/Tabs/Tabs'
 // import { ColorPairs } from '../../../../../../theme/ColorPalette'
 
-export const Body = () => {
-    const tabs = [
-        {
-            title: 'Tab 1', content: (
-                <Container>
-                 
-                </Container>
-            )
-        },
-        { title: 'Tab 2', content: "prueba" },
-    ];
+export const Body = ({config}) => {
+ 
     return (
 
         <Tabs
             tabPosition='left'
-            tabs={tabs}
+            tabs={config?.tabs}
         />
     )
 }

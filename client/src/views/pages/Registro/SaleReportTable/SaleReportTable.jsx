@@ -12,7 +12,7 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
   const data = bills?.map(({ data }) => {
     return {
       ncf: data?.NCF,
-      client: data?.client?.name,
+      client: data?.client?.name || "Generic Client",
       date: data?.date?.seconds,
       itbis: data?.products?.reduce((total, product) => total + (product?.tax?.value * product?.cost?.unit) * product?.amountToBuy?.total, 0),
       payment: data?.payment?.value,

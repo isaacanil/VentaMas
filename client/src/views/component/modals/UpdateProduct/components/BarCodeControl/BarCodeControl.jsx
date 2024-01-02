@@ -12,7 +12,6 @@ export const BarCodeControl = ({ product, value }) => {
         <Container>
             <InputV4
                 label={'Codigo de Barra'}
-                type="number"
                 value={value}
                 onChange={(e) => dispatch(setProduct({ ...product, barCode: e.target.value }))}
             />

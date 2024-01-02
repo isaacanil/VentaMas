@@ -2,34 +2,34 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { toggleAddPurchaseModal } from '../../../../../features/modals/modalSlice'
-import { getOrderData } from '../../../../../features/purchase/addPurchaseSlice'
-import { deleteOrderFromDB, deletePurchase, PassDataToPurchaseList } from '../../../../../firebase/firebaseconfig'
+import { getOrderData, setAddPurchaseMode, setPurchase } from '../../../../../features/purchase/addPurchaseSlice'
 import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
-
 import { icons } from '../../../../../constants/icons/icons'
 import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+import ROUTES_PATH from '../../../../../routes/routesName'
 
 export const ActionsButtonsGroup = ({ purchaseData }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-   
+    const {PURCHASES_CREATE} = ROUTES_PATH.PURCHASE_TERM
     const {dialog, setDialogConfirm} = useDialog()
   
-    const handleEditMode = (id) => {
-        setMode(modes.edit)
+    const handleEditMode = () => {
+        navigate(PURCHASES_CREATE);
+        dispatch(setAddPurchaseMode('edit'))
+        dispatch(setPurchase(purchaseData.value))
     }
 
     const handleDeleteMode = (id) => {
-        setMode(modes.delete)
+        //setMode(modes.delete)
         setDialogConfirm({
             isOpen: true,
             title: 'Eliminar Orden',
             type: 'warning',
             message: '¿Está seguro que desea eliminar esta orden?',
             onConfirm: () => console.log('confirm'),
-            onCancel: () => console.log('cancel')
+           
         })
     }
  
@@ -38,15 +38,16 @@ export const ActionsButtonsGroup = ({ purchaseData }) => {
             <Button
                 borderRadius='normal'
                 title={icons.operationModes.edit}
-                width='icon32'
-                color='gray-dark'
+                size='icon32'
+                color='white-contained'
                 onClick={() => handleEditMode(purchaseData.id)}
             />
             <Button
                 borderRadius='normal'
                 title={icons.operationModes.delete}
-                width='icon32'
-                color='gray-dark'
+                size='icon32'
+
+                color='error-contained'
                 onClick={() => handleDeleteMode(purchaseData.id)}
             />
         </ButtonGroup>

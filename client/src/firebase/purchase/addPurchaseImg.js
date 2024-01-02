@@ -49,11 +49,9 @@ const fbAddReceiptImageToOrderDoc = (user, orderId, url) => {
     const orderRef = doc(db, 'businesses', user.businessID, 'orders', orderId);
     try {
         updateDoc(orderRef, {
-            'data.receiptImgUrl': url
+            'data.receipt': url
         });
     } catch (error) {
         console.error("Error updating document: ", error);
     }
-
-
 }

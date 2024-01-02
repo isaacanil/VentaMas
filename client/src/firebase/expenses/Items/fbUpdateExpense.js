@@ -2,7 +2,7 @@ import { Timestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
 import { isFirebaseStorageUrl } from "../../../utils/url/isValidUrl";
 import { fbDeleteImage } from "../../img/fbDeleteImage";
-import { fbUploadImageAndGetURL } from "../../img/fbUploadImageAndGetURL";
+import { fbUploadFileAndGetURL } from "../../img/fbUploadFileAndGetURL";
 import { isImageFile } from "../../../utils/file/isValidFile";
 
 
@@ -48,7 +48,7 @@ export const fbUpdateExpense = async (user, setLoading, expense, img) => {
                 isOpen: true,
                 message: "Cargando nueva imagen..."
             });
-            const url = await fbUploadImageAndGetURL(user, 'expensesReceiptImg', img);
+            const url = await fbUploadFileAndGetURL(user, 'expensesReceiptImg', img);
             modifiedExpense.receiptImageUrl = url;
             console.log("Uploaded new image-----------------------");
         }

@@ -1,23 +1,9 @@
 import { Timestamp, doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseconfig";
-import { fbUploadImageAndGetURL } from "../img/fbUploadImageAndGetURL";
-import { isImageFile } from "../../utils/file/isValidFile";
+import { fbUploadFileAndGetURL } from "../img/fbUploadFileAndGetURL";
+import { isImageFile, isPDFFile } from "../../utils/file/isValidFile";
 
-const UpdateProducts = async (user, replenishments) => {
-    try {
-        replenishments.forEach((item) => {
-            const productRef = doc(db, "businesses", user.businessID, 'products', item.id)
-            const updatedStock = item.newStock + item.stock;
-            updateDoc(productRef, {
-                "product.stock": Number(updatedStock),
-            })
-        })
-
-    } catch (error) {
-        throw error;
-    }
-}
-const UpdateOrder = async (user, order) => {
+const updateOrder = async (user, order) => {
     try {
         const orderRef = doc(db, "businesses", user.businessID, 'orders', order.id)
         const providerRef = doc(db, "businesses", user.businessID, 'providers', order.provider.id)
@@ -31,7 +17,7 @@ const UpdateOrder = async (user, order) => {
         throw error;
     }
 }
-export const fbTransformOrderToPurchase = async (user, data, img, setLoading) => {
+export const fbTransformOrderToPurchase = async (user, data, receiptFile, setLoading) => {
     try {
         if (!user || !user.businessID) {
             throw new Error('No user or businessID');
@@ -45,6 +31,7 @@ export const fbTransformOrderToPurchase = async (user, data, img, setLoading) =>
             ...data,
             state: 'state_3',
             provider: providerRef,
+            type: 'Associated',
             dates: {
                 ...data.dates,
                 createdAt: Timestamp.fromMillis(data.dates.createdAt),
@@ -54,16 +41,16 @@ export const fbTransformOrderToPurchase = async (user, data, img, setLoading) =>
             }
         }
 
-        if (isImageFile(img)) {
-            setLoading({ isOpen: true, message: "Subiendo imagen del recibo al servidor..." });
-            dataModified.receiptImgUrl = await fbUploadImageAndGetURL(user, "purchaseReceiptImg", img);
+        if (isImageFile(receiptFile) || isPDFFile(receiptFile)) {
+            setLoading({ isOpen: true, message: "Subiendo recibo al servidor..." });
+            dataModified.receipt = await fbUploadFileAndGetURL(user, "purchaseReceipts", receiptFile);
         }
 
         setLoading({ isOpen: true, message: "Actualizando stock de productos..." });
-        await UpdateProducts(user, data.replenishments);
+        await fbUpdateProdStockForReplenish(user, data.replenishments);
 
         setLoading({ isOpen: true, message: "Actualizando estado de orden..." });
-        await UpdateOrder(user, data);
+        await updateOrder(user, data);
 
         setLoading({ isOpen: true, message: "Registrando detalles de la compra en la base de datos..." });
         await setDoc(purchaseRef, { data: dataModified });

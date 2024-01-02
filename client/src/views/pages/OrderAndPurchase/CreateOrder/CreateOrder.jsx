@@ -149,14 +149,14 @@ export const CreateOrder = () => {
                             <Button
                                 title='Cancelar'
                                 borderRadius={'normal'}
-                                bgcolor='gray'
+                                color={"white-contained"}
                                 height={'large'}
                                 onClick={handleCancel}
                             />
                             <Button
                                 title={OrderState.mode === CreateRef ? 'Crear' : 'Actualizar'}
                                 borderRadius={'normal'}
-                                bgcolor='primary'
+                                color='primary'
                                 height={'medium'}
                                 onClick={HandleSubmit}
                             />

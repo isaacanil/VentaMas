@@ -1,7 +1,7 @@
 import { Timestamp, doc, setDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { db } from "../../firebaseconfig";
-import { fbUploadImageAndGetURL } from "../../img/fbUploadImageAndGetURL";
+import { fbUploadFileAndGetURL } from "../../img/fbUploadFileAndGetURL";
 import { convertDate } from "../../../utils/date/formatDate";
 import { getNextID } from "../../Tools/getNextID";
 import { set } from "lodash";
@@ -29,7 +29,7 @@ export const fbAddExpense = async (user, setLoading, expense, receiptImage, ) =>
         setLoading({ isOpen: true, message: "Subiendo imagen del recibo al servidor..." });
 
         if (receiptImage) {
-            const url = await fbUploadImageAndGetURL(user, 'expensesReceiptImg', receiptImage);
+            const url = await fbUploadFileAndGetURL(user, 'expensesReceiptImg', receiptImage);
             modifiedExpense.receiptImageUrl = url;
         }
 

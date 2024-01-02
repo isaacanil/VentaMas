@@ -20,7 +20,7 @@ const initCategory = {
 export const CategoryProvider = ({ children }) => {
     const [categoryState, setCategoryState] = useState(initCategoryState);
     const [category, setCategory] = useState(initCategory);
-    console.log(category)
+
 
     return (
         <CategoryContext.Provider value={{ category, setCategory, categoryState, setCategoryState }}>

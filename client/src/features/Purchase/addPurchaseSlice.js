@@ -17,7 +17,7 @@ const EmptyPurchase = {
         paymentDate: "",
     },
     state: "",
-    receiptImgUrl: "",
+    receiptUrl: "",
     provider: {},
 }
 const EmptyProduct = {
@@ -35,6 +35,7 @@ const EmptyProduct = {
     }
 }
 const initialState = {
+    mode: "add",
     productSelected: EmptyProduct,
     purchase: EmptyPurchase
 }
@@ -42,6 +43,10 @@ export const addPurchaseSlice = createSlice({
     name: 'addPurchase',
     initialState,
     reducers: {
+        setAddPurchaseMode: (state, actions) => {
+      
+            state.mode = actions.payload
+        },
         getOrderData: (state, actions) => {
             const data = actions.payload
             data ? state.purchase = data : null
@@ -81,6 +86,7 @@ export const addPurchaseSlice = createSlice({
         cleanPurchase: (state) => {
             state.productSelected = EmptyProduct
             state.purchase = EmptyPurchase
+            state.mode = "add"
         },
         updateProduct: (state, actions) => {
             const { value, productID } = actions.payload;
@@ -94,10 +100,10 @@ export const addPurchaseSlice = createSlice({
             }
         },
         addReceiptImageToPurchase: (state, actions) => {
-            state.purchase.receiptImgUrl = actions.payload
+            state.purchase.receiptUrl = actions.payload
         },
         deleteReceiptImageFromPurchase: (state) => {
-            state.purchase.receiptImgUrl = "";
+            state.purchase.receiptUrl = "";
         },
         deleteProductFromPurchase: (state, actions) => {
             const { id } = actions.payload
@@ -120,6 +126,7 @@ export const {
     updateProduct,
     cleanPurchase,
     SelectProduct,
+    setAddPurchaseMode,
     getInitialCost,
     setProductSelected,
     AddProductToPurchase,
@@ -135,5 +142,6 @@ export const SelectProductSelected = (state) => state.addPurchase.productSelecte
 export const selectAddPurchaseList = (state) => state.addPurchase.pendingOrders;
 export const selectProducts = (state) => state.addPurchase.products;
 export const selectPurchase = (state) => state.addPurchase.purchase;
+export const selectPurchaseState = (state) => state.addPurchase;
 
 export default addPurchaseSlice.reducer

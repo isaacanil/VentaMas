@@ -37,20 +37,28 @@ display: grid;
 grid-template-columns: 1fr min-content;
 
 min-height: 500px;
-width: 1200px;
+width: 100%;
+gap: 2em;
+max-width: 1200px;
 padding: 4em;
-margin: 0 auto;
+@media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 2em;
+    }
 `
 const Main = styled.div`
   display: grid;
   align-content: start;
+  max-width: 500px;
+  width: 100%;
 `
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
 
-  width: 700px;
+  width: 100%;
+  max-width: 700px;
   padding: 2em;
   background-image: radial-gradient(circle, #0a53b3 0%, #ffffff 50%,  white 100%);
   

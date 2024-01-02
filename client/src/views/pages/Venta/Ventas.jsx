@@ -71,7 +71,21 @@ export const Sales = () => {
         <MenuComponents />
       </ProductContainer>
       <Cart></Cart>
-      {/* <ConfigModal /> */}
+      {/* <ConfigModal config={
+        {
+          title: 'Configuración',
+          tabs: [
+            {
+                title: 'Tab 1', content: (
+                    <Container>
+                     
+                    </Container>
+                )
+            },
+            { title: 'Tab 2', content: "prueba" },
+        ]
+        }
+      } /> */}
       {/* <ModalManager /> */}
     </Container>
   )

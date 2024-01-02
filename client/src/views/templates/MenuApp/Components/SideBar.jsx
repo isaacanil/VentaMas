@@ -10,6 +10,8 @@ import { WebName } from "../../system/WebName/WebName"
 import { getMenuData } from "../MenuData/MenuData"
 import { Button } from "../../system/Button/Button"
 import { icons } from "../../../../constants/icons/icons"
+import ROUTES_PATH from "../../../../routes/routesName"
+import { useNavigate } from "react-router-dom"
 const sidebarVariant = {
     open: {
         x: 0,
@@ -40,11 +42,15 @@ const sidebarTitleGroup = {
 export const SideBar = ({ isOpen }) => {
     const user = useSelector(selectUser);
     const links = getMenuData();
+    const { SETTINGS } = ROUTES_PATH.SETTING_TERM;
+    const navigate = useNavigate();
     const groupedLinks = links.reduce((acc, item) => {
         (acc[item.group] = acc[item.group] || []).push(item);
         return acc;
     }, {});
-
+    const handleGoToSetting = () => {
+        navigate(SETTINGS)
+    }
     return (
         <Container
             variants={sidebarVariant}
@@ -53,16 +59,17 @@ export const SideBar = ({ isOpen }) => {
         >
             <Wrapper>
                 <Head>
-                        <div>
-                            <EmptyBox />
-                            <WebName></WebName>
-                        </div>
-                        <Button
-                            startIcon={icons.operationModes.setting}
-                            color='info'
-                            size='small'
-                            borderRadius='normal'
-                        />
+                    <div>
+                        <EmptyBox />
+                        <WebName></WebName>
+                    </div>
+                    <Button
+                        startIcon={icons.operationModes.setting}
+                        color='info'
+                        size='icon32'
+                        borderRadius='normal'
+                        onClick={handleGoToSetting}
+                    />
                 </Head>
                 <UserSection user={user}></UserSection>
                 <Body>

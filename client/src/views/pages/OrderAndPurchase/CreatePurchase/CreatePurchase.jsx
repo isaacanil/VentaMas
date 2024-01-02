@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { ButtonGroup, MenuApp, Select } from '../../..'
 import { Button } from '../../..'
-import { getOrderData, selectPurchase, cleanPurchase, AddProductToPurchase, SelectProductSelected, SelectProduct, deleteProductFromPurchase, setProductSelected, updateProduct, setPurchase } from '../../../../features/purchase/addPurchaseSlice'
+import { getOrderData, selectPurchase, cleanPurchase, AddProductToPurchase, SelectProductSelected, SelectProduct, deleteProductFromPurchase, setProductSelected, updateProduct, setPurchase, selectPurchaseState } from '../../../../features/purchase/addPurchaseSlice'
 import { StockedProductPicker } from '../../../component/StockedProductPicker/StockedProductPicker'
 import { ProductListSelected } from '../../../component/ProductListSelected/ProductListSelected'
 import { selectUser } from '../../../../features/auth/userSlice'
@@ -15,6 +15,8 @@ import { addNotification } from '../../../../features/notification/NotificationS
 import { PurchaseDetails } from './PurchaseDetails/PurchaseDetails'
 import { fbTransformOrderToPurchase } from '../../../../firebase/purchase/fbPreparePurchaseDocument'
 import Loader from '../../../templates/system/loader/Loader'
+import { fbAddPurchase } from '../../../../firebase/purchase/fbAddPurchase'
+import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
 
 export const AddPurchase = () => {
     const dispatch = useDispatch();
@@ -23,6 +25,7 @@ export const AddPurchase = () => {
         isOpen: false,
         message: ''
     });
+    const { mode } = useSelector(selectPurchaseState)
     const user = useSelector(selectUser);
 
     const selectedProduct = useSelector(SelectProductSelected);
@@ -33,7 +36,7 @@ export const AddPurchase = () => {
     const { pendingOrders } = fbGetPendingOrders(user);
 
     const { PURCHASES } = ROUTES_PATH.PURCHASE_TERM;
-    const [imgReceipt, setImgReceipt] = useState(null)
+    const [imgReceipt, setImgReceipt] = useState(purchase.receipt || null)
 
     const handleClear = () => dispatch(cleanPurchase());
 
@@ -60,7 +63,7 @@ export const AddPurchase = () => {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Fecha de entrega', type: 'error' }))
             return
         }
-        if(!purchase.dates.paymentDate){
+        if (!purchase.dates.paymentDate) {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Fecha de pago', type: 'error' }))
             return
         }
@@ -69,10 +72,18 @@ export const AddPurchase = () => {
             return
         }
         try {
-            await fbTransformOrderToPurchase(user, purchase, imgReceipt, setLoading);
-            dispatch(addNotification({ title: 'Exito', message: 'Compra realizada', type: 'success' }))
+            if (mode === "add") {
+                if (purchase.id) {
+                    await fbTransformOrderToPurchase(user, purchase, imgReceipt, setLoading);
+                    dispatch(addNotification({ title: 'Exito', message: 'Compra realizada', type: 'success' }))
+                    handleClose();
+                } else {
+                    await fbAddPurchase(user, purchase, imgReceipt, setLoading);
+                }
+            }else if (mode === "edit") {
+                await fbUpdatePurchase(user, purchase, imgReceipt, setLoading);
+            }
             handleClose();
-            console.log("Transformación completada exitosamente");
         } catch (error) {
             dispatch(addNotification({ title: 'Error', message: 'Error al realizar la compra', type: 'error' }))
             console.error("Hubo un error al transformar la orden en una compra:", error);
@@ -90,7 +101,7 @@ export const AddPurchase = () => {
             <Loader show={loading.isOpen} useRedux={false} message={loading.message} theme='light' />
             <Header>
                 <MenuApp
-                    sectionName='Realizar Compra'
+                    sectionName={mode === "add" ? 'Realizar Compra' : 'Editar Compra'}
                 />
             </Header>
             <BodyContainer>
@@ -141,7 +152,7 @@ export const AddPurchase = () => {
                             <Button
                                 title='Guardar'
                                 borderRadius={'normal'}
-                                bgcolor='primary'
+                                color='primary'
                                 height={'medium'}
                                 onClick={handleSubmit}
                             />
@@ -207,9 +218,9 @@ const Footer = styled.div`
     justify-content: right;
     border: var(--border-primary);
     border-radius: var(--border-radius);
-    position: sticky;
-    z-index: 5;
-    bottom: 0;
+    //position: sticky;
+    //z-index: 5;
+    //bottom: 0;
     margin: 0 auto;
     display: flex;
 `

@@ -81,17 +81,16 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
                     <ButtonGroup>
                         <Button
                             borderRadius='normal'
-                            title={btnSubmitName}
-                            onClick={done}
-                            bgcolor='primary'
-                        />
-                        <Button
-                            borderRadius='normal'
                             title={'Cancel'}
                             onClick={close}
                         />
+                        <Button
+                            borderRadius='normal'
+                            title={btnSubmitName}
+                            onClick={done}
+                            color='primary'
+                        />
                     </ButtonGroup>
-
                 </Footer>
             </Container>
         </Backdrop>
@@ -116,14 +115,21 @@ const Backdrop = styled(motion.div)`
 const Container = styled(motion.div)`
  width: 100vw;
  max-width: 720px;
- height: 100%;
- max-height: 600px;
+ height: 98vh;
+ max-height: 1000px;
  background-color: var(--White);
  display: grid;
  grid-template-rows: 3em auto 3em;
  border-radius: 6px;
  overflow: hidden;
  position: relative;
+ @media (max-width: 768px) {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+ }
  ${props => {
         switch (props.width) {
             case 'small':

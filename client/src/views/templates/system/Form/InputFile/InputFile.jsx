@@ -39,7 +39,7 @@ const InputFile = ({
     const getDisplayValue = () => {
         if (isImageFile(img)) return img.name;     
         if (isFirebaseStorageUrl(img)) return img;
-        return ''; // valor por defecto si no se cumple ninguna condición
+        return ''; 
     }
     return (
         <div>
@@ -67,7 +67,7 @@ const InputFile = ({
                         onClick={handleOpenFile}
                         title={title}
                         size='medium'
-                        bgcolor='primary'
+                        color='primary'
                     />
                 }
                 {

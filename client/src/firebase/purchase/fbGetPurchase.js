@@ -1,55 +1,64 @@
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query } from "firebase/firestore";
 import { db } from "../firebaseconfig";
 import { fbGetDocFromReference } from "../provider/fbGetProviderFromReference";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectPurchaseList, updatePurchases } from "../../features/Purchase/purchasesSlice";
 import { selectUser } from "../../features/auth/userSlice";
+import { orderBy } from "lodash";
 
-export const useFbGetPurchase =  () => {
+export const useFbGetPurchase = () => {
     const user = useSelector(selectUser);
     const dispatch = useDispatch();
     const purchases = useSelector(selectPurchaseList);
     const setPurchases = (purchase) => {
         dispatch(updatePurchases(purchase))
-      }
+    }
+
     useEffect(() => {
-        const fetchData = () => {
+        const fetchData = async () => {
             if (!user.businessID || purchases.length > 0) return;
-            const purchasesRef = collection(db, 'businesses', user?.businessID, 'purchases')
-            const unsubscribe = onSnapshot(purchasesRef, async (snapshot) => {
-                const purchasePromises = snapshot.docs
-                    .map((item) => item.data())
-                    .sort((a, b) => a.data.id - b.data.id)
-                    .map(async (item) => {
-                        let purchaseData = item;
-                        const providerDoc = await fbGetDocFromReference(purchaseData.data.provider)
 
-                        if (providerDoc) { // Asegúrate de que providerDoc esté definido
-                            purchaseData.data.provider = providerDoc.provider;
+            const purchasesRef = collection(db, 'businesses', user?.businessID, 'purchases');
+            
+            const q = query(purchasesRef, orderBy("data.numberId", "desc"));
+            const unsubscribe = onSnapshot(q, async (snapshot) => {
+                try {
+                    const purchasePromises = snapshot.docs.map(async (item) => {
+                        let purchaseData = item.data();
+                        // Fetch provider data
+                        try {
+                            const providerDoc = await fbGetDocFromReference(purchaseData.data.provider);
+                            if (providerDoc) { 
+                                purchaseData.data.provider = providerDoc.provider;
+                            }
+                        } catch (error) {
+                            console.error('Error fetching provider data:', error);
+                            // Handle error or set a default value
                         }
-                        if (purchaseData.data.dates.createdAt) {
-                            purchaseData.data.dates.createdAt = purchaseData.data.dates.createdAt.toDate().getTime()
-                        }
-                        if (purchaseData.data.dates.deliveryDate) {
-                            purchaseData.data.dates.deliveryDate = purchaseData.data.dates.deliveryDate.toDate().getTime()
-                        }
-                        if (purchaseData.data.dates.paymentDate) {
-                            purchaseData.data.dates.paymentDate = purchaseData.data.dates.paymentDate.toDate().getTime()
-                        }
-                        if (purchaseData.data.dates.updatedAt) {
-                            purchaseData.data.dates.updatedAt = purchaseData.data.dates.updatedAt.toDate().getTime()
-                        }
+                        
+                        // Convert Firestore timestamps to JavaScript Date objects
+                        ['createdAt', 'deliveryDate', 'paymentDate', 'updatedAt'].forEach(dateField => {
+                            if (purchaseData.data.dates[dateField]) {
+                                purchaseData.data.dates[dateField] = purchaseData.data.dates[dateField].toDate().getTime();
+                            }
+                        });
+
                         return purchaseData;
-                    })
+                    });
 
-                const purchaseArray = await Promise.all(purchasePromises);
-                setPurchases(purchaseArray);
-                console.log(purchaseArray);
-            })
+                    const purchaseArray = await Promise.all(purchasePromises);
+                    setPurchases(purchaseArray);
+                } catch (error) {
+                    console.error('Error fetching purchase data:', error);
+                    // Handle the error appropriately, like setting an error state
+                }
+            });
+
             return () => unsubscribe();
-        }
+        };
         fetchData();
-    }, [user])
+    }, [user, purchases.length]); // Added purchases.length to dependencies
+
     return { purchases };
 }

@@ -30,7 +30,7 @@ const Container = styled.div`
 const Description = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+
   height: auto;
   /* justify-content: center; */
 

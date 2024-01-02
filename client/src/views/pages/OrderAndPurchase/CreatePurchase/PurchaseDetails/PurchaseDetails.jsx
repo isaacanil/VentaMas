@@ -17,9 +17,10 @@ import { selectUser } from '../../../../../features/auth/userSlice'
 import { icons } from '../../../../../constants/icons/icons'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 import InputFile from '../../../../templates/system/Form/InputFile/InputFile'
+import { getDate } from '../../../../../utils/date/getDate'
 
 export const PurchaseDetails = ({ purchase, imgReceipt, setImgReceipt }) => {
-
+    const today = getDate("today");
     const dispatch = useDispatch()
 
     const user = useSelector(selectUser)
@@ -36,15 +37,23 @@ export const PurchaseDetails = ({ purchase, imgReceipt, setImgReceipt }) => {
     }
     const deliveryDateValidate = typeof purchase?.dates?.deliveryDate === 'number';
     const paymentDateValidate = typeof purchase?.dates?.paymentDate === 'number';
-    const formattedDeliveryDate = deliveryDateValidate ? DateTime.fromMillis(purchase?.dates?.deliveryDate).toISODate() : '';
-    const formattedPaymentDate = paymentDateValidate ? DateTime.fromMillis(purchase?.dates?.paymentDate).toISODate() : '';
+    const formattedDeliveryDate = deliveryDateValidate && DateTime.fromMillis(purchase?.dates?.deliveryDate).toISODate();
+    const formattedPaymentDate = paymentDateValidate && DateTime.fromMillis(purchase?.dates?.paymentDate).toISODate();
 
     useEffect(() => {
         if (purchase.orderId) {
             dispatch(clearImageViewer())
         }
     }, [purchase])
-
+    useEffect(() => {
+        if (!purchase.dates.paymentDate) {
+            dispatch(setPurchase({ dates: { ...purchase.dates, paymentDate: today} }))
+        }
+        if (!purchase.dates.deliveryDate) {
+            dispatch(setPurchase({ dates: { ...purchase.dates, deliveryDate: today} }))
+        }
+    }, [purchase])
+   
     return (
         <Container>
             <Section flex>

@@ -25,7 +25,7 @@ export const useFbGetClients = () => {
                 return;
             }
             let clientArray = snapshot.docs.map((item) => item.data());
-            console.log(clientArray);
+            
             setClients(clientArray);
             setLoading(false);
         });

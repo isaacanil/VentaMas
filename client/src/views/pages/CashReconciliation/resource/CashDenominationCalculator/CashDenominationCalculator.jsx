@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
 import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
 
-export const CashDenominationCalculator = ({ isExpanded = null, inputDisabled = null, banknotes, setBanknotes, setIsExpanded, datetime, title, width, columns }) => {
+export const constCashDenominationCalculator = ({ isExpanded = null, inputDisabled = null, banknotes, setBanknotes, setIsExpanded, datetime, title, width, columns }) => {
 
     const bills = banknotes;
     const billsContainerRef = useRef(null)
@@ -51,12 +51,13 @@ export const CashDenominationCalculator = ({ isExpanded = null, inputDisabled = 
                     .sort((a, b) => a.value < b.value)
                     .map((bill, index) => (
                         <BillRow key={index}>
-                            <FormattedValue
+                            {/* <FormattedValue
                                 type={'subtitle'}
                                 value={`$ ${bill.ref}`}
                                 size={'small'}
                                 align={'right'}
-                            />
+                            /> */}
+                            {JSON.stringify(bill)}
                             {/* <BillRef>{bill.ref}</BillRef>  */}
                             <InputV4
                                 type="number"

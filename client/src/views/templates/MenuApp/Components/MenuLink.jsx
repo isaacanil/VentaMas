@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import { NavLink, useLocation, useMatch } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { SubMenu } from './SubMenu/SubMenu'
 export const MenuLink = ({ item, Items }) => {
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
@@ -37,21 +37,19 @@ export const MenuLink = ({ item, Items }) => {
     </Fragment>
   )
 }
-
-const MenuItem = styled.div`
- display: flex;
+const commonStyles = css`
+  display: flex;
   justify-content: space-between;
   padding: 0 0.8em;
   height: 2.8em;
   align-items: center;
+  font-weight: 450;
   color: var(--Gray6);
-
   margin: 0em;
   border-bottom: var(--border-primary);
   :last-child{
     border-bottom: none;
   }
-  
   :hover{
     color: ${props => props.theme.bg.color};
     /* background-color: var(--color2); */
@@ -63,14 +61,14 @@ const MenuItem = styled.div`
   svg{
     color: var(--Gray6);
   }
- 
-`
-const MenuItemLink = styled(MenuItem).attrs({
-  as: NavLink,
+`;
+
+
+
+const MenuItemLink = styled(NavLink).attrs({
   activeClassName: 'active'
 })`
-font-weight: 450;
-
+  ${commonStyles}
 
    &.active {
     color: white;
@@ -82,10 +80,9 @@ font-weight: 450;
   }
 
  `
-const MenuItemDiv = styled(MenuItem)`
-    font-weight: 450;
-    color: var(--Gray6);
-  `
+const MenuItemDiv = styled.div`
+  ${commonStyles}
+`
 
 const Group = styled.div`
   display: flex;

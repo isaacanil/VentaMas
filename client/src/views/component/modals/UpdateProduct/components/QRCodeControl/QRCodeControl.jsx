@@ -13,7 +13,6 @@ export const QRCodeControl = ({ product, value }) => {
         <Container>
             <InputV4
                 label={'Codigo QR'}
-                type="number"
                 value={value}
                 onChange={(e) => dispatch(setProduct({ ...product, qrCode: e.target.value }))}
             />

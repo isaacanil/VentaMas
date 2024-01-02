@@ -47,7 +47,7 @@ export const PaymentArea = () => {
             name: 'Transfer...',
         }
     ])
-    const [paymentValue, setPaymentValue] = useState(0)
+    const [paymentValue, setPaymentValue] = useState(0);
     const SelectPaymentMethod = (id, value) => {
         let SearchingMethod = paymentMethod.find((methodSelected) => methodSelected.method === id)
         setPaymentMethod(
@@ -156,7 +156,7 @@ export const PaymentArea = () => {
                         labelVariant='primary'
                         size=""
                         type="number"
-                        value={useRoundedNumber(quitarCeros(Number(paymentValue)))}
+                        value={paymentValue}
                         onChange={(e) => setPaymentValue(e.target.value)}
                     />
                 </Group>

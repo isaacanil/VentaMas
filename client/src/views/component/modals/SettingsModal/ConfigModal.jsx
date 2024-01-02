@@ -3,12 +3,16 @@ import styled from 'styled-components'
 import { Header } from './components/Header'
 import { Body } from './components/Body/Body'
 
-export const ConfigModal = () => {
+export const ConfigModal = ({config}) => {
   return (
     <Backdrop>
       <Container>
-        <Header />
-        <Body />
+        <Header 
+        config = {config}
+        />
+        <Body 
+        config = {config}
+        />
       </Container>
     </Backdrop>
   )

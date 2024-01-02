@@ -11,7 +11,8 @@ import { icons } from '../../../../../constants/icons/icons'
  * @param {*} {title = "Settings"}
  * @return {*} 
  */
-export const Header = ({ title = "Settings" }) => {
+export const Header = ({ config }) => {
+    const { title = "Settings" } = config;
     return (
         <Container
             
@@ -39,5 +40,5 @@ const Container = styled.div`
     padding: 0 1em;
     align-items: center;
     grid-template-columns: 1fr min-content;
-    border-bottom: 1px solid ${props => props.theme.grey["300"]};
+    border-bottom: ${props => props.theme.border.base};
 `

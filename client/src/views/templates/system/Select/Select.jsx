@@ -212,8 +212,6 @@ const Body = styled.div`
     max-height: 300px;
     height: 300px;
     position: absolute;
-    
-   
     z-index: 999999999999;
     background-color: #ffffff;
     overflow: hidden;
@@ -245,7 +243,6 @@ const Group = styled.div`
         font-size: 1em;
         color: rgb(66, 66, 66);
         width: 100%;
-        font-size: 12px;
         line-height: 1pc;
         display: -webkit-box;
         -webkit-line-clamp: 1;
@@ -263,7 +260,6 @@ const Item = styled.p`
         display: flex;
         align-items: center;
         height: 2.4em;
-        background-color: var(--White2);
     &:hover{
         background-color: var(--color);
         color: white;
@@ -279,29 +275,6 @@ const Item = styled.p`
   }}
 
     
-`
-const InputText = styled.input.attrs({
-  type: 'text'
-})`
-   
-    height: 2.75em;
-   border: none;
-    width: 100%;
-    padding: 0 0.4em;
-    &:focus{
-        outline: 2px solid #00000052;
-    }
-    
-
-  `
-
-const Button = styled.button`
-    background-color: white;
-    border: none;
-    display: flex;
-    align-items: center;
-    padding: 0;
-    justify-content: right;
 `
 const Icon = styled.div`
  height: 1em;
@@ -337,10 +310,10 @@ const Label = styled.label`
         line-height: 1;
         height: min-content;
         color: #353535;
-    font-weight: 600;
-    ::after {
-      content: ' :';
-    }
+        font-weight: 600;
+          ::after {
+            content: ' :';
+          }
         `
       case 'label2':
         return `

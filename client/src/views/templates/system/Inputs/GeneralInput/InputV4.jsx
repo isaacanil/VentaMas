@@ -2,6 +2,8 @@ import React, { Fragment, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { icons } from '../../../../../constants/icons/icons';
+import { formatNumber } from '../../../../../utils/number/number';
+import { useCallback } from 'react';
 
 /**
  * @typedef {Object} InputV4
@@ -48,33 +50,92 @@ const DEFAULT_ICONS = {
   search: icons.forms.search,
 
 };
+const limpiarValorCadena = (valor, type) => {
+  // Quita espacios innecesarios del inicio y final
+  if(type !== 'number'){
+    return  valor;
+  }
+  valor = valor.trim();
+  // Quita ceros innecesarios del inicio
+  valor = valor.replace(/^0+(?!\.)/, '');
+  // Quita ceros innecesarios del final de un número decimal
+  valor = valor.replace(/(\.\d*?[1-9])0+$/, '$1');
+  // Quita el punto decimal si no quedan dígitos después de él
+  valor = valor.replace(/\.$/, '');
+
+  return valor;
+};
+const limpiarValorNumero = (valor, type) => {
+  // Asume que el valor de entrada es numérico y no necesita conversión a cadena
+  if (type === 'number') {
+    // Si el valor es un entero, no habrá ceros a la derecha para eliminar
+    if (Number.isInteger(valor)) return valor;
+    // Convertir a cadena para procesar decimales
+    let valorComoCadena = valor.toString();
+    // Quita ceros innecesarios al final de un número decimal
+    valorComoCadena = valorComoCadena.replace(/(\.\d*?[1-9])0+$/, '$1');
+    // Convierte de nuevo a número
+    valor = Number(valorComoCadena);
+  }
+  return valor;
+};
+
+
 
 export const InputV4 = ({
   focusWhen,
-  id = "", icon, autoFocus,
-  label, labelVariant, marginBottom,
-  size, search, onClear, validate, errorMessage,
-  bgColor, clearButton = false, ...props
+  autoFocus,
+  id = "",
+  icon,
+  label,
+  labelVariant,
+  marginBottom,
+  size,
+  search,
+  onClear,
+  validate,
+  errorMessage,
+  bgColor,
+  clearButton = false,
+  value,
+  type,
+  ...props
 }) => {
-  const showClearButton = clearButton && props.value;
-
   const inputRef = useRef(null);
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const defaultIcon = DEFAULT_ICONS[type] || null;
+  const renderedIcon = icon || defaultIcon;
+
   useEffect(() => {
-    if (autoFocus) {
+    if (inputRef.current && autoFocus) {
       inputRef.current.focus();
     }
   }, [autoFocus]);
 
   useEffect(() => {
-    if (focusWhen) {
+    if (inputRef.current && focusWhen) {
       inputRef.current.focus();
     }
   }, [focusWhen]);
 
-  const [showPassword, setShowPassword] = useState(false);
-  const defaultIcon = DEFAULT_ICONS[props.type] || null;
-  const renderedIcon = icon || defaultIcon;
+  const handleClearClick = () => {
+    if (onClear && value) onClear();
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword(prevShowPassword => !prevShowPassword);
+  };
+  // Función unificada para limpiar valores
+const limpiarValor = useCallback((valor) => {
+  if (typeof valor === 'string') {
+    return limpiarValorCadena(valor) || "";
+  } else if (typeof valor === 'number') {
+    return limpiarValorNumero(valor) || "";
+  }
+  return valor;
+}, [value]);
 
   return (
     <Backdrop marginBottom={marginBottom}>
@@ -93,6 +154,7 @@ export const InputV4 = ({
         search={search}
         validate={validate}
         {...props}
+
       >
         {
           renderedIcon && (
@@ -105,34 +167,29 @@ export const InputV4 = ({
           ref={inputRef}
           id={id}
           {...props}
-          type={showPassword ? 'text' : props.type}
+          type={showPassword ? 'text' : type}
           autoComplete='off'
+          value={limpiarValor(value, type)}
           onInvalid={(e) => {
             e.preventDefault();
             e.target.setCustomValidity('Por favor, complete este campo.');
           }}
         />
         {
-          (props.value && onClear) ? (
+          (value && onClear) ? (
             <Icon
-              onClick={(onClear && props.value) && onClear}
-              style={{ cursor: 'pointer', marginLeft: '8px', position: 'relative', zIndex: '100', color: `${props.value ? "#999" : "transparent"}` }}
+              onClick={handleClearClick}
+              style={{ cursor: 'pointer', marginLeft: '8px', position: 'relative', zIndex: '100', color: `${value ? "#999" : "transparent"}` }}
             >
               {icons.operationModes.close}
             </Icon>
           ) : null
         }
 
-        {props.type === 'password' ? (
-          showPassword ? (
-            <Button onClick={() => setShowPassword(!showPassword)}>
-              {icons.input.password.show}
-            </Button>
-          ) : (
-            <Button onClick={() => setShowPassword(!showPassword)}>
-              {icons.input.password.hide}
-            </Button>
-          )
+        {type === 'password' ? (
+          <Button onClick={toggleShowPassword}>
+            {showPassword ? icons.input.password.hide : icons.input.password.show}
+          </Button>
         ) : null}
       </InputWrapper>
       {(validate && errorMessage) && (
@@ -175,9 +232,6 @@ justify-content: center;
 height: 2em;
 width: 1.6em;
    svg {
-    
-
-    
     font-size: 18px;
     color: #999;
   }
@@ -194,7 +248,7 @@ const InputWrapper = styled.div.attrs(() => ({
   border-radius: 4px;
   &:focus-within {
     ${props => props.disabled || props.readOnly ? null : `
-    border: 1px solid #6b93ff;
+    outline: 2px solid #6b93ff;
     `}
     
   }

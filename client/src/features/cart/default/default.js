@@ -1,3 +1,5 @@
+import { GenericClient } from "../../clientCart/clientCartSlice";
+
 const defaultDelivery = {
     status: false,
     value: ""
@@ -35,7 +37,7 @@ const initialState = {
     isOpen: false,
     data: {
         id: '',
-        client: defaultClient,
+        client: GenericClient,
         products: [],
         change: {
             value: 0

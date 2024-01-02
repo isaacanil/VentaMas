@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
 
 const emptyProduct = {
     status: 'create',
@@ -11,7 +12,7 @@ const emptyProduct = {
         size: '',
         type: '',
         isVisible: true,
-        tax: { unit: 0, total: 0 },
+        tax: initTaxes[0].tax,
         stock: 0,
         netContent: 0,
         order: 1,
@@ -33,7 +34,7 @@ const initialState = {
         price: { unit: 0, total: 0 },
         size: '',
         type: '',
-        tax: { unit: 0, total: 0 },
+        tax: initTaxes[0].tax,
         stock: 0,
         netContent: 0,
         qrCode: '',
