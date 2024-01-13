@@ -1,6 +1,7 @@
 const SALES_TERM = {
     SALES: '/sales',
     BILLS: '/bills',
+    
 }
 const CASH_RECONCILIATION_TERM = {
     CASH_RECONCILIATION_LIST: '/cash-reconciliation',

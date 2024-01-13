@@ -37,7 +37,7 @@ export const AddPurchase = () => {
 
     const { PURCHASES } = ROUTES_PATH.PURCHASE_TERM;
     const [imgReceipt, setImgReceipt] = useState(purchase.receipt || null)
-
+    const [fileList, setFileList] = useState([]);
     const handleClear = () => dispatch(cleanPurchase());
 
     const handleClose = () => {
@@ -137,8 +137,8 @@ export const AddPurchase = () => {
                     />
                     <PurchaseDetails
                         purchase={purchase}
-                        imgReceipt={imgReceipt}
-                        setImgReceipt={setImgReceipt}
+                        fileList={fileList}
+                        setFileList={setFileList}
                     />
                     <Footer>
                         <ButtonGroup>

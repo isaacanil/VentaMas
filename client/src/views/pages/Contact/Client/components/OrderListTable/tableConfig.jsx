@@ -20,10 +20,7 @@ export const tableConfig = () => {
     const openModalUpdateMode = (client) => { dispatch(toggleClientModal({ mode: updateMode, data: client })) }
 
     const columns = [
-        {
-            Header: "ID",
-            accessor: "id",
-        },
+       
         {
             Header: "Nombre",
             accessor: "name",

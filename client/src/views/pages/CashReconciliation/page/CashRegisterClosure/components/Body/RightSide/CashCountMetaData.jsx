@@ -22,7 +22,7 @@ export const CashCountMetaData = (cashCount, invoices = []) => {
     let totalTransfer = invoices.reduce((total, sale) => {
       return total + (sale.data.paymentMethod.filter(payment => payment.method === "transfer" && payment.status).length > 0 ? sale.data.totalPurchase.value : 0);
     }, 0);
-  
+    
     const totalRegister = totalClosingBanknotes  + totalCard + totalTransfer;
     
     const totalCharged = invoices.reduce((total, sale) => { 

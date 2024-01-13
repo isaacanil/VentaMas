@@ -16,8 +16,8 @@ import {
   toggleCart,
 } from '../../../features/cart/cartSlice'
 
-import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectNcfStatus, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData, selectTaxReceipt } from '../../../features/taxReceipt/taxReceiptSlice'
-import { addNotification } from '../../../features/notification/NotificationSlice'
+import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData, selectTaxReceipt, selectNcfType } from '../../../features/taxReceipt/taxReceiptSlice'
+import { addNotification } from '../../../features/notification/notificationSlice'
 import { selectAppMode } from '../../../features/appModes/appModeSlice'
 import { fbAddInvoice } from '../../../firebase/invoices/fbAddInvoice'
 import { fbUpdateProductsStock } from '../../../firebase/products/fbUpdateProductStock'
@@ -42,16 +42,15 @@ export const Cart = () => {
   const selectMode = useSelector(selectAppMode)
   const bill = useSelector(({ cart }) => cart.data)
   const taxReceiptDataSelected = useSelector(selectTaxReceiptData)
-
+  const nfcType = useSelector(selectNcfType);
   const checkCashCount = useIsOpenCashReconciliation()
-
+  const [step, setStep] = useState(0)
   const handleCashReconciliationConfirm = () => {
     const cashCountStrategy = getCashCountStrategy(checkCashCount.status, dispatch)
     cashCountStrategy.handleConfirm()
   }
 
   const viewport = useViewportWidth();
-  const ncfStatus = useSelector(selectNcfStatus);
   const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt);
   const ncfCode = useSelector(selectNcfCode);
   const TotalPurchaseRef = useSelector(SelectTotalPurchase);
@@ -65,12 +64,12 @@ export const Cart = () => {
   const increaseTaxReceipt = async () => {
     if (!taxReceiptEnabled) return;
     try {
-      switch (ncfStatus) {
-        case true:
+      switch (nfcType) {
+        case "CREDITO FISCAL":
           dispatch(IncreaseTaxCredit())
           console.log('hay ncf')
           break;
-        case false:
+        case "CONSUMIDOR FINAL":
           dispatch(IncreaseEndConsumer())
           console.log('no hay ncf')
           break;
@@ -83,7 +82,6 @@ export const Cart = () => {
       console.log(error)
     }
   }
-
   const createOrUpdateClient = async () => {
     try {
       dispatch(handleClient({ user }))
@@ -92,7 +90,6 @@ export const Cart = () => {
       dispatch(addNotification({ message: "Ocurrió un Error con el cliente, Intente de Nuevo", type: 'error' }));
     }
   }
-
   const savingDataToFirebase = async (bill, taxReceipt) => {
     try {
       if (selectMode === true) {
@@ -107,7 +104,6 @@ export const Cart = () => {
       console.log(err)
     }
   }
-
   const clearDataFromState = async () => {
     try {
       dispatch(CancelShipping())
@@ -116,7 +112,6 @@ export const Cart = () => {
       console.log('error al borrar los datos del state de factura')
     }
   }
-
   const showPrintPreview = async () => {
     try {
       handlePrint()
@@ -124,50 +119,62 @@ export const Cart = () => {
       dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     }
   }
-
   const handlePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
-    onAfterPrint: () => {
-      //paso #4 guardar los datos en firebase
-      savingDataToFirebase(billData, taxReceiptDataSelected);
-      setSubmittable(true);
-    },
+    onAfterPrint: () => setStep(4),
   })
-  const handleInvoice = useCallback(async () => {
-    try {
-      if (ProductSelected.length === 0) {
-        dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
-        return;
-      }
 
-      if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
-        handleCashReconciliationConfirm();
-        return;
-      };
-      await createOrUpdateClient();
-      //paso #1 seleccionar el tipo de comprobante
+  useEffect(() => {
+    if (step === 1) {
       { taxReceiptEnabled && increaseTaxReceipt() }
+      setStep(2)
+    }
+  }, [step])
 
-      //paso #2 seleccionar el ncf
+  useEffect(() => {
+    if (step === 2) {
       if (taxReceiptEnabled && ncfCode === null) {
         dispatch(addNotification({ message: "No hay comprobante fiscal seleccionado", type: 'error' }));
         return;
       }
       if (taxReceiptEnabled) dispatch(addTaxReceiptInState(ncfCode));
-      //paso #3 crear o actualizar el cliente
-
-
-      showPrintPreview();
-
-    } catch (error) {
-      handleInvoiceError(error);
+      setStep(3)
     }
-  }, [ProductSelected, checkCashCount, ncfCode, taxReceiptDataSelected, billData, submittable])
-
+  }, [step])
+  
+  useEffect(() => {
+    if (step === 3) {
+      try {
+        createOrUpdateClient();
+        showPrintPreview();
+      } catch (error) {
+        handleInvoiceError(error);
+      }
+    }
+  }, [step])
+  const handleInvoice = async () => {
+    if (ProductSelected.length === 0) {
+      dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
+      return;
+    }
+    if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
+      handleCashReconciliationConfirm();
+      return;
+    };
+    setStep(1)
+  }
   function handleInvoiceError(error) {
     dispatch(addNotification({ message: "Ocurrió un Error, Intente de Nuevo", type: 'error' }));
     console.error(error);
   }
+  useEffect(() => {
+    if (step === 4) {
+      savingDataToFirebase(billData, taxReceiptDataSelected);
+      setSubmittable(true)
+    }
+  }, [step])
+
+ 
   const handleCancelShipping = () => {
     if (viewport <= 800) dispatch(toggleCart());
     dispatch(CancelShipping())

@@ -10,7 +10,9 @@ import { updateObject } from '../../../../../utils/object/updateObject'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Switch } from '../../../../templates/system/Switch/Switch'
-
+import * as antd from 'antd'
+const { Select } = antd
+const { Option } = Select
 export const ClientDetails = ({ mode }) => {
     const dispatch = useDispatch()
     const deliveryStatusInput = useRef(null)
@@ -100,36 +102,50 @@ export const ClientDetails = ({ mode }) => {
                 )}
             </AnimatePresence>
             <Row>
-                <Group>
-                    <Group space={'medium'}>
-                        <Switch
-                        size='small'
-                            checked={client?.delivery?.status ? true : false}
-                            name='delivery.status'
-                            onChange={(e) => updateClient(e)}
-                        />
-                        <InputV4
-                            label='Delivery'
-                            labelVariant='primary'
-                            size='small'
-                            type="number"
-                            name='delivery.value'
 
-                            value={  client?.delivery?.value || ''   }
-                            disabled={!client?.delivery?.status}
-                            ref={deliveryStatusInput}
-                            focusWhen={client?.delivery?.status}
-                            onChange={(e) => updateClient(e)}
-                        />
-                    </Group>
-                    <select name="" id="" onChange={(e) => handleSetSourceOfPurchase(e.target.value)}>
-                        {
-                            sourceOfSaleList.map((item, index) => (
-                                <option value={item.serviceName} key={index} >{item.serviceName}</option>
-                            ))
-                        }
-                    </select>
-                </Group>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.6em'
+                    }}
+
+                >
+                    <Switch
+                        size='small'
+                        checked={client?.delivery?.status ? true : false}
+                        name='delivery.status'
+                        onChange={(e) => updateClient(e)}
+                    />
+                    <InputV4
+                        label='Delivery'
+                        labelVariant='primary'
+                        size='small'
+                        type="number"
+                        name='delivery.value'
+
+                        value={client?.delivery?.value || ''}
+                        disabled={!client?.delivery?.status}
+                        ref={deliveryStatusInput}
+                        focusWhen={client?.delivery?.status}
+                        onChange={(e) => updateClient(e)}
+                    />
+                </div>
+                <Select
+                    name=""
+                    id=""
+                    style={{
+                        width: '160px',
+                    }}
+                    defaultValue={sourceOfSaleList[0].serviceName}
+                    onChange={(e) => handleSetSourceOfPurchase(e.target.value)}>
+                    {
+                        sourceOfSaleList.map((item, index) => (
+                            <Option value={item.serviceName} key={index} >{item.serviceName}</Option>
+                        ))
+                    }
+                </Select>
+
             </Row>
         </Container>
     )
@@ -139,7 +155,7 @@ export const ClientDetails = ({ mode }) => {
 const Container = styled.div`
    display: grid;
    gap: 0.6em;
-   padding: 0.6em 0.4em 0em;
+   padding: 0.2em 0.4em 0em;
    border-bottom-left-radius: 6px;
    border-bottom-right-radius: 6px;
 `
@@ -147,6 +163,10 @@ const AnimatedWrapper = styled(motion.div)`
  display: grid;
    gap: 0.6em;
     
+`
+const Row = styled.div`
+display: flex;
+gap: 1em;
 `
 const Group = styled.div`
 display: flex;
@@ -174,7 +194,4 @@ align-items: center;
     }
     }
                 
-    `
-const Row = styled.div`
-
     `

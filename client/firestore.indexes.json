@@ -1,0 +1,101 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "product.category",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "product.productName",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "product.category",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "product.productName",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "product.order",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "product.productName",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "product.order",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "product.size",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "product.type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "product.productName",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "product.trackInventory",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "product.productName",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "product.trackInventory",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "product.productName",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "product.order",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

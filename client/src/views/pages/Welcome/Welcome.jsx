@@ -6,8 +6,8 @@ import styled from 'styled-components'
 import Header from './components/Header'
 import Body from './components/Body/Body'
 import ROUTES_PATH from '../../../routes/routesName'
-export const Welcome = () => {
 
+export const Welcome = () => {
   const user = useSelector(selectUser)
   const { HOME } = ROUTES_PATH.BASIC_TERM
   const navigate = useNavigate();

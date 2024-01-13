@@ -1,10 +1,9 @@
-import { nanoid } from 'nanoid'
 import React, { useState } from 'react'
 import { useEffect } from 'react'
 import { IoMdClose, IoMdTrash } from 'react-icons/io'
 import { MdClose, MdOutlineFileUpload } from 'react-icons/md'
 import styled from 'styled-components'
-import { fbAddProductImg } from '../../../../../firebase/products/fbAddProductImg'
+
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
@@ -14,6 +13,7 @@ import { useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbDeleteProductImg } from '../../../../../firebase/products/productsImg/fbDeleteProductImg'
 import { icons } from '../../../../../constants/icons/icons'
+import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg'
 
 export const MultimediaManager = () => {
   const [allImg, setAllImg] = useState([])
@@ -22,12 +22,11 @@ export const MultimediaManager = () => {
   useEffect(() => {
     fbGetProductsImg(user, setAllImg)
   }, [user])
-  
+
   console.log(allImg)
 
   const handleSubmit = () => {
-
-    fbAddProductImg(user,ImgToUpload).then((url) => {
+    fbAddProductImg(user, ImgToUpload).then((url) => {
       fbAddProductImgData(user, url)
       setImgToUpload(null)
     })

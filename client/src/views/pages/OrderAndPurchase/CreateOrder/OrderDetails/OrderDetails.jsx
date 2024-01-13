@@ -6,6 +6,9 @@ import { SelectOrder, setOrder } from '../../../../../features/addOrder/addOrder
 import { DateTime } from 'luxon'
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
+import * as ant from 'antd'
+import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
+const { Form, DatePicker } = ant
 
 export const OrderDetails = () => {
     const dispatch = useDispatch()
@@ -31,13 +34,21 @@ export const OrderDetails = () => {
     }, [])
 
     const dateValue = typeof order?.dates?.deliveryDate === 'number' && order?.dates?.deliveryDate;
-    const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : '';
+    const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : null;
+   
+    const convertMillisecondsToJSDate = (milliseconds = 387567890976) => {
+        return milliseconds ? new Date(milliseconds) : null;
+      };
+      const date = new Date();
+      const date2 = date.getTime();
     return (
         <Container>
             <Section flex>
-                <InputDate
+                <InputV4
                     type="date"
                     name=""
+                    label={'Fecha de entrega'}
+                    labelVariant={'label3'}
                     value={formattedDate}
                     id=""
                     min={minDate}
@@ -70,11 +81,15 @@ export const OrderDetails = () => {
 }
 const Container = styled.div`
 display: grid;
+
 gap: 0.4em;
 `
 const Section = styled.section`
     ${props => props.flex ? `
-        display: flex;
+        display: grid;
+        grid-template-columns: min-content 1fr;
+        background-color: var(--color2);
+        align-items: end;
         gap: 1em;
     ` : ''}
 `

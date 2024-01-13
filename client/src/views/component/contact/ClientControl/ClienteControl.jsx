@@ -15,9 +15,14 @@ import { Button } from '../../../templates/system/Button/Button'
 import { MdPersonAdd } from 'react-icons/md'
 import styled from 'styled-components'
 import { useWindowWidth } from '../../../../hooks/useWindowWidth'
+import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
+import { OPERATION_MODES } from '../../../../constants/modes.js'
+import * as antd from 'antd'
+const { Select } = antd
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
+import { selectNcfType, selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice.js'
 
 export const ClientControl = () => {
-
   const dispatch = useDispatch()
 
   const { clients } = useFbGetClients()
@@ -29,13 +34,14 @@ export const ClientControl = () => {
   const filteredClients = filtrarDatos(clients, searchTerm)
   const clientLabel = useSelector(selectLabelClientMode)
   const [inputIcon, setInputIcon] = useState()
-
+  const taxReceiptData = fbGetTaxReceipt()
   const isOpen = useSelector(selectIsOpen)
-
+  const nfcType = useSelector(selectNcfType)
   const closeMenu = () => dispatch(setIsOpen(false))
 
   const createClientMode = () => dispatch(setClientMode(CLIENT_MODE_BAR.CREATE.id))
-
+  const openAddClientModal = () => dispatch(toggleClientModal({ mode: OPERATION_MODES.CREATE.id, data: null, addClientToCart: true }))
+  const openUpdateClientModal = () => dispatch(toggleClientModal({ mode: OPERATION_MODES.UPDATE.id, data: client, addClientToCart: true }))
   const updateClientMode = () => dispatch(setClientMode(CLIENT_MODE_BAR.UPDATE.id))
 
   const searchClientMode = () => dispatch(setClientMode(CLIENT_MODE_BAR.SEARCH.id));
@@ -103,7 +109,6 @@ export const ClientControl = () => {
   const limitByWindowWidth = useWindowWidth()
   return (
     <Container ref={searchClientRef}>
-
       <Header>
         <SearchClient
           icon={inputIcon}
@@ -114,13 +119,28 @@ export const ClientControl = () => {
           fn={handleDeleteData}
           onChange={(e) => handleChangeClient(e)}
         />
-        <Button
-          title={<MdPersonAdd />}
-          width={'icon32'}
-          borderRadius={'normal'}
-          bgcolor={'warning'}
-          onClick={createClientMode}
-        />
+        {
+          mode === CLIENT_MODE_BAR.SEARCH.id && (
+            <Button
+              title={'Cliente'}
+              startIcon={<MdPersonAdd />}
+              borderRadius={'normal'}
+              bgcolor={'warning'}
+              onClick={openAddClientModal}
+            />
+          )
+        }
+        {
+          mode === CLIENT_MODE_BAR.UPDATE.id && (
+            <Button
+              title={'Editar'}
+              startIcon={CLIENT_MODE_BAR.UPDATE.icon}
+              borderRadius={'normal'}
+              bgcolor={'warning'}
+              onClick={openUpdateClientModal}
+            />
+          )
+        }
         {!limitByWindowWidth && (
           <Button
             title={'volver'}
@@ -142,12 +162,27 @@ export const ClientControl = () => {
           filteredClients={filteredClients}
         />
       }
+      <Select
+        style={{ width: 200 }}
+        value={nfcType}
+        onChange={(e) => dispatch(selectTaxReceiptType(e))}
+      >
+        <Select.OptGroup label="Comprobantes Fiscal" >
+          {taxReceiptData.taxReceipt
+            .map(({ data }, index) => (
+              <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
+            ))
+          }
+        </Select.OptGroup>
+      </Select>
     </Container>
   )
 }
 
 const Container = styled.div`
     position: relative;
+    display: grid;
+    gap: 6px;
     margin: 0;
     border: 0;
     width: 100%;

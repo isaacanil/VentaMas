@@ -2,7 +2,6 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import { ChangeProductImage } from '../../../../../features/updateProduct/updateProductSlice'
-import { fbAddProductImg } from '../../../../../firebase/products/fbAddProductImg'
 export const GalleryAdmin = ({images, setImg}) => {
     const dispatch = useDispatch()
     const AddImg = (img) => {

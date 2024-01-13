@@ -58,7 +58,7 @@ const MyBarChart = ({ sales, isOpen, onOpen }) => {
         >
           <Header>
             <Typography variant='h2'>
-              Ventas
+              Reporte de ventas
             </Typography>
             <Button
               title='Cerrar'

@@ -4,11 +4,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Select } from '../../../../templates/system/Select/Select'
 import { DateTime } from 'luxon'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
-import { SelectDataFromOrder } from '../../../../../hooks/useSelectDataFromOrder'
-import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
-import { IoReceipt } from 'react-icons/io5'
-import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
-import { fbAddPurchaseReceiptImg } from '../../../../../firebase/purchase/addPurchaseImg'
 import { clearImageViewer, toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
 import { deleteReceiptImageFromPurchase, selectProducts, setPurchase } from '../../../../../features/purchase/addPurchaseSlice'
@@ -18,8 +13,9 @@ import { icons } from '../../../../../constants/icons/icons'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
 import InputFile from '../../../../templates/system/Form/InputFile/InputFile'
 import { getDate } from '../../../../../utils/date/getDate'
+import { InputMultipleFiles } from '../../../../templates/system/Form/InputFile/InputMultipleFiles'
 
-export const PurchaseDetails = ({ purchase, imgReceipt, setImgReceipt }) => {
+export const PurchaseDetails = ({ purchase, fileList, setFileList }) => {
     const today = getDate("today");
     const dispatch = useDispatch()
 
@@ -100,9 +96,17 @@ export const PurchaseDetails = ({ purchase, imgReceipt, setImgReceipt }) => {
                 />
             </Section>
             <Section flex>
-                <InputFile
+                {/* <InputFile
                     img={imgReceipt}
                     setImg={setImgReceipt}
+                    label='Subir recibo'
+                    labelVariant='label3'
+                    showNameFile
+                    marginBottom={false}
+                /> */}
+                <InputMultipleFiles 
+                    fileList={fileList}
+                    setFileList={setFileList}
                     label='Subir recibo'
                     labelVariant='label3'
                     showNameFile

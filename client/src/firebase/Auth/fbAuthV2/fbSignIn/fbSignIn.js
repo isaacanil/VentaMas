@@ -62,7 +62,7 @@ async function updateAppState(dispatch, userData, userDoc) {
     }));
 }
 
-export const fbSignIn = async (user, dispatch, navigate, homePath, setError) => {
+export const fbSignIn = async (user, dispatch, navigate, homePath) => {
     try {
         const userDoc = await getUserFromFirestore(user);
         const userData = userDoc.data().user;
@@ -83,7 +83,6 @@ export const fbSignIn = async (user, dispatch, navigate, homePath, setError) => 
         console.log('User logged in successfully');
 
     } catch (error) {
-        setError(error.message);
-        console.error('An error occurred during sign in'); // No revela detalles del error
+        throw new Error(error.message);
     }
 };

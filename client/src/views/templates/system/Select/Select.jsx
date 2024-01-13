@@ -190,6 +190,7 @@ const OtherContainer = styled.div`
 const Container = styled.div`
     position: relative;
     max-width: 300px;
+    height: min-content;
     width: 100%;
 `
 

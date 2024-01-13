@@ -34,6 +34,9 @@ import { AnimatePresence } from "framer-motion"
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
 import Dialog from "../../templates/system/Dialog/Dialog"
 import NoteModal from "../../templates/system/NoteModal/NoteModal"
+import ClientFormAnt from "../../pages/Contact/Client/components/ClientForm/ClientFormAnt"
+import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
+import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
 
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
@@ -56,12 +59,15 @@ export const ModalManager = () => {
             isOpen={AddClientModalSelected}
           />
         )}
-        {UpdateProdModalSelected && (
-          <UpdateProductModal
+        {/* <UpdateProductModal
             key='modal-update-product'
             isOpen={UpdateProdModalSelected}
-          />
+          /> */}
+        {UpdateProdModalSelected && (
+          
+          <ProductEditorModal isOpen={UpdateProdModalSelected}  />
         )}
+        <InvoiceForm />
         {SetCustomPizzaSelected && (
           <SetCustomProduct
             key={'modal-set-custom-pizza'}
@@ -70,10 +76,11 @@ export const ModalManager = () => {
           />
         )}
         {ClientModalDataSelected.isOpen && (
-          <ClientForm
+          <ClientFormAnt
             key={'modal-client'}
             isOpen={ClientModalDataSelected.isOpen}
             mode={ClientModalDataSelected.mode}
+            addClientToCart={ClientModalDataSelected.addClientToCart}
             data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
           />
         )}

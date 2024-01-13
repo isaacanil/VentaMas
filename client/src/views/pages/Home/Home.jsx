@@ -17,7 +17,7 @@ export const Home = () => {
       <MenuWebsite />
       <WelcomeSection>
         <WelcomeSectionInner>
-          {/* <ChatBox/> */}
+        
           {user && <PersonalizedGreeting name={user.displayName} />}
           <FeatureCardList cardData={cardData} />
         </WelcomeSectionInner>

@@ -15,11 +15,6 @@ export const initialBanknotes = [
         quantity: "",
     },
     {
-        ref: '20',
-        value: 20,
-        quantity: "",
-    },
-    {
         ref: '25',
         value: 25,
         quantity: ""

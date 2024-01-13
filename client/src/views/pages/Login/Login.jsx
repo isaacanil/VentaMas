@@ -1,113 +1,161 @@
-import React, {useState} from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import * as ant from 'antd';
+const { Form, Input, Button, Checkbox, Card, Layout, Spin, notification } = ant;
+import { UserOutlined, LockOutlined, LoadingOutlined } from '@ant-design/icons';
+import { fbSignIn } from '../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
+import { useDispatch } from 'react-redux';
+import { set } from 'lodash';
+import { useNavigate } from 'react-router-dom';
 
-//component
-import {
-   Button,
-   
-} from '../../index'
-//style
 
-import LoginStyle from './Login.module.scss'
+const { Header, Content } = Layout;
 
-//redux
-import { useDispatch } from 'react-redux'
-import { login } from '../../../features/auth/userSlice';
-
-//firebase
-import {
-   auth,
- }from '../../../firebase/firebaseconfig.jsx'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import findRouteByName from '../../templates/MenuApp/findRouteByName'
-import ROUTES_NAME from '../../../routes/routesName'
-import styled from 'styled-components'
-
-//APP
 export const Login = () => {
    const dispatch = useDispatch()
-   const Navigate = useNavigate()
-
-   const [email, setEmail] = useState('')
-   const [password, setPassword] = useState('')
-   const {HOME} = ROUTES_NAME.BASIC_TERM
-   const homePath = findRouteByName(HOME).path
-
-   const loginToApp = (e) => {
-     e.preventDefault()
-      console.log(email, password)
-      //Sign in an existing user with Firebase
-      signInWithEmailAndPassword(auth, email, password)
-      .then((userCredencial)=>{
-        const user = userCredencial.user
-        dispatch(login({
-          email: user.email,
-          uid: user.uid,
-          displayName: user.displayName
-        }))
-        Navigate(homePath)
-      })
-      .catch((error)=>{
-         alert(error.message)
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode, errorMessage)
-      })
-      //returns  an auth object after a successful authentication
-      //userAuth.user contains all our user details
-        
-    };
-    console.log(email, password)
+   const navigate = useNavigate();
+   const [form] = Form.useForm();
+   const [loading, setLoading] = useState(false);
+   const [loadingTip, setLoadingTip] = useState('Cargando...');
+   const homePath = '/home';
    
+   useEffect(() => {
+      console.log('loading', loading)
+   }, [loading])
+   const onFinish = async () => {
+      setLoading(true); // Iniciar la animación de carga
+      // Agregar un retraso
+      setTimeout(async () => {
+         try {
+            const values = await form.validateFields();
+            const { username, password } = values;
+            const user = {
+               name: username,
+               password
+            };
+            // Llamar a la función de inicio de sesión
+            await fbSignIn(user, dispatch, navigate, homePath);
+            notification.success({
+               message: 'Inicio de sesión exitoso',
+               description: '¡Bienvenido!',
+            });
+            // Código restante...
+         } catch (error) {
+            notification.error({
+               message: 'Error',
+               description: error.message,
+            });
+            // Manejar errores si es necesario
+         } finally {
+            setLoading(false); // Detener la animación de carga
+         }
+      }, 2000); // 2000 milisegundos = 2 segundos de retraso
 
+   };
 
    return (
-      <div className={LoginStyle.Container_app}>
-         <section className={LoginStyle.Login_Wrapper}>
-            <div className={LoginStyle.Login_header}>
-               <div className={LoginStyle.WebName}>
-                  <span>Ventamax</span>
-               </div>
-               <span className={LoginStyle.Title}>Acceder</span>
-            </div>
-            <div className={LoginStyle.LoginControl_Container}>
-               <form className={LoginStyle.FormControl}>
-                  <div className={LoginStyle.FormItemGroup}>
-                     <label htmlFor="" className={LoginStyle.FormLabel}>Usuario:</label>
-                     <input 
-                     className={LoginStyle.FormInput} 
-                     type="text"
-                     placeholder='Email:'
-                     onChange={(e)=>setEmail(e.target.value)}
-                      />
-                  </div>
-                  <div className={LoginStyle.FormItemGroup}>
-                     <label
-                        className={LoginStyle.FormLabel}
-                        htmlFor=""  
-                        >Contraseña:
-                     </label>
+      <Layout className="layout">
+         <Spin
+            spinning={loading}
+            size="large"
+            tip={loadingTip}
+         >
+            <Header style={headerStyle} >
+               {/* <div className="logo" /> */}
+               <h1 style={{ color: 'white' }}>VentaMax</h1>
+            </Header>
+            <Content
+               style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '89vh'
+               }}>
+               <Card
+                  title="Inicio de Sesión"
+                  bordered={false}
+                  style={{
+                     width: 600,
+                     height: "80vh",
+                     display: 'grid',
+                     gridTemplateRows: "min-content 1fr",
+                  }}>
+                  <Form
+                     form={form}
+                     layout="vertical"
+                     name="normal_login"
+                     style={{
+                        display: 'grid',
+                        gridTemplateRows: "1fr min-content",
+                        gap: 16
+                     }}
+                     className="login-form"
+                     initialValues={{ remember: true }}
+                     onFinish={onFinish}
+                  >
+                     <Form.Item
+                        style={
+                           {
+                              padding: " 2em 0em 2.5em"
+                           }
+                        }
+                     >
+                        <Form.Item
+                           name="username"
+                           label="Usuario"
+                           rules={[{ required: true, message: 'Por favor ingresa tu nombre de usuario!' }]}
+                        >
+                           <Input
+                              prefix={<UserOutlined className="site-form-item-icon" />}
+                              placeholder="Usuario"
+                           />
+                        </Form.Item>
+                        <Form.Item
+                           name="password"
+                           label="Contraseña"
+                           rules={[{ required: true, message: 'Por favor ingresa tu contraseña!' }]}
+                        >
+                           <Input.Password
+                              prefix={<LockOutlined />}
+                              type="password"
+                              placeholder="Contraseña"
+                           />
+                        </Form.Item>
+                        {/* <Form.Item>
+                        <Form.Item name="remember" valuePropName="checked" noStyle>
+                           <Checkbox>Recuérdame</Checkbox>
+                        </Form.Item>
 
-                     <input 
-                     className={LoginStyle.FormInput} 
-                     type="password"
-                     placeholder='Contraseña:'
-               
-                     onChange={(e)=>setPassword(e.target.value)} />
+                        {/* <a className="login-form-forgot" href="">
+                        ¿Olvidaste tu contraseña?
+                     </a> 
+                     </Form.Item> */}
+                     </Form.Item>
+                     <Form.Item>
+                        <Button
+                           type="primary"
+                           htmlType="submit"
+                           style={{ width: '100%' }}
+                        >
+                           Iniciar sesión
+                        </Button>
+                     </Form.Item>
+                  </Form>
+               </Card>
+            </Content>
+         </Spin>
+      </Layout>
+   );
+};
 
-                     <Link  className={LoginStyle.FormForgetPasswordInput} to='/'>¿Olvidaste la Contraseña?</Link>
-                  </div >
-                  <div>
-                     <Button onClick={loginToApp} title={'Entrar'}/>
-                  </div>
-               </form>
-            </div>
-         </section>
-      </div>
-   )
-}
-const Backdrop = styled.div`
-`
-const Container = styled.div`
-   
-`
+export default Login;
+
+const headerStyle = {
+   textAlign: 'center',
+   display: 'flex',
+   alignItems: 'center',
+   color: '#fff',
+   height: 50,
+   paddingInline: 48,
+   lineHeight: '64px',
+   backgroundColor: '#4096ff',
+};

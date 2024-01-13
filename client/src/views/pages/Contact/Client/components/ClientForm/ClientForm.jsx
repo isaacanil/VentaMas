@@ -31,7 +31,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
             value: ''
         }
     })
-    console.log(client)
+   
     useEffect(() => {
         if (mode === update && data) {
             setClient(data);

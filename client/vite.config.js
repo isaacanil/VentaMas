@@ -1,11 +1,38 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-
-
+import {createStyleImportPlugin} from 'vite-plugin-style-import';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    createStyleImportPlugin({
+      libs: [
+        {
+          libraryName: 'antd',
+          esModule: true,
+          resolveStyle: (name) => {
+            return `antd/es/${name}/style/index`;
+          },
+        },
+      ],
+    }),
+  ],
+  css: {
+    preprocessorOptions: {
+      less: {
+        modifyVars: {
+          // Aquí puedes definir tus variables de estilo personalizadas
+          'btn-padding-base': '10px',
+          'btn-padding-large': '6px'
+          
+          
+          // ... otras variables
+        },
+        javascriptEnabled: true,
+      },
+    },
+  },
   server: {
     host: '0.0.0.0'
   },

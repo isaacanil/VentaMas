@@ -63,7 +63,7 @@ export const ExpenseChart = () => {
                     >
                         <Header>
                             <Typography variant='h2'>
-                                Ventas
+                                Reporte de Gastos
                             </Typography>
                             <Button
                                 title='Cerrar'

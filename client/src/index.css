@@ -10,7 +10,7 @@
   
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
+ 
 
 }
 ::selection{
@@ -57,6 +57,7 @@ select{
 input{
   background-color: white;
   color: rgb(83, 83, 83);
+  width: 100% !important;
 }
 
 

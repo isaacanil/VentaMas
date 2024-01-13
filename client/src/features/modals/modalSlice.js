@@ -33,6 +33,7 @@ const initialState = {
     modalToggleClient: {
         isOpen: false,
         mode: 'create',
+        addClientToCart: false,
         data: null
     },
     modalToggleProvider: {
@@ -98,12 +99,17 @@ const modalSlice = createSlice({
             state.modalSetCustomPizza.isOpen = !isOpen;
         },
         toggleClientModal: (state, actions) => {
-            const mode = actions.payload.mode
+           // const mode = actions.payload.mode
+
+            const {mode, addClientToCart} = actions.payload
             let isOpen = state.modalToggleClient.isOpen;
             state.modalToggleClient.isOpen = !isOpen;
             if (isOpen === false) {
                 state.modalToggleClient.mode = OPERATION_MODES.CREATE.id
                 state.modalToggleClient.data = null
+            }
+            if(addClientToCart){
+                state.modalToggleClient.addClientToCart = addClientToCart
             }
             if (mode === OPERATION_MODES.CREATE.id) {
                 state.modalToggleClient.mode = mode
@@ -115,6 +121,7 @@ const modalSlice = createSlice({
                 state.modalToggleClient.data = actions.payload.data
                 return
             }
+
         },
         toggleProviderModal: (state, actions) => {
             const create = OPERATION_MODES.CREATE.id;

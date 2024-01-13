@@ -21,11 +21,11 @@ export const CashReconciliationTable = () => {
         date: JSON.stringify(cashCount.opening.date)
       }
     }
-    
+
     dispatch(setCashCount(cashCountToUpdate));
     navigate(`/cash-register-closure/${cashCountToUpdate?.id}`);
   }
-  
+
   useEffect(() => {
     fbGetCashCounts(user, setCashCounts)
   }, [user])
@@ -35,17 +35,17 @@ export const CashReconciliationTable = () => {
       incrementNumber: cashCount?.incrementNumber,
       status: cashCount?.state,
       date: (
-        cashCount?.updatedAt?.seconds ? 
-        cashCount?.updatedAt?.seconds * 1000 : 
-        null
-        ),
+        cashCount?.updatedAt?.seconds ?
+          cashCount?.updatedAt?.seconds * 1000 :
+          null
+      ),
       user: cashCount?.opening.employee.name,
       total: cashCount,
       discrepancy: cashCount,
       action: cashCount,
     }
   })
- 
+
   const columns = tableConfig()
   const handleLabelState = (state) => {
     const stateLabels = {
@@ -69,7 +69,7 @@ export const CashReconciliationTable = () => {
   ]
   return (
     <Container>
-      
+
       <AdvancedTable
         columns={columns}
         data={data}

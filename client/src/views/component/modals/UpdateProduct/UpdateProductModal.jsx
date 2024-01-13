@@ -30,6 +30,7 @@ import Typography from '../../../templates/system/Typografy/Typografy'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useCallback } from 'react'
 import ProductPaymentDetails from './components/ProductPaymentdetails/ProductPaymentDetails'
+import { PaymentDetailTable } from './components/PaymentDetailTable/PaymentDetailTable'
 
 function interpretLayoutString(layoutString) {
     if (!layoutString) return {};
@@ -80,7 +81,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     useEffect(() => { getTaxes(setTaxesList) }, [])
 
     const { categories } = useFbGetCategories()
-    console.log(categories)
+    //console.log(categories)
     const productDataTypeCorrected = new productDataTypeCorrection(product);
 
     const handleUpdateProduct = async () => {
@@ -273,7 +274,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                                 />
                             </div>
                             <ProductPaymentDetails product={product} />
-                         
+                            {/* <PaymentDetailTable /> */}
                         </FormGroup>
                     </Section>
                 </Main>
@@ -286,7 +287,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                                     style={product?.productImageURL === image ?
                                         { objectFit: "cover" } :
                                         { objectFit: "contain", padding: "2em" }
-                                    } alt=""
+                                    } 
+                                    alt=""
                                 />
                             </Img>
                             <Align position='center'>

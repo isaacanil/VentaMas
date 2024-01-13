@@ -2,6 +2,8 @@ import { createSlice } from '@reduxjs/toolkit'
 import { diminishSequence } from './diminishSequence'
 import { increaseSequence } from './increaseSequence'
 import { fbUpdateTaxReceipt } from '../../firebase/taxReceipt/fbUpdateTaxReceipt'
+import { useEffect } from 'react'
+import { useState } from 'react'
 
 const updateComprobante = (state, name) => {
     const comprobante = state.data.find((item) => item.data.name === name);
@@ -12,6 +14,32 @@ const updateComprobante = (state, name) => {
         state.ncfCode = type + serie + increaseSequence(sequence, increase, 10);
     }
 }
+export function getUpdatedSequenceForInvoice(comprobanteName, comprobantes) {
+    // Encuentra el comprobante por nombre
+    const comprobanteIndex = comprobantes.findIndex(c => c.data.name === comprobanteName);
+
+    if (comprobanteIndex === -1) {
+        // No se encontró el comprobante, manejar según sea necesario
+        return null;
+    }
+
+    // Crear una copia del comprobante para modificar
+    const comprobante = { ...comprobantes[comprobanteIndex].data };
+
+    // Actualizar la cantidad y la secuencia
+    comprobante.quantity = String(Number(comprobante.quantity) - 1);
+    comprobante.sequence = increaseSequence(comprobante.sequence, comprobante.increase);
+
+    // Formatear y devolver la nueva secuencia
+    return `${comprobante.type}${comprobante.serie}${comprobante.sequence}`;
+}
+
+// Función para aumentar la secuencia
+// function increaseSequence(sequence, increase) {
+//     // Convierte la secuencia a número, incrementa y luego vuelve a formatear como string
+//     const newSequence = parseInt(sequence, 10) + increase;
+//     return newSequence.toString().padStart(sequence.length, '0');
+// }
 
 const initialState = {
     settings: {
@@ -19,7 +47,7 @@ const initialState = {
     },
     data: [],
     ncfCode: null,
-    ncfStatus: false,
+    ncfType: "",
 }
 
 export const taxReceiptSlice = createSlice({
@@ -29,7 +57,8 @@ export const taxReceiptSlice = createSlice({
         getTaxReceiptData: (state, action) => {          
             state.data = action.payload
         },
-        IncreaseEndConsumer: (state) => {
+        IncreaseEndConsumer: (state, action) => {
+            const name = action.payload;
             if (state.settings.taxReceiptEnabled) {
                 updateComprobante(state, 'CONSUMIDOR FINAL');
             }
@@ -46,8 +75,8 @@ export const taxReceiptSlice = createSlice({
             const taxReceipt = state.data
             fbUpdateTaxReceipt(taxReceipt)
         },
-        handleNCFStatus: (state, actions) => {
-            state.ncfStatus = actions.payload
+        selectTaxReceiptType: (state, actions) => {
+            state.ncfType = actions.payload;
         },
         
         clearTaxReceiptData: (state) => {
@@ -57,13 +86,13 @@ export const taxReceiptSlice = createSlice({
     }
 })
 
-export const { getTaxReceiptData, clearTaxReceiptData, IncreaseEndConsumer, IncreaseTaxCredit, handleNCFStatus, updateTaxCreditInFirebase, toggleTaxReceiptSettings } = taxReceiptSlice.actions;
+export const { getTaxReceiptData, clearTaxReceiptData, IncreaseEndConsumer, IncreaseTaxCredit, selectTaxReceiptType, updateTaxCreditInFirebase, toggleTaxReceiptSettings } = taxReceiptSlice.actions;
 
 //selectors
 export default taxReceiptSlice.reducer
 
 export const selectTaxReceiptData = (state) => state.taxReceipt.data;
-export const selectNcfStatus = (state) => state.taxReceipt.ncfStatus;
+export const selectNcfType = (state) => state.taxReceipt.ncfType;
 export const selectNcfCode = (state) => state.taxReceipt.ncfCode;
 export const selectTaxReceiptEnabled = (state) => state.taxReceipt.settings.taxReceiptEnabled;
 export const selectTaxReceipt = (state) => state.taxReceipt;

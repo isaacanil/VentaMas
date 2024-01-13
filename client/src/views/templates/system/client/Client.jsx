@@ -35,8 +35,7 @@ export const Client = ({ client, Close, updateClientMode, searchTerm}) => {
         <Container onClick={() => handleSubmit(client)}>
             {
                highlightSearch(client.name, searchTerm)
-            }
-            
+            }    
         </Container>
     )
 }

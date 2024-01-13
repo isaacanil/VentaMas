@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
 import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
 
-export const constCashDenominationCalculator = ({ isExpanded = null, inputDisabled = null, banknotes, setBanknotes, setIsExpanded, datetime, title, width, columns }) => {
+export const CashDenominationCalculator = ({ isExpanded = null, inputDisabled = null, banknotes, setBanknotes, setIsExpanded, datetime, title, width, columns }) => {
 
     const bills = banknotes;
     const billsContainerRef = useRef(null)
@@ -23,7 +23,6 @@ export const constCashDenominationCalculator = ({ isExpanded = null, inputDisabl
         closed: { overflow: 'hidden', height: '4em' },
     }
 
-    console.log(bills)
     const newBills = [...bills]
     return (
         <Container width={width}
@@ -31,7 +30,7 @@ export const constCashDenominationCalculator = ({ isExpanded = null, inputDisabl
         >
             <Header>
                 <Group>
-                    <FormattedValue size={'small'} type={'title'}  value={title} />
+                    <FormattedValue size={'small'} type={'title'} value={title} />
                 </Group>
                 <Group>
                     {/* {inputDisabled ? <FormattedValue size={'xsmall'}  type={'title'} value={'No editable'} /> : null} */}
@@ -48,7 +47,6 @@ export const constCashDenominationCalculator = ({ isExpanded = null, inputDisabl
                 transition={{ duration: 0.5 }}
                 columns={columns}  >
                 {newBills
-                    .sort((a, b) => a.value < b.value)
                     .map((bill, index) => (
                         <BillRow key={index}>
                             {/* <FormattedValue
@@ -57,8 +55,8 @@ export const constCashDenominationCalculator = ({ isExpanded = null, inputDisabl
                                 size={'small'}
                                 align={'right'}
                             /> */}
-                            {JSON.stringify(bill)}
-                            {/* <BillRef>{bill.ref}</BillRef>  */}
+                            {/* {JSON.stringify(bill)} */}
+                            <BillRef>{bill.ref}</BillRef>
                             <InputV4
                                 type="number"
                                 value={bill.quantity}
@@ -83,7 +81,10 @@ export const constCashDenominationCalculator = ({ isExpanded = null, inputDisabl
                                 {` ${useFormatPrice(bill.value * bill.quantity)}`}
                             </BillTotal> */}
                         </BillRow>
-                    ))}
+                    ))
+                    .reverse()
+
+                }
                 <OpenControllerWithMessage
                     isExpanded={isExpanded}
                     handleExpanded={handleExpanded}

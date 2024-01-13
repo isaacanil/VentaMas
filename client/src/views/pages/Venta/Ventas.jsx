@@ -26,7 +26,7 @@ export const Sales = () => {
   const categoryGrouped = useSelector(selectCategoryGrouped)
   const [cashCountConfirmation, setCashCountConfirmation] = useState(false)
   const { products, loading, setLoading, error } = useGetProducts()
-
+console.log(products[0])
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -46,7 +46,7 @@ export const Sales = () => {
     }
   }
   useBarcodeScanner(products, checkBarcode);
-
+  console.log(products)
   const productFiltered = filterData(products, searchData)
   const filterProductsByVisibility = productFiltered.filter(({ product }) => product.isVisible !== false);
   return (

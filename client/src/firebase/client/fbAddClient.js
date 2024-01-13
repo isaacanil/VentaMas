@@ -5,7 +5,7 @@ import { nanoid } from "nanoid"
 export const fbAddClient = async (user, client) => {
     try {
         if (!user || !user.businessID) throw new Error('No user or businessID');
-      
+      console.log('cliente', client)
         client = { ...client, id: nanoid(8) }
 
         const clientRef = doc(db, 'businesses', user.businessID, 'clients', client.id);

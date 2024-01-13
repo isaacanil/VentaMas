@@ -10,6 +10,7 @@ const {SALES, BILLS, CASH_RECONCILIATION} = ROUTES_NAME.SALES_TERM;
 const Routes = [
     {path: SALES, element: validateRouteAccess(<Sales />), name: SALES},
     {path: BILLS, element: validateRouteAccess(<Registro />), name: BILLS },
+    
     {path: CASH_RECONCILIATION, element: validateRouteAccess(<CashReconciliation />), name: CASH_RECONCILIATION}
 ]
 

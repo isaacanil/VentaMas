@@ -16,6 +16,7 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
       date: data?.date?.seconds,
       itbis: data?.products?.reduce((total, product) => total + (product?.tax?.value * product?.cost?.unit) * product?.amountToBuy?.total, 0),
       payment: data?.payment?.value,
+      products: data?.products?.reduce((total, product) => total + product?.amountToBuy?.total, 0),
       change: data?.change?.value,
       total: data?.totalPurchase?.value,
       ver: { data },
@@ -23,7 +24,7 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
     }
   })
   const total = useFormatPrice((bills.reduce((total, { data }) => total + data?.totalPurchase?.value, 0)))
-  
+  console.log(data.slice(0,1))
   const handlePaymentMethodValue = () => {
     if (data?.payment?.value) {
         return data?.payment.value

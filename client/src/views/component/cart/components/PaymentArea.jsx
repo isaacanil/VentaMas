@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../../features/cart/cartSlice'
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { getTaxReceiptData, handleNCFStatus, selectNcfStatus, selectTaxReceipt } from '../../../../features/taxReceipt/taxReceiptSlice'
+import { getTaxReceiptData,  selectTaxReceipt, } from '../../../../features/taxReceipt/taxReceiptSlice'
 
 import { quitarCeros } from '../../../../hooks/quitarCeros'
 import CustomInput from '../../../templates/system/Inputs/CustomInput'
@@ -16,20 +16,17 @@ import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
 import { Switch } from '../../../templates/system/Switch/Switch'
 import { Chip } from '../../../templates/system/Chip/Chip'
 import { icons } from '../../../../constants/icons/icons'
+import * as antd from 'antd'
+const { Select } = antd
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
-
-    const selectedNcfStatus = useSelector(selectNcfStatus)
     const TaxesRef = useSelector(SelectTotalTaxes)
     const PaymentValue = useSelector(SelectPaymentValue)
     const DeliveryRef = useSelector(SelectDelivery)
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
-    const [NCFStatus, setNCFStatus] = useState(false)
-
     const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt)
     const taxReceiptData = fbGetTaxReceipt()
-
     const [paymentMethod, setPaymentMethod] = useState([
         {
             status: true,
@@ -62,6 +59,7 @@ export const PaymentArea = () => {
         )
     }
 
+
     useEffect(() => {
         dispatch(addPaymentValue(paymentValue))
         dispatch(setChange())
@@ -82,22 +80,30 @@ export const PaymentArea = () => {
             dispatch(getTaxReceiptData(taxReceiptData))
         }
     }, [taxReceiptData])
-    useEffect(() => {
-        dispatch(handleNCFStatus(NCFStatus))
-    }, [NCFStatus])
+   
     return (
         <Container>
             <Row>
                 <Group className='tax-discount'>
                     {
                         taxReceiptEnabled ? (
-                            <Group space={'small'}>
-                                <Switch
+                            <Group>
+                                {/* <Switch
                                     size='small'
                                     checked={selectedNcfStatus}
                                     onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}
-                                />
-                                <STitle>Comp. Fiscal.</STitle>
+                                    <STitle>Comp. Fiscal.</STitle>
+                                /> */}
+                                {/* <Select
+                                    style={{ width: 200 }}
+                                >
+                                    {taxReceiptData.taxReceipt.map(({ data }, index) => {
+                                        return (
+                                            <Select.Option value={data.ncfCode} key={index}>{data.name}</Select.Option>
+                                        )
+                                    }
+                                    )}
+                                </Select> */}
                             </Group>
                         ) : (
                             <Chip

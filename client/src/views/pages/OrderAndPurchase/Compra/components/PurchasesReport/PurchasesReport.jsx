@@ -53,7 +53,7 @@ export const PurchasesReport = () => {
                     >
                         <Header>
                             <Typography variant='h2'>
-                                Ventas
+                                Reporte de compras
                             </Typography>
                             <Button
                                 title='Cerrar'

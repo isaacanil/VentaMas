@@ -24,14 +24,14 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
     const [counter, setCounter] = useState({ id })
 
     useEffect(() => {
-        if (stock >= counter.value) {
-            dispatch(totalShoppingItems())
-            dispatch(totalPurchase())
-            dispatch(totalTaxes())
+        if (counter.value >= 0) {
+            //dispatch(totalShoppingItems())
+            
             dispatch(onChangeValueAmountToProduct(counter))
             dispatch(addPaymentMethodAutoValue())
-            dispatch(setChange())
+           // dispatch(setChange())
         }
+       
     }, [counter])
 
     const handleIncreaseCounter = () => {
@@ -46,7 +46,7 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
 
 
     const handleDiminishCounter = () => {
-        if (amountToBuyTotal > 1) {
+        if (amountToBuyTotal >= 1) {
             setCounter({ id })
             dispatch(diminishAmountToProduct(counter))
             dispatch(totalPurchase())
@@ -54,6 +54,7 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
             dispatch(totalTaxes())
             dispatch(addPaymentMethodAutoValue())
         }
+       
         if (amountToBuyTotal === 1) {
             setDeletePrevent(true)
         }
@@ -64,7 +65,14 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
                 <ButtonCounter onClick={handleDiminishCounter}>
                     {icons.mathOperations.subtract}
                 </ButtonCounter>
-                <CounterDisplay type="number" name="" id="" value={amountToBuyTotal} onChange={e => setCounter({ ...counter, value: Number(e.target.value) })} />
+                <CounterDisplay
+                    type="number"
+                    name=""
+                    id=""
+                    value={amountToBuyTotal ? amountToBuyTotal : ""}
+                   
+                    onChange={e => setCounter({ ...counter, value: e.target.value })}
+                />
                 <ButtonCounter onClick={handleIncreaseCounter}>
                     {icons.mathOperations.add}
                 </ButtonCounter>
@@ -79,7 +87,7 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
 }
 const Container = styled.div`
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: min-content 1fr  min-content;
     align-items: center;
     background-color: var(--White3);
     height: 1.6em;
@@ -87,8 +95,7 @@ const Container = styled.div`
     border-radius: 6px;
 `
 const ButtonCounter = styled.button`
-        border: none;
-       
+    border: none;
        outline: none;
        font-weight: 700;
        display: flex;
@@ -96,8 +103,8 @@ const ButtonCounter = styled.button`
        justify-content: center;
        border-radius: 4px;
        background-color: var(--White);
-     
        height: 1.4em;
+       width: 1.4em;
        padding: 0.2em;
        &:focus{
          outline: none;
@@ -111,7 +118,7 @@ const ButtonCounter = styled.button`
 const CounterDisplay = styled.input`
 
       border: 1px solid rgba(0, 0, 0, 0);
-      width: 2.5em;
+        width: 100%;
       text-align: center;
       font-size: 17px;
       outline: none;

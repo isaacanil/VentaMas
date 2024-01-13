@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
 
 const emptyProduct = {
-    status: 'create',
+    status: false,
     product: {
         productName: '',
         productImageURL: '',
@@ -11,14 +11,17 @@ const emptyProduct = {
         price: { unit: 0, total: 0 },
         size: '',
         type: '',
+        listPrice: 0,
+        averagePrice: 0,
+        minimumPrice: 0,
         isVisible: true,
         tax: initTaxes[0].tax,
         stock: 0,
-        netContent: 0,
+        netContent: '',
         order: 1,
         amountToBuy: { unit: 1, total: 1 },
         id: '',
-        trackInventory: false,
+        trackInventory: true,
         qrCode: '',
         barCode: '',
     }
@@ -32,17 +35,20 @@ const initialState = {
         category: '',
         cost: { unit: 0, total: 0 },
         price: { unit: 0, total: 0 },
+        listPrice: 0,
+        averagePrice: 0,
+        minimumPrice: 0,
         size: '',
         type: '',
         tax: initTaxes[0].tax,
         stock: 0,
-        netContent: 0,
+        netContent: '',
         qrCode: '',
         barCode: '',
         order: 1,
         amountToBuy: { unit: 1, total: 1 },
         id: '',
-        trackInventory: false,
+        trackInventory: true,
     }
 }
 
@@ -51,19 +57,27 @@ export const updateProductSlice = createSlice({
     initialState,
     reducers: {
         ChangeProductData: (state, action) => {
-           const {status, product} = action.payload
-            state.status = status
+            const { status, product } = action.payload
+            if (!state.status) {
+                state.status = status
+            }
             state.product = {
                 ...state.product,
                 ...product,
             };
         },
+
         setProduct: (state, action) => {
             const product = action.payload
             state.product = product
         },
         ChangeProductImage: (state, action) => {
             state.product.productImageURL = action.payload
+        },
+        changeProductPrice: (state, action) => {
+            const { price } = action.payload
+            state.product.price = price
+
         },
         clearUpdateProductData: (state) => {
             state.product = emptyProduct.product
@@ -72,7 +86,7 @@ export const updateProductSlice = createSlice({
     }
 })
 
-export const { ChangeProductData, clearUpdateProductData, ChangeProductImage, setProduct } = updateProductSlice.actions;
+export const { ChangeProductData, changeProductPrice, clearUpdateProductData, ChangeProductImage, setProduct } = updateProductSlice.actions;
 
 //selectors
 export const selectUpdateProductData = (state) => state.updateProduct;

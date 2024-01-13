@@ -16,14 +16,12 @@ const cartSlice = createSlice({
             const client = actions.payload;
             if (client?.id) {
                 state.data.client = client;
-
                 if (client?.delivery?.status === true) {
                     state.data.delivery = client?.delivery
                 } else {
                     state.data.delivery = defaultDelivery
                 }
             }
-
         },
         setDefaultClient: (state) => {
             state.data.client = GenericClient
@@ -43,6 +41,16 @@ const cartSlice = createSlice({
             const data = actions.payload
             state.data.paymentMethod = data
         },
+        changeProductPrice: (state, action) => {
+            const { id, newPrice } = action.payload;
+            const product = state.data.products.find((product) => product.id === id);
+            if (product) {
+                if(newPrice === 0) return alert('El precio no puede ser 0')
+                product.price.unit = newPrice;
+                product.price.total = product.amountToBuy.total * product.price.unit;
+
+            }
+        },
         changePaymentMethod: (state, actions) => {
             const paymentMethod = state.data.paymentMethod
             const paymentMethodSelected = paymentMethod.findIndex((method) => method.status === true)
@@ -53,8 +61,6 @@ const cartSlice = createSlice({
         addPaymentMethodAutoValue: (state) => {
             const totalPurchase = state.data.totalPurchase.value
             state.data.payment.value = totalPurchase
-
-
         },
         addProduct: (state, action) => {
             const checkingID = state.data.products.find((product) => product.id === action.payload.id)
@@ -81,12 +87,21 @@ const cartSlice = createSlice({
         onChangeValueAmountToProduct: (state, action) => {
             const { id, value } = action.payload
             const productFound = state.data.products.find(product => product.id === id)
+           
             if (productFound) {
+                if(value === 0) return value = 1;
                 productFound.amountToBuy.total = Number(value)
                 productFound.price.total = Number(productFound.amountToBuy.total) * productFound.price.unit;
                 productFound.tax.total = productFound.amountToBuy * productFound.tax.unit;
                 productFound.cost.total = productFound.amountToBuy * productFound.cost.unit;
+                state.data.totalPurchase.value = state.data.products.reduce((total, product) => total + product.price.total, 0)
+                state.data.totalTaxes.value = state.data.products.reduce((total, product) => total + product.tax.total, 0)
+                state.data.totalPurchaseWithoutTaxes.value = state.data.products.reduce((total, product) => total + product.cost.total, 0)
+                state.data.totalShoppingItems.value = state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0)
+                state.data.change.value = state.data.payment.value - state.data.totalPurchase.value
             }
+           
+
         },
         addAmountToProduct: (state, action) => {
             const { value, id } = action.payload
@@ -102,11 +117,12 @@ const cartSlice = createSlice({
             const { id } = action.payload
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
-                productFound.amountToBuy.total = productFound.amountToBuy.total - productFound.amountToBuy.unit
-                productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
+                productFound.amountToBuy -= 1;
+                productFound.price.total = productFound.amountToBuy * productFound.price;
+                productFound.tax = productFound.amountToBuy * productFound.tax + productFound.tax;
                 if (productFound.trackInventory === true) {
                 }
-                if (productFound.amountToBuy.total === 0) {
+                if (productFound.amountToBuy === 0) {
                     state.data.products.splice(state.data.products.indexOf(productFound), 1)
                 }
             }
@@ -163,6 +179,7 @@ export const {
     addSourceOfPurchase,
     addTaxReceiptInState,
     CancelShipping,
+    changeProductPrice,
     deleteProduct,
     diminishAmountToProduct,
     onChangeValueAmountToProduct,

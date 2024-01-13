@@ -1,7 +1,8 @@
 import React from 'react'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { Button } from '../../../system/Button/Button'
+import * as antd from 'antd'
+const { Button } = antd
 import { useIsOpenCashReconciliation } from '../../../../../firebase/cashCount/useIsOpenCashReconciliation'
 import { useDispatch, useSelector } from 'react-redux'
 import { setUserNotification } from '../../../../../features/UserNotification/UserNotificationSlice'
@@ -11,6 +12,7 @@ import routesName from '../../../../../routes/routesName'
 import { openModalAddOrder, toggleAddPurchaseModal } from '../../../../../features/modals/modalSlice'
 import { Tooltip } from '../../../system/Button/Tooltip'
 import { CgMathPlus } from 'react-icons/cg'
+import { icons } from '../../../../../constants/icons/icons'
 export const OrderToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const { PURCHASES, ORDERS, ORDERS_CREATE  } = routesName.PURCHASE_TERM;
     const matchWithCashReconciliation = useMatch(ORDERS)
@@ -33,12 +35,9 @@ export const OrderToolbar = ({ side = 'left', searchData, setSearchData }) => {
                             Children={
                                 
                                 <Button
-                                    borderRadius='normal'
-                                   
-                                    startIcon={<CgMathPlus/>}
-                                    title='Pedido'
+                                    icon={icons.operationModes.add}
                                     onClick={openModal}
-                                />
+                                >Pedido</Button>
                          
                             } />
                     )

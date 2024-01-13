@@ -1,7 +1,7 @@
 import React, { Profiler } from 'react';
 import ReactDOM from 'react-dom/client';
 import './firebase/firebaseconfig';
-
+//import 'antd/dist/antd.css';
 import App from './App';
 import './index.css';
 import './styles/normalize/normalize.css';

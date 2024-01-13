@@ -70,20 +70,28 @@ export const columns = [
     maxWidth: '1fr',
     minWidth: '100px',
   },
+  // {
+  //   Header: 'Pago con',
+  //   accessor: 'payment',
+  //   align: 'right',
+  //   cell: ({ value }) => useFormatPrice(value),
+  //   maxWidth: '1fr',
+  //   minWidth: '100px',
+  // },
+  // {
+  //   Header: 'Cambio',
+  //   accessor: 'change',
+  //   align: 'right',
+  //   cell: ({ value }) => useFormatPrice(value),
+  //   description: 'Cambio entregado al cliente',
+  //   maxWidth: '1fr',
+  //   minWidth: '100px',
+  // },
   {
-    Header: 'Pago con',
-    accessor: 'payment',
+    Header: 'Articulos',
+    accessor: 'products',
     align: 'right',
-    cell: ({ value }) => useFormatPrice(value),
-    maxWidth: '1fr',
-    minWidth: '100px',
-  },
-  {
-    Header: 'Cambio',
-    accessor: 'change',
-    align: 'right',
-    cell: ({ value }) => useFormatPrice(value),
-    description: 'Cambio entregado al cliente',
+    description: 'Articulos comprados',
     maxWidth: '1fr',
     minWidth: '100px',
   },
@@ -98,7 +106,6 @@ export const columns = [
   },
 
   {
-
     Header: 'Ver',
     align: 'right',
     accessor: 'ver',
@@ -106,7 +113,6 @@ export const columns = [
     maxWidth: '0.5fr',
     minWidth: '50px',
     cell: ({ value }) => <PrintButton value={value} />
-
   }
 ]
 export const tableData = {
@@ -161,15 +167,12 @@ export const tableData = {
       max: '1fr',
       min: '100px',
     },
-
     {
-
       name: 'ver',
       align: 'right',
       description: 'Nombre del vendedor que realizó la venta',
       max: '0.5fr',
       min: '50px'
-
     }
   ],
   messageNoData: 'No hay datos para mostrar',

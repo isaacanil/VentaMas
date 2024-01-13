@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from '../../../templates/system/Button/Button'
+// import { Button } from '../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
 import WelcomeData from '../WelcomeData.json'
 import styled from 'styled-components'
@@ -7,8 +7,10 @@ import ROUTES_NAME from '../../../../routes/routesName'
 import { useMatchRouteByName } from '../../../templates/MenuApp/GlobalMenu/useMatchRouterByName'
 import { useNavigate } from 'react-router-dom'
 import findRouteByName from '../../../templates/MenuApp/findRouteByName'
+import * as ant from 'antd'
+const { Button } = ant;
 const Header = () => {
-    const {LOGIN, SIGNUP} = ROUTES_NAME.AUTH_TERM
+    const { LOGIN, SIGNUP } = ROUTES_NAME.AUTH_TERM
 
     const loginPath = LOGIN
     const signupPath = SIGNUP
@@ -16,24 +18,32 @@ const Header = () => {
     const handleNavigate = (path) => {
         navigate(path)
     }
-   
+
     return (
         <Head>
             <Group>
                 <WebName>{WelcomeData.webName}</WebName>
-                
+
                 {/* <Logo src={WelcomeData.logo} alt="" /> */}
             </Group>
             <Group>
                 <ButtonGroup>
                     <Button
+                        onClick={() => {
+                            handleNavigate(loginPath)
+                        }
+                        }
+                    >
+                        Iniciar sesión
+                    </Button>
+                    {/* <Button
                         borderRadius='normal'
                         title='Login'
                         onClick={() => {
                             handleNavigate(loginPath)
                         }
                         }
-                    />
+                    /> */}
                     {/* <Button
                         borderRadius='normal'
                         title='Sign up'

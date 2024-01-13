@@ -86,12 +86,12 @@ export const Product = ({ product, }) => {
 
                     {ProductCheckInCart.status ? (
                         <Group>
-                            <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.total}</AmountToBuy>
+                            <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.unit}</AmountToBuy>
                         </Group>
                     ) : <Group />}
 
                     <Group>
-                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product?.price?.total)}</Price>
+                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product?.price?.unit)}</Price>
                     </Group>
                 </Footer>
             </Body>
