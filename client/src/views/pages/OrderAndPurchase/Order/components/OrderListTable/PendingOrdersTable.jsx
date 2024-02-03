@@ -10,10 +10,13 @@ import { convertMillisToDate, getTimeElapsed, useFormatDate } from '../../../../
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 import { getOrderConditionByID, getOrderStateByID, orderAndDataCondition, orderAndDataState } from '../../../../../../constants/orderAndPurchaseState'
 import { StatusIndicatorDot } from '../StatusIndicatorDot/StatusIndicatorDot'
-import { Button } from '../../../../../templates/system/Button/Button'
+//import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
+
+import * as ant from 'antd'
+const { Button }  = ant;
 
 export const PendingOrdersTable = () => {
   const dispatch = useDispatch();
@@ -41,12 +44,10 @@ export const PendingOrdersTable = () => {
       accessor: 'note',
       cell: ({ value }) => (
         <Button
-          title='ver'
-          borderRadius='normal'
-          color='gray-dark'
-          border='light'
           onClick={() => dispatch(setNote({ note: value, isOpen: true }))}
-        />
+        >
+          Ver
+        </Button>
       )
     },
     {

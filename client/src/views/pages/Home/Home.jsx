@@ -3,7 +3,6 @@ import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../../features/auth/userSlice'
 import { getCardData } from './CardData'
-import { ChatBox } from '../../component/ChatBox/ChatBox'
 import styled from 'styled-components'
 import { FeatureCardList } from './components/FeatureCardList/FeatureCardList'
 import PersonalizedGreeting from './components/PersonalizedGreeting/PersonalizedGreeting'
@@ -16,8 +15,7 @@ export const Home = () => {
     <Container>
       <MenuWebsite />
       <WelcomeSection>
-        <WelcomeSectionInner>
-        
+        <WelcomeSectionInner>       
           {user && <PersonalizedGreeting name={user.displayName} />}
           <FeatureCardList cardData={cardData} />
         </WelcomeSectionInner>

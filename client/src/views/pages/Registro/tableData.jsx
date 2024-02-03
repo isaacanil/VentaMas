@@ -8,35 +8,71 @@ import { useFormatPrice } from "../../../hooks/useFormatPrice";
 import { getTimeElapsed } from "../../../hooks/useFormatTime";
 import { Button } from "../../templates/system/Button/Button";
 import { Receipt } from "../checkout/Receipt";
-import { faReceipt } from "@fortawesome/free-solid-svg-icons";
+import { faPrint, faReceipt } from "@fortawesome/free-solid-svg-icons";
 import { useReactToPrint } from "react-to-print";
 import { useRef } from "react";
 import { truncateString } from "../../../utils/text/truncateString";
-const PrintButton = ({ value }) => {
-  const {data} = value;
+;
+import { icons } from "../../../constants/icons/icons";
+import * as ant from "antd";
+import { useDispatch } from "react-redux";
+import { addInvoice } from "../../../features/invoice/invoiceFormSlice";
+import { DateTime } from "luxon";
+import { convertDate } from "../../../utils/date/convertTimeStampToDate";
+
+const EditButton = ({ value }) => {
+  const dispatch = useDispatch()
+  const data = value.data;
   const componentToPrintRef = useRef(null)
+  const is48HoursOld = data?.date?.seconds < (Date.now() / 1000) - 172800
+  const handleEdit = () => {
+    const invoiceData = {
+      ...data,
+      date: convertDate.fromTimestampToMillis(data.date),
+      payWith: data?.paymentMethod.find((method) => method.status === true)?.value,
+      updateAt: convertDate.fromTimestampToMillis(data?.updateAt),
+      cancel: data?.cancel ? {
+        ...data.cancel,
+        cancelledAt: convertDate.fromTimestampToMillis(data?.cancel?.cancelledAt),
+      } : null
+    }
+
+    dispatch(addInvoice({ invoice: invoiceData }))
+  }
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
   })
+
   return (
-    <div>
+    <div style={{
+      display: 'flex',
+      gap: '10px',
+    }}>
       <Receipt ref={componentToPrintRef} data={data} />
-      <Button
-        width='icon32'
-        color='gray-dark'
-        variant='container'
-        borderRadius='light'
+      <ant.Button
+        icon={<FontAwesomeIcon icon={faPrint} />}
         onClick={handleRePrint}
-        title={
-          <FontAwesomeIcon icon={faReceipt} />
-        }
+      />
+
+      <ant.Button
+        icon={icons.editingActions.edit}
+        onClick={handleEdit}
+        disabled={is48HoursOld}
       />
     </div>
   )
 }
 //max (es el ancho maximo de la columna)
 export const columns = [
+  {
+    Header: 'N°',
+    accessor: 'numberID',
+    sortable: true,
+    align: 'left',
+    maxWidth: '0.4fr',
+    min: '120px',
+  },
   {
     Header: 'RNC',
     accessor: 'ncf',
@@ -50,7 +86,7 @@ export const columns = [
     accessor: 'client',
     sortable: true,
     align: 'left',
-    maxWidth: '1.8fr',
+    maxWidth: '1.6fr',
     minWidth: '170px',
   },
   {
@@ -102,22 +138,41 @@ export const columns = [
     cell: ({ value }) => useFormatPrice(value),
     description: 'Monto total de la compra',
     maxWidth: '1fr',
-    minWidth: '100px',
+    minWidth: '110px',
   },
 
+  // {
+  //   Header: 'Ver',
+  //   align: 'right',
+  //   accessor: 'ver',
+  //   description: 'Nombre del vendedor que realizó la venta',
+  //   maxWidth: '0.5fr',
+  //   minWidth: '50px',
+  //   cell: ({ value }) => <PrintButton value={value} />
+  // },
   {
-    Header: 'Ver',
+    Header: 'Acción',
     align: 'right',
-    accessor: 'ver',
-    description: 'Nombre del vendedor que realizó la venta',
-    maxWidth: '0.5fr',
-    minWidth: '50px',
-    cell: ({ value }) => <PrintButton value={value} />
+    accessor: 'accion',
+    description: 'Accion',
+    maxWidth: '1fr',
+    minWidth: '80px',
+    cell: ({ value }) => <EditButton value={value} />
+
+
   }
 ]
 export const tableData = {
   title: 'Reporte de ventas',
   headers: [
+    {
+      Header: 'N°',
+      accessor: 'numberId',
+      sortable: true,
+      align: 'left',
+      maxWidth: '1fr',
+      min: '150px',
+    },
     {
       name: 'RNC',
       align: 'left',
@@ -173,7 +228,15 @@ export const tableData = {
       description: 'Nombre del vendedor que realizó la venta',
       max: '0.5fr',
       min: '50px'
+    },
+    {
+      name: 'accion',
+      align: 'right',
+      description: '',
+      max: '0.5fr',
+      min: '50px'
     }
+
   ],
   messageNoData: 'No hay datos para mostrar',
 };

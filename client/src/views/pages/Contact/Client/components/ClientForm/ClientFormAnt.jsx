@@ -9,7 +9,7 @@ import { OPERATION_MODES } from '../../../../../../constants/modes';
 import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
 import { addClient, setClientMode } from '../../../../../../features/clientCart/clientCartSlice';
 import { CLIENT_MODE_BAR } from '../../../../../../features/clientCart/clientMode';
-const { Modal, Form, Input, Button, notification } = ant;
+const { Modal, Form, Input, Button, notification, message } = ant;
 /**
  *
  *
@@ -70,7 +70,7 @@ const ClientFormAnt = ({
     const handleSubmit = async () => {
 
         try {
-            
+            let clientCreated = null;
             const values = await form.validateFields();
             
             delete values.clear;
@@ -87,16 +87,16 @@ const ClientFormAnt = ({
              
             } else {
                 console.log('client', JSON.stringify(client))
-                await fbAddClient(user, client)
-                notification.success({
+                clientCreated = await fbAddClient(user, client)
+                message.success({
                     message: 'Cliente Creado',
                     description: 'Se ha añadido un nuevo cliente con éxito.'
                 });
                
             }
-            if(addClientToCart){
-                dispatch(setClientMode(CLIENT_MODE_BAR.CREATE.id))
-                dispatch(addClient(client))
+            if(addClientToCart && clientCreated){
+                dispatch(setClientMode(CLIENT_MODE_BAR.UPDATE.id))
+                dispatch(addClient(clientCreated))
             }
             
             // Ensure the form is reset only when the modal is still open
@@ -154,36 +154,21 @@ const ClientFormAnt = ({
                 <Form.Item
                     name="tel"
                     label="Teléfono"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Por favor ingrese el teléfono del cliente',
-                        },
-                    ]}
+                   
                 >
                     <Input />
                 </Form.Item>
                 <Form.Item
                     name="personalID"
                     label="RNC/Cédula"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Por favor ingrese el RNC o la cédula del cliente',
-                        },
-                    ]}
+                   
                 >
                     <Input />
                 </Form.Item>
                 <Form.Item
                     name="address"
                     label="Dirección"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Por favor ingrese la dirección del cliente',
-                        },
-                    ]}
+                   
                 >
                     <Input />
                 </Form.Item>

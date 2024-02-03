@@ -9,6 +9,11 @@ import styles from './invoice.module.css'
 import { SearchOutlined } from '@ant-design/icons'
 import Receipt from './Receipt';
 import { InvoiceForm } from '../../../component/modals/InvoiceForm/InvoiceForm';
+import { fbAddNumberIdToInvoices } from '../../../../firebase/invoices/fbAddNumberIdToInvoice';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../../../features/auth/userSlice';
+import { fbGetUser } from '../../../../firebase/Auth/fbGetUser';
+import { Users } from './Users/Users';
 
 const data = {
   companyName: "CASA ESTILO RF",
@@ -99,8 +104,26 @@ const InvoiceFooter = styled.footer`
 
 
 export const Prueba = () => {
+  const user = useSelector(selectUser)
+  const [users, setUsers] = useState([])
+
+  const handleSubmit = () => {
+    let values = "recumperando las crendenciales..."
+    alert(values);
+  
+  }
+  console.log(users)
   return (
-  <InvoiceForm />
+    <div>
+        Hola
+        <Button
+        onClick={handleSubmit}
+        >
+          Recuperar Credenciales
+        </Button>
+        <Users />
+    </div>
+
   )
 }
 <Receipt />

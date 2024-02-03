@@ -23,6 +23,5 @@ const Container = styled.div`
     background-color: var(--color2);
     display: grid;
     grid-template-rows: min-content  1fr;
-    justify-content: center;
     align-items: flex-start;
 `

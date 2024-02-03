@@ -2,7 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 import { initialState, defaultDelivery } from "./default/default";
 import { GenericClient } from "../clientCart/clientCartSlice";
 
-
+const limitTwoDecimal = (number) => {
+    return Number(number.toFixed(2))
+}
 
 const cartSlice = createSlice({
     name: 'factura',
@@ -47,7 +49,7 @@ const cartSlice = createSlice({
             if (product) {
                 if(newPrice === 0) return alert('El precio no puede ser 0')
                 product.price.unit = newPrice;
-                product.price.total = product.amountToBuy.total * product.price.unit;
+                product.price.total = limitTwoDecimal(product.amountToBuy.total * product.price.unit);
 
             }
         },
@@ -66,8 +68,8 @@ const cartSlice = createSlice({
             const checkingID = state.data.products.find((product) => product.id === action.payload.id)
             if (state.data.products.length > 0 && checkingID) {
                 checkingID.amountToBuy.total = checkingID.amountToBuy.total + checkingID.amountToBuy.unit;
-                checkingID.price.total = checkingID.price.unit * checkingID.amountToBuy.total;
-                checkingID.tax.total = checkingID.tax.unit * checkingID.amountToBuy.total;
+                checkingID.price.total = limitTwoDecimal(checkingID.price.unit * checkingID.amountToBuy.total);
+                checkingID.tax.total = limitTwoDecimal(checkingID.tax.unit * checkingID.amountToBuy.total);
             } else {
                 const product = action.payload
                 const products = state.data.products
@@ -89,16 +91,19 @@ const cartSlice = createSlice({
             const productFound = state.data.products.find(product => product.id === id)
            
             if (productFound) {
-                if(value === 0) return value = 1;
+                if(value === 0) {
+                    let newValue = 1;
+                    return newValue;
+                  }
                 productFound.amountToBuy.total = Number(value)
                 productFound.price.total = Number(productFound.amountToBuy.total) * productFound.price.unit;
                 productFound.tax.total = productFound.amountToBuy * productFound.tax.unit;
                 productFound.cost.total = productFound.amountToBuy * productFound.cost.unit;
-                state.data.totalPurchase.value = state.data.products.reduce((total, product) => total + product.price.total, 0)
-                state.data.totalTaxes.value = state.data.products.reduce((total, product) => total + product.tax.total, 0)
-                state.data.totalPurchaseWithoutTaxes.value = state.data.products.reduce((total, product) => total + product.cost.total, 0)
-                state.data.totalShoppingItems.value = state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0)
-                state.data.change.value = state.data.payment.value - state.data.totalPurchase.value
+                state.data.totalPurchase.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.price.total, 0))
+                state.data.totalTaxes.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.tax.total, 0))
+                state.data.totalPurchaseWithoutTaxes.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.cost.total, 0))
+                state.data.totalShoppingItems.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0))
+                state.data.change.value = limitTwoDecimal(state.data.payment.value - state.data.totalPurchase.value)
             }
            
 
@@ -108,18 +113,18 @@ const cartSlice = createSlice({
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
                 productFound.amountToBuy.total = productFound.amountToBuy.total + productFound.amountToBuy.unit
-                productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
-                productFound.tax.total = productFound.amountToBuy.total * productFound.tax.unit + productFound.tax.unit;
-                productFound.cost.total = productFound.amountToBuy.total * productFound.cost.unit + productFound.cost.unit;
+                productFound.price.total = limitTwoDecimal(productFound.amountToBuy.total * productFound.price.unit);
+                productFound.tax.total = limitTwoDecimal(productFound.amountToBuy.total * productFound.tax.unit + productFound.tax.unit);
+                productFound.cost.total = limitTwoDecimal(productFound.amountToBuy.total * productFound.cost.unit + productFound.cost.unit);
             }
         },
         diminishAmountToProduct: (state, action) => {
             const { id } = action.payload
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
-                productFound.amountToBuy -= 1;
-                productFound.price.total = productFound.amountToBuy * productFound.price;
-                productFound.tax = productFound.amountToBuy * productFound.tax + productFound.tax;
+                productFound.amountToBuy.total -= 1;
+                productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
+                productFound.tax.total = productFound.amountToBuy.total * productFound.tax.unit + productFound.tax.unit;
                 if (productFound.trackInventory === true) {
                 }
                 if (productFound.amountToBuy === 0) {
@@ -131,12 +136,12 @@ const cartSlice = createSlice({
         totalTaxes: (state) => {
             const productSelected = state.data.products
             const total = productSelected.reduce((total, product) => total + (product.price.unit * product.tax.value) * product.amountToBuy.total, 0)
-            state.data.totalTaxes.value = total
+            state.data.totalTaxes.value = limitTwoDecimal(total)
         },
         totalPurchaseWithoutTaxes: (state) => {
             const ProductsSelected = state.data.products;
             const result = ProductsSelected.reduce((total, product) => total + product.cost.total, 0);
-            state.data.totalPurchaseWithoutTaxes.value = result;
+            state.data.totalPurchaseWithoutTaxes.value = limitTwoDecimal(result);
         },
         addDiscount: (state, action) => {
             const value = action.payload;
@@ -150,12 +155,12 @@ const cartSlice = createSlice({
             const discount = total * discountPercentage;
             const totalWithDiscount = total - discount;
             const Delivery = state.data.delivery.status ? state.data.delivery.value : 0;
-            state.data.totalPurchase.value = (Number(Delivery) + Number(totalWithDiscount))
+            state.data.totalPurchase.value = limitTwoDecimal(Number(Delivery) + Number(totalWithDiscount))
         },
         setChange: (state) => {
             const totalPurchase = state.data.totalPurchase.value;
             const payment = state.data.payment.value;
-            state.data.change.value = Number(payment) - Number(totalPurchase)
+            state.data.change.value = limitTwoDecimal(Number(payment) - Number(totalPurchase))
         },
         totalShoppingItems: (state) => {
             const Items = state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0)

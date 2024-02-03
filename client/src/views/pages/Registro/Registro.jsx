@@ -12,13 +12,13 @@ import { addNotification } from '../../../features/notification/NotificationSlic
 import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import { motion } from 'framer-motion'
 import { selectUser } from '../../../features/auth/userSlice'
-import  SalesReport  from './ReportsSale/ReportsSale'
+import SalesReport from './ReportsSale/ReportsSale'
 import { Calendar } from '../../templates/system/Dates/Calendar/Calendar'
 import { DateTime } from 'luxon'
 import { getDateRange } from '../../../utils/date/getDateRange'
 
 export const Registro = () => {
- 
+
   const dispatch = useDispatch();
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
@@ -31,8 +31,6 @@ export const Registro = () => {
   const handleTimeChange = (dates) => {
     setDatesSelected(dates)
   }
-
-  console.log(invoices)
 
   return (
     <Fragment>
@@ -51,9 +49,9 @@ export const Registro = () => {
             {/* <Calendar selectionType='range' /> */}
             <DatePicker setDates={setDatesSelected} dates={datesSelected} />
             <DateRangeFilter setDates={handleTimeChange} dates={datesSelected} />
-            <Button 
-            title={'Gráfico de ventas'}
-            onClick={onReportSaleOpen}
+            <Button
+              title={'Gráfico de ventas'}
+              onClick={onReportSaleOpen}
             />
             {/* <ComponentTagger text={'Exportar excel:'} children={ */}
 
@@ -64,8 +62,8 @@ export const Registro = () => {
           bills={invoices}
           searchTerm={searchTerm}
         />
-        <SalesReport isOpen={isReportSaleOpen} onOpen={onReportSaleOpen} sales={invoices} />
       </Container>
+      <SalesReport isOpen={isReportSaleOpen} onOpen={onReportSaleOpen} sales={invoices} />
     </Fragment>
   )
 }
@@ -90,7 +88,7 @@ const FilterBar = styled.div`
     align-items: end;
     padding: 0.4em 1em;
     margin: 0 auto;
-    z-index: 2;
+    /* z-index: 2; */
     gap: 1em;
   }
   select{

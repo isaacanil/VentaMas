@@ -3,11 +3,14 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { getOrderData, setAddPurchaseMode, setPurchase } from '../../../../../features/purchase/addPurchaseSlice'
-import { Button } from '../../../../templates/system/Button/Button'
+//import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
 import { icons } from '../../../../../constants/icons/icons'
 import { useDialog } from '../../../../../Context/Dialog/DialogContext'
 import ROUTES_PATH from '../../../../../routes/routesName'
+import * as ant from 'antd'
+import { DateTime } from 'luxon'
+const {Button} = ant
 
 export const ActionsButtonsGroup = ({ purchaseData }) => {
     const dispatch = useDispatch()
@@ -32,22 +35,24 @@ export const ActionsButtonsGroup = ({ purchaseData }) => {
            
         })
     }
+    // const createdAt = purchaseData.dates.createdAt
+    // const now = DateTime.now().toMillis()
+    // const diff = now - createdAt
+    // const isEditable = diff < 86400000
+    console.log('purchaseData', purchaseData.id)
  
     return (
         <ButtonGroup>
             <Button
-                borderRadius='normal'
-                title={icons.operationModes.edit}
-                size='icon32'
-                color='white-contained'
+                icon={icons.operationModes.edit}
+                color='error'
+              //  disabled={!isEditable}
                 onClick={() => handleEditMode(purchaseData.id)}
             />
+           
             <Button
-                borderRadius='normal'
-                title={icons.operationModes.delete}
-                size='icon32'
-
-                color='error-contained'
+                danger
+                icon={icons.operationModes.delete}
                 onClick={() => handleDeleteMode(purchaseData.id)}
             />
         </ButtonGroup>

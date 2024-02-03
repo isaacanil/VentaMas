@@ -46,7 +46,7 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
 
 
     const handleDiminishCounter = () => {
-        if (amountToBuyTotal >= 1) {
+        if (amountToBuyTotal > 1) {
             setCounter({ id })
             dispatch(diminishAmountToProduct(counter))
             dispatch(totalPurchase())

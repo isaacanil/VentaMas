@@ -32,17 +32,7 @@ export const CreatePurchaseToolbar = ({ side = 'left', searchData, setSearchData
                 {
                     side === 'right' && (
                         <ButtonGroup>
-                            <Tooltip
-                                description='Realizar Comprar'
-                                Children={
-                                    <Button
-                                    borderRadius='light'     
-                                        startIcon={icons.operationModes.add}
-                                        title='Proveedor'
-                                        onClick={openProviderModal}
-                                    />
-                             
-                                } />
+                            
                                <AddProductButton />
                         </ButtonGroup>
                     )

@@ -23,7 +23,7 @@ export const getOrderConditionByID = (conditionID) => {
         const condition = orderAndDataCondition.find(c => c.id === conditionID);
         return condition?.name;
     }
-    return conditionID || '';
+    return conditionID || null;
 }
 export const getOrderStateByID = (stateID) => {
     if(stateID){

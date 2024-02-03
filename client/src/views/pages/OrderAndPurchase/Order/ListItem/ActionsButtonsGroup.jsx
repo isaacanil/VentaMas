@@ -12,6 +12,7 @@ import { selectUser } from '../../../../../features/auth/userSlice'
 import { OPERATION_MODES } from '../../../../../constants/modes'
 import { fbDeleteOrder } from '../../../../../firebase/order/fbDeleteOrder'
 import { addNotification } from '../../../../../features/notification/NotificationSlice'
+import * as antd from 'antd'
 
 export const ActionsButtonsGroup = ({ orderData }) => {
     const dispatch = useDispatch();
@@ -50,36 +51,26 @@ export const ActionsButtonsGroup = ({ orderData }) => {
             }
         })
     }
-
     return (
         <ButtonGroup >
             <Fragment>
                 {
-
                     orderData.state === 'state_2' &&
-                    <Button
-                        borderRadius='normal'
-                        title={icons.operationModes.buy}
-                        size='icon32'
-                        color='gray-dark'
+                    <antd.Button
+                        icon={icons.operationModes.buy}
                         onClick={() => handlePurchasingMode(orderData.id)}
                     />
                 }
 
-                <Button
-                    borderRadius='normal'
-                    title={icons.operationModes.edit}
-                    size='icon32'
-                    color='gray-dark'
+                <antd.Button
+                    icon={icons.operationModes.edit}
                     onClick={() => handleEditMode(orderData.id)}
                 />
                 {
                     orderData.state === 'state_2' &&
-                    <Button
-                        borderRadius='normal'
-                        title={icons.operationModes.delete}
-                        size='icon32'
-                        color='gray-dark'
+                    <antd.Button
+                        danger
+                        icon={icons.operationModes.delete}
                         onClick={() => handleDeleteMode(orderData.id)}
                     />
                 }

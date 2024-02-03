@@ -15,9 +15,6 @@ const ProductCard = ({ productName, price, quantity, setQuantity }) => {
   return (
     <Card >
       <Form>
-
-
-
         <Form.Item label="">
           <Row gutter={16}>
             <Col>

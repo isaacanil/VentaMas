@@ -29,11 +29,9 @@ import usersManagementSlice from "../features/usersManagement/usersManagementSli
 import filterProductsSliceReducer from "../features/filterProduct/filterProductsSlice";
 import noteModalReducer from "../features/noteModal/noteModalSlice";
 import cashCountState from "../features/cashCount/cashStateSlice";
+import invoiceFormReducer from "../features/invoice/invoiceFormSlice";
 import * as expenseSlices from '../features/expense';
 import * as purchaseSlices from '../features/purchase';
-
-
-
 
 export const store = configureStore({
   reducer: {
@@ -53,6 +51,7 @@ export const store = configureStore({
     updateProduct: updateProductReducer,
     customPizza: customPizzaReducer,
     modal: modalReducer,
+    invoiceForm: invoiceFormReducer,
     alert: alertReducer,
     notification: notificationReducer,
     setting: settingReducer,

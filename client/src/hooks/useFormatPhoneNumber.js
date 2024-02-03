@@ -1,5 +1,3 @@
-import { warning } from "@remix-run/router";
-
 export const useFormatPhoneNumber = (number = '', warning = null) => {
   
   // Removing all non-numeric characters from the phone number

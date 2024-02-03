@@ -4,33 +4,36 @@ import { Row } from '../../../AdvancedTable'
 import { motion } from 'framer-motion'
 import { icons } from '../../../../../../../constants/icons/icons'
 
-export const TableHeader = ({handleSort, columnOrder, sortConfig,}) => {
+export const TableHeader = ({ handleSort, columnOrder, sortConfig }) => {
     
-    return (
-        <Container columns={columnOrder}>
-            <Row columns={columnOrder}>
-                {columnOrder.map((col, index) => (
-                    <HeaderCell
-                        key={index}
-                        align={col.align}
-                        onClick={() => handleSort(col.accessor, col.sortable)} // pasar col.sortable aquí
-                    >
-                        {col.Header}
-                        {/* {(col.sortable && sortConfig.direction !== 'asc' && sortConfig.direction !== 'desc') ? <span>{icons.mathOperations.subtract}</span> : ''}  */}
-                        {sortConfig.key === col.accessor
-                            ? (sortConfig.direction === 'asc'
-                                ? <MotionIcon key="up" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>{icons.arrows.caretUp}</MotionIcon>
-                                : sortConfig.direction === 'desc'
-                                    ? <MotionIcon key="down" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>{icons.arrows.caretDown}</MotionIcon>
-                                    : <MotionIcon key="minus" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>{icons.mathOperations.subtract}</MotionIcon>)
-                            : col.sortable && <MotionIcon key="minus" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>{icons.mathOperations.subtract}</MotionIcon>}
+  // Filtrar columnOrder para incluir solo columnas con estado 'active'
+  const activeColumns = columnOrder.filter(col => col.status === 'active');
 
-                    </HeaderCell>
-                ))}
-            </Row>
-        </Container>
-    )
+  return (
+      <Container columns={activeColumns}>
+          <Row columns={activeColumns}>
+              {activeColumns.map((col, index) => (
+                  <HeaderCell
+                      key={index}
+                      align={col.align}
+                      onClick={() => col.sortable ? handleSort(col.accessor) : null}
+                  >
+                      {col.Header}
+                      {/* Lógica para mostrar iconos de ordenamiento */}
+                      {sortConfig.key === col.accessor
+                          ? (sortConfig.direction === 'asc'
+                              ? <MotionIcon key="up">{icons.arrows.caretUp}</MotionIcon>
+                              : sortConfig.direction === 'desc'
+                                  ? <MotionIcon key="down">{icons.arrows.caretDown}</MotionIcon>
+                                  : <MotionIcon key="minus">{icons.mathOperations.subtract}</MotionIcon>)
+                          : col.sortable && <MotionIcon key="minus">{icons.mathOperations.subtract}</MotionIcon>}
+                  </HeaderCell>
+              ))}
+          </Row>
+      </Container>
+  )
 }
+
 const Container = styled.div`
     display: grid;  
     align-items: center;

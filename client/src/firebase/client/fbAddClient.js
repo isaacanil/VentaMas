@@ -11,6 +11,7 @@ export const fbAddClient = async (user, client) => {
         const clientRef = doc(db, 'businesses', user.businessID, 'clients', client.id);
 
         await setDoc(clientRef, { client });
+        return client;
     } catch (error) {
         console.error("Error adding document: ", error)
     }

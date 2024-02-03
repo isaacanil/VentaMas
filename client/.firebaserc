@@ -3,6 +3,14 @@
     "default": "ventamaxpos",
     "ventamaxpos": "ventamaxpos"
   },
-  "targets": {},
+  "targets": {
+    "ventamaxpos": {
+      "hosting": {
+        "ventamax": [
+          "ventamax.web.app"
+        ]
+      }
+    }
+  },
   "etags": {}
 }

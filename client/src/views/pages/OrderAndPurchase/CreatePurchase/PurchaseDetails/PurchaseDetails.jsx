@@ -14,6 +14,16 @@ import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV
 import InputFile from '../../../../templates/system/Form/InputFile/InputFile'
 import { getDate } from '../../../../../utils/date/getDate'
 import { InputMultipleFiles } from '../../../../templates/system/Form/InputFile/InputMultipleFiles'
+import * as antd from 'antd'
+
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { SelectStyle } from '../CreatePurchase'
+import { fromMillisToDayjs } from '../../../../../utils/date/convertMillisecondsToDayjs'
+import FileList from '../components/FileList'
+import { toggleProviderModal } from '../../../../../features/modals/modalSlice'
+const { Input, Form } = antd
+const dateFormat = 'DD/MM/YYYY';
 
 export const PurchaseDetails = ({ purchase, fileList, setFileList }) => {
     const today = getDate("today");
@@ -23,19 +33,12 @@ export const PurchaseDetails = ({ purchase, fileList, setFileList }) => {
 
     const beforeToday = new Date();
 
-    const handleDateChange = (value) => {
-        const selectedDate = DateTime.fromISO(value);
-        const timestamp = selectedDate.toJSDate().getTime();
-        return timestamp;
-    };
     const handleDeleteReceiptImageFromPurchase = () => {
         dispatch(deleteReceiptImageFromPurchase())
     }
     const deliveryDateValidate = typeof purchase?.dates?.deliveryDate === 'number';
     const paymentDateValidate = typeof purchase?.dates?.paymentDate === 'number';
-    const formattedDeliveryDate = deliveryDateValidate && DateTime.fromMillis(purchase?.dates?.deliveryDate).toISODate();
-    const formattedPaymentDate = paymentDateValidate && DateTime.fromMillis(purchase?.dates?.paymentDate).toISODate();
-
+    
     useEffect(() => {
         if (purchase.orderId) {
             dispatch(clearImageViewer())
@@ -43,68 +46,60 @@ export const PurchaseDetails = ({ purchase, fileList, setFileList }) => {
     }, [purchase])
     useEffect(() => {
         if (!purchase.dates.paymentDate) {
-            dispatch(setPurchase({ dates: { ...purchase.dates, paymentDate: today} }))
+            dispatch(setPurchase({ dates: { ...purchase.dates, paymentDate: today } }))
         }
         if (!purchase.dates.deliveryDate) {
-            dispatch(setPurchase({ dates: { ...purchase.dates, deliveryDate: today} }))
+            dispatch(setPurchase({ dates: { ...purchase.dates, deliveryDate: today } }))
         }
     }, [purchase])
-   
+    const conditionItems = orderAndDataCondition.map((item) => {
+        return {
+            label: item.name,
+            value: JSON.stringify(item)
+        }
+    })
+    const handleDateChange = (value, key) => {
+        if (value) {
+            const timestamp = value.valueOf(); // Obtiene los milisegundos desde la época Unix
+            dispatch(setPurchase({ dates: { ...purchase?.dates, [key]: timestamp } }));
+        }
+    };
+
     return (
         <Container>
             <Section flex>
-                <Select
-                    title='Condición'
-                    data={orderAndDataCondition}
-                    displayKey={'name'}
-                    onChange={(e) => dispatch(setPurchase({ condition: e.target.value?.id }))}
-                    value={getOrderConditionByID(purchase?.condition)}
-                />
-                <InputV4
-                    type="date"
-                    name="" id=""
-                    label={'Fecha de entrega'}
-                    labelVariant={'label3'}
-                    size={'medium'}
-                    value={formattedDeliveryDate}
-                    min={beforeToday.toISOString().substring(0, 10)}
-                    onChange={(e) => dispatch(setPurchase(
-                        {
-                            dates: {
-                                ...purchase?.dates,
-                                deliveryDate: handleDateChange(e.target.value)
-                            }
-                        }
-                    ))}
-                />
-                <InputV4
-                    type="date"
-                    name="" id=""
-                    label={'Fecha de pago'}
-                    labelVariant={'label3'}
-                    size={'medium'}
-                    value={formattedPaymentDate}
-                    min={beforeToday.toISOString().substring(0, 10)}
-                    onChange={(e) => dispatch(setPurchase(
-                        {
-                            dates: {
-                                ...purchase?.dates,
-                                paymentDate: handleDateChange(e.target.value)
-                            }
-                        }
-                    ))}
-                />
+                <Form.Item
+                    label='Condición'
+                    required
+                >
+                    <antd.Select
+                        placeholder="Condición"
+                        options={conditionItems}
+                        style={SelectStyle}
+                        value={getOrderConditionByID(purchase?.condition) }
+                        onChange={(e) => dispatch(setPurchase({ condition: JSON.parse(e).id }))}
+                    />
+                </Form.Item>
+                <Form.Item
+                    label="Fecha de entrega"
+                    required
+                >
+                    <antd.DatePicker
+                        value={deliveryDateValidate ? fromMillisToDayjs(purchase?.dates?.deliveryDate) : fromMillisToDayjs(Date.now())}
+                        format={dateFormat}
+                        onChange={(date) => handleDateChange(date, 'deliveryDate')}
+                    />
+                </Form.Item>
+                <Form.Item label="Fecha de pago">
+                    <antd.DatePicker
+                        defaultValue={paymentDateValidate ? fromMillisToDayjs(purchase?.dates?.paymentDate) : fromMillisToDayjs(Date.now())}
+                        format={dateFormat}
+                        onChange={(date) => handleDateChange(date, 'paymentDate')}
+                    />
+                </Form.Item>
             </Section>
             <Section flex>
-                {/* <InputFile
-                    img={imgReceipt}
-                    setImg={setImgReceipt}
-                    label='Subir recibo'
-                    labelVariant='label3'
-                    showNameFile
-                    marginBottom={false}
-                /> */}
-                <InputMultipleFiles 
+                <InputMultipleFiles
                     fileList={fileList}
                     setFileList={setFileList}
                     label='Subir recibo'
@@ -113,15 +108,21 @@ export const PurchaseDetails = ({ purchase, fileList, setFileList }) => {
                     marginBottom={false}
                 />
             </Section>
-            <Section>
-                <h5>Nota</h5>
-                <Textarea
-                    height='4em'
+            <FileList files={purchase.fileList} />
+            <Form.Item
+                label='Nota'
+
+
+                rules={[{ required: false }]}
+                onChange={(e) => dispatch(setPurchase({ note: e.target.value }))}
+            >
+                <Input.TextArea
                     value={purchase.note}
+                    rows={4}
                     placeholder='Escriba una Nota...'
-                    onChange={(e) => dispatch(setPurchase({ note: e.target.value }))}
                 />
-            </Section>
+            </Form.Item>
+
         </Container>
     )
 }
@@ -138,6 +139,9 @@ align-items: end;
         display: flex;
         gap: 1em;
     ` : ''}
+      .ant-form-item {
+        margin-bottom: 0; // Elimina el margen inferior del Form.Item
+    }
    
 `
 const InputDate = styled.input`

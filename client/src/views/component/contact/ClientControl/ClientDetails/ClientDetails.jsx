@@ -86,7 +86,7 @@ export const ClientDetails = ({ mode }) => {
                                 />
                             </Group>
                         </Row>
-                        <Row>
+                        <AddressWrapper>
                             <InputV4
                                 type="text"
                                 name="address"
@@ -97,19 +97,17 @@ export const ClientDetails = ({ mode }) => {
                                 onChange={(e) => updateClient(e)}
                                 autoComplete="off"
                             />
-                        </Row>
+                        </AddressWrapper>
                     </AnimatedWrapper>
                 )}
             </AnimatePresence>
             <Row>
-
                 <div
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.6em'
                     }}
-
                 >
                     <Switch
                         size='small'
@@ -123,7 +121,6 @@ export const ClientDetails = ({ mode }) => {
                         size='small'
                         type="number"
                         name='delivery.value'
-
                         value={client?.delivery?.value || ''}
                         disabled={!client?.delivery?.status}
                         ref={deliveryStatusInput}
@@ -164,9 +161,14 @@ const AnimatedWrapper = styled(motion.div)`
    gap: 0.6em;
     
 `
+const AddressWrapper = styled.div`
+display: grid;
+gap: 0.6em;
+`
 const Row = styled.div`
 display: flex;
 gap: 1em;
+width: 100%;
 `
 const Group = styled.div`
 display: flex;

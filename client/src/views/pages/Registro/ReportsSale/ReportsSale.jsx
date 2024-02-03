@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Typography from '../../../templates/system/Typografy/Typografy';
 import { Button } from '../../../templates/system/Button/Button';
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import { CustomerSalesReportTable } from './components/Table/CustomerSalesReportTable';
 
 const MyBarChart = ({ sales, isOpen, onOpen }) => {
   if (!isOpen) return null
@@ -66,6 +67,7 @@ const MyBarChart = ({ sales, isOpen, onOpen }) => {
             />
           </Header>
           <DailySalesBarChart sales={sales} />
+          <CustomerSalesReportTable sales={sales} />
           <Group>
             <PaymentMethodBarChart sales={sales} />
             <PurchaseTypeBarChart sales={sales} />
@@ -90,7 +92,7 @@ const Group = styled.div`
 `;
 
 const Component = styled(motion.div)`
-  width: 98vw;
+  width: 100vw;
   display: grid;
   gap: 4em;
   height: 100%;
@@ -109,10 +111,8 @@ const Backdrop = styled(motion.div)`
   justify-content: center;
   position: absolute;
   overflow: hidden;
-  padding-top: 7em;
-  
-  z-index: 30;
-
+  top: 0;
+  z-index: 3000000000000000000;
 `
 
 const Header = styled.div`

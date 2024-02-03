@@ -51,6 +51,7 @@ const Component = styled.div`
     width: 100%;
     height: 100%;
     background-color: #d32929;
+    border-radius: 4px;
     position: absolute;
     top: 0;
     left: 0;
@@ -78,7 +79,7 @@ const Component = styled.div`
             case 'false':
                 return `
                 transition: transform 200ms ease-in-out;
-                transform: scale(0.5) translateY(-200%);
+                transform: scale(0) translateY(-200%);
                   
                 `
 

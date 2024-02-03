@@ -5,12 +5,10 @@ import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { columns } from '../tableData'
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable'
 
-
-
 export const SaleReportTable = ({ bills = [], searchTerm }) => {
-
   const data = bills?.map(({ data }) => {
     return {
+      numberID: data?.numberID,
       ncf: data?.NCF,
       client: data?.client?.name || "Generic Client",
       date: data?.date?.seconds,
@@ -20,22 +18,23 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
       change: data?.change?.value,
       total: data?.totalPurchase?.value,
       ver: { data },
+      accion: { data },
       dateGroup: DateTime.fromMillis(data?.date?.seconds * 1000).toLocaleString(DateTime.DATE_FULL)
     }
   })
   const total = useFormatPrice((bills.reduce((total, { data }) => total + data?.totalPurchase?.value, 0)))
-  console.log(data.slice(0,1))
+  console.log(data.slice(0, 1))
   const handlePaymentMethodValue = () => {
     if (data?.payment?.value) {
-        return data?.payment.value
+      return data?.payment.value
     } else if (data?.cardPaymentMethod.status) {
-        return data?.cardPaymentMethod.value
+      return data?.cardPaymentMethod.value
     } else if (data?.cashPaymentMethod.status) {
-        return data?.cashPaymentMethod.value
+      return data?.cashPaymentMethod.value
     } else if (data?.transferPaymentMethod.status) {
-        return data?.transferPaymentMethod.value
+      return data?.transferPaymentMethod.value
     }
-}
+  }
   return (
     <Container>
       <AdvancedTable

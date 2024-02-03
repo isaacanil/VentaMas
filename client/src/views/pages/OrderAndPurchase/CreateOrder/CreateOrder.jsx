@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -28,18 +28,22 @@ import {
 } from '../../../../features/addOrder/addOrderModalSlice'
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { addNotification } from '../../../../features/notification/NotificationSlice'
-import { closeModalAddOrder } from '../../../../features/modals/modalSlice'
+import { closeModalAddOrder, toggleProviderModal } from '../../../../features/modals/modalSlice'
 import { AddOrder } from '../../../../firebase/firebaseconfig'
 import { useNavigate } from 'react-router-dom'
 import ROUTES_PATH from '../../../../routes/routesName'
 import { OPERATION_MODES } from '../../../../constants/modes'
 import { fbUpdateOrder } from '../../../../firebase/order/fbUpdateOrder'
 import { fbAddOrder } from '../../../../firebase/order/fbAddOrder'
+import * as antd from 'antd'
+const { Form } = antd
+import { SelectStyle } from '../CreatePurchase/CreatePurchase'
+import { icons } from '../../../../constants/icons/icons'
 
 export const CreateOrder = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
+    const [fileList, setFileList] = useState([]);
     const UpdateRef = OPERATION_MODES.UPDATE.id;
     const CreateRef = OPERATION_MODES.CREATE.id;
 
@@ -52,11 +56,16 @@ export const CreateOrder = () => {
     const user = useSelector(selectUser);
     const { providers } = useFbGetProviders(user);
     const productTotalPurchasePrice = useSelector(SelectTotalPurchase)
-    console.log('OrderSelected', OrderSelected);
     const handleClose = () => {
         dispatch(cleanOrder());
         navigate(ORDERS);
     }
+    useEffect(() => {
+        if (providers.length > 0  && !provider) {
+            const defaultProvider = providers[0].provider;
+            dispatch(setOrder({ provider: defaultProvider }));
+        }
+    }, [providers]);
 
     const HandleSubmit = async () => {
         if (!OrderSelected?.provider || OrderSelected?.provider?.id == "") {
@@ -75,18 +84,18 @@ export const CreateOrder = () => {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Condición', type: 'error' }))
             return
         }
-
+        const filesToUpload = fileList.map(file => file.originFileObj);
         try {
             if (OrderState.mode === CreateRef) {
                 // Lógica para crear la orden
-                await fbAddOrder(user, OrderSelected)
+                await fbAddOrder(user, OrderSelected, filesToUpload)
                     .then(() => {
                         dispatch(addNotification({ message: 'Pedido Creado', type: 'success' }));
                         handleClose();
                     });
             } else if (OrderState.mode === UpdateRef) {
                 // Lógica para editar la orden
-                await fbUpdateOrder(user, OrderSelected)
+                await fbUpdateOrder(user, OrderSelected, filesToUpload)
                     .then(() => {
                         dispatch(addNotification({ message: 'Pedido Actualizado', type: 'success' }));
                         handleClose();
@@ -109,62 +118,100 @@ export const CreateOrder = () => {
     const addProduct = () => dispatch(AddProductToOrder());
     const handleDeleteProduct = (product) => dispatch(DeleteProduct(product.id));
     const handleUpdateProduct = (product) => dispatch(updateProduct(product));
+
+    const providersOption = useMemo(() => {
+        return providers.map(({ provider }) => {
+            return {
+                label: provider.name,
+                value: JSON.stringify(provider)
+            };
+        });
+    }, [providers]);
+
     const title = {
         [CreateRef]: 'Nuevo Pedido',
         [UpdateRef]: 'Editar Pedido'
     }
 
-    return (
+    const handleProviderChange = (value) => {
+        const provider = JSON.parse(value);
+        dispatch(setOrder({ provider }));
+    };
 
-        <Modal>
-            <Header>
-                <MenuApp
-                    sectionName={title[OrderState.mode]}
-                />
-            </Header>
-            <BodyContainer>
-                <Body>
-                    <Select
-                        title='Proveedor'
-                        data={providers}
-                        onChange={(e) => dispatch(setOrder({provider: e.target.value?.provider}))}
-                        displayKey={'provider.name'}
-                        value={provider?.name}
+    const createMode = OPERATION_MODES.CREATE.id
+    const openProviderModal = () => { dispatch(toggleProviderModal({ mode: createMode, data: null })) }
+    console.log("fileList", fileList)
+    return (
+        <Form layout='vertical'>
+            <Modal>
+                <Header>
+                    <MenuApp
+                        sectionName={title[OrderState.mode]}
                     />
-                    <StockedProductPicker
-                        addProduct={addProduct}
-                        selectProduct={selectProduct}
-                        selectedProduct={selectedProduct}
-                        setProductSelected={handleSetSelectedProduct}
-                    />
-                    <ProductListSelected
-                        productsSelected={productsSelected}
-                        productsTotalPrice={productTotalPurchasePrice}
-                        handleDeleteProduct={handleDeleteProduct}
-                        handleUpdateProduct={handleUpdateProduct}
-                    />
-                    <OrderDetails />
-                    <WrapperFooter>
-                        <ButtonGroup>
-                            <Button
-                                title='Cancelar'
-                                borderRadius={'normal'}
-                                color={"white-contained"}
-                                height={'large'}
-                                onClick={handleCancel}
-                            />
-                            <Button
-                                title={OrderState.mode === CreateRef ? 'Crear' : 'Actualizar'}
-                                borderRadius={'normal'}
-                                color='primary'
-                                height={'medium'}
-                                onClick={HandleSubmit}
-                            />
-                        </ButtonGroup>
-                    </WrapperFooter>
-                </Body>
-            </BodyContainer>
-        </Modal>
+                </Header>
+                <BodyContainer>
+                    <Body>
+                        <div >
+                            <SelectWithButton> 
+                                <Form.Item
+                                    label="Proveedores"
+                                    required
+                                    rules={[{ required: true, message: 'Seleccione un proveedor' }]}
+                                >
+                                    <antd.Select
+                                        style={SelectStyle}
+                                        placeholder={"Proveedores"}
+                                        options={providersOption}
+                                        value={provider?.name}
+                                        onChange={handleProviderChange}
+                                    />
+                                </Form.Item>
+                                <antd.Button
+                                    icon={icons.operationModes.add}
+                                    size='medium'
+                                    onClick={openProviderModal}
+                                />
+                            </SelectWithButton>
+
+                        </div>
+                        <StockedProductPicker
+                            addProduct={addProduct}
+                            selectProduct={selectProduct}
+                            selectedProduct={selectedProduct}
+                            setProductSelected={handleSetSelectedProduct}
+                        />
+                        <ProductListSelected
+                            productsSelected={productsSelected}
+                            productsTotalPrice={productTotalPurchasePrice}
+                            handleDeleteProduct={handleDeleteProduct}
+                            handleUpdateProduct={handleUpdateProduct}
+                        />
+                       <OrderDetails 
+                        fileList={fileList}
+                        setFileList={setFileList}
+                       />
+                        <WrapperFooter>
+                            <ButtonGroup>
+                                <Button
+                                    title='Cancelar'
+                                    borderRadius={'normal'}
+                                    color={"white-contained"}
+                                    height={'large'}
+                                    onClick={handleCancel}
+                                />
+                                <Button
+                                    title={OrderState.mode === CreateRef ? 'Crear' : 'Actualizar'}
+                                    borderRadius={'normal'}
+                                    color='primary'
+                                    height={'medium'}
+                                    onClick={HandleSubmit}
+                                />
+                            </ButtonGroup>
+                        </WrapperFooter>
+                    </Body>
+                </BodyContainer>
+            </Modal>
+        </Form>
 
 
     )
@@ -181,29 +228,10 @@ const Modal = styled.div`
     gap: 0.6em;
     grid-template-rows: min-content 1fr;
 `
-const ToolBar = styled.div`
-    width: 100%;
-    display: flex;
-    gap: 10px;
 
-`
-const Group = styled.div`
-    display: flex;
-    gap: 0.4em;
-`
 
 const Header = styled.div`
     
-`
-const WrapperHeader = styled.div`
-    max-width: var(--max-width);
-    margin: 0 auto;
-    width: 100%;
-    background-color: var(--color2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
 `
 const BodyContainer = styled.div`
 
@@ -218,10 +246,10 @@ const BodyContainer = styled.div`
 const Body = styled.div`
         height: 100%;
         width: 100%;
-        padding: 0.6em;
+        padding: 1em;
         overflow-y: scroll;
         display: grid;
-        grid-template-rows: min-content min-content minmax(270px, 1fr) min-content min-content;
+        grid-template-rows: min-content min-content min-content min-content min-content;
         align-items: start;
         gap: 0.6em;
        
@@ -230,10 +258,7 @@ const Body = styled.div`
             gap: 1em;
         }
 `
-const Footer = styled.div`
-     width: 100%;
-    background-color: #494949;
-`
+
 const WrapperFooter = styled.div`
     height: 3em;
     max-width: var(--max-width);
@@ -249,3 +274,12 @@ const WrapperFooter = styled.div`
     margin: 0 auto;
     display: flex;
 `
+const SelectWithButton = styled.div`
+    display: grid;
+    grid-template-columns: min-content min-content;
+    align-items: end;
+    gap: 10px;
+    .ant-form-item {
+        margin-bottom: 0; // Elimina el margen inferior del Form.Item
+    }
+`;

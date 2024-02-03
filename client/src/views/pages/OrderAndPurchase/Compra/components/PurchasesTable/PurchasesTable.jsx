@@ -5,7 +5,7 @@ import { getPurchaseFromDB } from '../../../../../../firebase/firebaseconfig'
 import { selectUser } from '../../../../../../features/auth/userSlice'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 import { toggleViewOrdersNotes } from '../../../../../../features/modals/modalSlice'
-import { Button } from '../../../../../templates/system/Button/Button'
+//import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 import { convertMillisToDate } from '../../../../../../hooks/useFormatTime'
 import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
@@ -13,6 +13,8 @@ import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/Adv
 import { getOrderConditionByID, getOrderStateByID } from '../../../../../../constants/orderAndPurchaseState'
 import { useFbGetPurchase } from '../../../../../../firebase/purchase/fbGetPurchase'
 import { toggleImageViewer } from '../../../../../../features/imageViewer/imageViewerSlice'
+import * as antd from 'antd'
+const {Button} = antd;
 
 function ordenarPorNumberId(datos) {
   // Crear una copia del arreglo para evitar modificar el original
@@ -43,12 +45,8 @@ export const PurchaseTable = () => {
       accessor: 'note',
       cell: ({ value }) => (
         <Button
-          title='ver'
-          borderRadius='normal'
-          color='gray-dark'
-          border='light'
           onClick={() => dispatch(setNote({ note: value, isOpen: true }))}
-        />
+        >ver</Button>
       )
     },
 
@@ -69,17 +67,13 @@ export const PurchaseTable = () => {
       cell: ({ value }) => <div>{useFormatPrice(value)}</div>
     },
     {
-      Header: 'Recibo',
+      Header: 'Evidencia',
       accessor: 'receipt',
       align: 'right',
       cell: ({ value }) => (
         <Button
-          title='ver'
-          borderRadius='normal'
-          color='gray-dark'
-          border='light'
           onClick={() => dispatch(toggleImageViewer({ show: true, url: value }))}
-        />
+        >ver</Button>
       )
     },
     {
@@ -125,7 +119,7 @@ export const PurchaseTable = () => {
     })
   console.log(purchases)
   return (
-    <Container>
+  
       <AdvancedTable
         tableName={'Lista de Compras'}
         columns={columns}
@@ -134,7 +128,7 @@ export const PurchaseTable = () => {
         filterUI
         filterConfig={filterConfig}
       />
-    </Container>
+
 
   )
 }

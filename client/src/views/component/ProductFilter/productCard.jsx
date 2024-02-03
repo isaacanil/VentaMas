@@ -23,7 +23,7 @@ export const ProductCard = ({data, setShowProductList, fn, close}) => {
   )
 }
 const Container = styled.div`
-    height: 2.25em;
+    height: 2.4em;
     display: flex;
     align-items: center;
     padding: 0 0.6em;

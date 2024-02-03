@@ -24,24 +24,13 @@ export const CreateOrderToolbar = ({ side = 'left', searchData, setSearchData })
     const { abilities } = inspectUserAccess();
     const user = useSelector(selectUser)
     const createMode = OPERATION_MODES.CREATE.id
-    const openProviderModal = () => {dispatch(toggleProviderModal({mode: createMode, data: null}))}
+    
     return (
         matchWithCashReconciliation ? (
             <Container>
                 {
                     side === 'right' && (
                         <ButtonGroup>
-                            <Tooltip
-                                description='Realizar Comprar'
-                                Children={
-                                    <Button
-                                    borderRadius='light'     
-                                        startIcon={icons.operationModes.add}
-                                        title='Proveedor'
-                                        onClick={openProviderModal}
-                                    />
-                             
-                                } />
                                <AddProductButton />
                         </ButtonGroup>
                     )

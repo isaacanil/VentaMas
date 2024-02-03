@@ -1,21 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { nanoid } from "nanoid";
 import { OPERATION_MODES } from "../../constants/modes";
+import { DateTime } from "luxon";
+import { orderAndDataCondition } from "../../constants/orderAndPurchaseState";
 const EmptyOrder = {
-  condition: "",
+  condition: orderAndDataCondition[0].id,
   dates: {
     createdAt: "",
     deletedAt: "",
     completedAt: "",
-    deliveryDate: "",
+    deliveryDate: DateTime.now().toMillis(),
     paymentDate: "",
   },
   note: "",
   numberId: "",
   id: "",
-  provider: {},
+  provider: null,
   replenishments: [],
-  state: {},
+  state: null,
   receiptImgUrl: "",
   total: 0,
 }

@@ -3,20 +3,22 @@ import { Row } from '../../../AdvancedTable'
 import styled from 'styled-components'
 import { CenteredText } from '../../../../CentredText'
 
-export const TableBody = ({shouldGroup, groupedData, currentData, columnOrder, onRowClick, emptyText}) => {
+export const TableBody = ({ shouldGroup, groupedData, currentData, columnOrder, onRowClick, emptyText }) => {
   
-  
+  // Filtrar columnOrder para incluir solo columnas con estado 'active'
+  const activeColumns = columnOrder.filter(col => col.status === 'active');
+
   return (
-    <Container columns={columnOrder}>
+    <Container columns={activeColumns}>
     {
       shouldGroup
         ? Object.entries(groupedData).map(([groupKey, groupItems]) => (
           <Fragment key={groupKey}>
             <GroupHeader>{groupKey}</GroupHeader>
             {groupItems.map((row, rowIndex) => (
-              <Row key={rowIndex} columns={columnOrder} onClick={onRowClick ? () => onRowClick(row) : null}>
-                {columnOrder.map((col, colIndex) => (
-                  <BodyCell key={colIndex} align={col.align} columns={columnOrder}>
+              <Row key={rowIndex} columns={activeColumns} onClick={onRowClick ? () => onRowClick(row) : null}>
+                {activeColumns.map((col, colIndex) => (
+                  <BodyCell key={colIndex} align={col.align} columns={activeColumns}>
                     {col.cell ? col.cell({ value: row[col.accessor] }) : row[col.accessor]}
                   </BodyCell>
                 ))}
@@ -25,9 +27,9 @@ export const TableBody = ({shouldGroup, groupedData, currentData, columnOrder, o
           </Fragment>
         ))
         : currentData.map((row, rowIndex) => (
-          <Row key={rowIndex} columns={columnOrder} onClick={onRowClick ? () => onRowClick(row) : null}>
-            {columnOrder.map((col, colIndex) => (
-              <BodyCell key={colIndex} align={col.align} columns={columnOrder}>
+          <Row key={rowIndex} columns={activeColumns} onClick={onRowClick ? () => onRowClick(row) : null}>
+            {activeColumns.map((col, colIndex) => (
+              <BodyCell key={colIndex} align={col.align} columns={activeColumns}>
                 {col.cell ? col.cell({ value: row[col.accessor] }) : row[col.accessor]}
               </BodyCell>
             ))}
@@ -40,6 +42,7 @@ export const TableBody = ({shouldGroup, groupedData, currentData, columnOrder, o
   </Container>
   )
 }
+
 const Container = styled.div`
  display: grid;
    align-content: flex-start;

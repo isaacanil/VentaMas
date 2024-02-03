@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { ButtonGroup, MenuApp, Select } from '../../..'
@@ -17,14 +17,33 @@ import { fbTransformOrderToPurchase } from '../../../../firebase/purchase/fbPrep
 import Loader from '../../../templates/system/loader/Loader'
 import { fbAddPurchase } from '../../../../firebase/purchase/fbAddPurchase'
 import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
+import * as antd from 'antd'
+import { icons } from '../../../../constants/icons/icons'
+import { toggleProviderModal } from '../../../../features/modals/modalSlice'
+import { OPERATION_MODES } from '../../../../constants/modes'
+import { fromMillisToDateISO } from '../../../../utils/date/convertTimeStampToDate'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import FileList from './components/FileList'
+const ProviderOption = ({ provider, orderCount }) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span>{provider.name}</span>
+        <span style={{ marginLeft: '10px' }}>{`${orderCount}`}</span>
+    </div>
+);
 
+const { Form } = antd
 export const AddPurchase = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const [selectedProvider, setSelectedProvider] = useState(null);
+    const [filteredOrders, setFilteredOrders] = useState([]);
+
     const [loading, setLoading] = useState({
         isOpen: false,
         message: ''
     });
+
     const { mode } = useSelector(selectPurchaseState)
     const user = useSelector(selectUser);
 
@@ -33,10 +52,46 @@ export const AddPurchase = () => {
     const provider = useSelector(selectPurchase).provider;
 
     const { providers } = useFbGetProviders(user);
+    useEffect(() => {
+        if (providers.length > 0 && !provider) {
+            setSelectedProvider(providers[0].provider);
+            dispatch(setPurchase({ provider: providers[0].provider }));
+            setFilteredOrders(providers[0].provider.id);
+        }
+    }, [providers]);
+
     const { pendingOrders } = fbGetPendingOrders(user);
+    const pendingOrdersOption = useMemo(() => {
+        if (selectedProvider) {
+            return pendingOrders
+                .filter(({ data }) => data.provider.id === selectedProvider.id)
+                .map(({ data }) => {
+                    return { label: `#${data.numberId}  | ${fromMillisToDateISO(data.dates.createdAt)}  | ${useFormatPrice(data.total)}`, value: JSON.stringify(data) };
+                });
+        } else {
+            return [];
+        }
+    }, [pendingOrders, selectedProvider]);
+    // Calcular el número de pedidos para cada proveedor
+    const ordersCountByProvider = useMemo(() => {
+        return pendingOrders.reduce((acc, { data }) => {
+            acc[data.provider.id] = (acc[data.provider.id] || 0) + 1;
+            return acc;
+        }, {});
+    }, [pendingOrders]);
+
+    const providersOption = useMemo(() => {
+        return providers.map(({ provider }) => {
+            const orderCount = ordersCountByProvider[provider.id] || 0;
+            return {
+                label: <ProviderOption provider={provider} orderCount={orderCount} />,
+                value: JSON.stringify(provider)
+            };
+        });
+    }, [providers, ordersCountByProvider]);
 
     const { PURCHASES } = ROUTES_PATH.PURCHASE_TERM;
-    const [imgReceipt, setImgReceipt] = useState(purchase.receipt || null)
+
     const [fileList, setFileList] = useState([]);
     const handleClear = () => dispatch(cleanPurchase());
 
@@ -71,17 +126,19 @@ export const AddPurchase = () => {
             dispatch(addNotification({ title: 'Error', message: 'Agregue la Condición', type: 'error' }))
             return
         }
+
+        const filesToUpload = fileList.length > 0 ? fileList.map(file => file.originFileObj) : [];
         try {
             if (mode === "add") {
                 if (purchase.id) {
-                    await fbTransformOrderToPurchase(user, purchase, imgReceipt, setLoading);
+                    await fbTransformOrderToPurchase(user, purchase, filesToUpload, setLoading);
                     dispatch(addNotification({ title: 'Exito', message: 'Compra realizada', type: 'success' }))
-                    handleClose();
+
                 } else {
-                    await fbAddPurchase(user, purchase, imgReceipt, setLoading);
+                    await fbAddPurchase(user, purchase, filesToUpload, setLoading);
                 }
-            }else if (mode === "edit") {
-                await fbUpdatePurchase(user, purchase, imgReceipt, setLoading);
+            } else if (mode === "edit") {
+                await fbUpdatePurchase(user, purchase, filesToUpload, setLoading);
             }
             handleClose();
         } catch (error) {
@@ -95,75 +152,131 @@ export const AddPurchase = () => {
     const addProduct = () => dispatch(AddProductToPurchase());
     const handleDeleteProduct = (product) => dispatch(deleteProductFromPurchase(product.id));
     const handleUpdateProduct = (product) => dispatch(updateProduct(product));
+    //abrir el modal de proveedor
+    const createMode = OPERATION_MODES.CREATE.id
+    const openProviderModal = () => { dispatch(toggleProviderModal({ mode: createMode, data: null })) }
+
+    const filterOrders = (providerId) => {
+        const filtered = pendingOrders.filter(({ data }) => data.provider.id === providerId);
+        setFilteredOrders(filtered);
+    };
+
+    const handleProviderChange = (value) => {
+        const provider = JSON.parse(value);
+        dispatch(setPurchase({ provider }));
+        setSelectedProvider(provider);
+        filterOrders(provider.id);
+    };
+    useEffect(() => {
+        if (selectedProvider) {
+            filterOrders(selectedProvider.id);
+        }
+        dispatch(setPurchase({numberId: "", id: ""}))
+    }, [selectedProvider]);
+
+    const handleOrderChange = (value) => {
+        const order = JSON.parse(value);
+        dispatch(getOrderData(order));
+    };
+
+    console.log("proveedores ", providers)
+    console.log("Pedidos Pendiente ", pendingOrders)
+    console.log("pedidos Filtrados ", pendingOrdersOption)
+    console.log("id proveedor ", selectedProvider?.id)
+    console.log("proveedor ", provider?.name)
+    console.log("compra ", purchase)
 
     return (
-        <Modal >
-            <Loader show={loading.isOpen} useRedux={false} message={loading.message} theme='light' />
-            <Header>
-                <MenuApp
-                    sectionName={mode === "add" ? 'Realizar Compra' : 'Editar Compra'}
-                />
-            </Header>
-            <BodyContainer>
-                <Body>
-                    <ToolBar>
-                        <Select
-                            title='Pedidos'
-                            data={pendingOrders}
-                            value={purchase.numberId}
-                            displayKey={'data.numberId'}
-                            onNoneOptionSelected={handleClear}
-                            onChange={(e) => dispatch(getOrderData(e.target.value?.data))}
+        <Form
+            layout='vertical'
+            onValuesChange={(e) => console.log(e)}
+            defaultValue={purchase}
+        >
+            <Modal >
+                <Loader show={loading.isOpen} useRedux={false} message={loading.message} theme='light' />
+                <Header>
+                    <MenuApp
+                        sectionName={mode === "add" ? 'Realizar Compra' : 'Editar Compra'}
+                    />
+                </Header>
+                <BodyContainer>
+                    <Body>
+                        <ToolBar>
+                            <SelectWithButton>
+                                <Form.Item
+                                    label="Proveedores"
+                                    required
+                                >
+                                    <antd.Select
+                                        style={SelectStyle}
+                                        placeholder={"Proveedores"}
+                                        options={providersOption}
+                                        value={provider?.name}
+                                        onChange={handleProviderChange}
+                                    />
+                                </Form.Item>
+                                <antd.Button
+                                    icon={icons.operationModes.add}
+                                    size='medium'
+                                    onClick={openProviderModal}
+                                />
+
+                            </SelectWithButton>
+                            <SelectWithButton>
+                                <Form.Item
+                                    label="Pedidos"
+                                    required
+                                >
+                                    <antd.Select
+                                        placeholder={"Pedidos"}
+                                        options={pendingOrdersOption}
+                                        value={purchase?.numberId || null}
+                                        style={SelectStyle}
+                                        onChange={handleOrderChange}
+                                    />
+                                </Form.Item>
+                            </SelectWithButton>
+                        </ToolBar>
+                        <StockedProductPicker
+                            addProduct={addProduct}
+                            selectProduct={selectProduct}
+                            selectedProduct={selectedProduct}
+                            setProductSelected={handleSetSelectedProduct}
                         />
-                        <Select
-                            title='Proveedor'
-                            data={providers}
-                            value={provider?.name}
-                            displayKey={'provider.name'}
-                            onChange={(e) => dispatch(setPurchase({ provider: e.target.value?.provider }))}
+                        <ProductListSelected
+                            productsSelected={purchase.replenishments}
+                            productsTotalPrice={purchase.total}
+                            handleDeleteProduct={handleDeleteProduct}
+                            handleUpdateProduct={handleUpdateProduct}
                         />
-                    </ToolBar>
-                    <StockedProductPicker
-                        addProduct={addProduct}
-                        selectProduct={selectProduct}
-                        selectedProduct={selectedProduct}
-                        setProductSelected={handleSetSelectedProduct}
-                    />
-                    <ProductListSelected
-                        productsSelected={purchase.replenishments}
-                        productsTotalPrice={purchase.total}
-                        handleDeleteProduct={handleDeleteProduct}
-                        handleUpdateProduct={handleUpdateProduct}
-                    />
-                    <PurchaseDetails
-                        purchase={purchase}
-                        fileList={fileList}
-                        setFileList={setFileList}
-                    />
-                    <Footer>
-                        <ButtonGroup>
-                            <Button
-                                title='Cancelar'
-                                borderRadius={'normal'}
-                                bgcolor='gray'
-                                height={'large'}
-                                onClick={handleCancel}
-                            />
-                            <Button
-                                title='Guardar'
-                                borderRadius={'normal'}
-                                color='primary'
-                                height={'medium'}
-                                onClick={handleSubmit}
-                            />
-                        </ButtonGroup>
-                    </Footer>
-                </Body>
-            </BodyContainer>
+                        <PurchaseDetails
+                            purchase={purchase}
+                            fileList={fileList}
+                            setFileList={setFileList}
+                        />
 
-        </Modal>
-
-
+                        <Footer>
+                            <ButtonGroup>
+                                <Button
+                                    title='Cancelar'
+                                    borderRadius={'normal'}
+                                    bgcolor='gray'
+                                    height={'large'}
+                                    onClick={handleCancel}
+                                />
+                                <Button
+                                    title='Guardar'
+                                    borderRadius={'normal'}
+                                    color='primary'
+                                    height={'medium'}
+                                    onClick={handleSubmit}
+                                />
+                            </ButtonGroup>
+                        </Footer>
+                    </Body>
+                </BodyContainer>
+            </Modal>
+        </Form>
     )
 }
 
@@ -201,7 +314,7 @@ const Body = styled.div`
         padding: 1em;
         overflow-y: scroll;
         display: grid;
-        grid-template-rows: min-content min-content minmax(200px, 1fr) min-content min-content;
+        grid-template-rows: min-content min-content min-content min-content min-content;
         align-items: start;
         gap: 1em;
         header {
@@ -224,3 +337,15 @@ const Footer = styled.div`
     margin: 0 auto;
     display: flex;
 `
+export const SelectStyle = {
+    minWidth: '200px'
+}
+const SelectWithButton = styled.div`
+    display: grid;
+    grid-template-columns: 1fr min-content;
+    align-items: end;
+    gap: 10px;
+    .ant-form-item {
+        margin-bottom: 0; // Elimina el margen inferior del Form.Item
+    }
+`;

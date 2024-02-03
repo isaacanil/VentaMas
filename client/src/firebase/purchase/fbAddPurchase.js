@@ -1,12 +1,12 @@
 import { nanoid } from 'nanoid';
 import { Timestamp, doc, setDoc } from "firebase/firestore";
 import { db } from "../firebaseconfig";
-import { fbUploadFileAndGetURL } from '../img/fbUploadFileAndGetURL';
+import { fbAddMultipleFilesAndGetURLs, fbUploadFileAndGetURL } from '../img/fbUploadFileAndGetURL';
 import { getNextID } from '../Tools/getNextID';
 import { isImageFile, isPDFFile } from '../../utils/file/isValidFile';
 import { fbUpdateProdStockForReplenish } from './fbUpdateProdStockForReplenish';
 
-export const fbAddPurchase = async (user, purchase, receiptFile, setLoading) => {
+export const fbAddPurchase = async (user, purchase, fileList = [], setLoading) => {
     try {
         const id = nanoid(10);
         const purchasesRef = doc(db, "businesses", user.businessID, "purchases", id);
@@ -15,7 +15,7 @@ export const fbAddPurchase = async (user, purchase, receiptFile, setLoading) => 
         console.log("purchase------: ", purchase)
         const nextID = await getNextID(user, 'lastOrdersId');
         const providerRef = doc(db, "businesses", user.businessID, 'providers', purchase.provider.id);
-        const data = {
+        let data = {
             ...purchase,
             id,
             numberId: nextID,
@@ -30,9 +30,12 @@ export const fbAddPurchase = async (user, purchase, receiptFile, setLoading) => 
         };
 
         // Sube la imagen al servidor
-        if (receiptFile && (isPDFFile(receiptFile) || isImageFile(receiptFile))) {
+        if (fileList.length > 0) {
             setLoading({ isOpen: true, message: "Subiendo imagen del recibo al servidor..." });
-            data.receipt = await fbUploadFileAndGetURL(user, "purchaseReceipts", receiptFile);
+            const files = await fbAddMultipleFilesAndGetURLs(user, "purchaseReceipts", fileList);
+         
+            data.fileList = [...(data?.fileList || []), ...files]
+
         }
 
         // Actualiza el stock de los productos

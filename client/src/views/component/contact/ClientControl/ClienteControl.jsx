@@ -20,7 +20,7 @@ import { OPERATION_MODES } from '../../../../constants/modes.js'
 import * as antd from 'antd'
 const { Select } = antd
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
-import { selectNcfType, selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice.js'
+import { selectNcfType, selectTaxReceipt, selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice.js'
 
 export const ClientControl = () => {
   const dispatch = useDispatch()
@@ -29,7 +29,8 @@ export const ClientControl = () => {
 
   const client = useSelector(selectClient)
   const mode = useSelector(selectClientMode)
-
+  const taxReceipt = useSelector(selectTaxReceipt)
+  const taxReceiptSettingEnabled = taxReceipt?.settings?.taxReceiptEnabled;
   const [searchTerm, setSearchTerm] = useState('')
   const filteredClients = filtrarDatos(clients, searchTerm)
   const clientLabel = useSelector(selectLabelClientMode)
@@ -162,19 +163,25 @@ export const ClientControl = () => {
           filteredClients={filteredClients}
         />
       }
-      <Select
-        style={{ width: 200 }}
-        value={nfcType}
-        onChange={(e) => dispatch(selectTaxReceiptType(e))}
-      >
-        <Select.OptGroup label="Comprobantes Fiscal" >
-          {taxReceiptData.taxReceipt
-            .map(({ data }, index) => (
-              <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
-            ))
-          }
-        </Select.OptGroup>
-      </Select>
+      {
+        taxReceiptSettingEnabled && (
+          <Select
+            style={{ width: 200 }}
+            value={nfcType}
+            onChange={(e) => dispatch(selectTaxReceiptType(e))}
+          >
+
+            <Select.OptGroup label="Comprobantes Fiscal" >
+              {taxReceiptData.taxReceipt
+                .map(({ data }, index) => (
+                  <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
+                ))
+              }
+            </Select.OptGroup>
+          </Select>
+        )
+      }
+
     </Container>
   )
 }

@@ -6,76 +6,85 @@ import { SelectOrder, setOrder } from '../../../../../features/addOrder/addOrder
 import { DateTime } from 'luxon'
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
 import { Textarea } from '../../../../templates/system/Inputs/Textarea'
-import * as ant from 'antd'
+import * as antd from 'antd'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
-const { Form, DatePicker } = ant
-
-export const OrderDetails = () => {
+import { SelectStyle } from '../../CreatePurchase/CreatePurchase'
+import { fromMillisToDayjs } from '../../../../../utils/date/convertMillisecondsToDayjs'
+import dayjs from 'dayjs'
+import FileList from '../../CreatePurchase/components/FileList'
+import { InputMultipleFiles } from '../../../../templates/system/Form/InputFile/InputMultipleFiles'
+const { Form, DatePicker, Input } = antd
+const dateFormat = 'DD/MM/YYYY';
+export const OrderDetails = ({ setFileList, fileList }) => {
     const dispatch = useDispatch()
-    const conditions = orderAndDataCondition;
     const order = useSelector(SelectOrder);
     const { note, condition, dates } = order;
 
-    const minDate = DateTime.now().toISODate();
     const handleDateChange = (value) => {
-        const selectedDate = DateTime.fromISO(value);
-        const timestamp = selectedDate.toJSDate().getTime();
-        return timestamp;
+        if (value) {
+            const timestamp = value.valueOf(); // Obtiene los milisegundos desde la época Unix
+            dispatch(setOrder({ dates: { ...order?.dates, deliveryDate: timestamp } }));
+        }
     };
-    useEffect(() => {
-        setTimeout(() => {
-            dispatch(setOrder({
-                dates: {
-                    ...dates,
-                    deliveryDate: handleDateChange(new Date().toISOString())
-                }
-            }))
-        }, 1000)
-    }, [])
 
-    const dateValue = typeof order?.dates?.deliveryDate === 'number' && order?.dates?.deliveryDate;
-    const formattedDate = dateValue ? DateTime.fromMillis(dateValue).toISODate() : null;
-   
-    const convertMillisecondsToJSDate = (milliseconds = 387567890976) => {
-        return milliseconds ? new Date(milliseconds) : null;
-      };
-      const date = new Date();
-      const date2 = date.getTime();
+    const conditionItems = orderAndDataCondition.map((item) => {
+        return {
+            label: item.name,
+            value: JSON.stringify(item)
+        }
+    })
+    console.log('order', order)
+    const deliveryDate = typeof order?.dates?.deliveryDate === 'number' ? fromMillisToDayjs(order?.dates?.deliveryDate) : fromMillisToDayjs(new Date());
+
     return (
         <Container>
             <Section flex>
-                <InputV4
-                    type="date"
-                    name=""
-                    label={'Fecha de entrega'}
-                    labelVariant={'label3'}
-                    value={formattedDate}
-                    id=""
-                    min={minDate}
-                    onChange={(e) => dispatch(setOrder({
-                        dates: {
-                            ...dates,
-                            deliveryDate: handleDateChange(e.target.value)
-                        }
-                    }))}
-                />
-                <Select
-                    title='Condición'
-                    data={conditions}
-                    onChange={e => dispatch(setOrder({ condition: e.target.value?.id }))}
-                    displayKey={'name'}
-                    value={condition ? getOrderConditionByID(condition) : ''}
+                <Form.Item
+                    label="Fecha de entrega"
+                    required
+                >
+                    <antd.DatePicker
+                        value={deliveryDate}
+                        style={SelectStyle}
+                        format={dateFormat}
+                        onChange={(date) => handleDateChange(date)}
+                    />
+                </Form.Item>
+                <Form.Item
+                    label='Condición'
+                    required
+                >
+                    <antd.Select
+                        placeholder={"Condición"}
+                        options={conditionItems}
+                        style={SelectStyle}
+                        value={getOrderConditionByID(condition) || null}
+                        onChange={(e) => dispatch(setOrder({ condition: JSON.parse(e).id }))}
+                    />
+                </Form.Item>
+            </Section>
+            <br />
+            <Section>
+                <InputMultipleFiles
+                    fileList={fileList}
+                    setFileList={setFileList}
+                    label='Subir recibo'
+                    labelVariant='label3'
+                    showNameFile
+                    marginBottom={false}
                 />
             </Section>
-            <Section>
-                <h5>Nota</h5>
-                <Textarea
-                    height='4em'
+            <FileList files={order?.fileList} />
+            <Form.Item
+                label='Nota'
+            >
+                <Input.TextArea
                     value={note}
-                    placeholder='Agrega una nota al pedido ...'
+                    rows={4}
+                    placeholder='Escriba una Nota...'
                     onChange={(e) => dispatch(setOrder({ note: e.target.value }))}
                 />
-            </Section>
+            </Form.Item>
         </Container>
     )
 }
@@ -87,11 +96,13 @@ gap: 0.4em;
 const Section = styled.section`
     ${props => props.flex ? `
         display: grid;
-        grid-template-columns: min-content 1fr;
-        background-color: var(--color2);
+        grid-template-columns: min-content min-content;
         align-items: end;
         gap: 1em;
     ` : ''}
+    .ant-form-item {
+        margin-bottom: 0; // Elimina el margen inferior del Form.Item
+    }
 `
 const InputDate = styled.input`
     width: 140px;

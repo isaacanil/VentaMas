@@ -64,7 +64,6 @@ export const ModalManager = () => {
             isOpen={UpdateProdModalSelected}
           /> */}
         {UpdateProdModalSelected && (
-          
           <ProductEditorModal isOpen={UpdateProdModalSelected}  />
         )}
         <InvoiceForm />

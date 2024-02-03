@@ -1,7 +1,8 @@
 import { Timestamp, doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseconfig";
-import { fbUploadFileAndGetURL } from "../img/fbUploadFileAndGetURL";
+import { fbAddMultipleFilesAndGetURLs, fbUploadFileAndGetURL } from "../img/fbUploadFileAndGetURL";
 import { isImageFile, isPDFFile } from "../../utils/file/isValidFile";
+import { fbUpdateProdStockForReplenish } from "./fbUpdateProdStockForReplenish";
 
 const updateOrder = async (user, order) => {
     try {
@@ -17,12 +18,11 @@ const updateOrder = async (user, order) => {
         throw error;
     }
 }
-export const fbTransformOrderToPurchase = async (user, data, receiptFile, setLoading) => {
+export const fbTransformOrderToPurchase = async (user, data, filesList, setLoading) => {
     try {
         if (!user || !user.businessID) {
             throw new Error('No user or businessID');
         };
-
         setLoading({ isOpen: true, message: "Iniciando proceso de registro de Compra" });
         const providerRef = doc(db, 'businesses', user.businessID, 'providers', data.provider.id);
         const purchaseRef = doc(db, 'businesses', user.businessID, 'purchases', data.id);
@@ -34,16 +34,18 @@ export const fbTransformOrderToPurchase = async (user, data, receiptFile, setLoa
             type: 'Associated',
             dates: {
                 ...data.dates,
-                createdAt: Timestamp.fromMillis(data.dates.createdAt),
-                deliveryDate: Timestamp.fromMillis(data.dates.deliveryDate),
-                paymentDate: Timestamp.fromMillis(data.dates.paymentDate),
+                createdAt: Timestamp.fromMillis(data?.dates?.createdAt),
+                deliveryDate: Timestamp.fromMillis(data?.dates?.deliveryDate),
+                paymentDate: Timestamp.fromMillis(data?.dates?.paymentDate),
                 updatedAt: Timestamp.now(),
             }
         }
 
-        if (isImageFile(receiptFile) || isPDFFile(receiptFile)) {
+        if (filesList.length > 0) {
             setLoading({ isOpen: true, message: "Subiendo recibo al servidor..." });
-            dataModified.receipt = await fbUploadFileAndGetURL(user, "purchaseReceipts", receiptFile);
+            dataModified.fileList = await fbAddMultipleFilesAndGetURLs(user, "purchaseReceipts", filesList);
+            data.fileList = [...(data?.fileList || []), ...files]
+
         }
 
         setLoading({ isOpen: true, message: "Actualizando stock de productos..." });

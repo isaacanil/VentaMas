@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectPurchaseList, updatePurchases } from "../../features/Purchase/purchasesSlice";
 import { selectUser } from "../../features/auth/userSlice";
 import { orderBy } from "lodash";
+import { DateTime } from "luxon";
 
 export const useFbGetPurchase = () => {
     const user = useSelector(selectUser);
@@ -40,7 +41,7 @@ export const useFbGetPurchase = () => {
                         // Convert Firestore timestamps to JavaScript Date objects
                         ['createdAt', 'deliveryDate', 'paymentDate', 'updatedAt'].forEach(dateField => {
                             if (purchaseData.data.dates[dateField]) {
-                                purchaseData.data.dates[dateField] = purchaseData.data.dates[dateField].toDate().getTime();
+                                purchaseData.data.dates[dateField] = purchaseData.data.dates[dateField].toDate().getTime() || DateTime.now().toMillis();
                             }
                         });
 
