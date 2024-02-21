@@ -35,8 +35,8 @@ export const CashReconciliationTable = () => {
       incrementNumber: cashCount?.incrementNumber,
       status: cashCount?.state,
       date: (
-        cashCount?.updatedAt?.seconds ?
-          cashCount?.updatedAt?.seconds * 1000 :
+        cashCount?.updatedAt?
+          cashCount?.updatedAt  :
           null
       ),
       user: cashCount?.opening.employee.name,
@@ -45,6 +45,7 @@ export const CashReconciliationTable = () => {
       action: cashCount,
     }
   })
+  console.log(cashCounts)
 
   const columns = tableConfig()
   const handleLabelState = (state) => {

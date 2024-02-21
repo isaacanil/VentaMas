@@ -14,6 +14,14 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { fbGetUser } from '../../../../firebase/Auth/fbGetUser';
 import { Users } from './Users/Users';
+import { fbUpdateAllBusinessCashCounts } from '../../../../firebase/cashCount/fbUpdateMultipleCashCount';
+import { fbTransferProductsToAnotherBusiness } from '../../../../firebase/products/fbTransferProductsToAnotherBusiness';
+import { fbTransferCategoriesToAnotherBusiness } from '../../../../firebase/categories/fbTransferCategoriesToAnotherBusiness';
+import { ProductControlEfficient } from '../../../pages/Venta/components/ProductControl.jsx/ProductControlEfficient';
+import { useGetProducts } from '../../../../firebase/products/fbGetProducts';
+import {  fbUpdateProductsToNewFormatForMultipleBusinesses } from '../../../../firebase/products/fbChangeAllProducts';
+import { getPriceWithoutTax, getTax, getTotalPrice } from '../../../../utils/pricing';
+import { fbChangeInvoiceForm } from './fbChangeInvoiceForm';
 
 const data = {
   companyName: "CASA ESTILO RF",
@@ -106,30 +114,41 @@ const InvoiceFooter = styled.footer`
 export const Prueba = () => {
   const user = useSelector(selectUser)
   const [users, setUsers] = useState([])
-
-  const handleSubmit = () => {
-    let values = "recumperando las crendenciales..."
+  // const { products, loading, setLoading, error } = useGetProducts()
+  const handleSubmit = async () => {
+    let values = "cambiando productos de formato..."
     alert(values);
-  
+    // fbTransferCategoriesToAnotherBusiness("Lm8GG6YXQJO3zgR9DkGe", "X63aIFwHzk3r0gmT8w6P")
+    // fbTransferProductsToAnotherBusiness("Lm8GG6YXQJO3zgR9DkGe", "X63aIFwHzk3r0gmT8w6P")
+    //await fbUpdateProductsToNewFormat(user)
+    await fbUpdateProductsToNewFormatForMultipleBusinesses()
+
   }
   console.log(users)
   return (
     <div>
-        Hola
-        <Button
+      Hola 
+      <Button
         onClick={handleSubmit}
-        >
-          Recuperar Credenciales
-        </Button>
-        <Users />
+      >
+        Transferir categorias
+      </Button>
+
+    
     </div>
 
   )
 }
 <Receipt />
 
-const ModalWrapper = styled.div`
-  max-height: 100vh;
-  overflow: auto;
-  overflow-x: hidden;
-`;
+
+const ArticuloConImpuesto = () => {
+
+  return (
+    <div>
+ 
+   
+
+    </div>
+  );
+};

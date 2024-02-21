@@ -121,6 +121,7 @@ const ClientFormAnt = ({
 
     return (
         <Modal
+            style={{top: 10}}
             open={isOpen}
             title={isUpdating ? "Editar Cliente" : "Nuevo Cliente"}
             okText={isUpdating ? "Actualizar" : "Crear"}

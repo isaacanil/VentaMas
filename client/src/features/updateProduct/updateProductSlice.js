@@ -7,20 +7,22 @@ const emptyProduct = {
         productName: '',
         productImageURL: '',
         category: '',
-        cost: { unit: 0, total: 0 },
-        price: { unit: 0, total: 0 },
+        pricing: {
+            cost: 0,
+            price: 0,
+            listPrice: 0,
+            avgPrice: 0,
+            minPrice: 0,
+            tax: initTaxes[0],
+        },
         size: '',
         type: '',
-        listPrice: 0,
-        averagePrice: 0,
-        minimumPrice: 0,
-        isVisible: true,
-        tax: initTaxes[0].tax,
         stock: 0,
         netContent: '',
-        order: 1,
-        amountToBuy: { unit: 1, total: 1 },
+        amountToBuy: 1,
+        createdBy: 'unknown',
         id: '',
+        isVisible: true,
         trackInventory: true,
         qrCode: '',
         barCode: '',
@@ -30,17 +32,25 @@ const emptyProduct = {
 const initialState = {
     status: false,
     product: {
-        productName: '',
-        productImageURL: '',
+        name: '',
+        image: '',
         category: '',
-        cost: { unit: 0, total: 0 },
-        price: { unit: 0, total: 0 },
-        listPrice: 0,
-        averagePrice: 0,
-        minimumPrice: 0,
+        pricing: {
+            cost: 0,
+            price: 0,
+            listPrice: 0,
+            avgPrice: 0,
+            minPrice: 0,
+            tax: initTaxes[0],
+        },
+        promotions: {
+            start: null,
+            end: null,
+            discount: 0,
+            isActive: false,
+        },
         size: '',
         type: '',
-        tax: initTaxes[0].tax,
         stock: 0,
         netContent: '',
         qrCode: '',
@@ -72,12 +82,18 @@ export const updateProductSlice = createSlice({
             state.product = product
         },
         ChangeProductImage: (state, action) => {
-            state.product.productImageURL = action.payload
+            state.product.image = action.payload
         },
         changeProductPrice: (state, action) => {
-            const { price } = action.payload
-            state.product.price = price
-
+            
+           
+            state.product.pricing = {
+                ...state.product.pricing,
+                ...action?.payload?.pricing
+            }
+            if (action?.payload?.pricing?.listPrice) {
+                state.product.pricing.price = action?.payload?.pricing?.listPrice
+            }
         },
         clearUpdateProductData: (state) => {
             state.product = emptyProduct.product

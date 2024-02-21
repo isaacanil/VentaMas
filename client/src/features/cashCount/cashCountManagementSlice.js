@@ -11,13 +11,13 @@ const initialCashBoxStatus = {
     banknotesAmount: 0,
     comments: null
 }
+
 const initialCashCount = {
     state: null,
     opening: { ...initialCashBoxStatus },
     closing: { ...initialCashBoxStatus },
     sales: []
 }
-
 
 const cashCountManagementSlice = createSlice({
     name: 'cashCountManagement',
@@ -53,6 +53,10 @@ const cashCountManagementSlice = createSlice({
         setCashCountClosingComments: (state, action) => {
             state.closing.comments = action.payload;
         },
+        addPropertiesToCashCount: (state, action) => {
+            const payload = action.payload;
+            return { ...state, ...payload };
+        },
         setCashCountSales: (state, action) => {
             state.sales = action.payload;
         },
@@ -78,6 +82,7 @@ function calculateTotalAmount(banknotesByCurrency) {
 }
 
 export const {
+    addPropertiesToCashCount,
     setCashCountOpening,
     setCashCountOpeningBanknotes,
     setCashCountOpeningEmployee,

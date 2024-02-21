@@ -16,6 +16,8 @@ import {
   SelectViewOrdersNotesModalData,
   SelectAddCategoryModal,
   SelectAddProductOutflowModal,
+  SelectFileListModal,
+  toggleFileListModal,
 } from "../../../features/modals/modalSlice"
 
 import { ClientForm } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
@@ -37,6 +39,7 @@ import NoteModal from "../../templates/system/NoteModal/NoteModal"
 import ClientFormAnt from "../../pages/Contact/Client/components/ClientForm/ClientFormAnt"
 import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
 import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
+import { FileListModal } from "./FileListModal/FileListModal"
 
 export const ModalManager = () => {
   const update = OPERATION_MODES.UPDATE.id;
@@ -50,6 +53,7 @@ export const ModalManager = () => {
   const AddProductOutflowModalSelected = useSelector(SelectAddProductOutflowModal)
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
   const currentNotification = useSelector(selectCurrentNotification)
+  const FileListSelected = useSelector(SelectFileListModal)
   return (
     <Fragment>
       <AnimatePresence>
@@ -66,6 +70,7 @@ export const ModalManager = () => {
         {UpdateProdModalSelected && (
           <ProductEditorModal isOpen={UpdateProdModalSelected}  />
         )}
+        <FileListModal data={FileListSelected} onClose={toggleFileListModal}/>
         <InvoiceForm />
         {SetCustomPizzaSelected && (
           <SetCustomProduct

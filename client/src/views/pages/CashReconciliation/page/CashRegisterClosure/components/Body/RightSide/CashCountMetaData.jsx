@@ -40,6 +40,5 @@ export const CashCountMetaData = (cashCount, invoices = []) => {
     totalSystem,
     totalDiscrepancy,
     totalCharged
-    
   }
 }

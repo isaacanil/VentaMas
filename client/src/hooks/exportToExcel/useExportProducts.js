@@ -1,6 +1,4 @@
 import ExcelJS from 'exceljs';
-import { useDispatch } from 'react-redux';
-import { addNotification } from '../../features/notification/NotificationSlice';
 import { useFormatPrice } from '../useFormatPrice';
 
 export const ExportProducts = (products) => {
@@ -12,20 +10,23 @@ export const ExportProducts = (products) => {
 
     // Crear las columnas en la hoja de Excel
     worksheet.columns = [
-        { header: 'ID del producto', key: 'productId' },
         { header: 'Nombre del producto', key: 'productName' },
         { header: 'Categoría', key: 'category' },
         { header: 'Tamaño', key: 'size' },
         { header: 'Contenido neto', key: 'netContent' },
-        { header: 'Inventariable', key: 'trackInventory' },
         { header: 'Stock', key: 'stock' },
         { header: 'Impuesto', key: 'tax' },
+        { header: 'Facturable', key: 'isVisible' },
+        { header: 'Inventariable', key: 'trackInventory' },
+        { header: 'Codigo de barras', key: 'barcode'},
         { header: 'Costo', key: 'cost' },
-        { header: 'Precio final', key: 'finalPrice' }
+        { header: 'Precio de lista', key: 'listPrice' },
+        { header: 'Precio mínimo', key: 'minimumPrice' },
+        { header: 'Precio medio', key: 'averagePrice' },
     ];
-    
-     // Ordenar los datos en orden ascendente según el nombre del producto
-     products.sort((a, b) => {
+
+    // Ordenar los datos en orden ascendente según el nombre del producto
+    products.sort((a, b) => {
         if (a.product.productName < b.product.productName) {
             return -1;
         }
@@ -37,16 +38,19 @@ export const ExportProducts = (products) => {
 
     // Mapear los datos del arreglo a un arreglo de valores
     const data = products.map(({ product }) => [
-        product.id,
         product.productName,
         product.category,
         product.size,
         product.netContent,
-        product.trackInventory && 'Sí' || 'No',
         product.stock,
         product.tax.ref,
+        product.isVisible ? 'Sí' : 'No',
+        product.trackInventory ? 'Sí' : 'No',
+        product.barCode,
         useFormatPrice(product.cost.unit),
-        useFormatPrice(product.price.total)
+        useFormatPrice(product.listPrice),
+        useFormatPrice(product.minimumPrice),
+        useFormatPrice(product.averagePrice),
     ]);
 
     // Agregar los datos del arreglo a la hoja
@@ -74,13 +78,7 @@ export const ExportProducts = (products) => {
         a.download = 'productos.xlsx';
         a.click();
     });
-    // .then(
-    //     () => {
-    //         const dispatch = useDispatch();
-    //         dispatch(addNotification({ title: 'Éxito', message: 'Archivo guardado exitosamente!', type: 'success' }))
-    //         console.log('Archivo guardado exitosamente!');
-    //     }
-    // );
+
 }
 
 

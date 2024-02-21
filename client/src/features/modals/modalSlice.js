@@ -57,6 +57,10 @@ const initialState = {
     },
     modalConfirmOpenCashReconciliation: {
         isOpen: false,
+    },
+    modalFileList: {
+        isOpen: false,
+        fileList: []
     }
 }
 const modalSlice = createSlice({
@@ -99,16 +103,16 @@ const modalSlice = createSlice({
             state.modalSetCustomPizza.isOpen = !isOpen;
         },
         toggleClientModal: (state, actions) => {
-           // const mode = actions.payload.mode
+            // const mode = actions.payload.mode
 
-            const {mode, addClientToCart} = actions.payload
+            const { mode, addClientToCart } = actions.payload
             let isOpen = state.modalToggleClient.isOpen;
             state.modalToggleClient.isOpen = !isOpen;
             if (isOpen === false) {
                 state.modalToggleClient.mode = OPERATION_MODES.CREATE.id
                 state.modalToggleClient.data = null
             }
-            if(addClientToCart){
+            if (addClientToCart) {
                 state.modalToggleClient.addClientToCart = addClientToCart
             }
             if (mode === OPERATION_MODES.CREATE.id) {
@@ -184,7 +188,7 @@ const modalSlice = createSlice({
             state.modalToggleAddProductOutflow.isOpen = !isOpen;
         },
         toggleSignUpUser: (state, action) => {
-          
+
             if (action.payload?.isOpen === undefined) {
                 const isOpen = state.modalToggleSignUp.isOpen;
                 state.modalToggleSignUp.isOpen = !isOpen;
@@ -203,6 +207,19 @@ const modalSlice = createSlice({
         toggleConfirmOpenCashReconciliation: (state, action) => {
             const isOpen = state.modalConfirmOpenCashReconciliation.isOpen;
             state.modalConfirmOpenCashReconciliation.isOpen = !isOpen;
+        },
+        toggleFileListModal: (state, action) => {
+            const data = action.payload;
+            const isOpen = !state.modalFileList.isOpen;
+           
+            state.modalFileList.isOpen = isOpen;
+
+            if (isOpen === false) {
+                state.modalFileList.fileList = [];
+            } else {
+                state.modalFileList.fileList = data.fileList;
+
+            }
         }
     }
 })
@@ -229,7 +246,8 @@ export const {
     toggleAddCategory,
     toggleAddProductOutflow,
     toggleSignUpUser,
-    toggleConfirmOpenCashReconciliation
+    toggleConfirmOpenCashReconciliation,
+    toggleFileListModal
 
 } = modalSlice.actions
 
@@ -248,5 +266,5 @@ export const SelectAddCategoryModal = state => state.modal.modalToggleAddCategor
 export const SelectAddProductOutflowModal = state => state.modal.modalToggleAddProductOutflow;
 export const SelectSignUpUserModal = state => state.modal.modalToggleSignUp;
 export const SelectConfirmOpenCashReconciliationModal = state => state.modal.modalConfirmOpenCashReconciliation;
-
+export const SelectFileListModal = state => state.modal.modalFileList;
 export default modalSlice.reducer

@@ -25,6 +25,10 @@ export function convertMillisToFriendly(millis) {
         return "Invalid milliseconds";
     }
 }
+export function convertMillisToDate(millis) {
+    const date = DateTime.fromMillis(millis).toFormat("dd/MM/yyyy");
+    return date;
+}
 
 export function convertMillisToISO(millis) {
     const date = DateTime.fromMillis(millis);

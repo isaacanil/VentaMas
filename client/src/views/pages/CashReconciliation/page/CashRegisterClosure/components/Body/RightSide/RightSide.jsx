@@ -6,14 +6,16 @@ import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBo
 import { TextareaV2 } from '../../../Comments/TextareaV2'
 import { ViewInvoice } from './components/ViewInvoive/ViewInvoice'
 import { Comments } from '../../../Comments/Comments'
-import { selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
+import { addPropertiesToCashCount, selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { DateSection } from '../../Header/DateSection'
 import { selectUser } from '../../../../../../../../features/auth/userSlice'
 import { fbLoadInvoicesForCashCount } from '../../../../../../../../firebase/cashCount/fbLoadInvoicesForCashCount'
+import { CashCountMetaData } from './CashCountMetaData'
 
 export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => {
   const CashReconciliation = useSelector(selectCashCount)
+
   const { sales, id, state } = CashReconciliation
   const { banknotes, comments } = CashReconciliation.closing;
   const [invoices, setInvoices] = useState({
@@ -36,6 +38,12 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
     }
     fetchData()
   }, [])
+
+  const cashCountMetaData = CashCountMetaData(CashReconciliation, invoices.invoices)
+  useEffect(()=>{
+    dispatch(addPropertiesToCashCount(cashCountMetaData))
+  },[ banknotes])
+  console.log(cashCountMetaData)
   console.log(invoices)
   return (
     <Container>
@@ -43,7 +51,7 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
         banknotes={banknotes}
         setBanknotes={handleChangesBanknotes}
         title={'Cierre'}
-        datetime={<DateSection date={date} />}
+        datetime={<DateSection date={CashReconciliation.closing.date} />}
         isExpanded={calculationIsOpen}
         setIsExpanded={setCalculationIsOpen}
         inputDisabled={state === 'closed'}

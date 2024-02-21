@@ -2,9 +2,11 @@ import React, { Fragment } from 'react'
 import { useFormatPhoneNumber } from '../../../../../hooks/useFormatPhoneNumber'
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
+import { convertTimeStampToMillis, fromMillisToDateISO } from '../../../../../utils/date/convertTimeStampToDate';
+import { convertDate } from '../../../../../utils/date/formatDate';
 
 export const Header = ({ business, data, SubTitle, P, Space }) => {
-    const fechaActual = DateTime.now().toFormat('dd/MM/yyyy HH:mm');
+    const fechaActual = data?.date ? fromMillisToDateISO(convertTimeStampToMillis(data.date), "dd/MM/yyyy HH:mm"): DateTime.now().toFormat('dd/MM/yyyy HH:mm');
     return (
         <Container>
             <div>

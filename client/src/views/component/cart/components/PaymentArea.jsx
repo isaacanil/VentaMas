@@ -1,30 +1,38 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-// import Switch from '@mui/material/Switch'
 import { monetarySymbols } from '../../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
-import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue } from '../../../../features/cart/cartSlice'
+import { SelectDelivery, SelectTotalTaxes, addPaymentMethod, SelectTotalPurchase, SelectChange, setChange, totalPurchase, addPaymentMethodAutoValue, addPaymentValue, SelectPaymentValue, SelectCartData } from '../../../../features/cart/cartSlice'
 import { useEffect } from 'react'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { getTaxReceiptData,  selectTaxReceipt, } from '../../../../features/taxReceipt/taxReceiptSlice'
-
-import { quitarCeros } from '../../../../hooks/quitarCeros'
+import { getTaxReceiptData, selectTaxReceipt, } from '../../../../features/taxReceipt/taxReceiptSlice'
 import CustomInput from '../../../templates/system/Inputs/CustomInput'
-import { useRoundedNumber } from '../../../../hooks/useRoundedNumber'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
-import { Switch } from '../../../templates/system/Switch/Switch'
-import { Chip } from '../../../templates/system/Chip/Chip'
-import { icons } from '../../../../constants/icons/icons'
-import * as antd from 'antd'
-const { Select } = antd
+const calculateCartValues = (cartData) => {
+    const { products, delivery, discount, totalTaxes } = cartData
+    const subtotal = products.reduce((acc, product) => acc + product.price.unit * product.amountToBuy.total, 0)
+    const totalDiscount = (subtotal * (discount.value / 100))
+
+
+    const totalPurchase = subtotal + totalTaxes.value + delivery.value - totalDiscount
+    return {
+        subtotal,
+        totalDiscount,
+        totalTaxes,
+        totalPurchase
+    }
+
+}
 export const PaymentArea = () => {
     const ChangeRef = useSelector(SelectChange)
     const TaxesRef = useSelector(SelectTotalTaxes)
-    const PaymentValue = useSelector(SelectPaymentValue)
+    const paymentValue = useSelector(SelectPaymentValue)
     const DeliveryRef = useSelector(SelectDelivery)
     const dispatch = useDispatch()
     const TotalPurchaseRef = useSelector(SelectTotalPurchase)
+    const CartData = useSelector(SelectCartData)
+    //  const { subtotal, totalDiscount, totalTaxes, totalPurchase } = calculateCartValues(CartData)
     const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt)
     const taxReceiptData = fbGetTaxReceipt()
     const [paymentMethod, setPaymentMethod] = useState([
@@ -44,7 +52,8 @@ export const PaymentArea = () => {
             name: 'Transfer...',
         }
     ])
-    const [paymentValue, setPaymentValue] = useState(0);
+  
+
     const SelectPaymentMethod = (id, value) => {
         let SearchingMethod = paymentMethod.find((methodSelected) => methodSelected.method === id)
         setPaymentMethod(
@@ -59,166 +68,71 @@ export const PaymentArea = () => {
         )
     }
 
+    // useEffect(() => {
+    //     dispatch(addPaymentValue(paymentValue))
+    // }, [paymentValue])
 
-    useEffect(() => {
-        dispatch(addPaymentValue(paymentValue))
-        dispatch(setChange())
-    }, [paymentValue])
+    const handleChange = (e) => {
+        dispatch(addPaymentValue(e.target.value))
+    }
 
-    useEffect(() => {
-        dispatch(addPaymentMethodAutoValue())
-        setPaymentValue(TotalPurchaseRef)
-    }, [TotalPurchaseRef])
-
-    useEffect(() => {
-        dispatch(addPaymentMethod(paymentMethod))
-        console.log(paymentMethod)
-    }, [paymentMethod])
-
-    useEffect(() => {
-        if (taxReceiptData !== undefined && taxReceiptData.length > 0) {
-            dispatch(getTaxReceiptData(taxReceiptData))
-        }
-    }, [taxReceiptData])
-   
     return (
         <Container>
-            <Row>
-                <Group className='tax-discount'>
-                    {
-                        taxReceiptEnabled ? (
-                            <Group>
-                                {/* <Switch
-                                    size='small'
-                                    checked={selectedNcfStatus}
-                                    onChange={(e) => dispatch(handleNCFStatus(e.target.checked))}
-                                    <STitle>Comp. Fiscal.</STitle>
-                                /> */}
-                                {/* <Select
-                                    style={{ width: 200 }}
-                                >
-                                    {taxReceiptData.taxReceipt.map(({ data }, index) => {
-                                        return (
-                                            <Select.Option value={data.ncfCode} key={index}>{data.name}</Select.Option>
-                                        )
-                                    }
-                                    )}
-                                </Select> */}
-                            </Group>
-                        ) : (
-                            <Chip
-                                disabled
-                                size='small'
-                                icon={icons.operationModes.ban}
-                                label={"Comprobante"}
-                                color='primary'
+            <PaymentOptions>
+                {paymentMethod.map((method, index) => {
+                    return (
+                        <PaymentOption key={index}>
+                            <input
+                                type="radio"
+                                name="payment-method"
+                                id={method.method}
+                                defaultChecked={method.status}
+                                onChange={(e) => { SelectPaymentMethod(method.method, e.target.checked) }}
                             />
-                        )
-                    }
-                    <Group>
-                        <CustomInput options={["10", "20", "30"]} />
-                    </Group>
-                </Group>
-            </Row>
-            <Area>
-                <Group className='paymentMethod'>
-                    {paymentMethod.map((method, index) => {
-                        return (
-                            <Group grow='2' key={index}>
-                                <input
-                                    type="radio"
-                                    name="payment-method"
-                                    id={method.method}
-                                    defaultChecked={method.status}
-                                    onChange={(e) => { SelectPaymentMethod(method.method, e.target.checked) }}
-                                />
-                                <label htmlFor={method.method}>{method.name}</label>
-                            </Group>
-                        )
-                    }
-                    )}
-                </Group>
-            </Area>
-            <Row margin='bottom'>
-                <Group className='option1'>
+                            <label htmlFor={method.method}>{method.name}</label>
+                        </PaymentOption>
+                    )
+                }
+                )}
+            </PaymentOptions>
+            <PaymentInfo>
+                <LeftSide>
+                    <Wrapper>
+                        <Label>Delivery:</Label>
+                        {useFormatPrice(DeliveryRef.value)}
+                    </Wrapper>
                     <Wrapper>
                         <Label>ITBIS:</Label>
                         {useFormatPrice(TaxesRef)}
                     </Wrapper>
                     <Wrapper>
-                        <Label>Delivery:</Label>
-                        {useFormatPrice(DeliveryRef.value)}
-                    </Wrapper>
-                </Group>
-            </Row>
-            <Row margin='bottom'>
-                <Group className='option1'>
-                    <Wrapper>
                         <Label>Cambio:</Label>
                         {useFormatPrice(ChangeRef)}
                     </Wrapper>
+                </LeftSide>
+                <RightSide>
+                    <CustomInput options={["10", "20", "30", "50"]} />
                     <InputV4
                         label={`Pago con (${monetarySymbols.dollarSign})`}
                         labelVariant='primary'
-                        size=""
+                        size="large"
                         type="number"
                         value={paymentValue}
-                        onChange={(e) => setPaymentValue(e.target.value)}
+                        onChange={handleChange}
                     />
-                </Group>
-            </Row>
+                </RightSide>
+            </PaymentInfo>
         </Container>
     )
 }
 const Container = styled.div`
     background-color: white;
+    display: grid;
+    gap: 0.4em;
 `
-const Row = styled.div`
-    align-items: center;
-    padding: 0 0.4em;
-    ${props => {
-        switch (props.margin) {
-            case 'bottom':
-                return `
-                    margin-bottom: 10px;
-                `
-            default:
-                break;
-        }
-    }}
-`
-const Group = styled.div`
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    gap: 1em;
-    span{
-        display: flex;
-        justify-content: space-between;
-    }
-    ${props => {
-        switch (props.grow) {
-            case props.grow:
-                return `
-                flex-grow: ${props.grow};
-                `
-
-            default:
-                break;
-        }
-    }}
-    ${props => {
-        switch (props.className) {
-            case 'option1':
-                return `
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    justify-content: space-between;
-                    gap: 2em;
-                `
-            case 'paymentMethod':
-                return `
-                display: grid;
+const PaymentOptions = styled.div`
+     display: grid;
+     gap: 0.4em;
                 grid-template-columns: 1fr 1fr 1fr;
 
                 input[type="radio"]:checked + label{  
@@ -242,119 +156,33 @@ const Group = styled.div`
                         background-color: var(--color3)
                     }
                 }
-                `
-            case 'tax-discount':
-                return `
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                `
-            default:
-                break;
-        }
-
-    }}
-     ${props => {
-        switch (props.space) {
-            case 'small':
-                return `
-                gap: 0.6em; 
-                `
-            case 'medium':
-                return `
-                gap: 0.8em;
-                `
-            case 'large':
-                return `
-                gap: 1em;
-                `
-            default:
-                return `
-                    gap: 1em;
-                `
-        }
-    }
-    }
-   
-  
-    
-    
-    
 `
-const Item = styled.div`
-padding: 0;
-    flex-shrink: 1;
-    height: 2em;
-    position: relative;
+const PaymentOption = styled.div`
+    display: flex;
     align-items: center;
-    
-    label{
-        font-size: 11px;
-        height: 11px;
-        box-sizing: border-box;
-        margin: 0;
-        padding: 2px 0.6em; 
-        position: absolute;
-        top: -8px;
-        left: 0;
+    flex-grow: 1;
+    gap: 1em;
+    span{
         display: flex;
-        align-items: center;
-        background-color: var(--color3);
-        color: #5c5c5c;
-        font-weight: bold;
-        border-radius: 3px;
+        justify-content: space-between;
     }
-    input{
-        border-radius: 6px;
-        outline: none;
-        border: 1px solid rgba(0, 0, 0, 0.100);
-        padding: 0em 0.4em;
-        height: 1.8em;
-        font-size: 16px;
-        line-height: 14px;
-        width: 100%;
-        justify-self: flex-end;
-        color: var(--Gray10);
-        text-align: right;
-        &:focus{
-            text-align: left;
-        }
-        ::-webkit-outer-spin-button,
-        ::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-        margin: 0;
-        -moz-appearance: textfield;
-}
-        :read-only{
-            text-align: right;
-        }
-    
-}
 `
-const STitle = styled.div`
-    
-    white-space: nowrap;
+const LeftSide = styled.div`
+     display: grid;
+    gap: 0.05em;
 `
-const Area = styled.div`
-    .title{
-        position: absolute;
-        top: -14px;
-        font-weight: 650;
-        font-size: 14px;
-        line-height: 19px;
-        color: var(--Black3);
-        background-color: white;
-        border-radius: 10px;
-        padding: 0 0.2em;
-    }
-    position: relative;
-    padding: 0em 0.5em;
-    //border: 1px solid #0000003d;
-    color: #292929;
-    background-color: var(--icolor4);
-    border-radius: 4px;
-    margin: 0.4em 0;
+const RightSide = styled.div`
+    display: grid;
+    padding: 0.6em 0 0;
+    gap: 0.8em;
+`
+const PaymentInfo = styled.div`
+    display: grid;
+    padding: 0 0.4em;
+    gap: 1em;
+    grid-template-columns: 1fr 0.7fr;
+`
 
-`
 const Wrapper = styled.span`
    display: flex;
     justify-content: space-between;

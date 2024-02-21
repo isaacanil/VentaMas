@@ -50,6 +50,7 @@ export const ClientControl = () => {
   const handleDeleteData = () => {
     dispatch(deleteClient())
   }
+  
   const handleChangeClient = (e) => {
     if (mode === CLIENT_MODE_BAR.SEARCH.id) {
       setSearchTerm(e.target.value)
@@ -68,8 +69,6 @@ export const ClientControl = () => {
 
       case CLIENT_MODE_BAR.UPDATE.id:
         setInputIcon(CLIENT_MODE_BAR.UPDATE.icon)
-        dispatch(totalPurchase())
-        dispatch(setChange())
         closeMenu()
         break;
 

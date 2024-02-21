@@ -2,7 +2,7 @@
 import ROUTES_NAME from '../../../routes/routesName'
 import findRouteByName from '../../templates/MenuApp/findRouteByName'
 import { icons } from '../../../constants/icons/icons'
-import { inspectUserAccess } from '../../../hooks/abilities/useAbilities'
+import { userAccess } from '../../../hooks/abilities/useAbilities'
 
 const { BILLS, SALES } = ROUTES_NAME.SALES_TERM
 const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
@@ -12,7 +12,7 @@ const { MANAGE_BUSINESS, CHANGELOG_MANAGE, CHANGELOG_CREATE} = ROUTES_NAME.DEV_V
 
 const { inventory, purchase, register, sale, cashReconciliation } = icons.menu.unSelected
 export const getCardData = (user) => {
-  const { abilities } = inspectUserAccess();
+  const { abilities } = userAccess();
 
   function* generateData() {
     yield {

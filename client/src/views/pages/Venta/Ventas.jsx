@@ -8,7 +8,7 @@ import {
 
   MultiDisplayControl,
 } from '../../'
-import { Cart } from '../../component/cart/Cart'
+import { Cart } from '../../component/cart/Cart.jsx'
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { filterData } from '../../../hooks/search/useSearch'
@@ -20,13 +20,14 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ConfigMenu } from '../../component/modals/SettingsModal/components/Body/components/ConfigMenu.jsx'
 import { ConfigModal } from '../../component/modals/SettingsModal/ConfigModal.jsx'
+import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
 export const Sales = () => {
 
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
   const [cashCountConfirmation, setCashCountConfirmation] = useState(false)
   const { products, loading, setLoading, error } = useGetProducts()
-console.log(products[0])
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -46,9 +47,9 @@ console.log(products[0])
     }
   }
   useBarcodeScanner(products, checkBarcode);
-  console.log(products)
+  console.log(products, 'products')
   const productFiltered = filterData(products, searchData)
-  const filterProductsByVisibility = productFiltered.filter(({ product }) => product.isVisible !== false);
+  const filterProductsByVisibility = productFiltered.filter(( product ) => product.isVisible !== false);
   return (
     <Container
       animate={{ x: 0 }}
@@ -62,31 +63,20 @@ console.log(products[0])
           searchData={searchData}
           setSearchData={setSearchData}
         />
-        <ProductControl
+        {/* <ProductControl
           setProductsLoading={setLoading}
           productsLoading={loading}
           products={filterProductsByVisibility}
           isProductGrouped={categoryGrouped}
+        /> */}
+        < ProductControlEfficient
+          products={filterProductsByVisibility}
+          
         />
+
         <MenuComponents />
       </ProductContainer>
       <Cart></Cart>
-      {/* <ConfigModal config={
-        {
-          title: 'Configuración',
-          tabs: [
-            {
-                title: 'Tab 1', content: (
-                    <Container>
-                     
-                    </Container>
-                )
-            },
-            { title: 'Tab 2', content: "prueba" },
-        ]
-        }
-      } /> */}
-      {/* <ModalManager /> */}
     </Container>
   )
 }
@@ -121,7 +111,7 @@ const ProductContainer = styled.div`
     height: 100%;
     overflow-y: hidden;
     display: grid;
-    grid-template-rows: min-content min-content 1fr;
+    grid-template-rows: min-content min-content;
     @media(max-width: 800px) {
    
       position: relative;

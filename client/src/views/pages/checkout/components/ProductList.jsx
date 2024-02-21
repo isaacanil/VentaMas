@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
 import { Col } from './Table/Col'
 import { Row } from './Table/Row'
+import { getTax, getTotalPrice } from '../../../../utils/pricing'
 export const ProductList = ({ data }) => {
     const { products } = data
     return (
@@ -12,12 +13,12 @@ export const ProductList = ({ data }) => {
                     products.map((product, index) => (
                         <Product key={index}>
                             <Row cols='3'>
-                                <Col>{product.amountToBuy.total} x {separator(product.price.unit)}</Col>
-                                <Col textAlign='right'>{separator((product.price.unit * product.tax.value) * product.amountToBuy.total )}</Col>
-                                <Col textAlign='right'>{separator(product.price.total)}</Col>
+                                <Col>{product.amountToBuy} x {separator(getTotalPrice(product.pricing.price, product.pricing.tax))}</Col>
+                                <Col textAlign='right'>{separator(getTax(product.pricing.price, product.pricing.tax, product.amountToBuy))}</Col>
+                                <Col textAlign='right'>{separator(getTotalPrice(product.pricing.price, product.pricing.tax, 0, product.amountToBuy ))}</Col>
                             </Row>
                             <Row>
-                                <ProductName>{product.productName}</ProductName>
+                                <ProductName>{product.name}</ProductName>
                             </Row>
                         </Product>
                     ))

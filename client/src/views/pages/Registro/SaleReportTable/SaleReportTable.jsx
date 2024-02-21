@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { columns } from '../tableData'
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable'
+import { getProductsTax, getProductsTotalPrice, getTotalItems } from '../../../../utils/pricing'
 
 export const SaleReportTable = ({ bills = [], searchTerm }) => {
   const data = bills?.map(({ data }) => {
@@ -12,11 +13,11 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
       ncf: data?.NCF,
       client: data?.client?.name || "Generic Client",
       date: data?.date?.seconds,
-      itbis: data?.products?.reduce((total, product) => total + (product?.tax?.value * product?.cost?.unit) * product?.amountToBuy?.total, 0),
+      itbis: getProductsTax(data?.products),
       payment: data?.payment?.value,
-      products: data?.products?.reduce((total, product) => total + product?.amountToBuy?.total, 0),
+      products: getTotalItems(data?.products),
       change: data?.change?.value,
-      total: data?.totalPurchase?.value,
+      total: getProductsTotalPrice(data?.products, data?.pricing?.tax),
       ver: { data },
       accion: { data },
       dateGroup: DateTime.fromMillis(data?.date?.seconds * 1000).toLocaleString(DateTime.DATE_FULL)
@@ -36,7 +37,7 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
     }
   }
   return (
-    <Container>
+    
       <AdvancedTable
         columns={columns}
         data={data}
@@ -48,7 +49,7 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
         tableName={'Facturas'}
         numberOfElementsPerPage={40}
       />
-    </Container>
+
   )
 }
 
@@ -66,7 +67,7 @@ const TotalContainer = styled.div`
 `
 
 const Container = styled.div`
-  padding: 0.6em;
+  
   display: flex;
   overflow: hidden;
 `

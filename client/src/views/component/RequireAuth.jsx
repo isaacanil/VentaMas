@@ -3,7 +3,6 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { selectUser } from '../../features/auth/userSlice'
-import { inspectUserAccess } from "../../hooks/abilities/useAbilities";
 import { Home } from "../pages/Home/Home";
 
 export const RequireAuth = ({ children}) => {

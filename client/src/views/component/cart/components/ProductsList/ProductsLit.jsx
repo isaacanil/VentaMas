@@ -15,7 +15,7 @@ export const ProductsList = () => {
                 ProductSelected.length > 0 ?
                     (<AnimatePresence>
                             {ProductSelected.map((item, Index) => (
-                                <ProductCardForCart item={item} key={Index} />
+                                <ProductCardForCart item={item} key={item.id} />
                             ))}
                         </AnimatePresence>)
                     :

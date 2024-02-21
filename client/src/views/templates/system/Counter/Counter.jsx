@@ -26,22 +26,21 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
     useEffect(() => {
         if (counter.value >= 0) {
             //dispatch(totalShoppingItems())
-            
+
             dispatch(onChangeValueAmountToProduct(counter))
             dispatch(addPaymentMethodAutoValue())
-           // dispatch(setChange())
+            // dispatch(setChange())
         }
-       
+
     }, [counter])
+    const handleChangeCounter = (value) => {
+        dispatch(onChangeValueAmountToProduct({id, value}))
+
+    }
 
     const handleIncreaseCounter = () => {
         setCounter({ id })
         dispatch(addAmountToProduct(counter))
-        dispatch(totalShoppingItems())
-        dispatch(totalPurchase())
-        dispatch(addPaymentMethodAutoValue())
-        dispatch(totalTaxes())
-        dispatch(setChange())
     }
 
 
@@ -49,12 +48,8 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
         if (amountToBuyTotal > 1) {
             setCounter({ id })
             dispatch(diminishAmountToProduct(counter))
-            dispatch(totalPurchase())
-            dispatch(totalShoppingItems())
-            dispatch(totalTaxes())
-            dispatch(addPaymentMethodAutoValue())
         }
-       
+
         if (amountToBuyTotal === 1) {
             setDeletePrevent(true)
         }
@@ -70,8 +65,8 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
                     name=""
                     id=""
                     value={amountToBuyTotal ? amountToBuyTotal : ""}
-                   
-                    onChange={e => setCounter({ ...counter, value: e.target.value })}
+                    
+                    onChange={e => handleChangeCounter(e.target.value)}
                 />
                 <ButtonCounter onClick={handleIncreaseCounter}>
                     {icons.mathOperations.add}

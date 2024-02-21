@@ -1,30 +1,50 @@
-//name (es el nombre que se muestra en la tabla)
-//align (es la alineacion del texto)
-//description (es la descripcion que se muestra en el tooltip)
-//min (es el ancho minimo de la columna)
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useFormatPrice } from "../../../hooks/useFormatPrice";
 import { getTimeElapsed } from "../../../hooks/useFormatTime";
-import { Button } from "../../templates/system/Button/Button";
 import { Receipt } from "../checkout/Receipt";
 import { faPrint, faReceipt } from "@fortawesome/free-solid-svg-icons";
 import { useReactToPrint } from "react-to-print";
-import { useRef } from "react";
-import { truncateString } from "../../../utils/text/truncateString";
+import { useEffect, useRef, useState } from "react";
 ;
 import { icons } from "../../../constants/icons/icons";
 import * as ant from "antd";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addInvoice } from "../../../features/invoice/invoiceFormSlice";
-import { DateTime } from "luxon";
 import { convertDate } from "../../../utils/date/convertTimeStampToDate";
+import { selectUser } from "../../../features/auth/userSlice";
+import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus";
+import { Tag } from "../../templates/system/Tag/Tag";
 
 const EditButton = ({ value }) => {
   const dispatch = useDispatch()
   const data = value.data;
+  const user = useSelector(selectUser)
+  const [isCashCountOpen, setIsCashCountOpen] = useState();
   const componentToPrintRef = useRef(null)
+  const [isAllowEdit, setIsAllowEdit] = useState(false)
   const is48HoursOld = data?.date?.seconds < (Date.now() / 1000) - 172800
+
+  useEffect(() => {
+    const checkCashCountStatus = async () => {
+      // Asegúrate de que cashCountId tiene un valor válido antes de llamar a fbCashCountStatus
+      if (user && data && typeof data.cashCountId !== 'undefined' && data.cashCountId !== null) {
+        try {
+          const isOpen = await fbCashCountStatus(user, data.cashCountId, "open");
+          console.log("Checking cash count status...", !isOpen, " Hola ", is48HoursOld, " --> isOpen")
+          setIsAllowEdit(!isOpen && is48HoursOld);
+        } catch (error) {
+          console.error("Error checking cash count status:", error);
+          setIsAllowEdit(true); // Asumir cerrado en caso de error
+        }
+      } else {
+        setIsAllowEdit(true);
+      }
+    };
+
+    checkCashCountStatus();
+  }, [user, data?.cashCountId]);
+
   const handleEdit = () => {
     const invoiceData = {
       ...data,
@@ -36,13 +56,15 @@ const EditButton = ({ value }) => {
         cancelledAt: convertDate.fromTimestampToMillis(data?.cancel?.cancelledAt),
       } : null
     }
-
     dispatch(addInvoice({ invoice: invoiceData }))
   }
+
+    
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
   })
+  console.log(isAllowEdit, data.id, isAllowEdit, "isAllowEdit", isCashCountOpen)
 
   return (
     <div style={{
@@ -58,12 +80,12 @@ const EditButton = ({ value }) => {
       <ant.Button
         icon={icons.editingActions.edit}
         onClick={handleEdit}
-        disabled={is48HoursOld}
+        disabled={isAllowEdit}
       />
     </div>
   )
 }
-//max (es el ancho maximo de la columna)
+
 export const columns = [
   {
     Header: 'N°',
@@ -80,6 +102,18 @@ export const columns = [
     align: 'left',
     maxWidth: '1.4fr',
     min: '150px',
+    cell: ({ value }) => {
+      if (!value) return (
+        <Tag>
+          No Disponible
+        </Tag>
+      )
+      return (
+        <div>
+          {value}
+        </div>
+      )
+    }
   },
   {
     Header: 'Cliente',
@@ -106,23 +140,6 @@ export const columns = [
     maxWidth: '1fr',
     minWidth: '100px',
   },
-  // {
-  //   Header: 'Pago con',
-  //   accessor: 'payment',
-  //   align: 'right',
-  //   cell: ({ value }) => useFormatPrice(value),
-  //   maxWidth: '1fr',
-  //   minWidth: '100px',
-  // },
-  // {
-  //   Header: 'Cambio',
-  //   accessor: 'change',
-  //   align: 'right',
-  //   cell: ({ value }) => useFormatPrice(value),
-  //   description: 'Cambio entregado al cliente',
-  //   maxWidth: '1fr',
-  //   minWidth: '100px',
-  // },
   {
     Header: 'Articulos',
     accessor: 'products',
@@ -179,6 +196,16 @@ export const tableData = {
       description: 'Nombre del vendedor que realizó la venta',
       max: '1.4fr',
       min: '150px',
+      cell: ({ value }) => {
+        if(!value) return (
+          <div>Hola</div>
+        )
+        return (
+          <div>
+            {value}
+          </div>
+        )
+      }
     },
     {
       name: 'Cliente',

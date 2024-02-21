@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { ProductItem } from './ProductCard/ProductItem'
 import { ProductCardRow } from './ProductCard/ProductCardRow'
-import { Pagination } from '@mui/material'
 import { Carrusel } from '../../../../../../component/Carrusel/Carrusel'
 import { FormattedValue } from '../../../../../../templates/system/FormattedValue/FormattedValue'
 import { CenteredText } from '../../../../../../templates/system/CentredText'
@@ -20,6 +19,7 @@ import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/
 import { useDialog } from '../../../../../../../Context/Dialog/DialogContext'
 import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
+import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
@@ -133,16 +133,16 @@ export const ProductsTable = ({ products, searchTerm }) => {
     }
   ];
 
-  const data = products.map(({ product }) => ({
+  const data = products.map(( product ) => ({
     id: product.id,
     image: product.productImageURL,
-    name: { name: product.productName, img: product.productImageURL },
+    name: { name: product.name, img: product.image },
     stock: { stock: product.stock, trackInventory: product.trackInventory },
     trackInventory: product.trackInventory,
-    cost: product.cost.unit,
-    price: product?.price?.unit,
-    tax: product?.tax?.value * product.cost.unit,
-    isVisible: product.isVisible,
+    cost: product?.pricing?.cost,
+    price: getTotalPrice(product?.pricing?.price, product?.pricing?.tax, 0),
+    tax: getTax(product?.pricing?.price, product?.pricing?.tax),
+    isVisible: product?.isVisible,
     action: product,
     category: product.category,
   }));

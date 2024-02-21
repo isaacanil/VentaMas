@@ -7,7 +7,7 @@ import { UploadImgAdmin } from './UploadImgAdmin'
 
 export const Body = ({ images, ImgToUpload, setImgToUpload }) => {
     const { status, product } = useSelector(selectUpdateProductData)
-    const [img, setImg] = useState(product?.productImageURL);
+    const [img, setImg] = useState(product?.image);
     return (
         <Container>
             <BodyWrapper>

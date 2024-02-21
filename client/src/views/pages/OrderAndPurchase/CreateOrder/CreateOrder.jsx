@@ -61,7 +61,7 @@ export const CreateOrder = () => {
         navigate(ORDERS);
     }
     useEffect(() => {
-        if (providers.length > 0  && !provider) {
+        if (providers.length > 0 && !provider) {
             const defaultProvider = providers[0].provider;
             dispatch(setOrder({ provider: defaultProvider }));
         }
@@ -152,7 +152,7 @@ export const CreateOrder = () => {
                 <BodyContainer>
                     <Body>
                         <div >
-                            <SelectWithButton> 
+                            <SelectWithButton>
                                 <Form.Item
                                     label="Proveedores"
                                     required
@@ -186,10 +186,10 @@ export const CreateOrder = () => {
                             handleDeleteProduct={handleDeleteProduct}
                             handleUpdateProduct={handleUpdateProduct}
                         />
-                       <OrderDetails 
-                        fileList={fileList}
-                        setFileList={setFileList}
-                       />
+                        <OrderDetails
+                            fileList={fileList}
+                            setFileList={setFileList}
+                        />
                         <WrapperFooter>
                             <ButtonGroup>
                                 <Button

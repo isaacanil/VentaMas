@@ -1,11 +1,12 @@
 import { useSelector } from "react-redux"
 import { selectUser } from "../../features/auth/userSlice"
 import { db } from "../firebaseconfig"
-import { collection, query, orderBy, where, onSnapshot } from "firebase/firestore"
+import { collection, query, orderBy, where, onSnapshot, limit } from "firebase/firestore"
 import { useEffect, useState } from "react"
 import { SelectCategoryList, SelectCategoryStatus } from "../../features/category/categorySlicer"
 import { selectCriterio, selectInventariable, selectItbis, selectOrden } from "../../features/filterProduct/filterProductsSlice"
 import { filter } from "lodash"
+import { getTax } from "../../utils/pricing"
 
 
 function filterProducts(productsArray, inventariable, itbis) {
@@ -19,17 +20,17 @@ function filterProducts(productsArray, inventariable, itbis) {
   // Filtro por ITBIS
   if (itbis !== 'todos') {
     const itbisValue = parseFloat(itbis);
-    productsArray = filter(productsArray, product => product.product.tax.value === itbisValue);
+    productsArray = filter(productsArray, product => product.pricing.tax === itbisValue);
   }
 
   return productsArray;
 }
 function orderingProducts(productsArray, criterio, orden) {
   const handleOrdering = (field, order) => {
-    if (field === 'tax.value') {
+    if (field === 'tax') {
       productsArray.sort((a, b) => {
-        const taxA = a.product.price.unit * (1 + a.product.tax.value);
-        const taxB = b.product.price.unit * (1 + b.product.tax.value);
+        const taxA = getTax(a.product.pricing.price, a.product.pricing.tax);
+        const taxB = getTax(b.product.pricing.price, b.product.pricing.tax);
         if (order === 'ascNum') {
           if (taxA === 0) return 1;
           if (taxB === 0) return -1;
@@ -48,8 +49,8 @@ function orderingProducts(productsArray, criterio, orden) {
       const fields = field.split('.'); // Divide el campo usando el punto
 
       productsArray.sort((a, b) => {
-        let valueA = a.product;
-        let valueB = b.product;
+        let valueA = a;
+        let valueB = b;
 
         // Accede a las propiedades anidadas usando los fragmentos
         fields.forEach(f => {
@@ -68,13 +69,13 @@ function orderingProducts(productsArray, criterio, orden) {
     }
   };
 
-  if (criterio === 'nombre') handleOrdering('productName', orden);
+  if (criterio === 'nombre') handleOrdering('name', orden);
   if (criterio === 'inventariable') handleOrdering('trackInventory', orden);
-  if (criterio === 'precio') handleOrdering('price.unit', orden);
-  if (criterio === 'costo') handleOrdering('cost.unit', orden);
+  if (criterio === 'precio') handleOrdering('pricing.price', orden);
+  if (criterio === 'costo') handleOrdering('pricing.cost', orden);
   if (criterio === 'stock') handleOrdering('stock', orden);
   if (criterio === 'categoria') handleOrdering('category', orden);
-  if (criterio === 'impuesto') handleOrdering('tax.value', orden);
+  if (criterio === 'impuesto') handleOrdering('pricing.tax', orden);
 
   return productsArray;
 }
@@ -115,10 +116,18 @@ export function useGetProducts(trackInventory = false) {
           setLoading(false);
           return;
         }
-        let productsArray = snapshot.docs.map((item) => item.data());
+        let productsArray = snapshot.docs.map((item) => {
+          let doc = item.data();
+          delete doc?.product?.updatedAt;
+          delete doc?.product?.createdAt;
+          delete doc?.product?.createdBy;
+          return doc
+        }
+        );
 
-        productsArray = filterProducts(productsArray, inventariable, itbis);
-        productsArray = orderingProducts(productsArray, criterio, orden);
+
+        // productsArray = filterProducts(productsArray, inventariable, itbis);
+        // productsArray = orderingProducts(productsArray, criterio, orden);
 
         setProducts(productsArray);
         setLoading(false)

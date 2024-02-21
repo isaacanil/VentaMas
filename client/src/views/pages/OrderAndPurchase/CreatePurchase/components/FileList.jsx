@@ -1,8 +1,9 @@
 import React from 'react';
 import * as antd from 'antd';
 import { FilePdfOutlined, FileImageOutlined, FileOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
 
-const { Image, Row, Col, Card } = antd;
+const { Image, Card } = antd;
 
 const FileList = ({ files = [] }) => {
 
@@ -28,7 +29,7 @@ const FileList = ({ files = [] }) => {
     );
 
     return (
-      <Col span={6} key={url}>
+      <Col  key={url}>
         <Card
           hoverable
           size='small'
@@ -50,3 +51,9 @@ const FileList = ({ files = [] }) => {
 };
 
 export default FileList;
+const Row = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+`
+const Col = styled.div`
+`

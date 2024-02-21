@@ -1,9 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
+import { ButtonGroup } from '../../../../templates/system/Button/Button'
 import { Receipt } from '../../../../pages/checkout/Receipt'
-
+import * as antd from 'antd'
+import { icons } from '../../../../../constants/icons/icons'
+const { Typography, Modal } = antd
 export const CheckoutAction = ({
     TotalPurchaseRef,
     ProductSelected,
@@ -12,6 +14,27 @@ export const CheckoutAction = ({
     componentToPrintRef,
     bill
 }) => {
+    const showCancelSaleConfirm = () => {
+        Modal.confirm({
+            title: 'Cancelar Venta',
+            content: 'Si cancelas, se perderán todos los datos de la venta actual. ¿Deseas continuar?',
+            okText: 'Cancelar Venta',
+            zIndex: 999999999999,
+            okType: 'danger',
+            cancelText: 'Continuar Venta',
+            
+            onOk() {
+                // Aquí manejas la confirmación de la cancelación
+                antd.message.success('Venta cancelada', 2.5)
+                console.log('Venta cancelada');
+                handleCancelShipping()
+            },
+            onCancel() {
+                // Aquí manejas el caso en que el usuario decide no cancelar la venta
+
+            },
+        });
+    };
     return (
         <Container>
             <PriceContainer>
@@ -20,18 +43,23 @@ export const CheckoutAction = ({
             <Receipt ref={componentToPrintRef} data={bill}></Receipt>
             <ButtonGroup>
                 <Button
+
                     borderRadius='normal'
                     title='Cancelar'
-                    onClick={handleCancelShipping}
+                    onClick={showCancelSaleConfirm}
                     disabled={ProductSelected.length >= 1 ? false : true}
-                />
+                >
+                    Cancelar
+                </Button>
+
                 <Button
+                    type='primary'
                     borderRadius='normal'
                     title='Facturar'
                     onClick={handleInvoice}
                     color='primary'
                     disabled={ProductSelected.length >= 1 ? false : true}
-                />
+                >Facturar</Button>
             </ButtonGroup>
         </Container>
     )
@@ -67,3 +95,13 @@ const PriceContainer = styled.div`
     font-size: 1.4em;
     letter-spacing: 1px;
     `
+const Button = styled(antd.Button)`
+    font-weight: 600;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4em;
+    ${props => props.disabled ? "background-color: #8f8e8e !important" : null}
+    
+`

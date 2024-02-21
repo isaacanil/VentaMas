@@ -1,13 +1,11 @@
 import { useFormatPrice } from "../../../../../hooks/useFormatPrice"
-import { convertTimeStampToDate } from "../../../../../utils/date/convertTimeStampToDate"
-import { convertDate, convertMillisToFriendly, convertMillisToISO } from "../../../../../utils/date/formatDate"
+import { convertMillisToDate, } from "../../../../../utils/date/formatDate"
 import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator/CashCountStateIndicator"
 import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData"
 import { DateSection } from "../../page/CashRegisterClosure/components/Header/DateSection"
-
+import * as antd from 'antd'
+const { Tag } = antd
 export const tableConfig = () => {
-
-  
 
   let columns = [
     {
@@ -23,7 +21,7 @@ export const tableConfig = () => {
       align: 'left',
       maxWidth: '0.3fr',
       minWidth: '120px',
-      cell: ({value}) => <CashCountStateIndicator state={value}/>
+      cell: ({ value }) => <CashCountStateIndicator state={value} />
     },
     {
       accessor: 'date',
@@ -31,8 +29,8 @@ export const tableConfig = () => {
       align: 'left',
       maxWidth: '0.4fr',
       minWidth: '160px',
-      cell: ({value}) => convertMillisToFriendly(value)
-      // cell: ({value}) => convertMillisToISO(value)/>
+      //cell: ({value}) => convertMillisToDate(value)
+      cell: ({ value }) => convertMillisToDate(value)
     },
     {
       accessor: 'user',
@@ -41,37 +39,61 @@ export const tableConfig = () => {
       maxWidth: '0.4fr',
       minWidth: '120px',
     },
-
     {
       accessor: 'total',
       Header: 'Total',
       align: 'right',
       maxWidth: '0.4fr',
       minWidth: '150px',
-      cell: ({value}) =>{ 
-        return <GetTotalValue cashCount={value} />
+      cell: ({ value }) => {
+        const isOpen = value?.state === 'open';
+        if (isOpen) {
+          return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
+        }
+        return value.totalSystem ? useFormatPrice(value.totalSystem) : 'Total'
       }
     },
     {
       accessor: 'discrepancy',
-      Header: 'Resultado', //diferencia y sobrante
+      Header: 'Resultado', 
       align: 'right',
       maxWidth: '0.4fr',
       minWidth: '100px',
-      cell: ({value}) =>{ 
-        return <GetDiscrepancyValue cashCount={value} />
+      cell: ({ value }) => {
+        const isOpen = value?.state === 'open';
+        let color = 'success'
+        if (isOpen) {
+          return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
+        }
+        switch (true) {
+          case value.totalDiscrepancy < 0:
+            color = 'error'
+            break;
+          case value.totalDiscrepancy > 0:
+            color = 'warning'
+            break;
+          default:
+            color = 'success'
+            break;
+        }
+        return (
+          <Tag color={color} style={{ fontSize: '16px', padding: '5px 10px' }}>
+            {value.totalDiscrepancy ? useFormatPrice(value.totalDiscrepancy) : 'Sobrante'}
+          </Tag>
+        )
       }
     },
   ]
   return columns
 }
 
-const GetTotalValue = ({cashCount}) => {
-  const {totalSystem, totalDiscrepancy } = CashCountMetaData(cashCount);
+const GetTotalValue = ({ cashCount }) => {
+  console.log('cashCount----', cashCount)
+  const { totalSystem, totalDiscrepancy } = CashCountMetaData(cashCount, cashCount?.invoices);
   return useFormatPrice(totalSystem)
 }
 
-const GetDiscrepancyValue = ({cashCount}) => {
-  const {totalSystem, totalDiscrepancy } = CashCountMetaData(cashCount);
-  return  useFormatPrice(totalDiscrepancy)
+const GetDiscrepancyValue = ({ cashCount }) => {
+  const { totalSystem, totalDiscrepancy } = CashCountMetaData(cashCount);
+  return useFormatPrice(totalDiscrepancy)
 }

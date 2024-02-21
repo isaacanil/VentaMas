@@ -163,6 +163,7 @@ export const AddPurchase = () => {
 
     const handleProviderChange = (value) => {
         const provider = JSON.parse(value);
+        dispatch(cleanPurchase())
         dispatch(setPurchase({ provider }));
         setSelectedProvider(provider);
         filterOrders(provider.id);
@@ -170,9 +171,10 @@ export const AddPurchase = () => {
     useEffect(() => {
         if (selectedProvider) {
             filterOrders(selectedProvider.id);
+        } if(provider) {
+            setSelectedProvider(provider);
         }
-        dispatch(setPurchase({numberId: "", id: ""}))
-    }, [selectedProvider]);
+    }, [selectedProvider, provider]);
 
     const handleOrderChange = (value) => {
         const order = JSON.parse(value);
@@ -185,6 +187,7 @@ export const AddPurchase = () => {
     console.log("id proveedor ", selectedProvider?.id)
     console.log("proveedor ", provider?.name)
     console.log("compra ", purchase)
+    console.log("filterOrder", filteredOrders)
 
     return (
         <Form
@@ -209,7 +212,7 @@ export const AddPurchase = () => {
                                 >
                                     <antd.Select
                                         style={SelectStyle}
-                                        placeholder={"Proveedores"}
+                                        placeholder={"Seleccionar Proveedor"}
                                         options={providersOption}
                                         value={provider?.name}
                                         onChange={handleProviderChange}
@@ -228,7 +231,7 @@ export const AddPurchase = () => {
                                     required
                                 >
                                     <antd.Select
-                                        placeholder={"Pedidos"}
+                                        placeholder={"Seleccionar Pedido"}
                                         options={pendingOrdersOption}
                                         value={purchase?.numberId || null}
                                         style={SelectStyle}

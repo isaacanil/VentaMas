@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import * as ant from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChangeProductData, changeProductPrice, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+import { getTax } from '../../../../../../utils/pricing';
 const { InputNumber, Table, Form } = ant;
 const columns = [
     {
@@ -66,35 +67,35 @@ export const PriceCalculator = () => {
         const prices = [
             {
                 key: '1',
-                cost: product.cost.unit,
+                cost: product.pricing.cost,
                 description: 'Precio Lista',
-                name: 'listPrice',
-                amount: productData.listPrice,
+                name: ['pricing', 'listPrice'],
+                amount: productData.pricing.listPrice,
             },
             {
                 key: '2',
-                cost: product.cost.unit,
+                cost: product.pricing.cost,
                 description: 'Precio Medio',
-                name: 'averagePrice',
-                amount: productData.averagePrice,
+                name: ['pricing', 'avgPrice'],
+                amount: productData.pricing.avgPrice,
             },
             {
                 key: '3',
-                cost: product.cost.unit,
+                cost: product.pricing.cost,
                 description: 'Precio Mínimo',
-                name: 'minimumPrice',
-                amount: productData.minimumPrice,
+                name: ['pricing', 'minPrice'],
+                amount: productData.pricing.minPrice,
             }
         ];
 
         return prices.map(row => {
             // Asegúrate de que tienes números válidos y no indefinidos
             const amount = parseFloat(row.amount) || 0;
-            const taxValue = parseFloat(productData?.tax?.value) || 0;
-            const costUnit = parseFloat(productData?.cost?.unit) || 0;
+            const taxValue = parseFloat(productData?.pricing?.tax) || 0;
+            const costUnit = parseFloat(productData?.pricing?.cost) || 0;
 
             // Realiza los cálculos
-            const itbis = amount * taxValue;
+            const itbis = getTax(amount, taxValue);
             const finalPrice = amount + itbis;
             const margin = finalPrice - costUnit - itbis;
 
@@ -114,16 +115,12 @@ export const PriceCalculator = () => {
         });
     };
     useEffect(() => {
-
         setTableData(calculateTableData(product));
-        
-    }, [product.cost.unit, product.tax.value, product.listPrice, product.averagePrice, product.minimumPrice]);
+    }, [product.pricing.cost, product.pricing.tax, product.pricing.listPrice, product.pricing.avgPrice, product.pricing.minPrice]);
     useEffect(() => {
-        const finalPrice = Number(tableData[0]?.finalPrice)||0;
-        dispatch(changeProductPrice({ price:{ unit: finalPrice, total: finalPrice } } ))
+        const finalPrice = Number(tableData[0]?.finalPrice) || 0;
+        dispatch(changeProductPrice({ price: finalPrice }))
     }, [tableData])
-
-    console.log(tableData)
     return (
         <ant.Table
             columns={columns}

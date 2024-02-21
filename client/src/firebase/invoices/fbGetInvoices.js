@@ -14,16 +14,41 @@ export const fbGetInvoices = (time) => {
     const fetchInvoices = async () => {
       try {
         validateUser(user);
-        const { businessID } = user;
+        const { businessID, uid, role } = user;
 
         const start = new Date(time.startDate);
         const end = new Date(time.endDate);
+        const restrictionStartDate = new Date('2024-02-19');
+
         const invoicesRef = collection(db, "businesses", businessID, "invoices");
-        const q = query(invoicesRef,
-          where("data.date", ">=", start),
-          where("data.date", "<=", end),
-          orderBy("data.date", "desc"),
-        );
+        
+        let q;
+        if (new Date() >= restrictionStartDate) {
+          // Comprobación de la fecha para aplicar la restricción
+          if (role === 'admin' || role === 'owner' || role === 'dev') {
+            // Si el usuario es admin y la fecha actual es posterior al 21/02/2024
+            q = query(invoicesRef,
+              where("data.date", ">=", start),
+              where("data.date", "<=", end),
+              orderBy("data.date", "desc"),
+            );
+          } else {
+            // Si el usuario no es admin y la fecha actual es posterior al 21/02/2024
+            q = query(invoicesRef,
+              where("data.date", ">=", start),
+              where("data.date", "<=", end),
+              where("userId", "==", uid),
+              orderBy("data.date", "desc"),
+            );
+          }
+        } else {
+          // Si la fecha actual es anterior al 21/02/2024, aplicar lógica anterior (sin restricciones basadas en el rol)
+          q = query(invoicesRef,
+            where("data.date", ">=", start),
+            where("data.date", "<=", end),
+            orderBy("data.date", "desc"),
+          );
+        }
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
           if (snapshot.empty) {
@@ -42,16 +67,13 @@ export const fbGetInvoices = (time) => {
           unsubscribe();
         };
       } catch (error) {
-        if (error instanceof UserValidationError) {
-
-        } else {
-          throw error;
-        }
+        console.error("Error fetching invoices:", error);
+        setLoading(false);
       }
     };
 
     fetchInvoices();
   }, [time, user]);
-  console.log(invoices)
-  return { invoices, loading, setLoading };
+
+  return { invoices, loading };
 };

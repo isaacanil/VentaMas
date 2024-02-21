@@ -27,7 +27,7 @@ export { UserAdmin } from './pages/setting/subPage/Users/UserAdmin'
 //Todo ***********Components*************************************************
 export { ControlSearchProduct } from './component/ControlSearchProduct/ControlSearchProduct'
 export { SearchList } from './component/ControlSearchProduct/SearchList'
-export { Cart } from './component/cart/Cart'
+export { Cart } from './component/cart/Cart.jsx'
 export { MultiDisplayControl } from './component/MultiDisplayControl/MultiDisplayControl'
 export { RequireAuth } from './component/RequireAuth'
 export { ClientControl } from './component/contact/ClientControl/ClienteControl'

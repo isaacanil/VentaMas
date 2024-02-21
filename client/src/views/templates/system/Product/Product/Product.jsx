@@ -13,22 +13,18 @@ import { icons } from '../../../../../constants/icons/icons'
 import { useCheckForInternetConnection } from '../../../../../hooks/useCheckForInternetConnection'
 import useImageFallback from '../../../../../hooks/image/useImageFallback'
 import { motion } from 'framer-motion'
+import {  getTotalPrice } from '../../../../../utils/pricing'
+import * as antd from 'antd'
+import { CustomProduct } from '../CustomProduct'
+const { Badge } = antd
 
 export const Product = ({ product, }) => {
-    const imageHiddenRef = useSelector(selectImageHidden);
+    // const imageHiddenRef = useSelector(selectImageHidden);
+    const imageHiddenRef = false;
     const dispatch = useDispatch();
     const ProductsSelected = useSelector(SelectProduct);
     const deliverySelected = useSelector(SelectDelivery);
     const [isImageLoaded, setImageLoaded] = useState(false);
-
-    useEffect(() => {
-        dispatch(totalShoppingItems())
-        dispatch(totalPurchase())
-        dispatch(addPaymentMethodAutoValue())
-        dispatch(totalPurchaseWithoutTaxes())
-        dispatch(totalTaxes())
-        dispatch(setChange())
-    }, [ProductsSelected, deliverySelected])
 
     const handleGetThisProduct = (product) => {dispatch(addProduct(product))}
 
@@ -39,7 +35,7 @@ export const Product = ({ product, }) => {
 
     const isConnected = useCheckForInternetConnection();
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id);
-    const [imageFallback] = useImageFallback(product?.productImageURL, noImg);
+    const [imageFallback] = useImageFallback(product?.image, noImg);
     
     const item = {
         hidden: { y: 20, opacity: 0 },
@@ -48,7 +44,15 @@ export const Product = ({ product, }) => {
             opacity: 1
         }
     }
+    const price = getTotalPrice(product?.pricing?.listPrice, product?.pricing?.tax, 0); 
+    // if (product?.custom) {
+    //     return (
+    //        < CustomProduct  product={product} />
+    //     )
+    // }
     return (
+    
+        
         <Container
             onClick={() => handleGetThisProduct(product)}
             imageHiddenRef={imageHiddenRef}
@@ -71,7 +75,7 @@ export const Product = ({ product, }) => {
             }
             <Body>
                 <Title isOpen={ProductCheckInCart.status}>
-                    {product.productName}
+                    {product.name}
                 </Title>
                 {ProductCheckInCart.status ? (
                     <Button
@@ -82,20 +86,22 @@ export const Product = ({ product, }) => {
                         onClick={(e) => deleteProductFromCart(e, product?.id)}
                     />
                 ) : null}
+                
                 <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
 
                     {ProductCheckInCart.status ? (
                         <Group>
-                            <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy.unit}</AmountToBuy>
+                            <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy}</AmountToBuy>
                         </Group>
                     ) : <Group />}
 
                     <Group>
-                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice(product?.price?.unit)}</Price>
+                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price ))}</Price>
                     </Group>
                 </Footer>
             </Body>
         </Container>
+       
     )
 }
 const Container = styled(motion.li)`

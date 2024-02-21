@@ -9,7 +9,7 @@ export const fbUpdateProduct = async (data, dispatch, user) => {
     }
     const { businessID } = user
     const productRef = doc(db, "businesses", businessID, "products", product.id)
-    await updateDoc(productRef, { product })
+    await updateDoc(productRef,  product )
         .then(() => {
             dispatch(
                 addNotification({

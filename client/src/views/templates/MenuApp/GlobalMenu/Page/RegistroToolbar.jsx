@@ -3,7 +3,6 @@ import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
-import { inspectUserAccess } from '../../../../../hooks/abilities/useAbilities'
 import routesName from '../../../../../routes/routesName'
 import { addNotification } from '../../../../../features/notification/NotificationSlice'
 import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel'
@@ -46,7 +45,6 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
         break;
     }
   };
-  const { abilities } = inspectUserAccess();
   const user = useSelector(selectUser)
   const options = [
     {

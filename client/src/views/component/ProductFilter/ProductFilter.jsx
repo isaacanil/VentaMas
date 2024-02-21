@@ -15,7 +15,7 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
   const productListRef = useRef(null);
 
   const {products} =  useGetProducts(true);
-  const productsWithStockTracking = products.filter(({product}) => product.trackInventory === true ) || [];
+  const productsWithStockTracking = products.filter((product) => product.trackInventory === true ) || [];
  
   useEffect(() => {
     if (!productName) {

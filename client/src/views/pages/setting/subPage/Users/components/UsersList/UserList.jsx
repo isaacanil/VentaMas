@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers'
 import { Item } from './Table/Item/Item'
-import { inspectUserAccess } from '../../../../../../../hooks/abilities/useAbilities'
+import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
 import { useNavigate } from 'react-router-dom'
 import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
 import { DateTime } from 'luxon'
@@ -85,7 +85,7 @@ const columns = [
 export const UserList = () => {
   const [users, setUsers] = useState([])
   const userActual = useSelector(selectUser)
-  const { abilities } = inspectUserAccess();
+  const { abilities } = userAccess();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   useEffect(() => {
@@ -105,6 +105,7 @@ export const UserList = () => {
     dispatch(updateUser(user))
     navigate('/users/update-user/' + user.id)
   }
+ 
   return (
     <Container>
       <TableWrapper>

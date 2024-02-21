@@ -2,7 +2,7 @@ import { doc, increment, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseconfig";
 import { validateUser } from "../../utils/userValidation";
 
-export const fbUpdateProductsStock = (products, user) => {
+export const fbUpdateProductsStock = async (products, user) => {
     products.forEach((productData) => {
         console.log(productData, " --> productData")
         try {

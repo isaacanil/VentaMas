@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as antd from 'antd';
 import dayjs from 'dayjs';
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 
 const { Table, Typography, Divider } = antd;
 
@@ -61,13 +62,24 @@ const expandedRowRender = (facturas) => {
 
 export const CustomerSalesReportTable = ({ sales }) => {
   const groupedData = aggregateClientData(sales);
+  const [pageSize, setPageSize] = useState(20); 
+  const [currentPage, setCurrentPage] = useState(1); 
+  // Calcular totales
+  const totalItems = groupedData.reduce((sum, record) => sum + record.items, 0);
+  const totalSales = groupedData.reduce((sum, record) => sum + record.total, 0);
+  const totalClients = groupedData.length;
 
   const columns = [
     { title: 'Cliente', dataIndex: 'cliente', key: 'cliente' },
     { title: 'Items', dataIndex: 'items', key: 'items' },
     { title: 'Total', dataIndex: 'total', key: 'total', render: text => `$${text.toFixed(2)}` },
   ];
-
+ 
+  const handleTableChange = (page, pageSize) => {
+    setCurrentPage(page);
+    setPageSize(pageSize);
+  };
+  
   return (
     <div>
 
@@ -82,9 +94,37 @@ export const CustomerSalesReportTable = ({ sales }) => {
         columns={columns}
         size='small'
         scroll={{ x: 200 }}
-        pagination={{ pageSize: 5}}
+        pagination={{ 
+          current: currentPage,
+          pageSize: pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+          onChange: handleTableChange
+         }}
         expandable={{ expandedRowRender: record => expandedRowRender(record.facturas) }}
         dataSource={groupedData}
+        summary={pageData => {
+          let totalItemsSum = 0;
+          let totalSalesSum = 0;
+
+          pageData.forEach(({ items, total }) => {
+            totalItemsSum += items;
+            totalSalesSum += total;
+          });
+
+          return (
+            <Table.Summary.Row>
+               <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}><div style={{fontWeight: 700,}}>Total Clientes: {totalClients}</div></Table.Summary.Cell>
+              <Table.Summary.Cell index={2}><div style={{fontWeight: 700,}}>{totalItemsSum}</div></Table.Summary.Cell>
+              <Table.Summary.Cell index={3}>
+              <div style={{fontWeight: 700,}}>
+                {useFormatPrice(totalSalesSum)}
+                </div>
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          );
+        }}
       />
     </div>
   );

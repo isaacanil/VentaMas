@@ -9,15 +9,16 @@ export const useAbilities = () => {
     const user = useSelector(selectUser);
     const abilities = useSelector(selectAbilities);
     const dispatch = useDispatch();
+    
     useEffect(() => {
-        if (user) {dispatch(setAbilities(user));}
+        if (user) { dispatch(setAbilities(user)); }
     }, [user]);
-
+    console.log(abilities)
     return abilities;
 }
 
-export function inspectUserAccess() {
+export function userAccess() {
     const rules = useSelector(selectAbilities)
     const abilities = new PureAbility(rules)
-    return {abilities};
-  }
+    return { abilities };
+}

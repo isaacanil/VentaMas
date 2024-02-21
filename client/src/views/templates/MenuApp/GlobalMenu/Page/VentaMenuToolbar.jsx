@@ -75,21 +75,7 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
     return (
         matchWithVenta && (
             <Container>
-                {/* {
-                    side === 'left' && (
-                        <SearchInput
-                            search
-                            deleteBtn
-                            icon={icons.operationModes.search}
-                            placeholder='Buscar Producto...'
-                            bgColor={'white'}
-                            value={searchData}
-                            onClear={() => setSearchData('')}
-                            onChange={(e) => setSearchData(e.target.value)}
-                        />
-                    )
-
-                } */}
+            
                 {
                     side === 'right' && (
                         <Group >
@@ -105,12 +91,13 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
                                 onClick={() => handleFullScreenFN()}
                             />
                             <InventoryFilterAndSort />
-                            <DropdownMenu
+                            {/* <DropdownMenu
                                 title={icons.operationModes.setting}
                                 options={options}
                                 width={'icon32'}
                                 borderRadius='normal'
-                            />
+                                
+                            /> */}
                         </Group>
                     )
                 }

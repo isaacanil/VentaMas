@@ -8,7 +8,7 @@ import { BarCode } from './components/sections/BarCode';
 import { ProductInfo } from './components/sections/ProductInfo';
 import { InventoryInfo } from './components/sections/InventoryInfo';
 import { PriceInfo } from './components/sections/PriceInfo';
-import { ChangeProductData, clearUpdateProductData, selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice';
+import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice';
 import { PriceCalculator } from './components/sections/PriceCalculator';
 import { initTaxes } from '../../../component/modals/UpdateProduct/InitializeData';
 import { imgFailed } from './ImageManager/ImageManager';
@@ -42,23 +42,18 @@ export const ProductForm = ({ showImageManager }) => {
                 ant.notification.error({
                     message: 'Error',
                     description: error.errors[0],
-                   duration: 10
-
+                    duration: 10
+                })
             })
-            })
-
-
-
         } finally {
             setSubmit(false)
         }
     }
-
     const handleChangeValues = (changeValue, allValues) => {
         // Suponiendo que 'stock' es el nombre del campo que debe ser un número
         const key = Object.keys(changeValue)[0]; // Obtiene la clave del valor que cambió
         const value = changeValue[key];
-
+        console.log(changeValue)
         // Verifica si el campo que cambió es 'stock' y convierte su valor a número
         if (key === 'cost') {
             changeValue[key] = value ? { unit: value.unit, total: value.unit } : 0; // Convertir a número o cero si es vacío
@@ -66,11 +61,11 @@ export const ProductForm = ({ showImageManager }) => {
         if (key === 'tax') {
             changeValue[key] = value ? JSON.parse(value) : initTaxes[0]?.tax; // Convertir a número o cero si es vacío
         }
-        if (key === 'listPrice') {
+        if (key === 'pricing') {
             changeValue[key] = value ? value : { unit: 0, total: 0 }; // Convertir a número o cero si es vacío
+            dispatch(changeProductPrice({ ...changeValue }));
+            return
         }
-
-
         // Despacha la acción con el valor actualizado
         dispatch(ChangeProductData({ product: { ...changeValue } }));
     }
@@ -99,7 +94,7 @@ export const ProductForm = ({ showImageManager }) => {
                 layout="vertical"
                 onFinish={onFinish}
                 onValuesChange={handleChangeValues}
-                initialValues={{ ...product, tax: product?.tax.ref }}
+                initialValues={{ ...product }}
             >
                 <Row gutter={16}
                 >
@@ -125,7 +120,6 @@ export const ProductForm = ({ showImageManager }) => {
                     </Col>
                     <Col span={8}
                         style={{
-
                             display: 'grid',
                         }}
                     >
@@ -145,18 +139,16 @@ export const ProductForm = ({ showImageManager }) => {
                                 >
                                     <ImageContent>
                                         {
-                                            product?.productImageURL &&
+                                            product?.image &&
                                             <ant.Image
                                                 height={150}
-                                                src={product?.productImageURL}
+                                                src={product?.image}
                                             />
                                         }
                                         {
-                                            !product?.productImageURL &&
+                                            !product?.image &&
                                             <ImageContainer>
                                                 <Image
-                                                
-                                                 
                                                     src={imgFailed}
                                                 />
                                             </ImageContainer>

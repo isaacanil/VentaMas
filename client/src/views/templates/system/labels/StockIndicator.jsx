@@ -13,7 +13,7 @@ function StockIndicator({ stock, trackInventory }) {
 
         return (
             <StockContainer trackInventory={trackInventory} stock={stock}>
-                {stock}
+                {stock || 0}
             </StockContainer>
         );
     } else {

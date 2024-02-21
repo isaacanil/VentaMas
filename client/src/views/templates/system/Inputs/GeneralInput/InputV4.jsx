@@ -319,7 +319,7 @@ input[type="date"]{
         `
       case 'large':
         return `
-                    height: 2.4em;
+                    height: 2.2em;
                     font-size: 16px;
                 
                 `

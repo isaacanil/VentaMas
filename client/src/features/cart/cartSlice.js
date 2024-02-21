@@ -1,10 +1,29 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { initialState, defaultDelivery } from "./default/default";
 import { GenericClient } from "../clientCart/clientCartSlice";
+import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTax, getTotalItems } from "../../utils/pricing";
+import { update } from "lodash";
 
 const limitTwoDecimal = (number) => {
     return Number(number.toFixed(2))
 }
+
+
+
+const calculateChange = (payment, totalPurchase) => (payment - totalPurchase);
+
+// Función agrupadora para actualizar todos los totales
+const updateAllTotals = (state, paymentValue = null) => {
+    const products = state.data.products;
+    const discount = state?.data?.discount?.value;
+    const delivery = state?.data?.delivery?.value;
+    state.data.totalPurchase.value = getProductsTotalPrice(products, discount, delivery);
+    state.data.totalTaxes.value = getProductsTax(products);
+    state.data.totalShoppingItems.value = getTotalItems(products);
+    state.data.totalPurchaseWithoutTaxes.value = getProductsPrice(products);
+    state.data.payment.value = paymentValue !== null ? paymentValue :  state.data.totalPurchase.value;
+    state.data.change.value = calculateChange(state.data.payment.value, state.data.totalPurchase.value);
+};
 
 const cartSlice = createSlice({
     name: 'factura',
@@ -18,12 +37,13 @@ const cartSlice = createSlice({
             const client = actions.payload;
             if (client?.id) {
                 state.data.client = client;
-                if (client?.delivery?.status === true) {
-                    state.data.delivery = client?.delivery
-                } else {
-                    state.data.delivery = defaultDelivery
-                }
             }
+            if (client?.delivery?.status === true) {
+                state.data.delivery = client?.delivery
+            } else {
+                state.data.delivery = defaultDelivery
+            }
+            updateAllTotals(state)
         },
         setDefaultClient: (state) => {
             state.data.client = GenericClient
@@ -33,8 +53,13 @@ const cartSlice = createSlice({
             const paymentMethod = state.data.paymentMethod.find((item) => item.status === true)
             if (paymentMethod) {
                 state.data.payment.value = Number(paymentValue)
-                paymentMethod.value = state.data.payment.value
+                paymentMethod.value = Number(paymentValue)
             }
+            updateAllTotals(state, paymentValue)
+        },
+        changePaymentValue: (state, actions) => {
+            const paymentValue = actions.payload
+            state.data.payment.value = Number(paymentValue)
         },
         addTaxReceiptInState: (state, actions) => {
             state.data.NCF = actions.payload
@@ -47,13 +72,11 @@ const cartSlice = createSlice({
             const { id, newPrice } = action.payload;
             const product = state.data.products.find((product) => product.id === id);
             if (product) {
-                if(newPrice === 0) return alert('El precio no puede ser 0')
-                product.price.unit = newPrice;
-                product.price.total = limitTwoDecimal(product.amountToBuy.total * product.price.unit);
-
+                product.pricing.price = newPrice;
             }
+            updateAllTotals(state)
         },
-        changePaymentMethod: (state, actions) => {
+        changePaymentMethod: (state) => {
             const paymentMethod = state.data.paymentMethod
             const paymentMethodSelected = paymentMethod.findIndex((method) => method.status === true)
             if (paymentMethodSelected) {
@@ -67,14 +90,13 @@ const cartSlice = createSlice({
         addProduct: (state, action) => {
             const checkingID = state.data.products.find((product) => product.id === action.payload.id)
             if (state.data.products.length > 0 && checkingID) {
-                checkingID.amountToBuy.total = checkingID.amountToBuy.total + checkingID.amountToBuy.unit;
-                checkingID.price.total = limitTwoDecimal(checkingID.price.unit * checkingID.amountToBuy.total);
-                checkingID.tax.total = limitTwoDecimal(checkingID.tax.unit * checkingID.amountToBuy.total);
+                checkingID.amountToBuy = checkingID.amountToBuy + 1;
             } else {
                 const product = action.payload
                 const products = state.data.products
                 state.data.products = [...products, product]
             }
+            updateAllTotals(state)
         },
         deleteProduct: (state, action) => {
             const productFound = state.data.products.find((product) => product.id === action.payload)
@@ -85,59 +107,37 @@ const cartSlice = createSlice({
                 state.data.id = null
                 state.data.products = []
             }
+            updateAllTotals(state)
         },
         onChangeValueAmountToProduct: (state, action) => {
             const { id, value } = action.payload
             const productFound = state.data.products.find(product => product.id === id)
-           
             if (productFound) {
-                if(value === 0) {
-                    let newValue = 1;
-                    return newValue;
-                  }
-                productFound.amountToBuy.total = Number(value)
-                productFound.price.total = Number(productFound.amountToBuy.total) * productFound.price.unit;
-                productFound.tax.total = productFound.amountToBuy * productFound.tax.unit;
-                productFound.cost.total = productFound.amountToBuy * productFound.cost.unit;
-                state.data.totalPurchase.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.price.total, 0))
-                state.data.totalTaxes.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.tax.total, 0))
-                state.data.totalPurchaseWithoutTaxes.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.cost.total, 0))
-                state.data.totalShoppingItems.value = limitTwoDecimal(state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0))
-                state.data.change.value = limitTwoDecimal(state.data.payment.value - state.data.totalPurchase.value)
+                productFound.amountToBuy = Number(value)
             }
-           
-
+            updateAllTotals(state)
         },
         addAmountToProduct: (state, action) => {
-            const { value, id } = action.payload
+            const { id } = action.payload
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
-                productFound.amountToBuy.total = productFound.amountToBuy.total + productFound.amountToBuy.unit
-                productFound.price.total = limitTwoDecimal(productFound.amountToBuy.total * productFound.price.unit);
-                productFound.tax.total = limitTwoDecimal(productFound.amountToBuy.total * productFound.tax.unit + productFound.tax.unit);
-                productFound.cost.total = limitTwoDecimal(productFound.amountToBuy.total * productFound.cost.unit + productFound.cost.unit);
+                productFound.amountToBuy = productFound.amountToBuy + 1;
             }
+            updateAllTotals(state)
         },
         diminishAmountToProduct: (state, action) => {
             const { id } = action.payload
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
-                productFound.amountToBuy.total -= 1;
-                productFound.price.total = productFound.amountToBuy.total * productFound.price.unit;
-                productFound.tax.total = productFound.amountToBuy.total * productFound.tax.unit + productFound.tax.unit;
-                if (productFound.trackInventory === true) {
-                }
+                productFound.amountToBuy -= 1;
+
                 if (productFound.amountToBuy === 0) {
                     state.data.products.splice(state.data.products.indexOf(productFound), 1)
                 }
             }
+             updateAllTotals(state)
         },
         CancelShipping: (state) => state = initialState,
-        totalTaxes: (state) => {
-            const productSelected = state.data.products
-            const total = productSelected.reduce((total, product) => total + (product.price.unit * product.tax.value) * product.amountToBuy.total, 0)
-            state.data.totalTaxes.value = limitTwoDecimal(total)
-        },
         totalPurchaseWithoutTaxes: (state) => {
             const ProductsSelected = state.data.products;
             const result = ProductsSelected.reduce((total, product) => total + product.cost.total, 0);
@@ -146,25 +146,7 @@ const cartSlice = createSlice({
         addDiscount: (state, action) => {
             const value = action.payload;
             state.data.discount.value = Number(value);
-        },
-        totalPurchase: (state) => {
-            const productSelected = state.data.products
-            const discountRawValue = Number(state.data.discount.value);
-            const discountPercentage = (discountRawValue / 100);
-            const total = Number(productSelected.reduce((total, product) => total + product.price.total, 0))
-            const discount = total * discountPercentage;
-            const totalWithDiscount = total - discount;
-            const Delivery = state.data.delivery.status ? state.data.delivery.value : 0;
-            state.data.totalPurchase.value = limitTwoDecimal(Number(Delivery) + Number(totalWithDiscount))
-        },
-        setChange: (state) => {
-            const totalPurchase = state.data.totalPurchase.value;
-            const payment = state.data.payment.value;
-            state.data.change.value = limitTwoDecimal(Number(payment) - Number(totalPurchase))
-        },
-        totalShoppingItems: (state) => {
-            const Items = state.data.products.reduce((total, product) => total + product.amountToBuy.total, 0)
-            state.data.totalShoppingItems.value = Items
+            updateAllTotals(state)
         },
         addSourceOfPurchase: (state, actions) => {
             const source = actions.payload
@@ -214,6 +196,7 @@ export const SelectDiscount = (state) => state.cart.data.discount.value;
 export const SelectNCF = (state) => state.cart.data.NCF;
 export const SelectCartPermission = () => state.cart.permission
 export const SelectCartIsOpen = (state) => state.cart.isOpen
+export const SelectCartData = (state) => state.cart.data
 
 export default cartSlice.reducer
 

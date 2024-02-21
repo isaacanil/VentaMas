@@ -6,6 +6,7 @@ import { MenuApp } from "../../../../templates/MenuApp/MenuApp"
 import SideBar from "./components/SideBar/SideBar"
 import { UserList } from "./components/UsersList/UserList"
 import { Outlet } from "react-router-dom"
+import { SignUpModal } from "./components/UserForm"
 
 export const UserAdmin = () => {
     return (
@@ -15,6 +16,7 @@ export const UserAdmin = () => {
                 <SideBar />
                 <Outlet />
             </Wrapper>
+          
         </Container>
     )
 }

@@ -34,7 +34,7 @@ export const ProductEditorModal = ({isOpen}) => {
                 padding: "0",
                 margin: "0"
             }}
-            title={status === "update" ? `Editar ${product.productName}` : "Nuevo Producto"}
+            title={status === "update" ? `Editar ${product.name}` : "Nuevo Producto"}
             onCancel={handleCloseModal}
             onOk={hideModal}
             footer={null}

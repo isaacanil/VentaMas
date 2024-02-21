@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 // import Switch from '@mui/material/Switch'
-import { setChange, totalPurchase, addSourceOfPurchase } from '../../../../../features/cart/cartSlice'
+import { addSourceOfPurchase } from '../../../../../features/cart/cartSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { monetarySymbols } from '../../../../../constants/monetarySymbols'
 import { sourceOfSaleList } from '../../../../../constants/sourceOfSaleList'
@@ -23,16 +23,6 @@ export const ClientDetails = ({ mode }) => {
     const updateClient = (e) => {
         dispatch(setClient(updateObject(client, e)))
     }
-
-    useEffect(() => {
-
-        dispatch(totalPurchase())
-        dispatch(setChange())
-    }, [deliveryData])
-
-    useEffect(() => {
-        client?.delivery && dispatch(totalPurchase())
-    }, [client])
 
     const handleSetSourceOfPurchase = (value) => {
         dispatch(addSourceOfPurchase(value))

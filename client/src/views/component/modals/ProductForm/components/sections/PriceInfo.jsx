@@ -1,6 +1,6 @@
 import React from 'react'
 import * as ant from 'antd'
-import { initTaxes } from '../../../../../component/modals/UpdateProduct/InitializeData'
+import { initTaxes, taxLabel } from '../../../../../component/modals/UpdateProduct/InitializeData'
 const { Card, Space, InputNumber, Row, Col, Select, Checkbox, Form } = ant
 
 export const PriceInfo = () => {
@@ -20,7 +20,7 @@ export const PriceInfo = () => {
                     <Form.Item
                         name="isVisible"
                         label="Visibilidad en Facturación"
-                        valuePropName="checked" // Esto es necesario para los Checkbox
+                        valuePropName="checked" 
                         help="Si se activa, se mostrará en la facturación."
                     >
                         <Checkbox
@@ -42,7 +42,7 @@ export const PriceInfo = () => {
                 <Col
                     span={12}
                 >
-                    <Form.Item name={['cost', 'unit']} label="Costo" rules={[{ required: true }]}>
+                    <Form.Item name={['pricing','cost']} label="Costo" rules={[{ required: true }]}>
                         <InputNumber
                             placeholder=""
                             style={{
@@ -55,17 +55,15 @@ export const PriceInfo = () => {
                     span={12}
                 >
                     <Form.Item
-                        name="tax"
+                        name={["pricing","tax"]}
                         label="Impuesto"
                         rules={[{ required: true }]}>
                         <Select
                             defaultActiveFirstOption
-                            //defaultValue={initTaxes[0]?.tax?.ref }
-                            
                         >
                             {
-                                initTaxes.map(({ tax }) => (
-                                    <Option value={JSON.stringify(tax)}>{tax?.ref}</Option>
+                                initTaxes.map(( tax ) => (
+                                    <Option value={JSON.stringify(tax)}>{taxLabel(tax)}</Option>
                                 ))
                             }
 
@@ -77,7 +75,6 @@ export const PriceInfo = () => {
             <Row
                 gutter={16}
             >
-
             </Row>
         </Card>
     )

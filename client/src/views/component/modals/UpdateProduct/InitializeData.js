@@ -1,26 +1,18 @@
 export const initTaxes = [
-    {
-        tax:{
-            ref: 'Exento',
-            value: 0,
-            unit: 0,
-            total: 0
-        }
-    },
-    {
-        tax:{
-            ref: '16%',
-            value: 0.16,
-            unit: 0.16,
-            total: 0
-        }
-    },
-    {
-        tax:{
-            ref: '18%',
-            value: 0.18,
-            unit: 0.18,
-            total: 0
-        }
-    }
+    0,
+    16,
+    18,
 ]
+
+export const taxLabel = ( tax ) => {
+    switch (tax) {
+        case 0:
+            return 'Exento'
+        case 16:
+            return 'IVA 16%'
+        case 18:
+            return 'IVA 18%'
+        default:
+            return 'Exento'
+    }
+}

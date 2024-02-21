@@ -23,7 +23,7 @@ import { QRCodeControl } from './components/QRCodeControl/QRCodeControl'
 import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCategories'
 import useImageFallback from '../../../../hooks/image/useImageFallback'
 import { ProductVisibilityButton } from './components/Buttons/ProductVisibilityButton'
-import { addNotification } from '../../../../features/notification/notificationSlice'
+
 
 import { Select } from '../../../templates/system/Select/Select'
 import Typography from '../../../templates/system/Typografy/Typografy'
@@ -81,7 +81,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     useEffect(() => { getTaxes(setTaxesList) }, [])
 
     const { categories } = useFbGetCategories()
-    //console.log(categories)
+ 
     const productDataTypeCorrected = new productDataTypeCorrection(product);
 
     const handleUpdateProduct = async () => {
@@ -119,7 +119,7 @@ export const UpdateProductModal = ({ isOpen }) => {
         dispatch(clearUpdateProductData())
     }
     const localUpdateImage = (url) => dispatch(ChangeProductImage(url));
-    const [image] = useImageFallback(product?.productImageURL, noImage)
+    const [image] = useImageFallback(product?.image, noImage)
     return (
         <Modal
             nameRef={updateMode === status ? `Actualizar ${product.id} ` : 'Agregar Producto'}
@@ -284,7 +284,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                             <Img>
                                 <img
                                     src={image}
-                                    style={product?.productImageURL === image ?
+                                    style={product?.image === image ?
                                         { objectFit: "cover" } :
                                         { objectFit: "contain", padding: "2em" }
                                     } 

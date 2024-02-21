@@ -2,9 +2,7 @@ import styled from 'styled-components'
 import { useReactToPrint } from 'react-to-print'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-
 import { ClientControl } from '../../index'
-
 import {
   SelectProduct,
   CancelShipping,
@@ -15,9 +13,15 @@ import {
   SelectCartIsOpen,
   toggleCart,
 } from '../../../features/cart/cartSlice'
-
-import { IncreaseEndConsumer, IncreaseTaxCredit, selectNcfCode, selectTaxReceiptData, updateTaxCreditInFirebase, clearTaxReceiptData, selectTaxReceipt, selectNcfType } from '../../../features/taxReceipt/taxReceiptSlice'
-import { addNotification } from '../../../features/notification/notificationSlice'
+import {
+  IncreaseEndConsumer,
+  IncreaseTaxCredit,
+  selectNcfCode,
+  selectTaxReceiptData,
+  clearTaxReceiptData,
+  selectTaxReceipt,
+  selectNcfType
+} from '../../../features/taxReceipt/taxReceiptSlice'
 import { selectAppMode } from '../../../features/appModes/appModeSlice'
 import { fbAddInvoice } from '../../../firebase/invoices/fbAddInvoice'
 import { fbUpdateProductsStock } from '../../../firebase/products/fbUpdateProductStock'
@@ -26,30 +30,29 @@ import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxRece
 import { deleteClient, handleClient, selectClient } from '../../../features/clientCart/clientCartSlice'
 import { useIsOpenCashReconciliation } from '../../../firebase/cashCount/useIsOpenCashReconciliation'
 import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
-
 import { PaymentArea } from './components/PaymentArea'
 import { ProductsList } from './components/ProductsList/ProductsLit'
 import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
-import { useCallback } from 'react'
+import { addNotification } from '../../../features/notification/NotificationSlice'
+import { selectCashReconciliation } from '../../../features/cashCount/cashStateSlice'
 
 export const Cart = () => {
   const dispatch = useDispatch()
-
   const componentToPrintRef = useRef(null);
-
   const isOpen = useSelector(SelectCartIsOpen)
   const selectMode = useSelector(selectAppMode)
   const bill = useSelector(({ cart }) => cart.data)
+  console.log(bill.products)
   const taxReceiptDataSelected = useSelector(selectTaxReceiptData)
   const nfcType = useSelector(selectNcfType);
   const checkCashCount = useIsOpenCashReconciliation()
+  const cashCount = useSelector(selectCashReconciliation)
   const [step, setStep] = useState(0)
   const handleCashReconciliationConfirm = () => {
     const cashCountStrategy = getCashCountStrategy(checkCashCount.status, dispatch)
     cashCountStrategy.handleConfirm()
   }
-
   const viewport = useViewportWidth();
   const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt);
   const ncfCode = useSelector(selectNcfCode);
@@ -60,7 +63,6 @@ export const Cart = () => {
   const user = useSelector(selectUser);
   const clientInCart = useSelector(selectClient)
   const [submittable, setSubmittable] = useState(false)
-
   const increaseTaxReceipt = async () => {
     if (!taxReceiptEnabled) return;
     try {
@@ -93,9 +95,15 @@ export const Cart = () => {
   const savingDataToFirebase = async (bill, taxReceipt) => {
     try {
       if (selectMode === true) {
-        fbAddInvoice(bill, user)
-        { taxReceiptEnabled && fbUpdateTaxReceipt(user, taxReceipt) }
-        fbUpdateProductsStock(ProductSelected, user);
+        bill = {
+          ...bill,
+          cashCountId: cashCount.cashCount.id
+        }
+        await fbAddInvoice(bill, user)
+        if(taxReceiptEnabled) {
+           await fbUpdateTaxReceipt(user, taxReceipt) 
+        }
+        await fbUpdateProductsStock(ProductSelected, user);
         dispatch(addNotification({ message: "Venta Realizada", type: 'success', title: 'Completada' }))
       } else {
         dispatch(addNotification({ message: "No se puede Facturar en Modo Demo", type: 'error' }))
@@ -141,7 +149,7 @@ export const Cart = () => {
       setStep(3)
     }
   }, [step])
-  
+
   useEffect(() => {
     if (step === 3) {
       try {
@@ -173,15 +181,12 @@ export const Cart = () => {
       setSubmittable(true)
     }
   }, [step])
-
- 
   const handleCancelShipping = () => {
     if (viewport <= 800) dispatch(toggleCart());
     dispatch(CancelShipping())
     dispatch(clearTaxReceiptData())
     dispatch(deleteClient())
   }
-
   useEffect(() => {
     if (submittable === true) {
       clearDataFromState()
@@ -189,39 +194,37 @@ export const Cart = () => {
       setSubmittable(false)
     }
   }, [submittable])
-
+ 
   return (
     <Container isOpen={isOpen}>
       <ClientControl />
       <ProductsList />
-      <div>
-        <PaymentArea />
-        <CheckoutAction
-          ProductSelected={ProductSelected}
-          TotalPurchaseRef={TotalPurchaseRef}
-          handleCancelShipping={handleCancelShipping}
-          handleInvoice={handleInvoice}
-          componentToPrintRef={componentToPrintRef}
-          bill={bill}
-        />
-      </div>
+      <PaymentArea />
+      <CheckoutAction
+        ProductSelected={ProductSelected}
+        TotalPurchaseRef={TotalPurchaseRef}
+        handleCancelShipping={handleCancelShipping}
+        handleInvoice={handleInvoice}
+        componentToPrintRef={componentToPrintRef}
+        bill={bill}
+      />
     </Container>
   )
 }
 
 const Container = styled.div`
   position: relative;
-   height: calc(100%);
+   height: 100vh;
    background-color: ${({ theme }) => theme.bg.shade};
    max-width: 30em;
    width: 24em;
    overflow: hidden;
    display: grid;
    grid-template-columns: 1fr;
-   grid-template-rows: min-content auto min-content;
+   grid-template-rows: min-content 1fr min-content min-content;
    padding: 0 ;
    margin: 0;
-   gap: 10px;
+   gap: 0.4em;
    transition: width 600ms 0ms linear;
    @media(max-width: 800px){
       height: calc(100vh);
@@ -256,6 +259,3 @@ const Container = styled.div`
    
 `
 
-const PaymentSection = styled.div`
-  
-`

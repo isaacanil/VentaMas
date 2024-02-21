@@ -5,14 +5,14 @@ import { Button } from '../../../../../../../../templates/system/Button/Button'
 import { icons } from '../../../../../../../../../constants/icons/icons'
 import { fbDeleteUser } from '../../../../../../../../../firebase/users/fbDeleteUser'
 import { useNavigate } from 'react-router-dom'
-import { inspectUserAccess } from '../../../../../../../../../hooks/abilities/useAbilities'
+import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities'
 import { selectAbilities } from '../../../../../../../../../features/abilities/abilitiesSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice'
 
 export const Item = ({ data, num, colWidth }) => {
   const navigate = useNavigate()
-  const { abilities } = inspectUserAccess();
+  const { abilities } = userAccess();
 
   const dispatch = useDispatch()
   const handleDeleteUser = () => { fbDeleteUser(data.user.id) }

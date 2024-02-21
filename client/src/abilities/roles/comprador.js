@@ -5,9 +5,9 @@ export function defineAbilitiesForBuyer(user) {
   can('manage', 'Order'); // el comprador puede hacer pedidos
   can('manage', 'Purchase'); // y también puede hacer compras
   can('manage', 'Product'); // puede ver los productos
-  can('manage', 'Client'); // y también puede hacer compras
-  can('manage', 'Provider'); // y también puede hacer compras
-  can('manage', 'Category'); // y también puede hacer compras
-  can('manage', 'Inventory'); // y también puede hacer compras
+  can('manage', 'Client'); // 
+  can('manage', 'Provider'); // 
+  can('manage', 'Category'); //
+  can('manage', 'Inventory'); //
   return rules;
 }

@@ -14,6 +14,9 @@ import { Timestamp } from 'firebase/firestore'
 import { ErrorComponent } from '../../../../../templates/system/ErrorComponent/ErrorComponent'
 import { Select } from '../../../../../templates/system/Select/Select'
 import { each } from 'lodash'
+import { SignUpModal } from './UserForm'
+import * as antd from 'antd'
+const { Typography } = antd
 
 const formIcon = icons.forms
 const EmptyUser = {
@@ -142,12 +145,13 @@ const SignUp = () => {
         <Container>
             <Header>
             <div>
-                <h2>Crear Usuario</h2>
-                <p>Crear un nuevo usuario</p>
+                <Typography.Title level={3}>Crear Usuario</Typography.Title>
+                <Typography.Text >Crear un nuevo usuario</Typography.Text>
+              
             </div>
             </Header>
             <Body>
-                <InputV4
+                {/* <InputV4
                     icon={formIcon.user}
                     value={user.name}
                     label='Nombre de Usuario'
@@ -182,20 +186,19 @@ const SignUp = () => {
                     errorMessage={errors.password}
                     validate={errors.password}
                     onChange={handleInputChange}
-                />
+                /> */}
+                  <SignUpModal />
                 {/* <PasswordStrengthIndicator password={user.password} confirmPassword={user.confirmPassword} /> */}
-
                 <ErrorComponent errors={errors.firebase}></ErrorComponent>
-
             </Body>
-            <Footer>
+            {/* <Footer>
                 <Button
                     title={'Guardar'}
                     bgcolor={'primary'}
                     borderRadius={'light'}
                     onClick={handleSubmit}
                 />
-            </Footer>
+            </Footer> */}
 
         </Container>
 
@@ -211,7 +214,7 @@ const Header = styled.div`
     padding: 1.6em;
 `
 const Body = styled.div`
-padding: 1.8em 1.5em;
+padding: 0 1.5em;
 display: grid;
 grid-template-columns: 1fr;
 gap: 1em;

@@ -2,10 +2,10 @@ import React from 'react'
 import { SelectTotalShoppingItems } from '../../../../../features/cart/cartSlice'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-export const ShoppingItemsCounter = () => {
+export const ShoppingItemsCounter = ({itemLength}) => {
     const totalShoppingItems = useSelector(SelectTotalShoppingItems)
   return (
-    <Container>Artículos: {totalShoppingItems}</Container>
+    <Container> {totalShoppingItems} / {itemLength}</Container>
   )
 }
 

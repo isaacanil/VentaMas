@@ -5,7 +5,8 @@ import styled from 'styled-components'
 import { Button, ButtonGroup } from '../../../../../../../templates/system/Button/Button'
 import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
 import { useDispatch } from 'react-redux'
-import { addNotification } from '../../../../../../../../features/notification/notificationSlice'
+import { addNotification } from '../../../../../../../../features/notification/NotificationSlice'
+
 const formIcon = icons.forms
 export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose }) => {
     const [oldPassword, setOldPassword] = useState('')

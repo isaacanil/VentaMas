@@ -1,3 +1,4 @@
+
 import { createSlice } from '@reduxjs/toolkit'
 import { nanoid } from 'nanoid'
 import { orderAndDataCondition, orderAndDataState } from '../../constants/orderAndPurchaseState'
@@ -57,12 +58,12 @@ export const addPurchaseSlice = createSlice({
             state.productSelected = { ...state.productSelected, ...newValue }
         },
         SelectProduct: (state, actions) => {
-            const product = actions.payload.product;
+            const product = actions.payload;
             let productData = {
                 stock: product.stock,
                 id: product.id,
-                cost: product.cost.unit,
-                productName: product.productName,
+                cost: product.pricing.cost,
+                productName: product.name,
             }
             const findProduct = state.purchase.replenishments.find((item) => item.id === productData.id);
             if (findProduct) {

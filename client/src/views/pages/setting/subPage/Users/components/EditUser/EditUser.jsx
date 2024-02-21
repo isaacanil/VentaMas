@@ -201,7 +201,6 @@ const EditUser = () => {
                 </Body>
                 <Footer>
                     <ButtonGroup>
-
                         <Button
                             title={'Cancelar'}
                             bgcolor={'gray'}
@@ -214,7 +213,6 @@ const EditUser = () => {
                             borderRadius={'light'}
                             onClick={handleSubmit}
                         />
-
                     </ButtonGroup>
                 </Footer>
 

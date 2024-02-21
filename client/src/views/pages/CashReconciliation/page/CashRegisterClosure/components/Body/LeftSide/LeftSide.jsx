@@ -1,3 +1,4 @@
+
 import React from 'react'
 import styled from 'styled-components'
 import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator'
@@ -6,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectCashCount, setCashCountOpeningBanknotes, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { DateSection } from '../../Header/DateSection'
 import { UserView } from '../../../../../resource/UserView/UserView'
-import { convertTimeStampToDate } from '../../../../../../../../utils/date/convertTimeStampToDate'
+import { fromMillisToDateISO } from '../../../../../../../../utils/date/convertTimeStampToDate'
 
 export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
   const CashReconciliation = useSelector(selectCashCount);
@@ -21,7 +22,7 @@ export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
         banknotes={banknotes}
         setBanknotes={handleChangesBanknotes}
         title={'Apertura'}
-        datetime={<DateSection date={convertTimeStampToDate(CashReconciliation.opening.date)} />}
+        datetime={<DateSection date={(CashReconciliation.opening.date)} />}
         isExpanded={calculationIsOpen}
         setIsExpanded={setCalculationIsOpen}
       />

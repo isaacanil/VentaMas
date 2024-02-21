@@ -35,12 +35,12 @@ export const fbGetCashCounts = async (user, setCashCounts) => {
                 },
                 closing: {
                     ...data.closing,
+                    date: data.closing.date ? convertTimeStampToMillis(data.closing.date) : null,
                     employee: closingEmployeeData,
                     approvalEmployee: closingApprovalEmployeeData
                 },
                 sales: []
             }
-
             return data
         })
 

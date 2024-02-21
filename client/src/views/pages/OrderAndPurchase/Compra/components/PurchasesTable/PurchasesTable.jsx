@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getPurchaseFromDB } from '../../../../../../firebase/firebaseconfig'
 import { selectUser } from '../../../../../../features/auth/userSlice'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
-import { toggleViewOrdersNotes } from '../../../../../../features/modals/modalSlice'
+import { toggleFileListModal, toggleViewOrdersNotes } from '../../../../../../features/modals/modalSlice'
 //import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 import { convertMillisToDate } from '../../../../../../hooks/useFormatTime'
@@ -14,7 +14,8 @@ import { getOrderConditionByID, getOrderStateByID } from '../../../../../../cons
 import { useFbGetPurchase } from '../../../../../../firebase/purchase/fbGetPurchase'
 import { toggleImageViewer } from '../../../../../../features/imageViewer/imageViewerSlice'
 import * as antd from 'antd'
-const {Button} = antd;
+import { calculateTotalNewStockFromReplenishments } from '../../../Order/components/OrderListTable/PendingOrdersTable'
+const { Button } = antd;
 
 function ordenarPorNumberId(datos) {
   // Crear una copia del arreglo para evitar modificar el original
@@ -61,6 +62,12 @@ export const PurchaseTable = () => {
       cell: ({ value }) => <div>{convertMillisToDate(value)}</div>
     },
     {
+      Header: 'Items',
+      accessor: 'items',
+      cell: ({ value }) => <div>{value}</div>
+    },
+
+    {
       Header: 'Total',
       accessor: 'total',
       align: 'right',
@@ -68,13 +75,20 @@ export const PurchaseTable = () => {
     },
     {
       Header: 'Evidencia',
-      accessor: 'receipt',
+      accessor: 'fileList',
       align: 'right',
-      cell: ({ value }) => (
-        <Button
-          onClick={() => dispatch(toggleImageViewer({ show: true, url: value }))}
-        >ver</Button>
-      )
+      cell: ({ value }) => {
+        const handleShowFiles = () => {
+          dispatch(toggleFileListModal({ fileList: value }))
+        }
+        return (
+          <Button
+            onClick={handleShowFiles}
+          >
+            ver
+          </Button>
+        )
+      }
     },
     {
       Header: 'Acción',
@@ -111,31 +125,24 @@ export const PurchaseTable = () => {
         provider: data?.provider.name,
         note: data?.note,
         date: data?.dates,
-        receipt: data?.receipt,
+        fileList: data?.fileList,
+        items: calculateTotalNewStockFromReplenishments(data?.replenishments),
         paymentDate: data?.dates?.paymentDate,
         total: data?.total,
         action: data
       }
     })
-  console.log(purchases)
+  console.log(data)
   return (
-  
-      <AdvancedTable
-        tableName={'Lista de Compras'}
-        columns={columns}
-        data={data}
+    <AdvancedTable
+      tableName={'Lista de Compras'}
+      columns={columns}
+      data={data}
 
-        filterUI
-        filterConfig={filterConfig}
-      />
-
-
+      filterUI
+      filterConfig={filterConfig}
+    />
   )
 }
-const Container = styled.div`
-  width: 100vw;
-  padding: 0.6em 1em;
-  height: 100%;
 
-`
 

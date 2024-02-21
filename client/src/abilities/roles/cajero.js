@@ -7,6 +7,7 @@ export function defineAbilitiesForCashier(user) {
 
   can('manage', 'Bill');
   can('manage', 'Product');
+  can('modify', 'Price');
   can(['read', 'create', 'update'], 'Client');
   can(['read', 'create', 'update'], 'Provider');
   can(['read', 'create', 'update'], 'Category');

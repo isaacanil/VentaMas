@@ -69,6 +69,7 @@ background-color: ${({ theme }) => theme.bg.color2};
     color: #585858;
     transition: 300ms ease-in-out;
     :hover{
+
         background-color: #e7f0fa;
         color: rgb(83, 83, 83);
     }
@@ -99,8 +100,12 @@ background-color: ${({ theme }) => theme.bg.color2};
         switch (props.selected) {
             case true:
                 return `
-                    background-color: var(--color-info-light);
-                    color: var(--color-info-dark);
+                    background-color: ${props.theme.bg.color4};
+                    color: white;
+                    :hover{
+                        background-color: ${props.theme.bg.color4};
+                        color: white;
+                    }
                    
                 `
 

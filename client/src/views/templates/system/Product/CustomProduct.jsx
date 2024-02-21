@@ -32,7 +32,7 @@ export const CustomProduct = ({ product }) => {
             </ProductImgWrapper>
             <Body>
                 <Main>
-                    <Title>{product.productName}</Title>
+                    <Title>{product.name}</Title>
                 </Main>
                 <Footer>
                 </Footer>

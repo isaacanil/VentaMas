@@ -37,7 +37,6 @@ const getInvoices = async (invoiceRefs) => {
 
 
 export const fbLoadInvoicesForCashCount = async (user, cashCountID, dataType) => {
-   
     const cashCountRef = doc(db, 'businesses', user?.businessID, 'cashCounts', cashCountID);
     const cashCountDoc = await getDoc(cashCountRef);
 

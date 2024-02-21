@@ -16,7 +16,7 @@ export const ProductInfo = ({ product }) => {
             id="part-1"
         >
             <Form.Item
-                name="productName"
+                name="name"
                 label={"Nombre del producto"}
                
                 rules={[{ required: true, message: 'Introducir un nombre de producto.'

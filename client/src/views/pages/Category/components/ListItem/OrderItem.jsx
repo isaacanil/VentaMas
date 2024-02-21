@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 import styled from 'styled-components'
-import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
+import {ButtonGroup } from '../../../../templates/system/Button/Button'
 
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -10,7 +10,7 @@ import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbDeleteCategory } from '../../../../../firebase/categories/fbDeleteCategory'
 import { fbUpdateCategory } from '../../../../../firebase/categories/fbUpdateCategory'
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
-
+import * as antd from 'antd'
 export const OrderItem = ({ cat, Row, Col }) => {
   const dispatch = useDispatch();
 
@@ -53,6 +53,7 @@ export const OrderItem = ({ cat, Row, Col }) => {
   const handleDelete = (id) => {
     setMode('DELETE');
     setShowConfirmBtn(true);
+    
   };
 
   const handleAccept = () => {
@@ -60,10 +61,12 @@ export const OrderItem = ({ cat, Row, Col }) => {
       case 'DELETE':
         console.log('delete');
         fbDeleteCategory(user, cat.id);
+        antd.message.success('Categoría eliminada', 2.5)
         break;
       case 'EDIT':
         console.log('edit');
         fbUpdateCategory(category, user)
+        antd.message.success('Categoría actualizada', 2.5)
         break;
     }
     setMode(null);
@@ -94,36 +97,22 @@ export const OrderItem = ({ cat, Row, Col }) => {
         {showConfirmBtn ? (
           <ButtonGroup>
             <Button
-              borderRadius='normal'
-              title={icons.operationModes.cancel}
-              width='icon32'
-              color='gray-dark'
+              icon={icons.operationModes.cancel}
               onClick={handleReject}
-              tooltipDescription='Cancelar'
-              tooltipPlacement={'top'}
             />
             <Button
-              borderRadius='normal'
-              title={icons.operationModes.accept}
-              width='icon32'
-              color='gray-dark'
+              icon={icons.operationModes.accept}
               onClick={handleAccept}
             />
           </ButtonGroup>
         ) : (
           <ButtonGroup>
             <Button
-              borderRadius='normal'
-              title={icons.operationModes.edit}
-              width='icon32'
-              color='gray-dark'
+              icon={icons.operationModes.edit}
               onClick={handleEdit}
             />
             <Button
-              borderRadius='normal'
-              title={icons.operationModes.delete}
-              width='icon32'
-              color='gray-dark'
+              icon={icons.operationModes.delete}
               onClick={() => handleDelete(cat.id)}
             />
           </ButtonGroup>
@@ -134,6 +123,12 @@ export const OrderItem = ({ cat, Row, Col }) => {
 };
 
 const Container = styled.div`
+`
+const Button = styled(antd.Button)`
+font-size: 1.2em;
+display: flex;
+justify-content: center;
+align-items: center;
 `
 
 const CategoryName = styled.input`

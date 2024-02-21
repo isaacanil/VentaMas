@@ -5,7 +5,13 @@ import { CustomProduct } from '../../../../templates/system/Product/CustomProduc
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 
-export const CategoriesGrouped = ({ productsByCategory, viewRowModeRef }) => {
+export const CategoriesGrouped = ({ products, viewRowModeRef }) => {
+    const productsByCategory = products.reduce((result, { product }) => {
+        const category = product.category
+        if (!result[category]) { result[category] = [] }
+        result[category].push(product)
+        return result
+      }, {})
     const containerVariants = {
         hidden: { opacity: 1, scale: 0 },
         visible: {

@@ -7,7 +7,6 @@ import { useIsOpenCashReconciliation } from '../../../../../firebase/cashCount/u
 import { useDispatch, useSelector } from 'react-redux'
 import { setUserNotification } from '../../../../../features/UserNotification/UserNotificationSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
-import { inspectUserAccess } from '../../../../../hooks/abilities/useAbilities'
 import routesName from '../../../../../routes/routesName'
 import { openModalAddOrder, toggleAddPurchaseModal } from '../../../../../features/modals/modalSlice'
 import { Tooltip } from '../../../system/Button/Tooltip'
@@ -20,7 +19,6 @@ export const OrderToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
    
-    const { abilities } = inspectUserAccess();
     const user = useSelector(selectUser)
 
     // const openModal = () => dispatch(openModalAddOrder());

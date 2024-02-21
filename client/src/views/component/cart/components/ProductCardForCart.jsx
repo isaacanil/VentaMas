@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { IoMdClose } from 'react-icons/io'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
 import { Counter } from '../../../templates/system/Counter/Counter'
@@ -12,55 +12,103 @@ import { motion } from 'framer-motion'
 import * as antd from 'antd'
 import { SmileOutlined } from '@ant-design/icons';
 import { Dropdown } from './Dropdown'
+import { selectUser } from '../../../../features/auth/userSlice'
+import { userAccess } from '../../../../hooks/abilities/useAbilities'
+import { getPriceWithoutTax, getTax, getTotalPrice } from '../../../../utils/pricing'
+import { TbAxe } from 'react-icons/tb'
+
+const defaultColor = { bg: 'var(--White3)', border: 'var(--Gray4)' }; // Asume que var(--Gray4) es el color de borde por defecto
+const errorColor = { bg: '#ffefcc', border: '#f5ba3c' }; // Rojo claro para indicar error, con un borde más oscuro
+const exactMatchColor = { bg: '#ccffcc', border: '#88cc88' }; // Verde claro para coincidencia exacta, con un borde más oscuro
+const inRangeColor = { bg: '#ffffcc', border: '#cccc88' }; // Amarillo claro para indicar que está en rango, con un borde más oscuro
+
 const { Button } = antd
 const variants = {
     initial: { opacity: 0, y: -90 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: 150, transition: { duration: 0.5 } },  // nueva propiedad
 };
+const determineInputPriceColor = (totalPrice, minPrice, listPrice, averagePrice) => {
+    if (totalPrice < minPrice || totalPrice > listPrice) {
+        return errorColor;
+    } else if (totalPrice === minPrice || totalPrice === averagePrice) {
+        return exactMatchColor;
+    } else if (totalPrice > minPrice && totalPrice < listPrice) {
+        return inRangeColor;
+    }
+    return defaultColor;
+};
+function extraerPreciosConImpuesto(producto) {
+    const propiedadesPrecio = {
+        'listPrice': 'Precio de lista',
+        'avgPrice': 'Precio promedio',
+        'minPrice': 'Precio mínimo',
+    };
+    const preciosConImpuesto = [];
+
+    Object.entries(propiedadesPrecio).forEach(([key, label]) => {
+        if (producto.pricing.hasOwnProperty(key)) {
+            let valor = producto.pricing[key];
+            // Calcular y agregar el precio con impuesto
+            if (producto.pricing.hasOwnProperty('tax')) {
+                const impuesto = (producto.pricing.tax);   
+                const total = getTotalPrice(valor, impuesto, 0);
+                preciosConImpuesto.push({ label: total, value: total });
+            }
+        }
+    });
+
+    return preciosConImpuesto;
+}
 
 export const ProductCardForCart = ({ item }) => {
     const dispatch = useDispatch()
     const [priceInputFocus, setInputPriceFocus] = useState(false);
-    console.log(item)
-    const deleteProductFromCart = (id) => {
-        dispatch(totalPurchase())
-        dispatch(deleteProduct(id))
-        dispatch(totalPurchaseWithoutTaxes())
-        dispatch(totalPurchase())
-        dispatch(totalShoppingItems())
-        dispatch(setChange())
-        dispatch(addPaymentMethodAutoValue())
-    }
+    const { abilities } = userAccess();
+    const user = useSelector(selectUser)
+
+    const tax = item.pricing.tax
+    const minPrice = getTotalPrice(item?.pricing?.minPrice, tax, 0);
+    const listPrice = getTotalPrice(item?.pricing?.listPrice, tax, 0);
+    const averagePrice = getTotalPrice(item?.pricing?.avgPrice, tax, 0);
+    const price =  getTotalPrice(item?.pricing?.price, tax, 0)
+    
+    const [inputPriceColor, setInputPriceColor] = useState(defaultColor);
+    const [inputPrice, setInputPrice] = useState(price);
+
+    const deleteProductFromCart = (id) =>  dispatch(deleteProduct(id));
+    
+    const canModifyPrice = abilities.can('change', 'Price');
 
     const handleChangePrice = (e) => {
-        dispatch(changeProductPrice({ id: item.id, newPrice: e.target.value }))
-    }
-
-    function extraerPreciosConImpuesto(producto) {
-        const propiedadesPrecio = {
-            'listPrice': 'Precio de lista',
-            'averagePrice': 'Precio promedio',
-            'minimumPrice': 'Precio mínimo',
+        if (!canModifyPrice) {
+            antd.message.error('No tienes permisos para cambiar el precio de los productos');
+            return
         };
-        const preciosConImpuesto = [];
+        const newPrice = e.target.value;
+        const priceWithoutTax = getPriceWithoutTax(newPrice, tax);
+   
+        console.log(`Cambio de precio iniciado:
+        - Precio ingresado: ${newPrice}
+        - Impuesto: ${tax}
+        - Precio final (sin impuestos): ${priceWithoutTax}`);
+        if (newPrice < minPrice) {
+            antd.message.error('El precio ingresado es menor al precio mínimo permitido.', 4);
+        }
+        if (newPrice > listPrice) {
+            antd.message.error('El precio ingresado es mayor al precio de lista.', 4);
+        }
+       const color = determineInputPriceColor(newPrice, minPrice, listPrice, averagePrice)
 
-        Object.entries(propiedadesPrecio).forEach(([key, label]) => {
-            if (producto.hasOwnProperty(key)) {
-                let valor = producto[key];
-
-                // Calcular y agregar el precio con impuesto
-                if (producto.hasOwnProperty('tax') && producto.tax.hasOwnProperty('value')) {
-                    const impuesto = producto.tax.value;
-                    const precioConImpuesto = valor * (1 + impuesto);
-                    preciosConImpuesto.push({ label: ``, value: Number(precioConImpuesto.toFixed(2)) });
-                }
-            }
-        });
-
-        return preciosConImpuesto;
+        setInputPriceColor(color);
+    
+        dispatch(changeProductPrice({ id: item.id, newPrice: priceWithoutTax }));
+        setInputPriceFocus(false)
     }
+ 
+ 
     const precios = extraerPreciosConImpuesto(item);
+
     const handleMenuClick = (e) => {
         console.log(e)
         const item = {
@@ -68,8 +116,10 @@ export const ProductCardForCart = ({ item }) => {
                 value: e.value
             }
         }
+        setInputPrice(e.value)
         handleChangePrice(item); // actualiza el precio en el estado global del carrito
     };
+
 
     const items = precios.map((precio, index) => ({
         key: `${index}`,
@@ -78,10 +128,10 @@ export const ProductCardForCart = ({ item }) => {
                 onClick={() => handleMenuClick(precio)}
                 style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>{precio.label}</span>
-                <span>{`$${precio.value.toFixed(2)}`}</span>
             </div>
         )
     }));
+   
 
     return (
         <Container
@@ -89,7 +139,6 @@ export const ProductCardForCart = ({ item }) => {
             initial='initial'
             animate='animate'
             transition={{ duration: 0.6 }}
-
         >
             <Row>
                 <div
@@ -98,9 +147,8 @@ export const ProductCardForCart = ({ item }) => {
                         gridTemplateColumns: '1fr min-content min-content',
                     }}
                 >
-
-                    <Title>{item.productName}</Title>
-                    <Price>{useFormatPrice(item.price.total)}</Price>
+                    <Title>{item.name}</Title>
+                    <Price>{useFormatPrice(price * item.amountToBuy)}</Price>
                     <Button
                         type='text'
                         size='small'
@@ -120,48 +168,37 @@ export const ProductCardForCart = ({ item }) => {
             <Row>
                 <Group >
                     <Dropdown
-                        menu={{
-                            items
-                        }}
-                        trigger={
-                            ['click']
-                        }
+                        menu={{ items }}
+                        trigger={['click']}
                     >
-                        <Button
-                            icon={icons.arrows.caretDown}
-                            size='small'
-                        />
+                        {
+                            canModifyPrice ? (
+                                <Button
+                                    icon={icons.arrows.caretDown}
+                                    size='small'
+                                />) : (
+                                <div></div>
+                            )
+                        }
+
                     </Dropdown>
-                    <input
+                    <Input
+                        disabled={!canModifyPrice}
+                        readOnly={!canModifyPrice}
                         type={priceInputFocus ? "number" : "text"}
                         onFocus={() => setInputPriceFocus(true)}
-                        onBlur={() => setInputPriceFocus(false)}
-                        style={
-                            {
-                                width: '100%',
-                                height: "1.8em",
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                borderRadius: '6px',
-                                border: 'none',
-                                display: 'block',
-                                padding: '0 10px',
-                                margin: '0',
-                                whiteSpace: 'nowrap',
-                                backgroundColor: 'var(--White3)',
-                                color: 'var(--Gray6)',
-                            }
-                        }
-                        onChange={handleChangePrice}
-                        value={priceInputFocus ? item.price.unit : useFormatPrice(item.price.unit)}
+                        onBlur={handleChangePrice}
+                        color={inputPriceColor}
+                        onChange={(e) => setInputPrice(e.target.value)}
+                        value={priceInputFocus ? inputPrice : useFormatPrice(inputPrice)}
                     />
                     <Counter
-                        amountToBuyTotal={item.amountToBuy.total}
+                        amountToBuyTotal={item.amountToBuy}
                         stock={item.stock}
                         id={item.id}
                         product={item}
                     ></Counter>
-
+                   
 
                 </Group>
             </Row>
@@ -235,4 +272,22 @@ const Price = styled.span`
     background-color: var(--White1);
     color: var(--Gray6);
  
+`
+const Input = styled.input`
+    width: 100%;
+    height: 1.8em;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    display: block;
+    padding: 0 10px;
+    margin: 0;
+    white-space: nowrap;
+    color: var(--Gray6);
+    background-color: ${props => props.color.bg};
+    border: 2px solid ${props => props.color.border};
+    :focus {
+        outline: none;
+    }
+
 `

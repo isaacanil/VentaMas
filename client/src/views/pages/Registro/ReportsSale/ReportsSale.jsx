@@ -35,7 +35,7 @@ const MyBarChart = ({ sales, isOpen, onOpen }) => {
     }
   }
 
-  // useClickOutSide(ref, isOpen, onOpen)
+  //useClickOutSide(ref, isOpen, onOpen)
   useClickOutSide(componentRef, isOpen, onOpen)
 
   return (
@@ -83,7 +83,7 @@ const MyBarChart = ({ sales, isOpen, onOpen }) => {
   );
 };
 
-export default React.memo(MyBarChart);
+export default MyBarChart;
 
 const Group = styled.div`
   display: grid;

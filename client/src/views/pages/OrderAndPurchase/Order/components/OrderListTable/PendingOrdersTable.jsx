@@ -16,11 +16,58 @@ import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 
 import * as ant from 'antd'
-const { Button }  = ant;
+const { Button, Tag }  = ant;
+import { DateTime } from 'luxon';
+
+const calculatePaymentDate = (createdAt, conditionId) => {
+  let daysToAdd = 0;
+  switch (conditionId) {
+    case 'condition_0001': // Contado, asumimos pago inmediato, así que no se añaden días.
+      daysToAdd = 0;
+      break;
+    case 'condition_0002': // 1 semana
+      daysToAdd = 7;
+      break;
+    case 'condition_0003': // 15 días
+      daysToAdd = 15;
+      break;
+    case 'condition_0004': // 30 días
+      daysToAdd = 30;
+      break;
+    case 'condition_0005': // Otros, necesitarías definir una lógica específica para 'Otros'
+      // Por ahora, no añadimos días. Podrías modificar esto según sea necesario.
+      daysToAdd = 0;
+      break;
+    default:
+      // Manejar condición desconocida, por defecto no añadir días o manejar de otra manera
+      break;
+  }
+
+  // Utilizamos Luxon para calcular la nueva fecha
+  const paymentDate = DateTime.fromMillis(createdAt).plus({ days: daysToAdd });
+  return paymentDate.toMillis(); // Devuelve la fecha de pago como milisegundos desde epoch
+};
+export const calculateTotalNewStockFromReplenishments = (replenishments) => {
+  let totalNewStock = 0;
+
+  // Asegurándonos de que 'replenishments' es un arreglo
+  if (replenishments && Array.isArray(replenishments)) {
+    // Iteramos sobre cada 'replenishment' (reabastecimiento)
+    replenishments.forEach(item => {
+      // Asegurándonos de que el artículo tiene la propiedad 'newStock' y es un número
+      if (item.newStock && typeof item.newStock === 'number') {
+        // Sumamos 'newStock' al total
+        totalNewStock += item.newStock;
+      }
+    });
+  }
+
+  return totalNewStock;
+};
 
 export const PendingOrdersTable = () => {
   const dispatch = useDispatch();
-
+  
   const columns = [
     {
       Header: '#',
@@ -61,6 +108,24 @@ export const PendingOrdersTable = () => {
       cell: ({ value }) => <div>{convertMillisToDate(value)}</div>
     },
     {
+      Header: 'F. Pago',
+      accessor: 'paymentDate',
+      cell: ({ value }) => {
+        const paymentDate = DateTime.fromMillis(value);
+        const now = DateTime.now();
+        const isDueOrPast = now >= paymentDate;
+        return (<Tag style={{fontSize: "16px", padding: "5px"}} color={isDueOrPast ? 'error' : 'success'}>{convertMillisToDate(value)}</Tag>)
+    }
+    },
+    {
+      Header: 'Items',
+      accessor: 'items',
+      align: 'right',
+      minWidth: '80px',
+      maxWidth: '80px',
+      cell: ({ value }) => <div>{value}</div>
+    },
+    {
       Header: 'Total',
       accessor: 'total',
       align: 'right',
@@ -98,6 +163,7 @@ export const PendingOrdersTable = () => {
   const { pendingOrders } = fbGetPendingOrders(user);
 
   const data = pendingOrders.map(({ data }) => {
+    const paymentDate = calculatePaymentDate(data?.dates?.createdAt, data?.condition);
     return {
       number: data?.numberId,
       state: data?.state,
@@ -105,6 +171,8 @@ export const PendingOrdersTable = () => {
       condition: data?.condition,
       note: data?.note,
       createdAt: data?.dates?.createdAt,
+      paymentDate,
+      items: calculateTotalNewStockFromReplenishments(data?.replenishments),
       deliveryDate: data?.dates?.deliveryDate,
       total: data?.total,
       action: data
@@ -112,7 +180,7 @@ export const PendingOrdersTable = () => {
   })
 
   return (
-    <Container>
+ 
       <AdvancedTable
         tableName={'Lista de Pedidos Pendientes'}
         columns={columns}
@@ -120,12 +188,7 @@ export const PendingOrdersTable = () => {
         filterUI
         filterConfig={filterConfig}
       />
-    </Container>
+  
   )
 }
 
-const Container = styled.div`
-    width: 100vw;
-  padding: 0.4em 1em;
-  height: 100%;
-`

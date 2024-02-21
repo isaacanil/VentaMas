@@ -8,16 +8,17 @@ export const ProductCard = ({data, setShowProductList, fn, close}) => {
 
  const handleProductSelected = async () => {
   try {
-    await fn(data);
+    console.log("clicked ", data)
+    fn(data);
     close();
   } catch (error) {
-    
+    console.log(error)
   }
  }
   return (
     <Container onClick={handleProductSelected}>
         <span>
-            {data.product.productName}
+            {data.name}
         </span>       
     </Container>
   )

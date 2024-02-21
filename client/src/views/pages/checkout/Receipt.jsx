@@ -14,7 +14,30 @@ import { Header } from './components/Header/Header'
 
 
 export const Receipt = React.forwardRef(({ data }, ref) => {
+    function getReceiptInfo(code) {
+        if (!code) {
+            return { type: 'Desconocido', description: 'RECIBO  DE PAGO' };
+        }
+        console.log(code);
+        // Asegurarse de que se extrae correctamente el código relevante de la cadena
+        const pattern = /(B0\d)/; // Esta expresión regular busca el patrón exacto "B0" seguido de un dígito
+        const found = code.match(pattern);
+        
+        const receiptTypes = {
+            B01: { type: 'Crédito Fiscal', description: 'FACTURA PARA CREDITO FISCAL' },
+            B02: { type: 'Consumidor Final', description: 'FACTURA PARA CONUMIDOR FINAL' },
+            // ... include other receipt types with their corresponding information
+        };
+        
+        if (found && found[0] && receiptTypes[found[0]]) {
+            return receiptTypes[found[0]];
+        } else {
+            return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
+        }
+    }
     let business = useSelector(selectBusinessData)
+    const ncfType = getReceiptInfo(data.NCF).description
+
     return (
         business && data ? (
             <Container ref={ref}>
@@ -25,10 +48,11 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                     SubTitle={SubTitle}
                     P={P}
                 />
-                <Space  />
+                <Space />
                 <Line />
                 <Row space>
-                    <SubTitle align='center'> FACTURA PARA CONSUMIDOR FINAL</SubTitle>
+
+                    <SubTitle align='center'> {ncfType}</SubTitle>
                 </Row>
                 <Line />
                 <Row cols='3' space>
@@ -47,8 +71,9 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
 
 const Container = styled.div`
     * {
-        margin: 0;
+        margin: opx;
     }
+    padding: 1em 0.4em;
 
     line-height: 24px;
     
@@ -110,16 +135,16 @@ export const Line = styled.div`
 const Space = styled.div`
  margin-bottom: 0.6em;
  ${props => {
-    switch (props.size) {
-        case 'small':
-            return 'margin-bottom: 0.2em;'
-        case 'medium':
-            return 'margin-bottom: 0.8em;'
-        case 'large':
-            return 'margin-bottom: 1.6em;'
-        default:
-            return 'margin-bottom: 0.8em;'
-    }
-}}
+        switch (props.size) {
+            case 'small':
+                return 'margin-bottom: 0.2em;'
+            case 'medium':
+                return 'margin-bottom: 0.8em;'
+            case 'large':
+                return 'margin-bottom: 1.6em;'
+            default:
+                return 'margin-bottom: 0.8em;'
+        }
+    }}
 
 `

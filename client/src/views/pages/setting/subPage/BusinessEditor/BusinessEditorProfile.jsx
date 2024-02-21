@@ -1,142 +1,102 @@
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4';
+import { useSelector } from 'react-redux';
+import * as antd from 'antd';
+const { Form, Input, Button, Typography, Select, message } = antd;
 import { fbUpdateBusinessInfo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { useSelector } from 'react-redux';
-import { fbGetBusinessInfo } from '../../../../../firebase/businessInfo/fbGetBusinessInfo';
-import { MenuApp } from '../../../..';
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { set } from 'lodash';
-import Typography from '../../../../templates/system/Typografy/Typografy';
-import { fbAAddMultipleClients } from '../../../../../firebase/client/fbAddMultipleClients';
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import styled from 'styled-components';
+import { countries } from './countries.json';
+const { Title, Paragraph } = Typography;
+const { Option } = Select;
+
 
 const BusinessInfo = () => {
-
-  const business = useSelector(selectBusinessData)
-  const [businessInfo, setBusinessInfo] = useState(business || {
-    name: '',
-    address: '',
-    tel: '',
-  });
-
+  const business = useSelector(selectBusinessData);
+  const [form] = Form.useForm();
   const user = useSelector(selectUser);
 
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setBusinessInfo({
-      ...businessInfo,
-      [name]: value,
-    });
-  };
   useEffect(() => {
-    setBusinessInfo(business)
-  }, [business])
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if(!businessInfo?.name || !businessInfo?.address || !businessInfo?.tel) return alert('Completa todos los campos')
-    fbUpdateBusinessInfo(user, businessInfo);
+    // Si existe información de negocio previa, establecer los valores del formulario
+    if (business) {
+      form.setFieldsValue(business);
+    }
+  }, [business, form]);
+
+  const handleSubmit = async (values) => {
+    try {
+      await fbUpdateBusinessInfo(user, values);
+      message.success('Información actualizada');
+    } catch (error) {
+      message.error('Error al actualizar la información');
+    }
   };
   const metadata = {
     title: 'Información del negocio',
-    description: 'Agrega la información de tu negocio, como nombre, dirección y teléfono. Esta información se utilizará en tus facturas.',
-  }
+    description:
+      'Agrega la información de tu negocio, como nombre, dirección, teléfono, país y provincia. Esta información se utilizará en tus facturas.',
+  };
 
   return (
-    <Container>
+    <div>
       <MenuApp />
-      <Form onSubmit={handleSubmit}>
-        <Header>
-          <Typography variant='h2'>Información del negocio</Typography>
-          <Typography variant='p'>{metadata.description} </Typography>
-         
-        </Header>
-        <Wrapper>
-          <Group>
-            <InputV4
-              id="name"
-              label='Nombre'
-              placeholder="Nombre del negocio"
-              type="text"
-              name="name"
-              value={businessInfo?.name}
-              onChange={handleChange}
-            />
+      <Container>
+        <Typography>
+          <Title level={4}>{metadata.title}</Title>
+          <Paragraph>{metadata.description}</Paragraph>
+        </Typography>
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            name="name"
+            label="Nombre"
+            rules={[{ required: true, message: 'Por favor, ingresa el nombre del negocio' }]}>
+            <Input placeholder="Nombre del negocio" />
+          </Form.Item>
+          <Form.Item
+            name="tel"
+            label="Teléfono"
+            rules={[{ required: true, message: 'Por favor, ingresa el teléfono' }]}>
+            <Input placeholder="55 1234 5678" />
+          </Form.Item>
+          <Form.Item
+            name="country"
+            label="País"
+            rules={[{ required: true, message: 'Por favor, selecciona un país' }]}>
+            <Select placeholder="Selecciona un país">
+              {countries.map(country => (
+                <Option key={country.id} value={country.id}>{country.name}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="province"
+            label="Provincia/Estado"
+            rules={[{ required: true, message: 'Por favor, ingresa la provincia o estado' }]}>
+            <Input placeholder="Provincia o Estado" />
+          </Form.Item>
+          <Form.Item
+            name="address"
+            label="Dirección"
+            rules={[{ required: true, message: 'Por favor, ingresa la dirección' }]}>
+            <Input placeholder="Calle 123, Colonia, Ciudad, Estado" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Guardar
+            </Button>
+          </Form.Item>
+        </Form>
+      </Container>
 
-          </Group>
-          <Group>
-            <InputV4
-              id="address"
-              label='Dirección'
-              type="text"
-              name="address"
-              placeholder="Calle 123, Colonia, Ciudad, Estado"
-              value={businessInfo?.address}
-              onChange={handleChange}
-            />
-          </Group>
-          <Group>
-            <InputV4
-              id="tel"
-              label='Teléfono'
-              type="text"
-              name="tel"
-              placeholder="55 1234 5678"
-              value={businessInfo?.tel}
-              onChange={handleChange}
-            />
-          </Group>
-          <Button type="submit">Guardar</Button>
-        </Wrapper>
-      </Form>
-    </Container>
+    </div>
   );
 };
 
 export default BusinessInfo;
 
-const Container = styled.div``
-const Header = styled.div`
-max-width: 600px;
-`
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px;
-  `;
-
-const Group = styled.div`
-  margin-top: 10px;
-  margin-bottom: 1.4em;
-  font-size: 16px;
-  
-  label{
-    position: absolute;
-    margin-top: -20px;
-    font-size: 16px;
-    
-  }
-  `;
-
-
-const Button = styled.button`
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #007bff;
-  border: none;
-  color: #fff;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  `;
-const Wrapper = styled.div`
-max-width: 500px;
-width: 100%;
-display: grid;
-gap: 1em;
-margin-top: 3em;
-
-`
+const Container = styled.div`
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+`;

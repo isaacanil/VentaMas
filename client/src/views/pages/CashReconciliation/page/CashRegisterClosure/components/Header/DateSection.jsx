@@ -3,30 +3,43 @@ import styled from "styled-components";
 import { FormattedValue } from "../../../../../../templates/system/FormattedValue/FormattedValue";
 
 export const DateSection = ({ date }) => {
+    let currentDate;
 
-    if(typeof date === 'string'){
-        date = JSON.parse(date)
+    // Si date es una cadena, intentamos parsearla como un objeto JSON
+    if (typeof date === 'string') {
+        try {
+            date = JSON.parse(date);
+        } catch (error) {
+            console.error("Error parsing date string:", error);
+        }
     }
     console.log(date)
 
-    const currentDate = date;
-   
-    const formattedDate = date && currentDate.toLocaleString(DateTime.DATE_SHORT);
-    const formattedTime = date && currentDate.toFormat('hh:mm a');
+    // Si date es un número, asumimos que es una fecha en milisegundos
+    // y la convertimos a un objeto DateTime de Luxon
+    if (typeof date === 'number') {
+        currentDate = DateTime.fromMillis(date);
+    }
+
+    // Formateamos la fecha y la hora
+    const formattedDate = currentDate ? currentDate.toLocaleString(DateTime.DATE_SHORT) : '';
+    const formattedTime = currentDate ? currentDate.toFormat('hh:mm a') : '';
+
 
     return (
         date && (
-            <Container>
-                <DateContainer>
-                    <span>
-                        {formattedDate}
-                    </span>
-                    <span>
-                        {formattedTime}
-                    </span>
-                </DateContainer>
-            </Container>
-        )
+            currentDate && (
+                <Container>
+                    <DateContainer>
+                        <span>
+                            {formattedDate}
+                        </span>
+                        <span>
+                            {formattedTime}
+                        </span>
+                    </DateContainer>
+                </Container>
+        ))
     )
 }
 const Container = styled.div`

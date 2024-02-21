@@ -34,6 +34,7 @@ import { baseColors } from './baseColors';
         color: "rgb(66, 165, 245)",
         color2: baseColors.blue[50],
         color3: "#67B8DE",
+        color4: baseColors.blue[500],
     },
     border: {
         base: '1px solid #ced2d6',

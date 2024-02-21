@@ -6,7 +6,6 @@ import { useIsOpenCashReconciliation } from '../../../../../firebase/cashCount/u
 import { useDispatch, useSelector } from 'react-redux'
 import { setUserNotification } from '../../../../../features/UserNotification/UserNotificationSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
-import { inspectUserAccess } from '../../../../../hooks/abilities/useAbilities'
 import { selectCashReconciliation } from '../../../../../features/cashCount/cashStateSlice'
 
 export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearchData }) => {
@@ -15,7 +14,7 @@ export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearch
     const dispatch = useDispatch()
    // const { status, cashReconciliation } = useIsOpenCashReconciliation()
     const { state, cashCount } = useSelector(selectCashReconciliation);
-    const { abilities } = inspectUserAccess();
+  
     const user = useSelector(selectUser)
 
     const handleSwitchToCashRegisterOpening = () => {

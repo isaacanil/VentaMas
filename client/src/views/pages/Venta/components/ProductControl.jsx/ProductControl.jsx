@@ -27,16 +27,11 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
   const loadingMessage = 'Cargando los Productos'
   const productsContainerRef = useRef(null);
   const isScrolled = useScroll(productsContainerRef);
-
+  const productLength = products.length;
   // Agrupar los productos por categoría
   
 
-  const productsByCategory = products.reduce((result, { product }) => {
-    const category = product.category
-    if (!result[category]) { result[category] = [] }
-    result[category].push(product)
-    return result
-  }, {})
+
 
   useEffect(() => {
     setProductsLoading(true)
@@ -51,6 +46,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
     const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
     navigate(INVENTORY_ITEMS);
   }
+  
   const containerVariants = {
     hidden: { opacity: 1, scale: 0 },
     visible: {
@@ -72,7 +68,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
             productsLoading ? null : (
               isProductGrouped ? (
                 <CategoriesGrouped
-                  productsByCategory={productsByCategory}
+                  products={products}
                   viewRowModeRef={viewRowModeRef}
                 />
               ) : (
@@ -112,7 +108,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
             ) : null
           }
         </Wrapper>
-        <ShoppingItemsCounter />
+        <ShoppingItemsCounter itemLength={productLength } />
       </Container>
 
     </Fragment>

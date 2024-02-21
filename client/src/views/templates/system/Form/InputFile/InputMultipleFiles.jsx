@@ -9,7 +9,13 @@ export const InputMultipleFiles = ({ fileList, setFileList }) => {
 
     
     const onChange = ({ fileList: newFileList }) => {
-        setFileList(newFileList);
+        
+        const filesWithDoneStatus = newFileList.map(file => ({
+            ...file,
+            status: 'done', // Marca el archivo como 'done'
+        }));
+
+        setFileList(filesWithDoneStatus);
     };
 
     return (
