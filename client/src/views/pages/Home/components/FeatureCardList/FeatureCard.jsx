@@ -17,10 +17,11 @@ const Container = styled(Link)`
         overflow: hidden;
          /* Tus estilos para el enlace de la tarjeta de funciones aquí */
             background-color: var(--White);
-            height: 4em;
+            min-height: 3.5em;
           width: 100%;
-          padding: 0.2em 1em;
-          display:flex;
+          padding: 0.4em 0.8em;
+          display:grid;
+          grid-template-columns: min-content 1fr;
           gap: 1em;
           align-items: center;
           text-decoration: none;
@@ -31,7 +32,10 @@ const Container = styled(Link)`
 
 const FeatureCardIcon = styled.div`
   /* Tus estilos para la imagen de la tarjeta de funciones aquí */
-  font-size: 1.5em;
+  font-size: 1.4em;
+  width: 1.4em;
+  display: flex;
+  align-items: center;
               color: var(--color);
               display: block;
 `;
@@ -39,6 +43,6 @@ const FeatureCardIcon = styled.div`
 const FeatureCardTitle = styled.span`
   /* Tus estilos para el título de la tarjeta de funciones aquí */
   color: rgb(32, 32, 32);
-            text-align: center;
-            font-weight: 500;
+           font-size: 15px;
+            font-weight: 450;
 `;

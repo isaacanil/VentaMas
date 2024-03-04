@@ -16,7 +16,7 @@ import { motion } from 'framer-motion'
 import {  getTotalPrice } from '../../../../../utils/pricing'
 import * as antd from 'antd'
 import { CustomProduct } from '../CustomProduct'
-const { Badge } = antd
+const { Badge, Tag } = antd
 
 export const Product = ({ product, }) => {
     // const imageHiddenRef = useSelector(selectImageHidden);
@@ -26,7 +26,17 @@ export const Product = ({ product, }) => {
     const deliverySelected = useSelector(SelectDelivery);
     const [isImageLoaded, setImageLoaded] = useState(false);
 
-    const handleGetThisProduct = (product) => {dispatch(addProduct(product))}
+    const handleGetThisProduct = (product) => {
+        if(product?.weightDetail?.isSoldByWeight){
+            antd.Modal.info({
+                title: 'Producto no disponible',
+                content: 'Este producto se vende por peso, actualmente solo disponible al escanear con un codigo barra valido. Revise la configuracion del Producto en el panel de inventario',
+                onOk() {},
+              });
+              return
+        }
+        dispatch(addProduct(product))
+    }
 
     const deleteProductFromCart = (e, id) => {
         if (e) { e.stopPropagation() }
@@ -44,7 +54,7 @@ export const Product = ({ product, }) => {
             opacity: 1
         }
     }
-    const price = getTotalPrice(product?.pricing?.listPrice, product?.pricing?.tax, 0); 
+    const price = getTotalPrice(product); 
     // if (product?.custom) {
     //     return (
     //        < CustomProduct  product={product} />
@@ -89,14 +99,22 @@ export const Product = ({ product, }) => {
                 
                 <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
 
-                    {ProductCheckInCart.status ? (
+                    {ProductCheckInCart.status  ? (
                         <Group>
                             <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy}</AmountToBuy>
                         </Group>
                     ) : <Group />}
 
                     <Group>
-                        <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price ))}</Price>
+                        {
+                            product?.weightDetail?.isSoldByWeight ? (
+                              <Price>
+                              { useFormatPrice(price)} / {product?.weightDetail?.weightUnit}
+                              </Price>
+                            ) : (
+                                <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price ))}</Price>
+                            )
+                        }
                     </Group>
                 </Footer>
             </Body>

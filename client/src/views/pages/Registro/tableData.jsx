@@ -59,7 +59,7 @@ const EditButton = ({ value }) => {
     dispatch(addInvoice({ invoice: invoiceData }))
   }
 
-    
+
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
@@ -128,7 +128,10 @@ export const columns = [
     accessor: 'date',
     sortable: true,
     align: 'left',
-    cell: ({ value }) => getTimeElapsed(value * 1000),
+    cell: ({ value }) => {
+      const time = value * 1000
+      return (getTimeElapsed(time, 0))
+    },
     maxWidth: '1fr',
     minWidth: '160px',
   },
@@ -197,7 +200,7 @@ export const tableData = {
       max: '1.4fr',
       min: '150px',
       cell: ({ value }) => {
-        if(!value) return (
+        if (!value) return (
           <div>Hola</div>
         )
         return (
@@ -215,7 +218,7 @@ export const tableData = {
       min: '170px',
     },
     {
-      name: 'Fecha',
+      name: 'Fecha 6',
       align: 'left',
       description: 'Fecha en que se realizó la compra',
       max: '1fr',

@@ -91,7 +91,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
                     (
                       <Row key={index}>
                         <FormattedValue type={'number'} value={outFlowList?.length - index} />
-                        <FormattedValue type={'text'} value={item?.product?.productName} />
+                        <FormattedValue type={'text'} value={item?.product?.name} />
                         <FormattedValue type={'number'} value={item?.totalRemovedQuantity} />
                         <FormattedValue type={'text'} value={item?.motive} />
                         <FormattedValue type={'text'} value={item?.observations} />

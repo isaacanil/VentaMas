@@ -36,12 +36,14 @@ export const AdvancedTable = ({
   elementName,
   headerComponent,
   filterConfig = [],
-  datesKeyConfig = "", //ubicacion de la fecha en el array data
   emptyText = 'No hay datos para mostrar',
   columns = [],
   data = [],
   filterUI,
-  datesFilter,
+  datePicker = false,
+  dateRange,
+  defaultDate,
+  setDateRange,
   tableName,
   searchTerm = '',
   onRowClick,
@@ -53,7 +55,7 @@ export const AdvancedTable = ({
   const user = useSelector(selectUser)
   const wrapperRef = useRef(null);
 
-  const [dates, setDates] = useState({});
+  const [dates, setDates] = useState(dateRange || {});
 
   //Reordenamiento de Columnas
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
@@ -68,11 +70,11 @@ export const AdvancedTable = ({
   const dynamicFilterConfig = useDynamicFilterConfig(filterConfig, data);
 
   //Filtrado por fechas
-  const datesEmpty = dates?.startDate && dates?.endDate;
-  const filteredDataByDateRange = datesFilter && datesEmpty ? filterByDateRange(filteredData, dates?.startDate, dates?.endDate, datesKeyConfig) : filteredData;
+ 
+ // const filteredDataByDateRange =  datesEmpty ? filterByDateRange(filteredData, dates?.startDate, dates?.endDate, datesKeyConfig) : filteredData;
 
   // Filtrado de término de búsqueda
-  const searchTermFilteredData = searchTerm ? filterData(filteredDataByDateRange, searchTerm) : filteredDataByDateRange;
+  const searchTermFilteredData = searchTerm ? filterData(filteredData, searchTerm) : filteredData;
 
   //Ordenación y agrupación
   const { handleSort, sortedData, sortConfig } = useTableSorting(searchTermFilteredData, columns)
@@ -89,8 +91,9 @@ export const AdvancedTable = ({
   return (
     <Container
       headerComponent={filterUI || headerComponent}
-      datesFilter={datesFilter}>
-      {(filterUI || datesFilter ?
+      datesFilter={setDateRange}
+      >
+      {(filterUI || dateRange ?
         (
           <FilterBar>
             {
@@ -104,11 +107,11 @@ export const AdvancedTable = ({
               />
             }
             {
-              datesFilter &&
+              datePicker &&
               <DatePicker
-                dates={dates}
-                setDates={setDates}
-                datesDefault='empty'
+                dates={dateRange}
+                setDates={setDateRange}
+                datesDefault={defaultDate}
               />
             }
           </FilterBar>

@@ -95,7 +95,9 @@ export const PriceCalculator = () => {
             const costUnit = parseFloat(productData?.pricing?.cost) || 0;
 
             // Realiza los cálculos
-            const itbis = getTax(amount, taxValue);
+         
+            const tax = (taxValue / 100) ;
+            const itbis =  amount * tax ;
             const finalPrice = amount + itbis;
             const margin = finalPrice - costUnit - itbis;
 

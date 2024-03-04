@@ -21,7 +21,7 @@ export const QRCode = ({product}) => {
             >
                 <ant.QRCode 
                 size={100}
-                value={product?.qrCode || '-'} 
+                value={product?.qrcode || '-'} 
                 />
                 <Form.Item
                     name="qrCode"   
@@ -31,7 +31,7 @@ export const QRCode = ({product}) => {
                    
                     placeholder="Código QR" 
                     maxLength={60}
-                    value={product?.qrCode}
+                    value={product?.qrcode}
                 />
                 </Form.Item>
             </Space>

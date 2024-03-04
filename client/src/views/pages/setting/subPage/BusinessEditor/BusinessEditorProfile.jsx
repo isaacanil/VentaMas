@@ -18,7 +18,6 @@ const BusinessInfo = () => {
   const user = useSelector(selectUser);
 
   useEffect(() => {
-    // Si existe información de negocio previa, establecer los valores del formulario
     if (business) {
       form.setFieldsValue(business);
     }
@@ -26,7 +25,8 @@ const BusinessInfo = () => {
 
   const handleSubmit = async (values) => {
     try {
-      await fbUpdateBusinessInfo(user, values);
+      const businessData = {...business,  ...values };
+      await fbUpdateBusinessInfo(user, businessData);
       message.success('Información actualizada');
     } catch (error) {
       message.error('Error al actualizar la información');
@@ -40,7 +40,7 @@ const BusinessInfo = () => {
 
   return (
     <div>
-      <MenuApp />
+      <MenuApp sectionName={"Formulario de Negocio"} />
       <Container>
         <Typography>
           <Title level={4}>{metadata.title}</Title>

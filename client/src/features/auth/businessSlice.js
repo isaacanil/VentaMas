@@ -1,7 +1,8 @@
 import {createSlice} from '@reduxjs/toolkit'
 
 const initialState = {
-    data: null
+    data: null,
+
 }
 
 export const businessSlice = createSlice({
@@ -11,7 +12,6 @@ export const businessSlice = createSlice({
         setBusiness: (state, action) => {
             state.data = action.payload
         },
-      
     }
 })
 

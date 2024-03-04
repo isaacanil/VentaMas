@@ -13,6 +13,7 @@ import expenses from "./paths/Expenses";
 import changelogs from "./paths/Changelogs"
 import utility from "./paths/Utility";
 
+
 export const routes = [
     ...basic,
     ...auth,

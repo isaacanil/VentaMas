@@ -13,15 +13,20 @@ import { fbAddNumberIdToInvoices } from '../../../../firebase/invoices/fbAddNumb
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { fbGetUser } from '../../../../firebase/Auth/fbGetUser';
-import { Users } from './Users/Users';
+import { Users } from '../../../controlPanel/AllUsersControl/components/Users/Users';
 import { fbUpdateAllBusinessCashCounts } from '../../../../firebase/cashCount/fbUpdateMultipleCashCount';
 import { fbTransferProductsToAnotherBusiness } from '../../../../firebase/products/fbTransferProductsToAnotherBusiness';
 import { fbTransferCategoriesToAnotherBusiness } from '../../../../firebase/categories/fbTransferCategoriesToAnotherBusiness';
 import { ProductControlEfficient } from '../../../pages/Venta/components/ProductControl.jsx/ProductControlEfficient';
 import { useGetProducts } from '../../../../firebase/products/fbGetProducts';
-import {  fbUpdateProductsToNewFormatForMultipleBusinesses } from '../../../../firebase/products/fbChangeAllProducts';
-import { getPriceWithoutTax, getTax, getTotalPrice } from '../../../../utils/pricing';
+import { fbUpdateProductsToNewFormatForMultipleBusinesses } from '../../../../firebase/products/fbChangeAllProducts';
+import { getPriceWithoutTax, getProductsPrice, getTax, getTotalInvoice, getTotalPrice } from '../../../../utils/pricing';
 import { fbChangeInvoiceForm } from './fbChangeInvoiceForm';
+import { fbUpdateProductToNewFormat } from '../../../../firebase/products/fbUpdateProductWithNewFormat';
+import { fbFixInvoices, fbPreviewProcessedInvoice } from '../../../../firebase/invoices/fbFixInvoice';
+import { fbFixInvoicesForMultipleBusinesses } from '../../../../firebase/invoices/fbFixInvoicesMultiBusiness';
+import { fbGetInvoice } from '../../../../firebase/invoices/fbGetInvoice';
+import { fbCheckDuplicateProducts } from '../../../../firebase/products/fbCheckDuplicateProducts';
 
 const data = {
   companyName: "CASA ESTILO RF",
@@ -114,27 +119,28 @@ const InvoiceFooter = styled.footer`
 export const Prueba = () => {
   const user = useSelector(selectUser)
   const [users, setUsers] = useState([])
+  const [invoices, setInvoices] = useState([])
   // const { products, loading, setLoading, error } = useGetProducts()
   const handleSubmit = async () => {
-    let values = "cambiando productos de formato..."
+    let values = "Regvisando Facturas cambiando en los negocios EDW44d69fhdvE5QmuL2I / TqsxovmM"
     alert(values);
-    // fbTransferCategoriesToAnotherBusiness("Lm8GG6YXQJO3zgR9DkGe", "X63aIFwHzk3r0gmT8w6P")
-    // fbTransferProductsToAnotherBusiness("Lm8GG6YXQJO3zgR9DkGe", "X63aIFwHzk3r0gmT8w6P")
-    //await fbUpdateProductsToNewFormat(user)
-    await fbUpdateProductsToNewFormatForMultipleBusinesses()
-
+    //await fbTransferProductsToAnotherBusiness("Lm8GG6YXQJO3zgR9DkGe", "vvRKlKT9UOK4fX9FgJxN")
+    await fbCheckDuplicateProducts("vvRKlKT9UOK4fX9FgJxN")
+    // await fbFixInvoicesForMultipleBusinesses()
+    // await fbFixInvoices("EDW44d69fhdvE5QmuL2I")
+    // await fbPreviewProcessedInvoice("EDW44d69fhdvE5QmuL2I", "mbKZKk-ZQbPq")
+    // await fbGetInvoice("JnKRSCFwKSkiSNSiIpOM", "3CvDJRH8PWP2")
   }
   console.log(users)
   return (
     <div>
-      Hola 
       <Button
         onClick={handleSubmit}
       >
         Transferir categorias
       </Button>
 
-    
+
     </div>
 
   )
@@ -146,8 +152,8 @@ const ArticuloConImpuesto = () => {
 
   return (
     <div>
- 
-   
+
+
 
     </div>
   );

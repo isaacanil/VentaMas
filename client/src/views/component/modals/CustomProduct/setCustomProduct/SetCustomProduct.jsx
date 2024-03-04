@@ -19,12 +19,14 @@ import { Header } from './Components/Header.jsx'
 import { addNotification } from '../../../../../features/notification/NotificationSlice.js'
 
 const EmptyNewProduct = {
-    productName: '',
-    cost: { unit: 0, total: 0 },
+    name: '',
     id: '',
-    price: { unit: 0, total: 0 },
-    amountToBuy: { unit: 1, total: 1 },
-    tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
+    pricing: {
+        price: 0,
+        cost: 0,
+        tax: 0
+    },
+    amountToBuy: 1,
     size: '',
 }
 
@@ -44,25 +46,18 @@ export const SetCustomProduct = ({ isOpen }) => {
     }
 
     const HandleSubmit = async () => {
-        
         try {
-        
-            if(newProduct.productName === ''){
+            if (newProduct?.name === '') {
                 dispatch(
-                    addNotification({ 
-                            message: 'Debe seleccionar un producto', 
-                            type: 'error' 
-                        })
-                        )
+                    addNotification({
+                        message: 'Debe seleccionar un producto',
+                        type: 'error'
+                    })
+                )
                 return Promise.reject(new Error('Debe seleccionar un producto'))
             }
-            
+
             dispatch(addProduct(newProduct))
-            dispatch(totalPurchaseWithoutTaxes())
-            dispatch(totalShoppingItems())
-            dispatch(totalTaxes())
-            dispatch(totalPurchase())
-            dispatch(setChange())
             return Promise.resolve();
         } catch (error) {
             console.log(error)
@@ -70,7 +65,7 @@ export const SetCustomProduct = ({ isOpen }) => {
         }
 
     }
-    
+
 
     return (
         <Modal
@@ -99,7 +94,7 @@ export const SetCustomProduct = ({ isOpen }) => {
                 />
                 <PriceBar>
                     <span></span>
-                    <span>Total: RD$ {separator(newProduct.price.total)}</span>
+                    <span>Total: RD$ {separator(newProduct?.pricing?.price)}</span>
                 </PriceBar>
             </Body>
         </Modal>

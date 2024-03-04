@@ -13,7 +13,11 @@ const sales = [{
     title: 'Facturas',
     icon: icons.menu.unSelected.register,
     route: BILLS,
-    group: 'sales'
+    group: 'sales',
+    // tag: {
+    //     color: '#ff9900',
+    //     text: 'Mantenimiento'G
+    // }
 },]
 
 export default sales;

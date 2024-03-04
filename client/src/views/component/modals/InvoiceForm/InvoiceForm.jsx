@@ -266,15 +266,15 @@ export const InvoiceForm = ({ }) => {
     }
     dispatch(changeValueInvoiceForm({ invoice: value }))
   }
-  console.log(invoice.products)
-  return shouldRenderModal &&
 
+  return (
     <Modal
       style={{ top: 10 }}
       title={`Editar factura: ${invoice?.NCF ? (invoice?.NCF + " / ") : ""}  ${invoice?.date && (DateTime.fromMillis(invoice?.date).toFormat("dd LLL yyyy"))} `}
       open={modal.isOpen}
       width={800}
       onCancel={handleCancel}
+      destroyOnClose
       footer={[
         <div key="1" style={{
           float: 'left',
@@ -311,7 +311,7 @@ export const InvoiceForm = ({ }) => {
 
         <antd.Tabs defaultActiveKey='1' items={sections} />
       </Form>
-    </Modal>
+    </Modal>)
 }
   ;
 

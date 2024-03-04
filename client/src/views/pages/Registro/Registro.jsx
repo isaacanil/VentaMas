@@ -16,15 +16,16 @@ import SalesReport from './ReportsSale/ReportsSale'
 import { Calendar } from '../../templates/system/Dates/Calendar/Calendar'
 import { DateTime } from 'luxon'
 import { getDateRange } from '../../../utils/date/getDateRange'
+import { fbFixInvoices } from '../../../firebase/invoices/fbFixInvoice'
 
 export const Registro = () => {
 
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
   const [searchTerm, setSearchTerm] = useState('');
   const { invoices } = fbGetInvoices(datesSelected);
-  const user = useSelector(selectUser);
 
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
 
@@ -32,7 +33,7 @@ export const Registro = () => {
     setDatesSelected(dates)
   }
   const invoice = invoices.find((invoice) => invoice.data.id === 'ZTSBG1xQ9vWD');
-  console.log(invoice)
+  console.log(fbFixInvoices(invoices))
   return (
     <Fragment>
       <Container

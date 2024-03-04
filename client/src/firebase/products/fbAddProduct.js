@@ -11,7 +11,7 @@ export const fbAddProduct = (data, dispatch, user) => {
     }
     return new Promise((resolve, reject) => {
         const productRef = doc(db, "businesses", user.businessID, "products", product.id)
-        setDoc(productRef, { product })
+        setDoc(productRef,  product )
             .then(() => {
                 console.log('document written', product)
                 resolve()

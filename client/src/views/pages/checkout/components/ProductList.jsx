@@ -3,9 +3,12 @@ import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
 import { Col } from './Table/Col'
 import { Row } from './Table/Row'
-import { getTax, getTotalPrice } from '../../../../utils/pricing'
+import { getTax, getTotalPrice, resetAmountToBuyForProduct } from '../../../../utils/pricing'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+
 export const ProductList = ({ data }) => {
     const { products } = data
+    
     return (
         <Products>
             {
@@ -13,12 +16,28 @@ export const ProductList = ({ data }) => {
                     products.map((product, index) => (
                         <Product key={index}>
                             <Row cols='3'>
-                                <Col>{product.amountToBuy} x {separator(getTotalPrice(product.pricing.price, product.pricing.tax))}</Col>
-                                <Col textAlign='right'>{separator(getTax(product.pricing.price, product.pricing.tax, product.amountToBuy))}</Col>
-                                <Col textAlign='right'>{separator(getTotalPrice(product.pricing.price, product.pricing.tax, 0, product.amountToBuy ))}</Col>
+                                <Col>
+                                {
+                                    product?.weightDetail?.isSoldByWeight ? (
+                                        <div>
+                                            {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product.pricing.price)}
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            {product?.amountToBuy || 0} x {separator(getTotalPrice(resetAmountToBuyForProduct(product)))}
+                                        </div>
+                                    )
+                                }
+                                </Col>
+                                <Col textAlign='right'>
+                                    {separator(getTax(product))}
+                                </Col>
+                                <Col textAlign='right'>
+                                    {separator(getTotalPrice(product))}
+                                </Col>
                             </Row>
                             <Row>
-                                <ProductName>{product.name}</ProductName>
+                                <ProductName>{product?.name}</ProductName>
                             </Row>
                         </Product>
                     ))

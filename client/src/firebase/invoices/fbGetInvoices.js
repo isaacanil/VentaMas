@@ -5,7 +5,7 @@ import { collection, onSnapshot, orderBy, query, where } from "firebase/firestor
 import { UserValidationError, validateUser } from "../../utils/userValidation";
 import { selectUser } from "../../features/auth/userSlice";
 
-export const fbGetInvoices = (time) => {
+export const fbGetInvoices = ( time) => {
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState([]);
   const user = useSelector(selectUser);
@@ -18,7 +18,7 @@ export const fbGetInvoices = (time) => {
 
         const start = new Date(time.startDate);
         const end = new Date(time.endDate);
-        const restrictionStartDate = new Date('2024-02-19');
+        const restrictionStartDate = new Date('2024-01-21T14:41:00');
 
         const invoicesRef = collection(db, "businesses", businessID, "invoices");
         
@@ -37,7 +37,7 @@ export const fbGetInvoices = (time) => {
             q = query(invoicesRef,
               where("data.date", ">=", start),
               where("data.date", "<=", end),
-              where("userId", "==", uid),
+              where("data.userID", "==", uid),
               orderBy("data.date", "desc"),
             );
           }

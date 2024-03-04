@@ -17,15 +17,12 @@ export const OutputProductEntry = () => {
 
     const handleAddToProductOutflow = () => dispatch(addProductToProductOutflow(productSelected))
 
-    const inputQuantityRef = useRef(null);
-
-    const inputStockFocus = () => inputQuantityRef.current.focus();
-
     const handleSelectProduct = async (product) => {
-        inputStockFocus()
-        dispatch(selectProduct({ ...productSelected, product: product.product }))
+
+        console.log(product)
+        dispatch(selectProduct({ ...productSelected, product: product }))
     }
-    console.log('---productSelected, ,,,,,,, ', productSelected)
+ 
     const handleInputChange = (e, type = false) => {
         switch (type) {
             case false:
@@ -37,7 +34,7 @@ export const OutputProductEntry = () => {
         }
 
     }
-
+    console.log(productSelected?.product?.name)
     const tableColumns = tableHeaderColumns({ Group })
 
     return (
@@ -54,17 +51,17 @@ export const OutputProductEntry = () => {
                     handleSelectProduct={handleSelectProduct}
                     isOpen={showProductList}
                     setIsOpen={setShowProductList}
-                    productName={productSelected?.product?.productName || ''}
+                    productName={productSelected?.product?.name || ''}
                 />
                 <div>
                     <InputV4
                         type='number'
                         bgColor='gray-light'
                         border
-                        ref={inputQuantityRef}
+                     
                         placeholder={`Cantidad`}
-                        name='currentRemovedQuantity'
-                        value={productSelected?.currentRemovedQuantity || ''}
+                        name='removedQuantity'
+                        value={productSelected?.quantityRemoved || ''}
                         onChange={(e) => handleInputChange(e, 'number')}
                     />
                 </div>

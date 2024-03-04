@@ -113,6 +113,8 @@ export const UserList = () => {
           tableName={'Usuarios'}
           data={data}
           columns={columns}
+          pagination={true}
+          numberOfElementsPerPage={8}
           onRowClick={(row) => handleEditUser(row.user)}
         />
       </TableWrapper>

@@ -9,7 +9,7 @@ import { addNotification } from '../../../../../../features/notification/Notific
 import { removeMatchesString } from '../../../../../../hooks/removeMatchesString'
 import { separator } from '../../../../../../hooks/separator'
 import { getPizzaType } from '../../getPizzaType'
-import customPizzaData  from '../customPizza.json'
+import customPizzaData from '../customPizza.json'
 import { getPrice } from './getPrice'
 
 import { fbGetProductsQueryByType } from '../../../../../../firebase/products/customProduct/fbGetCustomProductByType'
@@ -18,54 +18,67 @@ import { selectUser } from '../../../../../../features/auth/userSlice'
 const EmptyProduct = {
     id: '',
     type: '',
-    productName: '',
+    name: '',
     category: '',
-    amountToBuy: { unit: 1, total: 1, },
-    price: { unit: 0, total: 0 },
+    amountToBuy: 1,
+    pricing: {
+        price: 0,
+        cost: 0,
+        tax: 0
+    },
     mitad: { first: '', second: '' }
 }
 const EmptyNewProduct = {
-    productName: '',
-    cost: { unit: 0, total: 0 },
+    name: '',
     id: '',
-    price: { unit: 0, total: 0 },
-    amountToBuy: { unit: 1, total: 1 },
-    tax: { ref: 'Exento', value: 0, unit: 0, total: 0 },
+    amountToBuy: 1,
+    pricing: {
+        price: 0,
+        cost: 0,
+        tax: 0
+    },
     size: '',
 }
 const EmptyProductSelected = { a: '', b: '' }
-export const Header = ({Row, Group, newProduct, setNewProduct, initialState, setInitialState}) => {
+
+export const Header = ({ Row, Group, newProduct, setNewProduct, initialState, setInitialState }) => {
+    let type = 'pizza';
+
+    const dispatch = useDispatch()
+
     const user = useSelector(selectUser)
+
     const [products, setProducts] = useState([])
     const { pizzaSlices, sizeList } = customPizzaData
     const [isComplete, setIsComplete] = useState('complete')
     const [product, setProduct] = useState(EmptyProduct)
     const [productSelected, setProductSelected] = useState(EmptyProductSelected)
+
     const matchList = /Completa|Pepperoni|Vegetales|Jamón y queso|Maíz |Pollo/g;
+
     const totalIngredientPrice = useSelector(selectTotalIngredientPrice)
     const IngredientListNameSelected = useSelector(SelectIngredientsListName)
     const [size, setSize] = useState('')
-    let type = 'pizza';
-    const dispatch = useDispatch()
-   useEffect(()=>{
-    if(initialState === true){
-        try {
-            setTimeout(()=>{
-                setProductSelected(EmptyProductSelected)
-                setProduct(EmptyProduct)
-                setIsComplete('complete')
-                setSize('')
-                setNewProduct(EmptyNewProduct)
-                setProducts([])
-                setInitialState(false)
-            }, 1000)
-        } catch (error) {
-            dispatch(addNotification({ message: 'Error al reiniciar el producto', type: 'error' }))
+
+
+    useEffect(() => {
+        if (initialState === true) {
+            try {
+                setTimeout(() => {
+                    setProductSelected(EmptyProductSelected)
+                    setProduct(EmptyProduct)
+                    setIsComplete('complete')
+                    setSize('')
+                    setNewProduct(EmptyNewProduct)
+                    setProducts([])
+                    setInitialState(false)
+                }, 1000)
+            } catch (error) {
+                dispatch(addNotification({ message: 'Error al reiniciar el producto', type: 'error' }))
+            }
         }
-       
-    }
-   }, [initialState])
-   
+    }, [initialState])
+
     useEffect(() => {
         if (size !== '') {
             fbGetProductsQueryByType(setProducts, type, size, user)
@@ -75,35 +88,33 @@ export const Header = ({Row, Group, newProduct, setNewProduct, initialState, set
     useEffect(() => {
         if (isComplete === 'complete' && productSelected.a !== '') {
             const a = JSON.parse(productSelected.a)
-            const firstProductName = removeMatchesString(String(a.productName), matchList)
+            const firstProductName = removeMatchesString(String(a.name), matchList)
             setNewProduct({
                 ...newProduct,
-                productName: `${getPizzaType(firstProductName)} ${IngredientListNameSelected && `. extras: ${IngredientListNameSelected}`}`,
-                price: {
-                    unit: getPrice({productSelected, setProduct, isComplete}) + totalIngredientPrice,
-                    total: getPrice({productSelected, setProduct, isComplete}) + totalIngredientPrice
+                name: `${getPizzaType(firstProductName)} ${IngredientListNameSelected && `. Ingredientes extras: ${IngredientListNameSelected}`}`,
+                pricing: {
+                    ...newProduct.pricing,
+                    price: getPrice({ productSelected, setProduct, isComplete }) + totalIngredientPrice
                 },
-
                 size: size,
                 id: nanoid(8)
             })
-            
         }
         if (isComplete === 'half' && (productSelected.a !== '' && productSelected.b !== '')) {
             const a = JSON.parse(productSelected.a)
             const b = JSON.parse(productSelected.b)
-            const firstProductName = removeMatchesString(String(a.productName), matchList);
-            const secondProductName = removeMatchesString(String(b.productName), matchList);
+            const firstProductName = removeMatchesString(String(a.name), matchList);
+            const secondProductName = removeMatchesString(String(b.name), matchList);
             try {
                 setNewProduct({
                     ...newProduct,
-                    productName: `pizza mitad de ${firstProductName} y mitad de ${secondProductName}. ${IngredientListNameSelected && `ingredientes extras: ${IngredientListNameSelected}`} `,
-                    price: {
-                        unit: Number(getPrice({productSelected, setProduct, isComplete})) + totalIngredientPrice,
-                        total: Number(getPrice({productSelected, setProduct, isComplete})) + totalIngredientPrice
+                    name: `pizza mitad de ${firstProductName} y mitad de ${secondProductName}. ${IngredientListNameSelected && `Ingredientes extras: ${IngredientListNameSelected}`} `,
+                    pricing: {
+                        ...newProduct.pricing,
+                        price: Number(getPrice({ productSelected, setProduct, isComplete })) + totalIngredientPrice,
                     },
                     size: size,
-                    id: nanoid(6)
+                    id: nanoid(8)
                 })
             } catch (error) {
                 console.log(error)
@@ -112,94 +123,95 @@ export const Header = ({Row, Group, newProduct, setNewProduct, initialState, set
     }, [productSelected, IngredientListNameSelected, isComplete])
 
     useEffect(() => {
-        if(isComplete === 'complete'){
+        if (isComplete === 'complete') {
             setNewProduct({
                 ...newProduct,
-                price: {
-                    unit: getPrice({productSelected, setProduct, isComplete}) + totalIngredientPrice,
-                    total: getPrice({productSelected, setProduct, isComplete}) + totalIngredientPrice
+                pricing: {
+                    ...newProduct.pricing,
+                    price: Number(getPrice({ productSelected, setProduct, isComplete })) + totalIngredientPrice,
                 },
                 size: size,
                 id: nanoid(8)
             })
-        } 
-        if(isComplete === 'half'){
+        }
+        if (isComplete === 'half') {
             setNewProduct({
                 ...newProduct,
-                price: {
-                    unit: Number(getPrice({productSelected, setProduct, isComplete})) + totalIngredientPrice,
-                    total: Number(getPrice({productSelected, setProduct, isComplete})) + totalIngredientPrice
+                pricing: {
+                    ...newProduct.pricing,
+                    price: Number(getPrice({ productSelected, setProduct, isComplete })) + totalIngredientPrice,
                 },
                 size: size,
-                id: nanoid(6)
+                id: nanoid(8)
             })
         }
-    }, [product.price.total])
- 
-  return (
-    <Container>
-              <Row>
-                    <Group>
-                        <h4>Porción</h4>
-                        <div>
-                            <Select name="" id="" value={isComplete} onChange={(e) => setIsComplete(e.target.value)}>
-                                {pizzaSlices.map((item, index) => (
-                                    <option key={index} value={item.value} >{item.label}</option>
-                                ))}
-                            </Select>
-                        </div>
-                    </Group>
-                    <Group>
-                        <h4>Tamaño</h4>
-                        <div>
-                            <Select name="" id="" value={size} onChange={e => setSize(e.target.value)}>
-                                
-                                {
-                                    sizeList.map((size, index) => (
-                                        <option value={size.value} key={index}>{size.label}</option>
+    }, [product?.pricing?.price])
+
+    console.log("?? NEW PRODUCT: ", newProduct)
+
+    return (
+        <Container>
+            <Row>
+                <Group>
+                    <h4>Porción</h4>
+                    <div>
+                        <Select name="" id="" value={isComplete} onChange={(e) => setIsComplete(e.target.value)}>
+                            {pizzaSlices.map((item, index) => (
+                                <option key={index} value={item.value} >{item.label}</option>
+                            ))}
+                        </Select>
+                    </div>
+                </Group>
+                <Group>
+                    <h4>Tamaño</h4>
+                    <div>
+                        <Select name="" id="" value={size} onChange={e => setSize(e.target.value)}>
+                            {
+                                sizeList.map((size, index) => (
+                                    <option value={size.value} key={index}>{size.label}</option>
+                                ))
+                            }
+                        </Select>
+                    </div>
+                </Group>
+            </Row>
+            <Row>
+                <Group>
+                    <div>
+                        <Select name="" id="" value={productSelected.a} onChange={(e) => setProductSelected({ ...productSelected, a: e.target.value })}>
+                            <option value="">Eligir</option>
+                            {
+                                products
+                                    .sort((a, b) => a?.name > b?.name ? 1 : -1)
+                                    .map((product, index) => (
+                                        <option value={JSON.stringify(product)} key={index}>{product?.name}</option>
                                     ))
-                                }
-                            </Select>
-                        </div>
-                    </Group>
-                </Row>
-                <Row>
+                            }
+                        </Select>
+                    </div>
+                </Group>
+                {isComplete === 'half' ? (
                     <Group>
                         <div>
-                            <Select name="" id="" value={productSelected.a} onChange={(e) => setProductSelected({ ...productSelected, a: e.target.value })}>
+                            <Select name="" id="" value={productSelected.b} onChange={(e) => setProductSelected({ ...productSelected, b: e.target.value })}>
                                 <option value="">Eligir</option>
                                 {
                                     products
-                                        .sort((a, b) => a.product.productName > b.product.productName ? 1 : -1)
-                                        .map(({ product }, index) => (
-                                            <option value={JSON.stringify(product)} key={index}>{product.productName}</option>
+                                        .sort((a, b) => a?.name > b?.name ? 1 : -1)
+                                        .map((product, index) => (
+                                            <option value={JSON.stringify(product)} key={index}>{product?.name}</option>
                                         ))
                                 }
                             </Select>
                         </div>
                     </Group>
-                    {isComplete === 'half'? (
-                        <Group>
-                            <div>
-                                <Select name="" id="" value={productSelected.b} onChange={(e) => setProductSelected({ ...productSelected, b: e.target.value })}>
-                                    <option value="">Eligir</option>
-                                    {
-                                        products
-                                            .sort((a, b) => a.product.productName > b.product.productName ? 1 : -1)
-                                            .map(({ product }, index) => (
-                                                <option value={JSON.stringify(product)} key={index}>{product.productName}</option>
-                                            ))
-                                    }
-                                </Select>
-                            </div>
-                        </Group>
-                    ) : null}
-                </Row>
-                <ProductPriceBar>
-                    <span>Total: RD$ {separator(product.price.total)}</span>
-                </ProductPriceBar>
-    </Container>
-  )
+                ) : null}
+            </Row>
+            <ProductPriceBar>
+                <span>Total: RD$ {separator(product?.pricing?.price)}</span>
+            </ProductPriceBar>
+        </Container>
+    )
 }
 const Container = styled.div`
 `

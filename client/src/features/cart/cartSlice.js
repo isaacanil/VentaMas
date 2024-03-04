@@ -3,6 +3,7 @@ import { initialState, defaultDelivery } from "./default/default";
 import { GenericClient } from "../clientCart/clientCartSlice";
 import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTax, getTotalItems } from "../../utils/pricing";
 import { update } from "lodash";
+import { nanoid } from "nanoid";
 
 const limitTwoDecimal = (number) => {
     return Number(number.toFixed(2))
@@ -21,7 +22,7 @@ const updateAllTotals = (state, paymentValue = null) => {
     state.data.totalTaxes.value = getProductsTax(products);
     state.data.totalShoppingItems.value = getTotalItems(products);
     state.data.totalPurchaseWithoutTaxes.value = getProductsPrice(products);
-    state.data.payment.value = paymentValue !== null ? paymentValue :  state.data.totalPurchase.value;
+    state.data.payment.value = paymentValue !== null ? paymentValue : state.data.totalPurchase.value;
     state.data.change.value = calculateChange(state.data.payment.value, state.data.totalPurchase.value);
 };
 
@@ -89,17 +90,34 @@ const cartSlice = createSlice({
         },
         addProduct: (state, action) => {
             const checkingID = state.data.products.find((product) => product.id === action.payload.id)
-            if (state.data.products.length > 0 && checkingID) {
+
+            if (checkingID && !checkingID?.weightDetail?.isSoldByWeight) {
                 checkingID.amountToBuy = checkingID.amountToBuy + 1;
+            } else if (checkingID && checkingID?.weightDetail?.isSoldByWeight) {
+                const product = action.payload
+                const productData = {
+                    ...product,
+                    cid: nanoid(8)
+                }
+                const products = state.data.products
+                state.data.products = [...products, productData]
+
             } else {
                 const product = action.payload
+                const productData = {
+                    ...product,
+                    cid: checkingID?.weightDetail?.isSoldByWeight
+                        ? nanoid(8)
+                        : product.id,
+                }
                 const products = state.data.products
-                state.data.products = [...products, product]
+
+                state.data.products = [...products, productData]
             }
             updateAllTotals(state)
         },
         deleteProduct: (state, action) => {
-            const productFound = state.data.products.find((product) => product.id === action.payload)
+            const productFound = state.data.products.find((product) => product.cid === action.payload)
             if (productFound) {
                 state.data.products.splice(state.data.products.indexOf(productFound), 1)
             }
@@ -135,7 +153,7 @@ const cartSlice = createSlice({
                     state.data.products.splice(state.data.products.indexOf(productFound), 1)
                 }
             }
-             updateAllTotals(state)
+            updateAllTotals(state)
         },
         CancelShipping: (state) => state = initialState,
         totalPurchaseWithoutTaxes: (state) => {

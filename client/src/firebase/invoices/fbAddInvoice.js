@@ -8,12 +8,15 @@ export const fbAddInvoice = async (data, user) => {
   if (!user || !user.businessID) return
 
   try {
+    const userRef = doc(db, "users", user.uid);
     const nextNumberId = await getNextID(user, 'lastInvoiceId');
     let bill = {
       ...data,
       id: nanoid(12),
       date: Timestamp.now(),
-      numberID: nextNumberId
+      numberID: nextNumberId,
+      userID: user.uid,
+      user: userRef
     }
     const billRef = doc(db, 'businesses', user.businessID, "invoices", bill.id)
     setDoc(billRef, { data: bill });

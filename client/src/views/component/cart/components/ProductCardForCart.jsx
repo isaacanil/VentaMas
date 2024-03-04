@@ -14,7 +14,7 @@ import { SmileOutlined } from '@ant-design/icons';
 import { Dropdown } from './Dropdown'
 import { selectUser } from '../../../../features/auth/userSlice'
 import { userAccess } from '../../../../hooks/abilities/useAbilities'
-import { getPriceWithoutTax, getTax, getTotalPrice } from '../../../../utils/pricing'
+import { getAvgPriceTotal, getListPriceTotal, getMinPriceTotal, getPriceWithoutTax, getTax, getTotalPrice } from '../../../../utils/pricing'
 import { TbAxe } from 'react-icons/tb'
 
 const defaultColor = { bg: 'var(--White3)', border: 'var(--Gray4)' }; // Asume que var(--Gray4) es el color de borde por defecto
@@ -44,19 +44,14 @@ function extraerPreciosConImpuesto(producto) {
         'avgPrice': 'Precio promedio',
         'minPrice': 'Precio mínimo',
     };
-    const preciosConImpuesto = [];
-
-    Object.entries(propiedadesPrecio).forEach(([key, label]) => {
-        if (producto.pricing.hasOwnProperty(key)) {
-            let valor = producto.pricing[key];
-            // Calcular y agregar el precio con impuesto
-            if (producto.pricing.hasOwnProperty('tax')) {
-                const impuesto = (producto.pricing.tax);   
-                const total = getTotalPrice(valor, impuesto, 0);
-                preciosConImpuesto.push({ label: total, value: total });
-            }
-        }
-    });
+    const listPriceTotal = getListPriceTotal(producto);
+    const avgPriceTotal = getAvgPriceTotal(producto);
+    const minPriceTotal = getMinPriceTotal(producto);
+    const preciosConImpuesto = [
+        {label: listPriceTotal, value: listPriceTotal},
+        {label: avgPriceTotal, value: avgPriceTotal},
+        {label: minPriceTotal, value: minPriceTotal},
+    ]
 
     return preciosConImpuesto;
 }
@@ -68,16 +63,16 @@ export const ProductCardForCart = ({ item }) => {
     const user = useSelector(selectUser)
 
     const tax = item.pricing.tax
-    const minPrice = getTotalPrice(item?.pricing?.minPrice, tax, 0);
-    const listPrice = getTotalPrice(item?.pricing?.listPrice, tax, 0);
-    const averagePrice = getTotalPrice(item?.pricing?.avgPrice, tax, 0);
-    const price =  getTotalPrice(item?.pricing?.price, tax, 0)
-    
+    const minPrice = getMinPriceTotal(item);
+    const listPrice = getListPriceTotal(item);
+    const averagePrice = getAvgPriceTotal(item);
+    const price = getTotalPrice(item)
+
     const [inputPriceColor, setInputPriceColor] = useState(defaultColor);
     const [inputPrice, setInputPrice] = useState(price);
 
-    const deleteProductFromCart = (id) =>  dispatch(deleteProduct(id));
-    
+    const deleteProductFromCart = (id) => dispatch(deleteProduct(id));
+
     const canModifyPrice = abilities.can('change', 'Price');
 
     const handleChangePrice = (e) => {
@@ -87,26 +82,23 @@ export const ProductCardForCart = ({ item }) => {
         };
         const newPrice = e.target.value;
         const priceWithoutTax = getPriceWithoutTax(newPrice, tax);
-   
-        console.log(`Cambio de precio iniciado:
-        - Precio ingresado: ${newPrice}
-        - Impuesto: ${tax}
-        - Precio final (sin impuestos): ${priceWithoutTax}`);
+
+      
         if (newPrice < minPrice) {
             antd.message.error('El precio ingresado es menor al precio mínimo permitido.', 4);
         }
         if (newPrice > listPrice) {
             antd.message.error('El precio ingresado es mayor al precio de lista.', 4);
         }
-       const color = determineInputPriceColor(newPrice, minPrice, listPrice, averagePrice)
+        const color = determineInputPriceColor(newPrice, minPrice, listPrice, averagePrice)
 
         setInputPriceColor(color);
-    
+
         dispatch(changeProductPrice({ id: item.id, newPrice: priceWithoutTax }));
         setInputPriceFocus(false)
     }
- 
- 
+
+
     const precios = extraerPreciosConImpuesto(item);
 
     const handleMenuClick = (e) => {
@@ -131,7 +123,7 @@ export const ProductCardForCart = ({ item }) => {
             </div>
         )
     }));
-   
+
 
     return (
         <Container
@@ -148,7 +140,7 @@ export const ProductCardForCart = ({ item }) => {
                     }}
                 >
                     <Title>{item.name}</Title>
-                    <Price>{useFormatPrice(price * item.amountToBuy)}</Price>
+                    <Price>{useFormatPrice(price)}</Price>
                     <Button
                         type='text'
                         size='small'
@@ -160,7 +152,7 @@ export const ProductCardForCart = ({ item }) => {
                             justifyContent: 'center'
                         }}
                         icon={icons.operationModes.discard}
-                        onClick={() => deleteProductFromCart(item.id)}
+                        onClick={() => deleteProductFromCart(item.cid)}
                         danger
                     />
                 </div>
@@ -172,7 +164,7 @@ export const ProductCardForCart = ({ item }) => {
                         trigger={['click']}
                     >
                         {
-                            canModifyPrice ? (
+                            canModifyPrice && !item?.weightDetail?.isSoldByWeight ? (
                                 <Button
                                     icon={icons.arrows.caretDown}
                                     size='small'
@@ -183,7 +175,7 @@ export const ProductCardForCart = ({ item }) => {
 
                     </Dropdown>
                     <Input
-                        disabled={!canModifyPrice}
+                        disabled={!canModifyPrice || item?.weightDetail?.isSoldByWeight}
                         readOnly={!canModifyPrice}
                         type={priceInputFocus ? "number" : "text"}
                         onFocus={() => setInputPriceFocus(true)}
@@ -192,13 +184,23 @@ export const ProductCardForCart = ({ item }) => {
                         onChange={(e) => setInputPrice(e.target.value)}
                         value={priceInputFocus ? inputPrice : useFormatPrice(inputPrice)}
                     />
-                    <Counter
-                        amountToBuyTotal={item.amountToBuy}
-                        stock={item.stock}
-                        id={item.id}
-                        product={item}
-                    ></Counter>
-                   
+                    {
+                        item?.weightDetail?.isSoldByWeight ? (
+                            <Input 
+                                readOnly={true}
+                                value={`${(item?.weightDetail?.weight)} ${item?.weightDetail?.weightUnit}`}
+
+                            />
+
+                        ) : (
+                            <Counter
+                                amountToBuyTotal={item.amountToBuy}
+                                stock={item?.stock}
+                                id={item.id}
+                                product={item}
+                            />
+                        )
+                    }
 
                 </Group>
             </Row>
@@ -284,8 +286,8 @@ const Input = styled.input`
     margin: 0;
     white-space: nowrap;
     color: var(--Gray6);
-    background-color: ${props => props.color.bg};
-    border: 2px solid ${props => props.color.border};
+    background-color: ${props => props?.color?.bg};
+    border: 2px solid ${props => props?.color?.border};
     :focus {
         outline: none;
     }

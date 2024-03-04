@@ -5,7 +5,7 @@ const { Modal, Form, Input, Button, Typography } = antd
 export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
     const [newPassword, setNewPassword] = useState('')
     const handleOk = () => {
-        alert("id: "+data.user.id+" password: "+newPassword)
+      
         fbUpdateUserPassword(data.user.id, newPassword)
         onClose()
     };

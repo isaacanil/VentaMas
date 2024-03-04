@@ -9,6 +9,7 @@ import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 import { ProductListModal } from './ProductListModal'
 const { Button, Input, Table } = antd
 import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
+import { getTotalPrice } from '../../../../../../utils/pricing'
 export const Products = ({ invoice }) => {
     const dispatch = useDispatch()
     const [isProductListModalVisible, setProductListModalVisible] = useState(false)
@@ -18,7 +19,7 @@ export const Products = ({ invoice }) => {
     const columns = [
         {
             title: 'Producto',
-            dataIndex: 'productName',
+            dataIndex: 'name',
             key: 'productName',
         },
         {
@@ -32,7 +33,7 @@ export const Products = ({ invoice }) => {
                         icon={icons.mathOperations.subtract}
                     />
                     <Input
-                        value={record.amountToBuy.total}
+                        value={record.amountToBuy}
                         onChange={(e) => {
                             const value = e.target.value;
                             const isValidNumber = !isNaN(parseFloat(value)) && isFinite(value);
@@ -52,12 +53,12 @@ export const Products = ({ invoice }) => {
             title: 'Precio Unitario',
             dataIndex: 'price',
             key: 'price',
-            render: price => `${price.unit}`,
+            render: (text, record) => `${useFormatPrice(getTotalPrice(record) )}`,
         },
         {
             title: 'Precio Total',
             key: 'totalPrice',
-            render: (text, record) => `${useFormatPrice(record.price.total)}`,
+            render: (text, record) => `${useFormatPrice(getTotalPrice(record) )}`,
         },
         {
             title: 'Acciones',

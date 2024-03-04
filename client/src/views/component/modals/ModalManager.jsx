@@ -42,6 +42,7 @@ import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
 import { FileListModal } from "./FileListModal/FileListModal"
 
 export const ModalManager = () => {
+
   const update = OPERATION_MODES.UPDATE.id;
   const AddClientModalSelected = useSelector(SelectAddClientModal)
   const UpdateProdModalSelected = useSelector(SelectUpdateProdModal)
@@ -54,6 +55,7 @@ export const ModalManager = () => {
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
   const currentNotification = useSelector(selectCurrentNotification)
   const FileListSelected = useSelector(SelectFileListModal)
+
   return (
     <Fragment>
       <AnimatePresence>
@@ -63,15 +65,23 @@ export const ModalManager = () => {
             isOpen={AddClientModalSelected}
           />
         )}
+          {/* <BusinessEditModal /> */}
         {/* <UpdateProductModal
             key='modal-update-product'
             isOpen={UpdateProdModalSelected}
           /> */}
         {UpdateProdModalSelected && (
-          <ProductEditorModal isOpen={UpdateProdModalSelected}  />
+          <ProductEditorModal
+          key={'modal-form-product'}
+          isOpen={UpdateProdModalSelected}  />
         )}
-        <FileListModal data={FileListSelected} onClose={toggleFileListModal}/>
-        <InvoiceForm />
+        <FileListModal
+        key={'modal-file-list'}
+        data={FileListSelected} onClose={toggleFileListModal}/>
+        <InvoiceForm 
+          key={'modal-invoice'}
+         
+        />
         {SetCustomPizzaSelected && (
           <SetCustomProduct
             key={'modal-set-custom-pizza'}

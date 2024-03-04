@@ -51,7 +51,6 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                 <Space />
                 <Line />
                 <Row space>
-
                     <SubTitle align='center'> {ncfType}</SubTitle>
                 </Row>
                 <Line />

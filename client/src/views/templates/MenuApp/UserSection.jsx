@@ -2,7 +2,7 @@ import { Button } from '../system/Button/Button'
 import React from 'react'
 import styled from 'styled-components'
 import { auth } from '../../../firebase/firebaseconfig'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../../../features/auth/userSlice'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRightFromBracket, faUser } from '@fortawesome/free-solid-svg-icons'
@@ -10,11 +10,14 @@ import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
 import { useNavigate } from 'react-router-dom'
 import { icons } from '../../../constants/icons/icons'
 import { useDialog } from '../../../Context/Dialog/DialogContext'
-
+import { selectBusinessData } from '../../../features/auth/businessSlice'
+import * as antd from 'antd'
+const { Tag } = antd
 export const UserSection = ({ user }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { dialog, onClose, setDialogConfirm } = useDialog();
+  const business = useSelector(selectBusinessData);
   const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
@@ -37,23 +40,31 @@ export const UserSection = ({ user }) => {
   }
   return (
     <Container>
-      <Group>
-        <Icon>
-          <FontAwesomeIcon icon={faUser} />
-        </Icon>
-        <span>{user === null ? null : <span>{user.displayName}</span>}</span>
-      </Group>
-      <Group>
-        <Button
-          startIcon={icons.operationModes.logout}
-          color={'gray-contained'}
-       
-          title={'Salir'}
-          size="medium"
-          borderRadius='normal'
-          onClick={logoutOfApp}
-        />
-      </Group>
+      <UserInfo>
+        <Avatar>
+
+          <Icon>
+            <FontAwesomeIcon icon={faUser} />
+          </Icon>
+
+          <Username>{user === null ? null : <span>{user?.displayName} </span>}</Username>
+        </Avatar>
+        <Action>
+          <Button
+            startIcon={icons.operationModes.logout}
+            color={'gray-contained'}
+
+            title={'Salir'}
+            size="medium"
+            borderRadius='normal'
+            onClick={logoutOfApp}
+          />
+        </Action>
+      </UserInfo>
+     
+        <Business color='blue'>{user === null ? null : <span>{business?.name} </span>}</Business>
+    
+
     </Container>
   )
 }
@@ -61,15 +72,12 @@ export const UserSection = ({ user }) => {
 
 
 const Container = styled.div`
-  display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1em;
-    span{
-      font-weight: 600;
-      color: #636262;
-      text-transform: capitalize;
-    }
+
+  display: grid;
+  gap: 0.6em;
+    padding: 0.8em 1em;
+    overflow: hidden;
+  
 `
 const Icon = styled.div`
   background-color: var(--color2);
@@ -84,9 +92,37 @@ const Icon = styled.div`
   color: #555555;
 
 `
-const Group = styled.div`
+
+const UserInfo = styled.div`
+ display: flex;
+ gap: 0.4em;
+ justify-content: space-between;
+`
+const Username = styled.div`
+  font-weight: 600;
+  color: #636262;
+  text-transform: capitalize;
+`
+const Avatar = styled.div` 
   display: flex;
-  gap: 1em;
   align-items: center;
+  gap: 0.5em;
+
+`
+const Business = styled(Tag)`  
+white-space: nowrap;
+width: 100%;
+overflow: hidden;
+text-overflow: ellipsis;
+font-size: 14px;
+padding: 0.4em 0.8em;
+border-radius: var(--border-radius);
+
+`
+const Action = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1em;
   
+  justify-content: center;
 `

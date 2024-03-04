@@ -6,24 +6,24 @@ import { SelectProductSelected } from '../../../features/addOrder/addOrderModalS
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4'
+import { filterData } from '../../../hooks/search/useSearch'
 export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProduct }) => {
   
-  const [value, setValue] = useState(undefined)
+  const [searchTerm, setSearchTerm] = useState(productName || null)
   const close = () => {
     setIsOpen(false)
   }
   const productListRef = useRef(null);
 
   const {products} =  useGetProducts(true);
-  const productsWithStockTracking = products.filter((product) => product.trackInventory === true ) || [];
- 
+  const productsTrackInventoryFilter= products.filter((product) => product.trackInventory === true ) || [];
+  const productsFiltered = typeof searchTerm == 'string' && filterData(productsTrackInventoryFilter, searchTerm)
   useEffect(() => {
     if (!productName) {
-      setValue('')
+      setSearchTerm('')
     }
-    if (productName) {
-      console.log(productName)
-      setValue(productName)
+    if(productName){
+      setSearchTerm(productName)
     }
   }, [productName])
 
@@ -34,9 +34,9 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
       <InputV4
         size='base'
         border
-        value={value}
+        value={searchTerm}
         placeholder='Buscar...'
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setSearchTerm(e.target.value)}
         onFocus={() => setIsOpen(true)}
         bgColor='gray-light'
       />
@@ -52,7 +52,8 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
           </ProductsListHead>
           <ProductsListBody>
             {
-              productsWithStockTracking.map((data, index) => (
+              
+              productsFiltered.map((data, index) => (
                 <ProductCard
                   fn={handleSelectProduct}
                   key={index}

@@ -15,6 +15,17 @@ const emptyProduct = {
             minPrice: 0,
             tax: initTaxes[0],
         },
+        promotions: {
+            start: null,
+            end: null,
+            discount: 0,
+            isActive: false,
+        },
+        weightDetail: {
+            isSoldByWeight: false,
+            weightUnit: 'lb',
+            weight: 0,
+        },
         size: '',
         type: '',
         stock: 0,
@@ -24,8 +35,8 @@ const emptyProduct = {
         id: '',
         isVisible: true,
         trackInventory: true,
-        qrCode: '',
-        barCode: '',
+        qrcode: '',
+        barcode: '',
     }
 }
 
@@ -49,16 +60,22 @@ const initialState = {
             discount: 0,
             isActive: false,
         },
+        weightDetail: {
+            isSoldByWeight: false,
+            weightUnit: 'lb',
+            weight: 0,
+        },
         size: '',
         type: '',
         stock: 0,
         netContent: '',
-        qrCode: '',
-        barCode: '',
+        qrcode: '',
+        barcode: '',
         order: 1,
-        amountToBuy: { unit: 1, total: 1 },
+        amountToBuy: 1,
         id: '',
         trackInventory: true,
+        isSoldByWeight: false,
     }
 }
 
@@ -79,14 +96,16 @@ export const updateProductSlice = createSlice({
 
         setProduct: (state, action) => {
             const product = action.payload
-            state.product = product
+            state.product = {
+                ...state.product,
+                ...product,
+            }
+          
         },
         ChangeProductImage: (state, action) => {
             state.product.image = action.payload
         },
-        changeProductPrice: (state, action) => {
-            
-           
+        changeProductPrice: (state, action) => { 
             state.product.pricing = {
                 ...state.product.pricing,
                 ...action?.payload?.pricing
@@ -95,6 +114,7 @@ export const updateProductSlice = createSlice({
                 state.product.pricing.price = action?.payload?.pricing?.listPrice
             }
         },
+    
         clearUpdateProductData: (state) => {
             state.product = emptyProduct.product
             state.status = emptyProduct.status

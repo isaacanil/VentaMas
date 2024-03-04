@@ -1,33 +1,43 @@
 import React from 'react';
 import * as antd  from 'antd';
+import { getTotalPrice } from '../../../../../../utils/pricing';
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 const { Modal, Table, Button } = antd;
 
 export const ProductListModal = ({ isVisible, onClose, products, onAddProduct }) => {
   const columns = [
     {
       title: 'Producto',
-      dataIndex: ['product', 'productName'],
-      key: 'productName',
-      sorter: (a, b) => a.product.productName.localeCompare(b.product.productName),
+      dataIndex: [ 'name'],
+      key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Precio Unitario',
-      dataIndex: ['product','price'],
+      dataIndex: ['pricing', 'price'],
       key: 'price',
-      render: (price) => `$${price.unit.toFixed(2)}`,
-      sorter: (a, b) => a.product.price.unit - b.product.price.unit,
+      render: (text, record) => useFormatPrice(getTotalPrice(record)),
+      sorter: (a, b) => {
+    
+      const totalPriceA = getTotalPrice(a)
+      const totalPriceB = getTotalPrice(b)
+      
+
+        return totalPriceA - totalPriceB
+        
+      },
     },
     {
       title: 'Stock',
-      dataIndex: ['product','stock'],
+      dataIndex: ['stock'],
       key: 'stock',
-      sorter: (a, b) => a.product.stock - b.product.stock,
+      sorter: (a, b) => a.stock - b.stock,
     },
     {
       title: 'Acciones',
       key: 'actions',
       render: (text, record) => (
-        <Button onClick={() => onAddProduct(record.product)}>Añadir</Button>
+        <Button onClick={() => onAddProduct(record)}>Añadir</Button>
       ),
     }
   ];

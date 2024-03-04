@@ -1,19 +1,27 @@
 import styled from "styled-components"
 import { FormattedValue } from "../../../../templates/system/FormattedValue/FormattedValue"
+import { BusinessEditModal } from "../../../BusinessEditModal/BusinessEditModal"
+import { useState } from "react"
 
-export const BusinessCard = ({business}) => {
+export const BusinessCard = ({ business }) => {
+    const [businessEditModalOpen, setBusinessEditModalOpen] = useState(false)
+    const handleBusinessEdit = () => setBusinessEditModalOpen((prev) => !prev)
+    
     return (
-        <Container>
+        <Container onClick={handleBusinessEdit}>
             <Head>
-                 <FormattedValue type={'subtitle'} value={business.name}>{business.name}</FormattedValue>
+                <FormattedValue type={'subtitle'} value={business.name}>{business.name}</FormattedValue>
             </Head>
             <Body>
-                <p>{business.description}</p>
-                <p>{business.address}</p>
-                <p>{business.tel}</p>
-                <p>{business.email}</p>
-                <p>{business.web}</p>
+                <p>ID: {business.id}</p>
+                <p>DIRECCIÓN: {business.address}</p>
+                <p>TEL: {business.tel}</p>
+                {`Modal:  ${businessEditModalOpen ? "Abierto" : "Cerrado"}`}
             </Body>
+            <BusinessEditModal
+                isOpen={businessEditModalOpen}
+                onClose={handleBusinessEdit}
+            />
         </Container>
     )
 }
@@ -21,7 +29,7 @@ export const BusinessCard = ({business}) => {
 
 
 const Container = styled.div`
-    padding: 10px;
+    padding: 1em;
     border: var(--border-primary);
     border-radius: 10px;
     background-color: #ffffff;

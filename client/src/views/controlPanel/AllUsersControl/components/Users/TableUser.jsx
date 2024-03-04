@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as antd from 'antd';
 import { ChangerPasswordModal } from './ChangerPasswordModal';
+import styled from 'styled-components';
 const { Table, Button } = antd;
 
 export const TableUser = ({ users }) => {
@@ -56,7 +57,6 @@ export const TableUser = ({ users }) => {
             render: (text, record) => {
                  const handleOpenModal = () => {
                     setIsOpen(true)
-                    alert(JSON.stringify(record))
                     setUserSelected(record)
                  }
                 return (
@@ -70,18 +70,24 @@ export const TableUser = ({ users }) => {
         }
         // Puedes agregar más columnas según necesites
     ];
+    const pagination = {
+        pageSize: 6,
+      
+    };
 
     return (
-        <div>
-            <Table columns={columnas} dataSource={users} rowKey="id" />
+        <Container>
+            <Table pagination={pagination} columns={columnas} dataSource={users} rowKey="id" />
             <ChangerPasswordModal 
             isOpen={isOpen} 
             data={userSelected}
             onClose={() => setIsOpen(false)}
             />
-        </div>
+        </Container>
 
     );
 };
 
-
+const Container = styled.div`
+    
+`

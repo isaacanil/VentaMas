@@ -1,5 +1,6 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
+import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTotalInvoice, getTotalItems } from '../../utils/pricing';
 
 const roundToTwoDecimals = (num) => {
     return Math.round(num * 100) / 100;
@@ -9,31 +10,19 @@ const updateProductAmount = (product, newAmount) => {
     // Crear una copia profunda de los objetos anidados
     const updatedProduct = {
         ...product,
-        amountToBuy: { ...product.amountToBuy },
-        price: { ...product.price },
-        tax: { ...product.tax }
+        pricing: { ...product?.pricing },
     };
 
-    updatedProduct.amountToBuy.total = newAmount;
-
-    const unitPrice = updatedProduct.price.unit;
-    updatedProduct.price.total = roundToTwoDecimals(unitPrice * newAmount);
-
-    const unitTax = roundToTwoDecimals(updatedProduct.tax.value * unitPrice);
-    updatedProduct.tax.total = roundToTwoDecimals(unitTax * newAmount);
+    updatedProduct.amountToBuy = newAmount;
 
     return updatedProduct;
 };
 
 
 const calculateTotals = (products) => {
-    let totalPurchase = 0;
-    let totalTaxes = 0;
 
-    products.forEach(product => {
-        totalPurchase += product.price.total;
-        totalTaxes += product.tax.total;
-    });
+    let totalPurchase = getProductsTotalPrice(products);
+    let totalTaxes = getProductsTax(products);
 
     return {
         totalPurchase: roundToTwoDecimals(totalPurchase),
@@ -50,10 +39,10 @@ const deleteProductAndUpdateTotals = (products, productId) => {
 };
 
 const calculateTotalItems = (products) => {
-    let totalItems = 0;
-    products.forEach(product => {
-        totalItems += product.amountToBuy.total;
-    });
+    let totalItems = getTotalItems(products);
+    // products.forEach(product => {
+    //     totalItems += product.amountToBuy;
+    // });
     return totalItems;
 };
 
@@ -68,11 +57,8 @@ const calculateChange = (totalPurchase, payment) => {
 };
 
 const calculateTotalPurchaseWithoutTaxes = (products) => {
-    let totalWithoutTaxes = 0;
-    products.forEach(product => {
-        totalWithoutTaxes += product.price.unit * product.amountToBuy.total;
-    });
-    return roundToTwoDecimals(totalWithoutTaxes);
+    const result = getProductsPrice(products);
+    return roundToTwoDecimals(result);
 };
 
 const invoice = {
@@ -149,7 +135,7 @@ const invoiceFormSlice = createSlice({
 
             // Asegúrate de que todos los productos tengan los cálculos correctos
             const products = invoice.products.map(product => {
-                return updateProductAmount(product, product.amountToBuy.total);
+                return updateProductAmount(product, product.amountToBuy);
             });
 
 
@@ -302,7 +288,7 @@ const invoiceFormSlice = createSlice({
                 return; // Si el producto no está en la lista, no hacer nada
             }
 
-            let newAmount = state.invoice.products[index].amountToBuy.total;
+            let newAmount = state.invoice.products[index].amountToBuy;
             switch (type) {
                 case "add":
                     newAmount += 1;

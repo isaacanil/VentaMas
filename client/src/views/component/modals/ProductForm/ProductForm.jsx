@@ -62,8 +62,12 @@ export const ProductForm = ({ showImageManager }) => {
             changeValue[key] = value ? JSON.parse(value) : initTaxes[0]?.tax; // Convertir a número o cero si es vacío
         }
         if (key === 'pricing') {
-            changeValue[key] = value ? value : { unit: 0, total: 0 }; // Convertir a número o cero si es vacío
+            changeValue[key] = value ? value : 0; // Convertir a número o cero si es vacío
             dispatch(changeProductPrice({ ...changeValue }));
+            return
+        }
+        if (key === 'weightDetail') {
+            dispatch(ChangeProductData({ product: { weightDetail: { ...product?.weightDetail, ...changeValue?.weightDetail } } }));
             return
         }
         // Despacha la acción con el valor actualizado

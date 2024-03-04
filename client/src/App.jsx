@@ -35,7 +35,7 @@ import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer'
 
 function App() {
   const dispatch = useDispatch();
-  
+
   const user = useSelector(selectUser);
 
   useAutomaticLogin();
@@ -73,7 +73,11 @@ function App() {
           {routes.map((route, index) => (
             <Route key={index} path={route.path} element={route.element}>
               {route.children && route.children.map((childRoute, childIndex) => (
-                <Route key={childIndex} path={childRoute.path} element={childRoute.element} />
+                <Route
+                  key={childIndex}
+                  path={childRoute?.path}
+                  element={childRoute?.element}
+                />
               ))}
             </Route>
           ))}
@@ -82,7 +86,6 @@ function App() {
           <ModalManager />
         </AnimatePresence>
       </Router>
-
     </Fragment>
   )
 }

@@ -2,24 +2,24 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import {SelectProduct} from '../../../features/addOrder/addOrderModalSlice'
+import { SelectProduct } from '../../../features/addOrder/addOrderModalSlice'
 
-export const ProductCard = ({data, setShowProductList, fn, close}) => {
+export const ProductCard = ({ data, setShowProductList, fn, close }) => {
 
- const handleProductSelected = async () => {
-  try {
-    console.log("clicked ", data)
-    fn(data);
-    close();
-  } catch (error) {
-    console.log(error)
+  const handleProductSelected = async () => {
+    try {
+
+      fn(data);
+      close();
+    } catch (error) {
+      console.log(error)
+    }
   }
- }
   return (
     <Container onClick={handleProductSelected}>
-        <span>
-            {data.name}
-        </span>       
+      <span>
+        {data.name}
+      </span>
     </Container>
   )
 }

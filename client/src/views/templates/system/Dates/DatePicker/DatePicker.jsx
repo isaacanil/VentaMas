@@ -26,12 +26,12 @@ const getEmptyDates = () => {
 export const DatePicker = ({
     setDates,
     dates,
-    datesDefault = "today",
+    datesDefault,
     dateOptionsMenu = false
 }) => {
 
     const handleSelectDateByDefault = () => {
-        if (datesDefault) { setDates(getDatesRange(datesDefault)); }
+        if (datesDefault) { setDates(getDefaultDates(datesDefault)); }
         if (datesDefault === "empty") { setDates(getEmptyDates()); }
     }
 
@@ -40,9 +40,7 @@ export const DatePicker = ({
             case "today":
                 setDates(getDefaultDates());
                 break;
-            case "empty":
-                setDates(getEmptyDates());
-                break;
+        
         }
     }, []);
 
@@ -53,7 +51,7 @@ export const DatePicker = ({
                     <Label>Fecha Inicio</Label>
                     <input
                         value={dates.startDate ? DateTime.fromMillis(dates.startDate).toISODate() : ""}
-                        max={dates.endDate ? DateTime.fromMillis(dates.endDate).toISODate() : undefined}
+                        max={dates.endDate ? DateTime.fromMillis(dates.endDate).toISODate() : null}
                         type="date"
                         name="startDate"
                         onChange={(e) => setDates({
@@ -66,7 +64,7 @@ export const DatePicker = ({
                     <Label>Fecha Fin</Label>
                     <input
                         value={dates.endDate ? DateTime.fromMillis(dates.endDate).toISODate() : ""}
-                        min={dates.startDate ? DateTime.fromMillis(dates.startDate).toISODate() : undefined}
+                        min={dates.startDate ? DateTime.fromMillis(dates.startDate).toISODate() : null}
                         max={DateTime.local().toISODate()}
                         type="date"
                         name="endDate"

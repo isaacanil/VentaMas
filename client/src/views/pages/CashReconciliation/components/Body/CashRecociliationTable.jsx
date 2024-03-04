@@ -1,18 +1,28 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { tableConfig } from './tableConfig'
-import { fbGetCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts'
+import { fbGetCashCounts, fbGetCashCountsDefault } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
 import { useNavigate } from 'react-router-dom'
 import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
+import { DateTime } from 'luxon'
 
 export const CashReconciliationTable = () => {
+  // const [dateRange, setDateRange] = useState({ 
+  //   startDate: DateTime.now().startOf('day').toMillis(), 
+  //   endDate: DateTime.now().endOf('day').toMillis() 
+  // })
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null
+  })
   const [cashCounts, setCashCounts] = useState([])
   const user = useSelector(selectUser)
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const handleClick = (cashCount) => {
     let cashCountToUpdate = {
       ...cashCount,
@@ -27,7 +37,13 @@ export const CashReconciliationTable = () => {
   }
 
   useEffect(() => {
-    fbGetCashCounts(user, setCashCounts)
+    fbGetCashCounts(user, setCashCounts, dateRange)
+  }, [user, dateRange])
+  useEffect(() => {
+  if(user){
+    fbGetCashCountsDefault(user, setCashCounts)
+
+  }
   }, [user])
 
   const data = cashCounts.map((cashCount) => {
@@ -35,9 +51,8 @@ export const CashReconciliationTable = () => {
       incrementNumber: cashCount?.incrementNumber,
       status: cashCount?.state,
       date: (
-        cashCount?.updatedAt?
-          cashCount?.updatedAt  :
-          null
+        cashCount?.updatedAt ?
+          cashCount?.updatedAt : null
       ),
       user: cashCount?.opening.employee.name,
       total: cashCount,
@@ -45,7 +60,7 @@ export const CashReconciliationTable = () => {
       action: cashCount,
     }
   })
-  console.log(cashCounts)
+  console.log(dateRange)
 
   const columns = tableConfig()
   const handleLabelState = (state) => {
@@ -70,7 +85,6 @@ export const CashReconciliationTable = () => {
   ]
   return (
     <Container>
-
       <AdvancedTable
         columns={columns}
         data={data}
@@ -78,7 +92,10 @@ export const CashReconciliationTable = () => {
         tableName={'cash_reconciliation_table'}
         filterConfig={filtersConfig}
         filterUI
-        datesFilter
+        datePicker
+
+        dateRange={dateRange}
+        setDateRange={setDateRange}
         datesKeyConfig='date'
         onRowClick={(row) => handleClick(row.action)}
       />

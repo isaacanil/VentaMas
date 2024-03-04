@@ -81,7 +81,7 @@ export const UpdateProductModal = ({ isOpen }) => {
     useEffect(() => { getTaxes(setTaxesList) }, [])
 
     const { categories } = useFbGetCategories()
- 
+
     const productDataTypeCorrected = new productDataTypeCorrection(product);
 
     const handleUpdateProduct = async () => {
@@ -100,7 +100,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                 await productSchema.validate(productDataTypeCorrected);
                 if (status === 'update') handleUpdateProduct();
                 if (status === 'create') handleAddProduct();
-                
+
             } else {
                 setErrors(errors)
                 const getErrors = Object.values(errors);
@@ -146,7 +146,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         </Typography>
                         <FormGroup layout='1fr'>
                             <InputV4
-                                name='productName'
+                                name='name'
                                 label={'Nombre del producto:'}
                                 required
                                 size={'medium'}
@@ -209,6 +209,8 @@ export const UpdateProductModal = ({ isOpen }) => {
                                 setProduct={setProduct}
                                 product={product}
                             />
+                        </FormGroup>
+                        <FormGroup layout='1fr 1fr' >
                             <InputV4
                                 label={'Stock:'}
                                 type="number"
@@ -226,7 +228,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                         >
                             Facturación y Precio
                         </Typography>
-                    
+
                         <FormGroup layout='1fr 1fr'>
                             <div>
                                 <ProductVisibilityButton
@@ -287,7 +289,7 @@ export const UpdateProductModal = ({ isOpen }) => {
                                     style={product?.image === image ?
                                         { objectFit: "cover" } :
                                         { objectFit: "contain", padding: "2em" }
-                                    } 
+                                    }
                                     alt=""
                                 />
                             </Img>

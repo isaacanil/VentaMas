@@ -51,6 +51,7 @@ export const SideBar = ({ isOpen }) => {
     const handleGoToSetting = () => {
         navigate(SETTINGS)
     }
+  
     return (
         <Container
             variants={sidebarVariant}

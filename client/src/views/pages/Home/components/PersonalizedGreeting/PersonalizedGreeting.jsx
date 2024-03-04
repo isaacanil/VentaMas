@@ -12,14 +12,22 @@ const Name = styled.span`
   font-weight: bold;
 `;
 
-const PersonalizedGreeting = ({ name = 'Anónimo', greetingText = '¡Bienvenido de nuevo' }) => {
+const PersonalizedGreeting = ({ name = 'Anónimo', greetingText = 'Bienvenido de vuelta', business }) => {
 
   const capitalizedFirstName = name.charAt(0).toUpperCase() + name.slice(1);
 
   return (
-    <Typography variant='h3'>
-      {greetingText}, <Name>{capitalizedFirstName}</Name>!
-    </Typography>
+    <div>
+
+      <Typography variant='h3'>
+        {greetingText}, <Name>{capitalizedFirstName}</Name>
+
+      </Typography>
+      <BusinessName>
+
+        {business && business}
+      </BusinessName>
+    </div>
   );
 };
 
@@ -29,3 +37,6 @@ PersonalizedGreeting.propTypes = {
 };
 
 export default PersonalizedGreeting;
+const BusinessName = styled.div`
+  
+`

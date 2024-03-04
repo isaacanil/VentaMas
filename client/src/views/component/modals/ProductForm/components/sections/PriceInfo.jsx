@@ -15,13 +15,13 @@ export const PriceInfo = () => {
                 gutter={16}
             >
                 <Col
-                    span={12}
+                  
                 >
                     <Form.Item
                         name="isVisible"
-                        label="Visibilidad en Facturación"
+                        label=""
                         valuePropName="checked" 
-                        help="Si se activa, se mostrará en la facturación."
+                        help="Determina si el producto aparecerá en la facturación."
                     >
                         <Checkbox
                             title='Inventariable'
@@ -31,10 +31,7 @@ export const PriceInfo = () => {
                         </Checkbox>
                     </Form.Item>
                 </Col>
-                <Col
-                    span={12}
-                >
-                </Col>
+               
             </Row>
             <Row
                 gutter={16}

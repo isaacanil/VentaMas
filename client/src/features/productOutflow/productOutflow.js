@@ -9,8 +9,7 @@ const EmptyProduct = {
     id: null, // Identificador único del producto
     product: null, // Identificador del producto específico que se vende
     motive: '', //Identificador de la razón detrás de la salida del producto
-    currentRemovedQuantity: 0, // Esta propiedad mantendrá la cantidad retirada actualmente
-    totalRemovedQuantity: 0, // La cantidad del producto que se vende.
+    quantityRemoved: 0,
     observations: "", // Cualquier comentario adicional o notas relacionadas con el producto
     status: false // El estado de la salida del producto (si se ha completado o no)
 }
@@ -38,47 +37,44 @@ export const productOutflowSlice = createSlice({
             state.productSelected = {
                 ...(state.productSelected || {}),
                 ...(newData || {}),
-                currentRemovedQuantity: newData.currentRemovedQuantity || 0,
-                totalRemovedQuantity: newData.totalRemovedQuantity || 0,
                 id: state.productSelected?.id || nanoid(10),
-              };
+            };
             state.data.date = state.data.date || new Date().getTime()
-            state.data.id = state.data.id || nanoid(10)    
+            state.data.id = state.data.id || nanoid(10)
         },
         addProductToProductOutflow: (state, actions) => {
-            console.log('addProductToProductOutflow', actions.payload)
             let data = actions.payload
             data = {
                 ...data,
-                totalRemovedQuantity: data.currentRemovedQuantity + data.totalRemovedQuantity,
+                
             }
             state.data.productList = [...state.data.productList, data]
             state.productSelected = EmptyProduct
         },
         deleteProductFromProductOutflow: (state, actions) => {
-            const {id} = actions.payload
+            const { id } = actions.payload
             const checkingId = state.data.productList.filter(item => item.id !== id)
-            if(checkingId){
+            if (checkingId) {
                 state.data.productList = checkingId
             }
         },
-        setProductOutflowData : (state, actions) => {
-            const {data} = actions.payload
-          
-           return {
+        setProductOutflowData: (state, actions) => {
+            const { data } = actions.payload
+
+            return {
                 ...state,
                 productSelected: data.productSelected,
-                data : {
+                data: {
                     ...state.data,
                     ...data.data,
                 },
                 mode: data.mode,
-              }
+            }
         },
         deleteData: (state) => {
             state.mode = OPERATION_MODES.CREATE.label
             state.productSelected = EmptyProduct
-            state.data = EmptyProductOutflow 
+            state.data = EmptyProductOutflow
         }
 
     }

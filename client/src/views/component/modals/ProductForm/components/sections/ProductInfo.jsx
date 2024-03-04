@@ -80,7 +80,7 @@ export const ProductInfo = ({ product }) => {
                         <Select
                             defaultValue={"2"}
                         >
-                            <Option value="Ninguna">Ninguna</Option>
+                            <Option value="none">Ninguna</Option>
                             {
                                 categories.map(({ category }) => (
                                     <Option value={category.name}>{category.name}</Option>

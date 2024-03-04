@@ -9,6 +9,7 @@ import { getTaxReceiptData, selectTaxReceipt, } from '../../../../features/taxRe
 import CustomInput from '../../../templates/system/Inputs/CustomInput'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
+
 const calculateCartValues = (cartData) => {
     const { products, delivery, discount, totalTaxes } = cartData
     const subtotal = products.reduce((acc, product) => acc + product.price.unit * product.amountToBuy.total, 0)

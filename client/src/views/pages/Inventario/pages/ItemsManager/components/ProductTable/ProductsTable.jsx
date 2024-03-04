@@ -11,7 +11,7 @@ import { openModalUpdateProd } from '../../../../../../../features/modals/modalS
 import { ChangeProductData, selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
 import { OPERATION_MODES } from '../../../../../../../constants/modes'
 import { handleDeleteProductAlert } from '../../../../../../../features/Alert/AlertSlice'
-import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
+import { ButtonGroup } from '../../../../../../templates/system/Button/Button'
 import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
 import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell'
@@ -20,19 +20,23 @@ import { useDialog } from '../../../../../../../Context/Dialog/DialogContext'
 import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
+import * as antd from 'antd'
+const { Button } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  console.log(user)
+
   const { setDialogConfirm } = useDialog();
-  const handleDeleteProduct = useCallback((id) => {
+
+  const handleDeleteProduct = useCallback((user, id) => {
+    let docId = id.product.id ? id.product.id : id.id
     setDialogConfirm({
       title: 'Eliminar producto',
       isOpen: true,
       type: 'error',
       message: '¿Está seguro que desea eliminar este producto?',
-      onConfirm: () => fbDeleteProduct(user, id),
+      onConfirm: () => fbDeleteProduct(user, docId),
     })
   }, [user])
 
@@ -92,7 +96,18 @@ export const ProductsTable = ({ products, searchTerm }) => {
       minWidth: '120px',
       maxWidth: '0.4fr',
       align: 'right',
-      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+      cell: ({ value }) => {
+        const price = getTotalPrice(value)
+        console.log("value ", value)
+        const unit = value?.weightDetail?.weightUnit
+        const isSoldByWeight = value?.weightDetail?.isSoldByWeight
+        if (isSoldByWeight) {
+          return (
+            <div>{useFormatPrice(price)} / {unit}</div>
+          )
+        }
+        return useFormatPrice(price)
+      }
     },
     {
       Header: 'Facturable',
@@ -110,22 +125,17 @@ export const ProductsTable = ({ products, searchTerm }) => {
       maxWidth: '100px',
       align: 'right',
       cell: ({ value }) => {
+        console.log(value)
         return (
           <ButtonGroup>
             <Button
-              startIcon={icons?.operationModes?.edit}
-              borderRadius='normal'
-
-              width='icon32'
-              bgcolor='editar'
+              icon={icons?.operationModes?.edit}
               onClick={() => handleUpdateProduct(value)}
             />
             <Button
-              startIcon={icons.operationModes.delete}
-              width='icon32'
-
-              borderRadius='normal'
-              onClick={() => handleDeleteProduct(value.id)}
+              icon={icons.operationModes.delete}
+              danger
+              onClick={() => handleDeleteProduct(user, value)}
             />
           </ButtonGroup>
         )
@@ -133,15 +143,15 @@ export const ProductsTable = ({ products, searchTerm }) => {
     }
   ];
 
-  const data = products.map(( product ) => ({
+  const data = products.map((product) => ({
     id: product.id,
-    image: product.productImageURL,
+    image: product.image,
     name: { name: product.name, img: product.image },
     stock: { stock: product.stock, trackInventory: product.trackInventory },
     trackInventory: product.trackInventory,
     cost: product?.pricing?.cost,
-    price: getTotalPrice(product?.pricing?.price, product?.pricing?.tax, 0),
-    tax: getTax(product?.pricing?.price, product?.pricing?.tax),
+    price: product,
+    tax: getTax(product),
     isVisible: product?.isVisible,
     action: product,
     category: product.category,

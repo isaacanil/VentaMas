@@ -14,11 +14,11 @@ export const BusinessControl = () => {
   return (
     <Container>
       <Head>
-        <MenuApp />
-        <h1>Gestionar Negocios</h1>
+        <MenuApp sectionName={"Gestionar Negocios"} />
+       
       </Head>
       <Body>
-        {businesses.map(({ business }) => <BusinessCard business={business} />)}
+        {businesses.map(({ business }) => <BusinessCard  business={business} />)}
       </Body>
     </Container>
   )
@@ -27,6 +27,7 @@ const Container = styled.div`
   display: grid;
   grid-template-rows: min-content 1fr;
   height: 100vh;
+  overflow: hidden;
 `
 const Head = styled.div``
 const Body = styled.div`
@@ -36,4 +37,5 @@ const Body = styled.div`
   background-color: var(--color2);
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   align-content: start;
+  overflow: auto;
 `

@@ -139,8 +139,7 @@ export const ExpensesTable = ({ searchTerm, expenses }) => {
                 columns={columns}
                 data={data}
                 elementName={'Gasto'}
-                datesFilter
-                datesKeyConfig='createdAt'
+                datePicker
                 filterUI
                 searchTerm={searchTerm}
                 groupBy={'dateGroup'}
@@ -154,10 +153,8 @@ export const ExpensesTable = ({ searchTerm, expenses }) => {
                         accessor: 'status',
                         defaultValue: 'active',
                         format: (value) => t(value)
-                        
                     }
                 ]}
-
             />
              <ExpenseChart expenses={expenses} isOpen={reportIsOpen} onOpen={handleReportOpen} />
         </Container>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import * as antd from 'antd';
 import dayjs from 'dayjs';
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import { getTotalPrice } from '../../../../../../utils/pricing';
+import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
 
 const { Table, Typography, Divider } = antd;
 
@@ -24,12 +26,18 @@ const aggregateClientData = (sales) => {
     clientGroup.facturas.push({
       numberID: sale.data.numberID,
       fecha: dayjs.unix(sale.data.date.seconds).format("DD/MM/YYYY"),
-      productos: sale.data.products.map(product => ({
-        nombre: product.productName,
-        precio: product.price.unit,
-        cantidad: product.amountToBuy.total,
-        subtotal: product.price.total,
-      })),
+      productos: sale.data.products.map(product => {
+        const taxPercent = product.pricing.tax;
+        const price = product.pricing.price;
+        const amountToBuy = product.amountToBuy;
+
+        return ({
+          nombre: product.name,
+          precio: getTotalPrice(price, taxPercent),
+          cantidad: amountToBuy,
+          subtotal: getTotalPrice(price, taxPercent, 0, amountToBuy),
+        })
+      }),
     });
     return acc;
   }, {});
@@ -43,9 +51,22 @@ const expandedRowRender = (facturas) => {
     { title: 'Factura', dataIndex: 'numberID', key: 'numberID' },
     { title: 'Fecha', dataIndex: 'fecha', key: 'fecha' },
     { title: 'Producto', dataIndex: 'nombre', key: 'nombre' },
-    { title: 'Precio', dataIndex: 'precio', key: 'precio' },
-    { title: 'Cantidad', dataIndex: 'cantidad', key: 'cantidad' },
-    { title: 'SubTotal', dataIndex: 'subtotal', key: 'subtotal' },
+    { title: 'Precio', 
+    dataIndex: 'precio', 
+    key: 'precio', 
+    render: (value) => useFormatPrice(value)
+  },
+    { title: 'Cantidad', 
+    dataIndex: 'cantidad', 
+    key: 'cantidad',
+    render: (value) => useFormatNumber(value)
+  },
+    { 
+      title: 'SubTotal', 
+      dataIndex: 'subtotal', 
+      key: 'subtotal' ,
+      render: (value) => useFormatPrice(value)
+    },
   ];
 
   const productData = facturas.flatMap(factura =>
@@ -62,8 +83,8 @@ const expandedRowRender = (facturas) => {
 
 export const CustomerSalesReportTable = ({ sales }) => {
   const groupedData = aggregateClientData(sales);
-  const [pageSize, setPageSize] = useState(20); 
-  const [currentPage, setCurrentPage] = useState(1); 
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
   // Calcular totales
   const totalItems = groupedData.reduce((sum, record) => sum + record.items, 0);
   const totalSales = groupedData.reduce((sum, record) => sum + record.total, 0);
@@ -71,15 +92,15 @@ export const CustomerSalesReportTable = ({ sales }) => {
 
   const columns = [
     { title: 'Cliente', dataIndex: 'cliente', key: 'cliente' },
-    { title: 'Items', dataIndex: 'items', key: 'items' },
-    { title: 'Total', dataIndex: 'total', key: 'total', render: text => `$${text.toFixed(2)}` },
+    { title: 'Items', dataIndex: 'items', key: 'items',  align: "right", render: value => `${useFormatNumber(value)}`},
+    { title: 'Total', dataIndex: 'total', key: 'total', align: "right", render: value => `${useFormatPrice(value)}` },
   ];
- 
+
   const handleTableChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
   };
-  
+
   return (
     <div>
 
@@ -94,13 +115,13 @@ export const CustomerSalesReportTable = ({ sales }) => {
         columns={columns}
         size='small'
         scroll={{ x: 200 }}
-        pagination={{ 
+        pagination={{
           current: currentPage,
           pageSize: pageSize,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50'],
           onChange: handleTableChange
-         }}
+        }}
         expandable={{ expandedRowRender: record => expandedRowRender(record.facturas) }}
         dataSource={groupedData}
         summary={pageData => {
@@ -114,12 +135,12 @@ export const CustomerSalesReportTable = ({ sales }) => {
 
           return (
             <Table.Summary.Row>
-               <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={1}><div style={{fontWeight: 700,}}>Total Clientes: {totalClients}</div></Table.Summary.Cell>
-              <Table.Summary.Cell index={2}><div style={{fontWeight: 700,}}>{totalItemsSum}</div></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}><div style={{ fontWeight: 700, }}>Total Clientes: {totalClients}</div></Table.Summary.Cell>
+              <Table.Summary.Cell index={2}><div style={{ fontWeight: 700, textAlign: "right" }}>{totalItemsSum}</div></Table.Summary.Cell>
               <Table.Summary.Cell index={3}>
-              <div style={{fontWeight: 700,}}>
-                {useFormatPrice(totalSalesSum)}
+                <div style={{ fontWeight: 700, textAlign: "right" }}>
+                  {useFormatPrice(totalSalesSum)}
                 </div>
               </Table.Summary.Cell>
             </Table.Summary.Row>

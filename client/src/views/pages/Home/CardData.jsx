@@ -8,70 +8,32 @@ const { BILLS, SALES } = ROUTES_NAME.SALES_TERM
 const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
 const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM
 const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM
-const { MANAGE_BUSINESS, CHANGELOG_MANAGE, CHANGELOG_CREATE} = ROUTES_NAME.DEV_VIEW_TERM
+const { MANAGE_BUSINESS, CHANGELOG_MANAGE, CHANGELOG_CREATE, ALL_USERS} = ROUTES_NAME.DEV_VIEW_TERM
 
 const { inventory, purchase, register, sale, cashReconciliation } = icons.menu.unSelected
-export const getCardData = (user) => {
+
+export const getMenuCardData = () => {
+  const {abilities} = userAccess();
+  const routes = [
+    { id: 1, title: 'Ventas', icon: icons.menu.unSelected.sale, route: ROUTES_NAME.SALES_TERM.SALES },
+    { id: 2, title: 'Facturas', icon: icons.menu.unSelected.register, route: ROUTES_NAME.SALES_TERM.BILLS },
+    { id: 3, title: 'Compras', icon: icons.menu.unSelected.purchase, route: ROUTES_NAME.PURCHASE_TERM.PURCHASES },
+    { id: 4, title: 'Inventario', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_ITEMS },
+    { id: 5, title: 'Cuadre de Caja', icon: icons.menu.unSelected.cashReconciliation, route: ROUTES_NAME.CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST },
+  ];
+  const filteredRoutes = routes.filter((item) => abilities.can('access', item.route));
+  return filteredRoutes;
+};
+
+export const getDeveloperFeaturesData = () => {
   const { abilities } = userAccess();
-
-  function* generateData() {
-    yield {
-      id: 1,
-      title: 'Ventas',
-      icon: sale,
-      route: SALES
-    };
-    yield {
-      id: 2,
-      title: 'Facturas',
-      icon: register,
-      route: BILLS
-    };
-    yield {
-      id: 3,
-      title: 'Compras',
-      icon: purchase,
-      route: PURCHASES
-    };
-    yield {
-      id: 4,
-      title: 'Inventario',
-      icon: inventory,
-      route: INVENTORY_ITEMS
-    };
-    yield {
-      id: 5,
-      title: 'Cuadre de Caja',
-      icon: cashReconciliation,
-      route: CASH_RECONCILIATION_LIST
-    };
-
-
-    if (abilities?.can('developerAccess', 'all')) {
-      yield {
-        id: 'Gestionar Negocios',
-        title: 'Gestionar Negocios',
-        icon: icons.operationModes.add,
-        route: MANAGE_BUSINESS
-      };
-    }
-    if (abilities?.can('developerAccess', 'all')) {
-      yield {
-        id: 'Gestionar Actualización',
-        title: 'Gestionar Actualización',
-        icon: icons.operationModes.add,
-        route: CHANGELOG_MANAGE
-      };
-    }
-    if (abilities?.can('developerAccess', 'all')) {
-      yield {
-        id: 'Documentar Actualización',
-        title: 'Documentar Actualización',
-        icon: icons.operationModes.add,
-        route: CHANGELOG_CREATE
-      };
-    }
+  if (abilities?.can('developerAccess', 'all')) {
+    return [
+      { id: 6, title: 'Gestionar Negocios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.MANAGE_BUSINESS },
+      { id: 7, title: 'Gestionar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_MANAGE },
+      { id: 8, title: 'Documentar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_CREATE },
+      { id: 9, title: 'Todos los usuarios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.ALL_USERS }
+    ];
   }
-
-  return Array.from(generateData());
-}
+  return []; // Retornar un array vacío si el usuario no tiene acceso a características de desarrollador
+};

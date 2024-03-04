@@ -9,9 +9,9 @@ export const fbUpdateProductsStock = async (products, user) => {
             validateUser(user)
             const { businessID } = user;
             const productRef = doc(db, "businesses", businessID, "products", productData.id);
-            const stockUpdateValue = productData?.trackInventory ? increment(-Number(productData?.amountToBuy?.total)) : increment(0);
+            const stockUpdateValue = productData?.trackInventory ? increment(-Number(productData?.amountToBuy)) : increment(0);
             updateDoc(productRef, {
-                "product.stock": stockUpdateValue,
+                "stock": stockUpdateValue,
             })
         } catch (error) {
             console.error("Error updating document: ", error);

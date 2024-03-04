@@ -1,31 +1,47 @@
 import { DateTime } from 'luxon';
 import { truncateString } from '../utils/text/truncateString';
 
-export function getTimeElapsed(timestamp) {
+export function getTimeElapsed(timestamp, friendlyLimit = 1440) {
   const now = DateTime.now();
   const diff = now.diff(DateTime.fromMillis(timestamp));
-  const elapsedSeconds = Math.floor(diff.as('seconds'));
   const elapsedMinutes = Math.floor(diff.as('minutes'));
-  const elapsedHours = Math.floor(diff.as('hours'));
   
-  if (elapsedSeconds < 60) {
-    return truncateString(`Hace ${elapsedSeconds} segundo${elapsedSeconds > 1 ? 's' : ''}`, 12);
-  } else if (elapsedMinutes < 60) {
-    const minutes = elapsedMinutes === 1 ? 'minuto' : 'minutos';
-    return truncateString(`Hace ${elapsedMinutes} ${minutes}`, 12);
-  } else if (elapsedHours <= 2 && elapsedHours < 24) {
-    const hours = elapsedHours === 1 ? 'hora' : 'horas';
-    return truncateString(`Hace ${elapsedHours} ${hours}`, 12);
+  if (elapsedMinutes < 1) {
+    const elapsedSeconds = Math.floor(diff.as('seconds'));
+    return `Hace ${elapsedSeconds} segundo${elapsedSeconds !== 1 ? 's' : ''}`;
+  } else if (elapsedMinutes < friendlyLimit) {
+    return `Hace ${elapsedMinutes} minuto${elapsedMinutes !== 1 ? 's' : ''}`;
   } else {
     const date = DateTime.fromMillis(timestamp);
-    return `${date.toLocaleString(DateTime.DATETIME_SHORT)}`;
+    return date.toLocaleString(DateTime.DATETIME_SHORT);
   }
 }
+
+
 export function useFormatDate(timestamp) {
   const date = DateTime.fromMillis(timestamp);
   return `${date.toLocaleString(DateTime.DATETIME_SHORT)}`;
 }
-
+// export function getTimeElapsed(timestamp) {
+//   const now = DateTime.now();
+//   const diff = now.diff(DateTime.fromMillis(timestamp));
+//   const elapsedSeconds = Math.floor(diff.as('seconds'));
+//   const elapsedMinutes = Math.floor(diff.as('minutes'));
+//   const elapsedHours = Math.floor(diff.as('hours'));
+  
+//   if (elapsedSeconds < 60) {
+//     return truncateString(`Hace ${elapsedSeconds} segundo${elapsedSeconds > 1 ? 's' : ''}`, 12);
+//   } else if (elapsedMinutes < 60) {
+//     const minutes = elapsedMinutes === 1 ? 'minuto' : 'minutos';
+//     return truncateString(`Hace ${elapsedMinutes} ${minutes}`, 12);
+//   } else if (elapsedHours <= 2 && elapsedHours < 24) {
+//     const hours = elapsedHours === 1 ? 'hora' : 'horas';
+//     return truncateString(`Hace ${elapsedHours} ${hours}`, 12);
+//   } else {
+//     const date = DateTime.fromMillis(timestamp);
+//     return `${date.toLocaleString(DateTime.DATETIME_SHORT)}`;
+//   }
+// }
 
 export const convertMillisToDate = (milliseconds, format = 'default', locale = 'es') => {
   //const date = DateTime.fromMillis(milliseconds).setLocale(locale);

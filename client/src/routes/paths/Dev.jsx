@@ -1,3 +1,4 @@
+import { AllUsersControl } from "../../views/controlPanel/AllUsersControl/AllUsersControl";
 import ChangeLogCreate from "../../views/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate";
 import { BusinessControl } from "../../views/controlPanel/CreateBusinessControl/BusinessControl";
 import { CreateBusiness } from "../../views/controlPanel/CreateBusinessControl/CreateBusiness";
@@ -8,7 +9,7 @@ import Menu from "../../views/templates/system/Menu/Menu";
 import { Prueba } from "../../views/templates/system/Menu/Prueba";
 
 import RoutesName from "../routesName"
-const { CREATE_BUSINESS, MANAGE_BUSINESS, CHANGELOG_CREATE, CHANGELOG_MANAGE } = RoutesName.DEV_VIEW_TERM;
+const { CREATE_BUSINESS, MANAGE_BUSINESS, CHANGELOG_CREATE, CHANGELOG_MANAGE, ALL_USERS } = RoutesName.DEV_VIEW_TERM;
 
 const routes = [
     {
@@ -30,6 +31,10 @@ const routes = [
     {
         path: '/prueba',
         element: <Prueba />,
+    },
+    {
+        path: ALL_USERS,
+        element: <AllUsersControl />,
     },
     {
         path: CHANGELOG_CREATE,

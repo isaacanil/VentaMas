@@ -4,6 +4,7 @@ import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js
 import styled from 'styled-components';
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+import { getTotalPrice } from '../../../../../../../utils/pricing';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -46,8 +47,11 @@ const options = {
 const accumulateCategorySalesData = (sales) => {
   return sales.reduce((acc, sale) => {
     sale.data.products.forEach(product => {
-      const category = product.category;
-      acc[category] = (acc[category] || 0) + product.price.total;
+      const category = product?.category;
+      const price = product?.pricing?.price;
+      const taxPercent = product?.pricing?.tax;
+      const amountToBuy = product?.amountToBuy
+      acc[category] = (acc[category] || 0) + getTotalPrice(price, taxPercent, 0, amountToBuy);
     });
     return acc;
   }, {});
