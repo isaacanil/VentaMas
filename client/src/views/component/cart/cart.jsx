@@ -165,6 +165,9 @@ export const Cart = () => {
       dispatch(addNotification({ message: "No hay productos seleccionados", type: 'error' }));
       return;
     }
+    // const isAmountToBuyValid = ProductSelected.every(product => product?.amountToBuy > 0 || !product?.amountToBuy){
+    //   antd
+    // }
     if (checkCashCount.status === 'closed' || checkCashCount.status === 'closing' || checkCashCount.status !== 'open') {
       handleCashReconciliationConfirm();
       return;

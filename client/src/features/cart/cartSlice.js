@@ -156,6 +156,14 @@ const cartSlice = createSlice({
             updateAllTotals(state)
         },
         CancelShipping: (state) => state = initialState,
+        changeProductWeight: (state, action) => {
+            const { id, weight } = action.payload
+            const product = state.data.products.find((product) => product.cid === id)
+            if (product) {
+                product.weightDetail.weight = weight
+            }
+            updateAllTotals(state)
+        },
         totalPurchaseWithoutTaxes: (state) => {
             const ProductsSelected = state.data.products;
             const result = ProductsSelected.reduce((total, product) => total + product.cost.total, 0);
@@ -185,6 +193,7 @@ export const {
     addTaxReceiptInState,
     CancelShipping,
     changeProductPrice,
+    changeProductWeight,
     deleteProduct,
     diminishAmountToProduct,
     onChangeValueAmountToProduct,
@@ -193,6 +202,7 @@ export const {
     totalPurchase,
     totalPurchaseWithoutTaxes,
     totalShoppingItems,
+
     totalTaxes,
     updateClientInState,
     saveBillInFirebase,

@@ -45,8 +45,6 @@ export function getTotalPrice(product) {
 
 function getWeight(product) {
   const sellingPrice = product?.pricing?.price;
-
-
   const weight = product?.weightDetail?.weight || 0;
   let baseSellingPrice;
   if (weight) {
@@ -54,12 +52,10 @@ function getWeight(product) {
   } else {
     baseSellingPrice = sellingPrice;
   }
-
   let finalPrice = baseSellingPrice;
   return finalPrice;
 }
 export function resetAmountToBuyForProduct(product) {
-  // Crear una copia del producto con amountToBuy ajustado a 1
   return {
     ...product, // Conservar todas las propiedades del producto
     amountToBuy: 1 // Establecer amountToBuy a 1
@@ -70,12 +66,16 @@ function getTotal(product) {
   const sellingPrice = product?.pricing?.price;
   const amountToBuy = product?.amountToBuy || 1;
   const baseSellingPrice = sellingPrice * amountToBuy;
-  let finalPrice = baseSellingPrice;
-  return finalPrice;
+  return baseSellingPrice;
 }
 
 export function getListPriceTotal(product) {
-  const price = product?.pricing.listPrice || 0;
+  let price = product?.pricing.listPrice || 0;
+  const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
+  if(isSoldByWeight){
+    const weight = product?.weightDetail?.weight || 0;
+    price = price * weight;
+  }
   const tax = (product?.pricing?.tax / 100) || 0;
   let taxAmount = price * tax;
   let totalPrice = price + taxAmount;
@@ -83,7 +83,12 @@ export function getListPriceTotal(product) {
 }
 
 export function getAvgPriceTotal(product) {
-  const price = product?.pricing?.avgPrice || 0;
+  let price = product?.pricing?.avgPrice || 0;
+  const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
+  if(isSoldByWeight){
+    const weight = product?.weightDetail?.weight || 0;
+    price = price * weight;
+  }
   const tax = (product?.pricing?.tax / 100) || 0;
   let taxAmount = price * tax;
   let totalPrice = price + taxAmount;
@@ -91,7 +96,12 @@ export function getAvgPriceTotal(product) {
 }
 
 export function getMinPriceTotal(product) {
-  const price = product?.pricing?.minPrice || 0;
+  let price = product?.pricing?.minPrice || 0;
+  const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
+  if(isSoldByWeight){
+    const weight = product?.weightDetail?.weight || 0;
+    price = price * weight;
+  }
   let tax = (product?.pricing?.tax / 100) || 0;
   let taxAmount = price * tax;
   let totalPrice = price + taxAmount;
@@ -117,11 +127,9 @@ export function getProductsPrice(products) {
   }, 0);
 }
 
-
 export function getProductsTax(products) {
   return products.reduce((acc, product) => acc + getTax(product), 0);
 }
-
 
 export function getProductsDiscount(products) {
   return products.reduce((acc, product) => acc + getDiscount(product), 0);

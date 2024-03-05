@@ -30,6 +30,7 @@ import filterProductsSliceReducer from "../features/filterProduct/filterProducts
 import noteModalReducer from "../features/noteModal/noteModalSlice";
 import cashCountState from "../features/cashCount/cashStateSlice";
 import invoiceFormReducer from "../features/invoice/invoiceFormSlice";
+import productWeightEntryModalSlice from "../features/productWeightEntryModalSlice/productWeightEntryModalSlice";
 import * as expenseSlices from '../features/expense';
 import * as purchaseSlices from '../features/purchase';
 
@@ -39,6 +40,7 @@ export const store = configureStore({
     user: userReducer,
     cart: cartReducer,
     abilities: abilitiesReducer,
+    productWeightEntryModalSlice: productWeightEntryModalSlice,
     filterProducts: filterProductsSliceReducer,
     clientCart: clientCartReducer,
     addOrder: addOrderReducer,

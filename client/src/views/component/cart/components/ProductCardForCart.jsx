@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
 import { Counter } from '../../../templates/system/Counter/Counter'
-import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurchaseWithoutTaxes, addPaymentMethodAutoValue, changeProductPrice } from '../../../../features/cart/cartSlice'
+import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurchaseWithoutTaxes, addPaymentMethodAutoValue, changeProductPrice, changeProductWeight } from '../../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { icons } from '../../../../constants/icons/icons'
 //import { Button } from '../../../templates/system/Button/Button'
@@ -48,9 +48,9 @@ function extraerPreciosConImpuesto(producto) {
     const avgPriceTotal = getAvgPriceTotal(producto);
     const minPriceTotal = getMinPriceTotal(producto);
     const preciosConImpuesto = [
-        {label: listPriceTotal, value: listPriceTotal},
-        {label: avgPriceTotal, value: avgPriceTotal},
-        {label: minPriceTotal, value: minPriceTotal},
+        { label: listPriceTotal, value: listPriceTotal },
+        { label: avgPriceTotal, value: avgPriceTotal },
+        { label: minPriceTotal, value: minPriceTotal },
     ]
 
     return preciosConImpuesto;
@@ -83,7 +83,7 @@ export const ProductCardForCart = ({ item }) => {
         const newPrice = e.target.value;
         const priceWithoutTax = getPriceWithoutTax(newPrice, tax);
 
-      
+
         if (newPrice < minPrice) {
             antd.message.error('El precio ingresado es menor al precio mínimo permitido.', 4);
         }
@@ -164,7 +164,7 @@ export const ProductCardForCart = ({ item }) => {
                         trigger={['click']}
                     >
                         {
-                            canModifyPrice && !item?.weightDetail?.isSoldByWeight ? (
+                            canModifyPrice  ? (
                                 <Button
                                     icon={icons.arrows.caretDown}
                                     size='small'
@@ -186,11 +186,13 @@ export const ProductCardForCart = ({ item }) => {
                     />
                     {
                         item?.weightDetail?.isSoldByWeight ? (
-                            <Input 
-                                readOnly={true}
-                                value={`${(item?.weightDetail?.weight)} ${item?.weightDetail?.weightUnit}`}
-
-                            />
+                            <div style={{ display: "flex", gap: "1em" }}>
+                                <Input
+                                    value={`${(item?.weightDetail?.weight)}`}
+                                    onChange={(e) => dispatch(changeProductWeight({id: item.cid, weight: e.target.value}))}
+                                />
+                                {item?.weightDetail?.weightUnit}
+                            </div>
 
                         ) : (
                             <Counter

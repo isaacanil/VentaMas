@@ -25,11 +25,9 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
 
     useEffect(() => {
         if (counter.value >= 0) {
-            //dispatch(totalShoppingItems())
 
             dispatch(onChangeValueAmountToProduct(counter))
             dispatch(addPaymentMethodAutoValue())
-            // dispatch(setChange())
         }
 
     }, [counter])

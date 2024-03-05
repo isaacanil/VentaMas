@@ -16,6 +16,7 @@ import { motion } from 'framer-motion'
 import {  getTotalPrice } from '../../../../../utils/pricing'
 import * as antd from 'antd'
 import { CustomProduct } from '../CustomProduct'
+import { ProductWeightEntryModal } from '../../../../component/modals/ProductWeightEmtryModal/ProductWeightEntryModal'
 const { Badge, Tag } = antd
 
 export const Product = ({ product, }) => {
@@ -24,15 +25,12 @@ export const Product = ({ product, }) => {
     const dispatch = useDispatch();
     const ProductsSelected = useSelector(SelectProduct);
     const deliverySelected = useSelector(SelectDelivery);
+    const [productWeightEntryModal, setProductWeightEntryModal] = useState(false);
     const [isImageLoaded, setImageLoaded] = useState(false);
 
     const handleGetThisProduct = (product) => {
         if(product?.weightDetail?.isSoldByWeight){
-            antd.Modal.info({
-                title: 'Producto no disponible',
-                content: 'Este producto se vende por peso, actualmente solo disponible al escanear con un codigo barra valido. Revise la configuracion del Producto en el panel de inventario',
-                onOk() {},
-              });
+            setProductWeightEntryModal(true);
               return
         }
         dispatch(addProduct(product))
@@ -62,63 +60,75 @@ export const Product = ({ product, }) => {
     // }
     return (
     
-        
-        <Container
-            onClick={() => handleGetThisProduct(product)}
-            imageHiddenRef={imageHiddenRef}
-            isSelected={ProductCheckInCart.status}
-            variants={item}
-        >
-            {
-                <Head imageHiddenRef={imageHiddenRef ? true : false}>
-
-                    <ImageContainer imageHiddenRef={imageHiddenRef}>
-                        {!isImageLoaded && <Loader isImageLoaded={isImageLoaded} />}
-                        {
-                            <img
-                                src={(isConnected && imageFallback) || noImg}
-                                onLoad={() => setImageLoaded(true)}
-                            />
-                        }
-                    </ImageContainer>
-                </Head>
-            }
-            <Body>
-                <Title isOpen={ProductCheckInCart.status}>
-                    {product.name}
-                </Title>
-                {ProductCheckInCart.status ? (
-                    <Button
-                        startIcon={icons.operationModes.discard}
-                        width='icon24'
-                        color={'on-error'}
-                        borderRadius='normal'
-                        onClick={(e) => deleteProductFromCart(e, product?.id)}
-                    />
-                ) : null}
-                
-                <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
-
-                    {ProductCheckInCart.status  ? (
+        <Fragment>
+            <Container
+                onClick={() => handleGetThisProduct(product)}
+                imageHiddenRef={imageHiddenRef}
+                isSelected={ProductCheckInCart.status}
+                variants={item}
+            >
+                {
+                    <Head imageHiddenRef={imageHiddenRef ? true : false}>
+    
+                        <ImageContainer imageHiddenRef={imageHiddenRef}>
+                            {!isImageLoaded && <Loader isImageLoaded={isImageLoaded} />}
+                            {
+                                <img
+                                    src={(isConnected && imageFallback) || noImg}
+                                    onLoad={() => setImageLoaded(true)}
+                                />
+                            }
+                        </ImageContainer>
+                    </Head>
+                }
+                <Body>
+                    <Title isOpen={ProductCheckInCart.status}>
+                        {product.name}
+                    </Title>
+                    {ProductCheckInCart.status ? (
+                        <Button
+                            startIcon={icons.operationModes.discard}
+                            width='icon24'
+                            color={'on-error'}
+                            borderRadius='normal'
+                            onClick={(e) => deleteProductFromCart(e, product?.id)}
+                        />
+                    ) : null}
+                    
+                    <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
+    
+                        {ProductCheckInCart.status  ? (
+                            <Group>
+                                <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy}</AmountToBuy>
+                            </Group>
+                        ) : <Group />}
+    
                         <Group>
-                            <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy}</AmountToBuy>
+                            {
+                                product?.weightDetail?.isSoldByWeight ? (
+                                  <Price>
+                                  { useFormatPrice(price)} / {product?.weightDetail?.weightUnit}
+                                  </Price>
+                                ) : (
+                                    <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price ))}</Price>
+                                )
+                            }
                         </Group>
-                    ) : <Group />}
-
-                    <Group>
-                        {
-                            product?.weightDetail?.isSoldByWeight ? (
-                              <Price>
-                              { useFormatPrice(price)} / {product?.weightDetail?.weightUnit}
-                              </Price>
-                            ) : (
-                                <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price ))}</Price>
-                            )
-                        }
-                    </Group>
-                </Footer>
-            </Body>
-        </Container>
+                    </Footer>
+                </Body>
+            </Container>
+            <ProductWeightEntryModal
+                isVisible={productWeightEntryModal}
+                product={product}
+                onAdd={() => {
+                    dispatch(addProduct(product))
+                    setProductWeightEntryModal(false);
+                }}
+                onCancel={() => {
+                    setProductWeightEntryModal(false);
+                }}
+            />
+        </Fragment>
        
     )
 }

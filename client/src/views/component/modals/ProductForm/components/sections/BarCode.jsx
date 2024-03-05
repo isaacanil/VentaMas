@@ -21,6 +21,7 @@ export const BarCode = ({ product }) => {
                 <Barcode
                     width={1}
                     height={50}
+                  
                     value={product?.barcode || '-'}
                 />
                 <Form.Item
