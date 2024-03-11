@@ -30,9 +30,6 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
   const productLength = products.length;
   // Agrupar los productos por categoría
   
-
-
-
   useEffect(() => {
     setProductsLoading(true)
     setTimeout(() => {

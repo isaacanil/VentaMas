@@ -105,7 +105,7 @@ export function useGetProducts(trackInventory = false) {
       const constraints = [];
 
       if (categoriesArray.length > 0 && categoriesStatus) {
-        constraints.push(where("product.category", "in", categoriesArray));
+        constraints.push(where("category", "in", categoriesArray));
       }
 
       const q = query(productsRef, ...constraints);

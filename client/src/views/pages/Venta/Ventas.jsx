@@ -27,7 +27,6 @@ import * as antd from 'antd'
 import { connectStorageEmulator } from 'firebase/storage'
 
 export const Sales = () => {
-
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
   const [cashCountConfirmation, setCashCountConfirmation] = useState(false)
