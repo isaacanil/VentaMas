@@ -12,9 +12,9 @@ import { getTax } from "../../utils/pricing"
 function filterProducts(productsArray, inventariable, itbis) {
   // Filtro por Inventariable
   if (inventariable === 'si') {
-    productsArray = filter(productsArray, product => product.product.trackInventory === true);
+    productsArray = filter(productsArray, product => product.trackInventory === true);
   } else if (inventariable === 'no') {
-    productsArray = filter(productsArray, product => product.product.trackInventory === false);
+    productsArray = filter(productsArray, product => product.trackInventory === false);
   }
 
   // Filtro por ITBIS
@@ -29,8 +29,8 @@ function orderingProducts(productsArray, criterio, orden) {
   const handleOrdering = (field, order) => {
     if (field === 'tax') {
       productsArray.sort((a, b) => {
-        const taxA = getTax(a.product.pricing.price, a.product.pricing.tax);
-        const taxB = getTax(b.product.pricing.price, b.product.pricing.tax);
+        const taxA = getTax(a.pricing.price, a.pricing.tax);
+        const taxB = getTax(b.pricing.price, b.pricing.tax);
         if (order === 'ascNum') {
           if (taxA === 0) return 1;
           if (taxB === 0) return -1;
@@ -105,7 +105,7 @@ export function useGetProducts(trackInventory = false) {
       const constraints = [];
 
       if (categoriesArray.length > 0 && categoriesStatus) {
-        constraints.push(where("product.category", "in", categoriesArray));
+        constraints.push(where("category", "in", categoriesArray));
       }
 
       const q = query(productsRef, ...constraints);
@@ -118,16 +118,19 @@ export function useGetProducts(trackInventory = false) {
         }
         let productsArray = snapshot.docs.map((item) => {
           let doc = item.data();
-          delete doc?.product?.updatedAt;
-          delete doc?.product?.createdAt;
-          delete doc?.product?.createdBy;
+          delete doc?.updatedAt;
+          delete doc?.createdAt;
+          delete doc?.createdBy;
           return doc
         }
         );
 
 
-        // productsArray = filterProducts(productsArray, inventariable, itbis);
-        // productsArray = orderingProducts(productsArray, criterio, orden);
+         productsArray = filterProducts(productsArray, inventariable, itbis);
+         productsArray = orderingProducts(productsArray, criterio, orden);
+
+         productsArray = productsArray.sort((a, b) => a?.custom === true ? -1 : 1);
+  
 
         setProducts(productsArray);
         setLoading(false)

@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
 import styled from 'styled-components';
 import { SubTitle } from '../../../../../../../../../checkout/Receipt';
-
+import * as antd from 'antd';
+const { Radio, Space } = antd;
 export const SortPanel = ({ Label, Group }) => {
     const [isCriterioChanged, setIsCriterioChanged] = useState(false);
 
@@ -39,50 +40,75 @@ export const SortPanel = ({ Label, Group }) => {
 
     return (
         <Container>
-            <div>
+            <GroupContainer>
                 <SubTitle>Ordenar por:</SubTitle>
-                <Group
-                    column
-                    themeColor={'neutral'}
+                <Radio.Group
+                    onChange={(e) => handleCriterioChange(e.target.value)}
+                    value={criterio}
+                    style={{
+                        width: '100%',
+
+                    }}
+                    buttonStyle="solid"
                 >
-                    {
-                        opcionesCriterio.length > 0 &&
-                        opcionesCriterio.map((opcion, index) => (
-                            <Label key={index}
-                                selected={criterio === opcion.valor}
-                                themeColor={'neutral'}
-                            >
-                                <input type="radio" value={opcion.valor} checked={criterio === opcion.valor} onChange={() => handleCriterioChange(opcion.valor)} />
+                    <Space
+                        direction="vertical"
+                        style={{
+                            width: '100%',
+                        }}
+                    >
+
+                        {opcionesCriterio.map((opcion, index) => (
+                            <Radio.Button
+                                style={{
+                                    width: '100%',
+
+                                }}
+
+                                value={opcion.valor}
+                                key={index}>
                                 {opcion.etiqueta}
-                            </Label>
-                        ))
-                    }
-                </Group>
-            </div>
-            <div>
-                <SubTitle>Orden:</SubTitle>
-                <Group
-                    themeColor={'neutral'}
-                    fillBtn
-                >
-                    {
-                        (opcionesOrden[criterio || 'asc']?.length > 0) &&
-                        (opcionesOrden[criterio || 'asc']).map((opcion, index) => (
-                            <Label key={index}
-                                selected={orden === opcion.valor}
-                                themeColor={'neutral'}
-                            >
-                                <input type="radio" value={opcion.valor} checked={orden === opcion.valor} onChange={() => handleOrdenChange(opcion.valor)} />
-                                {opcion.etiqueta}
-                            </Label>
+                            </Radio.Button>
                         ))}
-                </Group>
-            </div>
+                    </Space>
+                </Radio.Group>
+            </GroupContainer>
+            <GroupContainer>
+                <SubTitle>Orden:</SubTitle>
+                <Radio.Group
+                    buttonStyle='solid'
+                    onChange={(e) => handleOrdenChange(e.target.value)}
+                    value={orden}
+                    style={{
+                        width: '100%',
+                    }}
+                >
+
+                 
+
+                        {(opcionesOrden[criterio || 'asc']?.length > 0) && (opcionesOrden[criterio || 'asc']).map((opcion, index) => (
+                            <Radio.Button
+                                value={opcion.valor}
+                                key={index}>
+                                {opcion.etiqueta}
+                            </Radio.Button>
+                        ))}
+                   
+
+                </Radio.Group>
+            </GroupContainer>
         </Container>
     )
 }
 const Container = styled.div`
     display: grid;
-    gap: 0.6em;
+    gap: 1.8em;
     overflow: hidden;
+    
+`
+const GroupContainer = styled.div`
+    display: grid;
+    gap: 0.5em;
+    width: 100%;
+    align-items: center;
 `

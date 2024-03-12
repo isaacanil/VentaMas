@@ -279,7 +279,7 @@ const Title = styled.div`
     letter-spacing: 0.4px;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;  
-    text-transform: capitalize;
+    
     overflow: hidden;
     word-wrap: break-word;
     overflow-wrap: break-word;
