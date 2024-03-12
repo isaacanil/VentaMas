@@ -93,7 +93,7 @@ const OptionGroup = styled.div`
         switch (props.themeColor) {
             case 'primary':
                 return `
-                background-color: var(--color1);
+                background-color: var(--color);
                 color: var(--White);
                 
             `
@@ -107,7 +107,7 @@ const OptionGroup = styled.div`
     }}
 `;
 const SectionsWrapper = styled.div`
-    overflow: scroll;
+    overflow-y: scroll;
     height: 100%;
     padding: 1em 0.4em;
     border-top: 1px solid #ccc;

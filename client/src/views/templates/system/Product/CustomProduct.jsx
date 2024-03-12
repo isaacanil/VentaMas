@@ -27,25 +27,23 @@ export const CustomProduct = ({ product }) => {
 
                     {<FaPizzaSlice/>}
                 </div>
-                    {/* {product.productName.charAt(0)} */}
-                
+                      
             </ProductImgWrapper>
             <Body>
                 <Main>
                     <Title>{product.name}</Title>
                 </Main>
-                <Footer>
-                </Footer>
+                {/* <Footer>
+                </Footer> */}
             </Body>
         </ProductContainer>
     )
 }
 const ProductContainer = styled.div`
-    order: -2;
-    //border: 1px solid rgba(0, 0, 0, 0.200);
-    //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.100);
+  
     border-radius: 6px;
-    background-color: rgb(255, 255, 255);
+    border: 4px solid rgb(250, 234, 89);
+    background-color: rgb(250, 234, 89);
     overflow: hidden;
     display: grid;
     gap: 10px;
@@ -106,10 +104,10 @@ const ProductImgWrapper = styled.div`
                     border-radius: 6px;
                     height: 100%;
                     width: 100%;
-                    background-color: var(--White3);
+                    background-color: #f3f3f3b2;
                     svg{
                         font-size: 2em;
-                        color: var(--Gray2);
+                        color: #000000b2;
 
                     }
                 }
@@ -164,7 +162,6 @@ const ProductImgWrapper = styled.div`
 const Body = styled.div`
      height: 100%;
     width: 100%;
-    background-color: #ffffff;
     padding: 4px 0;
     position: relative;
     transition: 4000ms all ease-in-out;

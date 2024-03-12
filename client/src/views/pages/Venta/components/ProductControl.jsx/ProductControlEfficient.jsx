@@ -98,7 +98,9 @@ const ProductList = ({ products }) => {
           position: 'relative',
         }}
       >
-        {rowVirtualizer.getVirtualItems().map(virtualRow => (
+        {
+        rowVirtualizer.getVirtualItems()
+        .map(virtualRow => (
           <div
             key={virtualRow.key}
             style={{
@@ -131,7 +133,8 @@ const ProductList = ({ products }) => {
               return null; // Renderiza un espacio en blanco o un marcador de posición si no hay producto
             })}
           </div>
-        ))}
+        ))
+        }
       </div>
     </ProductsListContainer>
   )
