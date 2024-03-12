@@ -33,13 +33,15 @@ import { SelectProductOutflow } from "../../../features/productOutflow/productOu
 import { OPERATION_MODES } from "../../../constants/modes"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
 import { AnimatePresence } from "framer-motion"
-import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
+
 import Dialog from "../../templates/system/Dialog/Dialog"
 import NoteModal from "../../templates/system/NoteModal/NoteModal"
 import ClientFormAnt from "../../pages/Contact/Client/components/ClientForm/ClientFormAnt"
 import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
 import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
 import { FileListModal } from "./FileListModal/FileListModal"
+import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
+import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
 
 export const ModalManager = () => {
 
@@ -65,22 +67,26 @@ export const ModalManager = () => {
             isOpen={AddClientModalSelected}
           />
         )}
-          {/* <BusinessEditModal /> */}
+        {/* <BusinessEditModal /> */}
         {/* <UpdateProductModal
             key='modal-update-product'
             isOpen={UpdateProdModalSelected}
           /> */}
+        <BarcodePrintModal 
+        
+        />
+
         {UpdateProdModalSelected && (
           <ProductEditorModal
-          key={'modal-form-product'}
-          isOpen={UpdateProdModalSelected}  />
+            key={'modal-form-product'}
+            isOpen={UpdateProdModalSelected} />
         )}
         <FileListModal
-        key={'modal-file-list'}
-        data={FileListSelected} onClose={toggleFileListModal}/>
-        <InvoiceForm 
+          key={'modal-file-list'}
+          data={FileListSelected} onClose={toggleFileListModal} />
+        <InvoiceForm
           key={'modal-invoice'}
-         
+
         />
         {SetCustomPizzaSelected && (
           <SetCustomProduct
@@ -139,7 +145,7 @@ export const ModalManager = () => {
       <ImageViewer />
       <SmallNotification />
       <ConfirmationDialog />
- 
+
     </Fragment>
   )
 
