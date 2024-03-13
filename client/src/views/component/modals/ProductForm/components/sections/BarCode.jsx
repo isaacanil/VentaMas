@@ -21,17 +21,17 @@ export const BarCode = ({ product }) => {
                 <Barcode
                     width={1}
                     height={50}
-                  
+
                     value={product?.barcode || '-'}
                 />
                 <Form.Item
                     name="barcode"
                 >
-                <Input
-                    placeholder="Código de Barra"
-                    maxLength={60}
-                    value={product?.barcode}
-                />
+                    <Input
+                        placeholder="Código de Barra"
+                        maxLength={60}
+                        value={product?.barcode}
+                    />
                 </Form.Item>
             </Space>
         </Card>
