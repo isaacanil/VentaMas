@@ -1,17 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { fbGetAppVersion } from '../../../../firebase/app/fbGetAppVersion';
 
 const appMetadata = {
   name: 'Ventamax',
   version: 'Versión 02 de Octubre 2023',
   copyright: "© 2023 GISYS. Todos los derechos reservados."
 }
+function timestampToVersion(timestamp) {
+  if (!timestamp) return '';
+  var date = new Date(timestamp.seconds * 1000);
+  var day = ("0" + date.getDate()).slice(-2);
+  var monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  var month = monthNames[date.getMonth()];
+  var year = date.getFullYear();
+  
+  return 'Versión ' + day + ' de ' + month + ' ' + year;
+}
 const Footer = () => {
   const navigate = useNavigate()
+  const [appVersion, setAppVersion] = useState()
   const handleViewChangeLogs = () => {
     navigate("/changelogs/list")
   }
+  useEffect(() => {
+    const fetchAppVersion = async () => {
+     const version = await fbGetAppVersion();
+      setAppVersion(version);
+    };
+  
+    fetchAppVersion();
+  }, []);
   return (
     <FooterContainer>
       <FooterWrapper>
@@ -19,7 +40,7 @@ const Footer = () => {
           {appMetadata.copyright}
         </Copyright>
         <Version onClick={handleViewChangeLogs}>
-          {appMetadata.version}
+         {timestampToVersion(appVersion?.version)}
         </Version>
       </FooterWrapper>
     </FooterContainer>

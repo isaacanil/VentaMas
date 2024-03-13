@@ -15,12 +15,17 @@ export const ChangelogList = () => {
                 <Wrapper>
 
                     <h1>Ventamax — Notas del lanzamiento</h1>
-                    {changelogs.map(({ changelog }, index) => (
-                        <EditorWrapper>
-                            <Editor key={index} editorState={rawToEditorState(changelog.content)} />
+                    <br />
+                    {changelogs
+                        .sort((a, b) => new Date(b?.changelog?.createdAt) - new Date(a?.changelog?.createdAt))
+                        .map(({ changelog }, index) => (
+                            <EditorWrapper>
+                                <Editor key={index} editorState={rawToEditorState(changelog.content)} />
 
-                        </EditorWrapper>
-                    ))}
+                            </EditorWrapper>
+                        ))
+                      
+                    }
                 </Wrapper>
             </Container>
         </Fragment>
