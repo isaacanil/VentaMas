@@ -33,7 +33,7 @@ import invoiceFormReducer from "../features/invoice/invoiceFormSlice";
 import productWeightEntryModalSlice from "../features/productWeightEntryModalSlice/productWeightEntryModalSlice";
 import * as expenseSlices from '../features/expense';
 import * as purchaseSlices from '../features/purchase';
-
+import barcodePrintModalReducer from "../features/barcodePrintModalSlice/barcodePrintModalSlice";
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -70,6 +70,7 @@ export const store = configureStore({
     ...expenseSlices,
     ...purchaseSlices,
     cashCountState: cashCountState,
+    barcodePrintModal: barcodePrintModalReducer
   }
   ,
 })

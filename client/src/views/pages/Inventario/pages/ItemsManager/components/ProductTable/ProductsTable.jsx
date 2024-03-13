@@ -21,7 +21,12 @@ import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDelete
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
 import * as antd from 'antd'
-const { Button } = antd;
+//quiero el iconos d elos tres punto verticales
+
+import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined } from '@ant-design/icons';
+import { store } from '../../../../../../../app/store'
+import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
+const { Button, Dropdown, Menu } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
@@ -29,14 +34,17 @@ export const ProductsTable = ({ products, searchTerm }) => {
 
   const { setDialogConfirm } = useDialog();
 
-  const handleDeleteProduct = useCallback((user, id) => {
-    let docId = id.product.id ? id.product.id : id.id
+  const handleDeleteProduct = useCallback((id) => {
+    let docId = id?.product?.id ? id?.product?.id : id?.id
     setDialogConfirm({
       title: 'Eliminar producto',
       isOpen: true,
       type: 'error',
       message: '¿Está seguro que desea eliminar este producto?',
-      onConfirm: () => fbDeleteProduct(user, docId),
+      onConfirm: async () => {
+        const currentUser = selectUser(store.getState());
+        await fbDeleteProduct(currentUser, docId);
+      }
     })
   }, [user])
 
@@ -124,11 +132,54 @@ export const ProductsTable = ({ products, searchTerm }) => {
       minWidth: '100px',
       maxWidth: '100px',
       align: 'right',
+      clickable: false,
       cell: ({ value }) => {
-        console.log(value)
+        const menu = {
+          items: [
+            {
+              label: "Editar",
+              key: 1,
+              icon: <EditOutlined />,
+              onClick: () => handleUpdateProduct(value)
+            },
+            {
+              label: "Imprimir Barcode",
+              key: 2,
+              icon: <PrinterOutlined />,
+              onClick: () => dispatch(toggleBarcodeModal(value))
+            },
+            {
+              label: "Eliminar",
+              key: 3,
+              icon: <DeleteOutlined />,
+              danger: true,
+              onClick: () => handleDeleteProduct(value)
+            }
+          ]
+        }
+
+        // const menu = (
+        //   <Menu onClick={({ key }) => {
+        //     if (key === 'edit') {
+        //       handleUpdateProduct(value);
+        //     } else if (key === 'delete') {
+        //       handleDeleteProduct(user, value);
+        //     }
+        //   }}>
+        //     <Menu.Item key="edit" icon={<EditOutlined />}>
+        //       Editar
+        //     </Menu.Item>
+        //     <Menu.Item key="print" icon={<PrinterOutlined />}>
+        //       Imprimir Barcode
+        //     </Menu.Item>
+        //     <Menu.Item key="delete" icon={<DeleteOutlined />} danger>
+        //       Eliminar
+        //     </Menu.Item>
+        //   </Menu>
+        // );
         return (
           <ButtonGroup>
-            <Button
+            {/* <Button
               icon={icons?.operationModes?.edit}
               onClick={() => handleUpdateProduct(value)}
             />
@@ -136,7 +187,10 @@ export const ProductsTable = ({ products, searchTerm }) => {
               icon={icons.operationModes.delete}
               danger
               onClick={() => handleDeleteProduct(user, value)}
-            />
+            /> */}
+            <Dropdown menu={menu}>
+              <Button icon={<MoreOutlined />} />
+            </Dropdown>
           </ButtonGroup>
         )
       }
