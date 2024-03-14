@@ -16,6 +16,7 @@ import { selectUser } from '../../../../features/auth/userSlice'
 import { userAccess } from '../../../../hooks/abilities/useAbilities'
 import { getAvgPriceTotal, getListPriceTotal, getMinPriceTotal, getPriceWithoutTax, getTax, getTotalPrice } from '../../../../utils/pricing'
 import { TbAxe } from 'react-icons/tb'
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
 
 const defaultColor = { bg: 'var(--White3)', border: 'var(--Gray4)' }; // Asume que var(--Gray4) es el color de borde por defecto
 const errorColor = { bg: '#ffefcc', border: '#f5ba3c' }; // Rojo claro para indicar error, con un borde más oscuro
@@ -62,17 +63,17 @@ export const ProductCardForCart = ({ item }) => {
     const { abilities } = userAccess();
     const user = useSelector(selectUser)
 
+    const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     const tax = item.pricing.tax
     const minPrice = getMinPriceTotal(item);
     const listPrice = getListPriceTotal(item);
     const averagePrice = getAvgPriceTotal(item);
-    const price = getTotalPrice(item)
+    const price = getTotalPrice(item, taxReceiptEnabled)
 
     const [inputPriceColor, setInputPriceColor] = useState(defaultColor);
     const [inputPrice, setInputPrice] = useState(price);
 
     const deleteProductFromCart = (id) => dispatch(deleteProduct(id));
-
     const canModifyPrice = abilities.can('change', 'Price');
 
     const handleChangePrice = (e) => {

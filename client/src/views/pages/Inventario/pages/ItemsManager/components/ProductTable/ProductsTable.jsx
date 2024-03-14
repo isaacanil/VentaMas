@@ -26,12 +26,13 @@ import * as antd from 'antd'
 import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined } from '@ant-design/icons';
 import { store } from '../../../../../../../app/store'
 import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
+import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
 const { Button, Dropdown, Menu } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-
+  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const { setDialogConfirm } = useDialog();
 
   const handleDeleteProduct = useCallback((id) => {
@@ -105,7 +106,8 @@ export const ProductsTable = ({ products, searchTerm }) => {
       maxWidth: '0.4fr',
       align: 'right',
       cell: ({ value }) => {
-        const price = getTotalPrice(value)
+        
+        const price = getTotalPrice(value, taxReceiptEnabled)
         console.log("value ", value)
         const unit = value?.weightDetail?.weightUnit
         const isSoldByWeight = value?.weightDetail?.isSoldByWeight

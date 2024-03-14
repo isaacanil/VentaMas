@@ -34,6 +34,9 @@ const initialState = {
     permission: {
         openCashReconciliation: false
     },
+    settings: {
+        taxReceipt: { enabled: false }
+    },
     isOpen: false,
     data: {
         id: '',

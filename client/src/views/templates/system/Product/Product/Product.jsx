@@ -17,6 +17,7 @@ import {  getTotalPrice } from '../../../../../utils/pricing'
 import * as antd from 'antd'
 import { CustomProduct } from '../CustomProduct'
 import { ProductWeightEntryModal } from '../../../../component/modals/ProductWeightEmtryModal/ProductWeightEntryModal'
+import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
 const { Badge, Tag } = antd
 
 export const Product = ({ product, }) => {
@@ -27,7 +28,7 @@ export const Product = ({ product, }) => {
     const deliverySelected = useSelector(SelectDelivery);
     const [productWeightEntryModal, setProductWeightEntryModal] = useState(false);
     const [isImageLoaded, setImageLoaded] = useState(false);
-
+    const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     const handleGetThisProduct = (product) => {
         if(product?.weightDetail?.isSoldByWeight){
             setProductWeightEntryModal(true);
@@ -44,6 +45,7 @@ export const Product = ({ product, }) => {
     const isConnected = useCheckForInternetConnection();
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id);
     const [imageFallback] = useImageFallback(product?.image, noImg);
+
     
     const item = {
         hidden: { y: 20, opacity: 0 },
@@ -52,7 +54,7 @@ export const Product = ({ product, }) => {
             opacity: 1
         }
     }
-    const price = getTotalPrice(product); 
+    const price = getTotalPrice(product, taxReceiptEnabled); 
     // if (product?.custom) {
     //     return (
     //        < CustomProduct  product={product} />

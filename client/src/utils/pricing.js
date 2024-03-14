@@ -11,12 +11,12 @@ function isValidNumber(value) {
   return typeof value === 'number' && !isNaN(value) && value !== null;
 }
 
-export function getTax(product) {
+export function getTax(product, taxReceiptEnabled) {
   const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
   const result = (isSoldByWeight) ? getWeight(product) : getTotal(product)
   const taxPercentage = Number(product?.pricing?.tax) || 0;
   let tax = result * (taxPercentage / 100) ;
-  return limit(tax);
+  return taxReceiptEnabled ?  limit(tax) : 0;
 }
 
 export function getPriceWithoutTax(priceWithTax, taxPercentage) {
@@ -32,15 +32,15 @@ export function getDiscount(product) {
   return limit(price * (discountPercentage / 100));
 }
 
-export function getTotalPrice(product) {
+export function getTotalPrice(product, taxReceiptEnabled = false) {
   if (!product || !isValidNumber(product?.pricing?.price) || !isValidNumber(product?.amountToBuy)) return 0;
   const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
   const result = (isSoldByWeight) ? getWeight(product) : getTotal(product)
-  const tax = getTax(product) ;
+  const tax = taxReceiptEnabled ? getTax(product, taxReceiptEnabled)  : 0;
   const discount = getDiscount(product);
+  
   const total = result + tax - discount;
   return limit(total);
-
 }
 
 function getWeight(product) {
@@ -127,8 +127,11 @@ export function getProductsPrice(products) {
   }, 0);
 }
 
-export function getProductsTax(products) {
-  return products.reduce((acc, product) => acc + getTax(product), 0);
+export function getProductsTax(products, taxReceiptEnabled = false) {
+  if (taxReceiptEnabled) {
+    return products.reduce((acc, product) => acc + getTax(product, taxReceiptEnabled), 0);
+  }
+  return 0;
 }
 
 export function getProductsDiscount(products) {
@@ -139,11 +142,12 @@ export function getTotalItems(products) {
   return products.reduce((acc, product) => acc + product?.amountToBuy, 0);
 }
 
-export function getProductsTotalPrice(products, totalDiscountPercentage = 0, totalDelivery = 0) {
+export function getProductsTotalPrice(products, totalDiscountPercentage = 0, totalDelivery = 0, taxReceiptEnabled = false) {
   if (!isValidNumber(totalDelivery)) {
     totalDelivery = 0;
   }
-  let totalBeforeDiscount = getProductsPrice(products) + getProductsTax(products) - getProductsDiscount(products);
+ 
+  let totalBeforeDiscount = getProductsPrice(products) + getProductsTax(products, taxReceiptEnabled) - getProductsDiscount(products);
 
   let totalDiscount = getTotalDiscount(totalBeforeDiscount, totalDiscountPercentage);
 

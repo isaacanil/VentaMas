@@ -89,7 +89,6 @@ export const Sales = () => {
 
   useBarcodeScanner(products, checkBarcode);
 
-  console.log(products, 'products')
   const productFiltered = filterData(products, searchData)
   const filterProductsByVisibility = productFiltered.filter((product) => product.isVisible !== false);
 

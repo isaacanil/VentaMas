@@ -50,8 +50,8 @@ export const DatePicker = ({
                 <Col>
                     <Label>Fecha Inicio</Label>
                     <input
-                        value={dates.startDate ? DateTime.fromMillis(dates.startDate).toISODate() : ""}
-                        max={dates.endDate ? DateTime.fromMillis(dates.endDate).toISODate() : null}
+                        value={dates?.startDate ? DateTime.fromMillis(dates?.startDate).toISODate() : ""}
+                        max={dates?.endDate ? DateTime.fromMillis(dates?.endDate).toISODate() : null}
                         type="date"
                         name="startDate"
                         onChange={(e) => setDates({
@@ -63,8 +63,8 @@ export const DatePicker = ({
                 <Col>
                     <Label>Fecha Fin</Label>
                     <input
-                        value={dates.endDate ? DateTime.fromMillis(dates.endDate).toISODate() : ""}
-                        min={dates.startDate ? DateTime.fromMillis(dates.startDate).toISODate() : null}
+                        value={dates?.endDate ? DateTime.fromMillis(dates?.endDate).toISODate() : ""}
+                        min={dates?.startDate ? DateTime.fromMillis(dates?.startDate).toISODate() : null}
                         max={DateTime.local().toISODate()}
                         type="date"
                         name="endDate"
