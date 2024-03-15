@@ -29,29 +29,30 @@ const variants = {
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: 150, transition: { duration: 0.5 } },  // nueva propiedad
 };
-const determineInputPriceColor = (totalPrice, minPrice, listPrice, averagePrice) => {
+const determineInputPriceColor = (totalPrice, minPrice, listPrice, avgPrice) => {
     if (totalPrice < minPrice || totalPrice > listPrice) {
         return errorColor;
-    } else if (totalPrice === minPrice || totalPrice === averagePrice) {
+    } else if (totalPrice === minPrice || totalPrice === avgPrice) {
         return exactMatchColor;
     } else if (totalPrice > minPrice && totalPrice < listPrice) {
         return inRangeColor;
     }
     return defaultColor;
 };
-function extraerPreciosConImpuesto(producto) {
+function extraerPreciosConImpuesto(allPrice) {
+    const { listPrice, avgPrice, minPrice } = allPrice;
     const propiedadesPrecio = {
         'listPrice': 'Precio de lista',
         'avgPrice': 'Precio promedio',
         'minPrice': 'Precio mínimo',
     };
-    const listPriceTotal = getListPriceTotal(producto);
-    const avgPriceTotal = getAvgPriceTotal(producto);
-    const minPriceTotal = getMinPriceTotal(producto);
+    // const listPriceTotal = getListPriceTotal(producto);
+    // const avgPriceTotal = getAvgPriceTotal(producto);
+    // const minPriceTotal = getMinPriceTotal(producto);
     const preciosConImpuesto = [
-        { label: listPriceTotal, value: listPriceTotal },
-        { label: avgPriceTotal, value: avgPriceTotal },
-        { label: minPriceTotal, value: minPriceTotal },
+        { label: useFormatPrice(listPrice), value: listPrice },
+        { label: useFormatPrice(avgPrice), value: avgPrice },
+        { label: useFormatPrice(minPrice), value: minPrice },
     ]
 
     return preciosConImpuesto;
@@ -65,10 +66,16 @@ export const ProductCardForCart = ({ item }) => {
 
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     const tax = item.pricing.tax
-    const minPrice = getMinPriceTotal(item);
-    const listPrice = getListPriceTotal(item);
-    const averagePrice = getAvgPriceTotal(item);
+    const minPrice = getMinPriceTotal(item, taxReceiptEnabled);
+    const listPrice = getListPriceTotal(item, taxReceiptEnabled);
+    const avgPrice = getAvgPriceTotal(item, taxReceiptEnabled);
+
     const price = getTotalPrice(item, taxReceiptEnabled)
+    const allPrice = {
+        minPrice,
+        avgPrice,
+        listPrice
+    }
 
     const [inputPriceColor, setInputPriceColor] = useState(defaultColor);
     const [inputPrice, setInputPrice] = useState(price);
@@ -82,7 +89,7 @@ export const ProductCardForCart = ({ item }) => {
             return
         };
         const newPrice = e.target.value;
-        const priceWithoutTax = getPriceWithoutTax(newPrice, tax);
+        const priceWithoutTax = getPriceWithoutTax(newPrice, tax, taxReceiptEnabled);
 
 
         if (newPrice < minPrice) {
@@ -91,7 +98,7 @@ export const ProductCardForCart = ({ item }) => {
         if (newPrice > listPrice) {
             antd.message.error('El precio ingresado es mayor al precio de lista.', 4);
         }
-        const color = determineInputPriceColor(newPrice, minPrice, listPrice, averagePrice)
+        const color = determineInputPriceColor(newPrice, minPrice, listPrice, avgPrice)
 
         setInputPriceColor(color);
 
@@ -100,7 +107,7 @@ export const ProductCardForCart = ({ item }) => {
     }
 
 
-    const precios = extraerPreciosConImpuesto(item);
+    const precios = extraerPreciosConImpuesto( allPrice);
 
     const handleMenuClick = (e) => {
         console.log(e)
@@ -120,7 +127,7 @@ export const ProductCardForCart = ({ item }) => {
             <div
                 onClick={() => handleMenuClick(precio)}
                 style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>{precio.label}</span>
+                <span style={{whiteSpace: "nowrap"}}>{precio.label}</span>
             </div>
         )
     }));
@@ -165,7 +172,7 @@ export const ProductCardForCart = ({ item }) => {
                         trigger={['click']}
                     >
                         {
-                            canModifyPrice  ? (
+                            canModifyPrice ? (
                                 <Button
                                     icon={icons.arrows.caretDown}
                                     size='small'
@@ -190,7 +197,7 @@ export const ProductCardForCart = ({ item }) => {
                             <div style={{ display: "flex", gap: "1em" }}>
                                 <Input
                                     value={`${(item?.weightDetail?.weight)}`}
-                                    onChange={(e) => dispatch(changeProductWeight({id: item.cid, weight: e.target.value}))}
+                                    onChange={(e) => dispatch(changeProductWeight({ id: item.cid, weight: e.target.value }))}
                                 />
                                 {item?.weightDetail?.weightUnit}
                             </div>
