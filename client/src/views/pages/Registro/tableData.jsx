@@ -95,6 +95,7 @@ export const columns = [
     maxWidth: '0.4fr',
     min: '120px',
   },
+ 
   {
     Header: 'RNC',
     accessor: 'ncf',
