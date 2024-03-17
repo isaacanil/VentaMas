@@ -9,7 +9,7 @@ export const Header = () => {
             <Logo />
             <Description>
                 <FormattedValue
-                    value={'Autorización de segundo usuario.'}
+                    value={'Confirmación de Usuario autorizado'}
                     type={'subtitle'}
                 />
                 <FormattedValue
