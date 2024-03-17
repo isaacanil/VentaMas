@@ -114,6 +114,7 @@ export const OrderItem = ({ cat, Row, Col }) => {
             <Button
               icon={icons.operationModes.delete}
               onClick={() => handleDelete(cat.id)}
+              danger
             />
           </ButtonGroup>
         )}

@@ -54,6 +54,7 @@ export const CashReconciliationTable = () => {
         cashCount?.updatedAt ?
           cashCount?.updatedAt : null
       ),
+      
       user: cashCount?.opening.employee.name,
       total: cashCount,
       discrepancy: cashCount,
@@ -93,7 +94,7 @@ export const CashReconciliationTable = () => {
         filterConfig={filtersConfig}
         filterUI
         datePicker
-
+        defaultDate={'today'}
         dateRange={dateRange}
         setDateRange={setDateRange}
         datesKeyConfig='date'

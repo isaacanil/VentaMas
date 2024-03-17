@@ -30,13 +30,12 @@ import { ExpenseChart } from '../ExpenseReport/ExpenseReport'
  * @desc A component that renders a table of expenses.
  * @returns {JSX.Element} The ExpensesTable component
  */
-export const ExpensesTable = ({ searchTerm, expenses }) => {
-   
+export const ExpensesTable = ({ searchTerm, expenses, dateRange, setDateRange }) => {
     const { t } = useTranslation('status');
     const user = useSelector(selectUser);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
+ 
     const [reportIsOpen, setReportIsOpen] = useState(false);
     const handleReportOpen = () => setReportIsOpen(!reportIsOpen);
     const data = expenses
@@ -45,7 +44,7 @@ export const ExpensesTable = ({ searchTerm, expenses }) => {
                 number: expense.numberId,
                 category: expense.category,
                 description: expense.description,
-                dateExpense: expense.dates.expenseDate,
+                dateExpense: expense?.dates?.expenseDate,
                 amount: expense.amount,
                 receiptImg: expense.receiptImageUrl,
                 action: expense,
@@ -131,7 +130,7 @@ export const ExpensesTable = ({ searchTerm, expenses }) => {
             }
         }
     ]
-    console.log("----------------", data);
+  
 
     return (
         <Container>
@@ -142,7 +141,11 @@ export const ExpensesTable = ({ searchTerm, expenses }) => {
                 datePicker
                 filterUI
                 searchTerm={searchTerm}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
                 groupBy={'dateGroup'}
+                defaultDate={'today'}
+                datesKeyConfig='dateGroup'
                 filterConfig={[
                     {
                         label: 'Categoría',

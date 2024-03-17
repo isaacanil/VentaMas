@@ -67,7 +67,7 @@ const Table = styled.div`
   width: 100%;
   overflow: hidden;
   display: grid;
-  grid-template-rows: min-content 1fr; 
+  grid-template-rows:  1fr; 
   
   `
 const TableBody = styled.div`
@@ -75,7 +75,7 @@ const TableBody = styled.div`
   display: grid;
   align-content: start;
   grid-template-columns:  repeat(auto-fill, minmax(250px, 1fr));
-  overflow-y: auto;
+  overflow-y: scroll;
   color: var(--Gray10);
   font-size: 15px;
 

@@ -1,8 +1,9 @@
 import { useDispatch } from "react-redux";
 import { useDialog } from "../../../../../Context/Dialog/DialogContext";
 import { icons } from "../../../../../constants/icons/icons";
-import { Button, ButtonGroup } from "../Button"
-
+import {  ButtonGroup } from "../Button"
+import * as antd from "antd";
+const { Button } = antd;
 export const EditDelBtns = ({ onUpdate, onDelete = async () => { } }) => {
 
     const { dialog, setDialogConfirm, onClose } = useDialog();
@@ -31,18 +32,13 @@ export const EditDelBtns = ({ onUpdate, onDelete = async () => { } }) => {
     return (
         <ButtonGroup >
             <Button
-                borderRadius='normal'
-                title={icons.operationModes.edit}
-                width='icon32'
-                color='gray-dark'
+                icon={icons.operationModes.edit}
                 onClick={onUpdate}
             />
             <Button
-                borderRadius='normal'
-                title={icons.operationModes.delete}
-                width='icon32'
-                color='gray-dark'
+                icon={icons.operationModes.delete}
                 onClick={deleteConfirm}
+                danger
             />
         </ButtonGroup>
     )
