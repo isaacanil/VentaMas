@@ -8,9 +8,10 @@ import { setExpenseList } from '../../../../features/expense/expensesListSlice'
 import { getDateRange } from '../../../../utils/date/getDateRange'
 
 export const ExpensesList = () => {
-  const [datesSelected, setDatesSelected] = useState(getDateRange('thisMonth'));
+  // const [datesSelected, setDatesSelected] = useState(getDateRange('thisMonth'));
   const [searchTerm, setSearchTerm] = useState('');
-  const { expenses } = useFbGetExpenses(datesSelected);
+  const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
+  const { expenses } = useFbGetExpenses(dateRange);
 
   return (
     <Container>
@@ -21,6 +22,8 @@ export const ExpensesList = () => {
       />
       <ExpensesTable
         searchTerm={searchTerm}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
         expenses={expenses}
       />
     </Container>

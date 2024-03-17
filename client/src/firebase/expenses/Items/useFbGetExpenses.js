@@ -23,20 +23,12 @@ export const useFbGetExpenses = (dates) => {
     
     useEffect(() => {
         if (!user?.businessID) return;
-
-        // if (expenses.length > 0 && lastDates &&
-        //     lastDates.startDate === dates.startDate &&
-        //     lastDates.endDate === dates.endDate) {
-        //     return;
-        // }
         
         setLastDates(dates);
 
         const expensesCollection = collection(db, 'businesses', user.businessID, 'expenses');
-        const startDate = new Date(dates.startDate);
-        const endDate = new Date(dates.endDate);
-        console.log(startDate, 'startDate');
-        console.log(endDate, 'endDate');
+        const startDate = new Date(dates?.startDate);
+        const endDate = new Date(dates?.endDate);
 
         const expensesQuery = query(
             expensesCollection,
