@@ -32,8 +32,7 @@ export const Registro = () => {
   const handleTimeChange = (dates) => {
     setDatesSelected(dates)
   }
-  const invoice = invoices.find((invoice) => invoice.data.id === 'ZTSBG1xQ9vWD');
-  console.log(fbFixInvoices(invoices))
+ 
   return (
     <Fragment>
       <Container

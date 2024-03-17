@@ -1,3 +1,5 @@
+const MAX_DEPTH = 3;
+
 const removeAccents = (str) => {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
@@ -12,11 +14,14 @@ const searchInNumber = (number, term) => number.toString().includes(term);
 
 const searchInArray = (array, terms) => array.some(item => searchInObject(item, terms));
 
-const searchInObject = (object, terms) => Object.values(object).some(value => searchInProperty(value, terms));
+const searchInObject = (object, terms, depth = 0) => {
+    if (depth > MAX_DEPTH) return false; // Detiene la búsqueda si se excede la profundidad máxima
+    return Object.values(object).some(value => searchInProperty(value, terms, depth + 1));
+};
 
-const searchInProperty = (property, terms) => {
+const searchInProperty = (property, terms, depth = 0) => {
+    if (!property) { return false }
     for (const term of terms) {
-        if (!property) { continue }
         switch (typeof property) {
             case 'string':
                 if (searchInString(property, term)) return true;
@@ -26,11 +31,13 @@ const searchInProperty = (property, terms) => {
                 break;
             case 'object':
                 if (Array.isArray(property)) {
-                    if (searchInArray(property, terms)) return true;
+                    // Corrección aplicada aquí para pasar correctamente el parámetro `depth`
+                    if (searchInArray(property, terms, depth + 1)) return true;
                 } else if (property instanceof Date) {
                     if (searchInString(property.toISOString(), term)) return true;
                 } else {
-                    if (searchInObject(property, terms)) return true;
+                    // Aquí también aseguramos el seguimiento correcto de la profundidad
+                    if (searchInObject(property, terms, depth + 1)) return true;
                 }
                 break;
         }
