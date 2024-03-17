@@ -22,22 +22,29 @@ const getInitialColumnOrder = (columns, tableName, localStorageName) => {
 // Función para filtrar columnas inválidas
 const filterInvalidColumns = (columns) => columns.filter(savedCol => !(Object.keys(savedCol).length === 1 && savedCol.status === true));
 
-// Función para fusionar columnas de localStorage con las columnas por defecto
 const mergeColumns = (defaultColumns, savedColumns) => {
+  // Paso 1: Mantener columnas y orden del localStorage, asegurando que el estado se preserva
   const updatedColumns = savedColumns.map(savedCol => {
     const originalCol = defaultColumns.find(col => col.accessor === savedCol.accessor);
-    return originalCol ? { ...originalCol, status: savedCol.status || 'active' } : null;
+    // Si la columna original existe, se preserva el estado del localStorage
+    return originalCol ? { ...originalCol, status: savedCol.status } : null;
   }).filter(col => col !== null);
 
-  return defaultColumns.map(col => {
-    const savedCol = updatedColumns.find(saved => saved.accessor === col.accessor);
-    return savedCol || { ...col, status: 'active' };
+  // Paso 2: Agregar nuevas columnas que no estén en el localStorage al final
+  defaultColumns.forEach(col => {
+    const isColumnSaved = savedColumns.some(savedCol => savedCol.accessor === col.accessor);
+    // Si la columna por defecto no está en las guardadas, se agrega al final
+    if (!isColumnSaved) {
+      updatedColumns.push({ ...col, status: 'active' }); // Suponiendo que el estado por defecto de nuevas columnas es 'active'
+    }
   });
+  return updatedColumns;
 };
+
 
 export const useColumnOrder = (columns = [], tableName, userId) => {
   const localStorageName = buildLocalStorageName(userId, tableName);
-
+  console.log("------------ useColumnsOrder")
   const getColumnOrderFromStorage = useCallback(() => getInitialColumnOrder(columns, tableName, localStorageName), [tableName, columns, localStorageName]);
 
   const [columnOrder, setColumnOrder] = useState(getColumnOrderFromStorage);

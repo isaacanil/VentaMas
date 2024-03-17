@@ -13,6 +13,7 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
     return {
       numberID: data?.numberID,
       ncf: data?.NCF,
+   
       client: data?.client?.name || "Generic Client",
       date: data?.date?.seconds,
       itbis: getProductsTax(data?.products),
