@@ -3,6 +3,7 @@ import * as ant from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChangeProductData, changeProductPrice, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
 import { getTax } from '../../../../../../utils/pricing';
+import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
 const { InputNumber, Table, Form } = ant;
 const columns = [
     {
@@ -63,6 +64,7 @@ export const PriceCalculator = () => {
     const { product } = useSelector(selectUpdateProductData);
     const [tableData, setTableData] = useState([]);
     const dispatch = useDispatch();
+    const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     const calculateTableData = (productData) => {
         const prices = [
             {
@@ -93,11 +95,12 @@ export const PriceCalculator = () => {
             const amount = parseFloat(row.amount) || 0;
             const taxValue = parseFloat(productData?.pricing?.tax) || 0;
             const costUnit = parseFloat(productData?.pricing?.cost) || 0;
+         
 
             // Realiza los cálculos
          
             const tax = (taxValue / 100) ;
-            const itbis =  amount * tax ;
+            const itbis = taxReceiptEnabled ? (amount * tax) : 0 ;
             const finalPrice = amount + itbis;
             const margin = finalPrice - costUnit - itbis;
 

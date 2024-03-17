@@ -7,7 +7,9 @@ import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedT
 import { getProductsTax, getProductsTotalPrice, getTotalItems } from '../../../../utils/pricing'
 
 export const SaleReportTable = ({ bills = [], searchTerm }) => {
+  
   const data = bills?.map(({ data }) => {
+    const nfc = data?.NCF
     return {
       numberID: data?.numberID,
       ncf: data?.NCF,
@@ -17,7 +19,7 @@ export const SaleReportTable = ({ bills = [], searchTerm }) => {
       payment: data?.payment?.value,
       products: getTotalItems(data?.products),
       change: data?.change?.value,
-      total: getProductsTotalPrice(data?.products, data?.pricing?.tax),
+      total: getProductsTotalPrice(data?.products, 0, 0, nfc),
       ver: { data },
       accion: { data },
       dateGroup: DateTime.fromMillis(data?.date?.seconds * 1000).toLocaleString(DateTime.DATE_FULL)

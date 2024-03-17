@@ -15,11 +15,12 @@ const calculateChange = (payment, totalPurchase) => (payment - totalPurchase);
 
 // Función agrupadora para actualizar todos los totales
 const updateAllTotals = (state, paymentValue = null) => {
+    const taxReceiptEnabled = state.settings.taxReceipt.enabled;
     const products = state.data.products;
     const discount = state?.data?.discount?.value;
     const delivery = state?.data?.delivery?.value;
-    state.data.totalPurchase.value = getProductsTotalPrice(products, discount, delivery);
-    state.data.totalTaxes.value = getProductsTax(products);
+    state.data.totalPurchase.value = getProductsTotalPrice(products, discount, delivery, taxReceiptEnabled);
+    state.data.totalTaxes.value = getProductsTax(products, taxReceiptEnabled);
     state.data.totalShoppingItems.value = getTotalItems(products);
     state.data.totalPurchaseWithoutTaxes.value = getProductsPrice(products);
     state.data.payment.value = paymentValue !== null ? paymentValue : state.data.totalPurchase.value;
@@ -58,12 +59,17 @@ const cartSlice = createSlice({
             }
             updateAllTotals(state, paymentValue)
         },
+        
         changePaymentValue: (state, actions) => {
             const paymentValue = actions.payload
             state.data.payment.value = Number(paymentValue)
         },
         addTaxReceiptInState: (state, actions) => {
             state.data.NCF = actions.payload
+        },
+        setTaxReceiptEnabled: (state, actions) => {
+            const taxReceiptEnabled = actions.payload
+            state.settings.taxReceipt.enabled = taxReceiptEnabled
         },
         addPaymentMethod: (state, actions) => {
             const data = actions.payload
@@ -202,7 +208,7 @@ export const {
     totalPurchase,
     totalPurchaseWithoutTaxes,
     totalShoppingItems,
-
+    setTaxReceiptEnabled,
     totalTaxes,
     updateClientInState,
     saveBillInFirebase,

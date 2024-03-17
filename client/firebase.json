@@ -1,7 +1,7 @@
 {
   "hosting": {
-    "site": "ventamax",
     "public": "dist",
+    "site": "ventamax",
     "ignore": [
       "firebase.json",
       "**/.*",

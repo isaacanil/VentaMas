@@ -5,10 +5,13 @@ import { Col } from './Table/Col'
 import { Row } from './Table/Row'
 import { getTax, getTotalPrice, resetAmountToBuyForProduct } from '../../../../utils/pricing'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
+import { setTaxReceiptEnabled } from '../../../../features/cart/cartSlice'
 
 export const ProductList = ({ data }) => {
-    const { products } = data
-    
+    const { products, NCF } = data
+    const taxReceipt = useSelector(selectTaxReceiptEnabled)
     return (
         <Products>
             {
@@ -17,23 +20,23 @@ export const ProductList = ({ data }) => {
                         <Product key={index}>
                             <Row cols='3'>
                                 <Col>
-                                {
-                                    product?.weightDetail?.isSoldByWeight ? (
-                                        <div>
-                                            {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product.pricing.price)}
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            {product?.amountToBuy || 0} x {separator(getTotalPrice(resetAmountToBuyForProduct(product)))}
-                                        </div>
-                                    )
-                                }
+                                    {
+                                        product?.weightDetail?.isSoldByWeight ? (
+                                            <div>
+                                                {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product.pricing.price, NCF)}
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                {product?.amountToBuy || 0} x {separator(getTotalPrice(resetAmountToBuyForProduct(product), NCF))}
+                                            </div>
+                                        )
+                                    }
                                 </Col>
                                 <Col textAlign='right'>
-                                    {separator(getTax(product))}
+                                    {separator(getTax(product, NCF))}
                                 </Col>
                                 <Col textAlign='right'>
-                                    {separator(getTotalPrice(product))}
+                                    {separator(getTotalPrice(product, NCF))}
                                 </Col>
                             </Row>
                             <Row>

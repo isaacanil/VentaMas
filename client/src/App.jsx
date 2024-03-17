@@ -30,6 +30,7 @@ import { AnimatePresence } from 'framer-motion';
 import { usefbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
 import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer';
+import { useTaxReceiptEnabledToCart } from './features/cart/thunk';
 
 //const router = createBrowserRouter(routes)
 
@@ -44,6 +45,7 @@ function App() {
     dispatch(ReloadImageHiddenSetting())
   }, [])
 
+  useTaxReceiptEnabledToCart();
 
   useUserDocListener(user?.uid); // escucha los cambios en el documento del usuario actual
 
