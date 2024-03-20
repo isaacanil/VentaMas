@@ -14,19 +14,19 @@ export const Inventory = () => {
   const { products } = useGetProducts();
 
   return (
-    <Fragment>
+
+    <Container>
       <MenuApp
-      displayName='Productos'
+        displayName='Productos'
         searchData={searchTerm}
         setSearchData={setSearchTerm}
       />
-      <Container>
-        <ProductsTable
-          products={products}
-          searchTerm={searchTerm}
-        />
-      </Container>
-    </Fragment>
+      <ProductsTable
+        products={products}
+        searchTerm={searchTerm}
+      />
+    </Container>
+
   );
 };
 
@@ -35,8 +35,8 @@ const Container = styled.div`
     position: relative;
     grid-template-columns: auto;
     background-color: var(--White);
-    grid-template-rows: 1fr min-content;
-    max-height: calc(100vh - 2.75em);
-    height: calc(100vh - 2.75em);
+    grid-template-rows:  min-content 1fr;
+
+    height: calc(100vh );
    overflow: hidden;
 `

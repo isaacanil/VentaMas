@@ -1,20 +1,37 @@
-import { doc, setDoc } from "firebase/firestore"
-import { addNotification } from "../../features/notification/NotificationSlice"
+import { Timestamp, doc, serverTimestamp, setDoc } from "firebase/firestore"
 import { db } from "../firebaseconfig"
+import { fbUpdateStock } from "./fbUpdateStock"
+import { nanoid } from "nanoid"
 
-export const fbAddProductOutFlow = (user, productOutflow, dispatch) => {
-    if (!user?.businessID) return
-    productOutflow = {
-        ...productOutflow,
-        productList: productOutflow.productList.map((item) => ({
-            ...item,
-            currentRemovedQuantity: 0,
-        }))
+export const fbAddProductOutFlow =  async (user, productOutflow) => {
+    
+    if (!user?.businessID || !user?.uid ) {
+        console.error("Información requerida para la operación faltante o inválida");
+        return;
     }
-    const productOutFlowRef = doc(db, "businesses", user.businessID,  'productOutflow', productOutflow.id)
+
+    console.log(productOutflow, user.uid)
+    
+    const updates = productOutflow.productList.map(product => ({
+        product: product.product,
+        quantityRemoved: -product.quantityRemoved // Asume que quieres decrementar el stock
+    }));
+
+    const productOutflowData = {
+        ...productOutflow,
+        id: nanoid(10),
+        createdAt: serverTimestamp(),
+        createdBy: user.uid,
+        isDeleted: false,
+    }
+    console.log(productOutflowData)
+    const productOutFlowRef = doc(db, "businesses", user.businessID, 'productOutflow', productOutflowData.id)
+
     try {
-        setDoc(productOutFlowRef, productOutflow)
+        await setDoc(productOutFlowRef, productOutflowData)
+    
+        await fbUpdateStock(user, updates);
     } catch (error) {
-        dispatch(addNotification({ title: "ADD_PRODUCT_OUT_FLOW_ERROR", message: error, type: 'error' }))
+        console.error("Error en fbAddProductOutFlow:", error);
     }
 }

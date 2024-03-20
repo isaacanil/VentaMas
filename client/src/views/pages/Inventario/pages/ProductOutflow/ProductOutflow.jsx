@@ -11,7 +11,7 @@ import { fbGetProductOutflow } from '../../../../../firebase/ProductOutflow/fbGe
 import { fbUpdateStock } from '../../../../../firebase/ProductOutflow/fbUpdateStock';
 import useScroll from '../../../../../hooks/useScroll';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
-import { Button } from '../../../../templates/system/Button/Button';
+//import { Button } from '../../../../templates/system/Button/Button';
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup';
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
 import Loader from '../../../../templates/system/loader/Loader';
@@ -19,7 +19,11 @@ import { CenteredText } from '../../../../templates/system/CentredText';
 import { ProductOutflowDataFormatter, toggleProductOutflowModal } from './toggleProductOutflowModal';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { Header } from './components/Header/Header';
-
+import * as antd from 'antd'
+import { icons } from '../../../../../constants/icons/icons';
+import { convertTimeStampToMillis, fromMillisToDateISO } from '../../../../../utils/date/convertTimeStampToDate';
+import { convertMillisToDate } from '../../../../../utils/date/formatDate';
+const { Button } = antd
 
 export const ProductOutflow = () => {
   const dispatch = useDispatch()
@@ -35,10 +39,9 @@ export const ProductOutflow = () => {
   };
 
   const handleDeleteProductOutflow = async (item) => {
-
     try {
-      await fbUpdateStock(user, item.productList, true)
-      await fbDeleteProductOutflow(user, item.id)
+    
+      await fbDeleteProductOutflow(user, item)
       dispatch(addNotification({ type: 'success', message: 'Salida de producto eliminada' }))
     } catch (err) {
       dispatch(addNotification({ type: 'error', message: 'Error al eliminar la salida de producto' }))
@@ -101,7 +104,7 @@ export const ProductOutflow = () => {
               outflowList.length > 0 ?
                 (
                   outflowList
-                    .sort((a, b) => a.date - b.date)
+                    .sort((a, b) => a.createdAt - b.createdAt)
                     .reverse()
                     .map((item, index) => (
                       <Row key={item.id}>
@@ -109,27 +112,21 @@ export const ProductOutflow = () => {
                           type={'number'}
                           value={(outflowList.length - index)}
                         />
-                        <FormattedValue
-                          type={'date'}
-                          value={item.date}
-                        />
+                      {convertMillisToDate(item?.createdAt?.seconds * 1000)}
+                      
                         <span>
                           <FormattedValue
                             type={'number'}
                             value={
                               item.productList.reduce((total, item) => {
-                                return total + Number(item.totalRemovedQuantity)
+                                return total + Number(item?.quantityRemoved)
                               }, 0)
                             }
                           />
-
                         </span>
                         <ButtonGroup>
                           <Button
-                            width={'icon32'}
-                            title={<MdEdit />}
-                            color={'gray-dark'}
-                            borderRadius={'normal'}
+                            icon={icons.operationModes.edit}
                             onClick={() =>
                               toggleProductOutflowModal({
                                 mode: OPERATION_MODES.UPDATE.label,
@@ -139,10 +136,9 @@ export const ProductOutflow = () => {
                             }
                           />
                           <Button
-                            width={'icon32'}
-                            title={<MdDelete />}
-                            color={'gray-dark'}
+                            icon={icons.operationModes.delete}
                             borderRadius={'normal'}
+                            danger
                             onClick={() => handleDeleteProductOutflow(item)}
                           />
                         </ButtonGroup>

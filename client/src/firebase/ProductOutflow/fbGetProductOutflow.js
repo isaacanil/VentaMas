@@ -1,14 +1,16 @@
-import { collection, onSnapshot } from "firebase/firestore"
+import { collection, onSnapshot, query, where } from "firebase/firestore"
 import { toggleLoader } from "../../features/loader/loaderSlice"
 import { db } from "../firebaseconfig"
 /* */
 export const fbGetProductOutflow = ({user, setOutflowList, setOutflowListLoader, dispatch}) => {
     if(!user?.businessID) return
-    console.log('fbGetProductOutflow', user.businessID, '-------------------')
    
     const productOutflowRef = collection(db,"businesses", user.businessID, 'productOutflow')
+
+    const q = query(productOutflowRef, where("isDeleted", "!=", true))
+
     setOutflowListLoader(true)
-    onSnapshot(productOutflowRef, (snapshot) => {
+    onSnapshot(q, (snapshot) => {
         if(snapshot.empty) {
             setOutflowList([])
             setOutflowListLoader(false)
