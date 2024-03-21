@@ -6,7 +6,8 @@ import { fbSignIn } from '../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
 import { useDispatch } from 'react-redux';
 import { set } from 'lodash';
 import { useNavigate } from 'react-router-dom';
-
+import { Logo } from '../../../assets/logo/Logo';
+import styled from "styled-components"
 
 const { Header, Content } = Layout;
 
@@ -61,6 +62,7 @@ export const Login = () => {
          >
             <Header style={headerStyle} >
                {/* <div className="logo" /> */}
+               
                <h1 style={{ color: 'white' }}>VentaMax</h1>
             </Header>
             <Content
@@ -73,12 +75,8 @@ export const Login = () => {
                <Card
                   title="Inicio de Sesión"
                   bordered={false}
-                  style={{
-                     width: 600,
-                     height: "80vh",
-                     display: 'grid',
-                     gridTemplateRows: "min-content 1fr",
-                  }}>
+               >
+                   
                   <Form
                      form={form}
                      layout="vertical"
@@ -120,15 +118,7 @@ export const Login = () => {
                               placeholder="Contraseña"
                            />
                         </Form.Item>
-                        {/* <Form.Item>
-                        <Form.Item name="remember" valuePropName="checked" noStyle>
-                           <Checkbox>Recuérdame</Checkbox>
-                        </Form.Item>
-
-                        {/* <a className="login-form-forgot" href="">
-                        ¿Olvidaste tu contraseña?
-                     </a> 
-                     </Form.Item> */}
+                    
                      </Form.Item>
                      <Form.Item>
                         <Button
@@ -159,3 +149,7 @@ const headerStyle = {
    lineHeight: '64px',
    backgroundColor: '#4096ff',
 };
+
+const Container = styled.div`
+   
+`

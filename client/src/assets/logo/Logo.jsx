@@ -1,7 +1,7 @@
 import React from 'react'
 import logo from './ventamax.svg'
 import styled from 'styled-components'
-export const Logo = ({ size }) => {
+export const Logo = ({ size = "medium" }) => {
   return (
     <Component>
       <Img
