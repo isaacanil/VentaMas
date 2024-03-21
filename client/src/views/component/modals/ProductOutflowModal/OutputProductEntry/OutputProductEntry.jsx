@@ -18,9 +18,11 @@ export const OutputProductEntry = () => {
     const handleAddToProductOutflow = () => dispatch(addProductToProductOutflow(productSelected))
 
     const handleSelectProduct = async (product) => {
-
-        console.log(product)
-        dispatch(selectProduct({ ...productSelected, product: product }))
+        const productData = {
+            name: product?.name,
+            id: product?.id
+        }
+        dispatch(selectProduct({ ...productSelected, product: productData }))
     }
  
     const handleInputChange = (e, type = false) => {
@@ -58,9 +60,8 @@ export const OutputProductEntry = () => {
                         type='number'
                         bgColor='gray-light'
                         border
-                     
                         placeholder={`Cantidad`}
-                        name='removedQuantity'
+                        name='quantityRemoved'
                         value={productSelected?.quantityRemoved || ''}
                         onChange={(e) => handleInputChange(e, 'number')}
                     />

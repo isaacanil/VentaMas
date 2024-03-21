@@ -13,7 +13,7 @@ export const Header = () => {
     };
     return (
         <span>
-            <MenuApp />
+            <MenuApp sectionName={'Salida de Producto'} />
             <Container>
                 <HeaderWrapper>
                     {/* <Title>Registro de salida de productos</Title> */}

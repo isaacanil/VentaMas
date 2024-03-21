@@ -28,6 +28,7 @@ import { fbFixInvoicesForMultipleBusinesses } from '../../../../firebase/invoice
 import { fbGetInvoice } from '../../../../firebase/invoices/fbGetInvoice';
 import { fbCheckDuplicateProducts } from '../../../../firebase/products/fbCheckDuplicateProducts';
 import { fbUpdateAppVersion } from '../../../../firebase/app/fbUpdateAppVersion';
+import { fbDeleteProducts } from '../../../../firebase/products/fbDeleteProducts';
 
 const data = {
   companyName: "CASA ESTILO RF",
@@ -127,7 +128,12 @@ export const Prueba = () => {
     alert(values);
     //await fbTransferProductsToAnotherBusiness("Lm8GG6YXQJO3zgR9DkGe", "vvRKlKT9UOK4fX9FgJxN")
     //await fbCheckDuplicateProducts("vvRKlKT9UOK4fX9FgJxN")
-    
+    try{
+      await fbDeleteProducts(user)
+
+    }catch(err){
+      console.log(err)
+    }
     // await fbFixInvoicesForMultipleBusinesses()
     // await fbFixInvoices("EDW44d69fhdvE5QmuL2I")
     // await fbPreviewProcessedInvoice("EDW44d69fhdvE5QmuL2I", "mbKZKk-ZQbPq")
