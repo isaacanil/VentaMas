@@ -8,18 +8,21 @@ import styled from "styled-components"
 import { Logo } from "../../../../assets/logo/Logo";
 import { LogoContainer } from "./components/Header/LogoContainer";
 import * as ant from 'antd';
-const { Form, Input, Button, Checkbox, Card, Layout, Spin, notification } = ant;
+const { Input, Button, Checkbox, Card, Layout, Spin, notification } = ant;
 import { UserOutlined, LockOutlined, LoadingOutlined } from '@ant-design/icons';
+import { fbSignIn } from "../../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
+import { selectUser } from "../../../../features/auth/userSlice";
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom';
+
 export const Login = () => {
     const [form] = Form.useForm();
-    const [user, setUser] = useState({
-        email: "",
-        password: "",
-    })
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        fbLogin(user, homePath, navigate, dispatch)
-    }
+    const user = useSelector(selectUser)
+    const [loading, setLoading] = useState(false);
+    const [loadingTip, setLoadingTip] = useState('Cargando...');
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const homePath = '/home';
     const onFinish = async () => {
         setLoading(true); // Iniciar la animación de carga
         setTimeout(async () => {
@@ -51,135 +54,105 @@ export const Login = () => {
     };
     return (
         <Container>
-            {/* <form onSubmit={handleSubmit}>
-                <Body>
-
-
-                    <Group>
-                        <InputV4
-                            type="text"
-                            placeholder="Email"
-                            label="Email"
-                            value={user.email}
-                            onChange={(e) => setUser({ ...user, email: e.target.value })}
-                        />
-                    </Group>
-                    < Group>
-                        <InputV4
-                            type="password"
-                            placeholder="Password"
-                            label="Password"
-                            value={user.password}
-                            onChange={(e) => setUser({ ...user, password: e.target.value })}
-                        />
-                    </Group>
-                </Body>
-                <Footer>
-                    <Group>
-                        <Button>Login</Button>
-                    </Group>
-                </Footer>
-            </form> */}
-            <Form
-                autoComplete="off"
-                form={form}
-                layout="vertical"
-                name="normal_login"
-                style={{
-                    display: 'grid',
-                    gridTemplateRows: "1fr min-content",
-                    gap: 16
-                }}
-                className="login-form"
-                initialValues={{ remember: true }}
-                onFinish={onFinish}
-            >
-                 <LogoContainer />
-                <Form.Item
-                    style={
-                        {
-                            padding: " 2em 0em 2.5em"
-                        }
-                    }
+        
+                <Wrapper
+                
                 >
-                    <Form.Item
-                        name="username"
-                        label="Usuario"
-                        autoComplete="off"
-                        rules={[{ required: true, message: 'Por favor ingresa tu nombre de usuario!' }]}
-                    >
-                        <Input
-                            prefix={<UserOutlined className="site-form-item-icon" />}
-                            placeholder="Usuario"
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="password"
-                        autoComplete={false}
-                        label="Contraseña"
-                        rules={[{ required: true, message: 'Por favor ingresa tu contraseña!' }]}
-                    >
-                        <Input.Password
-                            prefix={<LockOutlined />}
-                            type="password"
-                            placeholder="Contraseña"
-                        />
-                    </Form.Item>
+                   
 
-                </Form.Item>
-                <Form.Item>
-                    <Button
-                        type="primary"
-                        htmlType="submit"
-                        style={{ width: '100%' }}
+                    <Form
+                        autoComplete="off"
+                        form={form}
+                        layout="vertical"
+                        name="normal_login"
+                        style={{
+                            display: 'grid',
+                            gridTemplateRows: "1fr min-content",
+                            gap: 16
+                        }}
+                        className="login-form"
+                        initialValues={{ remember: true }}
+                        onFinish={onFinish}
                     >
-                        Iniciar sesión
-                    </Button>
-                </Form.Item>
-            </Form>
-        </Container>
+                        <LogoContainer />
+                        <Body>
+
+                            <Form.Item
+                                name="username"
+                                label="Usuario"
+                                autoComplete="off"
+                                rules={[{ required: true, message: 'Por favor ingresa tu nombre de usuario!' }]}
+                            >
+                                <Input
+                                    size="large"
+                                    prefix={<UserOutlined className="site-form-item-icon" />}
+                                    placeholder="Usuario"
+                                    autoComplete="off"
+
+                                />
+                            </Form.Item>
+                            <br />
+                            <Form.Item
+                                name="password"
+                                label="Contraseña"
+                                rules={[{ required: true, message: 'Por favor ingresa tu contraseña!' }]}
+                            >
+                                <Input.Password
+                                    size="large"
+                                    prefix={<LockOutlined />}
+                                    type="password"
+                                    autoComplete="new-password"
+                                    placeholder="Contraseña"
+                                />
+                            </Form.Item>
+
+
+
+                        </Body>
+                        <Form.Item>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                size="large"
+
+                                style={{ width: '100%' }}
+                            >
+                                Iniciar sesión
+                            </Button>
+                        </Form.Item>
+                    </Form>
+
+                </Wrapper>
+          
+        </Container >
     )
 }
 
-
-
-
-
 const Container = styled.div`
-    max-width: 600px;
+   padding: 1em;
+   width: 100%;
+   justify-content: center;
+   height: 100vh;
+   max-height: 800px;
+   display: flex;
+
+`
+const Wrapper = styled.div`
+     max-width: 600px;
     width: 100%;
     background-color: white;
-    border-radius: var(--border-radius);
+
+    border-radius: 1em;
     padding: 2em;
     display: grid;
-    grid-template-rows: min-content 1fr;
-     form{
-    width: 100%;
-    height: 400px;
+    grid-template-rows: 1fr;
+    
+`
+const Body = styled.div`
+    
+`
+const Form = styled(ant.Form)`
     display: grid;
-    grid-template-rows: 1fr min-content;
-  }
+    grid-template-rows: min-content 1fr min-content !important;
+    
 `
-const Titulo = styled.h2`
-
-`
-const Head = styled.div``
-const Body = styled.div``
-
-const Footer = styled.div``
-const Group = styled.div`
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1.5rem;
-    width: 100%;
-`;
-
-// const Button = styled.button`
-//   padding: 4px;
-//   height: 2em;
-//   margin-top: 4px;
-//   background-color: var(--color);
-//   border-radius: var(--border-radius-light);
-//   border: var(--border-primary);
-// `;
-

@@ -20,8 +20,8 @@ width: min-content;
 `
 const imgSize = {
   xsmall: '1.5rem',
-  small: '2rem',
-  medium: '4rem',
+  small: '3rem',
+  medium: '5rem',
   large: '6rem',
   xlarge: '10rem',
   xxlarge: '12rem',

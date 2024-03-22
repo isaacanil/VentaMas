@@ -36,7 +36,7 @@ const Container = styled.div`
 display: grid;
 grid-template-columns: 1fr min-content;
 
-min-height: 500px;
+min-height: 350px;
 width: 100%;
 gap: 2em;
 max-width: 1200px;

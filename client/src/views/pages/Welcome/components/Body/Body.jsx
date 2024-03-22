@@ -4,6 +4,8 @@ import welcomeData from '../../WelcomeData.json'
 import Typography from '../../../../templates/system/Typografy/Typografy'
 import { Logo } from '../../../../../assets/logo/Logo'
 import { CardWelcome } from './CardWelcome/CardWelcome'
+import { ImageGallery } from '../../../../component/ImageGallery/ImageGallery'
+import { uiImage } from '../../../../templates/system/FormattedValue/ui/uiImage'
 
 
 const Body = () => {
@@ -16,6 +18,7 @@ const Body = () => {
         <Section>
         </Section>
       </Description>
+      <ImageGallery images={uiImage} />
     </Container>
   )
 }

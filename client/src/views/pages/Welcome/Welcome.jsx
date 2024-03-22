@@ -34,7 +34,6 @@ const Container = styled.div`
   margin: 0;
   background-color: #ffffff;
   color: #fff;
-  overflow: hidden;
  
   a {
     color: #fff;

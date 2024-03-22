@@ -2,13 +2,14 @@ import styled from "styled-components"
 import { useFormatNumber } from "../../../../hooks/useFormatNumber"
 import { useFormatDate } from "../../../../hooks/useFormatTime"
 import { useFormatPrice } from "../../../../hooks/useFormatPrice"
+import { DateTime } from "luxon";
 
 const formatValue = (type, value) => {
   switch (type) {
     case 'number':
       return useFormatNumber(value);
     case 'date':
-      return useFormatDate(value);
+      return useFormatDate(value || DateTime.now().toMillis());
     case 'price':
       return useFormatPrice(value);
     default:

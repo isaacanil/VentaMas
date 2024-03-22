@@ -9,16 +9,14 @@ export const LogoContainer = () => {
     return (
         <Container>
             <Wrapper>
-
-            <Title
-                level={3}
-
-            >
-                Facturación en Linea
-            </Title>
-            <LogoWrapper>
-                <Logo />
-            </LogoWrapper>
+                <Title
+                    level={4}
+                >
+                    Facturación en Linea
+                </Title>
+                <LogoWrapper>
+                    <Logo />
+                </LogoWrapper>
             </Wrapper>
             ventamax
         </Container >
@@ -31,9 +29,6 @@ const Container = styled.div`
     align-items: center;
     align-content: center;
     margin-bottom: 1.7em;
-   
-    
-
 `
 const Wrapper = styled.div`
     display: grid;
@@ -42,20 +37,21 @@ const Wrapper = styled.div`
     align-content: center;
     width: min-content;
     position: relative;
-   
-    
-
 `
 
 const Title = styled(Typography.Title)`
     white-space: nowrap;
     margin: 0 !important;
-    padding: 0.2em 0.4em;
+    padding:  0.4em 0.8em;
     padding-right: 1em;
     position: absolute;
     background-color: var(--color);
-    right: 2em;
+    right: 3.5em;
+    color: white !important;
     border-radius: 40px 0px 0px 40px;
+    @media (max-width: 600px){
+        display: none;
+    }
 
 `
 const LogoWrapper = styled.div`
