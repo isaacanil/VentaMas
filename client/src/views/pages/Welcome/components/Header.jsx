@@ -36,22 +36,7 @@ const Header = () => {
                     >
                         Iniciar sesión
                     </Button>
-                    {/* <Button
-                        borderRadius='normal'
-                        title='Login'
-                        onClick={() => {
-                            handleNavigate(loginPath)
-                        }
-                        }
-                    /> */}
-                    {/* <Button
-                        borderRadius='normal'
-                        title='Sign up'
-                        onClick={() => {
-                            handleNavigate(signupPath.path)
-                        }
-                        }
-                    /> */}
+                
                 </ButtonGroup>
             </Group>
         </Head>

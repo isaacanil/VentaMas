@@ -2,18 +2,28 @@ import React from 'react'
 import styled from 'styled-components'
 import { Logo } from '../../../../../../assets/logo/Logo'
 import Typography from '../../../../../templates/system/Typografy/Typografy'
+import * as ant from 'antd'
+import { useNavigate } from 'react-router-dom'
+const { Button } = ant;
 
 export const CardWelcome = ({ welcomeData }) => {
+    const loginPath = '/login'
+    const navigate = useNavigate()
+    const handleNavigate = (path) => {
+        navigate(path)
+    }
     return (
         <Container>
             <Main>
                 <Typography
                     variant={"h1"}
                     size='xlarge'
+                    context={"web"}
                     color='primary'
                 >
                     Ventamax
                 </Typography>
+                <br />
                 <Typography
                     variant={"h2"}
                 >
@@ -24,9 +34,25 @@ export const CardWelcome = ({ welcomeData }) => {
                 >
                     Eleva tu negocio al siguiente nivel con herramientas avanzadas, análisis profundos y soporte especializado. Si eres un profesional en ventas, Ventamax Pro es para ti.
                 </Typography>
+                <br />
+                <div>
+
+                <Button
+                    type='primary'
+                    size='large'
+                    onClick={() => {
+                        handleNavigate(loginPath)
+                    }}
+                >
+                    Iniciar sesión
+                </Button>
+                </div>
             </Main>
             <LogoContainer>
-                <Logo size='xxlarge' src={welcomeData.logo} alt="" />
+                <LogoBG>
+                    <Logo size='xlarge' src={welcomeData.logo} alt="" />
+
+                </LogoBG>
             </LogoContainer>
         </Container>
 
@@ -47,19 +73,29 @@ padding: 4em;
     }
 `
 const Main = styled.div`
-  display: grid;
-  align-content: start;
+  
+ display: grid;
   max-width: 500px;
   width: 100%;
+  @media (max-width: 800px){
+    order:2;
+  }
 `
 const LogoContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   width: 100%;
   max-width: 700px;
-  padding: 2em;
-  background-image: radial-gradient(circle, #0a53b3 0%, #ffffff 50%,  white 100%);
-  
+  display: flex;
+  justify-content: center;
  `
+const LogoBG = styled.div`
+ display: flex;
+ align-items: center;
+ justify-content: center;
+  
+ width: 6em;
+ height: 6em;
+ max-width: 700px;
+ padding: 2em;
+ background-image: radial-gradient(circle, #0a53b3 0%, #ffffff 50%,  white 100%);
+ 
+`

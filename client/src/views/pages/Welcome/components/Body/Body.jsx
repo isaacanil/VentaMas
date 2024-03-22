@@ -15,8 +15,7 @@ const Body = () => {
         <Section>
          <CardWelcome welcomeData={welcomeData}></CardWelcome>
         </Section>
-        <Section>
-        </Section>
+       
       </Description>
       <ImageGallery images={uiImage} />
     </Container>

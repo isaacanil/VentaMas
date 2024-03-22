@@ -20,6 +20,7 @@ export const Welcome = () => {
     <Container>
       <Header />
       <Body />
+      
     </Container>
   )
 }
