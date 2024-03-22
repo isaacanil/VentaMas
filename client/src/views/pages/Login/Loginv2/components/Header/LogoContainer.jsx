@@ -13,7 +13,7 @@ export const LogoContainer = () => {
                     <Title
                         level={4}
                     >
-                        Facturación en Linea
+                        Facturación en Línea
                     </Title>
                     <LogoWrapper>
                         <Logo />
