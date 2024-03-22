@@ -214,8 +214,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
   }));
 
   return (
-    <Container>
-      <TableWrapper>
+
         <AdvancedTable
           data={data}
           columns={columns}
@@ -226,8 +225,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           onRowClick={(row) => handleUpdateProduct(row.action)}
           groupBy={'category'}
         />
-      </TableWrapper>
-    </Container>
+
   )
 }
 const ProductName = styled.div`
@@ -236,26 +234,8 @@ const ProductName = styled.div`
   height: 100%;                     
   gap: 1.2em;
 `
-const Container = styled.div`
-    width: 100%;
-    display: flex;
-    background-color: var(--color2);
-    justify-content: center;
-`
-const TableWrapper = styled.header`
-  position: relative;
-  display: grid;
-  grid-template-rows: 1fr; 
-  height: calc(100vh - 2.75em);
-  width: 100%;
-  
-  overflow: hidden;
-  //border-radius: 0.5em;
-  margin: 0; /* nuevo estilo */
-  @media (max-width: 800px) {
-    max-height: 100%;
-  }
-`;
+
+
 const ProductCountDisplay = styled.div`
   position: absolute;
   left: 10px;

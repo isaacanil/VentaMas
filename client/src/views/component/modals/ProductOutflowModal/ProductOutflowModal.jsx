@@ -3,7 +3,7 @@ import { MdDelete, MdEdit } from 'react-icons/md'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { toggleAddProductOutflow } from '../../../../features/modals/modalSlice'
-import productOutflow, { deleteData, deleteProductFromProductOutflow, SelectProductList, SelectProductOutflow } from '../../../../features/productOutflow/productOutflow'
+import productOutflow, { deleteData, deleteProductFromProductOutflow, SelectProductList, SelectProductOutflow, updateProductFromProductOutflow } from '../../../../features/productOutflow/productOutflow'
 import { fbAddProductOutFlow } from '../../../../firebase/ProductOutflow/fbAddProductOutflow'
 import { fbDeleteItemFromProductOutflow } from '../../../../firebase/ProductOutflow/fbDeleteItemFromProductOutflow'
 import { fbGetProductOutflow } from '../../../../firebase/ProductOutflow/fbGetProductOutflow'
@@ -12,14 +12,16 @@ import { fbUpdateStock } from '../../../../firebase/ProductOutflow/fbUpdateStock
 import { useFormatNumber } from '../../../../hooks/useFormatNumber'
 import useScroll from '../../../../hooks/useScroll'
 import { CenteredText } from '../../../templates/system/CentredText'
-import { Button, ButtonGroup } from '../../../templates/system/Button/Button'
 import { FormattedValue } from '../../../templates/system/FormattedValue/FormattedValue'
 import { ProductFilter } from '../../ProductFilter/ProductFilter'
 import { Modal } from '../Modal'
 import { OutputProductEntry } from './OutputProductEntry/OutputProductEntry'
 import { fbRemoveOutputRestoreQuantity } from '../../../../firebase/ProductOutflow/fbRemoveOutputRestoreQuantity'
 import { selectUser } from '../../../../features/auth/userSlice'
-
+import { ButtonGroup } from '../../../templates/system/Button/Button'
+import * as antd from 'antd'
+import { icons } from '../../../../constants/icons/icons'
+const { Button, Input } = antd
 export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
   const outFlowList = useSelector(SelectProductList)
   const outFlowProduct = useSelector(SelectProductOutflow)
@@ -32,29 +34,42 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
   }
 
   const handleDeleteProductOutflow = (item, idDoc) => {
-    console.log(item.id)
     fbRemoveOutputRestoreQuantity(user, item)
     dispatch(deleteProductFromProductOutflow({ id: item.id }))
   }
-  
-  const handleUpdateProductOutflow = () => {
-    fbUpdateProductOutflow(user, outFlowProduct.data)
-    fbUpdateStock(user, outFlowProduct.data.productList)
+
+  const handleUpdateProductOutflow = async () => {
+    try {
+      console.log(outFlowProduct.data)
+      await fbUpdateProductOutflow(user, outFlowProduct.data)
+    } catch (err) {
+
+    }
   }
 
-  const handleAddOutflow = () => {
-    fbAddProductOutFlow(user, outFlowProduct.data, dispatch)
-    fbUpdateStock(user, outFlowProduct.data.productList)
+  const handleAddOutflow = async () => {
+    try {
+      console.log(" click handleAddOutflow")
+      await fbAddProductOutFlow(user, outFlowProduct.data);
+    } catch (err) {
+      console.log(err)
+    }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    console.log("click  handleSubmit")
     if (mode === 'create') {
-      handleAddOutflow()
+      await handleAddOutflow()
     }
     if (mode === 'update') {
-      handleUpdateProductOutflow()
+      await handleUpdateProductOutflow()
     }
   }
+
+  const handleUpdateProduct = (id, updatedFields) => {
+    console.log({ id, data: updatedFields })
+    dispatch(updateProductFromProductOutflow({ id, data: updatedFields }));
+  };
 
   const tableRef = useRef(null);
   const isScrolled = useScroll(tableRef)
@@ -92,18 +107,33 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
                       <Row key={index}>
                         <FormattedValue type={'number'} value={outFlowList?.length - index} />
                         <FormattedValue type={'text'} value={item?.product?.name} />
-                        <FormattedValue type={'number'} value={item?.totalRemovedQuantity} />
-                        <FormattedValue type={'text'} value={item?.motive} />
-                        <FormattedValue type={'text'} value={item?.observations} />
-                        <ButtonGroup>
+                        <Input
+                          type='number'
+                          value={item?.quantityRemoved}
+                          onChange={(e) => handleUpdateProduct(item.id, { quantityRemoved: e.target.value })}
+                        />
+                        <Input
+                          value={item?.motive || "none"}
+                          onChange={(e) => handleUpdateProduct(item.id, { motive: e.target.value })}
+                        />
+                        <Input
+                          value={item?.observations || "none"}
+                          onChange={(e) => handleUpdateProduct(item.id, { observations: e.target.value })}
+                        />
+                        <div
+                          style={
+                            {
+                              display: "flex",
+                              justifyContent: "right"
+                            }
+                          }
+                        >
                           <Button
-                            width={'icon32'}
-                            title={<MdDelete />}
-                            color={'gray-dark'}
-                            borderRadius={'normal'}
+                            danger
+                            icon={icons.operationModes.delete}
                             onClick={() => handleDeleteProductOutflow(item, outFlowProduct.data.id)}
                           />
-                        </ButtonGroup>
+                        </div>
                       </Row>
                     )) || (
                     <CenteredText
@@ -161,10 +191,11 @@ align-items: flex-start;
 
 const TableHeader = styled.div`
   display: grid;
-  grid-template-columns: 6em 1fr 1fr 1fr 1fr 5em;
+  grid-template-columns: 3em 1fr 1fr 1fr 1fr 5em;
   align-items: center;
   background-color: var(--White);
-  padding: 8px;
+  padding: 8px 24px 8px 8px;
+  gap: 1em;
   font-size: 14px;
   font-weight: bold;
   position: sticky;
@@ -178,26 +209,16 @@ const TableHeader = styled.div`
   `}
 `;
 
-const Label = styled.div``;
-
 const Row = styled.div`
   display: grid;
-  grid-template-columns: 6em  1fr 1fr 1fr 1fr 5em;
+  grid-template-columns: 3em  1fr 1fr 1fr 1fr 5em;
   align-items: center;
+  gap: 1em;
   border-radius: 4px;
-  padding: 8px;
+  padding: 8px 8px 8px 8px;
   font-size: 14px;
   transition: all 0.2s linear;
   :hover{
     background-color: #f5f5f5;
   }
 `;
-
-const NumberList = styled.span`
-  font-weight: bold;
- font-family: 'Chivo Mono', monospace;
-`;
-const Number = styled.span`
-  font-family: 'Chivo Mono', monospace;
-`;
-

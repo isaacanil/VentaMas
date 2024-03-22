@@ -25,12 +25,7 @@ const getColumns = (width) => {
 };
 
 export function ProductControlEfficient({ products }) {
-
-
   const productLength = products.length;
-
-
-
   return (
     <Container>
       <Carrusel />

@@ -109,6 +109,7 @@ const ProductsListBody = styled.div`
  // background-color: #f0f0f0;
  display: grid;
  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+ grid-auto-rows: 1fr;
  align-items: flex-start;
  align-content: flex-start;
  background-color: var(--White3);
