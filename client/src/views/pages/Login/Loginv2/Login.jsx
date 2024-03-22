@@ -15,10 +15,10 @@ import { selectUser } from "../../../../features/auth/userSlice";
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
 
-export const Login = () => {
+export const Login = ({setLoading = null}) => {
     const [form] = Form.useForm();
     const user = useSelector(selectUser)
-    const [loading, setLoading] = useState(false);
+  //  const [loading, setLoading] = useState(false);
     const [loadingTip, setLoadingTip] = useState('Cargando...');
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -54,12 +54,7 @@ export const Login = () => {
     };
     return (
         <Container>
-        
-                <Wrapper
-                
-                >
-                   
-
+                <Wrapper >
                     <Form
                         autoComplete="off"
                         form={form}
@@ -76,7 +71,6 @@ export const Login = () => {
                     >
                         <LogoContainer />
                         <Body>
-
                             <Form.Item
                                 name="username"
                                 label="Usuario"
@@ -105,25 +99,19 @@ export const Login = () => {
                                     placeholder="Contraseña"
                                 />
                             </Form.Item>
-
-
-
                         </Body>
                         <Form.Item>
                             <Button
                                 type="primary"
                                 htmlType="submit"
                                 size="large"
-
                                 style={{ width: '100%' }}
                             >
                                 Iniciar sesión
                             </Button>
                         </Form.Item>
                     </Form>
-
                 </Wrapper>
-          
         </Container >
     )
 }
@@ -141,9 +129,12 @@ const Wrapper = styled.div`
      max-width: 600px;
     width: 100%;
     background-color: white;
+    background-color: #4d4d4d;
+  
 
     border-radius: 1em;
-    padding: 2em;
+    padding: 0 2em 2em;
+
     display: grid;
     grid-template-rows: 1fr;
     
@@ -153,6 +144,12 @@ const Body = styled.div`
 `
 const Form = styled(ant.Form)`
     display: grid;
+   
     grid-template-rows: min-content 1fr min-content !important;
+    color: white;
+    label{
+
+        color: white !important;
+    }
     
 `
