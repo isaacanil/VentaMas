@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import { useFormatPrice } from '../useFormatPrice';
 
-export const ExportProducts = (products) => {
+export const ExportProducts = (products, taxReceiptEnabled) => {
     // Crear una instancia de Workbook
     const workbook = new ExcelJS.Workbook();
 
@@ -10,7 +10,7 @@ export const ExportProducts = (products) => {
 
     // Crear las columnas en la hoja de Excel
     worksheet.columns = [
-        { header: 'Nombre del producto', key: 'productName' },
+        { header: 'Nombre del producto', key: 'name' },
         { header: 'Categoría', key: 'category' },
         { header: 'Tamaño', key: 'size' },
         { header: 'Contenido neto', key: 'netContent' },
@@ -27,30 +27,30 @@ export const ExportProducts = (products) => {
 
     // Ordenar los datos en orden ascendente según el nombre del producto
     products.sort((a, b) => {
-        if (a.product.productName < b.product.productName) {
+        if (a.name < b.name) {
             return -1;
         }
-        if (a.product.productName > b.product.productName) {
+        if (a.name > b.name) {
             return 1;
         }
         return 0;
     });
 
     // Mapear los datos del arreglo a un arreglo de valores
-    const data = products.map(({ product }) => [
-        product.productName,
+    const data = products.map(( product ) => [
+        product.name,
         product.category,
         product.size,
         product.netContent,
         product.stock,
-        product.tax.ref,
+        product.pricing.tax,
         product.isVisible ? 'Sí' : 'No',
         product.trackInventory ? 'Sí' : 'No',
-        product.barCode,
-        useFormatPrice(product.cost.unit),
-        useFormatPrice(product.listPrice),
-        useFormatPrice(product.minimumPrice),
-        useFormatPrice(product.averagePrice),
+        product.barcode,
+        useFormatPrice(product.pricing.cost),
+        useFormatPrice(product.pricing.listPrice),
+        useFormatPrice(product.pricing.minPrice),
+        useFormatPrice(product.pricing.avgPrice),
     ]);
 
     // Agregar los datos del arreglo a la hoja
@@ -80,5 +80,3 @@ export const ExportProducts = (products) => {
     });
 
 }
-
-
