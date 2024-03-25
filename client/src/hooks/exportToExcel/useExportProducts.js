@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import { useFormatPrice } from '../useFormatPrice';
 
-export const ExportProducts = (products, taxReceiptEnabled) => {
+export const ExportProducts = (products) => {
     // Crear una instancia de Workbook
     const workbook = new ExcelJS.Workbook();
 
@@ -48,9 +48,9 @@ export const ExportProducts = (products, taxReceiptEnabled) => {
         product.trackInventory ? 'Sí' : 'No',
         product.barcode,
         useFormatPrice(product.pricing.cost),
-        useFormatPrice(product.pricing.listPrice),
-        useFormatPrice(product.pricing.minPrice),
-        useFormatPrice(product.pricing.avgPrice),
+        useFormatPrice(product.pricing?.listPrice),
+        useFormatPrice(product.pricing?.minPrice),
+        useFormatPrice(product.pricing?.avgPrice),
     ]);
 
     // Agregar los datos del arreglo a la hoja

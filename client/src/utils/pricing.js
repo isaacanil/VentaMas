@@ -76,7 +76,7 @@ function getTotal(product) {
 }
 
 export function getListPriceTotal(product, taxReceiptEnabled = true) {
-  let price = product?.pricing.listPrice || 0;
+  let price = product?.pricing?.listPrice || 0;
   const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
   if (isSoldByWeight) {
     const weight = product?.weightDetail?.weight || 0;
@@ -191,7 +191,7 @@ const getTotalDiscount = (totalBeforeDiscount = 0, totalDiscountPercentage = 0) 
   return totalBeforeDiscount * (totalDiscountPercentage / 100);
 }
 
-export const getProducts = (products, taxReceiptEnabled) => {
+export const getProducts = (products = [], taxReceiptEnabled) => {
   return products.map(product => {
     return {
       ...product,
