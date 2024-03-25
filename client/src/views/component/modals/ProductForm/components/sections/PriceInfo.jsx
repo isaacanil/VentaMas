@@ -2,9 +2,10 @@ import React from 'react'
 import * as ant from 'antd'
 import { initTaxes, taxLabel } from '../../../../../component/modals/UpdateProduct/InitializeData'
 const { Card, Space, InputNumber, Row, Col, Select, Checkbox, Form } = ant
-
+import { useSelector } from 'react-redux'
+import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
 export const PriceInfo = () => {
-
+    const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     return (
         <Card
             title="Información de precio"
@@ -54,6 +55,7 @@ export const PriceInfo = () => {
                     <Form.Item
                         name={["pricing","tax"]}
                         label="Impuesto"
+                        help={taxReceiptEnabled ? "" : "El impuesto no se aplicará a la venta del producto. La facturación de impuestos está desactivada."}
                         rules={[{ required: true }]}>
                         <Select
                             defaultActiveFirstOption

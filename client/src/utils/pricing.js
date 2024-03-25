@@ -191,3 +191,17 @@ const getTotalDiscount = (totalBeforeDiscount = 0, totalDiscountPercentage = 0) 
   return totalBeforeDiscount * (totalDiscountPercentage / 100);
 }
 
+export const getProducts = (products, taxReceiptEnabled) => {
+  return products.map(product => {
+    return {
+      ...product,
+      pricing: {
+        ...product.pricing,
+        avgPrice: getAvgPriceTotal(product, taxReceiptEnabled),
+        listPrice: getListPriceTotal(product, taxReceiptEnabled),
+        minPrice: getMinPriceTotal(product, taxReceiptEnabled),
+        price: getTotalPrice(product, taxReceiptEnabled)
+      }
+    };
+  });
+}

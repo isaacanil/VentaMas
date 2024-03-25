@@ -6,18 +6,38 @@ import { useGetProducts } from '../../../../firebase/products/fbGetProducts'
 import ExcelJS from 'exceljs';
 import { ExportProducts } from '../../../../hooks/exportToExcel/useExportProducts'
 import { last } from 'lodash'
-
+import { getProducts } from '../../../../utils/pricing'
+import { useSelector } from 'react-redux'
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
 export const ExportProductsButton = () => {
   const {products} = useGetProducts()
-  const lastVersionProduct = products.find((product) => product.id === 'woqhnKlQY6')
- 
-  console.log('last product',{product: lastVersionProduct?.product})
+  console.log(products[0])
+  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+  const productsArray = getProducts(products, taxReceiptEnabled)
+  const tax = {
+    0: 'Exento',
+    16: '16%',
+    18: '18%',
+  }
+  const productsTaxTransformed = productsArray.map(product => {
+    return {
+      ...product,
+      pricing: {
+        ...product.pricing,
+        tax: taxReceiptEnabled ? (product.pricing.tax ? (
+          tax[product.pricing.tax]
+        
+        ) : 'Exento') : 'Exento',
+      }
+    }
+  }
+  )
 
   return (
     <Button 
         title='Exportar'
         borderRadius={'light'}
-        onClick={() => ExportProducts(products)}
+        onClick={() => ExportProducts(productsTaxTransformed)}
         startIcon={<FontAwesomeIcon icon={faFileExport}/>}
     />
   )
