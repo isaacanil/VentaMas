@@ -15,14 +15,17 @@ export const CardWelcome = ({ welcomeData }) => {
     return (
         <Container>
             <Main>
-                <Typography
+
+                <AppName
                     variant={"h1"}
                     size='xlarge'
+                    
                     context={"web"}
                     color='primary'
                 >
                     Ventamax
-                </Typography>
+                </AppName>
+
                 <br />
                 <Typography
                     variant={"h2"}
@@ -37,15 +40,15 @@ export const CardWelcome = ({ welcomeData }) => {
                 <br />
                 <div>
 
-                <Button
-                    type='primary'
-                    size='large'
-                    onClick={() => {
-                        handleNavigate(loginPath)
-                    }}
-                >
-                    Iniciar sesión
-                </Button>
+                    <Button
+                        type='primary'
+                        size='large'
+                        onClick={() => {
+                            handleNavigate(loginPath)
+                        }}
+                    >
+                        Iniciar sesión
+                    </Button>
                 </div>
             </Main>
             <LogoContainer>
@@ -61,13 +64,12 @@ export const CardWelcome = ({ welcomeData }) => {
 const Container = styled.div`
 display: grid;
 grid-template-columns: 1fr min-content;
-
 min-height: 350px;
 width: 100%;
 gap: 2em;
-max-width: 1200px;
+max-width: 1300px;
 padding: 4em;
-@media (max-width: 768px) {
+@media (max-width: 800px) {
     grid-template-columns: 1fr;
     padding: 2em;
     }
@@ -75,11 +77,16 @@ padding: 4em;
 const Main = styled.div`
   
  display: grid;
-  max-width: 500px;
+  max-width: 600px;
   width: 100%;
   @media (max-width: 800px){
     order:2;
+    max-width: none;
   }
+`
+const AppName = styled(ant.Typography.Title)`
+   color: var(--color) !important;
+   font-weight: 700;
 `
 const LogoContainer = styled.div`
   width: 100%;
@@ -92,10 +99,10 @@ const LogoBG = styled.div`
  align-items: center;
  justify-content: center;
   
- width: 6em;
- height: 6em;
+
+
  max-width: 700px;
  padding: 2em;
- background-image: radial-gradient(circle, #0a53b3 0%, #ffffff 50%,  white 100%);
+ //background-image: radial-gradient(circle, #0a53b3 0%, #ffffff 50%,  white 100%);
  
 `
