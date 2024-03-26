@@ -29,6 +29,7 @@ import { fbGetInvoice } from '../../../../firebase/invoices/fbGetInvoice';
 import { fbCheckDuplicateProducts } from '../../../../firebase/products/fbCheckDuplicateProducts';
 import { fbUpdateAppVersion } from '../../../../firebase/app/fbUpdateAppVersion';
 import { fbDeleteProducts } from '../../../../firebase/products/fbDeleteProducts';
+import { fbUpdateProductStructure } from '../../../../firebase/products/fbUpdateProductStructure';
 
 const data = {
   companyName: "CASA ESTILO RF",
@@ -121,36 +122,23 @@ const InvoiceFooter = styled.footer`
 export const Prueba = () => {
   const user = useSelector(selectUser)
   const [users, setUsers] = useState([])
-  const [invoices, setInvoices] = useState([])
-  // const { products, loading, setLoading, error } = useGetProducts()
   const handleSubmit = async () => {
-    let values = "Regvisando Facturas cambiando en los negocios EDW44d69fhdvE5QmuL2I / TqsxovmM"
-    alert(values);
     //await fbTransferProductsToAnotherBusiness("Lm8GG6YXQJO3zgR9DkGe", "vvRKlKT9UOK4fX9FgJxN")
     //await fbCheckDuplicateProducts("vvRKlKT9UOK4fX9FgJxN")
-    try{
-      await fbDeleteProducts(user)
-
-    }catch(err){
-      console.log(err)
-    }
-    // await fbFixInvoicesForMultipleBusinesses()
-    // await fbFixInvoices("EDW44d69fhdvE5QmuL2I")
-    // await fbPreviewProcessedInvoice("EDW44d69fhdvE5QmuL2I", "mbKZKk-ZQbPq")
-    // await fbGetInvoice("JnKRSCFwKSkiSNSiIpOM", "3CvDJRH8PWP2")
+    //await fbUpdateProductStructure(user, "fMv08esuyb")
+    //await fbFixInvoicesForMultipleBusinesses()
+    //await fbFixInvoices("EDW44d69fhdvE5QmuL2I")
+    //await fbPreviewProcessedInvoice("EDW44d69fhdvE5QmuL2I", "mbKZKk-ZQbPq")
+    //await fbGetInvoice("JnKRSCFwKSkiSNSiIpOM", "3CvDJRH8PWP2")
   }
-  console.log(users)
   return (
     <div>
       <Button
         onClick={handleSubmit}
       >
-        Transferir categorias
+        Cambiar Estructura de Productos
       </Button>
-
-
     </div>
-
   )
 }
 <Receipt />
