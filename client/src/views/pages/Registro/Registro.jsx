@@ -8,7 +8,6 @@ import { SaleReportTable } from './SaleReportTable/SaleReportTable'
 
 import { ComponentTagger } from '../../templates/system/ComponentTagger/ComponentTagger'
 import { useDispatch, useSelector } from 'react-redux'
-import { addNotification } from '../../../features/notification/NotificationSlice'
 import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import { motion } from 'framer-motion'
 import { selectUser } from '../../../features/auth/userSlice'
@@ -17,6 +16,9 @@ import { Calendar } from '../../templates/system/Dates/Calendar/Calendar'
 import { DateTime } from 'luxon'
 import { getDateRange } from '../../../utils/date/getDateRange'
 import { fbFixInvoices } from '../../../firebase/invoices/fbFixInvoice'
+import useViewportWidth from '../../../hooks/windows/useViewportWidth'
+import { CardList } from '../../component/CardList/CardList'
+import { SaleRecordList } from './SaleRecordList/RecordList'
 
 export const Registro = () => {
 
@@ -32,6 +34,7 @@ export const Registro = () => {
   const handleTimeChange = (dates) => {
     setDatesSelected(dates)
   }
+  const vw = useViewportWidth()
  
   return (
     <Fragment>
@@ -59,10 +62,20 @@ export const Registro = () => {
             {/* } /> */}
           </span>
         </FilterBar>
-        <SaleReportTable
-          bills={invoices}
-          searchTerm={searchTerm}
-        />
+        {
+          vw > 800 ? (
+
+            <SaleReportTable
+              bills={invoices}
+              searchTerm={searchTerm}
+            />
+          ): (
+            <SaleRecordList
+              invoices={invoices}
+              searchTerm={searchTerm}
+            />
+          )
+        }
       </Container>
       <SalesReport isOpen={isReportSaleOpen} onOpen={onReportSaleOpen} sales={invoices} />
     </Fragment>
