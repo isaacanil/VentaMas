@@ -6,10 +6,17 @@ import { FormattedValue } from '../../../system/FormattedValue/FormattedValue'
 import { useMatch } from 'react-router-dom'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { useMatchRouteByName } from '../useMatchRouterByName'
-
+import * as antd from 'antd'
+import { icons } from '../../../../../constants/icons/icons'
+const { Button } = antd
+import { useDispatch } from 'react-redux'
+import { toggleSignUpUser } from '../../../../../features/modals/modalSlice'
 const UsersAdminToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const { USERS_LIST } = ROUTES_NAME.SETTING_TERM
-
+    const dispatch = useDispatch()
+    const handleOpenModal = () => {
+        dispatch(toggleSignUpUser({isOpen: true}))
+    }
     const matchWithUsers = useMatch("/users/list")
     return (
         matchWithUsers ? (
@@ -26,6 +33,16 @@ const UsersAdminToolbar = ({ side = 'left', searchData, setSearchData }) => {
                         />
                     </Group>
                 )} */}
+                {
+                    side === 'right' && (
+                       <Button 
+                       onClick={handleOpenModal}
+                        icon={icons.operationModes.add}
+                       >
+                        Usuario
+                       </Button>
+                    )
+                }
             </Container>
 
         ) : null
