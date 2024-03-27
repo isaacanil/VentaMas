@@ -13,23 +13,9 @@ import { useNavigate } from 'react-router-dom'
 import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
 import { DateTime } from 'luxon'
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { getRoleLabelById, userRoles } from '../../../../../../../abilities/roles'
+import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice'
 
-const renamedAbilities = (abilities) => {
-  switch (abilities) {
-    case 'owner':
-      return 'Dueño'
-    case 'admin':
-      return 'Admin'
-    case 'buyer':
-      return 'Compras'
-    case 'cashier':
-      return 'Cajero'
-    case 'manager':
-      return 'Gerente'
-    case 'dev':
-      return 'Desarrollador'
-  }
-}
 const columns = [
   {
     Header: '#',
@@ -50,24 +36,28 @@ const columns = [
     Header: 'Fecha de Creación',
     accessor: 'createAt',
     align: 'left',
-
     cell: ({ value }) => {
       const millis = value?.seconds * 1000;
       const dateObject = DateTime.fromMillis(millis);
       return dateObject.toLocaleString(DateTime.DATETIME_MED);
     },
-
   },
   {
     Header: 'Rol',
     accessor: 'role',
     align: 'left',
-    cell: ({ value }) => (
-      <Role role={value}>
-        {renamedAbilities(value)}
-      </Role>
-    ),
+    cell: ({ value }) => {
+      const role = userRoles.find(r => r.id === value) || {};
 
+      return (
+        <Role
+          primaryColor={role.primaryColor}
+          secondaryColor={role.secondaryColor}
+        >
+          {getRoleLabelById(value)}
+        </Role>
+      )
+    },
   },
   {
     Header: 'Estado',
@@ -77,10 +67,7 @@ const columns = [
     maxWidth: '0.4fr',
     minWidth: '100px',
   },
-
 ]
-
-
 
 export const UserList = () => {
   const [users, setUsers] = useState([])
@@ -103,95 +90,41 @@ export const UserList = () => {
   })
   const handleEditUser = (user) => {
     dispatch(updateUser(user))
-    navigate('/users/update-user/' + user.id)
+    dispatch(toggleSignUpUser({ isOpen: true, data: user }))
+    // navigate('/users/update-user/' + user.id)
   }
- 
+
   return (
-    <Container>
-      <TableWrapper>
+   
+ 
         <AdvancedTable
           tableName={'Usuarios'}
           data={data}
           columns={columns}
           pagination={true}
-          numberOfElementsPerPage={8}
           onRowClick={(row) => handleEditUser(row.user)}
         />
-      </TableWrapper>
-    </Container>
+   
+  
   )
 }
 
 
-const Container = styled.div`
-height: 100%;
-background-color: var(--color2);
-display: grid;
-grid-template-rows: 1fr;
-padding: 1em;
-`
-const TableWrapper = styled.div`
-height: 100%;
-`
+
+
 const Role = styled.div`
     height: 2em;
-    max-width: 150px;
+   
     border-radius: 100px;
-    width: 100%;
+    width: fit-content;
   display: flex;
   text-transform: capitalize;
   align-items: center;
   padding: 0 1em;
- color: ${(props) => {
-    switch (props.role) {
-      case 'owner':
-        return `#0072F5`
-      case 'admin':
-        return `#9750DD;`
-      case 'buyer':
-        return `#17C964;`
-      case 'cashier':
-        return `#F5A524;`
-      case 'manager':
-        return `#F31260;`
-      case 'dev':
-        return `#f312bb;`
-      default:
-    }
-  }};
-    border: 2px solid ${(props) => {
-    switch (props.role) {
-      case 'owner':
-        return `#0072F5`
-      case 'admin':
-        return `#9750DD;`
-      case 'buyer':
-        return `#17C964;`
-      case 'cashier':
-        return `#F5A524;`
-      case 'manager':
-        return `#F31260;`
-      case 'dev':
-        return `#f312bb;`
-      default:
-    }
-  }};
+  color: ${props => props.primaryColor};
+  background-color: ${props => props.secondaryColor};
+  border: 2px solid ${props => props.primaryColor};
+
   font-weight: 600;
-    background-color: ${(props) => {
-    switch (props.role) {
-      case 'owner':
-        return `#e4f1ff`
-      case 'admin':
-        return `#f5ebff;`
-      case 'buyer':
-        return `#e3ffef;`
-      case 'cashier':
-        return `#fff8ec;`
-      case 'manager':
-        return `#ffe3ec;`
-      case 'dev':
-        return `#ffe9fb;`
-      default:
-    }
-  }};
+
       `

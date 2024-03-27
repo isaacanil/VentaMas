@@ -54,7 +54,7 @@ const Head = styled.div`
   font-size: 25px;
   padding: 0 1em;
   justify-content: space-between;
-  background: linear-gradient(to right, #000000 50%, #040452 100%);
+  background-color: var(--color) ;
 `
 const Group = styled.div`
   display: flex;
@@ -73,4 +73,8 @@ const WebName = styled.div`
     font-weight: 700;
     margin: 0;
     color: white;
+    @media (max-width: 800px) {
+        font-size: 1em;
+        text-align: center;
+    }
 `

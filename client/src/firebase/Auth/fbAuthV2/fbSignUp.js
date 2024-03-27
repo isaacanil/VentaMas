@@ -4,7 +4,7 @@ import { db } from "../../firebaseconfig";
 import { nanoid } from "nanoid";
 
 // Función para verificar si el nombre de usuario ya existe
-async function checkIfUserExists(name) {
+export async function checkIfUserExists(name) {
     const userCollection = collection(db, "users");
     const nameQuery = query(userCollection, where("user.name", "==", name));
     const matchingUsersSnapshot = await getDocs(nameQuery);

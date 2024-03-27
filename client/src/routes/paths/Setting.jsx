@@ -2,7 +2,6 @@ import { Setting, TaxReceiptSetting, UserAdmin } from "../../views";
 import AppInfo from "../../views/pages/setting/subPage/AppInfo/AppInfo";
 import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
 import EditUser from "../../views/pages/setting/subPage/Users/components/EditUser/EditUser";
-import SignUp from "../../views/pages/setting/subPage/Users/components/SignUp";
 import { UserList } from "../../views/pages/setting/subPage/Users/components/UsersList/UserList";
 import validateRouteAccess from "../requiereAuthProvider";
 import ROUTES_NAME from "../routesName";
@@ -30,14 +29,6 @@ const Routes = [
                 path: USERS_LIST,
                 element: validateRouteAccess(<UserList />),
             },
-            {
-                path: CREATE_USER,
-                element: validateRouteAccess(<SignUp />),
-            },
-            {
-                path: UPDATE_USER,
-                element: validateRouteAccess(<EditUser />),
-            }
         ]
     },
     { path: `${basePath}${TAX_RECEIPT}`, element: validateRouteAccess(<TaxReceiptSetting />) },
