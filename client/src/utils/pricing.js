@@ -76,7 +76,7 @@ function getTotal(product) {
 }
 
 export function getListPriceTotal(product, taxReceiptEnabled = true) {
-  let price = product?.pricing.listPrice || 0;
+  let price = product?.pricing?.listPrice || 0;
   const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
   if (isSoldByWeight) {
     const weight = product?.weightDetail?.weight || 0;

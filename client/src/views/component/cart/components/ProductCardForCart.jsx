@@ -46,9 +46,6 @@ function extraerPreciosConImpuesto(allPrice) {
         'avgPrice': 'Precio promedio',
         'minPrice': 'Precio mínimo',
     };
-    // const listPriceTotal = getListPriceTotal(producto);
-    // const avgPriceTotal = getAvgPriceTotal(producto);
-    // const minPriceTotal = getMinPriceTotal(producto);
     const preciosConImpuesto = [
         { label: useFormatPrice(listPrice), value: listPrice },
         { label: useFormatPrice(avgPrice), value: avgPrice },
@@ -81,13 +78,11 @@ export const ProductCardForCart = ({ item }) => {
     const [inputPrice, setInputPrice] = useState(price);
 
     const deleteProductFromCart = (id) => dispatch(deleteProduct(id));
-    const canModifyPrice = abilities.can('change', 'Price');
+
+    const canModifyPrice = abilities.can('modify', 'Price');
+    const canSelectPrice = abilities.can('read', 'PriceList');
 
     const handleChangePrice = (e) => {
-        if (!canModifyPrice) {
-            antd.message.error('No tienes permisos para cambiar el precio de los productos');
-            return
-        };
         const newPrice = e.target.value;
         const priceWithoutTax = getPriceWithoutTax(newPrice, tax, taxReceiptEnabled);
 
@@ -107,15 +102,14 @@ export const ProductCardForCart = ({ item }) => {
     }
 
 
-    const precios = extraerPreciosConImpuesto( allPrice);
+    const precios = extraerPreciosConImpuesto(allPrice);
 
     const handleMenuClick = (e) => {
-        console.log(e)
-        const item = {
-            target: {
-                value: e.value
-            }
-        }
+        if (!canSelectPrice) {
+            antd.message.error('No tienes permisos para seleccionar un precio de la lista');
+            return
+        };
+        const item = { target: { value: e.value } }
         setInputPrice(e.value)
         handleChangePrice(item); // actualiza el precio en el estado global del carrito
     };
@@ -127,7 +121,7 @@ export const ProductCardForCart = ({ item }) => {
             <div
                 onClick={() => handleMenuClick(precio)}
                 style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{whiteSpace: "nowrap"}}>{precio.label}</span>
+                <span style={{ whiteSpace: "nowrap" }}>{precio.label}</span>
             </div>
         )
     }));
@@ -172,7 +166,7 @@ export const ProductCardForCart = ({ item }) => {
                         trigger={['click']}
                     >
                         {
-                            canModifyPrice ? (
+                            canSelectPrice ? (
                                 <Button
                                     icon={icons.arrows.caretDown}
                                     size='small'

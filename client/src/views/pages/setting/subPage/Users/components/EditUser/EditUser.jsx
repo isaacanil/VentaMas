@@ -21,19 +21,6 @@ import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpda
 
 const formIcon = icons.forms
 
-const EmptyUser = {
-    name: '',
-    password: '',
-    role: '',
-    id: '',
-    businessID: undefined,
-    createAt: ""
-}
-
-const EmptyRol = {
-    id: '',
-    label: ''
-}
 const getRol = (id) => {
     switch (id) {
         case 'admin':
@@ -42,6 +29,10 @@ const getRol = (id) => {
             return 'Gerente'
         case 'cashier':
             return 'Cajero'
+        case 'specialCashier1':
+            return 'Cajero - Especial 1'
+        case 'specialCashier2':
+            return 'Cajero - Especial 2'
         case 'buyer':
             return 'Comprador'
         default:
@@ -63,6 +54,8 @@ const EditUser = () => {
         { id: 'admin', label: 'Admin' },
         { id: 'manager', label: 'Gerente' },
         { id: 'cashier', label: 'Cajero' },
+        { id: 'specialCashier1', label: 'Cajero - Especial 1' },
+        { id: 'specialCashier2', label: 'Cajero - Especial 2' },
         { id: 'buyer', label: 'Comprador' },
     ]
 
@@ -112,11 +105,7 @@ const EditUser = () => {
     console.log('user', user)
     const handleSubmit = async () => {
         const errors = validateUser(user);
-
-        // Crea un nuevo objeto user con los datos actualizados
-
         if (Object.keys(errors).length === 0) {
-            // Crea un nuevo usuario con los datos actualizados.
             try {
                 await fbUpdateUser(user.id, user);
                 handleClear();

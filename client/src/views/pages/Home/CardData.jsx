@@ -1,19 +1,10 @@
 
 import ROUTES_NAME from '../../../routes/routesName'
-import findRouteByName from '../../templates/MenuApp/findRouteByName'
 import { icons } from '../../../constants/icons/icons'
 import { userAccess } from '../../../hooks/abilities/useAbilities'
 
-const { BILLS, SALES } = ROUTES_NAME.SALES_TERM
-const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
-const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM
-const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM
-const { MANAGE_BUSINESS, CHANGELOG_MANAGE, CHANGELOG_CREATE, ALL_USERS} = ROUTES_NAME.DEV_VIEW_TERM
-
-const { inventory, purchase, register, sale, cashReconciliation } = icons.menu.unSelected
-
 export const getMenuCardData = () => {
-  const {abilities} = userAccess();
+  const { abilities } = userAccess();
   const routes = [
     { id: 1, title: 'Ventas', icon: icons.menu.unSelected.sale, route: ROUTES_NAME.SALES_TERM.SALES },
     { id: 2, title: 'Facturas', icon: icons.menu.unSelected.register, route: ROUTES_NAME.SALES_TERM.BILLS },

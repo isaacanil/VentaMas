@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import Header from './components/Header'
 import Body from './components/Body/Body'
 import ROUTES_PATH from '../../../routes/routesName'
+import { Footer } from './components/Footer/Footer'
 
 export const Welcome = () => {
   const user = useSelector(selectUser)
@@ -20,7 +21,7 @@ export const Welcome = () => {
     <Container>
       <Header />
       <Body />
-      
+      <Footer />
     </Container>
   )
 }

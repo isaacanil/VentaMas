@@ -54,6 +54,7 @@ const initialState = {
     },
     modalToggleSignUp: {
         isOpen: false,
+        data: null
     },
     modalConfirmOpenCashReconciliation: {
         isOpen: false,
@@ -188,6 +189,9 @@ const modalSlice = createSlice({
             state.modalToggleAddProductOutflow.isOpen = !isOpen;
         },
         toggleSignUpUser: (state, action) => {
+            if(action.payload?.data) {
+                state.modalToggleSignUp.data = action.payload.data;
+            }
 
             if (action.payload?.isOpen === undefined) {
                 const isOpen = state.modalToggleSignUp.isOpen;
@@ -196,13 +200,13 @@ const modalSlice = createSlice({
             }
             if (action.payload?.isOpen === false) {
                 state.modalToggleSignUp.isOpen = false;
+                state.modalToggleSignUp.data = null;
                 return
             }
             if (action.payload?.isOpen === true) {
                 state.modalToggleSignUp.isOpen = true;
                 return
             }
-
         },
         toggleConfirmOpenCashReconciliation: (state, action) => {
             const isOpen = state.modalConfirmOpenCashReconciliation.isOpen;

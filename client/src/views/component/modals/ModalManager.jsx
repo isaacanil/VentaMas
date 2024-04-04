@@ -42,6 +42,7 @@ import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
 import { FileListModal } from "./FileListModal/FileListModal"
 import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
+import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserForm"
 
 export const ModalManager = () => {
 
@@ -72,10 +73,10 @@ export const ModalManager = () => {
             key='modal-update-product'
             isOpen={UpdateProdModalSelected}
           /> */}
-        <BarcodePrintModal 
-        
-        />
+        <BarcodePrintModal
 
+        />
+        <SignUpModal />
         {UpdateProdModalSelected && (
           <ProductEditorModal
             key={'modal-form-product'}
