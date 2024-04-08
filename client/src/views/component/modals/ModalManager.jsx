@@ -73,9 +73,7 @@ export const ModalManager = () => {
             key='modal-update-product'
             isOpen={UpdateProdModalSelected}
           /> */}
-        <BarcodePrintModal 
-        
-        />
+        <BarcodePrintModal />
         <InvoicePreview/>
 
         {UpdateProdModalSelected && (
