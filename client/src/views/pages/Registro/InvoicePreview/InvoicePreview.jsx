@@ -1,17 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { BsFillPersonFill } from "react-icons/bs";
-import { FaMoneyBillAlt } from "react-icons/fa";
-import { GiShoppingCart } from "react-icons/gi";
 import Products from "./components/Products";
-import { useFormatPrice } from "../../../../hooks/useFormatPrice";
-import { Button } from "../../../templates/system/Button/Button";
-import Typography from "../../../templates/system/Typografy/Typografy";
 import { closeInvoicePreviewModal, selectInvoicePreview } from "../../../../features/invoice/invoicePreviewSlice";
 import { useDispatch, useSelector } from "react-redux";
 import * as antd from "antd";
-import { useFormatPhoneNumber } from "../../../../hooks/useFormatPhoneNumber";
-import { InfoCard } from "../../../templates/system/InfoCard/InfoCard";
 import { ClientInfoCard } from "./components/ClientInfo";
 import SummaryInfoCard from "./components/SummaryInfoCard";
 import { PaymentMethodInfoCard } from "./components/PaymentMethodInfoCard";
@@ -40,7 +32,6 @@ export const InvoicePreview = () => {
 
   return (
     isOpen && (
-
       <Modal
         open={isOpen}
         onCancel={handleClose}
@@ -54,7 +45,6 @@ export const InvoicePreview = () => {
         </div>
         <Products products={products} />
         <Group>
-
         <ClientInfoCard client={client} />
           <PaymentMethodInfoCard paymentMethod={paymentMethod} />
           <SummaryInfoCard summaryData={{
@@ -66,11 +56,8 @@ export const InvoicePreview = () => {
           }} />
         </Group>
       </Modal>
-
-
     )
   )
-
 };
 
 const Group = styled.div`
