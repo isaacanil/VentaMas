@@ -6,7 +6,6 @@ import {
   Cart,
   MenuApp,
   MenuComponents,
-
   MultiDisplayControl,
 } from '../../'
 
@@ -19,12 +18,9 @@ import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalS
 import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodescanner'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { ConfigMenu } from '../../component/modals/SettingsModal/components/Body/components/ConfigMenu.jsx'
-import { ConfigModal } from '../../component/modals/SettingsModal/ConfigModal.jsx'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import * as antd from 'antd'
-import { connectStorageEmulator } from 'firebase/storage'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('')

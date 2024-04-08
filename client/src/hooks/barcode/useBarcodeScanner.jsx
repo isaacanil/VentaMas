@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMatch } from 'react-router-dom';
-import Products from '../../views/pages/Registro/BillDataPreview/components/Products';
+
 
 export const useBarcodeScanner = (products, fn) => {
     let barcode = '';

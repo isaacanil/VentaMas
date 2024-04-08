@@ -34,6 +34,8 @@ import productWeightEntryModalSlice from "../features/productWeightEntryModalSli
 import * as expenseSlices from '../features/expense';
 import * as purchaseSlices from '../features/purchase';
 import barcodePrintModalReducer from "../features/barcodePrintModalSlice/barcodePrintModalSlice";
+import invoicesSlice from "../features/invoice/invoicesSlice";
+import invoicePreviewReducer from "../features/invoice/invoicePreviewSlice";
 export const store = configureStore({
   reducer: {
     app: appReducer,
@@ -67,6 +69,8 @@ export const store = configureStore({
     userNotification: UserNotificationReducer,
     usersManagement: usersManagementSlice,
     note: noteModalReducer,
+    invoices: invoicesSlice,
+    invoicePreview: invoicePreviewReducer,
     ...expenseSlices,
     ...purchaseSlices,
     cashCountState: cashCountState,

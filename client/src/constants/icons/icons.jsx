@@ -84,6 +84,7 @@ export const icons = {
         save: <FontAwesomeIcon icon={faCloudArrowUp} />,
         cancel: <FontAwesomeIcon icon={faXmark} />,
         accept: <FontAwesomeIcon icon={faCheck} />,
+        show: <FontAwesomeIcon icon={faEye} />,
     },
     operationModes: {
         ban: <FontAwesomeIcon icon={faBan} />,
@@ -108,7 +109,8 @@ export const icons = {
         setting: <FontAwesomeIcon icon={faGear} />,
         setting2: <FontAwesomeIcon icon={faEllipsisVertical} />,
         setting3: <FontAwesomeIcon icon={faWrench} />,
-        hide: <FontAwesomeIcon icon={faEyeSlash} />
+        hide: <FontAwesomeIcon icon={faEyeSlash} />,
+        more: <FontAwesomeIcon icon={faEye} />,
     },
     mathOperations: {
         add: <FontAwesomeIcon icon={faPlus} />,

@@ -14,18 +14,18 @@ export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setS
   const ref = useRef(null)
   const dispatch = useDispatch();
   const navigate = useNavigate();
- 
+
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
-  const handledMenu = () => {setIsOpenMenu(!isOpenMenu)};
+  const handledMenu = () => { setIsOpenMenu(!isOpenMenu) };
 
   useEffect(() => {
     dispatch(toggleOpenMenu(isOpenMenu))
   }, [isOpenMenu])
 
-  const closeMenu = () => {setIsOpenMenu(false)}
+  const closeMenu = () => { setIsOpenMenu(false) }
 
-  const goBack = () => {navigate(-1)}
+  const goBack = () => { navigate(-1) }
 
   useClickOutSide(ref, !isOpenMenu, closeMenu)
 
@@ -49,9 +49,7 @@ export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setS
               onClear={() => setSearchData('')}
               onChange={(e) => setSearchData(e.target.value)}
             />
-
           )}
-        
         </Group>
         <GlobalMenu data={data} setSearchData={setSearchData} searchData={searchData} />
         <SideBar isOpen={isOpenMenu} handleOpenMenu={handledMenu} />

@@ -54,7 +54,6 @@ export const CardWelcome = ({ welcomeData }) => {
             <LogoContainer>
                 <LogoBG>
                     <Logo size='xlarge' src={welcomeData.logo} alt="" />
-
                 </LogoBG>
             </LogoContainer>
         </Container>
@@ -98,11 +97,6 @@ const LogoBG = styled.div`
  display: flex;
  align-items: center;
  justify-content: center;
-  
-
-
  max-width: 700px;
  padding: 2em;
- //background-image: radial-gradient(circle, #0a53b3 0%, #ffffff 50%,  white 100%);
- 
 `

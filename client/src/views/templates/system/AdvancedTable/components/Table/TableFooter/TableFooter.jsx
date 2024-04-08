@@ -70,6 +70,7 @@ const FooterRightSide = styled.div`
 `
 const Counter = styled.div`
   display: flex;
+  white-space: nowrap;
   align-items: center;
   border-radius: var(--border-radius);
   gap: 0.5em;
@@ -83,7 +84,7 @@ const ElementsName = styled.div`
   font-size: 1em;
   color: var(--color-gray);
   text-transform: capitalize;
-  @media (max-width: 868px) {
+  @media (max-width: 1100px) {
     display: none;
   }
 `

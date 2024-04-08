@@ -42,6 +42,7 @@ import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
 import { FileListModal } from "./FileListModal/FileListModal"
 import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
+import { InvoicePreview } from "../../pages/Registro/InvoicePreview/InvoicePreview"
 
 export const ModalManager = () => {
 
@@ -75,6 +76,7 @@ export const ModalManager = () => {
         <BarcodePrintModal 
         
         />
+        <InvoicePreview/>
 
         {UpdateProdModalSelected && (
           <ProductEditorModal

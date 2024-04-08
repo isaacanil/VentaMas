@@ -3,21 +3,14 @@ import logo from './ventamax.svg'
 import styled from 'styled-components'
 export const Logo = ({ size = "medium" }) => {
   return (
-    <Component>
       <Img
         src={logo}
         size={size}
         alt=""
       />
-    </Component>
   )
 }
 
-const Component = styled.div`
-display: flex;
-width: min-content;
-
-`
 const imgSize = {
   xsmall: '1.5rem',
   small: '3rem',
@@ -27,7 +20,7 @@ const imgSize = {
   xxlarge: '12rem',
 }
 const Img = styled.img`
-  display: block;
-  height: ${(props) => props.size ? imgSize[props.size ] : imgSize["medium"]};
-  width: ${(props) => props.size ? imgSize[props.size ] : imgSize["medium"]};
+  display: block !important;
+  height: ${(props) => props.size ? imgSize[props.size ] : imgSize["medium"] } !important;
+  width: ${(props) => props.size ? imgSize[props.size ] : imgSize["medium"]} !important;
 `

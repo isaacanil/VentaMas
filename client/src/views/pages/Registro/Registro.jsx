@@ -1,27 +1,19 @@
-import React, { Fragment, useState } from 'react'
-import { MenuApp, Button, ButtonGroup } from '../../'
-import styled from 'styled-components'
-import { DatePicker } from '../../templates/system/Dates/DatePicker/DatePicker'
-import { DateRangeFilter } from '../../templates/system/Button/TimeFilterButton/DateRangeFilter'
-import { tableData } from './tableData'
-import { SaleReportTable } from './SaleReportTable/SaleReportTable'
-
-import { ComponentTagger } from '../../templates/system/ComponentTagger/ComponentTagger'
-import { useDispatch, useSelector } from 'react-redux'
-import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import { motion } from 'framer-motion'
+import React, { Fragment, useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+import { MenuApp } from '../../'
 import { selectUser } from '../../../features/auth/userSlice'
-import SalesReport from './ReportsSale/ReportsSale'
-import { Calendar } from '../../templates/system/Dates/Calendar/Calendar'
-import { DateTime } from 'luxon'
-import { getDateRange } from '../../../utils/date/getDateRange'
-import { fbFixInvoices } from '../../../firebase/invoices/fbFixInvoice'
+import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
-import { CardList } from '../../component/CardList/CardList'
+import { getDateRange } from '../../../utils/date/getDateRange'
+import SalesReport from './ReportsSale/ReportsSale'
 import { SaleRecordList } from './SaleRecordList/RecordList'
+import { SaleReportTable } from './SaleReportTable/SaleReportTable'
+import { FilterBar } from './components/FilterBar/FilterBar'
+import { setInvoices } from '../../../features/invoice/invoicesSlice'
 
 export const Registro = () => {
-
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
@@ -29,13 +21,14 @@ export const Registro = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { invoices } = fbGetInvoices(datesSelected);
 
+  const [processedInvoices, setProcessedInvoices] = useState(invoices);
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
-
-  const handleTimeChange = (dates) => {
-    setDatesSelected(dates)
-  }
+  useEffect(() => {
+    setProcessedInvoices([...invoices]);
+  }, [invoices]);
   const vw = useViewportWidth()
- 
+  console.log(processedInvoices)
+
   return (
     <Fragment>
       <Container
@@ -48,30 +41,23 @@ export const Registro = () => {
           searchData={searchTerm}
           setSearchData={setSearchTerm}
         />
-        <FilterBar>
-          <span>
-            {/* <Calendar selectionType='range' /> */}
-            <DatePicker setDates={setDatesSelected} dates={datesSelected} />
-            <DateRangeFilter setDates={handleTimeChange} dates={datesSelected} />
-            <Button
-              title={'Gráfico de ventas'}
-              onClick={onReportSaleOpen}
-            />
-            {/* <ComponentTagger text={'Exportar excel:'} children={ */}
-
-            {/* } /> */}
-          </span>
-        </FilterBar>
+        <FilterBar
+          invoices={invoices}
+          processedInvoices={processedInvoices}
+          setProcessedInvoices={setProcessedInvoices}
+          datesSelected={datesSelected}
+          setDatesSelected={setDatesSelected}
+          onReportSaleOpen={onReportSaleOpen}
+        />
         {
-          vw > 800 ? (
-
+          vw > 900 ? (
             <SaleReportTable
-              bills={invoices}
+              bills={processedInvoices}
               searchTerm={searchTerm}
             />
-          ): (
+          ) : (
             <SaleRecordList
-              invoices={invoices}
+              invoices={processedInvoices}
               searchTerm={searchTerm}
             />
           )
@@ -89,26 +75,6 @@ const Container = styled(motion.div)`
   background-color: var(--color2);
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
-`
-const FilterBar = styled.div`
-  width: 100%;
-  display: flex;
-  justify-items: center;
-  background-color: var(--White);
-  span{
-
-    width: 100%;
-    display: flex;
-    align-items: end;
-    padding: 0.4em 1em;
-    margin: 0 auto;
-    /* z-index: 2; */
-    gap: 1em;
-  }
-  select{
-    padding: 0.1em 0.2em;
-  }
- 
 `
 
 
