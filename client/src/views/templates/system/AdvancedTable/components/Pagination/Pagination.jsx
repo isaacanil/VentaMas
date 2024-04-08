@@ -15,6 +15,7 @@ export const Pagination = ({ firstPage, prevPage, nextPage, lastPage, pageCount,
 }
 const PaginationContainer = styled.div`
   display: flex;
+  gap: 0.5em;
   justify-self: center;
   justify-content: space-between;
   align-items: center;
@@ -24,13 +25,14 @@ const PaginationContainer = styled.div`
 `;
 
 const PageCount = styled.div`
-  width: 100px;
+ 
+
   display: flex;
   justify-content: center;
 `
 const PageSwitch = styled.button`
  
-  margin: 0 0.5em;
+
   cursor: pointer;
   height: 2em;
   width: 2em;

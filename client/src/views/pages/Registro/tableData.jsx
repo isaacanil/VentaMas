@@ -6,7 +6,6 @@ import { Receipt } from "../checkout/Receipt";
 import { faPrint, faReceipt } from "@fortawesome/free-solid-svg-icons";
 import { useReactToPrint } from "react-to-print";
 import { useEffect, useRef, useState } from "react";
-;
 import { icons } from "../../../constants/icons/icons";
 import * as ant from "antd";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,6 +14,7 @@ import { convertDate } from "../../../utils/date/convertTimeStampToDate";
 import { selectUser } from "../../../features/auth/userSlice";
 import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus";
 import { Tag } from "../../templates/system/Tag/Tag";
+import { openInvoicePreviewModal } from "../../../features/invoice/invoicePreviewSlice";
 
 const EditButton = ({ value }) => {
   const dispatch = useDispatch()
@@ -27,21 +27,17 @@ const EditButton = ({ value }) => {
 
   useEffect(() => {
     const checkCashCountStatus = async () => {
-      // Asegúrate de que cashCountId tiene un valor válido antes de llamar a fbCashCountStatus
       if (user && data && typeof data.cashCountId !== 'undefined' && data.cashCountId !== null) {
         try {
           const isOpen = await fbCashCountStatus(user, data.cashCountId, "open");
-          console.log("Checking cash count status...", !isOpen, " Hola ", is48HoursOld, " --> isOpen")
           setIsAllowEdit(!isOpen && is48HoursOld);
         } catch (error) {
-          console.error("Error checking cash count status:", error);
           setIsAllowEdit(true); // Asumir cerrado en caso de error
         }
       } else {
         setIsAllowEdit(true);
       }
     };
-
     checkCashCountStatus();
   }, [user, data?.cashCountId]);
 
@@ -59,12 +55,14 @@ const EditButton = ({ value }) => {
     dispatch(addInvoice({ invoice: invoiceData }))
   }
 
-
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     onAfterPrint: () => setPrinted(true),
   })
-  console.log(isAllowEdit, data.id, isAllowEdit, "isAllowEdit", isCashCountOpen)
+
+  const handleViewMore = () => {
+    dispatch(openInvoicePreviewModal(data))
+  }
 
   return (
     <div style={{
@@ -76,11 +74,14 @@ const EditButton = ({ value }) => {
         icon={<FontAwesomeIcon icon={faPrint} />}
         onClick={handleRePrint}
       />
-
       <ant.Button
         icon={icons.editingActions.edit}
         onClick={handleEdit}
         disabled={isAllowEdit}
+      />
+      <ant.Button
+        icon={icons.editingActions.show}
+        onClick={handleViewMore}
       />
     </div>
   )
@@ -95,7 +96,7 @@ export const columns = [
     maxWidth: '0.4fr',
     min: '120px',
   },
- 
+
   {
     Header: 'RNC',
     accessor: 'ncf',
@@ -179,8 +180,6 @@ export const columns = [
     maxWidth: '1fr',
     minWidth: '80px',
     cell: ({ value }) => <EditButton value={value} />
-
-
   }
 ]
 export const tableData = {

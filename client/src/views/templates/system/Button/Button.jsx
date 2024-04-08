@@ -2,10 +2,7 @@
 import { forwardRef, useState } from 'react'
 import styled, { css } from 'styled-components'
 
-
-
 export const Button = forwardRef(({
-
   border,
   color = "on-gray",
   title,
@@ -165,7 +162,7 @@ const borderRadius = {
 export const Container = styled.button`
   ${styleByDefault}
   ${props => props.size ? sizes[props.size] : sizes.medium}
- 
+  
   &:hover{
     ${props => !props.isActivated ? `
       
@@ -289,11 +286,13 @@ export const Container = styled.button`
     }
   }}
   ${(props) => {
-    if (props.disabled) {
-      return `
+    switch (props.disabled) {
+      case true:
+        return `
            opacity: 0.4;
            cursor: not-allowed;
            pointer-events: none;
+
           `;
     }
   }}

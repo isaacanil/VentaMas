@@ -90,7 +90,6 @@ export const SideBar = ({ isOpen }) => {
                     </Links>
                 </Body>
             </Wrapper>
-
         </Container>
     )
 }

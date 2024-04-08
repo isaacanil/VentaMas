@@ -8,6 +8,7 @@ import { usePopper } from 'react-popper';
 import Typography from '../../Typografy/Typografy';
 import { truncateString } from '../../../../../utils/text/truncateString';
 import { useMenuOptions } from './useMenuOptions';
+import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
 
 const menuVariant = {
     hidden: {
@@ -70,13 +71,21 @@ export const DateRangeFilter = ({ setDates, dates }) => {
         if (typeof date !== 'number') return;
         return DateTime.fromMillis(date).toLocaleString(DateTime.DATE_MED)
     }
+    const vw = useViewportWidth();
+    const truncateOptions = (string = [], length = 4) => {
+        if (vw < 800) {
+            return truncateString(string, length)
+        }
+        if(string.length > 400) return truncateString(string, 4)
+        return string
+    }
     return (
         <StyledButton ref={menuRef} >
             <Button
                 ref={setReferenceElement}
                 borderRadius='light'
                 startIcon={<BiCalendar />}
-                title={truncateString(activeOptionLabel, 8) || 'Filtrar Fechas'}
+                title={truncateOptions(activeOptionLabel, 4) || 'Filtrar Fechas'}
                 onClick={handleButtonClick}
             />
             {
@@ -96,24 +105,26 @@ export const DateRangeFilter = ({ setDates, dates }) => {
 
                     </Header>
                     <Body>
-                      
+
                         <Options>
                             {sections
                                 .map((section) => (
                                     <OptionsGroup>
                                         <h3>{section}</h3>
-                                        {groupedOptions[section].map((option, index) => (
-                                            <StyledMenuItem
-                                                key={index}
-                                                isActive={activeOptionLabel === option.label}
-                                                onClick={() =>
-                                                    handleMenuItemClick(option.startDate, option.endDate, option.label)
-                                                }
-                                            >
-                                                {console.log(activeOptionLabel)}
-                                                {option.label}
-                                            </StyledMenuItem>
-                                        ))}
+                                        <Items>
+
+                                            {groupedOptions[section].map((option, index) => (
+                                                <StyledMenuItem
+                                                    key={index}
+                                                    isActive={activeOptionLabel === option.label}
+                                                    onClick={() =>
+                                                        handleMenuItemClick(option.startDate, option.endDate, option.label)
+                                                    }
+                                                >
+                                                    {option.label}
+                                                </StyledMenuItem>
+                                            ))}
+                                        </Items>
                                     </OptionsGroup>
                                 ))}
                         </Options>
@@ -145,7 +156,9 @@ const Options = styled.div`
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
 `
 
-const StyledButton = styled.div``;
+const StyledButton = styled.div`
+    
+`;
 
 const StyledMenu = styled.ul`
 /*box */
@@ -167,8 +180,7 @@ const StyledMenu = styled.ul`
 `;
 
 const StyledMenuItem = styled.li`
-  list-style: none;
- 
+    list-style: none;
     display: flex;
     align-items: center;
     padding: 0 1em;
@@ -177,10 +189,8 @@ const StyledMenuItem = styled.li`
     font-weight: 450;
     font-size: 14px;
     border-radius: 6px;
-    
     background-color: ${props => props.isActive ? '#2772e4' : '#ffffff'}; 
     color: ${props => props.isActive ? '#ffffff' : '#000000'};
-    //box-shadow: inset 1px 2px 5px rgba(0, 0, 0, 0.152);
     text-transform: capitalize;
     
 `;
@@ -193,10 +203,17 @@ const OptionsGroup = styled.div`
     h3 {
         font-size: 14px;
         font-weight: 600;
-        
         text-transform: uppercase;
+    } 
+`;
+
+const Items = styled.div`
+    display: grid;
+    gap: 0.5em;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+    @media (max-width: 800px) {
+        grid-template-columns: 1fr ;
     }
- 
-    
-   
 `;
