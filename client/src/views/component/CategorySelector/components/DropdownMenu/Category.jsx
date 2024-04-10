@@ -7,12 +7,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 export const Category = ({
     category = {},
     isFavorite = false,
+    searchTerm = '',
     selected = false,
     onClick = () => { },
     toggleFavoriteCategory = () => { }
 }) => {
     const [isHover, setIsHover] = useState(false)
-
+    const [isHoverFavorite, setIsHoverFavorite] = useState(false)
     const handleMouseEnter = () => {
         setIsHover(true);
     };
@@ -21,6 +22,13 @@ export const Category = ({
         setIsHover(false);
     };
 
+    const highlightMatch = (text) => {
+        if (!searchTerm) return text;
+        const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+        return parts.map((part, index) => 
+            part.toLowerCase() === searchTerm.toLowerCase() ? <mark key={index}>{part}</mark> : part
+        );
+    };
 
     return (
         <Container
@@ -29,7 +37,7 @@ export const Category = ({
             onMouseLeave={handleMouseLeave}
         >
             <CategoryItem onClick={() => onClick(category)} >
-                {category?.name}
+            {highlightMatch(category?.name)}
             </CategoryItem>
             {/* {
                 selected && (
@@ -38,9 +46,11 @@ export const Category = ({
                     </DeleteButton>
                 )
             } */}
-       
-            <FavoriteStar onClick={() => toggleFavoriteCategory(category)}>
-                <FontAwesomeIcon icon={isFavorite || isHover ? faStar :  faStarRegular} />
+            <FavoriteStar 
+                onMouseEnter={() => setIsHoverFavorite(true)}
+                onMouseLeave={() => setIsHoverFavorite(false)}
+            onClick={() => toggleFavoriteCategory(category)}>
+                <FontAwesomeIcon icon={isFavorite || isHoverFavorite ? faStar :  faStarRegular} />
             </FavoriteStar>
         </Container>
     )
@@ -48,9 +58,8 @@ export const Category = ({
 const Container = styled.div`
     display: grid;
     grid-template-columns: 1fr min-content min-content;
-    
     justify-content: space-between;
-    padding: 0em 0.8em;
+    padding: 0em 0.4em;
     border-radius: 0.4em;
     cursor: pointer;
     border: 2px solid transparent;
@@ -71,8 +80,7 @@ const DeleteButton = styled.span`
     align-items: center;
 `       
 const CategoryItem = styled.span`
-    
-    padding: 0.4em 0.8em;
+    padding: 0.4em 0.4em;
     height: 100%;
 `;
 const FavoriteStar = styled.span`

@@ -17,7 +17,8 @@ const categorySlice = createSlice({
                 state.status = true
                 state.categoryList.push({ id, name })
             }
-            else {
+            
+            else if(state.categoryList.length === 12) {
                 notification.error({
                     message: 'Error',
                     description: 'No puedes agregar más de 12 categorías'

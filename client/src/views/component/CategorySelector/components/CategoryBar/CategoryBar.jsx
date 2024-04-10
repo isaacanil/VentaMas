@@ -56,7 +56,6 @@ export const CategoryBar = ({open, setOpen, categoriesSelected }) => {
       </Button>
     </Container >
   )
-
 }
 const Container = styled.div`
   height: 2.6em;
@@ -67,6 +66,7 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: min-content min-content 1fr min-content;
   background-color: #ffffff;
+  border-bottom: 1px solid #ccc;
 `;
 const Category = ({ category }) => {
   const dispatch = useDispatch();

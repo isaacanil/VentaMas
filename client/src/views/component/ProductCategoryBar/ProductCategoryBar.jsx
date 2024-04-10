@@ -2,7 +2,7 @@ import React from 'react'
 import { CategorySelector } from '../CategorySelector/CategorySelector'
 import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
 import { useDispatch, useSelector } from 'react-redux'
-import { SelectCategoryList, addCategory } from '../../../features/category/categorySlicer'
+import { SelectCategoryList, addCategory, deleteAllCategoriesSelected } from '../../../features/category/categorySlicer'
 import { fbAddFavoriteProductCategory } from '../../../firebase/categories/fbAddFavoriteProductCategory'
 import { selectUser } from '../../../features/auth/userSlice'
 import { fbGetFavoriteProductCategories, useGetFavoriteProductCategories } from '../../../firebase/categories/fbGetFavoriteProductCategories'
@@ -19,12 +19,14 @@ export const ProductCategoryBar = () => {
     await fbAddFavoriteProductCategory(user, category)
   }
   const handleDeleteFavorite = async (category) => {
-   
     try {
       await fbRemoveFavoriteProductCategory(user, category.id)
     }catch (error) {
       console.error('Error al eliminar categoría de favoritos: ', error)
     }
+  }
+  const handleDeleteAllCategoriesSelected = () => {
+      dispatch(deleteAllCategoriesSelected())
   }
   const dispatch = useDispatch()
   const handleProductCategory = (category) => {
@@ -38,6 +40,7 @@ export const ProductCategoryBar = () => {
       addFavoriteCategory={handleAddFavorite}
       deleteFavoriteCategory={handleDeleteFavorite}
       categoriesSelected={categorySelected}
+      deleteAllCategoriesSelected={handleDeleteAllCategoriesSelected}
     />
   )
 }

@@ -4,6 +4,8 @@ import { Category } from './Category';
 import * as antd from 'antd';
 import { filterData } from '../../../../../hooks/search/useSearch';
 import { icons } from '../../../../../constants/icons/icons';
+import { useWindowWidth } from '../../../../../hooks/useWindowWidth';
+import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
 const { Input, Typography, Button } = antd;
 
 export const DropdownMenu = ({
@@ -12,14 +14,13 @@ export const DropdownMenu = ({
     categories = [],
     categoriesSelected = [],
     favoriteCategories = [],
+    deleteAllCategoriesSelected = () => { },
     handleCategoryClick = () => { },
     addFavoriteCategory = () => { },
     deleteFavoriteCategory = () => { }
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [maxCategoriesToShow, setMaxCategoriesToShow] = useState(20);
-
-
 
     const adjustLists = () => {
         // Copia para evitar la mutación del estado original
@@ -37,8 +38,8 @@ export const DropdownMenu = ({
         }
         return { adjustedFavoriteCategories, adjustedNormalCategories };
     };
-    const { adjustedFavoriteCategories, adjustedNormalCategories } = adjustLists();
 
+    const { adjustedFavoriteCategories, adjustedNormalCategories } = adjustLists();
 
     //quiero quitar una propiedad que me createAt como seria?
     const favoriteCategoriesDelete = adjustedFavoriteCategories.map(({ category: { createdAt, ...restCategory }, ...rest }) => ({
@@ -52,7 +53,6 @@ export const DropdownMenu = ({
 
     const filteredFavoriteCategories = filterData(favoriteCategoriesDelete, searchTerm);
     const filteredNormalCategories = filterData(categoriesDelete, searchTerm);
-
 
     return (
         <Container>
@@ -72,18 +72,22 @@ export const DropdownMenu = ({
                         type='text'
                         size='small'
                     >
-
                     </Button>
                 </Header>
                 <Body>
-
                     <div
                         style={{
                             display: 'flex',
-                            justifyContent: 'center',
+                            justifyContent: 'space-between',
+                            padding: '0.4em 0.4em '
                         }}
                     >
-                        <Typography.Text type='secondary' style={{ padding: ' 0.2em 1em', }} >
+                          <Button
+                            onClick={deleteAllCategoriesSelected}
+                          >
+                            Deselecionar todo
+                        </Button>
+                        <Typography.Text type='secondary' style={{ padding: ' 0.2em 0.4em', }} >
                             {filteredFavoriteCategories.length + filteredNormalCategories.length} / {categories.length} categorías
                         </Typography.Text>
                     </div>
@@ -97,6 +101,7 @@ export const DropdownMenu = ({
                                     .sort((a, b) => a.category.name.localeCompare(b.category.name))
                                     .map(({ category }) => (
                                         <Category
+                                            searchTerm={searchTerm}
                                             key={category.id}
                                             category={category}
                                             selected={categoriesSelected.some(selectedCategory => selectedCategory.id === category.id)}
@@ -117,8 +122,8 @@ export const DropdownMenu = ({
                                 {filteredNormalCategories
                                     .sort((a, b) => a.category.name.localeCompare(b.category.name))
                                     .map(({ category }) => (
-
                                         <Category
+                                        searchTerm={searchTerm}
                                             key={category.id}
                                             category={category}
                                             selected={categoriesSelected.some(selectedCategory => selectedCategory.id === category.id)}
@@ -143,8 +148,6 @@ export const DropdownMenu = ({
                         </div>
                     }
                 </Body>
-
-
             </Wrapper>
         </Container>
     )
@@ -182,23 +185,23 @@ const Categories = styled.div`
     /* estilos para las categorías */
     display: grid;
     gap: 0.4em;
-    padding: 0 10px;
+    padding: 0 0.4em;
     
 `;
 const Body = styled.div`
     /* estilos para el cuerpo del menú desplegable */
-    padding: 0 0.8em;
+   
     display: grid;
     align-content: start;
 
     overflow-y: auto;
-    gap: 0.8em;
+    gap: 0.6em;
     padding-bottom: 1em;
 `;
 
 const Header = styled.div`
     /* estilos para el header */
-    padding: 0.4em 0.8em;
+    padding: 0.4em ;
     display: grid;
     grid-template-columns: 1fr min-content;
 

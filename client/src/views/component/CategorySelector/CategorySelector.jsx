@@ -14,7 +14,8 @@ export const CategorySelector = ({
   categoriesSelected,
   addFavoriteCategory,
   deleteFavoriteCategory,
-  handleCategoryClick
+  handleCategoryClick, 
+  deleteAllCategoriesSelected
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -40,6 +41,7 @@ export const CategorySelector = ({
             handleCategoryClick={handleCategoryClick}
             addFavoriteCategory={addFavoriteCategory}
             deleteFavoriteCategory={deleteFavoriteCategory}
+            deleteAllCategoriesSelected={deleteAllCategoriesSelected}
           />
         )
       }
