@@ -1,6 +1,7 @@
 
 import { createSlice } from "@reduxjs/toolkit";
-
+import * as antd from 'antd';
+const { notification } = antd;
 const initialState = {
     status: false,
     categoryList: []
@@ -11,10 +12,16 @@ const categorySlice = createSlice({
     reducers: {
         addCategory: (state, action) => {
             const { id, name } = action.payload
-            const checkingNameIsDifferent = state.categoryList.every((cat) => cat !== name)
-            if (checkingNameIsDifferent && state.categoryList.length < 8) {
-                    state.status = true
-                    state.categoryList.push(name)
+            const checkingNameIsDifferent = state.categoryList.every((cat) => cat.id !== id)
+            if (checkingNameIsDifferent && state.categoryList.length < 12) {
+                state.status = true
+                state.categoryList.push({ id, name })
+            }
+            else {
+                notification.error({
+                    message: 'Error',
+                    description: 'No puedes agregar más de 12 categorías'
+                })
             }
         },
         deleteAllCategoriesSelected: (state) => {
@@ -22,12 +29,12 @@ const categorySlice = createSlice({
             state.status = false
         },
         deleteCategorySelected: (state, action) => {
-            const name = action.payload
-            const checkingNameIsDifferent = state.categoryList.find((cat) => cat === name)
+            const { id } = action.payload
+            const checkingNameIsDifferent = state.categoryList.find((cat) => cat.id === id)
             if (checkingNameIsDifferent) {
                 state.categoryList.splice(state.categoryList.indexOf(checkingNameIsDifferent), 1)
             }
-            
+
             if (state.categoryList.length == 0) {
                 state.status = false
             }

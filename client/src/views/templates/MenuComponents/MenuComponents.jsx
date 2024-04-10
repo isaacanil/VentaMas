@@ -41,7 +41,6 @@ const Container = styled.div`
         z-index: 1;
       
         align-items: center;
-        padding: 0 1em;
     }
 `
 const Items = styled.ul`

@@ -72,18 +72,7 @@ export const Carrusel = ({
         }
     }
 
-    const effectCategoriesContainer = {
-        hidden: { opacity: 1, scale: 0 },
-        visible: {
-            opacity: 1,
-            scale: 1,
-            transition: {
-                delayChildren: 0.9,
-                staggerChildren: 0.9
-            }
 
-        }
-    }
 
     const { configureAddProductCategoryModal } = useCategoryState();
     const findElementInArray = (array, element) => {

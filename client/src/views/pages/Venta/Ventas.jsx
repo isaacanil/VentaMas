@@ -41,10 +41,10 @@ export const Sales = () => {
       });
       return;
     }
-  
+
     // Intentar encontrar el producto basado en el código de barras
     const product = products.find((p) => p?.barcode === barcode || p?.barcode === extractProductInfo(barcode));
-  
+
     if (!product) {
       antd.notification.error({
         message: 'Producto no encontrado',
@@ -53,14 +53,14 @@ export const Sales = () => {
       });
       return;
     }
-  
+
     // Verificar si el producto se vende por peso
     const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
-  
+
     if (barcode.startsWith('20') && barcode.length === 13 && isSoldByWeight) {
       const weightInfo = extractWeightInfo(barcode);
       const weight = formatWeight(weightInfo);
-  
+
       const productData = {
         ...product,
         weightDetail: {
@@ -79,9 +79,9 @@ export const Sales = () => {
       // Producto no vendido por peso o código de barras no cumple con los requisitos
       dispatch(addProduct(product));
     }
-  
+
   };
-  
+
 
   useBarcodeScanner(products, checkBarcode);
 

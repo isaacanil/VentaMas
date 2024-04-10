@@ -78,6 +78,10 @@ export const icons = {
         paragraph: <FontAwesomeIcon icon={faParagraph} />
     },
     editingActions:{
+        star: <FontAwesomeIcon 
+        icon={faStar} 
+
+        />,
         create: <FontAwesomeIcon icon={faPlus} />,
         edit: <FontAwesomeIcon icon={faPencil} />,
         delete: <FontAwesomeIcon icon={faTrash} />,
