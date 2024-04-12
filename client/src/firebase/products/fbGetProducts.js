@@ -103,9 +103,9 @@ export function useGetProducts(trackInventory = false) {
       const productsRef = collection(db, "businesses", String(user?.businessID), "products");
 
       const constraints = [];
-
+      const categoriesNameArray = categoriesArray.map((item) => item.name);
       if (categoriesArray.length > 0 && categoriesStatus) {
-        constraints.push(where("category", "in", categoriesArray));
+        constraints.push(where("category", "in", categoriesNameArray));
       }
 
       const q = query(productsRef, ...constraints);

@@ -5,6 +5,9 @@ import { Carrusel } from '../../../../component/Carrusel/Carrusel';
 import styled from 'styled-components';
 import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
 import { CustomProduct } from '../../../../templates/system/Product/CustomProduct';
+import { CategorySelector } from '../../../../component/CategorySelector/CategorySelector';
+import { ProductCategoryBar } from '../../../../component/ProductCategoryBar/ProductCategoryBar';
+
 const getColumns = (width) => {
   if (width < 600) {
     return 1;
@@ -28,12 +31,14 @@ export function ProductControlEfficient({ products }) {
   const productLength = products.length;
   return (
     <Container>
-      <Carrusel />
+      {/* <Carrusel /> */}
+      <ProductCategoryBar  />
       <ProductList products={products} />
       <ShoppingItemsCounter itemLength={productLength} />
     </Container>
   );
 }
+
 const Container = styled.div`
   height: 100%;
   background-color: ${props => props.theme.bg.color2}; 
@@ -94,41 +99,41 @@ const ProductList = ({ products }) => {
         }}
       >
         {
-        rowVirtualizer.getVirtualItems()
-        .map(virtualRow => (
-          <div
-            key={virtualRow.key}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${columns}, 1fr)`, // Crea una grilla con N columnas
-              gap: '10px', // Espacio entre los elementos de la grilla
-              position: 'absolute',
-              top: `${virtualRow.start}px`,
-              left: 0,
-              width: '100%',
-              height: `${cellHeight}px`, // Asegúrate de que esto coincida con estimateSize
-            }}
-          >
-            {Array.from({ length: columns }).map((_, columnIndex) => {
-              const itemIndex = virtualRow.index * columns + columnIndex;
-              const product = products[itemIndex];
-              if (product) {
-                if (product?.custom) {
-                  return (
-                    < CustomProduct key={product?.id} product={product} />
-                  )
-                }
-                return (
-                  <Product
-                    key={product?.id}
-                    product={product}
-                  />
-                );
-              }
-              return null; // Renderiza un espacio en blanco o un marcador de posición si no hay producto
-            })}
-          </div>
-        ))
+          rowVirtualizer.getVirtualItems()
+            .map(virtualRow => (
+              <div
+                key={virtualRow.key}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${columns}, 1fr)`, // Crea una grilla con N columnas
+                  gap: '10px', // Espacio entre los elementos de la grilla
+                  position: 'absolute',
+                  top: `${virtualRow.start}px`,
+                  left: 0,
+                  width: '100%',
+                  height: `${cellHeight}px`, // Asegúrate de que esto coincida con estimateSize
+                }}
+              >
+                {Array.from({ length: columns }).map((_, columnIndex) => {
+                  const itemIndex = virtualRow.index * columns + columnIndex;
+                  const product = products[itemIndex];
+                  if (product) {
+                    if (product?.custom) {
+                      return (
+                        < CustomProduct key={product?.id} product={product} />
+                      )
+                    }
+                    return (
+                      <Product
+                        key={product?.id}
+                        product={product}
+                      />
+                    );
+                  }
+                  return null; // Renderiza un espacio en blanco o un marcador de posición si no hay producto
+                })}
+              </div>
+            ))
         }
       </div>
     </ProductsListContainer>

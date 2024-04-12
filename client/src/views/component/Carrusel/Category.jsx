@@ -16,13 +16,11 @@ export const Category = ({ category, ref, onClick, type, icon, themeColor, selec
         }
         if (isSelected) {
             setIsSelected(!isSelected)
-            dispatch(deleteCategorySelected(category.name))
+            dispatch(deleteCategorySelected(category))
         }
         setTimeout(() => {
             ref.current.scrollTo(0, 0)
         }, 100)
-
-
     }
     const effectCategory = {
         hidden: { y: 20, opacity: 0 },
