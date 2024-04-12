@@ -13,7 +13,7 @@ import { productDataTypeCorrection } from '../../../../features/updateProduct/va
 import { productSchema } from '../../../../features/updateProduct/productSchema'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4'
 import { useFormatNumber } from '../../../../hooks/useFormatNumber'
-import noImage from '../../../../assets/producto/noImg.png'
+import noImage from '../../../../assets/product/noImg.png'
 import { OPERATION_MODES } from '../../../../constants/modes'
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct'
 import { initTaxes } from './InitializeData'
@@ -29,7 +29,7 @@ import { Select } from '../../../templates/system/Select/Select'
 import Typography from '../../../templates/system/Typografy/Typografy'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useCallback } from 'react'
-import ProductPaymentDetails from './components/ProductPaymentdetails/ProductPaymentDetails'
+import ProductPaymentDetails from './components/ProductPaymentDetails/ProductPaymentDetails'
 import { PaymentDetailTable } from './components/PaymentDetailTable/PaymentDetailTable'
 
 function interpretLayoutString(layoutString) {

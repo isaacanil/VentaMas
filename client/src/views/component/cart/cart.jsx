@@ -34,7 +34,7 @@ import { PaymentArea } from './components/PaymentArea'
 import { ProductsList } from './components/ProductsList/ProductsLit'
 import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
-import { addNotification } from '../../../features/notification/NotificationSlice'
+import { addNotification } from '../../../features/notification/notificationSlice'
 import { selectCashReconciliation } from '../../../features/cashCount/cashStateSlice'
 
 export const Cart = () => {
@@ -43,7 +43,6 @@ export const Cart = () => {
   const isOpen = useSelector(SelectCartIsOpen)
   const selectMode = useSelector(selectAppMode)
   const bill = useSelector(({ cart }) => cart.data)
-  console.log(bill.products)
   const taxReceiptDataSelected = useSelector(selectTaxReceiptData)
   const nfcType = useSelector(selectNcfType);
   const checkCashCount = useIsOpenCashReconciliation()

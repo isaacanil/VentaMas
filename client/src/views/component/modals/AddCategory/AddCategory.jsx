@@ -6,7 +6,7 @@ import { toggleAddCategory } from '../../../../features/modals/modalSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
 import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
-import { addNotification } from '../../../../features/notification/NotificationSlice';
+import { addNotification } from '../../../../features/notification/notificationSlice';
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
 import { motion } from 'framer-motion';
 import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';

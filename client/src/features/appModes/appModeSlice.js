@@ -1,6 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
-import { addNotification } from '../notification/NotificationSlice';
 import { CONFIG } from '../../constants/appConfig';
 
 const appModeSlice = createSlice({

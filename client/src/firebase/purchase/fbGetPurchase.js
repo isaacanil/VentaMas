@@ -3,7 +3,7 @@ import { db } from "../firebaseconfig";
 import { fbGetDocFromReference } from "../provider/fbGetProviderFromReference";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectPurchaseList, updatePurchases } from "../../features/Purchase/purchasesSlice";
+import { selectPurchaseList, updatePurchases } from "../../features/purchase/purchasesSlice";
 import { selectUser } from "../../features/auth/userSlice";
 import { orderBy } from "lodash";
 import { DateTime } from "luxon";

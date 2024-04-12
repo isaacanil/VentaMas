@@ -1,6 +1,6 @@
 import { Timestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
-import { isFirebaseStorageUrl } from "../../../utils/url/isValidUrl";
+import { isFirebaseStorageUrl } from "../../../utils/url/isValidURL";
 import { fbDeleteImage } from "../../img/fbDeleteImage";
 import { fbUploadFileAndGetURL } from "../../img/fbUploadFileAndGetURL";
 import { isImageFile } from "../../../utils/file/isValidFile";

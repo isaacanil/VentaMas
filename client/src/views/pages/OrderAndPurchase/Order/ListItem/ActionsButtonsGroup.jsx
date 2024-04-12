@@ -11,7 +11,7 @@ import { useDialog } from '../../../../../Context/Dialog/DialogContext'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { OPERATION_MODES } from '../../../../../constants/modes'
 import { fbDeleteOrder } from '../../../../../firebase/order/fbDeleteOrder'
-import { addNotification } from '../../../../../features/notification/NotificationSlice'
+import { addNotification } from '../../../../../features/notification/notificationSlice'
 import * as antd from 'antd'
 
 export const ActionsButtonsGroup = ({ orderData }) => {

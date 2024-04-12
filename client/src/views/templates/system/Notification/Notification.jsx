@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FaExclamationCircle, FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { removeNotification, selectCurrentNotification } from '../../../../features/notification/NotificationSlice';
+import { removeNotification, selectCurrentNotification } from '../../../../features/notification/notificationSlice';
 import { motion } from 'framer-motion';
 import { isArray } from 'lodash';
 import { Button } from '../Button/Button';

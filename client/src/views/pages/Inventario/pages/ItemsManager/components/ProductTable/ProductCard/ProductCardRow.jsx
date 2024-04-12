@@ -7,7 +7,7 @@ import { ChangeProductData } from '../../../../../../../../features/updateProduc
 import { useCheckForInternetConnection } from '../../../../../../../../hooks/useCheckForInternetConnection';
 import useImageFallback from '../../../../../../../../hooks/image/useImageFallback';
 import { Button, ButtonGroup } from '../../../../../../../templates/system/Button/Button';
-import noImg from '../../../../../../../../assets/producto/noImg.png';
+import noImg from '../../../../../../../../assets/product/noImg.png';
 import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
 import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
 import { icons } from '../../../../../../../../constants/icons/icons';

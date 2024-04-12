@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import * as ant from 'antd';
-const { Form, Button, Spin, Radio, InputNumber, Card, Space, Row, Col, Divider, Flex, Affix, Checkbox, Anchor } = ant;
+const { Form, Button, Spin,  Card, Space, Row, Col, } = ant;
 import { LoadingOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { QRCode } from './components/sections/QRCode';

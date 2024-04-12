@@ -5,7 +5,7 @@ import { InputV4 } from '../../Inputs/GeneralInput/InputV4';
 import { Button, ButtonGroup } from '../../Button/Button';
 import { useDispatch } from 'react-redux';
 import { toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice';
-import { isFirebaseStorageUrl } from '../../../../../utils/url/isValidUrl';
+import { isFirebaseStorageUrl } from '../../../../../utils/url/isValidURL';
 import { isImageFile } from '../../../../../utils/file/isValidFile';
 
 const InputFile = ({ 

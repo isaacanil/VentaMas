@@ -1,10 +1,9 @@
 import React from 'react'
-
-import noImg from '../../../../../../../assets/producto/noImg.png'
-
+import noImg from '../../../../../../../assets/product/noImg.png'
 import useImageFallback from '../../../../../../../hooks/image/useImageFallback';
 import styled from 'styled-components';
 import { useCheckForInternetConnection } from '../../../../../../../hooks/useCheckForInternetConnection';
+
 export const ImgCell = ({img}) => {
     const isConnected = useCheckForInternetConnection();
     const [imageFallback] = useImageFallback(img, noImg)

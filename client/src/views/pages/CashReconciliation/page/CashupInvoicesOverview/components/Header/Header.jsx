@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { formatBill } from '../../../../../../../hooks/exportToExcel/formatBill'
 import { useDispatch } from 'react-redux'
 import exportToExcel from '../../../../../../../hooks/exportToExcel/useExportToExcel'
-import { addNotification } from '../../../../../../../features/notification/NotificationSlice'
+import { addNotification } from '../../../../../../../features/notification/notificationSlice'
 import {icons} from '../../../../../../../constants/icons/icons'
 export const Header = ({ invoices = [] }) => {
     console.log(invoices)
