@@ -11,7 +11,7 @@ import { ProductCategoriesToolbar } from "./Page/ProductCategoriesToolbar";
 import { PurchaseToolbar } from "./Page/PurchaseToolbar";
 import { RegistroToolbar } from "./Page/RegistroToolbar";
 import UsersAdminToolbar from "./Page/UsersAdminToolbar";
-import { VentaMenuToolbar } from "./Page/VentaMenuToolbar";
+import { VentaMenuToolbar } from "./Page/VentaMenuToolBar";
 
 const componentsConfig = [
   {

@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4.jsx';
 import { useDispatch, useSelector } from 'react-redux';
-import { addNotification } from '../../../features/notification/notificationSlice';
+import { addNotification } from '../../../features/notification/NotificationSlice';
 import { validationRules } from '../../templates/system/Inputs/validationRules';
 
 export const SignUp = () => {

@@ -1,8 +1,8 @@
 import { Fragment } from "react"
-import { AddClientModal } from "./addClient/AddClientModal"
+import { AddClientModal } from "./AddClient/AddClientModal"
 
 import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
-import { SetCustomProduct } from "./CustomProduct/setCustomProduct/SetCustomProduct"
+import { SetCustomProduct } from "./CustomProduct/SetCustomProduct/SetCustomProduct"
 
 import { useSelector } from "react-redux"
 
@@ -41,12 +41,8 @@ import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
 import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
 import { FileListModal } from "./FileListModal/FileListModal"
 import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
-<<<<<<< Updated upstream
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
 import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserForm"
-=======
-import { selectCurrentNotification } from "../../../features/notification/notificationSlice"
->>>>>>> Stashed changes
 import { InvoicePreview } from "../../pages/Registro/InvoicePreview/InvoicePreview"
 
 export const ModalManager = () => {

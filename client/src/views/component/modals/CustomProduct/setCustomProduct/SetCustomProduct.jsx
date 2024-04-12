@@ -3,7 +3,8 @@ import React, { useState } from 'react'
 import { useEffect } from 'react'
 import styled from 'styled-components'
 import { separator } from '../../../../../hooks/separator'
-import { Modal } from '../../Modal.jsx'
+import { Modal } from '../../Modal'
+import { IngredientCard } from '../../../../templates/system/customProduct/typePizza/ingredientCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { SelectSetCustomPizzaModal, handleModalSetCustomPizza } from '../../../../../features/modals/modalSlice'
 import { selectTotalIngredientPrice, SelectIngredientsListName, formatData } from '../../../../../features/customProducts/customProductSlice'
@@ -15,7 +16,7 @@ import { getPizzaType } from '../getPizzaType.js'
 import customPizzaData from './customPizza.json'
 import { IngredientList } from './Components/IngredientList.jsx'
 import { Header } from './Components/Header.jsx'
-import { addNotification } from '../../../../../features/notification/notificationSlice.js'
+import { addNotification } from '../../../../../features/notification/NotificationSlice.js'
 
 const EmptyNewProduct = {
     name: '',

@@ -1,19 +1,23 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { InputV4 } from "../../templates/system/Inputs/GeneralInput/InputV4";
+import { fbLogin } from "../../../firebase/Auth/fbLogin";
 import ROUTES_NAME from "../../../routes/routesName";
+import findRouteByName from "../../templates/MenuApp/findRouteByName";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { fbSignIn } from "../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
+import { addNotification } from "../../../features/notification/NotificationSlice";
 import { ErrorComponent } from "../../templates/system/ErrorComponent/ErrorComponent";
 import Typography from "../../templates/system/Typografy/Typografy";
-
+import ROUTES_PATH from "../../../routes/routesName";
 const Backdrop = styled.div`
   display: grid;
     place-items: center;
     height: 100vh;
   margin: 0 auto;
   background-color: var(--color2);
+ 
 `;
 
 const Container = styled.div`

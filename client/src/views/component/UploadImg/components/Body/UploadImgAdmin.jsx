@@ -4,13 +4,14 @@ import { MdOutlineFileUpload } from 'react-icons/md'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice'
+
+
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
-import noImg from '../../../../../assets/product/noImg.png'
+import noImg from '../../../../../assets/producto/noImg.png'
 import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg'
-
 export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
    const user = useSelector(selectUser);
 

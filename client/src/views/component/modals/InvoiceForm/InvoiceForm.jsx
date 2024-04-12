@@ -13,6 +13,7 @@ import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { useForm } from 'antd/es/form/Form';
 import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
 import { selectUser } from '../../../../features/auth/userSlice';
+import modalStyle from './InvoiceForm.module.css'
 import { InvoiceInfoExtras } from './components/InvoiceInfoExtras/InvoiceInfoExtras';
 const data = {
   "id": "LziSjmxV_4A9",

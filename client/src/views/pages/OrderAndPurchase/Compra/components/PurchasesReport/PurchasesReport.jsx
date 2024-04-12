@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import styled from 'styled-components';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectPurchaseList } from '../../../../../../features/purchase/purchasesSlice';
+import { selectPurchaseList } from '../../../../../../features/Purchase/purchasesSlice';
 import { selectPurchaseChartModal, togglePurchaseChartModal } from '../../../../../../features/purchase/purchaseUISlice';
 import { DailyPurchasesBarChart } from './reports/DailyPurchasesBarChart';
 import Typography from '../../../../../templates/system/Typografy/Typografy';

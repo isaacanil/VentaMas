@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Modal } from '../Modal.jsx'
+import { Modal } from '../Modal'
 import { db } from '../../../../firebase/firebaseconfig.jsx'
 import { setDoc, doc } from 'firebase/firestore'
 import { nanoid } from 'nanoid'

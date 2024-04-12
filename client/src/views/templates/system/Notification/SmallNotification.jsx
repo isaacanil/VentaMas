@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { selectAppMode, toggleMode } from '../../../../features/appModes/appModeSlice';
-import { addNotification } from '../../../../features/notification/notificationSlice';
+import { addNotification } from '../../../../features/notification/NotificationSlice';
 import { Button } from '../Button/Button';
 
 // Este es el componente principal que renderizará el componente Alert

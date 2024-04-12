@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Button } from '../../templates/system/Button/Button'
 import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { useEffect } from 'react'
-import { addNotification } from '../../../features/notification/notificationSlice'
+import { addNotification } from '../../../features/notification/NotificationSlice'
 import { useFormatPrice } from '../../../hooks/useFormatPrice';
 import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4'
 

@@ -6,12 +6,17 @@ import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage, faListAl
 import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
+import { SearchInput } from '../../../system/Inputs/SearchInput'
+import { useMatchRouteByName } from '../useMatchRouterByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
+import { icons } from '../../../../../constants/icons/icons'
 import { useMatch } from 'react-router-dom'
 import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
+import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 import { setTheme, toggleTheme } from '../../../../../features/theme/themeSlice'
+import { fbAAddMultipleClients } from '../../../../../firebase/client/fbAddMultipleClients'
+import { clients } from '../../../../../firebase/client/clients'
 import { selectUser } from '../../../../../features/auth/userSlice'
-
 export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const ImageHidden = useSelector(selectImageHidden)
     const viewRowModeRef = useSelector(selectIsRow)

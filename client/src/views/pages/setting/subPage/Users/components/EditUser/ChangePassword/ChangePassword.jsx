@@ -3,13 +3,8 @@ import { icons } from '../../../../../../../../constants/icons/icons'
 import styled from 'styled-components'
 import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
 import { useDispatch } from 'react-redux'
-<<<<<<< Updated upstream
 import * as antd from 'antd'
 const { Modal, Form, Input, notification, Button } = antd
-=======
-import { addNotification } from '../../../../../../../../features/notification/notificationSlice'
-
->>>>>>> Stashed changes
 const formIcon = icons.forms
 export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose }) => {
     const [form] = Form.useForm()

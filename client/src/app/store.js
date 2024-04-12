@@ -32,9 +32,7 @@ import cashCountState from "../features/cashCount/cashStateSlice";
 import invoiceFormReducer from "../features/invoice/invoiceFormSlice";
 import productWeightEntryModalSlice from "../features/productWeightEntryModalSlice/productWeightEntryModalSlice";
 import * as expenseSlices from '../features/expense';
-import addPurcahseReducer from "../features/purchase/addPurchaseSlice";
-import purchasesSliceReducer from "../features/purchase/purchasesSlice";
-import purchaseUISliceReducer from "../features/purchase/purchaseUISlice";
+import * as purchaseSlices from '../features/purchase';
 import barcodePrintModalReducer from "../features/barcodePrintModalSlice/barcodePrintModalSlice";
 import invoicesSlice from "../features/invoice/invoicesSlice";
 import invoicePreviewReducer from "../features/invoice/invoicePreviewSlice";
@@ -73,10 +71,8 @@ export const store = configureStore({
     note: noteModalReducer,
     invoices: invoicesSlice,
     invoicePreview: invoicePreviewReducer,
-    addPurchase: addPurcahseReducer,
-    purchases: purchasesSliceReducer,
-    purchaseUI: purchaseUISliceReducer,
     ...expenseSlices,
+    ...purchaseSlices,
     cashCountState: cashCountState,
     barcodePrintModal: barcodePrintModalReducer
   }

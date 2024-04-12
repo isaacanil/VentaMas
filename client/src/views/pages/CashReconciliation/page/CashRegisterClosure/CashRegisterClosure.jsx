@@ -13,7 +13,7 @@ import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbC
 import { DateTime } from 'luxon'
 import { fbCashCountChangeState } from '../../../../../firebase/cashCount/closing/fbCashCountClosing'
 import { useFbGetCashCount } from '../../../../../firebase/cashCount/fbGetCashCount'
-import { addNotification } from '../../../../../features/notification/notificationSlice'
+import { addNotification } from '../../../../../features/notification/NotificationSlice'
 
 export const CashRegisterClosure = () => {
   const dispatch = useDispatch()
