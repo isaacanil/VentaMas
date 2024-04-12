@@ -28,25 +28,39 @@ const StyledTitle = styled.h2`
 const ProductTable = ({ products }) => {
     const columns = [
         {
-            title: 'Nombre',
+            title: 'Descripción',
             dataIndex: 'name',
             key: 'name',
             render: text => text ?? 'Producto Desconocido',
         },
         {
-            title: 'Precio',
+            title: 'Cantidad',
+            dataIndex: 'amountToBuy',
+            key: 'amountToBuy',
+            render: text => text ?? 'N/A',
+        },
+        {
+            title: 'Precio Unitario',
             dataIndex: ['pricing', 'price'],
-            key: 'price',
+            key: 'unitPrice',
             render: price => useFormatPrice(price) ?? 'N/A',
+        },
+        {
+            title: 'Total',
+            dataIndex: ['pricing', 'price'],
+            key: 'total',
+            render: (_, record) => useFormatPrice(record.pricing.price * record.amountToBuy) ?? 'N/A',
         },
         // Agrega aquí más columnas si necesitas
     ];
 
     // Transformar datos de productos para cumplir con la estructura esperada por Ant Design Table
     const dataSource = products.map((product, index) => ({
-        key: index, // Es mejor usar un identificador único si está disponible
+        key: index, 
         ...product,
     }));
+
+    console.log(dataSource);
 
     return <Table
         size='small'
