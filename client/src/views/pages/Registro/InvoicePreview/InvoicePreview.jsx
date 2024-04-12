@@ -41,11 +41,10 @@ export const InvoicePreview = () => {
       >
         <div className="flex justify-between items-center">
           <Title>Detalles de la Factura</Title>
-          {/* <button onClick={handleClose} className="px-4 py-2 rounded text-white bg-red-500 hover:bg-red-700">Cerrar</button> */}
         </div>
         <Products products={products} />
         <Group>
-        <ClientInfoCard client={client} />
+          <ClientInfoCard client={client} />
           <PaymentMethodInfoCard paymentMethod={paymentMethod} />
           <SummaryInfoCard summaryData={{
             sourceOfPurchase,
