@@ -36,6 +36,7 @@ import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { selectCashReconciliation } from '../../../features/cashCount/cashStateSlice'
+import { WarrantyControl } from './components/WarrantyControl'
 
 export const Cart = () => {
   const dispatch = useDispatch()
@@ -100,8 +101,8 @@ export const Cart = () => {
           cashCountId: cashCount.cashCount.id
         }
         await fbAddInvoice(bill, user)
-        if(taxReceiptEnabled) {
-           await fbUpdateTaxReceipt(user, taxReceipt) 
+        if (taxReceiptEnabled) {
+          await fbUpdateTaxReceipt(user, taxReceipt)
         }
         await fbUpdateProductsStock(ProductSelected, user);
         dispatch(addNotification({ message: "Venta Realizada", type: 'success', title: 'Completada' }))
@@ -197,13 +198,12 @@ export const Cart = () => {
       setSubmittable(false)
     }
   }, [submittable])
-  
- 
   return (
     <Container isOpen={isOpen}>
       <ClientControl />
       <ProductsList />
       <PaymentArea />
+      <WarrantyControl />
       <CheckoutAction
         ProductSelected={ProductSelected}
         TotalPurchaseRef={TotalPurchaseRef}

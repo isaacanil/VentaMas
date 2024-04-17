@@ -2,34 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import * as antd from 'antd';
-import { fbAddRncData } from '../../../../firebase/rnc/fbAddRncData';
-const { Table, Button, Input } = antd;
-const { Search } = Input;
-import styles from './invoice.module.css'
-import { SearchOutlined } from '@ant-design/icons'
-import Receipt from './Receipt';
-import { InvoiceForm } from '../../../component/modals/InvoiceForm/InvoiceForm';
-import { fbAddNumberIdToInvoices } from '../../../../firebase/invoices/fbAddNumberIdToInvoice';
+// import Receipt from './Receipt';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../features/auth/userSlice';
-import { fbGetUser } from '../../../../firebase/Auth/fbGetUser';
-import { Users } from '../../../controlPanel/AllUsersControl/components/Users/Users';
-import { fbUpdateAllBusinessCashCounts } from '../../../../firebase/cashCount/fbUpdateMultipleCashCount';
-import { fbTransferProductsToAnotherBusiness } from '../../../../firebase/products/fbTransferProductsToAnotherBusiness';
-import { fbTransferCategoriesToAnotherBusiness } from '../../../../firebase/categories/fbTransferCategoriesToAnotherBusiness';
-import { ProductControlEfficient } from '../../../pages/Venta/components/ProductControl.jsx/ProductControlEfficient';
-import { useGetProducts } from '../../../../firebase/products/fbGetProducts';
-import { fbUpdateProductsToNewFormatForMultipleBusinesses } from '../../../../firebase/products/fbChangeAllProducts';
-import { getPriceWithoutTax, getProductsPrice, getTax, getTotalInvoice, getTotalPrice } from '../../../../utils/pricing';
-import { fbChangeInvoiceForm } from './fbChangeInvoiceForm';
-import { fbUpdateProductToNewFormat } from '../../../../firebase/products/fbUpdateProductWithNewFormat';
-import { fbFixInvoices, fbPreviewProcessedInvoice } from '../../../../firebase/invoices/fbFixInvoice';
-import { fbFixInvoicesForMultipleBusinesses } from '../../../../firebase/invoices/fbFixInvoicesMultiBusiness';
-import { fbGetInvoice } from '../../../../firebase/invoices/fbGetInvoice';
-import { fbCheckDuplicateProducts } from '../../../../firebase/products/fbCheckDuplicateProducts';
-import { fbUpdateAppVersion } from '../../../../firebase/app/fbUpdateAppVersion';
-import { fbDeleteProducts } from '../../../../firebase/products/fbDeleteProducts';
-import { fbUpdateProductStructure } from '../../../../firebase/products/fbUpdateProductStructure';
+import { Receipt } from '../../../pages/checkout/Receipt';
+import { WarrantySignature } from '../../../pages/checkout/components/WarrantySignature';
+
 
 const data = {
   companyName: "CASA ESTILO RF",
@@ -133,16 +111,16 @@ export const Prueba = () => {
   }
   return (
     <div>
-      <Button
-        onClick={handleSubmit}
-      >
-        Cambiar Estructura de Productos
-      </Button>
+<WarrantySignature />
     </div>
   )
 }
-<Receipt />
 
+{/* <Button
+  onClick={handleSubmit}
+>
+  Cambiar Estructura de Productos
+</Button> */}
 
 const ArticuloConImpuesto = () => {
 

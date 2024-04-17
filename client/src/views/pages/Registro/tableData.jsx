@@ -15,6 +15,7 @@ import { selectUser } from "../../../features/auth/userSlice";
 import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus";
 import { Tag } from "../../templates/system/Tag/Tag";
 import { openInvoicePreviewModal } from "../../../features/invoice/invoicePreviewSlice";
+import { togglePrintWarranty } from "../../../features/cart/cartSlice";
 
 const EditButton = ({ value }) => {
   const dispatch = useDispatch()
@@ -25,6 +26,9 @@ const EditButton = ({ value }) => {
   const [isAllowEdit, setIsAllowEdit] = useState(false)
   const is48HoursOld = data?.date?.seconds < (Date.now() / 1000) - 172800
 
+  const handleTogglePrintWarranty = () => {
+    dispatch(togglePrintWarranty())
+  }
   useEffect(() => {
     const checkCashCountStatus = async () => {
       if (user && data && typeof data.cashCountId !== 'undefined' && data.cashCountId !== null) {
@@ -57,7 +61,9 @@ const EditButton = ({ value }) => {
 
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
-    onAfterPrint: () => setPrinted(true),
+    onBeforePrint: () => handleTogglePrintWarranty(),
+    onAfterPrint: () => setTimeOut(() => handleTogglePrintWarranty(), 10000)
+
   })
 
   const handleViewMore = () => {

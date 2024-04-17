@@ -2,14 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 import { initialState, defaultDelivery } from "./default/default";
 import { GenericClient } from "../clientCart/clientCartSlice";
 import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTax, getTotalItems } from "../../utils/pricing";
-import { update } from "lodash";
 import { nanoid } from "nanoid";
 
 const limitTwoDecimal = (number) => {
     return Number(number.toFixed(2))
 }
-
-
 
 const calculateChange = (payment, totalPurchase) => (payment - totalPurchase);
 
@@ -59,7 +56,7 @@ const cartSlice = createSlice({
             }
             updateAllTotals(state, paymentValue)
         },
-        
+
         changePaymentValue: (state, actions) => {
             const paymentValue = actions.payload
             state.data.payment.value = Number(paymentValue)
@@ -96,7 +93,8 @@ const cartSlice = createSlice({
         },
         addProduct: (state, action) => {
             const checkingID = state.data.products.find((product) => product.id === action.payload.id)
-
+            const products = state.data.products
+            //los productos tienen informacion de garantia en product.warranty.status, grarardar en data.warranty un objeto con el id y el fecha en l;a que se agrego
             if (checkingID && !checkingID?.weightDetail?.isSoldByWeight) {
                 checkingID.amountToBuy = checkingID.amountToBuy + 1;
             } else if (checkingID && checkingID?.weightDetail?.isSoldByWeight) {
@@ -105,9 +103,7 @@ const cartSlice = createSlice({
                     ...product,
                     cid: nanoid(8)
                 }
-                const products = state.data.products
                 state.data.products = [...products, productData]
-
             } else {
                 const product = action.payload
                 const productData = {
@@ -116,8 +112,6 @@ const cartSlice = createSlice({
                         ? nanoid(8)
                         : product.id,
                 }
-                const products = state.data.products
-
                 state.data.products = [...products, productData]
             }
             updateAllTotals(state)
@@ -184,6 +178,9 @@ const cartSlice = createSlice({
             const source = actions.payload
             state.data.sourceOfPurchase = source
         },
+        togglePrintWarranty: (state) => {
+            state.settings.printWarranty = !state.settings.printWarranty
+        }
     }
 })
 
@@ -194,6 +191,7 @@ export const {
     addPaymentMethod,
     addDiscount,
     addPaymentMethodAutoValue,
+    togglePrintWarranty,
     addProduct,
     addSourceOfPurchase,
     addTaxReceiptInState,
@@ -231,6 +229,7 @@ export const SelectNCF = (state) => state.cart.data.NCF;
 export const SelectCartPermission = () => state.cart.permission
 export const SelectCartIsOpen = (state) => state.cart.isOpen
 export const SelectCartData = (state) => state.cart.data
+export const SelectSettingCart = (state) => state.cart.settings
 
 export default cartSlice.reducer
 

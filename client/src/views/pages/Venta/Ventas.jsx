@@ -112,7 +112,6 @@ export const Sales = () => {
           products={filterProductsByVisibility}
 
         />
-
         <MenuComponents />
       </ProductContainer>
       <Cart />

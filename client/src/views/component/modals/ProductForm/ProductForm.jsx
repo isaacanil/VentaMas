@@ -17,6 +17,7 @@ import { selectUser } from '../../../../features/auth/userSlice';
 import { fbAddProduct } from '../../../../firebase/products/fbAddProduct';
 import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct';
 import { closeModalUpdateProd } from '../../../../features/modals/modalSlice';
+import { WarrantyInfo } from './components/sections/WarrantyInfo';
 
 export const ProductForm = ({ showImageManager }) => {
     const dispatch = useDispatch();
@@ -70,6 +71,10 @@ export const ProductForm = ({ showImageManager }) => {
             dispatch(ChangeProductData({ product: { weightDetail: { ...product?.weightDetail, ...changeValue?.weightDetail } } }));
             return
         }
+        if (key === 'warranty') {
+            dispatch(ChangeProductData({ product: { warranty: { ...product?.warranty, ...changeValue?.warranty } } }))
+            return
+        }
         // Despacha la acción con el valor actualizado
         dispatch(ChangeProductData({ product: { ...changeValue } }));
     }
@@ -99,6 +104,10 @@ export const ProductForm = ({ showImageManager }) => {
                 onFinish={onFinish}
                 onValuesChange={handleChangeValues}
                 initialValues={{ ...product }}
+                style={{
+                    gap: '10px',
+                    display: 'grid',
+                }}
             >
                 <Row gutter={16}
                 >
@@ -119,6 +128,7 @@ export const ProductForm = ({ showImageManager }) => {
                             <InventoryInfo
                                 product={product}
                             />
+
                             <PriceInfo product={product} />
                         </Space>
                     </Col>
@@ -158,23 +168,21 @@ export const ProductForm = ({ showImageManager }) => {
                                             </ImageContainer>
                                         }
                                     </ImageContent>
-                                    <Form.Item
-                                        name="upload"
-                                        label=""
+
+                                    <Button
+                                        style={{
+                                            width: '100%'
+                                        }}
+                                        onClick={showImageManager}
                                     >
-                                        <Button
-                                            style={{
-                                                width: '100%'
-                                            }}
-                                            onClick={showImageManager}
-                                        >
-                                            {product?.productImageURL ? "Actualizar" : "Agregar"} imagen
-                                        </Button>
-                                    </Form.Item>
+                                        {product?.productImageURL ? "Actualizar" : "Agregar"} imagen
+                                    </Button>
+
                                 </Space>
                             </Card>
                             <QRCode product={product} />
                             <BarCode product={product} />
+                            <WarrantyInfo />
                         </Space>
                     </Col>
                 </Row>
