@@ -27,6 +27,7 @@ import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined } from '@an
 import { store } from '../../../../../../../app/store'
 import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
 import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
+import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar'
 const { Button, Dropdown, Menu } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
@@ -219,7 +220,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           data={data}
           columns={columns}
           searchTerm={searchTerm}
-          headerComponent={<Carrusel addCategoryBtn />}
+          headerComponent={ <ProductCategoryBar  />}
           tableName={'inventory_items_table'}
           elementName={'productos'}
           onRowClick={(row) => handleUpdateProduct(row.action)}
