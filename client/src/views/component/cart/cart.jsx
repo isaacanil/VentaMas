@@ -36,7 +36,6 @@ import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
 import { addNotification } from '../../../features/notification/NotificationSlice'
 import { selectCashReconciliation } from '../../../features/cashCount/cashStateSlice'
-import { WarrantyControl } from './components/WarrantyControl'
 
 export const Cart = () => {
   const dispatch = useDispatch()
@@ -203,7 +202,7 @@ export const Cart = () => {
       <ClientControl />
       <ProductsList />
       <PaymentArea />
-      <WarrantyControl />
+     
       <CheckoutAction
         ProductSelected={ProductSelected}
         TotalPurchaseRef={TotalPurchaseRef}

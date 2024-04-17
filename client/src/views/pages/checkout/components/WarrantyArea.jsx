@@ -10,32 +10,13 @@ export const WarrantyArea = ({ data }) => {
     const { printWarranty } = useSelector(SelectSettingCart)
     const someProductHaveWarranty = data.products.some((product) => product?.warranty?.status)
 
-    if (printWarranty && someProductHaveWarranty) {
+    if (someProductHaveWarranty) {
         return (
             <Container>
                 <SubTitle>
                     Garantía
                 </SubTitle>
-                <p>
-                    Productos con Garantía
-                </p>
-                {
-                    data?.products.map((product)=>{
-                        const haveWarranty = product?.warranty?.status
-                        if(haveWarranty){
-                            return (
-                                <div>
-                                    <div>
-                                     - Producto: {product?.name} - Duración: {convertTimeToSpanish(product?.warranty?.quantity, product?.warranty?.unit)}
-                                    </div>
-                                    {/* <div>
-                                        Duración: 
-                                    </div> */}
-                                </div>
-                            )
-                        }
-                    })
-                }
+   
                
             </Container>
         )

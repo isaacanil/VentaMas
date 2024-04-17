@@ -26,9 +26,6 @@ const EditButton = ({ value }) => {
   const [isAllowEdit, setIsAllowEdit] = useState(false)
   const is48HoursOld = data?.date?.seconds < (Date.now() / 1000) - 172800
 
-  const handleTogglePrintWarranty = () => {
-    dispatch(togglePrintWarranty())
-  }
   useEffect(() => {
     const checkCashCountStatus = async () => {
       if (user && data && typeof data.cashCountId !== 'undefined' && data.cashCountId !== null) {
@@ -61,9 +58,6 @@ const EditButton = ({ value }) => {
 
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
-    onBeforePrint: () => handleTogglePrintWarranty(),
-    onAfterPrint: () => setTimeOut(() => handleTogglePrintWarranty(), 10000)
-
   })
 
   const handleViewMore = () => {

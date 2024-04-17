@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { SelectSettingCart } from '../../../../features/cart/cartSlice';
 
-export const WarrantySignature = () => {
-  const { printWarranty } = useSelector(SelectSettingCart)
-  if (printWarranty) {
+export const WarrantySignature = ({data}) => {
+  const someProductHaveWarranty = data.products.some((product) => product?.warranty?.status)
+  if (someProductHaveWarranty) {
     return (
       <SignatureContainer>
         <div>

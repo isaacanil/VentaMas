@@ -65,8 +65,8 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                 <ProductList data={data} />
                 <Line />
                 <PaymentArea P={P} data={data} />
-                <WarrantySignature />
-                <WarrantyArea data={data} />
+                <WarrantySignature data={data} />
+                {/* <WarrantyArea data={data} /> */}
             </Container>
         ) : null
     )
