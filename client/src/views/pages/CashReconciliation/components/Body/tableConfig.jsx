@@ -51,6 +51,7 @@ export const tableConfig = () => {
           return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
         }
         return value.totalSystem ? useFormatPrice(value.totalSystem) : 'Total'
+            //  return JSON.stringify(useFormatPrice(value.totalSystem))
       }
     },
     {

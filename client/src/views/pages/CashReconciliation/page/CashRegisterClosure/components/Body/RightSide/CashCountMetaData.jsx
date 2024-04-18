@@ -6,10 +6,7 @@ export const CashCountMetaData = (cashCount, invoices = []) => {
     const {sales, opening, closing} = cashCount;
     const totalOpeningBanknotes = opening.banknotesTotal;
     const totalClosingBanknotes = closing.banknotesTotal;
- 
-    // let totalCard = invoices.reduce((total, sale) => {
-    //   return total + (sale.data.paymentMethod.filter(payment => payment.method === "card" && payment.status).length > 0 ? sale.data.totalPurchase.value : 0);
-    // }, 0);
+
     const totalCard = invoices.reduce((total, factura) => {
       const { paymentMethod, payment } = factura.data;
       const tarjeta = paymentMethod.find(method => method.method === 'card' && method.status === true);
@@ -34,11 +31,11 @@ export const CashCountMetaData = (cashCount, invoices = []) => {
     const totalDiscrepancy = totalRegister - totalSystem;
    
   return {
-    totalCard,
-    totalTransfer,
-    totalRegister,
-    totalSystem,
-    totalDiscrepancy,
-    totalCharged
+    totalCard: totalCard || 0,
+    totalTransfer: totalTransfer || 0,
+    totalRegister: totalRegister || 0,
+    totalSystem: totalSystem || 0,
+    totalDiscrepancy: totalDiscrepancy || 0,
+    totalCharged: totalCharged || 0
   }
 }

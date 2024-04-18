@@ -6,7 +6,7 @@ import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBo
 import { TextareaV2 } from '../../../Comments/TextareaV2'
 import { ViewInvoice } from './components/ViewInvoive/ViewInvoice'
 import { Comments } from '../../../Comments/Comments'
-import { addPropertiesToCashCount, selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
+import { addPropertiesToCashCount, selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, updateCashCountTotals, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { DateSection } from '../../Header/DateSection'
 import { selectUser } from '../../../../../../../../features/auth/userSlice'
@@ -15,9 +15,9 @@ import { CashCountMetaData } from './CashCountMetaData'
 
 export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => {
   const CashReconciliation = useSelector(selectCashCount)
-
   const { sales, id, state } = CashReconciliation
   const { banknotes, comments } = CashReconciliation.closing;
+
   const [invoices, setInvoices] = useState({
     count: '',
     invoices: []
@@ -40,11 +40,14 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
   }, [])
 
   const cashCountMetaData = CashCountMetaData(CashReconciliation, invoices.invoices)
-  useEffect(()=>{
+  useEffect(() => {
+    dispatch(updateCashCountTotals(cashCountMetaData))
+  }, [CashReconciliation, invoices, banknotes])
+
+  useEffect(() => {
     dispatch(addPropertiesToCashCount(cashCountMetaData))
-  },[ banknotes])
-  console.log(cashCountMetaData)
-  console.log(invoices)
+  }, [banknotes])
+
   return (
     <Container>
       <CashDenominationCalculator

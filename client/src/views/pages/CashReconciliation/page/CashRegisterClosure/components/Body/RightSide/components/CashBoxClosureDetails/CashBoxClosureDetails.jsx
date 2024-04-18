@@ -11,7 +11,7 @@ import { useFormatPrice } from '../../../../../../../../../../hooks/useFormatPri
 export const CashBoxClosureDetails = ({invoices}) => {
   const cashCount = useSelector(selectCashCount)
   const {totalSystem, totalCharged, totalDiscrepancy} = CashCountMetaData(cashCount, invoices)
-  console.log(invoices)
+
  
   return (
     <Container>
