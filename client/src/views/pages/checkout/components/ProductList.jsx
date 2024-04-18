@@ -8,6 +8,7 @@ import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
 import { setTaxReceiptEnabled } from '../../../../features/cart/cartSlice'
+import { convertTimeToSpanish } from '../../../component/modals/ProductForm/components/sections/WarrantyInfo'
 
 export const ProductList = ({ data }) => {
     const { products, NCF } = data
@@ -42,6 +43,13 @@ export const ProductList = ({ data }) => {
                             <Row>
                                 <ProductName>{product?.name}</ProductName>
                             </Row>
+                            {
+                                product?.warranty?.status && (
+                                    <Row>
+                                        {convertTimeToSpanish(product?.warranty?.quantity, product?.warranty?.unit)} de Garantía
+                                    </Row>
+                                )
+                            }
                         </Product>
                     ))
                 ) : null

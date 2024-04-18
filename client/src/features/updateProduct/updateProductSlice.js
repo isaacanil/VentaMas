@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
+import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/WarrantyInfo'
 
 const emptyProduct = {
     status: false,
@@ -25,6 +26,11 @@ const emptyProduct = {
             isSoldByWeight: false,
             weightUnit: 'lb',
             weight: 0,
+        },
+        warranty: {
+            status: false,
+            unit: warrantyOptions[1].value,
+            quantity: 1,
         },
         size: '',
         type: '',
