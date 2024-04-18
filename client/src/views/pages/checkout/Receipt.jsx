@@ -11,6 +11,8 @@ import { useFormatPhoneNumber } from '../../../hooks/useFormatPhoneNumber'
 import { useSelector } from 'react-redux'
 import { selectBusinessData } from '../../../features/auth/businessSlice'
 import { Header } from './components/Header/Header'
+import { WarrantyArea } from './components/WarrantyArea'
+import { WarrantySignature } from './components/WarrantySignature'
 
 
 export const Receipt = React.forwardRef(({ data }, ref) => {
@@ -18,7 +20,7 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
         if (!code) {
             return { type: 'Desconocido', description: 'RECIBO  DE PAGO' };
         }
-        console.log(code);
+  
         // Asegurarse de que se extrae correctamente el código relevante de la cadena
         const pattern = /(B0\d)/; // Esta expresión regular busca el patrón exacto "B0" seguido de un dígito
         const found = code.match(pattern);
@@ -35,8 +37,8 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
             return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
         }
     }
-    let business = useSelector(selectBusinessData)
-    const ncfType = getReceiptInfo(data.NCF).description
+    let business = useSelector(selectBusinessData) || ""
+    const ncfType = getReceiptInfo(data?.NCF)?.description
 
     return (
         business && data ? (
@@ -63,6 +65,8 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                 <ProductList data={data} />
                 <Line />
                 <PaymentArea P={P} data={data} />
+                <WarrantySignature data={data} />
+                {/* <WarrantyArea data={data} /> */}
             </Container>
         ) : null
     )

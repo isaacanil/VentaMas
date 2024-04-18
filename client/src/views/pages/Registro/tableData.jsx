@@ -15,6 +15,7 @@ import { selectUser } from "../../../features/auth/userSlice";
 import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus";
 import { Tag } from "../../templates/system/Tag/Tag";
 import { openInvoicePreviewModal } from "../../../features/invoice/invoicePreviewSlice";
+import { togglePrintWarranty } from "../../../features/cart/cartSlice";
 
 const EditButton = ({ value }) => {
   const dispatch = useDispatch()
@@ -57,7 +58,6 @@ const EditButton = ({ value }) => {
 
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
-    onAfterPrint: () => setPrinted(true),
   })
 
   const handleViewMore = () => {

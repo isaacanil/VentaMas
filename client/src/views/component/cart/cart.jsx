@@ -100,8 +100,8 @@ export const Cart = () => {
           cashCountId: cashCount.cashCount.id
         }
         await fbAddInvoice(bill, user)
-        if(taxReceiptEnabled) {
-           await fbUpdateTaxReceipt(user, taxReceipt) 
+        if (taxReceiptEnabled) {
+          await fbUpdateTaxReceipt(user, taxReceipt)
         }
         await fbUpdateProductsStock(ProductSelected, user);
         dispatch(addNotification({ message: "Venta Realizada", type: 'success', title: 'Completada' }))
@@ -197,13 +197,12 @@ export const Cart = () => {
       setSubmittable(false)
     }
   }, [submittable])
-  
- 
   return (
     <Container isOpen={isOpen}>
       <ClientControl />
       <ProductsList />
       <PaymentArea />
+     
       <CheckoutAction
         ProductSelected={ProductSelected}
         TotalPurchaseRef={TotalPurchaseRef}

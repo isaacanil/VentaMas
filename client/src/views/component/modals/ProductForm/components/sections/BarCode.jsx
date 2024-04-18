@@ -26,6 +26,11 @@ export const BarCode = ({ product }) => {
                 />
                 <Form.Item
                     name="barcode"
+                    style={
+                        {
+                            marginBottom: 0
+                        }
+                    }
                 >
                     <Input
                         placeholder="Código de Barra"

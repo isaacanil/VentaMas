@@ -30,12 +30,14 @@ const defaultPaymentMethod = [
         status: false
     }
 ];
+
 const initialState = {
     permission: {
         openCashReconciliation: false
     },
     settings: {
-        taxReceipt: { enabled: false }
+        taxReceipt: { enabled: false },
+        printWarranty: false
     },
     isOpen: false,
     data: {
