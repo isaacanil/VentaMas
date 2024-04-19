@@ -4,6 +4,7 @@ import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator
 import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData"
 import { DateSection } from "../../page/CashRegisterClosure/components/Header/DateSection"
 import * as antd from 'antd'
+import { fbLoadInvoicesForCashCount } from "../../../../../firebase/cashCount/fbLoadInvoicesForCashCount"
 const { Tag } = antd
 export const tableConfig = () => {
 
@@ -51,12 +52,12 @@ export const tableConfig = () => {
           return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
         }
         return value.totalSystem ? useFormatPrice(value.totalSystem) : 'Total'
-            //  return JSON.stringify(useFormatPrice(value.totalSystem))
+        //  return JSON.stringify(useFormatPrice(value.totalSystem))
       }
     },
     {
       accessor: 'discrepancy',
-      Header: 'Resultado', 
+      Header: 'Resultado',
       align: 'right',
       maxWidth: '0.4fr',
       minWidth: '100px',
@@ -79,11 +80,36 @@ export const tableConfig = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: '16px', padding: '5px 10px' }}>
-            {value.totalDiscrepancy ? useFormatPrice(value.totalDiscrepancy) : 'Sobrante'}
+            {useFormatPrice(value.totalDiscrepancy) ?? 'Sobrante'}
           </Tag>
         )
       }
     },
+    {
+      accessor: 'action',
+      Header: 'Acción',
+      align: 'right',
+      maxWidth: '0.4fr',
+      minWidth: '100px',
+      clickable: false,
+      cell: ({ value }) => {
+        const isOpen = value?.state === 'open';
+        const id = value?.id;
+        const loadInvoice = async () => {
+          const invoicesData = await fbLoadInvoicesForCashCount(user, id, 'all')
+          return invoicesData
+        }
+        const handleReCalculate = async () => {
+          const invoices = await loadInvoice()
+          const cashCountMetaData = CashCountMetaData(value, invoices)
+          
+        }
+        if (isOpen) {
+          return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
+        }
+        return <antd.Button type="primary" >Re-calcular</antd.Button>
+      }
+    }
   ]
   return columns
 }
