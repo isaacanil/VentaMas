@@ -2,13 +2,16 @@ import React from 'react'
 import styled from 'styled-components'
 import { Button } from '../../../../../../../../../templates/system/Button/Button'
 import { useNavigate } from 'react-router-dom'
+import { Skeleton } from '../../../../../../../../../templates/system/Skeleton/Skeleton'
 
-export const ViewInvoice = ({invoices}) => {
+export const ViewInvoice = ({invoices, loading}) => {
     const navigate = useNavigate()
     const handleRedirect = () => {
         navigate('/cash-register-invoices-overview')
     }
     return (
+        <Skeleton loading={loading}>
+
         <Container>
             #{invoices}
            <Button
@@ -18,6 +21,7 @@ export const ViewInvoice = ({invoices}) => {
                 onClick={handleRedirect}
            />
         </Container>
+        </Skeleton>
     )
 }
 

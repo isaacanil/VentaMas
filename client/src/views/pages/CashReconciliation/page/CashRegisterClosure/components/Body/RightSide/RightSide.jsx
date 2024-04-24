@@ -12,6 +12,7 @@ import { DateSection } from '../../Header/DateSection'
 import { selectUser } from '../../../../../../../../features/auth/userSlice'
 import { fbLoadInvoicesForCashCount } from '../../../../../../../../firebase/cashCount/fbLoadInvoicesForCashCount'
 import { CashCountMetaData } from './CashCountMetaData'
+import loaderSlice from '../../../../../../../../features/loader/loaderSlice'
 
 export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => {
   const CashReconciliation = useSelector(selectCashCount)
@@ -20,7 +21,8 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
 
   const [invoices, setInvoices] = useState({
     count: '',
-    invoices: []
+    invoices: [],
+    loading: false
   })
   const dispatch = useDispatch()
   const user = useSelector(selectUser)
@@ -33,6 +35,7 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
   }
   useEffect(() => {
     const fetchData = async () => {
+      setInvoices({ ...invoices, loading: true })
       const invoicesData = await fbLoadInvoicesForCashCount(user, id, 'all')
       setInvoices(invoicesData)
     }
@@ -59,9 +62,18 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
         setIsExpanded={setCalculationIsOpen}
         inputDisabled={state === 'closed'}
       />
-      <TransactionSummary invoices={invoices.invoices} />
-      <ViewInvoice invoices={invoices.count} />
-      <CashBoxClosureDetails invoices={invoices.invoices} />
+      <TransactionSummary 
+        invoices={invoices.invoices} 
+        loading={invoices.loading}
+      />
+      <ViewInvoice
+        invoices={invoices.count}
+        loading={invoices.loading}
+      />
+      <CashBoxClosureDetails
+        loading={invoices.loading}
+        invoices={invoices.invoices}
+      />
       <Comments
         label='Comentarios de cierre'
         placeholder='Escribe aquí ...'

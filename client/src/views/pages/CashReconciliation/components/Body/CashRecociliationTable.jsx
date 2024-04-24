@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
 import { useNavigate } from 'react-router-dom'
-import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
+import { clearCashCount, setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { DateTime } from 'luxon'
 
 export const CashReconciliationTable = () => {
@@ -30,9 +30,10 @@ export const CashReconciliationTable = () => {
     dispatch(setCashCount(cashCountToUpdate));
     navigate(`/cash-register-closure/${cashCountToUpdate?.id}`);
   }
-
+ 
   useEffect(() => {
     fbGetCashCounts(user, setCashCounts, dateRange)
+
   }, [user, dateRange])
   useEffect(() => {
     if (user) {
@@ -77,7 +78,7 @@ export const CashReconciliationTable = () => {
       accessor: 'user',
     }
   ]
-  console.log(cashCounts.slice(1, 2))
+
   return (
     <Container>
       <AdvancedTable

@@ -1,12 +1,17 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import { Header } from './components/Header/Header'
 import { CashReconciliationTable } from './components/Body/CashRecociliationTable'
 import { ConfirmationDialog } from '../../component/modals/UserNotification/components/ConfirmationDialog/ConfirmationDialog'
+import { useDispatch } from 'react-redux'
+import { clearCashCount } from '../../../features/cashCount/cashCountManagementSlice'
 
 export const CashReconciliation = () => {
-
+  const dispatch = useDispatch()
+  useEffect(() => {
+    dispatch(clearCashCount())
+  }, [])
   return (
     <Container>
         <Header />

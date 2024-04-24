@@ -14,8 +14,8 @@ const initialCashBoxStatus = {
 
 const initialCashCount = {
     state: null,
-    opening: { ...initialCashBoxStatus },
-    closing: { ...initialCashBoxStatus },
+    opening:  initialCashBoxStatus ,
+    closing: initialCashBoxStatus ,
     sales: [],
     totalCard: 0,
     totalTransfer: 0,
@@ -77,9 +77,20 @@ const cashCountManagementSlice = createSlice({
             return action.payload;
         },
         clearCashCount: (state) => {
-            state.opening = { ...initialCashBoxStatus };
-            state.closing = { ...initialCashBoxStatus };
+            state.opening = initialCashBoxStatus;
+            state.closing = initialCashBoxStatus;
+            state.totalCard = 0;
+            state.totalTransfer = 0;
+            state.totalCharged = 0;
+            state.totalDiscrepancy = 0;
+            state.totalRegister = 0;
+            state.totalSystem = 0;
+            state.updatedAt = null;
+            state.createdAt = null;
             state.sales = [];
+            state.state = null;
+            state.id = null;
+            state.incrementNumber = null;
         }
     }
 });

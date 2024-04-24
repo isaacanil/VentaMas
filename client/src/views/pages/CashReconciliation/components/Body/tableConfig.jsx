@@ -5,9 +5,49 @@ import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Bod
 import { DateSection } from "../../page/CashRegisterClosure/components/Header/DateSection"
 import * as antd from 'antd'
 import { fbLoadInvoicesForCashCount } from "../../../../../firebase/cashCount/fbLoadInvoicesForCashCount"
-const { Tag } = antd
-export const tableConfig = () => {
+import { useSelector } from "react-redux"
+import { selectUser } from "../../../../../features/auth/userSlice"
+import { fbUpdateCashCountTotals } from "../../../../../firebase/cashCount/fbUpdateCashCountTotals"
+const { Tag, Dropdown, Button } = antd
+import { MoreOutlined } from '@ant-design/icons';
 
+const ActionButtons = ({ data }) => {
+  const user = useSelector(selectUser)
+  const isOpen = data?.state === 'open';
+  const id = data?.id;
+  const handleReCalculate = async () => {
+    const { invoices } = await fbLoadInvoicesForCashCount(user, id, 'all')
+    const cashCountMetaData = CashCountMetaData(data, invoices)
+    await fbUpdateCashCountTotals(user, id, cashCountMetaData)
+    antd.notification.success({ 
+      message: 'Totales Recalculados',
+      description: 'Los totales de la caja han sido recalculados con éxito',
+      
+
+     })
+  }
+  const menu = {
+    items: [
+      {
+        label: "Recalcular Totales",
+        key: 1,
+        //icon: <EditOutlined />,
+        onClick: () => handleReCalculate()
+      },
+    ]
+  }
+
+  if (isOpen) {
+    return 
+  }
+  return (
+    <Dropdown menu={menu}>
+      <Button icon={<MoreOutlined />} />
+    </Dropdown>
+  )
+}
+
+export const tableConfig = () => {
   let columns = [
     {
       accessor: 'incrementNumber',
@@ -92,23 +132,7 @@ export const tableConfig = () => {
       maxWidth: '0.4fr',
       minWidth: '100px',
       clickable: false,
-      cell: ({ value }) => {
-        const isOpen = value?.state === 'open';
-        const id = value?.id;
-        const loadInvoice = async () => {
-          const invoicesData = await fbLoadInvoicesForCashCount(user, id, 'all')
-          return invoicesData
-        }
-        const handleReCalculate = async () => {
-          const invoices = await loadInvoice()
-          const cashCountMetaData = CashCountMetaData(value, invoices)
-          
-        }
-        if (isOpen) {
-          return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
-        }
-        return <antd.Button type="primary" >Re-calcular</antd.Button>
-      }
+      cell: ({ value }) => <ActionButtons data={value} />
     }
   ]
   return columns
