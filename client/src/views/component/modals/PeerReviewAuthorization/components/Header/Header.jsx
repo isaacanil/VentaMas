@@ -3,7 +3,9 @@ import { FormattedValue } from '../../../../../templates/system/FormattedValue/F
 
 import { Logo } from '../../../../../../assets/logo/Logo'
 import styled from 'styled-components'
-export const Header = () => {
+export const Header = ({
+    description = "Permite a un segundo usuario autorizar la apertura de la caja después de una revisión."
+}) => {
     return (
         <Component>
             <Logo />
@@ -13,7 +15,7 @@ export const Header = () => {
                     type={'subtitle'}
                 />
                 <FormattedValue
-                    value={'Permite a un segundo usuario autorizar la apertura de la caja después de una revisión.'}
+                    value={description}
                     type={'paragraph'}
                     size={'xsmall'}
                 />
