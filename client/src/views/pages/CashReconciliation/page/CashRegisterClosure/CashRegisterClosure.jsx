@@ -78,6 +78,7 @@ export const CashRegisterClosure = () => {
       <PeerReviewAuthorization
         isOpen={peerReviewAuthorizationIsOpen}
         setIsOpen={setPeerReviewAuthorizationIsOpen}
+        description={'Permite a un segundo usuario autorizar el cierre de la caja después de una revisión.'}
         onSubmit={handleSubmit}
       />
     </Backdrop>

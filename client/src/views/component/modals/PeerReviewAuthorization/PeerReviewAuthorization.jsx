@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 import { clearCashCount } from '../../../../features/cashCount/cashCountManagementSlice'
 import { useDispatch } from 'react-redux'
 
-export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
+export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit, description }) => {
 
     const [user, setUser] = useState({
         name: '',
@@ -91,7 +91,7 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit }) => {
                 animate={isOpen ? 'open' : 'closed'}
                 transition={{ duration: 0.3 }}
             >
-                <Header />
+                <Header description={description} />
               
                 {loading ? <p>Loading...</p> : (
                     <>

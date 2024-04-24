@@ -13,7 +13,7 @@ import { MoreOutlined } from '@ant-design/icons';
 
 const ActionButtons = ({ data }) => {
   const user = useSelector(selectUser)
-  const isOpen = data?.state === 'open';
+  const isOpen = data?.state === 'open' || data?.state === 'closing';
   const id = data?.id;
   const handleReCalculate = async () => {
     const { invoices } = await fbLoadInvoicesForCashCount(user, id, 'all')
@@ -22,8 +22,6 @@ const ActionButtons = ({ data }) => {
     antd.notification.success({ 
       message: 'Totales Recalculados',
       description: 'Los totales de la caja han sido recalculados con éxito',
-      
-
      })
   }
   const menu = {
@@ -87,7 +85,7 @@ export const tableConfig = () => {
       maxWidth: '0.4fr',
       minWidth: '150px',
       cell: ({ value }) => {
-        const isOpen = value?.state === 'open';
+        const isOpen = value?.state === 'open' || value?.state === 'closing';
         if (isOpen) {
           return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
         }
@@ -102,7 +100,7 @@ export const tableConfig = () => {
       maxWidth: '0.4fr',
       minWidth: '100px',
       cell: ({ value }) => {
-        const isOpen = value?.state === 'open';
+        const isOpen = value?.state === 'open' || value?.state === 'closing';
         let color = 'success'
         if (isOpen) {
           return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>

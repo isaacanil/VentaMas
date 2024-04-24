@@ -55,7 +55,7 @@ const Wrapper = styled.div`
   
     border-radius: var(--border-radius);
     
-    z-index: 1;
+ 
     ${({ loading }) => !loading ? css`animation: ${fade} 3s ease-in-out infinite;` : 'animation: none;'}
 `
 
@@ -66,6 +66,6 @@ const Hide = styled.div`
     ${({ loading }) => loading ? '' : 'visibility: hidden;'}
    
     transition: visibility  0.5s ease-in-out; 
-    z-index: 2;
+  
 `
 
