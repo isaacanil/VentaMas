@@ -70,7 +70,6 @@ export const fbGetCashCounts = async (user, setCashCounts, dateRange) => {
             }).catch((error) => {
                 console.log(error)
             })
-
     })
 }
 

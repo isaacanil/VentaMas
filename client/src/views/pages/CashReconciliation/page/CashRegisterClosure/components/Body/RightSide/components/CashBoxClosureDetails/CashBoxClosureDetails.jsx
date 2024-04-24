@@ -7,13 +7,14 @@ import { selectCashCount } from '../../../../../../../../../../features/cashCoun
 import { CashReconciliation } from '../../../../../../../CashReconciliation'
 import { CashCountMetaData } from '../../CashCountMetaData'
 import { useFormatPrice } from '../../../../../../../../../../hooks/useFormatPrice'
+import Loader from '../../../../../../../../../templates/system/loader/Loader'
+import { Skeleton } from '../../../../../../../../../templates/system/Skeleton/Skeleton'
 
-export const CashBoxClosureDetails = ({invoices}) => {
+export const CashBoxClosureDetails = ({invoices, loading}) => {
   const cashCount = useSelector(selectCashCount)
   const {totalSystem, totalCharged, totalDiscrepancy} = CashCountMetaData(cashCount, invoices)
-  console.log(invoices)
- 
   return (
+   <Skeleton loading={loading} >
     <Container>
       <InputWithHorizontalLabel
         label={'Total Facturado'}
@@ -36,6 +37,7 @@ export const CashBoxClosureDetails = ({invoices}) => {
       }
 
     </Container>
+   </Skeleton>
   )
 }
 const Container = styled.div`

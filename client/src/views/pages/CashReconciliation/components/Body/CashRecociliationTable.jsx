@@ -6,14 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
 import { useNavigate } from 'react-router-dom'
-import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
+import { clearCashCount, setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { DateTime } from 'luxon'
 
 export const CashReconciliationTable = () => {
-  // const [dateRange, setDateRange] = useState({ 
-  //   startDate: DateTime.now().startOf('day').toMillis(), 
-  //   endDate: DateTime.now().endOf('day').toMillis() 
-  // })
   const [dateRange, setDateRange] = useState({
     startDate: null,
     endDate: null
@@ -31,19 +27,18 @@ export const CashReconciliationTable = () => {
         date: JSON.stringify(cashCount.opening.date)
       }
     }
-
     dispatch(setCashCount(cashCountToUpdate));
     navigate(`/cash-register-closure/${cashCountToUpdate?.id}`);
   }
-
+ 
   useEffect(() => {
     fbGetCashCounts(user, setCashCounts, dateRange)
+
   }, [user, dateRange])
   useEffect(() => {
-  if(user){
-    fbGetCashCountsDefault(user, setCashCounts)
-
-  }
+    if (user) {
+      fbGetCashCountsDefault(user, setCashCounts)
+    }
   }, [user])
 
   const data = cashCounts.map((cashCount) => {
@@ -54,14 +49,13 @@ export const CashReconciliationTable = () => {
         cashCount?.updatedAt ?
           cashCount?.updatedAt : null
       ),
-      
       user: cashCount?.opening.employee.name,
       total: cashCount,
       discrepancy: cashCount,
       action: cashCount,
     }
   })
-  console.log(dateRange)
+
 
   const columns = tableConfig()
   const handleLabelState = (state) => {
@@ -84,6 +78,7 @@ export const CashReconciliationTable = () => {
       accessor: 'user',
     }
   ]
+
   return (
     <Container>
       <AdvancedTable

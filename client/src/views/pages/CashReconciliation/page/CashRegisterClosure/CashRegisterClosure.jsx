@@ -27,13 +27,12 @@ export const CashRegisterClosure = () => {
 
   const cashCountIsOpen = cashCount?.state === 'open';
   const cashCountIsClosed = cashCount?.state === 'closed';
-  //const { abilities } = inspectUserAccess();
-  // this change the cashCount state for the user cant make a bill if the cash count is not open or when is in closing process
+ 
   useEffect(() => {
     if (cashCountIsOpen) fbCashCountChangeState(cashCount, actualUser, 'closing');
   }, [])
 
-  //this is for close the window if the cash count is not initialized
+ 
   useEffect(() => {
     if (!cashCount.opening.initialized) navigate('/cash-reconciliation');
   }, [cashCount])
@@ -49,9 +48,7 @@ export const CashRegisterClosure = () => {
     setPeerReviewAuthorizationIsOpen(true)
   };
 
-  // (cashCount.opening.employee.id === actualUser.uid) || actualUser.role === 'admin'
   const handleCancel = async () => {
-    //if the user cancel and the status is open or closing, the status will be open
     if (cashCount.state === 'closing' || cashCount.state === 'open') {
       fbCashCountChangeState(cashCount, actualUser, 'open')
     }

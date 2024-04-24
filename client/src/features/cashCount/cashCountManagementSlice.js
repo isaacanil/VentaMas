@@ -14,20 +14,30 @@ const initialCashBoxStatus = {
 
 const initialCashCount = {
     state: null,
-    opening: { ...initialCashBoxStatus },
-    closing: { ...initialCashBoxStatus },
-    sales: []
+    opening:  initialCashBoxStatus ,
+    closing: initialCashBoxStatus ,
+    sales: [],
+    totalCard: 0,
+    totalTransfer: 0,
+    totalCharged: 0,
+    totalDiscrepancy: 0,
+    totalRegister: 0,
+    totalSystem: 0,
 }
 
 const cashCountManagementSlice = createSlice({
     name: 'cashCountManagement',
-    initialState: {
-        state: null,
-        opening: { ...initialCashBoxStatus },
-        closing: { ...initialCashBoxStatus },
-        sales: []
-    },
+    initialState: initialCashCount,
     reducers: {
+        updateCashCountTotals: (state, action) => {
+            const { totalCard, totalTransfer, totalCharged, totalDiscrepancy, totalRegister, totalSystem } = action.payload;
+            state.totalCard = totalCard || 0;
+            state.totalTransfer = totalTransfer || 0;
+            state.totalCharged = totalCharged || 0;
+            state.totalDiscrepancy = totalDiscrepancy || 0;
+            state.totalRegister = totalRegister || 0;
+            state.totalSystem = totalSystem || 0;
+        },
         setCashCountOpeningBanknotes: (state, action) => {
             state.opening.banknotes = action.payload;
             state.opening.banknotesAmount = calculateTotalAmount(state.opening.banknotes);
@@ -67,9 +77,20 @@ const cashCountManagementSlice = createSlice({
             return action.payload;
         },
         clearCashCount: (state) => {
-            state.opening = { ...initialCashBoxStatus };
-            state.closing = { ...initialCashBoxStatus };
+            state.opening = initialCashBoxStatus;
+            state.closing = initialCashBoxStatus;
+            state.totalCard = 0;
+            state.totalTransfer = 0;
+            state.totalCharged = 0;
+            state.totalDiscrepancy = 0;
+            state.totalRegister = 0;
+            state.totalSystem = 0;
+            state.updatedAt = null;
+            state.createdAt = null;
             state.sales = [];
+            state.state = null;
+            state.id = null;
+            state.incrementNumber = null;
         }
     }
 });
@@ -91,6 +112,7 @@ export const {
     setCashCountClosingBanknotes,
     setCashCountClosingComments,
     setCashCountSales,
+    updateCashCountTotals,
     setCashCount,
     clearCashCount,
     setClosingCashTotalAndDiscrepancy

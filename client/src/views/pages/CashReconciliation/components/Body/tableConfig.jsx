@@ -4,9 +4,50 @@ import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator
 import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData"
 import { DateSection } from "../../page/CashRegisterClosure/components/Header/DateSection"
 import * as antd from 'antd'
-const { Tag } = antd
-export const tableConfig = () => {
+import { fbLoadInvoicesForCashCount } from "../../../../../firebase/cashCount/fbLoadInvoicesForCashCount"
+import { useSelector } from "react-redux"
+import { selectUser } from "../../../../../features/auth/userSlice"
+import { fbUpdateCashCountTotals } from "../../../../../firebase/cashCount/fbUpdateCashCountTotals"
+const { Tag, Dropdown, Button } = antd
+import { MoreOutlined } from '@ant-design/icons';
 
+const ActionButtons = ({ data }) => {
+  const user = useSelector(selectUser)
+  const isOpen = data?.state === 'open';
+  const id = data?.id;
+  const handleReCalculate = async () => {
+    const { invoices } = await fbLoadInvoicesForCashCount(user, id, 'all')
+    const cashCountMetaData = CashCountMetaData(data, invoices)
+    await fbUpdateCashCountTotals(user, id, cashCountMetaData)
+    antd.notification.success({ 
+      message: 'Totales Recalculados',
+      description: 'Los totales de la caja han sido recalculados con éxito',
+      
+
+     })
+  }
+  const menu = {
+    items: [
+      {
+        label: "Recalcular Totales",
+        key: 1,
+        //icon: <EditOutlined />,
+        onClick: () => handleReCalculate()
+      },
+    ]
+  }
+
+  if (isOpen) {
+    return 
+  }
+  return (
+    <Dropdown menu={menu}>
+      <Button icon={<MoreOutlined />} />
+    </Dropdown>
+  )
+}
+
+export const tableConfig = () => {
   let columns = [
     {
       accessor: 'incrementNumber',
@@ -51,11 +92,12 @@ export const tableConfig = () => {
           return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
         }
         return value.totalSystem ? useFormatPrice(value.totalSystem) : 'Total'
+        //  return JSON.stringify(useFormatPrice(value.totalSystem))
       }
     },
     {
       accessor: 'discrepancy',
-      Header: 'Resultado', 
+      Header: 'Resultado',
       align: 'right',
       maxWidth: '0.4fr',
       minWidth: '100px',
@@ -78,11 +120,20 @@ export const tableConfig = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: '16px', padding: '5px 10px' }}>
-            {value.totalDiscrepancy ? useFormatPrice(value.totalDiscrepancy) : 'Sobrante'}
+            {useFormatPrice(value.totalDiscrepancy) ?? 'Sobrante'}
           </Tag>
         )
       }
     },
+    {
+      accessor: 'action',
+      Header: 'Acción',
+      align: 'right',
+      maxWidth: '0.4fr',
+      minWidth: '100px',
+      clickable: false,
+      cell: ({ value }) => <ActionButtons data={value} />
+    }
   ]
   return columns
 }

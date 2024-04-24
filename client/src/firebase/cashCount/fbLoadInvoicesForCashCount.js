@@ -3,7 +3,6 @@ import { db } from "../firebaseconfig";
 import { DateTime } from "luxon";
 
 const getInvoices = async (invoiceRefs) => {
-    console.log(invoiceRefs);
     const invoices = await Promise.all(invoiceRefs.map(async (ref) => {
         const invoiceDoc = await getDoc(ref);
         
@@ -53,7 +52,8 @@ export const fbLoadInvoicesForCashCount = async (user, cashCountID, dataType) =>
             case 'all':
                 return {
                     count: invoiceRefs.length,
-                    invoices: await getInvoices(invoiceRefs)
+                    invoices: await getInvoices(invoiceRefs),
+                    loading: false
                 }
             default:
                 console.log('Invalid data type!');

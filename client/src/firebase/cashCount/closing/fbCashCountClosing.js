@@ -26,6 +26,9 @@ export const fbCashCountChangeState = async (cashCount, user, state) => {
           timestamp: Timestamp.fromMillis(Date.now()),
           updatedBy: user?.uid,
         }),
+       
+      
+        
       })
       console.log('Cash count closing document successfully written!');
       return 'success'

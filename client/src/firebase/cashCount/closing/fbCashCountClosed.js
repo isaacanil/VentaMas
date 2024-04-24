@@ -4,7 +4,7 @@ import { db } from '../../firebaseconfig'
 
 // Función para cerrar un 'cashCount'
 export const fbCashCountClosed = async (user, cashCount, employeeID, approvalEmployeeID, closingDate) => {
-  
+
   // Verificamos que el objeto 'user' y 'businessID' existen
   if (!user || !user?.businessID) { return null }
 
@@ -25,7 +25,13 @@ export const fbCashCountClosed = async (user, cashCount, employeeID, approvalEmp
         approvalEmployee: approvalEmployeeRefPath,
         initialized: true,
         date: Timestamp.fromMillis(closingDate)
-      }
+      },
+      'cashCount.totalCard': cashCount?.totalCard,
+      'cashCount.totalTransfer': cashCount?.totalTransfer,
+      'cashCount.totalCharged': cashCount?.totalCharged,
+      'cashCount.totalDiscrepancy': cashCount?.totalDiscrepancy,
+      'cashCount.totalRegister': cashCount?.totalRegister,
+      'cashCount.totalSystem': cashCount?.totalSystem
     })
     console.log('Cash count closing document successfully written!');
     return 'success'

@@ -6,21 +6,23 @@ import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBo
 import { TextareaV2 } from '../../../Comments/TextareaV2'
 import { ViewInvoice } from './components/ViewInvoive/ViewInvoice'
 import { Comments } from '../../../Comments/Comments'
-import { addPropertiesToCashCount, selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
+import { addPropertiesToCashCount, selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, updateCashCountTotals, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { DateSection } from '../../Header/DateSection'
 import { selectUser } from '../../../../../../../../features/auth/userSlice'
 import { fbLoadInvoicesForCashCount } from '../../../../../../../../firebase/cashCount/fbLoadInvoicesForCashCount'
 import { CashCountMetaData } from './CashCountMetaData'
+import loaderSlice from '../../../../../../../../features/loader/loaderSlice'
 
 export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => {
   const CashReconciliation = useSelector(selectCashCount)
-
   const { sales, id, state } = CashReconciliation
   const { banknotes, comments } = CashReconciliation.closing;
+
   const [invoices, setInvoices] = useState({
     count: '',
-    invoices: []
+    invoices: [],
+    loading: false
   })
   const dispatch = useDispatch()
   const user = useSelector(selectUser)
@@ -33,6 +35,7 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
   }
   useEffect(() => {
     const fetchData = async () => {
+      setInvoices({ ...invoices, loading: true })
       const invoicesData = await fbLoadInvoicesForCashCount(user, id, 'all')
       setInvoices(invoicesData)
     }
@@ -40,11 +43,14 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
   }, [])
 
   const cashCountMetaData = CashCountMetaData(CashReconciliation, invoices.invoices)
-  useEffect(()=>{
+  useEffect(() => {
+    dispatch(updateCashCountTotals(cashCountMetaData))
+  }, [CashReconciliation, invoices, banknotes])
+
+  useEffect(() => {
     dispatch(addPropertiesToCashCount(cashCountMetaData))
-  },[ banknotes])
-  console.log(cashCountMetaData)
-  console.log(invoices)
+  }, [banknotes])
+
   return (
     <Container>
       <CashDenominationCalculator
@@ -56,9 +62,18 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen, date }) => 
         setIsExpanded={setCalculationIsOpen}
         inputDisabled={state === 'closed'}
       />
-      <TransactionSummary invoices={invoices.invoices} />
-      <ViewInvoice invoices={invoices.count} />
-      <CashBoxClosureDetails invoices={invoices.invoices} />
+      <TransactionSummary 
+        invoices={invoices.invoices} 
+        loading={invoices.loading}
+      />
+      <ViewInvoice
+        invoices={invoices.count}
+        loading={invoices.loading}
+      />
+      <CashBoxClosureDetails
+        loading={invoices.loading}
+        invoices={invoices.invoices}
+      />
       <Comments
         label='Comentarios de cierre'
         placeholder='Escribe aquí ...'

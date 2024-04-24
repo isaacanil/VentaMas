@@ -5,14 +5,18 @@ import { useSelector } from 'react-redux'
 import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { CashCountMetaData } from '../../CashCountMetaData'
 import { useFormatPrice } from '../../../../../../../../../../hooks/useFormatPrice'
+import { Skeleton } from '../../../../../../../../../templates/system/Skeleton/Skeleton'
 
-export const TransactionSummary = ({invoices}) => {
+
+export const TransactionSummary = ({invoices, loading}) => {
   const cashCount = useSelector(selectCashCount)
   const { totalCard, totalRegister, totalTransfer } = CashCountMetaData(cashCount, invoices)
   
  
   return (
-  
+  <Skeleton
+    loading={loading}
+  >
     <Container>
       <InputWithHorizontalLabel
         label={'Total Tarjeta'}
@@ -33,6 +37,7 @@ export const TransactionSummary = ({invoices}) => {
         value={useFormatPrice(totalRegister)}
       />
     </Container>
+  </Skeleton>
   )
 }
 const Container = styled.div`
