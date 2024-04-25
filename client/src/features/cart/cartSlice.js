@@ -116,6 +116,10 @@ const cartSlice = createSlice({
             }
             updateAllTotals(state)
         },
+        addSeller: (state, actions) => {
+            const seller = actions.payload
+            state.data.seller = seller
+        },
         deleteProduct: (state, action) => {
             const productFound = state.data.products.find((product) => product.cid === action.payload)
             if (productFound) {
@@ -210,7 +214,8 @@ export const {
     totalTaxes,
     updateClientInState,
     saveBillInFirebase,
-    toggleCart
+    toggleCart,
+    addSeller
 } = cartSlice.actions
 
 export const SelectProduct = (state) => state.cart.data.products;
