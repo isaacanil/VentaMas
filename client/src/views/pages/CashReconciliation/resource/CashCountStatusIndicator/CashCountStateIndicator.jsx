@@ -2,6 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 const handleLabelState = (state) => {
+  if(!state) return ('Pendiente')
+ 
   const stateLabels = {
     open: 'Abierto',
     closing: 'Cerrando Cuadre',
@@ -12,8 +14,10 @@ const handleLabelState = (state) => {
 }
 
 export const CashCountStateIndicator = ({state}) => {
+  const stateLabel = handleLabelState(state) 
+  
   return (
-    <Container state={state}>{handleLabelState(state)}</Container>
+    <Container state={state}>{stateLabel}</Container>
   )
 }
 
