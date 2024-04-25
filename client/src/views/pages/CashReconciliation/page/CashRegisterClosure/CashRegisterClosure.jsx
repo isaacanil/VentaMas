@@ -34,7 +34,9 @@ export const CashRegisterClosure = () => {
 
  
   useEffect(() => {
-    if (!cashCount.opening.initialized) navigate('/cash-reconciliation');
+    if (!cashCount?.opening?.initialized) {
+      navigate('/cash-reconciliation')
+    };
   }, [cashCount])
 
   const handleOpenPeerReviewAuthorization = () => {
@@ -64,7 +66,8 @@ export const CashRegisterClosure = () => {
     }
   }
 
-  const cashCountActual = cashCount?.id ? useFbGetCashCount(cashCount.id) : null
+   const cashCountActual = useFbGetCashCount(cashCount?.id) 
+
   return (
     <Backdrop>
       <Container>

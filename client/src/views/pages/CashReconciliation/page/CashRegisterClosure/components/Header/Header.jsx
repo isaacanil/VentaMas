@@ -6,7 +6,8 @@ import { CashReconciliationState } from './CashReconciliationState/CashReconcili
 import { ViewInvoice } from '../Body/RightSide/components/ViewInvoive/ViewInvoice'
 import { CashCountStateIndicator } from '../../../../resource/CashCountStatusIndicator/CashCountStateIndicator'
 
-export const Header = ({state}) => {
+export const Header = ({state = 'closed'}) => {
+   
     return (
         <Container>
             <Row>
