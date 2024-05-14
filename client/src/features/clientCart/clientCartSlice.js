@@ -67,7 +67,6 @@ export const clientSlice = createSlice({
                 default:
                     state.labelClientMode = SEARCH.label;
                     state.showClientList = SEARCH.showClientList;
-
             }
         },
         addClient: (state, action) => {

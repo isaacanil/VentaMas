@@ -39,8 +39,8 @@ export function getTotalPrice(product, taxReceiptEnabled = true) {
   if (!product || !isValidNumber(product?.pricing?.price) || !isValidNumber(product?.amountToBuy)) return 0;
   const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
   const result = (isSoldByWeight) ? getWeight(product) : getTotal(product)
-  let tax =  getTax(product, taxReceiptEnabled) ;
-  if(!taxReceiptEnabled){
+  let tax = getTax(product, taxReceiptEnabled);
+  if (!taxReceiptEnabled) {
     tax = 0
   }
   const discount = getDiscount(product);
@@ -204,4 +204,14 @@ export const getProducts = (products = [], taxReceiptEnabled) => {
       }
     };
   });
+}
+
+//crear uan funcion que se encargue de cambiar la presiciond e un desimal por defercto podria ser 2
+
+export const setNumPrecision = (value, precision = 2) => {
+  const num = Number(value);
+  if (isNaN(num)) {
+    return 0;
+  }
+  return Number(num.toFixed(precision));
 }

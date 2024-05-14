@@ -1,3 +1,4 @@
+import { reference } from "@popperjs/core";
 import { GenericClient } from "../../clientCart/clientCartSlice";
 
 const defaultDelivery = {
@@ -22,11 +23,13 @@ const defaultPaymentMethod = [
     {
         method: "card",
         value: 0,
+        reference: "",
         status: false
     },
     {
         method: "transfer",
         value: 0,
+        reference: "",
         status: false
     }
 ];
@@ -37,10 +40,12 @@ const initialState = {
     },
     settings: {
         taxReceipt: { enabled: false },
-        printWarranty: false
+        printInvoice: true,
+        isInvoicePanelOpen: false
     },
     isOpen: false,
     data: {
+        isAddedToReceivables: false,
         id: '',
         client: GenericClient,
         products: [],

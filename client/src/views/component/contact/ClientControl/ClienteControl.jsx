@@ -169,7 +169,6 @@ export const ClientControl = () => {
             value={nfcType}
             onChange={(e) => dispatch(selectTaxReceiptType(e))}
           >
-
             <Select.OptGroup label="Comprobantes Fiscal" >
               {taxReceiptData.taxReceipt
                 .map(({ data }, index) => (
@@ -180,7 +179,6 @@ export const ClientControl = () => {
           </Select>
         )
       }
-
     </Container>
   )
 }

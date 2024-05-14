@@ -16,15 +16,15 @@ export const ProductList = ({ data }) => {
     return (
         <Products>
             {
-                products.length > 0 ? (
-                    products.map((product, index) => (
+                products?.length > 0 ? (
+                    products?.map((product, index) => (
                         <Product key={index}>
                             <Row cols='3'>
                                 <Col>
                                     {
                                         product?.weightDetail?.isSoldByWeight ? (
                                             <div>
-                                                {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product.pricing.price, NCF)}
+                                                {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product?.pricing?.price, NCF)}
                                             </div>
                                         ) : (
                                             <div>

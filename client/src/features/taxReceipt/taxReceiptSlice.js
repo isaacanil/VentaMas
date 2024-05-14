@@ -1,27 +1,36 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { diminishSequence } from './diminishSequence'
 import { increaseSequence } from './increaseSequence'
 import { fbUpdateTaxReceipt } from '../../firebase/taxReceipt/fbUpdateTaxReceipt'
-import { useEffect } from 'react'
-import { useState } from 'react'
 
-const updateComprobante = (state, name) => {
+export const updateComprobante = (state, name) => {
     const comprobante = state.data.find((item) => item.data.name === name);
     if (comprobante) {
-        const {type, serie, sequence, increase, quantity} = comprobante.data;
+        const { type, serie, sequence, increase, quantity } = comprobante.data;
         comprobante.data.quantity = String(Number(quantity) - 1);
         comprobante.data.sequence = increaseSequence(sequence, increase, 10);
         state.ncfCode = type + serie + increaseSequence(sequence, increase, 10);
     }
 }
+
+export const generateNCFCode = (receipt) => {
+    if (receipt) {
+        const { type, series, sequence, increase, quantity } = receipt.data;
+        // Decrease the quantity
+        receipt.data.quantity = String(Number(quantity) - 1);
+        // Increase and format the sequence
+        receipt.data.sequence = increaseSequence(sequence, increase, 10);
+        // Build and assign the NCF code
+        const ncfCode = type + series + increaseSequence(sequence, increase, 10);
+        return ncfCode;
+    }
+}
+
 export function getUpdatedSequenceForInvoice(comprobanteName, comprobantes) {
     // Encuentra el comprobante por nombre
     const comprobanteIndex = comprobantes.findIndex(c => c.data.name === comprobanteName);
 
-    if (comprobanteIndex === -1) {
-        // No se encontró el comprobante, manejar según sea necesario
-        return null;
-    }
+    // No se encontró el comprobante, manejar según sea necesario
+    if (comprobanteIndex === -1) { return null }
 
     // Crear una copia del comprobante para modificar
     const comprobante = { ...comprobantes[comprobanteIndex].data };
@@ -33,13 +42,6 @@ export function getUpdatedSequenceForInvoice(comprobanteName, comprobantes) {
     // Formatear y devolver la nueva secuencia
     return `${comprobante.type}${comprobante.serie}${comprobante.sequence}`;
 }
-
-// Función para aumentar la secuencia
-// function increaseSequence(sequence, increase) {
-//     // Convierte la secuencia a número, incrementa y luego vuelve a formatear como string
-//     const newSequence = parseInt(sequence, 10) + increase;
-//     return newSequence.toString().padStart(sequence.length, '0');
-// }
 
 const initialState = {
     settings: {
@@ -54,7 +56,7 @@ export const taxReceiptSlice = createSlice({
     name: 'taxReceipt',
     initialState,
     reducers: {
-        getTaxReceiptData: (state, action) => {          
+        getTaxReceiptData: (state, action) => {
             state.data = action.payload
         },
         IncreaseEndConsumer: (state, action) => {
@@ -78,7 +80,6 @@ export const taxReceiptSlice = createSlice({
         selectTaxReceiptType: (state, actions) => {
             state.ncfType = actions.payload;
         },
-        
         clearTaxReceiptData: (state) => {
             state.ncfStatus = false
             state.ncfCode = null

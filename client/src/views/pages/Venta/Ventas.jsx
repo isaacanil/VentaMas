@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import * as antd from 'antd'
+import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('')
@@ -115,6 +116,7 @@ export const Sales = () => {
         <MenuComponents />
       </ProductContainer>
       <Cart />
+      <InvoicePanel />
     </Container>
   )
 }

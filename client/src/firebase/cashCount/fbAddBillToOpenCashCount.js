@@ -1,15 +1,16 @@
-import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { collection, query, where } from 'firebase/firestore'
 
 import { db } from '../firebaseconfig'
+import { fbGetDoc, fbGetDocs, fbUpdateDoc } from '../firebaseOperations'
 
-export const fbAddBillToOpenCashCount = async (user, invoiceRef) => {
+export const fbAddBillToOpenCashCount = async (user, invoiceRef, transaction = null) => {
     if (!user || !user?.businessID || !user?.uid) { return }
 
     const cashCountRef = collection(db, 'businesses', user?.businessID, 'cashCounts')
     const q = query(cashCountRef, where("cashCount.state", "==", "open"));
 
     try {
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await fbGetDocs(q, transaction);
 
         if (querySnapshot.empty) { return }
 
@@ -19,10 +20,11 @@ export const fbAddBillToOpenCashCount = async (user, invoiceRef) => {
             const data = doc.data();
 
             // Obtén los datos del empleado desde la referencia
-            const employeeSnapshot = await getDoc(data.cashCount.opening.employee);
+            const employeeSnapshot = await fbGetDoc(data.cashCount.opening.employee, transaction);
+
             const employeeData = employeeSnapshot.data();
 
-            if(employeeData.user.id === user?.uid){
+            if (employeeData.user.id === user?.uid) {
                 cashCountDoc = doc;
                 break; // Sal del bucle una vez que encuentres el cuadre correcto
             }
@@ -35,11 +37,12 @@ export const fbAddBillToOpenCashCount = async (user, invoiceRef) => {
 
         const { cashCount } = cashCountDoc.data()
         cashCount.sales.push(invoiceRef)
-        await updateDoc(cashCountDoc.ref, { cashCount })
+      
+        await fbUpdateDoc(cashCountDoc.ref, { cashCount }, transaction)
 
-        if(cashCount.id){
+        if (cashCount.id) {
             return (cashCount.id)
-        }else{
+        } else {
             console.error("Error al encontrar el id del cuadre: ", error);
         }
 

@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 const ThemeColorProvider = ({ children }) => {
     const theme = useSelector(selectThemeMode);
-
+    console.log(lightTheme)
     return (
         <ThemeProvider theme={theme === 'light' ? lightTheme : darkTheme}>
             {/* Aquí podrías también pasar toggleTheme a los hijos si necesitas un botón para cambiar el tema */}

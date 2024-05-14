@@ -14,7 +14,6 @@ export const ProductCategoryBar = () => {
   const categorySelected = useSelector(SelectCategoryList)
   const favoriteProductCategoryArray = useGetFavoriteProductCategories(user)
   const favoriteCategory = filterFavoriteProductCategories(categories, favoriteProductCategoryArray.favoriteCategories)
-  console.log('favoriteCategory', favoriteCategory)
   const handleAddFavorite = async (category) => {
     await fbAddFavoriteProductCategory(user, category)
   }

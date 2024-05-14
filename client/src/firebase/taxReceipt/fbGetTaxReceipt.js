@@ -22,7 +22,6 @@ export const fbGetTaxReceipt = () => {
         let taxReceiptsArray = snapshot.docs.map(item => item.data());
         setTaxReceipt(taxReceiptsArray);
         const defaultOption = taxReceiptsArray.find(item => item.data.name === 'CONSUMIDOR FINAL')
-        console.log(defaultOption, "-------------------------")
         dispatch(selectTaxReceiptType(defaultOption.data.name))
       });
      // dispatch()
