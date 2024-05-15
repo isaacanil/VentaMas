@@ -42,6 +42,7 @@ const initialState = {
     isOpen: false,
     data: {
         id: '',
+        seller: {},
         client: GenericClient,
         products: [],
         change: {

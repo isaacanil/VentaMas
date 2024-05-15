@@ -12,6 +12,7 @@ import {
   SelectNCF,
   SelectCartIsOpen,
   toggleCart,
+  addSeller,
 } from '../../../features/cart/cartSlice'
 import {
   IncreaseEndConsumer,
@@ -43,7 +44,6 @@ export const Cart = () => {
   const isOpen = useSelector(SelectCartIsOpen)
   const selectMode = useSelector(selectAppMode)
   const bill = useSelector(({ cart }) => cart.data)
-  console.log(bill.products)
   const taxReceiptDataSelected = useSelector(selectTaxReceiptData)
   const nfcType = useSelector(selectNcfType);
   const checkCashCount = useIsOpenCashReconciliation()
@@ -197,12 +197,18 @@ export const Cart = () => {
       setSubmittable(false)
     }
   }, [submittable])
+
+  useEffect(() => {
+    if (user?.realName) {
+      dispatch(addSeller({ name: user?.realName, id: user?.uid }))
+    }
+  }, [user])
+
   return (
     <Container isOpen={isOpen}>
       <ClientControl />
       <ProductsList />
       <PaymentArea />
-     
       <CheckoutAction
         ProductSelected={ProductSelected}
         TotalPurchaseRef={TotalPurchaseRef}
