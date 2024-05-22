@@ -18,15 +18,20 @@ const options = {
 
 const accumulateGenericCustomerSalesData = (sales) => {
   return sales.reduce((acc, sale) => {
-    const customerName = sale.data.client.name.toLowerCase();
+    if (sale && sale.data && sale.data.client && typeof sale.data.client.name === 'string') {
+      const customerName = sale.data.client.name.toLowerCase();
 
-    if (customerName.includes('generico') || customerName.includes('genérico') || customerName.includes('generic client')) {
-      acc['Generico'] = (acc['Generico'] || 0) + sale.data.totalPurchase.value;
+      if (customerName.includes('generico') || customerName.includes('genérico') || customerName.includes('generic client')) {
+        acc['Generico'] = (acc['Generico'] || 0) + sale.data.totalPurchase.value;
+      }
+    } else {
+      console.warn('Sale data or client name is undefined or not a string:', sale);
     }
     
     return acc;
   }, {});
 };
+
 
 
 export const GenericCustomerSalesChart = ({sales}) => {

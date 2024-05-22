@@ -38,6 +38,9 @@ export const InvoicePanel = () => {
     const dispatch = useDispatch()
     const [form] = antd.Form.useForm()
     const [invoice, setInvoice] = useState({})
+    const [submitting, setSubmitting] = useState(false)
+    
+    const [formSubmitted, setFormSubmitted] = useState(false);
     const [loading, setLoading] = useState({
         status: false,
         message: ''
@@ -129,6 +132,7 @@ export const InvoicePanel = () => {
                 })
             }
             setLoading({ status: false, message: '' })
+            setSubmitting(true)
 
 
         } catch (error) {
@@ -138,6 +142,7 @@ export const InvoicePanel = () => {
                 duration: 4
             })
             setLoading({ status: false, message: '' })
+            setSubmitting(false)
             console.error('Error processing invoice:', error)
         }
     }
@@ -170,6 +175,7 @@ export const InvoicePanel = () => {
                     danger
                     disabled={loading.status}
                     onClick={showCancelSaleConfirm}
+
                 >
                     Cancelar
                 </Button>,
