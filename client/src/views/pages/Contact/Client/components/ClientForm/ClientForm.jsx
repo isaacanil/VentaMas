@@ -45,7 +45,6 @@ export const ClientForm = ({ isOpen, mode, data }) => {
             })
         }
     }, [mode, data])
-    console.log(client)
     function validateClient(client) {
         if (client.name === '' || client.personalID === '') {
             alert("El nombre y el ID personal son obligatorios");
@@ -100,7 +99,6 @@ export const ClientForm = ({ isOpen, mode, data }) => {
             await handleUpdateClient();
             await handleOpenModal();
         }
-
     }
 
     return (
@@ -122,7 +120,6 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                             {mode === create ? 'Nuevo Cliente' : 'Editar Cliente'}
                         </Typography>
                     </ToolBar>
-
                     <Body>
                         <Group>
                             <label htmlFor="">Nombre</label>

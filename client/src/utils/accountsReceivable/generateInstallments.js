@@ -22,7 +22,7 @@ export function generateInstallments({ ar, user }) {
             installmentBalance: installmentAmount,
             createdBy: user?.uid,
             updatedBy: user?.uid,
-            activeStatus: true
+            isActive: true
         };
     });
 }

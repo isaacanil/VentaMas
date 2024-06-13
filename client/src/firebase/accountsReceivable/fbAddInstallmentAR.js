@@ -1,4 +1,4 @@
-import { Timestamp, doc, writeBatch } from 'firebase/firestore';
+import { Timestamp, collection, doc, writeBatch } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 // Asegúrate de importar correctamente tu configuración de Firestore
 import { DateTime } from 'luxon'; // Asegúrate de importar Luxon si no lo has hecho
@@ -29,17 +29,15 @@ export async function fbAddInstallmentAR({ user, ar }) {
         const installments = generateInstallments({ user, ar });
 
         const installmentsData = prepareInstallmentForFirebase(installments)
-        console.log(ar)
-        console.log(installments)
-        console.log(installmentsData)
+ 
 
         // Referencia base para las cuotas
-        const baseInstallmentsRef = doc(db, 'businesses', user.businessID, 'accountsReceivable', ar.arId);
+        const baseInstallmentsRef = collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments');
 
         // Uso de un batch para escribir múltiples documentos
         const batch = writeBatch(db);
         installmentsData.forEach(installment => {
-            const installmentRef = doc(baseInstallmentsRef, 'installments', installment.installmentId);
+            const installmentRef = doc(baseInstallmentsRef, installment.installmentId);
             batch.set(installmentRef, installment);
         });
 

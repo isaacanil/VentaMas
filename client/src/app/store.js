@@ -37,6 +37,7 @@ import barcodePrintModalReducer from "../features/barcodePrintModalSlice/barcode
 import invoicesSlice from "../features/invoice/invoicesSlice";
 import invoicePreviewReducer from "../features/invoice/invoicePreviewSlice";
 import accountsReceivableReducer from "../features/accountsReceivable/accountsReceivableSlice";
+import accountsReceivablePaymentReducer from "../features/accountsReceivable/accountsReceivablePaymentSlice";
 
 export const store = configureStore({
   reducer: {
@@ -45,6 +46,7 @@ export const store = configureStore({
     cart: cartReducer,
     abilities: abilitiesReducer,
     accountsReceivable: accountsReceivableReducer,
+    accountsReceivablePayment: accountsReceivablePaymentReducer,
     productWeightEntryModalSlice: productWeightEntryModalSlice,
     filterProducts: filterProductsSliceReducer,
     clientCart: clientCartReducer,

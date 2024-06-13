@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Showcase } from '../../../../../../../../templates/system/ShowCase/ShowCase'
+import { Showcase } from '../../../../../../../../templates/system/Showcase/Showcase'
 import { selectCart } from '../../../../../../../../../features/cart/cartSlice';
 import { useSelector } from 'react-redux';
 

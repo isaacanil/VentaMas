@@ -21,7 +21,7 @@ const { DatePicker, Input, InputNumber, Select, Button, Form } = antd;
 const { Option } = Select;
 const { TextArea } = Input;
 
-export const ReceivableManagementPanel = ({ form }) => {
+export const ReceivableManagementPanel = ({ form, creditLimit }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser)
     const [generalBalance, setGeneralBalance] = useState("")
@@ -39,7 +39,7 @@ export const ReceivableManagementPanel = ({ form }) => {
     const client = useSelector(selectClient)
     const receivableStatus = cartData.isAddedToReceivables;
     const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
-    const payment = cartData.payment.value;
+    const payment = cartData?.payment?.value || 0;
     const isChangeNegative = change < 0;
     const isReceivable = receivableStatus && isChangeNegative;
     const maxInstallments = getMaxInstallments(paymentFrequency);
@@ -160,10 +160,10 @@ export const ReceivableManagementPanel = ({ form }) => {
                                     />
                                 </FormItem>
                                 <FormItem
-                                    label="Monto x Cuota"
+                                    label="Monto por Cuota"
                                 >
                                     <div style={{
-                                        textAlign: 'center',
+                                        textAlign: '',
                                         fontWeight: 600
                                     }}>
                                         <span>{useFormatPrice(installmentAmount)}</span>
@@ -184,7 +184,7 @@ export const ReceivableManagementPanel = ({ form }) => {
                             </Header>
                             <Header>
                                 <Label>Balance General</Label>
-                                <Label>{useFormatPrice(getPositive(generalBalance))}</Label>
+                                <Label>{useFormatPrice(getPositive(generalBalance))} / {useFormatPrice(creditLimit?.creditLimit?.value || 0)}</Label>
                             </Header>
                         </Footer>
                     </PanelContainer>)
@@ -194,7 +194,7 @@ export const ReceivableManagementPanel = ({ form }) => {
 };
 
 const PanelContainer = styled(motion.div)`
-  padding: 20px;
+  padding: 6px 12px;
   background: #f4f4f4;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

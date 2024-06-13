@@ -10,6 +10,7 @@ import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import * as antd from 'antd'
+import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
 
 
 const InvoiceSummary = () => {
@@ -57,11 +58,13 @@ const InvoiceSummary = () => {
       <TotalLine>
         <Button
           onClick={handleInvoicePanelOpen}
-       disabled={!isCartValid}
+          disabled={!isCartValid}
         >
           Facturar
         </Button>
-        <TotalLabel>{useFormatPrice(total)}</TotalLabel>
+        <TotalLabel>
+          <AnimatedNumber value={useFormatPrice(total)} />
+        </TotalLabel>
       </TotalLine>
     </SummaryContainer>
   );

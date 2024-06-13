@@ -16,31 +16,32 @@ import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 import { generateInstallments } from '../../../../../utils/accountsReceivable/generateInstallments'
 import { fromMillisToDayjs } from '../../../../../utils/date/convertMillisecondsToDayjs'
 const { Button, notification } = antd
-const mask = {
-    backdropFilter: 'blur(2px)',
-    display: 'grid',
-    overflow: 'hidden'
+export const modalStyles = {
+    mask: {
+        backdropFilter: 'blur(2px)',
+        display: 'grid',
+        overflow: 'hidden'
+    },
+    content: {
+        padding: 0,
+        width: '100%',
+        height: '100%',
+        margin: 0,
+        overflowY: 'hidden',
+        display: 'grid',
+    },
+    body: {
+        margin: 0,
+        padding: '1em',
+        overflowY: 'auto'
+    }
 }
-const content = {
-    padding: 0,
-    width: '100%',
-    height: '100%',
-    margin: 0,
-    overflowY: 'hidden',
-    display: 'grid',
-}
-const body = {
-    margin: 0,
-    padding: '1em',
-    overflowY: 'auto'
-}
+
 export const InvoicePanel = () => {
     const dispatch = useDispatch()
     const [form] = antd.Form.useForm()
     const [invoice, setInvoice] = useState({})
-    const [submitting, setSubmitting] = useState(false)
-    
-    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [submitted, setSubmitted] = useState(false)
     const [loading, setLoading] = useState({
         status: false,
         message: ''
@@ -62,7 +63,7 @@ export const InvoicePanel = () => {
     const isAddedToReceivables = cart?.isAddedToReceivables;
     const change = cart?.change?.value;
     const isChangeNegative = change < 0;
-    console.log(accountsReceivable)
+    
     const handlePrint = useReactToPrint({
         content: () => componentToPrintRef.current,
         onAfterPrint: () => {
@@ -132,7 +133,7 @@ export const InvoicePanel = () => {
                 })
             }
             setLoading({ status: false, message: '' })
-            setSubmitting(true)
+            setSubmitted(true)
 
 
         } catch (error) {
@@ -142,13 +143,13 @@ export const InvoicePanel = () => {
                 duration: 4
             })
             setLoading({ status: false, message: '' })
-            setSubmitting(false)
+            setSubmitted(false)
             console.error('Error processing invoice:', error)
         }
     }
 
     // const installments = generateInstallments({ ar: accountsReceivable, user })
-   
+
     useEffect(() => {
         form.setFieldsValue({
             frequency: 'monthly',
@@ -162,18 +163,23 @@ export const InvoicePanel = () => {
             paymentDate: fromMillisToDayjs(accountsReceivable?.paymentDate),
         });
     }, [accountsReceivable]);
+    useEffect(() => {
+        if (!invoicePanel) {
+            setSubmitted(false);
+        }
+    }, [invoicePanel]);
     return (
         <Modal
             style={{ top: 10 }}
             open={invoicePanel}
             title='Pago de Factura'
             onCancel={handleInvoicePanel}
-            styles={{ mask, content, body }}
+            styles={modalStyles}
             footer={
                 [<Button
                     type='default'
                     danger
-                    disabled={loading.status}
+                    disabled={loading.status || submitted}
                     onClick={showCancelSaleConfirm}
 
                 >
@@ -182,7 +188,7 @@ export const InvoicePanel = () => {
                 <Button
                     type='primary'
                     loading={loading.status}
-                    disabled={isChangeNegative && !isAddedToReceivables}
+                    disabled={(isChangeNegative && !isAddedToReceivables) || submitted}
                     onClick={handleSubmit}
                 >
                     Facturar
@@ -195,12 +201,14 @@ export const InvoicePanel = () => {
             }}>
                 <Receipt ref={componentToPrintRef} data={invoice}></Receipt>
             </div>
-            <Body form={form} />
+            <Body
+                form={form}
+            />
         </Modal>
     )
 }
 
-const Modal = styled(antd.Modal)`
+export const Modal = styled(antd.Modal)`
     .ant-modal-content{
     }
     .ant-modal-header{

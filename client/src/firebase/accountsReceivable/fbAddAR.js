@@ -21,6 +21,7 @@ export async function fbAddAR({ user, accountsReceivable }) {
             createdAt: Timestamp.fromMillis(ar?.createdAt),
             updatedAt: Timestamp.fromMillis(ar?.updatedAt),
             paymentDate: Timestamp.fromMillis(ar?.paymentDate),
+            lastPaymentDate: null
         }
         await setDoc(arRef, arData)
         return ar;

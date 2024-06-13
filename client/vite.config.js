@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import {createStyleImportPlugin} from 'vite-plugin-style-import';
-
+import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -18,7 +18,20 @@ export default defineConfig({
       ],
     }),
   ],
-  
+  resolve: {
+    alias:{
+      '@': path.resolve(__dirname, "./src"),
+      '@component': path.resolve(__dirname, './src/views/component'),
+      '@pages': path.resolve(__dirname, './src/views/pages'),
+      '@templates': path.resolve(__dirname, './src/views/templates'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@validate': path.resolve(__dirname, './src/utils'),
+      '@fbConfig': path.resolve(__dirname, './src/firebase'),
+      '@schema': path.resolve(__dirname, './src/schema'),
+      '@routes': path.resolve(__dirname, './src/routes'),
+    }
+  },
   css: {
     preprocessorOptions: {
       less: {

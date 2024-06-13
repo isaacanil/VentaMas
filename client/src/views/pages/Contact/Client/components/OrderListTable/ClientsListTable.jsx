@@ -8,7 +8,6 @@ import { selectUser } from '../../../../../../features/auth/userSlice'
 import { useSelector } from 'react-redux'
 
 export const ClientsListTable = ({ clients = [] }) => {
-  
   const { columns, filterConfig } = tableConfig();
   const data = clients.map(({ client }) => {
     return {

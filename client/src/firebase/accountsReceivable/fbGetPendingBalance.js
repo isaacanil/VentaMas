@@ -9,13 +9,13 @@ export async function fbGetPendingBalance(businessID, clientId) {
         accountsReceivableRef,
         where('clientId', '==', clientId),
     );
-    console.log(businessID, clientId);
+
     try {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
             console.log('No matching documents.');
-            return 0; // Return 0 if no matching documents found
+            return 0; 
         }
 
         let totalPendingBalance = 0;
@@ -24,7 +24,7 @@ export async function fbGetPendingBalance(businessID, clientId) {
             const data = doc.data();
             totalPendingBalance += data.arBalance;
         });
-        console.log(totalPendingBalance)
+     
         return totalPendingBalance
 
     } catch (error) {

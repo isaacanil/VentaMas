@@ -44,6 +44,7 @@ import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
 import { selectCurrentNotification } from "../../../features/notification/NotificationSlice"
 import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserForm"
 import { InvoicePreview } from "../../pages/Registro/InvoicePreview/InvoicePreview"
+import { PaymentForm } from "../forms/PaymentForm/PaymentForm"
 
 export const ModalManager = () => {
 
@@ -74,7 +75,9 @@ export const ModalManager = () => {
             key='modal-update-product'
             isOpen={UpdateProdModalSelected}
           /> */}
-        <BarcodePrintModal />
+        <BarcodePrintModal
+          key={'modal-barcode-print'}
+        />
         <InvoicePreview />
         <SignUpModal />
         {UpdateProdModalSelected && (
@@ -105,6 +108,9 @@ export const ModalManager = () => {
             data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
           />
         )}
+         <PaymentForm 
+            key={'modal-payment-form'}
+         />
         {ProviderModalDataSelected.isOpen && (
           <ProviderForm
             key={'modal-provider'}
