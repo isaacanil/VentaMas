@@ -20,17 +20,17 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
         if (!code) {
             return { type: 'Desconocido', description: 'RECIBO  DE PAGO' };
         }
-  
+
         // Asegurarse de que se extrae correctamente el código relevante de la cadena
         const pattern = /(B0\d)/; // Esta expresión regular busca el patrón exacto "B0" seguido de un dígito
         const found = code.match(pattern);
-        
+
         const receiptTypes = {
             B01: { type: 'Crédito Fiscal', description: 'FACTURA PARA CREDITO FISCAL' },
             B02: { type: 'Consumidor Final', description: 'FACTURA PARA CONUMIDOR FINAL' },
             // ... include other receipt types with their corresponding information
         };
-        
+
         if (found && found[0] && receiptTypes[found[0]]) {
             return receiptTypes[found[0]];
         } else {
@@ -66,7 +66,17 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                 <Line />
                 <PaymentArea P={P} data={data} />
                 <WarrantySignature data={data} />
-                {/* <WarrantyArea data={data} /> */}
+                {
+                    data?.seller?.name && (
+                        <div
+                            style={{
+                                padding: '0.8em 0 0.4em',
+                            }}
+                        >
+                            <SubTitle>{`Le Atendió: ${data?.seller?.name}`}</SubTitle>
+                        </div>
+                    )
+                }
             </Container>
         ) : null
     )

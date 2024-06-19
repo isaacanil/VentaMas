@@ -120,6 +120,13 @@ export const SignUpModal = () => {
                     >
                         <Typography.Title level={3}> {data ? "Actualizar" : "Crear Usuario"}</Typography.Title>
                         <Form.Item
+                            label="Nombre o Alias"
+                            name="realName"
+                            help="Nombre real o alias del usuario. Este campo es opcional."
+                        >
+                            <Input />
+                        </Form.Item>
+                        <Form.Item
                             label="Nombre de Usuario"
                             name="name"
                             rules={[
@@ -127,7 +134,7 @@ export const SignUpModal = () => {
                                 { min: 3, message: 'El nombre de usuario debe tener al menos 3 caracteres!' },
                                 { max: 20, message: 'El nombre de usuario debe tener como máximo 30 caracteres!' },
                             ]}
-                            help="El nombre de usuario puede contener letras, números, puntos, guiones y guiones bajos."
+                            help="Elige un identificador único para acceder al sistema."
                         >
                             <Input />
                         </Form.Item>

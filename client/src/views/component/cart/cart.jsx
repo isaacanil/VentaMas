@@ -64,4 +64,3 @@ const Container = styled.div`
    }
    
 `
-

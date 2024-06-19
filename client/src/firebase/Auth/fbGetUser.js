@@ -12,8 +12,6 @@ export const fbGetUserWithId = async (userId) => {
 }
 //la estructura de los usuarios en la base de datso es un doc que tiene user y luego dentro tiene las propiedades ejemplo para el negocio seria "user.businessID" user es un objeto en el doc ten lo pendiente
 
-const id = 'TRNykpxKa580PqGc0GtI' //negocio de los usuarios que necesito
-
 export async function fbGetUser() {
     const usuariosColeccion = collection(db, 'users');
     const snapshot = await getDocs(usuariosColeccion);
