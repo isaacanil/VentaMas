@@ -11,9 +11,7 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
     const [invoiceStatus, setInvoiceStatus] = useState(creditLimitForm.getFieldValue(['invoice', 'status']));
     const [creditLimitStatus, setCreditLimitStatus] = useState(creditLimitForm.getFieldValue(['creditLimit', 'status']));
     const user = useSelector(selectUser);
-    useEffect(() => {
-        setCreditLimitState(creditLimitForm.getFieldsValue());
-    }, []);
+
     useEffect(() => {
         const fetchCreditLimit = async () => {
             if (user && client.id) {
@@ -32,14 +30,45 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
         setInvoiceStatus(allValues.invoice?.status);
         setCreditLimitStatus(allValues.creditLimit?.status);
         setCreditLimitState(allValues);
+        clearValidationErrors(allValues);
+    };
+    const clearValidationErrors = (allValues) => {
+        if (!allValues.invoice?.status) {
+            creditLimitForm.setFieldsValue({
+                invoice: { value: null }
+            });
+            creditLimitForm.setFields([
+                {
+                    name: ['invoice', 'value'],
+                    errors: [],
+                },
+            ]);
+        }
+        if (!allValues.creditLimit?.status) {
+            creditLimitForm.setFieldsValue({
+                creditLimit: { value: null }
+            });
+            creditLimitForm.setFields([
+                {
+                    name: ['creditLimit', 'value'],
+                    errors: [],
+                },
+            ]);
+        }
     };
     const validateMinLength = (rule, value) => {
+        if (value == null && !creditLimitStatus || !invoiceStatus) {
+            return Promise.resolve()
+        }
         if (value && value.toString().length < 0) {
             return Promise.reject('El valor debe tener al menos 6 caracteres');
         }
         return Promise.resolve();
     };
     const validatePositiveNumber = (rule, value) => {
+        if (value == null && !creditLimitStatus || !invoiceStatus) {
+            return Promise.resolve()
+        }
         if (value <= 0) {
             return Promise.reject('El valor debe ser mayor a cero');
         }

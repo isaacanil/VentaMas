@@ -4,7 +4,8 @@ import { nanoid } from "nanoid";
 import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
 import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
 
-// Función para obtener las cuotas de una cuenta específica
+const THRESHOLD = 1e-10;
+
 const getInstallmentsByArId = async (user, arId) => {
     const installmentsRef = collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments');
     const q = query(installmentsRef, where('arId', '==', arId), orderBy('installmentDate', 'asc'));
@@ -12,7 +13,10 @@ const getInstallmentsByArId = async (user, arId) => {
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-// Función para procesar un pago parcial a una cuenta por cobrar específica
+const roundToTwoDecimals = (num) => {
+    return Math.round(num * 100) / 100;
+};
+
 export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) => {
     try {
         const { totalPaid, clientId, arId, paymentMethods, comments } = paymentDetails;
@@ -41,19 +45,22 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
         // Obtener todas las cuotas de la cuenta por cobrar específica
         let accountInstallments = await getInstallmentsByArId(user, arId);
 
-        let paidInstallments = [];
+        let paidInstallments = new Set();
 
         for (let installment of accountInstallments) {
             if (remainingAmount <= 0) break;
 
             let amountToApply = Math.min(remainingAmount, installment.installmentBalance);
-            let newInstallmentBalance = installment.installmentBalance - amountToApply;
+            let newInstallmentBalance = roundToTwoDecimals(installment.installmentBalance - amountToApply);
 
             const installmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.installmentId);
             const installmentPaymentRef = doc(collection(db, "businesses", user.businessID, "accountsReceivableInstallmentPayments"));
 
             // Acumular la actualización del balance de la cuota
-            batch.update(installmentRef, { installmentBalance: newInstallmentBalance, isActive: newInstallmentBalance === 0 ? false : installment.isActive });
+            batch.update(installmentRef, { 
+                installmentBalance: newInstallmentBalance, 
+                isActive: newInstallmentBalance === 0 ? false : installment.isActive 
+            });
 
             // Acumular el registro del pago de la cuota
             batch.set(installmentPaymentRef, {
@@ -63,42 +70,56 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
                 paymentId,
                 createdAt: Timestamp.now(),
                 updatedAt: Timestamp.now(),
-                paymentAmount: amountToApply,
+                paymentAmount: roundToTwoDecimals(amountToApply),
                 createdBy: user.uid,
                 updatedBy: user.uid,
                 isActive: true,
                 clientId: clientId,
                 arId: arId,
             });
+
             if (newInstallmentBalance === 0) {
-                paidInstallments.push(installment.id);
+                paidInstallments.add(installment.id);
             }
-            remainingAmount -= amountToApply;
+
+            remainingAmount = roundToTwoDecimals(remainingAmount - amountToApply);
         }
 
         // Actualizar el balance de la cuenta por cobrar
         const accountsReceivableRef = doc(db, "businesses", user.businessID, "accountsReceivable", arId);
         const account = await getDoc(accountsReceivableRef);
         if (account.exists()) {
-            const newArBalance = account.data().arBalance - totalPaid;
-            const updatedPaidInstallments = [
+            let currentArBalance = account.data().arBalance;
+            let newArBalance = roundToTwoDecimals(currentArBalance - totalPaid);
+
+            if (newArBalance < 0) {
+                remainingAmount = -newArBalance;
+                newArBalance = 0;
+            } else {
+                remainingAmount = 0;
+            }
+
+            const updatedPaidInstallments = Array.from(new Set([
                 ...(account.data().paidInstallments || []), 
-                ...paidInstallments
-            ];
+                ...Array.from(paidInstallments)
+            ]));
+
             batch.update(accountsReceivableRef, {
                 arBalance: newArBalance,
                 lastPaymentDate: Timestamp.now(),
-                lastPayment: totalPaid,             
+                lastPayment: totalPaid,
                 isActive: newArBalance === 0 ? false : account.data().isActive,
                 isClosed: newArBalance === 0 ? true : account.data().isClosed,
                 paidInstallments: updatedPaidInstallments
             });
         }
+
         // Ejecutar todas las actualizaciones en un solo batch
         await batch.commit();
 
         if (remainingAmount > 0) {
-            console.log(`Payment completed. Remaining amount: ${remainingAmount}`);
+            console.log(`Payment completed. Remaining amount to return: ${remainingAmount}`);
+            // Aquí puedes agregar la lógica para devolver la cantidad restante al usuario
         } else {
             console.log('Payment completed with no remaining amount.');
         }

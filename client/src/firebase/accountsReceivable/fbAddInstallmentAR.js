@@ -1,24 +1,20 @@
 import { Timestamp, collection, doc, writeBatch } from 'firebase/firestore';
-import { nanoid } from 'nanoid';
-// Asegúrate de importar correctamente tu configuración de Firestore
-import { DateTime } from 'luxon'; // Asegúrate de importar Luxon si no lo has hecho
-import usePaymentDates from '../../views/component/cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/usePaymentDates';
 import { db } from '../firebaseconfig';
 import { generateInstallments } from '../../utils/accountsReceivable/generateInstallments';
 
-function prepareInstallmentForFirebase(installments){
+function prepareInstallmentForFirebase(installments) {
     return installments.map((installment) => ({
         ...installment,
         createdAt: Timestamp.fromMillis(installment.createdAt),
         updatedAt: Timestamp.fromMillis(installment.updatedAt),
         installmentDate: Timestamp.fromMillis(installment.installmentDate)
-    }))
+    }));
 }
 
 export async function fbAddInstallmentAR({ user, ar }) {
     try {
-           // Verificación inicial de los parámetros
-           if (!user?.businessID) {
+        // Verificación inicial de los parámetros
+        if (!user?.businessID) {
             throw new Error('User business ID is missing');
         }
         if (!ar) {
@@ -27,9 +23,7 @@ export async function fbAddInstallmentAR({ user, ar }) {
 
         // Generación de documentos de cuotas
         const installments = generateInstallments({ user, ar });
-
-        const installmentsData = prepareInstallmentForFirebase(installments)
- 
+        const installmentsData = prepareInstallmentForFirebase(installments);
 
         // Referencia base para las cuotas
         const baseInstallmentsRef = collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments');
@@ -43,7 +37,7 @@ export async function fbAddInstallmentAR({ user, ar }) {
 
         // Confirmación de la operación batch
         await batch.commit();
-
+        console.log('Installments added successfully for accounts receivable');
 
     } catch (error) {
         console.error('Error adding installments for accounts receivable:', error);

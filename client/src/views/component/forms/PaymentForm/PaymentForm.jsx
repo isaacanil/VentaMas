@@ -1,6 +1,6 @@
 import * as antd from "antd";
-import { useState } from "react";
-import { closePaymentModal, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
+import { useEffect, useState } from "react";
+import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { ShowcaseList } from "../../../templates/system/Showcase/ShowcaseList";
@@ -16,14 +16,21 @@ export const PaymentForm = () => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
     const user = useSelector(selectUser)
+    const [installment, setInstallment] = useState();
 
     const {
         isOpen,
         paymentDetails,
     } = useSelector(selectAccountsReceivablePayment);
-    const handlePaymentConceptChange = (value) => {
-        dispatch(setPaymentOption({ paymentOption: value }));
-    };
+
+    useEffect(() => {
+        if (isOpen && paymentDetails.arId) {
+            dispatch(fetchLastInstallmentAmount({ user, arId: paymentDetails.arId }));
+        }
+    }, [isOpen, user, paymentDetails.arId]);
+
+    const handlePaymentConceptChange = (value) => dispatch(setPaymentOption({ paymentOption: value }));
+
     const handleAmountChange = (changedValues, allValues) => {
         const { paymentMethods } = paymentDetails; // Obtener paymentMethods del estado
         const cashMethod = allValues['cash']
@@ -99,26 +106,26 @@ export const PaymentForm = () => {
             throw new Error('Los comentarios no pueden exceder los 500 caracteres.');
         }
     }
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         try {
-            validate()
-            form.validateFields()
-                .then((values) => {
-                    form.resetFields();
-                    fbProcessClientPaymentAR(user, paymentDetails)
-                    dispatch(closePaymentModal());
-                })
-                .catch((info) => {
-                    console.log('Validate Failed:', info);
-                });
+            validate();
+            await form.validateFields();
+            await fbProcessClientPaymentAR(user, paymentDetails);
+            dispatch(closePaymentModal());
+            form.resetFields();
         } catch (error) {
-            antd.notification.error({
-                message: 'Error al procesar el pago',
-                description: error.message
-            });
+            if (error.name === 'ValidationError') {
+                console.log('Validate Failed:', error);
+            } else {
+                antd.notification.error({
+                    message: 'Error al procesar el pago',
+                    description: error.message
+                });
+            }
         }
-      
     };
+
+    
 
     const paymentOptions = Object.values(PAYMENT_OPTIONS);
     const change = (paymentDetails.totalPaid || 0) - paymentDetails.totalAmount

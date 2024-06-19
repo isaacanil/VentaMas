@@ -1,10 +1,9 @@
+import { collection, doc, setDoc, Timestamp, writeBatch, getDoc, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "../firebaseconfig";
-import { collection, query, where, orderBy, getDocs, doc, updateDoc, setDoc, Timestamp, writeBatch, getDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
-import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
 import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
 
-// Función para obtener una cuenta específica por su ID
+// Function to get a specific account by its ID
 const getClientAccountById = async (user, accountId) => {
     try {
         const accountRef = doc(db, 'businesses', user.businessID, 'accountsReceivable', accountId);
@@ -21,7 +20,7 @@ const getClientAccountById = async (user, accountId) => {
     }
 };
 
-// Función para obtener la cuota más antigua de una cuenta específica que esté activa
+// Function to get the oldest active installment for a specific account
 const getOldestActiveInstallmentByArId = async (user, arId) => {
     try {
         const installmentsRef = collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments');
@@ -34,14 +33,26 @@ const getOldestActiveInstallmentByArId = async (user, arId) => {
     }
 };
 
-// Función para procesar el pago de la cuota más antigua activa
+// Function to round to two decimal places
+const roundToTwo = (num) => {
+    return Math.round(num * 100) / 100;
+};
+
+// Function to process the payment for the oldest active installment
 export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails }) => {
     try {
-        const { clientId, totalAmount: paymentAmount, arId, paymentMethods, comments } = paymentDetails;
+        const { clientId, totalAmount: paymentAmount, arId, paymentMethods, comments, totalPaid } = paymentDetails;
 
-        if (!paymentAmount || paymentAmount <= 0) {
+        const paymentAmountFloat = roundToTwo(parseFloat(paymentAmount));
+        const totalPaidFloat = roundToTwo(parseFloat(totalPaid));
+
+        if (!paymentAmountFloat || paymentAmountFloat <= 0) {
             console.log('Invalid payment amount.');
             return;
+        }
+
+        if (totalPaidFloat !== paymentAmountFloat) {
+            throw new Error('Total paid and total amount are not equal.');
         }
 
         const account = await getClientAccountById(user, arId);
@@ -76,22 +87,44 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
 
         const batch = writeBatch(db);
 
-        let amountToApply = Math.min(paymentAmount, installment.installmentBalance ?? 0);
-        let newInstallmentBalance = (installment.installmentBalance ?? 0) - amountToApply;
-        let newAccountBalance = (account.arBalance ?? 0) - amountToApply;
+        // Handle the balance during payment
+        let amountToApply = roundToTwo(Math.min(paymentAmountFloat, parseFloat(installment.installmentBalance ?? 0)));
+        let newInstallmentBalance = roundToTwo(parseFloat(installment.installmentBalance ?? 0) - amountToApply);
+        let newAccountBalance = roundToTwo(parseFloat(account.arBalance ?? 0) - amountToApply);
+
+        // Adjust for any small rounding difference
+        if (Math.abs(newAccountBalance) < 0.01) {
+            newAccountBalance = 0;
+        }
+        if (Math.abs(newInstallmentBalance) < 0.01) {
+            newInstallmentBalance = 0;
+        }
 
         const accountsReceivableRef = doc(db, "businesses", user.businessID, "accountsReceivable", account.arId);
-        const installmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.installmentId);
+        const installmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id);
         const installmentPaymentRef = doc(collection(db, "businesses", user.businessID, "accountsReceivableInstallmentPayments"));
 
-        batch.update(installmentRef, { installmentBalance: newInstallmentBalance, isActive: newInstallmentBalance === 0 ? false : installment.isActive });
+        batch.update(installmentRef, { 
+            installmentBalance: newInstallmentBalance, 
+            isActive: newInstallmentBalance > 0 
+        });
 
-        account.arBalance = newAccountBalance;
+        if (newInstallmentBalance <= 0) {
+            const updatedPaidInstallments = [...(account.paidInstallments || []), installment.id];
+            batch.update(accountsReceivableRef, { 
+                arBalance: newAccountBalance, 
+                lastPaymentDate: Timestamp.now(),
+                lastPayment: amountToApply,
+                isActive: newAccountBalance > 0, 
+                isClosed: newAccountBalance <= 0, 
+                paidInstallments: updatedPaidInstallments 
+            });
+        }
 
         batch.set(installmentPaymentRef, {
-            ...defaultInstallmentPaymentsAR,
+            ...defaultPaymentsAR,
             installmentPaymentId: nanoid(),
-            installmentId: installment.installmentId,
+            installmentId: installment.id,
             paymentId,
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
@@ -103,21 +136,18 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
             arId: account.arId,
         });
 
-        const updatedPaidInstallments = [...(account.paidInstallments || []), installment.installmentId];
-
-        batch.update(accountsReceivableRef, { 
-            arBalance: account.arBalance, 
-            lastPaymentDate: Timestamp.now(),
-            lastPayment: amountToApply,
-            isActive: account.arBalance === 0 ? false : account?.isActive, 
-            isClosed: account.arBalance === 0 ? true : account?.isClosed,
-            paidInstallments: updatedPaidInstallments
-        });
-
         await batch.commit();
 
-        if (amountToApply < paymentAmount) {
-            console.log(`Payment completed. Remaining amount: ${paymentAmount - amountToApply}`);
+        // Check if there's a small remaining balance due to rounding
+        const remainingAmount = roundToTwo(paymentAmountFloat - amountToApply);
+        if (remainingAmount > 0) {
+            const adjustmentBatch = writeBatch(db); // Create a new batch for the adjustment
+            const adjustmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id);
+            adjustmentBatch.update(adjustmentRef, {
+                installmentBalance: roundToTwo(newInstallmentBalance + remainingAmount)
+            });
+            await adjustmentBatch.commit();
+            console.log(`Payment completed with adjustment. Remaining amount adjusted: ${remainingAmount}`);
         } else {
             console.log('Payment completed with no remaining amount.');
         }

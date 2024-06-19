@@ -1,40 +1,10 @@
 import styled from 'styled-components'
-import { useReactToPrint } from 'react-to-print'
-import React, { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ClientControl } from '../../index'
 import {
-  SelectProduct,
-  CancelShipping,
-  SelectTotalPurchase,
-  SelectFacturaData,
-  addTaxReceiptInState,
-  SelectNCF,
   SelectCartIsOpen,
-  toggleCart,
 } from '../../../features/cart/cartSlice'
-import {
-  IncreaseEndConsumer,
-  IncreaseTaxCredit,
-  selectNcfCode,
-  selectTaxReceiptData,
-  clearTaxReceiptData,
-  selectTaxReceipt,
-  selectNcfType
-} from '../../../features/taxReceipt/taxReceiptSlice'
-import { selectAppMode } from '../../../features/appModes/appModeSlice'
-import { fbAddInvoice } from '../../../firebase/invoices/fbAddInvoice'
-import { fbUpdateProductsStock } from '../../../firebase/products/fbUpdateProductStock'
-import { selectUser } from '../../../features/auth/userSlice'
-import { fbUpdateTaxReceipt } from '../../../firebase/taxReceipt/fbUpdateTaxReceipt'
-import { deleteClient, handleClient, selectClient } from '../../../features/clientCart/clientCartSlice'
-import { getCashCountStrategy } from '../../../notification/cashCountNotification/cashCountNotificacion'
-import { PaymentArea } from './components/PaymentArea'
 import { ProductsList } from './components/ProductsList/ProductsLit'
-import { CheckoutAction } from './components/CheckoutAction/CheckoutAction'
-import useViewportWidth from '../../../hooks/windows/useViewportWidth'
-import { addNotification } from '../../../features/notification/NotificationSlice'
-import { selectCashReconciliation } from '../../../features/cashCount/cashStateSlice'
 import InvoiceSummary from './components/InvoiceSummary/InvoiceSummary'
 
 export const Cart = () => {

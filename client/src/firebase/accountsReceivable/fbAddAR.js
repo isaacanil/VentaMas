@@ -1,6 +1,7 @@
 import { Timestamp, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { db } from "../firebaseconfig";
+import { getNextID } from "../Tools/getNextID";
 
 export async function fbAddAR({ user, accountsReceivable }) {
     try {
@@ -12,6 +13,7 @@ export async function fbAddAR({ user, accountsReceivable }) {
         const ar = {
             ...accountsReceivable,
             arBalance: accountsReceivable?.totalReceivable,
+            numberId: await getNextID(user, "lastAccountReceivableId"),
             arId,
             createdBy: user?.uid,
             updatedBy: user?.uid,

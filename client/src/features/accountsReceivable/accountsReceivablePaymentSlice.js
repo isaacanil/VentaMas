@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { getLastInstallmentAmountByArId } from '../../firebase/accountsReceivable/installment/getLastInstallmentAmountByArId';
 
 const paymentDetails = {
   paymentScope: 'balance', // Tipo de pago (cuota, balance de cuenta, abono) account
@@ -36,8 +37,22 @@ const initialState = {
   error: null, // Para manejar errores
   isValid: true, // Para manejar validaciones
   methodErrors: {},
-  extra: null // Para manejar información adicional
+  extra: null, // Para manejar información adicional
+  installment: null
 };
+
+// Thunk to fetch last installment amount
+export const fetchLastInstallmentAmount = createAsyncThunk(
+  'accountsReceivablePayment/fetchLastInstallmentAmount',
+  async ({ user, arId }, { rejectWithValue }) => {
+    try {
+      const lastInstallmentAmount = await getLastInstallmentAmountByArId(user, arId);
+      return { arId, lastInstallmentAmount };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const accountsReceivablePaymentSlice = createSlice({
   name: 'accountsReceivablePayment',
@@ -95,8 +110,6 @@ const accountsReceivablePaymentSlice = createSlice({
         if (!(key === 'reference' && method === 'cash')) {
           paymentMethod[key] = value;
         }
-        
-
         // Recalculate totalPaid only if the method is active
         state.paymentDetails.totalPaid = state.paymentDetails.paymentMethods.reduce((total, method) => {
           return method.status ? total + method.value : total;
@@ -119,6 +132,21 @@ const accountsReceivablePaymentSlice = createSlice({
       delete state.methodErrors[`${method}_reference`];
     }
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchLastInstallmentAmount.fulfilled, (state, action) => {
+        const { arId, lastInstallmentAmount } = action.payload;
+        if (state.paymentDetails.arId === arId) {
+          state.extra = { ...state.extra, installmentAmount: lastInstallmentAmount };
+          if (state.paymentDetails.paymentOption === 'installment') {
+            state.paymentDetails.totalAmount = lastInstallmentAmount;
+          }
+        }
+      })
+      .addCase(fetchLastInstallmentAmount.rejected, (state, action) => {
+        state.error = action.payload;
+      });
+  }
 });
 
 export const {

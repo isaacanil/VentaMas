@@ -13,7 +13,7 @@ export const ProductsList = () => {
         <Container>
             {
                 ProductSelected.length > 0 ?
-                    (<AnimatePresence>
+                    (<AnimatePresence>5
                         {ProductSelected.map((item, index) => (
                             <ProductCardForCart item={item} key={index} />
                         ))}

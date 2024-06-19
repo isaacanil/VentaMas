@@ -44,8 +44,8 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
 
     let paidInstallments = [];
 
-    // Actualizar el balance de la cuenta
-    let newArBalance = accountInstallments.reduce((acc, installment) => acc + installment.installmentBalance, 0);
+    // Calcular el balance actual de la cuenta
+    let initialArBalance = accountInstallments.reduce((acc, installment) => acc + installment.installmentBalance, 0);
 
     for (let installment of accountInstallments) {
         if (remainingAmount <= 0) break;
@@ -53,7 +53,7 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
         let amountToApply = Math.min(remainingAmount, installment.installmentBalance);
         let newInstallmentBalance = installment.installmentBalance - amountToApply;
 
-        const installmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.installmentId);
+        const installmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id);
         const installmentPaymentRef = doc(collection(db, "businesses", user.businessID, "accountsReceivableInstallmentPayments"));
 
         // Acumular la actualización del balance de la cuota
@@ -80,8 +80,12 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
         remainingAmount -= amountToApply;
     }
 
-    // Actualizar el balance de la cuenta por cobrar
-    newArBalance -= totalPaid;
+    // Asegurarse de que el saldo de la cuenta por cobrar no sea negativo
+    let newArBalance = initialArBalance - totalPaid;
+    if (newArBalance < 0) {
+        newArBalance = 0;
+    }
+
     const accountsReceivableRef = doc(db, "businesses", user.businessID, "accountsReceivable", arId);
     const account = await getDoc(accountsReceivableRef);
     if (account.exists()) {
@@ -103,7 +107,8 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
     await batch.commit();
 
     if (remainingAmount > 0) {
-        console.log(`Payment completed. Remaining amount: ${remainingAmount}`);
+        console.log(`Payment completed. Remaining amount: ${remainingAmount}. Consider returning the excess amount or handling it appropriately.`);
+        // Aquí podrías agregar lógica para manejar el monto restante, como devolverlo al cliente.
     } else {
         console.log('Payment completed with no remaining amount.');
     }

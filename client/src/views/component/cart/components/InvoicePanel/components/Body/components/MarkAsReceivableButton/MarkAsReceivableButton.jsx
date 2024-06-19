@@ -58,6 +58,9 @@ export const MarkAsReceivableButton = () => {
                 const invoiceAvailableCount = await fbGetActiveARCount(user.businessID, clientId)
                 setActiveAccountsReceivableCount(invoiceAvailableCount);
                 setIsWithinInvoiceCount(invoiceAvailableCount <= creditLimit?.invoice?.value || 0);
+            }else{
+                setIsWithinInvoiceCount(true)
+            
             }
         }
         fetchInvoiceAvailableCount()
@@ -67,6 +70,8 @@ export const MarkAsReceivableButton = () => {
             const adjustedCreditLimit = (currentBalance) + (-change);
             setIsWithinCreditLimit(adjustedCreditLimit <= creditLimit?.creditLimit?.value);
             setCreditLimitValue(adjustedCreditLimit);
+        }else {
+            setIsWithinCreditLimit(true)
         }
     }, [creditLimit, currentBalance, change]);
 
@@ -111,7 +116,7 @@ export const MarkAsReceivableButton = () => {
                         style={{ width: '100%' }}
                         onClick={handleClick}
                         spellCheck={true}
-                        disabled={isGenericClient || !isWithinCreditLimit || !isWithinInvoiceCount}
+                        disabled={isGenericClient || !isWithinCreditLimit || !isWithinInvoiceCount }
                     >
                         {receivableStatus ? 'Quitar de CXC' : 'Agregar a CXC'}
                     </Button>
@@ -166,7 +171,7 @@ export const ARValidateMessage = ({
                 />
             }
             {
-                !isWithinCreditLimit && <Alert
+               (creditLimit != null && creditLimit.creditLimit.status) && !isWithinCreditLimit && <Alert
                 message={
                     <>
                       El saldo de la factura excede el límite de crédito:{" "}
@@ -180,10 +185,18 @@ export const ARValidateMessage = ({
                 />
             }
             {
-                !isWithinInvoiceCount && <Alert
+               (creditLimit != null && creditLimit.invoice.status) && !isWithinInvoiceCount && <Alert
                     message={`El límite de cuenta por cobrar ha sido alcanzado. Facturas actuales: ${useFormatNumber(activeAccountsReceivableCount)} / ${useFormatNumber(creditLimit?.invoice?.value)}`}
                     type="error"
                     showIcon
+                />
+            }
+            {
+                (creditLimit == null ) && <Alert   
+                    message="Para agregar a CXC, el cliente debe tener un límite de crédito configurado."
+                    description="Editar Cliente -> Info. Financiera -> Límite de Crédito"
+                    type="error"
+                    showIcon    
                 />
             }
         </>
