@@ -1,78 +1,71 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Row } from './Table/Row'
 import { separator } from '../../../../hooks/separator'
 import { SubTitle } from '../Receipt'
 import { Col } from './Table/Col'
+import { fbGetPendingBalance } from '../../../../firebase/accountsReceivable/fbGetPendingBalance'
+import { selectUser } from '../../../../features/auth/userSlice'
+import { useSelector } from 'react-redux'
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 
 export const PaymentArea = ({ data, P }) => {
-
-    const handlePaymentMethod = () => {
-        //Agrega compatibilidad con la nueva version
-        if (data?.paymentMethod) {
-            let method = data?.paymentMethod.find((item) => item.status === true).method;
-            switch (method) {
-                case 'card':
-                    return 'Tarjeta';
-                case 'cash':
-                    return 'Efectivo';
-                case 'transfer':
-                    return 'Transferencia';
-                default:
-            }
-        } 
-        //Agrega compatibilidad con versiones anteriores
-        else if (data?.cardPaymentMethod) {
-            return 'Tarjeta';
-        } else if (data?.cashPaymentMethod) {
-            return 'Efectivo';
-        } else if (data?.transferPaymentMethod) {
-            return 'Transferencia';
+    const [pendingBalance, setPendingBalance] = useState(0)
+    const user = useSelector(selectUser);
+    const businessID = user?.businessID
+    const clientId = data?.client?.id
+    useEffect(() => {
+        const fetchPendingBalance = async () => {
+            if(!businessID || !clientId) return 
+            await fbGetPendingBalance(businessID, clientId)
+                .then((result) => {
+                    setPendingBalance(result)
+                })
         }
-    }
-    const handlePaymentMethodValue = () => {
-        if (data?.payment) {
-            return separator(data?.payment.value)
-        } else if (data?.cardPaymentMethod) {
-            return separator(data?.cardPaymentMethod.value)
-        } else if (data?.cashPaymentMethod) {
-            return separator(data?.cashPaymentMethod.value)
-        } else if (data?.transferPaymentMethod) {
-            return separator(data?.transferPaymentMethod.value)
-        }
-    }
-
+        fetchPendingBalance()
+    }, [businessID, clientId])
     return (
         <Container>
-          
             <Row cols='3'>
                 <SubTitle>TOTAL A PAGAR :</SubTitle>
-                <Col textAlign='right'>{separator(data.totalTaxes.value)}</Col>
-                <Col textAlign='right'>{separator(data.totalPurchase.value)}</Col>
+                <Col textAlign='right'>{separator(data?.totalTaxes?.value)}</Col>
+                <Col textAlign='right'>{separator(data?.totalPurchase?.value)}</Col>
             </Row>
             {
-                data.delivery.status ? (
+                data?.delivery?.status ? (
                     <Row cols='3'>
                         <P>ENVIO :</P>
                         <div></div>
-                        <Col textAlign='right'>{separator(data.delivery.value)}</Col>
+                        <Col textAlign='right'>{separator(data?.delivery?.value)}</Col>
                     </Row>
                 ) : null
             }
+            {
+                data?.paymentMethod?.filter((item) => item?.status === true)?.map((item, index) => (
+                    <Row key={index} cols='3'>
+                        <P>{item?.method === 'card' ? 'Tarjeta' : item?.method === 'cash' ? 'Efectivo' : 'Transferencia'} :</P>
+                        <div></div>
+                        <Col textAlign='right'>{separator(item?.value)}</Col>
+                    </Row>
+                ))
+            }
             <Row cols='3'>
-                <P>
-                    {handlePaymentMethod()} :
-                </P>
+                <P> {data?.change?.value >= 0 ? "CAMBIO" : "FALTANTE"}</P>
                 <div></div>
-                <Col textAlign='right'>
-                    {handlePaymentMethodValue()}
-                </Col>
+                <Col textAlign='right'>{useFormatPrice(data?.change?.value)}</Col>
             </Row>
-            <Row cols='3'>
-                <P>CAMBIO :</P>
-                <div></div>
-                <Col textAlign='right'>{separator(data.change.value)}</Col>
-            </Row>
+            {
+                data?.change?.value < 0 && (
+                    <>
+                        <Row cols='3'>
+                            <P>BALANCE ACTUAL : </P>
+                            <div></div>
+                            <Col textAlign='right'>{useFormatPrice(pendingBalance)}</Col>
+                        </Row>
+                    </>
+                )
+            }
+
         </Container>
     )
 }

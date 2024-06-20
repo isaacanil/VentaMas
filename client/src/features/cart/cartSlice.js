@@ -20,9 +20,17 @@ const updateAllTotals = (state, paymentValue = null) => {
     state.data.totalTaxes.value = getProductsTax(products, taxReceiptEnabled);
     state.data.totalShoppingItems.value = getTotalItems(products);
     state.data.totalPurchaseWithoutTaxes.value = getProductsPrice(products);
+    const cashPaymentMethod = state.data.paymentMethod
+        .findIndex((method) => method.method === 'cash' && method.status === true);
+
+    if (cashPaymentMethod !== -1) {
+        state.data.paymentMethod[cashPaymentMethod].value = state.data.totalPurchase.value;
+    }
+
     state.data.payment.value = paymentValue !== null ? paymentValue : state.data.totalPurchase.value;
     state.data.change.value = calculateChange(state.data.payment.value, state.data.totalPurchase.value);
 };
+
 
 const cartSlice = createSlice({
     name: 'factura',
@@ -56,7 +64,6 @@ const cartSlice = createSlice({
             }
             updateAllTotals(state, paymentValue)
         },
-
         changePaymentValue: (state, actions) => {
             const paymentValue = actions.payload
             state.data.payment.value = Number(paymentValue)
@@ -68,9 +75,41 @@ const cartSlice = createSlice({
             const taxReceiptEnabled = actions.payload
             state.settings.taxReceipt.enabled = taxReceiptEnabled
         },
+        toggleInvoicePanelOpen: (state) => {
+            state.settings.isInvoicePanelOpen = !state.settings.isInvoicePanelOpen
+        },
+        setCartId: (state) => {
+            const id = state.data.id
+            if (!id) {
+                state.data.id = nanoid()
+            }
+        },
         addPaymentMethod: (state, actions) => {
             const data = actions.payload
             state.data.paymentMethod = data
+        },
+        setPaymentMethod: (state, actions) => {
+            const paymentMethod = actions.payload
+            const index = state.data.paymentMethod.findIndex((method) => method.method === paymentMethod.method);
+            if (index !== -1) {
+                state.data.paymentMethod[index] = paymentMethod;
+            }
+            const paymentMethods = state.data.paymentMethod;
+            const getActivePaymentMethods = () => paymentMethods
+                .filter((method) => method.status === true)
+                .reduce((acc, method) => acc + method.value, 0);
+
+            state.data.payment.value = getActivePaymentMethods();
+            const setChange = calculateChange(state.data.payment.value, state.data.totalPurchase.value);
+            state.data.change.value = setChange;
+        },
+        toggleReceivableStatus: (state, actions) => {
+            const value = actions.payload
+            if (value === undefined) {
+                state.data.isAddedToReceivables = !state.data.isAddedToReceivables;
+            } else {
+                state.data.isAddedToReceivables = value;
+            }
         },
         changeProductPrice: (state, action) => {
             const { id, newPrice } = action.payload;
@@ -116,10 +155,6 @@ const cartSlice = createSlice({
             }
             updateAllTotals(state)
         },
-        addSeller: (state, actions) => {
-            const seller = actions.payload
-            state.data.seller = seller
-        },
         deleteProduct: (state, action) => {
             const productFound = state.data.products.find((product) => product.cid === action.payload)
             if (productFound) {
@@ -152,7 +187,6 @@ const cartSlice = createSlice({
             const productFound = state.data.products.find((product) => product.id === id)
             if (productFound) {
                 productFound.amountToBuy -= 1;
-
                 if (productFound.amountToBuy === 0) {
                     state.data.products.splice(state.data.products.indexOf(productFound), 1)
                 }
@@ -182,14 +216,15 @@ const cartSlice = createSlice({
             const source = actions.payload
             state.data.sourceOfPurchase = source
         },
-        togglePrintWarranty: (state) => {
-            state.settings.printWarranty = !state.settings.printWarranty
+        togglePrintInvoice: (state) => {
+            state.settings.printInvoice = !state.settings.printInvoice
         }
     }
 })
 
 export const {
     addAmountToProduct,
+    setCartId,
     getClient,
     addPaymentValue,
     addPaymentMethod,
@@ -203,10 +238,13 @@ export const {
     changeProductPrice,
     changeProductWeight,
     deleteProduct,
+    setPaymentMethod,
+    toggleReceivableStatus,
     diminishAmountToProduct,
     onChangeValueAmountToProduct,
     selectClientInState,
     setChange,
+    toggleInvoicePanelOpen,
     totalPurchase,
     totalPurchaseWithoutTaxes,
     totalShoppingItems,
@@ -215,7 +253,7 @@ export const {
     updateClientInState,
     saveBillInFirebase,
     toggleCart,
-    addSeller
+    togglePrintInvoice
 } = cartSlice.actions
 
 export const SelectProduct = (state) => state.cart.data.products;
@@ -235,12 +273,6 @@ export const SelectCartPermission = () => state.cart.permission
 export const SelectCartIsOpen = (state) => state.cart.isOpen
 export const SelectCartData = (state) => state.cart.data
 export const SelectSettingCart = (state) => state.cart.settings
+export const selectCart = (state) => state.cart
 
 export default cartSlice.reducer
-
-
-
-
-
-
-

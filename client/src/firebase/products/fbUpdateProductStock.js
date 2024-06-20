@@ -1,20 +1,21 @@
 import { doc, increment, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseconfig";
 import { validateUser } from "../../utils/userValidation";
+import { fbUpdateDoc } from "../firebaseOperations";
 
-export const fbUpdateProductsStock = async (products, user) => {
-    products.forEach((productData) => {
-        console.log(productData, " --> productData")
-        try {
+export async function fbUpdateProductsStock(products, user, transaction = null) {
+    try {
+        products.forEach((productData) => {
             validateUser(user)
             const { businessID } = user;
             const productRef = doc(db, "businesses", businessID, "products", productData.id);
             const stockUpdateValue = productData?.trackInventory ? increment(-Number(productData?.amountToBuy)) : increment(0);
-            updateDoc(productRef, {
+            fbUpdateDoc(productRef, {
                 "stock": stockUpdateValue,
             })
-        } catch (error) {
-            console.error("Error updating document: ", error);
-        }
-    })
+           
+        })
+    } catch (error) {
+        throw error
+    }
 }

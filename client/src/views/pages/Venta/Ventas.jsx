@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import * as antd from 'antd'
+import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('')
@@ -95,7 +96,6 @@ export const Sales = () => {
     >
       {/* <MultiDisplayControl></MultiDisplayControl> */}
       <ProductContainer>
-
         <MenuApp
           displayName='Productos'
           borderRadius={'bottom-right'}
@@ -110,11 +110,11 @@ export const Sales = () => {
         /> */}
         < ProductControlEfficient
           products={filterProductsByVisibility}
-
         />
         <MenuComponents />
       </ProductContainer>
       <Cart />
+      <InvoicePanel />
     </Container>
   )
 }
@@ -130,19 +130,15 @@ const Container = styled(motion.div)`
   margin-right: 0;
   padding-right: 0;
   @media(max-width: 800px) {
- 
     width: 100vw;
     height: calc(100vh);
     display: grid; 
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
     gap: 0;
- 
-  
 }
   `
 const ProductContainer = styled.div`
- 
     gap: 0;
     margin-right: 0;
     padding-right: 0;
@@ -150,8 +146,7 @@ const ProductContainer = styled.div`
     overflow-y: hidden;
     display: grid;
     grid-template-rows: min-content min-content;
-    @media(max-width: 800px) {
-   
+    @media(max-width: 500px) {
       position: relative;
       gap: 0;
       margin-right: 0;

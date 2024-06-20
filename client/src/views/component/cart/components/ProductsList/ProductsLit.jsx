@@ -13,11 +13,11 @@ export const ProductsList = () => {
         <Container>
             {
                 ProductSelected.length > 0 ?
-                    (<AnimatePresence>
-                            {ProductSelected.map((item, Index) => (
-                                <ProductCardForCart item={item} key={item.cartRef} />
-                            ))}
-                        </AnimatePresence>)
+                    (<AnimatePresence>5
+                        {ProductSelected.map((item, index) => (
+                            <ProductCardForCart item={item} key={index} />
+                        ))}
+                    </AnimatePresence>)
                     :
                     (<EmptyCartMessage
                         key="empty-message"
@@ -27,7 +27,7 @@ export const ProductsList = () => {
                     >
                         <Typography variant='body1'>
 
-                        {EMPTY_CART_MESSAGE}
+                            {EMPTY_CART_MESSAGE}
                         </Typography>
                     </EmptyCartMessage>)
             }

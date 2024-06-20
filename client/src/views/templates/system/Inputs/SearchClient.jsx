@@ -23,7 +23,7 @@ export const SearchClient = ({ name, icon, type, text, ref, size, title, label, 
                     onChange={onChange}
                     readOnly={readOnly}
                     onFocus={onFocus}
-                    autocomplete="off"
+                    autoComplete="off"
                     placeholder={label}
                 />
                 {/* <label htmlFor="">{label}</label> */}

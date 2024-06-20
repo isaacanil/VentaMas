@@ -7,5 +7,4 @@ export const fbUpdateClient = async (user, client ) => {
 
     const clientRef = doc(db, "businesses", user.businessID, 'clients', client.id)
     await updateDoc(clientRef, { client })
-        .then(() => { console.log('product from firebase', client) })
 }

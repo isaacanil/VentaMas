@@ -32,7 +32,7 @@ export function ProductControlEfficient({ products }) {
   return (
     <Container>
       {/* <Carrusel /> */}
-      <ProductCategoryBar  />
+      <ProductCategoryBar />
       <ProductList products={products} />
       <ShoppingItemsCounter itemLength={productLength} />
     </Container>
@@ -142,7 +142,7 @@ const ProductList = ({ products }) => {
 
 const ProductsListContainer = styled.div`
   gap: 10px;
-  height: ${props => props.listContainer > 800 ? `calc(100vh - 5.3em)` : `calc(100vh - 8.41em)`};
+  height: ${props => props.listContainer > 400 ? `calc(100vh - 5.3em)` : `calc(100vh - 8.41em)`};
   padding: 10px;
   overflow: auto;
   width: 100%;

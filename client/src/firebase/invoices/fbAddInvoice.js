@@ -3,13 +3,14 @@ import { db } from "../firebaseconfig";
 import { fbAddBillToOpenCashCount } from "../cashCount/fbAddBillToOpenCashCount";
 import { nanoid } from "nanoid";
 import { getNextID } from "../Tools/getNextID";
+import { fbSetDoc } from "../firebaseOperations";
 
-export const fbAddInvoice = async (data, user) => {
+export const fbAddInvoice = async (data, user, transaction = null) => {
   if (!user || !user.businessID) return
 
   try {
     const userRef = doc(db, "users", user.uid);
-    const nextNumberId = await getNextID(user, 'lastInvoiceId');
+    const nextNumberId = await getNextID(user, 'lastInvoiceId', transaction);
     let bill = {
       ...data,
       id: nanoid(12),
@@ -19,8 +20,9 @@ export const fbAddInvoice = async (data, user) => {
       user: userRef
     }
     const billRef = doc(db, 'businesses', user.businessID, "invoices", bill.id)
-    setDoc(billRef, { data: bill });
-    fbAddBillToOpenCashCount(user, billRef)
+
+    await fbSetDoc(billRef, { data: bill }, transaction)
+    await fbAddBillToOpenCashCount(user, billRef, transaction)
   } catch (error) {
     console.log(error)
   }

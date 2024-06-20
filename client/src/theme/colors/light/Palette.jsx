@@ -22,7 +22,6 @@ import { baseColors } from './baseColors';
         secondary: 'rgba(0, 0, 0, 0.54)',
         disabled: 'rgba(0, 0, 0, 0.38)',
         hint: 'rgba(0, 0, 0, 0.38)',
-        
     },
     // Color del divisor, utilizado para separar secciones de la interfaz
     divider: 'rgba(0, 0, 0, 0.12)',

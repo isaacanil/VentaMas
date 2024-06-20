@@ -10,7 +10,6 @@ import * as antd from "antd";
 const { Typography } = antd;
 const { Title, Paragraph } = Typography;
 const CustomInput = ({ options }) => {
-
   const [value, setValue] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch()
@@ -51,15 +50,12 @@ const CustomInput = ({ options }) => {
           </MenuOptions>
         </StyledMenu>
       )}
-      <Wrapper >
-        
+      <Wrapper >    
         <InputV4
           type="number"
-          label='Descuento (%)'
-          labelVariant='primary'
-          size='large'
           value={quitarCeros(value)}
           onChange={handleChange}
+          placeholder="0"
           onClick={handleClick}
         />
       </Wrapper>
@@ -70,6 +66,7 @@ const CustomInput = ({ options }) => {
 export default CustomInput;
 const Container = styled.div`
   position: relative;
+  max-width: 140px;
 `
 const Wrapper = styled.div`
     position: relative;

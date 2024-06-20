@@ -36,7 +36,6 @@ export const ProductCardRow = ({ product, Col, Row }) => {
                             noFound={product?.productImageURL ? false : true}
                             alt=""
                             style={product?.productImageURL === imageFallback ? { objectFit: "cover" } : { objectFit: 'contain' }}
-
                         />
                     </ImgContainer>
                 </Col>

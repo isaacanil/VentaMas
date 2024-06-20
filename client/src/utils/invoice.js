@@ -65,5 +65,6 @@ export function countInvoices(invoices) {
     return invoices.length;
 }
 
+export const calculateInvoiceChange = (invoice) => invoice.payment.value - invoice.totalPurchase.value;
 
 

@@ -2,7 +2,6 @@ import React from 'react'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { Button } from '../../../system/Button/Button'
-import { useIsOpenCashReconciliation } from '../../../../../firebase/cashCount/useIsOpenCashReconciliation'
 import { useDispatch, useSelector } from 'react-redux'
 import { setUserNotification } from '../../../../../features/UserNotification/UserNotificationSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
@@ -12,7 +11,6 @@ export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearch
     const matchWithCashReconciliation = useMatch("/cash-reconciliation")
     const navigate = useNavigate()
     const dispatch = useDispatch()
-   // const { status, cashReconciliation } = useIsOpenCashReconciliation()
     const { state, cashCount } = useSelector(selectCashReconciliation);
   
     const user = useSelector(selectUser)

@@ -43,6 +43,7 @@ export const ClientDetails = ({ mode }) => {
         }
     };
     return (
+        isMenuVisible &&
         <Container>
             <AnimatePresence>
                 {isMenuVisible && (
@@ -91,7 +92,7 @@ export const ClientDetails = ({ mode }) => {
                     </AnimatedWrapper>
                 )}
             </AnimatePresence>
-            <Row>
+            {/* <Row>
                 <div
                     style={{
                         display: 'flex',
@@ -133,7 +134,7 @@ export const ClientDetails = ({ mode }) => {
                     }
                 </Select>
 
-            </Row>
+            </Row> */}
         </Container>
     )
 }

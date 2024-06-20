@@ -68,9 +68,7 @@ function App() {
   if (user === false) { return <GenericLoader /> }
 
   return (
-
     <Fragment>
-   
       <Router>
         <Routes>
           {routes.map((route, index) => (
