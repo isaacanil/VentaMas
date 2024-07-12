@@ -276,10 +276,3 @@ export const SelectSettingCart = (state) => state.cart.settings
 export const selectCart = (state) => state.cart
 
 export default cartSlice.reducer
-
-
-
-
-
-
-

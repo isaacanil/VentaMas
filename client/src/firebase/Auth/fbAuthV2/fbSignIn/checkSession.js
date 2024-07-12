@@ -15,18 +15,19 @@ export function useAutomaticLogin() {
         if (sessionToken) {
             (async () => {
                 try {
-                    // Obtener el id del usuario asociado con el token de sesión
                     const sessionSnapshot = await getDoc(doc(db, 'sessionTokens', sessionToken));
                     const userId = sessionSnapshot.data().userId;
                     
                     // Obtener los detalles del usuario de Firestore
                     const userSnapshot = await getDoc(doc(db, 'users', userId));
                     const userData = userSnapshot.data().user;
-
+                    const username = userData?.realName ? userData?.realName : userData?.name;
                     // Actualizar el estado de la aplicación con los detalles del usuario
                     dispatch(login({
                         uid: userSnapshot.id,
-                        displayName: userData.name
+                        displayName: username,
+                        username: userData?.name,
+                        realName: userData?.realName,
                     }));
      
                     console.log('User logged in successfully');

@@ -47,6 +47,7 @@ const initialState = {
     data: {
         isAddedToReceivables: false,
         id: '',
+        seller: {},
         client: GenericClient,
         products: [],
         change: {
