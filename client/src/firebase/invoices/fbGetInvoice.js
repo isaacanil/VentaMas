@@ -1,16 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseconfig";
 
-// export  const  fbGetInvoice = async (user, invoiceId) => {
-//     try {
-//         const invoiceRef = doc(db, "businesses", user.businessID, "invoices", invoiceId);
-//         const invoice = await getDoc(invoiceRef);
-//         console.log("Factura obtenida:", invoice.data());
-//         return invoice;
-//     } catch (error) {
-//         console.error("Error obteniendo factura:", error);
-//     }
-// }
 export const fbGetInvoice = async (businessID, invoiceId) => {
     try {
         const invoiceRef = doc(db, "businesses", businessID, "invoices", invoiceId);

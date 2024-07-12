@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { MdClose } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
 import { selectImageViewerShow, selectImageViewerURL, toggleImageViewer } from "../../../../features/imageViewer/imageViewerSlice";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'; // <-- Importa aquí
@@ -10,79 +11,91 @@ import { Button } from "../Button/Button";
 import Typography from "../Typografy/Typografy";
 
 const ImageViewer = () => {
+  const dispatch = useDispatch();
   const show = useSelector(selectImageViewerShow)
-
-  const urlRef = useSelector(selectImageViewerURL)
+  const url = useSelector(selectImageViewerURL)
   const imgRef = useRef(null)
-  const dispatch = useDispatch()
-  const [url, setUrl] = useState(urlRef)
 
   const onClose = () => dispatch(toggleImageViewer({ show: false, url: '' }));
 
-  useEffect(() => { setUrl(urlRef) }, [urlRef])
+  useClickOutSide(imgRef, show, onClose);
 
-  useClickOutSide(imgRef, show, onClose)
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
+
+  if (!show) return null;
 
   return (
-    <Overlay show={show} >
-      <Header>
-        <Typography
-          disableMargins
-          variant="h2"
-          color="light"
+    <AnimatePresence>
+      {show && (
+        <Overlay
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
         >
-          Visualizador de imagen
-        </Typography>
-        <Button
-          title={<MdClose />}
-          onClick={onClose}
-        />
-      </Header>
-      {url &&
-        <ImageContainer ref={imgRef} >
-          <TransformWrapper
-            minScale={1}
-            maxScale={2}
-            wheel={{ step: 50 }}
-          >
-            <TransformComponent
-              contentStyle={{ width: '100%', height: '100%' }}
-              wrapperStyle={{ width: '100%', height: '100%' }}
+          <Header>
+            <Typography
+              disableMargins
+              variant="h2"
+              color="light"
             >
-              <img
-                src={url}
-                alt="Visualización de imagen"
-                style={{ width: '100%', objectFit: 'contain' }}
-              />
-            </TransformComponent>
-          </TransformWrapper>
-        </ImageContainer>}
-      {!url &&
-        <CenteredText
-          textVariant="h2"
-          containerVariant="contained"
-          text={'No se proporciono una imagen para visualizar'}
-        />}
+              Visualizador de imagen
+            </Typography>
+            <Button
+              title={<MdClose />}
+              onClick={onClose}
+            />
+          </Header>
+          {url &&
+            <ImageContainer ref={imgRef} >
+              <TransformWrapper
+                minScale={1}
+                maxScale={2}
+                wheel={{ step: 50 }}
+              >
+                <TransformComponent
+                  contentStyle={{ width: '100%', height: '100%' }}
+                  wrapperStyle={{ width: '100%', height: '100%' }}
+                >
+                  <img
+                    src={url}
+                    alt="Visualización de imagen"
+                    style={{ width: '100%', objectFit: 'contain' }}
+                  />
+                </TransformComponent>
+              </TransformWrapper>
+            </ImageContainer>}
+          {!url &&
+            <CenteredText
+              textVariant="h2"
+              containerVariant="contained"
+              text={'No se proporciono una imagen para visualizar'}
+            />}
 
-    </Overlay>
+        </Overlay>
+      )}
+    </AnimatePresence>
   );
 };
 
-const Overlay = styled.div`
+const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.692);
+  background-color: rgba(0, 0, 0, 0.8);
   display: grid;
   gap: 0.5em;
   align-items: start;
   padding: 0.3em;
-  opacity: ${({ show }) => (show ? 1 : 0)};
-  pointer-events: ${({ show }) => (show ? 'all' : 'none')};
   z-index: 9999;
- 
 `;
 
 const ImageContainer = styled.div`

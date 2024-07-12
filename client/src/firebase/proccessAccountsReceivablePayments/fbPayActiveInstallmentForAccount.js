@@ -2,7 +2,9 @@ import { collection, doc, setDoc, Timestamp, writeBatch, getDoc, query, where, o
 import { db } from "../firebaseconfig";
 import { nanoid } from "nanoid";
 import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
-
+import { fbAddPayment } from "../accountsReceivable/payment/fbAddPayment";
+import { fbAddAccountReceivablePaymentReceipt } from "../accountsReceivable/fbAddAccountReceivablePaymentReceipt";
+import { fbGetInvoice } from "../invoices/fbGetInvoice";
 // Function to get a specific account by its ID
 const getClientAccountById = async (user, accountId) => {
     try {
@@ -34,9 +36,9 @@ const getOldestActiveInstallmentByArId = async (user, arId) => {
 };
 
 // Function to round to two decimal places
-const roundToTwo = (num) => {
-    return Math.round(num * 100) / 100;
-};
+const roundToTwo = (num) =>  Math.round(num * 100) / 100;
+
+
 
 // Function to process the payment for the oldest active installment
 export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails }) => {
@@ -69,21 +71,7 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
             return;
         }
 
-        const paymentId = nanoid();
-        const paymentsRef = doc(db, "businesses", user.businessID, "accountsReceivablePayments", paymentId);
-        const paymentData = {
-            ...defaultPaymentsAR,
-            paymentId,
-            paymentMethods,
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-            comments,
-            createdUserId: user?.uid,
-            updatedUserId: user?.uid,
-            isActive: true
-        };
-        console.log('Creating payment:', paymentMethods);
-        await setDoc(paymentsRef, paymentData);
+        const paymentId = await fbAddPayment(user, paymentDetails);
 
         const batch = writeBatch(db);
 
@@ -130,6 +118,7 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
             updatedAt: Timestamp.now(),
             paymentAmount: amountToApply,
             createdBy: user.uid,
+            user: user,
             updatedBy: user.uid,
             isActive: true,
             clientId: clientId,
@@ -151,6 +140,40 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
         } else {
             console.log('Payment completed with no remaining amount.');
         }
+        const invoice = await fbGetInvoice(user.businessID, account.invoiceId)
+         // Create payment receipt data
+         const paymentReceipt = {
+            accounts: [
+                {
+                    arNumber: account.numberId,
+                    invoiceNumber: invoice.data.numberID,
+                    invoiceId: invoice.data.id,
+                    arId: account.arId,
+                    paidInstallments: [
+                        {
+                            number: installment.installmentNumber,
+                            id: installment.id,
+                            amount: amountToApply,
+                            status: 'paid'
+                        }
+                    ],
+                    remainingInstallments:  account?.totalInstallments - account?.paidInstallments?.length,
+                    totalInstallments: account.totalInstallments,
+                    totalPaid: amountToApply,
+                    arBalance: newAccountBalance,
+                }
+            ],
+            totalAmount: totalAmount, // Total amount paid
+            paymentMethod: paymentMethods,
+            change: roundToTwo(paymentAmountFloat - amountToApply)
+        };
+
+        const receipt = await fbAddAccountReceivablePaymentReceipt({ user, clientId, paymentReceipt });
+        const receiptRef = doc(db, 'businesses', user.businessID, 'accountsReceivablePaymentReceipt', receipt.id);
+        transaction.set(receiptRef, paymentReceipt);
+
+        return receipt
+
     } catch (error) {
         console.error("Error processing payment for oldest active installment:", error);
         throw error;

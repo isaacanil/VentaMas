@@ -45,6 +45,7 @@ import { selectCurrentNotification } from "../../../features/notification/Notifi
 import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserForm"
 import { InvoicePreview } from "../../pages/Registro/InvoicePreview/InvoicePreview"
 import { PaymentForm } from "../forms/PaymentForm/PaymentForm"
+import ARInfoModal from "./ARInfoModal/ARInfoModal"
 
 export const ModalManager = () => {
 
@@ -111,6 +112,9 @@ export const ModalManager = () => {
          <PaymentForm 
             key={'modal-payment-form'}
          />
+         {/* <ARInfoModal
+            key={'modal-ar-info-modal'}
+         /> */}
         {ProviderModalDataSelected.isOpen && (
           <ProviderForm
             key={'modal-provider'}

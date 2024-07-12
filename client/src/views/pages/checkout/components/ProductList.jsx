@@ -14,49 +14,57 @@ export const ProductList = ({ data }) => {
     const { products, NCF } = data
     const taxReceipt = useSelector(selectTaxReceiptEnabled)
     return (
-        <Products>
-            {
-                products?.length > 0 ? (
-                    products?.map((product, index) => (
-                        <Product key={index}>
-                            <Row cols='3'>
-                                <Col>
-                                    {
-                                        product?.weightDetail?.isSoldByWeight ? (
-                                            <div>
-                                                {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product?.pricing?.price, NCF)}
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                {product?.amountToBuy || 0} x {separator(getTotalPrice(resetAmountToBuyForProduct(product), NCF))}
-                                            </div>
-                                        )
-                                    }
-                                </Col>
-                                <Col textAlign='right'>
-                                    {separator(getTax(product, NCF))}
-                                </Col>
-                                <Col textAlign='right'>
-                                    {separator(getTotalPrice(product, NCF))}
-                                </Col>
-                            </Row>
-                            <Row>
-                                <ProductName>{product?.name}</ProductName>
-                            </Row>
-                            {
-                                product?.warranty?.status && (
-                                    <Row>
-                                        {convertTimeToSpanish(product?.warranty?.quantity, product?.warranty?.unit)} de Garantía
-                                    </Row>
-                                )
-                            }
-                        </Product>
-                    ))
-                ) : null
-            }
-        </Products>
+        <Container>
+            <Products>
+                {
+                    products?.length > 0 ? (
+                        products?.map((product, index) => (
+                            <Product key={index}>
+                                <Row cols='3'>
+                                    <Col>
+                                        {
+                                            product?.weightDetail?.isSoldByWeight ? (
+                                                <div>
+                                                    {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product?.pricing?.price, NCF)}
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    {product?.amountToBuy || 0} x {separator(getTotalPrice(resetAmountToBuyForProduct(product), NCF))}
+                                                </div>
+                                            )
+                                        }
+                                    </Col>
+                                    <Col textAlign='right'>
+                                        {separator(getTax(product, NCF))}
+                                    </Col>
+                                    <Col textAlign='right'>
+                                        {separator(getTotalPrice(product, NCF))}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <ProductName>{product?.name}</ProductName>
+                                </Row>
+                                {
+                                    product?.warranty?.status && (
+                                        <Row>
+                                            {convertTimeToSpanish(product?.warranty?.quantity, product?.warranty?.unit)} de Garantía
+                                        </Row>
+                                    )
+                                }
+                            </Product>
+                        ))
+                    ) : null
+                }
+            </Products>
+        </Container>
+
+
+
     )
 }
+const Container = styled.div`
+ 
+`
 
 const Products = styled.div`
       display: block;

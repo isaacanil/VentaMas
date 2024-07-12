@@ -71,7 +71,6 @@ export const Product = ({ product, }) => {
             >
                 {
                     <Head imageHiddenRef={imageHiddenRef ? true : false}>
-    
                         <ImageContainer imageHiddenRef={imageHiddenRef}>
                             {!isImageLoaded && <Loader isImageLoaded={isImageLoaded} />}
                             {

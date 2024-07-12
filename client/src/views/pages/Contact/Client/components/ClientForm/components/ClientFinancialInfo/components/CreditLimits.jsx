@@ -5,27 +5,31 @@ import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice'
 import { fbGetCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbGetCreditLimit';
 import { selectUser } from '../../../../../../../../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
+import { useQuery } from '@tanstack/react-query';
+
 const { Checkbox, Input, Form, InputNumber, Alert } = antd;
+
 export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
-    const [creditLimitState, setCreditLimitState] = useState();
     const [invoiceStatus, setInvoiceStatus] = useState(creditLimitForm.getFieldValue(['invoice', 'status']));
     const [creditLimitStatus, setCreditLimitStatus] = useState(creditLimitForm.getFieldValue(['creditLimit', 'status']));
     const user = useSelector(selectUser);
+    const clientId = client.id;
+    
+    const { data: creditLimitState, error, isLoading } = useQuery({
+        queryKey: ['creditLimit', user, clientId],
+        queryFn: () => fbGetCreditLimit({ user, clientId }),
+        enabled: !!user && !!clientId,
+        refetchOnWindowFocus: false,
+    });
 
     useEffect(() => {
-        const fetchCreditLimit = async () => {
-            if (user && client.id) {
-                const creditLimitData = await fbGetCreditLimit({ user, clientId: client.id });
-                if (creditLimitData) {
-                    creditLimitForm.setFieldsValue(creditLimitData); // Si necesitas establecer los valores del formulario
-                    setInvoiceStatus(creditLimitData?.invoice?.status);
-                    setCreditLimitStatus(creditLimitData?.creditLimit?.status);
-                    setCreditLimitState(creditLimitData);
-                }
-            }
-        };
-        fetchCreditLimit();
-    }, [user, client.id]);
+        if (creditLimitState) {
+            creditLimitForm.setFieldsValue(creditLimitState);
+            setInvoiceStatus(creditLimitState?.invoice?.status);
+            setCreditLimitStatus(creditLimitState?.creditLimit?.status);
+        }
+    }, [creditLimitState]);
+    
     const handleFormChange = (changedValues, allValues) => {
         setInvoiceStatus(allValues.invoice?.status);
         setCreditLimitStatus(allValues.creditLimit?.status);
@@ -74,6 +78,15 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
         }
         return Promise.resolve();
     };
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    
+    if (error) {
+        return <div>Error loading credit limit</div>;
+    }
+    
     
     return (
         <div>

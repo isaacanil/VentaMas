@@ -33,7 +33,7 @@ export function ProductControlEfficient({ products }) {
     <Container>
       {/* <Carrusel /> */}
       <ProductCategoryBar />
-      <ProductList products={products} />
+      <ProductList products={[...products, ...products, ...products, ...products, ...products, ...products, ...products, ...products, ...products, ...products]} />
       <ShoppingItemsCounter itemLength={productLength} />
     </Container>
   );
@@ -49,6 +49,7 @@ const Container = styled.div`
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
+  
   position: relative;
 `
 
@@ -75,10 +76,10 @@ const ProductList = ({ products }) => {
     return () => window.removeEventListener('resize', updateColumns);
   }, []); // Dependencias vacías para ejecutar solo una vez al montar
 
-  // Configuración de la grilla
+
   // Configuraciones de la grilla
   const itemCount = products.length; // Total de elementos en la grilla
-  const cellHeight = 90; // Altura de cada celda de la grilla
+  const cellHeight = 88; // Altura de cada celda de la grilla
 
   const rowVirtualizer = useVirtualizer({
     count: Math.ceil(itemCount / columns), // Número total de "filas" virtuales
@@ -106,7 +107,7 @@ const ProductList = ({ products }) => {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: `repeat(${columns}, 1fr)`, // Crea una grilla con N columnas
-                  gap: '10px', // Espacio entre los elementos de la grilla
+                  gap: '0.4em', // Espacio entre los elementos de la grilla
                   position: 'absolute',
                   top: `${virtualRow.start}px`,
                   left: 0,
@@ -141,9 +142,11 @@ const ProductList = ({ products }) => {
 }
 
 const ProductsListContainer = styled.div`
-  gap: 10px;
   height: ${props => props.listContainer > 400 ? `calc(100vh - 5.3em)` : `calc(100vh - 8.41em)`};
-  padding: 10px;
+  padding: 0.4em;
+  gap: 0.4em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   overflow: auto;
   width: 100%;
   background-color: var(--color2);

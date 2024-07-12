@@ -63,7 +63,7 @@ export const InvoicePanel = () => {
     const isAddedToReceivables = cart?.isAddedToReceivables;
     const change = cart?.change?.value;
     const isChangeNegative = change < 0;
-    
+
     const handlePrint = useReactToPrint({
         content: () => componentToPrintRef.current,
         onAfterPrint: () => {
@@ -76,6 +76,7 @@ export const InvoicePanel = () => {
             })
         }
     })
+
     const handleCancelShipping = () => {
         if (viewport <= 800) dispatch(toggleCart());
         dispatch(CancelShipping())
@@ -83,6 +84,7 @@ export const InvoicePanel = () => {
         dispatch(deleteClient())
         dispatch(clearTaxReceiptData())
     }
+
     const showCancelSaleConfirm = () => {
         Modal.confirm({
             title: 'Cancelar Venta',
@@ -93,7 +95,6 @@ export const InvoicePanel = () => {
             cancelText: 'Continuar Venta',
 
             onOk() {
-                // Aquí manejas la confirmación de la cancelación
                 antd.message.success('Venta cancelada', 2.5)
                 handleCancelShipping()
             },
@@ -103,12 +104,12 @@ export const InvoicePanel = () => {
             },
         });
     };
+    
     async function handleSubmit() {
         try {
             setLoading({ status: true, message: 'Procesando Factura' })
             if (cart?.isAddedToReceivables) {
                 await form.validateFields()
-
             }
             const { invoice } = await processInvoice({
                 cart,
@@ -196,11 +197,7 @@ export const InvoicePanel = () => {
                 ]
             }
         >
-            <div style={{
-                display: 'none',
-            }}>
-                <Receipt ref={componentToPrintRef} data={invoice}></Receipt>
-            </div>
+            <Receipt ref={componentToPrintRef} data={invoice} />
             <Body
                 form={form}
             />

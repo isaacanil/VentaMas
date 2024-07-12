@@ -89,8 +89,8 @@ export const ReceivableManagementPanel = ({ form, creditLimit }) => {
 
     useEffect(() => {
         const fetchPendingBalance = async () => {
-            const pendingBalance = await fbGetPendingBalance(user?.businessID, client?.id)
-            setCurrentBalance(pendingBalance)
+            const unsubscribe = fbGetPendingBalance(user?.businessID, client?.id, setCurrentBalance)
+            return () => unsubscribe()
         };
         fetchPendingBalance();
     }, [client, isReceivable, user])

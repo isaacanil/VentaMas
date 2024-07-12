@@ -10,29 +10,38 @@ import { fbGetCreditLimit } from '../../../../../../../firebase/accountsReceivab
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { useSelector } from 'react-redux'
 import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice'
-
+import { useQuery } from '@tanstack/react-query'
+0
 export const Body = ({ form }) => {
-    const [creditLimit, setCreditLimit] = useState(null);
     const user = useSelector(selectUser);
     const client = useSelector(selectClient);
     const clientId = client.id;
-    useEffect(() => {
-        const fetchCreditLimit = async () => {
-            if (user && client.id) {
-                const creditLimitData = await fbGetCreditLimit({ user, clientId });
-                if (creditLimitData) {
-                    setCreditLimit(creditLimitData);
-                }
-            }
-        };
-        fetchCreditLimit();
-    }, [user, client.id]);
+
+    
+
+    const { data: creditLimit, error, isLoading } = useQuery({
+        queryKey: ['creditLimit', user, clientId],
+        queryFn: () => fbGetCreditLimit({ user, clientId }),
+        enabled: !!user && !!clientId,
+        refetchOnWindowFocus: false,
+    });
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error loading credit limit</div>;
+    }
+
     return (
         <Container>
             <ChargedSection />
             <PaymentMethods />
             <PaymentSummary />
-            <MarkAsReceivableButton />
+            <MarkAsReceivableButton
+                creditLimit={creditLimit}
+            />
             <ReceivableManagementPanel
                 form={form}
                 creditLimit={creditLimit}

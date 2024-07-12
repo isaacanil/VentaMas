@@ -41,9 +41,9 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
         <Accounts>
           {openAccounts.map((account) => (
             <AccountCard
-              key={account.accountNumber}
+              key={account.arId}
               account={account}
-              accountNumber={account.accountNumber}
+              accountNumber={account.numberId}
               date={account.date}
               frequency={account.frequency}
               balance={account.balance}
@@ -86,12 +86,12 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
         client={client}
         pendingBalance={pendingBalance}
       />
-      <Line />
+       {/* <Line /> */}
       <CreditLimits creditLimitForm={creditLimitForm} client={client} arBalance={pendingBalance || 0}/>
       <AccountsReceivable>
         <SectionTitle>Cuentas por cobrar</SectionTitle>
         <Tabs defaultActiveKey="1" items={tabItems} />
-      </AccountsReceivable>
+      </AccountsReceivable>  
     </Container>
   );
 };
@@ -99,7 +99,6 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
 export default ClientFinancialInfo;
 
 export const Container = styled.div`
-
   display: grid;
   gap: 1em;
 `;

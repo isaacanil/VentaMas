@@ -11,24 +11,5 @@ export const Col = ({textAlign, children}) => {
   const Container = styled.div`
   width: 100%;
     display: flex;
-    ${props => {
-      switch (props.textAlign) {
-        case 'left':
-          return`
-          justify-content: flex-start;
-
-          `
-        case 'right':
-          return`
-            justify-content: flex-end;
-       
-          `
-        case 'center':
-          return`
-          justify-content: center;
-          `
-        default:
-          break;
-      }
-    }}
+    justify-content: ${props => props.textAlign};
   `

@@ -11,6 +11,11 @@ import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV
 import { AnimatePresence, motion } from 'framer-motion'
 import { Switch } from '../../../../templates/system/Switch/Switch'
 import * as antd from 'antd'
+import { Button } from '../../../../templates/system/Button/Button'
+import { fbGetPendingBalance } from '../../../../../firebase/accountsReceivable/fbGetPendingBalance'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
+import { setAccountPayment } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
 const { Select } = antd
 const { Option } = Select
 export const ClientDetails = ({ mode }) => {
@@ -19,6 +24,35 @@ export const ClientDetails = ({ mode }) => {
     const [deliveryData, setDeliveryData] = useState({ value: "", status: false })
     const client = useSelector(selectClient)
     const isMenuVisible = ((client?.name && (client?.name !== 'Generic Client')) || mode)
+    const [pendingBalance, setPendingBalance] = useState(0)
+    const user = useSelector(selectUser)
+    const businessID = user.businessID
+
+
+    useEffect(() => {
+        const fetchPendingBance = async () => {
+            if (!client || !businessID) return
+            const unsubscribe = fbGetPendingBalance(businessID, client.id, setPendingBalance)
+            return () => {
+                unsubscribe()
+            }
+       
+        }
+        fetchPendingBance()
+    }, [client])
+
+    const handlePayment = () => {
+        dispatch(setAccountPayment({
+            isOpen: true,
+            paymentDetails: {
+                paymentScope: 'balance',
+                paymentOption: 'installment',
+                totalAmount: pendingBalance,
+                clientId: client.id,
+
+            }
+        }))
+    }
 
     const updateClient = (e) => {
         dispatch(setClient(updateObject(client, e)))
@@ -55,6 +89,46 @@ export const ClientDetails = ({ mode }) => {
                     >
                         <Row>
                             <Group>
+                                <div>
+                                 {`#${client?.numberId}`}
+                                </div>
+                                <InputV4
+                                    type="text"
+                                    name='personalID'
+                                    label='Cédula/RNC'
+                                    size='small'
+                                    labelVariant='primary'
+                                    value={client.personalID}
+                                    onChange={e => updateClient(e)}
+                                    autoComplete='off'
+                                />
+                                <div
+                                style={{
+                                    display: 'flex',
+                                    gap: '0.2em',
+                                    alignItems: 'center'
+                                }}
+                                >
+                                <InputV4
+                                    type="text"
+                                    label='Balance general'
+                                    size='small'
+                                    labelVariant='primary'
+                                    value={useFormatPrice(pendingBalance)}
+                                    autoComplete='off'
+                                />
+                                <Button
+                                    title="Pagar"
+                                    type="text"
+                                    color="primary"
+                                    onClick={handlePayment}
+                                    disabled={pendingBalance === 0}
+                                />
+                                </div>
+                            </Group>
+                        </Row>
+                        <Row>
+                            <Group>
                                 <InputV4
                                     size='small'
                                     type="text"
@@ -68,10 +142,10 @@ export const ClientDetails = ({ mode }) => {
                                 <InputV4
                                     type="text"
                                     name='personalID'
-                                    label='Cédula/RNC'
+                                    label='Teléfono 2'
                                     size='small'
                                     labelVariant='primary'
-                                    value={client.personalID}
+                                    value={client?.tel2}
                                     onChange={e => updateClient(e)}
                                     autoComplete='off'
                                 />
@@ -92,49 +166,6 @@ export const ClientDetails = ({ mode }) => {
                     </AnimatedWrapper>
                 )}
             </AnimatePresence>
-            {/* <Row>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.6em'
-                    }}
-                >
-                    <Switch
-                        size='small'
-                        checked={client?.delivery?.status ? true : false}
-                        name='delivery.status'
-                        onChange={(e) => updateClient(e)}
-                    />
-                    <InputV4
-                        label='Delivery'
-                        labelVariant='primary'
-                        size='small'
-                        type="number"
-                        name='delivery.value'
-                        value={client?.delivery?.value || ''}
-                        disabled={!client?.delivery?.status}
-                        ref={deliveryStatusInput}
-                        focusWhen={client?.delivery?.status}
-                        onChange={(e) => updateClient(e)}
-                    />
-                </div>
-                <Select
-                    name=""
-                    id=""
-                    style={{
-                        width: '160px',
-                    }}
-                    defaultValue={sourceOfSaleList[0].serviceName}
-                    onChange={(e) => handleSetSourceOfPurchase(e.target.value)}>
-                    {
-                        sourceOfSaleList.map((item, index) => (
-                            <Option value={item.serviceName} key={index} >{item.serviceName}</Option>
-                        ))
-                    }
-                </Select>
-
-            </Row> */}
         </Container>
     )
 }
@@ -158,33 +189,12 @@ gap: 0.6em;
 `
 const Row = styled.div`
 display: flex;
-gap: 1em;
+gap: 0.6em;
 width: 100%;
 `
 const Group = styled.div`
 display: flex;
-gap: 1em;
+gap: 0.8em;
 align-items: center;
-    ${props => {
-        switch (props.space) {
-            case 'small':
-                return `
-                gap: 0.6em; 
-                `
-            case 'medium':
-                return `
-                gap: 0.8em;
-                `
-            case 'large':
-                return `
-                gap: 1em;
-                `
-            default:
-                return `
-                    gap: 1em;
-                `
-        }
-    }
-    }
                 
     `

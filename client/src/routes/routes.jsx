@@ -12,6 +12,7 @@ import dev from "./paths/Dev";
 import expenses from "./paths/Expenses";
 import changelogs from "./paths/Changelogs"
 import utility from "./paths/Utility";
+import accountReceivable from './paths/AccountReceivable'
 
 
 export const routes = [
@@ -28,6 +29,7 @@ export const routes = [
     ...dev,
     ...changelogs,
     ...utility,
+    ...accountReceivable,
     {
         path: "*",
         element: <NotFound />

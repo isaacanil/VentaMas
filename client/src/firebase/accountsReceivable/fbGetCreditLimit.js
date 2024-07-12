@@ -1,21 +1,30 @@
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from '../firebaseconfig';
 
-export async function fbGetCreditLimit({ user, clientId }) {
-    try {
-        if (!user?.businessID) return null;
-        if (!clientId) return null;
+export function fbGetCreditLimit({ user, clientId }) {
+    return new Promise((resolve, reject) => {
+        if (!user?.businessID || !clientId) {
+            reject(new Error("BusinessID o ClientID no proporcionados"));
+            return;
+        }
 
         const creditLimitRef = doc(db, 'businesses', user.businessID, 'creditLimit', clientId);
-        const docSnapshot = await getDoc(creditLimitRef);
 
-        if (docSnapshot.exists()) {
-            return docSnapshot.data();
-        } else {
-            console.log('No such document!');
-            return null;
-        }
-    } catch (error) {
-        throw error;
-    }
+        const unsubscribe = onSnapshot(creditLimitRef, 
+            (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    resolve(docSnapshot.data());
+                } else {
+                    resolve(null);
+                    console.log('No existe tal documento!');
+                }
+            },
+            (error) => {
+                reject(error);
+            }
+        );
+
+        // Retorna la función para cancelar la suscripción
+        return unsubscribe;
+    });
 }

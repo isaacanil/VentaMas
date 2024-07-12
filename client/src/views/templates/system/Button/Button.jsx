@@ -23,15 +23,14 @@ export const Button = forwardRef(({
   iconOff,
   iconColor,
   titlePosition,
+  loading = false, 
   type = 'button'
-
 }, ref) => {
 
   const handleClick = (e) => {
     e.stopPropagation()
     onClick()
   }
-
   return (
     <Container
       size={size}

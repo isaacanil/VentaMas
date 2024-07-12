@@ -98,7 +98,7 @@ export const InputV4 = ({
   bgColor,
   clearButton = false,
   value,
-  type,
+  type = 'text',
   ...props
 }) => {
   const inputRef = useRef(null);

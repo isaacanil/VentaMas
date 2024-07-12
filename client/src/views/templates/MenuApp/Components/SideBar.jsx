@@ -75,8 +75,7 @@ export const SideBar = ({ isOpen }) => {
                 <UserSection user={user}></UserSection>
                 <Body>
                     <Links>
-                        {
-                            Object.keys(groupedLinks).map(group => (
+                        {Object.keys(groupedLinks).map(group => (
                                 <Group key={group}>
                                     {/* {groupedLinks[group].length > 1 && <GroupTitle>{sidebarTitleGroup[group]}</GroupTitle>} */}
                                     <MenuLinkList>
@@ -85,8 +84,7 @@ export const SideBar = ({ isOpen }) => {
                                         ))}
                                     </MenuLinkList>
                                 </Group>
-                            ))
-                        }
+                            )) }
                     </Links>
                 </Body>
             </Wrapper>

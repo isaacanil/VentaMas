@@ -7,30 +7,21 @@ export const Row = ({ cols, space, children }) => {
         </Container>
     )
 }
+// Object to handle padding styles
+const paddingStyles = {
+    true: 'padding: 0.4em 0;',
+    false: ''
+};
+
+// Object to handle column styles
+const columnStyles = {
+    '3': 'grid-template-columns: 1fr 0.8fr 0.8fr;',
+    default: 'grid-template-columns: 1fr;'
+};
+
 const Container = styled.div`
-  display: grid;
- align-items: center;
-  grid-template-columns: 1fr;
-  ${props => {
-        switch (props.space) {
-            case true:
-                return `
-                padding: 0.4em 0;
-                `
-            default:
-                break;
-        }
-    }
-    }
-      ${props => {
-        switch (props.cols) {
-            case '3':
-                return `
-              
-              grid-template-columns: 1fr 0.8fr 0.8fr;
-              `
-            default:
-                break;
-        }
-    }}
+   display: grid;
+  align-items: center;
+  ${({ space }) => paddingStyles[space]}
+  ${({ cols }) => columnStyles[cols] || columnStyles.default}
   `

@@ -22,7 +22,7 @@ export function calculateTotalActiveBalance(accounts) {
 export const convertAccountsData = (data) => {
     console.log(data)
     return data.map(account => {
-        const accountNumber = account.arId;
+
         const date = DateTime.fromSeconds(account.createdAt.seconds).toFormat('dd/MM/yyyy');
         let frequency;
         if (account.paymentFrequency === 'monthly') {
@@ -38,7 +38,7 @@ export const convertAccountsData = (data) => {
 
         return {
             ...account,
-            accountNumber,
+       
             date,
             frequency,
             balance,

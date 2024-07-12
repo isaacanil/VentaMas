@@ -13,13 +13,13 @@ import { useFormatNumber } from '../../../../../../../../../hooks/useFormatNumbe
 import ColoredNumber from '../../../../../../../../templates/system/ColoredNumber/ColoredNumber';
 const { Button, Alert } = antd;
 
-export const MarkAsReceivableButton = () => {
+export const MarkAsReceivableButton = ({creditLimit = null}) => {
     const dispatch = useDispatch();
-    const [creditLimit, setCreditLimit] = useState(null);
     const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] = useState(0);
     const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
     const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
     const [creditLimitValue, setCreditLimitValue] = useState(0);
+
     const {
         currentBalance,
     } = useSelector(selectAR)
@@ -36,22 +36,11 @@ export const MarkAsReceivableButton = () => {
     const receivableStatus = isAddedToReceivables && isWithinCreditLimit;
 
     useEffect(() => {
-        if (!cartData.isAddedToReceivables) {
+        if (!cartData.isAddedToReceivables || !creditLimit) {
             dispatch(resetAR())
         }
-    }, [cartData?.isAddedToReceivables])
+    }, [cartData?.isAddedToReceivables, creditLimit])
 
-    useEffect(() => {
-        const fetchCreditLimit = async () => {
-            if (user && client.id) {
-                const creditLimitData = await fbGetCreditLimit({ user, clientId });
-                if (creditLimitData) {
-                    setCreditLimit(creditLimitData);
-                }
-            }
-        };
-        fetchCreditLimit();
-    }, [user, client.id]);
     useEffect(() => {
         const fetchInvoiceAvailableCount = async () => {
             if (creditLimit?.invoice?.status) {
@@ -60,11 +49,11 @@ export const MarkAsReceivableButton = () => {
                 setIsWithinInvoiceCount(invoiceAvailableCount <= creditLimit?.invoice?.value || 0);
             }else{
                 setIsWithinInvoiceCount(true)
-            
             }
         }
         fetchInvoiceAvailableCount()
     }, [clientId, user, creditLimit])
+
     useEffect(() => {
         if (creditLimit?.creditLimit?.status && currentBalance !== null) {
             const adjustedCreditLimit = (currentBalance) + (-change);
@@ -171,7 +160,7 @@ export const ARValidateMessage = ({
                 />
             }
             {
-               (creditLimit != null && creditLimit.creditLimit.status) && !isWithinCreditLimit && <Alert
+               (creditLimit != null && creditLimit?.creditLimit?.status) && !isWithinCreditLimit && <Alert
                 message={
                     <>
                       El saldo de la factura excede el límite de crédito:{" "}
@@ -185,7 +174,7 @@ export const ARValidateMessage = ({
                 />
             }
             {
-               (creditLimit != null && creditLimit.invoice.status) && !isWithinInvoiceCount && <Alert
+               (creditLimit != null && creditLimit?.invoice?.status) && !isWithinInvoiceCount && <Alert
                     message={`El límite de cuenta por cobrar ha sido alcanzado. Facturas actuales: ${useFormatNumber(activeAccountsReceivableCount)} / ${useFormatNumber(creditLimit?.invoice?.value)}`}
                     type="error"
                     showIcon

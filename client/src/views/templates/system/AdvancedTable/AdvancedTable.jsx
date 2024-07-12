@@ -49,7 +49,8 @@ export const AdvancedTable = ({
   onRowClick,
   footerLeftSide,
   footerRightSide,
-  numberOfElementsPerPage = 20
+  numberOfElementsPerPage = 20, 
+  loading = false
 }) => {
   //Usuarios y referencias
   const user = useSelector(selectUser)
@@ -135,6 +136,7 @@ export const AdvancedTable = ({
             groupedData={groupedData}
             onRowClick={onRowClick}
             shouldGroup={shouldGroup}
+            loading={loading}
           />
         </Wrapper>
         <TableFooter

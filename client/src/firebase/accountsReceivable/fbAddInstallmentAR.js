@@ -4,7 +4,7 @@ import { generateInstallments } from '../../utils/accountsReceivable/generateIns
 
 function prepareInstallmentForFirebase(installments) {
     return installments.map((installment) => ({
-        ...installment,
+        ...installment,  
         createdAt: Timestamp.fromMillis(installment.createdAt),
         updatedAt: Timestamp.fromMillis(installment.updatedAt),
         installmentDate: Timestamp.fromMillis(installment.installmentDate)

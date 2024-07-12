@@ -19,7 +19,6 @@ export const ClientBalanceInfo = ({
                 paymentScope: 'balance',
                 totalAmount: pendingBalance,
                 clientId: client.id,
-
             }
         }))
     }
