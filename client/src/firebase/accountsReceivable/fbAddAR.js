@@ -7,14 +7,14 @@ export async function fbAddAR({ user, accountsReceivable }) {
     try {
         if (!user?.businessID) return;
         if (!accountsReceivable) return;
-        const arId = nanoid();
-        const arRef = doc(db, 'businesses', user.businessID, 'accountsReceivable', arId)
+        const id = nanoid();
+        const arRef = doc(db, 'businesses', user.businessID, 'accountsReceivable', id)
 
         const ar = {
             ...accountsReceivable,
             arBalance: accountsReceivable?.totalReceivable,
             numberId: await getNextID(user, "lastAccountReceivableId"),
-            arId,
+            id,
             createdBy: user?.uid,
             updatedBy: user?.uid,
         }

@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 
 export const defaultAR = {
-  arId: "",  // ID de la cuenta por cobrar
+  id: "",  // ID de la cuenta por cobrar
   invoiceId: "", // ID de la factura
   clientId: "", // ID del cliente
   createdAt: DateTime.now().toMillis(), // Fecha de creación en milisegundos

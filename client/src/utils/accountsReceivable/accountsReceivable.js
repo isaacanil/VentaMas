@@ -38,7 +38,6 @@ export const convertAccountsData = (data) => {
 
         return {
             ...account,
-       
             date,
             frequency,
             balance,

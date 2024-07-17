@@ -7,7 +7,7 @@ const roundToTwo = (num) => {
 };
 
 export function generateInstallments({ ar, user }) {
-    const { totalInstallments, totalReceivable, arId, paymentFrequency } = ar;
+    const { totalInstallments, totalReceivable, paymentFrequency } = ar;
 
     // Generación de fechas de pago utilizando usePaymentDates
     const { paymentDates } = usePaymentDates(paymentFrequency, totalInstallments);
@@ -27,8 +27,8 @@ export function generateInstallments({ ar, user }) {
         }
 
         installments.push({
-            installmentId: nanoid(),
-            arId,
+            id: nanoid(),
+            arId: ar.id,
             createdAt: DateTime.now().toMillis(),
             updatedAt: DateTime.now().toMillis(),
             installmentDate: date,

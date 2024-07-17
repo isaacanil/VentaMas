@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { ChargedSection } from './components/ChargedSection/ChargedSection'
 import { PaymentMethods } from './components/PaymentMethods/PaymentMethods'
@@ -11,13 +11,20 @@ import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { useSelector } from 'react-redux'
 import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice'
 import { useQuery } from '@tanstack/react-query'
-0
+import { useCreditLimitCheck } from '../../../../../../../hooks/accountsReceivable/useCheckAccountReceivable'
+import { SelectCartData } from '../../../../../../../features/cart/cartSlice'
+import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
+import * as antd from 'antd'
+const { Alert } = antd
+
 export const Body = ({ form }) => {
     const user = useSelector(selectUser);
     const client = useSelector(selectClient);
+    const cartData = useSelector(SelectCartData);
     const clientId = client.id;
 
-    
+    const { abilities } = userAccess();
+
 
     const { data: creditLimit, error, isLoading } = useQuery({
         queryKey: ['creditLimit', user, clientId],
@@ -25,6 +32,19 @@ export const Body = ({ form }) => {
         enabled: !!user && !!clientId,
         refetchOnWindowFocus: false,
     });
+
+    const {
+        activeAccountsReceivableCount,
+        isWithinCreditLimit,
+        isWithinInvoiceCount,
+        creditLimitValue,
+        change
+    } = useCreditLimitCheck(creditLimit, cartData.change.value, clientId, user.businessID);
+
+    const isAddedToReceivables = cartData?.isAddedToReceivables;
+    const receivableStatus = isAddedToReceivables && isWithinCreditLimit;
+
+    const isChangeNegative = cartData.change.value < 0;
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -34,18 +54,45 @@ export const Body = ({ form }) => {
         return <div>Error loading credit limit</div>;
     }
 
+
     return (
         <Container>
             <ChargedSection />
             <PaymentMethods />
             <PaymentSummary />
-            <MarkAsReceivableButton
-                creditLimit={creditLimit}
-            />
-            <ReceivableManagementPanel
-                form={form}
-                creditLimit={creditLimit}
-            />
+            {
+                abilities.can('manage', 'accountReceivable') ? (
+                    <Fragment>
+                        <MarkAsReceivableButton
+                            creditLimit={creditLimit}
+                            activeAccountsReceivableCount={activeAccountsReceivableCount}
+                            isWithinCreditLimit={isWithinCreditLimit}
+                            isWithinInvoiceCount={isWithinInvoiceCount}
+                            creditLimitValue={creditLimitValue}
+                            change={change}
+                            clientId={clientId}
+                        />
+                        <ReceivableManagementPanel
+                            form={form}
+                            activeAccountsReceivableCount={activeAccountsReceivableCount}
+                            isWithinCreditLimit={isWithinCreditLimit}
+                            isWithinInvoiceCount={isWithinInvoiceCount}
+                            creditLimit={creditLimit}
+                            isChangeNegative={isChangeNegative}
+                            receivableStatus={receivableStatus}
+                        />
+                    </Fragment>
+                ) : (
+                    isChangeNegative && (
+                        <Alert
+                            message='Acceso Restringido'
+                            description='No se puede facturar ventas con un cambio negativo a menos que se use cuentas por cobrar. No tienes permisos para usar cuentas por cobrar. Por favor, contacta al administrador para obtener los permisos necesarios.'
+                            type='error'
+                            showIcon
+                        />
+                    )
+                )
+            }
             <PrintControl />
         </Container>
     )

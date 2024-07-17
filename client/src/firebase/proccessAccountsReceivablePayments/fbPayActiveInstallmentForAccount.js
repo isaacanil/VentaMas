@@ -36,7 +36,7 @@ const getOldestActiveInstallmentByArId = async (user, arId) => {
 };
 
 // Function to round to two decimal places
-const roundToTwo = (num) =>  Math.round(num * 100) / 100;
+const roundToTwo = (num) => Math.round(num * 100) / 100;
 
 
 
@@ -64,14 +64,14 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
             return;
         }
 
-        const installment = await getOldestActiveInstallmentByArId(user, account.arId);
+        const installment = await getOldestActiveInstallmentByArId(user, account.id);
 
         if (!installment) {
             console.log('No active installment found for the account.');
             return;
         }
 
-        const paymentId = await fbAddPayment(user, paymentDetails);
+        const payment = await fbAddPayment(user, paymentDetails);
 
         const batch = writeBatch(db);
 
@@ -88,24 +88,24 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
             newInstallmentBalance = 0;
         }
 
-        const accountsReceivableRef = doc(db, "businesses", user.businessID, "accountsReceivable", account.arId);
+        const accountsReceivableRef = doc(db, "businesses", user.businessID, "accountsReceivable", account.id);
         const installmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id);
         const installmentPaymentRef = doc(collection(db, "businesses", user.businessID, "accountsReceivableInstallmentPayments"));
 
-        batch.update(installmentRef, { 
-            installmentBalance: newInstallmentBalance, 
-            isActive: newInstallmentBalance > 0 
+        batch.update(installmentRef, {
+            installmentBalance: newInstallmentBalance,
+            isActive: newInstallmentBalance > 0
         });
 
         if (newInstallmentBalance <= 0) {
             const updatedPaidInstallments = [...(account.paidInstallments || []), installment.id];
-            batch.update(accountsReceivableRef, { 
-                arBalance: newAccountBalance, 
+            batch.update(accountsReceivableRef, {
+                arBalance: newAccountBalance,
                 lastPaymentDate: Timestamp.now(),
                 lastPayment: amountToApply,
-                isActive: newAccountBalance > 0, 
-                isClosed: newAccountBalance <= 0, 
-                paidInstallments: updatedPaidInstallments 
+                isActive: newAccountBalance > 0,
+                isClosed: newAccountBalance <= 0,
+                paidInstallments: updatedPaidInstallments
             });
         }
 
@@ -113,16 +113,19 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
             ...defaultPaymentsAR,
             installmentPaymentId: nanoid(),
             installmentId: installment.id,
-            paymentId,
+            paymentId: payment.id,
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
             paymentAmount: amountToApply,
             createdBy: user.uid,
-            user: user,
+            user: {
+                id: user.uid,
+                displayName: user.displayName
+            },
             updatedBy: user.uid,
             isActive: true,
             clientId: clientId,
-            arId: account.arId,
+            arId: account.id,
         });
 
         await batch.commit();
@@ -141,14 +144,14 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
             console.log('Payment completed with no remaining amount.');
         }
         const invoice = await fbGetInvoice(user.businessID, account.invoiceId)
-         // Create payment receipt data
-         const paymentReceipt = {
+        // Create payment receipt data
+        const paymentReceipt = {
             accounts: [
                 {
                     arNumber: account.numberId,
-                    invoiceNumber: invoice.data.numberID,
-                    invoiceId: invoice.data.id,
-                    arId: account.arId,
+                    invoiceNumber: invoice?.data?.numberID,
+                    invoiceId: invoice?.data?.id,
+                    arId: account.id,
                     paidInstallments: [
                         {
                             number: installment.installmentNumber,
@@ -157,20 +160,18 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
                             status: 'paid'
                         }
                     ],
-                    remainingInstallments:  account?.totalInstallments - account?.paidInstallments?.length,
+                    remainingInstallments: account?.totalInstallments - account?.paidInstallments?.length,
                     totalInstallments: account.totalInstallments,
                     totalPaid: amountToApply,
                     arBalance: newAccountBalance,
                 }
             ],
-            totalAmount: totalAmount, // Total amount paid
+            totalAmount: paymentAmount, // Total amount paid
             paymentMethod: paymentMethods,
             change: roundToTwo(paymentAmountFloat - amountToApply)
         };
 
         const receipt = await fbAddAccountReceivablePaymentReceipt({ user, clientId, paymentReceipt });
-        const receiptRef = doc(db, 'businesses', user.businessID, 'accountsReceivablePaymentReceipt', receipt.id);
-        transaction.set(receiptRef, paymentReceipt);
 
         return receipt
 

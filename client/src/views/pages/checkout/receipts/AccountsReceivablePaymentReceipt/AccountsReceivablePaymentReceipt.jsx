@@ -11,8 +11,11 @@ import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
 
 export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
+  const statusSpanish = {
+    paid: 'Pagado',
+  }
   const formatReceipt = (receipt) => (
-    `Cuota #${receipt.number}, ${useFormatPrice(receipt.amount)}, ${receipt.status}`
+    `Cuota #${receipt.number}, ${useFormatPrice(receipt.amount)}, ${statusSpanish[receipt.status]}`
 );
   return (
     <ReceiptComponent.HiddenPrintWrapper>
@@ -29,7 +32,7 @@ export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
             <div key={index}>
               <InfoItem label={"NO. DOCUMENTO"} value={`#${account?.arNumber}`} />
               <ReceiptList
-                title={"Pago Aplicado a"}
+                title={"Pago Aplicado a: "}
                 list={account?.paidInstallments}
                 formatReceipt={formatReceipt}
               />

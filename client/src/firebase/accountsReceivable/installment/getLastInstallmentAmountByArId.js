@@ -15,7 +15,7 @@ export const getLastInstallmentAmountByArId = async (user, arId) => {
         
         const lastInstallment = querySnapshot.docs[0].data();
         console.log(lastInstallment)
-        return lastInstallment.installmentAmount;
+        return lastInstallment?.installmentBalance;
     } catch (error) {
         console.error("Error getting last installment amount by AR ID:", error);
         throw error;

@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { db } from '../firebaseconfig';
 import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
 import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
+import { fbGetInvoice } from "../invoices/fbGetInvoice";
 
 const THRESHOLD = 1e-10;
 
@@ -17,7 +18,7 @@ const getInstallmentsByArId = async (user, arId) => {
 
 export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) => {
     const { totalPaid, arId, clientId, paymentMethods, comments } = paymentDetails;
-    
+
     try {
         // Fetch all necessary data outside the transaction
         const accountInstallments = await getInstallmentsByArId(user, arId);
@@ -32,11 +33,11 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
 
         return await runTransaction(db, async (transaction) => {
             let remainingAmount = totalPaid;
-            const paymentId = nanoid();
-            const paymentsRef = doc(db, "businesses", user.businessID, "accountsReceivablePayments", paymentId);
+            const id = nanoid();
+            const paymentsRef = doc(db, "businesses", user.businessID, "accountsReceivablePayments", id);
             const paymentData = {
                 ...defaultPaymentsAR,
-                paymentId,
+                id,
                 paymentMethods,
                 totalPaid,
                 createdAt: Timestamp.now(),
@@ -66,8 +67,8 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
 
                 installmentUpdates.push({
                     ref: doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id),
-                    data: { 
-                        installmentBalance: newInstallmentBalance, 
+                    data: {
+                        installmentBalance: newInstallmentBalance,
                         isActive: newInstallmentBalance > THRESHOLD
                     }
                 });
@@ -78,7 +79,7 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
                         ...defaultInstallmentPaymentsAR,
                         installmentPaymentId: nanoid(),
                         installmentId: installment.id,
-                        paymentId,
+                        paymentId: id,
                         createdAt: Timestamp.now(),
                         updatedAt: Timestamp.now(),
                         paymentAmount: roundToTwoDecimals(amountToApply),
@@ -107,7 +108,7 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
             }
 
             const updatedPaidInstallments = [
-                ...(accountData.paidInstallments || []), 
+                ...(accountData.paidInstallments || []),
                 ...paidInstallments
             ];
 
@@ -124,9 +125,13 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
             installmentUpdates.forEach(update => transaction.update(update.ref, update.data));
             installmentPayments.forEach(payment => transaction.set(payment.ref, payment.data));
 
+            // Fetch invoice data
+            const invoice = await fbGetInvoice(user.businessID, accountData.invoiceId);
+
+
             const paymentReceipt = {
                 receiptId: nanoid(),
-                paymentId,
+                paymentId: id,
                 clientId,
                 arId,
                 businessId: user.businessID,
@@ -134,7 +139,9 @@ export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) =
                 createdBy: user.uid,
                 accounts: [{
                     arNumber: accountData.numberId,
-                    arId: accountData.arId,
+                    arId: accountData.id,
+                    invoiceNumber: invoice?.data?.numberID, // Add invoice number
+                    invoiceId: invoice?.data?.id, // Add invoice ID
                     paidInstallments: paidInstallments.map(id => ({
                         number: accountInstallments.find(installment => installment.id === id).installmentNumber,
                         id,

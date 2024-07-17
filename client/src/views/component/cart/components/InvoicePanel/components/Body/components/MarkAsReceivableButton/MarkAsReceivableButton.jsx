@@ -19,11 +19,9 @@ export const MarkAsReceivableButton = ({creditLimit = null}) => {
     const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
     const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
     const [creditLimitValue, setCreditLimitValue] = useState(0);
-
     const {
         currentBalance,
     } = useSelector(selectAR)
-
     const cartData = useSelector(SelectCartData);
     const user = useSelector(selectUser);
     const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
@@ -31,7 +29,7 @@ export const MarkAsReceivableButton = ({creditLimit = null}) => {
 
     const isChangeNegative = change < 0;
     const clientId = cartData?.client?.id;
-    const isGenericClient = clientId === 'GC-0000';
+    const isGenericClient = clientId === 'GC-0000' || clientId === null;
     const isAddedToReceivables = cartData?.isAddedToReceivables;
     const receivableStatus = isAddedToReceivables && isWithinCreditLimit;
 
@@ -49,11 +47,11 @@ export const MarkAsReceivableButton = ({creditLimit = null}) => {
                 setIsWithinInvoiceCount(invoiceAvailableCount <= creditLimit?.invoice?.value || 0);
             }else{
                 setIsWithinInvoiceCount(true)
+            
             }
         }
         fetchInvoiceAvailableCount()
     }, [clientId, user, creditLimit])
-
     useEffect(() => {
         if (creditLimit?.creditLimit?.status && currentBalance !== null) {
             const adjustedCreditLimit = (currentBalance) + (-change);
@@ -99,7 +97,8 @@ export const MarkAsReceivableButton = ({creditLimit = null}) => {
 
     return (
         <Fragment>
-            {isChangeNegative && (
+            {
+                isChangeNegative && 
                 <Container>
                     <Button
                         style={{ width: '100%' }}
@@ -122,7 +121,8 @@ export const MarkAsReceivableButton = ({creditLimit = null}) => {
                         creditLimitValue={creditLimitValue}
                     />
                 </Container>
-            )}
+            }
+         
         </Fragment>
 
     );
@@ -160,7 +160,7 @@ export const ARValidateMessage = ({
                 />
             }
             {
-               (creditLimit != null && creditLimit?.creditLimit?.status) && !isWithinCreditLimit && <Alert
+               (creditLimit != null && creditLimit.creditLimit.status) && !isWithinCreditLimit && <Alert
                 message={
                     <>
                       El saldo de la factura excede el límite de crédito:{" "}
@@ -174,7 +174,7 @@ export const ARValidateMessage = ({
                 />
             }
             {
-               (creditLimit != null && creditLimit?.invoice?.status) && !isWithinInvoiceCount && <Alert
+               (creditLimit != null && creditLimit.invoice.status) && !isWithinInvoiceCount && <Alert
                     message={`El límite de cuenta por cobrar ha sido alcanzado. Facturas actuales: ${useFormatNumber(activeAccountsReceivableCount)} / ${useFormatNumber(creditLimit?.invoice?.value)}`}
                     type="error"
                     showIcon

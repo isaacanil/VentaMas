@@ -73,13 +73,16 @@ const ClientFormAnt = ({
         }
     }, [mode, data])
 
-    useEffect(() => {
-        if (isUpdating && customerData) {
-            form.setFieldsValue(customerData);
-        } else {
-            form.resetFields();
-        }
-    }, [customerData, isUpdating]);
+    // useEffect(() => {
+    //     if (isUpdating && customerData) {
+    //         form.setFieldsValue(customerData);
+    //     } else {
+    //         setTimeout(() => {
+    //         form.resetFields();
+    //         creditLimitForm.resetFields();
+    //         }, 10000);
+    //     }
+    // }, [customerData, isUpdating]);
 
     const handleSubmit = async () => {
         try {
@@ -121,9 +124,11 @@ const ClientFormAnt = ({
             }
 
             // Ensure the form is reset only when the modal is still open
-            if (isOpen) {
+           
                 form.resetFields();
-            }
+                creditLimitForm.resetFields();
+        
+            
             dispatch(toggleClientModal({ mode: create }))
         } catch (info) {
             notification.error({

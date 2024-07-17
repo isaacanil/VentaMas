@@ -1,5 +1,5 @@
 export const defaultInstallmentPaymentsAR = {
-    installmentPaymentId: "", // Identificador único del pago a plazos
+    id: "", // Identificador único del pago a plazos
     installmentId: "", // Referencia a la cuota asociada
     paymentId: "", // Referencia al pago asociado
     createdAt: new Date(), // Fecha y hora de creación

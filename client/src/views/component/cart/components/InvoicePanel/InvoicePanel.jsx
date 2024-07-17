@@ -15,7 +15,9 @@ import { Receipt } from '../../../../pages/checkout/Receipt'
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 import { generateInstallments } from '../../../../../utils/accountsReceivable/generateInstallments'
 import { fromMillisToDayjs } from '../../../../../utils/date/convertMillisecondsToDayjs'
-const { Button, notification } = antd
+
+const { Button, notification, Spin } = antd
+
 export const modalStyles = {
     mask: {
         backdropFilter: 'blur(2px)',
@@ -104,7 +106,7 @@ export const InvoicePanel = () => {
             },
         });
     };
-    
+
     async function handleSubmit() {
         try {
             setLoading({ status: true, message: 'Procesando Factura' })
@@ -135,8 +137,7 @@ export const InvoicePanel = () => {
             }
             setLoading({ status: false, message: '' })
             setSubmitted(true)
-
-
+            
         } catch (error) {
             notification.error({
                 message: 'Error de Proceso',
@@ -198,9 +199,13 @@ export const InvoicePanel = () => {
             }
         >
             <Receipt ref={componentToPrintRef} data={invoice} />
-            <Body
-                form={form}
-            />
+            <Spin
+                spinning={loading.status}
+            >
+                <Body
+                    form={form}
+                />
+            </Spin>
         </Modal>
     )
 }

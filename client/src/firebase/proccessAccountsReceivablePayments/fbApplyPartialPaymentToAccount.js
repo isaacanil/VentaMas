@@ -34,11 +34,11 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
 
         return await runTransaction(db, async (transaction) => {
             let remainingAmount = totalPaid;
-            const paymentId = nanoid();
-            const paymentsRef = doc(db, "businesses", user.businessID, "accountsReceivablePayments", paymentId);
+            const id = nanoid();
+            const paymentsRef = doc(db, "businesses", user.businessID, "accountsReceivablePayments", id);
             const paymentData = {
                 ...defaultPaymentsAR,
-                paymentId,
+                id,
                 paymentMethods,
                 totalPaid,
                 createdAt: Timestamp.now(),
@@ -62,7 +62,7 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
                 const newInstallmentBalance = roundToTwoDecimals(installment.installmentBalance - amountToApply);
 
                 installmentUpdates.push({
-                    ref: doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.installmentId),
+                    ref: doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id),
                     data: { 
                         installmentBalance: newInstallmentBalance, 
                         isActive: newInstallmentBalance > THRESHOLD
@@ -73,9 +73,9 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
                     ref: doc(collection(db, "businesses", user.businessID, "accountsReceivableInstallmentPayments")),
                     data: {
                         ...defaultInstallmentPaymentsAR,
-                        installmentPaymentId: nanoid(),
-                        installmentId: installment.installmentId,
-                        paymentId,
+                        id: nanoid(),
+                        installmentId: installment.id,
+                        paymentId: id,
                         createdAt: Timestamp.now(),
                         updatedAt: Timestamp.now(),
                         paymentAmount: roundToTwoDecimals(amountToApply),
@@ -126,7 +126,7 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
                     arNumber: accountData.numberId,
                     invoiceNumber: invoice.data.numberID,
                     invoiceId: invoice.data.id,
-                    arId: accountData.arId,
+                    arId: accountData.id,
                     paidInstallments: Array.from(paidInstallments).map(id => ({
                         number: accountInstallments.find(installment => installment.id === id).installmentNumber,
                         id,

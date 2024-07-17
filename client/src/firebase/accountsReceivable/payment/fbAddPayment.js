@@ -4,12 +4,12 @@ import { getDocRef } from "../../firebaseOperations";
 import { nanoid } from "nanoid";
 
 export const fbAddPayment = async (user, paymentDetails) => {
-    const paymentId = nanoid();
-    const paymentsRef = getDocRef("businesses", user.businessID, "accountsReceivablePayments", paymentId);
+    const id = nanoid();
+    const paymentsRef = getDocRef("businesses", user.businessID, "accountsReceivablePayments", id);
     const paymentData = {
         ...defaultPaymentsAR,
-        paymentId,
         ...paymentDetails,
+        id,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         createdUserId: user?.uid,
@@ -17,5 +17,5 @@ export const fbAddPayment = async (user, paymentDetails) => {
         isActive: true
     };
     await setDoc(paymentsRef, paymentData);
-    return paymentId;
+    return paymentData;
 };

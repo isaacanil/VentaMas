@@ -206,6 +206,20 @@ export const PaymentForm = () => {
                             ))}
                         </Select>
                     }
+                      {
+                        (paymentDetails.paymentOption == "partial") && (
+                            <ShowcaseList
+                                showcases={[
+                                    {
+                                        title: "Balance de la cuenta Actual" ,
+                                        valueType: "price",
+                                        description: "Se aplicara el pago a las diferentes cuotas de la cuenta actual",
+                                        value: paymentDetails.totalAmount,
+                                    },
+                                ]}
+                            />
+                        )
+                    }
                     {
                         !(paymentDetails.paymentOption == "partial") && (
                             <ShowcaseList
@@ -232,7 +246,7 @@ export const PaymentForm = () => {
                                 value: paymentDetails.totalPaid,
                             },
                             {
-                                title: change > 0 ? "Devuelta" : "Faltante",
+                                title: change >= 0 ? "Devuelta" : "Faltante",
                                 valueType: "price",
                                 value: change,
                                 description: (paymentDetails.paymentOption == "installment" || paymentDetails.paymentOption == "balance") ? "Tiene que pagar completamente" : "No tiene que pagar el faltante completamente",

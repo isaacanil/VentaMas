@@ -33,7 +33,7 @@ export function ProductControlEfficient({ products }) {
     <Container>
       {/* <Carrusel /> */}
       <ProductCategoryBar />
-      <ProductList products={[...products, ...products, ...products, ...products, ...products, ...products, ...products, ...products, ...products, ...products]} />
+      <ProductList products={products} />
       <ShoppingItemsCounter itemLength={productLength} />
     </Container>
   );

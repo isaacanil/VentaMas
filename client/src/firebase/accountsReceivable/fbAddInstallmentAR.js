@@ -31,7 +31,7 @@ export async function fbAddInstallmentAR({ user, ar }) {
         // Uso de un batch para escribir múltiples documentos
         const batch = writeBatch(db);
         installmentsData.forEach(installment => {
-            const installmentRef = doc(baseInstallmentsRef, installment.installmentId);
+            const installmentRef = doc(baseInstallmentsRef, installment.id);
             batch.set(installmentRef, installment);
         });
 
