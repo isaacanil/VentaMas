@@ -13,7 +13,7 @@ export const fbAddInvoice = async (data, user, transaction = null) => {
     const nextNumberId = await getNextID(user, 'lastInvoiceId', transaction);
     let bill = {
       ...data,
-      id: nanoid(12),
+      id: data?.id || nanoid(),
       date: Timestamp.now(),
       numberID: nextNumberId,
       userID: user.uid,

@@ -1,17 +1,32 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { Row } from '../../../AdvancedTable'
 import styled from 'styled-components'
 import { CenteredText } from '../../../../CentredText'
+import Loader from '../../../../loader/Loader'
 
-export const TableBody = ({ shouldGroup, groupedData, currentData, columnOrder, onRowClick, emptyText }) => {
+export const TableBody = ({ loading = false, shouldGroup, groupedData, currentData, columnOrder, onRowClick, emptyText }) => {
+
+  const [showLoader, setShowLoader] = useState(loading);
+
+  useEffect(() => {
+    if (loading) {
+      setShowLoader(true);
+    } else {
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 1000); // Este tiempo debe coincidir con minDisplayTime
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   // Filtrar columnOrder para incluir solo columnas con estado 'active'
   const activeColumns = columnOrder.filter(col => col.status === 'active');
   const handleCellClick = (e, col, row) => {
-
     if (onRowClick && col?.clickable !== false) onRowClick(row);
-
   };
+
+  if (showLoader) { return <Loader show={true} minDisplayTime={1000} /> }
+
   return (
     <Container columns={activeColumns}>
       {
@@ -22,7 +37,7 @@ export const TableBody = ({ shouldGroup, groupedData, currentData, columnOrder, 
               {groupItems.map((row, rowIndex) => (
                 <Row key={rowIndex} columns={activeColumns}>
                   {activeColumns.map((col, colIndex) => (
-                    <BodyCell key={colIndex} align={col.align} clickable={col?.clickable !== false ? true : false}  columns={activeColumns} onClick={(e) => handleCellClick(e, col, row)}>
+                    <BodyCell key={colIndex} align={col.align} clickable={col?.clickable !== false ? true : false} columns={activeColumns} onClick={(e) => handleCellClick(e, col, row)}>
                       {col.cell ? col.cell({ value: row[col.accessor] }) : row[col.accessor]}
                     </BodyCell>
                   ))}

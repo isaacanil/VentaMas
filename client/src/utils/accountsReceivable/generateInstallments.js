@@ -7,10 +7,10 @@ const roundToTwo = (num) => {
 };
 
 export function generateInstallments({ ar, user }) {
-    const { totalInstallments, totalReceivable, arId, frequency } = ar;
+    const { totalInstallments, totalReceivable, paymentFrequency } = ar;
 
     // Generación de fechas de pago utilizando usePaymentDates
-    const { paymentDates } = usePaymentDates(frequency, totalInstallments);
+    const { paymentDates } = usePaymentDates(paymentFrequency, totalInstallments);
 
     // Cálculo del monto de cada cuota
     const precisePart = totalReceivable / totalInstallments;
@@ -27,12 +27,13 @@ export function generateInstallments({ ar, user }) {
         }
 
         installments.push({
-            installmentId: nanoid(),
-            arId,
+            id: nanoid(),
+            arId: ar.id,
             createdAt: DateTime.now().toMillis(),
             updatedAt: DateTime.now().toMillis(),
             installmentDate: date,
             installmentAmount: installmentAmount,
+            installmentNumber: index + 1, // Añadiendo el número de cuota
             installmentBalance: installmentAmount,
             createdBy: user?.uid,
             updatedBy: user?.uid,

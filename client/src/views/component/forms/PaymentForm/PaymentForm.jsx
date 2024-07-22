@@ -1,5 +1,5 @@
 import * as antd from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
@@ -9,14 +9,20 @@ import { PaymentFields } from "./components/PaymentFields";
 import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
 import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
 import { selectUser } from "../../../../features/auth/userSlice";
-const { Form, Checkbox, Input, Select, Button, } = antd;
+import { selectClient } from "../../../../features/clientCart/clientCartSlice";
+import { AccountsReceivablePaymentReceipt } from "../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt";
+import { useReactToPrint } from "react-to-print";
+const { Form, Checkbox, Input, Select, Button, Radio, notification } = antd;
 const { Option } = Select;
 
 export const PaymentForm = () => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
     const user = useSelector(selectUser)
-    const [installment, setInstallment] = useState();
+    const componentToPrintRef = useRef();
+    const [loading, setLoading] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [receipt, setReceipt] = useState(null);
 
     const {
         isOpen,
@@ -28,6 +34,11 @@ export const PaymentForm = () => {
             dispatch(fetchLastInstallmentAmount({ user, arId: paymentDetails.arId }));
         }
     }, [isOpen, user, paymentDetails.arId]);
+    useEffect(() => {
+        if (!isOpen) {
+            setSubmitted(false);
+        }
+    }, [isOpen]);
 
     const handlePaymentConceptChange = (value) => dispatch(setPaymentOption({ paymentOption: value }));
 
@@ -80,7 +91,7 @@ export const PaymentForm = () => {
         if (paymentDetails.totalAmount <= 0) {
             throw new Error('El monto total debe ser mayor a cero.');
         }
-        if(paymentDetails.paymentOptions === "balance" || paymentDetails.paymentOptions === "installment"){
+        if (paymentDetails.paymentOptions === "balance" || paymentDetails.paymentOptions === "installment") {
             if (paymentDetails.totalPaid < paymentDetails.totalAmount) {
                 throw new Error('Debe de pagar el monto total');
             }
@@ -106,14 +117,39 @@ export const PaymentForm = () => {
             throw new Error('Los comentarios no pueden exceder los 500 caracteres.');
         }
     }
+    const handleClear = () => {
+        dispatch(closePaymentModal());
+        form.resetFields();
+    };
+    const handlePrint = useReactToPrint({
+        content: () => componentToPrintRef.current,
+        onAfterPrint: () => {
+            notification.success({
+                message: 'Pago Procesada',
+                description: 'Pago Registrado con éxito',
+                duration: 4
+            })
+           handleClear();
+        }
+    })
     const handleSubmit = async () => {
+        setLoading(true);
         try {
             validate();
             await form.validateFields();
-            await fbProcessClientPaymentAR(user, paymentDetails);
-            dispatch(closePaymentModal());
-            form.resetFields();
+            await fbProcessClientPaymentAR(user, paymentDetails, setReceipt);
+            setSubmitted(true)
+
+            if (paymentDetails.printReceipt) {
+                console.log("receipt => ", receipt)
+                setTimeout(() => handlePrint(), 1000)
+            } else {
+                dispatch(closePaymentModal());
+                form.resetFields();
+            }
+
         } catch (error) {
+            setSubmitted(false)
             if (error.name === 'ValidationError') {
                 console.log('Validate Failed:', error);
             } else {
@@ -122,10 +158,10 @@ export const PaymentForm = () => {
                     description: error.message
                 });
             }
+        } finally {
+            setLoading(false);
         }
     };
-
-    
 
     const paymentOptions = Object.values(PAYMENT_OPTIONS);
     const change = (paymentDetails.totalPaid || 0) - paymentDetails.totalAmount
@@ -134,13 +170,19 @@ export const PaymentForm = () => {
         <Modal
             open={isOpen}
             style={{ top: 10, }}
-            title={PAYMENT_SCOPE[paymentDetails.paymentScope]}
+            title={`${PAYMENT_SCOPE[paymentDetails.paymentScope]}`}
             onCancel={() => dispatch(closePaymentModal())}
-            onOk={handleSubmit}
+
             styles={modalStyles}
+            footer={[
+                <Button key="back" onClick={() => dispatch(closePaymentModal())}>
+                    Cancelar
+                </Button>,
+                <Button key="submit" type="primary" onClick={handleSubmit} loading={loading} disabled={submitted}>
+                    Pagar
+                </Button>,
+            ]}
             zIndex={2000}
-            okText="Pagar"
-            cancelText="Cancelar"
         >
             <Form
                 form={form}
@@ -164,13 +206,28 @@ export const PaymentForm = () => {
                             ))}
                         </Select>
                     }
-                    {
-                        !(paymentDetails.paymentScope == "balance" || paymentDetails.paymentOption == "partial") && (
+                      {
+                        (paymentDetails.paymentOption == "partial") && (
                             <ShowcaseList
                                 showcases={[
                                     {
-                                        title: "Total a pagar",
+                                        title: "Balance de la cuenta Actual" ,
                                         valueType: "price",
+                                        description: "Se aplicara el pago a las diferentes cuotas de la cuenta actual",
+                                        value: paymentDetails.totalAmount,
+                                    },
+                                ]}
+                            />
+                        )
+                    }
+                    {
+                        !(paymentDetails.paymentOption == "partial") && (
+                            <ShowcaseList
+                                showcases={[
+                                    {
+                                        title: paymentDetails.paymentScope == "balance" ? "Balance General" : "Total a pagar",
+                                        valueType: "price",
+                                        description: paymentDetails.paymentScope == "balance" ? "Se aplicara el pago a las diferentes cuentas por cobrar del cliente actual" : "Total a pagar por el cliente",
                                         value: paymentDetails.totalAmount,
                                     },
                                 ]}
@@ -189,10 +246,11 @@ export const PaymentForm = () => {
                                 value: paymentDetails.totalPaid,
                             },
                             {
-                                title: change > 0 ? "Devuelta" : "Faltante",
+                                title: change >= 0 ? "Devuelta" : "Faltante",
                                 valueType: "price",
                                 value: change,
-                                color: paymentDetails.totalAmount >= paymentDetails.totalPaid
+                                description: (paymentDetails.paymentOption == "installment" || paymentDetails.paymentOption == "balance") ? "Tiene que pagar completamente" : "No tiene que pagar el faltante completamente",
+                                color: (paymentDetails.paymentOption == "installment" || paymentDetails.paymentOption == "balance") ? paymentDetails.totalAmount >= paymentDetails.totalPaid : null
                             },
                         ]}
                     />
@@ -206,6 +264,9 @@ export const PaymentForm = () => {
                     </Form.Item>
                 </FormWrapper>
             </Form>
+            <div   >
+                <AccountsReceivablePaymentReceipt data={receipt} ref={componentToPrintRef} />
+            </div>
         </Modal>
     );
 };

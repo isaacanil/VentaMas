@@ -1,7 +1,6 @@
 import React from 'react'
 import { db } from '../firebaseconfig';
-import { getDoc } from 'firebase/firestore';
-import { fbReadData } from '../firebaseOperations';
+import { doc, getDoc } from 'firebase/firestore';
 
 /**
  * Fetches a client from the database by ID to check if they exist.
@@ -10,13 +9,13 @@ import { fbReadData } from '../firebaseOperations';
  * @param {function} fetchByIdFunction - Function to fetch the client by ID from the database.
  * @returns {Promise<object|null>} Returns the client object if found, or null if not found.
  */
-export async function fbGetClient(user, clientId, transaction = null) {
+export async function fbGetClient(user, clientId) {
     try {
         const clientRef = doc(db, 'businesses', user.businessID, 'clients', clientId)
-        const clientSnapshot = await fbReadData(clientRef, transaction);
+        const clientSnapshot = await getDoc(clientRef);
         const clientExist = clientSnapshot.exists();
         if (clientExist) {
-            return clientSnapshot.data();
+            return clientSnapshot.data().client;
         } else {
             return null;
         };

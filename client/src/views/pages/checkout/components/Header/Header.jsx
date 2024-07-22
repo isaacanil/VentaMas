@@ -3,39 +3,40 @@ import { useFormatPhoneNumber } from '../../../../../hooks/useFormatPhoneNumber'
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
 import { convertTimeStampToMillis, fromMillisToDateISO } from '../../../../../utils/date/convertTimeStampToDate';
-import { convertDate } from '../../../../../utils/date/formatDate';
+import { useSelector } from 'react-redux';
+import { selectBusinessData } from '../../../../../features/auth/businessSlice';
+import { P } from '../../Receipt';
+import { InfoItem, Spacing } from '../../Style';
 
-export const Header = ({ business, data, SubTitle, P, Space }) => {
-    const fechaActual = data?.date ? fromMillisToDateISO(convertTimeStampToMillis(data.date), "dd/MM/yyyy HH:mm"): DateTime.now().toFormat('dd/MM/yyyy HH:mm');
+export const Header = ({ data, Space }) => {
+    let business = useSelector(selectBusinessData) || ""
+    const fechaActual = data?.date ? fromMillisToDateISO(convertTimeStampToMillis(data.date), "dd/MM/yyyy HH:mm") : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
     return (
         <Container>
-            <div>
                 <Title>{business?.name}</Title>
-                
-                <P align="center">{business?.address}</P>
-                <P align="center">{useFormatPhoneNumber(business?.tel)}</P>
-                <Space size={'large'}  />
-                <P><Group>Fecha:  <span>{fechaActual}</span></Group></P>
-                {data.NCF && <P><Group> NCF: <span> {data.NCF} </span></Group></P>}
-                <Space />
-            </div>
+                <InfoItem align='center' label={business?.address} justifyContent='center' />
+                <InfoItem align='center' label={useFormatPhoneNumber(business?.tel)} justifyContent='center' />
 
+                <Spacing size={'large'} />
+
+                <InfoItem label={"Fecha"} value={fechaActual} />
+                {data?.NCF && <InfoItem label={"NCF"} value={data?.NCF} />}
+                <Spacing />
             {
-                data.client ? (
+                data?.client && (
                     <div>
-
-                        <P><Group>CLIENTE:<span style={{ "textTransform": "uppercase" }}>{data.client.name ? data.client.name : 'CLIENTE GENERICO'}</span></Group></P>
+                        <InfoItem label="CLIENTE" value={data?.client?.name?.toUpperCase() || 'CLIENTE GENERICO'} />
                         {
-                            data.client.tel ? <P><Group>  TEL:<span>{useFormatPhoneNumber(data.client.tel)}</span> </Group></P> : null
+                            data?.client?.personalID && <InfoItem label="CEDULA/RNC" value={data?.client?.personalID} />
                         }
                         {
-                            data.client.personalID ? <P><Group>CEDULA/RNC: <span>{data.client.personalID}</span> </Group> </P> : null
+                            data?.client?.tel && <InfoItem label="TEL" value={useFormatPhoneNumber(data?.client?.tel)} />
                         }
                         {
-                            data.client.address ? <P><Group>DIR: <span>{data.client.address}</span></Group></P> : null
+                            data?.client?.address && <InfoItem label="DIR" value={data?.client?.address} />
                         }
                     </div>
-                ) : null
+                )
             }
         </Container>
     )

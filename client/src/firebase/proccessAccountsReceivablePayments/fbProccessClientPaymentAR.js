@@ -3,7 +3,7 @@ import { fbPayBalanceForAccounts } from "./fbPayBalanceForAccounts";
 import { fbPayAllInstallmentsForAccount } from "./fbPayAllInstallmentsForAccount";
 import { fbPayActiveInstallmentForAccount } from "./fbPayActiveInstallmentForAccount";
 
-export const fbProcessClientPaymentAR = async (user, paymentDetails) => {
+export const fbProcessClientPaymentAR = async (user, paymentDetails, callback) => {
     const { paymentScope, paymentOption, clientId, totalAmount, paymentMethods } = paymentDetails;
 
 
@@ -17,15 +17,16 @@ export const fbProcessClientPaymentAR = async (user, paymentDetails) => {
     };
 
     try {
+        let receipt;
         if (paymentScope === 'balance') {
-            await paymentHandlers.balance();
-            console.log('Balance payment processed successfully.');
+            receipt = await paymentHandlers.balance();
         } else if (paymentScope === 'account' && paymentHandlers.account[paymentOption]) {
-            await paymentHandlers.account[paymentOption](clientId, paymentDetails.arId, totalAmount);
-            console.log(`${paymentOption} payment processed successfully.`);
+            receipt = await paymentHandlers.account[paymentOption](clientId, paymentDetails.arId, totalAmount);
         } else {
             throw new Error('Invalid payment option.');
         }
+        callback(receipt)
+        return receipt;
     } catch (error) {
         console.error('Error processing payment:', error);
         throw error; // Re-throw the error after logging it

@@ -1,9 +1,19 @@
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, doc, collection } from "firebase/firestore";
+import { db } from "./firebaseconfig";
 
 // Función para leer datos de Firestore
 export async function fbGetDocs(refOrQuery, transaction = null) {
     try {
 
+        return transaction ? await transaction.get(refOrQuery) : await getDocs(refOrQuery);
+    } catch (error) {
+        console.error("Error al leer datos de Firestore: ", error);
+        throw error;
+    }
+}
+
+export async function fbReadData (refOrQuery, transaction = null) {
+    try {
         return transaction ? await transaction.get(refOrQuery) : await getDocs(refOrQuery);
     } catch (error) {
         console.error("Error al leer datos de Firestore: ", error);
@@ -19,6 +29,14 @@ export async function fbGetDoc(refOrQuery, transaction = null) {
         throw error;
     }
 }
+export const getDocRef = (...segments) => {
+    return doc(db, ...segments);
+};
+
+// Function to get a collection reference using destructured array segments
+export const getCollectionRef = (...segments) => {
+    return collection(db, ...segments);
+};
 
 
 // Función para escribir datos en Firestore

@@ -8,6 +8,7 @@ import { selectUser } from '../../../features/auth/userSlice'
 import { fbGetFavoriteProductCategories, useGetFavoriteProductCategories } from '../../../firebase/categories/fbGetFavoriteProductCategories'
 import { filterFavoriteProductCategories } from '../../../utils/data/products/category'
 import { fbRemoveFavoriteProductCategory } from '../../../firebase/categories/fbRemoveFavoriteProductCategory'
+
 export const ProductCategoryBar = () => {
   const user = useSelector(selectUser)
   const { categories } = useFbGetCategories()
@@ -24,13 +25,10 @@ export const ProductCategoryBar = () => {
       console.error('Error al eliminar categoría de favoritos: ', error)
     }
   }
-  const handleDeleteAllCategoriesSelected = () => {
-      dispatch(deleteAllCategoriesSelected())
-  }
+  const handleDeleteAllCategoriesSelected = () =>  dispatch(deleteAllCategoriesSelected())
   const dispatch = useDispatch()
-  const handleProductCategory = (category) => {
-    dispatch(addCategory(category))
-  }
+  const handleProductCategory = (category) => dispatch(addCategory(category))
+  
   return (
     <CategorySelector
       categories={categories}

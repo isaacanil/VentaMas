@@ -5,6 +5,12 @@ import { DateTime } from 'luxon';
 // Estado inicial con un único objeto defaultAR
 const initialState = {
     ar: defaultAR,
+    info: {
+        ar: {},
+        payments: [],
+        installments: [],
+        paymentInstallment: []
+    }
 };
 
 const accountsReceivableSlice = createSlice({
@@ -15,6 +21,13 @@ const accountsReceivableSlice = createSlice({
             const ar = action.payload;
             state.ar = {...state.ar, ...ar}
             state.ar.updatedAt = DateTime.now().toMillis();
+        },
+        setAccountReceivableInfo(state, action) {
+            const { ar, payments, installments, paymentInstallments } = action.payload;
+            if(ar){state.info.ar = ar}
+            if(payments){state.info.payments = payments}
+            if(installments){state.info.installments = installments}
+            if(paymentInstallments){state.info.paymentInstallment = paymentInstallments}
         },
         updateInvoiceId(state, action) {
             state.ar.invoiceId = action.payload;
@@ -40,13 +53,17 @@ const accountsReceivableSlice = createSlice({
         toggleActiveStatus(state) {
             state.ar.isActive = !state.ar.activeStatus;
         },
+        toggleARInfoModal(state){
+            const isOpen = state.modalInfo.isOpen;
+            state.modalInfo.isOpen = !isOpen;
+        },
         resetAR(state) {
             state.ar = defaultAR
         }
     },
 });
 
-export const { setAR, updateARFrequency, updateARDues, updateARAmountByDue, updateComments, toggleIsClosed, toggleActiveStatus, resetAR } = accountsReceivableSlice.actions;
+export const { setAR, toggleARInfoModal, updateARFrequency, setAccountReceivableInfo, updateARDues, updateARAmountByDue, updateComments, toggleIsClosed, toggleActiveStatus, resetAR } = accountsReceivableSlice.actions;
 
 export default accountsReceivableSlice.reducer;
 

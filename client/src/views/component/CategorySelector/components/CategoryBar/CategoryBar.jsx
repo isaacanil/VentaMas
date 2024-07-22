@@ -66,7 +66,7 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: min-content min-content 1fr min-content;
   background-color: #ffffff;
-  border-bottom: 1px solid #ccc;
+
 `;
 const Category = ({ category }) => {
   const dispatch = useDispatch();
@@ -81,25 +81,6 @@ const Category = ({ category }) => {
   );
 }
 
-// const Button = styled.button`
-//     height: 1.5em;
-//     width: 1em;
-//     padding: 0;
-//     margin: 0;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     font-size: 1em;
-//     border: 0;
-//     color: ${({ theme }) => theme.text.primary};
-//     background-color: transparent;
-//     border-radius: var(--border-radius-light);
-//     outline: 0;
-//     transition: 500ms background-color ease-in-out;
-//     :hover{
-//         background-color: rgba(0, 0, 0, 0.200);
-//     }
-// `
 const CategoryList = styled.div`
   /* estilos para la lista de categorías */ 
   display: flex;

@@ -12,10 +12,8 @@ import {
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { filterData } from '../../../hooks/search/useSearch'
-import { ProductControl } from './components/ProductControl.jsx/ProductControl.jsx'
-import { ShoppingItemsCounter } from './components/ShoppingItemsCounter/ShoppingItemsCounter'
-import { addProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../features/cart/cartSlice'
-import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodescanner'
+import { addProduct } from '../../../features/cart/cartSlice'
+import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodeScanner'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
@@ -80,9 +78,7 @@ export const Sales = () => {
       // Producto no vendido por peso o código de barras no cumple con los requisitos
       dispatch(addProduct(product));
     }
-
   };
-
 
   useBarcodeScanner(products, checkBarcode);
 
@@ -126,7 +122,7 @@ const Container = styled(motion.div)`
   grid-template-columns: 1fr min-content;
   background-color: ${props => props.theme.bg.shade}; 
   grid-template-rows: 1fr;
-  gap: 0.6em;
+  gap: 0.4em;
   margin-right: 0;
   padding-right: 0;
   @media(max-width: 800px) {
@@ -155,7 +151,4 @@ const ProductContainer = styled.div`
       overflow-y: hidden;
       display: grid;
       grid-template-rows: min-content min-content 1fr;
-  
-    
-  
 }`

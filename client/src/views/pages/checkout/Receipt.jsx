@@ -1,18 +1,13 @@
 import React, { Fragment } from 'react'
-
-import style from './ReceiptStyle.module.scss'
 import styled from 'styled-components'
 import { ProductList } from './components/ProductList'
 import { PaymentArea } from './components/PaymentArea'
 import { Row } from './components/Table/Row'
-import { Col } from './components/Table/Col'
-import { DateTime } from 'luxon'
-import { useFormatPhoneNumber } from '../../../hooks/useFormatPhoneNumber'
 import { useSelector } from 'react-redux'
 import { selectBusinessData } from '../../../features/auth/businessSlice'
 import { Header } from './components/Header/Header'
-import { WarrantyArea } from './components/WarrantyArea'
 import { WarrantySignature } from './components/WarrantySignature'
+import { ReceiptComponent } from './Style'
 
 
 export const Receipt = React.forwardRef(({ data }, ref) => {
@@ -37,61 +32,49 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
             return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
         }
     }
-    let business = useSelector(selectBusinessData) || ""
+
     const ncfType = getReceiptInfo(data?.NCF)?.description
 
     return (
-        business && data ? (
-            <Container ref={ref}>
-                <Header
-                    data={data}
-                    business={business}
-                    Space={Space}
-                    SubTitle={SubTitle}
-                    P={P}
-                />
-                <Space />
-                <Line />
-                <Row space>
-                    <SubTitle align='center'> {ncfType}</SubTitle>
-                </Row>
-                <Line />
-                <Row cols='3' space>
-                    <P>DESCRIPCION</P>
-                    <P align="right">ITBIS</P>
-                    <P align="right">VALOR</P>
-                </Row>
-                <Line />
-                <ProductList data={data} />
-                <Line />
-                <PaymentArea P={P} data={data} />
-                <WarrantySignature data={data} />
-                {
-                    data?.seller?.name && (
-                        <div
-                            style={{
-                                padding: '0.8em 0 0.4em',
-                            }}
-                        >
-                            <SubTitle>{`Le Atendió: ${data?.seller?.name}`}</SubTitle>
-                        </div>
-                    )
-                }
-            </Container>
+        data ? (
+            <ReceiptComponent.HiddenPrintWrapper>
+                <ReceiptComponent.Container ref={ref}>
+                    <Header
+                        data={data}
+                        Space={Space}
+                        SubTitle={SubTitle}
+                        P={P}
+                    />
+                    <Space />
+                    <Line />
+                    <Row space>
+                        <SubTitle align='center'> {ncfType}</SubTitle>
+                    </Row>
+                    <Line />
+                    <Row cols='3' space>
+                        <P>DESCRIPCION</P>
+                        <P align="right">ITBIS</P>
+                        <P align="right">VALOR</P>
+                    </Row>
+                    <Line />
+                    <ProductList data={data} />
+                    <Line />
+                    <PaymentArea P={P} data={data} />
+                    <WarrantySignature data={data} />
+                    {/* <WarrantyArea data={data} /> */}
+                </ReceiptComponent.Container>
+            </ReceiptComponent.HiddenPrintWrapper>
         ) : null
     )
 });
 
 const Container = styled.div`
     * {
-        margin: opx;
+        margin: 0px;
     }
     padding: 1em 0.4em;
-
     line-height: 24px;
-    
     width: 100%;
-//cuanto seria el maximo de ancho de la factura 80mm = 226.772px
     font-size: 14px;
     text-transform: uppercase;
     font-family:'Lato', sans-serif;

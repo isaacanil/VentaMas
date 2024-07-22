@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 //TODO ***AUTH**************************************
 import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 //TODO ***FIRESTORE***********************************
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore, runTransaction } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore, runTransaction, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
 //TODO ***STORAGE***********************************
 import { deleteObject, getDownloadURL, getStorage, listAll, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"
 
@@ -27,20 +27,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const storage = getStorage(app);
-export const db = getFirestore(app);
 export const auth = getAuth(app)
 
-enableIndexedDbPersistence(db)
-  .then(() => {
-    console.log("La persistencia de datos IndexedDB está habilitada");
-  })
-  .catch((err) => {
-    if (err.code === 'failed-precondition') {
-      console.error("Probablemente múltiples pestañas abiertas a la vez.");
-    } else if (err.code === 'unimplemented') {
-      console.error("El navegador actual no admite todas las características necesarias.");
-    }
-  });
+
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({tabManager: persistentSingleTabManager()})
+});
+
 
 export const AuthStateChanged = () => {
   const dispatch = useDispatch()

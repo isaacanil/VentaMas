@@ -6,9 +6,9 @@ export function Showcase({
     title,
     value,
     valueType = 'none',
+    description,
     color = false
 }) {
-
     const determineColor = () => {
         if (typeof color === 'boolean' && color === true) {
             return value >= 0 ? 'success-contained' : 'error-contained';
@@ -36,6 +36,9 @@ export function Showcase({
         <Container color={determineColor()}>
             <Title>{title}</Title>
             <Value>{formatting(value)}</Value>
+            {
+                description && <Description>{description}</Description>
+            }
         </Container>
     )
 }
@@ -44,7 +47,7 @@ const Container = styled.div`
     display: grid;
     padding: 0.3em 0.6em;
     justify-content: center;
-    align-items: center;
+
     text-align: center; 
     border-radius: 0.4em;
     /* color: ${(props) => {
@@ -67,5 +70,9 @@ const Value = styled.h2`
 const Title = styled.span`
     font-size: 1em;
     font-weight: 500;
+    margin: 0;
+`
+const Description = styled.span`
+    font-size: 0.9em;
     margin: 0;
 `

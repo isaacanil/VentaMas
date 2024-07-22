@@ -21,7 +21,7 @@ const { DatePicker, Input, InputNumber, Select, Button, Form } = antd;
 const { Option } = Select;
 const { TextArea } = Input;
 
-export const ReceivableManagementPanel = ({ form, creditLimit }) => {
+export const ReceivableManagementPanel = ({ form, creditLimit, activeAccountsReceivableCount, isWithinCreditLimit, isWithinInvoiceCount, isChangeNegative, receivableStatus }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser)
     const [generalBalance, setGeneralBalance] = useState("")
@@ -37,10 +37,8 @@ export const ReceivableManagementPanel = ({ form, creditLimit }) => {
 
     const cartData = useSelector(SelectCartData);
     const client = useSelector(selectClient)
-    const receivableStatus = cartData.isAddedToReceivables;
     const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
     const payment = cartData?.payment?.value || 0;
-    const isChangeNegative = change < 0;
     const isReceivable = receivableStatus && isChangeNegative;
     const maxInstallments = getMaxInstallments(paymentFrequency);
     const containerVariants = {
@@ -81,7 +79,7 @@ export const ReceivableManagementPanel = ({ form, creditLimit }) => {
 
     useEffect(() => {
         setTotalReceivable(getPositive(change))
-    }, [change, totalInstallments, ])
+    }, [change, totalInstallments,])
 
     useEffect(() => {
         setPaymentDate(nextPaymentDate)
@@ -89,8 +87,8 @@ export const ReceivableManagementPanel = ({ form, creditLimit }) => {
 
     useEffect(() => {
         const fetchPendingBalance = async () => {
-            const pendingBalance = await fbGetPendingBalance(user?.businessID, client?.id)
-            setCurrentBalance(pendingBalance)
+            const unsubscribe = fbGetPendingBalance(user?.businessID, client?.id, setCurrentBalance)
+            return () => unsubscribe()
         };
         fetchPendingBalance();
     }, [client, isReceivable, user])
@@ -101,94 +99,93 @@ export const ReceivableManagementPanel = ({ form, creditLimit }) => {
         }
     }, [client])
 
+
     return (
+       (isReceivable && !isValidClient && isChangeNegative) &&
         <AnimatePresence>
-            {
-                (isReceivable && !isValidClient) && (
-                    <PanelContainer
-                        key='receivable-panel'
-                        initial='hidden'
-                        animate='visible'
-                        exit='hidden'
-                        variants={containerVariants}
-                    >
-                        <Header>
-                            <Label>Balance pendiente</Label>
-                            <Label>{useFormatPrice(getPositive(currentBalance))}</Label>
-                        </Header>
-                        <Form
-                            layout='vertical'
-                            form={form}
+            <PanelContainer
+                key='receivable-panel'
+                initial='hidden'
+                animate='visible'
+                exit='hidden'
+                variants={containerVariants}
+            >
+                <Header>
+                    <Label>Balance pendiente</Label>
+                    <Label>{useFormatPrice(getPositive(currentBalance))}</Label>
+                </Header>
+                <Form
+                    layout='vertical'
+                    form={form}
+                >
+                    <Group>
+                        <FormItem
+                            label="Frecuencia de Pago"
+                            name='paymentFrequency'
+                            rules={[{ required: true, message: 'Por favor seleccione una frecuencia de pago' }]}
                         >
-                            <Group>
-                                <FormItem
-                                    label="Frecuencia de Pago"
-                                    name='paymentFrequency'
-                                    rules={[{ required: true, message: 'Por favor seleccione una frecuencia de pago' }]}
-                                >
-                                    <Select
-                                        value={paymentFrequency}
-                                        style={{ width: '100%' }}
-                                        onChange={(e) => setFrequency(e)}
-                                    >
-                                        <Option value="monthly">Mensual</Option>
-                                        <Option value="weekly">Semanal</Option>
-                                    </Select>
-                                </FormItem>
-                                <FormItem
-                                    label="Cuotas"
-                                    name='totalInstallments'
-                                    rules={[
-                                        { required: true, message: 'Por favor seleccione el número de cuotas' },
-                                        { type: 'number', min: 1, max: maxInstallments, message: `El número de cuotas debe estar entre 1 y ${maxInstallments}` }
-                                    ]}
-                                >
-                                    <InputNumber value={totalInstallments} onChange={setInstallments} style={{ width: '100%' }} />
-                                </FormItem>
-                            </Group>
-                            <Group>
-                                <FormItem
-                                    label="Fecha de Pago"
-                                    name='paymentDate'
-                                    rules={[{ required: true, message: 'Por favor seleccione una fecha de pago' }]}
-                                >
-                                    <DatePicker
-                                        format={'DD/MM/YYYY'}
-                                        style={{ width: '100%' }}
-                                        value={fromMillisToDayjs(paymentDate)}
-                                        onChange={(date) => setPaymentDate(date.valueOf())}
-                                    />
-                                </FormItem>
-                                <FormItem
-                                    label="Monto por Cuota"
-                                >
-                                    <div style={{
-                                        textAlign: '',
-                                        fontWeight: 600
-                                    }}>
-                                        <span>{useFormatPrice(installmentAmount)}</span>
-                                    </div>
-                                </FormItem>
-                            </Group>
-                            <FormItem
-                                label="Comentarios"
-                                name='comments'
+                            <Select
+                                value={paymentFrequency}
+                                style={{ width: '100%' }}
+                                onChange={(e) => setFrequency(e)}
                             >
-                                <TextArea rows={3} value={comments} onChange={(e) => setComments(e.target.value)} />
-                            </FormItem>
-                        </Form>
-                        <Footer>
-                            <Header>
-                                <Label>Total a Crédito.</Label>
-                                <Label>{useFormatPrice(getPositive(change))}</Label>
-                            </Header>
-                            <Header>
-                                <Label>Balance General</Label>
-                                <Label>{useFormatPrice(getPositive(generalBalance))} / {useFormatPrice(creditLimit?.creditLimit?.value || 0)}</Label>
-                            </Header>
-                        </Footer>
-                    </PanelContainer>)
-            }
+                                <Option value="monthly">Mensual</Option>
+                                <Option value="weekly">Semanal</Option>
+                            </Select>
+                        </FormItem>
+                        <FormItem
+                            label="Cuotas"
+                            name='totalInstallments'
+                            rules={[
+                                { required: true, message: 'Por favor seleccione el número de cuotas' },
+                                { type: 'number', min: 1, max: maxInstallments, message: `El número de cuotas debe estar entre 1 y ${maxInstallments}` }
+                            ]}
+                        >
+                            <InputNumber value={totalInstallments} onChange={setInstallments} style={{ width: '100%' }} />
+                        </FormItem>
+                    </Group>
+                    <Group>
+                        <FormItem
+                            label="Fecha de Pago"
+                            name='paymentDate'
+                            rules={[{ required: true, message: 'Por favor seleccione una fecha de pago' }]}
+                        >
+                            <DatePicker
+                                format={'DD/MM/YYYY'}
+                                style={{ width: '100%' }}
+                                value={fromMillisToDayjs(paymentDate)}
+                                onChange={(date) => setPaymentDate(date.valueOf())}
+                            />
+                        </FormItem>
+                        <FormItem
+                            label="Monto por Cuota"
+                        >
+                            <div style={{
+                                textAlign: '',
+                                fontWeight: 600
+                            }}>
+                                <span>{useFormatPrice(installmentAmount)}</span>
+                            </div>
+                        </FormItem>
+                    </Group>
+                    <FormItem
+                        label="Comentarios"
+                        name='comments'
+                    >
+                        <TextArea rows={3} value={comments} onChange={(e) => setComments(e.target.value)} />
+                    </FormItem>
+                </Form>
+                <Footer>
+                    <Header>
+                        <Label>Total a Crédito.</Label>
+                        <Label>{useFormatPrice(getPositive(change))}</Label>
+                    </Header>
+                    <Header>
+                        <Label>Balance General</Label>
+                        <Label>{useFormatPrice(getPositive(generalBalance))} / {useFormatPrice(creditLimit?.creditLimit?.value || 0)}</Label>
+                    </Header>
+                </Footer>
+            </PanelContainer>
         </AnimatePresence>
     )
 };

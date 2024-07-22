@@ -13,9 +13,8 @@ import { useFormatNumber } from '../../../../../../../../../hooks/useFormatNumbe
 import ColoredNumber from '../../../../../../../../templates/system/ColoredNumber/ColoredNumber';
 const { Button, Alert } = antd;
 
-export const MarkAsReceivableButton = () => {
+export const MarkAsReceivableButton = ({creditLimit = null}) => {
     const dispatch = useDispatch();
-    const [creditLimit, setCreditLimit] = useState(null);
     const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] = useState(0);
     const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
     const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
@@ -23,7 +22,6 @@ export const MarkAsReceivableButton = () => {
     const {
         currentBalance,
     } = useSelector(selectAR)
-
     const cartData = useSelector(SelectCartData);
     const user = useSelector(selectUser);
     const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
@@ -31,27 +29,16 @@ export const MarkAsReceivableButton = () => {
 
     const isChangeNegative = change < 0;
     const clientId = cartData?.client?.id;
-    const isGenericClient = clientId === 'GC-0000';
+    const isGenericClient = clientId === 'GC-0000' || clientId === null;
     const isAddedToReceivables = cartData?.isAddedToReceivables;
     const receivableStatus = isAddedToReceivables && isWithinCreditLimit;
 
     useEffect(() => {
-        if (!cartData.isAddedToReceivables) {
+        if (!cartData.isAddedToReceivables || !creditLimit) {
             dispatch(resetAR())
         }
-    }, [cartData?.isAddedToReceivables])
+    }, [cartData?.isAddedToReceivables, creditLimit])
 
-    useEffect(() => {
-        const fetchCreditLimit = async () => {
-            if (user && client.id) {
-                const creditLimitData = await fbGetCreditLimit({ user, clientId });
-                if (creditLimitData) {
-                    setCreditLimit(creditLimitData);
-                }
-            }
-        };
-        fetchCreditLimit();
-    }, [user, client.id]);
     useEffect(() => {
         const fetchInvoiceAvailableCount = async () => {
             if (creditLimit?.invoice?.status) {
@@ -110,7 +97,8 @@ export const MarkAsReceivableButton = () => {
 
     return (
         <Fragment>
-            {isChangeNegative && (
+            {
+                isChangeNegative && 
                 <Container>
                     <Button
                         style={{ width: '100%' }}
@@ -133,7 +121,8 @@ export const MarkAsReceivableButton = () => {
                         creditLimitValue={creditLimitValue}
                     />
                 </Container>
-            )}
+            }
+         
         </Fragment>
 
     );

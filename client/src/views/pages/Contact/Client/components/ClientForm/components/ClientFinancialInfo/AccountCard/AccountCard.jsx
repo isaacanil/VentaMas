@@ -7,24 +7,28 @@ import { useFormatPrice } from '@hooks/useFormatPrice';
 import { Payment } from './components/Payment';
 
 
-export const AccountCard = ({ accountNumber, date, frequency, balance, installments, installmentAmount, lastPayment, lastPaymentDate, isActive, account }) => {
+export const AccountCard = ({  accountNumber, date, frequency, balance, installments, installmentAmount, lastPayment, lastPaymentDate, isActive, account }) => {
   return (
     <Card>
       <AccountInfo>
         <KeyValueDisplay
+
           title={"#"}
           value={accountNumber}
         />
         <KeyValueDisplay
           title={"Fecha"}
+          align={'center'}
           value={date}
         />
         <KeyValueDisplay
           title={"Frecuencia"}
+          align={'center'}
           value={frequency}
         />
         <KeyValueDisplay
           title={"Balance"}
+          align="right"
           value={useFormatPrice(balance)}
         />
       </AccountInfo>
@@ -52,9 +56,10 @@ const Card = styled.div`
 `;
 
 const AccountInfo = styled.div`
-  display: flex;
+  display: grid;
   gap: 1em;
-  justify-content: space-between;
+  grid-template-columns: min-content 1fr 1fr 1fr;
+
   border-bottom: 1px solid #ccc;
 `;
 

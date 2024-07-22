@@ -24,7 +24,6 @@ const ReciboCompras = (props, ref) => {
 //como seria Release Notes en español?              
   return (
     <Container>
-
       <Article 
       title="Ventamax — Notas de la versión" 
       sections={articleSections} 

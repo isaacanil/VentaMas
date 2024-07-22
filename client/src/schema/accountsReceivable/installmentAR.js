@@ -1,5 +1,5 @@
 export const defaultInstallmentAR = {
-    installmentId: "", // Identificador único de la cuota
+    id: "", // Identificador único de la cuota
     arId: "", // Referencia al AR asociado
     createdAt: new Date(), // Fecha y hora de creación
     updatedAt: new Date(), // Fecha y hora de la última actualización

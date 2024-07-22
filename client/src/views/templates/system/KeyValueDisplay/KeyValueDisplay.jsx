@@ -7,6 +7,7 @@ const Container = styled.div`
     align-content: start;
     flex-wrap: wrap; /* No permite el wrap inicialmente */
     width: 100%;
+    justify-content: ${props => props.align === 'left' ? 'flex-start' : 'flex-end'};
   
 `;
 
@@ -19,9 +20,11 @@ const Value = styled.span`
   color: #555;
 `;
 
-const KeyValueDisplay = ({ title, value }) => {
+const KeyValueDisplay = ({ title, value, align = 'left' }) => {
   return (
-    <Container>
+    <Container
+      align={align}
+    >
       <Title>{title}:</Title>
       <Value>{value}</Value>
     </Container>

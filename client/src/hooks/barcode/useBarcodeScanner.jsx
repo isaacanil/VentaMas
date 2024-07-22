@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useMatch } from 'react-router-dom';
-
 
 export const useBarcodeScanner = (products, fn) => {
     let barcode = '';

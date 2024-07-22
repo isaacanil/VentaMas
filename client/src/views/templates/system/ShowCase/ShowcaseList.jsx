@@ -12,6 +12,7 @@ export const ShowcaseList = ({ showcases }) => {
                     title={showcase.title}
                     valueType={showcase.valueType}
                     value={showcase.value}
+                    description={showcase.description}
                     color={showcase.color}
                 />
             ))}

@@ -25,7 +25,7 @@ export function Payment({
       isOpen: true,
       paymentDetails: {
         clientId: client.id,
-        arId: account.arId,
+        arId: account.id,
         paymentScope: 'account',
         totalAmount: balance,
       },

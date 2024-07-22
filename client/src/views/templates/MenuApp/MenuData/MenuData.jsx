@@ -11,6 +11,7 @@ import admin from './items/admin'
 import contacts from './items/contacts'
 import changelogs from './items/changelogs'
 import utility from './items/utility'
+import accountsReceivable from './items/accountsReceivable'
 import { userAccess } from '../../../../hooks/abilities/useAbilities'
 
 export const ChevronRight = <FontAwesomeIcon icon={faChevronRight} />
@@ -27,6 +28,7 @@ export const getMenuData = () => {
     const allMenuItems = [
         ...basic,
         ...sales,
+        ...accountsReceivable,
         ...inventory,
         ...financialManagement,
         ...utility,

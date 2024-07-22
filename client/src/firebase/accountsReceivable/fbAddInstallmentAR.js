@@ -4,7 +4,7 @@ import { generateInstallments } from '../../utils/accountsReceivable/generateIns
 
 function prepareInstallmentForFirebase(installments) {
     return installments.map((installment) => ({
-        ...installment,
+        ...installment,  
         createdAt: Timestamp.fromMillis(installment.createdAt),
         updatedAt: Timestamp.fromMillis(installment.updatedAt),
         installmentDate: Timestamp.fromMillis(installment.installmentDate)
@@ -31,7 +31,7 @@ export async function fbAddInstallmentAR({ user, ar }) {
         // Uso de un batch para escribir múltiples documentos
         const batch = writeBatch(db);
         installmentsData.forEach(installment => {
-            const installmentRef = doc(baseInstallmentsRef, installment.installmentId);
+            const installmentRef = doc(baseInstallmentsRef, installment.id);
             batch.set(installmentRef, installment);
         });
 

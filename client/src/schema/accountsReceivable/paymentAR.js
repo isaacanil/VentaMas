@@ -1,6 +1,6 @@
 // Esquema para Payments for Accounts Receivable (Payments_AR) usando camelCase
 export const defaultPaymentsAR = {
-    paymentId: "", // Identificador único del pago
+    id: "", // Identificador único del pago
     paymentMethods: [
       {
         method: "cash",

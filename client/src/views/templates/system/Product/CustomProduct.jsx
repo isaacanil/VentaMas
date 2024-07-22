@@ -16,7 +16,8 @@ export const CustomProduct = ({ product }) => {
     //const [productList, setProductList] = useState([])
     const dispatch = useDispatch();
     const ProductSelected = useSelector(SelectProduct);
-    const imageHiddenRef = useSelector(selectImageHidden)
+    // const imageHiddenRef = useSelector(selectImageHidden)
+    const imageHiddenRef = false;
     const handleGetThisProduct = () => {
         dispatch(handleModalSetCustomPizza())
     };

@@ -28,7 +28,7 @@ const paymentDetails = {
   comments: "", // Comentarios
   totalAmount: 0.00, // Monto total a pagar
   totalPaid: 0.00, // Monto total pagado
-  printReceipt: false, // Si se debe imprimir el recibo de pago
+  printReceipt: true, // Si se debe imprimir el recibo de pago
 }
 
 const initialState = {
@@ -63,7 +63,7 @@ const accountsReceivablePaymentSlice = createSlice({
     },
     closePaymentModal: (state) => {
       state.isOpen = false;
-      state.paymentDetails = paymentDetails;
+      state.paymentDetails = {...paymentDetails};
       state.error = null;
       state.isValid = true;
       state.methodErrors = {};
@@ -74,8 +74,6 @@ const accountsReceivablePaymentSlice = createSlice({
         ...state.paymentDetails,
         ...action.payload
       };
-  
-
     },
     setPaymentOption: (state, action) => {
       const { paymentOption } = action.payload;
