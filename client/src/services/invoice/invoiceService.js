@@ -32,6 +32,9 @@ export async function processInvoice({
         verifyCartItems(cart);
         //Cuadre de caja
         const { cashCount } = await validateCashReconciliation({ user, dispatch, });
+
+        if(cashCount === null) return;
+        
         //Comprobante fiscal
         const ncfCode = await handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType, });
         //Cliente
@@ -63,15 +66,19 @@ async function validateCashReconciliation({ user, dispatch, transaction }) {
     try {
         const { state, cashCount } = await checkOpenCashReconciliation(user, transaction);
 
+        console.log('Cash count state:', state);
+        console.log('Cash count:', cashCount);
+
         const handleCashReconciliationConfirm = () => {
             const cashCountStrategy = getCashCountStrategy(state, dispatch)
             cashCountStrategy.handleConfirm()
         }
+
         if (state === 'open') {
             return { cashCount };
         }
 
-        if (state === 'closed' || state === 'closing') {
+        if (state === 'closed' || state === 'closing' || state === 'none') {
             handleCashReconciliationConfirm();
             return { cashCount: null };
         }

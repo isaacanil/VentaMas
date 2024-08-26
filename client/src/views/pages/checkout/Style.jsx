@@ -2,9 +2,9 @@ import styled from "styled-components";
 
 export const Container = styled.div`
     padding: 1em 0.4em;
-    line-height: 24px;
+    line-height: 20px;
     width: 100%;
-    font-size: 14px;
+    font-size: 11px;
     text-transform: uppercase;
     font-family: 'Lato', sans-serif;
     pointer-events: none;
@@ -14,8 +14,9 @@ export const Container = styled.div`
 `;
 
 export const HiddenPrintWrapper = styled.div`
-    display: none;
+    display: ${({ ignoreHidden }) => !ignoreHidden && 'none'};
 `;
+
 const Title = styled.p`
     font-size: 18px;
     font-weight: 600;
@@ -43,7 +44,6 @@ const Group = styled.div`
 
 export const Subtitle = styled.p`
     display: flex;
-    font-size: 13px;
     font-weight: 600;
     line-height: 12px;
     padding: 0;
@@ -54,7 +54,6 @@ export const Subtitle = styled.p`
 `;
 
 export const Paragraph = styled.p`
-    font-size: 13px;
     margin: 0;
     padding: 0.2em 0;
     text-transform: uppercase;
@@ -91,7 +90,7 @@ export const Spacing = styled.div`
     }}
 `;
 
-export const ReceiptComponent = {
+export  const ReceiptComponent = {
     Container,
     HiddenPrintWrapper,
     Subtitle,

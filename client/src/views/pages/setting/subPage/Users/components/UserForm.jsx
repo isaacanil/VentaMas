@@ -9,11 +9,9 @@ import { SelectSignUpUserModal, toggleSignUpUser } from '../../../../../../featu
 const { Modal, Form, Input, Button, Select, message, Alert, Spin, Typography, Switch } = antd;
 const { Option } = Select;
 import { useDispatch } from 'react-redux';
-import ElemLabel from '../../../../../templates/system/ElemLabel/ElemLabel';
 import { ChangePassword } from './EditUser/ChangePassword/ChangePassword';
 import { fbUpdateUser } from '../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
 export const SignUpModal = () => {
-
     const [form] = Form.useForm();
     const user = useSelector(selectUser);
     const [isOpenChangePassword, setIsOpenChangePassword] = useState(false)

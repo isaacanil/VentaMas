@@ -10,7 +10,7 @@ import { WarrantySignature } from './components/WarrantySignature'
 import { ReceiptComponent } from './Style'
 
 
-export const Receipt = React.forwardRef(({ data }, ref) => {
+export const Receipt = React.forwardRef(({ data, ignoreHidden }, ref) => {
     function getReceiptInfo(code) {
         if (!code) {
             return { type: 'Desconocido', description: 'RECIBO  DE PAGO' };
@@ -37,7 +37,7 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
 
     return (
         data ? (
-            <ReceiptComponent.HiddenPrintWrapper>
+           <ReceiptComponent.HiddenPrintWrapper ignoreHidden={ignoreHidden} >
                 <ReceiptComponent.Container ref={ref}>
                     <Header
                         data={data}
@@ -63,31 +63,12 @@ export const Receipt = React.forwardRef(({ data }, ref) => {
                     <WarrantySignature data={data} />
                     {/* <WarrantyArea data={data} /> */}
                 </ReceiptComponent.Container>
-            </ReceiptComponent.HiddenPrintWrapper>
+        </ReceiptComponent.HiddenPrintWrapper>
         ) : null
     )
 });
 
-const Container = styled.div`
-    * {
-        margin: 0px;
-    }
-    padding: 1em 0.4em;
-    line-height: 24px;
-    width: 100%;
-    font-size: 14px;
-    text-transform: uppercase;
-    font-family:'Lato', sans-serif;
-    position: absolute;
-    pointer-events: none;
-    z-index: -100000000;
-    p {
-        line-height: 16px;
-    }
-    `
-
 export const SubTitle = styled.p`
-    font-size: 13px;
     font-weight: 600;
     line-height: 12px;
     padding: 0 0;
@@ -108,7 +89,7 @@ export const SubTitle = styled.p`
     }
 `
 export const P = styled.p`
-    font-size: 13px;
+   
     margin: 0;
     padding: 0.2em 0;
     text-transform: uppercase;

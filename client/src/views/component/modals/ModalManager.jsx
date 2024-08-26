@@ -79,8 +79,8 @@ export const ModalManager = () => {
         <BarcodePrintModal
           key={'modal-barcode-print'}
         />
-        <InvoicePreview />
-        <SignUpModal />
+        <InvoicePreview key={'invoice-preview'} />
+        <SignUpModal key={'sign-up-modal'}  />
         {UpdateProdModalSelected && (
           <ProductEditorModal
             key={'modal-form-product'}
@@ -128,7 +128,7 @@ export const ModalManager = () => {
             key={'notification'}
           />
         )}
-
+        
         <AddCategoryModal
           key={'modal-add-category'}
           isOpen={AddCategoryModalSelected.isOpen}

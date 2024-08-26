@@ -33,7 +33,6 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
     const handleFormChange = (changedValues, allValues) => {
         setInvoiceStatus(allValues.invoice?.status);
         setCreditLimitStatus(allValues.creditLimit?.status);
-        setCreditLimitState(allValues);
         clearValidationErrors(allValues);
     };
     const clearValidationErrors = (allValues) => {

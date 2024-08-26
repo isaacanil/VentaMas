@@ -20,13 +20,11 @@ export const Cart = () => {
 
 const Container = styled.div`
   position: relative;
-   height: 100vh;
    background-color: ${({ theme }) => theme.bg.shade};
    max-width: 30em;
    width: 24em;
    overflow: hidden;
    display: grid;
-   grid-template-columns: 1fr;
    grid-template-rows: min-content 1fr min-content ;
    padding: 0 ;
    margin: 0;
@@ -42,7 +40,7 @@ const Container = styled.div`
       border-bottom: 0;
       position: absolute;
       top: 0;
-      z-index: 100000;
+      z-index: 1000;
  
       transition: transform 600ms 0ms linear;
       

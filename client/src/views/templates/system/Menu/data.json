@@ -1,0 +1,175 @@
+{
+    "numberID": 3866,
+    "user": {
+        "converter": null,
+        "_key": {
+            "path": {
+                "segments": [
+                    "projects",
+                    "ventamaxpos",
+                    "databases",
+                    "(default)",
+                    "documents",
+                    "users",
+                    "RDqKdup2nV"
+                ],
+                "offset": 5,
+                "len": 2
+            }
+        },
+        "type": "document",
+        "firestore": {
+            "app": {
+                "_isDeleted": false,
+                "_options": {
+                    "apiKey": "AIzaSyCT-2T9BUy2w0XmdffWWLRvorMWsxpUK2w",
+                    "authDomain": "ventamaxpos.firebaseapp.com",
+                    "projectId": "ventamaxpos",
+                    "storageBucket": "ventamaxpos.appspot.com",
+                    "messagingSenderId": "451664861927",
+                    "appId": "1:451664861927:web:fa43a82fe4125a57312042",
+                    "measurementId": "G-P66Z0ETD2Y"
+                },
+                "_config": {
+                    "name": "[DEFAULT]",
+                    "automaticDataCollectionEnabled": false
+                },
+                "_name": "[DEFAULT]",
+                "_automaticDataCollectionEnabled": false,
+                "_container": {
+                    "name": "[DEFAULT]",
+                    "providers": {}
+                }
+            },
+            "databaseId": {
+                "projectId": "ventamaxpos",
+                "database": "(default)"
+            },
+            "settings": {
+                "host": "firestore.googleapis.com",
+                "ssl": true,
+                "ignoreUndefinedProperties": false,
+                "cache": {
+                    "kind": "persistent"
+                },
+                "cacheSizeBytes": 41943040,
+                "experimentalForceLongPolling": false,
+                "experimentalAutoDetectLongPolling": true,
+                "experimentalLongPollingOptions": {},
+                "useFetchStreams": true
+            }
+        }
+    },
+    "change": {
+        "value": 0
+    },
+    "isAddedToReceivables": false,
+    "totalPurchaseWithoutTaxes": {
+        "value": 5200
+    },
+    "paymentMethod": [
+        {
+            "method": "cash",
+            "status": true,
+            "value": 5200
+        },
+        {
+            "method": "card",
+            "reference": "",
+            "status": false,
+            "value": 0
+        },
+        {
+            "value": 0,
+            "method": "transfer",
+            "reference": "",
+            "status": false
+        }
+    ],
+    "sourceOfPurchase": "Presencial",
+    "totalTaxes": {
+        "value": 0
+    },
+    "totalPurchase": {
+        "value": 5200
+    },
+    "NCF": null,
+    "delivery": {
+        "value": "",
+        "status": false
+    },
+    "id": "txAtIqVzVmarLnBuz_uOZ",
+    "seller": {},
+    "totalShoppingItems": {
+        "value": 1000
+    },
+    "userID": "RDqKdup2nV",
+    "payment": {
+        "value": 5200
+    },
+    "discount": {
+        "value": 0
+    },
+    "client": {
+        "delivery": {
+            "value": "",
+            "status": false
+        },
+        "numberId": 5,
+        "id": "3V81Kfnz",
+        "tel": "8098057176",
+        "personalID": ". ",
+        "address": "Arroyo Hondo ",
+        "name": "Jonathan Báez "
+    },
+    "cashCountId": "F823pgm3QY",
+    "date": {
+        "seconds": 1723067493,
+        "nanoseconds": 959000000
+    },
+    "products": [
+        {
+            "productImageURL": "",
+            "barcode": "",
+            "order": 1,
+            "stock": -6042466,
+            "trackInventory": true,
+            "category": "Huevo",
+            "size": "Grande",
+            "productName": "",
+            "amountToBuy": 1000,
+            "image": "",
+            "pricing": {
+                "cost": 4.8,
+                "minPrice": 4.95,
+                "price": 5.2,
+                "tax": 0,
+                "avgPrice": 5.1,
+                "listPrice": 5.2
+            },
+            "status": "disponible",
+            "netContent": "Unidad",
+            "id": "1mFtvVeQln",
+            "cid": "1mFtvVeQln",
+            "qrcode": "",
+            "isVisible": true,
+            "product": {
+                "stock": null
+            },
+            "weightDetail": {
+                "weight": 0,
+                "isSoldByWeight": false,
+                "weightUnit": "lb"
+            },
+            "name": "El huevo en Ruta",
+            "isSoldByWeight": false,
+            "promotions": {
+                "start": null,
+                "discount": 0,
+                "isActive": false,
+                "end": null
+            },
+            "type": "Huevo"
+        }
+    ]
+}

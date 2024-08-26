@@ -71,7 +71,7 @@ const Products = styled.div`
     border: none;
     padding: 0;
     list-style: none;
-    line-height: 30px;
+    line-height: 22px;
 `
 const Product = styled.div`
     width: 100%;

@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { convertTimeStampToMillis, fromMillisToDateISO } from '../../../../../utils/date/convertTimeStampToDate';
 import { useSelector } from 'react-redux';
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { P } from '../../Receipt';
 import { InfoItem, Spacing } from '../../Style';
 
 export const Header = ({ data, Space }) => {

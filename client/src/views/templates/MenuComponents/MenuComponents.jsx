@@ -30,7 +30,6 @@ export const MenuComponents = () => {
 }
 const Container = styled.div`   
     display: none;
-    
     @media(max-width: 800px) {
         height: 3em;
         width: 100%;

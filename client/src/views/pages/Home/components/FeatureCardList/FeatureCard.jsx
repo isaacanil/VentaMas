@@ -13,22 +13,20 @@ export const FeatureCard = ({ card }) => {
     )
 }
 const Container = styled(Link)`
-        border-radius: var(--border-radius1);
+        border-radius: 0.4em;
         overflow: hidden;
          /* Tus estilos para el enlace de la tarjeta de funciones aquí */
             background-color: var(--White);
-            min-height: 3.5em;
+            min-height: 3em;
           width: 100%;
           padding: 0.4em 0.8em;
           display:grid;
           grid-template-columns: min-content 1fr;
-          gap: 1em;
+          gap: 0.6em;
           align-items: center;
           text-decoration: none;
+    
 `
-
-
-
 
 const FeatureCardIcon = styled.div`
   /* Tus estilos para la imagen de la tarjeta de funciones aquí */

@@ -47,6 +47,8 @@ export function getCashCountStrategy(checkCashCountStatus, dispatch) {
             return new ClosingCashCountStrategy(dispatch);
         case 'open':
             return new CashCountStrategy(dispatch);
+        case 'none':
+            return new NoOpenCashCountStrategy(dispatch);
         default:
             return new NoOpenCashCountStrategy(dispatch);
     }

@@ -1,6 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
 import { icons } from "../../../../../../constants/icons/icons"
-import { Button, ButtonGroup } from "../../../../../templates/system/Button/Button"
 import { Message } from "../../../../../templates/system/message/Message"
 import { fbDeleteClient } from "../../../../../../firebase/client/fbDeleteClient"
 import { toggleClientModal } from "../../../../../../features/modals/modalSlice"
@@ -9,18 +8,25 @@ import { useFormatPhoneNumber } from "../../../../../../hooks/useFormatPhoneNumb
 import { truncateString } from "../../../../../../utils/text/truncateString"
 import { selectUser } from "../../../../../../features/auth/userSlice"
 
+import * as antd from "antd"
+import { ButtonGroup } from "../../../../../templates/system/Button/Button"
+
+const { Button } = antd
+
+
 export const tableConfig = () => {
-    const user = useSelector(selectUser)
+    const dispatch = useDispatch();
+    const user = useSelector(selectUser);
+
     const updateMode = OPERATION_MODES.UPDATE.id
     const noData = <Message title='(vacio)' fontSize='small' bgColor='error' />
-    const dispatch = useDispatch();
-
-    const handleDeleteClient = (id) => fbDeleteClient(user, id);
+ 
+    const handleDeleteClient = async (id) => await fbDeleteClient(user?.businessID, id);
 
     const openModalUpdateMode = (client) => { dispatch(toggleClientModal({ mode: updateMode, data: client })) }
+    
 
     const columns = [
-       
         {
             Header: "Nombre",
             accessor: "name",
@@ -44,24 +50,23 @@ export const tableConfig = () => {
         {
             Header: "Acciones",
             accessor: "actions",
+            minWidth: '300px',
+            maxWidth: '1fr',
             align: 'right',
             cell: ({ value }) => {
                 return (
                     <ButtonGroup>
                         <Button
-                            borderRadius='normal'
-                            title={icons.operationModes.edit}
-                            width='icon32'
-                            color='gray-dark'
+                        icon={icons.operationModes.edit}
                             onClick={() => openModalUpdateMode(value)}
-                        />
+                        >
+                        </Button>
                         <Button
-                            borderRadius='normal'
-                            title={icons.operationModes.delete}
-                            width='icon32'
-                            color='gray-dark'
+                            danger
+                            icon={icons.operationModes.delete}
                             onClick={() => handleDeleteClient(value.id)}
-                        />
+                        >
+                        </Button>
                     </ButtonGroup>
                 )
             }

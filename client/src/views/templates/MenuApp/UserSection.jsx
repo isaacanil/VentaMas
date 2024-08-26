@@ -3,7 +3,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { auth } from '../../../firebase/firebaseconfig'
 import { useDispatch, useSelector } from 'react-redux'
-import { logout } from '../../../features/auth/userSlice'
+import { logout, selectUser } from '../../../features/auth/userSlice'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRightFromBracket, faUser } from '@fortawesome/free-solid-svg-icons'
 import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
@@ -13,17 +13,21 @@ import { useDialog } from '../../../Context/Dialog/DialogContext'
 import { selectBusinessData } from '../../../features/auth/businessSlice'
 import * as antd from 'antd'
 const { Tag } = antd
-export const UserSection = ({ user }) => {
+
+export const UserSection = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { dialog, onClose, setDialogConfirm } = useDialog();
   const business = useSelector(selectBusinessData);
+  const user = useSelector(selectUser)
+
   const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
     auth.signOut();
     navigate('/', { replace: true });
   }
+
   const logoutOfApp = () => {
     // dispatch to the store with the logout action
     setDialogConfirm({
@@ -36,24 +40,24 @@ export const UserSection = ({ user }) => {
         onClose()
       }
     })
-
   }
+  const getDisplayName = (user) => {
+    return user?.displayName && user.displayName.trim() !== '' ? user.displayName : user?.username
+  }
+
   return (
     <Container>
       <UserInfo>
         <Avatar>
-
           <Icon>
             <FontAwesomeIcon icon={faUser} />
           </Icon>
-
-          <Username>{user === null ? null : <span>{user?.displayName} </span>}</Username>
+          <Username>{<span>{getDisplayName(user)} </span>}</Username>
         </Avatar>
         <Action>
           <Button
             startIcon={icons.operationModes.logout}
             color={'gray-contained'}
-
             title={'Salir'}
             size="medium"
             borderRadius='normal'
@@ -61,10 +65,7 @@ export const UserSection = ({ user }) => {
           />
         </Action>
       </UserInfo>
-     
-        <Business color='blue'>{user === null ? null : <span>{business?.name} </span>}</Business>
-    
-
+      <Business color='blue'>{user === null ? null : <span>{business?.name} </span>}</Business>
     </Container>
   )
 }
