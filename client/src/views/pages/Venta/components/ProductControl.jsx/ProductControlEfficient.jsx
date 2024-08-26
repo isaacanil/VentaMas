@@ -8,23 +8,22 @@ import { CustomProduct } from '../../../../templates/system/Product/CustomProduc
 import { CategorySelector } from '../../../../component/CategorySelector/CategorySelector';
 import { ProductCategoryBar } from '../../../../component/ProductCategoryBar/ProductCategoryBar';
 
+const columnByWidth =  {
+  600: 1,
+  900: 2,
+  1100: 3,
+  1500: 4,
+  1800: 5,
+  2100: 6,
+  2400: 7,
+  2700: 8,
+}
+
+
+
 const getColumns = (width) => {
-  if (width < 600) {
-    return 1;
-  }
-  if (width < 900) {
-    return 2;
-  }
-  if (width < 1200) {
-    return 3;
-  }
-  if (width < 1500) {
-    return 4;
-  }
-  if (width < 1800) {
-    return 5;
-  }
-  return 3;
+  const columns = Object.keys(columnByWidth).find((w) => w > width);
+  return columnByWidth[columns];
 };
 
 export function ProductControlEfficient({ products }) {
@@ -142,7 +141,11 @@ const ProductList = ({ products }) => {
 }
 
 const ProductsListContainer = styled.div`
-  height: ${props => props.listContainer > 400 ? `calc(100vh - 5.3em)` : `calc(100vh - 8.41em)`};
+  height:  calc(100vh - 8.41em);
+  @media ( width > 800px){
+    height: calc(100vh - 5.3em);
+  }
+
   padding: 0.4em;
   gap: 0.4em;
   border: 1px solid #ccc;

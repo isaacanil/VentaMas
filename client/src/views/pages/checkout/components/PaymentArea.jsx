@@ -7,6 +7,7 @@ import { fbGetPendingBalance } from '../../../../firebase/accountsReceivable/fbG
 import { selectUser } from '../../../../features/auth/userSlice'
 import { useSelector } from 'react-redux'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import { useFormatNumber} from '../../../../hooks/useFormatNumber'
 import { Paragraph, Spacing, Subtitle } from '../Style'
 
 export const PaymentArea = ({ data }) => {
@@ -30,31 +31,31 @@ export const PaymentArea = ({ data }) => {
         {
             label: 'ENVIO',
             value1: null,
-            value2: useFormatPrice(data?.delivery?.value),
+            value2: useFormatNumber(data?.delivery?.value),
             condition: data?.delivery?.status
         },
         ...data?.paymentMethod?.filter(item => item?.status === true)
             .map((item) => ({
                 label: paymentLabel[item?.method],
-                value2: useFormatPrice(item?.value),
+                value2: useFormatNumber(item?.value),
                 condition: true
             })) || [],
         {
-            subtitle: 'TOTAL A PAGAR',
-            value1: useFormatPrice(data?.totalTaxes?.value),
-            value2: useFormatPrice(data?.totalPurchase?.value),
+            subtitle: 'TOTAL',
+            value1: useFormatNumber(data?.totalTaxes?.value),
+            value2: useFormatNumber(data?.totalPurchase?.value),
             condition: true,
             spacingEnd: true,
             spacingStart: true, 
         },
         {
             label: data?.change?.value >= 0 ? "CAMBIO" : "FALTANTE",
-            value2: useFormatPrice(data?.change?.value),
+            value2: useFormatNumber(data?.change?.value),
             condition: true
         },
         {
             label: 'BALANCE ACTUAL',
-            value2: useFormatPrice(pendingBalance),
+            value2: useFormatNumber(pendingBalance),
             condition: data?.change?.value < 0
         }
     ]

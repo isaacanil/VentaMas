@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-
-import { OrderItem } from '../../ListItem/ClientCard'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 import { tableConfig } from './tableConfig'
-import { selectUser } from '../../../../../../features/auth/userSlice'
 import { useSelector } from 'react-redux'
+import { selectUser } from '../../../../../../features/auth/userSlice'
 
 export const ClientsListTable = ({ clients = [] }) => {
+  
   const { columns, filterConfig } = tableConfig();
   const data = clients.map(({ client }) => {
     return {

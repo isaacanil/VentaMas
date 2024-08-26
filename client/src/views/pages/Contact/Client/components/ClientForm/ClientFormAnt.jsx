@@ -135,6 +135,7 @@ const ClientFormAnt = ({
                 message: 'Error al Procesar',
                 description: 'Hubo un error al procesar el formulario. Por favor, inténtelo de nuevo.'
             });
+            console.log('error:', info);
         } finally {
             setLoading(false);
         }
@@ -149,6 +150,7 @@ const ClientFormAnt = ({
             label: 'Info. General',
             children: <ClientGeneralInfo
                 form={form}
+                creditLimitForm={creditLimitForm}
                 customerData={customerData}
                 isUpdating={isUpdating}
                 setIsSubmitButtonDisabled={setIsSubmitButtonDisabled}

@@ -40,7 +40,6 @@ export const icons = {
             hide: <FontAwesomeIcon icon={faEyeSlash} />,
         }
     },
-
     arrows: {
         arrowLeft: <FontAwesomeIcon icon={faArrowLeft} />,
         chevronDown: <FontAwesomeIcon icon={faChevronDown} />,
@@ -146,7 +145,6 @@ export const icons = {
             category: <FontAwesomeIcon icon={faRectangleList} />,
             register: <FontAwesomeIcon icon={faReceipt} />,
             settings: <FontAwesomeIcon icon={faGear} />,
-
         },
         unSelected: {
             cashReconciliation: <FontAwesomeIcon icon={faSign} />,
@@ -169,7 +167,6 @@ export const icons = {
     users: {
         provider: <FontAwesomeIcon icon={faUserTie} />,
         client: <FontAwesomeIcon icon={faUser} />,
-
     },
     settings: {
         businessInfo: <FontAwesomeIcon icon={faBuilding} />,
@@ -185,6 +182,4 @@ export const icons = {
         barcode: <FontAwesomeIcon icon={faBarcode} />,
         qrcode: <FontAwesomeIcon icon={faQrcode} />,
     },
-
-
 }

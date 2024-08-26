@@ -56,10 +56,12 @@ export async function checkOpenCashReconciliation(user, transaction = null) {
         const employeeRef = doc(db, 'users', user.uid);
 
         const cashReconciliationRef = collection(db, 'businesses', user.businessID, 'cashCounts');
+
         const q = query(cashReconciliationRef,
             where("cashCount.state", "in", ["open", "closing"]),
             where("cashCount.opening.employee", "==", employeeRef)
         );
+        
         const querySnapshot = await fbGetDocs(q);
 
         if (querySnapshot.empty) {

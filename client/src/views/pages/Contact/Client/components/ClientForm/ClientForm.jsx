@@ -148,7 +148,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                             <input
                                 type="text"
                                 name='tel'
-                                placeholder='8496503586'
+                                placeholder='8097204816'
                                 value={client.tel}
                                 onChange={(e) =>
                                     setClient({

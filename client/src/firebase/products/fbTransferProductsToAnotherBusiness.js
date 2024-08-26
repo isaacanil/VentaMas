@@ -12,10 +12,13 @@ import { nanoid } from "nanoid";
 export const fbTransferProductsToAnotherBusiness = async (businessIdA, businessIdB, limit = 0) => {
     try {
         const productsBusinessA = collection(db, `businesses/${businessIdA}/products`);
+        const productCategoriesBusinessA = collection(db, `businesses/${businessIdA}/categories`);
         const productsBusinessB = collection(db, `businesses/${businessIdB}/products`);
+        const productCategoriesBusinessB = collection(db, `businesses/${businessIdB}/categories`);
         
         const querySnapshot = await getDocs(productsBusinessA);
         let totalProducts = querySnapshot.docs.length;
+        
         console.log(`Total productos encontrados en el negocio origen (${businessIdA}): ${totalProducts}`);
 
         if (limit > 0 && limit < totalProducts) {
