@@ -4,6 +4,7 @@ import Typography from '../../../../templates/system/Typografy/Typografy';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 const Greeting = styled.h1`
   font-size: 20px;
@@ -15,19 +16,17 @@ const Name = styled.span`
   font-weight: bold;
 `;
 
+
 const PersonalizedGreeting = ({ greetingText = 'Bienvenido de vuelta' }) => {
   const user = useSelector(selectUser)
   const business = useSelector(selectBusinessData)
 
-  if(!user) return null
+  const realName = user?.realName?.trim();
+  const username = user?.username?.trim();
 
-  const nameToDisplay = user?.realName 
-    ? user.realName 
-    : user?.username 
-      ? user.username 
-      : 'Usuario';
+  const nameToDisplay = realName || username || 'Usuario';
   
-      const capitalizedFirstName = nameToDisplay.charAt(0).toUpperCase() + nameToDisplay.slice(1);
+  const capitalizedFirstName = nameToDisplay.charAt(0).toUpperCase() + nameToDisplay.slice(1);
 
   return (
     <div>
