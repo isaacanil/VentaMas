@@ -20,8 +20,14 @@ const PersonalizedGreeting = ({ greetingText = 'Bienvenido de vuelta' }) => {
   const business = useSelector(selectBusinessData)
 
   if(!user) return null
+
+  const nameToDisplay = user?.realName 
+    ? user.realName 
+    : user?.username 
+      ? user.username 
+      : 'Usuario';
   
-  const capitalizedFirstName = user?.username?.charAt(0)?.toUpperCase() + user?.username?.slice(1);
+      const capitalizedFirstName = nameToDisplay.charAt(0).toUpperCase() + nameToDisplay.slice(1);
 
   return (
     <div>
