@@ -2,11 +2,11 @@ import { createSlice } from '@reduxjs/toolkit'
 import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
 import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/WarrantyInfo'
 
-const emptyProduct = {
+const defaultProduct = {
     status: false,
     product: {
-        productName: '',
-        productImageURL: '',
+        name: '',
+        image: '',
         category: '',
         pricing: {
             cost: 0,
@@ -39,51 +39,17 @@ const emptyProduct = {
         amountToBuy: 1,
         createdBy: 'unknown',
         id: '',
+        order: 1,
         isVisible: true,
+        footer: '',
+        measurement: '',
         trackInventory: true,
         qrcode: '',
         barcode: '',
     }
 }
 
-const initialState = {
-    status: false,
-    product: {
-        name: '',
-        image: '',
-        category: '',
-        pricing: {
-            cost: 0,
-            price: 0,
-            listPrice: 0,
-            avgPrice: 0,
-            minPrice: 0,
-            tax: initTaxes[0],
-        },
-        promotions: {
-            start: null,
-            end: null,
-            discount: 0,
-            isActive: false,
-        },
-        weightDetail: {
-            isSoldByWeight: false,
-            weightUnit: 'lb',
-            weight: 0,
-        },
-        size: '',
-        type: '',
-        stock: 0,
-        netContent: '',
-        qrcode: '',
-        barcode: '',
-        order: 1,
-        amountToBuy: 1,
-        id: '',
-        trackInventory: true,
-        isSoldByWeight: false,
-    }
-}
+const initialState = { ...defaultProduct }
 
 export const updateProductSlice = createSlice({
     name: 'updateProduct',
@@ -99,14 +65,12 @@ export const updateProductSlice = createSlice({
                 ...product,
             };
         },
-
         setProduct: (state, action) => {
             const product = action.payload
             state.product = {
                 ...state.product,
                 ...product,
             }
-          
         },
         ChangeProductImage: (state, action) => {
             state.product.image = action.payload
@@ -120,10 +84,9 @@ export const updateProductSlice = createSlice({
                 state.product.pricing.price = action?.payload?.pricing?.listPrice
             }
         },
-    
         clearUpdateProductData: (state) => {
-            state.product = emptyProduct.product
-            state.status = emptyProduct.status
+            state.product = defaultProduct.product
+            state.status = defaultProduct.status
         }
     }
 })
