@@ -35,8 +35,6 @@ export default function WarehouseModal({ warehouse, onClose }) {
     if (view === "rowShelf") setSelectedRowShelf(data);
     if (view === "segment") setSelectedSegment(data);
   };
-  
-  
 
   console.log("selectedShelf => ", selectedShelf);  
   console.log("selectedRowShelf => ", selectedRowShelf);
