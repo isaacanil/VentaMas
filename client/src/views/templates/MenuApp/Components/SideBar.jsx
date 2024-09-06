@@ -32,12 +32,6 @@ const sidebarVariant = {
         }
     }
 };
-const sidebarTitleGroup = {
-    sales: 'Ventas',
-    purchase: 'Compras',
-    inventory: 'Inventario',
-    financialManagement: 'Gestión financiera',
-}
 
 export const SideBar = ({ isOpen }) => {
     const user = useSelector(selectUser);

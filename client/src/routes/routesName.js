@@ -40,6 +40,9 @@ const INVENTORY_TERM = {
     CREATE_PRODUCT: `${inventoryBasePath}/create-product`,
     INVENTORY_ITEMS: '/inventory/items',
     CATEGORIES: '/inventory/categories',
+    WAREHOUSES: `${inventoryBasePath}/warehouses`, // Listado de almacenes
+    CREATE_WAREHOUSE: `${inventoryBasePath}/warehouses/create`, // Crear un nuevo almacén
+    EDIT_WAREHOUSE: `${inventoryBasePath}/warehouses/edit/:id`,
     INVENTORY_SERVICES: '/inventory/services',
     PRODUCT_IMAGES_MANAGER: '/inventory/product-images-manager',
     PRODUCT_OUTFLOW: '/inventory/product_outflow',

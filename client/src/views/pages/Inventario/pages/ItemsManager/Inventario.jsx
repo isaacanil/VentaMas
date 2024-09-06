@@ -1,12 +1,9 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-  MenuApp,
-} from '../../../../index';
+import {MenuApp,} from '../../../../index';
 import styled from 'styled-components';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 import { ProductsTable } from './components/ProductTable/ProductsTable';
-
 
 export const Inventory = () => {
   const dispatch = useDispatch();
@@ -14,7 +11,6 @@ export const Inventory = () => {
   const { products } = useGetProducts();
 
   return (
-
     <Container>
       <MenuApp
         displayName='Productos'

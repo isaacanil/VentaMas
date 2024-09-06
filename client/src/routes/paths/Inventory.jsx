@@ -5,6 +5,7 @@ import validateRouteAccess from "../requiereAuthProvider";
 import ROUTES_NAME from "../routesName";
 import {ProductOutflow} from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
 import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";
+import { Warehouse } from "../../views/pages/Inventory/components/Warehouse/Warehouse";
 const { 
     INVENTORY_ITEMS, 
     CATEGORIES, 
@@ -12,6 +13,7 @@ const {
     PRODUCT_IMAGES_MANAGER, 
     PRODUCT_OUTFLOW,
     CREATE_PRODUCT,
+    WAREHOUSES
 } = ROUTES_NAME.INVENTORY_TERM;
 
 const Routes = [
@@ -26,6 +28,10 @@ const Routes = [
     {
         path: PRODUCT_IMAGES_MANAGER,
         element: validateRouteAccess(<MultimediaManager />),
+    },
+    {
+        path: WAREHOUSES,
+        element: validateRouteAccess(<Warehouse />),
     },
     {
         path: INVENTORY_SERVICES,

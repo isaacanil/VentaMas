@@ -7,6 +7,7 @@ const {
     INVENTORY_SERVICES,
     PRODUCT_IMAGES_MANAGER, 
     PRODUCT_OUTFLOW, 
+    WAREHOUSES,
     SERVICE_OUTFLOW
 } = ROUTES_NAME.INVENTORY_TERM
 
@@ -31,6 +32,12 @@ const inventory = [
                 title: 'Categoría',
                 icon: icons.menu.unSelected.category,
                 route: CATEGORIES,
+                group: 'inventoryItems'
+            },
+            {
+                title: 'Almacenes',
+                route: WAREHOUSES,
+                icon: null,
                 group: 'inventoryItems'
             },
             {
