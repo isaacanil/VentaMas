@@ -20,6 +20,7 @@ export default defineConfig({
   ],
   resolve: {
     alias:{
+      'react-is': path.resolve(__dirname, 'node_modules/react-is/index.js'),
       '@': path.resolve(__dirname, "./src"),
       '@component': path.resolve(__dirname, './src/views/component'),
       '@pages': path.resolve(__dirname, './src/views/pages'),

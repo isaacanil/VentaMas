@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as antd from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
 import RowShelfForm from "../forms/RowShelfForm/RowShelfForm";
 import SegmentForm from "../forms/SegmentForm/SegmentForm";
+import { DetailContainer, DetailItem } from "./WarehouseContent";
+import { getAllRowShelves, listenAllRowShelves } from "../../../../../../firebase/warehouse/RowShelfService";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "../../../../../../features/auth/userSlice";
+import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
+import { getAllSegments, listenAllSegments } from "../../../../../../firebase/warehouse/SegmentService";
+import { useNavigate } from "react-router-dom";
 
 const { Modal, Button, List } = antd;
 
@@ -55,23 +62,39 @@ const Body = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
-export default function RowShelfContent({ rowShelf, onNavigate }) {
+export default function RowShelfContent( ) {
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const [products, setProducts] = useState([
-    { id: 1, name: "Producto Z", quantity: 20, batch: "Lote Z", expirationDate: null },
-    { id: 2, name: "Producto W", quantity: 30, batch: "Lote W", expirationDate: null },
-    { id: 3, name: "Producto X", quantity: 25, batch: "Lote X", expirationDate: null },
-    { id: 4, name: "Producto Y", quantity: 15, batch: "Lote Y", expirationDate: null },
-    { id: 5, name: "Producto V", quantity: 10, batch: "Lote V", expirationDate: null },
-  ]);
-
-  const [segments, setSegments] = useState([
-    { id: 1, name: "Segmento 1", capacity: 30 },
-    { id: 2, name: "Segmento 2", capacity: 20 },
-  ]);
-
+  const { selectedWarehouse, selectedShelf, selectedRowShelf } = useSelector(selectWarehouse);
+  const rowShelf = selectedRowShelf;
+  const [products, setProducts] = useState([]);
+  const user = useSelector(selectUser);
+  const [segments, setSegments] = useState([]);
   const [isRowShelfFormOpen, setIsRowShelfFormOpen] = useState(false);
   const [isSegmentFormOpen, setIsSegmentFormOpen] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const fetchRowShelves = async () => {
+      try {
+        if (selectedWarehouse && selectedShelf) {
+         await listenAllSegments(
+            user,
+            selectedWarehouse?.id,
+            selectedShelf?.id,
+            selectedRowShelf?.id,
+            setSegments
+          )
+
+        }
+      } catch (error) {
+        console.error("Error fetching row shelves: ", error);
+      }
+    };
+
+    fetchRowShelves();
+  }, [selectedWarehouse, selectedShelf]);
+
+console.log("Rows: ", segments);
 
   const handleSaveProduct = (newProduct) => {
     setProducts([...products, newProduct]);
@@ -81,7 +104,11 @@ export default function RowShelfContent({ rowShelf, onNavigate }) {
   const handleEditRowShelfInfo = () => {
     setIsRowShelfFormOpen(true);
   };
-
+  
+  const onNavigate = (segment) => {
+    navigate(`segment/${segment?.id}`);
+    dispatch(navigateWarehouse({ view: "segment", data: segment }))
+  }
   return (
     <Container>
       <RowShelfInfo>
@@ -95,15 +122,23 @@ export default function RowShelfContent({ rowShelf, onNavigate }) {
             Editar
           </Button>
         </InfoHeader>
-        <p>
-          <strong>Nombre:</strong> {rowShelf.name}
-        </p>
-        <p>
-          <strong>Capacidad:</strong> {rowShelf.capacity} unidades
-        </p>
-        {/* Agregar más detalles si es necesario */}
+        <DetailContainer>
+ 
+          <DetailItem>
+            <strong>Nombre:</strong> {rowShelf?.name}
+          </DetailItem>
+          <DetailItem>
+            <strong>Nombre Corto:</strong> {rowShelf?.shortName}
+          </DetailItem>
+          <DetailItem>
+            <strong>Capacidad:</strong> {rowShelf?.capacity}
+          </DetailItem>
+          <DetailItem>
+            <strong>Descripción:</strong> {rowShelf?.description}
+          </DetailItem>
+   
+        </DetailContainer>
       </RowShelfInfo>
-
       <Body>
         <SectionContent>
           <SectionHeader>
@@ -143,7 +178,7 @@ export default function RowShelfContent({ rowShelf, onNavigate }) {
           <List
             dataSource={segments}
             renderItem={(segment) => (
-              <List.Item onClick={() => onNavigate("segment", segment, ["Warehouse", rowShelf.name, segment.name])}>
+              <List.Item onClick={() => onNavigate(segment)}>
                 <List.Item.Meta title={segment.name} description={`Capacidad: ${segment.capacity} unidades`} />
               </List.Item>
             )}
@@ -151,16 +186,14 @@ export default function RowShelfContent({ rowShelf, onNavigate }) {
         </SectionContent>
       </Body>
 
-      <RowShelfForm 
+      <RowShelfForm
         visible={isRowShelfFormOpen}
         onClose={() => setIsRowShelfFormOpen(false)}
-        onSave={(newRowShelf) => console.log(newRowShelf)}
       />
 
       <SegmentForm
         visible={isSegmentFormOpen}
         onClose={() => setIsSegmentFormOpen(false)}
-        onSave={(newSegment) => console.log(newSegment)}
       />
 
       {/* Modal para agregar/editar productos */}

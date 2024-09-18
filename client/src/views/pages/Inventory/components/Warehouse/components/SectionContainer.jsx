@@ -38,12 +38,12 @@ const SectionFooter = styled.div`
   margin-top: 10px;
 `;
 
-export default function SectionContainer({ title, items, onAdd, renderItem }) {
+export default function SectionContainer({ title, items = [], onAdd, renderItem }) {
   const [currentPage, setCurrentPage] = useState(1); // Página actual
   const pageSize = 5; // Número de elementos por página
 
   // Calcular el número de páginas totales
-  const totalItems = items.length;
+  const totalItems = Array.isArray(items) ? items.length : 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   // Filtrar los elementos que se mostrarán en la página actual

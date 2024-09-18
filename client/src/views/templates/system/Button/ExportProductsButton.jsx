@@ -11,7 +11,6 @@ import { useSelector } from 'react-redux'
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
 export const ExportProductsButton = () => {
   const {products} = useGetProducts()
-  console.log(products[0])
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const productsArray = getProducts(products, taxReceiptEnabled)
   const tax = {

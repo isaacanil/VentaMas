@@ -10,7 +10,7 @@ import { clearUpdateProductData, selectUpdateProductData } from '../../../../fea
 
 // Definir las columnas de la tabla
 
-export const ProductEditorModal = ({isOpen}) => {
+export const ProductEditorModal = ({ isOpen }) => {
     const [view, setView] = useState('product-form')
     const dispatch = useDispatch();
     const { product, status } = useSelector(selectUpdateProductData)
@@ -28,29 +28,15 @@ export const ProductEditorModal = ({isOpen}) => {
             centered={true}
             open={isOpen}
             width={'1000px'}
-            styles={{
-                maxHeight: 300,
-                overflow: "auto",
-                padding: "0",
-                margin: "0"
-            }}
+            
+       
             title={status === "update" ? `Editar ${product.name}` : "Nuevo Producto"}
             onCancel={handleCloseModal}
             onOk={hideModal}
             footer={null}
-            // footer={[
-            //     <Button key="back" onClick={hideModal}>
-            //         Return
-            //     </Button>,
-            //     <Button key="submit" type="primary" onClick={hideModal}>
-            //         Submit
-            //     </Button>,
-            // ]}
-
         >
-          
             {view === "product-form" && <ProductForm showImageManager={showImageManager} />}
-            {view === "image-manager" && <ImageManager hideImageManager={hideImageManager}/>}
+            {view === "image-manager" && <ImageManager hideImageManager={hideImageManager} />}
 
         </Modal>
     )

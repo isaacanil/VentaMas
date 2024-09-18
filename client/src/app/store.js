@@ -38,6 +38,7 @@ import invoicesSlice from "../features/invoice/invoicesSlice";
 import invoicePreviewReducer from "../features/invoice/invoicePreviewSlice";
 import accountsReceivableReducer from "../features/accountsReceivable/accountsReceivableSlice";
 import accountsReceivablePaymentReducer from "../features/accountsReceivable/accountsReceivablePaymentSlice";
+import warehouseReducer from "../features/warehouse/warehouseSlice";
 
 export const store = configureStore({
   reducer: {
@@ -79,7 +80,8 @@ export const store = configureStore({
     ...expenseSlices,
     ...purchaseSlices,
     cashCountState: cashCountState,
-    barcodePrintModal: barcodePrintModalReducer
+    barcodePrintModal: barcodePrintModalReducer,
+    warehouse: warehouseReducer,
   }
   ,
 })

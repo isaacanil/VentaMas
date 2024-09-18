@@ -15,7 +15,7 @@ export const FeatureCardList = ({ title, cardData }) => {
 
     return (
         <Container>
-            <Title level={5}>
+            <Title level={4}>
                 {title && title}
             </Title>
             <Wrapper >
@@ -42,27 +42,30 @@ export const FeatureCardList = ({ title, cardData }) => {
 }
 const Container = styled.div`
     display: grid;
-    gap: 0.4em;
+    gap: 0.6em;
+    background-color: #fff;
+    padding: 1em;
+    border-radius: 8px;
     `
 const Wrapper = styled.div`
     display: grid;
     border-radius: 10px;
-    grid-template-columns: repeat(auto-fit, minMax(400px, 1fr));
-    gap: 0.4em;
+    grid-template-columns: repeat(auto-fit, minMax(300px, 1fr));
+    gap: 1.2em 0.6em;
 `
 const Category = styled.div`
     display: grid;
     gap: 0.6em;
-    padding: 0.6em;
+    padding: 0em;
     align-content: start;
-    background-color: var(--color3);
+
     border-radius: 0.4em;
 `
 const FeatureContainer = styled.div`
     text-decoration: none;
     display: grid;
     grid-template-columns: ${props => props.cardsCount === 1 ? 'repeat(auto-fill, minmax(200px, 1fr))' : 'repeat(auto-fit, minmax(200px, 1fr))'};
-    gap: 0.4em;
+    gap: 0.6em;
     list-style: none;
     padding: 0;
 `
@@ -70,8 +73,9 @@ const Title = styled(Typography.Title)`
     color:  #0086df !important;
     margin: 0 !important;
 `
-const CategoryHeader = styled.h3`
-    font-size: 0.9em;   
+const CategoryHeader = styled.span`
+    font-size: 1em;  
+    font-weight: 500; 
     margin: 0;
     color: #333;
 `;

@@ -1,6 +1,4 @@
 import React from 'react'
-import { VentaMenuToolbar } from './Page/VentaMenuToolBar'
-import { InventoryMenuToolbar } from './Page/InventoryMenuToolbar'
 import { toolbarConfig } from './GlobalMenuConfig'
 import styled from 'styled-components'
 

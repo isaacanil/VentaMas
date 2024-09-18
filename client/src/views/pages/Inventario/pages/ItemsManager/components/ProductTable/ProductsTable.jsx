@@ -107,9 +107,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       maxWidth: '0.4fr',
       align: 'right',
       cell: ({ value }) => {
-        
         const price = getTotalPrice(value, taxReceiptEnabled)
-        console.log("value ", value)
         const unit = value?.weightDetail?.weightUnit
         const isSoldByWeight = value?.weightDetail?.isSoldByWeight
         if (isSoldByWeight) {
@@ -161,36 +159,8 @@ export const ProductsTable = ({ products, searchTerm }) => {
           ]
         }
 
-        // const menu = (
-        //   <Menu onClick={({ key }) => {
-        //     if (key === 'edit') {
-        //       handleUpdateProduct(value);
-        //     } else if (key === 'delete') {
-        //       handleDeleteProduct(user, value);
-        //     }
-        //   }}>
-        //     <Menu.Item key="edit" icon={<EditOutlined />}>
-        //       Editar
-        //     </Menu.Item>
-        //     <Menu.Item key="print" icon={<PrinterOutlined />}>
-        //       Imprimir Barcode
-        //     </Menu.Item>
-        //     <Menu.Item key="delete" icon={<DeleteOutlined />} danger>
-        //       Eliminar
-        //     </Menu.Item>
-        //   </Menu>
-        // );
         return (
           <ButtonGroup>
-            {/* <Button
-              icon={icons?.operationModes?.edit}
-              onClick={() => handleUpdateProduct(value)}
-            />
-            <Button
-              icon={icons.operationModes.delete}
-              danger
-              onClick={() => handleDeleteProduct(user, value)}
-            /> */}
             <Dropdown menu={menu}>
               <Button icon={<MoreOutlined />} />
             </Dropdown>

@@ -13,6 +13,4 @@ export interface Warehouse {
       height: number;
     };
     capacity: number;
-    businessId: string;
   }
-  

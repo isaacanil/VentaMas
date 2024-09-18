@@ -14,7 +14,10 @@ export const DashboardShortcuts = () => {
     return (
         <Container>
             {abilities?.can('developerAccess', 'all') && (
-                <FeatureCardList title={"Funciones de desarrollador"} cardData={developer} />
+                <FeatureCardList
+                    title={"Funciones de desarrollador"}
+                    cardData={developer}
+                />
             )}
             <FeatureCardList
                 title={"Atajos"}
@@ -25,5 +28,6 @@ export const DashboardShortcuts = () => {
 }
 const Container = styled.div`
     display: grid;
-    gap: 0.4em;
+    gap: 1.4em;
+    
     `

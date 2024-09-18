@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as antd from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { ShelfForm } from "../forms/ShelfForm/ShelfForm";
 import RowShelfForm from "../forms/RowShelfForm/RowShelfForm";
+import { DetailContainer } from "./WarehouseContent";
+import { selectUser } from "../../../../../../features/auth/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
+import { getAllRowShelves, listenAllRowShelves } from "../../../../../../firebase/warehouse/RowShelfService";
+import { useNavigate } from "react-router-dom";
+
 
 const { Modal, Button, List } = antd;
 
@@ -56,28 +63,65 @@ const Body = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
-export default function ShelfContent({ shelf, onNavigate }) {
-  const [rowShelves, setRowShelves] = useState([
-    { id: 1, name: "Fila A1", capacity: 50 },
-    { id: 2, name: "Fila B2", capacity: 75 },
-    { id: 3, name: "Fila C3", capacity: 60 },
-  ]);
-  const [selectedRowShelf, setSelectedRowShelf] = useState(null);
+const DetailItem = styled.p`
+  margin: 8px 0;
+  font-size: 14px;
+  color: #333;
+
+
+  & > strong {
+    font-weight: 600;
+ /* Color distintivo para los títulos de los detalles */
+  }
+`;
+
+export default function ShelfContent() {
+  const [rowShelves, setRowShelves] = useState([]);
+  const [products, setProducts] = useState([]);
+  const user = useSelector(selectUser);
+
+  const { selectedWarehouse, selectedShelf } = useSelector(selectWarehouse);
+  const shelf = selectedShelf;
+
   const [isRowShelfFormOpen, setIsRowShelfFormOpen] = useState(false);
   const [isOpenShelfForm, setIsOpenShelfForm] = useState(false);
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const [products, setProducts] = useState([
-    { id: 1, name: "Producto X", quantity: 30, batch: "Lote A", expirationDate: null },
-  ]);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    // Llamar a la función de lectura de filas de estante cuando el componente se monte
+    const fetchRowShelves = async () => {
+      try {
+        if (selectedWarehouse && selectedShelf) {
+          await listenAllRowShelves(
+            user,
+            selectedWarehouse?.id,
+            selectedShelf?.id,
+            setRowShelves
+          )
+        
+        }
+      } catch (error) {
+        console.error("Error fetching row shelves: ", error);
+      }
+    };
+
+    fetchRowShelves();
+  }, [selectedWarehouse, selectedShelf]);
 
   const handleSaveProduct = (newProduct) => {
     setProducts([...products, newProduct]);
     setIsProductFormOpen(false);
   };
-  
+
   const handleSaveRowShelf = (newRowShelf) => {
     setRowShelves([...rowShelves, newRowShelf]);
     setIsRowShelfFormOpen(false);
+  };
+
+  const onNavigate = (row) => {
+    navigate(`row/${row.id}`);
+    dispatch(navigateWarehouse({ view: "rowShelf", data: row })); // Actualiza el estado global de Redux
   };
 
   const handleEditShelfInfo = () => {
@@ -96,12 +140,28 @@ export default function ShelfContent({ shelf, onNavigate }) {
             Editar
           </Button>
         </InfoHeader>
-        <p>
-          <strong>Nombre:</strong> {shelf.name}
-        </p>
-        <p>
-          <strong>Capacidad:</strong> {shelf.capacity} unidades
-        </p>
+        <DetailContainer>
+ 
+          <DetailItem>
+            <strong>Nombre:</strong> {shelf?.name }
+          </DetailItem>
+          <DetailItem>
+            <strong>Nombre Corto:</strong> {shelf?.shortName}
+          </DetailItem>
+   
+          <DetailItem>
+            <strong>Capacidad de Fila:</strong> {shelf?.rowCapacity} unidades
+          </DetailItem>
+          <DetailItem>
+            <strong>Descripción:</strong> {shelf?.description}
+          </DetailItem>
+          <DetailItem>
+            <strong>Fecha de Creación:</strong> {shelf?.createdAt?.seconds}
+          </DetailItem>
+          <DetailItem>
+            <strong>Última Actualización:</strong> {shelf?.updatedAt?.seconds}
+          </DetailItem>
+        </DetailContainer>
         {/* Agregar más detalles si es necesario */}
       </ShelfInfo>
 
@@ -123,7 +183,7 @@ export default function ShelfContent({ shelf, onNavigate }) {
               <List.Item>
                 <List.Item.Meta
                   title={product.name}
-                  description={`Cantidad: ${product.quantity}, Lote: ${product.batch}`}
+                  description={`Cantidad: ${product?.quantity}, Lote: ${product?.batch}`}
                 />
               </List.Item>
             )}
@@ -144,7 +204,7 @@ export default function ShelfContent({ shelf, onNavigate }) {
           <List
             dataSource={rowShelves}
             renderItem={(row) => (
-              <List.Item onClick={() => onNavigate("rowShelf", row, ["Warehouse", shelf.name, row.name])}>
+              <List.Item onClick={() => onNavigate(row)}>
                 <List.Item.Meta title={row.name} description={`Capacidad: ${row.capacity} unidades`} />
               </List.Item>
             )}

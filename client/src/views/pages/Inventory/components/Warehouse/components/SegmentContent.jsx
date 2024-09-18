@@ -4,6 +4,9 @@ import * as antd from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
 import SegmentForm from "../forms/SegmentForm/SegmentForm";
+import { DetailContainer, DetailItem } from "./WarehouseContent";
+import { useSelector } from "react-redux";
+import { selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
 
 const { Modal, Button, List } = antd;
 
@@ -56,14 +59,11 @@ const Body = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
-export default function SegmentContent({ segment }) {
+export default function SegmentContent() {
   // Estado para almacenar los productos asociados con el segmento
-  const [products, setProducts] = useState([
-    { id: 1, name: "Producto Y", quantity: 20, batch: "Lote B", expirationDate: "2024-12-31" },
-  ]);
-
-
-
+  const [products, setProducts] = useState([]);
+  const {selectedSegment} = useSelector(selectWarehouse)
+  const segment = selectedSegment;
   // Estado para manejar la apertura del formulario de productos
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
   const [isSegmentFormOpen, setIsSegmentFormOpen] = useState(false);
@@ -98,11 +98,26 @@ export default function SegmentContent({ segment }) {
             Editar
           </Button>
         </InfoHeader>
+        <DetailContainer>
+          <DetailItem>
+            <strong>Nombre:</strong> {segment?.name}
+          </DetailItem>
+          <DetailItem>
+            <strong>Nombre Corto:</strong> {segment?.shortName}
+          </DetailItem>
+          <DetailItem>
+            <strong>Capacidad:</strong> {segment?.capacity}
+          </DetailItem>
+          <DetailItem>
+            <strong>Descripción:</strong> {segment?.description}
+          </DetailItem>
+   
+        </DetailContainer>
         <p>
-          <strong>Nombre:</strong> {segment.name}
+          <strong>Nombre:</strong> {segment?.name}
         </p>
         <p>
-          <strong>Capacidad:</strong> {segment.capacity} unidades
+          <strong>Capacidad:</strong> {segment?.capacity} unidades
         </p>
         {/* Agregar más detalles si es necesario */}
       </SegmentInfo>

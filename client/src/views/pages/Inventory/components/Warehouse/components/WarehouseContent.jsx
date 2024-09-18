@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as antd from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import SectionContainer from "./SectionContainer";
-import {WarehouseForm} from "../forms/WarehouseForm/WarehouseForm";
+import { WarehouseForm } from "../forms/WarehouseForm/WarehouseForm";
 import { ShelfForm } from "../forms/ShelfForm/ShelfForm";
+import { createShelf, deleteShelf, listenAllShelves, updateShelf } from "../../../../../../firebase/warehouse/shelfService";
+import { selectUser } from "../../../../../../features/auth/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
+import { useNavigate } from "react-router-dom";
+import { ProductStockForm } from "../forms/ProductStockForm/ProductStockForm";
 
-const { Modal, Button, List } = antd;
+const { Modal, Button, List, message } = antd;
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`
@@ -27,12 +33,23 @@ const SectionTitle = styled.h3`
   
 `;
 
-const DetailContainer = styled.div`
+export const DetailContainer = styled.div`
   display: grid;
   gap: 0em 0.6em;
  
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 
+`;
+export const DetailItem = styled.p`
+  margin: 8px 0;
+  font-size: 14px;
+  color: #333;
+
+
+  & > strong {
+    font-weight: 600;
+ /* Color distintivo para los títulos de los detalles */
+  }
 `;
 const InfoHeader = styled.div`
   display: flex;
@@ -48,55 +65,42 @@ const Body = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
-export default function WarehouseContent({ warehouse, onNavigate }) {
-  const [shelves, setShelves] = useState([
-    { id: 1, name: "Estante A1", products: 150 },
-    { id: 2, name: "Estante B2", products: 200 },
-    { id: 3, name: "Estante C3", products: 180 },
-    { id: 1, name: "Estante A1", products: 150 },
-    { id: 2, name: "Estante B2", products: 200 },
-    { id: 3, name: "Estante C3", products: 180 },
-    { id: 1, name: "Estante A1", products: 150 },
-    { id: 2, name: "Estante B2", products: 200 },
-    { id: 3, name: "Estante C3", products: 180 },
-    { id: 1, name: "Estante A1", products: 150 },
-    { id: 2, name: "Estante B2", products: 200 },
-    { id: 3, name: "Estante C3", products: 180 },
-  ]);
-
-  const [selectedShelf, setSelectedShelf] = useState(null);
+export default function WarehouseContent() {
+  const [shelves, setShelves] = useState([]);
+  const [products, setProducts] = useState([]);
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false); // Estado para el modal de almacén
   const [isShelfFormOpen, setIsShelfFormOpen] = useState(false); // Estado para el modal de estantes
+  const { selectedWarehouse } = useSelector(selectWarehouse);
+  const warehouse = selectedWarehouse;
+  const user = useSelector(selectUser);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-
-  const [products, setProducts] = useState([
-    { id: 1, name: "Producto A", quantity: 50, batch: "Lote 001", expirationDate: null },
-    { id: 2, name: "Producto B", quantity: 100, batch: "Lote 002", expirationDate: null },
-    { id: 1, name: "Producto A", quantity: 50, batch: "Lote 001", expirationDate: null },
-    { id: 2, name: "Producto B", quantity: 100, batch: "Lote 002", expirationDate: null },
-    { id: 1, name: "Producto A", quantity: 50, batch: "Lote 001", expirationDate: null },
-    { id: 2, name: "Producto B", quantity: 100, batch: "Lote 002", expirationDate: null },
-  ]);
+  useEffect(() => {
+    if (selectedWarehouse?.id) {
+      const unsubscribe = listenAllShelves(user, warehouse.id, setShelves);
+      return () => unsubscribe();
+    }
+  }, [selectedWarehouse, user]);
 
   const handleEditWarehouseInfo = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveShelf = (newShelf) => {
-    console.log(newShelf);
-    setIsShelfFormOpen(false);
-  }
-
-  const handleSaveWarehouse = (newWarehouse) => {
-    console.log(newWarehouse);
-    setIsFormOpen(false);
-  }
+  const onNavigate = (shelf) => {
+    navigate(`shelf/${shelf.id}`);
+    dispatch(navigateWarehouse({ view: "shelf", data: shelf }));
+  };
+  const handleSaveProduct = (newProduct) => {
+    setProducts([...products, newProduct]);
+    setIsProductFormOpen(false);
+  };
 
   return (
     <Container>
       <WarehouseInfo>
-      <InfoHeader>
+        <InfoHeader>
           <SectionTitle>Información del Almacén</SectionTitle>
           <Button
             type="default"
@@ -106,22 +110,22 @@ export default function WarehouseContent({ warehouse, onNavigate }) {
             Editar
           </Button>
         </InfoHeader>
-<DetailContainer>
-
-        <p><strong>#:</strong> {warehouse.number}</p>
-        <p><strong>Nombre:</strong> {warehouse.name}</p>
-        <p><strong>Nombre Corto:</strong> {warehouse.shortName}</p>
-        <p><strong>Descripción:</strong> {warehouse.description}</p>
-        <p><strong>Propietario:</strong> {warehouse.owner}</p>
-        <p><strong>Ubicación:</strong> {warehouse.location}</p>
-        <p><strong>Dirección:</strong> {warehouse.address}</p>
-        <p><strong>Dimensiones:</strong> {`Largo: ${warehouse.dimension.length} m, Ancho: ${warehouse.dimension.width} m, Altura: ${warehouse.dimension.height} m`}</p>
-        <p><strong>Capacidad:</strong> {warehouse.capacity} m³</p>
-        {/* <p><strong>ID del Negocio:</strong> {warehouse.businessId}</p> */}
-</DetailContainer>
+        {warehouse && (
+          <DetailContainer>
+            <p><strong>#:</strong> {warehouse.number}</p>
+            <p><strong>Nombre:</strong> {warehouse.name}</p>
+            <p><strong>Nombre Corto:</strong> {warehouse.shortName}</p>
+            <p><strong>Descripción:</strong> {warehouse.description}</p>
+            <p><strong>Propietario:</strong> {warehouse.owner}</p>
+            <p><strong>Ubicación:</strong> {warehouse.location}</p>
+            <p><strong>Dirección:</strong> {warehouse.address}</p>
+            <p><strong>Dimensiones:</strong> {`Largo: ${warehouse.dimension.length} m, Ancho: ${warehouse.dimension.width} m, Altura: ${warehouse.dimension.height} m`}</p>
+            <p><strong>Capacidad:</strong> {warehouse.capacity} m³</p>
+          </DetailContainer>
+        )}
       </WarehouseInfo>
       <Body>
-      <SectionContainer
+        <SectionContainer
           title="Productos"
           items={products}
           onAdd={() => setIsProductFormOpen(true)}
@@ -134,53 +138,41 @@ export default function WarehouseContent({ warehouse, onNavigate }) {
             </List.Item>
           )}
         />
-          <SectionContainer
+        <SectionContainer
           title="Estantes"
           items={shelves}
           onAdd={() => setIsShelfFormOpen(true)}
           renderItem={(shelf) => (
-            <List.Item  onClick={() => onNavigate("shelf", shelf, ["Warehouse", shelf.name])}>
+            <List.Item onClick={() => onNavigate(shelf)}>
               <List.Item.Meta
                 title={shelf.name}
-                description={`Productos: ${shelf.products} unidades`}
+                description={
+                  <>
+                    <p><strong>Nombre Corto:</strong> {shelf.shortName}</p>
+                    <p><strong>Capacidad de Fila:</strong> {shelf.rowCapacity}</p>
+                  </>
+                }
               />
             </List.Item>
           )}
         />
       </Body>
-      {/* Modal para agregar/editar productos */}
-
       <WarehouseForm
-        visible={isFormOpen}
+        isOpen={isFormOpen}
         initialData={warehouse}
         onClose={() => setIsFormOpen(false)}
-        onSave={handleSaveWarehouse}
       />
-        {/* Modal para agregar/editar estantes */}
-        <ShelfForm
+      <ShelfForm
         visible={isShelfFormOpen}
         onClose={() => setIsShelfFormOpen(false)}
-        onSave={handleSaveShelf}
       />
-
-      <Modal
-        title="Añadir/Editar Producto"
-        open={isProductFormOpen}
-        onCancel={() => setIsProductFormOpen(false)}
-        footer={null}
-      >
-        {/* Aquí puedes agregar el formulario de producto */}
-      </Modal>
-
-      {/* Modal para agregar/editar estantes */}
-      <Modal
-        title="Añadir/Editar Estante"
-        open={isShelfFormOpen}
-        onCancel={() => setIsShelfFormOpen(false)}
-        footer={null}
-      >
-        {/* Aquí puedes agregar el formulario de estante */}
-      </Modal>
+      <ProductStockForm
+          isOpen={isProductFormOpen}
+          onClose={() => setIsProductFormOpen(false)}
+          locationType="Warehouse" // Tipo de ubicación
+          initialData={null} // Si es un producto nuevo, null
+          onSave={handleSaveProduct}
+        />
     </Container>
   );
 }

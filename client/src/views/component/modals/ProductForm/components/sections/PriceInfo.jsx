@@ -12,16 +12,12 @@ export const PriceInfo = () => {
             id="part-3"
             size='small'
         >
-            <Row
-                gutter={16}
-            >
-                <Col
-                  
-                >
+            <Row gutter={16} >
+                <Col>
                     <Form.Item
                         name="isVisible"
                         label=""
-                        valuePropName="checked" 
+                        valuePropName="checked"
                         help="Determina si el producto aparecerá en la facturación."
                     >
                         <Checkbox
@@ -32,15 +28,11 @@ export const PriceInfo = () => {
                         </Checkbox>
                     </Form.Item>
                 </Col>
-               
+
             </Row>
-            <Row
-                gutter={16}
-            >
-                <Col
-                    span={12}
-                >
-                    <Form.Item name={['pricing','cost']} label="Costo" rules={[{ required: true }]}>
+            <Row gutter={16}>
+                <Col span={12} >
+                    <Form.Item name={['pricing', 'cost']} label="Costo" rules={[{ required: true }]}>
                         <InputNumber
                             placeholder=""
                             style={{
@@ -53,23 +45,26 @@ export const PriceInfo = () => {
                     span={12}
                 >
                     <Form.Item
-                        name={["pricing","tax"]}
+                        name={["pricing", "tax"]}
                         label="Impuesto"
                         help={taxReceiptEnabled ? "" : "El impuesto no se aplicará a la venta del producto. La facturación de impuestos está desactivada."}
                         rules={[{ required: true }]}>
-                        <Select
-                            defaultActiveFirstOption
-                        >
+                        <Select defaultActiveFirstOption >
                             {
-                                initTaxes.map(( tax ) => (
-                                    <Option value={JSON.stringify(tax)}>{taxLabel(tax)}</Option>
+                                initTaxes.map((tax, index) => (
+                                    <Option
+                                        key={tax}
+                                        value={JSON.stringify(tax)}
+                                    >
+                                        {taxLabel(tax)}
+                                    </Option>
                                 ))
                             }
 
                         </Select>
                     </Form.Item>
                 </Col>
-              
+
             </Row>
             <Row
                 gutter={16}

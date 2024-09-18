@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from "react";
 import * as antd from "antd";
 import styled from "styled-components";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
 
 const { Button, Input, InputNumber, Form, Modal } = antd;
-
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const CardTitle = styled.h2`
-  margin-left: 10px;
-  font-size: 18px;
-`;
 
 const CardDescription = styled.p`
   color: #888;
@@ -34,8 +26,9 @@ const StyledButton = styled(Button)`
   }
 `;
 
-export function WarehouseForm({ visible, onClose, onSave, initialData = null }) {
+export function WarehouseForm({ isOpen, onClose, initialData = null }) {
   // Verificamos si hay datos iniciales para determinar si estamos en modo de creación o actualización
+  const user = useSelector(selectUser);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -52,6 +45,7 @@ export function WarehouseForm({ visible, onClose, onSave, initialData = null }) 
     capacity: 0,
     businessId: "",
   });
+  console.log("formData ------------ ", formData);
 
   useEffect(() => {
     if (initialData) {
@@ -79,19 +73,23 @@ export function WarehouseForm({ visible, onClose, onSave, initialData = null }) 
     });
   };
 
-  const handleSubmit = () => {
-    const warehouseData = {
-      ...formData,
-      id: initialData ? initialData.id : `warehouse-${Date.now()}`, // Mantener el ID existente si estamos en modo actualización
-    };
-    onSave(warehouseData); // Usar la prop onSave para guardar los datos
-    onClose(); // Cerrar el modal al enviar
+  const handleSubmit = async () => {
+    try {
+      if (initialData) {
+        await updateWarehouse(user, initialData?.id, formData); // Actualizar almacén
+      } else {
+        await createWarehouse(user, formData); // Crear nuevo almacén
+      }
+      onClose(); // Cerrar el modal al enviar
+    } catch (error) {
+      antd.message.error("Ocurrió un error al procesar la solicitud.");
+    }
   };
 
   return (
     <Modal
       title={initialData ? "Actualizar Información del Almacén" : "Información del Almacén"}
-      open={visible}
+      open={isOpen}
       onCancel={onClose}
       footer={null} // Eliminamos el footer predeterminado
     >

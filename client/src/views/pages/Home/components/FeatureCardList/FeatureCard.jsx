@@ -17,7 +17,8 @@ const Container = styled(Link)`
         overflow: hidden;
          /* Tus estilos para el enlace de la tarjeta de funciones aquí */
             background-color: var(--White);
-            min-height: 3em;
+            min-height: 3.2em;
+            border: 1px solid #e7e7e7;
           width: 100%;
           padding: 0.4em 0.8em;
           display:grid;

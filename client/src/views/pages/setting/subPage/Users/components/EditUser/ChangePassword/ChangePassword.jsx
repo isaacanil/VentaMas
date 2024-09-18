@@ -26,7 +26,6 @@ export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose
         }
     }
     const handleCancel = () => {
-        console.log('handleCancel')
         setIsOpen(false)
     }
     useEffect(() => {

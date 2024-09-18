@@ -10,64 +10,51 @@ const searchInString = (string, term) => {
     return stringWithoutAccents.includes(termWithoutAccents);
 };
 
-const searchInNumber = (number, term) => number.toString().includes(term);
+const searchInNumber = (number, term) => number.toString().toLowerCase().includes(term.toLowerCase());
 
-const searchInArray = (array, terms) => array.some(item => searchInObject(item, terms));
+const searchInArray = (array, term) => array.some(item => searchInObject(item, term));
 
-const searchInObject = (object, terms, depth = 0) => {
-    if (depth > MAX_DEPTH) return false; // Detiene la búsqueda si se excede la profundidad máxima
-    return Object.values(object).some(value => searchInProperty(value, terms, depth + 1));
+const searchInObject = (object, term, depth = 0) => {
+    if (depth > MAX_DEPTH) return false;
+    return Object.values(object).some(value => searchInProperty(value, term, depth + 1));
 };
 
-const searchInProperty = (property, terms, depth = 0) => {
-    if (!property) { return false }
-    for (const term of terms) {
-        switch (typeof property) {
-            case 'string':
-                if (searchInString(property, term)) return true;
-                break;
-            case 'number':
-                if (searchInNumber(property, term)) return true;
-                break;
-            case 'object':
-                if (Array.isArray(property)) {
-                    // Corrección aplicada aquí para pasar correctamente el parámetro `depth`
-                    if (searchInArray(property, terms, depth + 1)) return true;
-                } else if (property instanceof Date) {
-                    if (searchInString(property.toISOString(), term)) return true;
-                } else {
-                    // Aquí también aseguramos el seguimiento correcto de la profundidad
-                    if (searchInObject(property, terms, depth + 1)) return true;
-                }
-                break;
-        }
+const searchInProperty = (property, term, depth = 0) => {
+    if (!property) return false;
+    
+    switch (typeof property) {
+        case 'string':
+            return searchInString(property, term);
+        case 'number':
+            return searchInNumber(property, term);
+        case 'object':
+            if (Array.isArray(property)) {
+                return searchInArray(property, term, depth + 1);
+            } else if (property instanceof Date) {
+                return searchInString(property.toISOString(), term);
+            } else {
+                return searchInObject(property, term, depth + 1);
+            }
+        default:
+            return false;
     }
-    return false;
 };
 
-const filterDataWithTerms = (array, terms) => {
-    return array.filter(item => searchInObject(item, terms));
+const filterDataWithTerm = (array, term) => {
+    return array.filter(item => searchInObject(item, term));
 };
 
 export const filterData = (array, searchTerm) => {
-    !array && (array = []);
-    if (!Array.isArray(array)) {
+    if (!array || !Array.isArray(array)) {
         throw new Error('The first parameter must be an array');
     }
     if (typeof searchTerm !== 'string') {
         throw new Error('The second parameter must be a string');
     }
 
-    const terms = searchTerm.toLowerCase().split(' ');
-    const exactMatchResults = filterDataWithTerms(array, [searchTerm.toLowerCase()]);
-
-    if (exactMatchResults.length > 0) {
-        return exactMatchResults;
+    if (searchTerm.trim() === '') {
+        return array;
     }
 
-    if (terms.length > 1) {
-        return filterDataWithTerms(array, terms);
-    }
-
-    return filterDataWithTerms(array, [searchTerm.toLowerCase()]);
+    return filterDataWithTerm(array, searchTerm.trim().toLowerCase());
 };

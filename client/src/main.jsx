@@ -16,6 +16,9 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { AntConfigProvider } from './ant/AntConfigProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as antd from "antd";
+const AntApp = antd.App;
+
 
 function onRenderCallback(
   id, // the "id" prop of the Profiler tree that has just committed
@@ -41,8 +44,10 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
+    <AntApp>
       <I18nextProvider i18n={i18n}>
         <AppProviders>
+          
           <AntConfigProvider>
           <QueryClientProvider client={queryClient}>
             {/* <Profiler id="App" onRender={onRenderCallback}> */}
@@ -52,6 +57,7 @@ root.render(
           </AntConfigProvider>
         </AppProviders>
       </I18nextProvider>
+      </AntApp>
     </Provider>
   </React.StrictMode>
 )

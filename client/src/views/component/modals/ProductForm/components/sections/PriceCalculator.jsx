@@ -109,7 +109,7 @@ export const PriceCalculator = () => {
             const percentBenefits = isCalculationValid ? (margin / finalPrice) * 100 : 0;
 
             // Redondea y formatea los resultados
-            console.log(isCalculationValid, percentBenefits.toFixed(0))
+            // console.log(isCalculationValid, percentBenefits.toFixed(0))
             return {
                 ...row,
                 itbis: itbis.toFixed(2),

@@ -11,8 +11,8 @@ import { ProductCategoriesToolbar } from "./Page/ProductCategoriesToolbar";
 import { PurchaseToolbar } from "./Page/PurchaseToolbar";
 import { RegistroToolbar } from "./Page/RegistroToolbar";
 import UsersAdminToolbar from "./Page/UsersAdminToolbar";
-import { VentaMenuToolbar } from "./Page/VentaMenuToolBar";
-
+import { VentaMenuToolbar } from "./Page/VentaMenuToolbar";
+import { WarehouseToolbar } from "./Page/WarehouseToolbar";
 const componentsConfig = [
   {
     id: 'ventaMenuToolBar',
@@ -65,7 +65,12 @@ const componentsConfig = [
   {
     id: 'clientControlToolBar',
     component: ClientControlToolbar
-  }
+  },
+  {
+    id: 'warehouseToolBar',
+    component: WarehouseToolbar
+  },
+
 ];
 
 const generateToolbarConfig = (side) =>

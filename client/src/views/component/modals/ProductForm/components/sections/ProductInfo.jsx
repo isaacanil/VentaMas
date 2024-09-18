@@ -18,9 +18,10 @@ export const ProductInfo = ({ product }) => {
             <Form.Item
                 name="name"
                 label={"Nombre del producto"}
-               
-                rules={[{ required: true, message: 'Introducir un nombre de producto.'
-                 }, { type: 'string', min: 4, message: 'Mínimo 4 caracteres.' }]}
+
+                rules={[{
+                    required: true, message: 'Introducir un nombre de producto.'
+                }, { type: 'string', min: 4, message: 'Mínimo 4 caracteres.' }]}
             >
                 <Input
                     placeholder="Ingresa el nombre del producto"
@@ -33,15 +34,15 @@ export const ProductInfo = ({ product }) => {
                 <Col
                     span={12}
                 >
-                    <Form.Item 
-                    name="type" 
-                    label="Tipo de Producto" 
-                    rules={[{ required: true, message: 'Introducir un tipo de producto.' }]}
-                   >
+                    <Form.Item
+                        name="type"
+                        label="Tipo de Producto"
+                        rules={[{ required: true, message: 'Introducir un tipo de producto.' }]}
+                    >
                         <Input placeholder="Ingresa el tipo del producto " />
                     </Form.Item>
                 </Col>
-                
+
                 <Col
                     span={12}
                 >
@@ -57,8 +58,8 @@ export const ProductInfo = ({ product }) => {
                     span={12}
                 >
                     <Form.Item name="size" label="Tamaño" >
-                        <Input 
-                        placeholder="Ingresa el tamaño"
+                        <Input
+                            placeholder="Ingresa el tamaño"
                         />
                     </Form.Item>
                 </Col>
@@ -74,24 +75,27 @@ export const ProductInfo = ({ product }) => {
                     <Form.Item
                         name="category"
                         label={"Categoría"}
-
-                        //rules={[{ required: true }]}
                     >
                         <Select
                             defaultValue={"2"}
                         >
-                            <Option value="none">Ninguna</Option>
+                            <Option key="none" value="none">Ninguna</Option>
                             {
                                 categories.map(({ category }) => (
-                                    <Option value={category.name}>{category.name}</Option>
+                                    <Option
+                                        key={category?.name || index}
+                                        value={category.name}
+                                    >
+                                        {category.name}
+                                    </Option>
                                 ))
                             }
                         </Select>
                     </Form.Item>
                     <Form.Item label={" "}>
-                        <Button 
-                        icon={icons.operationModes.add}
-                        onClick={configureAddProductCategoryModal}
+                        <Button
+                            icon={icons.operationModes.add}
+                            onClick={configureAddProductCategoryModal}
                         ></Button>
                     </Form.Item>
                 </Col>
