@@ -1,21 +1,30 @@
-import { useGetProducts } from '../../firebase/products/fbGetProducts';
 import { Registro, Sales } from '../../views'
 import { CashReconciliation } from '../../views/pages/CashReconciliation/CashReconciliation';
-import { ErrorElement } from '../../views/pages/ErrorElement/ErrorElement';
+import { Preorder } from '../../views/pages/PreorderSale/PreorderSale';
+
 import validateRouteAccess from '../requiereAuthProvider';
 import ROUTES_NAME from '../routesName';
 
-const { SALES, BILLS, CASH_RECONCILIATION } = ROUTES_NAME.SALES_TERM;
+const { SALES, BILLS, CASH_RECONCILIATION, PREORDERS } = ROUTES_NAME.SALES_TERM;
 
 
 const Routes = [
     {
         path: SALES,
         element: validateRouteAccess(<Sales />),
-        name: SALES
     },
-    { path: BILLS, element: validateRouteAccess(<Registro />), name: BILLS },
-    { path: CASH_RECONCILIATION, element: validateRouteAccess(<CashReconciliation />), name: CASH_RECONCILIATION }
+    { 
+        path: BILLS, 
+        element: validateRouteAccess(<Registro />), 
+    },
+    { 
+        path: CASH_RECONCILIATION, 
+        element: validateRouteAccess(<CashReconciliation />), 
+    },
+    { 
+        path: PREORDERS, 
+        element: validateRouteAccess(<Preorder />), 
+    },
 ]
 
 export default Routes;

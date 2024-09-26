@@ -9,13 +9,13 @@ import { motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { Body } from './components/Body/Body'
 import { useClickOutSide } from '../../../../../../../hooks/useClickOutSide'
+import { ButtonIconMenu } from '../../../../../../templates/system/Button/ButtonIconMenu'
 
 export const InventoryFilterAndSort = () => {
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(false);
     const menuFlotanteRef = useRef(null);
     const handleOpen = () => { setIsOpen(!isOpen) };
-
     const MenuVariant = {
         hidden: {
             x: '110%'
@@ -35,12 +35,8 @@ export const InventoryFilterAndSort = () => {
     useClickOutSide(menuFlotanteRef, isOpen,  handleOpen)
     return (
         <Container>
-            <Button
-                type='primary'
-                size='small'
-                width={'icon32'}
-                startIcon={icons.operationModes.filter}
-                borderRadius={'normal'}
+            <ButtonIconMenu 
+                icon={icons.operationModes.filter}
                 onClick={handleOpen}
             />
             <MenuFlotante

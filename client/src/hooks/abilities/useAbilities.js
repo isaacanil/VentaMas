@@ -13,7 +13,7 @@ export const useAbilities = () => {
     useEffect(() => {
         if (user) { dispatch(setAbilities(user)); }
     }, [user]);
-    console.log(abilities)
+   
     return abilities;
 }
 

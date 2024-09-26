@@ -10,27 +10,27 @@ export function useAutomaticLogin() {
 
     useEffect(() => {
         // Obtener el token de sesión del almacenamiento local
-        const sessionToken = localStorage.getItem('sessionToken');
+        const sessionToken = localStorage?.getItem('sessionToken');
 
         if (sessionToken) {
             (async () => {
                 try {
                     const sessionSnapshot = await getDoc(doc(db, 'sessionTokens', sessionToken));
-                    const userId = sessionSnapshot.data().userId;
+                    const userId = sessionSnapshot?.data()?.userId;
                     
                     // Obtener los detalles del usuario de Firestore
                     const userSnapshot = await getDoc(doc(db, 'users', userId));
-                    const userData = userSnapshot.data().user;
+                    const userData = userSnapshot?.data()?.user;
                     const username = userData?.realName ? userData?.realName : userData?.name;
                     // Actualizar el estado de la aplicación con los detalles del usuario
                     dispatch(login({
-                        uid: userSnapshot.id,
+                        uid: userSnapshot?.id,
                         displayName: username,
                         username: userData?.name,
                         realName: userData?.realName,
                     }));
      
-                    console.log('User logged in successfully');
+                    // console.log('User logged in successfully');
                 } catch (error) {
                     dispatch(logout())
                     console.error('An error occurred during automatic sign in'); 

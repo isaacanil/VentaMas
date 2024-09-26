@@ -12,7 +12,6 @@ export const taxReceiptEnabledToCart = createAsyncThunk(
         const state = getState();
         const taxReceiptEnabled = state.taxReceipt.settings.taxReceiptEnabled; // Ajusta este camino según cómo esté estructurado tu estado
         console.log("fetch", taxReceiptEnabled);
-        // Suponiendo que tienes una acción en cartSlice para actualizar este valor
         dispatch(setTaxReceiptEnabled(taxReceiptEnabled));
     }
 );

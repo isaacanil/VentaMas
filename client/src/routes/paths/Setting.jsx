@@ -1,4 +1,5 @@
 import { Setting, TaxReceiptSetting, UserAdmin } from "../../views";
+import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
 import AppInfo from "../../views/pages/setting/subPage/AppInfo/AppInfo";
 import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
 import EditUser from "../../views/pages/setting/subPage/Users/components/EditUser/EditUser";
@@ -12,6 +13,7 @@ const {
     UPDATE_USER,
     USERS_LIST,
     TAX_RECEIPT,
+    SETTING,
     APP_INFO,
     BUSINESS_INFO,
     CREATE_USER
@@ -30,6 +32,10 @@ const Routes = [
                 element: validateRouteAccess(<UserList />),
             },
         ]
+    },
+    {
+        path: `${SETTING}`,
+        element: validateRouteAccess(<GeneralConfig />),
     },
     { path: `${basePath}${TAX_RECEIPT}`, element: validateRouteAccess(<TaxReceiptSetting />) },
     { path: `${basePath}${BUSINESS_INFO}`, element: validateRouteAccess(<BusinessInfo />) },

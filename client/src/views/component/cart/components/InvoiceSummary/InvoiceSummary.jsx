@@ -1,9 +1,9 @@
-import React from 'react';
+import React, {Fragment} from 'react';
 import styled from 'styled-components';
 import CustomInput from '../../../../templates/system/Inputs/CustomInput';
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4';
 import { useDispatch, useSelector } from 'react-redux';
-import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoicePanelOpen } from '../../../../../features/cart/cartSlice';
+import { CancelShipping, SelectCartData, SelectSettingCart, selectCart, setCartId, toggleCart, toggleInvoicePanelOpen } from '../../../../../features/cart/cartSlice';
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { Delivery } from './components/Delivery/Delivery';
 import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
@@ -11,18 +11,27 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import * as antd from 'antd'
 import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
+import { fbAddPreOrder } from '../../../../../firebase/invoices/fbAddPreocer';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { clearTaxReceiptData } from '../../../../../features/taxReceipt/taxReceiptSlice';
+import { deleteClient, setIsOpen } from '../../../../../features/clientCart/clientCartSlice';
+import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
+import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
 
 
 const InvoiceSummary = () => {
   const [isCartValid, setIsCartValid] = useState(false)
   const cart = useSelector(selectCart);
-  const cartData = cart.data;
-  const total = cartData.totalPurchase.value;
-  const subTotal = cartData.totalPurchaseWithoutTaxes.value;
+  const user = useSelector(selectUser)
+  const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] = useState(false)
+  const cartData = cart?.data;
+  const total = cartData?.totalPurchase?.value;
+  const subTotal = cartData?.totalPurchaseWithoutTaxes?.value;
   const itbis = cartData.totalTaxes.value;
   const [loading, setLoading] = useState(false)
-  const cartSettings = useSelector(SelectSettingCart)
+  const { billing } = useSelector(SelectSettingCart)
   const dispatch = useDispatch()
+  const viewport = useViewportWidth();
 
   useEffect(() => {
     const { isValid } = validateInvoiceCart(cartData)
@@ -40,7 +49,34 @@ const InvoiceSummary = () => {
       })
     }
   }
+  const handleCancelShipping = () => {
+    if (viewport <= 800) dispatch(toggleCart());
+    dispatch(CancelShipping())
+    dispatch(clearTaxReceiptData())
+    dispatch(deleteClient())
+    dispatch(clearTaxReceiptData())
+}
+  const handleSavePreOrder = async () => {
+    const { isValid, message } = validateInvoiceCart(cartData);
+    try {
+    
+        await fbAddPreOrder(user, cartData)
+        handleCancelShipping()
+        setIsOpenPreorderConfirmation(false)
+        antd.notification({
+          message: 'Preorden guardada con éxito',
+          type: 'success'
+
+        })
+   
+    } catch (error) {
+      console.error('Error al guardar la preorden:', error)
+    }
+
+  };
+
   return (
+    <Fragment>
     <SummaryContainer>
       <LineItem>
         <Label>SubTotal:</Label>
@@ -56,17 +92,39 @@ const InvoiceSummary = () => {
         <CustomInput options={["10", "20", "30", "40", "50"]} />
       </LineItem>
       <TotalLine>
-        <Button
-          onClick={handleInvoicePanelOpen}
-          disabled={!isCartValid}
-        >
-          Facturar
-        </Button>
+        {
+          billing?.billingMode === "direct" && (
+            <Button
+              onClick={handleInvoicePanelOpen}
+              disabled={!isCartValid && !billing?.isLoading}
+            >
+              Facturar
+            </Button>
+          )
+        }
+        {
+          billing?.billingMode === "deferred" && (
+            <Button
+              onClick={ () => setIsOpenPreorderConfirmation(true)}
+              disabled={!isCartValid && !billing?.isLoading}
+            >
+              Preventa
+            </Button>
+          )
+        }
         <TotalLabel>
           <AnimatedNumber value={useFormatPrice(total)} />
         </TotalLabel>
       </TotalLine>
     </SummaryContainer>
+    <PreorderConfirmation
+      open={isOpenPreorderConfirmation}
+      onCancel={() => setIsOpenPreorderConfirmation(false)}
+      onConfirm={handleSavePreOrder}
+      preorder={{data: cartData}}
+      
+    />
+    </Fragment>
   );
 };
 

@@ -12,6 +12,7 @@ import { Button } from "../../system/Button/Button"
 import { icons } from "../../../../constants/icons/icons"
 import ROUTES_PATH from "../../../../routes/routesName"
 import { useNavigate } from "react-router-dom"
+import { SelectSettingCart } from "../../../../features/cart/cartSlice"
 const sidebarVariant = {
     open: {
         x: 0,
@@ -41,17 +42,64 @@ const sidebarTitleGroup = {
 
 export const SideBar = ({ isOpen }) => {
     const user = useSelector(selectUser);
+    const { billing: { billingMode } } = useSelector(SelectSettingCart)
     const links = getMenuData();
     const { SETTINGS } = ROUTES_PATH.SETTING_TERM;
     const navigate = useNavigate();
-    const groupedLinks = links.reduce((acc, item) => {
-        (acc[item.group] = acc[item.group] || []).push(item);
+
+    // Filtrar los enlaces basados en 'key' y 'condition'
+    const filteredLinks = links.reduce((acc, item) => {
+        // Verificar si el elemento principal tiene una 'key' y una 'condition' y evaluarla
+        let includeItem = true;
+        if (item.key && item.condition) {
+            includeItem = item.condition({ billingMode });
+        }
+
+        // Si el elemento no cumple la condición, lo omitimos
+        if (!includeItem) {
+            return acc;
+        }
+
+        // Crear una copia del elemento para evitar mutaciones
+        const newItem = { ...item };
+
+        // Si el elemento tiene un 'submenu', aplicamos el filtrado al 'submenu'
+        if (item.submenu) {
+            const filteredSubmenu = item.submenu.filter(subItem => {
+                // Verificar si el subelemento tiene una 'key' y una 'condition' y evaluarla
+                if (subItem.key && subItem.condition) {
+                    return subItem.condition({ billingMode });
+                }
+                return true; // Incluir subelementos sin 'key' o sin 'condition'
+            });
+
+            // Si después del filtrado hay elementos en el 'submenu', lo asignamos
+            if (filteredSubmenu.length > 0) {
+                newItem.submenu = filteredSubmenu;
+            } else {
+                // Si no hay elementos en el 'submenu', eliminamos la propiedad 'submenu'
+                delete newItem.submenu;
+            }
+        }
+
+        // Añadir el elemento filtrado al acumulador
+        acc.push(newItem);
+        return acc;
+    }, []);
+
+    // Agrupar los enlaces filtrados por 'group'
+    const groupedLinks = filteredLinks.reduce((acc, item) => {
+        if (!acc[item.group]) {
+            acc[item.group] = [];
+        }
+        acc[item.group].push(item);
         return acc;
     }, {});
+
     const handleGoToSetting = () => {
         navigate(SETTINGS)
     }
-  
+
     return (
         <Container
             variants={sidebarVariant}
@@ -76,15 +124,15 @@ export const SideBar = ({ isOpen }) => {
                 <Body>
                     <Links>
                         {Object.keys(groupedLinks).map(group => (
-                                <Group key={group}>
-                                    {/* {groupedLinks[group].length > 1 && <GroupTitle>{sidebarTitleGroup[group]}</GroupTitle>} */}
-                                    <MenuLinkList>
-                                        {groupedLinks[group].map((item, index) => (
-                                            <MenuLink item={item} key={index}></MenuLink>
-                                        ))}
-                                    </MenuLinkList>
-                                </Group>
-                            )) }
+                            <Group key={group}>
+                                {/* {groupedLinks[group].length > 1 && <GroupTitle>{sidebarTitleGroup[group]}</GroupTitle>} */}
+                                <MenuLinkList>
+                                    {groupedLinks[group].map((item, index) => (
+                                        <MenuLink item={item} key={index}></MenuLink>
+                                    ))}
+                                </MenuLinkList>
+                            </Group>
+                        ))}
                     </Links>
                 </Body>
             </Wrapper>

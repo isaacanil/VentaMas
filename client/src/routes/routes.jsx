@@ -14,7 +14,6 @@ import changelogs from "./paths/Changelogs"
 import utility from "./paths/Utility";
 import accountReceivable from './paths/AccountReceivable'
 
-
 export const routes = [
     ...basic,
     ...auth,

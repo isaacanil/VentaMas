@@ -10,19 +10,22 @@ import { SearchInput } from '../../../system/Inputs/SearchInput'
 import { useMatchRouteByName } from '../useMatchRouterByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { icons } from '../../../../../constants/icons/icons'
-import { useMatch } from 'react-router-dom'
+import { useMatch, useNavigate } from 'react-router-dom'
 import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
 import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 import { setTheme, toggleTheme } from '../../../../../features/theme/themeSlice'
 import { fbAAddMultipleClients } from '../../../../../firebase/client/fbAddMultipleClients'
 import { clients } from '../../../../../firebase/client/clients'
 import { selectUser } from '../../../../../features/auth/userSlice'
+import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu'
 export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
+    const navigate = useNavigate();
     const ImageHidden = useSelector(selectImageHidden)
     const viewRowModeRef = useSelector(selectIsRow)
     const categoryGrouped = useSelector(selectCategoryGrouped)
     const FullScreen = useSelector(selectFullScreen)
-    const { SALES } = ROUTES_NAME.SALES_TERM
+    const { SALES, } = ROUTES_NAME.SALES_TERM
+    const { SETTING } = ROUTES_NAME.SETTING_TERM
     const matchWithVenta = useMatch(SALES)
     const user = useSelector(selectUser)
     const dispatch = useDispatch()
@@ -37,6 +40,9 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
     }
     const handleCategoryGroupedFN = () => {
         dispatch(toggleCategoryGrouped())
+    }
+    const handleSettings = () => {
+        navigate(SETTING)
     }
     const savedTheme = localStorage.getItem('theme');
     const handleThemeModeFN = () => {
@@ -75,22 +81,20 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
     return (
         matchWithVenta && (
             <Container>
-            
                 {
                     side === 'right' && (
                         <Group >
-                            <Button
+                            <ButtonIconMenu 
                                 tooltipDescription={FullScreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
                                 tooltipPlacement={'bottom-end'}
-                                width={'icon32'}
-                                borderRadius='normal'
-                                isActivated={FullScreen ? true : false}
-                                isActivatedColors='style1'
-                                iconOff={<FontAwesomeIcon icon={faCompress} />}
-                                iconOn={<FontAwesomeIcon icon={faExpand} />}
+                                icon={FullScreen ?  <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpand} /> }
                                 onClick={() => handleFullScreenFN()}
                             />
                             <InventoryFilterAndSort />
+                            <ButtonIconMenu 
+                                icon={icons.operationModes.setting}
+                                onClick={() => handleSettings()}
+                            />
                             {/* <DropdownMenu
                                 title={icons.operationModes.setting}
                                 options={options}

@@ -44,7 +44,6 @@ const mergeColumns = (defaultColumns, savedColumns) => {
 
 export const useColumnOrder = (columns = [], tableName, userId) => {
   const localStorageName = buildLocalStorageName(userId, tableName);
-  console.log("------------ useColumnsOrder")
   const getColumnOrderFromStorage = useCallback(() => getInitialColumnOrder(columns, tableName, localStorageName), [tableName, columns, localStorageName]);
 
   const [columnOrder, setColumnOrder] = useState(getColumnOrderFromStorage);

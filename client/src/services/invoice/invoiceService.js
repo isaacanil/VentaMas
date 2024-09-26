@@ -1,7 +1,4 @@
-import { runTransaction } from "firebase/firestore";
 import { validateInvoiceCart } from "../../utils/invoiceValidation";
-import { db } from "../../firebase/firebaseconfig";
-import * as antd from 'antd'
 import { getCashCountStrategy } from "../../notification/cashCountNotification/cashCountNotificacion";
 import { checkOpenCashReconciliation } from "../../firebase/cashCount/useIsOpenCashReconciliation";
 import { fbGetAndUpdateTaxReceipt } from "../../firebase/taxReceipt/fbGetAndUpdateTaxReceipt";
@@ -11,6 +8,7 @@ import { fbUpdateProductsStock } from "../../firebase/products/fbUpdateProductSt
 import { fbAddInvoice } from "../../firebase/invoices/fbAddInvoice";
 import { fbAddAR } from "../../firebase/accountsReceivable/fbAddAR";
 import { fbAddInstallmentAR } from "../../firebase/accountsReceivable/fbAddInstallmentAR";
+import { fbGenerateInvoiceFromPreorder } from "../../firebase/invoices/fbGenerateInvoiceFromPreorder";
 
 const NCF_TYPES = {
     'CREDITO FISCAL': 'CREDITO FISCAL',
@@ -33,8 +31,10 @@ export async function processInvoice({
         //Cuadre de caja
         const { cashCount } = await validateCashReconciliation({ user, dispatch, });
 
-        if(cashCount === null) return;
-        
+        if (cashCount === null) {
+            throw new Error('No se puede procesar la factura sin cuadre de caja');
+        }
+
         //Comprobante fiscal
         const ncfCode = await handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType, });
         //Cliente
@@ -42,7 +42,12 @@ export async function processInvoice({
         //Actualizar stock 
         await adjustProductInventory({ user, products: cart.products, });
         //Crear factura
-        const invoice = await generateFinalInvoice({ user, cart, clientData, ncfCode, cashCount, })
+        let invoice = null;
+        if(cart?.preorderDetails?.isOrWasPreorder){
+            invoice = await generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode })
+        } else {
+            invoice = await generateFinalInvoice({ user, cart, clientData, ncfCode, cashCount })
+        }
         //Cuentas por cobrar
         await manageReceivableAccounts({ user, accountsReceivable, invoice })
 
@@ -51,6 +56,8 @@ export async function processInvoice({
     } catch (error) {
         setLoading({ status: false, message: "" })
         throw error
+    } finally {
+        setLoading({ status: false, message: "" })
     }
 }
 
@@ -127,20 +134,20 @@ async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData
             client: clientData.client,
             cashCountId: cashCount.id
         }
-        await fbAddInvoice(bill, user, transaction)
-        return bill
+        await fbAddInvoice(bill, user, transaction);
+        return bill;
     } catch (error) {
         throw error
     }
-
 }
+
 async function manageReceivableAccounts({ user, accountsReceivable, invoice }) {
     try {
         if (!invoice?.isAddedToReceivables) return;
-        if(!accountsReceivable?.totalInstallments) {
+        if (!accountsReceivable?.totalInstallments) {
             throw new Error('Installments data is missing')
         }
-      
+
         const ar = await fbAddAR({
             user,
             accountsReceivable
@@ -152,5 +159,23 @@ async function manageReceivableAccounts({ user, accountsReceivable, invoice }) {
         })
     } catch (error) {
         throw error;
+    }
+}
+
+async function generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode }) {
+    try {
+        if (!cart?.preorderDetails?.isOrWasPreorder || !cart?.status == "pending") {
+            throw new Error("Invalid preorder data");
+        }
+        const bill = {
+            ...cart,
+            NCF: ncfCode,
+            cashCountId: cashCount.id 
+        }
+        await fbGenerateInvoiceFromPreorder(user, bill);
+        return bill;
+    } catch (error) {
+        console.error(error);
+        throw error; 
     }
 }

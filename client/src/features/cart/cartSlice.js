@@ -40,6 +40,13 @@ const cartSlice = createSlice({
             const isOpen = state.isOpen;
             state.isOpen = !isOpen;
         },
+        setCart: (state, actions) => {
+            const cart = actions.payload;
+            if (cart?.id) {
+                state.data = cart;
+            }
+            updateAllTotals(state)
+        },
         getClient: (state, actions) => {
             const client = actions.payload;
             if (client?.id) {
@@ -57,6 +64,12 @@ const cartSlice = createSlice({
         },
         addPaymentValue: (state, actions) => {
             const paymentValue = actions.payload
+            const isPreOrderEnabled = state.settings.isPreOrderEnabled;
+
+            if (isPreOrderEnabled && state.data.status === 'preorder' && !state.data.isPreOrder) {
+                throw new Error("Debe marcar la factura como preorden antes de proceder al pago.");
+            }
+
             const paymentMethod = state.data.paymentMethod.find((item) => item.status === true)
             if (paymentMethod) {
                 state.data.payment.value = Number(paymentValue)
@@ -193,7 +206,18 @@ const cartSlice = createSlice({
             }
             updateAllTotals(state)
         },
-        CancelShipping: (state) => state = initialState,
+       CancelShipping: (state) => state = initialState,
+        CancelShipping: (state) => {
+            return{
+                ...initialState,
+                settings: {
+                    ...initialState.settings,
+                    billing: {
+                        ...state.settings.billing
+                    }
+                }
+            } 
+        },
         changeProductWeight: (state, action) => {
             const { id, weight } = action.payload
             const product = state.data.products.find((product) => product.cid === id)
@@ -218,7 +242,13 @@ const cartSlice = createSlice({
         },
         togglePrintInvoice: (state) => {
             state.settings.printInvoice = !state.settings.printInvoice
-        }
+        },
+        setBillingSettings: (state, action) => {
+            const { billingMode, isError, isLoading } = action.payload;
+            state.settings.billing.billingMode = billingMode;
+            state.settings.billing.isLoading = isLoading;
+            state.settings.billing.isError = isError;
+        },
     }
 })
 
@@ -244,6 +274,7 @@ export const {
     onChangeValueAmountToProduct,
     selectClientInState,
     setChange,
+    setCart,
     toggleInvoicePanelOpen,
     totalPurchase,
     totalPurchaseWithoutTaxes,
@@ -253,7 +284,9 @@ export const {
     updateClientInState,
     saveBillInFirebase,
     toggleCart,
-    togglePrintInvoice
+    togglePrintInvoice,
+    setDefaultClient,
+    setBillingSettings,
 } = cartSlice.actions
 
 export const SelectProduct = (state) => state.cart.data.products;
@@ -276,3 +309,27 @@ export const SelectSettingCart = (state) => state.cart.settings
 export const selectCart = (state) => state.cart
 
 export default cartSlice.reducer
+
+
+
+
+
+
+// const timestamp = new Date().toISOString();
+
+// state.data.history.push({
+//     status: newStatus,
+//     timestamp
+// });
+// state.data.status = newStatus;
+
+// if (newStatus === 'preorder') {
+//     state.data.isPreOrder = true;
+//     state.data.preOrderDate = new Date().toISOString();
+// } else if (newStatus === 'completed') {
+//     state.data.isPreOrder = false;
+//     state.data.preOrderDate = null;
+// } else if (newStatus === 'canceled' || newStatus === 'deleted') {
+//     state.data.isPreOrder = false;
+//     state.data.preOrderDate = null;
+// }

@@ -3,15 +3,13 @@ import { Button } from './Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileExport } from '@fortawesome/free-solid-svg-icons'
 import { useGetProducts } from '../../../../firebase/products/fbGetProducts'
-import ExcelJS from 'exceljs';
 import { ExportProducts } from '../../../../hooks/exportToExcel/useExportProducts'
-import { last } from 'lodash'
 import { getProducts } from '../../../../utils/pricing'
 import { useSelector } from 'react-redux'
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
+
 export const ExportProductsButton = () => {
   const {products} = useGetProducts()
-  console.log(products[0])
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const productsArray = getProducts(products, taxReceiptEnabled)
   const tax = {
@@ -36,7 +34,6 @@ export const ExportProductsButton = () => {
   return (
     <Button 
         title='Exportar'
-        borderRadius={'light'}
         onClick={() => ExportProducts(productsTaxTransformed)}
         startIcon={<FontAwesomeIcon icon={faFileExport}/>}
     />
