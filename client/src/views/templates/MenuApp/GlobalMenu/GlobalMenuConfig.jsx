@@ -5,8 +5,9 @@ import { CreateOrderToolbar } from "./Page/CreateOrderToolbar";
 import { CreatePurchaseToolbar } from "./Page/CreatePurchaseToolbar";
 import { ExpensesCategoriesToolbar } from "./Page/ExpensesCategoriesToolbar";
 import { ExpensesListToolbar } from "./Page/ExpensesListToolbar";
-import { InventoryMenuToolbar } from "./Page/InventoryMenuToolbar";
+import { InventoryMenuToolbar } from "./Page/InventoryMenuToolbar/InventoryMenuToolbar";
 import { OrderToolbar } from "./Page/OrderToolbar";
+import { PreorderMenuToolbar } from "./Page/PreorderMenuToolbar";
 import { ProductCategoriesToolbar } from "./Page/ProductCategoriesToolbar";
 import { PurchaseToolbar } from "./Page/PurchaseToolbar";
 import { RegistroToolbar } from "./Page/RegistroToolbar";
@@ -65,6 +66,10 @@ const componentsConfig = [
   {
     id: 'clientControlToolBar',
     component: ClientControlToolbar
+  },
+  {
+    id: 'preorderToolBar',
+    component: PreorderMenuToolbar
   }
 ];
 

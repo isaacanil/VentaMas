@@ -102,7 +102,10 @@ const styleByDefault = css`
 const sizes = {
   small: `
     height: 2em;
-    padding: 0 0.4em;
+    padding: 0 0.6em;
+    svg {
+    font-size: 16px;
+    }
   `,
   medium: `
     height: 2.2em;

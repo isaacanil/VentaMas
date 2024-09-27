@@ -59,5 +59,3 @@ import { baseColors } from './baseColors';
 export const { action, background, colors, common, } = palette;
 
 export default palette;
-
-console.log("palette", palette);

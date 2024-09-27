@@ -1,7 +1,7 @@
 const SALES_TERM = {
     SALES: '/sales',
     BILLS: '/bills',
-    
+    PREORDERS: '/preorders'
 }
 const CASH_RECONCILIATION_TERM = {
     CASH_RECONCILIATION_LIST: '/cash-reconciliation',
@@ -51,6 +51,7 @@ const CONTACT_TERM = {
 }
 const SETTING_TERM = {
     SETTINGS: '/settings',
+    SETTING: '/general-config',
     USERS: '/users',
     USERS_LIST: 'list',
     CREATE_USER: 'create-user/',

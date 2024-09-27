@@ -13,11 +13,9 @@ export const AddProductButton = () => {
     const Open = () => {
         dispatch(openModalUpdateProd());
         dispatch(ChangeProductData({ product, status: OPERATION_MODES.CREATE.label }));
-       
     }
     return (
         <Button
-            borderRadius='light'
             startIcon={icons.operationModes.add}
             title="Producto"
             onClick={Open}>

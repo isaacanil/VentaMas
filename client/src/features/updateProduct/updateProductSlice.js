@@ -5,6 +5,7 @@ import { warrantyOptions } from '../../views/component/modals/ProductForm/compon
 const defaultProduct = {
     status: false,
     product: {
+    
         name: '',
         image: '',
         category: '',

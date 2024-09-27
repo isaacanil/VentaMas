@@ -10,6 +10,6 @@ export const useFormatPrice = (value, symbol = monetarySymbols.dollarSign) => {
         case 'pound':
             return `${monetarySymbols.poundSign}  ${separator(value)}`
         default:
-            return `${monetarySymbols.dollarSign}  ${separator(value)}`
+            return `${symbol}  ${separator(value)}`
     }
 }

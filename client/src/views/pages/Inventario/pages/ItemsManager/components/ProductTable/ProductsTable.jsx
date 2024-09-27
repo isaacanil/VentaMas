@@ -110,7 +110,6 @@ export const ProductsTable = ({ products, searchTerm }) => {
       cell: ({ value }) => {
         
         const price = getTotalPrice(value, taxReceiptEnabled)
-        console.log("value ", value)
         const unit = value?.weightDetail?.weightUnit
         const isSoldByWeight = value?.weightDetail?.isSoldByWeight
         if (isSoldByWeight) {

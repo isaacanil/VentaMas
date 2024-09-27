@@ -1,15 +1,22 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-    padding: 1em 0.4em;
-    line-height: 20px;
     width: 100%;
+    margin: 0;
+    padding: 3mm; 
+    line-height: 20px;
+    width: 100vw;
     font-size: 11px;
     text-transform: uppercase;
     font-family: 'Lato', sans-serif;
     pointer-events: none;
     p {
         line-height: 16px;
+    }
+    @media print {
+        margin: 0;
+        
+        pointer-events: auto;
     }
 `;
 
@@ -90,7 +97,7 @@ export const Spacing = styled.div`
     }}
 `;
 
-export  const ReceiptComponent = {
+export const ReceiptComponent = {
     Container,
     HiddenPrintWrapper,
     Subtitle,

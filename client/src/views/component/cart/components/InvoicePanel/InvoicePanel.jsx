@@ -44,6 +44,7 @@ export const InvoicePanel = () => {
     const [form] = antd.Form.useForm()
     const [invoice, setInvoice] = useState({})
     const [submitted, setSubmitted] = useState(false)
+    
     const [loading, setLoading] = useState({
         status: false,
         message: ''
@@ -183,7 +184,6 @@ export const InvoicePanel = () => {
                     danger
                     disabled={loading.status || submitted}
                     onClick={showCancelSaleConfirm}
-
                 >
                     Cancelar
                 </Button>,
