@@ -49,7 +49,7 @@ export const AdvancedTable = ({
   onRowClick,
   footerLeftSide,
   footerRightSide,
-  numberOfElementsPerPage = 20, 
+  numberOfElementsPerPage = 40, 
   loading = false
 }) => {
   //Usuarios y referencias

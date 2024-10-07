@@ -32,8 +32,6 @@ const create = async (user, batchData) => {
         createdBy: user.uid,
         updatedAt: serverTimestamp(),
         updatedBy: user.uid,
-       
-
       },
     });
 
@@ -74,14 +72,13 @@ const readAll = async (user, productID = null) => {
 };
 
 // Escuchar en tiempo real todos los batches de un negocio específico, opcionalmente filtrados por productId
-const listenAll = async (user, productID = null, callback) => {
+const listenAll = (user, productID = null, callback) => {
   try {
     const batchCollectionRef = getBatchCollectionRef(user.businessID);
     let q;
     console.log(
-      '\nproductID:', productID,
+      '\nproductID ------- :', productID,
       '\nuser.businessID:', user.businessID
-
     )
 
     if (productID) {
@@ -109,6 +106,76 @@ const listenAll = async (user, productID = null, callback) => {
     throw error;
   }
 };
+
+// Function to listen to specific batches by their IDs
+export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
+  try {
+    // Verificar que user y user.businessID estén definidos
+    if (!user || !user.businessID) {
+      console.error('User o user.businessID no están definidos');
+      return () => {}; // Retorna una función de limpieza vacía
+    }
+
+    // Verificar que batchIDs es un array válido y no está vacío
+    if (!Array.isArray(batchIDs) || batchIDs.length === 0) {
+      console.warn('No se proporcionaron batch IDs para escuchar');
+      return () => {};
+    }
+
+    const unsubscribeFuncs = [];
+
+    // Iterar sobre cada batchID y crear un listener para cada uno
+    batchIDs.forEach((batchID) => {
+      if (!batchID) {
+        console.warn('Skipping invalid batchID:', batchID);
+        return;
+      }
+
+      const batchDocRef = doc(db, 'businesses', user.businessID, 'batches', batchID);
+
+      const unsubscribe = onSnapshot(
+        batchDocRef,
+        (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const updatedBatch = docSnapshot.data();
+            console.log('Updated batch:', updatedBatch);
+
+            // Actualizar el estado de los batches
+            callback((prevBatches) => {
+              // Si prevBatches es undefined, inicializarlo como un array vacío
+              const previous = prevBatches || [];
+              // Actualizar o agregar el batch
+              const batchExists = previous.some(batch => batch.id === updatedBatch.id);
+              if (batchExists) {
+                return previous.map((batch) =>
+                  batch.id === updatedBatch.id ? updatedBatch : batch
+                );
+              } else {
+                return [...previous, updatedBatch];
+              }
+            });
+          } else {
+            console.warn(`Batch con ID ${batchID} no existe en la base de datos.`);
+          }
+        },
+        (error) => {
+          console.error('Error escuchando batch por ID:', error);
+        }
+      );
+
+      unsubscribeFuncs.push(unsubscribe);
+    });
+
+    // Retornar una función de limpieza que cancela todos los listeners
+    return () => {
+      unsubscribeFuncs.forEach((unsubscribe) => unsubscribe());
+    };
+  } catch (error) {
+    console.error('Error in listenAllBatchesByIds service:', error);
+    throw error;
+  }
+};
+
 
 // Actualizar un batch existente
 const update = async (user, data) => {
@@ -150,6 +217,7 @@ export const batchRepository = {
   create,
   readAll,
   listenAll,
+  listenAllBatchesByIds,
   update,
   remove,
 };

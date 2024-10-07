@@ -1,68 +1,79 @@
 // components/forms/SegmentForm.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import * as antd from "antd";
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createSegment, updateSegment } from "../../../../../../../firebase/warehouse/SegmentService";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { clearSegmentForm, closeSegmentForm, selectSegmentState } from "../../../../../../../features/warehouse/segmentSlice";
 const { Form, Input, Button, Modal, message } = antd;
 
-export default function SegmentForm({ visible, onClose, onSave, }) {
+export default function SegmentForm() {
+  const dispatch = useDispatch();
   const [form] = Form.useForm();
-  const {selectedWarehouse, selectedShelf, selectedRowShelf, selectedSegment} = useSelector(selectWarehouse);
+  const {formData, isOpen} = useSelector(selectSegmentState);
+  const {selectedWarehouse: warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf, selectedSegment: segment } = useSelector(selectWarehouse);
   const user = useSelector(selectUser);
+
+  useEffect(() => {
+    if (formData) {
+      form.setFieldsValue(formData);
+    } else {
+      form.resetFields();
+    }
+  }, [formData, form]);
 
   const handleFinish = async (values) => {
     const newSegment = {
-      id: selectedSegment?.id || Date.now(), // Usar un ID único si es nuevo
+      ...formData,
       ...values,
       capacity: parseInt(values.capacity, 10), // Asegurar que la capacidad sea un número entero
     };
-
     try {
-      if (selectedSegment?.id) {
-        // Actualizar segmento existente
+      if (newSegment?.id) {
         await updateSegment(
           user, // Usuario y negocio
-          selectedWarehouse?.id, // ID del almacén
-          selectedShelf?.id, // ID del estante
-          selectedRowShelf?.id, // ID de la fila de estante
-          newSegment?.id, // ID del segmento a actualizar
+          warehouse?.id, // ID del almacén
+          shelf?.id, // ID del estante
+          rowShelf?.id,  
           newSegment // Datos actualizados
         );
         message.success("Segmento actualizado con éxito.");
       } else {
-        // Crear nuevo segmento
         await createSegment(
           user, // Usuario y negocio
-          selectedWarehouse?.id, // ID del almacén
-          selectedShelf?.id, // ID del estante
-          selectedRowShelf?.id, // ID de la fila de estante
+          warehouse?.id, // ID del almacén
+          shelf?.id, // ID del estante
+          rowShelf?.id, // ID de la fila de estante
           newSegment // Datos del nuevo segmento
         );
         message.success("Segmento creado con éxito.");
       }
 
-     onSave && onSave(newSegment); // Llamar a la función de guardado externa para actualizar la vista
-      form.resetFields(); // Limpiar los campos del formulario después de guardar
-      onClose(); // Cerrar el modal después de guardar
+      handleClose();
     } catch (error) {
       console.error("Error al guardar el segmento:", error);
       message.error("Error al guardar el segmento.");
     }
   };
 
+  const handleClose = () => {
+    form.resetFields();
+    dispatch(clearSegmentForm());
+    dispatch(closeSegmentForm());
+  }
+
   return (
     <Modal
-    title={selectedSegment?.id ? "Editar Segmento" : "Añadir Segmento"}
-    open={visible}
-    onCancel={onClose}
+    title={formData?.id ? "Editar Segmento" : "Añadir Segmento"}
+    open={isOpen}
+    onCancel={handleClose}
     footer={null} // No mostrar pie de página de botones por defecto
   >
     <Form
       form={form}
       layout="vertical"
-      initialValues={selectedSegment}
+      initialValues={formData}
       onFinish={handleFinish}
     >
       <Form.Item
@@ -87,7 +98,7 @@ export default function SegmentForm({ visible, onClose, onSave, }) {
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit">
-          Guardar
+          {formData?.id ? "Actualizar" : "Crear"}
         </Button>
       </Form.Item>
     </Form>

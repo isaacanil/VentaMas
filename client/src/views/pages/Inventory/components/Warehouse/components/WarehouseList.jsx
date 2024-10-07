@@ -4,7 +4,7 @@ import Breadcrumbs from "./Breadcrumbs";
 import * as antd from "antd"; // Importar todos los componentes de Ant Design
 import WarehouseModal from "./WarehouseLayout";
 import { WarehouseForm } from "../forms/WarehouseForm/WarehouseForm";
-import { getWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
+import { getWarehouses, useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../../../../../features/auth/userSlice";
 import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
@@ -43,32 +43,12 @@ export default function WarehouseList() {
   const dispatch = useDispatch();
   const navigation = useNavigate();
   const user = useSelector(selectUser)
-  const { selectedWarehouse } = useSelector(selectWarehouse);
-  const [warehouses, setWarehouses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Fetch warehouses on component mount
-  useEffect(() => {
-    const fetchWarehouses = async () => {
-      try {
-        const warehouseData = await getWarehouses(user); // Llama al servicio para obtener los almacenes
-        setWarehouses(warehouseData);
-      } catch (error) {
-        console.error('Error fetching warehouses: ', error);
-      }
-    };
-
-    fetchWarehouses();
-  }, [user]);
+  const {data: warehouses, loading, error} = useListenWarehouses(); // Escucha los cambios en los almacenes
 
   const filteredWarehouses = useMemo(() => {
     return filterData(warehouses, searchTerm);
   }, [warehouses, searchTerm]);
-
-  const handleCreateWarehouse = (newWarehouse) => {
-    setWarehouses([...warehouses, newWarehouse]);
-    setIsCreateModalOpen(false);
-  };
 
   const handleSelectWarehouse = (warehouse) => {
     navigation(`/inventory/warehouse/${warehouse.id}`);

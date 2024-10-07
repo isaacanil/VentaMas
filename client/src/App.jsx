@@ -31,6 +31,7 @@ import { usefbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGe
 import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
 import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer';
 import { useTaxReceiptEnabledToCart } from './features/cart/thunk';
+import useInitializeBillingSettings from './firebase/billing/useInitializeBillingSettings';
 
 //const router = createBrowserRouter(routes)
 
@@ -44,6 +45,8 @@ function App() {
   useEffect(() => {
     dispatch(ReloadImageHiddenSetting())
   }, [])
+
+  useInitializeBillingSettings()
 
   useTaxReceiptEnabledToCart();
 

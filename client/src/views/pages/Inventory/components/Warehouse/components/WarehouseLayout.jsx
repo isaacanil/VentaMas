@@ -1,4 +1,3 @@
-// components/WarehouseModal.jsx
 import React, { useState } from "react";
 import * as antd from "antd";
 import { icons } from "../../../../../../constants/icons/icons";
@@ -12,20 +11,25 @@ const { Modal, Breadcrumb, Button } = antd;
 const widthSize = "calc(100vw - 16px)";
 const Container = styled.div`
   display: grid;
-  gap: 1em;
+  grid-template-rows: auto 1fr; 
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
   display: flex;
   align-items: center;
   gap: 1em;
-  padding: 0 1em;
   max-width: 1300px;
  width: ${widthSize};
+ height: 2.4em;
   margin: 0 auto;
 `;
+
 const Wrapper = styled.div`
   display: grid;
+  grid-template-rows: auto 1fr;
+  overflow-y: auto;
   gap: 1em;
   padding: 0.5em;
 `

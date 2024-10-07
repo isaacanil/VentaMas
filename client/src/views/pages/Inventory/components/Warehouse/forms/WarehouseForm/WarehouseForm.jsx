@@ -45,7 +45,6 @@ export function WarehouseForm({ isOpen, onClose, initialData = null }) {
     capacity: 0,
     businessId: "",
   });
-  console.log("formData ------------ ", formData);
 
   useEffect(() => {
     if (initialData) {

@@ -28,6 +28,7 @@ import { store } from '../../../../../../../app/store'
 import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
 import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
 import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar'
+import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
 const { Button, Dropdown, Menu } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
@@ -78,8 +79,8 @@ export const ProductsTable = ({ products, searchTerm }) => {
       sortable: true,
       sortableValue: (value) => value.stock,
       minWidth: '80px',
-      maxWidth: '80px',
-      cell: ({ value }) => <StockIndicator stock={value.stock} trackInventory={value.trackInventory}></StockIndicator>
+      maxWidth: '140px',
+      cell: ({ value }) => <StockIndicator stock={useFormatNumber(value.stock)} trackInventory={value.trackInventory}></StockIndicator>
     },
     {
       Header: 'Costo',

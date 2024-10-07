@@ -1,70 +1,84 @@
 import React, { useEffect } from "react";
 import * as antd from "antd";
 import { shelfRepository } from "../../../../../../../firebase/warehouse/shelfRepository";
-import { updateShelf } from "../../../../../../../firebase/warehouse/shelfService";
+import { createShelf, updateShelf } from "../../../../../../../firebase/warehouse/shelfService";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
+import { clearShelfForm, closeShelfForm, selectShelfState, updateShelfFormData } from "../../../../../../../features/warehouse/shelfSlice";
 
 const { Form, Input, Button, Modal, message } = antd;
 
-export function ShelfForm({ visible, onClose, onSave = null, }) {
+export function ShelfForm({ }) {
+  const dispatch = useDispatch();
   const [form] = Form.useForm();
+  const { formData, isOpen } = useSelector(selectShelfState)
+  const { selectedWarehouse } = useSelector(selectWarehouse);
   const user = useSelector(selectUser);
-  const {selectedWarehouse, selectedShelf} = useSelector(selectWarehouse);
   const warehouseId = selectedWarehouse?.id;
-  const shelf = selectedShelf;
+
   useEffect(() => {
-    if (shelf) {
-      form.setFieldsValue(shelf); // Rellenar el formulario con los datos del estante para editar
+    if (formData) {
+      form.setFieldsValue(formData);
     } else {
-      form.resetFields(); // Limpiar el formulario si es un nuevo estante
+      form.resetFields();
     }
-  }, [shelf, form]);
+  }, [formData, form]);
 
   const handleFinish = async (values) => {
     try {
       const newShelf = {
+        ...formData,
         ...values,
         rowCapacity: parseInt(values.rowCapacity, 10), // Convertir a entero
       };
 
-      if (shelf) {
+      if (formData?.id) {
+        console.log(formData)
         // Actualizar un estante existente
         await updateShelf(
           user,
           warehouseId,
-          shelf?.id,
           newShelf
         );
         antd.message.success("Estante actualizado con éxito.");
       } else {
         // Crear un nuevo estante
-        await shelfRepository.create(
-          user,
-          warehouseId,
-          newShelf
-        );
+        await createShelf(user, warehouseId, newShelf);
+   
         antd.message.success("Estante creado con éxito.");
       }
-
-      onSave && onSave(newShelf); // Llamar a la función de guardado externa
-      form.resetFields(); // Limpiar los campos del formulario después de guardar
-      onClose(); // Cerrar el modal después de guardar
+      handleClose();
     } catch (error) {
       console.error("Error al guardar el estante: ", error);
       antd.message.error("Error al guardar el estante."); // Mostrar mensaje de error
     }
   };
+  const handleClose = () => {
+    dispatch(clearShelfForm());
+    dispatch(closeShelfForm());
+    form.resetFields();
+  }
+  const handleFormChange = (changedFields) => {
+    dispatch(updateShelfFormData(changedFields)); // Actualiza el estado del formulario
+  };
+
+
 
   return (
     <Modal
-      title={shelf ? "Editar Estante" : "Añadir Estante"}
-      open={visible}
-      onCancel={onClose}
+      title={formData?.id ? "Editar Estante" : "Añadir Estante"}
+      open={isOpen}
+      onCancel={handleClose}
       footer={null} // No mostrar pie de página de botones por defecto
     >
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={formData}
+        onFinish={handleFinish}
+        onValuesChange={handleFormChange}
+      >
         <Form.Item
           name="name"
           label="Nombre"

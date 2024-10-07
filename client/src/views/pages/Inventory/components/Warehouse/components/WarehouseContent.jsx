@@ -2,23 +2,27 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as antd from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faDeleteLeft, faEdit } from "@fortawesome/free-solid-svg-icons";
 import SectionContainer from "./SectionContainer";
 import { WarehouseForm } from "../forms/WarehouseForm/WarehouseForm";
 import { ShelfForm } from "../forms/ShelfForm/ShelfForm";
-import { createShelf, deleteShelf, listenAllShelves, updateShelf } from "../../../../../../firebase/warehouse/shelfService";
+import { createShelf, deleteShelf, listenAllShelves, updateShelf, useListenShelves } from "../../../../../../firebase/warehouse/shelfService";
 import { selectUser } from "../../../../../../features/auth/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-import { useNavigate } from "react-router-dom";
-import { ProductStockForm } from "../forms/ProductStockForm/ProductStockForm";
+import { useNavigate, useParams } from "react-router-dom";
+import { useListenWarehouse, useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
+import { icons } from "../../../../../../constants/icons/icons";
+import { ProductsSection } from "./ProductsSection";
+import { openShelfForm, setShelfLoading } from "../../../../../../features/warehouse/shelfSlice";
 
-const { Modal, Button, List, message } = antd;
+const { Modal, Button, List, message, Tag } = antd;
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`
   display: grid;
   gap: 1em;
+  overflow: hidden;
 `;
 const WarehouseInfo = styled.div`
   padding: 20px;
@@ -66,23 +70,17 @@ const Body = styled.div`
 `;
 
 export default function WarehouseContent() {
-  const [shelves, setShelves] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false); // Estado para el modal de almacén
-  const [isShelfFormOpen, setIsShelfFormOpen] = useState(false); // Estado para el modal de estantes
-  const { selectedWarehouse } = useSelector(selectWarehouse);
-  const warehouse = selectedWarehouse;
-  const user = useSelector(selectUser);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (selectedWarehouse?.id) {
-      const unsubscribe = listenAllShelves(user, warehouse.id, setShelves);
-      return () => unsubscribe();
-    }
-  }, [selectedWarehouse, user]);
+  const user = useSelector(selectUser);
+
+  const { warehouseId } = useParams();
+  const [location, setLocation] = useState({ id: warehouseId, type: "Warehouse" })
+  const { data: warehouse, loading: warehouseLoading, error: warehouseError } = useListenWarehouse(warehouseId);
+  const { data: shelves, loading, error } = useListenShelves(warehouse?.id);
+
+  const [isFormOpen, setIsFormOpen] = useState(false); // Estado para el modal de almacén
 
   const handleEditWarehouseInfo = () => {
     setIsFormOpen(true);
@@ -92,10 +90,21 @@ export default function WarehouseContent() {
     navigate(`shelf/${shelf.id}`);
     dispatch(navigateWarehouse({ view: "shelf", data: shelf }));
   };
-  const handleSaveProduct = (newProduct) => {
-    setProducts([...products, newProduct]);
-    setIsProductFormOpen(false);
+
+  const onNavToProduct = (productId) => {
+    navigate(`/inventory/product/${productId}`);
   };
+
+  if (warehouseLoading) {
+    return <div>Loading warehouse data...</div>;
+  }
+  const handleUpdateShelf = async (data) => {
+    dispatch(setShelfLoading(true));
+    dispatch(openShelfForm(data));
+  }
+  const handleAddShelf = async () => {
+    dispatch(openShelfForm());
+  }
 
   return (
     <Container>
@@ -120,38 +129,60 @@ export default function WarehouseContent() {
             <p><strong>Ubicación:</strong> {warehouse.location}</p>
             <p><strong>Dirección:</strong> {warehouse.address}</p>
             <p><strong>Dimensiones:</strong> {`Largo: ${warehouse.dimension.length} m, Ancho: ${warehouse.dimension.width} m, Altura: ${warehouse.dimension.height} m`}</p>
-            <p><strong>Capacidad:</strong> {warehouse.capacity} m³</p>
+            <p><strong>Capacidad:</strong> <Tag>{warehouse.capacity}</Tag></p>
           </DetailContainer>
         )}
       </WarehouseInfo>
       <Body>
-        <SectionContainer
-          title="Productos"
-          items={products}
-          onAdd={() => setIsProductFormOpen(true)}
-          renderItem={(product) => (
-            <List.Item>
-              <List.Item.Meta
-                title={product.name}
-                description={`Cantidad: ${product.quantity}, Lote: ${product.batch}`}
-              />
-            </List.Item>
-          )}
+        <ProductsSection
+          location={location}
         />
         <SectionContainer
           title="Estantes"
           items={shelves}
-          onAdd={() => setIsShelfFormOpen(true)}
+          onAdd={handleAddShelf}
           renderItem={(shelf) => (
-            <List.Item onClick={() => onNavigate(shelf)}>
+            <List.Item
+              actions={[
+                <Button
+                  icon={<FontAwesomeIcon icon={faEdit} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpdateShelf(shelf);
+                  }}
+                >
+                </Button>,
+                <Button
+                  icon={icons.editingActions.delete}
+                  danger
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    Modal.confirm({
+                      title: "Eliminar Estante",
+                      content: "¿Estás seguro de eliminar este estante?",
+                      okText: "Eliminar",
+                      okType: "danger",
+                      cancelText: "Cancelar",
+                      onOk: async () => {
+                        try {
+                          await deleteShelf(user, warehouse.id, shelf.id);
+                          message.success("Estante eliminado correctamente");
+                        } catch (error) {
+                          console.error("Error al eliminar el estante: ", error);
+                          message.error("Error al eliminar el estante");
+                        }
+                      },
+                    });
+                  }}
+                >
+                </Button>,
+              ]}
+              onClick={() => onNavigate(shelf)}
+            >
               <List.Item.Meta
                 title={shelf.name}
-                description={
-                  <>
-                    <p><strong>Nombre Corto:</strong> {shelf.shortName}</p>
-                    <p><strong>Capacidad de Fila:</strong> {shelf.rowCapacity}</p>
-                  </>
-                }
+                description={`Capacidad de Fila: ${shelf.rowCapacity}`}
+
               />
             </List.Item>
           )}
@@ -162,17 +193,6 @@ export default function WarehouseContent() {
         initialData={warehouse}
         onClose={() => setIsFormOpen(false)}
       />
-      <ShelfForm
-        visible={isShelfFormOpen}
-        onClose={() => setIsShelfFormOpen(false)}
-      />
-      <ProductStockForm
-          isOpen={isProductFormOpen}
-          onClose={() => setIsProductFormOpen(false)}
-          locationType="Warehouse" // Tipo de ubicación
-          initialData={null} // Si es un producto nuevo, null
-          onSave={handleSaveProduct}
-        />
     </Container>
   );
 }

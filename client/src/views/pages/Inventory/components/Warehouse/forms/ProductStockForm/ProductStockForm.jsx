@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from "react";
 import * as antd from "antd";
 import styled from "styled-components";
-import { createProductStock, updateProductStock } from "../../../../../../../firebase/warehouse/ProductStockService";
+import {
+  createProductStock,
+  updateProductStock,
+  useListenProductsStock,
+} from "../../../../../../../firebase/warehouse/ProductStockService";
+import { useGetProductsWithBatch } from "../../../../../../../hooks/products/useGetProductsWithBatch";
+import useListenBatches from "../../../../../../../hooks/products/useListenBatch";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { closeProductStock, selectProductStock, setProductStockClear, updateProductStockFormData, openProductStock } from "../../../../../../../features/productStock/productStockSlice";
+import { useFormatNumber } from "../../../../../../../hooks/useFormatNumber";
+import { useParams } from "react-router-dom";
+import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
 
-const { Button, Input, InputNumber, Form, Modal, Select, message, Spin } = antd;
+const { Button, InputNumber, Form, Modal, Select, message, Spin, Alert, Progress } = antd;
 const { Option } = Select;
 
 const FormContainer = styled(Form)`
@@ -19,98 +31,255 @@ const StyledButton = styled(Button)`
     background-color: #40a9ff;
   }
 `;
+const getLocationPath = (warehouseId, shelfId, rowId, segmentId) => {
+  if (!warehouseId) {
+    throw new Error("warehouseId is required to determine the location path.");
+  }
 
-export function ProductStockForm({ isOpen, onClose, initialData = null, locationType = "Warehouse" }) {
-  const [loading, setLoading] = useState(false); // Indicador de carga
-  const [formData, setFormData] = useState({
-    id: "", // Autogenerado, no necesario en el formulario
-    batchId: "",
-    locationType, // Tipo de ubicación
-    locationId: "", // Referencia a la ubicación
-    productId: "",
-    stock: 0, // Cantidad de stock
-  });
+  let path = [warehouseId];
+
+  if (shelfId) path.push(shelfId);
+  if (rowId) path.push(rowId);
+  if (segmentId) path.push(segmentId);
+
+  return path.join('/');
+}
+
+export function ProductStockForm() {
+  const dispatch = useDispatch();
+  const [form] = Form.useForm();
+
+  const user = useSelector(selectUser);
+  const { isOpen, formData } = useSelector(selectProductStock)
+  const {selectedWarehouse : warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf, selectedSegment: segment} = useSelector(selectWarehouse);
+  const {warehouseId, shelfId, rowId, segmentId} = {warehouseId: warehouse?.id, shelfId: shelf?.id, rowId: rowShelf?.id, segmentId: segment?.id};
+
+  // const { warehouseId, shelfId, rowId, segmentId } = useParams();
+  const params = useParams();
+  console.log("params  ",warehouseId, shelfId, rowId, segmentId);
+
+  const { productId, batchId, stock: formStock, locationId } = formData;
+
+  const { products, error: productsError, loading: productsLoading } = useGetProductsWithBatch();
+  const { batches, error: batchesError, loading: batchesLoading } = useListenBatches(user, formData?.productId);
+  const { data: productsStock } = useListenProductsStock(productId);
+
+  const isLoading = productsLoading || batchesLoading;
+
+  // Calcular el stock total del batch específico seleccionado
+  const selectedBatch = batches.find((batch) => batch.id === batchId);
+  const totalStockFromBatches = selectedBatch ? selectedBatch.quantity : 0;
+  const totalStockFromProducts = productsStock?.filter(product => product.id !== formData.id).reduce((acc, product) => acc + (product.stock || 0), 0) || 0;
+
+  const stockDifference = (formStock || 0) + totalStockFromProducts;
+  const stockExceeded = totalStockFromBatches - stockDifference;
+
+  const isStockAvailable = batchId && totalStockFromBatches - totalStockFromProducts > 0;
 
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData); // Rellenar el formulario con datos iniciales si están presentes
+    if (isOpen && warehouseId) {
+      dispatch(updateProductStockFormData({
+        path: getLocationPath(warehouseId, shelfId, rowId, segmentId),
+      }
+      ));
     }
-  }, [initialData]);
+  }, [isOpen, warehouseId, shelfId, rowId, segmentId]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "stock" ? parseInt(value) || 0 : value,
+  const handleProductChange = (productId) => {
+    const product = products.find((product) => product.id === productId);
+    dispatch(updateProductStockFormData({
+      productId,
+      productName: product?.name || "",
+      batchId: "",
+    }));
+  };
+
+  const handleBatchChange = (batchId) => {
+    const existingProductStock = productsStock?.find(product => product.batchId === batchId && product.location.id === locationId);
+    console.log("existingProductStock  ",productsStock);
+    if (existingProductStock) {
+      antd.Modal.confirm({
+        title: "Este batch ya existe en la ubicación actual",
+        content: "¿Deseas actualizar el stock existente en lugar de agregar uno nuevo?",
+        okText: "Sí, actualizar",
+        cancelText: "No",
+        onOk: () => {
+          dispatch(openProductStock(existingProductStock));
+        },
+        onCancel: () => {
+          dispatch(updateProductStockFormData({
+            batchId,
+          }));
+        },
+      });
+    } else {
+      dispatch(updateProductStockFormData({
+        batchId,
+      }));
+    }
+  };
+
+  const handleStockChange = (value) => {
+    dispatch(updateProductStockFormData({
+      stock: value,
     }));
   };
 
   const handleSubmit = async () => {
-    setLoading(true); // Activar indicador de carga
     try {
-      if (initialData) {
-        await updateProductStock(formData); // Actualizar producto en stock
-      } else {
-        await createProductStock(formData); // Crear nuevo producto en stock
+      await form.validateFields();
+
+      if (!formData.productId) {
+        message.error("Por favor, selecciona un producto.");
+        return;
       }
-      message.success(`Producto ${initialData ? 'actualizado' : 'creado'} exitosamente.`);
-      onClose(); // Cerrar el modal después de enviar
+      if (batches.length > 0 && !formData.batchId) {
+        message.error("Por favor, selecciona un batch.");
+        return;
+      }
+      if (formData.stock <= 0 || isNaN(formData.stock)) {
+        message.error("La cantidad de stock no puede ser negativa o cero.");
+        return;
+      }
+
+      if (formData.id) {
+        // Si se seleccionó un batch existente, actualizar el stock
+        const updatedStock = formData.stock;
+        const updatedData = {
+          ...formData,
+          stock: updatedStock,
+        };
+        await updateProductStock(user, updatedData);
+        message.success("Stock actualizado exitosamente.");
+      } else {
+        // Si no existe, crear un nuevo registro de stock
+        const data = {
+          ...formData,
+        };
+        await createProductStock(user, data);
+        message.success("Producto creado exitosamente.");
+      }
+
+      handleClose();// Cerrar el modal después de enviar
     } catch (error) {
+      console.error(error);
       message.error("Ocurrió un error al procesar la solicitud.");
-    } finally {
-      setLoading(false); // Desactivar indicador de carga
     }
+  };
+
+  const handleClose = () => {
+    dispatch(setProductStockClear());
+    dispatch(closeProductStock());
   };
 
   return (
     <Modal
-      title={initialData ? "Actualizar Producto en Stock" : "Agregar Producto en Stock"}
+      title={formData.id ? "Actualizar Producto en Stock" : "Agregar Producto en Stock"}
       open={isOpen}
-      onCancel={onClose}
+      onCancel={handleClose}
       footer={null}
+      destroyOnClose
     >
-      <Spin spinning={loading}>
-        <FormContainer onFinish={handleSubmit} layout="vertical">
+      <Spin spinning={isLoading}>
+        <FormContainer form={form} layout="vertical" onFinish={handleSubmit}>
+          {/* Selección de Producto */}
           <Form.Item
-            label="ID de Lote"
-            name="batchId"
-            rules={[{ required: true, message: "Por favor, ingrese el ID del lote" }]}
+            label="Producto"
+            required
+            tooltip="Selecciona el producto correspondiente"
+            rules={[{ required: true, message: 'Por favor selecciona un producto' }]}
           >
-            <Input name="batchId" value={formData.batchId} onChange={handleChange} />
+            <Select
+              showSearch
+              placeholder="Selecciona un producto"
+              optionFilterProp="children"
+              onChange={handleProductChange}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+              value={formData.productId || undefined}
+              allowClear
+            >
+              {products.map((product) => (
+                <Option key={product.id} value={product.id}>
+                  {product.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
-          <Form.Item
-            label="Tipo de Ubicación"
+
+          {/* Selección de Batch */}
+          {batches.length > 0 && (
+            <Form.Item
+              label="Batch"
+              required
+              tooltip="Selecciona el batch correspondiente"
+              rules={[{ required: true, message: 'Por favor selecciona un batch' }]}
+            >
+              <Select
+                showSearch
+                placeholder="Selecciona un batch"
+                optionFilterProp="children"
+                onChange={handleBatchChange}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+                value={formData.batchId || undefined}
+                allowClear
+              >
+                {batches.map((batch) => (
+                  <Option key={batch.id} value={batch.id}>
+                    {batch.shortName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          )}
+          {/* Cantidad de Stock */}
+          {isStockAvailable ? (
+            <Form.Item
+              label="Cantidad de Stock"
+              required
+              tooltip="Ingresa la cantidad de stock disponible"
+              rules={[{ required: true, message: 'Por favor ingresa la cantidad de stock' }]}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: '1em' }}>
+                <InputNumber
+                  min={0}
+                  max={totalStockFromBatches - totalStockFromProducts}
+                  style={{ width: "100%" }}
+                  value={formData.stock}
+                  onChange={handleStockChange}
+                />
+                <span style={{ whiteSpace: 'nowrap', color: stockExceeded < 0 ? 'red' : 'black' }}> (Máximo: {totalStockFromBatches - totalStockFromProducts})</span>
+              </div>
+            </Form.Item>
+          ) : batchId && (
+            <Alert message="El máximo disponible ha sido alcanzado. Por favor intenta con otro producto o lote." type="warning" showIcon style={{ marginBottom: 16 }} />
+          )}
+
+          {isStockAvailable && (
+            <Form.Item
+              label="Stock Total Disponible"
+              tooltip="Este es el stock total disponible del batch seleccionado y otros productos"
+            >
+              <div>
+                <Progress percent={(stockDifference / totalStockFromBatches) * 100} status={stockExceeded < 0 ? 'exception' : 'normal'} />
+                <span>{useFormatNumber(stockDifference)}</span>/<span>{totalStockFromBatches}</span>
+              </div>
+              {stockExceeded < 0 && (
+                <Alert message="El stock ingresado excede el total disponible. Por favor ajusta la cantidad." type="error" showIcon style={{ marginTop: 8 }} />
+              )}
+            </Form.Item>
+          )}
+
+          {/* Botón de Envío */}
+          <StyledButton
+            type="primary"
+            htmlType="submit"
+            disabled={isLoading || stockExceeded < 0 || !isStockAvailable}
           >
-            <Input value={locationType} readOnly />
-          </Form.Item>
-          <Form.Item
-            label="ID de Ubicación"
-            name="locationId"
-            rules={[{ required: true, message: "Por favor, ingrese el ID de la ubicación" }]}
-          >
-            <Input name="locationId" value={formData.locationId} onChange={handleChange} />
-          </Form.Item>
-          <Form.Item
-            label="ID de Producto"
-            name="productId"
-            rules={[{ required: true, message: "Por favor, ingrese el ID del producto" }]}
-          >
-            <Input name="productId" value={formData.productId} onChange={handleChange} />
-          </Form.Item>
-          <Form.Item
-            label="Cantidad de Stock"
-            name="stock"
-            rules={[{ required: true, message: "Por favor, ingrese la cantidad de stock" }]}
-          >
-            <InputNumber
-              name="stock"
-              min={0}
-              value={formData.stock}
-              onChange={(value) => handleChange({ target: { name: "stock", value } })}
-            />
-          </Form.Item>
-          <StyledButton type="primary" htmlType="submit" disabled={loading}>
-            {initialData ? "Actualizar" : "Agregar"}
+            {formData.id ? "Actualizar" : "Agregar"}
           </StyledButton>
         </FormContainer>
       </Spin>

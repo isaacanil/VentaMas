@@ -1,5 +1,8 @@
 // rowShelfService.js
+import { useSelector } from 'react-redux';
 import { rowShelfRepository } from './RowShelfRepository';
+import { selectUser } from '../../features/auth/userSlice';
+import { useEffect, useState } from 'react';
 
 // Crear una nueva fila de estante
 export const createRowShelf = async (user, warehouseId, shelfId, rowShelfData) => {
@@ -31,9 +34,10 @@ export const getAllRowShelves = async (user, warehouseId, shelfId) => {
 };
 
 // Escuchar en tiempo real todas las filas de un estante específico
-export const listenAllRowShelves = (user, warehouseId, shelfId, callback) => {
+export const listenAllRowShelves = (user, warehouseId, shelfId, callback, onError) => {
     try {
-        return rowShelfRepository.listenAll(user, warehouseId, shelfId, callback);
+    
+        return rowShelfRepository.listenAll(user, warehouseId, shelfId, callback, onError);
     } catch (error) {
         console.error('Error al escuchar filas de estante en tiempo real:', error);
         throw error;
@@ -58,7 +62,7 @@ export const updateRowShelf = async (user, warehouseId, shelfId, rowId, updatedD
 };
 
 // Marcar una fila de estante como eliminada
-export const removeRowShelf = async (user, warehouseId, shelfId, rowId) => {
+export const deleteRowShelf = async (user, warehouseId, shelfId, rowId) => {
     try {
         const removedRowId = await rowShelfRepository.remove(user, warehouseId, shelfId, rowId);
         console.log('Fila de estante marcada como eliminada:', removedRowId);
@@ -67,4 +71,31 @@ export const removeRowShelf = async (user, warehouseId, shelfId, rowId) => {
         console.error('Error al eliminar la fila de estante:', error);
         throw error;
     }
+};
+
+export const useListenRowShelves = (warehouseId, shelfId) => {
+    const user = useSelector(selectUser);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        if (warehouseId && shelfId && user?.businessID) {
+            setLoading(true); // Iniciar el estado de carga
+            const unsubscribe = listenAllRowShelves(
+                user,
+                warehouseId,
+                shelfId,
+                (data) => {
+                    setData(data);
+                    setLoading(false);
+                },
+                (error) => {
+                    setError(error);
+                    setLoading(false);
+                }
+            );
+            return () => unsubscribe();
+        }
+    }, [warehouseId, shelfId, user]);
+    return { data, loading, error };
 };

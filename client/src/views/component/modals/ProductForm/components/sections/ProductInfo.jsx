@@ -3,10 +3,9 @@ import * as ant from 'antd'
 const { Card, Space, Button, Input, Row, Col, Select, Form } = ant
 import { icons } from '../../../../../../constants/icons/icons'
 import { useFbGetCategories } from '../../../../../../firebase/categories/useFbGetCategories'
-import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
 import { useCategoryState } from '../../../../../../Context/CategoryContext/CategoryContext'
-export const ProductInfo = ({ product }) => {
 
+export const ProductInfo = ({ product }) => {
     const { categories } = useFbGetCategories()
     const { configureAddProductCategoryModal } = useCategoryState();
     return (
@@ -100,6 +99,30 @@ export const ProductInfo = ({ product }) => {
                     </Form.Item>
                 </Col>
             </Row>
+               {/* Nuevos campos de Medida y Pie */}
+               <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item name="measurement" label="Medida">
+                        <Input placeholder="Ingresa la medida" />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item name="footer" label="Pie">
+                        <Input placeholder="Ingresa el pie" />
+                    </Form.Item>
+                </Col>
+            </Row>
+
+            {/* Descripción dinámica basada en Medida y Pie */}
+            {/* {product?.medida || product?.pie ? (
+                <div style={{ marginTop: 16 }}>
+                    <p>
+                    {product?.measurement && `Medida: [${product.measurement}]`}
+                    {product?.measurement && product?.footer && ', '}
+                    {product?.footer && `Pie: [${product.footer}]`}
+                    </p>
+                </div>
+            ) : null} */}
         </Card>
     )
 }

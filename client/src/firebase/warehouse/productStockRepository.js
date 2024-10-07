@@ -7,6 +7,9 @@ import {
   doc,
   serverTimestamp,
   setDoc,
+  query,
+  where,
+  onSnapshot,
 } from 'firebase/firestore';
 
 // Obtener referencia de la colección de productos en stock global
@@ -28,6 +31,9 @@ const create = async (user, productStockData) => {
       createdBy: user.uid,
       updatedAt: serverTimestamp(),
       updatedBy: user.uid,
+      isDeleted: false,
+      deletedAt: null,
+      deletedBy: null,
     });
 
     return { ...productStockData, id };
@@ -53,16 +59,74 @@ const readAll = async (user) => {
   }
 };
 
-// Actualizar un producto en stock
-const update = async (user, id, updatedData) => {
+// Escuchar en tiempo real todos los batches de un negocio específico, opcionalmente filtrados por productId
+const listenAllByLocation = (user, location, callback) => {
   try {
-    const productStockDocRef = doc(db, 'businesses', user.businessID, 'productsStock', id);
+  
+    const batchCollectionRef = getProductStockCollectionRef(user.businessID, location.id);
+    let q;
+ 
+    if (location) {
+      q = query(
+        batchCollectionRef,
+        where('location.id', '==', location.id),
+        where('isDeleted', '==', false),
+      );
+    } 
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const data = querySnapshot.docs.map(doc => doc.data());
+        callback(data);
+      },
+      (error) => {
+        console.error('Error al escuchar documentos en tiempo real:', error);
+      }
+    );
+
+    return unsubscribe;
+  } catch (error) {
+    console.error('Error al escuchar documentos en tiempo real:', error);
+    throw error;
+  }
+};
+// Escuchar en tiempo real todos los productos en stock de una ubicación específica
+const listenAll = (user, productId, callback) => {
+  try {
+    const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+    const q = query(
+      productStockCollectionRef,
+      where('productId', '==', productId),
+      where('isDeleted', '==', false)
+    );
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const data = querySnapshot.docs.map((doc) => doc.data());
+        callback(data);
+      },
+      (error) => {
+        console.error('Error al escuchar documentos en tiempo real:', error);
+      }
+    );
+
+    return unsubscribe;
+  } catch (error) {
+    console.error('Error al escuchar documentos en tiempo real:', error);
+    throw error;
+  }
+};
+
+// Actualizar un producto en stock
+const update = async (user, data) => {
+  try {
+    const productStockDocRef = doc(db, 'businesses', user.businessID, 'productsStock', data.id);
     await updateDoc(productStockDocRef, {
-      ...updatedData,
+      ...data,
       updatedAt: serverTimestamp(),
       updatedBy: user.uid,
     });
-    return { id, ...updatedData };
+    return {data};
   } catch (error) {
     console.error('Error al actualizar el documento: ', error);
     throw error;
@@ -88,6 +152,8 @@ const remove = async (user, id) => {
 export const productStockRepository = {
   create,
   readAll,
+  listenAll,
+  listenAllByLocation,
   update,
   remove,
 };

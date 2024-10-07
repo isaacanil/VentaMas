@@ -48,7 +48,41 @@ const createEmptyProduct = () => ({
 
 const initialState = {
     status: false,
-    product: createEmptyProduct(),
+    product: {
+        name: '',
+        image: '',
+        category: '',
+        pricing: {
+            cost: 0,
+            price: 0,
+            listPrice: 0,
+            avgPrice: 0,
+            minPrice: 0,
+            tax: initTaxes[0],
+        },
+        promotions: {
+            start: null,
+            end: null,
+            discount: 0,
+            isActive: false,
+        },
+        weightDetail: {
+            isSoldByWeight: false,
+            weightUnit: 'lb',
+            weight: 0,
+        },
+        size: '',
+        type: '',
+        stock: 0,
+        netContent: '',
+        qrcode: '',
+        barcode: '',
+        order: 1,
+        amountToBuy: 1,
+        id: '',
+        trackInventory: true,
+        isSoldByWeight: false,
+    }
 }
 
 export const updateProductSlice = createSlice({
@@ -65,14 +99,12 @@ export const updateProductSlice = createSlice({
                 ...product,
             };
         },
-
         setProduct: (state, action) => {
             const product = action.payload
             state.product = {
                 ...state.product,
                 ...product,
             }
-
         },
         ChangeProductImage: (state, action) => {
             state.product.image = action.payload

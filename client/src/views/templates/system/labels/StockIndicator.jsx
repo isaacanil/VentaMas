@@ -34,9 +34,10 @@ export default StockIndicator;
 const StockContainer = styled.div`
   display: flex;
   align-items: center;
-  width: 60px;
+  width: 100%;
+  background-color: #f5f5f5;
   height: 2em;
-    justify-content: space-between;
+    justify-content: right;
     padding: 0 0.4em;    
     border-radius: var(--border-radius-light);
     ${props => !props.stock && `

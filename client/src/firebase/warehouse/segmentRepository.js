@@ -9,6 +9,8 @@ import {
     serverTimestamp,
     onSnapshot,
     setDoc,
+    query,
+    where,
 } from 'firebase/firestore';
 
 // Obtener referencia de la colección de segmentos de una fila de estante
@@ -29,6 +31,10 @@ const getSegmentCollectionRef = (businessId, warehouseId, shelfId, rowShelfId) =
 const create = async (user, warehouseId, shelfId, rowShelfId, segmentData) => {
     const id = nanoid();
     try {
+        console.log(segmentData)
+        if (!segmentData.name || typeof segmentData.capacity !== 'number') {
+            throw new Error('Datos inválidos para crear un segmento');
+        }
         const segmentCollectionRef = getSegmentCollectionRef(user.businessID, warehouseId, shelfId, rowShelfId);
         const segmentDocRef = doc(segmentCollectionRef, id);
 
@@ -40,6 +46,9 @@ const create = async (user, warehouseId, shelfId, rowShelfId, segmentData) => {
             createdBy: user.uid,
             updatedAt: serverTimestamp(),
             updatedBy: user.uid,
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
         });
 
         return { ...segmentData, id };
@@ -67,31 +76,34 @@ const readAll = async (user, warehouseId, shelfId, rowShelfId) => {
 
 // Escuchar en tiempo real todos los segmentos de una fila de estante específica
 const listenAll = (user, warehouseId, shelfId, rowShelfId, callback) => {
-    try {
-        const segmentCollectionRef = getSegmentCollectionRef(user.businessID, warehouseId, shelfId, rowShelfId);
-        return onSnapshot(segmentCollectionRef, (querySnapshot) => {
-            const segments = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            callback(segments);
-        });
-    } catch (error) {
-        console.error('Error al escuchar documentos en tiempo real: ', error);
-        throw error;
+    if(user.businessID === undefined || warehouseId === undefined || shelfId === undefined || rowShelfId === undefined) {
+        console.error('Invalid parameter passed to listenAll', user.businessID, warehouseId, shelfId, rowShelfId);
+        return () => {};
     }
+    const segmentCollectionRef = getSegmentCollectionRef(user.businessID, warehouseId, shelfId, rowShelfId);
+    const q = query(segmentCollectionRef, where('isDeleted', '==', false));
+    return onSnapshot(
+        q,
+        (querySnapshot) => {
+            const segments = querySnapshot.docs.map((doc) => (doc.data()));
+            callback(segments);
+        },
+        (error) => {
+            console.error('Error al escuchar documentos en tiempo real: ', error);
+        }
+    );
 };
 
 // Actualizar un segmento
-const update = async (user, warehouseId, shelfId, rowShelfId, id, updatedData) => {
+const update = async (user, warehouseId, shelfId, rowShelfId, data) => {
     try {
-        const segmentDocRef = doc(db, 'businesses', user.businessID, 'warehouses', warehouseId, 'shelves', shelfId, 'rows', rowShelfId, 'segments', id);
+        const segmentDocRef = doc(db, 'businesses', user.businessID, 'warehouses', warehouseId, 'shelves', shelfId, 'rows', rowShelfId, 'segments', data.id);
         await updateDoc(segmentDocRef, {
-            ...updatedData,
+            ...data,
             updatedAt: serverTimestamp(),
             updatedBy: user.uid,
         });
-        return { id, ...updatedData };
+        return data;
     } catch (error) {
         console.error('Error al actualizar el documento: ', error);
         throw error;

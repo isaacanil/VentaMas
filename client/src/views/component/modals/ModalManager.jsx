@@ -46,6 +46,11 @@ import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserFo
 import { InvoicePreview } from "../../pages/Registro/InvoicePreview/InvoicePreview"
 import { PaymentForm } from "../forms/PaymentForm/PaymentForm"
 import ARInfoModal from "./ARInfoModal/ARInfoModal"
+import { ProductStockForm } from "../../pages/Inventory/components/Warehouse/forms/ProductStockForm/ProductStockForm"
+import { ShelfForm } from "../../pages/Inventory/components/Warehouse/forms/ShelfForm/ShelfForm"
+import RowShelfForm from "../../pages/Inventory/components/Warehouse/forms/RowShelfForm/RowShelfForm"
+import SegmentForm from "../../pages/Inventory/components/Warehouse/forms/SegmentForm/SegmentForm"
+import ProductExpirySelection from "./ProductExpirySelection/ProductExpirySelection"
 
 export const ModalManager = () => {
 
@@ -80,7 +85,7 @@ export const ModalManager = () => {
           key={'modal-barcode-print'}
         />
         <InvoicePreview key={'invoice-preview'} />
-        <SignUpModal key={'sign-up-modal'}  />
+        <SignUpModal key={'sign-up-modal'} />
         {UpdateProdModalSelected && (
           <ProductEditorModal
             key={'modal-form-product'}
@@ -109,10 +114,10 @@ export const ModalManager = () => {
             data={ClientModalDataSelected.mode === update ? ClientModalDataSelected.data : null}
           />
         )}
-         <PaymentForm 
-            key={'modal-payment-form'}
-         />
-         {/* <ARInfoModal
+        <PaymentForm
+          key={'modal-payment-form'}
+        />
+        {/* <ARInfoModal
             key={'modal-ar-info-modal'}
          /> */}
         {ProviderModalDataSelected.isOpen && (
@@ -128,7 +133,9 @@ export const ModalManager = () => {
             key={'notification'}
           />
         )}
-        
+
+        <ProductStockForm />
+
         <AddCategoryModal
           key={'modal-add-category'}
           isOpen={AddCategoryModalSelected.isOpen}
@@ -153,6 +160,10 @@ export const ModalManager = () => {
       <NoteModal />
       <Loader />
       <Dialog />
+      <ShelfForm />
+      <ProductExpirySelection/>
+      <RowShelfForm />
+      <SegmentForm />
       <ImageViewer />
       <SmallNotification />
       <ConfirmationDialog />

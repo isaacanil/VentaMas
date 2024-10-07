@@ -9,6 +9,8 @@ import {
     serverTimestamp,
     onSnapshot,
     setDoc,
+    query,
+    where,
 } from 'firebase/firestore';
 
 // Obtener referencia de la colección de filas de un estante
@@ -36,6 +38,9 @@ const create = async (user, warehouseId, shelfId, rowShelfData) => {
             createdBy: user.uid,
             updatedAt: serverTimestamp(),
             updatedBy: user.uid,
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
         });
 
         return { ...rowShelfData, id };
@@ -62,16 +67,22 @@ const readAll = async (user, warehouseId, shelfId) => {
 };
 
 // Escuchar en tiempo real todas las filas de un estante específico
-const listenAll = (user, warehouseId, shelfId, callback) => {
+const listenAll = (user, warehouseId, shelfId, callback, onError) => {
     try {
         const rowShelfCollectionRef = getRowShelfCollectionRef(user.businessID, warehouseId, shelfId);
-        return onSnapshot(rowShelfCollectionRef, (querySnapshot) => {
-            const rows = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            callback(rows);
-        });
+        const q = query(rowShelfCollectionRef, where('isDeleted', '==', false));
+        return onSnapshot(
+            q,
+            (querySnapshot) => {
+                const rows = querySnapshot.docs.map((doc) => doc.data());
+                callback(rows);
+            }, 
+            (error) => {
+                console.error('Error al escuchar documentos en tiempo real: ', error);
+                onError && onError(error);
+            }
+
+        );
     } catch (error) {
         console.error('Error al escuchar documentos en tiempo real: ', error);
         throw error;

@@ -12,7 +12,7 @@ import {
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import { filterData } from '../../../hooks/search/useSearch'
-import { addProduct } from '../../../features/cart/cartSlice'
+import { addProduct, CancelShipping, toggleCart } from '../../../features/cart/cartSlice'
 import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodeScanner'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
@@ -20,6 +20,9 @@ import { ProductControlEfficient } from './components/ProductControl.jsx/Product
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import * as antd from 'antd'
 import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
+import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
+import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js'
+import { deleteClient } from '../../../features/clientCart/clientCartSlice.js'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('')
@@ -27,6 +30,7 @@ export const Sales = () => {
   const [cashCountConfirmation, setCashCountConfirmation] = useState(false)
   const { products, loading, setLoading, error } = useGetProducts()
 
+  const viewport = useViewportWidth();
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -84,6 +88,16 @@ export const Sales = () => {
 
   const productFiltered = filterData(products, searchData)
   const filterProductsByVisibility = productFiltered.filter((product) => product.isVisible !== false);
+
+  useEffect(() => {
+    const handleCancelShipping = () => {
+      if (viewport <= 800) dispatch(toggleCart());
+      dispatch(CancelShipping())
+      dispatch(clearTaxReceiptData())
+      dispatch(deleteClient())
+    }
+    handleCancelShipping()
+  }, [])
 
   return (
     <Container

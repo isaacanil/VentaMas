@@ -71,13 +71,14 @@ export const BatchForm = ({
     const batchData = {
       ...initialData,
       ...values,
-      productId: product.id,
+      notes: values?.notes || "",
+      productId: product?.id,
       expirationDate: convertDayjs.dayjsToTimestamp(values?.expirationDate),
       manufacturingDate: convertDayjs.dayjsToTimestamp(values?.manufacturingDate),
       receivedDate: convertDayjs.dayjsToTimestamp(values?.receivedDate),
     };
     console.log(batchData);
-    
+
     try {
       if (mode === "create") {
         // Crear un nuevo batch
@@ -106,7 +107,7 @@ export const BatchForm = ({
       setLoading(false);
     }
   };
-  
+
   const onFinishFailed = (errorInfo) => {
     notification.error({
       message: "Error al Crear/Editar Lote",
@@ -126,11 +127,9 @@ export const BatchForm = ({
         onClick={showModal}
         type={mode === "create" ? "primary" : "default"}
       >
-        {
-          !justIcon && (
-            initialData ? "Editar Lote" : "Crear Lote"
-          )
-        }
+        {!justIcon && (
+          initialData ? "Editar Lote" : "Crear Lote"
+        )}
       </Button>
       <Modal
         title={initialData ? "Editar Lote" : "Crear Nuevo Lote"}
@@ -169,36 +168,6 @@ export const BatchForm = ({
               <Input placeholder="Nombre corto del lote" />
             </Form.Item>
 
-            {/* Número de lote */}
-            <Form.Item
-              label={<StyledLabel>Número de Lote</StyledLabel>}
-              name="batchNumber"
-              help="Ingrese el número de lote."
-              rules={[
-                {
-                  required: true,
-                  message: "El número de lote es obligatorio.",
-                },
-              ]}
-            >
-              <Input placeholder="Número de lote" />
-            </Form.Item>
-
-            {/* Fecha de fabricación */}
-            <Form.Item
-              label={<StyledLabel>Fecha de Fabricación</StyledLabel>}
-              name="manufacturingDate"
-              help="Seleccione la fecha de fabricación."
-            >
-              <DatePicker
-                format="DD/MM/YYYY"
-                style={{ width: "100%" }}
-                placeholder="Seleccione una fecha"
-                suffixIcon={<CalendarOutlined />}
-                disabledDate={disablePastDates}
-              />
-            </Form.Item>
-
             {/* Fecha de expiración */}
             <Form.Item
               label={<StyledLabel>Fecha de Expiración</StyledLabel>}
@@ -219,48 +188,10 @@ export const BatchForm = ({
                 disabledDate={disablePastDates}
               />
             </Form.Item>
-            <Form.Item
-              label={<StyledLabel>Código de Ubicación</StyledLabel>}
-              name="locationCode"
-              help="Ingrese el código de ubicación."
-              rules={[
-                {
-                  required: true,
-                  message: "El código de ubicación es obligatorio.",
-                },
-              ]}
-            >
-              <Input placeholder="Código de ubicación" />
-            </Form.Item>
-            <Form.Item
-              label={<StyledLabel>Fecha de Recepción</StyledLabel>}
-              name="receivedDate"
-              help="Seleccione la fecha de recepción."
-              rules={[
-                {
-                  required: true,
-                  message: "La fecha de recepción es obligatoria.",
-                },
-              ]}
-            >
-              <DatePicker
-                format="DD/MM/YYYY"
-                style={{ width: "100%" }}
-                placeholder="Seleccione una fecha"
-                suffixIcon={<CalendarOutlined />}
-                disabledDate={disablePastDates}
-              />
-            </Form.Item>
-            <Form.Item
-              label={<StyledLabel>Notas</StyledLabel>}
-              name="notes"
-              help="Ingrese notas adicionales del lote."
-            >
-              <Input.TextArea placeholder="Notas del lote" />
-            </Form.Item>
+            
             <Form.Item
               label={<StyledLabel>Cantidad</StyledLabel>}
-              name="count"
+              name="quantity"
               help="Ingrese la cantidad total de productos en el lote."
               rules={[
                 {

@@ -111,7 +111,7 @@ export const ClientDetails = ({ mode }) => {
                                 >
                                 <InputV4
                                     type="text"
-                                    label='Balance general'
+                                    label='Bal general'
                                     size='small'
                                     labelVariant='primary'
                                     value={useFormatPrice(pendingBalance)}

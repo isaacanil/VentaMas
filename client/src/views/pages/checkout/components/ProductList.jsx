@@ -13,6 +13,8 @@ import { convertTimeToSpanish } from '../../../component/modals/ProductForm/comp
 export const ProductList = ({ data }) => {
     const { products, NCF } = data
     const taxReceipt = useSelector(selectTaxReceiptEnabled)
+    const getFullProductName = ({ name, measurement, footer }) => 
+        `${name}${measurement ? ` Medida: [${measurement}]` : ''}${footer ? ` Pie: [${footer}]` : ''}`;
     return (
         <Container>
             <Products>
@@ -42,7 +44,7 @@ export const ProductList = ({ data }) => {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <ProductName>{product?.name}</ProductName>
+                                    <ProductName>{getFullProductName(product)} </ProductName>
                                 </Row>
                                 {
                                     product?.warranty?.status && (

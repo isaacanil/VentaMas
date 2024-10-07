@@ -13,11 +13,13 @@ import { icons } from '../../../../../constants/icons/icons'
 import { useCheckForInternetConnection } from '../../../../../hooks/useCheckForInternetConnection'
 import useImageFallback from '../../../../../hooks/image/useImageFallback'
 import { motion } from 'framer-motion'
-import {  getTotalPrice } from '../../../../../utils/pricing'
+import { getTotalPrice } from '../../../../../utils/pricing'
 import * as antd from 'antd'
 import { CustomProduct } from '../CustomProduct'
 import { ProductWeightEntryModal } from '../../../../component/modals/ProductWeightEmtryModal/ProductWeightEntryModal'
 import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
+import { BatchSelectorModal } from './BatchSelectorModal'
+import { openProductExpirySelector } from '../../../../../features/warehouse/productExpirySelectionSlice'
 const { Badge, Tag } = antd
 
 export const Product = ({ product, }) => {
@@ -25,14 +27,22 @@ export const Product = ({ product, }) => {
     const imageHiddenRef = false;
     const dispatch = useDispatch();
     const ProductsSelected = useSelector(SelectProduct);
+    const [isOpenBatchModal, setIsOpenBatchModal] = useState(false);
+    
     const deliverySelected = useSelector(SelectDelivery);
     const [productWeightEntryModal, setProductWeightEntryModal] = useState(false);
     const [isImageLoaded, setImageLoaded] = useState(false);
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     const handleGetThisProduct = (product) => {
-        if(product?.weightDetail?.isSoldByWeight){
+        if(product?.hasExpirationDate){
+            dispatch(openProductExpirySelector(product))
+            // openBatchModal();
+
+            return
+        }
+        if (product?.weightDetail?.isSoldByWeight) {
             setProductWeightEntryModal(true);
-              return
+            return
         }
         dispatch(addProduct(product))
     }
@@ -46,7 +56,7 @@ export const Product = ({ product, }) => {
     const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id);
     const [imageFallback] = useImageFallback(product?.image, noImg);
 
-    
+
     const item = {
         hidden: { y: 20, opacity: 0 },
         visible: {
@@ -54,14 +64,19 @@ export const Product = ({ product, }) => {
             opacity: 1
         }
     }
-    const price = getTotalPrice(product, taxReceiptEnabled); 
-    // if (product?.custom) {
-    //     return (
-    //        < CustomProduct  product={product} />
-    //     )
-    // }
+    const price = getTotalPrice(product, taxReceiptEnabled);
+    const openBatchModal = () => {
+        setIsOpenBatchModal(true);
+    }
+    const closeBatchModal = () => {
+        setIsOpenBatchModal(false);
+    }
+    const getBatch = (batch) => {
+        console.log(batch)
+    }
+
     return (
-    
+
         <Fragment>
             <Container
                 onClick={() => handleGetThisProduct(product)}
@@ -95,23 +110,23 @@ export const Product = ({ product, }) => {
                             onClick={(e) => deleteProductFromCart(e, product?.id)}
                         />
                     ) : null}
-                    
+
                     <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
-    
-                        {ProductCheckInCart.status  ? (
+
+                        {ProductCheckInCart.status ? (
                             <Group>
                                 <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy}</AmountToBuy>
                             </Group>
                         ) : <Group />}
-    
+
                         <Group>
                             {
                                 product?.weightDetail?.isSoldByWeight ? (
-                                  <Price>
-                                  { useFormatPrice(price)} / {product?.weightDetail?.weightUnit}
-                                  </Price>
+                                    <Price>
+                                        {useFormatPrice(price)} / {product?.weightDetail?.weightUnit}
+                                    </Price>
                                 ) : (
-                                    <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price ))}</Price>
+                                    <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price))}</Price>
                                 )
                             }
                         </Group>
@@ -129,8 +144,15 @@ export const Product = ({ product, }) => {
                     setProductWeightEntryModal(false);
                 }}
             />
+            <BatchSelectorModal
+                isOpen={isOpenBatchModal}
+                productId={product.id}
+                onClose={closeBatchModal}
+                onAdd={getBatch}
+
+            />
         </Fragment>
-       
+
     )
 }
 const Container = styled(motion.li)`

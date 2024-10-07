@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import * as antd from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,10 +10,14 @@ import { getAllRowShelves, listenAllRowShelves } from "../../../../../../firebas
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../../../../../features/auth/userSlice";
 import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-import { getAllSegments, listenAllSegments } from "../../../../../../firebase/warehouse/SegmentService";
-import { useNavigate } from "react-router-dom";
+import { deleteSegment, getAllSegments, listenAllSegments, useListenAllSegments } from "../../../../../../firebase/warehouse/SegmentService";
+import { useNavigate, useParams } from "react-router-dom";
+import { ProductsSection } from "./ProductsSection";
+import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfSlice";
+import { icons } from "../../../../../../constants/icons/icons";
+import { openSegmentForm } from "../../../../../../features/warehouse/segmentSlice";
 
-const { Modal, Button, List } = antd;
+const { Modal, Button, List, Tag, message } = antd;
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`
@@ -62,53 +66,76 @@ const Body = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 `;
 
-export default function RowShelfContent( ) {
-  const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const { selectedWarehouse, selectedShelf, selectedRowShelf } = useSelector(selectWarehouse);
-  const rowShelf = selectedRowShelf;
-  const [products, setProducts] = useState([]);
-  const user = useSelector(selectUser);
-  const [segments, setSegments] = useState([]);
-  const [isRowShelfFormOpen, setIsRowShelfFormOpen] = useState(false);
-  const [isSegmentFormOpen, setIsSegmentFormOpen] = useState(false);
+export default function RowShelfContent() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { rowId, warehouseId, shelfId } = useParams();
+  const user = useSelector(selectUser);
+  const [location, setLocation] = useState({ id: rowId, type: "rowShelf" });
+  const { selectedWarehouse: warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf } = useSelector(selectWarehouse);
+  const { data: segments, loading, error } = useListenAllSegments(warehouseId, shelfId, rowId)
+
   useEffect(() => {
-    const fetchRowShelves = async () => {
-      try {
-        if (selectedWarehouse && selectedShelf) {
-         await listenAllSegments(
-            user,
-            selectedWarehouse?.id,
-            selectedShelf?.id,
-            selectedRowShelf?.id,
-            setSegments
-          )
+    if (!warehouseId || !shelfId || !rowId) {
+      message.warning("Faltan IDs para cargar los datos correctamente. Verifique la URL o la selección.");
+      navigate("/warehouses"); // Redirigir al usuario si faltan IDs
+      return;
+    }
+  }, [warehouseId, shelfId, rowId, dispatch, navigate]);
 
-        }
-      } catch (error) {
-        console.error("Error fetching row shelves: ", error);
-      }
-    };
-
-    fetchRowShelves();
-  }, [selectedWarehouse, selectedShelf]);
-
-console.log("Rows: ", segments);
-
-  const handleSaveProduct = (newProduct) => {
-    setProducts([...products, newProduct]);
-    setIsProductFormOpen(false);
+  const handleUpdateRowShelf = () => {
+    dispatch(openRowShelfForm(rowShelf));
   };
 
-  const handleEditRowShelfInfo = () => {
-    setIsRowShelfFormOpen(true);
-  };
-  
-  const onNavigate = (segment) => {
+  const onNavigate = useCallback((segment) => {
     navigate(`segment/${segment?.id}`);
-    dispatch(navigateWarehouse({ view: "segment", data: segment }))
+    dispatch(navigateWarehouse({ view: "segment", data: segment }));
+  }, [navigate, dispatch]);
+
+  const handleDeleteSegment = async (segment) => {
+    try {
+      await deleteSegment(user, warehouseId, shelfId, rowId, segment.id);
+      message.success("Segmento eliminado correctamente");
+    } catch (error) {
+      console.error("Error al eliminar el segmento: ", error);
+      message.error("Error al eliminar el segmento");
+    }
   }
+
+  const handleAddSegment = () => {
+    dispatch(openSegmentForm());
+  }
+
+  const handleUpdateSegment = (segment) => {
+    dispatch(openSegmentForm(segment));
+  }
+
+  const renderActions = useCallback((segment) => [
+    <Button
+      icon={<FontAwesomeIcon icon={faEdit} />}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleUpdateSegment(segment);
+        //funcion de actualziar segmento
+      }}
+    />, // Se reutiliza la función de editar
+    <Button
+      icon={icons.editingActions.delete}
+      danger
+      onClick={(e) => {
+        e.stopPropagation();
+        Modal.confirm({
+          title: "Eliminar Segmento de Fila",
+          content: "¿Estás seguro de que deseas eliminar este segmento?",
+          okText: "Eliminar",
+          okType: "danger",
+          cancelText: "Cancelar",
+          onOk: () => handleDeleteSegment(segment),
+        });
+      }}
+    />,
+  ], [handleDeleteSegment]);
+
   return (
     <Container>
       <RowShelfInfo>
@@ -117,13 +144,12 @@ console.log("Rows: ", segments);
           <Button
             type="default"
             icon={<FontAwesomeIcon icon={faEdit} />}
-            onClick={handleEditRowShelfInfo}
+            onClick={handleUpdateRowShelf}
           >
             Editar
           </Button>
         </InfoHeader>
         <DetailContainer>
- 
           <DetailItem>
             <strong>Nombre:</strong> {rowShelf?.name}
           </DetailItem>
@@ -131,46 +157,25 @@ console.log("Rows: ", segments);
             <strong>Nombre Corto:</strong> {rowShelf?.shortName}
           </DetailItem>
           <DetailItem>
-            <strong>Capacidad:</strong> {rowShelf?.capacity}
+            <strong>Capacidad:</strong> <Tag>{rowShelf?.capacity}</Tag>
           </DetailItem>
           <DetailItem>
             <strong>Descripción:</strong> {rowShelf?.description}
           </DetailItem>
-   
+
         </DetailContainer>
       </RowShelfInfo>
       <Body>
-        <SectionContent>
-          <SectionHeader>
-            <SectionTitle>Productos en la Fila</SectionTitle>
-            <AddButton
-              type="primary"
-              icon={<FontAwesomeIcon icon={faPlusCircle} />}
-              onClick={() => setIsProductFormOpen(true)}
-            >
-              Añadir
-            </AddButton>
-          </SectionHeader>
-          <List
-            dataSource={products}
-            renderItem={(product) => (
-              <List.Item>
-                <List.Item.Meta
-                  title={product.name}
-                  description={`Cantidad: ${product.quantity}, Lote: ${product.batch}`}
-                />
-              </List.Item>
-            )}
-          />
-        </SectionContent>
-
+        <ProductsSection
+          location={location}
+        />
         <SectionContent>
           <SectionHeader>
             <SectionTitle>Segmentos en la Fila</SectionTitle>
             <AddButton
               type="primary"
               icon={<FontAwesomeIcon icon={faPlusCircle} />}
-              onClick={() => setIsSegmentFormOpen(true)}
+              onClick={handleAddSegment}
             >
               Añadir
             </AddButton>
@@ -178,7 +183,10 @@ console.log("Rows: ", segments);
           <List
             dataSource={segments}
             renderItem={(segment) => (
-              <List.Item onClick={() => onNavigate(segment)}>
+              <List.Item
+                actions={renderActions(segment)}
+                onClick={() => onNavigate(segment)}
+              >
                 <List.Item.Meta title={segment.name} description={`Capacidad: ${segment.capacity} unidades`} />
               </List.Item>
             )}
@@ -186,25 +194,6 @@ console.log("Rows: ", segments);
         </SectionContent>
       </Body>
 
-      <RowShelfForm
-        visible={isRowShelfFormOpen}
-        onClose={() => setIsRowShelfFormOpen(false)}
-      />
-
-      <SegmentForm
-        visible={isSegmentFormOpen}
-        onClose={() => setIsSegmentFormOpen(false)}
-      />
-
-      {/* Modal para agregar/editar productos */}
-      <Modal
-        title="Añadir/Editar Producto"
-        open={isProductFormOpen}
-        onCancel={() => setIsProductFormOpen(false)}
-        footer={null}
-      >
-        {/* <ProductForm onSave={handleSaveProduct} /> */}
-      </Modal>
     </Container>
   );
 }

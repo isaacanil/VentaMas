@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react';
+import { selectUser } from '../../features/auth/userSlice';
 import { batchRepository } from './batchRepository';
+import { useSelector } from 'react-redux';
 
 // Servicio para crear un nuevo batch
 export const createBatch = async (user, batchData) => {
@@ -21,15 +24,16 @@ export const getAllBatches = async (user, productID = null) => {
 };
 
 // Escuchar en tiempo real todos los batches de un negocio específico, opcionalmente filtrados por productId
-export const listenAllBatches = async (user, productID = null, callback) => {
+export const listenAllBatches = (user, productID = null, callback) => {
   try {
     // Retorna la función de desuscripción para permitir cancelar la escucha
-    return await batchRepository.listenAll(user, productID, callback);
+    return  batchRepository.listenAll(user, productID, callback);
   } catch (error) {
     console.error('Error al escuchar batches en tiempo real:', error);
     throw error;
   }
 };
+
 
 // Servicio para actualizar un batch existente
 export const updateBatch = async (user, updatedData) => {
@@ -50,3 +54,50 @@ export const deleteBatch = async (user, batchID) => {
     throw error;
   }
 };
+
+export const useListenBatchesByIds = (batchIDs = []) => {
+  const user = useSelector(selectUser);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Check if batchIDs array is empty or no user is provided
+      // Try-catch para manejar posibles errores en la lógica de suscripción
+      try {
+       
+        // Validaciones iniciales
+        if (!Array.isArray(batchIDs) || batchIDs.length === 0 || !user.businessID) {
+          setData([]);
+          setLoading(false);
+          return;
+        }
+  
+        setLoading(true);
+        setError(null);
+  
+        // Escuchar en tiempo real los IDs de batches
+        const unsubscribe = batchRepository.listenAllBatchesByIds(user, batchIDs, (updatedBatches) => {
+          try {
+            setData(updatedBatches);
+            setLoading(false);
+          } catch (callbackError) {
+            console.error('Error en el callback de onSnapshot:', callbackError);
+            setError(callbackError);
+          }
+        });
+  
+        // Cleanup
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Error en useListenBatchesByIds:', error);
+        setError(error);
+        setLoading(false);
+      }
+
+  }, [user, batchIDs]);
+
+  return { data, loading, error };
+};
+
+export default useListenBatchesByIds;

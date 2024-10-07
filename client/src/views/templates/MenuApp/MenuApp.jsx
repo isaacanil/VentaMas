@@ -9,6 +9,7 @@ import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 import { icons } from '../../../constants/icons/icons'
 import { useNavigate } from 'react-router-dom'
+import { GoBackButton } from '../system/Button/GoBackButton'
 
 export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setSearchData, searchData, displayName = "" }) => {
   const ref = useRef(null)
@@ -35,6 +36,7 @@ export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setS
       <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
+          <GoBackButton />
           {sectionName && (
             <SectionName>{sectionNameIcon}{sectionName}</SectionName>
           )}
@@ -131,7 +133,7 @@ const Container = styled.div`
 `
 const Group = styled.div`
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto auto auto;
   width: 100%;
   align-items: center;
   gap: 0.4em;

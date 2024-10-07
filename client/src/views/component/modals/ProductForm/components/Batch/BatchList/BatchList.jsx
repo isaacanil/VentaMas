@@ -13,6 +13,7 @@ import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { ChangeProductData, selectUpdateProductData } from "../../../../../../../features/updateProduct/updateProductSlice";
 import { useQuery } from "@tanstack/react-query";
+import { fbUpdateProduct } from "../../../../../../../firebase/products/fbUpdateProduct";
 
 // Styled Components
 const StyledContainer = styled.div`
@@ -46,7 +47,6 @@ const BatchList = () => {
 
       try {
         if (!user || !product?.id) return;
-
         unsubscribe = await listenAllBatches(user, product?.id, setBatches);
       } catch (error) {
         console.error("Error al obtener lotes:", error);
@@ -84,11 +84,14 @@ const BatchList = () => {
 
   };
 
-  const handleExpirationDateSwitch = (checked) => {
+  const handleExpirationDateSwitch = async (checked) => {
     dispatch(ChangeProductData({ product: { hasExpirationDate: checked } }));
+    try{
+      await fbUpdateProduct({...product, hasExpirationDate: checked}, dispatch, user);
+    }catch(error){
+      console.error("Error al cambiar el estado de la fecha de expiración:", error);
+    }
   };
-
-  console.log("batches =>", batches)
 
   return (
     <StyledContainer>
@@ -132,7 +135,7 @@ const BatchList = () => {
                   title={<strong>{item.shortName}</strong>}
                   description={
                     <>
-                      <div>Cantidad: <Tag color="blue">{item.count}</Tag></div>
+                      <div>Cantidad: <Tag color="blue">{item.quantity}</Tag></div>
                       <div>Fecha de Expiración: {DateTime.fromISO(item.expirationDate).toLocaleString(DateTime.DATE_MED)}</div>
                     </>
                   }

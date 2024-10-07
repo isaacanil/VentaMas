@@ -1,4 +1,3 @@
-import { reference } from "@popperjs/core";
 import { GenericClient } from "../../clientCart/clientCartSlice";
 
 const defaultDelivery = {
@@ -41,7 +40,12 @@ const initialState = {
     settings: {
         taxReceipt: { enabled: false },
         printInvoice: true,
-        isInvoicePanelOpen: false
+        isInvoicePanelOpen: false,
+        billing: {
+            billingMode: 'direct',
+            isLoading: false,
+            isError: null
+        }
     },
     isOpen: false,
     data: {
@@ -74,10 +78,22 @@ const initialState = {
         totalPurchase: {
             value: 0
         },
-        sourceOfPurchase: 'Presencial'
+        sourceOfPurchase: 'Presencial',
+        status: 'completed', 
+        preorderDetails: {
+            preorderNumber: null,
+            createdAt: null,
+        },
+        history: []
     },
-
 }
+/*los estados pueden ser:
+    - preorder
+    - completed
+    - cancelled-preorder
+    - cancelled
+    - refunded
+*/
 export {
     defaultClient,
     defaultDelivery,

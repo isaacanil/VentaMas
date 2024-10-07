@@ -15,6 +15,7 @@ export const PaymentArea = ({ data }) => {
     const user = useSelector(selectUser);
     const businessID = user?.businessID
     const clientId = data?.client?.id
+    const formatNumber = (num) => useFormatPrice(num, "")
     useEffect(() => {
         const fetchPendingBalance = async () => {
             if (!businessID || !clientId) return
@@ -31,31 +32,31 @@ export const PaymentArea = ({ data }) => {
         {
             label: 'ENVIO',
             value1: null,
-            value2: useFormatNumber(data?.delivery?.value),
+            value2: formatNumber(data?.delivery?.value),
             condition: data?.delivery?.status
         },
         ...data?.paymentMethod?.filter(item => item?.status === true)
             .map((item) => ({
                 label: paymentLabel[item?.method],
-                value2: useFormatNumber(item?.value),
+                value2: formatNumber(item?.value),
                 condition: true
             })) || [],
         {
             subtitle: 'TOTAL',
-            value1: useFormatNumber(data?.totalTaxes?.value),
-            value2: useFormatNumber(data?.totalPurchase?.value),
+            value1: formatNumber(data?.totalTaxes?.value),
+            value2: formatNumber(data?.totalPurchase?.value),
             condition: true,
             spacingEnd: true,
             spacingStart: true, 
         },
         {
             label: data?.change?.value >= 0 ? "CAMBIO" : "FALTANTE",
-            value2: useFormatNumber(data?.change?.value),
+            value2: formatNumber(data?.change?.value),
             condition: true
         },
         {
             label: 'BALANCE ACTUAL',
-            value2: useFormatNumber(pendingBalance),
+            value2: formatNumber(pendingBalance),
             condition: data?.change?.value < 0
         }
     ]

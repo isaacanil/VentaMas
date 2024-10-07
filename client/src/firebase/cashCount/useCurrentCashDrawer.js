@@ -58,7 +58,6 @@ export const useCurrentCashDrawer = () => {
                 });
                 const cashData = await Promise.all(docsPromise);
                 // Busca un registro con estado 'open'
-                console.log("cash count: ", cashData)
                 const openDrawerEntry = cashData.find(({ cashCount }) => cashCount.state === "open" && cashCount.opening.employee.id === user.uid);
 
                 if (openDrawerEntry) {

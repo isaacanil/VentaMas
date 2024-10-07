@@ -12,6 +12,7 @@ import ShelfContent from "../../views/pages/Inventory/components/Warehouse/compo
 import RowShelfContent from "../../views/pages/Inventory/components/Warehouse/components/RowShelfContent";
 import SegmentContent from "../../views/pages/Inventory/components/Warehouse/components/SegmentContent";
 import WarehouseLayout from "../../views/pages/Inventory/components/Warehouse/components/WarehouseLayout";
+import ProductView from "../../views/component/modals/Product/ProductView";
 
 const {
     INVENTORY_ITEMS,
@@ -24,6 +25,7 @@ const {
     PRODUCT_IMAGES_MANAGER,
     PRODUCT_OUTFLOW,
     CREATE_PRODUCT,
+    PRODUCT,
     WAREHOUSES
 } = ROUTES_NAME.INVENTORY_TERM;
 
@@ -31,6 +33,10 @@ const Routes = [
     {
         path: INVENTORY_ITEMS,
         element: validateRouteAccess(<Inventory />),
+    },
+    {
+        path: PRODUCT,
+        element: validateRouteAccess(<ProductView />),
     },
     {
         path: CATEGORIES,

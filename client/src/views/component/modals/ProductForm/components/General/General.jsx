@@ -16,7 +16,7 @@ import { closeModalUpdateProd } from '../../../../../../features/modals/modalSli
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
 import { fbAddProduct } from '../../../../../../firebase/products/fbAddProduct';
-
+import * as antd from 'antd';
 export const General = ({ showImageManager }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
@@ -65,7 +65,7 @@ export const General = ({ showImageManager }) => {
         } catch (err) {
             console.log(err)
             err.errorFields && err.errorFields.forEach((error) => {
-                ant.notification.error({
+                antd.notification.error({
                     message: 'Error',
                     description: error.errors[0],
                     duration: 10
@@ -149,7 +149,7 @@ export const General = ({ showImageManager }) => {
                                     <ImageContent>
                                         {
                                             product?.image &&
-                                            <ant.Image
+                                            <antd.Image
                                                 height={150}
                                                 src={product?.image}
                                             />

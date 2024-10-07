@@ -1,5 +1,8 @@
 // segmentService.js
+import { useEffect, useState } from 'react';
 import { segmentRepository } from './segmentRepository';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../features/auth/userSlice';
 
 // Crear un nuevo segmento
 export const createSegment = async (user, warehouseId, shelfId, rowShelfId, segmentData) => {
@@ -40,14 +43,12 @@ export const listenAllSegments = (user, warehouseId, shelfId, rowShelfId, callba
 };
 
 // Actualizar un segmento específico
-export const updateSegment = async (user, warehouseId, shelfId, rowShelfId, segmentId, updatedData) => {
+export const updateSegment = async (user, warehouseId, shelfId, rowShelfId, data) => {
     try {
-        if (!updatedData || typeof updatedData !== 'object') {
+        if (!data || typeof data !== 'object') {
             throw new Error('Datos inválidos para actualizar el segmento');
         }
-
-        const updatedSegment = await segmentRepository.update(user, warehouseId, shelfId, rowShelfId, segmentId, updatedData);
-        console.log('Segmento actualizado con éxito:', updatedSegment);
+        const updatedSegment = await segmentRepository.update(user, warehouseId, shelfId, rowShelfId, data);
         return updatedSegment;
     } catch (error) {
         console.error('Error al actualizar el segmento:', error);
@@ -56,7 +57,7 @@ export const updateSegment = async (user, warehouseId, shelfId, rowShelfId, segm
 };
 
 // Marcar un segmento como eliminado
-export const removeSegment = async (user, warehouseId, shelfId, rowShelfId, segmentId) => {
+export const deleteSegment = async (user, warehouseId, shelfId, rowShelfId, segmentId) => {
     try {
         const removedSegmentId = await segmentRepository.remove(user, warehouseId, shelfId, rowShelfId, segmentId);
         console.log('Segmento marcado como eliminado:', removedSegmentId);
@@ -66,3 +67,23 @@ export const removeSegment = async (user, warehouseId, shelfId, rowShelfId, segm
         throw error;
     }
 };
+
+export const useListenAllSegments = (warehouseId, shelfId, rowShelfId) => {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState();
+    const user = useSelector(selectUser);
+    useEffect(() => {
+        if (!user || !warehouseId || !shelfId || !rowShelfId) {
+            setData([]);
+            setLoading(false);
+        }
+        const unsubscribe = listenAllSegments(user, warehouseId, shelfId, rowShelfId, (data) => {
+            setData(data);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+
+    }, [user, warehouseId, shelfId, rowShelfId]);
+    return { data, loading, error };
+}

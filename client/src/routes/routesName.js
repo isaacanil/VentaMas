@@ -1,7 +1,7 @@
 const SALES_TERM = {
     SALES: '/sales',
     BILLS: '/bills',
-    
+    PREORDERS: '/preorders'
 }
 const CASH_RECONCILIATION_TERM = {
     CASH_RECONCILIATION_LIST: '/cash-reconciliation',
@@ -44,6 +44,7 @@ const SEGMENT_BASE_PATH = `${ROW_BASE_PATH}/:rowId/segment`;
 
 const INVENTORY_TERM = {
     CREATE_PRODUCT: `${INVENTORY_BASE_PATH}/create-product`,
+    PRODUCT: `${INVENTORY_BASE_PATH}/product/:productId`,
     INVENTORY_ITEMS: '/inventory/items',
     CATEGORIES: '/inventory/categories',
     WAREHOUSES: `${INVENTORY_BASE_PATH}/warehouses`, // Listado de almacenes
@@ -64,6 +65,7 @@ const CONTACT_TERM = {
 }
 const SETTING_TERM = {
     SETTINGS: '/settings',
+    SETTING: '/general-config',
     USERS: '/users',
     USERS_LIST: 'list',
     CREATE_USER: 'create-user/',
