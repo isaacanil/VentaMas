@@ -11,6 +11,7 @@ import {
   getDoc,
   onSnapshot,
 } from 'firebase/firestore';
+import { getNextID } from '../Tools/getNextID';
 
 // Obtener referencia de la colección de almacenes de un negocio
 const getWarehouseCollectionRef = (businessID) => {
@@ -33,6 +34,7 @@ const create = async (user, warehouseData) => {
       ...warehouseData,
       id, // Asegurarse de que el ID está almacenado en los datos
       createdAt: serverTimestamp(),
+      number: await getNextID(user, 'lastWarehouseId'),
       createdBy: user.uid,
       updatedAt: serverTimestamp(),
       updatedBy: user.uid,

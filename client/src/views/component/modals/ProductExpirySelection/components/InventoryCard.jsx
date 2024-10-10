@@ -81,7 +81,7 @@ const InventoryCard = ({ item }) => {
         const dateObject = new Date(milliseconds);
         return dateObject.toISOString().split('T')[0];
     };
-
+    const { productStockId, batchId, batchData, productStock, batch } = item;
     const handleSelect = () => {
         try{
             Modal.confirm({
@@ -92,9 +92,10 @@ const InventoryCard = ({ item }) => {
                 onOk: () => {
                   const newItem = {
                     ...product,
-                    batchData: item?.batchData,
+                    productStock,
+                    batch
                   };
-    
+                  
                   dispatch(addProduct(newItem));
                   dispatch(clearProductExpirySelector());
                 },
@@ -104,8 +105,7 @@ const InventoryCard = ({ item }) => {
               });
         }catch(err){
             console.log(err)
-        }
-       
+        }  
     }
 
 
@@ -120,7 +120,7 @@ const InventoryCard = ({ item }) => {
                         <span style={{ fontWeight: 'bold', fontSize: '0.875rem' }}>{item.warehouse}</span>
                     </StyledCardInfo>
                     <StyledBadge variant={item.stock > 50 ? "default" : "secondary"}>
-                        {item.stock}
+                        {item?.productStock?.stock}
                     </StyledBadge>
                 </StyledCardHeader>
                 <StyledCardDetails>
@@ -133,23 +133,23 @@ const InventoryCard = ({ item }) => {
                         {item.row ? `-${item.row}` : ''}
                         {item.segment ? `-${item.segment}` : ''}
                     </StyledCardInfo>
-                    {item?.batchData?.expirationDate && (
+                    {item?.batch?.expirationDate && (
                         <StyledCardInfo>
                             <StyledIconWrapper size="0.75rem" marginRight="0.25rem" color="#ff4d4f">
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                             </StyledIconWrapper>
-                            <span>{getDateIsoFromTimestamp(item?.batchData?.expirationDate)}</span>
+                            <span>{getDateIsoFromTimestamp(item?.batch?.expirationDate)}</span>
                         </StyledCardInfo>
                     )}
                     <StyledLoteDetails>
                         <StyledIconWrapper size="0.75rem" marginRight="0.25rem" color="#faad14">
                             <FontAwesomeIcon icon={faChartBar} />
                         </StyledIconWrapper>
-                        <span>Lote: {item?.batchData?.shortName}</span>
+                        <span>Lote: {item?.batch?.shortName}</span>
                     </StyledLoteDetails>
                 </StyledCardDetails>
                 <StyledProgressBar>
-                    <StyledProgress width={Math.min(item.stock, 100)} />
+                    <StyledProgress width={Math.min(item.productStock.stock, 100)} />
                 </StyledProgressBar>
             </StyledCardContent>
         </StyledCard>

@@ -1,6 +1,5 @@
 // Import necessary libraries
 import { createSelector, createSlice } from '@reduxjs/toolkit';
-import { clear } from 'draft-js/lib/DefaultDraftBlockRenderMap';
 
 // Initial inventory state
 const initialState = {

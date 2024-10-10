@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { selectUser } from '../../features/auth/userSlice';
 import { batchRepository } from './batchRepository';
 import { useSelector } from 'react-redux';
@@ -61,11 +61,11 @@ export const useListenBatchesByIds = (batchIDs = []) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const memorizedBatchIDs = useMemo(() => batchIDs, [batchIDs]);
+  const memorizedUser = useMemo(() => user, [user]);
+
   useEffect(() => {
-    // Check if batchIDs array is empty or no user is provided
-      // Try-catch para manejar posibles errores en la lógica de suscripción
       try {
-       
         // Validaciones iniciales
         if (!Array.isArray(batchIDs) || batchIDs.length === 0 || !user.businessID) {
           setData([]);
@@ -95,7 +95,7 @@ export const useListenBatchesByIds = (batchIDs = []) => {
         setLoading(false);
       }
 
-  }, [user, batchIDs]);
+  }, [memorizedUser, memorizedBatchIDs]);
 
   return { data, loading, error };
 };

@@ -14,7 +14,7 @@ export const importProductData = async (file, language = 'en') => {
     try {
         const fileData = await file.arrayBuffer();
         const data = await readExcelFile(fileData);
-        console.log('Datos originales leídos:', data);
+        console.log('Datos originales leídos:', data.sort((a, b) => a.Impuesto - b.Impuesto));
         const headerMapping = productHeaderMappings;
 
         const dataMapped = mapData({ data, headerMapping, transformConfig, language });

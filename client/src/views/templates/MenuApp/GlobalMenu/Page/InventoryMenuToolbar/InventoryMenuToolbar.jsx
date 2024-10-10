@@ -35,7 +35,8 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
     const handleImport = async (file) => {
         try {
             const productData = await importProductData(file, 'es');
-            await fbAddProducts(user, productData);
+       
+             await fbAddProducts(user, productData);
             message.success('Archivo importado correctamente.');
         } catch (error) {
             message.error('Hubo un problema al importar el archivo.');

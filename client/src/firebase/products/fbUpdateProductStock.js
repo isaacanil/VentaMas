@@ -3,16 +3,30 @@ import { db } from "../firebaseconfig";
 import { validateUser } from "../../utils/userValidation";
 import { fbUpdateDoc } from "../firebaseOperations";
 
-export async function fbUpdateProductsStock(products, user, transaction = null) {
+export async function fbUpdateProductsStock(products, user) {
     try {
-        products.forEach((productData) => {
+        products.forEach((product) => {
             validateUser(user)
+            if(!product?.trackInventory) return;
             const { businessID } = user;
-            const productRef = doc(db, "businesses", businessID, "products", productData.id);
-            const stockUpdateValue = productData?.trackInventory ? increment(-Number(productData?.amountToBuy)) : increment(0);
-            fbUpdateDoc(productRef, {
+            const productRef = doc(db, "businesses", businessID, "products", product.id);
+            const productBatchRef = doc(db, "businesses", businessID,  "batches", product?.batch?.id);
+            const productStockRef = doc(db, "businesses", businessID, "productsStock", product?.productStock?.id);
+            const stockUpdateValue = increment(-Number(product?.amountToBuy));
+        
+            updateDoc(productRef, {
                 "stock": stockUpdateValue,
             })
+            
+            if(product?.hasExpirationDate){
+                console.log("Updating stock for product with expiration date **********************")
+                updateDoc(productBatchRef, {
+                    "quantity": stockUpdateValue,
+                })
+                updateDoc(productStockRef, {
+                    "stock": stockUpdateValue,
+                })
+            }
            
         })
     } catch (error) {

@@ -23,7 +23,7 @@ export const transformConfig = [
     {
         field: 'pricing.price',
         source: 'pricing.listPrice',
-        transform: (value) => parseFloat(value) || 0
+        transform: (value) => value || 0
     },
     {
         field: 'pricing.listPrice', // Nuevo
@@ -39,7 +39,11 @@ export const transformConfig = [
     },
     {
         field: 'pricing.tax', // Nuevo
-        transform: (value) => String(value) || initTaxes[0] // Usa el valor por defecto de initTaxes
+        transform: (value) => {
+            console.log('value:', typeof value, " value ", value)
+            const tax = value * 100 || 0
+            return `${tax}`;
+        } // Usa el valor por defecto de initTaxes
     },
     {
         field: 'promotions.start',

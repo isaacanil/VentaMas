@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
 
-const { Button, Input, InputNumber, Form, Modal } = antd;
+const { Button, Input, InputNumber, Form, Spin, Modal } = antd;
 
 const CardDescription = styled.p`
   color: #888;
@@ -29,59 +29,46 @@ const StyledButton = styled(Button)`
 export function WarehouseForm({ isOpen, onClose, initialData = null }) {
   // Verificamos si hay datos iniciales para determinar si estamos en modo de creación o actualización
   const user = useSelector(selectUser);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    shortName: "",
-    number: 0,
-    owner: "",
-    location: "",
-    address: "",
-    dimension: {
-      length: 0,
-      width: 0,
-      height: 0,
-    },
-    capacity: 0,
-    businessId: "",
-  });
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData); // Rellenar el formulario con los datos iniciales si están presentes
+      form.setFieldsValue({
+        ...initialData,
+        dimension: initialData.dimension || { length: 0, width: 0, height: 0 },
+        capacity: initialData.capacity || 0,
+      }); // Rellenar el formulario con los datos iniciales si están presentes
+    } else {
+      form.setFieldsValue({
+        name: "",
+        shortName: "",
+        description: "",
+        owner: "",
+        location: "",
+        address: "",
+        dimension: { length: 0, width: 0, height: 0 },
+        capacity: 0,
+      });
     }
-  }, [initialData]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      if (name.startsWith("dimension.")) {
-        const dimensionKey = name.split(".")[1];
-        return {
-          ...prev,
-          dimension: {
-            ...prev.dimension,
-            [dimensionKey]: parseFloat(value) || 0,
-          },
-        };
-      }
-      return {
-        ...prev,
-        [name]: name === "number" || name === "capacity" ? parseFloat(value) || 0 : value,
-      };
-    });
-  };
+  }, [initialData, form]);
 
   const handleSubmit = async () => {
     try {
+      await form.validateFields(); // Validar los campos del formulario
+      const data = form.getFieldsValue(); // Obtener los valores del formulario
+      setLoading(true);
       if (initialData) {
-        await updateWarehouse(user, initialData?.id, formData); // Actualizar almacén
+        await updateWarehouse(user, initialData?.id, data); // Actualizar almacén
       } else {
-        await createWarehouse(user, formData); // Crear nuevo almacén
+        await createWarehouse(user, data); // Crear nuevo almacén
       }
       onClose(); // Cerrar el modal al enviar
     } catch (error) {
       antd.message.error("Ocurrió un error al procesar la solicitud.");
+      console.error("Ocurrió un error al procesar la solicitud.", error);
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -92,70 +79,67 @@ export function WarehouseForm({ isOpen, onClose, initialData = null }) {
       onCancel={onClose}
       footer={null} // Eliminamos el footer predeterminado
     >
-      <CardDescription>
+      <Spin
+        size="large"
+        spinning={loading}
+        tip={initialData ? "Actualizando almacén..." : "Creando almacén..."}
+      >
+          <CardDescription>
         {initialData ? "Actualiza los detalles del almacén" : "Introduce los detalles del nuevo almacén"}
       </CardDescription>
-      <FormContainer onFinish={handleSubmit} layout="vertical">
-        <Form.Item label="Nombre" required>
-          <Input name="name" value={formData.name} onChange={handleChange} />
+      <FormContainer form={form} onFinish={handleSubmit} layout="vertical">
+        <Form.Item label="Nombre" name="name" rules={[{ required: true, message: "Por favor ingresa el nombre" }]}>
+          <Input />
         </Form.Item>
-        <Form.Item label="Nombre Corto" required>
-          <Input name="shortName" value={formData.shortName} onChange={handleChange} />
+        <Form.Item label="Nombre Corto" rules={[{required: true, message: "Por favor ingresa el nombre corto"}]} name="shortName">
+          <Input />
         </Form.Item>
-        <Form.Item label="Descripción" required>
-          <Input.TextArea name="description" value={formData.description} onChange={handleChange} rows={3} />
+        <Form.Item label="Descripción" name="description">
+          <Input.TextArea rows={3} />
         </Form.Item>
-        <Form.Item label="Número" required>
-          <InputNumber
-            name="number"
-            min={0}
-            value={formData.number}
-            onChange={(value) => handleChange({ target: { name: "number", value } })}
-          />
+        <Form.Item label="Propietario" name="owner">
+          <Input />
         </Form.Item>
-        <Form.Item label="Propietario" required>
-          <Input name="owner" value={formData.owner} onChange={handleChange} />
+        <Form.Item label="Ubicación" name="location" rules={[{ required: true, message: "Por favor ingresa la ubicación" }]}>
+          <Input />
         </Form.Item>
-        <Form.Item label="Ubicación" required>
-          <Input name="location" value={formData.location} onChange={handleChange} />
+        <Form.Item label="Dirección" name="address">
+          <Input />
         </Form.Item>
-        <Form.Item label="Dirección" required>
-          <Input name="address" value={formData.address} onChange={handleChange} />
-        </Form.Item>
-        <Form.Item label="Dimensiones (Longitud, Ancho, Altura en m)" required>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <InputNumber
-              name="dimension.length"
-              min={0}
-              value={formData.dimension.length}
-              onChange={(value) => handleChange({ target: { name: "dimension.length", value } })}
-            />
-            <InputNumber
-              name="dimension.width"
-              min={0}
-              value={formData.dimension.width}
-              onChange={(value) => handleChange({ target: { name: "dimension.width", value } })}
-            />
-            <InputNumber
-              name="dimension.height"
-              min={0}
-              value={formData.dimension.height}
-              onChange={(value) => handleChange({ target: { name: "dimension.height", value } })}
-            />
-          </div>
-        </Form.Item>
-        <Form.Item label="Capacidad (m³)" required>
-          <InputNumber
-            name="capacity"
-            min={0}
-            value={formData.capacity}
-            onChange={(value) => handleChange({ target: { name: "capacity", value } })}
-          />
+
+        <DimensionInputGroup>
+          <Form.Item label={'Longitud'} name={['dimension', 'length']} >
+            <InputNumber style={{ width: '100%' }} min={0} placeholder="Longitud" />
+          </Form.Item>
+          <Form.Item label={'Ancho'} name={['dimension', 'width']}>
+            <InputNumber style={{ width: '100%' }} min={0} placeholder="Ancho" />
+          </Form.Item>
+          <Form.Item label={'Altura'} name={['dimension', 'height']} >
+            <InputNumber style={{ width: '100%' }} min={0} placeholder="Altura" />
+          </Form.Item>
+        </DimensionInputGroup>
+
+        <Form.Item label="Capacidad (m³)" name="capacity">
+          <InputNumber min={0} />
         </Form.Item>
         <StyledButton type="primary" htmlType="submit">
           {initialData ? "Actualizar" : "Enviar"}
         </StyledButton>
       </FormContainer>
+
+      </Spin>
+    
     </Modal>
   );
 }
+
+const DimensionInputGroup = styled.div`
+  display: grid;
+  gap: 0.6em;
+  grid-template-columns: repeat(3, 1fr);
+  input[type="number"] {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+`;

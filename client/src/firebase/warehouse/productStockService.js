@@ -156,10 +156,6 @@ export const useListenProductsStock = (productId = null) => {
       setError(err);
       setLoading(false);
     };
-
-    // Puedes modificar el servicio listenAllBatches para manejar errores
-    // o agregar un listener adicional aquí si es necesario.
-
     // Limpiar la suscripción al desmontar el componente
     return () => unsubscribe();
     ;
