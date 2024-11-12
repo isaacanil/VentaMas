@@ -20,6 +20,6 @@ export const useTaxReceiptEnabledToCart = () => {
     const taxReceipt = useSelector(selectTaxReceiptEnabled)
     const dispatch = useDispatch()
     useEffect(() => {
-        dispatch(taxReceiptEnabledToCart());
+        dispatch(setTaxReceiptEnabled(taxReceipt));
     }, [taxReceipt]);
 }

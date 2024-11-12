@@ -34,7 +34,6 @@ const StyledTitle = styled.h2`
 `;
 
 const BatchList = () => {
-
   const { product, status } = useSelector(selectUpdateProductData);
   const [batches, setBatches] = useState([]);
   const user = useSelector(selectUser);

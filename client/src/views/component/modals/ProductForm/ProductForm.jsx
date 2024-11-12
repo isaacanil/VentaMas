@@ -7,6 +7,7 @@ import { General } from './components/General/General';
 import BatchList from './components/Batch/BatchList/BatchList';
 import { useSelector } from 'react-redux';
 import { selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice';
+import { SaleUnitsConfig } from './components/SaleUnits/SaleUnitsConfig';
 
 export const ProductForm = ({ showImageManager }) => {
     const { product, status } = useSelector(selectUpdateProductData)
@@ -21,7 +22,12 @@ export const ProductForm = ({ showImageManager }) => {
             label: 'Lote',
             disabled: status === "create",
             children: <BatchList/>
-        }
+        },
+        {
+            key: '3',
+            label: 'Unidades de Venta', // Nuevo label para la tercera pestaña
+            children: <SaleUnitsConfig />
+        },
     ]
     return (
         <Tabs
@@ -30,29 +36,3 @@ export const ProductForm = ({ showImageManager }) => {
         />
     )
 }
-
-const ImageContent = styled.div`
-    border-radius: 5px;
-    height: 150px;
-    overflow: hidden;
-`
-const ImageContainer = styled.div`
-    height: 100%;
-   width: 100%;
-  `;
-
-const Image = styled.img`
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  `;
-const Footer = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    align-items: center;
-    padding: 10px 0px 0px;
-    margin-top: 20px;
-    width: 100%;
-    `

@@ -1,34 +1,36 @@
-import React, { useEffect, useState } from 'react'
-import { IoMdClose } from 'react-icons/io'
-import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
-import { separator } from '../../../../hooks/separator'
-import { Counter } from '../../../templates/system/Counter/Counter'
-import { totalShoppingItems, deleteProduct, totalPurchase, setChange, totalPurchaseWithoutTaxes, addPaymentMethodAutoValue, changeProductPrice, changeProductWeight } from '../../../../features/cart/cartSlice'
-import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { icons } from '../../../../constants/icons/icons'
-//import { Button } from '../../../templates/system/Button/Button'
-import { motion } from 'framer-motion'
-import * as antd from 'antd'
-import { SmileOutlined } from '@ant-design/icons';
-import { Dropdown } from './Dropdown'
-import { selectUser } from '../../../../features/auth/userSlice'
-import { userAccess } from '../../../../hooks/abilities/useAbilities'
-import { getAvgPriceTotal, getListPriceTotal, getMinPriceTotal, getPriceWithoutTax, getTax, getTotalPrice } from '../../../../utils/pricing'
-import { TbAxe } from 'react-icons/tb'
-import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
+import React, { useEffect, useState } from 'react';
+import { IoMdClose } from 'react-icons/io';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+import { Counter } from '../../../templates/system/Counter/Counter';
+import {
+    deleteProduct,
+    changeProductPrice,
+    changeProductWeight
+} from '../../../../features/cart/cartSlice';
+import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { icons } from '../../../../constants/icons/icons';
+import { motion } from 'framer-motion';
+import * as antd from 'antd';
+import { userAccess } from '../../../../hooks/abilities/useAbilities';
+import {
+    getAvgPriceTotal,
+    getListPriceTotal,
+    getMinPriceTotal,
+    getPriceTotal,
+    getPriceWithoutTax,
+    getTotalPrice
+} from '../../../../utils/pricing';
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
+import PriceAndSaleUnitsModal from './PriceAndSaleUnitsModal';
 
-const defaultColor = { bg: 'var(--White3)', border: 'var(--Gray4)' }; // Asume que var(--Gray4) es el color de borde por defecto
-const errorColor = { bg: '#ffefcc', border: '#f5ba3c' }; // Rojo claro para indicar error, con un borde más oscuro
-const exactMatchColor = { bg: '#ccffcc', border: '#88cc88' }; // Verde claro para coincidencia exacta, con un borde más oscuro
-const inRangeColor = { bg: '#ffffcc', border: '#cccc88' }; // Amarillo claro para indicar que está en rango, con un borde más oscuro
+const defaultColor = { bg: 'var(--White3)', border: 'var(--Gray4)' };
+const errorColor = { bg: '#ffefcc', border: '#f5ba3c' };
+const exactMatchColor = { bg: '#ccffcc', border: '#88cc88' };
+const inRangeColor = { bg: '#ffffcc', border: '#cccc88' };
 
-const { Button } = antd
-const variants = {
-    initial: { opacity: 0, y: -90 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: 150, transition: { duration: 0.5 } },  // nueva propiedad
-};
+const { Button, message } = antd;
+
 const determineInputPriceColor = (totalPrice, minPrice, listPrice, avgPrice) => {
     if (totalPrice < minPrice || totalPrice > listPrice) {
         return errorColor;
@@ -39,152 +41,131 @@ const determineInputPriceColor = (totalPrice, minPrice, listPrice, avgPrice) => 
     }
     return defaultColor;
 };
-function extraerPreciosConImpuesto(allPrice) {
-    const { listPrice, avgPrice, minPrice } = allPrice;
-    const propiedadesPrecio = {
-        'listPrice': 'Precio de lista',
-        'avgPrice': 'Precio promedio',
-        'minPrice': 'Precio mínimo',
-    };
-    const preciosConImpuesto = [
-        { label: useFormatPrice(listPrice), value: listPrice },
-        { label: useFormatPrice(avgPrice), value: avgPrice },
-        { label: useFormatPrice(minPrice), value: minPrice },
-    ]
 
+export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
+
+    const { listPrice, avgPrice, minPrice } = pricing || {};
+    console.log('pricing ...........................', pricing.listPrice);
+    const preciosConImpuesto = [
+        {
+            label: 'Precio de Lista',
+            value: listPrice || 'N/A',
+            valueWithTax: getListPriceTotal({ pricing }, taxReceiptEnabled),
+            pricing,
+            type: 'listPrice',
+            enabled: pricing?.listPriceEnabled ?? true
+        },
+        {
+            label: 'Precio Promedio',
+            value: avgPrice || 'N/A',
+            valueWithTax: getAvgPriceTotal({ pricing }, taxReceiptEnabled),
+            type: 'avgPrice',
+            pricing,
+            enabled: pricing?.avgPriceEnabled ?? true
+        },
+        {
+            label: 'Precio Mínimo',
+            value: minPrice || 'N/A',
+            valueWithTax: getMinPriceTotal({ pricing }, taxReceiptEnabled),
+            type: 'minPrice',
+            pricing,
+            enabled: pricing?.minPriceEnabled ?? true
+        }
+    ];
+    console.log('preciosConImpuesto ______________________________', preciosConImpuesto);
     return preciosConImpuesto;
 }
 
+const variants = {
+    initial: { opacity: 0, y: -90 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 150, transition: { duration: 0.5 } },
+};
+
 export const ProductCardForCart = ({ item }) => {
-    const dispatch = useDispatch()
-    const [priceInputFocus, setInputPriceFocus] = useState(false);
+    const dispatch = useDispatch();
     const { abilities } = userAccess();
-    const user = useSelector(selectUser)
+    const [isModalVisible, setModalVisible] = useState(false);
 
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-    const tax = item.pricing.tax
-    const minPrice = getMinPriceTotal(item, taxReceiptEnabled);
-    const listPrice = getListPriceTotal(item, taxReceiptEnabled);
-    const avgPrice = getAvgPriceTotal(item, taxReceiptEnabled);
+    const [selectedUnit, setSelectedUnit] = useState(null); // Por defecto, el item base
+    const [inputPrice, setInputPrice] = useState(getTotalPrice(item, taxReceiptEnabled));
+    const [precios, setPrecios] = useState([]);
+    const itemPrice = () => {
+        setInputPrice(getPriceTotal(item, taxReceiptEnabled))
+    }
+    useEffect(() => {
+        itemPrice()
+    }, [item])
 
-    const price = getTotalPrice(item, taxReceiptEnabled)
-    const allPrice = {
-        minPrice,
-        avgPrice,
-        listPrice
+    const updatePricing = (pricing) => {
+        setPrecios(extraerPreciosConImpuesto(pricing, taxReceiptEnabled));
+    };
+
+    const handleSelectUnit = (unit) => {
+        setSelectedUnit(unit);
+        const pricing = unit.pricing;
+
+        console.log('total ', getPriceTotal({ pricing }, taxReceiptEnabled))
+        const selectedPriceValue = getPriceTotal({ pricing }, taxReceiptEnabled);
+        setInputPrice(selectedPriceValue);
+
+        updatePricing(pricing);// Actualiza los precios disponibles y el estado
+        dispatch(changeProductPrice({ id: item.id, saleUnit: unit, }));
+    };
+
+    const handleSelectDefaultUnit = (unit) => {
+        const pricing = unit?.pricing;
+        setSelectedUnit(null);
+        const selectedPriceValue = getPriceTotal({ pricing }, taxReceiptEnabled)
+        setInputPrice(selectedPriceValue);
+        updatePricing(pricing);
+        dispatch(changeProductPrice({ id: item.id, pricing: pricing }))
     }
 
-    const [inputPriceColor, setInputPriceColor] = useState(defaultColor);
-    const [inputPrice, setInputPrice] = useState(price);
-
-    const deleteProductFromCart = (id) => dispatch(deleteProduct(id));
-
-    const canModifyPrice = abilities.can('modify', 'Price');
-    const canSelectPrice = abilities.can('read', 'PriceList');
-
-    const handleChangePrice = (e) => {
-        const newPrice = e.target.value;
-        const priceWithoutTax = getPriceWithoutTax(newPrice, tax, taxReceiptEnabled);
-
-
-        if (newPrice < minPrice) {
-            antd.message.error('El precio ingresado es menor al precio mínimo permitido.', 4);
+    const handleSelectPrice = (pricing) => {
+        if (!abilities.can('read', 'PriceList')) {
+            message.error('No tienes permisos para seleccionar un precio de la lista');
+            return;
         }
-        if (newPrice > listPrice) {
-            antd.message.error('El precio ingresado es mayor al precio de lista.', 4);
-        }
-        const color = determineInputPriceColor(newPrice, minPrice, listPrice, avgPrice)
+        // Puedes seleccionar qué precio utilizar, aquí asumiremos listPrice
+        const selectedPriceValue = getPriceTotal({ pricing: pricing.pricing }, taxReceiptEnabled);
+        setInputPrice(selectedPriceValue);
 
-        setInputPriceColor(color);
+        dispatch(changeProductPrice({ id: item.id, price: pricing.value }));
 
-        dispatch(changeProductPrice({ id: item.id, newPrice: priceWithoutTax }));
-        setInputPriceFocus(false)
-    }
-
-
-    const precios = extraerPreciosConImpuesto(allPrice);
-
-    const handleMenuClick = (e) => {
-        if (!canSelectPrice) {
-            antd.message.error('No tienes permisos para seleccionar un precio de la lista');
-            return
-        };
-        const item = { target: { value: e.value } }
-        setInputPrice(e.value)
-        handleChangePrice(item); // actualiza el precio en el estado global del carrito
+        // Actualiza los precios disponibles y el estado
+        updatePricing(pricing.pricing);
     };
 
 
-    const items = precios.map((precio, index) => ({
-        key: `${index}`,
-        label: (
-            <div
-                onClick={() => handleMenuClick(precio)}
-                style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ whiteSpace: "nowrap" }}>{precio.label}</span>
-            </div>
-        )
-    }));
-
-
     return (
-        <Container
-            variants={variants}
-            initial='initial'
-            animate='animate'
-            transition={{ duration: 0.6 }}
-        >
+        <Container variants={variants} initial="initial" animate="animate" transition={{ duration: 0.6 }}>
             <Row>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr min-content min-content',
-                    }}
-                >
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr min-content min-content' }}>
                     <Title>{item.name}</Title>
-                    <Price>{useFormatPrice(price)}</Price>
+                    <Price>{useFormatPrice(getTotalPrice(item, taxReceiptEnabled))}</Price>
                     <Button
-                        type='text'
-                        size='small'
-                        style={{
-                            fontSize: 20,
-                            padding: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
+                        type="text"
+                        size="small"
                         icon={icons.operationModes.discard}
-                        onClick={() => deleteProductFromCart(item.cid)}
+                        onClick={() => dispatch(deleteProduct(item.cid))}
                         danger
                     />
                 </div>
             </Row>
             <Row>
-                <Group >
-                    <Dropdown
-                        menu={{ items }}
-                        trigger={['click']}
-                    >
-                        {
-                            canSelectPrice ? (
-                                <Button
-                                    icon={icons.arrows.caretDown}
-                                    size='small'
-                                />) : (
-                                <div></div>
-                            )
-                        }
-
-                    </Dropdown>
+                <Group>
+                    <Button
+                        icon={icons.arrows.caretDown}
+                        size="small"
+                        onClick={() => setModalVisible(true)}
+                    />
                     <Input
-                        disabled={!canModifyPrice || item?.weightDetail?.isSoldByWeight}
-                        readOnly={!canModifyPrice}
-                        type={priceInputFocus ? "number" : "text"}
-                        onFocus={() => setInputPriceFocus(true)}
-                        onBlur={handleChangePrice}
-                        color={inputPriceColor}
-                        onChange={(e) => setInputPrice(e.target.value)}
-                        value={priceInputFocus ? inputPrice : useFormatPrice(inputPrice)}
+                        disabled={!abilities.can('modify', 'Price') || item?.weightDetail?.isSoldByWeight}
+                        readOnly={!abilities.can('modify', 'Price')}
+                        type="text"
+                        value={useFormatPrice(inputPrice)}
                     />
                     {
                         item?.weightDetail?.isSoldByWeight ? (
@@ -208,55 +189,42 @@ export const ProductCardForCart = ({ item }) => {
 
                 </Group>
             </Row>
+            <PriceAndSaleUnitsModal
+                isVisible={isModalVisible}
+                onClose={() => setModalVisible(false)}
+                prices={precios}
+                selectedUnit={selectedUnit}
+                onSelectDefaultUnit={handleSelectDefaultUnit}
+                item={item}
+                onSelectPrice={handleSelectPrice}
+                onSelectUnit={handleSelectUnit}
+            />
         </Container>
-    )
-}
+    );
+};
+
 const Container = styled(motion.div)`
     width: 100%;
     height: min-content;
-    position: relative;
     background-color: #ffffff;
-    padding: 0.2em 0.4em;
-    border: 1px solid rgba(0, 0, 0, 0.100);
+    padding: 0.4em;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-
     display: grid;
-    border: none;
-    border: 1px solid rgba(0, 0, 0, 0.121);
-    gap: 0.3em;
+    gap: 0.4em;
+`;
 
-`
 const Row = styled.div`
- 
     display: grid;
     align-items: center;
-`
+`;
+
 const Group = styled.div`
     display: grid;
     align-items: center;
-    gap: 1em;
-    grid-template-columns: min-content 1fr 1fr ;
-    .ant-dropdown{
-        z-index: 1000000000 !important;
-    }
-    .ant-dropdown.css-dev-only-do-not-override-zl9ks2 {
-  z-index: 1000000000 !important;
-}
-
-
-    ${props => {
-        switch (props.justifyContent) {
-            case 'space-between':
-                return `
-                    justify-content: space-between;
-                `
-
-
-            default:
-                break;
-        }
-    }}
-`
+    gap: 0.4em;
+    grid-template-columns: min-content 1fr 1fr;
+`;
 
 const Title = styled.span`
     font-weight: 500;
@@ -264,36 +232,26 @@ const Title = styled.span`
     font-size: 14px;
     color: rgb(71, 71, 71);
     text-transform: capitalize;
-`
+`;
+
 const Price = styled.span`
-    
-    width: 100%;
     font-size: 14px;
     font-weight: 600;
-    border-radius: 6px;
-    display: block;
-    padding: 0 10px;
-    margin: 0;
     white-space: nowrap;
+    padding: 0 10px;
     background-color: var(--White1);
     color: var(--Gray6);
- 
-`
+`;
+
 const Input = styled.input`
     width: 100%;
     height: 1.8em;
     font-size: 14px;
     font-weight: 600;
     border-radius: 6px;
-    display: block;
     padding: 0 10px;
-    margin: 0;
-    white-space: nowrap;
-    color: var(--Gray6);
     background-color: ${props => props?.color?.bg};
     border: 2px solid ${props => props?.color?.border};
-    :focus {
-        outline: none;
-    }
-
-`
+    color: var(--Gray6);
+    outline: none;
+`;

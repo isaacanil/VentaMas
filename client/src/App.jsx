@@ -48,7 +48,7 @@ function App() {
 
   useInitializeBillingSettings()
 
-  useTaxReceiptEnabledToCart();
+  // useTaxReceiptEnabledToCart();
 
   useUserDocListener(user?.uid); // escucha los cambios en el documento del usuario actual
 

@@ -124,11 +124,23 @@ const cartSlice = createSlice({
                 state.data.isAddedToReceivables = value;
             }
         },
+     
         changeProductPrice: (state, action) => {
-            const { id, newPrice } = action.payload;
+            const { id, pricing, saleUnit, price } = action.payload;
             const product = state.data.products.find((product) => product.id === id);
             if (product) {
-                product.pricing.price = newPrice;
+                if (saleUnit) {
+                    product.selectedSaleUnit = saleUnit
+                } else if (pricing) {
+                    product.pricing = pricing;
+                    product.pricing.price = product.pricing.listPrice;
+                    product.selectedSaleUnit = null;
+                }
+                if (price && product.selectedSaleUnit) {
+                    product.selectedSaleUnit.pricing.price = price;
+                } else if (price) {
+                    product.pricing.price = price
+                }
             }
             updateAllTotals(state)
         },
@@ -206,17 +218,18 @@ const cartSlice = createSlice({
             }
             updateAllTotals(state)
         },
-       CancelShipping: (state) => state = initialState,
+        // CancelShipping: (state) => state = initialState,
         CancelShipping: (state) => {
-            return{
+            return {
                 ...initialState,
                 settings: {
                     ...initialState.settings,
+                    ...state.settings,
                     billing: {
                         ...state.settings.billing
                     }
                 }
-            } 
+            }
         },
         changeProductWeight: (state, action) => {
             const { id, weight } = action.payload
