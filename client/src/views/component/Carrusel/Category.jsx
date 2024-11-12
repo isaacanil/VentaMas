@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useDispatch } from "react-redux"
-import { addCategory, deleteCategorySelected } from "../../../features/category/categorySlicer"
+import { addItem, deleteItem } from "../../../features/category/categorySlicer"
 import styled from "styled-components"
 import { motion } from "framer-motion"
 import { icons } from "../../../constants/icons/icons"
@@ -12,11 +12,11 @@ export const Category = ({ category, ref, onClick, type, icon, themeColor, selec
     const start = (category, ref) => {
         if (isSelected === false) {
             setIsSelected(!isSelected)
-            dispatch(addCategory(category))
+            dispatch(addItem(category))
         }
         if (isSelected) {
             setIsSelected(!isSelected)
-            dispatch(deleteCategorySelected(category))
+            dispatch(deleteItem(category))
         }
         setTimeout(() => {
             ref.current.scrollTo(0, 0)

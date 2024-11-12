@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { icons } from '../../../../../../../../constants/icons/icons'
 import styled from 'styled-components'
 import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
-import { useDispatch } from 'react-redux'
-import * as antd from 'antd'
-const { Modal, Form, Input, notification, Button } = antd
+import { Modal, Form, Input, notification, Button }from 'antd'
+
 const formIcon = icons.forms
+
 export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose }) => {
     const [form] = Form.useForm()
 
@@ -29,8 +29,10 @@ export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose
         setIsOpen(false)
     }
     useEffect(() => {
-        form.resetFields()
-    }, [isOpen])
+        if (isOpen) {
+            form.resetFields()
+        }
+    }, [isOpen, form])
 
     return (
         <Modal

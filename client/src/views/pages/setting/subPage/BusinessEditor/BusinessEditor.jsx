@@ -1,11 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import { InputV4 } from '../../../../templates/system/Inputs/InputV4';
-import { fbUpdateBusinessInfo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { useSelector } from 'react-redux';
-import { fbGetBusinessInfo } from '../../../../../firebase/businessInfo/fbGetBusinessInfo';
 import BusinessProfileEditor from './BusinessEditorProfile';
 import { MenuApp } from '../../../..';
 
@@ -19,8 +13,6 @@ const BusinessEditor = () => {
   );
 };
 export default BusinessEditor;
-
-
 
 const Form = styled.form`
   display: flex;

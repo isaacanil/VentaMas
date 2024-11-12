@@ -1,20 +1,21 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    isOpen: false,    // Controla la visibilidad del modal
-    formData: {       // Datos del formulario
-        id: "",       // Autogenerado, no necesario en el formulario
-        name: "",     // Nombre del estante
-        shortName: "", // Nombre corto
-        description: "", // Descripción opcional
-        rowCapacity: 0,  // Capacidad de fila
+    isOpen: false,
+    formData: {
+        id: "",
+        name: "",
+        shortName: "",
+        description: "",
+        rowCapacity: 0,
     },
-    loading: false,    // Estado de carga
-    error: null,       // Error en caso de fallo
+    loading: false,
+    error: null,
 };
 
-const shelfSlice = createSlice({
-    name: 'shelf',
+const shelfModalSlice = createSlice({
+    name: 'shelfModal', // Updated slice name
     initialState,
     reducers: {
         openShelfForm: (state, action) => {
@@ -28,7 +29,7 @@ const shelfSlice = createSlice({
         },
         closeShelfForm: (state) => {
             state.isOpen = false;
-            state.formData = initialState.formData; // Restablece el formulario
+            state.formData = initialState.formData;
         },
         setShelfLoading: (state, action) => {
             state.loading = action.payload;
@@ -42,7 +43,6 @@ const shelfSlice = createSlice({
             state.loading = false;
         },
         updateShelfFormData: (state, action) => {
-            // Actualiza uno o más campos del formulario
             state.formData = {
                 ...state.formData,
                 ...action.payload,
@@ -59,9 +59,9 @@ export const {
     setShelfError,
     clearShelfForm,
     updateShelfFormData,
-} = shelfSlice.actions;
+} = shelfModalSlice.actions;
 
-export default shelfSlice.reducer;
+export default shelfModalSlice.reducer;
 
 // Selector para obtener el estado completo del shelf
-export const selectShelfState = (state) => state.shelf;
+export const selectShelfState = (state) => state.shelfModal;

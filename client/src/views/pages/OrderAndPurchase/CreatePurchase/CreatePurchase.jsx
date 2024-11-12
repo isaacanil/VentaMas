@@ -23,7 +23,7 @@ import { toggleProviderModal } from '../../../../features/modals/modalSlice'
 import { OPERATION_MODES } from '../../../../constants/modes'
 import { fromMillisToDateISO } from '../../../../utils/date/convertTimeStampToDate'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import FileList from './components/FileList'
+
 const ProviderOption = ({ provider, orderCount }) => (
     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>{provider.name}</span>

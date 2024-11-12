@@ -8,21 +8,21 @@ import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import { InputV4 } from '../../templates/system/Inputs/GeneralInput/InputV4'
 import { filterData } from '../../../hooks/search/useSearch'
 export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProduct }) => {
-  
+
   const [searchTerm, setSearchTerm] = useState(productName || null)
   const close = () => {
     setIsOpen(false)
   }
   const productListRef = useRef(null);
 
-  const {products} =  useGetProducts(true);
-  const productsTrackInventoryFilter= products.filter((product) => product.trackInventory === true ) || [];
+  const { products } = useGetProducts(true);
+  const productsTrackInventoryFilter = products.filter((product) => product.trackInventory === true) || [];
   const productsFiltered = typeof searchTerm == 'string' && filterData(productsTrackInventoryFilter, searchTerm)
   useEffect(() => {
     if (!productName) {
       setSearchTerm('')
     }
-    if(productName){
+    if (productName) {
       setSearchTerm(productName)
     }
   }, [productName])
@@ -52,7 +52,6 @@ export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProd
           </ProductsListHead>
           <ProductsListBody>
             {
-              
               productsFiltered.map((data, index) => (
                 <ProductCard
                   fn={handleSelectProduct}
@@ -74,7 +73,8 @@ const Component = styled.div`
   z-index: 1;
 `
 const ProductsList = styled.div`
-  height: calc(100vh - 16em);
+  height: calc(100vh - 18em);
+  max-height: 400px;
   max-width: 1000px;
   width: 100%;
   
@@ -109,12 +109,13 @@ const ProductsListBody = styled.div`
  // background-color: #f0f0f0;
  display: grid;
  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
- grid-auto-rows: 1fr;
+ grid-auto-rows: min-content;
  align-items: flex-start;
  align-content: flex-start;
  background-color: var(--White3);
  gap: 0.4em;
  padding: 0.3em;
+
 
   
 `

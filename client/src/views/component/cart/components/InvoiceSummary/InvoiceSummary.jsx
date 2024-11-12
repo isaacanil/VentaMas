@@ -18,7 +18,6 @@ import { deleteClient, setIsOpen } from '../../../../../features/clientCart/clie
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
 
-
 const InvoiceSummary = () => {
   const [isCartValid, setIsCartValid] = useState(false)
   const cart = useSelector(selectCart);

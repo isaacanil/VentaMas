@@ -34,12 +34,12 @@ const inventory = [
                 route: CATEGORIES,
                 group: 'inventoryItems'
             },
-            {
-                title: 'Almacenes',
-                route: WAREHOUSES,
-                icon: null,
-                group: 'inventoryItems'
-            },
+            // {
+            //     title: 'Almacenes',
+            //     route: WAREHOUSES,
+            //     icon: null,
+            //     group: 'inventoryItems'
+            // },
             {
                 title: 'Administrador de Imágenes',
                 route: PRODUCT_IMAGES_MANAGER,

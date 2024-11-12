@@ -3,6 +3,7 @@ import { db } from "../firebaseconfig";
 
 export const fbAddFavoriteProductCategory = async (user, category) => {
     const { businessID, uid } = user;
+    console.log("prueba, ", category)
     if (!businessID) {
         return console.log('no tienes permisos para realizar esta acción');
     }

@@ -1,32 +1,29 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { icons } from '../../../../../constants/icons/icons';
 import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 export const Category = ({
-    category = {},
+    item = {},
     isFavorite = false,
     searchTerm = '',
+    color= '#f2f2f2',
     selected = false,
-    onClick = () => { },
-    toggleFavoriteCategory = () => { }
+    onClick = () => {},
+    toggleFavorite
 }) => {
     const [isHover, setIsHover] = useState(false)
     const [isHoverFavorite, setIsHoverFavorite] = useState(false)
-    const handleMouseEnter = () => {
-        setIsHover(true);
-    };
 
-    const handleMouseLeave = () => {
-        setIsHover(false);
-    };
+    const handleMouseEnter = () => setIsHover(true);
+    const handleMouseLeave = () => setIsHover(false);
 
     const highlightMatch = (text) => {
         if (!searchTerm) return text;
         const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
-        return parts.map((part, index) => 
-            part.toLowerCase() === searchTerm.toLowerCase() ? <mark key={index}>{part}</mark> : part
+        return parts.map((part, index) =>
+            part.toLowerCase() === searchTerm.toLowerCase()
+                ? <mark key={index}>{part}</mark> : part
         );
     };
 
@@ -34,24 +31,26 @@ export const Category = ({
         <Container
             selected={selected}
             onMouseEnter={handleMouseEnter}
+            color={color}
             onMouseLeave={handleMouseLeave}
+            onClick={() => onClick(item)}
         >
-            <CategoryItem onClick={() => onClick(category)} >
-            {highlightMatch(category?.name)}
-            </CategoryItem>
-            {/* {
-                selected && (
-                    <DeleteButton>
-                        {icons.editingActions.cancel}
-                    </DeleteButton>
+            <CategoryItem>{highlightMatch(item?.name)}</CategoryItem>
+            {
+                toggleFavorite && (
+                    <FavoriteStar
+                    onMouseEnter={() => setIsHoverFavorite(true)}
+                    onMouseLeave={() => setIsHoverFavorite(false)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(item)
+                    }}>
+                    <FontAwesomeIcon icon={isFavorite || isHoverFavorite ? faStar : faStarRegular} />
+                </FavoriteStar>
                 )
-            } */}
-            <FavoriteStar 
-                onMouseEnter={() => setIsHoverFavorite(true)}
-                onMouseLeave={() => setIsHoverFavorite(false)}
-            onClick={() => toggleFavoriteCategory(category)}>
-                <FontAwesomeIcon icon={isFavorite || isHoverFavorite ? faStar :  faStarRegular} />
-            </FavoriteStar>
+
+            }
+           
         </Container>
     )
 }
@@ -63,9 +62,9 @@ const Container = styled.div`
     border-radius: 0.4em;
     cursor: pointer;
     border: 2px solid transparent;
-    background-color: var(--White1);
-    :hover{
-        background-color: var(--White4);
+    background-color: ${({ color }) => color};  // Usamos el color dinámico
+    :hover {
+        background-color: ${({ color }) => color};  // Mantén el hover del mismo color
     }
     ${props => props.selected && `
         border: 2px solid var(--color1);
@@ -78,7 +77,7 @@ const DeleteButton = styled.span`
     width: 1.2em;
     display: flex;
     align-items: center;
-`       
+`
 const CategoryItem = styled.span`
     padding: 0.4em 0.4em;
     height: 100%;

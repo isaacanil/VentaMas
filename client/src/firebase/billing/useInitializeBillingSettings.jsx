@@ -38,14 +38,14 @@ const useInitializeBillingSettings = () => {
 
         // Suscribirse a cambios en tiempo real
         const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
-            const data = docSnapshot.data() || { billingMode: 'direct' };
+            const data = docSnapshot.data() || { billingMode: 'direct', invoiceType: 'template1' };
 
             // Actualizar el cache de React Query
-            queryClient.setQueryData(['billingSettings', user.businessID], data);
+            queryClient.setQueryData(['billingSettings', user.businessID], data)
 
             // Despachar la acción para actualizar el estado global
             dispatch(setBillingSettings({
-                billingMode: data.billingMode,
+                ...data,
                 isLoading: false,
                 isError: false
             }));

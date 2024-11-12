@@ -47,7 +47,7 @@ const INVENTORY_TERM = {
     PRODUCT: `${INVENTORY_BASE_PATH}/product/:productId`,
     INVENTORY_ITEMS: '/inventory/items',
     CATEGORIES: '/inventory/categories',
-    WAREHOUSES: `${INVENTORY_BASE_PATH}/warehouses`, // Listado de almacenes
+    WAREHOUSES: `${INVENTORY_BASE_PATH}/warehouse`, // Listado de almacenes
     WAREHOUSE: `${WAREHOUSE_BASE_PATH}/:warehouseId`, // Detalle de un almacén
     SHELF: `${SHELVE_BASE_PATH}/:shelfId`, // Detalle de un estante
     ROW: `${ROW_BASE_PATH}/:rowId`, // Detalle de una fila

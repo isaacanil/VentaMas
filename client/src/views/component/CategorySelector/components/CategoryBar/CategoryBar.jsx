@@ -1,17 +1,17 @@
 import React, { useRef } from 'react'
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md'
 import styled from 'styled-components'
 import { useDispatch } from 'react-redux'
 import { icons } from '../../../../../constants/icons/icons'
-import { deleteCategorySelected } from '../../../../../features/category/categorySlicer'
+import { deleteItem } from '../../../../../features/category/categorySlicer'
 import { useMoveScroll } from '../../../../../utils/scroll/moveScroll'
-import * as antd from 'antd'
-const { Button } = antd
-export const CategoryBar = ({open, setOpen, categoriesSelected }) => {
+import { Button } from 'antd';
+import { categoryColors } from '../../categoryColors'
+
+export const CategoryBar = ({ open, setOpen, items = [] }) => {
   const categoriesRef = useRef(null)
   const { toEnd, toLeft, toRight, toStart } = useMoveScroll(categoriesRef)
 
-  if (categoriesSelected.length === 0) {
+  if (items?.length === 0) {
     return (
       <Container>
         <Button
@@ -30,7 +30,6 @@ export const CategoryBar = ({open, setOpen, categoriesSelected }) => {
       <Button
         icon={icons.editingActions.create}
         onClick={() => setOpen(!open)}
-        
       >
       </Button>
       <Button
@@ -43,9 +42,11 @@ export const CategoryBar = ({open, setOpen, categoriesSelected }) => {
         ref={categoriesRef}
       >
         {
-          categoriesSelected.map((category) => (
-            <Category key={category.id} category={category} />
-          ))
+          (items?.length === 0) ?
+            (<>No elementos</>) :
+            (items.map((item) => (
+              <Category key={item.id} item={item} />
+            )))
         }
       </CategoryList>
       <Button
@@ -68,14 +69,14 @@ const Container = styled.div`
   background-color: #ffffff;
 
 `;
-const Category = ({ category }) => {
+const Category = ({ item }) => {
   const dispatch = useDispatch();
   const handleDeleteCategory = () => {
-    dispatch(deleteCategorySelected(category))
+    dispatch(deleteItem(item))
   };
   return (
-    <CategoryItem>
-      {category.name}
+    <CategoryItem type={item.type}>
+      {item.name}
       <RemoveIcon onClick={handleDeleteCategory} >{icons.editingActions.cancel}</RemoveIcon>
     </CategoryItem>
   );
@@ -103,7 +104,7 @@ const CategoryItem = styled.div`
     gap: 1em;
     white-space: nowrap;
     align-items: center;
-    background-color: var(--color2);
+    background-color: ${({type}) => categoryColors[type] || categoryColors.default};
     border-radius: 0.4em;
     justify-content: space-between;
 `;
@@ -122,8 +123,6 @@ const RemoveIcon = styled.span`
     color: var(--Black5);
     background-color: var(--White5);
     border-radius: 0.4em;
-    
-
   }
 
 `;

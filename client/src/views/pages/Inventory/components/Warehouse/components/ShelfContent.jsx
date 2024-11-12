@@ -12,8 +12,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ProductStockForm } from "../forms/ProductStockForm/ProductStockForm";
 import { ProductsSection } from "./ProductsSection";
 import { icons } from "../../../../../../constants/icons/icons";
-import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfSlice";
-import { openShelfForm } from "../../../../../../features/warehouse/shelfSlice";
+import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfModalSlice";
+import { openShelfForm } from "../../../../../../features/warehouse/shelfModalSlice";
 
 
 const { Modal, Button, List, Tag, message } = antd;
@@ -86,27 +86,20 @@ export default function ShelfContent() {
   const { selectedWarehouse: warehouse, selectedShelf: shelf } = useSelector(selectWarehouse);
   const [location, setLocation] = useState({ id: shelfId, type: "shelf" })
 
-  const [isRowShelfFormOpen, setIsRowShelfFormOpen] = useState(false);
-  const [isOpenShelfForm, setIsOpenShelfForm] = useState(false);
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const { data : rowShelves, loading, error } = useListenRowShelves(warehouse?.id, shelf?.id);
+  const { data: rowShelves, loading, error } = useListenRowShelves(warehouse?.id, shelf?.id);
 
   const onNavigate = (row) => {
     navigate(`row/${row.id}`);
     dispatch(navigateWarehouse({ view: "rowShelf", data: row })); // Actualiza el estado global de Redux
   };
 
-  const handleEditShelfInfo = () => {
-    dispatch(openShelfForm(shelf));
-    setIsOpenShelfForm(true);
-  }
+  const handleEditShelfInfo = () => dispatch(openShelfForm(shelf));
 
-  const handleAddRowShelf = () => {
-    dispatch(openRowShelfForm());
-  }
-  const handleUpdateShelf = (data) => {
-    dispatch(openRowShelfForm(data));
-  }
+  const handleAddRowShelf = () => dispatch(openRowShelfForm());
+
+  const handleUpdateShelf = (data) => dispatch(openRowShelfForm(data));
+
   return (
     <Container>
       <ShelfInfo>

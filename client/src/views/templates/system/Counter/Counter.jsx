@@ -1,57 +1,59 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import { CgMathMinus, CgMathPlus } from 'react-icons/cg';
+import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { icons } from '../../../../constants/icons/icons';
 import {
-    setChange,
-    totalTaxes,
-    totalPurchase,
-    deleteProduct,
     addAmountToProduct,
     diminishAmountToProduct,
     onChangeValueAmountToProduct,
-    totalShoppingItems,
     addPaymentMethodAutoValue
-} from '../../../../features/cart/cartSlice'
-import { Button } from '../Button/Button';
+} from '../../../../features/cart/cartSlice';
 import { Alert } from '../Product/Cart/Alert';
-import Style from './Counter.module.scss'
 import styled from 'styled-components';
 
-export const Counter = ({ amountToBuyTotal, stock, id }) => {
-    const dispatch = useDispatch()
-    const [DeletePrevent, setDeletePrevent] = useState(false)
-    const [counter, setCounter] = useState({ id })
+export const Counter = ({ amountToBuy, stock, id, item }) => {
+    const dispatch = useDispatch();
+    const [DeletePrevent, setDeletePrevent] = useState(false);
+    const [inputAmount, setInputAmount] = useState(amountToBuy || 1); // Estado para el input
 
     useEffect(() => {
-        if (counter.value >= 0) {
+        setInputAmount(amountToBuy);
+    }, [amountToBuy]);
+    // Manejador para cambiar el valor del input en tiempo real
+    const handleInputChange = (e) => {
+        const value = parseInt(e.target.value, 10);
 
-            dispatch(onChangeValueAmountToProduct(counter))
-            dispatch(addPaymentMethodAutoValue())
+        // Validación en tiempo real si se debe restringir el stock
+        if (item.restrictSaleWithoutStock && value > stock) {
+            alert(`La cantidad solicitada no puede exceder el stock disponible (${stock} unidades).`);
+            setInputAmount(stock);  // Limitar al stock máximo
+        } else if (value > 0) {
+            setInputAmount(value);  // Solo permitir valores positivos
+            dispatch(onChangeValueAmountToProduct({ id, value }));
         }
+    };
 
-    }, [counter])
-    const handleChangeCounter = (value) => {
-        dispatch(onChangeValueAmountToProduct({id, value}))
-
-    }
-
+    // Manejador para aumentar la cantidad
     const handleIncreaseCounter = () => {
-        setCounter({ id })
-        dispatch(addAmountToProduct(counter))
-    }
+        const newValue = inputAmount + 1;
+        if (item.restrictSaleWithoutStock && newValue > stock) {
+            alert(`No puedes agregar más de ${stock} unidades.`);
+        } else {
+            setInputAmount(newValue);
+            dispatch(addAmountToProduct({ id, value: newValue }));
+        }
+    };
 
-
+    // Manejador para disminuir la cantidad
     const handleDiminishCounter = () => {
-        if (amountToBuyTotal > 1) {
-            setCounter({ id })
-            dispatch(diminishAmountToProduct(counter))
+        if (inputAmount > 1) {
+            const newValue = inputAmount - 1;
+            setInputAmount(newValue);
+            dispatch(diminishAmountToProduct({ id, value: newValue }));
+        } else {
+            setDeletePrevent(true); // Mostrar alerta si intenta disminuir por debajo de 1
         }
+    };
 
-        if (amountToBuyTotal === 1) {
-            setDeletePrevent(true)
-        }
-    }
     return (
         <Fragment>
             <Container>
@@ -60,13 +62,13 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
                 </ButtonCounter>
                 <CounterDisplay
                     type="number"
-                    name=""
-                    id=""
-                    value={amountToBuyTotal ? amountToBuyTotal : ""}
-                    
-                    onChange={e => handleChangeCounter(e.target.value)}
+                    value={inputAmount}
+                    onChange={handleInputChange}  // Validación y actualización en tiempo real
                 />
-                <ButtonCounter onClick={handleIncreaseCounter}>
+                <ButtonCounter
+                    onClick={handleIncreaseCounter}
+                    disabled={item.restrictSaleWithoutStock && inputAmount >= stock} // Deshabilitar si se alcanza el stock y hay restricción
+                >
                     {icons.mathOperations.add}
                 </ButtonCounter>
             </Container>
@@ -76,49 +78,54 @@ export const Counter = ({ amountToBuyTotal, stock, id }) => {
                 handleIsOpen={setDeletePrevent}
             />
         </Fragment>
-    )
-}
+    );
+};
+
 const Container = styled.div`
     display: grid;
-    grid-template-columns: min-content 1fr  min-content;
+    grid-template-columns: min-content 1fr min-content;
     align-items: center;
     background-color: var(--White3);
     height: 1.6em;
     padding: 0 0.2em;
     border-radius: 6px;
-`
+`;
+
 const ButtonCounter = styled.button`
     border: none;
-       outline: none;
-       font-weight: 700;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       border-radius: 4px;
-       background-color: var(--White);
-       height: 1.4em;
-       width: 1.4em;
-       padding: 0.2em;
-       &:focus{
-         outline: none;
-       }
-        svg{
-          
-            color: var(--Gray6);
-        }
-    
-`
-const CounterDisplay = styled.input`
-
-      border: 1px solid rgba(0, 0, 0, 0);
-        width: 100%;
-      text-align: center;
-      font-size: 17px;
-      outline: none;
-      background-color: transparent;
-      &::-webkit-inner-spin-button, &::-webkit-outer-spin-button{
-         -webkit-appearance: none;
-         margin: 0;
-     
+    outline: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background-color: var(--White);
+    height: 1.4em;
+    width: 1.4em;
+    padding: 0.2em;
+    &:focus {
+        outline: none;
     }
-    `
+    svg {
+        color: var(--Gray6);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+`;
+
+const CounterDisplay = styled.input`
+    border: 1px solid rgba(0, 0, 0, 0);
+    width: 100%;
+    text-align: center;
+    font-size: 17px;
+    outline: none;
+    background-color: transparent;
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+`;

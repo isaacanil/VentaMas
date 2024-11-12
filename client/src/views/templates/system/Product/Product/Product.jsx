@@ -1,49 +1,73 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useMemo, useState } from 'react'
 import styled, { css, keyframes } from 'styled-components'
-import { separator } from '../../../../../hooks/separator'
 import { useDispatch, useSelector } from 'react-redux'
-
-import { selectImageHidden, } from '../../../../../features/setting/settingSlice'
-import { addPaymentMethodAutoValue, addProduct, addTaxReceiptInState, deleteProduct, SelectDelivery, SelectProduct, setChange, totalPurchase, totalPurchaseWithoutTaxes, totalShoppingItems, totalTaxes } from '../../../../../features/cart/cartSlice'
+import { addProduct, deleteProduct, SelectProduct, } from '../../../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import noImg from '../../../../../assets/producto/noimg.png'
-import { IsProductSelected } from './IsProductSelected'
+import { useProductInCart, useProductStockStatus } from './IsProductSelected'
 import { Button } from '../../Button/Button'
 import { icons } from '../../../../../constants/icons/icons'
 import { useCheckForInternetConnection } from '../../../../../hooks/useCheckForInternetConnection'
 import useImageFallback from '../../../../../hooks/image/useImageFallback'
 import { motion } from 'framer-motion'
 import { getTotalPrice } from '../../../../../utils/pricing'
-import * as antd from 'antd'
-import { CustomProduct } from '../CustomProduct'
+import { notification } from 'antd'
 import { ProductWeightEntryModal } from '../../../../component/modals/ProductWeightEmtryModal/ProductWeightEntryModal'
 import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
 import { BatchSelectorModal } from './BatchSelectorModal'
 import { openProductExpirySelector } from '../../../../../features/warehouse/productExpirySelectionSlice'
-const { Badge, Tag } = antd
+import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
+
+const item = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+}
 
 export const Product = ({ product, }) => {
-    // const imageHiddenRef = useSelector(selectImageHidden);
-    const imageHiddenRef = false;
     const dispatch = useDispatch();
     const ProductsSelected = useSelector(SelectProduct);
+    const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+
+    const imageHiddenRef = false;
+
     const [isOpenBatchModal, setIsOpenBatchModal] = useState(false);
-    
-    const deliverySelected = useSelector(SelectDelivery);
     const [productWeightEntryModal, setProductWeightEntryModal] = useState(false);
     const [isImageLoaded, setImageLoaded] = useState(false);
-    const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-    const handleGetThisProduct = (product) => {
-        if(product?.hasExpirationDate){
-            dispatch(openProductExpirySelector(product))
-            // openBatchModal();
 
+    const isConnected = useCheckForInternetConnection();
+    // const productCheckInCart = isProductSelected(ProductsSelected, product.id);
+    const [imageFallback] = useImageFallback(product?.image, noImg);
+
+    const { status: isProductInCart, product: productInCart } = useProductInCart(product.id);
+
+    const { isLowStock, isOutOfStock } = useProductStockStatus(product, productInCart)
+
+    const price = useMemo(() => getTotalPrice(product, taxReceiptEnabled), [product, taxReceiptEnabled]);
+
+    const handleGetThisProduct = (product) => {
+        if (isLowStock) {
+            notification.warning({
+                message: 'Alerta de Stock Bajo',
+                description: `El stock de ${product.name} está por debajo del umbral de 20 unidades\nStock actual: ${product?.stock} unidades`,
+            });
+        }
+        if (isOutOfStock) {
+            notification.warning({
+                message: 'Alerta de Stock Agotado',
+                description: `El stock de ${product.name} está agotado\nStock actual: ${product?.stock} unidades`,
+            });
+
+            return;
+        }
+        if (product?.hasBatch) {
+            dispatch(openProductExpirySelector(product))
             return
         }
         if (product?.weightDetail?.isSoldByWeight) {
             setProductWeightEntryModal(true);
             return
         }
+    
         dispatch(addProduct(product))
     }
 
@@ -52,40 +76,22 @@ export const Product = ({ product, }) => {
         dispatch(deleteProduct(id))
     }
 
-    const isConnected = useCheckForInternetConnection();
-    const ProductCheckInCart = IsProductSelected(ProductsSelected, product.id);
-    const [imageFallback] = useImageFallback(product?.image, noImg);
+    const openBatchModal = () => setIsOpenBatchModal(true);
+    const closeBatchModal = () => setIsOpenBatchModal(false);
+    const getBatch = (batch) => console.log(batch)
 
-
-    const item = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1
-        }
-    }
-    const price = getTotalPrice(product, taxReceiptEnabled);
-    const openBatchModal = () => {
-        setIsOpenBatchModal(true);
-    }
-    const closeBatchModal = () => {
-        setIsOpenBatchModal(false);
-    }
-    const getBatch = (batch) => {
-        console.log(batch)
-    }
-
+    const isDisabled = isOutOfStock || isLowStock
     return (
-
         <Fragment>
             <Container
                 onClick={() => handleGetThisProduct(product)}
                 imageHiddenRef={imageHiddenRef}
-                isSelected={ProductCheckInCart.status}
+                isSelected={isProductInCart}
+                isDisabled={isDisabled}
                 variants={item}
             >
                 {
-                    <Head imageHiddenRef={imageHiddenRef ? true : false}>
+                    <ImageWrapper imageHiddenRef={imageHiddenRef ? true : false}>
                         <ImageContainer imageHiddenRef={imageHiddenRef}>
                             {!isImageLoaded && <Loader isImageLoaded={isImageLoaded} />}
                             {
@@ -95,43 +101,46 @@ export const Product = ({ product, }) => {
                                 />
                             }
                         </ImageContainer>
-                    </Head>
+                    </ImageWrapper>
                 }
-                <Body>
-                    <Title isOpen={ProductCheckInCart.status}>
-                        {product.name}
-                    </Title>
-                    {ProductCheckInCart.status ? (
-                        <Button
-                            startIcon={icons.operationModes.discard}
-                            width='icon24'
-                            color={'on-error'}
-                            borderRadius='normal'
-                            onClick={(e) => deleteProductFromCart(e, product?.id)}
-                        />
-                    ) : null}
-
-                    <Footer imageHiddenRef={imageHiddenRef} isSelected={ProductCheckInCart.status ? true : false}>
-
-                        {ProductCheckInCart.status ? (
-                            <Group>
-                                <AmountToBuy>{ProductCheckInCart.productSelectedData.amountToBuy}</AmountToBuy>
-                            </Group>
-                        ) : <Group />}
-
+              {isOutOfStock && <StockWarning>Agotado</StockWarning>}
+              {isLowStock && !isOutOfStock && <StockWarning>Pocas unidades</StockWarning>}
+                <Content>
+                    <Header>
+                        <Title isOpen={isProductInCart}>
+                            {product.name}
+                        </Title>
+                        {isProductInCart && (
+                            <Button
+                                startIcon={icons.operationModes.discard}
+                                width='icon24'
+                                color={'on-error'}
+                                borderRadius='normal'
+                                onClick={(e) => deleteProductFromCart(e, product?.id)}
+                            />
+                        )}
+                    </Header>
+                    <Body>
+                        
+                    </Body>
+                    <Footer imageHiddenRef={imageHiddenRef} isSelected={isProductInCart}>
+                        <Group>
+                            <AmountToBuy isDisabled={isDisabled} >{isProductInCart && `${useFormatNumber(productInCart?.amountToBuy)} / `} {useFormatNumber(product.stock)}</AmountToBuy>
+                        </Group>
                         <Group>
                             {
                                 product?.weightDetail?.isSoldByWeight ? (
-                                    <Price>
+                                    <Price isDisabled={isDisabled} >
                                         {useFormatPrice(price)} / {product?.weightDetail?.weightUnit}
                                     </Price>
                                 ) : (
-                                    <Price isSelected={ProductCheckInCart.status ? true : false}>{useFormatPrice((price))}</Price>
+                                    <Price isDisabled={isDisabled} isSelected={isProductInCart}>{useFormatPrice((price))}</Price>
                                 )
                             }
                         </Group>
                     </Footer>
-                </Body>
+                </Content>
+
             </Container>
             <ProductWeightEntryModal
                 isVisible={productWeightEntryModal}
@@ -155,16 +164,18 @@ export const Product = ({ product, }) => {
 
     )
 }
+const OutOfStockContainer = '#fffcce';
+const OutOfStock = '#ffd000';
 const Container = styled(motion.li)`
     box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.020);
     height: 80px;
     width: 100%;
-    background-color: #ffffff;
     border-radius: var(--border-radius);
     display: flex;
     gap: 10px;
     overflow: hidden;
     transition: 400ms all ease-in-out;
+    background-color: ${(props) => (props.isDisabled ? '#ffffff' : '#ffffff')};
     position: relative;
     outline: 2px solid transparent;
     :hover{
@@ -173,16 +184,8 @@ const Container = styled(motion.li)`
             transition: 300ms filter ease-in-out;
         }
     }
-    ${(props) => {
-        switch (props.isSelected) {
-            case true:
-                return `
-                outline: 2.9px solid var(--color);                
-                `
-            default:
-                break;
-        }
-    }}
+    outline: ${(props) => (props.isSelected ? props.isDisabled ? '2.9px solid black' : '2.9px solid var(--color)' : '2.9px solid transparent')};
+   
     ${(props) => {
         switch (props.imageHiddenRef) {
             case true:
@@ -198,7 +201,40 @@ const Container = styled(motion.li)`
     }
     }
 `
-const Head = styled.div`
+const Content = styled.div`
+    display: grid;
+    width: 100%;
+    grid-template-rows: 1fr min-content min-content;
+
+`
+const Header = styled.div`
+    display: flex;
+    justify-content: space-between;
+
+    padding: 0.4em 0.4em 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--Gray6);
+    letter-spacing: 0.4px;
+`
+const StockWarning = styled.div`
+position: absolute;
+bottom: 0;
+width: 90px;
+text-align: center;
+line-height: 1.2em;
+left: 0;
+
+padding: 0.6em 0.4em 0.2em;
+/* background-color: #ffcece; */
+background: linear-gradient(180deg, rgba(255, 77, 80, 0), #000000 50%);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 0 10px 0 0;
+
+`
+const ImageWrapper = styled.div`
     position: absolute;
     transform:  translateX(-90px) scale(0);
     transition-property: transform;
@@ -226,12 +262,12 @@ const Head = styled.div`
 const Body = styled.div`
     height: 100%;
     width: 100%;
-    background-color: #ffffff;
     padding: 4px 0;
     position: relative;
     transition: 4000ms all ease-in-out;
     display: grid;
-    grid-template-columns: 1fr min-content;
+
+    grid-template-rows: 1fr min-content min-content;
     transition: all 400ms ease-in-out;
    
 `
@@ -251,15 +287,11 @@ const ImageContainer = styled.div`
     }
 `
 const Footer = styled.div`
-    position: absolute;
-    bottom: 0;
-    right: 0;
     padding: 0 0.8em;
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: 1.6em;
     pointer-events: none;
     
     border-top-left-radius: ${(props) => {
@@ -267,7 +299,7 @@ const Footer = styled.div`
     }
     };
 transition:  800ms border-radius ease-in-out;
-background-color: var(--White1);
+
 font-weight: 400;
 color: var(--Gray6);
 letter-spacing: 0.2px;
@@ -276,14 +308,14 @@ letter-spacing: 0.2px;
 const AmountToBuy = styled.div`
     padding: 0 0.4em;
     height: 1.4em;
-    width: 2em;
+    width: min-content;
     border-radius: 4px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    line-height: 0;
+    white-space: nowrap;
     background-color: var(--White4);
-    color: var(--color);
+    background-color: ${props => props.isDisabled ? 'var(--White4)' : 'var(--White4)'};
+    color: ${props => props.isDisabled ? 'black' : 'var(--color)'};
 `
 
 const Group = styled.div`
@@ -325,19 +357,10 @@ const Price = styled.div`
   display: block;
   height: 100%;
     font-weight: 550;
-    color: #1D69A8;
+    color: ${(props) => (props.isSelected ? (props.isDisabled ? 'black' : 'var(--color)') : 'var(--color)')};
     font-size: 14px;
     transition: color 400ms ease-in-out;
-    ${(props) => {
-        switch (props.isSelected) {
-            case true:
-                return `
-                    color: var(--color)
-                `
-            default:
-                break;
-        }
-    }}
+
 `
 const loadingAnimation = keyframes`
   0% { background-position: 200% 0; }

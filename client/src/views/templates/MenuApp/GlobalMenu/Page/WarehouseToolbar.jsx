@@ -5,11 +5,17 @@ import ROUTES_NAME from '../../../../../routes/routesName'
 import { useMatch } from 'react-router-dom'
 import { icons } from '../../../../../constants/icons/icons'
 import { WarehouseForm } from '../../../../pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm'
+import { useDispatch } from 'react-redux'
+import { openWarehouseForm } from '../../../../../features/warehouse/warehouseModalSlice'
 
 export const WarehouseToolbar = ({ side = 'left' }) => {
     const [isOpen, setIsOpen] = useState(false)
+    const dispatch = useDispatch()
     const { WAREHOUSES } = ROUTES_NAME.INVENTORY_TERM
     const matchWithWarehouses = useMatch(WAREHOUSES)
+    const handleAddWarehouse = () => {
+        dispatch(openWarehouseForm())
+    }
     return (
         matchWithWarehouses && (
             <Fragment>
@@ -23,20 +29,20 @@ export const WarehouseToolbar = ({ side = 'left' }) => {
                                     startIcon={icons.operationModes.add}
                                     borderRadius='normal'
                                     title={'Almacén'}
-                                    onClick={() => setIsOpen(true)}
+                                    onClick={handleAddWarehouse}
                                 />
 
                             </Group>
                         )
                     }
                 </Container>
-                {isOpen && (
+                {/* {isOpen && (
                     <WarehouseForm
                         isOpen={isOpen}
                         onClose={() => setIsOpen(false)}
                         
                     />
-                )}
+                )} */}
             </Fragment>
         )
     )

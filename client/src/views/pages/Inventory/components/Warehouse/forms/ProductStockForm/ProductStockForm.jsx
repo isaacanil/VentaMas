@@ -55,8 +55,7 @@ export function ProductStockForm() {
   const {warehouseId, shelfId, rowId, segmentId} = {warehouseId: warehouse?.id, shelfId: shelf?.id, rowId: rowShelf?.id, segmentId: segment?.id};
 
   // const { warehouseId, shelfId, rowId, segmentId } = useParams();
-  const params = useParams();
-  console.log("params  ",warehouseId, shelfId, rowId, segmentId);
+  // const params = useParams();
 
   const { productId, batchId, stock: formStock, locationId } = formData;
 
@@ -264,7 +263,7 @@ export function ProductStockForm() {
               tooltip="Este es el stock total disponible del batch seleccionado y otros productos"
             >
               <div>
-                <Progress percent={(stockDifference / totalStockFromBatches) * 100} status={stockExceeded < 0 ? 'exception' : 'normal'} />
+                <Progress percent={useFormatNumber((stockDifference / totalStockFromBatches) * 100)} status={stockExceeded < 0 ? 'exception' : 'normal'} />
                 <span>{useFormatNumber(stockDifference)}</span>/<span>{totalStockFromBatches}</span>
               </div>
               {stockExceeded < 0 && (

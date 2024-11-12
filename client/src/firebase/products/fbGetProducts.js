@@ -3,7 +3,7 @@ import { selectUser } from "../../features/auth/userSlice"
 import { db } from "../firebaseconfig"
 import { collection, query, orderBy, where, onSnapshot, limit } from "firebase/firestore"
 import { useEffect, useState } from "react"
-import { SelectCategoryList, SelectCategoryStatus } from "../../features/category/categorySlicer"
+import { SelectActiveIngredients, SelectCategories, SelectCategoryList, SelectCategoryStatus } from "../../features/category/categorySlicer"
 import { selectCriterio, selectInventariable, selectItbis, selectOrden } from "../../features/filterProduct/filterProductsSlice"
 import { filter } from "lodash"
 import { getTax } from "../../utils/pricing"
@@ -93,7 +93,9 @@ export function useGetProducts(trackInventory = false) {
   const inventariable = useSelector(selectInventariable)
   const itbis = useSelector(selectItbis)
 
-  const categoriesArray = useSelector(SelectCategoryList);
+  const activeIngredients = useSelector(SelectActiveIngredients);
+  const categories = useSelector(SelectCategories);
+
   const categoriesStatus = useSelector(SelectCategoryStatus)
 
   useEffect(() => {
@@ -103,9 +105,13 @@ export function useGetProducts(trackInventory = false) {
       const productsRef = collection(db, "businesses", String(user?.businessID), "products");
 
       const constraints = [];
-      const categoriesNameArray = categoriesArray.map((item) => item.name);
-      if (categoriesArray.length > 0 && categoriesStatus) {
+      const categoriesNameArray = categories.map((item) => item.name);
+      if (categories.length > 0 && categoriesStatus) {
         constraints.push(where("category", "in", categoriesNameArray));
+      }
+      const activeIngredientsNameArray = activeIngredients.map((item) => item.name);
+      if (activeIngredients.length > 0) {
+        constraints.push(where("activeIngredients", "in", activeIngredientsNameArray));
       }
 
       const q = query(productsRef, ...constraints);
@@ -145,7 +151,7 @@ export function useGetProducts(trackInventory = false) {
       console.error("Ocurrió un error al obtener los productos:", error);
     }
 
-  }, [user?.businessID, trackInventory, categoriesArray, categoriesStatus, criterio, orden, inventariable, itbis]);
+  }, [user?.businessID, trackInventory, categories, activeIngredients, categoriesStatus, criterio, orden, inventariable, itbis]);
 
   return { products, error, loading, setLoading };
 }

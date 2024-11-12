@@ -4,7 +4,8 @@ import Typography from '../../../../templates/system/Typografy/Typografy';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import { useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { generateTextFromPrompt } from '../../../../../google-ai/generaTextFromPrompt';
 
 const Greeting = styled.h1`
   font-size: 20px;
@@ -17,21 +18,30 @@ const Name = styled.span`
 `;
 
 
-const PersonalizedGreeting = ({ greetingText = 'Bienvenido de vuelta' }) => {
+const PersonalizedGreeting = ({ greetingText = 'Bienvenid@' }) => {
   const user = useSelector(selectUser)
   const business = useSelector(selectBusinessData)
+
+  const [personalizedMessage, setPersonalizedMessage] = useState(greetingText); // Estado para el mensaje generado
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   const realName = user?.realName?.trim();
   const username = user?.username?.trim();
 
   const nameToDisplay = realName || username || 'Usuario';
   
-  const capitalizedFirstName = nameToDisplay.charAt(0).toUpperCase() + nameToDisplay.slice(1);
+  const capitalizedFirstName = nameToDisplay;
+
+  useEffect(() => {
+    // Aquí simplemente usamos el nombre del usuario y el saludo neutral.
+    const message = `${greetingText}, ${nameToDisplay}`;
+    setPersonalizedMessage(message);
+  }, [nameToDisplay, greetingText]);
 
   return (
     <div>
       <Typography variant='h3' disableMargins>
-        {greetingText}, <Name>{capitalizedFirstName}</Name>
+      {loading ? "Cargando..." : `${personalizedMessage}, `} 
       </Typography>
       <BusinessName>
         {business && business?.name}

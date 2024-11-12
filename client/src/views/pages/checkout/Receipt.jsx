@@ -8,9 +8,11 @@ import { selectBusinessData } from '../../../features/auth/businessSlice'
 import { Header } from './components/Header/Header'
 import { WarrantySignature } from './components/WarrantySignature'
 import { ReceiptComponent } from './Style'
+import { ThankYouMessage } from './components/ThankYouMessage'
 
 
 export const Receipt = React.forwardRef(({ data, ignoreHidden }, ref) => {
+      const business = useSelector(selectBusinessData) || ""
     function getReceiptInfo(code) {
         if (!code) {
             return { type: 'Desconocido', description: 'RECIBO  DE PAGO' };
@@ -61,6 +63,7 @@ export const Receipt = React.forwardRef(({ data, ignoreHidden }, ref) => {
                     <Line />
                     <PaymentArea P={P} data={data} />
                     <WarrantySignature data={data} />
+                    <ThankYouMessage message={business?.invoice?.invoiceMessage} />
                     {/* <WarrantyArea data={data} /> */}
                 </ReceiptComponent.Container>
         </ReceiptComponent.HiddenPrintWrapper>

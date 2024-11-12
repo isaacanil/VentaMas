@@ -1,61 +1,23 @@
-import React, { useState } from 'react'
+import React, { forwardRef, useState } from 'react'
 import styled from 'styled-components'
 import { Category } from './Category';
 import * as antd from 'antd';
 import { filterData } from '../../../../../hooks/search/useSearch';
 import { icons } from '../../../../../constants/icons/icons';
-import { useWindowWidth } from '../../../../../hooks/useWindowWidth';
-import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
 const { Input, Typography, Button } = antd;
 
-export const DropdownMenu = ({
-    open,
+export const DropdownMenu = forwardRef(({
     setOpen,
-    categories = [],
-    categoriesSelected = [],
-    favoriteCategories = [],
-    deleteAllCategoriesSelected = () => { },
-    handleCategoryClick = () => { },
-    addFavoriteCategory = () => { },
-    deleteFavoriteCategory = () => { }
-}) => {
+    sectionsConfig = {},
+    deleteAllItems = () => { },
+
+}, ref) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [maxCategoriesToShow, setMaxCategoriesToShow] = useState(20);
 
-    const adjustLists = () => {
-        // Copia para evitar la mutación del estado original
-        let adjustedFavoriteCategories = [...favoriteCategories];
-        let adjustedNormalCategories = categories.filter(category =>
-            !favoriteCategories.some(favoriteCategory => favoriteCategory.category.id === category.category.id)
-        );
-
-        // Si hay 20 o más favoritos, no mostramos las categorías normales
-        if (adjustedFavoriteCategories.length >= maxCategoriesToShow) {
-            adjustedNormalCategories = [];
-        } else {
-            // Asegurarnos de que el total no exceda 20 elementos
-            adjustedNormalCategories = adjustedNormalCategories.slice(0, maxCategoriesToShow - adjustedFavoriteCategories.length);
-        }
-        return { adjustedFavoriteCategories, adjustedNormalCategories };
-    };
-
-    const { adjustedFavoriteCategories, adjustedNormalCategories } = adjustLists();
-
-    //quiero quitar una propiedad que me createAt como seria?
-    const favoriteCategoriesDelete = adjustedFavoriteCategories.map(({ category: { createdAt, ...restCategory }, ...rest }) => ({
-        category: restCategory,
-        ...rest
-    }));
-    const categoriesDelete = adjustedNormalCategories.map(({ category: { createdAt, ...restCategory }, ...rest }) => ({
-        category: restCategory,
-        ...rest
-    }));
-
-    const filteredFavoriteCategories = filterData(favoriteCategoriesDelete, searchTerm);
-    const filteredNormalCategories = filterData(categoriesDelete, searchTerm);
+    const filterItems = (items) => filterData(items, searchTerm);
 
     return (
-        <Container>
+        <Container ref={ref}>
             <Wrapper>
                 <Header>
                     <Input
@@ -82,76 +44,66 @@ export const DropdownMenu = ({
                             padding: '0.4em 0.4em '
                         }}
                     >
-                          <Button
-                            onClick={deleteAllCategoriesSelected}
-                          >
-                            Deselecionar todo
-                        </Button>
-                        <Typography.Text type='secondary' style={{ padding: ' 0.2em 0.4em', }} >
-                            {filteredFavoriteCategories.length + filteredNormalCategories.length} / {categories.length} categorías
+                        <Button onClick={deleteAllItems}>Deselecionar todo</Button>
+                        <Typography.Text type='secondary'>
+                            {Object.values(sectionsConfig).reduce((total, section) => total + section.items.length, 0)} categorías
                         </Typography.Text>
                     </div>
-                    {filteredFavoriteCategories.length > 0 && (
-                        <Categories>
-                            <Typography.Title level={5}>
-                                Favoritos
-                            </Typography.Title>
-                            <CategoryList>
-                                {filteredFavoriteCategories
-                                    .sort((a, b) => a.category.name.localeCompare(b.category.name))
-                                    .map(({ category }) => (
-                                        <Category
-                                            searchTerm={searchTerm}
-                                            key={category.id}
-                                            category={category}
-                                            selected={categoriesSelected.some(selectedCategory => selectedCategory.id === category.id)}
-                                            isFavorite
-                                            toggleFavoriteCategory={deleteFavoriteCategory}
-                                            onClick={() => handleCategoryClick(category)}
-                                        />
-                                    ))}
-                            </CategoryList>
-                        </Categories>
-                    )}
-                    {filteredNormalCategories.length > 0 && (
-                        <Categories>
-                            <Typography.Title level={5}>
-                                Categorías
-                            </Typography.Title>
-                            <CategoryList>
-                                {filteredNormalCategories
-                                    .sort((a, b) => a.category.name.localeCompare(b.category.name))
-                                    .map(({ category }) => (
-                                        <Category
-                                        searchTerm={searchTerm}
-                                            key={category.id}
-                                            category={category}
-                                            selected={categoriesSelected.some(selectedCategory => selectedCategory.id === category.id)}
-                                            toggleFavoriteCategory={addFavoriteCategory}
-                                            onClick={() => handleCategoryClick(category)}
-                                        />
-                                    ))}
-                            </CategoryList>
-                        </Categories>
-                    )}
-                    {
-                        filteredFavoriteCategories.length === 0 && filteredNormalCategories.length === 0 &&
-                        <div
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            <Typography.Text type='secondary' style={{ padding: '1em' }}>
-                                No se encontraron resultados, intenta con otra búsqueda o agrega una nueva categoría
-                            </Typography.Text>
-                        </div>
-                    }
+                    <CategoriesContainer>
+                        {Object.keys(sectionsConfig).map((sectionKey) => {
+                            const {
+                                title,
+                                items,
+                                onSelect,
+                                onToggleFavorite,
+                                color
+                            } = sectionsConfig[sectionKey];
+
+                            const filteredItems = filterItems(items);
+
+                            return filteredItems.length > 0 && (
+                                <Categories key={sectionKey}>
+                                    <Typography.Title level={5}>
+                                        {title}
+                                    </Typography.Title>
+                                    <CategoryList>
+                                        {filteredItems
+                                            .sort((a, b) => {
+                                                const nameA = a.name || '';  // Si 'name' es undefined, usa un string vacío para evitar el error
+                                                const nameB = b.name || '';
+                                                return nameA.localeCompare(nameB);
+                                            })
+                                            .map((item) => (
+                                                <Category
+                                                    key={item.id}
+                                                    item={item}
+                                                    selected={item.selected}
+                                                    isFavorite={item.isFavorite}
+                                                    color={color}
+                                                    toggleFavorite={onToggleFavorite ? () => onToggleFavorite(item) : undefined}
+                                                    onClick={() => onSelect(item)}
+                                                />
+                                            ))}
+
+                                    </CategoryList>
+                                </Categories>
+                            );
+                        })}
+
+                        {/* Mensaje cuando no hay resultados */}
+                        {Object.keys(sectionsConfig).every((sectionKey) => filterItems(sectionsConfig[sectionKey].items).length === 0) && (
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <Typography.Text type='secondary' style={{ padding: '1em' }}>
+                                    No se encontraron resultados, intenta con otra búsqueda o agrega una nueva categoría
+                                </Typography.Text>
+                            </div>
+                        )}
+                    </CategoriesContainer>
                 </Body>
             </Wrapper>
         </Container>
     )
-}
+})
 
 const Container = styled.div`
  
@@ -179,6 +131,15 @@ const CategoryList = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 0.4em;
+`;
+const CategoriesContainer = styled.div`
+    /* estilos para el contenedor de las categorías */
+    display: grid;
+    gap: 2em;
+    padding: 0 0.4em;
+    align-content: start;
+    overflow-y: auto;
+    height: calc(100vh - 9em);
 `;
 
 const Categories = styled.div`

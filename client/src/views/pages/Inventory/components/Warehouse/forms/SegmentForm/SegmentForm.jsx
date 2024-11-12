@@ -3,9 +3,10 @@ import React, { useEffect } from "react";
 import * as antd from "antd";
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { createSegment, updateSegment } from "../../../../../../../firebase/warehouse/SegmentService";
+import { createSegment, updateSegment } from "../../../../../../../firebase/warehouse/segmentService";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { clearSegmentForm, closeSegmentForm, selectSegmentState } from "../../../../../../../features/warehouse/segmentSlice";
+import { clearSegmentForm, closeSegmentForm, selectSegmentState } from "../../../../../../../features/warehouse/segmentModalSlice";
+
 const { Form, Input, Button, Modal, message } = antd;
 
 export default function SegmentForm() {

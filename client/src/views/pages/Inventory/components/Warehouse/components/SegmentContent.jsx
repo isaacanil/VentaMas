@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import * as antd from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { DetailContainer, DetailItem } from "./WarehouseContent";
 import { useDispatch, useSelector } from "react-redux";
 import { selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
 import { useParams } from "react-router-dom";
 import { ProductsSection } from "./ProductsSection";
-import { openSegmentForm } from "../../../../../../features/warehouse/segmentSlice";
+import { openSegmentForm } from "../../../../../../features/warehouse/segmentModalSlice";
 
 const { Modal, Button, List, Tag } = antd;
 

@@ -3,16 +3,16 @@ import styled from 'styled-components'
 import { separator } from '../../../../hooks/separator'
 import { Col } from './Table/Col'
 import { Row } from './Table/Row'
-import { getTax, getTotalPrice, resetAmountToBuyForProduct } from '../../../../utils/pricing'
+import { getPriceTotal, getTax, getTotal, getTotalPrice, resetAmountToBuyForProduct } from '../../../../utils/pricing'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
-import { setTaxReceiptEnabled } from '../../../../features/cart/cartSlice'
+import { setTaxReceiptEnabled, SelectSettingCart } from '../../../../features/cart/cartSlice'
 import { convertTimeToSpanish } from '../../../component/modals/ProductForm/components/sections/WarrantyInfo'
 
 export const ProductList = ({ data }) => {
     const { products, NCF } = data
-    const taxReceipt = useSelector(selectTaxReceiptEnabled)
+    const {taxReceipt} = useSelector(SelectSettingCart)
     const getFullProductName = ({ name, measurement, footer }) => 
         `${name}${measurement ? ` Medida: [${measurement}]` : ''}${footer ? ` Pie: [${footer}]` : ''}`;
     return (
@@ -27,11 +27,11 @@ export const ProductList = ({ data }) => {
                                         {
                                             product?.weightDetail?.isSoldByWeight ? (
                                                 <div>
-                                                    {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(product?.pricing?.price, NCF)}
-                                                </div>
+                                                    {product?.weightDetail?.weight} {product?.weightDetail?.weightUnit} X {useFormatPrice(getTotalPrice(resetAmountToBuyForProduct(product), taxReceipt?.enabled))}
+                                           </div>
                                             ) : (
                                                 <div>
-                                                    {product?.amountToBuy || 0} x {separator(getTotalPrice(resetAmountToBuyForProduct(product), NCF))}
+                                                    {product?.amountToBuy || 0} x {separator(getTotalPrice(resetAmountToBuyForProduct(product), taxReceipt?.enabled))}
                                                 </div>
                                             )
                                         }
@@ -59,9 +59,6 @@ export const ProductList = ({ data }) => {
                 }
             </Products>
         </Container>
-
-
-
     )
 }
 const Container = styled.div`

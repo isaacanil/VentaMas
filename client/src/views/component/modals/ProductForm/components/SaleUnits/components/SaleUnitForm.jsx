@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, InputNumber, Button, Modal, Checkbox, message } from 'antd';
+import { Form, Input, InputNumber, Button, Modal, Checkbox, message, Tag } from 'antd';
 import styled from 'styled-components';
 import { DollarCircleOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
@@ -15,11 +15,12 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
   const user = useSelector(selectUser);
   const initialData = {
     unitName: '',
-    quantity: 1,
+    packSize: 1,
     pricing: {
       tax: 0,
       cost: 0,
       listPrice: 0,
+      stock: 0,
       avgPrice: 0,
       price: 0,
       minPrice: 0,
@@ -145,22 +146,28 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
             >
               <Input placeholder="Ejemplo: Caja" />
             </Form.Item>
+            <Grid>
+
             <Form.Item
-              name="quantity"
-              tooltip="Cantidad de productos en la unidad de venta"
-              label="Cantidad"
+              tooltip="Cantidad de productos en stock"
+              label="Stock"
+            >
+          
+
+              //here we calculate the stock
+        
+            </Form.Item>
+            <Form.Item
+              name="packSize"
+             tooltip="Cantidad de productos en un paquete"
+              label="Cantidad de Productos por Paquete"
               rules={[{ required: true, message: 'Por favor ingresa la cantidad' }]}
             >
               <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1em',
-                width: '100%',
-              }}
-            >
+            </Grid>
+            <Grid>
+
               <Form.Item
                 name={['pricing', 'tax']}
                 tooltip="Impuesto aplicado a la unidad de venta"
@@ -176,7 +183,8 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
               >
                 <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
               </Form.Item>
-            </div>
+            </Grid>
+         
 
             {/* Precio de Lista */}
             <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues !== currentValues}>
@@ -333,6 +341,13 @@ const Group = styled.div`
 
   gap: 1em;
   width: 100%;
+`;
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1em;
+  align-items: end;
+
 `;
 const CardContainer = styled.div`
   display: grid;

@@ -14,7 +14,7 @@ import {
   CreditCardOutlined,
   DownOutlined,
 } from '@ant-design/icons';
-import BillingConfig from './configs/BillingConfig';
+import BillingConfig from './configs/BillingConfig'; // Import the new InvoiceConfig component
 import { Header } from './components/Header/Header';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,7 +40,6 @@ const tabItems = [
     label: 'Ventas y Facturación',
     content: <BillingConfig />,
   },
-
 ];
 
 export default function GeneralConfig() {

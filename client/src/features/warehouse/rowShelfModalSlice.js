@@ -1,20 +1,21 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    isOpen: false,    // Controla la visibilidad del modal
-    formData: {       // Datos del formulario
-        id: "",       // Autogenerado, no necesario en el formulario
-        name: "",     // Nombre de la fila de estante
-        shortName: "", // Nombre corto
-        description: "", // Descripción opcional
-        capacity: 0,  // Capacidad de la fila
+    isOpen: false,
+    formData: {
+        id: "",
+        name: "",
+        shortName: "",
+        description: "",
+        capacity: 0,
     },
-    loading: false,    // Estado de carga
-    error: null,       // Error en caso de fallo
+    loading: false,
+    error: null,
 };
 
-const rowShelfSlice = createSlice({
-    name: 'rowShelf',
+const rowShelfModalSlice = createSlice({
+    name: 'rowShelfModal', // Updated slice name
     initialState,
     reducers: {
         openRowShelfForm: (state, action) => {
@@ -28,7 +29,7 @@ const rowShelfSlice = createSlice({
         },
         closeRowShelfForm: (state) => {
             state.isOpen = false;
-            state.formData = initialState.formData; // Restablece el formulario
+            state.formData = initialState.formData;
         },
         setRowShelfLoading: (state, action) => {
             state.loading = action.payload;
@@ -42,7 +43,6 @@ const rowShelfSlice = createSlice({
             state.loading = false;
         },
         updateRowShelfFormData: (state, action) => {
-            // Actualiza uno o más campos del formulario
             state.formData = {
                 ...state.formData,
                 ...action.payload,
@@ -59,9 +59,9 @@ export const {
     setRowShelfError,
     clearRowShelfForm,
     updateRowShelfFormData,
-} = rowShelfSlice.actions;
+} = rowShelfModalSlice.actions;
 
-export default rowShelfSlice.reducer;
+export default rowShelfModalSlice.reducer;
 
 // Selector para obtener el estado completo del rowShelf
-export const selectRowShelfState = (state) => state.rowShelf;
+export const selectRowShelfState = (state) => state.rowShelfModal;

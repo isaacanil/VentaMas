@@ -61,6 +61,8 @@ const initialState = {
         discount: {
             value: 0
         },
+        dueDate: null,
+        hasDueDate: false,
         paymentMethod: defaultPaymentMethod,
         NCF: null,
         totalShoppingItems: {

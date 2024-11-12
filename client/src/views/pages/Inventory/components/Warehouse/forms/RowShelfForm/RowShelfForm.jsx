@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { createRowShelf, updateRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
-import { clearRowShelfForm, closeRowShelfForm, selectRowShelfState, updateRowShelfFormData } from "../../../../../../../features/warehouse/rowShelfSlice";
+import { clearRowShelfForm, closeRowShelfForm, selectRowShelfState, updateRowShelfFormData } from "../../../../../../../features/warehouse/rowShelfModalSlice";
 const { Form, Input, Button, Modal, message } = antd;
 
 export default function RowShelfForm() {

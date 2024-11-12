@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
-
 import { ButtonGroup, MenuApp, Select } from '../../..'
 import { Button } from '../../..'
-
-import { SelectDataFromOrder } from '../../../../hooks/useSelectDataFromOrder'
 import { StockedProductPicker } from '../../../component/StockedProductPicker/StockedProductPicker'
 import { ProductListSelected } from '../../../component/ProductListSelected/ProductListSelected'
-
 import { selectUser } from '../../../../features/auth/userSlice'
-import { fbGetPendingOrders } from '../../../../firebase/order/fbGetPedingOrder'
 import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
 import {
     setOrder,
@@ -28,8 +23,7 @@ import {
 } from '../../../../features/addOrder/addOrderModalSlice'
 import { OrderDetails } from './OrderDetails/OrderDetails'
 import { addNotification } from '../../../../features/notification/NotificationSlice'
-import { closeModalAddOrder, toggleProviderModal } from '../../../../features/modals/modalSlice'
-import { AddOrder } from '../../../../firebase/firebaseconfig'
+import { toggleProviderModal } from '../../../../features/modals/modalSlice'
 import { useNavigate } from 'react-router-dom'
 import ROUTES_PATH from '../../../../routes/routesName'
 import { OPERATION_MODES } from '../../../../constants/modes'

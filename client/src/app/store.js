@@ -40,10 +40,12 @@ import accountsReceivableReducer from "../features/accountsReceivable/accountsRe
 import accountsReceivablePaymentReducer from "../features/accountsReceivable/accountsReceivablePaymentSlice";
 import warehouseReducer from "../features/warehouse/warehouseSlice";
 import productStockReducer from "../features/productStock/productStockSlice";
-import shelfReducer from "../features/warehouse/shelfSlice";
-import rowShelfReducer from "../features/warehouse/rowShelfSlice";
-import segmentReducer from "../features/warehouse/segmentSlice";
+import warehouseModalReducer from "../features/warehouse/warehouseModalSlice";
+import shelfModalReducer from "../features/warehouse/shelfModalSlice";
+import rowShelfModalReducer from "../features/warehouse/rowShelfModalSlice";
+import segmentModalReducer from "../features/warehouse/segmentModalSlice";
 import productExpirySelectorReducer from "../features/warehouse/productExpirySelectionSlice";
+import activeIngredientsReducer from "../features/activeIngredients/activeIngredientsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -87,11 +89,13 @@ export const store = configureStore({
     cashCountState: cashCountState,
     barcodePrintModal: barcodePrintModalReducer,
     warehouse: warehouseReducer,
-    shelf: shelfReducer,
-    rowShelf: rowShelfReducer,
-    segment: segmentReducer,
+    warehouseModal: warehouseModalReducer,
+    shelfModal: shelfModalReducer,
+    rowShelfModal: rowShelfModalReducer,
+    segmentModal: segmentModalReducer,
     productStock: productStockReducer,
     productExpirySelector: productExpirySelectorReducer,
+    activeIngredients: activeIngredientsReducer,
   }
   ,
 })

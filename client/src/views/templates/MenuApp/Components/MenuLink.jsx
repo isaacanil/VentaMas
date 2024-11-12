@@ -26,9 +26,9 @@ export const MenuLink = ({ item, Items }) => {
           </Icon>
           {item.title}
         </Group>
-          {
-            item.tag && <Tag color={item.tag.color} style={{fontSize: 16}}>{item.tag.text}</Tag>
-          }
+        {
+          item.tag && <Tag color={item.tag.color} style={{ fontSize: 16 }}>{item.tag.text}</Tag>
+        }
         {
           item.submenu && isOpenSubMenu
             ? item.submenuIconOpen
@@ -70,19 +70,21 @@ const commonStyles = css`
 
 
 
-const MenuItemLink = styled(NavLink).attrs({
-  activeClassName: 'active'
-})`
+const MenuItemLink = styled(NavLink)`
   ${commonStyles}
 
-   &.active {
+  &.active {
     color: white;
     font-weight: 600;
     background-color: ${props => props.theme.bg.color};
-  svg{
-    color: white;
+    border-radius: 0.4em;
+   
+
+    svg {
+      color: white;
+    }
   }
-  }
+
 
  `
 const MenuItemDiv = styled.div`

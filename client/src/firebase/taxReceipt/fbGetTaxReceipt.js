@@ -1,11 +1,9 @@
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseconfig";
-import { fbCreateTaxReceipt } from "./fbCreateTaxReceipt";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../features/auth/userSlice";
 import { validateUser } from "../../utils/userValidation";
 import { useEffect, useState } from "react";
-import { taxReceiptDefault } from "./taxReceiptsDefault";
 import { selectTaxReceiptType } from "../../features/taxReceipt/taxReceiptSlice";
 
 export const fbGetTaxReceipt = () => {
@@ -14,7 +12,10 @@ export const fbGetTaxReceipt = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     try {
-      validateUser(user);
+      if(!user.businessID){
+        setTaxReceipt([]);
+        return
+      }
       const { businessID } = user;
       const taxReceiptsRef = collection(db, "businesses", businessID, "taxReceipts");
 
@@ -24,7 +25,6 @@ export const fbGetTaxReceipt = () => {
         const defaultOption = taxReceiptsArray.find(item => item.data.name === 'CONSUMIDOR FINAL')
         dispatch(selectTaxReceiptType(defaultOption.data.name))
       });
-     // dispatch()
       return () => {
         unsubscribe();
       };

@@ -25,8 +25,6 @@ export const importProductData = async (file, language = 'en') => {
         })
 
         return transformedData;
-
-
     } catch (error) {
         console.error('Error al importar datos de productos:', error);
         throw error;

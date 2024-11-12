@@ -151,7 +151,7 @@ export const BatchForm = ({
           >
             {/* Nombre corto del lote */}
             <Form.Item
-              label={<StyledLabel>Nombre corto</StyledLabel>}
+              label={"Nombre corto"}
               name="shortName"
               help="Ingrese un nombre corto para identificar el Lote."
               rules={[
@@ -170,15 +170,10 @@ export const BatchForm = ({
 
             {/* Fecha de expiración */}
             <Form.Item
-              label={<StyledLabel>Fecha de Expiración</StyledLabel>}
+              label={"Fecha de Expiración (opcional)"}
               name="expirationDate"
               help="Seleccione una fecha de expiración."
-              rules={[
-                {
-                  required: true,
-                  message: "La fecha de expiración es obligatoria.",
-                },
-              ]}
+           
             >
               <DatePicker
                 format="DD/MM/YYYY"
@@ -190,7 +185,7 @@ export const BatchForm = ({
             </Form.Item>
             
             <Form.Item
-              label={<StyledLabel>Cantidad</StyledLabel>}
+              label={"Cantidad"}
               name="quantity"
               help="Ingrese la cantidad total de productos en el lote."
               rules={[

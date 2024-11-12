@@ -51,6 +51,8 @@ import { ShelfForm } from "../../pages/Inventory/components/Warehouse/forms/Shel
 import RowShelfForm from "../../pages/Inventory/components/Warehouse/forms/RowShelfForm/RowShelfForm"
 import SegmentForm from "../../pages/Inventory/components/Warehouse/forms/SegmentForm/SegmentForm"
 import ProductExpirySelection from "./ProductExpirySelection/ProductExpirySelection"
+import ActiveIngredientModal from "./ActiveIngredients/ActiveIngredientModal"
+import { WarehouseForm } from "../../pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm"
 
 export const ModalManager = () => {
 
@@ -160,10 +162,15 @@ export const ModalManager = () => {
       <NoteModal />
       <Loader />
       <Dialog />
-      <ShelfForm />
       <ProductExpirySelection/>
+      <ActiveIngredientModal />
+     
+      <ShelfForm />
       <RowShelfForm />
       <SegmentForm />
+      <WarehouseForm />
+
+
       <ImageViewer />
       <SmallNotification />
       <ConfirmationDialog />

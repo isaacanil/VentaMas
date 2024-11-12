@@ -55,9 +55,7 @@ export const useGetProductsWithBatch = () => {
 
     useEffect(() => {
         if (!user || !user.businessID) {
-            const errMsg = 'Usuario o businessID no válido';
-            console.error(errMsg);
-            setError(errMsg);
+            setProducts([]);
             setLoading(false);
             return;
         }

@@ -84,7 +84,7 @@ export const StockedProductPicker = ({ addProduct, selectedProduct, selectProduc
                     <span>Product</span>
                 </Col>
                 <Col>
-                    <span>{`Cantidad: ${`(${stock || 0}`} / ${totalStock || 0})`}</span>
+                    <span>{`Cantidad: `}</span>
                 </Col>
                 <Col>
                     <span>Costo {`(${useFormatPrice(cost || 0)})`}</span>

@@ -6,7 +6,8 @@ import { motion } from 'framer-motion'
 import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber'
 import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
 
-export const ShoppingItemsCounter = ({ itemLength }) => {
+export const ShoppingItemsCounter = ({ products }) => {
+  const productLength = products?.length || 0;
   const totalShoppingItems = useSelector(SelectTotalShoppingItems)
 
   return (
@@ -17,7 +18,7 @@ export const ShoppingItemsCounter = ({ itemLength }) => {
           <Separator>/</Separator>
         </>
       ) : null}
-      <AnimatedNumber value={useFormatNumber(itemLength)} />
+      <AnimatedNumber value={useFormatNumber(productLength)} />
     </Container>
   )
 }

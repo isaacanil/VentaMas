@@ -35,8 +35,10 @@ const createEmptyProduct = () => ({
     size: '',
     type: '',
     stock: 0,
+    totalUnits: null,
     packSize: 1, // Cantidad de productos en un paquete
     netContent: '',
+    restrictSaleWithoutStock: false,
     amountToBuy: 1,
     createdBy: 'unknown',
     id: '',
@@ -45,9 +47,9 @@ const createEmptyProduct = () => ({
     qrcode: '',
     barcode: '',
     order: 1,
-    hasExpirationDate: false, 
+    hasExpirationDate: false,
     selectedSaleUnit: null,
-    
+
 });
 
 const initialState = {
@@ -88,8 +90,8 @@ export const updateProductSlice = createSlice({
                 state.product.pricing.price = action?.payload?.pricing?.listPrice
             }
         },
-           // Activa o desactiva la venta por unidades
-           toggleSaleUnits: (state, action) => {
+        // Activa o desactiva la venta por unidades
+        toggleSaleUnits: (state, action) => {
             const { isSoldInUnits } = action.payload;
             state.product.isSoldInUnits = isSoldInUnits;
 
@@ -167,7 +169,7 @@ export const selectSelectedSaleUnit = (state) => {
     const { selectedSaleUnitId, saleUnits } = state.updateProduct.product;
     return saleUnits.find(unit => unit.id === selectedSaleUnitId) || null;
 };
-export const selectSaleUnitById = (state, id) => 
+export const selectSaleUnitById = (state, id) =>
     state.updateProduct.product.saleUnits.find(unit => unit.id === id);
 
 export default updateProductSlice.reducer;

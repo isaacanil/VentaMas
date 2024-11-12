@@ -6,8 +6,11 @@ const { message } = antd;
 
 // Función para actualizar el modo de facturación en Firebase
 export const setBillingSettings = async (user, setting) => {
+    console.log('Actualizando modo de facturación:',)
+    // console.log('Actualizando modo de facturación:', setting)
+    // console.log('ID del negocio:', user?.businessID)
     if (!user?.businessID) {
-        message.error('El ID del negocio no está disponible.');
+        // message.error('El ID del negocio no está disponible.');
         return;
     }
     try {
@@ -26,11 +29,11 @@ export const setBillingSettings = async (user, setting) => {
         }
 
         console.log('Modo de facturación seleccionado:', setting);
-        message.success('El modo de facturación ha sido actualizado correctamente.');
+        // message.success('El modo de facturación ha sido actualizado correctamente.');
 
     } catch (error) {
         console.error('Error al actualizar la configuración de facturación:', error);
-        message.error('Error al actualizar la configuración de facturación.');
+        // message.error('Error al actualizar la configuración de facturación.');
     }
 };
 

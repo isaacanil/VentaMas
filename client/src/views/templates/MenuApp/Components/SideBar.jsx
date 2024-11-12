@@ -193,8 +193,10 @@ const Group = styled.div`
 const MenuLinkList = styled.div`
     background-color: ${props => props.theme.bg.shade};
     border-radius: var(--border-radius);
+    padding: 0.2em;
     border: 1px solid rgb(0, 0, 0, 0.1);
     overflow: hidden;
+  
 `
 const GroupTitle = styled.h3`
     /* Estilos para el título del grupo */

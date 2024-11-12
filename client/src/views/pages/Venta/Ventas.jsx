@@ -28,7 +28,7 @@ export const Sales = () => {
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
   const [cashCountConfirmation, setCashCountConfirmation] = useState(false)
-  const { products, loading, setLoading, error } = useGetProducts()
+  const { products, loading: productsLoading, setLoading, error } = useGetProducts()
 
   const viewport = useViewportWidth();
   const navigate = useNavigate()
@@ -119,6 +119,7 @@ export const Sales = () => {
           isProductGrouped={categoryGrouped}
         /> */}
         < ProductControlEfficient
+          productsLoading={productsLoading}
           products={filterProductsByVisibility}
         />
         <MenuComponents />

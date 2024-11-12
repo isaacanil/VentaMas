@@ -1,79 +1,128 @@
-// rowShelfService.js
 import { useSelector } from 'react-redux';
-import { rowShelfRepository } from './RowShelfRepository';
 import { selectUser } from '../../features/auth/userSlice';
 import { useEffect, useState } from 'react';
+import { nanoid } from '@reduxjs/toolkit';
+import { db } from '../firebaseconfig';
+import {
+    collection,
+    getDocs,
+    updateDoc,
+    doc,
+    serverTimestamp,
+    onSnapshot,
+    setDoc,
+    query,
+    where,
+} from 'firebase/firestore';
+
+// Obtener referencia de la colección de filas de un estante
+const getRowShelfCollectionRef = (businessId, warehouseId, shelfId) => {
+    if (typeof businessId !== 'string' || !businessId || typeof warehouseId !== 'string' || !warehouseId || typeof shelfId !== 'string' || !shelfId) {
+        console.error("Invalid parameter passed to getRowShelfCollectionRef", businessId, warehouseId, shelfId);
+        return;
+    }
+    return collection(db, 'businesses', businessId, 'warehouses', warehouseId, 'shelves', shelfId, 'rows');
+};
 
 // Crear una nueva fila de estante
-export const createRowShelf = async (user, warehouseId, shelfId, rowShelfData) => {
+const createRowShelf = async (user, warehouseId, shelfId, rowShelfData) => {
+    const id = nanoid();
     try {
-        // Validación de datos, si es necesario
-        if (!rowShelfData.name || typeof rowShelfData.capacity !== 'number') {
-            throw new Error('Datos inválidos para crear una fila de estante');
-        }
+        const rowShelfCollectionRef = getRowShelfCollectionRef(user.businessID, warehouseId, shelfId);
+        const rowShelfDocRef = doc(rowShelfCollectionRef, id);
 
-        const newRowShelf = await rowShelfRepository.create(user, warehouseId, shelfId, rowShelfData);
-        console.log('Fila de estante creada con éxito:', newRowShelf);
-        return newRowShelf;
+        await setDoc(rowShelfDocRef, {
+            ...rowShelfData,
+            id,
+            shelfId,
+            warehouseId,
+            createdAt: serverTimestamp(),
+            createdBy: user.uid,
+            updatedAt: serverTimestamp(),
+            updatedBy: user.uid,
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
+        });
+
+        return { ...rowShelfData, id };
     } catch (error) {
-        console.error('Error al crear la fila de estante:', error);
+        console.error('Error al añadir el documento: ', error);
         throw error;
     }
 };
 
 // Obtener todas las filas de un estante específico
-export const getAllRowShelves = async (user, warehouseId, shelfId) => {
+const getAllRowShelves = async (user, warehouseId, shelfId) => {
     try {
-        const rows = await rowShelfRepository.readAll(user, warehouseId, shelfId);
-        console.log('Filas de estante obtenidas:', rows);
+        const rowShelfCollectionRef = getRowShelfCollectionRef(user.businessID, warehouseId, shelfId);
+        const querySnapshot = await getDocs(rowShelfCollectionRef);
+        const rows = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
         return rows;
     } catch (error) {
-        console.error('Error al obtener las filas de estante:', error);
+        console.error('Error al leer los documentos: ', error);
         throw error;
     }
 };
 
 // Escuchar en tiempo real todas las filas de un estante específico
-export const listenAllRowShelves = (user, warehouseId, shelfId, callback, onError) => {
+const listenAllRowShelves = (user, warehouseId, shelfId, callback, onError) => {
     try {
-    
-        return rowShelfRepository.listenAll(user, warehouseId, shelfId, callback, onError);
+        const rowShelfCollectionRef = getRowShelfCollectionRef(user.businessID, warehouseId, shelfId);
+        const q = query(rowShelfCollectionRef, where('isDeleted', '==', false));
+        return onSnapshot(
+            q,
+            (querySnapshot) => {
+                const rows = querySnapshot.docs.map((doc) => doc.data());
+                callback(rows);
+            }, 
+            (error) => {
+                console.error('Error al escuchar documentos en tiempo real: ', error);
+                onError && onError(error);
+            }
+        );
     } catch (error) {
-        console.error('Error al escuchar filas de estante en tiempo real:', error);
+        console.error('Error al escuchar documentos en tiempo real: ', error);
         throw error;
     }
 };
 
 // Actualizar una fila de estante específica
-export const updateRowShelf = async (user, warehouseId, shelfId, rowId, updatedData) => {
+const updateRowShelf = async (user, warehouseId, shelfId, rowId, updatedData) => {
     try {
-        // Validación de datos actualizados, si es necesario
-        if (!updatedData || typeof updatedData !== 'object') {
-            throw new Error('Datos inválidos para actualizar la fila de estante');
-        }
-
-        const updatedRowShelf = await rowShelfRepository.update(user, warehouseId, shelfId, rowId, updatedData);
-        console.log('Fila de estante actualizada con éxito:', updatedRowShelf);
-        return updatedRowShelf;
+        const rowShelfDocRef = doc(db, 'businesses', user.businessID, 'warehouses', warehouseId, 'shelves', shelfId, 'rows', rowId);
+        await updateDoc(rowShelfDocRef, {
+            ...updatedData,
+            updatedAt: serverTimestamp(),
+            updatedBy: user.uid,
+        });
+        return { id: rowId, ...updatedData };
     } catch (error) {
-        console.error('Error al actualizar la fila de estante:', error);
+        console.error('Error al actualizar el documento: ', error);
         throw error;
     }
 };
 
 // Marcar una fila de estante como eliminada
-export const deleteRowShelf = async (user, warehouseId, shelfId, rowId) => {
+const deleteRowShelf = async (user, warehouseId, shelfId, rowId) => {
     try {
-        const removedRowId = await rowShelfRepository.remove(user, warehouseId, shelfId, rowId);
-        console.log('Fila de estante marcada como eliminada:', removedRowId);
-        return removedRowId;
+        const rowShelfDocRef = doc(db, 'businesses', user.businessID, 'warehouses', warehouseId, 'shelves', shelfId, 'rows', rowId);
+        await updateDoc(rowShelfDocRef, {
+            isDeleted: true,
+            deletedAt: serverTimestamp(),
+            deletedBy: user.uid,
+        });
+        return rowId;
     } catch (error) {
-        console.error('Error al eliminar la fila de estante:', error);
+        console.error('Error al marcar el documento como eliminado: ', error);
         throw error;
     }
 };
 
-export const useListenRowShelves = (warehouseId, shelfId) => {
+const useListenRowShelves = (warehouseId, shelfId) => {
     const user = useSelector(selectUser);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -98,4 +147,13 @@ export const useListenRowShelves = (warehouseId, shelfId) => {
         }
     }, [warehouseId, shelfId, user]);
     return { data, loading, error };
+};
+
+export {
+    createRowShelf,
+    getAllRowShelves,
+    listenAllRowShelves,
+    updateRowShelf,
+    deleteRowShelf,
+    useListenRowShelves
 };

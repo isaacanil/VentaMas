@@ -45,7 +45,7 @@ const determineInputPriceColor = (totalPrice, minPrice, listPrice, avgPrice) => 
 export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
 
     const { listPrice, avgPrice, minPrice } = pricing || {};
-    console.log('pricing ...........................', pricing.listPrice);
+   
     const preciosConImpuesto = [
         {
             label: 'Precio de Lista',
@@ -179,7 +179,8 @@ export const ProductCardForCart = ({ item }) => {
 
                         ) : (
                             <Counter
-                                amountToBuyTotal={item.amountToBuy}
+                                item={item}
+                                amountToBuy={item.amountToBuy}
                                 stock={item?.stock}
                                 id={item.id}
                                 product={item}

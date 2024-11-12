@@ -16,7 +16,7 @@ export const Footer = () => {
       </Row>
       <Row justify="center" style={{ marginTop: '10px' }}>
         <Col>
-          <FooterText>Desarrollado por Gysys</FooterText>
+          <FooterText>Desarrollado por Gisys</FooterText>
         </Col>
       </Row>
     </FooterContainer>

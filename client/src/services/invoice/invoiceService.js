@@ -9,6 +9,7 @@ import { fbAddInvoice } from "../../firebase/invoices/fbAddInvoice";
 import { fbAddAR } from "../../firebase/accountsReceivable/fbAddAR";
 import { fbAddInstallmentAR } from "../../firebase/accountsReceivable/fbAddInstallmentAR";
 import { fbGenerateInvoiceFromPreorder } from "../../firebase/invoices/fbGenerateInvoiceFromPreorder";
+import { Timestamp } from "firebase/firestore";
 
 const NCF_TYPES = {
     'CREDITO FISCAL': 'CREDITO FISCAL',
@@ -23,7 +24,8 @@ export async function processInvoice({
     ncfType,
     taxReceiptEnabled = false,
     setLoading = () => { },
-    dispatch
+    dispatch,
+    dueDate = null
 }) {
     try {
         //Validar que el carrito tenga productos
@@ -46,7 +48,7 @@ export async function processInvoice({
         if(cart?.preorderDetails?.isOrWasPreorder){
             invoice = await generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode })
         } else {
-            invoice = await generateFinalInvoice({ user, cart, clientData, ncfCode, cashCount })
+            invoice = await generateFinalInvoice({ user, cart, clientData, ncfCode, cashCount, dueDate })
         }
         //Cuentas por cobrar
         await manageReceivableAccounts({ user, accountsReceivable, invoice })
@@ -58,6 +60,18 @@ export async function processInvoice({
         throw error
     } finally {
         setLoading({ status: false, message: "" })
+    }
+}
+
+async function checkIfHasDueDate({cart, dueDate}) {
+    if(!dueDate){
+        return cart;
+    }
+    const date = Timestamp.fromMillis(dueDate);
+    return {
+        ...cart,
+        dueDate: date,
+        hasDueDate: true
     }
 }
 
@@ -126,16 +140,17 @@ async function adjustProductInventory({ user, products, transaction = null }) {
         throw error;
     }
 }
-async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, transaction }) {
+async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, dueDate, transaction }) {
     try {
+        const cartWithDueDate = await checkIfHasDueDate({ cart, dueDate });
         const bill = {
-            ...cart,
+            ...cartWithDueDate,
             NCF: ncfCode,
             client: clientData.client,
             cashCountId: cashCount.id
         }
-        await fbAddInvoice(bill, user, transaction);
-        return bill;
+        const result = await fbAddInvoice(bill, user, transaction);
+        return result || bill;
     } catch (error) {
         throw error
     }

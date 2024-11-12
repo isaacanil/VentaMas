@@ -7,8 +7,9 @@ const initialState = {
   selectedShelf: null,
   selectedRowShelf: null,
   selectedSegment: null,
-  selectedProduct: null,  // Producto seleccionado
-  breadcrumbs: [{ title: 'Warehouse', key: 'warehouse' }],
+  selectedProduct: null, 
+  currentProducts: [],
+  breadcrumbs: [{ title: 'Warehouse', key: 'warehouse', data: null }],
 };
 
 const warehouseSlice = createSlice({
@@ -82,6 +83,9 @@ const warehouseSlice = createSlice({
       if (view === 'segment') {
         state.selectedSegment = data;
       }
+      if (view === 'product') {
+        state.selectedProduct = data;
+      }
 
       // Si se navega a un producto, se actualiza el producto seleccionado
       if (product) {
@@ -118,10 +122,54 @@ const warehouseSlice = createSlice({
         state.selectedProduct = null;
       }
     },
+
+    // Nueva acción para navegar a través de los breadcrumbs
+    navigateToBreadcrumb: (state, action) => {
+      const index = action.payload; // Índice del breadcrumb clicado
+      
+      // Actualizar breadcrumbs
+      state.breadcrumbs = state.breadcrumbs.slice(0, index + 1);
+      
+      // Resetear selecciones basadas en el índice clickeado
+      // Recordar: 0=warehouse, 1=shelf, 2=rowShelf, 3=segment
+      switch (index) {
+        case 0: // Warehouse
+          state.selectedShelf = null;
+          state.selectedRowShelf = null;
+          state.selectedSegment = null;
+          state.selectedProduct = null;
+          state.currentView = 'warehouse';
+          break;
+        case 1: // Shelf
+          state.selectedRowShelf = null;
+          state.selectedSegment = null;
+          state.selectedProduct = null;
+          state.currentView = 'shelf';
+          break;
+        case 2: // RowShelf
+          state.selectedSegment = null;
+          state.selectedProduct = null;
+          state.currentView = 'rowShelf';
+          break;
+        case 3: // Segment
+          state.selectedProduct = null;
+          state.currentView = 'segment';
+          break;
+        default:
+          // Si por alguna razón el índice está fuera de rango, resetear todo
+          state.selectedWarehouse = null;
+          state.selectedShelf = null;
+          state.selectedRowShelf = null;
+          state.selectedSegment = null;
+          state.selectedProduct = null;
+          state.currentView = 'warehouse';
+      }
+    },
   },
 });
 
-export const { navigateWarehouse, back } = warehouseSlice.actions;
+export const { navigateWarehouse, back, navigateToBreadcrumb } = warehouseSlice.actions;
 export default warehouseSlice.reducer;
 
 export const selectWarehouse = (state) => state.warehouse;
+

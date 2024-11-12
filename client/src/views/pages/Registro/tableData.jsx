@@ -1,4 +1,3 @@
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useFormatPrice } from "../../../hooks/useFormatPrice";
 import { getTimeElapsed } from "../../../hooks/useFormatTime";
@@ -16,6 +15,7 @@ import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus
 import { Tag } from "../../templates/system/Tag/Tag";
 import { openInvoicePreviewModal } from "../../../features/invoice/invoicePreviewSlice";
 import { togglePrintWarranty } from "../../../features/cart/cartSlice";
+import { Invoice } from "../../component/Invoice/components/Invoice/Invoice";
 
 const EditButton = ({ value }) => {
   const dispatch = useDispatch()
@@ -69,7 +69,7 @@ const EditButton = ({ value }) => {
       display: 'flex',
       gap: '10px',
     }}>
-      <Receipt ref={componentToPrintRef} data={data} />
+      <Invoice ref={componentToPrintRef} data={data} />
       <ant.Button
         icon={<FontAwesomeIcon icon={faPrint} />}
         onClick={handleRePrint}

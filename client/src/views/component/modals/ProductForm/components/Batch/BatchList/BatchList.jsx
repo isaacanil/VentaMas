@@ -2,17 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { List, Button, Modal, notification, Tag, Space, Switch } from "antd";
+import { List, Button, Modal, notification, Tag, Switch } from "antd";
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import { nanoid } from "nanoid";
-import { DateTime } from "luxon";
 import { BatchForm } from "../BatchForm";
 import { Form } from "antd";
 import { deleteBatch, listenAllBatches } from "../../../../../../../firebase/warehouse/batchService";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { ChangeProductData, selectUpdateProductData } from "../../../../../../../features/updateProduct/updateProductSlice";
-import { useQuery } from "@tanstack/react-query";
 import { fbUpdateProduct } from "../../../../../../../firebase/products/fbUpdateProduct";
 
 // Styled Components
@@ -83,10 +80,10 @@ const BatchList = () => {
 
   };
 
-  const handleExpirationDateSwitch = async (checked) => {
-    dispatch(ChangeProductData({ product: { hasExpirationDate: checked } }));
+  const handleBatchSwitch = async (checked) => {
+    dispatch(ChangeProductData({ product: { hasBatch: checked } }));
     try{
-      await fbUpdateProduct({...product, hasExpirationDate: checked}, dispatch, user);
+      await fbUpdateProduct({...product, hasBatch: checked}, dispatch, user);
     }catch(error){
       console.error("Error al cambiar el estado de la fecha de expiración:", error);
     }
@@ -95,17 +92,17 @@ const BatchList = () => {
   return (
     <StyledContainer>
       <Form.Item
-        label="Producto con fecha de expiración"
+        label="Producto con lotes"
         valuePropName="checked"
       >
         <Switch
-          checked={product.hasExpirationDate}
-          onChange={handleExpirationDateSwitch}
+          checked={product.hasBatch}
+          onChange={handleBatchSwitch}
           style={{ marginRight: 8 }}
         />
       </Form.Item>
       
-      {product.hasExpirationDate && (
+      {product.hasBatch && (
         <div>
           <Header>
             <StyledTitle>Lista de Lotes</StyledTitle>
@@ -135,7 +132,7 @@ const BatchList = () => {
                   description={
                     <>
                       <div>Cantidad: <Tag color="blue">{item.quantity}</Tag></div>
-                      <div>Fecha de Expiración: {DateTime.fromISO(item.expirationDate).toLocaleString(DateTime.DATE_MED)}</div>
+                      {/* <div>Fecha de Expiración: {DateTime.fromISO(item.expirationDate).toLocaleString(DateTime.DATE_MED)}</div> */}
                     </>
                   }
                 />

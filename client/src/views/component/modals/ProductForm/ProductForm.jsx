@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import * as ant from 'antd';
-const { Form, Button, Spin, Card, Space, Row, Col, Tabs } = ant;
-
-import styled from 'styled-components';
+import React from 'react'
+import { Tabs } from 'antd';
 import { General } from './components/General/General';
 import BatchList from './components/Batch/BatchList/BatchList';
 import { useSelector } from 'react-redux';
@@ -10,7 +7,7 @@ import { selectUpdateProductData } from '../../../../features/updateProduct/upda
 import { SaleUnitsConfig } from './components/SaleUnits/SaleUnitsConfig';
 
 export const ProductForm = ({ showImageManager }) => {
-    const { product, status } = useSelector(selectUpdateProductData)
+    const { status } = useSelector(selectUpdateProductData)
     const items = [
         {
             key: '1',
@@ -26,6 +23,7 @@ export const ProductForm = ({ showImageManager }) => {
         {
             key: '3',
             label: 'Unidades de Venta', // Nuevo label para la tercera pestaña
+            disabled: status === "create",
             children: <SaleUnitsConfig />
         },
     ]

@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Body } from './components/Body/Body'
 import * as antd from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
-import { CancelShipping, SelectCartData, SelectSettingCart, toggleCart, toggleInvoicePanelOpen } from '../../../../../features/cart/cartSlice'
+import { CancelShipping, SelectCartData, SelectSettingCart, toggleCart, toggleInvoicePanel, toggleInvoicePanelOpen } from '../../../../../features/cart/cartSlice'
 import { processInvoice } from '../../../../../services/invoice/invoiceService'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { deleteClient, selectClient } from '../../../../../features/clientCart/clientCartSlice'
@@ -15,6 +15,8 @@ import { Receipt } from '../../../../pages/checkout/Receipt'
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 import { generateInstallments } from '../../../../../utils/accountsReceivable/generateInstallments'
 import { fromMillisToDayjs } from '../../../../../utils/date/convertMillisecondsToDayjs'
+import { Invoice } from '../../../Invoice/components/Invoice/Invoice'
+import dayjs from 'dayjs' // Add this import
 
 const { Button, notification, Spin } = antd
 
@@ -39,6 +41,16 @@ export const modalStyles = {
     }
 }
 
+const calculateDueDate = (duePeriod, hasDueDate) => {
+    if (!hasDueDate) return null;
+    
+    const currentDate = dayjs();
+    return currentDate
+        .add(duePeriod.months || 0, 'month')
+        .add(duePeriod.weeks || 0, 'week')
+        .add(duePeriod.days || 0, 'day');
+}
+
 export const InvoicePanel = () => {
     const dispatch = useDispatch()
     const [form] = antd.Form.useForm()
@@ -56,6 +68,7 @@ export const InvoicePanel = () => {
     const cartSettings = useSelector(SelectSettingCart)
     const invoicePanel = cartSettings.isInvoicePanelOpen;
     const shouldPrintInvoice = cartSettings.printInvoice;
+    const {duePeriod, hasDueDate} = cartSettings?.billing;
     const componentToPrintRef = useRef();
     const user = useSelector(selectUser)
     const client = useSelector(selectClient)
@@ -66,6 +79,7 @@ export const InvoicePanel = () => {
     const isAddedToReceivables = cart?.isAddedToReceivables;
     const change = cart?.change?.value;
     const isChangeNegative = change < 0;
+   
 
     const handlePrint = useReactToPrint({
         content: () => componentToPrintRef.current,
@@ -85,6 +99,7 @@ export const InvoicePanel = () => {
         dispatch(CancelShipping())
         dispatch(clearTaxReceiptData())
         dispatch(deleteClient())
+        dispatch(toggleInvoicePanel())
         dispatch(clearTaxReceiptData())
     }
 
@@ -114,6 +129,9 @@ export const InvoicePanel = () => {
             if (cart?.isAddedToReceivables) {
                 await form.validateFields()
             }
+
+            const dueDate = calculateDueDate(duePeriod, hasDueDate);
+            
             const { invoice } = await processInvoice({
                 cart,
                 user,
@@ -122,8 +140,10 @@ export const InvoicePanel = () => {
                 taxReceiptEnabled,
                 ncfType,
                 setLoading,
-                dispatch
+                dispatch,
+                dueDate: dueDate?.valueOf(), // Convert to milliseconds
             })
+
             if (shouldPrintInvoice) {
                 setInvoice(invoice)
                 setTimeout(() => handlePrint(), 1000)
@@ -150,6 +170,7 @@ export const InvoicePanel = () => {
             console.error('Error processing invoice:', error)
         }
     }
+    console.log(invoice)
 
     // const installments = generateInstallments({ ar: accountsReceivable, user })
 
@@ -198,7 +219,7 @@ export const InvoicePanel = () => {
                 ]
             }
         >
-            <Receipt ref={componentToPrintRef} data={invoice} />
+            <Invoice ref={componentToPrintRef} data={invoice} />
             <Spin
                 spinning={loading.status}
             >

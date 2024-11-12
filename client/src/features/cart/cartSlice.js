@@ -19,6 +19,7 @@ const updateAllTotals = (state, paymentValue = null) => {
     state.data.totalPurchase.value = getProductsTotalPrice(products, discount, delivery, taxReceiptEnabled);
     state.data.totalTaxes.value = getProductsTax(products, taxReceiptEnabled);
     state.data.totalShoppingItems.value = getTotalItems(products);
+    
     state.data.totalPurchaseWithoutTaxes.value = getProductsPrice(products);
     const cashPaymentMethod = state.data.paymentMethod
         .findIndex((method) => method.method === 'cash' && method.status === true);
@@ -124,7 +125,7 @@ const cartSlice = createSlice({
                 state.data.isAddedToReceivables = value;
             }
         },
-     
+
         changeProductPrice: (state, action) => {
             const { id, pricing, saleUnit, price } = action.payload;
             const product = state.data.products.find((product) => product.id === id);
@@ -156,13 +157,16 @@ const cartSlice = createSlice({
             state.data.payment.value = totalPurchase
         },
         addProduct: (state, action) => {
-            const checkingID = state.data.products.find((product) => product.id === action.payload.id)
+            const product = action.payload
+            const checkingID = state.data.products.find((p) => p.id === product.id)
             const products = state.data.products
             //los productos tienen informacion de garantia en product.warranty.status, grarardar en data.warranty un objeto con el id y el fecha en l;a que se agrego
             if (checkingID && !checkingID?.weightDetail?.isSoldByWeight) {
+
                 checkingID.amountToBuy = checkingID.amountToBuy + 1;
+                return
             } else if (checkingID && checkingID?.weightDetail?.isSoldByWeight) {
-                const product = action.payload
+
                 const productData = {
                     ...product,
                     cid: nanoid(8)
@@ -256,9 +260,16 @@ const cartSlice = createSlice({
         togglePrintInvoice: (state) => {
             state.settings.printInvoice = !state.settings.printInvoice
         },
+        toggleInvoicePanel: (state) => {
+            state.settings.isInvoicePanelOpen = !state.settings.isInvoicePanelOpen;
+        },
         setBillingSettings: (state, action) => {
             const { billingMode, isError, isLoading } = action.payload;
             state.settings.billing.billingMode = billingMode;
+            state.settings.billing = {
+                ...state.settings.billing,
+                ...action.payload,
+            }
             state.settings.billing.isLoading = isLoading;
             state.settings.billing.isError = isError;
         },
@@ -298,6 +309,7 @@ export const {
     saveBillInFirebase,
     toggleCart,
     togglePrintInvoice,
+    toggleInvoicePanel,
     setDefaultClient,
     setBillingSettings,
 } = cartSlice.actions

@@ -1,13 +1,10 @@
 import React, { useEffect } from "react";
-import * as antd from "antd";
-import { shelfRepository } from "../../../../../../../firebase/warehouse/shelfRepository";
+import { Form, Input, Button, Modal, message } from "antd";
 import { createShelf, updateShelf } from "../../../../../../../firebase/warehouse/shelfService";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
-import { clearShelfForm, closeShelfForm, selectShelfState, updateShelfFormData } from "../../../../../../../features/warehouse/shelfSlice";
-
-const { Form, Input, Button, Modal, message } = antd;
+import { clearShelfForm, closeShelfForm, selectShelfState, updateShelfFormData } from "../../../../../../../features/warehouse/shelfModalSlice";
 
 export function ShelfForm({ }) {
   const dispatch = useDispatch();
@@ -41,17 +38,17 @@ export function ShelfForm({ }) {
           warehouseId,
           newShelf
         );
-        antd.message.success("Estante actualizado con éxito.");
+        message.success("Estante actualizado con éxito.");
       } else {
         // Crear un nuevo estante
         await createShelf(user, warehouseId, newShelf);
    
-        antd.message.success("Estante creado con éxito.");
+        message.success("Estante creado con éxito.");
       }
       handleClose();
     } catch (error) {
       console.error("Error al guardar el estante: ", error);
-      antd.message.error("Error al guardar el estante."); // Mostrar mensaje de error
+      message.error("Error al guardar el estante."); // Mostrar mensaje de error
     }
   };
   const handleClose = () => {
@@ -62,8 +59,6 @@ export function ShelfForm({ }) {
   const handleFormChange = (changedFields) => {
     dispatch(updateShelfFormData(changedFields)); // Actualiza el estado del formulario
   };
-
-
 
   return (
     <Modal

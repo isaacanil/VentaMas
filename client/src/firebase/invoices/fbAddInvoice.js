@@ -23,6 +23,7 @@ export const fbAddInvoice = async (data, user, transaction = null) => {
 
     await fbSetDoc(billRef, { data: bill }, transaction)
     await fbAddBillToOpenCashCount(user, billRef, transaction)
+    return bill
   } catch (error) {
     console.log(error)
   }

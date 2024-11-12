@@ -9,12 +9,15 @@ import { useSelector } from 'react-redux'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { useFormatNumber} from '../../../../hooks/useFormatNumber'
 import { Paragraph, Spacing, Subtitle } from '../Style'
+import { getDiscount, getProductsDiscount, getProductsPrice, getProductsTax, getTotalDiscount } from '../../../../utils/pricing'
 
 export const PaymentArea = ({ data }) => {
     const [pendingBalance, setPendingBalance] = useState(0)
     const user = useSelector(selectUser);
     const businessID = user?.businessID
     const clientId = data?.client?.id
+    const subtotal = getProductsPrice(data?.products || []) + getProductsTax(data?.products || []);
+    const discount = getTotalDiscount(subtotal, data?.discount?.value || 0);
     const formatNumber = (num) => useFormatPrice(num, "")
     useEffect(() => {
         const fetchPendingBalance = async () => {
@@ -34,6 +37,16 @@ export const PaymentArea = ({ data }) => {
             value1: null,
             value2: formatNumber(data?.delivery?.value),
             condition: data?.delivery?.status
+        },
+        {
+            label: 'SUBTOTAL',
+            value2: formatNumber(subtotal),
+            condition: true
+        },
+        {
+            label: 'DESCUENTO',
+            value2: formatNumber(discount),
+            condition: discount > 0
         },
         ...data?.paymentMethod?.filter(item => item?.status === true)
             .map((item) => ({

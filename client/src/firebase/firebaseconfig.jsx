@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+
 //TODO ***AUTH**************************************
 import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 //TODO ***FIRESTORE***********************************
@@ -13,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login, logout, selectUser } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { fbGetDocFromReference } from "./provider/fbGetProviderFromReference";
+// import { getVertexAI, getGenerativeModel } from "firebase/";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -28,6 +30,7 @@ const app = initializeApp(firebaseConfig);
 
 export const storage = getStorage(app);
 export const auth = getAuth(app)
+
 
 
 export const db = initializeFirestore(app, {

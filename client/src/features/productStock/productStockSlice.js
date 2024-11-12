@@ -5,10 +5,9 @@ const initialState = {
     formData: {
         id: "", // Autogenerado, no necesario en el formulario
         batchId: "",
-        location,
+        location: {},
         productId: "",
         productName: "",
-        
         stock: 0, // Cantidad de stock
     },
     loading: false,
@@ -22,13 +21,11 @@ const productStockSlice = createSlice({
         openProductStock: (state, action) => {
             state.isOpen = true;
             if (action.payload) {
-                // Si se proporciona data inicial, se establece en formData
                 state.formData = {
                     ...initialState.formData,
                     ...action.payload,
                 }
             } else {
-                // Si no, se inicializa formData con valores vacíos
                 state.formData = initialState.formData;
             }
         },

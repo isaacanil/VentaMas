@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import * as antd from "antd";
 import styled from "styled-components";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
+import { 
+    selectWarehouseModalState, 
+    closeWarehouseForm, 
+    setWarehouseLoading, 
+    setWarehouseError 
+} from "../../../../../../../features/warehouse/warehouseModalSlice";
 
 const { Button, Input, InputNumber, Form, Spin, Modal } = antd;
 
@@ -26,109 +32,102 @@ const StyledButton = styled(Button)`
   }
 `;
 
-export function WarehouseForm({ isOpen, onClose, initialData = null }) {
-  // Verificamos si hay datos iniciales para determinar si estamos en modo de creación o actualización
+export function WarehouseForm() {
+  const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const { isOpen, formData, loading, error } = useSelector(selectWarehouseModalState);
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
-      form.setFieldsValue({
-        ...initialData,
-        dimension: initialData.dimension || { length: 0, width: 0, height: 0 },
-        capacity: initialData.capacity || 0,
-      }); // Rellenar el formulario con los datos iniciales si están presentes
-    } else {
-      form.setFieldsValue({
-        name: "",
-        shortName: "",
-        description: "",
-        owner: "",
-        location: "",
-        address: "",
-        dimension: { length: 0, width: 0, height: 0 },
-        capacity: 0,
-      });
+    if (isOpen) {
+      if (formData) {
+        form.setFieldsValue({
+          ...formData,
+          dimension: formData.dimension || { length: 0, width: 0, height: 0 },
+          capacity: formData.capacity || 0,
+        }); // Populate the form with initial data if present
+      } else {
+        form.resetFields();
+      }
     }
-  }, [initialData, form]);
+  }, [isOpen, formData, form]);
 
   const handleSubmit = async () => {
     try {
-      await form.validateFields(); // Validar los campos del formulario
-      const data = form.getFieldsValue(); // Obtener los valores del formulario
-      setLoading(true);
-      if (initialData) {
-        await updateWarehouse(user, initialData?.id, data); // Actualizar almacén
+      await form.validateFields(); // Validate form fields
+      const data = form.getFieldsValue(); // Get form values
+      dispatch(setWarehouseLoading(true));
+      if (formData && formData.id) {
+        await updateWarehouse(user, formData.id, data); // Update warehouse
       } else {
-        await createWarehouse(user, data); // Crear nuevo almacén
+        await createWarehouse(user, data); // Create new warehouse
       }
-      onClose(); // Cerrar el modal al enviar
+      dispatch(closeWarehouseForm()); // Close the modal after submission
+      antd.message.success(`Almacén ${formData ? "actualizado" : "creado"} correctamente`);
     } catch (error) {
       antd.message.error("Ocurrió un error al procesar la solicitud.");
+      dispatch(setWarehouseError(error.message));
       console.error("Ocurrió un error al procesar la solicitud.", error);
-    } finally{
-      setLoading(false);
+    } finally {
+      dispatch(setWarehouseLoading(false));
     }
   };
 
   return (
     <Modal
-      title={initialData ? "Actualizar Información del Almacén" : "Información del Almacén"}
+      title={formData && formData.id ? "Actualizar Información del Almacén" : "Información del Almacén"}
       open={isOpen}
-      onCancel={onClose}
-      footer={null} // Eliminamos el footer predeterminado
+      onCancel={() => dispatch(closeWarehouseForm())}
+      footer={null} // Remove default footer
     >
       <Spin
         size="large"
         spinning={loading}
-        tip={initialData ? "Actualizando almacén..." : "Creando almacén..."}
+        tip={formData && formData.id ? "Actualizando almacén..." : "Creando almacén..."}
       >
-          <CardDescription>
-        {initialData ? "Actualiza los detalles del almacén" : "Introduce los detalles del nuevo almacén"}
-      </CardDescription>
-      <FormContainer form={form} onFinish={handleSubmit} layout="vertical">
-        <Form.Item label="Nombre" name="name" rules={[{ required: true, message: "Por favor ingresa el nombre" }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="Nombre Corto" rules={[{required: true, message: "Por favor ingresa el nombre corto"}]} name="shortName">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Descripción" name="description">
-          <Input.TextArea rows={3} />
-        </Form.Item>
-        <Form.Item label="Propietario" name="owner">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Ubicación" name="location" rules={[{ required: true, message: "Por favor ingresa la ubicación" }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="Dirección" name="address">
-          <Input />
-        </Form.Item>
-
-        <DimensionInputGroup>
-          <Form.Item label={'Longitud'} name={['dimension', 'length']} >
-            <InputNumber style={{ width: '100%' }} min={0} placeholder="Longitud" />
+        <CardDescription>
+          {formData && formData.id ? "Actualiza los detalles del almacén" : "Introduce los detalles del nuevo almacén"}
+        </CardDescription>
+        <FormContainer form={form} onFinish={handleSubmit} layout="vertical">
+          <Form.Item label="Nombre" name="name" rules={[{ required: true, message: "Por favor ingresa el nombre" }]}>
+            <Input />
           </Form.Item>
-          <Form.Item label={'Ancho'} name={['dimension', 'width']}>
-            <InputNumber style={{ width: '100%' }} min={0} placeholder="Ancho" />
+          <Form.Item label="Nombre Corto" rules={[{required: true, message: "Por favor ingresa el nombre corto"}]} name="shortName">
+            <Input />
           </Form.Item>
-          <Form.Item label={'Altura'} name={['dimension', 'height']} >
-            <InputNumber style={{ width: '100%' }} min={0} placeholder="Altura" />
+          <Form.Item label="Descripción" name="description">
+            <Input.TextArea rows={3} />
           </Form.Item>
-        </DimensionInputGroup>
+          <Form.Item label="Propietario" name="owner">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Ubicación" name="location" rules={[{ required: true, message: "Por favor ingresa la ubicación" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Dirección" name="address">
+            <Input />
+          </Form.Item>
 
-        <Form.Item label="Capacidad (m³)" name="capacity">
-          <InputNumber min={0} />
-        </Form.Item>
-        <StyledButton type="primary" htmlType="submit">
-          {initialData ? "Actualizar" : "Enviar"}
-        </StyledButton>
-      </FormContainer>
+          <DimensionInputGroup>
+            <Form.Item label={'Longitud'} name={['dimension', 'length']} >
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="Longitud" />
+            </Form.Item>
+            <Form.Item label={'Ancho'} name={['dimension', 'width']}>
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="Ancho" />
+            </Form.Item>
+            <Form.Item label={'Altura'} name={['dimension', 'height']} >
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="Altura" />
+            </Form.Item>
+          </DimensionInputGroup>
 
+          <Form.Item label="Capacidad (m³)" name="capacity">
+            <InputNumber min={0} />
+          </Form.Item>
+          <StyledButton type="primary" htmlType="submit">
+            {formData && formData.id ? "Actualizar" : "Enviar"}
+          </StyledButton>
+        </FormContainer>
       </Spin>
-    
     </Modal>
   );
 }
@@ -141,5 +140,4 @@ const DimensionInputGroup = styled.div`
     width: 100% !important;
     max-width: none !important;
   }
-
 `;
