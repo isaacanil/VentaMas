@@ -17,6 +17,7 @@ import { clearTaxReceiptData } from '../../../../../features/taxReceipt/taxRecei
 import { deleteClient, setIsOpen } from '../../../../../features/clientCart/clientCartSlice';
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
+import { getTotalDiscount } from '../../../../../utils/pricing';
 
 const InvoiceSummary = () => {
   const [isCartValid, setIsCartValid] = useState(false)
@@ -27,6 +28,8 @@ const InvoiceSummary = () => {
   const total = cartData?.totalPurchase?.value;
   const subTotal = cartData?.totalPurchaseWithoutTaxes?.value;
   const itbis = cartData.totalTaxes.value;
+  const discountPercent = cartData.discount.value;
+  const discount = getTotalDiscount(subTotal, discountPercent)
   const [loading, setLoading] = useState(false)
   const { billing } = useSelector(SelectSettingCart)
   const dispatch = useDispatch()
@@ -73,6 +76,7 @@ const InvoiceSummary = () => {
     }
 
   };
+  
 
   return (
     <Fragment>
@@ -88,7 +92,10 @@ const InvoiceSummary = () => {
       <Delivery />
       <LineItem>
         <Label>Descuento (%):</Label>
-        <CustomInput options={["10", "20", "30", "40", "50"]} />
+        <div style={{display: 'grid', gridTemplateColumns: '72px 72px', gap: '1em', alignItems: 'center'}}>
+        <Label>-{useFormatPrice(discount)}</Label>
+        <CustomInput value={discountPercent} options={["10", "20", "30", "40", "50"]} />
+        </div>
       </LineItem>
       <TotalLine>
         {

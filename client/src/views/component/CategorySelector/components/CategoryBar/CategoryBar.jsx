@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, forwardRef } from 'react'
 import styled from 'styled-components'
 import { useDispatch } from 'react-redux'
 import { icons } from '../../../../../constants/icons/icons'
@@ -7,7 +7,7 @@ import { useMoveScroll } from '../../../../../utils/scroll/moveScroll'
 import { Button } from 'antd';
 import { categoryColors } from '../../categoryColors'
 
-export const CategoryBar = ({ open, setOpen, items = [] }) => {
+export const CategoryBar = forwardRef(({ open, setOpen, items = [] }, ref) => {
   const categoriesRef = useRef(null)
   const { toEnd, toLeft, toRight, toStart } = useMoveScroll(categoriesRef)
 
@@ -57,7 +57,7 @@ export const CategoryBar = ({ open, setOpen, items = [] }) => {
       </Button>
     </Container >
   )
-}
+})
 const Container = styled.div`
   height: 2.6em;
   align-items: center;

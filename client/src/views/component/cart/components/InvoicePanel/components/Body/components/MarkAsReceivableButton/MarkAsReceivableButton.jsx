@@ -160,7 +160,7 @@ export const ARValidateMessage = ({
                 />
             }
             {
-               (creditLimit != null && creditLimit.creditLimit.status) && !isWithinCreditLimit && <Alert
+               (creditLimit != null && creditLimit?.creditLimit?.status) && !isWithinCreditLimit && <Alert
                 message={
                     <>
                       El saldo de la factura excede el límite de crédito:{" "}
@@ -174,7 +174,7 @@ export const ARValidateMessage = ({
                 />
             }
             {
-               (creditLimit != null && creditLimit.invoice.status) && !isWithinInvoiceCount && <Alert
+               (creditLimit != null && creditLimit?.invoice?.status) && !isWithinInvoiceCount && <Alert
                     message={`El límite de cuenta por cobrar ha sido alcanzado. Facturas actuales: ${useFormatNumber(activeAccountsReceivableCount)} / ${useFormatNumber(creditLimit?.invoice?.value)}`}
                     type="error"
                     showIcon

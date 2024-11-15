@@ -12,11 +12,12 @@ import useImageFallback from '../../../../../hooks/image/useImageFallback'
 import { motion } from 'framer-motion'
 import { getTotalPrice } from '../../../../../utils/pricing'
 import { notification } from 'antd'
-import { ProductWeightEntryModal } from '../../../../component/modals/ProductWeightEmtryModal/ProductWeightEntryModal'
+// import { ProductWeightEntryModal } from '../../../../component/modals/ProductWeightEmtryModal/ProductWeightEntryModal'
+// import { BatchSelectorModal } from './BatchSelectorModal'
 import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
-import { BatchSelectorModal } from './BatchSelectorModal'
 import { openProductExpirySelector } from '../../../../../features/warehouse/productExpirySelectionSlice'
 import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
+import { truncateString } from '../../../../../utils/text/truncateString'
 
 const item = {
     hidden: { y: 20, opacity: 0 },
@@ -76,9 +77,9 @@ export const Product = ({ product, }) => {
         dispatch(deleteProduct(id))
     }
 
-    const openBatchModal = () => setIsOpenBatchModal(true);
-    const closeBatchModal = () => setIsOpenBatchModal(false);
-    const getBatch = (batch) => console.log(batch)
+    // const openBatchModal = () => setIsOpenBatchModal(true);
+    // const closeBatchModal = () => setIsOpenBatchModal(false);
+    // const getBatch = (batch) => console.log(batch)
 
     const isDisabled = isOutOfStock || isLowStock
     return (
@@ -108,7 +109,7 @@ export const Product = ({ product, }) => {
                 <Content>
                     <Header>
                         <Title isOpen={isProductInCart}>
-                            {product.name}
+                            {truncateString(product.name, 53)}
                         </Title>
                         {isProductInCart && (
                             <Button
@@ -120,9 +121,9 @@ export const Product = ({ product, }) => {
                             />
                         )}
                     </Header>
-                    <Body>
+                    {/* <Body>
                         
-                    </Body>
+                    </Body> */}
                     <Footer imageHiddenRef={imageHiddenRef} isSelected={isProductInCart}>
                         <Group>
                             <AmountToBuy isDisabled={isDisabled} >{isProductInCart && `${useFormatNumber(productInCart?.amountToBuy)} / `} {useFormatNumber(product.stock)}</AmountToBuy>
@@ -142,7 +143,7 @@ export const Product = ({ product, }) => {
                 </Content>
 
             </Container>
-            <ProductWeightEntryModal
+            {/* <ProductWeightEntryModal
                 isVisible={productWeightEntryModal}
                 product={product}
                 onAdd={() => {
@@ -159,7 +160,7 @@ export const Product = ({ product, }) => {
                 onClose={closeBatchModal}
                 onAdd={getBatch}
 
-            />
+            /> */}
         </Fragment>
 
     )
@@ -172,7 +173,7 @@ const Container = styled(motion.li)`
     width: 100%;
     border-radius: var(--border-radius);
     display: flex;
-    gap: 10px;
+    gap: 6px;
     overflow: hidden;
     transition: 400ms all ease-in-out;
     background-color: ${(props) => (props.isDisabled ? '#ffffff' : '#ffffff')};
@@ -203,17 +204,17 @@ const Container = styled(motion.li)`
 `
 const Content = styled.div`
     display: grid;
-    width: 100%;
-    grid-template-rows: 1fr min-content min-content;
 
+    width: 100%;
+    grid-template-rows: 1fr min-content;
 `
 const Header = styled.div`
     display: flex;
     justify-content: space-between;
-
-    padding: 0.4em 0.4em 0;
+    padding: 0.1em 0.4em 0;
     font-size: 14px;
     font-weight: 600;
+    
     color: var(--Gray6);
     letter-spacing: 0.4px;
 `
@@ -292,6 +293,7 @@ const Footer = styled.div`
     align-items: center;
     justify-content: space-between;
     width: 100%;
+
     pointer-events: none;
     
     border-top-left-radius: ${(props) => {
@@ -332,26 +334,26 @@ const Title = styled.div`
     display: -webkit-box;
     font-weight: 600;
     letter-spacing: 0.4px;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;  
+    /* -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;   */
     
     overflow: hidden;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    /* word-wrap: break-word; */
+    /* overflow-wrap: break-word; */
     hyphens: auto; 
-    text-overflow: ellipsis;
+    /* text-overflow: ellipsis; */
 
-    ${(props) => {
+    /* ${(props) => {
         switch (props.isOpen) {
             case false:
                 return `
-                    padding: 0.4em 1em 0 0.4em;
+                    padding: 0.4em 1em 0 0em;
 
                 `
             default:
                 break;
         }
-    }}
+    }} */
 `;
 const Price = styled.div`
   display: block;

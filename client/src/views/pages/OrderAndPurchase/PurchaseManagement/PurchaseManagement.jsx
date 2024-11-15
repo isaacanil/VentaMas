@@ -132,31 +132,16 @@ const PurchaseManagement = () => {
       />
       <Body>
         <Form layout="vertical">
-          {/* <Tabs defaultActiveKey="general" size='small'>
-            <TabPane tab="General" key="general"> */}
-              <GeneralForm
-                purchaseData={purchaseData}
-                handleInputChange={handleInputChange}
-                products={purchaseData.products}
-                showProductModal={showProductModal}
-                removeProduct={removeProduct}
-                onEditProduct={showProductModal}
-                totals={purchaseData.totals}
-
-              />
-            {/* </TabPane> */}
-            {/* <TabPane tab="Productos" key="products">
-              <ProductsTable
-                products={purchaseData.products}
-                showProductModal={showProductModal}
-                removeProduct={removeProduct}
-                onEditProduct={showProductModal}
-              />
-            </TabPane> */}
-          {/* </Tabs> */}
-          {/* <TotalsSummary totals={purchaseData.totals} /> */}
+          <GeneralForm
+            purchaseData={purchaseData}
+            handleInputChange={handleInputChange}
+            products={purchaseData.products}
+            showProductModal={showProductModal}
+            removeProduct={removeProduct}
+            onEditProduct={showProductModal}
+            totals={purchaseData.totals}
+          />
         </Form>
-
       </Body>
       <ProductModal
         visible={modalVisible}

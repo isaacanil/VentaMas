@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Button, Modal, Form } from 'antd'; // Eliminar Select de las importaciones
 import { Invoice } from '../Invoice/Invoice';
 import { useReactToPrint } from 'react-to-print';
-import { mockData } from '../../../../templates/system/Menu/Prueba';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { useSelector } from 'react-redux';
@@ -82,7 +81,7 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
         <Invoice
           ref={ref}
           template={selectedTemplate}
-          data={mockData}
+          data={{}}
           ignoreHidden={true}
         />
       </InvoiceContainer>
@@ -124,7 +123,7 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
             width: '100%',
           }}
         >
-        {renderInvoice(componentRef)}
+          {renderInvoice(componentRef)}
 
         </div>
       </Modal>

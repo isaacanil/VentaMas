@@ -15,7 +15,7 @@ import { useCreditLimitCheck } from '../../../../../../../hooks/accountsReceivab
 import { SelectCartData } from '../../../../../../../features/cart/cartSlice'
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
 import * as antd from 'antd'
-const { Alert } = antd
+const { Alert, Form } = antd
 
 export const Body = ({ form }) => {
     const user = useSelector(selectUser);
@@ -24,7 +24,6 @@ export const Body = ({ form }) => {
     const clientId = client.id;
 
     const { abilities } = userAccess();
-
 
     const { data: creditLimit, error, isLoading } = useQuery({
         queryKey: ['creditLimit', user, clientId],
@@ -54,47 +53,51 @@ export const Body = ({ form }) => {
         return <div>Error loading credit limit</div>;
     }
 
-
     return (
-        <Container>
-            <ChargedSection />
-            <PaymentMethods />
-            <PaymentSummary />
-            {
-                abilities.can('manage', 'accountReceivable') ? (
-                    <Fragment>
-                        <MarkAsReceivableButton
-                            creditLimit={creditLimit}
-                            activeAccountsReceivableCount={activeAccountsReceivableCount}
-                            isWithinCreditLimit={isWithinCreditLimit}
-                            isWithinInvoiceCount={isWithinInvoiceCount}
-                            creditLimitValue={creditLimitValue}
-                            change={change}
-                            clientId={clientId}
-                        />
-                        <ReceivableManagementPanel
-                            form={form}
-                            activeAccountsReceivableCount={activeAccountsReceivableCount}
-                            isWithinCreditLimit={isWithinCreditLimit}
-                            isWithinInvoiceCount={isWithinInvoiceCount}
-                            creditLimit={creditLimit}
-                            isChangeNegative={isChangeNegative}
-                            receivableStatus={receivableStatus}
-                        />
-                    </Fragment>
-                ) : (
-                    isChangeNegative && (
-                        <Alert
-                            message='Acceso Restringido'
-                            description='No se puede facturar ventas con un cambio negativo a menos que se use cuentas por cobrar. No tienes permisos para usar cuentas por cobrar. Por favor, contacta al administrador para obtener los permisos necesarios.'
-                            type='error'
-                            showIcon
-                        />
+        <Form
+            form={form}
+            layout="vertical"
+        >
+            <Container>
+                <ChargedSection />
+                <PaymentMethods />
+                <PaymentSummary />
+                {
+                    abilities.can('manage', 'accountReceivable') ? (
+                        <Fragment>
+                            <MarkAsReceivableButton
+                                creditLimit={creditLimit}
+                                activeAccountsReceivableCount={activeAccountsReceivableCount}
+                                isWithinCreditLimit={isWithinCreditLimit}
+                                isWithinInvoiceCount={isWithinInvoiceCount}
+                                creditLimitValue={creditLimitValue}
+                                change={change}
+                                clientId={clientId}
+                            />
+                            <ReceivableManagementPanel
+                                form={form}
+                                activeAccountsReceivableCount={activeAccountsReceivableCount}
+                                isWithinCreditLimit={isWithinCreditLimit}
+                                isWithinInvoiceCount={isWithinInvoiceCount}
+                                creditLimit={creditLimit}
+                                isChangeNegative={isChangeNegative}
+                                receivableStatus={receivableStatus}
+                            />
+                        </Fragment>
+                    ) : (
+                        isChangeNegative && (
+                            <Alert
+                                message='Acceso Restringido'
+                                description='No se puede facturar ventas con un cambio negativo a menos que se use cuentas por cobrar. No tienes permisos para usar cuentas por cobrar. Por favor, contacta al administrador para obtener los permisos necesarios.'
+                                type='error'
+                                showIcon
+                            />
+                        )
                     )
-                )
-            }
-            <PrintControl />
-        </Container>
+                }
+                <PrintControl />
+            </Container>
+        </Form>
     )
 }
 

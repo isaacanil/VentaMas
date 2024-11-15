@@ -138,12 +138,14 @@ export function getProductsTotalPrice(products, totalDiscountPercentage = 0, tot
   if (!isValidNumber(totalDelivery)) {
     totalDelivery = 0;
   }
-
-  let totalBeforeDiscount = getProductsPrice(products) + getProductsTax(products, taxReceiptEnabled) - getProductsDiscount(products);
+  let subtotal = getProductsPrice(products);
+  let itbis = getProductsTax(products, taxReceiptEnabled);
+  let productsDiscount = getProductsDiscount(products)
+  let totalBeforeDiscount = subtotal - productsDiscount;
 
   let totalDiscount = getTotalDiscount(totalBeforeDiscount, totalDiscountPercentage);
 
-  let total = (totalBeforeDiscount - totalDiscount + totalDelivery)
+  let total = (totalBeforeDiscount - totalDiscount + totalDelivery + itbis)
 
   return limit(total);
 }

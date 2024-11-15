@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Header } from './components/Header/Header'
 import styled from 'styled-components'
 import { Body } from './components/Body/Body'
-import * as antd from 'antd'
+import { Button, notification, Spin, Form, Modal as AntdModal, message } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
 import { CancelShipping, SelectCartData, SelectSettingCart, toggleCart, toggleInvoicePanel, toggleInvoicePanelOpen } from '../../../../../features/cart/cartSlice'
 import { processInvoice } from '../../../../../services/invoice/invoiceService'
@@ -11,14 +10,10 @@ import { deleteClient, selectClient } from '../../../../../features/clientCart/c
 import { selectAR } from '../../../../../features/accountsReceivable/accountsReceivableSlice'
 import { clearTaxReceiptData, selectNcfType, selectTaxReceipt } from '../../../../../features/taxReceipt/taxReceiptSlice'
 import { useReactToPrint } from 'react-to-print'
-import { Receipt } from '../../../../pages/checkout/Receipt'
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
-import { generateInstallments } from '../../../../../utils/accountsReceivable/generateInstallments'
 import { fromMillisToDayjs } from '../../../../../utils/date/convertMillisecondsToDayjs'
 import { Invoice } from '../../../Invoice/components/Invoice/Invoice'
 import dayjs from 'dayjs' // Add this import
-
-const { Button, notification, Spin } = antd
 
 export const modalStyles = {
     mask: {
@@ -53,7 +48,7 @@ const calculateDueDate = (duePeriod, hasDueDate) => {
 
 export const InvoicePanel = () => {
     const dispatch = useDispatch()
-    const [form] = antd.Form.useForm()
+    const [form] = Form.useForm()
     const [invoice, setInvoice] = useState({})
     const [submitted, setSubmitted] = useState(false)
     
@@ -113,7 +108,7 @@ export const InvoicePanel = () => {
             cancelText: 'Continuar Venta',
 
             onOk() {
-                antd.message.success('Venta cancelada', 2.5)
+                message.success('Venta cancelada', 2.5)
                 handleCancelShipping()
             },
             onCancel() {
@@ -170,7 +165,6 @@ export const InvoicePanel = () => {
             console.error('Error processing invoice:', error)
         }
     }
-    console.log(invoice)
 
     // const installments = generateInstallments({ ar: accountsReceivable, user })
 
@@ -231,7 +225,7 @@ export const InvoicePanel = () => {
     )
 }
 
-export const Modal = styled(antd.Modal)`
+export const Modal = styled(AntdModal)`
     .ant-modal-content{
     }
     .ant-modal-header{

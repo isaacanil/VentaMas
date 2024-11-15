@@ -81,6 +81,7 @@ const TotalRow = styled.div`
   }
 `;
 
+
 const BoldText = styled.p`
   font-weight: bold;
   font-size: 14px;

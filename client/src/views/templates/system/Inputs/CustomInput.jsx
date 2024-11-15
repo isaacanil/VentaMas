@@ -9,13 +9,12 @@ import { InputV4 } from "./GeneralInput/InputV4";
 import * as antd from "antd";
 const { Typography } = antd;
 const { Title, Paragraph } = Typography;
-const CustomInput = ({ options }) => {
-  const [value, setValue] = useState(0);
+const CustomInput = ({ options, value }) => {
+
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch()
   const inputRef = useRef(null);
   const handleChange = (e) => {
-    setValue(Number(e.target.value));
     dispatch(addDiscount(Number(e.target.value)))
   };
 
@@ -24,7 +23,6 @@ const CustomInput = ({ options }) => {
   };
 
   const handleSelect = (option) => {
-    setValue(option);
     setShowMenu(false);
     dispatch(addDiscount(option))
   };
@@ -76,6 +74,7 @@ const Wrapper = styled.div`
     margin: 0;
     padding: 0 0.4em;
     position: absolute;
+
     top: -8px;
     display: flex;
     align-items: center;

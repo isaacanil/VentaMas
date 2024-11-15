@@ -12,11 +12,13 @@ const calculateChange = (payment, totalPurchase) => (payment - totalPurchase);
 
 // Función agrupadora para actualizar todos los totales
 const updateAllTotals = (state, paymentValue = null) => {
+    console.log('ejecutando')
     const taxReceiptEnabled = state.settings.taxReceipt.enabled;
     const products = state.data.products;
-    const discount = state?.data?.discount?.value;
+    const discountPercentage = state?.data?.discount?.value;
     const delivery = state?.data?.delivery?.value;
-    state.data.totalPurchase.value = getProductsTotalPrice(products, discount, delivery, taxReceiptEnabled);
+    console.log(products)
+    state.data.totalPurchase.value = getProductsTotalPrice(products, discountPercentage, delivery, taxReceiptEnabled);
     state.data.totalTaxes.value = getProductsTax(products, taxReceiptEnabled);
     state.data.totalShoppingItems.value = getTotalItems(products);
     
@@ -157,23 +159,23 @@ const cartSlice = createSlice({
             state.data.payment.value = totalPurchase
         },
         addProduct: (state, action) => {
-            const product = action.payload
-            const checkingID = state.data.products.find((p) => p.id === product.id)
-            const products = state.data.products
-            //los productos tienen informacion de garantia en product.warranty.status, grarardar en data.warranty un objeto con el id y el fecha en l;a que se agrego
-            if (checkingID && !checkingID?.weightDetail?.isSoldByWeight) {
+            const product = action.payload;
+            const checkingID = state.data.products.find((p) => p.id === product.id);
+            const products = state.data.products;
 
-                checkingID.amountToBuy = checkingID.amountToBuy + 1;
-                return
-            } else if (checkingID && checkingID?.weightDetail?.isSoldByWeight) {
+            if (checkingID) {
+                if(checkingID?.weightDetail?.isSoldByWeight){
+                    const productData = {
+                        ...product,
+                        cid: nanoid(8)
+                    }
+                    state.data.products = [...products, productData]
+                }else{
+                    checkingID.amountToBuy +=  1;
 
-                const productData = {
-                    ...product,
-                    cid: nanoid(8)
                 }
-                state.data.products = [...products, productData]
-            } else {
-                const product = action.payload
+              
+            } else { 
                 const productData = {
                     ...product,
                     cid: checkingID?.weightDetail?.isSoldByWeight

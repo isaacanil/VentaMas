@@ -86,7 +86,6 @@ const ProductModal = ({ visible, onCancel, onSave, initialData }) => {
                     name="expirationDate" 
                     label="Fecha de Expiración"
                     tooltip={'Fecha de vencimiento del producto'}
-                    rules={[{ required: true, message: 'Por favor seleccione la fecha de expiración' }]}
                 >
                     <DatePicker style={{ width: '100%' }} />
                 </Form.Item>

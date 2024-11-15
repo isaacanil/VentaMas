@@ -130,7 +130,6 @@ export const CategorySelector = ({ }) => {
       ref={containerRef}
     >
       <CategoryBar
-        ref={containerRef}
         open={open}
         setOpen={setOpen}
         items={items}

@@ -28,29 +28,27 @@ export async function processInvoice({
     dueDate = null
 }) {
     try {
-        //Validar que el carrito tenga productos
+        setLoading({ status: true, message: "Procesando factura..." });
         verifyCartItems(cart);
-        //Cuadre de caja
+
         const { cashCount } = await validateCashReconciliation({ user, dispatch, });
 
-        if (cashCount === null) {
+        if (!cashCount) {
             throw new Error('No se puede procesar la factura sin cuadre de caja');
         }
 
-        //Comprobante fiscal
-        const ncfCode = await handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType, });
-        //Cliente
-        const clientData = await retrieveAndUpdateClientData({ user, client, });
-        //Actualizar stock 
-        await adjustProductInventory({ user, products: cart.products, });
-        //Crear factura
-        let invoice = null;
-        if(cart?.preorderDetails?.isOrWasPreorder){
-            invoice = await generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode })
-        } else {
-            invoice = await generateFinalInvoice({ user, cart, clientData, ncfCode, cashCount, dueDate })
-        }
-        //Cuentas por cobrar
+        const [ncfCode, clientData] = await Promise.all([
+            handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType }),
+            retrieveAndUpdateClientData({ user, client }),
+        ]);
+
+        const [invoice] = await Promise.all([
+            cart?.preorderDetails?.isOrWasPreorder
+                ? generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode })
+                : generateFinalInvoice({ user, cart, clientData, ncfCode, cashCount, dueDate }),
+            adjustProductInventory({ user, products: cart.products }),
+        ]);
+
         await manageReceivableAccounts({ user, accountsReceivable, invoice })
 
         return { invoice }
@@ -63,8 +61,8 @@ export async function processInvoice({
     }
 }
 
-async function checkIfHasDueDate({cart, dueDate}) {
-    if(!dueDate){
+function checkIfHasDueDate({ cart, dueDate }) {
+    if (!dueDate) {
         return cart;
     }
     const date = Timestamp.fromMillis(dueDate);
@@ -75,36 +73,27 @@ async function checkIfHasDueDate({cart, dueDate}) {
     }
 }
 
-async function verifyCartItems(cart) {
-    //validar que el carrito tenga productos
+function verifyCartItems(cart) {
     const { isValid, message } = validateInvoiceCart(cart);
     if (!isValid) {
         throw new Error(message)
     }
 }
 async function validateCashReconciliation({ user, dispatch, transaction }) {
-    //revisar si hay cuadre de caja abierto y del usuario actual
     try {
         const { state, cashCount } = await checkOpenCashReconciliation(user, transaction);
-
-        console.log('Cash count state:', state);
-        console.log('Cash count:', cashCount);
-
-        const handleCashReconciliationConfirm = () => {
-            const cashCountStrategy = getCashCountStrategy(state, dispatch)
-            cashCountStrategy.handleConfirm()
-        }
 
         if (state === 'open') {
             return { cashCount };
         }
 
-        if (state === 'closed' || state === 'closing' || state === 'none') {
-            handleCashReconciliationConfirm();
+        if (['closed', 'closing', 'none'].includes(state)) {
+            const cashCountStrategy = getCashCountStrategy(state, dispatch)
+            cashCountStrategy.handleConfirm()
             return { cashCount: null };
         }
     } catch (error) {
-        throw error
+        throw new Error(`Error al validar cuadre de caja: ${error.message}`);
     }
 }
 async function handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType, transaction = null }) {
@@ -125,34 +114,33 @@ async function retrieveAndUpdateClientData({ user, client, transaction = null })
     const clientId = client.id;
     if (!client) {
         console.log('No client selected');
-        return;
+        return { client: GenericClient };
     }
     if (!clientId) {
-        return { client: GenericClient }
+        return { client: GenericClient };
     }
-    await fbUpsertClient(user, client, transaction)
-    return { client }
-}
-async function adjustProductInventory({ user, products, transaction = null }) {
     try {
-        await fbUpdateProductsStock(products, user)
+        await fbUpsertClient(user, client);
+        return { client };
     } catch (error) {
-        throw error;
+        throw new Error(`Error al actualizar los datos del cliente: ${error.message}`);
     }
 }
-async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, dueDate, transaction }) {
+async function adjustProductInventory({ user, products }) {
+    await fbUpdateProductsStock(products, user)
+}
+async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, dueDate }) {
     try {
-        const cartWithDueDate = await checkIfHasDueDate({ cart, dueDate });
+        const cartWithDueDate = dueDate ? checkIfHasDueDate({ cart, dueDate }) : cart;
         const bill = {
             ...cartWithDueDate,
             NCF: ncfCode,
             client: clientData.client,
             cashCountId: cashCount.id
         }
-        const result = await fbAddInvoice(bill, user, transaction);
-        return result || bill;
+        return await fbAddInvoice(bill, user) || bill;
     } catch (error) {
-        throw error
+        throw new Error(`Error al generar la factura final: ${error.message}`);
     }
 }
 
@@ -162,18 +150,10 @@ async function manageReceivableAccounts({ user, accountsReceivable, invoice }) {
         if (!accountsReceivable?.totalInstallments) {
             throw new Error('Installments data is missing')
         }
-
-        const ar = await fbAddAR({
-            user,
-            accountsReceivable
-        })
-        console.log(ar)
-        await fbAddInstallmentAR({
-            user,
-            ar
-        })
+        const ar = await fbAddAR({ user, accountsReceivable })
+        await fbAddInstallmentAR({ user, ar })
     } catch (error) {
-        throw error;
+        throw new Error(`Error al gestionar cuentas por cobrar: ${error.message}`);
     }
 }
 
@@ -185,12 +165,12 @@ async function generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode }) {
         const bill = {
             ...cart,
             NCF: ncfCode,
-            cashCountId: cashCount.id 
+            cashCountId: cashCount.id
         }
         await fbGenerateInvoiceFromPreorder(user, bill);
         return bill;
     } catch (error) {
         console.error(error);
-        throw error; 
+        throw error;
     }
 }
