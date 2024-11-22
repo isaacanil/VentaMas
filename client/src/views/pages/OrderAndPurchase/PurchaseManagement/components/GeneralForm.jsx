@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import EvidenceUpload from './EvidenceUpload'
 import ProductsTable from './ProductsTable'
 import TotalsSummary from './TotalsSummary'
+import AddProduct from './AddProduct'
 
 const { TextArea } = Input
 const { Option } = Select
@@ -16,16 +17,36 @@ const productOptions = [
     // Add more products as needed
 ]
 
-const GeneralForm = ({ purchaseData, handleInputChange, products, showProductModal,removeProduct, totals }) => {
+const GeneralForm = ({ purchaseData, handleInputChange, products, showProductModal, removeProduct, totals }) => {
     const [options, setOptions] = useState(productOptions)
-
+    const [editingProduct, setEditingProduct] = useState(null);
     const onSearch = (searchText) => {
         setOptions(
-            productOptions.filter(item => 
+            productOptions.filter(item =>
                 item.label.toLowerCase().includes(searchText.toLowerCase())
             )
         )
     }
+    const handleProductSave = (values) => {
+        if (editingProduct) {
+          // Edit existing product
+          const updatedProducts = purchaseData.products.map((p, idx) =>
+            idx === editingProduct.index ? { ...values, totalCost: calculateProductTotal(values) } : p
+          );
+          setPurchaseData(prev => ({ ...prev, products: updatedProducts }));
+        } else {
+          // Add new product
+          setPurchaseData(prev => ({
+            ...prev,
+            products: [
+              ...prev.products,
+              { ...values, totalCost: calculateProductTotal(values) }
+            ]
+          }));
+        }
+        setModalVisible(false);
+        setEditingProduct(null);
+      };
 
     return (
         <>
@@ -51,13 +72,17 @@ const GeneralForm = ({ purchaseData, handleInputChange, products, showProductMod
                     <Input name="purchaseReceipt" value={purchaseData.purchaseReceipt} onChange={handleInputChange} required />
                 </Form.Item>
             </Group>
+            <AddProduct
+                onSave={handleProductSave}
+                initialData={editingProduct}
+            />
             <ProductsTable
                 products={products}
                 showProductModal={showProductModal}
                 removeProduct={removeProduct}
                 onEditProduct={showProductModal}
-              />
-              <TotalsSummary totals={totals} />
+            />
+            <TotalsSummary totals={totals} />
             <Group>
                 <Form.Item label="Condición" required>
                     <Select name="condition" value={purchaseData.condition} onChange={handleInputChange} required>

@@ -34,14 +34,6 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, showProductModa
 
   return (
     <div>
-      <Button 
-        type="primary" 
-        icon={<PlusOutlined />} 
-        onClick={() => showProductModal()}
-        style={{ marginBottom: 16 }}
-      >
-        Agregar Producto
-      </Button>
       <Table 
         columns={columns} 
         dataSource={products.map((product, index) => ({

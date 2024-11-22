@@ -7,7 +7,6 @@ export const CenteredText = ({ textVariant = 'body1', containerVariant = 'text',
   const [show, setShow] = useState(false);
   const handleButton = (e) => {
     e.preventDefault();
-    alert('hola')
   };
   useEffect(() => {
     if (showAfter || showAfter === 0) {

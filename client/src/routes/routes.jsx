@@ -31,6 +31,8 @@ export const routes = [
     ...accountReceivable,
     {
         path: "*",
-        element: <NotFound />
+        element: <NotFound />,
+        title: "Página no encontrada",
+        metaDescription: "Lo sentimos, la página que estás buscando no existe.",
     }
 ]

@@ -91,11 +91,10 @@ const InvoiceSummary = () => {
       </LineItem>
       <Delivery />
       <LineItem>
-        <Label>Descuento (%):</Label>
-        <div style={{display: 'grid', gridTemplateColumns: '72px 72px', gap: '1em', alignItems: 'center'}}>
-        <Label>-{useFormatPrice(discount)}</Label>
-        <CustomInput value={discountPercent} options={["10", "20", "30", "40", "50"]} />
-        </div>
+        <Label>Descuento:</Label>
+      
+        <CustomInput discount={discount} value={discountPercent} options={["10", "20", "30", "40", "50"]} />
+    
       </LineItem>
       <TotalLine>
         {
@@ -186,5 +185,6 @@ const TotalLabel = styled.span`
 `;
 export const Label = styled.span`
   font-weight: 500;
+  white-space: nowrap;
   font-size: 14px;
  `

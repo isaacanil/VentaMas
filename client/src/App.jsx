@@ -1,3 +1,4 @@
+import { scan } from 'react-scan'; // import this BEFORE react
 import { Fragment, useEffect, useState } from 'react';
 
 //importando componentes de react-router-dom
@@ -32,7 +33,7 @@ import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUser
 import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer';
 import { useTaxReceiptEnabledToCart } from './features/cart/thunk';
 import useInitializeBillingSettings from './firebase/billing/useInitializeBillingSettings';
-
+import SEO from './Seo/Seo';
 //const router = createBrowserRouter(routes)
 
 function App() {
@@ -49,6 +50,11 @@ function App() {
   useInitializeBillingSettings()
 
   // useTaxReceiptEnabledToCart();
+
+  scan({
+    enabled: true,
+    log: true, // logs render info to console (default: false)
+  });
 
   useUserDocListener(user?.uid); // escucha los cambios en el documento del usuario actual
 
@@ -73,6 +79,7 @@ function App() {
   return (
     <Fragment>
       <Router>
+        <SEO />
         <Routes>
           {routes.map((route, index) => (
             <Route key={index} path={route.path} element={route.element}>

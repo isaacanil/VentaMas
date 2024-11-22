@@ -118,9 +118,8 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
         <div
           style={{
             position: 'relative',
-            width: TEMPLATES_CONFIG[selectedTemplate]?.format === 'THERMAL' ? '80mm' : '210mm',
-            backgroundColor: 'red',
             width: '100%',
+            backgroundColor: 'red',
           }}
         >
           {renderInvoice(componentRef)}

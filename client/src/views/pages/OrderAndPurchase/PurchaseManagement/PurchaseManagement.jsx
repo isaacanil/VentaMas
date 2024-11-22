@@ -6,7 +6,7 @@ import GeneralForm from './components/GeneralForm'
 import ProductsTable from './components/ProductsTable'
 import TotalsSummary from './components/TotalsSummary'
 import EvidenceUpload from './components/EvidenceUpload'
-import ProductModal from './components/ProductModal'
+import AddProduct from './components/AddProduct'
 import { MenuApp } from '../../../templates/MenuApp/MenuApp'
 
 const { TabPane } = Tabs
@@ -55,32 +55,6 @@ const PurchaseManagement = () => {
   const showProductModal = (product = null) => {
     setEditingProduct(product ? { ...product } : null);
     setModalVisible(true);
-  };
-
-  const handleModalCancel = () => {
-    setModalVisible(false);
-    setEditingProduct(null);
-  };
-
-  const handleProductSave = (values) => {
-    if (editingProduct) {
-      // Edit existing product
-      const updatedProducts = purchaseData.products.map((p, idx) =>
-        idx === editingProduct.index ? { ...values, totalCost: calculateProductTotal(values) } : p
-      );
-      setPurchaseData(prev => ({ ...prev, products: updatedProducts }));
-    } else {
-      // Add new product
-      setPurchaseData(prev => ({
-        ...prev,
-        products: [
-          ...prev.products,
-          { ...values, totalCost: calculateProductTotal(values) }
-        ]
-      }));
-    }
-    setModalVisible(false);
-    setEditingProduct(null);
   };
 
   const calculateProductTotal = (product) => {
@@ -143,12 +117,6 @@ const PurchaseManagement = () => {
           />
         </Form>
       </Body>
-      <ProductModal
-        visible={modalVisible}
-        onCancel={handleModalCancel}
-        onSave={handleProductSave}
-        initialData={editingProduct}
-      />
     </Container>
   )
 }
@@ -160,7 +128,7 @@ const Container = styled.div`
 `
 const Body = styled.div`
  padding: 0 1em;
- max-width: 1200px;
+
  width: 100%;
   margin: 0 auto;
 `

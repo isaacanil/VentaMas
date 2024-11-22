@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { DateTime } from 'luxon';
 import { BiCalendar } from 'react-icons/bi';
 import styled from 'styled-components';
-import { Button } from '../Button';
+import { Button } from 'antd';
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
 import { usePopper } from 'react-popper';
 import Typography from '../../Typografy/Typografy';
@@ -83,11 +83,13 @@ export const DateRangeFilter = ({ setDates, dates }) => {
         <StyledButton ref={menuRef} >
             <Button
                 ref={setReferenceElement}
-                borderRadius='light'
-                startIcon={<BiCalendar />}
+             
+               icon={<BiCalendar />}
                 title={truncateOptions(activeOptionLabel, 4) || 'Filtrar Fechas'}
                 onClick={handleButtonClick}
-            />
+            >
+            {truncateOptions(activeOptionLabel, 4) || 'Filtrar Fechas'}
+            </Button>
             {
                 isMenuOpen &&
                 <StyledMenu

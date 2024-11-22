@@ -6,7 +6,6 @@ export const fbGetInvoice = async (businessID, invoiceId) => {
         const invoiceRef = doc(db, "businesses", businessID, "invoices", invoiceId);
         const invoiceSnap = await getDoc(invoiceRef);
         if (invoiceSnap.exists()) {
-            console.log("Factura obtenida:", invoiceSnap.data());
             return invoiceSnap.data(); // Retorna los datos de la factura, no el objeto Snapshot
         } else {
             console.log("No se encontró la factura con ID:", invoiceId);

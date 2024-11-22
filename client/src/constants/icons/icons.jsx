@@ -1,4 +1,4 @@
-import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faFileInvoiceDollar, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faArrowLeft, faAsterisk, faBagShopping, faBan, faBarcode, faBarsStaggered, faBold, faBox, faBoxesStacked, faBuilding, faCalendar, faCaretDown, faCaretUp, faCartFlatbed, faCartPlus, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCircleCheck, faCircleInfo, faCloudArrowUp, faCompress, faCreditCard, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHashtag, faHeading, faHome, faImage, faInfo, faItalic, faListOl, faListUl, faLock, faMagnifyingGlass, faMoneyBillTransfer, faMoneyBillWave, faMultiply, faParagraph, faPencil, faPlus, faQrcode, faQuoteLeft, faReceipt, faRectangleList, faReplyAll, faRightToBracket, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSquarePlus, faStar, faStrikethrough, faSubscript, faSubtract, faSuperscript, faTags, faTrash, faTrashCan, faTriangleExclamation, faUnderline, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faAnglesLeft, faAnglesRight, faArrowDown19, faFileInvoiceDollar, faArrowDown91, faArrowDownAZ, faArrowDownShortWide, faArrowDownWideShort, faArrowDownZA, faArrowLeft, faAsterisk, faBagShopping, faBan, faBarcode, faBarsStaggered, faBold, faBox, faBoxesStacked, faBuilding, faCalendar, faCaretDown, faCaretUp, faCartFlatbed, faCartPlus, faCartShopping, faChartPie, faCheck, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCircleCheck, faCircleInfo, faCloudArrowUp, faCompress, faCreditCard, faDivide, faDolly, faEllipsisVertical, faEnvelope, faExpand, faEye, faEyeSlash, faFilter, faGear, faGrip, faGripLines, faHashtag, faHeading, faHome, faImage, faInfo, faItalic, faListOl, faListUl, faLock, faMagnifyingGlass, faMoneyBillTransfer, faMoneyBillWave, faMultiply, faParagraph, faPencil, faPlus, faQrcode, faQuoteLeft, faReceipt, faRectangleList, faReplyAll, faRightToBracket, faSign, faSortDown, faSortUp, faSquareCaretDown, faSquareMinus, faSquarePen, faSquarePlus, faStar, faStrikethrough, faSubscript, faSubtract, faSuperscript, faTags, faTrash, faTrashCan, faTriangleExclamation, faUnderline, faUpRightAndDownLeftFromCenter, faUser, faUserCheck, faUserCog, faUserPlus, faUserTie, faUsers, faWrench, faXmark, faCheckCircle, faList } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const icons = {
@@ -145,6 +145,7 @@ export const icons = {
             settings: <FontAwesomeIcon icon={faGear} />,
         },
         unSelected: {
+            list: <FontAwesomeIcon icon={faList} />,
             cashReconciliation: <FontAwesomeIcon icon={faSign} />,
             expenses: {
                 category: <FontAwesomeIcon icon={faTags} />,
@@ -152,6 +153,7 @@ export const icons = {
                 list: <FontAwesomeIcon icon={faSquarePen} />,
                 expenses: <FontAwesomeIcon icon={faMoneyBillWave} />,
             },
+            accountsReceivable: <FontAwesomeIcon icon={faFileInvoiceDollar} />, 
             home: <FontAwesomeIcon icon={faHome} />,
             sale: <FontAwesomeIcon icon={faBagShopping} />,
             purchase: <FontAwesomeIcon icon={faCartShopping} />,

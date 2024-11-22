@@ -10,9 +10,9 @@ const Routes = [
     },
     {
         path: HOME,
-        element: (
-            validateRouteAccess(<Home />)  
-        ),
+        element: ( validateRouteAccess(<Home />)),
+        title: "Dashboard - Ventamax",
+        metaDescription: "Resumen de estadísticas, accesos rápidos y actividades recientes en Ventamax POS.",
     }
 ]
 

@@ -4,12 +4,12 @@ import styled from 'styled-components'
 import { SideBar } from './Components/SideBar'
 import { useDispatch, useSelector } from 'react-redux'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
-import { SearchInput } from '../system/Inputs/SearchInput'
 import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 import { icons } from '../../../constants/icons/icons'
 import { useNavigate } from 'react-router-dom'
 import { GoBackButton } from '../system/Button/GoBackButton'
+import { Input } from 'antd';
 
 export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setSearchData, searchData, displayName = "" }) => {
   const ref = useRef(null)
@@ -41,15 +41,13 @@ export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setS
             <SectionName>{sectionNameIcon}{sectionName}</SectionName>
           )}
           {setSearchData && (
-            <SearchInput
-              search
-              deleteBtn
-              icon={icons.operationModes.search}
+            <Input
+              prefix={icons.operationModes.search}
               placeholder={`Buscar ${displayName || sectionName || ""}...`}
-              bgColor={'white'}
               value={searchData}
-              onClear={() => setSearchData('')}
               onChange={(e) => setSearchData(e.target.value)}
+              allowClear
+              style={{ width: '100%', maxWidth: 300 }}
             />
           )}
         </Group>

@@ -85,8 +85,14 @@ const ClientFormAnt = ({
     // }, [customerData, isUpdating]);
 
     const handleSubmit = async () => {
+        // Evitar submissions múltiples
+        if (loading || submitted) {
+            return;
+        }
+
         try {
             setLoading(true);
+            setSubmitted(true); // Marcar como enviado
             let clientCreated = null;
             const values = await form.validateFields();
             const creditLimitData = await creditLimitForm.validateFields();
@@ -124,11 +130,11 @@ const ClientFormAnt = ({
             }
 
             // Ensure the form is reset only when the modal is still open
-           
-                form.resetFields();
-                creditLimitForm.resetFields();
-        
-            
+
+            form.resetFields();
+            creditLimitForm.resetFields();
+
+
             dispatch(toggleClientModal({ mode: create }))
         } catch (info) {
             notification.error({
@@ -138,6 +144,10 @@ const ClientFormAnt = ({
             console.log('error:', info);
         } finally {
             setLoading(false);
+            // Resetear el estado submitted después de un breve delay
+            setTimeout(() => {
+                setSubmitted(false);
+            }, 2000); // 2 segundos de cooldown
         }
     };
     const handleOpenModal = () => dispatch(toggleClientModal({ mode: create }));
@@ -148,21 +158,25 @@ const ClientFormAnt = ({
         {
             key: '1',
             label: 'Info. General',
-            children: <ClientGeneralInfo
-                form={form}
-                creditLimitForm={creditLimitForm}
-                customerData={customerData}
-                isUpdating={isUpdating}
-                setIsSubmitButtonDisabled={setIsSubmitButtonDisabled}
-            />,
+            children: (
+                <ClientGeneralInfo
+                    form={form}
+                    creditLimitForm={creditLimitForm}
+                    customerData={customerData}
+                    isUpdating={isUpdating}
+                    setIsSubmitButtonDisabled={setIsSubmitButtonDisabled}
+                />
+            ),
         },
         {
             key: '2',
             label: 'Info. Financiera',
-            children: <ClientFinancialInfo
-                creditLimitForm={creditLimitForm}
-                client={client}
-            />,
+            children: (
+                <ClientFinancialInfo
+                    creditLimitForm={creditLimitForm}
+                    client={client}
+                />
+            ),
             disabled: !isUpdating
         },
     ];
@@ -171,9 +185,11 @@ const ClientFormAnt = ({
         <Modal
             style={{ top: 10 }}
             open={isOpen}
-            title={isUpdating ? "Editar Cliente" : "Nuevo Cliente"}
+            title={isUpdating ? "Editar Cliente" : "Nuevo Cliente 2"}
             okText={isUpdating ? "Actualizar" : "Crear"}
             cancelText="Cerrar"
+            confirmLoading={loading || submitted}
+            okButtonProps={{ disabled: loading || submitted }}
             styles={{
                 content: {
                     padding: "1.2em"

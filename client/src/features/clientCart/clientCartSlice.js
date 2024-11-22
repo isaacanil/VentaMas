@@ -31,6 +31,7 @@ const EmptyClient = {
 const initialState = {
     mode: CLIENT_MODE_BAR.SEARCH.id,
     labelClientMode: CLIENT_MODE_BAR.SEARCH.label,
+    searchTerm: '',
     client: GenericClient,
     copyClient: null,
     isOpen: false,
@@ -69,8 +70,12 @@ export const clientSlice = createSlice({
                     state.showClientList = SEARCH.showClientList;
             }
         },
+        setClientSearchTerm: (state, action) => {
+            state.searchTerm = action.payload
+        },
         addClient: (state, action) => {
             state.client = { ...action.payload }
+            state.mode = CLIENT_MODE_BAR.UPDATE.id
             state.copyClient = { ...action.payload }
         },
         setIsOpen: (state, action) => {
@@ -106,13 +111,14 @@ export const clientSlice = createSlice({
     }
 })
 
-export const { setClient, setClientMode, setIsOpen, deleteClient, addClient, handleClient } = clientSlice.actions;
+export const { setClient, setClientMode, setIsOpen,setClientSearchTerm, deleteClient, addClient, handleClient } = clientSlice.actions;
 
 //selectors
 export const selectClient = (state) => state.clientCart.client;
 export const selectClientMode = (state) => state.clientCart.mode;
 export const selectLabelClientMode = (state) => state.clientCart.labelClientMode;
 export const selectIsOpen = (state) => state.clientCart.isOpen;
+export const selectClientSearchTerm = (state) => state.clientCart.searchTerm;
 
 
 export default clientSlice.reducer

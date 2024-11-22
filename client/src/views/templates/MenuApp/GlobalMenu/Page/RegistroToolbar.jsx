@@ -63,23 +63,6 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
   return (
     matchWithCashReconciliation ? (
       <Container>
-          {/* {
-                    side === 'left' && (
-
-
-                        <SearchInput
-                            search
-                            deleteBtn
-                            icon={icons.operationModes.search}
-                            placeholder='Buscar Factura...'
-                            bgColor={'white'}
-                            value={searchData}
-                            onClear={() => setSearchData('')}
-                            onChange={(e) => setSearchData(e.target.value)}
-                        />
-                    )
-
-                } */}
         {
           side === 'right' && (
             <DropdownMenu

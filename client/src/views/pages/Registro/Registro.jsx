@@ -20,8 +20,6 @@ export const Registro = () => {
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
   const [searchTerm, setSearchTerm] = useState('');
   const { invoices } = fbGetInvoices(datesSelected);
-  console.log("invoice 0")
-  console.log(invoices[0]);
 
   const [processedInvoices, setProcessedInvoices] = useState(invoices);
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);

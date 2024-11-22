@@ -5,17 +5,18 @@ import styled from "styled-components";
 import { addDiscount, totalPurchase } from "../../../../features/cart/cartSlice";
 import { quitarCeros } from "../../../../hooks/quitarCeros";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
-import { InputV4 } from "./GeneralInput/InputV4";
-import * as antd from "antd";
-const { Typography } = antd;
+// import { InputV4 } from "./GeneralInput/InputV4";
+import { Typography, InputNumber, message } from "antd";
+import { useFormatPrice } from "../../../../hooks/useFormatPrice";
 const { Title, Paragraph } = Typography;
-const CustomInput = ({ options, value }) => {
+
+const CustomInput = ({ options, value, discount }) => {
 
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch()
   const inputRef = useRef(null);
-  const handleChange = (e) => {
-    dispatch(addDiscount(Number(e.target.value)))
+  const handleChange = (newValue) => {
+    dispatch(addDiscount(Number(quitarCeros(newValue))))
   };
 
   const handleClick = () => {
@@ -28,6 +29,12 @@ const CustomInput = ({ options, value }) => {
   };
 
   useClickOutSide(inputRef, showMenu, handleClick)
+  useEffect(() => {
+
+    if (value < 0) message.error('El descuento no puede ser negativo');
+    if (value > 100) message.error('El descuento no puede ser mayor a 100');
+    
+  }, [value])
 
   return (
     <Container ref={inputRef} >
@@ -48,12 +55,16 @@ const CustomInput = ({ options, value }) => {
           </MenuOptions>
         </StyledMenu>
       )}
-      <Wrapper >    
-        <InputV4
-          type="number"
-          value={quitarCeros(value)}
+      <Wrapper >
+        <InputNumber
+          value={value}
           onChange={handleChange}
-          placeholder="0"
+          placeholder="%"
+          prefix="%"
+          addonAfter={"-" + useFormatPrice(discount)}
+          style={{ width: '170px' }}
+          min={0}
+          max={100}
           onClick={handleClick}
         />
       </Wrapper>
@@ -64,7 +75,7 @@ const CustomInput = ({ options, value }) => {
 export default CustomInput;
 const Container = styled.div`
   position: relative;
-  max-width: 140px;
+
 `
 const Wrapper = styled.div`
     position: relative;

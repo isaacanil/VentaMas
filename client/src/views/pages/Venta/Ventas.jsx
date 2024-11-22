@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import {  useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
@@ -23,19 +23,18 @@ import { InvoicePanel } from '../../component/cart/components/InvoicePanel/Invoi
 import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
 import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js'
 import { deleteClient } from '../../../features/clientCart/clientCartSlice.js'
+import { Helmet } from 'react-helmet-async'
+import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector.jsx'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('')
   const categoryGrouped = useSelector(selectCategoryGrouped)
-  const [cashCountConfirmation, setCashCountConfirmation] = useState(false)
   const { products, loading: productsLoading, setLoading, error } = useGetProducts()
 
   const viewport = useViewportWidth();
-  const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const checkBarcode = (products, barcode) => {
-    // Verificar si hay productos disponibles
     if (products.length <= 0) {
       antd.notification.error({
         message: 'Error al escanear',
@@ -45,7 +44,6 @@ export const Sales = () => {
       return;
     }
 
-    // Intentar encontrar el producto basado en el código de barras
     const product = products.find((p) => p?.barcode === barcode || p?.barcode === extractProductInfo(barcode));
 
     if (!product) {
@@ -57,7 +55,6 @@ export const Sales = () => {
       return;
     }
 
-    // Verificar si el producto se vende por peso
     const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
 
     if (barcode.startsWith('20') && barcode.length === 13 && isSoldByWeight) {
@@ -79,7 +76,6 @@ export const Sales = () => {
       });
       dispatch(addProduct(productData));
     } else {
-      // Producto no vendido por peso o código de barras no cumple con los requisitos
       dispatch(addProduct(product));
     }
   };
@@ -100,11 +96,12 @@ export const Sales = () => {
   }, [])
 
   return (
+    <>
+     <ClientSelector />
     <Container
       animate={{ x: 0 }}
       transition={{ type: "spring", stiffness: 0 }}
     >
-      {/* <MultiDisplayControl></MultiDisplayControl> */}
       <ProductContainer>
         <MenuApp
           displayName='Productos'
@@ -112,12 +109,6 @@ export const Sales = () => {
           searchData={searchData}
           setSearchData={setSearchData}
         />
-        {/* <ProductControl
-          setProductsLoading={setLoading}
-          productsLoading={loading}
-          products={filterProductsByVisibility}
-          isProductGrouped={categoryGrouped}
-        /> */}
         < ProductControlEfficient
           productsLoading={productsLoading}
           products={filterProductsByVisibility}
@@ -127,6 +118,7 @@ export const Sales = () => {
       <Cart />
       <InvoicePanel />
     </Container>
+    </>
   )
 }
 

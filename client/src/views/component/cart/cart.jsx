@@ -48,7 +48,6 @@ const Container = styled.div`
     switch (props.isOpen) {
       case false:
         return `
-             
               transform: translateX(-100%);
               position: absolute;
               z-index: 1;

@@ -5,11 +5,11 @@ import { DatePicker } from '../../../../templates/system/Dates/DatePicker/DatePi
 import { DateRangeFilter } from '../../../../templates/system/Button/TimeFilterButton/DateRangeFilter'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import { calculateInvoicesTotal, countInvoices } from '../../../../../utils/invoice'
-import { Button } from '../../../../templates/system/Button/Button'
+
 import * as antd from 'antd'
 import { icons } from '../../../../../constants/icons/icons'
-import { use } from 'i18next'
-const { Select, Form } = antd
+
+const { Select, Form, Button } = antd
 export const FilterBar = ({ invoices, datesSelected, setDatesSelected, onReportSaleOpen, processedInvoices, setProcessedInvoices }) => {
     const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
     const [sortDirection, setSortDirection] = useState('asc');
@@ -77,14 +77,7 @@ export const FilterBar = ({ invoices, datesSelected, setDatesSelected, onReportS
             </Row>
             <Buttons>
                 <OrderOptions>
-                    {
-                        vw > 900 && (
-                            <Button
-                                title={'Gráfico de ventas'}
-                                onClick={onReportSaleOpen}
-                            />
-                        )
-                    }
+                  
                     <Form.Item
                         label={"Ordenar: "}
                         style={{ marginBottom: 0 }}
@@ -106,6 +99,13 @@ export const FilterBar = ({ invoices, datesSelected, setDatesSelected, onReportS
                         disabled={sortCriteria === 'defaultCriteria'}
                     />
                 </OrderOptions>
+                {
+                        vw > 900 && (
+                            <Button
+                                onClick={onReportSaleOpen}
+                            >Gráfico de ventas</Button>
+                        )
+                    }
                 {
                     vw < 900 && (
                         <MoreInfo>

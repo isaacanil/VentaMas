@@ -87,7 +87,8 @@ const EXPENSES_TERM = {
     EXPENSES_LIST: '/expenses/list',
     EXPENSES_CATEGORY: '/expenses/categories',
 }
-const ACCOUNT_RECEIVABLE = {
+const ACCOUNT_RECEIVABLE_TERM = {
+    ACCOUNT_RECEIVABLE_LIST: '/account-receivable/list',
     ACCOUNT_RECEIVABLE_INFO: '/account-receivable/info/:id',
     RECEIVABLE_PAYMENT_RECEIPTS: '/account-receivable/receipts',
 }
@@ -98,7 +99,7 @@ const ROUTES_PATH = {
     AUTH_TERM,
     CASH_RECONCILIATION_TERM,
     EXPENSES_TERM,
-    ACCOUNT_RECEIVABLE,
+    ACCOUNT_RECEIVABLE: ACCOUNT_RECEIVABLE_TERM,
     SALES_TERM,
     INVENTORY_TERM,
     CONTACT_TERM,
@@ -108,4 +109,4 @@ const ROUTES_PATH = {
     CHANGELOG_TERM
 }
 
-export default ROUTES_PATH 
+export default ROUTES_PATH

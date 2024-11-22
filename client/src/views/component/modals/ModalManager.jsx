@@ -1,11 +1,7 @@
 import { Fragment } from "react"
 import { AddClientModal } from "./AddClient/AddClientModal"
-
-import { UpdateProductModal } from "./UpdateProduct/UpdateProductModal"
 import { SetCustomProduct } from "./CustomProduct/SetCustomProduct/SetCustomProduct"
-
 import { useSelector } from "react-redux"
-
 import {
   SelectAddClientModal,
   SelectUpdateProdModal,
@@ -19,8 +15,8 @@ import {
   SelectFileListModal,
   toggleFileListModal,
 } from "../../../features/modals/modalSlice"
+import { AnimatePresence } from "framer-motion"
 
-import { ClientForm } from "../../pages/Contact/Client/components/ClientForm/ClientForm"
 import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
 import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
 import { Notification } from "../../templates/system/Notification/Notification"
@@ -32,8 +28,6 @@ import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
 import { OPERATION_MODES } from "../../../constants/modes"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
-import { AnimatePresence } from "framer-motion"
-
 import Dialog from "../../templates/system/Dialog/Dialog"
 import NoteModal from "../../templates/system/NoteModal/NoteModal"
 import ClientFormAnt from "../../pages/Contact/Client/components/ClientForm/ClientFormAnt"
@@ -45,7 +39,7 @@ import { selectCurrentNotification } from "../../../features/notification/Notifi
 import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserForm"
 import { InvoicePreview } from "../../pages/Registro/InvoicePreview/InvoicePreview"
 import { PaymentForm } from "../forms/PaymentForm/PaymentForm"
-import ARInfoModal from "./ARInfoModal/ARInfoModal"
+import ARInfoModal from "./ARInfoModal/ARSummaryModal"
 import { ProductStockForm } from "../../pages/Inventory/components/Warehouse/forms/ProductStockForm/ProductStockForm"
 import { ShelfForm } from "../../pages/Inventory/components/Warehouse/forms/ShelfForm/ShelfForm"
 import RowShelfForm from "../../pages/Inventory/components/Warehouse/forms/RowShelfForm/RowShelfForm"
@@ -53,6 +47,7 @@ import SegmentForm from "../../pages/Inventory/components/Warehouse/forms/Segmen
 import ProductExpirySelection from "./ProductExpirySelection/ProductExpirySelection"
 import ActiveIngredientModal from "./ActiveIngredients/ActiveIngredientModal"
 import { WarehouseForm } from "../../pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm"
+import ARSummaryModal from "./ARInfoModal/ARSummaryModal"
 
 export const ModalManager = () => {
 
@@ -162,9 +157,9 @@ export const ModalManager = () => {
       <NoteModal />
       <Loader />
       <Dialog />
-      <ProductExpirySelection/>
+      <ProductExpirySelection />
       <ActiveIngredientModal />
-     
+      <ARSummaryModal />
       <ShelfForm />
       <RowShelfForm />
       <SegmentForm />

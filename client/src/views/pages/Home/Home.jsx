@@ -4,19 +4,22 @@ import styled from 'styled-components'
 import PersonalizedGreeting from './components/PersonalizedGreeting/PersonalizedGreeting'
 import Footer from './Footer/Footer'
 import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts'
+import { Helmet } from 'react-helmet-async'
 
 export const Home = () => {
   return (
-    <Container>
-      <MenuWebsite />
-      <WelcomeSection>
-        <WelcomeSectionInner>
-          <PersonalizedGreeting />
-          <DashboardShortcuts />
-        </WelcomeSectionInner>
-      </WelcomeSection>
-      <Footer />
-    </Container>
+    <>
+      <Container>
+        <MenuWebsite />
+        <WelcomeSection>
+          <WelcomeSectionInner>
+            <PersonalizedGreeting />
+            <DashboardShortcuts />
+          </WelcomeSectionInner>
+        </WelcomeSection>
+        <Footer />
+      </Container>
+    </>
   )
 }
 
