@@ -9,12 +9,10 @@ export const getLastInstallmentAmountByArId = async (user, arId) => {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.log('No installments found for the specified AR ID.');
             return null;
         }
         
         const lastInstallment = querySnapshot.docs[0].data();
-        console.log(lastInstallment)
         return lastInstallment?.installmentBalance;
     } catch (error) {
         console.error("Error getting last installment amount by AR ID:", error);

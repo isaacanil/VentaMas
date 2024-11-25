@@ -1,11 +1,9 @@
-// NoteModal.js
 import React from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearNote, selectNote, setNote } from '../../../../features/noteModal/noteModalSlice';
+import { clearNote, selectNote} from '../../../../features/noteModal/noteModalSlice';
 import Typography from '../Typografy/Typografy';
 import { Button } from '../Button/Button';
-
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -32,7 +30,6 @@ const ModalContent = styled.div`
   display: grid;
     grid-template-rows: min-content 1fr  min-content;
     gap: 1em;
-
 `;
 const ModalHeader = styled.div`
 

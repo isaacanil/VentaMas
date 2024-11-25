@@ -21,7 +21,6 @@ export function useUserDocListener(userId) {
                     }));
                 } else {
                     dispatch(logout());
-                    console.log('User data deleted');
                 }
             });
 

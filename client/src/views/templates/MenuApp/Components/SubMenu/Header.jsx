@@ -1,4 +1,6 @@
+import { Button } from 'antd'
 import React from 'react'
+import { IoIosArrowBack } from 'react-icons/io'
 import styled from 'styled-components'
 
 export const Header = () => {
@@ -8,7 +10,7 @@ export const Header = () => {
                 startIcon={<IoIosArrowBack />}
                 title='atrás'
                 variant='contained'
-                onClick={showSubMenu}
+              
             />
             <Title>{item.title}</Title>
         </Container>

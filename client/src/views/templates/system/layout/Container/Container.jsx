@@ -4,23 +4,19 @@ import React from 'react'
 export const Container = ({
   variant = 'default',
   children,
-  alignItems = 'start',
   overflow = 'none',
   maxWidth = 'full',
   width = 'full',
   maxHeight = 'full',
   height,
-  border = 'none',
   bg = "shade",
   display,
-  justifyContent = 'start',
   position = 'static',
   borderRadius = 'none',
   positionPlace = 'none',
   ...props
 }) => {
   return (
-
     <Box
       padding={padding}
       maxWidth={maxWidth}
@@ -30,7 +26,6 @@ export const Container = ({
       maxHeight={maxHeight}
       display={display}
       variant={variant}
-      border={border}
       position={position}
       positionPlace={positionPlace}
       borderRadius={borderRadius}
@@ -39,7 +34,6 @@ export const Container = ({
     >
       {children}
     </Box>
-
   )
 }
 
@@ -92,9 +86,6 @@ const variants = {
   `,
 };
 
-
-
-
 const getWidth = {
   xsmall: '360px',
   small: '600px',
@@ -121,12 +112,7 @@ const padding = {
   base: '1em',
   large: '1.2em',
 }
-const border = {
-  none: 'none',
-  small: '1px solid rgba(255, 255, 255, 0.100)',
-  base: '1px solid rgba(255, 255, 255, 0.100)',
-  large: '3px solid rgba(255, 255, 255, 0.300)',
-}
+
 const position = {
   static: 'static',
   relative: 'relative',

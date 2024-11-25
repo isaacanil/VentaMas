@@ -1,6 +1,5 @@
 import styled from "styled-components";
-import { useDispatch, useSelector } from 'react-redux';
-import { SelectFacturaData } from "../../../../features/cart/cartSlice";
+import { useDispatch } from 'react-redux';
 import { highlightSearch } from "../highlight/Highlight";
 import { addClient } from "../../../../features/clientCart/clientCartSlice";
 import { MdDelete, MdEdit } from 'react-icons/md';

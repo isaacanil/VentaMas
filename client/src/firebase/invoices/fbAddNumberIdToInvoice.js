@@ -3,18 +3,14 @@ import { db } from "../firebaseconfig";
 import { writeBatch, collection, query, orderBy, getDocs, doc, setDoc, runTransaction } from 'firebase/firestore';
 
 async function updateInvoicesInBatches(businessID) {
-    console.log(`Iniciando la actualización de facturas para el negocio con ID: ${businessID}`);
     
     const invoicesRef = collection(db, 'businesses', businessID, 'invoices');
     const q = query(invoicesRef, orderBy('data.date'));
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-        console.log(`No se encontraron facturas para el negocio con ID: ${businessID}`);
         return;
     }
-
-    console.log(`Se encontraron ${querySnapshot.size} facturas para el negocio con ID: ${businessID}`);
 
     let counter = 1;
     let batch = writeBatch(db);

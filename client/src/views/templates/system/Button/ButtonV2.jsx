@@ -1,21 +1,17 @@
-import React, { useState } from 'react';
-import styled, { css  } from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const Button = ({
-  variant = 'contained', // default, outlined, text, contained
+  variant = 'contained',
   loading = false,
   loadingIndicator,
-  size = 'small', // small, medium, large
-  color = 'primary', // primary, secondary, default
+  size = 'small', 
+  color = 'primary', 
   startIcon,
   disabled = false,
   href,
   children,
   onClick,
-  borderRadius = ''
-
 }) => {
-
   return (
     <StyledButton
       variant={variant}
@@ -24,7 +20,6 @@ export const Button = ({
       color={color}
       disabled={disabled}
       href={href}
-    
       onClick={onClick}
     >
       {loading ? loadingIndicator || 'Loading...' : startIcon ? <IconContainer>{startIcon}</IconContainer> : null}

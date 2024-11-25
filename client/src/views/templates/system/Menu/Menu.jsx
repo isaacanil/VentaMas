@@ -1,31 +1,10 @@
-// Menu.js
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Modal from './Modal';
-
 import { Button } from '../Button/Button';
 import { icons } from '../../../../constants/icons/icons';
-// import Config1 from './Config1'; // Importa tus componentes de configuración
-// import Config2 from './Config2';
 
-
-const options = [
-    // {
-    //     id: 'config1', label: 'Columnas', component: (
-    //         <ColumnMenu
-    //             // resetColumnOrder={resetColumnOrder}
-    //             // isOpen={isReorderMenuOpen}
-    //             // toggleOpen={toggleReorderMenu}
-    //             // columns={columns}
-    //             // columnOrder={columnOrder}
-    //             // setColumnOrder={setColumnOrder}
-    //         />
-    //     )
-    // },
-    // Agregar más opciones de configuración aquí
-];
-
-const Menu = ({isOpen, onClose, options}) => {
+const Menu = ({ isOpen, onClose, options }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState(null);
 
@@ -42,23 +21,21 @@ const Menu = ({isOpen, onClose, options}) => {
     return (
         isOpen &&
         <Backdrop>
-
-        <MenuContainer>
-            <Header>
-                <h1>Configuraciones</h1>
-                <Button title={icons.operationModes.close} onClick={onClose}/>
-            </Header>
-            {}
-            {options?.map(option => (
-                <MenuItem key={option.id} onClick={() => openModal(option)}>
-                    {option.label}
-                </MenuItem>
-            ))}
-
-            {isModalOpen && (
-                <Modal content={selectedOption.component} closeModal={closeModal} />
-            )}
-        </MenuContainer>
+            <MenuContainer>
+                <Header>
+                    <h1>Configuraciones</h1>
+                    <Button title={icons.operationModes.close} onClick={onClose} />
+                </Header>
+                { }
+                {options?.map(option => (
+                    <MenuItem key={option.id} onClick={() => openModal(option)}>
+                        {option.label}
+                    </MenuItem>
+                ))}
+                {isModalOpen && (
+                    <Modal content={selectedOption.component} closeModal={closeModal} />
+                )}
+            </MenuContainer>
         </Backdrop>
     );
 };

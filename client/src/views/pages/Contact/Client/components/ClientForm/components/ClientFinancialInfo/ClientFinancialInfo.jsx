@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import * as antd from 'antd';
-const { Button, Card, Checkbox, Input, Row, Col, Tabs, } = antd;
-const { TabPane, } = Tabs;
+const { Button, Card, Tabs, } = antd;
 import styled from 'styled-components';
-import Typography from '@templates/system/Typografy/Typografy.jsx'
 import { ClientBalanceInfo } from './components/ClientBalanceInfo';
 import { CreditLimits } from './components/CreditLimits';
 import { AccountCard } from './AccountCard/AccountCard';
-import { fbGetClientAccountsReceivable } from '@fbConfig/accountsReceivable/fbGetClientAccountsReceivable';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { calculateTotalActiveBalance, convertAccountsData } from '../../../../../../../../utils/accountsReceivable/accountsReceivable';
+import { fbGetClientAccountsReceivable } from '../../../../../../../../firebase/accountsReceivable/fbGetClientAccountsReceivable';
 
 const ClientFinancialInfo = ({ client, creditLimitForm }) => {
   const [accounts, setAccounts] = useState([])

@@ -35,32 +35,16 @@ export const addProductSlice = createSlice({
     initialState,
     reducers: {
         addProductData: (state, action) => {
-            console.log(action.payload)
-            // state.product.productName = action.payload.productName
             state.product.productImage = action.payload.productImage
-            // state.product.productImageURL = action.payload.productImageURL
-            // state.product.cost = action.payload.cost
-            // state.product.price = action.payload.price
-            // state.product.stock = action.payload.stock
-            // state.product.tax = action.payload.tax
-            // state.product.category = action.payload.category
-            // state.product.netContent = action.payload.netContent
-            // state.product.amountToBuy = action.payload.amountToBuy
-            // state.product.id = action.payload.id
-
-           
-        
         },
-        priceTotal: (state, action) => {
-           
-            if(
+        priceTotal: (state) => {
+            if (
                 state.product.cost.total !== "" &&
                 state.product.tax.unit !== ""
-            ){
+            ) {
                 state.product.price.total = state.product.cost.total * state.product.tax.value + state.product.cost.total
             }
         }
-        
     }
 })
 
@@ -69,7 +53,6 @@ export const {
     priceTotal
 } = addProductSlice.actions;
 
-//selectors
 export const selectProduct = (state) => state.addProduct.product;
 
 export default addProductSlice.reducer

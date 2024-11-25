@@ -26,7 +26,6 @@ export const fbGetFavoriteProductCategories = (user, callback) => {
             const favoriteCategories = doc.data().favoriteCategories;
             callback(favoriteCategories); // Llama al callback con las categorías favoritas
         } else {
-            // console.log("No se encontraron categorías favoritas.");
             callback([]); // Llama al callback con un arreglo vacío si el documento no existe
         }
     }, (error) => {

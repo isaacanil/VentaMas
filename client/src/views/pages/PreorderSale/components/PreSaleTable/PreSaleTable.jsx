@@ -1,15 +1,11 @@
 import { DateTime } from 'luxon'
-import React, { useRef } from 'react'
 import styled from 'styled-components'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
 import { getProductsTax, getProductsTotalPrice, getTotalItems } from '../../../../../utils/pricing'
 import { tableConfig } from './tableConfig'
 
-
 export const PreSaleTable = ({ preSales = [], searchTerm }) => {
-
-  console.log(preSales.slice(0, 1))
 
   const data = preSales?.map(({ data }) => {
     const nfc = data?.NCF
@@ -30,19 +26,17 @@ export const PreSaleTable = ({ preSales = [], searchTerm }) => {
   const total = useFormatPrice((preSales?.reduce((total, { data }) => total + data?.totalPurchase?.value, 0)))
 
   return (
-
-
-      <AdvancedTable
-        columns={tableConfig}
-        data={data}
-        groupBy={'dateGroup'}
-        emptyText='No se encontraron preventas.'
-        footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
-        searchTerm={searchTerm}
-        elementName={'preventas'}
-        tableName={'Preventas'}
-        numberOfElementsPerPage={40}
-      />
+    <AdvancedTable
+      columns={tableConfig}
+      data={data}
+      groupBy={'dateGroup'}
+      emptyText='No se encontraron preventas.'
+      footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
+      searchTerm={searchTerm}
+      elementName={'preventas'}
+      tableName={'Preventas'}
+      numberOfElementsPerPage={40}
+    />
   )
 }
 

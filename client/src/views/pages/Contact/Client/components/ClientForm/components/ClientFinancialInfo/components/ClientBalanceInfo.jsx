@@ -1,11 +1,11 @@
 import React from 'react'
-import { ClientName, CodeTitle, Header, BalanceAmount, BalanceCard, } from '../ClientFinancialInfo'
+import { CodeTitle, BalanceAmount } from '../ClientFinancialInfo'
 import styled from 'styled-components';
 import * as antd from 'antd';
 const { Button, } = antd;
-import { useFormatPrice } from '@hooks/useFormatPrice';
 import { setAccountPayment } from '../../../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { useDispatch } from 'react-redux';
+import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
 
 export const ClientBalanceInfo = ({
     client, 

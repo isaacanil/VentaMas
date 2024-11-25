@@ -12,7 +12,6 @@ export async function fbGetPendingBalance(businessID, clientId, callback) {
     try {
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             if (querySnapshot.empty) {
-                console.log('No matching documents.');
                 callback(0); // callback con balance 0 si no hay documentos
                 return;
             }

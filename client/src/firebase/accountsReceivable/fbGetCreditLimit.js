@@ -16,7 +16,6 @@ export function fbGetCreditLimit({ user, clientId }) {
                     resolve(docSnapshot.data());
                 } else {
                     resolve(null);
-                    console.log('No existe tal documento!');
                 }
             },
             (error) => {

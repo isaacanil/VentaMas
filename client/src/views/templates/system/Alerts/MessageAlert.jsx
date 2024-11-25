@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from 'react'
 import { MdMessage } from 'react-icons/md'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
 import { Button } from '../Button/Button'
+
 export const MessageAlert = ({isOpen , data}) => {
   const dispatch = useDispatch()
 
-  const closeModal = ()=>{
-    dispatch(
-      toggleViewOrdersNotes({isOpen: 'close'})
-    )
-  }
+  const closeModal = ()=>  dispatch(toggleViewOrdersNotes({isOpen: 'close'}))
+  
   return (
     <Backdrop isOpen={isOpen === true && data !== null ? true : false}>
       <Container isOpen={isOpen === true ? true : false}>
@@ -28,12 +25,11 @@ export const MessageAlert = ({isOpen , data}) => {
         <Footer>
           <Button borderRadius={'normal'} title='ok' onClick={closeModal}></Button>
         </Footer>
-
       </Container>
-
     </Backdrop>
   )
 }
+
 const Backdrop = styled.div`
   height: 100%;
   width: 100vw;
@@ -49,31 +45,20 @@ const Backdrop = styled.div`
           transform: scale(0);
           display: none;
         `
-    
       default:
         break;
     }
   }}
-
 `
 const Container = styled.div`
-  //box
   background-color: #ffffff;
-
-  //height
   height: min-content;
   max-width: 600px;
   width: 100%;
-
-  //border
-
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   box-shadow: var(--box-shadow);
-
-  //font
   color: #141414;
-
   display: grid;
   grid-template-rows: 1fr min-content;
   gap: 1em;
@@ -81,8 +66,6 @@ const Container = styled.div`
   position: relative;
   align-items: center;
   padding: 0.5em 0;
-
-  
 
   ${(props) => {
     switch (props.isOpen) {
@@ -96,8 +79,6 @@ const Container = styled.div`
         break;
     }
   }}
-  
-  
 `
 const Body = styled.div`
   height: 100%;
@@ -118,7 +99,6 @@ const Body = styled.div`
     justify-content: center;
     grid-template-rows: auto;
   }
-  
 `
 const Footer = styled.div`
   padding: 0 1em;
@@ -140,11 +120,7 @@ width: 100%;
 overflow: hidden;
 overflow-wrap: break-word;
 padding: 1em 2em;
-  
-    
-  
 `
 const Message = styled.p`
   width: 100%;
-  
 `

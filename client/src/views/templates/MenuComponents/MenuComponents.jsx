@@ -1,29 +1,27 @@
 import React from 'react'
-import Style from './MenuComponents.module.scss'
 import { Button } from './../../index'
 import styled from 'styled-components'
 import { MenuConfig } from './MenuConfig'
 import { useDispatch } from 'react-redux'
+
 export const MenuComponents = () => {
-   const dispatch = useDispatch()
+    const dispatch = useDispatch()
     return (
         <Container>
             <Items>
-                {
-                    MenuConfig.map((item, index) => {
-                        return (
-                            <Item key={index}>
-                                <Button
-                                    bgcolor={item?.bgcolor}
-                                    startIcon={item.icon}
-                                    title={item.title}
-                                    icon={item.icon}
-                                    onClick={() => item.onclick(dispatch)}
-                                />
-                            </Item>
-                        )
-                    })
-                }
+                {MenuConfig.map((item, index) => {
+                    return (
+                        <Item key={index}>
+                            <Button
+                                bgcolor={item?.bgcolor}
+                                startIcon={item.icon}
+                                title={item.title}
+                                icon={item.icon}
+                                onClick={() => item.onclick(dispatch)}
+                            />
+                        </Item>
+                    )
+                })}
             </Items>
         </Container>
     )
@@ -38,7 +36,6 @@ const Container = styled.div`
         overflow: hidden;
         display: flex;
         z-index: 1;
-      
         align-items: center;
     }
 `
@@ -49,10 +46,7 @@ const Items = styled.ul`
         justify-content: end;
         margin: 0;
         padding: 0;
-    
 `
 const Item = styled.li`
-
     ${props => props.align === 'right' ? 'justify-self: end;' : ''}
-
 `

@@ -2,12 +2,13 @@ import React from 'react'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { Button } from '../../../system/Button/Button'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import routesName from '../../../../../routes/routesName'
 import { CgMathPlus } from 'react-icons/cg'
 import { ButtonGroup } from '../../../..'
 import { togglePurchaseChartModal } from '../../../../../features/purchase/purchaseUISlice'
-export const PurchaseToolbar = ({ side = 'left', searchData, setSearchData }) => {
+
+export const PurchaseToolbar = ({ side = 'left' }) => {
     const { PURCHASES, PURCHASES_CREATE } = routesName.PURCHASE_TERM;
     const matchWithCashReconciliation = useMatch(PURCHASES)
 
@@ -17,6 +18,7 @@ export const PurchaseToolbar = ({ side = 'left', searchData, setSearchData }) =>
     const handleOpenPurchaseChart = () => dispatch(togglePurchaseChartModal());
     // const openModal = () => {dispatch(toggleAddPurchaseModal())}
     const openModal = () => navigate(PURCHASES_CREATE);
+    
     return (
         matchWithCashReconciliation ? (
             <Container>

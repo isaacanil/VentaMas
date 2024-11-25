@@ -8,30 +8,26 @@ export const Grid = styled(motion.ul)`
     gap: 0.7em;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 
-    ${(props ) => {
+    ${(props) => {
         switch (props.padding) {
             case 'bottom':
-                return`
-                    // padding-bottom: 2.75em;
-                `
-        
+                return `
+                    padding-bottom: 2.75em;
+                `;
             default:
-                break;
+                return '';
         }
     }}
-    ${(props)=>{
+
+    ${(props) => {
         switch (props.isRow) {
             case true:
-                return`
-                grid-template-columns: 1fr;
-                transition: all 400ms ease-in-out;
-                
-                `
-                break;
-            
+                return `
+                    grid-template-columns: 1fr;
+                    transition: all 400ms ease-in-out;
+                `;
             default:
-                break;
+                return '';
         }
     }}
-    
-`
+`;

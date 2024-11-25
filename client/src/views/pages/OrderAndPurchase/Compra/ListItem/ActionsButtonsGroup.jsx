@@ -1,16 +1,11 @@
-
-import React, { Fragment, useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { getOrderData, setAddPurchaseMode, setPurchase } from '../../../../../features/purchase/addPurchaseSlice'
-//import { Button } from '../../../../templates/system/Button/Button'
+import { setAddPurchaseMode, setPurchase } from '../../../../../features/purchase/addPurchaseSlice'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
 import { icons } from '../../../../../constants/icons/icons'
 import { useDialog } from '../../../../../Context/Dialog/DialogContext'
 import ROUTES_PATH from '../../../../../routes/routesName'
-import * as ant from 'antd'
-import { DateTime } from 'luxon'
-const {Button} = ant
+import {Button} from 'antd'
 
 export const ActionsButtonsGroup = ({ purchaseData }) => {
     const dispatch = useDispatch()
@@ -25,7 +20,6 @@ export const ActionsButtonsGroup = ({ purchaseData }) => {
     }
 
     const handleDeleteMode = (id) => {
-        //setMode(modes.delete)
         setDialogConfirm({
             isOpen: true,
             title: 'Eliminar Orden',
@@ -35,11 +29,6 @@ export const ActionsButtonsGroup = ({ purchaseData }) => {
            
         })
     }
-    // const createdAt = purchaseData.dates.createdAt
-    // const now = DateTime.now().toMillis()
-    // const diff = now - createdAt
-    // const isEditable = diff < 86400000
-    console.log('purchaseData', purchaseData.id)
  
     return (
         <ButtonGroup>

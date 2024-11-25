@@ -6,11 +6,9 @@ export const fbToggleFavoriteProductCategory = async (user, category) => {
     const categoryId = category?.id;
 
     if (!businessID || !uid) {
-        console.log('No tienes permisos para realizar esta acción');
         return;
     }
     if (!categoryId) {
-        console.log('No se ha proporcionado el ID de la categoría');
         return;
     }
 
@@ -29,14 +27,12 @@ export const fbToggleFavoriteProductCategory = async (user, category) => {
                     favoriteCategories: arrayRemove(categoryId),
                     updatedAt: serverTimestamp()
                 });
-                console.log('Categoría eliminada de favoritos con éxito');
             } else {
                 // Si no está, la añadimos
                 await updateDoc(favoriteProductCategoryRef, {
                     favoriteCategories: arrayUnion(categoryId),
                     updatedAt: serverTimestamp()
                 });
-                console.log('Categoría añadida a favoritos con éxito');
             }
         } else {
             // Si el documento no existe, lo creamos y añadimos la categoría
@@ -45,7 +41,6 @@ export const fbToggleFavoriteProductCategory = async (user, category) => {
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             });
-            console.log('Categoría favorita añadida con éxito');
         }
     } catch (error) {
         console.error('Error al alternar categoría favorita: ', error);

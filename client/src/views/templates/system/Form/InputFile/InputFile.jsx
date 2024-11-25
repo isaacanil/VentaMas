@@ -1,5 +1,4 @@
 import { useRef } from 'react';
-
 import styled from 'styled-components';
 import { InputV4 } from '../../Inputs/GeneralInput/InputV4';
 import { Button, ButtonGroup } from '../../Button/Button';
@@ -36,11 +35,7 @@ const InputFile = ({
     const handleViewImage = () => {
         dispatch(toggleImageViewer({ show: true, url: resolveImgURL(img) }))
     };
-    const getDisplayValue = () => {
-        if (isImageFile(img)) return img.name;     
-        if (isFirebaseStorageUrl(img)) return img;
-        return ''; 
-    }
+   
     return (
         <div>
             <input type="file" ref={inputRef} style={{ display: 'none' }} onChange={handleFile} />

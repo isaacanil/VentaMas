@@ -13,7 +13,7 @@ export const fbGetCashCounts = async (user, setCashCounts, dateRange) => {
     const userRef = userId ? doc(db, "users", userId) : null
     const startDate = dateRange?.startDate ? DateTime.fromMillis(dateRange.startDate).toJSDate() : null;
     const endDate = dateRange?.endDate ? DateTime.fromMillis(dateRange.endDate).toJSDate() : null;
-    console.log(startDate, endDate)
+
     let conditions = [];
 
     if (startDate !== null || endDate !== null) {
@@ -68,7 +68,6 @@ export const fbGetCashCounts = async (user, setCashCounts, dateRange) => {
             .then((cashCounts) => {
                 setCashCounts(cashCounts)
             }).catch((error) => {
-                console.log(error)
             })
     })
 }
@@ -138,7 +137,7 @@ export const fbGetCashCountsDefault = async (user, setCashCounts) => {
             .then((cashCounts) => {
                 setCashCounts(cashCounts)
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
             })
 
     })

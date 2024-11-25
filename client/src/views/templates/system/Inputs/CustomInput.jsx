@@ -1,20 +1,18 @@
-// Este componente usa React y styled-components para crear un input personalizado con un menú
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
-import { addDiscount, totalPurchase } from "../../../../features/cart/cartSlice";
+import { addDiscount } from "../../../../features/cart/cartSlice";
 import { quitarCeros } from "../../../../hooks/quitarCeros";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
-// import { InputV4 } from "./GeneralInput/InputV4";
 import { Typography, InputNumber, message } from "antd";
 import { useFormatPrice } from "../../../../hooks/useFormatPrice";
 const { Title, Paragraph } = Typography;
 
 const CustomInput = ({ options, value, discount }) => {
-
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch()
   const inputRef = useRef(null);
+
   const handleChange = (newValue) => {
     dispatch(addDiscount(Number(quitarCeros(newValue))))
   };
@@ -29,11 +27,10 @@ const CustomInput = ({ options, value, discount }) => {
   };
 
   useClickOutSide(inputRef, showMenu, handleClick)
-  useEffect(() => {
 
+  useEffect(() => {
     if (value < 0) message.error('El descuento no puede ser negativo');
     if (value > 100) message.error('El descuento no puede ser mayor a 100');
-    
   }, [value])
 
   return (
@@ -73,9 +70,9 @@ const CustomInput = ({ options, value, discount }) => {
 };
 
 export default CustomInput;
+
 const Container = styled.div`
   position: relative;
-
 `
 const Wrapper = styled.div`
     position: relative;
@@ -85,7 +82,6 @@ const Wrapper = styled.div`
     margin: 0;
     padding: 0 0.4em;
     position: absolute;
-
     top: -8px;
     display: flex;
     align-items: center;
@@ -94,7 +90,6 @@ const Wrapper = styled.div`
     font-weight: 600;
     border-radius: 3px;
     font-size: 11px;
-    
     }
 `
 

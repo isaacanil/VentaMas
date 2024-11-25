@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 
 const initialState = {
-    product:{
+    product: {
 
     },
     ingredient: [],
@@ -21,10 +21,10 @@ const customProductSlice = createSlice({
             state.product = actions.payload
         },
         addIngredient: (state, action) => {
-            const checkingID = state.ingredient.find(({ id }) => id === action.payload.id)
-            checkingID ? (
-                console.log('ya esta gregado')
-            ) : state.ingredient.push(action.payload)
+            const ingredientExists = state.ingredient.find(({ id }) => id === action.payload.id)
+            if (!ingredientExists) {
+                state.ingredient.push(action.payload);
+            }
         },
         deleteIngredient: (state, action) => {
             const checkingID = state.ingredient.find(({ id }) => id === action.payload.id)
@@ -51,17 +51,17 @@ const customProductSlice = createSlice({
         totalPurchase: (state) => {
             const n = state.ingredient.reduce((total, ingredient) => total + Number(ingredient.cost), 0)
             state.totalIngredients.value = n
-           
+
         },
         formatData: (state) => {
-           
-                state.ingredient = [],
+
+            state.ingredient = [],
                 state.ingredientList = '',
                 state.totalIngredients = {
                     value: 0
                 },
                 state.totalProductPrice = 0
-            
+
         }
 
     }

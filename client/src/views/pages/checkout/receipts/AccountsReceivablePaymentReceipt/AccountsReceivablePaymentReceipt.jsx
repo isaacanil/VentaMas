@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react'
-import { HiddenPrintWrapper, InfoItem, ReceiptComponent, Subtitle } from '../../Style'
+import { InfoItem, ReceiptComponent, Subtitle } from '../../Style'
 import { Header } from '../../components/Header/Header'
 import styled from 'styled-components';
 import { Line } from '../../Receipt';

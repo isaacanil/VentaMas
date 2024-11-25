@@ -1,13 +1,11 @@
-import React, { useState } from 'react'
 import { Counter } from '../../Counter/Counter'
 import style from './ProductCardForCartStyle.module.scss'
 import { separator } from '../../../../../hooks/separator'
 import { useDispatch } from 'react-redux'
 import { totalShoppingItems, deleteProduct } from '../../../../../features/cart/cartSlice'
 import { IoClose } from 'react-icons/io5'
-import { Alert } from './Alert'
-export const ProductCardForCart = ({ item }) => {
 
+export const ProductCardForCart = ({ item }) => {
   const dispatch = useDispatch()
   const deleteProductFromCart = (id) => {
     dispatch(

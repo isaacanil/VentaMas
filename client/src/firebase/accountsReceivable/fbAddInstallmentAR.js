@@ -37,7 +37,6 @@ export async function fbAddInstallmentAR({ user, ar }) {
 
         // Confirmación de la operación batch
         await batch.commit();
-        console.log('Installments added successfully for accounts receivable');
 
     } catch (error) {
         console.error('Error adding installments for accounts receivable:', error);

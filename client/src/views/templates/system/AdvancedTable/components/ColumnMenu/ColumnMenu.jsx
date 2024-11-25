@@ -1,15 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { AnimatePresence, AnimateSharedLayout, motion } from 'framer-motion';
-
+import { AnimatePresence, motion } from 'framer-motion';
 import { useClickOutSide } from '../../../../../../hooks/useClickOutSide';
-//import { Button } from '../../../Button/Button';
-import { FormattedValue } from '../../../FormattedValue/FormattedValue';
 import { icons } from '../../../../../../constants/icons/icons';
+import { Modal, Tabs, Button, Typography } from 'antd';
 
-import * as antd from 'antd';
-
-const { Modal, List, Tooltip, Form, Tabs, Button, Typography } = antd;
 const { TabPane } = Tabs;
 
 export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, setColumnOrder, resetColumnOrder }) => {
@@ -17,11 +12,10 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
     const MenuRef = useRef(null);
     useEffect(() => {
         if (highlightedItems.length > 0) {
-            // Quita el resaltado después de 2 segundos.
             const timerId = setTimeout(() => {
                 setHighlightedItems([]);
             }, 2000);
-            return () => clearTimeout(timerId); // Limpia el temporizador si el componente se desmonta.
+            return () => clearTimeout(timerId);
         }
     }, [highlightedItems]);
 
@@ -30,12 +24,10 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
     }, [columnOrder]);
 
     const removeColumn = (accessor) => {
-        // Primero, actualiza el estado de la columna a 'deleted'
         const updatedColumns = columnOrder.map(col =>
             col.accessor === accessor ? { ...col, status: 'deleted' } : col
         );
 
-        // Luego, mueve la columna eliminada al final del arreglo
         const columnToRemove = updatedColumns.find(col => col.accessor === accessor);
         const columnsWithoutRemoved = updatedColumns.filter(col => col.accessor !== accessor);
         const newColumnOrder = [...columnsWithoutRemoved, columnToRemove];
@@ -43,45 +35,24 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
         setColumnOrder(newColumnOrder);
     }
 
-    // const restoreColumn = (accessor) => {
-    //     const updatedColumns = columnOrder.map(col => col.accessor === accessor ? { ...col, status: 'active' } : col);
-    //     setColumnOrder(updatedColumns);
-    // };
-
-    const restoreAllColumns = () => {
-        const updatedColumns = columnOrder.map(col => ({ ...col, status: 'active' }));
-        setColumnOrder(updatedColumns);
-    };
-    const initialColumnOrder = columns.map((col, index) => ({
-        ...col,
-        originalPosition: index,
-        status: 'active' // Asegúrate de que todas las columnas comiencen con el estado 'active'
-    }));
-
     const restoreColumn = (accessor) => {
-        // Encuentra la columna eliminada y su posición original
         const columnToRestoreIndex = columnOrder.findIndex(col => col.accessor === accessor);
         const columnToRestore = columnOrder[columnToRestoreIndex];
         const { originalPosition } = columnToRestore;
-      
-        // Crea una nueva lista de columnas sin la columna eliminada
+
         let updatedColumns = columnOrder.filter(col => col.accessor !== accessor);
-      
-        // Inserta la columna en su posición original
+
         updatedColumns.splice(originalPosition, 0, {
-          ...columnToRestore,
-          status: 'active'
+            ...columnToRestore,
+            status: 'active'
         });
-      
-        // Asegúrate de que no haya elementos con el mismo accessor después de la posición original
+
         updatedColumns = updatedColumns.filter((col, index) => {
-          return !(col.accessor === accessor && index > originalPosition);
+            return !(col.accessor === accessor && index > originalPosition);
         });
-      
+
         setColumnOrder(updatedColumns);
-      };
-
-
+    };
 
     const moveColumn = (fromIndex, direction) => {
         if (columnOrder[fromIndex].reorderable === false) return; // No mover si no es reordenable = false
@@ -94,27 +65,22 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
         const [movedColumn] = newColumnOrder.splice(fromIndex, 1);
         setHighlightedItems([movedColumn.accessor]);
 
-        // Puedes usar una animación aquí para "ocultar" el ítem antes de moverlo
         setTimeout(() => {
             newColumnOrder.splice(toIndex, 0, movedColumn);
             setColumnOrder(newColumnOrder);
-            // Actualiza el estado para mostrar el ítem nuevamente
             setVisibleColumns(newColumnOrder);
-        }, 1000); // Aquí puedes ajustar el tiempo según lo necesites
+        }, 1000);
 
-        // Actualiza el estado para "ocultar" el ítem
         setVisibleColumns(columnOrder.filter((col, index) => index !== fromIndex));
     };
     const getDeletedColumns = () => {
         return columnOrder.filter(column => column.status === 'deleted');
     };
     const disableMoveUp = (index) => {
-        // Deshabilita el botón de subir si es el primer elemento o si el anterior es no reordenable
         return index === 0 || columnOrder[index - 1].reorderable === false;
     };
 
     const disableMoveDown = (index) => {
-        // Deshabilita el botón de bajar si es el último elemento o si el siguiente es no reordenable
         return index === columnOrder.length - 1 || columnOrder[index + 1].reorderable === false;
     };
 
@@ -164,9 +130,6 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
                                                     danger
 
                                                 />
-                                                {/* <button onClick={() => moveColumn(index, 'up')}>{icons.arrows.chevronUp}</button> */}
-                                                {/* <button onClick={() => moveColumn(index, 'down')}>{icons.arrows.chevronDown}</button> */}
-                                                {/* <button onClick={() => removeColumn(column.accessor)}>{icons.operationModes.discard}</button> */}
                                             </>
                                         )}
                                     </div>
@@ -222,7 +185,7 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
             <Typography.Title level={5} >Revertir Cambios</Typography.Title>
             <Typography.Paragraph >Restablece el orden original de las columnas y reactiva las columnas eliminadas</Typography.Paragraph>
             <Footer>
-           
+
 
                 <Button
                     title={''}
@@ -230,7 +193,7 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
                 >
                     Restaurar
                 </Button>
-                
+
             </Footer>
 
         </Modal>

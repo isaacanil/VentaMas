@@ -28,7 +28,7 @@ const Knob = styled(motion.div)`
   background-color: white;
 `;
 
-export const Switch = ({ size = 'medium', checked = false, onChange, name, type }) => {
+export const Switch = ({ size = 'medium', checked = false, onChange, name }) => {
   const switchRef = useRef(null);
   const [knobPosition, setKnobPosition] = useState(null);
 

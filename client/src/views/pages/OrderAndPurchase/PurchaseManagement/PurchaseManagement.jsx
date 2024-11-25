@@ -1,24 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Tabs, Card, Space, Form, notification } from 'antd'
-import { SaveOutlined } from '@ant-design/icons'
+import { Form } from 'antd'
 import styled from 'styled-components'
 import GeneralForm from './components/GeneralForm'
-import ProductsTable from './components/ProductsTable'
-import TotalsSummary from './components/TotalsSummary'
-import EvidenceUpload from './components/EvidenceUpload'
-import AddProduct from './components/AddProduct'
 import { MenuApp } from '../../../templates/MenuApp/MenuApp'
-
-const { TabPane } = Tabs
-
-const Wrapper = styled.div`
-  padding: 24px;
-`
-
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
-`
 
 const PurchaseManagement = () => {
   const [purchaseData, setPurchaseData] = useState({
@@ -124,11 +108,14 @@ const PurchaseManagement = () => {
 export default PurchaseManagement
 const Container = styled.div`
   display: grid;
-  gap: 1em;
+  height: 100vh;
+  grid-template-rows: min-content 1fr;
+  overflow-y: hidden;
+
 `
 const Body = styled.div`
- padding: 0 1em;
-
+ padding: 1em;
+  overflow-y: auto;
  width: 100%;
   margin: 0 auto;
 `

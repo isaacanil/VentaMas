@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { IoIosArrowDown } from 'react-icons/io'
-import { MdClear } from 'react-icons/md'
 import { SelectHead } from './SelectHead';
 import { SelectBody } from './SelectBody';
 

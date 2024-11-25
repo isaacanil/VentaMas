@@ -20,6 +20,5 @@ export const fbLogin = async ( user, homePath, navigate, dispatch) => {
         .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
-            console.log(errorCode, errorMessage)
         })
 }

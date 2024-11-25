@@ -1,8 +1,6 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { MdClose, MdSearch } from 'react-icons/md';
 import { icons } from '../../../../../constants/icons/icons';
-import { formatNumber } from '../../../../../utils/number/number';
 import { useCallback } from 'react';
 
 /**

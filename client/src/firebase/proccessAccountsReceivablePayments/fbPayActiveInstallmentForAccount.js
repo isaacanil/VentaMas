@@ -60,7 +60,6 @@ export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails })
         const account = await getClientAccountById(user, arId);
 
         if (!account) {
-            console.log('No active account found for the client.');
             return;
         }
 

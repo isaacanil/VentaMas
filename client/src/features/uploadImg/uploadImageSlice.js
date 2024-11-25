@@ -6,13 +6,13 @@ const initialState = {
     loading: false,
     status: 0,
 }
+
 export const UploadImgSlice = createSlice({
     name: 'uploadImg',
     initialState,
     reducers: {
         SaveImg: (state, action) => {
             const {img, url} = action.payload;
-            console.log(img)
             if(img){state.img = img};
             if(url){state.url = url};
         },  
@@ -22,20 +22,16 @@ export const UploadImgSlice = createSlice({
         },
         UploadProgress: (state, action) => {
             const {progress} = action.payload
-            console.log(progress)
             state.status = progress || 0;
-           
         },
         UploadImgLoading: (state, action) => {
             state.loading = action.payload
         }
-        
     }
 })
 
 export const { SaveImg, clearImg, UploadImgLoading, UploadProgress } = UploadImgSlice.actions;
 
-//selectors
 export const selectImg = (state) => state.uploadImg.img;
 export const selectUploadImageUrl = (state) => state.uploadImg.url;
 export const selectUploadImageLoading = (state) => state.uploadImg.loading;

@@ -1,13 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { IoIosArrowDown } from 'react-icons/io'
-import { MdClear } from 'react-icons/md'
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { icons } from '../../../../constants/icons/icons';
-
 import { usePopper } from 'react-popper';
 import { InputV4 } from '../Inputs/GeneralInput/InputV4';
-import { CenteredText } from '../CentredText';
 
 const getValueByKeyOrPath = (obj, keyOrPath) => {
   if (typeof keyOrPath === 'string' && keyOrPath.includes('.')) {
@@ -16,34 +12,11 @@ const getValueByKeyOrPath = (obj, keyOrPath) => {
   return obj[keyOrPath];
 }
 
-const containerVariants = {
-  open: {
-    clipPath: "inset(0% 0% 0% 0% round 4px)",
-    transition: {
-      type: "spring",
-      bounce: 0,
-      duration: 0.7,
-      delayChildren: 0.3,
-      staggerChildren: 0.05
-    }
-  },
-  closed: {
-    clipPath: "inset(100% 0% 0% 0% round 10px)",
-    transition: {
-      type: "spring",
-      bounce: 0,
-      duration: 0.3
-    }
-  }
-}
-
-
 export const Select = ({
   title,
   data,
   value,
   onChange,
-  
   displayKey,
   labelVariant = 'primary',
   onNoneOptionSelected,
@@ -51,14 +24,10 @@ export const Select = ({
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  //referencia al contenedor del select
-  const SelectRef = useRef(null)
-  //termino de busqueda
+  const SelectRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
-  // Popper
   const [referenceElement, setReferenceElement] = useState(null);
   const [popperElement, setPopperElement] = useState(null);
-  //estilos de popper
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     modifiers: [{ name: 'arrow' }],
   });
@@ -108,7 +77,6 @@ export const Select = ({
           props.required && <Asterisk style={{ color: 'red', }}>{icons.forms.asterisk}</Asterisk>
         }
       </OtherContainer>
-
       <Head ref={setReferenceElement}>
         {isLoading === true ? (
           <Group>
@@ -168,7 +136,6 @@ export const Select = ({
                 }
                 No hay {title}.
               </NoneItemMessageContainer>
-
             )
           )}
         </Body>

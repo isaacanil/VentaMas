@@ -14,7 +14,6 @@ export async function fbGetActiveARCount(businessID, clientId) {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.log('No matching documents.');
             return 0; 
         }
 

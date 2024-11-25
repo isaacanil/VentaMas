@@ -11,13 +11,11 @@ export const fbUpdateBusinessInfo = async (user, businessInfo) => {
         const businessDoc = await getDoc(businessInfoRef);
 
         if (!businessDoc.exists()) {
-            console.log('No such document!');
             await setDoc(businessInfoRef, { business: { ...businessInfo } });
         } else {
             await updateDoc(businessInfoRef, { business: { ...businessInfo } });
         }
     } catch (error) {
-        console.error("Error updating document:", error);
     }
 };
 
@@ -29,28 +27,22 @@ export const fbUpdateBusinessLogo = async (user, newLogoFile) => {
     const sectionName = 'logo'; // podemos usar esto para diferentes secciones de imágenes
 
     try {
-        // Get current business info
         const businessDoc = await getDoc(businessInfoRef);
         const currentData = businessDoc.data();
 
-        // Delete old logo if exists
         if (currentData?.business?.logoUrl) {
             const oldLogoRef = ref(storage, currentData.business.logoUrl);
             try {
                 await deleteObject(oldLogoRef);
             } catch (error) {
-                console.log("No old logo found or error deleting:", error);
             }
         }
 
-        // Usar directamente el nombre original del archivo
         const storageRef = ref(storage, `businesses/${user.businessID}/${sectionName}/${newLogoFile.name}`);
         await uploadBytes(storageRef, newLogoFile);
-        
-        // Get the download URL
+
         const downloadURL = await getDownloadURL(storageRef);
 
-        // Update business document with new logo URL
         await updateDoc(businessInfoRef, {
             'business.logoUrl': downloadURL
         });

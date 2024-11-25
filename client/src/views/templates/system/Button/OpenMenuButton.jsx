@@ -1,20 +1,15 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { selectMenuOpenStatus, toggleOpenMenu } from '../../../../features/nav/navSlice'
+import { toggleOpenMenu } from '../../../../features/nav/navSlice'
 
 export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
   const dispatch = useDispatch()
-  const toggleMenu = () => {
-    // alert("click")
-    dispatch(toggleOpenMenu());
-  };
-  
+  const toggleMenu = () => dispatch(toggleOpenMenu());
+
   return (
     <Container
       isOpen={isOpen}
-      // onMouseEnter={toggleMenu} // Se abre el menú
-      // onMouseLeave={toggleMenu} // Se cierra el menú
       onClick={onClick || toggleMenu} zIndex={zIndex}>
       <MenuIcon isOpen={isOpen}></MenuIcon>
     </Container>

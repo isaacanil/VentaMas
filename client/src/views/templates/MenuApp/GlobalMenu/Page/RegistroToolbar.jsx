@@ -1,8 +1,7 @@
 import React from 'react'
-import { useMatch, useNavigate } from 'react-router-dom'
+import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
+import { useDispatch } from 'react-redux'
 import routesName from '../../../../../routes/routesName'
 import { addNotification } from '../../../../../features/notification/NotificationSlice'
 import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel'
@@ -10,17 +9,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faListAlt, faTable } from '@fortawesome/free-solid-svg-icons'
 import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 import { formatBill } from '../../../../../hooks/exportToExcel/formatBill'
-import { SearchInput } from '../../../system/Inputs/SearchInput'
-import { icons } from '../../../../../constants/icons/icons'
 import { DateTime } from 'luxon'
 
 export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData }) => {
+  const dispatch = useDispatch()
 
   const { BILLS } = routesName.SALES_TERM;
   const matchWithCashReconciliation = useMatch(BILLS);
   const invoices = data;
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const currentDate = DateTime.now().toFormat('ddMMyyyy');
+
   const transformedResumenBillsData = () => invoices.map((invoice) => {
     return formatBill({ data: invoice.data, type: 'Resumen' });
   });
@@ -28,7 +26,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
   const transformedDetailedBillsData = () => {
     return formatBill({ data: invoices, type: 'Detailed' });
   };
-  const currentDate = DateTime.now().toFormat('ddMMyyyy');
+
   const handleExportButton = (type) => {
     if (invoices.length === 0) {
       dispatch(addNotification({ title: 'Error al exportar', message: 'No hay Facturas para exportar', type: 'error' }))
@@ -45,7 +43,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
         break;
     }
   };
-  const user = useSelector(selectUser)
+
   const options = [
     {
       text: 'Resumen de Factura',

@@ -47,7 +47,7 @@ const EvidenceUpload = () => {
   }
 
   return (
-    <div>
+    <div style={{padding: '1em'}}>
       <Select defaultValue="recibos" style={{ width: 120, marginRight: 10 }} onChange={handleFileTypeChange}>
         <Option value="recibos">Recibos</Option>
         <Option value="facturas">Facturas</Option>

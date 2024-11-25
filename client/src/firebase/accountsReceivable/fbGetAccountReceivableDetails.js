@@ -139,7 +139,6 @@ import {
         invoice: invoiceData,
         installments: installmentsWithPayments
       };
-      console.log('result', result)
       return result;
   
     } catch (error) {

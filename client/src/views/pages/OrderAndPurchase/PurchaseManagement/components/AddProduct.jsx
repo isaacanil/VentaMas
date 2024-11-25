@@ -33,8 +33,6 @@ const ProductRow = ({ onSave, initialData }) => {
         }
     };
 
-
-
     useEffect(() => {
         if (initialData) {
             form.setFieldsValue(initialData);
@@ -43,78 +41,97 @@ const ProductRow = ({ onSave, initialData }) => {
     }, [initialData, form]);
 
     useEffect(() => {
-        // form.validateFields().then(calculateCosts).catch(() => { });
+        form.validateFields().then(calculateCosts).catch(() => { });
     }, [form]);
 
     return (
         <RowContainer>
-            <Form 
-                form={form} 
+            <Form
+                form={form}
                 layout="horizontal"
             >
                 <FieldsRow>
-                    <StyledFormItem 
-                        name="productName" 
-                        label="Nombre del Producto" 
-                        rules={[{ required: true }]}
-                    >
-                        <Input placeholder="Nombre del Producto" />
-                    </StyledFormItem>
+                    <Tooltip title='Nombre del Producto'>
+                        <StyledFormItem
+                            name="productName"
+                            label="Producto"
+                            rules={[{ required: true }]}
+                        >
+                            <Input placeholder="Producto" />
+                        </StyledFormItem>
+                    </Tooltip>
+                    <Tooltip title='Fecha de Expiración'>
+                        <StyledFormItem name="expirationDate" label="F. Expiración">
+                            <DatePicker format='DD/MM/YY' placeholder="Fecha. Exp" />
+                        </StyledFormItem>
+                    </Tooltip>
+                    <Tooltip title='Cantidad'>
+                        <StyledFormItem
+                            name="quantity"
+                            label="Cant."
+                            rules={[{ required: true }]}
+                        >
+                            <InputNumber placeholder="Cantidad" onChange={calculateCosts} />
+                        </StyledFormItem>
+                    </Tooltip>
+                    <Tooltip title='Unidad de Medida'>
+                        <StyledFormItem
+                            name="unitMeasure"
+                            label={
+                                "Unid. Medida"
+                            }
+                            rules={[{ required: true }]}
+                        >
 
-                    <Form.Item name="expirationDate" label="Fecha de Expiración">
-                        <DatePicker placeholder="Fecha. Exp" />
-                    </Form.Item>
+                            <Input placeholder="Unidad" />
+                        </StyledFormItem>
+                    </Tooltip>
+                    <Tooltip title='Costo Base'>
+                        <StyledFormItem
+                            name="baseCost"
+                            label="Costo Base"
 
-                    <StyledFormItem 
-                        name="quantity" 
-                        label="Cantidad" 
-                        rules={[{ required: true }]}
-                    >
-                        <InputNumber placeholder="Cantidad" onChange={calculateCosts} />
-                    </StyledFormItem>
+                            rules={[{ required: true }]}
+                        >
+                            <InputNumber placeholder="Costo" style={{ width: '100%' }} onChange={calculateCosts} />
+                        </StyledFormItem>
+                    </Tooltip>
+                    <Tooltip title='ITBIS'>
+                        <StyledFormItem
+                            name="taxRate"
+                            label="ITBIS (%)"
 
-                    <StyledFormItem 
-                        name="unitMeasure" 
-                        label="Unidad de Medida" 
-                        rules={[{ required: true }]}
-                    >
-                        <Input placeholder="Unidad" />
-                    </StyledFormItem>
-
-                    <StyledFormItem 
-                        name="baseCost" 
-                        label="Costo Base" 
-                        rules={[{ required: true }]}
-                    >
-                        <InputNumber placeholder="Costo" onChange={calculateCosts} />
-                    </StyledFormItem>
-
-                    <StyledFormItem 
-                        name="taxRate" 
-                        label="ITBIS (%)" 
-                        rules={[{ required: true }]}
-                    >
-                        <InputNumber
-                            placeholder="%"
-                            onChange={calculateCosts}
-                            addonAfter={calculatedITBIS.toFixed(2)}
-                        />
-                    </StyledFormItem>
-
-                    <Form.Item name="freight" label="Flete">
-                        <InputNumber placeholder="Flete" onChange={calculateCosts} />
-                    </Form.Item>
-
-                    <Form.Item name="otherCosts" label="Otros">
-                        <InputNumber placeholder="Otros" onChange={calculateCosts} />
-                    </Form.Item>
-
+                            rules={[{ required: true }]}
+                        >
+                            <InputNumber
+                                placeholder="%"
+                                onChange={calculateCosts}
+                            // addonAfter={calculatedITBIS.toFixed(2)}
+                            />
+                        </StyledFormItem>
+                    </Tooltip>
+                    <Tooltip title='Flete'>
+                        <StyledFormItem name="freight" label="Flete">
+                            <InputNumber placeholder="Flete" onChange={calculateCosts} />
+                        </StyledFormItem>
+                    </Tooltip>
+                    <Tooltip title='Otros Costos'>
+                        <StyledFormItem name="otherCosts" label="Otros">
+                            <InputNumber placeholder="Otros" onChange={calculateCosts} />
+                        </StyledFormItem>
+                    </Tooltip>
                     <ActionContainer>
-                        <TotalItem title="C.U." value={unitCost} />
-                        <TotalItem title="SubTotal" value={subTotal} />
-                        <Button type="primary" onClick={handleSubmit}>
-                            Agregar
-                        </Button>
+                        <Tooltip title='Costo Unitario'>
+                            <TotalItem title="Costo. Unitario" value={unitCost} />
+                        </Tooltip>
+                        <Tooltip title='Subtotal'>
+                            <TotalItem title="Subtotal" value={subTotal} />
+                        </Tooltip>
+                        <Tooltip title='Agregar Producto'>
+                            <Button type="primary" onClick={handleSubmit}>
+                                Agregar
+                            </Button>
+                        </Tooltip>
                     </ActionContainer>
                 </FieldsRow>
             </Form>
@@ -125,19 +142,17 @@ const ProductRow = ({ onSave, initialData }) => {
 export default ProductRow;
 
 const RowContainer = styled.div`
-    padding-bottom: 2em;
-    border-bottom: 1px solid #b80000;
+    padding-bottom: 0.2em;
     margin-bottom: 1em;
 `;
 
 const FieldsRow = styled.div`
     display: grid;
-    grid-template-columns: 2fr 140px min-content 120px min-content 110px min-content min-content min-content min-content;
+    grid-template-columns: 1.5fr 100px min-content 115px 105px min-content  min-content min-content 2fr;
     gap: 8px;
-  
-
-   
+    align-items: end; /* Centra verticalmente los campos */
 `;
+
 
 const StatsContainer = styled.div`
     display: flex;
@@ -156,7 +171,10 @@ const TotalItem = styled(Statistic)`
 
 const ActionContainer = styled(StatsContainer)`
     display: flex;
-    align-items: center;
+    align-items: end;
+    padding: 0 0 0.3em 0;
+    justify-content: flex-end;
+  
     gap: 8px;
     
     .ant-btn {
@@ -169,4 +187,24 @@ const StyledFormItem = styled(Form.Item)`
     .ant-form-item-explain {
         display: none;
     }
+    
+    .ant-form-item-label {
+    height: 3.2em;
+    display: flex;
+    align-items: end;
+}
+
+
+    .ant-form-item-control {
+        min-height: unset; // Elimina la altura mínima predeterminada
+    }
+
+    &.ant-form-item {
+        margin-bottom: 0;
+       
+        display: flex;
+        flex-direction: column;
+    }
+
+
 `;

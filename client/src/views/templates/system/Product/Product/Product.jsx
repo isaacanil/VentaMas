@@ -1,7 +1,7 @@
-import React, { Fragment, useEffect, useMemo, useState } from 'react'
+import React, { Fragment, useMemo, useState } from 'react'
 import styled, { css, keyframes } from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
-import { addProduct, deleteProduct, SelectProduct, } from '../../../../../features/cart/cartSlice'
+import { addProduct, deleteProduct, } from '../../../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import noImg from '../../../../../assets/producto/noimg.png'
 import { useProductInCart, useProductStockStatus } from './IsProductSelected'
@@ -12,8 +12,6 @@ import useImageFallback from '../../../../../hooks/image/useImageFallback'
 import { motion } from 'framer-motion'
 import { getTotalPrice } from '../../../../../utils/pricing'
 import { notification } from 'antd'
-// import { ProductWeightEntryModal } from '../../../../component/modals/ProductWeightEmtryModal/ProductWeightEntryModal'
-// import { BatchSelectorModal } from './BatchSelectorModal'
 import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
 import { openProductExpirySelector } from '../../../../../features/warehouse/productExpirySelectionSlice'
 import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
@@ -26,12 +24,9 @@ const item = {
 
 export const Product = ({ product, }) => {
     const dispatch = useDispatch();
-    const ProductsSelected = useSelector(SelectProduct);
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
 
     const imageHiddenRef = false;
-
-    const [isOpenBatchModal, setIsOpenBatchModal] = useState(false);
     const [productWeightEntryModal, setProductWeightEntryModal] = useState(false);
     const [isImageLoaded, setImageLoaded] = useState(false);
 
@@ -76,10 +71,6 @@ export const Product = ({ product, }) => {
         if (e) { e.stopPropagation() }
         dispatch(deleteProduct(id))
     }
-
-    // const openBatchModal = () => setIsOpenBatchModal(true);
-    // const closeBatchModal = () => setIsOpenBatchModal(false);
-    // const getBatch = (batch) => console.log(batch)
 
     const isDisabled = isOutOfStock || isLowStock
     return (
@@ -165,8 +156,7 @@ export const Product = ({ product, }) => {
 
     )
 }
-const OutOfStockContainer = '#fffcce';
-const OutOfStock = '#ffd000';
+
 const Container = styled(motion.li)`
     box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.020);
     height: 80px;
@@ -259,18 +249,6 @@ const ImageWrapper = styled.div`
     }}
     
     
-`
-const Body = styled.div`
-    height: 100%;
-    width: 100%;
-    padding: 4px 0;
-    position: relative;
-    transition: 4000ms all ease-in-out;
-    display: grid;
-
-    grid-template-rows: 1fr min-content min-content;
-    transition: all 400ms ease-in-out;
-   
 `
 const ImageContainer = styled.div`
     height: 80px;

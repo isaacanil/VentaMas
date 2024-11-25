@@ -1,14 +1,9 @@
-
 import React from 'react'
-import { BsFilter } from 'react-icons/bs'
 import { CgMathPlus } from 'react-icons/cg'
-import { MdFilter } from 'react-icons/md'
-import { TbPlus } from 'react-icons/tb'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import { openModalAddOrder } from '../../../features/modals/modalSlice'
 import { Button } from '../../templates/system/Button/Button'
-import { OrderFilter } from './components/OrderFilter/OrderFilter'
 
 export const ToolBar = () => {
     const dispatch = useDispatch()
@@ -16,7 +11,6 @@ export const ToolBar = () => {
     return (
         <Container>
             <Wrapper>
-                {/* <OrderFilter></OrderFilter> */}
                 <Button
                     borderRadius='normal'
                     bgcolor='primary'

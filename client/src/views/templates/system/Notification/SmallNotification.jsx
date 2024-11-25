@@ -62,7 +62,3 @@ const Title = styled.div`
   color: var(--Gray8);
   letter-spacing: 1px;
 `;
-const Message = styled.div`
-  font-size: 14px;
-
-`;

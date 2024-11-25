@@ -1,10 +1,9 @@
-import React, { useState } from "react";
 import styled from "styled-components";
-const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-import { DateTime } from "luxon";
 import { Button } from "../../Button/Button";
 import { CalendarBody } from "./components/CalendarBody/CalendarBody";
 import { useCalendar } from "./hook/useCalendar";
+
+const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export const Calendar = ({ selectionType = "single" }) => {
   const {
@@ -30,7 +29,6 @@ export const Calendar = ({ selectionType = "single" }) => {
         <CalendarMonth>{month} {year}</CalendarMonth>
         <CalendarButton onClick={handleNextMonth}>Next</CalendarButton>
       </CalendarHeader>
-
       <CalendarBody
         selectionType={selectionType}
         selectedDate={selectedDate}

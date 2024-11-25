@@ -1,12 +1,10 @@
-import React, { useState } from "react";
-import * as antd from "antd";
+import { Breadcrumb, Button } from "antd";
 import { icons } from "../../../../../../constants/icons/icons";
 import { back, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { MenuApp } from "../../../../../templates/MenuApp/MenuApp";
 import { Outlet, useNavigate } from "react-router-dom";
-const { Modal, Breadcrumb, Button } = antd;
 
 const widthSize = "calc(100vw - 16px)";
 const Container = styled.div`
@@ -50,7 +48,7 @@ const ContentContainer = styled.div`
 export default function WarehouseLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentView, selectedWarehouse, selectedShelf, selectedRowShelf, selectedSegment, breadcrumbs } = useSelector(selectWarehouse);
+  const { selectedWarehouse, breadcrumbs } = useSelector(selectWarehouse);
 
   const handleBack = () => {
     dispatch(back());

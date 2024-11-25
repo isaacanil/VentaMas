@@ -1,22 +1,14 @@
-import React, { useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
-
-import { OrderCard } from '../../ListItem/OrderCard'
 import { selectUser } from '../../../../../../features/auth/userSlice'
-import { useFbGetOrders } from '../../../../../../firebase/order/usefbGetOrders'
 import { fbGetPendingOrders } from '../../../../../../firebase/order/fbGetPedingOrder'
-import { convertMillisToDate, getTimeElapsed, useFormatDate } from '../../../../../../hooks/useFormatTime'
+import { convertMillisToDate } from '../../../../../../hooks/useFormatTime'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
-import { getOrderConditionByID, getOrderStateByID, orderAndDataCondition, orderAndDataState } from '../../../../../../constants/orderAndPurchaseState'
+import { getOrderConditionByID, getOrderStateByID } from '../../../../../../constants/orderAndPurchaseState'
 import { StatusIndicatorDot } from '../StatusIndicatorDot/StatusIndicatorDot'
-//import { Button } from '../../../../../templates/system/Button/Button'
 import { ActionsButtonsGroup } from '../../ListItem/ActionsButtonsGroup'
 import { setNote } from '../../../../../../features/noteModal/noteModalSlice'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
-
-import * as ant from 'antd'
-const { Button, Tag }  = ant;
+import { Button, Tag } from 'antd'
 import { DateTime } from 'luxon';
 
 const calculatePaymentDate = (createdAt, conditionId) => {
@@ -39,24 +31,17 @@ const calculatePaymentDate = (createdAt, conditionId) => {
       daysToAdd = 0;
       break;
     default:
-      // Manejar condición desconocida, por defecto no añadir días o manejar de otra manera
       break;
   }
 
-  // Utilizamos Luxon para calcular la nueva fecha
   const paymentDate = DateTime.fromMillis(createdAt).plus({ days: daysToAdd });
-  return paymentDate.toMillis(); // Devuelve la fecha de pago como milisegundos desde epoch
+  return paymentDate.toMillis(); 
 };
 export const calculateTotalNewStockFromReplenishments = (replenishments) => {
   let totalNewStock = 0;
-
-  // Asegurándonos de que 'replenishments' es un arreglo
   if (replenishments && Array.isArray(replenishments)) {
-    // Iteramos sobre cada 'replenishment' (reabastecimiento)
     replenishments.forEach(item => {
-      // Asegurándonos de que el artículo tiene la propiedad 'newStock' y es un número
       if (item.newStock && typeof item.newStock === 'number') {
-        // Sumamos 'newStock' al total
         totalNewStock += item.newStock;
       }
     });
@@ -180,7 +165,6 @@ export const PendingOrdersTable = () => {
   })
 
   return (
- 
       <AdvancedTable
         tableName={'Lista de Pedidos Pendientes'}
         columns={columns}
@@ -188,7 +172,5 @@ export const PendingOrdersTable = () => {
         filterUI
         filterConfig={filterConfig}
       />
-  
   )
 }
-

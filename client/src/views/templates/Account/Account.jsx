@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { UserIcon } from '../../../assets'
+import { useState } from 'react'
 
 import Style from './Account.module.scss'
 import { Link } from 'react-router-dom'
@@ -7,7 +6,7 @@ import { Button } from '../../'
 import { auth } from '../../../firebase/firebaseconfig.jsx'
 import { logout, selectUser } from '../../../features/auth/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import { FaUser, FaUserCog } from 'react-icons/fa'
+import { FaUserCog } from 'react-icons/fa'
 import { FiExternalLink } from 'react-icons/fi'
 export const Account = () => {
   const dispatch = useDispatch();
@@ -15,18 +14,15 @@ export const Account = () => {
   const OpenMenu = () => {
     SetIsOpen(!isOpen)
   }
-  const user = useSelector(selectUser)
   const logoutOfApp = () => {
-    // dispatch to the store with the logout action
     dispatch(logout());
     auth.signOut();
   }
 
   return (
-
     <div className={Style.Component_container} onClick={OpenMenu}>
       <Button
-      color='gray-dark'
+        color='gray-dark'
         borderRadius={'normal'}
         width={'icon32'}
         title={<FaUserCog />}

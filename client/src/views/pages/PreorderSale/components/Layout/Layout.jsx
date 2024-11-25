@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import NavBar from '../NavBar/NavBar';
 
 const Wrapper = styled.div`
   display: grid;

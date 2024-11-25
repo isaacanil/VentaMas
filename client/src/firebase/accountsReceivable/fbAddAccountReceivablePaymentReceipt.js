@@ -21,7 +21,6 @@ export async function fbAddAccountReceivablePaymentReceipt({user, clientId, paym
         updatedAt: Timestamp.now(),
         ...paymentReceipt,
     }
-    console.log('user: ', user)
     const paymentReceiptRef = doc(db, 'businesses', user.businessID, 'accountsReceivablePaymentReceipt', receipt.id);
     await setDoc(paymentReceiptRef, receipt);
     return receipt;

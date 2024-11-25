@@ -28,7 +28,6 @@ export const useFbGetOrders = () => {
         })
         return () => unsubscribe()
     }, [user])
-    console.log(orders, 'orders-------------------------------------------------')
     
     return { orders }
 }

@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react'
+import { Fragment } from 'react'
 import styled from 'styled-components'
-import Style from './ErrorMassage.module.scss'
+
 export const ErrorMessage = ({text}) => {
   return (
     <Fragment>

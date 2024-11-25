@@ -16,12 +16,6 @@ const h3Sizes = {
     large: '1.5rem',
 };
 
-const aSizes = {
-    small: '1.1rem',
-    medium: '1.25rem',
-    large: '1.5rem',
-};
-
 const h4Sizes = {
     small: '0.9rem',
     medium: '1.1rem',

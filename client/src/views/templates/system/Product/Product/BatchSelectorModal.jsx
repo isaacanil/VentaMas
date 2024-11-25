@@ -9,7 +9,7 @@ const { Option } = Select;
 export const BatchSelectorModal = ({isOpen, onClose, onAdd, productId}) => {
     const [selectedBatch, setSelectedBatch] = useState(null);
     const user = useSelector(selectUser);
-    const { batches, error: batchesError, loading: batchesLoading } = useListenBatches(user, productId);
+    const { batches } = useListenBatches(user, productId);
 
   return (
     <Modal

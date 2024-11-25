@@ -29,24 +29,24 @@ const GeneralForm = ({ purchaseData, handleInputChange, products, showProductMod
     }
     const handleProductSave = (values) => {
         if (editingProduct) {
-          // Edit existing product
-          const updatedProducts = purchaseData.products.map((p, idx) =>
-            idx === editingProduct.index ? { ...values, totalCost: calculateProductTotal(values) } : p
-          );
-          setPurchaseData(prev => ({ ...prev, products: updatedProducts }));
+            // Edit existing product
+            const updatedProducts = purchaseData.products.map((p, idx) =>
+                idx === editingProduct.index ? { ...values, totalCost: calculateProductTotal(values) } : p
+            );
+            setPurchaseData(prev => ({ ...prev, products: updatedProducts }));
         } else {
-          // Add new product
-          setPurchaseData(prev => ({
-            ...prev,
-            products: [
-              ...prev.products,
-              { ...values, totalCost: calculateProductTotal(values) }
-            ]
-          }));
+            // Add new product
+            setPurchaseData(prev => ({
+                ...prev,
+                products: [
+                    ...prev.products,
+                    { ...values, totalCost: calculateProductTotal(values) }
+                ]
+            }));
         }
         setModalVisible(false);
         setEditingProduct(null);
-      };
+    };
 
     return (
         <>
@@ -83,24 +83,29 @@ const GeneralForm = ({ purchaseData, handleInputChange, products, showProductMod
                 onEditProduct={showProductModal}
             />
             <TotalsSummary totals={totals} />
-            <Group>
-                <Form.Item label="Condición" required>
-                    <Select name="condition" value={purchaseData.condition} onChange={handleInputChange} required>
-                        <Option value="Condición 1">Condición 1</Option>
-                        <Option value="Condición 2">Condición 2</Option>
-                        <Option value="Condición 3">Condición 3</Option>
-                    </Select>
-                </Form.Item>
-            </Group>
-            <Group>
-                <Form.Item label="Fecha de Entrega" style={{ width: '100%' }} required>
-                    <DatePicker name="deliveryDate" value={purchaseData.deliveryDate} onChange={handleInputChange} required style={{ width: '100%' }} />
-                </Form.Item>
-                <Form.Item label="Fecha de Pago" style={{ width: '100%' }}>
-                    <DatePicker name="paymentDate" value={purchaseData.paymentDate} onChange={handleInputChange} required style={{ width: '100%' }} />
-                </Form.Item>
-            </Group>
-            <EvidenceUpload />
+            <div style={{display: 'grid', gridTemplateColumns: ' repeat(auto-fit, minmax(250px, 1fr))',  }}>
+                <div>
+                    <Group>
+                        <Form.Item label="Condición" required>
+                            <Select name="condition" value={purchaseData.condition} onChange={handleInputChange} required>
+                                <Option value="Condición 1">Condición 1</Option>
+                                <Option value="Condición 2">Condición 2</Option>
+                                <Option value="Condición 3">Condición 3</Option>
+                            </Select>
+                        </Form.Item>
+                    </Group>
+                    <Group>
+                        <Form.Item label="Fecha de Entrega" style={{ width: '100%' }} required>
+                            <DatePicker name="deliveryDate" value={purchaseData.deliveryDate} onChange={handleInputChange} required style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item label="Fecha de Pago" style={{ width: '100%' }}>
+                            <DatePicker name="paymentDate" value={purchaseData.paymentDate} onChange={handleInputChange} required style={{ width: '100%' }} />
+                        </Form.Item>
+                    </Group>
+                </div>
+
+                <EvidenceUpload />
+            </div>
             <Form.Item label="Notas">
                 <TextArea name="notes" value={purchaseData.notes} onChange={handleInputChange} />
             </Form.Item>

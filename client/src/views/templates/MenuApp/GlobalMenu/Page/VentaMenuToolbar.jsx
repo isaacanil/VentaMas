@@ -1,25 +1,18 @@
-
-import React from 'react'
-import { Button } from '../../../system/Button/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage, faListAlt } from '@fortawesome/free-solid-svg-icons'
+import { faCompress, faExpand, faHeading, faImage, faListAlt } from '@fortawesome/free-solid-svg-icons'
 import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
-import { SearchInput } from '../../../system/Inputs/SearchInput'
-import { useMatchRouteByName } from '../useMatchRouterByName'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { icons } from '../../../../../constants/icons/icons'
 import { useMatch, useNavigate } from 'react-router-dom'
 import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
-import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
-import { setTheme, toggleTheme } from '../../../../../features/theme/themeSlice'
-import { fbAAddMultipleClients } from '../../../../../firebase/client/fbAddMultipleClients'
-import { clients } from '../../../../../firebase/client/clients'
-import { selectUser } from '../../../../../features/auth/userSlice'
+import { toggleTheme } from '../../../../../features/theme/themeSlice'
 import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu'
-export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) => {
+
+export const VentaMenuToolbar = ({ side = 'left' }) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch()
     const ImageHidden = useSelector(selectImageHidden)
     const viewRowModeRef = useSelector(selectIsRow)
     const categoryGrouped = useSelector(selectCategoryGrouped)
@@ -27,8 +20,8 @@ export const VentaMenuToolbar = ({ side = 'left', searchData, setSearchData }) =
     const { SALES, } = ROUTES_NAME.SALES_TERM
     const { SETTING } = ROUTES_NAME.SETTING_TERM
     const matchWithVenta = useMatch(SALES)
-    const user = useSelector(selectUser)
-    const dispatch = useDispatch()
+
+
     const handleImageHiddenFN = () => {
         dispatch(handleImageHidden())
     }

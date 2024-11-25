@@ -7,11 +7,6 @@ const gap = {
     base: '1em',
     large: '1.2em',
 }
-const wrap ={
-    nowrap: 'nowrap',
-    wrap: 'wrap',
-}
-
 
 const Flex = styled.div`
   display: flex;

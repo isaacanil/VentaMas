@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import * as antd from 'antd';
-const { Form, Input, Button, Typography, Select, message, Card, Upload } = antd;
+const { Form, Input, Button, Select, message,  Upload } = antd;
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import { fbUpdateBusinessInfo, fbUpdateBusinessLogo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 import { selectUser } from '../../../../../features/auth/userSlice';
@@ -9,13 +9,11 @@ import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
 import { countries } from './countries.json';
-import { Tabs } from 'antd';
 import { useWindowWidth } from '../../../../../hooks/useWindowWidth';
 import imageCompression from 'browser-image-compression';
 
-const { Title, Paragraph } = Typography;
 const { Option } = Select;
-const { TabPane } = Tabs;
+
 
 const BusinessProfileEditor = () => {
   const business = useSelector(selectBusinessData);

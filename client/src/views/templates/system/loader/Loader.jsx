@@ -1,37 +1,16 @@
 
-import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 import { selectLoaderMessage, selectLoaderShow } from '../../../../features/loader/loaderSlice';
 
-const Loader = ({ useRedux = true, show: propsShow, message: propsMessage, theme = 'dark', minDisplayTime = 0 }) => {
+const Loader = ({ useRedux = true, show: propsShow, message: propsMessage, theme = 'dark'}) => {
   const reduxShow = useSelector(selectLoaderShow);
   const reduxMessage = useSelector(selectLoaderMessage);
 
-  const externalShow = useRedux ? reduxShow : propsShow;
+  const show = useRedux ? reduxShow : propsShow;
   const message = useRedux ? reduxMessage : propsMessage;
 
-  const [internalShow, setInternalShow] = useState(false);
-
-  useEffect(() => {
-    let timer;
-    if (externalShow) {
-      setInternalShow(true);
-    } else if (minDisplayTime > 0) {
-      timer = setTimeout(() => {
-        setInternalShow(false);
-      }, minDisplayTime);
-    } else {
-      setInternalShow(false);
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [externalShow, minDisplayTime]);
-
-  if (!internalShow) return null;
-
+  if (!show) return null;
 
   return (
     <Container show={show} theme={theme}>

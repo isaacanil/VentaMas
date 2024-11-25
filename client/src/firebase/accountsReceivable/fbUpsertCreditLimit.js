@@ -3,7 +3,6 @@ import { db } from '../firebaseconfig';
 import { nanoid } from "nanoid";
 
 export async function fbUpsertCreditLimit({ user, client, creditLimitData }) {
-    console.log('fbUpsertCreditLimit', user, client, creditLimitData)
     try {
         if (!user?.businessID) return;
         if (!creditLimitData) return;

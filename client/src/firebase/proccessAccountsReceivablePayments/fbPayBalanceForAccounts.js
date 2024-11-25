@@ -169,7 +169,8 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
             // Actualizar la factura con los pagos realizados
             if (invoice) {
                 const invoiceRef = doc(db, "businesses", user.businessID, "invoices", account.invoiceId);
-                const invoiceData = invoice.data();
+                const invoiceData = invoice.data;
+                console.log("invoice data: ", invoiceData)
                 invoiceData.totalPaid = roundToTwoDecimals((invoiceData.totalPaid || 0) + accountTotalPaid);
                 invoiceData.balanceDue = roundToTwoDecimals(invoiceData.totalAmount - invoiceData.totalPaid);
                 invoiceData.status = invoiceData.balanceDue <= THRESHOLD ? true : false;

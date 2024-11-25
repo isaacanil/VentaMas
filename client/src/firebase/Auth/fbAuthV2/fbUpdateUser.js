@@ -28,13 +28,11 @@ async function hashPassword(password) {
 }
 
 export const fbUpdateUserPassword = async (uid, oldPassword, newPassword) => {
-    console.log(uid, oldPassword, newPassword)
     const userRef = doc(db, "users", uid);
     const userSnapshot = await getDoc(userRef);
     const userData = userSnapshot.data().user;
     const userPassword = userData.password;
 
-    // Verificar que la contraseña antigua sea correcta
     const isOldPasswordCorrect = await compare(oldPassword, userPassword);
 
     if (!isOldPasswordCorrect) {
@@ -49,8 +47,6 @@ export const fbUpdateUserPassword = async (uid, oldPassword, newPassword) => {
         await updateDoc(userRef, {
             "user.password": hashedPassword
         });
-        console.log("User password updated successfully");
     } catch (error) {
-        console.log("Error updating user password", error);
     }
 }

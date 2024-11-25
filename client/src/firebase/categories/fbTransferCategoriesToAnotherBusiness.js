@@ -8,7 +8,6 @@ export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, busines
     const querySnapshot = await getDocs(categoriesBusinessA);
 
     const totalCategories = querySnapshot.docs.length;
-    console.log(`Total categorías encontradas: ${totalCategories}`);
 
     // Dividir las categorías en lotes de 500
     const batchSize = 500;
@@ -29,8 +28,5 @@ export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, busines
 
         await batch.commit();
         batchCount++;
-        console.log(`Lote ${batchCount} de ${Math.ceil(totalCategories / batchSize)} procesado.`);
     }
-
-    console.log('Transferencia de categorías completada.');
 };

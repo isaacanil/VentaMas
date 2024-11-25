@@ -8,7 +8,6 @@ export const fbGetInvoice = async (businessID, invoiceId) => {
         if (invoiceSnap.exists()) {
             return invoiceSnap.data(); // Retorna los datos de la factura, no el objeto Snapshot
         } else {
-            console.log("No se encontró la factura con ID:", invoiceId);
             return null; // O maneja la ausencia de la factura como prefieras
         }
     } catch (error) {

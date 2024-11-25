@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { getTaxReceiptData, IncreaseEndConsumer, selectTaxReceiptEnabled, toggleTaxReceiptSettings } from '../../../../../features/taxReceipt/taxReceiptSlice'
+import { getTaxReceiptData,  selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
 import { Button, MenuApp } from '../../../../index'
 import { TableTaxReceipt } from './components/TableTaxReceipt/TableTaxReceipt'
 import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt'
 import { fbUpdateTaxReceipt } from '../../../../../firebase/taxReceipt/fbUpdateTaxReceipt'
 import { selectUser } from '../../../../../features/auth/userSlice'
-import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue'
 import { useCompareArrays } from '../../../../../hooks/useCompareArrays'
 import { ButtonGroup } from '../../../../templates/system/Button/Button'
 import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt'
 import Typography from '../../../../templates/system/Typografy/Typografy'
 import { Switch } from '../../../../templates/system/Switch/Switch'
 import { Breadcrumb } from '../../../../templates/system/Breadcrumb/Breadcrumb'
-import { ConfirmationDialog } from '../../../../component/modals/UserNotification/components/ConfirmationDialog/ConfirmationDialog'
-import Dialog from '../../../../templates/system/Dialog/Dialog'
 import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+
 // Aquí separamos los botones en sus propios componentes
 const UpdateButton = ({ arrayAreEqual, handleSubmit }) => (
   <Button

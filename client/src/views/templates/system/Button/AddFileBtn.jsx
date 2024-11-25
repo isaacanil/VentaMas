@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CgSpinner } from 'react-icons/cg'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { toggleImageViewer } from '../../../../features/imageViewer/imageViewerSlice'
 import { toggleLoader } from '../../../../features/loader/loaderSlice'
 import { selectUploadImageLoading, selectUploadImageStatus, selectUploadImageUrl } from '../../../../features/uploadImg/uploadImageSlice'
-import { Button } from './Button'
 
 export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
     const process = useSelector(selectUploadImageStatus)
@@ -20,10 +19,10 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
         fn(e.target.files[0])
     }
 
-
     useEffect(() => {
         setProgress(process)
     }, [process])
+
     useEffect(() => {
         if (progress === 0 && loading === true) {
             dispatch(toggleLoader({ show: true, message: '0' }))
@@ -40,20 +39,14 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
             setStartIconBtn(null)
             setTitleBtn('Listo')
             dispatch(toggleLoader({ show: true, message: `Listo` }))
-
             setTimeout(() => {
                 dispatch(toggleLoader({ show: false, message: '' }))
                 setTitleBtn('Cambiar')
-                // setTimeout(() => {
-                   dispatch(toggleImageViewer({ show: true, url }))
-                // }, 1000);
+                dispatch(toggleImageViewer({ show: true, url }))
             }
                 , 2500);
         }
     }, [progress, url])
-
-    
-
 
     return (
         <Container spin={progress > 0 && progress < 100}>
@@ -68,6 +61,7 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
         </Container>
     )
 }
+
 const Container = styled.div`
     overflow: hidden;
     height: 2em;
@@ -75,7 +69,6 @@ const Container = styled.div`
     position: relative;
     border-radius: 4px;
     transition: width 600ms ease-in-out;
-    
     input{
         display: none;
     }
@@ -97,7 +90,6 @@ const Container = styled.div`
                     pointer-events: none;
                     :hover{
                         cursor: not-allowed;
-
                     }
                     svg{
                         transform: rotate(360deg);
@@ -110,8 +102,6 @@ const Container = styled.div`
                                 transform: rotate(360deg);
                             }
                         }
-
-
                     }
                 }
                 `
@@ -120,6 +110,7 @@ const Container = styled.div`
         }
     }}
 `
+
 const Progress = styled.div`
 position: absolute;
     height: 100%;

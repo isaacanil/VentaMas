@@ -3,10 +3,7 @@ import Typography from "../Typografy/Typografy";
 import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 
-
-
 const renderText = (parsedText) => {
-  console.log(parsedText)
   return parsedText.map((block, index) => {
     const externalLink = block.fragments.find((fragment) => fragment.link && (fragment.url.startsWith('http') || fragment.url.startsWith('www')));
     if (block.type === 'p') {
@@ -50,17 +47,12 @@ const renderText = (parsedText) => {
                   {fragment.text}
                 </Typography>
               )}
-
             </Fragment>
-
-
           ))}
         </Typography>
       );
     }
-    // ... manejar otros tipos de bloques aquí
   });
 };
-
 
 export default renderText;

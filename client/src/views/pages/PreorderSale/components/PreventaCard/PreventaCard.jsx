@@ -1,14 +1,13 @@
-// src/components/PreventaCard.jsx
 import React from 'react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faCalendar, 
-  faBox, 
-  faDollarSign, 
-  faUserCircle, 
-  faTimes, 
-  faCheck 
+import {
+  faCalendar,
+  faBox,
+  faDollarSign,
+  faUserCircle,
+  faTimes,
+  faCheck
 } from '@fortawesome/free-solid-svg-icons';
 import * as antd from 'antd';
 const { Button, Card, Tag } = antd;
@@ -94,17 +93,19 @@ const PreventaCard = ({ preventa, onCancel, onComplete }) => {
     <StyledCard
       hoverable
       actions={[
-        <Button 
-          type="primary" 
-          danger 
-          onClick={() => onCancel(preventa.id)} 
+        <Button
+          key="cancel" // Added key
+          type="primary"
+          danger
+          onClick={() => onCancel(preventa.id)}
           icon={<FontAwesomeIcon icon={faTimes} />}
         >
           Cancelar
         </Button>,
-        <Button 
-          type="primary" 
-          onClick={() => onComplete(preventa.id)} 
+        <Button
+          key="complete" // Added key
+          type="primary"
+          onClick={() => onComplete(preventa.id)}
           icon={<FontAwesomeIcon icon={faCheck} />}
         >
           Completar

@@ -1,5 +1,4 @@
-
-import { forwardRef, useState } from 'react'
+import { forwardRef } from 'react'
 import styled, { css } from 'styled-components'
 
 export const Button = forwardRef(({
@@ -23,7 +22,6 @@ export const Button = forwardRef(({
   iconOff,
   iconColor,
   titlePosition,
-  loading = false, 
   type = 'button'
 }, ref) => {
 
@@ -59,29 +57,20 @@ export const Button = forwardRef(({
   )
 });
 const styleByDefault = css`
-  //align
   display: flex;
   align-items: center;
   justify-content: ${props => props.alignText || 'center'};
   gap: 0.6em;
-  
-  //text
   font-size: 16px;
   font-weight: 500;
   text-align: ${props => props.alignText || 'center'};
   text-decoration: none;
   text-transform: capitalize;   
-
   white-space: nowrap;
-
-  //border
   border: none;
   outline: none;
-
-  //cursor
   cursor: pointer;
 
-  //svg
   svg{
     font-size: 1.2em;
     margin: 0;
@@ -89,10 +78,7 @@ const styleByDefault = css`
     place-items: center;
   }
 
-  //transition
   transition: border-color 0.25s, background-color 500ms;
-
-  //other
   pointer-events: all;
 
   &:focus, &:focus-visible{
@@ -361,7 +347,6 @@ export const Container = styled.button`
   @media (max-width: 800px) {
     display: ${props => props.hidden === true ? 'none' : 'flex'};
   }
-  
 `
 export const ButtonGroup = styled.div`
   display: flex;

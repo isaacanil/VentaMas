@@ -12,16 +12,13 @@ const calculateChange = (payment, totalPurchase) => (payment - totalPurchase);
 
 // Función agrupadora para actualizar todos los totales
 const updateAllTotals = (state, paymentValue = null) => {
-    console.log('ejecutando')
     const taxReceiptEnabled = state.settings.taxReceipt.enabled;
     const products = state.data.products;
     const discountPercentage = state?.data?.discount?.value;
     const delivery = state?.data?.delivery?.value;
-    console.log(products)
     state.data.totalPurchase.value = getProductsTotalPrice(products, discountPercentage, delivery, taxReceiptEnabled);
     state.data.totalTaxes.value = getProductsTax(products, taxReceiptEnabled);
     state.data.totalShoppingItems.value = getTotalItems(products);
-    
     state.data.totalPurchaseWithoutTaxes.value = getProductsPrice(products);
     const cashPaymentMethod = state.data.paymentMethod
         .findIndex((method) => method.method === 'cash' && method.status === true);

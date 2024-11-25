@@ -1,13 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Row } from '../../../../../../../../templates/system/Table/Row'
-import { Button } from '../../../../../../../../templates/system/Button/Button'
-import { icons } from '../../../../../../../../../constants/icons/icons'
 import { fbDeleteUser } from '../../../../../../../../../firebase/users/fbDeleteUser'
 import { useNavigate } from 'react-router-dom'
 import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities'
-import { selectAbilities } from '../../../../../../../../../features/abilities/abilitiesSlice'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice'
 
 export const Item = ({ data, num, colWidth }) => {

@@ -80,8 +80,6 @@ export const fbSignIn = async (user, dispatch, navigate, homePath) => {
 
         navigate(homePath);
 
-        console.log('User logged in successfully');
-
     } catch (error) {
         throw new Error(error.message);
     }

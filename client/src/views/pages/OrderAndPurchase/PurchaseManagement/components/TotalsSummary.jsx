@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Card, Statistic, Divider } from 'antd'
+import { Statistic } from 'antd'
+
 const Contained = styled.div`
   padding: 1em 0;
 `

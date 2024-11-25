@@ -1,13 +1,13 @@
 import { useDispatch } from "react-redux";
 import { useDialog } from "../../../../../Context/Dialog/DialogContext";
 import { icons } from "../../../../../constants/icons/icons";
-import {  ButtonGroup } from "../Button"
-import * as antd from "antd";
-const { Button } = antd;
-export const EditDelBtns = ({ onUpdate, onDelete = async () => { } }) => {
+import { ButtonGroup } from "../Button"
+import { Button } from "antd";
 
-    const { dialog, setDialogConfirm, onClose } = useDialog();
+export const EditDelBtns = ({ onUpdate, onDelete = async () => { } }) => {
     const dispatch = useDispatch();
+    const { dialog, setDialogConfirm, onClose } = useDialog();
+
     const deleteConfirm = async () => {
         setDialogConfirm({
             ...dialog,
@@ -29,6 +29,7 @@ export const EditDelBtns = ({ onUpdate, onDelete = async () => { } }) => {
             }
         })
     }
+
     return (
         <ButtonGroup >
             <Button

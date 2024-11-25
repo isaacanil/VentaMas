@@ -17,18 +17,14 @@ export const InvoicePreview = () => {
     client = {},
     products = [],
     paymentMethod = [],
-    totalPurchase = {},
-    date = {},
     sourceOfPurchase = "",
-    user = {},
     totalShoppingItems = {},
     totalTaxes = {},
     payment = {},
     totalPurchaseWithoutTaxes = {}
   } = invoicePreviewSelected?.data || {};
-  const handleClose = () => {
-    dispatch(closeInvoicePreviewModal());
-  }
+
+  const handleClose = () => dispatch(closeInvoicePreviewModal());
 
   return (
     isOpen && (

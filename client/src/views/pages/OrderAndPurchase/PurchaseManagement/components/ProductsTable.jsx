@@ -35,6 +35,7 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, showProductModa
   return (
     <div>
       <Table 
+      size='small'
         columns={columns} 
         dataSource={products.map((product, index) => ({
           ...product,

@@ -1,7 +1,7 @@
 import { icons } from "../../../../../constants/icons/icons";
 import ROUTES_NAME  from "../../../../../routes/routesName";
 
-const { HOME, WELCOME } = ROUTES_NAME.BASIC_TERM
+const { HOME } = ROUTES_NAME.BASIC_TERM
 
 const basic = [
     {

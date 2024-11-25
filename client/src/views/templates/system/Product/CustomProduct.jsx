@@ -1,22 +1,11 @@
 import React from 'react'
-
-
-import { useEffect, useState } from 'react';
 import styled from 'styled-components'
-import { Button } from '../../../index';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { handleModalSetCustomPizza } from '../../../../features/modals/modalSlice'
-import { addProduct, totalShoppingItems } from '../../../../features/cart/cartSlice';
-import { SelectProduct } from '../../../../features/cart/cartSlice';
-import { separator } from '../../../../hooks/separator';
-import { selectImageHidden } from '../../../../features/setting/settingSlice';
 import { FaPizzaSlice } from 'react-icons/fa';
 
 export const CustomProduct = ({ product }) => {
-    //const [productList, setProductList] = useState([])
     const dispatch = useDispatch();
-    const ProductSelected = useSelector(SelectProduct);
-    // const imageHiddenRef = useSelector(selectImageHidden)
     const imageHiddenRef = false;
     const handleGetThisProduct = () => {
         dispatch(handleModalSetCustomPizza())
@@ -25,17 +14,13 @@ export const CustomProduct = ({ product }) => {
         <ProductContainer  onClick={() => handleGetThisProduct(product)} imageHiddenRef={imageHiddenRef ? true : false}>
             <ProductImgWrapper imageHiddenRef={imageHiddenRef ? true : false}>
                 <div>
-
                     {<FaPizzaSlice/>}
                 </div>
-                      
             </ProductImgWrapper>
             <Body>
                 <Main>
                     <Title>{product.name}</Title>
                 </Main>
-                {/* <Footer>
-                </Footer> */}
             </Body>
         </ProductContainer>
     )
@@ -187,34 +172,4 @@ const Title = styled.div`
     text-transform: capitalize;
     text-overflow: ellipsis;
     overflow: hidden;
-`
-const ProductStock = styled.div`
-    height: 50px;
-    width: 50px;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center; 
-`
-const Footer = styled.footer`
-
-`
-const couter = styled.div`
-`
-const ProductPrice = styled.div`
-    height: auto;
-    width: 100%;
-    bottom: 0;
-    right: 0;
-    text-align: right;
-    position: absolute;
-
-    background-color: #d8d8d8;
-    font-weight: 500;
-    padding: 0.2em 1.5em 0.2em 0;
-    border-top-left-radius: 10px;
-    color: #424242;
-    
-    //border-radius: 50px;
-    
 `

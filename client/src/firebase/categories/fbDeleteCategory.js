@@ -9,8 +9,7 @@ export const fbDeleteCategory = async (user, id) => {
   const categoryRef = doc(db, "businesses", businessID, "categories", id)
   try {
     await deleteDoc(categoryRef)
-    console.log(id)
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }

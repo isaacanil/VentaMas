@@ -1,22 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
-
 import { useDialog } from '../../../../Context/Dialog/DialogContext';
-
 import { BackdropVariants, ContainerVariants } from './variants';
 import { Button, ButtonGroup } from '../Button/Button';
 import Typography from '../Typografy/Typografy';
 import { icons } from '../../../../constants/icons/icons';
-import { Button as ButtonV2 } from '../Button/ButtonV2';
+
 const iconTypes = {
     warning: icons.types.warning,
     error: icons.types.error,
     success: icons.types.success,
     info: icons.types.info,
 }
+
 const Dialog = () => {
-    const { dialog, setDialogConfirm, onClose } = useDialog();
+    const { dialog, onClose } = useDialog();
 
     if (!dialog.isOpen) return null;
 

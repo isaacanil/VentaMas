@@ -11,7 +11,6 @@ export const taxReceiptEnabledToCart = createAsyncThunk(
     async (_, { getState, dispatch }) => {
         const state = getState();
         const taxReceiptEnabled = state.taxReceipt.settings.taxReceiptEnabled; // Ajusta este camino según cómo esté estructurado tu estado
-        console.log("fetch", taxReceiptEnabled);
         dispatch(setTaxReceiptEnabled(taxReceiptEnabled));
     }
 );

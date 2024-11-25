@@ -1,9 +1,5 @@
-import { UploadOutlined, FileAddFilled } from '@ant-design/icons';
-
-import { useState } from 'react';
-import * as antd from 'antd';
-const { Button, Upload, Form } = antd;
-
+import { UploadOutlined } from '@ant-design/icons';
+import { Button, Upload, Form } from 'antd';
 
 export const InputMultipleFiles = ({ fileList, setFileList }) => {
 

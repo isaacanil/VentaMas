@@ -1,18 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Modal = ({ selectedConfig, content, closeModal }) => {
-    const renderConfig = () => {
-        // Aquí podrías tener diferentes lógicas para renderizar las configuraciones según selectedConfig
-        if (selectedConfig === 'config1') {
-            return <div>Configuración 1 para la tabla</div>;
-        } else if (selectedConfig === 'config2') {
-            return <div>Configuración 2 para la tabla</div>;
-        }
-        // Agregar más casos según las configuraciones que necesites
-
-        return <div>Configuración no encontrada</div>;
-    };
+const Modal = ({ content, closeModal }) => {
 
     return (
         <ModalContainer>

@@ -1,6 +1,4 @@
-import { Fragment } from "react"
 import { motion } from "framer-motion"
-
 import { useSelector } from "react-redux"
 import styled from "styled-components"
 import { selectUser } from "../../../../features/auth/userSlice"
@@ -13,6 +11,7 @@ import { icons } from "../../../../constants/icons/icons"
 import ROUTES_PATH from "../../../../routes/routesName"
 import { useNavigate } from "react-router-dom"
 import { SelectSettingCart } from "../../../../features/cart/cartSlice"
+
 const sidebarVariant = {
     open: {
         x: 0,
@@ -198,16 +197,6 @@ const MenuLinkList = styled.div`
     overflow: hidden;
   
 `
-const GroupTitle = styled.h3`
-    /* Estilos para el título del grupo */
-    font-size: 14px;
-    font-weight: 500;
-    padding: 0.5em 0.8em;
-    margin: 0;  
-  
-    color: #505050;
-
-`;
 const Head = styled.div`
    height: 2.75em;
     width: 100%;

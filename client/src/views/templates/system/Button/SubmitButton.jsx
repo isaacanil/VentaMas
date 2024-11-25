@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from './Button'
-export const SubmitButton = ({title, disabled, isReady}) => {
+export const SubmitButton = ({title, isReady}) => {
     let btn;
    
     isReady ? (

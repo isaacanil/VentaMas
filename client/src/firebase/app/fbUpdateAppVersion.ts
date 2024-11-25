@@ -13,6 +13,5 @@ export const fbUpdateAppVersion = async (ChangelogId: string) => {
         lastChangelog: ChangelogId
     }
     await updateDoc(appRef, appData);
-    console.log('version actualizada');
 }
 

@@ -9,9 +9,7 @@ export const fbGetBusinessInfo = (user, dispatch) => {
         if (doc.exists) {
             const { business } = doc.data()
             dispatch(setBusiness(business))
-        } else {
-            console.log('documento no encontrado')
-        }
+        } 
     })
     return unsubscribe
 }

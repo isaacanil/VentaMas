@@ -1,4 +1,3 @@
-// Toolbar.js
 import React from 'react';
 import { RichUtils, convertToRaw } from 'draft-js';
 import styled from 'styled-components';
@@ -9,6 +8,7 @@ import { DropdownMenu } from '../../DropdownMenu/DropdowMenu';
 
 const Toolbar = ({ editorState, setEditorState, onClear }) => {
     const navigate = useNavigate();
+    
     const toggleInlineStyle = (style) => {
         const newState = RichUtils.toggleInlineStyle(editorState, style);
         setEditorState(newState);

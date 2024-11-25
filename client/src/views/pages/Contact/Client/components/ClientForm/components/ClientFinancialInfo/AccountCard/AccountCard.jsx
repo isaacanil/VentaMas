@@ -1,6 +1,4 @@
 import React from 'react'
-import * as antd from 'antd'
-const { Button, Checkbox, Input } = antd
 import styled from 'styled-components'
 import KeyValueDisplay from '@templates/system/KeyValueDisplay/KeyValueDisplay';
 import { useFormatPrice } from '@hooks/useFormatPrice';

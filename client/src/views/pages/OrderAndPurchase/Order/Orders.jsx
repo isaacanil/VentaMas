@@ -1,16 +1,14 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import { MenuApp } from '../../../'
 import { PendingOrdersTable } from './components/OrderListTable/PendingOrdersTable'
-export const Orders = () => {
 
+export const Orders = () => {
   return (
     <Container>
       <MenuApp
         sectionName={'Pedidos'}
       />
-      <PendingOrdersTable  />
+      <PendingOrdersTable />
     </Container>
   )
 }

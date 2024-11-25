@@ -10,25 +10,7 @@ import { truncateString } from '../../../../../utils/text/truncateString';
 import { useMenuOptions } from './useMenuOptions';
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
 
-const menuVariant = {
-    hidden: {
-        opacity: 0,
-        scale: 0.9,
-        transition: {
-            duration: 0.1,
-        },
-    },
-    visible: {
-        opacity: 1,
-        scale: 1,
-        transition: {
-            duration: 0.1,
-        },
-    },
-};
-
 export const DateRangeFilter = ({ setDates, dates }) => {
-    // Popper
     const [referenceElement, setReferenceElement] = useState(null);
     const [popperElement, setPopperElement] = useState(null);
     const [arrowElement, setArrowElement] = useState(null);

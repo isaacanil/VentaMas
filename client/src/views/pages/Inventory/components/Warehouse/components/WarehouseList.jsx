@@ -1,31 +1,17 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import styled from "styled-components";
-import Breadcrumbs from "./Breadcrumbs";
-import * as antd from "antd"; // Importar todos los componentes de Ant Design
-import WarehouseModal from "./WarehouseLayout";
-import { WarehouseForm } from "../forms/WarehouseForm/WarehouseForm";
 import { getWarehouses, useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../../../../../features/auth/userSlice";
 import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
 import { useNavigate } from "react-router-dom";
 import { MenuApp } from "../../../../..";
 import { filterData } from "../../../../../../hooks/search/useSearch";
 import WarehouseCard from "./WarehouseCard";
-const { Button, Input } = antd; // Usar destructuring para los componentes específicos que necesitamos
 
-// Estilos con styled-components
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 16px;
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
 `;
 
 const WarehouseGrid = styled.div`
@@ -35,14 +21,11 @@ const WarehouseGrid = styled.div`
 `;
 
 const Wrapper = styled.div`
-
 `
-
 
 export default function WarehouseList() {
   const dispatch = useDispatch();
   const navigation = useNavigate();
-  const user = useSelector(selectUser)
   const [searchTerm, setSearchTerm] = useState('');
   const {data: warehouses, loading, error} = useListenWarehouses(); // Escucha los cambios en los almacenes
 
@@ -71,10 +54,3 @@ export default function WarehouseList() {
     </Wrapper>
   );
 }
-
-const Group = styled.div` 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-`;

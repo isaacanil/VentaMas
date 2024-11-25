@@ -2,7 +2,7 @@ import { getTimeElapsed } from "../../../../../hooks/useFormatTime";
 import { Tag } from "../../../../templates/system/Tag/Tag";
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { selectUser } from "../../../../../features/auth/userSlice";
 import * as antd from "antd";
 import { icons } from "../../../../../constants/icons/icons";

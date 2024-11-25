@@ -20,17 +20,19 @@ export const Table = ({
         <Backdrop>
             <Container ref={tableRef}>
                 <Header
-                    children={header}
                     colWidth={colWidth}
                     scrolled={scrolled}
-                />
+                >
+                    {header}
+                </Header>
                 <Body
-                    children={body}
                     messageNoData={messageNoData}
-                />
-                <Footer
-                    children={footer}
-                />
+                >
+                    {body}
+                </Body>
+                <Footer>
+                    {footer}
+                </Footer>
             </Container>
         </Backdrop>
     )

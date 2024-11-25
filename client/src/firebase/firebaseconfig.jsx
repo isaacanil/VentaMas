@@ -6,12 +6,12 @@ import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChan
 //TODO ***FIRESTORE***********************************
 import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore, runTransaction, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
 //TODO ***STORAGE***********************************
-import { deleteObject, getDownloadURL, getStorage, listAll, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"
+import { getStorage, } from "firebase/storage"
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { nanoid } from "nanoid";
-import { useDispatch, useSelector } from "react-redux";
-import { login, logout, selectUser } from "../features/auth/userSlice";
+import { useDispatch } from "react-redux";
+import { login, logout } from "../features/auth/userSlice";
 import { useNavigate } from "react-router-dom";
 import { fbGetDocFromReference } from "./provider/fbGetProviderFromReference";
 // import { getVertexAI, getGenerativeModel } from "firebase/";
@@ -31,10 +31,8 @@ const app = initializeApp(firebaseConfig);
 export const storage = getStorage(app);
 export const auth = getAuth(app)
 
-
-
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({tabManager: persistentSingleTabManager()})
+  localCache: persistentLocalCache({ tabManager: persistentSingleTabManager() })
 });
 
 
@@ -79,7 +77,7 @@ export const HandleRegister = (name, email, pass, confirmPass, Navigate) => {
       .then(userAuth => {
         updateProfile(userAuth.user, {
           displayName: name,
-        }).catch(error => console.log('user not updated'));
+        })
       }).catch(err => alert(err));
     Navigate('/login');
   }
@@ -99,15 +97,8 @@ export const loginToApp = (email, password) => {
       }))
       Navigate('/app/')
     })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(errorCode, errorMessage)
-    })
-  // returns  an auth object after a successful authentication
-  // userAuth.user contains all our user details
-
 };
+
 export const watchingUserState = (setUserDisplayName) => {
   onAuthStateChanged(auth, (userAuth) => {
     if (userAuth) {
@@ -125,16 +116,13 @@ export const fbAddImgReceiptData = async (id, url) => {
       url: url
     });
   } catch (error) {
-    console.log(error)
   }
 }
 export const fbDeletePurchaseReceiptImg = async (data) => {
   const { url } = data
   try {
     if (url) { await deleteImgFromUrl(url) }
-    console.log(url)
   } catch (error) {
-    console.log(error)
   }
 }
 
@@ -157,7 +145,6 @@ export const addIngredientTypePizza = async (ingredient) => {
       ingredientList: arrayUnion(ingredient)
     });
   } catch (error) {
-    console.log("Lo sentimos Ocurrió un error:", error)
   }
 
 }
@@ -168,7 +155,6 @@ export const deleteIngredientTypePizza = async (ingredient) => {
       ingredientList: arrayRemove(ingredient)
     });
   } catch (error) {
-    console.log("Lo sentimos Ocurrió un error: ", error)
   }
 }
 
@@ -209,12 +195,9 @@ export const AddOrder = async (user, value) => {
     state: 'state_2'
   }
   const OrderRef = doc(db, "businesses", user.businessID, "orders", data.orderId)
-  console.log(data)
   try {
     await setDoc(OrderRef, { data })
-    console.log('Document written ', data)
   } catch (error) {
-    console.error("Error adding document: ", error)
   }
 
 }
@@ -239,10 +222,10 @@ export const getPurchaseFromDB = async (user, setPurchases) => {
         if (purchaseData.data.dates.deliveryDate) {
           purchaseData.data.dates.deliveryDate = purchaseData.data.dates.deliveryDate.toDate().getTime()
         }
-        if(purchaseData.data.dates.paymentDate){
+        if (purchaseData.data.dates.paymentDate) {
           purchaseData.data.dates.paymentDate = purchaseData.data.dates.paymentDate.toDate().getTime()
         }
-        if(purchaseData.data.dates.updatedAt){
+        if (purchaseData.data.dates.updatedAt) {
           purchaseData.data.dates.updatedAt = purchaseData.data.dates.updatedAt.toDate().getTime()
         }
         return purchaseData;
@@ -250,7 +233,6 @@ export const getPurchaseFromDB = async (user, setPurchases) => {
 
     const purchaseArray = await Promise.all(purchasePromises);
     setPurchases(purchaseArray);
-    console.log(purchaseArray);
   })
 }
 export const deletePurchase = async (id) => {
@@ -276,9 +258,7 @@ export const getUsers = (setUsers) => {
     Promise.all(usersArray).then(result => {
       setUsers(result)
     }).catch(error => {
-      console.log(error)
     });
-    // setUsers(usersArray)
   })
 }
 export const createUser = (rolType) => {

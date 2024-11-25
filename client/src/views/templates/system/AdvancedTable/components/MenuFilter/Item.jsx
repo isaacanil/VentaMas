@@ -1,7 +1,6 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useClickOutSide } from '../../../../../../hooks/useClickOutSide'
-import { Button } from '../../../Button/Button';
 import { icons } from '../../../../../../constants/icons/icons';
 
 export const Item = ({ label, filterOptions, onChange, onClear, format, selectedValue }) => {

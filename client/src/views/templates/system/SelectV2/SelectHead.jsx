@@ -3,7 +3,7 @@ import { IoIosArrowDown } from 'react-icons/io'
 import { MdClear } from 'react-icons/md'
 import styled from 'styled-components'
 
-export const SelectHead = ({isOpen, setIsOpen, showSelectTitle, title, data }) => {
+export const SelectHead = ({isOpen, setIsOpen, showSelectTitle, data }) => {
     return (
         <Head>
         {!isOpen ? (

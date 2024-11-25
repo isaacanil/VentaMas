@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react'
 import { Button } from './Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileExport } from '@fortawesome/free-solid-svg-icons'
@@ -24,7 +23,6 @@ export const ExportProductsButton = () => {
         ...product.pricing,
         tax: taxReceiptEnabled ? (product.pricing.tax ? (
           tax[product.pricing.tax]
-        
         ) : 'Exento') : 'Exento',
       }
     }

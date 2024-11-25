@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import * as antd from "antd";
+import React, { useEffect } from "react";
+import { Button, InputNumber, Form, Modal, Select, message, Spin, Alert, Progress } from "antd";
 import styled from "styled-components";
 import {
   createProductStock,
@@ -12,10 +12,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { closeProductStock, selectProductStock, setProductStockClear, updateProductStockFormData, openProductStock } from "../../../../../../../features/productStock/productStockSlice";
 import { useFormatNumber } from "../../../../../../../hooks/useFormatNumber";
-import { useParams } from "react-router-dom";
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
 
-const { Button, InputNumber, Form, Modal, Select, message, Spin, Alert, Progress } = antd;
 const { Option } = Select;
 
 const FormContainer = styled(Form)`
@@ -31,6 +29,7 @@ const StyledButton = styled(Button)`
     background-color: #40a9ff;
   }
 `;
+
 const getLocationPath = (warehouseId, shelfId, rowId, segmentId) => {
   if (!warehouseId) {
     throw new Error("warehouseId is required to determine the location path.");
@@ -51,11 +50,8 @@ export function ProductStockForm() {
 
   const user = useSelector(selectUser);
   const { isOpen, formData } = useSelector(selectProductStock)
-  const {selectedWarehouse : warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf, selectedSegment: segment} = useSelector(selectWarehouse);
-  const {warehouseId, shelfId, rowId, segmentId} = {warehouseId: warehouse?.id, shelfId: shelf?.id, rowId: rowShelf?.id, segmentId: segment?.id};
-
-  // const { warehouseId, shelfId, rowId, segmentId } = useParams();
-  // const params = useParams();
+  const { selectedWarehouse: warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf, selectedSegment: segment } = useSelector(selectWarehouse);
+  const { warehouseId, shelfId, rowId, segmentId } = { warehouseId: warehouse?.id, shelfId: shelf?.id, rowId: rowShelf?.id, segmentId: segment?.id };
 
   const { productId, batchId, stock: formStock, locationId } = formData;
 
@@ -95,7 +91,7 @@ export function ProductStockForm() {
 
   const handleBatchChange = (batchId) => {
     const existingProductStock = productsStock?.find(product => product.batchId === batchId && product.location.id === locationId);
-    console.log("existingProductStock  ",productsStock);
+    console.log("existingProductStock  ", productsStock);
     if (existingProductStock) {
       antd.Modal.confirm({
         title: "Este batch ya existe en la ubicación actual",

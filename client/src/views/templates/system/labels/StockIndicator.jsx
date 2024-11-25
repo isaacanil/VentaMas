@@ -1,16 +1,10 @@
 import { faCircleMinus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import { FaTag } from 'react-icons/fa';
 import styled from 'styled-components';
-import { Tooltip } from '../Button/Tooltip';
-
-
 
 function StockIndicator({ stock, trackInventory }) {
-
     if (trackInventory) {
-
         return (
             <StockContainer trackInventory={trackInventory} stock={stock}>
                 {stock || 0}
@@ -18,13 +12,11 @@ function StockIndicator({ stock, trackInventory }) {
         );
     } else {
         return (
-
             <StockContainer trackInventory={trackInventory}>
                 <span>
                     <FontAwesomeIcon icon={faCircleMinus} />
                 </span>
             </StockContainer>
-
         );
     }
 }
@@ -85,7 +77,5 @@ const StockContainer = styled.div`
                 break;
         }
     }}
-   
-    
 `;
 

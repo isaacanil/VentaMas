@@ -7,11 +7,9 @@ export const fbCashCountStatus = async (user, cashCountID, state) => {
 
     if (cashCountDoc.exists() && cashCountID && state) {
         const cashCountData = cashCountDoc.data();
-        // Verifica si el estado del cuadre de caja coincide con el estado especificado
         const isStateMatch = cashCountData.cashCount.state === state;
-        console.log(isStateMatch, " --> isStateMatch")
         
         return isStateMatch;
     }
-    return false; // Devuelve false si el documento no existe o si no hay coincidencia
+    return false; 
 }

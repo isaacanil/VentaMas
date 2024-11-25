@@ -2,19 +2,17 @@ import React, { useState, Fragment, useRef, useEffect } from 'react'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './Components/SideBar'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { toggleOpenMenu } from '../../../features/nav/navSlice'
 import { OpenMenuButton } from '../system/Button/OpenMenuButton'
 import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 import { icons } from '../../../constants/icons/icons'
-import { useNavigate } from 'react-router-dom'
 import { GoBackButton } from '../system/Button/GoBackButton'
 import { Input } from 'antd';
 
 export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setSearchData, searchData, displayName = "" }) => {
-  const ref = useRef(null)
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const ref = useRef(null)
 
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
@@ -25,8 +23,6 @@ export const MenuApp = ({ data, sectionName, sectionNameIcon, borderRadius, setS
   }, [isOpenMenu])
 
   const closeMenu = () => { setIsOpenMenu(false) }
-
-  const goBack = () => { navigate(-1) }
 
   useClickOutSide(ref, !isOpenMenu, closeMenu)
 
