@@ -1,55 +1,113 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Modal, Button, Select, Checkbox, Typography, Alert, Divider, message, Table, Input, Collapse, Tag } from 'antd';
+import { Button, Checkbox, Typography, Alert, message, Table, Input, InputNumber, Grid, Skeleton, Tooltip, Tabs } from 'antd';
 import styled from 'styled-components';
-import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import { SearchOutlined, PrinterOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { closeCreditNoteModal, selectCreditNoteModal, openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { useFbGetClientsOnOpen } from '../../../../firebase/client/useFbGetClientsOnOpen';
 import { useFbGetInvoicesByClient } from '../../../../firebase/invoices/useFbGetInvoicesByClient';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { formatPrice } from '../../../../utils/formatPrice';
 import { fbAddCreditNote } from '../../../../firebase/creditNotes/fbAddCreditNote';
-import { getTotalPrice } from '../../../../utils/pricing';
+import { getTotalPrice, getTax } from '../../../../utils/pricing';
 import { fbUpdateCreditNote } from '../../../../firebase/creditNotes/fbUpdateCreditNote';
 import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
+import { ProductList } from './components/ProductList';
+import { ResponsiveContainer } from './components/ResponsiveContainer';
+import { CreditNotePanel } from './components/CreditNotePanel';
+import ClientSelector from './components/ClientSelector';
+import InvoiceSelector from './components/InvoiceSelector';
+import { generateCreditNoteLetterPdf } from '../../../../pdf/creditNote/templates/template1/CreditNoteLetterPdf';
+import { selectBusinessData } from '../../../../features/auth/businessSlice';
+import { useCreditNotePDF } from '../../../../hooks/creditNote/useCreditNotePDF';
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
+import dayjs from 'dayjs';
 
-const { Option } = Select;
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
+const { useBreakpoint } = Grid;
 
 export const CreditNoteModal = () => {
   const dispatch = useDispatch();
   const { isOpen, selectedInvoice, selectedClient, mode, creditNoteData } = useSelector(selectCreditNoteModal);
   const user = useSelector(selectUser);
+  const business = useSelector(selectBusinessData);
   const { clients: fetchedClients, loading: clientsLoading } = useFbGetClientsOnOpen({ isOpen });
+  const { pdfLoading, handlePrintPdf } = useCreditNotePDF();
+  const { taxReceipt } = fbGetTaxReceipt();
+  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
 
   const clients = fetchedClients.map(c => c.client);
   
   const [selectedItems, setSelectedItems] = useState([]);
+  const [itemQuantities, setItemQuantities] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState(selectedClient?.id || null);
-  const { invoices, loading: invoicesLoading } = useFbGetInvoicesByClient(selectedClientId);
+  const [dateRange, setDateRange] = useState([dayjs().startOf('month'), dayjs().endOf('month')]);
+  const { invoices, loading: invoicesLoading } = useFbGetInvoicesByClient(selectedClientId, dateRange);
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(selectedInvoice?.id || null);
   const { creditNotes: invoiceCreditNotes } = useFbGetCreditNotesByInvoice(selectedInvoiceId);
+
+  const creditNoteReceipt = taxReceipt?.find(receipt => 
+    (receipt.data?.name?.toLowerCase().includes('nota') && 
+    receipt.data?.name?.toLowerCase().includes('crédito')) ||
+    receipt.data?.serie === '04'
+  );
+
+  const isCreditNoteReceiptConfigured = Boolean(creditNoteReceipt && !creditNoteReceipt.data?.disabled);
+
+  // Verificar si se pueden crear/editar notas de crédito
+  const canUseCreditNotes = taxReceiptEnabled && isCreditNoteReceiptConfigured;
 
   const otherCreditNotes = useMemo(() =>
     invoiceCreditNotes.filter(cn => cn.id !== creditNoteData?.id),
     [invoiceCreditNotes, creditNoteData]
   );
 
-  const creditedItemIds = useMemo(() =>
-    otherCreditNotes.flatMap(cn => (cn.items || []).map(it => it.id)),
-    [otherCreditNotes]
-  );
+  const creditedQuantities = useMemo(() => {
+    const map = {};
+    otherCreditNotes.forEach(cn => {
+      (cn.items || []).forEach(it => {
+        const qty = it.amountToBuy || 1;
+        map[it.id] = (map[it.id] || 0) + qty;
+      });
+    });
+    return map;
+  }, [otherCreditNotes]);
+
+  const existingItemQuantities = useMemo(() => {
+    const map = {};
+    (creditNoteData?.items || []).forEach(it => {
+      map[it.id] = it.amountToBuy || 1;
+    });
+    return map;
+  }, [creditNoteData]);
 
   const currentInvoice = invoices.find(inv => inv.id === selectedInvoiceId);
 
   const availableInvoiceItems = useMemo(() => {
     if (!currentInvoice || !Array.isArray(currentInvoice.products)) return [];
-    return currentInvoice.products.filter(item => !creditedItemIds.includes(item.id));
-  }, [currentInvoice, creditedItemIds]);
+
+    return currentInvoice.products
+      .map(item => {
+        const totalQty = item.amountToBuy || 1; // Cantidad original en la factura
+        const creditedByOthers = creditedQuantities[item.id] || 0; // Ya acreditado por otras NC (excluye esta)
+        
+        // La máxima cantidad que se puede acreditar para este item.
+        // Es simplemente lo que queda en la factura después de restar otras NC.
+        const maxAvailableQty = totalQty - creditedByOthers;
+        
+        return { ...item, maxAvailableQty };
+      })
+      // Un producto se muestra si todavía se puede acreditar (maxAvailableQty > 0)
+      // o si está en la nota de crédito actual que se está editando.
+      .filter(item => item.maxAvailableQty > 0 || (mode === 'edit' && (existingItemQuantities[item.id] || 0) > 0));
+  }, [currentInvoice, creditedQuantities, existingItemQuantities, mode]);
+  
   const currentClient = clients.find(client => client.id === selectedClientId);
   const relatedCreditNotes = invoiceCreditNotes.filter(
     cn => cn.invoiceId === selectedInvoiceId && cn.id !== creditNoteData?.id
@@ -68,41 +126,55 @@ export const CreditNoteModal = () => {
 
   const hasAvailableProducts = availableInvoiceItems.length > 0;
 
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
+
+  const memoizedFormatPrice = useMemo(() => formatPrice, []);
+
   useEffect(() => {
     if (!isOpen) return;
     if (mode !== 'create' && creditNoteData) {
       setSelectedClientId(creditNoteData.client?.id || null);
       setSelectedInvoiceId(creditNoteData.invoiceId || null);
-      setSelectedItems(creditNoteData.items?.map(i => i.id) || []);
-      setSelectAll(false); // we will rely on checkboxes
+      const ids = creditNoteData.items?.map(i => i.id) || [];
+      setSelectedItems(ids);
+      const qtyMap = {};
+      (creditNoteData.items || []).forEach(it => {
+        qtyMap[it.id] = it.amountToBuy || 1;
+      });
+      setItemQuantities(qtyMap);
+      setSelectAll(false);
     } else {
-      // reset already handled by handleClose, but guard just in case
       setSelectedClientId(null);
       setSelectedInvoiceId(null);
       setSelectedItems([]);
+      setItemQuantities({});
       setSelectAll(false);
     }
   }, [isOpen, mode, creditNoteData]);
 
-  // Effect to reset/initialize when invoice changes
   useEffect(() => {
-    if (!selectedInvoiceId) {
+    if (!selectedInvoiceId || clientsLoading || invoicesLoading) {
       setSelectedItems([]);
+      setItemQuantities({});
       setSelectAll(false);
       setFilteredProducts([]);
       return;
     }
 
-    // This logic runs when the invoice is first selected, or when available items for it change fundamentally.
-    // It defaults to selecting all available items.
     const initialSelection = availableInvoiceItems.map(item => item.id);
     setSelectedItems(initialSelection);
+    const qtyMap = {};
+    availableInvoiceItems.forEach(it => {
+      qtyMap[it.id] = existingItemQuantities[it.id] || it.maxAvailableQty;
+    });
+    setItemQuantities(qtyMap);
     setSelectAll(initialSelection.length > 0 && initialSelection.length === availableInvoiceItems.length);
     setFilteredProducts(availableInvoiceItems);
     setSearchText('');
     setCurrentPage(1);
 
-  }, [selectedInvoiceId, creditedItemIds]);
+  }, [selectedInvoiceId, creditedQuantities, existingItemQuantities, clientsLoading, invoicesLoading]);
 
   useEffect(() => {
     const baseList = availableInvoiceItems;
@@ -123,6 +195,7 @@ export const CreditNoteModal = () => {
   const handleClose = () => {
     dispatch(closeCreditNoteModal());
     setSelectedItems([]);
+    setItemQuantities({});
     setSelectAll(false);
     setSelectedClientId(null);
     setSelectedInvoiceId(null);
@@ -131,6 +204,7 @@ export const CreditNoteModal = () => {
   const handleClientChange = (clientId) => {
     setSelectedClientId(clientId);
     setSelectedItems([]);
+    setItemQuantities({});
     setSelectAll(false);
     setSelectedInvoiceId(null);
   };
@@ -138,19 +212,38 @@ export const CreditNoteModal = () => {
   const handleInvoiceChange = (invoiceId) => {
     setSelectedInvoiceId(invoiceId);
     setSelectedItems([]);
+    setItemQuantities({});
     setSelectAll(false);
   };
 
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
-    setSelectedItems(checked ? filteredProducts.filter(it => !creditedItemIds.includes(it.id)).map(item => item.id) : []);
+    if (checked) {
+      const ids = filteredProducts.map(item => item.id);
+      setSelectedItems(ids);
+      const qtyMap = {};
+      filteredProducts.forEach(item => {
+        qtyMap[item.id] = existingItemQuantities[item.id] || item.maxAvailableQty;
+      });
+      setItemQuantities(qtyMap);
+    } else {
+      setSelectedItems([]);
+      setItemQuantities({});
+    }
   };
 
   const handleItemChange = (itemId, checked) => {
     if (checked) {
       setSelectedItems(prev => [...prev, itemId]);
+      const item = availableInvoiceItems.find(it => it.id === itemId);
+      const defaultQty = existingItemQuantities[itemId] || item?.maxAvailableQty || 1;
+      setItemQuantities(prev => ({ ...prev, [itemId]: defaultQty }));
     } else {
       setSelectedItems(prev => prev.filter(id => id !== itemId));
+      setItemQuantities(prev => {
+        const { [itemId]: _, ...rest } = prev;
+        return rest;
+      });
       setSelectAll(false);
     }
   };
@@ -158,22 +251,49 @@ export const CreditNoteModal = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const selectedProducts = availableInvoiceItems.filter(item => selectedItems.includes(item.id));
+      const selectedProducts = availableInvoiceItems
+        .filter(item => selectedItems.includes(item.id))
+        .map(item => ({
+          ...item,
+          amountToBuy: itemQuantities[item.id] || 1,
+        }));
+      
+      // Validación final: verificar que ninguna cantidad exceda lo disponible
+      const invalidItems = selectedProducts.filter(item => {
+        const availableItem = availableInvoiceItems.find(ai => ai.id === item.id);
+        return availableItem && item.amountToBuy > availableItem.maxAvailableQty;
+      });
+      
+      if (invalidItems.length > 0) {
+        const itemNames = invalidItems.map(item => item.name).join(', ');
+        message.error(`Las siguientes cantidades exceden lo disponible: ${itemNames}`);
+        setLoading(false);
+        return;
+      }
       
       const payload = {
         client: currentClient,
         invoiceId: selectedInvoiceId,
+        invoiceNcf: currentInvoice?.ncf || currentInvoice?.NCF,
         items: selectedProducts,
         totalAmount,
       };
 
+      let savedCreditNote;
       if (effectiveIsEdit) {
         await fbUpdateCreditNote(user, creditNoteData.id, payload);
         message.success('Nota de crédito actualizada exitosamente');
+        savedCreditNote = { ...creditNoteData, ...payload };
       } else {
-        await fbAddCreditNote(user, payload);
-      message.success('Nota de crédito creada exitosamente');
+        savedCreditNote = await fbAddCreditNote(user, payload);
+        message.success('Nota de crédito creada exitosamente');
+        
+        // Imprimir automáticamente después de crear
+        setTimeout(() => {
+          handlePrintPdf(savedCreditNote);
+        }, 500); // Pequeño delay para asegurar que el mensaje se muestre
       }
+      
       handleClose();
     } catch (error) {
       console.error('Error al procesar la nota de crédito:', error);
@@ -183,9 +303,25 @@ export const CreditNoteModal = () => {
     }
   };
 
-  const totalAmount = availableInvoiceItems
-    .filter(item => selectedItems.includes(item.id))
-    .reduce((sum, item) => sum + getTotalPrice(item), 0);
+  const totalAmount = selectedItems.reduce((sum, id) => {
+    const item = availableInvoiceItems.find(it => it.id === id);
+    if (!item) return sum;
+    const qty = itemQuantities[id] || 1;
+    const itemCopy = { ...item, amountToBuy: qty };
+    return sum + getTotalPrice(itemCopy);
+  }, 0);
+
+  // Calcular ITBIS total correctamente
+  const totalItbis = selectedItems.reduce((sum, id) => {
+    const item = availableInvoiceItems.find(it => it.id === id);
+    if (!item) return sum;
+    const qty = itemQuantities[id] || 1;
+    const itemCopy = { ...item, amountToBuy: qty };
+    return sum + getTax(itemCopy, true);
+  }, 0);
+
+  // Calcular subtotal (total sin impuestos)
+  const subtotal = totalAmount - totalItbis;
 
   const columns = [
     {
@@ -195,7 +331,7 @@ export const CreditNoteModal = () => {
       render: (_, record) => (
         <Checkbox
           checked={selectedItems.includes(record.id)}
-          disabled={effectiveIsView || creditedItemIds.includes(record.id)}
+          disabled={effectiveIsView}
           onChange={(e) => handleItemChange(record.id, e.target.checked)}
         />
       ),
@@ -204,14 +340,66 @@ export const CreditNoteModal = () => {
       title: 'Producto',
       dataIndex: 'name',
       key: 'name',
+      width: isMobile ? "30px" : '35%',
+      ellipsis: isMobile ? { showTitle: true } : false,
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Cantidad',
-      dataIndex: 'amountToBuy',
-      key: 'quantity',
-      width: '80px',
-      render: (amountToBuy) => amountToBuy || 1,
+      dataIndex: 'creditQty',
+      key: 'creditQty',
+      width: isMobile ? '90px' : '110px',
+      render: (_, record) => {
+        const maxQty = record.maxAvailableQty < 0 ? 0 : record.maxAvailableQty;
+        const originalQty = (record.amountToBuy || 1);
+        const creditedByOthers = (creditedQuantities[record.id] || 0);
+        const selected = selectedItems.includes(record.id);
+        const value = itemQuantities[record.id] || existingItemQuantities[record.id] || 1;
+
+        const qtyDisplay = (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontWeight: '500' }}>{value}</span>
+            <span style={{ fontSize: '11px', color: '#999' }}>/{maxQty}</span>
+          </div>
+        );
+
+        if (effectiveIsView || !selected) {
+          return qtyDisplay;
+        }
+
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <InputNumber
+              min={1}
+              max={maxQty}
+              value={value}
+              onChange={(val) => handleQuantityChange(record.id, val)}
+              size="small"
+              style={{ width: '60px' }}
+            />
+            <Tooltip 
+              title={
+                <div>
+                  <div><strong>Cálculo de Cantidad Máxima</strong></div>
+                  <div style={{ marginBottom: '4px' }}>• Factura Original: {originalQty}</div>
+                  <div style={{ marginBottom: '4px' }}>• Acreditado en otras NC: {creditedByOthers}</div>
+                  <div style={{ borderTop: '1px solid #ddd', paddingTop: '4px', marginTop: '4px' }}>
+                    <strong>Máximo disponible: {maxQty}</strong>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
+                    Fórmula: {originalQty} - {creditedByOthers} = {maxQty}
+                  </div>
+                </div>
+              }
+              placement="topLeft"
+            >
+              <span style={{ fontSize: '11px', color: '#999', cursor: 'help' }}>
+                /{maxQty} <InfoCircleOutlined />
+              </span>
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       title: 'Precio',
@@ -219,9 +407,10 @@ export const CreditNoteModal = () => {
       key: 'price',
       width: '120px',
       align: 'right',
+      responsive: ['md'],
       render: (_, record) => {
         const unitPrice = getTotalPrice(record, true, false);
-        return useFormatPrice(unitPrice);
+        return memoizedFormatPrice(unitPrice);
       },
       sorter: (a, b) => getTotalPrice(a, true, false) - getTotalPrice(b, true, false),
     },
@@ -231,10 +420,12 @@ export const CreditNoteModal = () => {
       key: 'itbis',
       width: '120px',
       align: 'right',
+      responsive: ['lg'],
       render: (_, record) => {
-        const total = getTotalPrice(record);
-        const itbis = total - (total / 1.18);
-        return useFormatPrice(itbis);
+        const qty = itemQuantities[record.id] || existingItemQuantities[record.id] || record.amountToBuy || 1;
+        const tempItem = { ...record, amountToBuy: qty };
+        const itbis = getTax(tempItem, true);
+        return memoizedFormatPrice(itbis);
       },
     },
     {
@@ -243,8 +434,17 @@ export const CreditNoteModal = () => {
       key: 'total',
       width: '120px',
       align: 'right',
-      render: (_, record) => useFormatPrice(getTotalPrice(record)),
-      sorter: (a, b) => getTotalPrice(a) - getTotalPrice(b),
+      responsive: ['sm'],
+      render: (_, record) => {
+        const qty = itemQuantities[record.id] || existingItemQuantities[record.id] || record.amountToBuy || 1;
+        const tempItem = { ...record, amountToBuy: qty };
+        return memoizedFormatPrice(getTotalPrice(tempItem));
+      },
+      sorter: (a, b) => {
+        const qtyA = itemQuantities[a.id] || existingItemQuantities[a.id] || a.amountToBuy || 1;
+        const qtyB = itemQuantities[b.id] || existingItemQuantities[b.id] || b.amountToBuy || 1;
+        return getTotalPrice({ ...a, amountToBuy: qtyA }) - getTotalPrice({ ...b, amountToBuy: qtyB });
+      },
     },
   ];
 
@@ -254,91 +454,118 @@ export const CreditNoteModal = () => {
     dispatch(openCreditNoteModal({ mode, creditNoteData: note }));
   };
 
+  const handleQuantityChange = (itemId, value) => {
+    if (!value || value < 1) return;
+    
+    // Verificar que no exceda la cantidad máxima disponible
+    const item = availableInvoiceItems.find(it => it.id === itemId);
+    if (item && value > item.maxAvailableQty) {
+      const originalQty = item.amountToBuy || 1;
+      const creditedByOthers = creditedQuantities[itemId] || 0;
+      const existingQty = existingItemQuantities[itemId] || 0;
+      
+      message.warning({
+        content: (
+          <div>
+            <div><strong>Cantidad excede el máximo disponible</strong></div>
+            <div style={{ fontSize: '12px', marginTop: '4px' }}>
+              • Factura original: {originalQty}<br/>
+              • Otras notas de crédito: {creditedByOthers}<br/>
+              <strong>Máximo permitido: {item.maxAvailableQty}</strong>
+            </div>
+          </div>
+        ),
+        duration: 4
+      });
+      return;
+    }
+    
+    setItemQuantities(prev => ({ ...prev, [itemId]: value }));
+  };
+
+  if (clientsLoading && isOpen) {
+    return (
+      <ResponsiveContainer
+        isMobile={isMobile}
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Cargando..."
+      >
+        <Container isMobile={isMobile}>
+          <Skeleton active paragraph={{ rows: 6 }} />
+        </Container>
+      </ResponsiveContainer>
+    );
+  }
+
   return (
-    <Modal
+    <ResponsiveContainer
+      isMobile={isMobile}
+      isOpen={isOpen}
+      onClose={handleClose}
       title={<TitleRow>{effectiveIsView ? 'Detalle Nota de Crédito' : effectiveIsEdit ? 'Editar Nota de Crédito' : 'Crear Nueva Nota de Crédito'}</TitleRow>}
-      open={isOpen}
-      onCancel={handleClose}
-      width={700}
-      style={{top: '10px'}}
-      footer={null}
     >
-      <Container>
+      <Container isMobile={isMobile}>
+        {!canUseCreditNotes && (
+          <Alert
+            message={!taxReceiptEnabled ? "Comprobantes Fiscales Deshabilitados" : "Comprobante de Notas de Crédito no configurado"}
+            description={!taxReceiptEnabled ? 
+              "Los comprobantes fiscales están deshabilitados en la configuración. Para crear o editar notas de crédito, debe habilitar los comprobantes fiscales y configurar el comprobante correspondiente (serie 04 - NOTAS DE CRÉDITO)." :
+              "Para crear o editar notas de crédito, debe configurar el comprobante fiscal correspondiente (serie 04 - NOTAS DE CRÉDITO)."
+            }
+            type="warning"
+            showIcon
+            style={{ marginBottom: '1rem' }}
+          />
+        )}
+
         {(effectiveIsView || effectiveIsEdit) && creditNoteData && (
-          <CurrentNCNumber>
-            Nota de Crédito: {creditNoteData.number || creditNoteData.numberID || creditNoteData.id}
-          </CurrentNCNumber>
+          <NCFContainer>
+            <NCFLabel>NCF</NCFLabel>
+            <NCFValue>{creditNoteData.ncf || 'N/A'}</NCFValue>
+          </NCFContainer>
         )}
         {mode === 'create' && (
           <Description>Complete los detalles para generar una nueva nota de crédito.</Description>
         )}
 
-        <FormSection>
-          <FormRow>
-            <FormField>
-              <FieldLabel>Cliente</FieldLabel>
-              <Select
-                placeholder="Seleccionar cliente"
-                value={selectedClientId}
-                onChange={handleClientChange}
-                disabled={effectiveIsView}
-                style={{ width: '100%' }}
-                loading={clientsLoading}
-              >
-                {clients.map(client => (
-                  <Option key={client.id} value={client.id}>
-                    {client.name}
-                  </Option>
-                ))}
-              </Select>
-            </FormField>
+        {canUseCreditNotes && (
+          <FormSection>
+            <FormRow>
+              <FormField>
+                <ClientSelector
+                  clients={clients}
+                  selectedClient={currentClient}
+                  onSelectClient={(client) => handleClientChange(client?.id || null)}
+                  loading={clientsLoading}
+                  disabled={effectiveIsView}
+                />
+              </FormField>
 
-            <FormField>
-              <FieldLabel>Facturas</FieldLabel>
-              <Select
-                placeholder="Seleccionar factura"
-                value={selectedInvoiceId}
-                onChange={handleInvoiceChange}
-                disabled={!selectedClientId || effectiveIsView}
-                style={{ width: '100%' }}
-                loading={invoicesLoading}
-              >
-                {invoices.map(invoice => (
-                  <Option key={invoice.id} value={invoice.id}>
-                   #{invoice.numberID} - {invoice.products?.length || 0} items - {useFormatPrice(invoice.totalPurchase.value)}
-                  </Option>
-                ))}
-              </Select>
-            </FormField>
-          </FormRow>
-        </FormSection>
-
-        {relatedCreditNotes.length > 0 && (
-          <RelatedNCSection>
-            <Collapse size="small">
-                    {relatedCreditNotes.map(cn => (
-                <Panel 
-                  header={`NC ${cn.number || cn.numberID || cn.id}`}
-                  key={cn.id}
-                  extra={
-                    <Button type="link" icon={<EyeOutlined />} onClick={(e)=>handleNavigateNote(cn, e)} />
-                  }
-                >
-                  {(cn.items || []).map(item => (
-                    <RelatedItemRow key={item.id}>
-                      <span>
-                        {item.name} <Tag>x{item.amountToBuy || 1}</Tag>
-                      </span>
-                      <span>{useFormatPrice(getTotalPrice(item))}</span>
-                    </RelatedItemRow>
-                    ))}
-                </Panel>
-              ))}
-            </Collapse>
-          </RelatedNCSection>
+              <FormField>
+                <InvoiceSelector
+                  invoices={invoices}
+                  selectedInvoice={currentInvoice}
+                  onSelectInvoice={(invoice) => handleInvoiceChange(invoice?.id || null)}
+                  loading={invoicesLoading}
+                  disabled={!selectedClientId || effectiveIsView}
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                />
+              </FormField>
+            </FormRow>
+          </FormSection>
         )}
 
-        {currentInvoice && hasAvailableProducts && (
+        {canUseCreditNotes && (
+          <Tabs
+            defaultActiveKey="productos"
+            type="card"
+            size={isMobile ? 'small' : 'middle'}
+          >
+            {/* TAB: Productos */}
+            <Tabs.TabPane tab="Productos" key="productos">
+              {currentInvoice && hasAvailableProducts && (
           <ProductsSection>
             <SectionHeader>
               <div>
@@ -359,24 +586,27 @@ export const CreditNoteModal = () => {
                   prefix={<SearchOutlined />}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  style={{ width: 200 }}
+                  style={{ width: isMobile ? '100%' : 200 }}
                   disabled={effectiveIsView}
                 />
               </SearchContainer>
             </SectionHeader>
 
-            <Table
-              dataSource={filteredProducts}
+            <ProductList
+              key={selectedInvoiceId}
+              products={filteredProducts}
               columns={columns}
-              rowKey="id"
-              pagination={{
-                current: currentPage,
-                pageSize: pageSize,
-                total: filteredProducts.length,
-                onChange: (page) => setCurrentPage(page),
-                showSizeChanger: false,
-              }}
-              size="small"
+              selectedItems={selectedItems}
+              itemQuantities={itemQuantities}
+              existingItemQuantities={existingItemQuantities}
+              creditedQuantities={creditedQuantities}
+              isMobile={isMobile}
+              effectiveIsView={effectiveIsView}
+              currentPage={currentPage}
+              pageSize={isMobile ? 3 : pageSize}
+              onPageChange={(page) => setCurrentPage(page)}
+              onItemChange={handleItemChange}
+              onQuantityChange={handleQuantityChange}
             />
 
             {selectedItems.length > 0 && (
@@ -389,15 +619,15 @@ export const CreditNoteModal = () => {
                     </InfoRow>
                     <InfoRow>
                       <InfoLabel>Subtotal:</InfoLabel>
-                      <InfoValue>{useFormatPrice(totalAmount / 1.18)}</InfoValue>
+                      <InfoValue>{memoizedFormatPrice(subtotal)}</InfoValue>
                     </InfoRow>
                     <InfoRow>
-                      <InfoLabel>ITBIS (18%):</InfoLabel>
-                      <InfoValue>{useFormatPrice(totalAmount - (totalAmount / 1.18))}</InfoValue>
+                      <InfoLabel>ITBIS:</InfoLabel>
+                      <InfoValue>{memoizedFormatPrice(totalItbis)}</InfoValue>
                     </InfoRow>
                     <InfoRow className="total">
                       <InfoLabel>Total a Acreditar:</InfoLabel>
-                      <InfoValue>{useFormatPrice(totalAmount)}</InfoValue>
+                      <InfoValue>{memoizedFormatPrice(totalAmount)}</InfoValue>
                     </InfoRow>
                   </TotalInfo>
                 </TotalSection>
@@ -406,7 +636,7 @@ export const CreditNoteModal = () => {
           </ProductsSection>
         )}
 
-        {currentInvoice && !hasAvailableProducts && (
+              {currentInvoice && !hasAvailableProducts && (
           <NoProductsMessage>
             <Alert
               type="info"
@@ -414,13 +644,49 @@ export const CreditNoteModal = () => {
               message="Sin productos disponibles"
               description="Todos los productos de esta factura ya han sido acreditados en otras notas de crédito." />
           </NoProductsMessage>
+              )}
+            </Tabs.TabPane>
+
+            {/* TAB: Notas Relacionadas */}
+            <Tabs.TabPane tab={`Notas Relacionadas (${relatedCreditNotes.length})`} key="relacionadas">
+              {relatedCreditNotes.length > 0 ? (
+                <RelatedNCSection>
+                  {relatedCreditNotes.map(cn => (
+                    <CreditNotePanel
+                      key={cn.id}
+                      creditNote={cn}
+                      onNavigateNote={handleNavigateNote}
+                      isExpanded={false}
+                      isMobile={isMobile}
+                    />
+                  ))}
+                </RelatedNCSection>
+              ) : (
+                <Alert
+                  type="info"
+                  showIcon
+                  message="Sin notas de crédito relacionadas"
+                  description="No existen notas de crédito asociadas a esta factura." />
+              )}
+            </Tabs.TabPane>
+          </Tabs>
         )}
 
         <ActionButtons>
           <Button onClick={handleClose}>
             Cancelar
           </Button>
-          {!effectiveIsView && (
+          {(effectiveIsView || effectiveIsEdit) && (
+            <Button
+              icon={<PrinterOutlined />}
+              onClick={() => handlePrintPdf(creditNoteData)}
+              loading={pdfLoading}
+              disabled={!creditNoteData}
+            >
+              Imprimir
+            </Button>
+          )}
+          {!effectiveIsView && canUseCreditNotes && (
           <Button
             type="primary"
             onClick={handleSubmit}
@@ -437,14 +703,15 @@ export const CreditNoteModal = () => {
           </CountdownText>
         )}
       </Container>
-    </Modal>
+    </ResponsiveContainer>
   );
 };
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: ${props => props.isMobile ? '1rem' : '1.5rem'};
+  height: ${props => props.isMobile ? '100%' : 'auto'};
 `;
 
 const Description = styled.p`
@@ -464,6 +731,7 @@ const FormRow = styled.div`
   
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: 0.75rem;
   }
 `;
 
@@ -479,17 +747,6 @@ const FieldLabel = styled.label`
   color: ${props => props.theme?.text?.primary || '#333'};
 `;
 
-const AlertSection = styled.div``;
-
-const CreditNoteList = styled.ul`
-  margin: 0.5rem 0 0 0;
-  padding-left: 1rem;
-`;
-
-const CreditNoteItem = styled.li`
-  margin: 0.25rem 0;
-`;
-
 const ProductsSection = styled.div`
   display: flex;
   flex-direction: column;
@@ -501,6 +758,12 @@ const SectionHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
 `;
 
 const SectionTitle = styled.h3`
@@ -508,6 +771,10 @@ const SectionTitle = styled.h3`
   font-size: 1rem;
   font-weight: 600;
   color: ${props => props.theme?.text?.primary || '#333'};
+  
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
 `;
 
 const SelectAllContainer = styled.div`
@@ -517,6 +784,10 @@ const SelectAllContainer = styled.div`
 const SearchContainer = styled.div`
   display: flex;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const TotalSection = styled.div`
@@ -524,6 +795,10 @@ const TotalSection = styled.div`
   justify-content: flex-end;
   padding: 0.5rem 0;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
 `;
 
 const TotalInfo = styled.div`
@@ -532,6 +807,11 @@ const TotalInfo = styled.div`
   border-radius: 8px;
   padding: 1rem;
   background-color: ${props => props.theme?.background?.secondary || '#fafafa'};
+  
+  @media (max-width: 768px) {
+    min-width: 100%;
+    padding: 0.75rem;
+  }
 `;
 
 const InfoRow = styled.div`
@@ -544,7 +824,7 @@ const InfoRow = styled.div`
     margin-top: 0.5rem;
     padding-top: 0.5rem;
     border-top: 1px solid ${props => props.theme?.border?.color || '#d9d9d9'};
-  font-weight: 600;
+    font-weight: 600;
     font-size: 1.1rem;
   }
 `;
@@ -554,6 +834,7 @@ const InfoLabel = styled.span`
 `;
 
 const InfoValue = styled.span`
+  font-weight: 500;
   color: ${props => props.theme?.text?.primary || '#333'};
   font-family: monospace;
 `;
@@ -564,6 +845,24 @@ const ActionButtons = styled.div`
   gap: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid ${props => props.theme?.border?.color || '#d9d9d9'};
+  
+  @media (max-width: 768px) {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    margin: 1rem -16px -20px -16px;
+    padding: 1rem 16px;
+    border-top: 1px solid #f0f0f0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    
+    button {
+      width: 100%;
+      height: 44px;
+      font-size: 16px;
+    }
+  }
 `;
 
 const CountdownText = styled.div`
@@ -574,14 +873,10 @@ const CountdownText = styled.div`
 `;
 
 const RelatedNCSection = styled.div`
-  margin-top: 8px;
-`;
-
-const RelatedItemRow = styled.div`
+  margin-top: 1.5rem;
   display: flex;
-  justify-content: space-between;
-  margin: 4px 0;
-  font-size: 0.85rem;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const NoProductsMessage = styled.div`
@@ -595,7 +890,66 @@ const TitleRow = styled.span`
   font-weight: 600;
 `;
 
-const CurrentNCNumber = styled.p`
-  font-weight: 600;
-  margin: 0;
+const NCFContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border: 1px solid ${props => props.theme?.border?.color || '#d9d9d9'};
+  border-radius: 8px;
+  background-color: ${props => props.theme?.background?.secondary || '#fafafa'};
+  max-width: 300px;
 `;
+
+const NCFLabel = styled.span`
+  font-size: 0.75rem;
+  color: ${props => props.theme?.text?.secondary || '#666'};
+  margin-bottom: 4px;
+`;
+
+const NCFValue = styled.span`
+  font-size: 1em;
+  font-weight: 600;
+  color: ${props => props.theme?.text?.primary || '#333'};
+  word-break: break-all;
+`;
+
+const InvoiceDetailsContainer = styled.div`
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const InvoiceInfoSection = styled.div`
+  padding: 1rem;
+  border: 1px solid ${props => props.theme?.border?.color || '#d9d9d9'};
+  border-radius: 8px;
+  background-color: ${props => props.theme?.background?.secondary || '#fafafa'};
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const InfoItemLabel = styled.span`
+  font-size: 0.75rem;
+  color: ${props => props.theme?.text?.secondary || '#666'};
+  margin-bottom: 2px;
+`;
+
+const InfoItemValue = styled.span`
+  font-weight: 500;
+  color: ${props => props.theme?.text?.primary || '#333'};
+`;
+
+const QtyDisplayContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export default CreditNoteModal;

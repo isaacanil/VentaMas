@@ -38,7 +38,7 @@ class ImportProgress {
     const { processedProducts, totalProducts } = this.stats;
     if (totalProducts > 0) {
       const percentage = Math.round((processedProducts / totalProducts) * 100);
-      console.log(`Progreso: ${percentage}% (${processedProducts}/${totalProducts})`);
+              // Processing products
     }
   }
 
@@ -120,7 +120,7 @@ async function preloadProductDocs(limitedProducts, productsCollection, existingP
  *   hay varios barcodes distintos).
  */
 async function fixDuplicatedNameBarcode(user, localProducts) {
-  console.log("== Iniciando fixDuplicatedNameBarcode ==");
+      console.info("Starting duplicate barcode fix process");
 
   try {
     // Colección de productos
@@ -142,10 +142,10 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
     }
 
     // 2. Obtener *todos* los documentos (o podrías filtrar solo los nombres que te interesan).
-    console.log("Obteniendo documentos de productos para verificar duplicados...");
+    // Retrieving products to check for duplicates
     const snapshot = await getDocs(productsColl);
     if (snapshot.empty) {
-      console.log("No hay productos en la BD, no hay duplicados por corregir.");
+              console.info("No products found in database");
       return;
     }
 
@@ -170,7 +170,7 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
       inner.get(barcodeKey).push({ docId, data });
     });
 
-    console.log(`Procesando ${byNameBarcode.size} nombres únicos para buscar duplicados...`);
+          // Processing unique product names
 
     let batch = writeBatch(db);
     let ops = 0;
@@ -181,7 +181,7 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
       if (ops === 0) return; // nada que guardar
       try {
         await batch.commit();
-        console.log(`Lote de ${ops} correcciones guardado`);
+        // Batch corrections saved
       } catch (err) {
         console.error("Error al guardar lote de correcciones:", err);
         throw err;           // propaga para manejo superior
@@ -196,29 +196,27 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
         if (docsArr.length <= 1) continue; // no hay duplicados
 
         // Si hay 2 o más con el mismo name+barcode => conflicto
-        console.log(
-          `Conflicto: ${docsArr.length} docs con name="${nameKey}" y barcode="${barcodeKey}"`
-        );
+        // Conflict detected with duplicate name and barcode
         conflicts++;
 
         const [, ...duplicates] = docsArr;
 
         const localBarcodesArr = [...(localByName.get(nameKey) || [])].filter(b => b !== barcodeKey);
-        console.log(`  Barcodes alternativos disponibles: ${localBarcodesArr.length}`);
+        // Processing alternative barcodes
 
         let idx = 0;
         for (const dup of duplicates) {
           let newBarcode = localBarcodesArr[idx++] ?? null;
 
           if (!newBarcode) {
-            console.log(`    -> No hay barcode alternativo. Documento "${dup.docId}" sigue duplicado.`);
+            // No alternative barcode available
             continue;
           }
 
           const docRef = doc(productsColl, dup.docId);
           batch.update(docRef, { barcode: newBarcode, updatedAt: serverTimestamp() });
           ops++;
-          console.log(`    -> Reasignado doc "${dup.docId}" al barcode="${newBarcode}"`);
+          // Document reassigned to new barcode
 
           if (ops >= maxOps) await commitAndReset();
         }
@@ -262,7 +260,9 @@ function processProduct(batch, product, batchNumber, context) {
       const updatedProduct = { ...product, image: existingData.image };
       batch.update(docRef, updatedProduct);
       opCount++;
-      console.log(`Producto actualizado (update) y se mantuvo 'image': ${product.name}`);
+      console.log(
+        `Producto actualizado (update) y se mantuvo 'image': ${product.name}`
+      );
       context.progress.updateProgress('updatedProducts');
     } else {
       // No existe => crear
@@ -278,7 +278,9 @@ function processProduct(batch, product, batchNumber, context) {
           const updatedProduct = { ...product, image: existingData.image };
           batch.update(docRef, updatedProduct);
           opCount++;
-          console.log(`Producto actualizado con id: ${product.id}`);
+          console.log(
+            `Producto actualizado con id: ${product.id}`
+          );
         }
       } else {
         docRef = doc(context.productsCollection);
@@ -366,7 +368,9 @@ function processProduct(batch, product, batchNumber, context) {
         batch.set(categoryDocRef, category);
         opCount++;
         context.existingCategoriesByName.set(categoryNameLowerCase, { docSnapshot: categoryDocRef, data: category });
-        console.log(`Categoría agregada: ${product.category}`);
+        console.log(
+          `Categoría agregada: ${product.category}`
+        );
         context.progress.updateProgress('newCategories');
       }
     }

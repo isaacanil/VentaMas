@@ -58,7 +58,7 @@ export function abbreviatePaymentMethods(methodsArray) {
 }
 
 export function calculateInvoicesTotal(invoices) {
-    console.log(invoices)
+
     return invoices.reduce((total, invoice) => total + invoice.data.totalPurchase.value, 0);
 }
 export function countInvoices(invoices) {

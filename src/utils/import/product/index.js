@@ -14,7 +14,7 @@ export const importProductData = async (file, language = 'en') => {
     try {
         const fileData = await file.arrayBuffer();
         const data = await readExcelFile(fileData);
-        console.log('Datos originales leídos:', data.sort((a, b) => a.Impuesto - b.Impuesto));
+    
         const headerMapping = productHeaderMappings;
 
         const dataMapped = mapData({ data, headerMapping, transformConfig, language });
@@ -34,7 +34,7 @@ export const importProductData = async (file, language = 'en') => {
 export const createProductTemplate = async (language = 'es', optionalFields = []) => {
     try {
         const headers = createSelectedHeaders(productHeaderMappings, language, optionalFields);
-        console.log('Columnas seleccionadas:', headers);
+
         const fileName = `Plantilla_Productos_${language}.xlsx`;
         await createExcelTemplate(headers, fileName);
     } catch (error) {

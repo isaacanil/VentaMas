@@ -67,18 +67,14 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
         let extractedClientId = clientId;
         let clientData = null;
         
-        console.log('Procesando datos de cliente para las cuentas seleccionadas...');
-        
         // Solo buscar en la ubicación específica: account.accountData.client.id
         if (accounts && accounts.length > 0) {
             for (let i = 0; i < accounts.length; i++) {
                 const account = accounts[i];
-                console.log(`Procesando cuenta ${i+1}:`, account?.id);
                 
                 // Buscar directamente en la ubicación específica
                 if (account.accountData && account.accountData.client && account.accountData.client.id) {
                     const accountClientId = account.accountData.client.id;
-                    console.log(`ID de cliente encontrado en cuenta ${i+1}:`, accountClientId);
                     
                     // Usar el cliente de cada cuenta individual
                     extractedClientId = accountClientId;
@@ -87,8 +83,6 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
                 }
             }
         }
-        
-        console.log('Cliente final seleccionado:', extractedClientId);
         
         // 2. Preparar información para el recibo con el ID de cliente correcto
         const paymentReceipt = {
@@ -294,10 +288,10 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
         
         // Solo incluir el clientId si es una cadena válida
         if (extractedClientId && typeof extractedClientId === 'string' && extractedClientId.trim() !== '') {
-            console.log('Usando clientId válido para el recibo:', extractedClientId);
+            // Cliente válido encontrado para el recibo
             receiptParams.clientId = extractedClientId;
         } else {
-            console.log('No se pudo obtener un clientId válido para el recibo');
+            // No se pudo obtener un clientId válido para el recibo
         }
         
         // Crear el recibo en la colección correcta: accountsReceivablePaymentReceipt

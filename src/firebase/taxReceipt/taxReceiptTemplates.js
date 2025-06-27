@@ -42,6 +42,16 @@ export const countryComprobantes = {
         increase: 1, 
         quantity: 1000, 
         description: "Factura para entidades gubernamentales" 
+      },
+      { 
+        name: "NOTAS DE CRÉDITO", 
+        type: "B", 
+        serie: "04", 
+        sequence: 0, 
+        sequenceLength: 8,
+        increase: 1, 
+        quantity: 1000, 
+        description: "Nota de crédito para anular operaciones, devoluciones o descuentos." 
       }
     ]
   }

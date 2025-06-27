@@ -2,6 +2,7 @@ import { motion } from "framer-motion"
 import { useSelector, useDispatch } from "react-redux"
 import styled from "styled-components"
 import { selectUser } from "../../../../features/auth/userSlice"
+import { selectBusinessData } from "../../../../features/auth/businessSlice"
 import { MenuLink } from "./MenuLink"
 import { UserSection } from "../UserSection"
 import { WebName } from "../../system/WebName/WebName"
@@ -37,10 +38,11 @@ const sidebarVariant = {
 export const SideBar = ({ isOpen, handleOpenMenu }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
+    const business = useSelector(selectBusinessData);
     const { billing: { billingMode } } = useSelector(SelectSettingCart);
-    const businessType = user?.business?.businessType || null;
+    const businessType = business?.businessType || null;
     const links = getMenuData();
-    const { SETTINGS } = ROUTES_PATH.SETTING_TERM;
+    const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM;
     const navigate = useNavigate();    // Filtrar los enlaces basados en 'key' y 'condition'
     const filteredLinks = links.reduce((acc, item) => {
         // Verificar si el elemento principal tiene una 'key' y una 'condition' y evaluarla
@@ -90,7 +92,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
         return acc;
     }, {}); 
     const handleGoToSetting = () => {
-        navigate(SETTINGS)
+        navigate(GENERAL_CONFIG_BUSINESS);
     }
 
     const handleOpenNotifications = () => {

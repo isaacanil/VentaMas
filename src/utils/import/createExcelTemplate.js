@@ -6,7 +6,7 @@ export const createExcelTemplate = async (headers, fileName) => {
     const worksheet = workbook.addWorksheet('Plantilla');
 
     worksheet.addRow(headers);
-    console.log('Columnas agregadas:', headers);
+
 
     if(!worksheet.columns || worksheet.columns.length === 0) { 
     
@@ -35,7 +35,7 @@ export const createExcelTemplate = async (headers, fileName) => {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 
-    console.log(`Archivo de plantilla creado: ${fileName}`);
+
   } catch (error) {
     console.error('Error al crear la plantilla:', error);
     throw error;

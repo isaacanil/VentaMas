@@ -29,11 +29,7 @@ export async function downloadQuotationPdf(business, data, onDialogClose) {
 
 export async function downloadInvoiceLetterPdf(business, data, onDialogClose) {
     try {
-        console.log('business', business);
-        console.log('data', data);
-        
-        // Intentar generar PDF con logo
-        console.log('🔄 Intentando generar PDF...');
+        // Generating PDF for quotation
         const base64 = await generateInvoiceLetterPdf(business, data);
         
         printJS({ 

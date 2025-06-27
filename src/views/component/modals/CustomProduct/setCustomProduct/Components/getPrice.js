@@ -10,7 +10,6 @@ export const getPrice = ({ productSelected, setProduct, isComplete }) => {
 
     switch (true) {
         case complete && firstProductPrice:
-            console.log('completa y a tiene precio')
             setProduct({
                 pricing: {
                     price: firstProductPrice,
@@ -18,7 +17,6 @@ export const getPrice = ({ productSelected, setProduct, isComplete }) => {
             })
             return firstProductPrice
         case half && firstProductPrice > secondProductPrice:
-            console.log('mitad y a es mayor que b')
             setProduct({
                 pricing: {
                     price: firstProductPrice,
@@ -26,7 +24,6 @@ export const getPrice = ({ productSelected, setProduct, isComplete }) => {
             })
             return firstProductPrice
         case half && firstProductPrice < secondProductPrice:
-            console.log('mitad y a es menor que b')
             setProduct({
                 pricing: {
                     price: secondProductPrice,
@@ -34,7 +31,6 @@ export const getPrice = ({ productSelected, setProduct, isComplete }) => {
             })
             return secondProductPrice
         case half && firstProductPrice === secondProductPrice:
-            console.log('mitad y a es igual que b')
             setProduct({
                 pricing: {
                     price: firstProductPrice,
@@ -42,7 +38,6 @@ export const getPrice = ({ productSelected, setProduct, isComplete }) => {
             })
             return firstProductPrice
         default:
-            console.log('default')
             setProduct({
                 pricing: {
                     price: firstProductPrice,

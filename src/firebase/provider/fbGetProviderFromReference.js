@@ -8,7 +8,7 @@ export const fbGetDocFromReference = async (ref) => {
       if (doc) { // Si el documento existe
         return doc; // Retorna el documento
       } else {
-        console.log("No such document!");
+        console.warn("No such document!");
         return null; // Retorna nulo si no existe el documento
       }
     } catch (error) { // Si hay un error en la promesa

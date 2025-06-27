@@ -3,7 +3,7 @@ import React from "react";
 // Creamos el componente Products
 export const ProductsByCategory = ({ products }) => {
   // Obtenemos las categorías únicas del array de productos
-  console.log(products)
+  
 //   if(products.length === 0){
 //     return;
 //   }

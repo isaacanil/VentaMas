@@ -25,7 +25,7 @@ export async function submitInvoice({
     }
     try {
         const { data } = await handleInvoice({ user, cart, client, accountsReceivable, insuranceAR, insuranceAuth, ncfType, taxReceiptEnabled, dueDate, insuranceEnabled });
-        console.log("Invoice data:", data);
+    
         return data;
 
     } catch (err) {

@@ -20,7 +20,7 @@ function print(message, type = 'info') {
       const timestamp = new Date().toISOString(); // Obtenemos la fecha y hora actuales
       switch (type) {
         case 'info':
-          console.log(`[DEV LOG] [INFO] [${timestamp}]: ${message}`);
+          // Development logging disabled
           break;
         case 'warning':
           console.warn(`[DEV LOG] [WARNING] [${timestamp}]: ${message}`);
@@ -29,7 +29,7 @@ function print(message, type = 'info') {
           console.error(`[DEV LOG] [ERROR] [${timestamp}]: ${message}`);
           break;
         default:
-          console.log(`[DEV LOG] [${timestamp}]: ${message}`);
+          // Development logging disabled
       }
     }
   }

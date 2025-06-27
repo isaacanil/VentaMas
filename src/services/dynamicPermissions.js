@@ -175,7 +175,7 @@ export const migrateCashierPermissions = async (businessID, currentUserID) => {
     // Aquí normalmente buscaríamos en la colección de usuarios
     // Por ahora, retornamos la estructura para implementación manual
     
-    console.log('Migración de cajeros especiales completada', migrationResults);
+            // Migration completed successfully
     return migrationResults;
     
   } catch (error) {

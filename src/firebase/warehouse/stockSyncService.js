@@ -39,7 +39,7 @@ const setLastSyncTime = (businessID) => {
 // Función principal para sincronizar el stock
 export const syncProductsStock = async (businessID) => {
   try {
-    console.log('Iniciando sincronización de stock...');
+
     const products = await getAllProducts(businessID);
     
     for (const product of products) {
@@ -51,12 +51,12 @@ export const syncProductsStock = async (businessID) => {
           stock: totalStock,
           lastStockSync: new Date().toISOString()
         });
-        console.log(`Stock actualizado para ${product.name}: ${totalStock}`);
+
       }
     }
     
     setLastSyncTime(businessID);
-    console.log('Sincronización de stock completada');
+
   } catch (error) {
     console.error('Error en la sincronización de stock:', error);
   }

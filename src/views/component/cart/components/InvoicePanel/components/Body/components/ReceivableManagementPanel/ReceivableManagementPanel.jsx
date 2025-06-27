@@ -70,17 +70,7 @@ export const ReceivableManagementPanel = ({
   const generalBalance = useMemo(() => getPositive(change) + currentBalance, [change, currentBalance]);
   const isInvalidClient = !client.id || client.id === "GC-0000";
 
-  // Debug logs
-  console.log('ReceivableManagementPanel - Debug Info:', {
-    isOpen,
-    receivableStatus,
-    isChangeNegative,
-    isReceivable,
-    isInvalidClient,
-    clientId: client?.id,
-    businessID: user?.businessID, 
-    currentBalance,
-  });
+
 
   const updatePaymentDateInStore = useCallback(
     (value) => dispatch(setAR({ paymentDate: value })),
@@ -93,7 +83,6 @@ export const ReceivableManagementPanel = ({
     setUserModifiedDate(false);
     setForceRecalculate(true);
     dispatch(setAR({ ...updates, paymentDate: null }));
-    console.log("Base date updated:", new Date(newBase).toLocaleDateString(), updates);
   }, [dispatch]);
 
   const handleDateChange = useCallback(
@@ -101,13 +90,11 @@ export const ReceivableManagementPanel = ({
       if (date) {
         const newDateMillis = date.valueOf();
         if (newDateMillis !== paymentDate) {
-          console.log("Date manually changed:", date.format('DD/MM/YYYY'));
           setUserModifiedDate(true);
           setForceRecalculate(false);
           updatePaymentDateInStore(newDateMillis);
         }
       } else {
-        console.log("Date cleared by user");
         setUserModifiedDate(false);
         updatePaymentDateInStore(null);
         setBaseCalculationDate(DateTime.now().startOf("day").toMillis());
@@ -121,7 +108,6 @@ export const ReceivableManagementPanel = ({
     (value) => {
       const numValue = Number(value) || 1;
       if (numValue !== totalInstallments) {
-        console.log('Installments changed:', totalInstallments, '->', numValue);
         updateARConfig({ totalInstallments: numValue });
       } else {
         dispatch(setAR({ totalInstallments: numValue }));
@@ -133,7 +119,6 @@ export const ReceivableManagementPanel = ({
   const setFrequency = useCallback(
     (value) => {
       if (value !== paymentFrequency) {
-        console.log('Frequency changed:', paymentFrequency, '->', value);
         updateARConfig({ paymentFrequency: value });
       } else {
         dispatch(setAR({ paymentFrequency: value }));
@@ -187,11 +172,9 @@ export const ReceivableManagementPanel = ({
         }
       } else if (forceRecalculate) {
         setForceRecalculate(false);
-        console.log("Force recalculate flag reset (date matched).");
       }
     } else if (forceRecalculate) {
       setForceRecalculate(false);
-      console.log("Force recalculate flag reset (conditions not met).");
     }
   }, [
     nextPaymentDate,
@@ -276,7 +259,6 @@ export const ReceivableManagementPanel = ({
       const initialBase = DateTime.now().startOf("day").toMillis();
       setBaseCalculationDate(initialBase);
       setForceRecalculate(true); // Forzar recálculo inicial
-      console.log("Initializing base calculation date:", new Date(initialBase).toLocaleDateString());
     }
   }, [isOpen, baseCalculationDate]);
   // Inicializar valores por defecto cuando se abre el modal por primera vez
@@ -289,7 +271,6 @@ export const ReceivableManagementPanel = ({
         totalInstallments === 0;
         
       if (needsInitialization) {
-        console.log('Inicializando valores por defecto del AR');
         dispatch(setAR({ 
           paymentFrequency: 'monthly',
           totalInstallments: 1,
@@ -302,7 +283,6 @@ export const ReceivableManagementPanel = ({
 
   // No renderizar el modal si el cliente es inválido
   if (isInvalidClient) {
-    console.log('Modal no renderizado: cliente inválido');
     return null;
   }
 

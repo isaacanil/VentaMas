@@ -18,7 +18,7 @@ export const fbGetTaxReceipt = () => {
     // Siempre iniciamos cargando
     setLoading(true);
 
-    if (!user.businessID) {
+    if (!user || !user.businessID) {
       setTaxReceipt([]);
       setLoading(false);
       return;

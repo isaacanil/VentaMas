@@ -18,6 +18,7 @@ import UsersAdminToolbar from "./Page/UsersAdminToolbar";
 import { VentaMenuToolbar } from "./Page/VentaMenuToolbar";
 import { WarehouseToolbar } from "./Page/WarehouseToolbar";
 import { AccountReceivableToolbar } from "./Page/AccountReceivableToolbar/AccountReceivableToolbar";
+import { CreditNoteToolbar } from "./Page/CreditNoteToolbar";
 
 const componentsConfig = [
   {
@@ -95,6 +96,10 @@ const componentsConfig = [
   {
     id: 'generalConfigToolBar',
     component: GeneralConfigToolbar
+  },
+  {
+    id: 'creditNoteToolBar',
+    component: CreditNoteToolbar
   }
 ];
 

@@ -31,7 +31,7 @@ export const fbDeleteProducts = async (user) => {
         // Comprometer (ejecutar) el lote
         await batch.commit();
 
-        console.log(`${querySnapshot.size} documentos eliminados.`);
+        console.info(`${querySnapshot.size} products deleted successfully.`);
     } catch (error) {
         console.error("Error eliminando documentos: ", error);
     }

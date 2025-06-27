@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import * as  ant from 'antd';
-const { Upload, Button, message, Dropdown, Typography, Divider } = ant;
-import { ArrowLeftOutlined, InboxOutlined } from '@ant-design/icons';
+const { Upload, Button, message, Typography, Progress } = ant;
+import { ArrowLeftOutlined, InboxOutlined, PictureOutlined, DeleteOutlined } from '@ant-design/icons';
 import noImg from '../../../../../assets/producto/noImg.png';
 import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg';
 import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData';
@@ -13,73 +13,216 @@ import { Gallery } from './components/Gallery';
 import { ChangeProductImage, selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice';
 
 const Container = styled.div`
-  display: grid;
-  gap: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 20px;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 8px;
 `;
 
 const Header = styled.div`
-  display: grid;
-  grid-template-columns: min-content min-content;
-  justify-content: space-between;
-  width: 100%;
-`;
-const Toolbar = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  width: 100%;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  
+  margin: -20px -20px 0 -20px;
+  padding: 16px 20px 12px 20px;
+  border-radius: 8px 8px 0 0;
 `;
 
-
-
-
-// const Button = styled.button`
-//   background-color: blue;
-//   color: white;
-//   padding: 10px 20px;
-//   border: none;
-//   cursor: pointer;
-// `;
-
-const SelectedImage = styled.div`
+const Title = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   
-  /* width: 110px;
-  height: 110px; */
-  
-  overflow: hidden;
-    img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-    }
+  .anticon {
+    color: #3b82f6;
+    font-size: 16px;
+  }
 `;
 
-const SelectedImageContainer = styled.div`
+const MainContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+`;
+
+const UploadSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  align-items: end;
-  width: 100%;
-  min-width: 200px;
-  
+  gap: 16px;
 `;
-const UploadImage = styled.div`
- 
-  width: 200px;
 
-  max-width: 300px;
+const SectionTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+  
+  .anticon {
+    color: #6b7280;
+    font-size: 16px;
+  }
+`;
+
+const UploadContainer = styled.div`
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 20px;
+  border: 2px dashed #d1d5db;
+  transition: all 0.2s ease;
+  position: relative;
+  
+  &:hover {
+    border-color: #3b82f6;
+    background: #f8faff;
+  }
+  
+  .ant-upload-drag {
+    border: none !important;
+    background: transparent !important;
+    padding: 24px 16px !important;
+  }
+  
+  .ant-upload-drag:hover {
+    background: transparent !important;
+  }
+  
+  .ant-upload-drag-icon {
+    font-size: 36px !important;
+    color: #6b7280 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .ant-upload-text {
+    font-size: 14px !important;
+    color: #374151 !important;
+    font-weight: 500 !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .ant-upload-hint {
+    color: #6b7280 !important;
+    font-size: 12px !important;
+  }
+`;
+
+const ProgressContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  z-index: 10;
+`;
+
+const PreviewSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const PreviewCard = styled.div`
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+`;
+
+const ImagePreview = styled.div`
+  width: 100%;
+  height: 180px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  
+  .no-image {
+    color: #9ca3af;
+    font-size: 36px;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 8px;
+  width: 100%;
+`;
+
+const GallerySection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  grid-column: 1 / -1;
+`;
+
+const GalleryContainer = styled.div`
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+`;
+
+const HelpText = styled.p`
+  margin: 0 0 16px 0;
+  color: #6b7280;
+  font-size: 13px;
+  background: #f9fafb;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #3b82f6;
 `;
 
 // React component
 const ImageManager = ({ hideImageManager }) => {
-  // You would manage state and functionality here
   const user = useSelector(selectUser);
   const [images, setImages] = useState([]);
   const [fileList, setFileList] = useState([]);
-  const {product} = useSelector(selectUpdateProductData);
-  const productImg = product?.productImageURL;
-  const dispatch = useDispatch();  const updateFileListWithProgress = (file, progress) => {
+  const { product } = useSelector(selectUpdateProductData);
+  const productImg = product?.image;
+  const dispatch = useDispatch();
+
+  const updateFileListWithProgress = (file, progress) => {
     setFileList(prevFileList => prevFileList.map(f => {
       if (f.uid === file.uid) {
         return { ...f, percent: progress, name: file.name, status: 'uploading' };
@@ -88,11 +231,11 @@ const ImageManager = ({ hideImageManager }) => {
     }));
   };
 
-  const props = {
+  const uploadProps = {
     name: 'file',
     multiple: false,
     fileList,
-    action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
+    showUploadList: false,
     customRequest: async ({ file, onProgress }) => {
       try {
         const newFile = { ...file, percent: 0, status: 'uploading' };
@@ -107,79 +250,144 @@ const ImageManager = ({ hideImageManager }) => {
 
         const url = await fbAddProductImg(user, file, updateProgress);
         await fbAddProductImgData(user, url);
-        message.success(`Imagen subida exitosamente.`);
+        message.success('Imagen cargada correctamente');
         setFileList([{ ...newFile, status: 'done', url }]);
       } catch (error) {
-        message.error(`${file.name} imagen no subida.`);
+        message.error('Error al cargar la imagen');
         setFileList([{ ...file, status: 'error' }]);
       } finally {
-        setFileList([]);
+        setTimeout(() => setFileList([]), 1000);
       }
     },
+    beforeUpload: (file) => {
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        message.error('Solo se permiten archivos de imagen');
+        return false;
+      }
+      const isLt5M = file.size / 1024 / 1024 < 5;
+      if (!isLt5M) {
+        message.error('El archivo debe ser menor a 5MB');
+        return false;
+      }
+      return true;
+    },
   };
- 
-  useEffect(() => { fbGetProductsImg(user, setImages) }, [user])
+
+  useEffect(() => {
+    fbGetProductsImg(user, setImages);
+  }, [user]);
+
   const uploadProgress = fileList.length > 0 ? fileList[0].percent : 0;
+  const isUploading = fileList.length > 0 && fileList[0].status === 'uploading';
+
+  const handleRemoveImage = () => {
+    dispatch(ChangeProductImage(null));
+  };
+
   return (
     <Container>
-      <Toolbar>
+      <Header>
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={hideImageManager}
+          type="default"
         >
-          Atrás
+          Volver
         </Button>
-      </Toolbar>
-      <Divider orientation='left' style={{ margin: 0 }}>
-        Cargar Imagen
-      </Divider>
-      <Header>
-        <UploadImage>
-          <Upload.Dragger {...props}  >
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p>Haz clic o arrastra la imagen a esta área para subirla</p> 
-            {
-              fileList.length > 0 ? (<p>Subiendo {uploadProgress}%</p>) : null
-            }  
-          </Upload.Dragger>
-        
-        </UploadImage>
-        <SelectedImageContainer>
-          <SelectedImage>
-            <ant.Image
-              height={110}
-              width={110}
-            
-              //src={selectedImage || noImg}
-              src={productImg || noImg}
-              alt="Selected"
-              preview={productImg ? true : false}
-              fallback={imgFailed}
-            />
-          </SelectedImage>
-          <Button
-            disabled={!productImg}
-          onClick={() => dispatch(ChangeProductImage(null))}
-          >
-            Deselecionar
-          </Button>
-        </SelectedImageContainer>
+   
       </Header>
-      <Divider
-        orientation='left'
-        style={{ margin: 0 }}
-      >
-        Imágenes Subidas
-      </Divider>
-      <Typography.Text type='secondary'>
-        Click en las imágenes para seleccionarlas
-      </Typography.Text>
-      <Gallery
+
+      <MainContent>
+        <UploadSection>
+          <SectionTitle>
+            <InboxOutlined />
+            Cargar Imagen
+          </SectionTitle>
+          
+          <UploadContainer>
+            <Upload.Dragger {...uploadProps}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">
+                Seleccionar imagen del producto
+              </p>
+              <p className="ant-upload-hint">
+                JPG, PNG o GIF • Máximo 5MB
+              </p>
+            </Upload.Dragger>
+            
+            {isUploading && (
+              <ProgressContainer>
+                <Typography.Text strong style={{ marginBottom: 16, color: '#374151', textAlign: 'center' }}>
+                  Cargando imagen...
+                </Typography.Text>
+                <Progress 
+                  percent={Math.round(uploadProgress)} 
+                  status="active"
+                  strokeColor={{
+                    '0%': '#3b82f6',
+                    '100%': '#1d4ed8',
+                  }}
+                  style={{ width: '80%' }}
+                />
+              </ProgressContainer>
+            )}
+          </UploadContainer>
+        </UploadSection>
+
+        <PreviewSection>
+          <SectionTitle>
+            <PictureOutlined />
+            Vista Previa
+          </SectionTitle>
+          
+          <PreviewCard>
+            <ImagePreview>
+              {productImg ? (
+                <ant.Image
+                  src={productImg}
+                  alt="Imagen del producto"
+                  width="100%"
+                  height="100%"
+                  style={{ objectFit: 'cover' }}
+                  fallback={imgFailed}
+                />
+              ) : (
+                <PictureOutlined className="no-image" />
+              )}
+            </ImagePreview>
+            
+            <ButtonGroup>
+              <Button
+                disabled={!productImg}
+                onClick={handleRemoveImage}
+                icon={<DeleteOutlined />}
+                danger
+                block
+                size="small"
+              >
+                Remover
+              </Button>
+            </ButtonGroup>
+          </PreviewCard>
+        </PreviewSection>
+      </MainContent>
+
+      <GallerySection>
+        <SectionTitle>
+          <PictureOutlined />
+          Imágenes Disponibles
+        </SectionTitle>
         
-        images={images}
-      />
+        <GalleryContainer>
+          <HelpText>
+            💡 Selecciona una imagen de la galería para asignarla al producto
+          </HelpText>
+          <Gallery images={images} />
+        </GalleryContainer>
+      </GallerySection>
     </Container>
   );
 };

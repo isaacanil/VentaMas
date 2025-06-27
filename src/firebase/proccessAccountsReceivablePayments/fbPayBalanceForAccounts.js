@@ -130,15 +130,11 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
 
         for (let account of accounts) {
             if (remainingAmount <= 0) break;
-            console.log(`Processing account ${account.id} - remainingAmount: ${remainingAmount}`);
-
             const accountInstallments = await getInstallmentsByArId(user, account.id);
-            console.log(`Account ${account.id} has ${accountInstallments.length} installments, accountInstallments: `, accountInstallments);
             let accountTotalPaid = 0;
             const paidInstallments = [];
 
             for (let installment of accountInstallments) {
-                console.log(`Processing installment ${installment.id} - remainingAmount: ${remainingAmount}`);
                 if (remainingAmount <= 0) break;
 
                 const processedInstallment = await processInstallment(batch, user, installment, remainingAmount, paymentId, clientId, account);
@@ -149,7 +145,6 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
                 }
 
                 const { amountToApply, newAccountBalance, newInstallmentBalance } = processedInstallment;
-                console.log(` ---- > remainingAmount: ${isNaN(remainingAmount) ? 'NaN' : remainingAmount} - amountToApply: ${amountToApply} - newAccountBalance: ${newAccountBalance} - newInstallmentBalance: ${newInstallmentBalance}`);
                 remainingAmount = roundToTwoDecimals(remainingAmount - amountToApply);
                 accountTotalPaid = roundToTwoDecimals(accountTotalPaid + amountToApply);
                 account.arBalance = newAccountBalance;
@@ -170,7 +165,6 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
             if (invoice) {
                 const invoiceRef = doc(db, "businesses", user.businessID, "invoices", account.invoiceId);
                 const invoiceData = invoice.data;
-                console.log("invoice data: ", invoiceData)
                 invoiceData.totalPaid = roundToTwoDecimals((invoiceData.totalPaid || 0) + accountTotalPaid);
                 invoiceData.balanceDue = roundToTwoDecimals(invoiceData.totalAmount - invoiceData.totalPaid);
                 invoiceData.status = invoiceData.balanceDue <= THRESHOLD ? true : false;

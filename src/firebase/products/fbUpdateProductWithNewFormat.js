@@ -4,7 +4,7 @@ import { getTax } from "../../utils/pricing";
 
 export async function fbUpdateProductToNewFormat(businessID, productID) {
     try {
-        console.log(`Iniciando la actualización del producto para el negocio con ID: ${businessID} y producto ID: ${productID}`);
+        // Starting product update
 
         // Referencia al documento del producto
         const productRef = doc(db, "businesses", businessID, "products", productID);
@@ -12,7 +12,7 @@ export async function fbUpdateProductToNewFormat(businessID, productID) {
         // Obtener el documento del producto
         const docSnapshot = await getDoc(productRef);
         if (!docSnapshot.exists()) {
-            console.log("El producto no existe. Abortando la actualización.");
+            console.warn("Product not found. Aborting update.");
             return;
         }
 

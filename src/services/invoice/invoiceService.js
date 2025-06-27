@@ -132,7 +132,7 @@ async function validateCashReconciliation({ user, dispatch, transaction }) {
 
 async function handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType }) {
     if (!user || !taxReceiptEnabled) return null;
-    
+
     try {
         return await fbGetAndUpdateTaxReceipt(user, ncfType);
     } catch (error) {
@@ -186,9 +186,7 @@ async function manageReceivableAccounts({ user, accountsReceivable, invoice }) {
 
 async function manageInsuranceReceivableAccounts({ user, arData, invoice, insuranceAuth, authDataId }) {
     try {
-        // Log the input object to see what's being passed
-        console.log("------------------------------------------------insuranceAR Object:", JSON.stringify(arData));
-        console.log("insuranceAuth Object:", JSON.stringify(insuranceAuth));
+        // Validate input data
         if (!arData?.totalInstallments) {
             throw new Error('Datos de cuotas de seguro faltantes');
         }
@@ -220,13 +218,9 @@ async function manageInsuranceReceivableAccounts({ user, arData, invoice, insura
             comments: arData.comments || ''
         };
 
-        // Log the normalized object to verify it has the correct properties
-        console.log("Normalized AR Object:", JSON.stringify(normalizedAR, null, 2));
-
         // Usar las mismas funciones que para cuentas por cobrar normales
         const ar = await fbAddAR({ user, accountsReceivable: normalizedAR });
         await fbAddInstallmentAR({ user, ar });
-        console.log("ar created: ------------------- ", ar)
     } catch (error) {
         console.error("Error en manageInsuranceReceivableAccounts:", error);
         throw new Error(`Error al gestionar cuentas por cobrar de seguro: ${error.message}`);
@@ -268,16 +262,16 @@ async function processTestModeInvoice({
     insuranceEnabled,
 }) {
     try {
-        console.log('🧪 Procesando factura en MODO PRUEBA - No se guardará en base de datos');
-        
+
+
         // Generar un mock de NCF para prueba
         const mockNcfCode = taxReceiptEnabled ? `TEST-${ncfType}-${Date.now()}` : null;
-        
+
         // Generar datos mock del cliente
-        const mockClientData = client || { 
-            id: 'test-client-id', 
+        const mockClientData = client || {
+            id: 'test-client-id',
             name: 'Cliente de Prueba',
-            ...GenericClient 
+            ...GenericClient
         };
 
         // Crear factura mock con estructura similar a la real
@@ -302,8 +296,8 @@ async function processTestModeInvoice({
         // Simular tiempo de procesamiento
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log('✅ Factura de prueba generada exitosamente:', mockInvoice);
-        
+
+
         return { invoice: mockInvoice };
 
     } catch (error) {

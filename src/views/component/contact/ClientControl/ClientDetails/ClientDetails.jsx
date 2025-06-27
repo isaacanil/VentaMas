@@ -32,7 +32,7 @@ export const ClientDetails = ({ mode }) => {
     );
 
     const changePendingBalance = (balance) => {
-      console.log('-------------------Pending balance updated:', balance)
+      
       setPendingBalance(balance)
       dispatch(setAR({ currentBalance: balance }));
     }

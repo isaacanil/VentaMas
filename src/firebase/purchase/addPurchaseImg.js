@@ -24,11 +24,11 @@ export const fbAddPurchaseReceiptImg = (user, dispatch, file, orderId) => {
     uploadFile.on('state_changed',
         (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log('Upload is ' + progress + '% done');
+            // Upload in progress
             dispatch(UploadProgress({ progress }));
         },
         (error) => {
-            console.log(error)
+            console.error("Upload error:", error);
             dispatch(UploadImgLoading(false))
         },
         async () => {

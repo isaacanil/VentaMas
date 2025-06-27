@@ -16,7 +16,7 @@ export const handleTaxReceipt = async (dispatch, taxReceiptEnabled, ncfStatus) =
             dispatch(IncreaseEndConsumer());
         }
     } catch (error) {
-        console.log(error);
+        console.error('Error in cart helper:', error);
         notification.error({
             message: "Ocurrió un error al manejar el comprobante fiscal. Intente de nuevo."
         });
@@ -48,7 +48,7 @@ export const savingDataToFirebase = async (dispatch, user, bill, taxReceipt) => 
                 message: "No se puede Facturar en Modo Demo"
             });
         }
-    } catch (err) { console.log(err) }
+    } catch (err) { console.error('Error clearing invoice state:', err) }
 }
 
 export const handleClearDataFromState = async (dispatch, viewportWidth) => {
@@ -58,7 +58,7 @@ export const handleClearDataFromState = async (dispatch, viewportWidth) => {
         dispatch(deleteClient())
         if (viewportWidth < 800) dispatch(toggleCart());
     } catch (error) {
-        console.log('error al borrar los datos del state de factura')
+        console.error('Error al borrar los datos del state de factura')
     }
 }
 
@@ -66,7 +66,7 @@ export const createOrUpdateClient = async (dispatch, user) => {
     try {
       dispatch(handleClient({ user }))
     } catch (error) {
-      console.log(error)
+              console.error('Error in cart operation:', error)
       notification.error({
           message: "Ocurrió un Error con el cliente, Intente de Nuevo"
       });

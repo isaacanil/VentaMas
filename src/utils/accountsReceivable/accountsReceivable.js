@@ -12,7 +12,7 @@ export function calculateTotalCredit(remainingBalance) {
     return remainingBalance;
 }
 export function calculateTotalActiveBalance(accounts) {
-    console.log("active balance cuentas ", accounts)
+
     return accounts
         .filter(account => account.isActive && account.arBalance > 0)
         .reduce((total, account) => total + account.arBalance, 0);
@@ -20,7 +20,7 @@ export function calculateTotalActiveBalance(accounts) {
 
 
 export const convertAccountsData = (data) => {
-    console.log(data)
+    
     return data.map(account => {
 
         const date = DateTime.fromSeconds(account.createdAt.seconds).toFormat('dd/MM/yyyy');

@@ -18,7 +18,6 @@ function generateSessionToken(user) {
 
 async function getUserFromFirestore(user) {
     const userRef = collection(db, "users");
-    console.log(user);
     const q = query(userRef, where("user.name", "==", user.name));
     const userSnapshot = await getDocs(q);
 

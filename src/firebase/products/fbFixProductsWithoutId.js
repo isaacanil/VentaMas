@@ -8,7 +8,7 @@ export async function fbFixProductsWithoutId(user) {
 
         const q = query(productsCollection);
         const querySnapshot = await getDocs(q);
-        console.log('-------------------- Productos sin ID:', querySnapshot.size);
+        console.info(`Found ${querySnapshot.size} products without ID`);
         const products = querySnapshot.docs.map((doc) => ({...doc.data(), id: doc.id}));
 
          const BATCH_LIMIT = 500;

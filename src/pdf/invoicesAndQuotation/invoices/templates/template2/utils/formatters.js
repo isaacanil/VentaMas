@@ -1,7 +1,10 @@
 import { DateTime } from 'luxon';
 
 export function money(n) {
-  return Number(n).toFixed(2);
+  const num = Number(n) || 0;
+  const parts = num.toFixed(2).split('.')
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `RD$ ${parts.join('.')}`;
 }
 
 export function formatDate(ts) {

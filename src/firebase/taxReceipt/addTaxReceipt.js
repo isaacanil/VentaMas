@@ -26,7 +26,7 @@ export const addTaxReceipt = async (user, data) => {
         // Add the new document with the data nested under a 'data' field
         const docRef = await addDoc(receiptsCollectionRef, { data: data }); 
         
-        console.log(`Tax receipt created successfully with ID: ${docRef.id}`);
+        console.info(`Tax receipt created successfully`);
         return docRef; // Return the reference to the new document
 
     } catch (error) {

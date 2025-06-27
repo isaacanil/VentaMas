@@ -113,8 +113,7 @@ export const Prueba = () => {
       setFilteredInvoices(facturas);
       setDuplicateGroups(gruposParaSelect);
       
-      console.log(`Facturas cargadas: ${facturas.length}`);
-      console.log(`Grupos de duplicados encontrados: ${gruposParaSelect.length}`);
+      // Facturas cargadas y grupos procesados correctamente
       
     } catch (error) {
       console.error('Error cargando facturas:', error);
@@ -166,12 +165,7 @@ export const Prueba = () => {
       facturasPorSerieYTipo.get(clave).push(factura);
     });
 
-    console.log('=== DEBUG NUEVA LÓGICA POR SERIE Y TIPO ===');
-    console.log('Grupos encontrados:', Array.from(facturasPorSerieYTipo.keys()));
-    facturasPorSerieYTipo.forEach((facturas, clave) => {
-      console.log(`${clave}: ${facturas.length} facturas`);
-    });
-    console.log('==========================================');
+    // Procesando facturas por serie y tipo
 
     // 3. Procesar cada grupo de serie+tipo por separado
     const facturasCorregidas = [];
@@ -200,8 +194,7 @@ export const Prueba = () => {
         inconsistencias: 0
       };
 
-      console.log(`=== Procesando grupo ${claveSerieYTipo} ===`);
-      console.log(`Facturas: ${facturasDelGrupo.length}, Secuencia base: ${secuenciaInicialDelGrupo}`);
+      // Procesando grupo de facturas
 
       facturasDelGrupo.forEach((factura, indexEnGrupo) => {
         const secuenciaOriginal = extraerSecuencia(factura.ncf);
@@ -305,23 +298,11 @@ export const Prueba = () => {
       });
 
       resumenPorSerieYTipo.set(claveSerieYTipo, resumenGrupo);
-      console.log(`Grupo ${claveSerieYTipo} completado:`, resumenGrupo);
     });
 
     // 4. Clasificar facturas por estado
     const facturasSinCambios = facturasCorregidas.filter(f => !f.necesitaCorreccion);
-    const facturasConCambios = facturasCorregidas.filter(f => f.necesitaCorreccion);    console.log('=== RESUMEN NUEVA LÓGICA POR SERIE Y TIPO ===');
-    console.log('Total facturas analizadas:', facturasOrdenadas.length);
-    console.log('Grupos de serie+tipo encontrados:', facturasPorSerieYTipo.size);
-    console.log('Facturas sin cambios:', facturasSinCambios.length);
-    console.log('Facturas con cambios:', facturasConCambios.length);
-    console.log('Total duplicados detectados:', totalDuplicados);
-    console.log('Total inconsistencias de secuencia:', totalInconsistencias);
-    console.log('Total problemas:', totalProblemas);
-    resumenPorSerieYTipo.forEach((resumen, clave) => {
-      console.log(`Grupo ${clave}:`, resumen);
-    });
-    console.log('============================================');
+    const facturasConCambios = facturasCorregidas.filter(f => f.necesitaCorreccion);
 
     // 5. Preparar overview con la nueva lógica por serie y tipo
     const overview = {

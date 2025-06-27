@@ -18,15 +18,15 @@ const updateProductsStockFromReplenishments = async (user, newPurchase, previous
     const previousReplenishmentsMap = previousPurchase ? new Map(previousPurchase.replenishments.map(item => [item.id, item])) : new Map();
 
     for (const [productId, newReplenishment] of newReplenishmentsMap) {
-        console.log("newReplenishment being processed:", newReplenishment);
+        // Processing new replenishment
         if (previousReplenishmentsMap.has(productId)) {
             const previousReplenishment = previousReplenishmentsMap.get(productId);
-            console.log("previousReplenishment for existing product:", previousReplenishment);
+            // Processing existing product replenishment
             let stockChange = newReplenishment.newStock - previousReplenishment.newStock;
-            console.log(`Producto ${productId} (${newReplenishment.productName}): stock anterior ${previousReplenishment.newStock}, stock nuevo ${newReplenishment.newStock}. Cambio: ${stockChange}`);
+            // Stock change calculated for existing product
             // await updateProductStock(user, productId, stockChange);
         } else {
-            console.log(`Producto nuevo: ${productId} (${newReplenishment.productName}). Stock establecido a ${newReplenishment.newStock}`);
+            // New product stock established
             // await updateProductStock(user, productId, newReplenishment.newStock);
         }
     }
@@ -43,7 +43,7 @@ const updateProductsStockFromReplenishments = async (user, newPurchase, previous
 
 const updateProductStock = async (user, productId, stockChange) => {
     // Realizar la actualización del stock del producto en la base de datos
-    console.log(`Actualizando el stock del producto ${productId} en ${stockChange} unidades.`);
+                // Updating product stock
 
     const productsRef = doc(db, 'businesses', user.businessID, "products", productId);
     // Usa 'increment' para ajustar el stock en lugar de establecer un nuevo valor directamente
@@ -93,7 +93,7 @@ export const deleteRemovedFiles = async (removedAttachments) => {
 export const fbUpdatePurchase = async ({ user, purchase, localFiles = [], setLoading = () => { } }) => {
     try {
         setLoading(true);
-        console.log("Updating purchase:", purchase);
+        // Updating purchase data
         const purchaseRef = doc(db, "businesses", user.businessID, "purchases", purchase.id);
 
         // Get previous version of purchase

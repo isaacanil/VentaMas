@@ -19,6 +19,13 @@ import { AntConfigProvider } from './ant/AntConfigProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {App as AntApp} from "antd";
 import { HelmetProvider } from 'react-helmet-async';
+import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill';
+
+(async () => {
+  if (shouldPolyfill()) {
+    await import('@formatjs/intl-segmenter/polyfill-force');
+  }
+})();
 
 const queryClient = new QueryClient();
 

@@ -61,7 +61,7 @@ const Dependent = ({ form }) => {
   
   const handleEditDependent = (dependent) => {
     // Implementar edición de dependiente
-    console.log("Editar dependiente:", dependent);
+
     // Implementar lógica de edición aquí
   };
 

@@ -77,7 +77,7 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
   });
 
   const handlePreview = () => {
-    console.log('handlePreview called');
+    
     setIsModalVisible(true);
   };
 

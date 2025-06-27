@@ -43,7 +43,7 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
         settingIngredientId().then(() => {
             if (ingredient.cost && ingredient.id && ingredient.name !== '') {
                 addIngredientTypePizza(ingredient)
-                console.log('done')
+        
                 setIngredient({
                     name: '',
                     cost: '',

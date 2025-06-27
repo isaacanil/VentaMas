@@ -7,8 +7,8 @@ export const fbDeleteProvider = async (id, user) => {
     const providerRef = doc(db, "businesses", user.businessID, "providers", id)
     try {
         await deleteDoc(providerRef)
-        console.log(id)
+        // Deleting provider
     } catch (error) {
-        console.log(error)
+        console.error("Error deleting provider:", error);
     }
 }

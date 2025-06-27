@@ -16,13 +16,13 @@ export const transferProducts = async (businessIdA, businessIdB, limit = 0) => {
 
     let totalProducts = querySnapshot.docs.length;
 
-    console.log(`Total productos encontrados en el negocio origen (${businessIdA}): ${totalProducts}`);
+    console.info(`Found ${totalProducts} products to transfer`);
 
     if (limit > 0 && limit < totalProducts) {
         totalProducts = limit;
     }
 
-    console.log(`Total productos a transferir: ${totalProducts}`);
+    // Processing product transfer
 
     const batchSize = 500;
     let batchCount = 0;
@@ -44,8 +44,8 @@ export const transferProducts = async (businessIdA, businessIdB, limit = 0) => {
 
         await batch.commit();
         batchCount++;
-        console.log(`Lote ${batchCount} de ${Math.ceil(totalProducts / batchSize)} procesado para negocio destino (${businessIdB}).`);
+        // Batch processed
     }
 
-    console.log(`Transferencia de productos de negocio origen (${businessIdA}) a negocio destino (${businessIdB}) completada.`);
+    console.info("Product transfer completed successfully");
 };

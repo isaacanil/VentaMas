@@ -63,7 +63,7 @@ export const MarkAsReceivableButton = ({creditLimit = null, setIsOpen, isOpen}) 
     const user = useSelector(selectUser);
     const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
     const client = cartData?.client;
-    console.log('client: ', client);
+
 
     const {
         isGenericClient,
@@ -83,15 +83,7 @@ export const MarkAsReceivableButton = ({creditLimit = null, setIsOpen, isOpen}) 
     const receivableStatus = isAddedToReceivables && isWithinCreditLimit;
     const { currentBalance } = useSelector(selectAR);
 
-    // Debug logs
-    console.log('MarkAsReceivableButton - Debug Info:', {
-        isOpen,
-        isChangeNegative,
-        isAddedToReceivables,
-        receivableStatus,
-        isWithinCreditLimit,
-        clientId
-    });
+
 
     useEffect(() => {
         if (!cartData.isAddedToReceivables || !creditLimit) {

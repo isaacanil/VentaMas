@@ -9,7 +9,7 @@ export const Product = ({ product, index, invoice }) => {
 
   const dispatch = useDispatch()
   const increase = () => {
-    console.log("increase")
+    
     dispatch(changeAmountToBuyProduct({ product, type: "add" }))
   }
   const decrease = () => {
@@ -19,7 +19,7 @@ export const Product = ({ product, index, invoice }) => {
     return !isNaN(parseFloat(value)) && isFinite(value);
   }
   const onChange = (value) => {
-    console.log(value)
+    
     value = Number(value)
     if (!isValidNumber(value)) return
     dispatch(changeAmountToBuyProduct({ product, amount: value, type: "change" }))

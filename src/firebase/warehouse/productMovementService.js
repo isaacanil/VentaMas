@@ -237,10 +237,7 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
         // Si el currentLocationId coincide con sourceLocation es una salida
         // Si coincide con destinationLocation es una entrada
 
-        console.log('Checking movement:', movement);
-        console.log('Current Location:', currentLocationId);
-        console.log('Source Location:', movement.sourceLocation);
-        console.log('Destination Location:', movement.destinationLocation);
+        
 
         let movementType;
 
@@ -282,7 +279,7 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
           movementType = 'unknown';
         }
 
-        console.log('Movement Type:', movementType);
+  
 
 
 

@@ -13,8 +13,8 @@ export const MenuWebsite = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { dialog, onClose, setDialogConfirm } = useDialog();
-    const { SETTING } = ROUTES_PATH.SETTING_TERM
-    const handleSetting = () => navigate(SETTING)
+    const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM
+    const handleSetting = () => navigate(GENERAL_CONFIG_BUSINESS)
 
     const handleLogout = () => {
         dispatch(logout());

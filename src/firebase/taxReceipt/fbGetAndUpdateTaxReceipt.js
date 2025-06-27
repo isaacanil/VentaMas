@@ -15,7 +15,7 @@ export const fbGetAndUpdateTaxReceipt = async (user, taxReceiptName) => {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.log('No matching documents found');
+            console.warn('No matching tax receipt documents found');
             return null;  // Return null or appropriate value if no documents found
         }
         const taxReceiptDoc = querySnapshot.docs[0];

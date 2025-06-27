@@ -71,6 +71,6 @@ export const useCompareObjectsInState = (obj1, obj2) => {
       areEqual = false
     }
  
-  console.log(areEqual, 'from compare')
+  
   return areEqual;
 }

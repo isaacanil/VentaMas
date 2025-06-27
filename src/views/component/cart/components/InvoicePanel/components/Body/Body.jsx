@@ -34,14 +34,7 @@ export const Body = ({ form }) => {    const user = useSelector(selectUser);
         change
     } = useCreditLimitCheck(creditLimit, cartData.change.value, clientId, user.businessID);
 
-    // Debug temporal para verificar valores desde Body.jsx
-    console.log('Body.jsx useCreditLimitCheck Debug:', {
-        activeAccountsReceivableCount,
-        invoiceLimit: creditLimit?.invoice?.value,
-        invoiceStatus: creditLimit?.invoice?.status,
-        isWithinInvoiceCount,
-        creditLimit
-    });
+
 
     const isAddedToReceivables = cartData?.isAddedToReceivables;
     const receivableStatus = isAddedToReceivables && isWithinCreditLimit;

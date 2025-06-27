@@ -181,7 +181,7 @@ const generateShortName = (purchase) => {
 export const fbCompletePurchase = async ({ user, purchase, localFiles = [], setLoading = () => { } }) => {
     try {
         setLoading(true);
-        console.log("Completing purchase:", purchase);
+        // Completing purchase process
         const purchaseRef = doc(db, "businesses", user.businessID, "purchases", purchase.id);
 
         // Ensure default warehouse exists

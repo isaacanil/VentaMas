@@ -13,7 +13,7 @@ export const fbUpdateStock = async (user, updates) => {
 
         const miDocRef = doc(db, "businesses", user.businessID, "products", id);
         const quantity = update?.quantityRemoved;
-        console.log(quantity)
+        // Updating stock quantity
         if (quantity) {
             // Aquí suponemos que `increment` es una función válida previamente definida/importada
             // que correctamente crea un objeto de incremento para Firestore.
@@ -24,7 +24,7 @@ export const fbUpdateStock = async (user, updates) => {
     // Ejecuta todas las actualizaciones en batch
     try {
         await batch.commit();
-        console.log('Todas las actualizaciones de inventario han sido aplicadas');
+        console.info('All inventory updates applied successfully');
     } catch (error) {
         console.error('Error al actualizar el inventario:', error);
     }

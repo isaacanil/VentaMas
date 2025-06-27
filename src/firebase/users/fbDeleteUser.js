@@ -23,7 +23,7 @@ export const fbDeleteUser = async (uid, password) => {
     // Intenta borrar el documento de la base de datos
     try {
         await deleteDoc(userDocRef);
-        console.log(`User ${uid} deleted from database!`);
+        // User deleted from database successfully
     } catch (error) {
         console.error(`Error deleting user from database: ${error}`);
         return; // Si falla, no intenta borrar la autenticación
@@ -42,13 +42,13 @@ export const fbDeleteUser = async (uid, password) => {
         )
 
         await deleteUser(result.user);
-        console.log(`User ${uid} deleted from auth!`);
+        // User deleted from auth successfully
     } catch (error) {
         console.error(`Error deleting user from auth: ${error}`);
         // Si falla, intenta restaurar el documento en la base de datos
         try {
             await setDoc(userDocRef, userData);
-            console.log(`User ${uid} restored in database!`);
+            // User restored in database successfully
         } catch (restoreError) {
             console.error(`Error restoring user in database: ${restoreError}`);
         }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
-import { Form, Button, Spin, Card, Space, Row, Col, notification } from 'antd';
+import { Form, Button, Spin, Card, Space, Row, Col, notification, Image as AntdImage } from 'antd';
 import styled from 'styled-components';
 import { ProductInfo } from '../sections/ProductInfo';
 import { InventoryInfo } from '../sections/InventoryInfo';
@@ -159,7 +159,7 @@ export const General = ({ showImageManager }) => {
                                     <ImageContent>
                                         {
                                             product?.image &&
-                                            <antd.Image
+                                            <AntdImage
                                                 height={150}
                                                 src={product?.image}
                                             />
@@ -180,7 +180,7 @@ export const General = ({ showImageManager }) => {
                                         }}
                                         onClick={showImageManager}
                                     >
-                                        {product?.productImageURL ? "Actualizar" : "Agregar"} imagen
+                                        {product?.image ? "Actualizar" : "Agregar"} imagen
                                     </Button>
 
                                 </Space>
@@ -220,6 +220,9 @@ export const General = ({ showImageManager }) => {
 const ImageContent = styled.div`
     border-radius: 5px;
     height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
 `
 const ImageContainer = styled.div`

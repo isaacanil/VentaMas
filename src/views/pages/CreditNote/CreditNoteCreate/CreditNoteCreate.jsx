@@ -23,7 +23,7 @@ export const CreditNoteCreate = () => {
     setLoading(true);
     try {
       // Aquí iría la lógica para guardar la nota de crédito
-      console.log('Datos de la nota de crédito:', values);
+  
       
       // Simular guardado
       await new Promise(resolve => setTimeout(resolve, 1000));

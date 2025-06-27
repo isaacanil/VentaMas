@@ -1,7 +1,7 @@
 // DropdownMenu.js
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button } from '../Button/Button';
+import { Button as AntButton } from 'antd';
 import { Option } from './Option';
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { usePopper } from 'react-popper';
@@ -35,12 +35,13 @@ export const DropdownMenu = ({ title = 'Opciones', options = [], customButton, .
         customButton ? (
           React.cloneElement(customButton, { onClick: toggleMenu, ref: setReferenceElement })
         ) : (
-          <Button
+          <AntButton
             ref={setReferenceElement}
-            title={title}
             onClick={toggleMenu}
             {...props}
-          />
+          >
+            {title}
+          </AntButton>
         )
       }
 

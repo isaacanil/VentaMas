@@ -1,0 +1,60 @@
+/* Custom DatePicker Styles */
+.custom-datepicker-popover {
+  z-index: 1050;
+}
+
+.custom-datepicker-popover .ant-popover-content {
+  padding: 0;
+}
+
+.custom-datepicker-popover .ant-popover-inner {
+  padding: 0;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .custom-datepicker-popover {
+    display: none !important;
+  }
+}
+
+/* Focus styles for accessibility */
+.custom-datepicker-day:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+}
+
+.custom-datepicker-preset:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+}
+
+/* Animation for mobile modal */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Apply animations */
+.mobile-modal-content {
+  animation: slideUp 0.3s ease-out;
+}
+
+.mobile-modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+} 

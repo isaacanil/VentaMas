@@ -13,11 +13,11 @@ import { transferClients } from "./fbTransferClients";
 export const fbTransferDataToAnotherBusiness = async (businessIdA, businessIdB, limit = 0) => {
     try {
         await transferProducts(businessIdA, businessIdB, limit);
-        console.log("Productos Transferidos")
+        // Products transferred
         await transferProductCategories(businessIdA, businessIdB, limit);
-        console.log("Categorias Transferidos")
+        // Categories transferred
         await transferClients(businessIdA, businessIdB, limit);
-        console.log("Clientes Transferidos")
+        // Clients transferred
     } catch (error) {
         console.error(`Error transfiriendo productos y categorías de negocio origen (${businessIdA}) a negocio destino (${businessIdB}):`, error);
     }

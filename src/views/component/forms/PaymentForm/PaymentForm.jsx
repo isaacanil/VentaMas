@@ -156,7 +156,7 @@ export const PaymentForm = () => {
         } catch (error) {
             setSubmitted(false)
             if (error.name === 'ValidationError') {
-                console.log('Validate Failed:', error);
+                console.error('Payment form validation failed:', error);
             } else {
                 antd.notification.error({
                     message: 'Error al procesar el pago',

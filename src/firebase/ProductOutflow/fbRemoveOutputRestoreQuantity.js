@@ -8,7 +8,7 @@ const getProduct = async (product) => {
       
       if (productSnapshot.exists()) {
         const productData = productSnapshot.data();
-        return console.log(productData);
+        return; // Product data not found
       } else {
         console.log("Product does not exist");
         return null;

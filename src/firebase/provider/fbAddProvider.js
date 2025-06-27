@@ -12,7 +12,7 @@ export const fbAddProvider = async (provider, user) => {
     try {
       const providerRef = doc(db, "businesses", user.businessID, 'providers', provider.id)
       await setDoc(providerRef, { provider })
-        console.log("Document written with ID: ", provider.id)
+        console.info("Provider created successfully");
     } catch (error) {
       console.error("Error adding document: ", error)
     }

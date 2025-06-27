@@ -21,6 +21,7 @@ import useInvoice from '../../../../../services/invoice/useInvoice'
 import { selectBusinessData } from '../../../../../features/auth/businessSlice'
 import { downloadInvoiceLetterPdf } from '../../../../../firebase/quotation/downloadQuotationPDF'
 import { selectAppMode } from '../../../../../features/appModes/appModeSlice'
+import { measure } from '../../../../../utils/perf/measure'
 
 export const modalStyles = {
     mask: {
@@ -145,7 +146,7 @@ export const InvoicePanel = () => {
         if (invoiceType === 'template2') {
             try {
              
-                await downloadInvoiceLetterPdf(business, invoice, handleAfterPrint);
+                await measure('downloadInvoiceLetterPdf', () => downloadInvoiceLetterPdf(business, invoice, handleAfterPrint));
             } catch (e) {
                 notification.error({
                     message: 'Error al imprimir',
@@ -174,7 +175,7 @@ export const InvoicePanel = () => {
                 ?.map(product => `${product.name}: ${product.comment}`)
                 ?.join('; ');
 
-            const { invoice } = await processInvoice({
+            const { invoice } = await measure('processInvoice', () => processInvoice({
                 cart,
                 user,
                 client,
@@ -189,7 +190,7 @@ export const InvoicePanel = () => {
                 insuranceAuth,
                 invoiceComment, // Add comments from products to the invoice
                 isTestMode, // Pass test mode to service
-            })
+            }))
 
             // const invoice = await runInvoice({
             //     cart,
@@ -206,7 +207,7 @@ export const InvoicePanel = () => {
 
             if (shouldPrintInvoice) {
                 setInvoice(invoice);
-                await handleInvoicePriting(invoice);
+                await measure('handleInvoicePrinting', () => handleInvoicePriting(invoice));
             }
             if (!shouldPrintInvoice) {
                 setInvoice({});

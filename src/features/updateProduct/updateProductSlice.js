@@ -81,7 +81,7 @@ export const updateProductSlice = createSlice({
         ChangeProductImage: (state, action) => {
             state.product.image = action.payload
         },        changeProductPrice: (state, action) => {
-            console.log('changeProductPrice - Payload received:', action.payload);
+      
             state.product.pricing = {
                 ...state.product.pricing,
                 ...action?.payload?.pricing
@@ -94,7 +94,7 @@ export const updateProductSlice = createSlice({
             if (action?.payload?.pricing?.price) {
                 state.product.pricing.price = action?.payload?.pricing?.price
             }
-            console.log('changeProductPrice - Updated pricing:', state.product.pricing);
+      
         },
         // Activa o desactiva la venta por unidades
         toggleSaleUnits: (state, action) => {

@@ -1,19 +1,68 @@
-import React from 'react';
-import { useDispatch } from 'react-redux';
-import { Card, Table, Button, Space, Tooltip } from 'antd';
-import { PlusOutlined, EyeOutlined, EditOutlined, LockOutlined } from '@ant-design/icons';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Button, Space, Tooltip, Tag, Alert, Result, Empty, Spin } from 'antd';
+import { EyeOutlined, EditOutlined, LockOutlined, SettingOutlined, WarningOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import { openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { useFbGetCreditNotes } from '../../../../firebase/creditNotes/useFbGetCreditNotes';
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
+import { CreditNoteFilters } from './components/CreditNoteFilters';
+import { useBusinessDataConfig } from '../../../../features/auth/useBusinessDataConfig';
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
+import ROUTES_NAME from '../../../../routes/routesName';
+import { CREDIT_NOTE_STATUS_LABEL, CREDIT_NOTE_STATUS_COLOR } from '../../../../constants/creditNoteStatus';
 
 export const CreditNoteList = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const { creditNotes, loading } = useFbGetCreditNotes();
+    // Estado para los filtros
+    const [filters, setFilters] = useState({
+        startDate: dayjs().startOf('day'),
+        endDate: dayjs().endOf('day'),
+        clientId: null
+    });
+
+    const { creditNotes, loading: creditNotesLoading } = useFbGetCreditNotes(filters);
+    const { taxReceipt, isLoading: taxReceiptLoading } = fbGetTaxReceipt();
+    const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+
+    const isOverallLoading = creditNotesLoading || taxReceiptLoading;
 
     const ALLOWED_EDIT_MS = 2 * 24 * 60 * 60 * 1000; // 2 días
+
+
+    const creditNoteReceipt = useMemo(() => {
+        if (taxReceiptLoading) return null;      // aún no llega la data
+        return taxReceipt?.find(r => {
+            const name = (r.data?.name || '').toLowerCase();
+            return (name.includes('nota') && name.includes('crédito')) || r.data?.serie === '04';
+        });
+    }, [taxReceiptLoading, taxReceipt]);
+
+    const isCreditNoteReceiptConfigured =
+        !!creditNoteReceipt && !creditNoteReceipt.data?.disabled;
+
+    const showConfigWarning = useMemo(() => {
+        // No mostrar warning si aún están cargando
+        if (creditNotesLoading || taxReceiptLoading) return false;
+        
+        // Mostrar warning si:
+        // 1. Los comprobantes fiscales están deshabilitados completamente, O
+        // 2. Los comprobantes están habilitados pero no existe o está deshabilitado el de serie 04
+        return !taxReceiptEnabled || (taxReceiptEnabled && !isCreditNoteReceiptConfigured);
+    }, [creditNotesLoading, taxReceiptLoading, taxReceiptEnabled, isCreditNoteReceiptConfigured]);
+
+
+    const handleGoToTaxReceiptConfig = () => {
+        navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_TAX_RECEIPT);
+    };
 
     const canEditRecord = (record) => {
         const created = record.createdAt?.seconds ? new Date(record.createdAt.seconds * 1000) : new Date(record.createdAt);
@@ -22,77 +71,166 @@ export const CreditNoteList = () => {
 
     const columns = [
         {
-            title: 'Número',
-            dataIndex: 'number',
-            key: 'number',
+            Header: 'Número',
+            accessor: 'ncf',
+            minWidth: '120px',
+            maxWidth: '150px',
+            sortable: true,
+            cell: ({ value }) => {
+                const record = creditNotes.find(cn => cn.ncf === value);
+                return (
+                    <div>
+                        <div style={{ fontWeight: 600 }}>{value || 'N/A'}</div>
+                        {record?.number && (
+                            <div style={{ fontSize: '0.8em', color: '#666' }}>
+                                Ref: {record.number}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
         },
         {
-            title: 'Cliente',
-            dataIndex: ['client', 'name'],
-            key: 'client',
-            render: (_, record) => record.client?.name || '-'
+            Header: 'Cliente',
+            accessor: 'client',
+            minWidth: '200px',
+            sortable: true,
+            cell: ({ value }) => (
+                <div>
+                    <div>{value?.name || '-'}</div>
+                    {value?.rnc && (
+                        <div style={{ fontSize: '0.8em', color: '#666' }}>
+                            RNC: {value.rnc}
+                        </div>
+                    )}
+                </div>
+            )
         },
         {
-            title: 'Monto',
-            dataIndex: 'totalAmount',
-            key: 'amount',
+            Header: 'NCF Afectado',
+            accessor: 'invoiceNcf',
+            minWidth: '150px',
+            maxWidth: '180px',
+            sortable: true,
+            cell: ({ value }) => (
+                <div style={{ fontFamily: 'monospace', fontSize: '0.85em' }}>
+                    {value || 'N/A'}
+                </div>
+            )
+        },
+
+        {
+            Header: 'Items',
+            accessor: 'items',
+            minWidth: '80px',
+            maxWidth: '100px',
+            align: 'center',
+            cell: ({ value }) => (
+                <Tag color="blue">
+                    {value?.length || 0} items
+                </Tag>
+            )
+        },
+        {
+            Header: 'Monto',
+            accessor: 'totalAmount',
+            minWidth: '120px',
+            maxWidth: '150px',
             align: 'right',
-            render: (value) => useFormatPrice(value || 0),
-            sorter: (a, b) => (a.totalAmount || 0) - (b.totalAmount || 0),
+            sortable: true,
+            cell: ({ value }) => (
+                <div style={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                    {useFormatPrice(value || 0)}
+                </div>
+            )
         },
         {
-            title: 'Fecha',
-            dataIndex: 'createdAt',
-            key: 'date',
-            render: (value) => {
+            Header: 'Fecha',
+            accessor: 'createdAt',
+            minWidth: '120px',
+            maxWidth: '150px',
+            sortable: true,
+            cell: ({ value }) => {
                 if (!value) return '-';
                 const date = value.seconds ? new Date(value.seconds * 1000) : new Date(value);
-                return date.toLocaleDateString();
-            },
-            sorter: (a, b) => {
-                const getMillis = (ts) => (ts?.seconds ? ts.seconds * 1000 : ts ? new Date(ts).getTime() : 0);
-                return getMillis(a.createdAt) - getMillis(b.createdAt);
-            },
+                return (
+                    <div>
+                        <div>{date.toLocaleDateString()}</div>
+                        <div style={{ fontSize: '0.8em', color: '#666' }}>
+                            {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                    </div>
+                );
+            }
         },
         {
-            title: 'Estado',
-            dataIndex: 'status',
-            key: 'status',
-            render: (value) => value || 'Emitida'
+            Header: 'Estado',
+            accessor: 'status',
+            minWidth: '100px',
+            maxWidth: '120px',
+            cell: ({ value }) => {
+                const record = creditNotes.find(cn => cn.status === value);
+                const isEditable = record ? canEditRecord(record) : false;
+                const label = CREDIT_NOTE_STATUS_LABEL[value] || 'Emitida';
+                const color = CREDIT_NOTE_STATUS_COLOR[value] || (isEditable ? 'green' : 'default');
+                return (
+                    <Tag color={color}>
+                        {label}
+                    </Tag>
+                );
+            }
         },
         {
-            title: 'Acciones',
-            key: 'actions',
-            render: (_, record) => (
-                <Space size="middle">
-                    <Tooltip title="Ver">
-                        <Button
-                            type="link"
-                            icon={<EyeOutlined />}
-                            onClick={() => handleView(record)}
-                        />
-                    </Tooltip>
-                    {canEditRecord(record) ? (
-                        <Tooltip title="Editar">
+            Header: 'Acciones',
+            accessor: 'actions',
+            minWidth: '150px',
+            maxWidth: '180px',
+            align: 'right',
+            keepWidth: true,
+            clickable: false,
+            cell: ({ value }) => {
+                // El value aquí será toda la fila (record completo)
+                const record = creditNotes.find(cn => cn.id === value?.id) || value;
+                return (
+                    <Space size="small">
+                        <Tooltip title="Ver">
                             <Button
-                                type="link"
-                                icon={<EditOutlined />}
-                                onClick={() => handleEdit(record)}
+                                icon={<EyeOutlined />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleView(record);
+                                }}
                             />
                         </Tooltip>
-                    ) : (
-                        <Tooltip title="Edición deshabilitada (fuera de plazo)">
-                            <Button type="link" icon={<LockOutlined />} disabled />
-                        </Tooltip>
-                    )}
-                </Space>
-            ),
+                        {canEditRecord(record) ? (
+                            <Tooltip title="Editar">
+                                <Button
+                                    icon={<EditOutlined />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEdit(record);
+                                    }}
+                                />
+                            </Tooltip>
+                        ) : (
+                            <Tooltip title="Edición deshabilitada (fuera de plazo)">
+                                <Button
+                                    icon={<LockOutlined />}
+                                    disabled
+                                />
+                            </Tooltip>
+                        )}
+                    </Space>
+                );
+            }
         },
     ];
 
-    const handleCreateNew = () => {
-        dispatch(openCreditNoteModal({ mode: 'create' }));
-    };
+    // Transformar los datos para incluir el record completo en la columna de acciones
+    const transformedData = creditNotes.map(record => ({
+        ...record,
+        actions: record // Pasamos el record completo para las acciones
+    }));
 
     const handleView = (record) => {
         dispatch(openCreditNoteModal({
@@ -108,37 +246,207 @@ export const CreditNoteList = () => {
         }));
     };
 
+    const handleRowClick = (record) => {
+        handleView(record);
+    };
+
+    const HeaderComponent = () => (
+        <HeaderContainer>
+            <HeaderTitle>Notas de Crédito</HeaderTitle>
+        </HeaderContainer>
+    );
+
+    // Asegurar que los datos del negocio estén suscritos
+    useBusinessDataConfig();
+
+
+    if (showConfigWarning) {
+        // Determinar el mensaje específico según el caso
+        const getWarningContent = () => {
+            if (!taxReceiptEnabled) {
+                return {
+                    title: "Comprobantes Fiscales Deshabilitados",
+                    subDescription: "Los comprobantes fiscales están deshabilitados en la configuración.",
+                    description: "Para gestionar notas de crédito necesitas habilitar los comprobantes fiscales y configurar el comprobante correspondiente (serie 04)."
+                };
+            } else {
+                return {
+                    title: "Configuración Requerida",
+                    subDescription: "Por favor, completa la configuración necesaria para continuar.",
+                    description: "Para gestionar notas de crédito necesitas configurar el comprobante fiscal correspondiente (serie 04)."
+                };
+            }
+        };
+
+        const warningContent = getWarningContent();
+
+        return (
+            <Container>
+                <MenuApp sectionName={"Notas de Crédito"}  data={[]} />
+                <CreditNoteConfigWarning>
+                    <EmptyStateContainer>
+                        <EmptyStateIcon>
+                            <WarningOutlined />
+                        </EmptyStateIcon>
+                        <EmptyStateTitle>
+                            {warningContent.title}
+                        </EmptyStateTitle>
+                        <EmptyStateSubDescription>
+                            {warningContent.subDescription}
+                        </EmptyStateSubDescription>
+                        <EmptyStateDescription>
+                            {warningContent.description}
+                        </EmptyStateDescription>
+                        <ConfigButton
+                            onClick={handleGoToTaxReceiptConfig}
+                        >
+                            Configurar ahora
+                        </ConfigButton>
+                    </EmptyStateContainer>
+                </CreditNoteConfigWarning>
+            </Container>
+        );
+    }
+
     return (
         <Container>
-            <MenuApp />
-            <Card
-                title="Notas de Crédito"
-                extra={
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={handleCreateNew}
-                    >
-                        Nota de Crédito
-                    </Button>
-                }
-            >
-                <Table
-                    columns={columns}
-                    dataSource={creditNotes}
-                    loading={loading}
-                    rowKey="id"
-                    pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showQuickJumper: true,
-                    }}
+            <MenuApp
+                searchData={searchTerm}
+                setSearchData={setSearchTerm}
+                data={creditNotes}
+            />
+            <TableContainer>
+                <CreditNoteFilters
+                    filters={filters}
+                    onFiltersChange={setFilters}
                 />
-            </Card>
+                <AdvancedTable
+                    data={transformedData}
+                    columns={columns}
+                    loading={isOverallLoading}
+                    searchTerm={searchTerm}
+                    headerComponent={<HeaderComponent />}
+                    tableName="creditNotes"
+                    elementName="nota de crédito"
+                    onRowClick={handleRowClick}
+                    numberOfElementsPerPage={15}
+
+                    emptyText="No hay notas de crédito para mostrar"
+                />
+            </TableContainer>
         </Container>
     );
 };
 
 const Container = styled.div`
+    height: 100vh;
+    display: grid;
+    grid-template-rows: min-content 1fr;
+    flex-direction: column;
+`;
 
+const TableContainer = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    
+    overflow: hidden;
+`;
+
+const CreditNoteConfigWarning = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1em 2em;
+    background-color: #f8f9fa;
+    min-height: 60vh;
+`;
+
+const HeaderContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+`;
+
+const HeaderTitle = styled.h2`
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #262626;
+`;
+
+const EmptyStateContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.5em;
+    text-align: center;
+    max-width: 480px;
+    margin: 0 auto;
+    background-color: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+`;
+
+const EmptyStateIcon = styled.div`
+    font-size: 24px;
+    color: #f5a623;
+    background-color: #fffbe6;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5em;
+`;
+
+const EmptyStateTitle = styled.h3`
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+    color: #262626;
+    margin-bottom: 0.6em;
+`;
+
+const EmptyStateSubDescription = styled.p`
+    margin: 0 0 1.5em 0;
+    font-size: 1em;
+    color: #8c8c8c;
+    line-height: 1.5;
+    max-width: 380px;
+`;
+
+const EmptyStateDescription = styled.p`
+    margin: 0 0 2.5em 0;
+    font-size: 1em;
+    color: #8c8c8c;
+    line-height: 1.5;
+    max-width: 380px;
+`;
+
+const ConfigButton = styled.button`
+    height: 48px;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0 2.5em;
+    background-color: #1a1a1a;
+    color: white;
+    border: none;
+    &:hover {
+        background-color: #333;
+        color: white !important;
+    }
+`;
+
+const CenteredContainer = styled.div`
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `;

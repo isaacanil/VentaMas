@@ -16,39 +16,39 @@ const businessIDs = [
 
 export async function fbUpdateProductsToNewFormatForMultipleBusinesses() {
     try {
-        console.log("Iniciando la actualización de productos para múltiples negocios...");
+        console.info("Starting bulk product update process");
 
         // Verificar que se proporcione un array válido de businessIDs
         if (!Array.isArray(businessIDs) || businessIDs.length === 0) {
-            console.log("Array de IDs de negocios no proporcionado o vacío. Abortando la actualización.");
+            console.warn("No business IDs provided. Aborting update.");
             return;
         }
 
         // Iterar sobre cada businessID para actualizar sus productos
         for (const businessID of businessIDs) {
-            console.log(`Procesando actualización para el negocio con ID: ${businessID}`);
+            // Processing business update
 
             const productsRef = collection(db, "businesses", businessID, "products");
             const querySnapshot = await getDocs(productsRef);
-            console.log("Productos obtenidos de la base de datos.");
+            // Products retrieved from database
 
             const products = querySnapshot.docs.map((doc) => ({...doc.data(), id: doc.id}));
-            console.log(`${products.length} productos encontrados para el negocio ${businessID}.`);
+            console.info(`Found ${products.length} products to update`);
 
             const batch = writeBatch(db);
 
             const updatedProducts = newProductSchema(products);
-            console.log("Productos mapeados a la nueva estructura.");
+            // Products mapped to new structure
 
             updatedProducts.forEach((product, index) => {
                 if (!product.id) return; // Asegurarse de que el producto tenga un id
                 const productRef = doc(productsRef, product.id);
                 batch.set(productRef, product);
-                console.log(`Producto ${index + 1} preparado para la actualización: ${product.name} - ${product.id}`);
+                // Product prepared for update
             });
 
             await batch.commit();
-            console.log(`Productos actualizados con éxito en la base de datos para el negocio ${businessID}.`);
+            console.info("Products updated successfully in database");
         }
     } catch (error) {
         console.error("Error actualizando productos para múltiples negocios:", error);
