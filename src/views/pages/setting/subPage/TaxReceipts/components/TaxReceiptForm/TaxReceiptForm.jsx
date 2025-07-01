@@ -41,6 +41,7 @@ export default function TaxReceiptForm({
                 ...currentEditItem, // Mantener el ID y otros datos originales no editables
                 ...finalValues, // Usar los valores finales del formulario
             }
+            console.log(data);
             await updateTaxReceipt(user, data);
             message.success('Comprobante fiscal actualizado correctamente');
         }
@@ -102,7 +103,7 @@ export default function TaxReceiptForm({
                         label="Secuencia"
                         rules={[{ required: true, message: 'Por favor ingrese la secuencia' }]}
                     >
-                        <Input placeholder="Secuencia" maxLength={10} type="number" />
+                        <Input placeholder="Secuencia" maxLength={10} />
                     </Form.Item>
                     <Form.Item
                         name="increase"

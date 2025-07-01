@@ -28,6 +28,8 @@ import NotificationCenter from './views/templates/NotificationCenter/Notificatio
 import { useInitializeBillingSettings } from './firebase/billing/useInitializeBillingSettings';
 import { useBackfillUserNumbers } from './firebase/Auth/fbBackfillUserNumbers';
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';
+import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';
+import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
 
 
 // Componente para rastrear la navegación dentro del Router
@@ -68,6 +70,8 @@ function App() {
 
   useFbTaxReceiptToggleStatus()// obtiene el estado del comprobante fiscal
 
+  useFixTaxReceiptWithoutId();
+
   useBusinessDataConfig()// obtiene la configuración de la empresa
 
   useFullScreen()// establece el modo pantalla completa
@@ -78,30 +82,32 @@ function App() {
 
   return (
     <Fragment>
-      <Router>
-        <NavigationTracker />
-        <SessionManager />
-        <SEO />
-        <AnimatePresence mode="wait">
-          <Routes>
-            {routes.map((route, index) => (
-              <Route key={index} path={route.path} element={route.element}>
-                {route.children && route.children.map((childRoute, childIndex) => (
-                  <Route
-                    key={childIndex}
-                    path={childRoute?.path}
-                    element={childRoute?.element}
-                  />
-                ))}
-              </Route>
-            ))}
-          </Routes>
-        </AnimatePresence>
-        <AnimatePresence>
-          <ModalManager />
-        </AnimatePresence>
-        <NotificationCenter />
-      </Router>
+      <ViewportContainer>
+        <Router>
+          <NavigationTracker />
+          <SessionManager />
+          <SEO />
+          <AnimatePresence mode="wait">
+            <Routes>
+              {routes.map((route, index) => (
+                <Route key={index} path={route.path} element={route.element}>
+                  {route.children && route.children.map((childRoute, childIndex) => (
+                    <Route
+                      key={childIndex}
+                      path={childRoute?.path}
+                      element={childRoute?.element}
+                    />
+                  ))}
+                </Route>
+              ))}
+            </Routes>
+          </AnimatePresence>
+          <AnimatePresence>
+            <ModalManager />
+          </AnimatePresence>
+          <NotificationCenter />
+        </Router>
+      </ViewportContainer>
     </Fragment>
   )
 }

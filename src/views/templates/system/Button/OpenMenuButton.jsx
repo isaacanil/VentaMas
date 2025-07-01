@@ -41,6 +41,16 @@ const Container = styled.div`
   z-index: ${props => props.isOpen ? 10000 : 0};
   transition-delay: ${props => !props.isOpen && '1s'};
 
+  // Adaptación responsive para móviles
+  @media (max-width: 768px) {
+    width: 2.3em;
+    height: 2.3em;
+    min-width: 2.3em;
+    min-height: 2.3em;
+    max-width: 2.3em;
+    max-height: 2.3em;
+  }
+
 `
 const MenuIcon = styled.div`
   position: relative;
@@ -49,7 +59,12 @@ const MenuIcon = styled.div`
   height: 2px;
   background-color: var(--menu-items);
   transition: all 1s ease-in-out;
- 
+  
+  // Iconos más grandes en móviles
+  @media (max-width: 768px) {
+    width: 1.4em;
+    height: 2.5px;
+  }
 
   &:after {
     content: '';
@@ -60,6 +75,12 @@ const MenuIcon = styled.div`
     background-color: var(--menu-items);
     margin-top: 6px;
     transition: all 0.4s ease-in-out;
+    
+    @media (max-width: 768px) {
+      width: 1.4em;
+      height: 2.5px;
+      margin-top: 7px;
+    }
   }
 
   &::before {
@@ -71,6 +92,12 @@ const MenuIcon = styled.div`
     background-color: var(--menu-items);
     margin-top: -6px;
     transition: all 0.4s ease-in-out;
+    
+    @media (max-width: 768px) {
+      width: 1.4em;
+      height: 2.5px;
+      margin-top: -7px;
+    }
   }
   ${props => {
     switch (props.isOpen) {
@@ -81,6 +108,12 @@ const MenuIcon = styled.div`
          height: 2px;
          background-color: transparent;
          transition: all 0.2s ease-in-out;
+         
+         @media (max-width: 768px) {
+           width: 1.4em;
+           height: 2.5px;
+         }
+         
         &::after {
             content: '';
             position: absolute;
@@ -91,7 +124,10 @@ const MenuIcon = styled.div`
             transform: rotate(-45deg);
             transition: all 0.4s ease-in-out;
 
-
+            @media (max-width: 768px) {
+              width: 1.4em;
+              height: 2.5px;
+            }
          }
 
          &::before {
@@ -103,6 +139,11 @@ const MenuIcon = styled.div`
             margin-top: 0;
             transform: rotate(45deg);
             transition: all 0.4s ease-in-out;
+            
+            @media (max-width: 768px) {
+              width: 1.4em;
+              height: 2.5px;
+            }
          }
         `
       default:

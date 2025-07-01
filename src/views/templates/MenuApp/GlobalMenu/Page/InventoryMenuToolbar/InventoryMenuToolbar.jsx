@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { InventoryFilterAndSort } from '../../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
 import { DropdownMenu } from '../../../../system/DropdownMenu/DropdowMenu'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileExport, faFileImport } from '@fortawesome/free-solid-svg-icons'
+import { faFileExport, faFileImport, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 import ImportModal from '../../../../../component/modals/ImportModal/ImportModal'
 import { createProductTemplate, importProductData } from '../../../../../../utils/import/product'
 import { message } from 'antd'
@@ -20,6 +20,7 @@ import { ExportProducts } from '../../../../../../hooks/exportToExcel/useExportP
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
 import { fbAddActiveIngredients } from './fbAddActiveIngredients'
 import ImportProgressModal from '../../../../../component/modals/ImportProgressModal/ImportProgressModal';
+import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
 
 export const InventoryMenuToolbar = ({ side = 'left' }) => {
     const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
@@ -28,6 +29,7 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     const { products } = useGetProducts();
     const user = useSelector(selectUser);
+    const vw = useViewportWidth();
     const [importProgress, setImportProgress] = useState({
         totalProducts: 0,
         processedProducts: 0,
@@ -109,7 +111,8 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
                     <Fragment>
                         <ButtonGroup>
                             <DropdownMenu
-                                title={"Herramientas"}
+                                title={vw > 900 ? "Herramientas" : ""}
+                                icon={vw <= 900 ? <FontAwesomeIcon icon={faEllipsisVertical} /> : undefined}
                                 options={options}
                                 borderRadius='normal'
                             />

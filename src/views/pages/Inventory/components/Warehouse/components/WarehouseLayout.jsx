@@ -10,7 +10,7 @@ const widthSize = "calc(100vw - 16px)";
 const Container = styled.div`
   display: grid;
   grid-template-rows: auto 1fr; 
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
 `;
 

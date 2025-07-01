@@ -42,7 +42,7 @@ export const ResponsiveContainer = ({
       width={1100}
       style={{ top: '20px' }}
       footer={null}
-      destroyOnClose={true}
+      destroyOnHidden={true}
     >
       {children}
     </Modal>

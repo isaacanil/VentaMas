@@ -70,7 +70,7 @@ export const Welcome = () => {
   )
 }
 const Container = styled.div`
-  min-height: 100vh;
+  min-height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -79,7 +79,7 @@ const Container = styled.div`
   color: #333;
   
   @media (max-width: 768px) {
-    min-height: 100vh;
+    min-height: 100%;
   }
  
   a {

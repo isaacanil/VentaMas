@@ -233,7 +233,7 @@ const Container = styled.div`
     border: 1px solid #e0e0e0;
     overflow: hidden;
     width: 100%;
-    height: min-content;
+    height: 100%;
     background-color: var(--White1);
     pointer-events: all;
     transform: translateX(600px);  

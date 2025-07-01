@@ -156,7 +156,7 @@ const Container = styled.div`
   display: grid;
   grid-template-rows: min-content auto 1fr;
   grid-gap: 16px;
-  height: 100vh;
+  height: 100%;
   background-color: var(--color2);
 `;
 

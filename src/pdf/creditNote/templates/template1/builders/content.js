@@ -1,4 +1,4 @@
-import { money, getProductIndividualDiscount } from '../utils/formatters.js';
+import { money, getProductIndividualDiscount, getProductTotalPrice, getProductTax, getProductSubtotal } from '../utils/formatters.js';
 
 /* ──────────────────────────────────────────────── */
 export function buildContent(d) {
@@ -11,24 +11,26 @@ export function buildContent(d) {
     headerRow,
     ...(d.items || []).flatMap(p => {
       const price = +p.pricing?.price || 0;
-      const taxP  = +p.pricing?.tax   || 0;         // porcentaje
-      const tax   = price * (taxP / 100);
-      const tot   = (price + tax) * (+p.amountToBuy || 0);
+      const quantity = +p.amountToBuy || 1;
+      
+      // Usar las funciones de pricing.js para mantener consistencia
+      const tax = getProductTax(p);
+      const total = getProductTotalPrice(p);
+      const discountAmount = getProductIndividualDiscount(p);
 
       const productRow = [
-        { text: p.amountToBuy, alignment: 'center' },
+        { text: quantity, alignment: 'center' },
         p.barcode || '-',
         p.name,
         { text: money(price), alignment: 'right' },
-        { text: money(tax),   alignment: 'right' },
-        { text: money(tot),   alignment: 'right' }
+        { text: money(tax), alignment: 'right' },
+        { text: money(total), alignment: 'right' }
       ];
 
       const extraRows = [];
       
       /* línea extra para descuento individual */
       if (p.discount && p.discount.value > 0) {
-        const discountAmount = getProductIndividualDiscount(p);
         const discountType = p.discount.type === 'percentage' ? `${p.discount.value}%` : 'Monto fijo';
         extraRows.push([
           { text: `Descuento: -${money(discountAmount)} (${discountType})`, 

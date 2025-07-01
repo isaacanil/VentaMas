@@ -19,7 +19,7 @@ export function fbGetPendingBalance(businessID, clientId, callback) {
                 safeCb(0);
                 return;
             }
-            console.log("ejecutandose")
+            //
             let totalPendingBalance = 0;
             querySnapshot.forEach(doc => {
                 const data = doc.data();

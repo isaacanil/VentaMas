@@ -120,7 +120,7 @@ export const columns = [
     sortable: true,
     align: 'left',
     maxWidth: '0.4fr',
-    min: '120px',
+    min: '90px',
   },
 
   {
@@ -149,7 +149,7 @@ export const columns = [
     sortable: true,
     align: 'left',
     maxWidth: '1.6fr',
-    minWidth: '170px',
+    minWidth: '200px',
   },
   {
     Header: 'Fecha',
@@ -161,7 +161,7 @@ export const columns = [
       return (getTimeElapsed(time, 0))
     },
     maxWidth: '1fr',
-    minWidth: '160px',
+    minWidth: '140px',
   },
   {
     Header: 'ITBIS',
@@ -186,7 +186,7 @@ export const columns = [
     cell: ({ value }) => useFormatPrice(value),
     description: 'Monto total de la compra',
     maxWidth: '1fr',
-    minWidth: '110px',
+    minWidth: '120px',
   },
 
   // {
@@ -204,7 +204,7 @@ export const columns = [
     accessor: 'accion',
     description: 'Accion',
     maxWidth: '1fr',
-    minWidth: '80px',
+    minWidth: '180px',
     cell: ({ value }) => <EditButton value={value} />
   }
 ]

@@ -116,10 +116,9 @@ export const ProductList = ({ products, productsLoading }) => {
 }
 
 const ProductsListContainer = styled.div`
-    height:  calc(100vh - 8.41em);
-    @media ( width > 800px){
-      height: calc(100vh - 5.3em);
-    }
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     padding: 0.4em;
     gap: 0.4em;
     border: 1px solid #ccc;
@@ -128,6 +127,7 @@ const ProductsListContainer = styled.div`
     width: 100%;
     position: relative;
     background-color: var(--color2);
+    min-height: 0;
   `
 const VirtualRowsContainer = styled.div`
     height: ${({ totalSize }) => `${totalSize}px`};

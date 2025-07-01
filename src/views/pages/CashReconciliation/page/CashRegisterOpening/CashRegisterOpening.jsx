@@ -83,7 +83,7 @@ const Backdrop = styled.div`
 `
 const Container = styled.div`
   max-width: 500px;
-  height: 100vh;
+  height: 100%;
   position: relative;
   margin: 0 auto;
   display: grid;

@@ -152,16 +152,10 @@ export const CreateContact = ({isOpen}) => {
     )
 }
 const Container = styled.div`
-  position: absolute;
-  top: 0px;
-  right: 0px;
-   
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    pointer-events: none;
-
-   
+  display: grid;
+  height: 100%;
+  grid-template-rows: min-content 1fr;
+  overflow: hidden;
 `
 const SideBar = styled.div`
     position: absolute;

@@ -4,11 +4,14 @@ import {MenuApp,} from '../../../../index';
 import styled from 'styled-components';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 import { ProductsTable } from './components/ProductTable/ProductsTable';
+import { ProductRecordList } from './components/ProductTable/ProductRecordList';
+import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
 
 export const Inventory = () => {
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState('');
   const { products } = useGetProducts();
+  const vw = useViewportWidth();
 
   return (
     <Container>
@@ -17,10 +20,17 @@ export const Inventory = () => {
         searchData={searchTerm}
         setSearchData={setSearchTerm}
       />
-      <ProductsTable
-        products={products}
-        searchTerm={searchTerm}
-      />
+      {vw > 900 ? (
+        <ProductsTable
+          products={products}
+          searchTerm={searchTerm}
+        />
+      ) : (
+        <ProductRecordList
+          products={products}
+          searchTerm={searchTerm}
+        />
+      )}
     </Container>
 
   );
@@ -33,6 +43,6 @@ const Container = styled.div`
     background-color: var(--White);
     grid-template-rows:  min-content 1fr;
 
-    height: calc(100vh );
+    height: 100%;
    overflow: hidden;
 `

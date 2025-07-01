@@ -339,7 +339,7 @@ export const CreditNoteList = () => {
 };
 
 const Container = styled.div`
-    height: 100vh;
+    height: 100%;
     display: grid;
     grid-template-rows: min-content 1fr;
     flex-direction: column;

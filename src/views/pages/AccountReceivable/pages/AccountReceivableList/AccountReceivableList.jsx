@@ -12,7 +12,7 @@ import { sortAccounts } from "../../../../../utils/sorts/sortAccountsReceivable"
 
 const Container = styled.div`
     display: grid;
-    height: 100vh;
+    height: 100%;
     grid-template-rows: min-content min-content 1fr;
 `;
 

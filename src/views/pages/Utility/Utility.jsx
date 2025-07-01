@@ -86,7 +86,7 @@ export const Utility = ({ isOpen = true }) => {
     )
 }
 const Container = styled.div`
-height: 100vh;
+height: 100%;
     display: grid;
     overflow: hidden;
     grid-template-rows: min-content 1fr;

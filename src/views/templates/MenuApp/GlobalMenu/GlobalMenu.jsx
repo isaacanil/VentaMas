@@ -2,11 +2,11 @@ import React from 'react'
 import { toolbarConfig } from './GlobalMenuConfig'
 import styled from 'styled-components'
 
-export const GlobalMenu = ({ data, searchData, setSearchData }) => {
+export const GlobalMenu = ({ data, searchData, setSearchData, onReportSaleOpen }) => {
     const renderToolbarComponents = (side) => {
         return toolbarConfig[side].map((config) => {
             const MenuComponent = config.component;
-            return <MenuComponent key={config.id} side={config.side} data={data} searchData={searchData} setSearchData={setSearchData} />;
+            return <MenuComponent key={config.id} side={config.side} data={data} searchData={searchData} setSearchData={setSearchData} onReportSaleOpen={onReportSaleOpen} />;
         })
     };
     return (

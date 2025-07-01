@@ -94,9 +94,9 @@ export const Warehouse = () => {
   )
 }
 
-const Container = styled.div` 
+const Container = styled.div`
   display: grid;
-  grid-template-rows: min-content min-content 1fr;
-  height: 100vh;
-  overflow-y: hidden; 
+  height: 100%;
+  grid-template-rows: min-content 1fr;
+  overflow: hidden;
 `

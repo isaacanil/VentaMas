@@ -22,7 +22,7 @@ export const Home = () => {
 }
 
 const Container = styled.div`
-  height: 100vh;
+  height: 100%;
   width: 100%;
   display: grid;
   grid-template-rows: min-content 1fr min-content;

@@ -77,86 +77,168 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
 
     const FiltersContent = (
         <Container>
-            <FiltersRow>
-                <FilterGroup>
-                    <FilterLabel>Rango de fechas:</FilterLabel>
-                    <DatePicker
-                        mode="range"
-                        value={dateRange}
-                        onChange={handleDateRangeChange}
-                        format="DD/MM/YYYY"
-                        placeholder="Seleccionar rango de fechas"
-                        allowClear
-                    
-                        presets={[
-                            {
-                                label: 'Hoy',
-                                value: [dayjs().startOf('day'), dayjs().endOf('day')]
-                            },
-                            {
-                                label: 'Ayer',
-                                value: [dayjs().subtract(1, 'day').startOf('day'), dayjs().subtract(1, 'day').endOf('day')]
-                            },
-                            {
-                                label: 'Esta semana',
-                                value: [dayjs().startOf('week'), dayjs().endOf('week')]
-                            },
-                            {
-                                label: 'Este mes',
-                                value: [dayjs().startOf('month'), dayjs().endOf('month')]
-                            },
-                            {
-                                label: 'Este año',
-                                value: [dayjs().startOf('year'), dayjs().endOf('year')]
-                            },
-                            {
-                                label: 'Últimos 7 días',
-                                value: [dayjs().subtract(6, 'day').startOf('day'), dayjs().endOf('day')]
-                            },
-                            {
-                                label: 'Últimos 30 días',
-                                value: [dayjs().subtract(29, 'day').startOf('day'), dayjs().endOf('day')]
+            {isMobile ? (
+                <MobileFiltersContainer>
+                    <MobileFilterGroup>
+                        <MobileFilterLabel>Rango de fechas:</MobileFilterLabel>
+                        <DatePicker
+                            mode="range"
+                            value={dateRange}
+                            onChange={handleDateRangeChange}
+                            format="DD/MM/YYYY"
+                            placeholder="Seleccionar fechas"
+                            allowClear
+                            presets={[
+                                {
+                                    label: 'Hoy',
+                                    value: [dayjs().startOf('day'), dayjs().endOf('day')]
+                                },
+                                {
+                                    label: 'Ayer',
+                                    value: [dayjs().subtract(1, 'day').startOf('day'), dayjs().subtract(1, 'day').endOf('day')]
+                                },
+                                {
+                                    label: 'Esta semana',
+                                    value: [dayjs().startOf('week'), dayjs().endOf('week')]
+                                },
+                                {
+                                    label: 'Este mes',
+                                    value: [dayjs().startOf('month'), dayjs().endOf('month')]
+                                },
+                                {
+                                    label: 'Este año',
+                                    value: [dayjs().startOf('year'), dayjs().endOf('year')]
+                                },
+                                {
+                                    label: 'Últimos 7 días',
+                                    value: [dayjs().subtract(6, 'day').startOf('day'), dayjs().endOf('day')]
+                                },
+                                {
+                                    label: 'Últimos 30 días',
+                                    value: [dayjs().subtract(29, 'day').startOf('day'), dayjs().endOf('day')]
+                                }
+                            ]}
+                        />
+                    </MobileFilterGroup>
+
+                    <MobileFilterGroup>
+                        <MobileFilterLabel>Cliente:</MobileFilterLabel>
+                        <Select
+                            value={filters.clientId || ''}
+                            onChange={handleClientChange}
+                            placeholder="Seleccionar cliente"
+                            allowClear
+                            showSearch
+                            optionFilterProp="children"
+                            loading={clientsLoading}
+                            style={{ width: '100%' }}
+                            size="middle"
+                            filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
-                        ]}
-                    />
-                </FilterGroup>
+                        >
+                            <Option value="">Todos los clientes</Option>
+                            {clients.map(client => (
+                                <Option key={client.id} value={client.id}>
+                                    {client.name}
+                                    {client.rnc && ` (${client.rnc})`}
+                                </Option>
+                            ))}
+                        </Select>
+                    </MobileFilterGroup>
 
-                <FilterGroup>
-                    <FilterLabel>Cliente:</FilterLabel>
-                    <Select
-                        value={filters.clientId || ''}
-                        onChange={handleClientChange}
-                        placeholder="Todos"
-                        allowClear
-                        showSearch
-                        optionFilterProp="children"
-                        loading={clientsLoading}
-                        style={{ width: '100%', minWidth: 150, maxWidth: 250 }}
-                        size="middle"
-                        filterOption={(input, option) =>
-                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                    >
-                        <Option value="">Todos</Option>
-                        {clients.map(client => (
-                            <Option key={client.id} value={client.id}>
-                                {client.name}
-                                {client.rnc && ` (${client.rnc})`}
-                            </Option>
-                        ))}
-                    </Select>
-                </FilterGroup>
+                    <MobileFilterGroup>
+                        <Button
+                            icon={<ClearOutlined />}
+                            onClick={handleClearFilters}
+                            title="Limpiar filtros"
+                            style={{ width: '100%' }}
+                        >
+                            Limpiar filtros
+                        </Button>
+                    </MobileFilterGroup>
+                </MobileFiltersContainer>
+            ) : (
+                <FiltersRow>
+                    <FilterGroup>
+                        <FilterLabel>Rango de fechas:</FilterLabel>
+                        <DatePicker
+                            mode="range"
+                            value={dateRange}
+                            onChange={handleDateRangeChange}
+                            format="DD/MM/YYYY"
+                            placeholder="Seleccionar fechas"
+                            allowClear
+                            presets={[
+                                {
+                                    label: 'Hoy',
+                                    value: [dayjs().startOf('day'), dayjs().endOf('day')]
+                                },
+                                {
+                                    label: 'Ayer',
+                                    value: [dayjs().subtract(1, 'day').startOf('day'), dayjs().subtract(1, 'day').endOf('day')]
+                                },
+                                {
+                                    label: 'Esta semana',
+                                    value: [dayjs().startOf('week'), dayjs().endOf('week')]
+                                },
+                                {
+                                    label: 'Este mes',
+                                    value: [dayjs().startOf('month'), dayjs().endOf('month')]
+                                },
+                                {
+                                    label: 'Este año',
+                                    value: [dayjs().startOf('year'), dayjs().endOf('year')]
+                                },
+                                {
+                                    label: 'Últimos 7 días',
+                                    value: [dayjs().subtract(6, 'day').startOf('day'), dayjs().endOf('day')]
+                                },
+                                {
+                                    label: 'Últimos 30 días',
+                                    value: [dayjs().subtract(29, 'day').startOf('day'), dayjs().endOf('day')]
+                                }
+                            ]}
+                        />
+                    </FilterGroup>
 
-                <FilterGroup>
-                    <Button
-                        icon={<ClearOutlined />}
-                        onClick={handleClearFilters}
-                        title="Limpiar filtros"
-                    >
-                        Limpiar
-                    </Button>
-                </FilterGroup>
-            </FiltersRow>
+                    <FilterGroup>
+                        <FilterLabel>Cliente:</FilterLabel>
+                        <Select
+                            value={filters.clientId || ''}
+                            onChange={handleClientChange}
+                            placeholder="Todos"
+                            allowClear
+                            showSearch
+                            optionFilterProp="children"
+                            loading={clientsLoading}
+                            style={{ width: '100%', minWidth: 150, maxWidth: 250 }}
+                            size="middle"
+                            filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                        >
+                            <Option value="">Todos</Option>
+                            {clients.map(client => (
+                                <Option key={client.id} value={client.id}>
+                                    {client.name}
+                                    {client.rnc && ` (${client.rnc})`}
+                                </Option>
+                            ))}
+                        </Select>
+                    </FilterGroup>
+
+                    <FilterGroup>
+                        <Button
+                            icon={<ClearOutlined />}
+                            onClick={handleClearFilters}
+                            title="Limpiar filtros"
+                        >
+                            Limpiar
+                        </Button>
+                    </FilterGroup>
+                </FiltersRow>
+            )}
         </Container>
     );
 
@@ -171,7 +253,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                     placement="bottom"
                     onClose={() => setDrawerVisible(false)}
                     open={drawerVisible}
-                    height="auto"
+                    height="70%"
                 >
                     {FiltersContent}
                 </Drawer>
@@ -191,6 +273,42 @@ const Container = styled.div`
         padding: 0.5rem;
         overflow-x: auto;
     }
+`;
+
+const MobileContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.8em 1em;
+    width: 100%;
+    background-color: var(--White);
+    border-bottom: 1px solid var(--Gray);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+`;
+
+const MobileFiltersContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    min-height: 300px;
+`;
+
+const MobileFilterGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+`;
+
+const MobileFilterLabel = styled.label`
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #262626;
+    margin-bottom: 0.25rem;
+`;
+
+const ClearButtonContainer = styled.div`
+    margin-top: 1rem;
 `;
 
 const FiltersRow = styled.div`
@@ -225,10 +343,6 @@ const FilterLabel = styled.label`
     font-size: 0.875rem;
     font-weight: 500;
     color: #262626;
-`;
-
-const MobileContainer = styled.div`
-    padding: 0 1rem 1rem;
 `;
 
  

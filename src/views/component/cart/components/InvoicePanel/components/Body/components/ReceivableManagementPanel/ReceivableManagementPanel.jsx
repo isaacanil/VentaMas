@@ -293,7 +293,7 @@ export const ReceivableManagementPanel = ({
       open={isOpen}
       onCancel={handleModalClose}
       footer={null}
-      destroyOnClose={true}
+      destroyOnHidden={true}
       width={600}
       style={{ top: 20 }}
     >

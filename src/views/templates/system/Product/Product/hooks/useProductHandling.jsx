@@ -29,6 +29,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
 
   const handleGetThisProduct = useCallback(async () => {
     try {
+ 
       setIsFirebaseLoading(true);
       if (isOutOfStock) {
         notification.warning({

@@ -54,8 +54,7 @@ export const ReceivablePaymentReceipt = () => {
   )
 }
 const Container = styled(motion.div)`
-  max-height: calc(100vh);
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   display: grid;
   background-color: var(--color2);

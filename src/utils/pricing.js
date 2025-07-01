@@ -222,7 +222,7 @@ export function getProductsTotalPrice(products, totalDiscountPercentage = 0, tot
 }
 
 export function convertDecimalToPercentage(valorDecimal) {
-  const num = Number(decimalValue);
+  const num = Number(valorDecimal);
   if (isNaN(num)) {
     return 0;
   }

@@ -158,7 +158,7 @@ const Container = styled(motion.div)`
     /*Box */
     max-width: 400px;
     width: 100%;
-    height: 100vh;
+    height: 100%;
 
     border-radius: 10px;
     border-bottom-left-radius: 0;
@@ -226,6 +226,10 @@ const Head = styled.div`
     background-color: ${props => props.theme.bg.color}; 
     position: sticky;
     top: 0;
+
+    @media (max-width: 768px) {
+        height: 3.2em;
+    }
 
     div{
         display: flex;

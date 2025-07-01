@@ -1,4 +1,4 @@
-import { money, getProductsIndividualDiscounts, hasIndividualDiscounts } from '../utils/formatters.js';
+import { money, getProductsIndividualDiscounts, hasIndividualDiscounts, getProductTax, getProductSubtotal } from '../utils/formatters.js';
 
 /* ───── bloque firma + etiqueta opcional ───── */
 function signatureBlock(label, extraLine) {
@@ -17,19 +17,39 @@ export function buildFooter(biz, d) {
   const individualDiscounts = getProductsIndividualDiscounts(d.items || []);
   const hasIndividualDisc = hasIndividualDiscounts(d.items || []);
 
-  /* Tabla de totales para nota de crédito */
-  const subtotal = (d.totalAmount || 0) / 1.18;
-  const itbis = (d.totalAmount || 0) - subtotal;
+  /* Calcular totales usando las funciones de pricing.js para mantener consistencia */
+  let subtotalBeforeDiscounts = 0;
+  let totalItbis = 0;
+  
+  (d.items || []).forEach(item => {
+    const price = +item.pricing?.price || 0;
+    const quantity = +item.amountToBuy || 1;
+    
+    // Usar subtotal básico (precio * cantidad)
+    subtotalBeforeDiscounts += price * quantity;
+    
+    // Usar la función de impuestos de la aplicación
+    totalItbis += getProductTax(item);
+  });
+  
+  // Aplicar descuentos individuales al subtotal
+  const subtotalAfterDiscounts = subtotalBeforeDiscounts - individualDiscounts;
+  
+  // El total final debe coincidir exactamente con el totalAmount de la aplicación
+  const totalFinal = d.totalAmount || (subtotalAfterDiscounts + totalItbis);
 
   const totalsBody = [
-    ['Sub-Total:', { text: money(subtotal), style: 'totalsValue', margin: [0, 0] }],
-    ['ITBIS (18%):', { text: money(itbis), style: 'totalsValue', margin: [0, 0] }],
+    ['Sub-Total:', { text: money(subtotalBeforeDiscounts), style: 'totalsValue', margin: [0, 0] }],
     hasIndividualDisc && [
       'Descuentos Productos:', { text: `-${money(individualDiscounts)}`, style: 'totalsValue', margin: [0, 0] }
     ],
+    hasIndividualDisc && [
+      'Sub-Total (c/desc.):', { text: money(subtotalAfterDiscounts), style: 'totalsValue', margin: [0, 0] }
+    ],
+    ['ITBIS:', { text: money(totalItbis), style: 'totalsValue', margin: [0, 0] }],
     [
       { text: 'Total Acreditado:', bold: true, margin: [0, 4, 0, 2] },
-      { text: money(d.totalAmount || 0), style: 'totalsValue', bold: true, margin: [0, 4, 0, 2] }
+      { text: money(totalFinal), style: 'totalsValue', bold: true, margin: [0, 4, 0, 2] }
     ]
   ].filter(Boolean);
 

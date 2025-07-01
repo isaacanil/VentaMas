@@ -77,43 +77,8 @@ export const updateTaxReceipt = async (user, data) => {
     }
 
     try {
-        const receiptRef = doc(db, "businesses", user.businessID, "taxReceipts", data.id);        // PROTECCIÓN: Validar que la secuencia no retroceda
-        if (data.sequence !== undefined) {
-            const currentDoc = await getDoc(receiptRef);
-            if (currentDoc.exists()) {
-                const currentData = currentDoc.data().data;
-                const currentSequence = parseInt(currentData.sequence || '0', 10);
-                const newSequence = parseInt(data.sequence || '0', 10);
-                const ncfType = currentData.name; // El nombre del taxReceipt es el tipo de NCF
-                
-                // Usar la función de validación centralizada
-                const validation = await validateSequenceUpdate(
-                    user.businessID, 
-                    ncfType, 
-                    newSequence, 
-                    currentSequence
-                );
-                
-                if (!validation.isValid) {
-                    console.error(`SECURITY: Sequence validation failed for receipt ${data.id}: ${validation.reason}`);
-                    throw new Error(`Error de seguridad: ${validation.reason}. Esto podría causar duplicación de NCF.`);
-                }
-                
-                // Log para auditoría
-                if (newSequence !== currentSequence) {
-                    console.log(`✅ Sequence updated for receipt ${data.id}: ${currentSequence} -> ${newSequence}${validation.lastUsedSequence ? ` (last used: ${validation.lastUsedSequence})` : ''}`);
-                }
-            }
-        }
-
-        // Validar que no se esté retrocediendo la secuencia del NCF en uso
-        if (data.ncfType) {
-            const lastUsedSequence = await getLastUsedSequence(user.businessID, data.ncfType);
-            if (lastUsedSequence > 0 && data.sequence < lastUsedSequence) {
-                throw new Error(`No se puede retroceder la secuencia del NCF. Última secuencia usada para ${data.ncfType}: ${lastUsedSequence}, nueva secuencia: ${data.sequence}`);
-            }
-        }
-
+        const receiptRef = doc(db, "businesses", user.businessID, "taxReceipts", data.id);
+        
         await updateDoc(receiptRef, {data});
         console.log(`Tax receipt ${data.id} updated successfully.`);
 

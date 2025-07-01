@@ -47,7 +47,7 @@ export const Setting = () => {
 
 const Container = styled.div`
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: grid;
   gap: 0.5em;
   grid-template-rows: min-content 1fr;

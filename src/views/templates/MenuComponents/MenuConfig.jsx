@@ -5,7 +5,7 @@ import { toggleCart } from '../../../features/cart/cartSlice'
 
 export const MenuConfig = [
     {
-        title: 'Ir a Facturación',
+        title: 'Facturar',
         icon: <FontAwesomeIcon icon={faReceipt} />,
         onclick: (dispatch) => {
             dispatch(toggleCart())

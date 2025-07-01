@@ -128,7 +128,7 @@ export const Sales = () => {
 }
 
 const Container = styled(motion.div)`
-  height: 100vh;
+  height: 100%;
   display: grid;
   overflow-y: hidden;
   grid-template-columns: 1fr min-content;
@@ -140,11 +140,8 @@ const Container = styled(motion.div)`
 }
   `
 const ProductContainer = styled.div`
-    display: grid;
-    overflow: hidden;
-    grid-template-rows: min-content min-content;
-    @media(max-width: 800px) {
-      position: relative;
-      grid-template-rows: min-content min-content 1fr;
-}
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
 `

@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import { getTotalPrice, getTax, getProductIndividualDiscount as getAppProductIndividualDiscount } from '../../../../../utils/pricing.js';
 
 export function money(n) {
   const num = Number(n) || 0;
@@ -21,19 +22,9 @@ export function formatDate(ts) {
   return DateTime.fromMillis(ms).toFormat('dd/MM/yyyy');
 }
 
+// Usar la función de la aplicación para mantener consistencia
 export function getProductIndividualDiscount(product) {
-  if (!product.discount || product.discount.value <= 0) return 0;
-  
-  const price = +product.pricing?.price || 0;
-  const quantity = +product.amountToBuy || 1;
-  const subtotalBeforeDiscount = price * quantity;
-  
-  if (product.discount.type === 'percentage') {
-    return subtotalBeforeDiscount * (product.discount.value / 100);
-  } else {
-    // Para monto fijo
-    return Math.min(product.discount.value, subtotalBeforeDiscount);
-  }
+  return getAppProductIndividualDiscount(product);
 }
 
 export function getProductsIndividualDiscounts(products) {
@@ -46,4 +37,29 @@ export function hasIndividualDiscounts(products) {
   return products.some(product => 
     product.discount && product.discount.value > 0
   );
+}
+
+// Nuevas funciones para usar en el PDF que mantienen consistencia con la app
+export function getProductTotalPrice(product) {
+  return getTotalPrice(product, true, true);
+}
+
+export function getProductTax(product) {
+  return getTax(product, true);
+}
+
+export function getProductSubtotal(product) {
+  const { price, amountToBuy } = product?.pricing ? 
+    { price: product.pricing.price || 0, amountToBuy: product.amountToBuy || 1 } :
+    { price: 0, amountToBuy: 1 };
+  
+  let subtotal = price * amountToBuy;
+  
+  // Aplicar descuento individual si existe
+  if (product.discount && product.discount.value > 0) {
+    const discountAmount = getProductIndividualDiscount(product);
+    subtotal -= discountAmount;
+  }
+  
+  return subtotal;
 } 

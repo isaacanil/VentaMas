@@ -31,7 +31,7 @@ const Container = styled.div`
    gap: 0.4em;
    transition: width 600ms 0ms linear;
    @media(max-width: 800px){
-      height: calc(100vh);
+      height: 100%;
       width: 100%;
       max-width: 100%;
       border: 1px solid rgba(0, 0, 0, 0.121);

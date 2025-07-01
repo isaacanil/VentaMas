@@ -42,3 +42,6 @@ storage.rules
 .env
 .env.local
 .env.*.local
+
+*storybook.log
+storybook-static
