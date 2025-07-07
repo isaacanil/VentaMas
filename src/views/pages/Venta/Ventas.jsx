@@ -18,14 +18,14 @@ import { motion } from 'framer-motion'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import { notification } from 'antd'
-import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
-import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
+import { InvoicePanel } from '../../component/Cart/components/InvoicePanel/InvoicePanel.jsx'
 import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js'
 import { deleteClient } from '../../../features/clientCart/clientCartSlice.js'
 
 import { ProductBatchModal } from '../Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx'
 import { selectUser } from '../../../features/auth/userSlice.js'
 import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx'
+import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('');

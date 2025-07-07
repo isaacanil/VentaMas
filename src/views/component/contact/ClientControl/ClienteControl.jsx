@@ -11,7 +11,7 @@ import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
 import { OPERATION_MODES } from '../../../../constants/modes.js'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
 import { selectNcfType, selectTaxReceipt, selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice.js'
-import { Input, Button as AntButton, Checkbox, Select } from 'antd';
+import { Input, Button as AntButton, Checkbox, Select, Button } from 'antd';
 import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
 import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
 import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
@@ -111,6 +111,15 @@ export const ClientControl = () => {
   return (
     <Container ref={searchClientRef}>
       <Header>
+              {!limitByWindowWidth && (
+            <Button
+              onClick={handleCloseCart}
+              data-client-control-input="true"
+              icon={icons.arrows.chevronLeft}
+            >
+              Atrás
+            </Button>
+          )}
         <InputWrapper data-client-control-input="true">
           <Input
             prefix={inputIcon}
@@ -146,14 +155,7 @@ export const ClientControl = () => {
             </ClientButton>
           )}
 
-          {!limitByWindowWidth && (
-            <ClientButton
-              onClick={handleCloseCart}
-              data-client-control-input="true"
-            >
-              Volver
-            </ClientButton>
-          )}
+          
         </InputWrapper>
       </Header>
       <ClientDetails
@@ -212,6 +214,7 @@ const Header = styled.div`
    height: 2.75em;
    position: relative;
    z-index: 10;
+   gap: 0.5em;
    background-color: var(--Gray8);
    border-bottom-left-radius: var(--border-radius-light);
    padding: 0.5em;

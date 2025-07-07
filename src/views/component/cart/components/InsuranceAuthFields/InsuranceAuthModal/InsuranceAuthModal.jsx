@@ -20,7 +20,7 @@ import { createClientInsurance, updateClientInsurance, getClientInsuranceByClien
 import Dependent from './components/Dependent/Dependent';
 import useInsuranceEnabled from '../../../../../../hooks/useInsuranceEnabled';
 // Importamos el componente FileUploader
-import FileUploader from '../../../../../component/FileUploader/FileUploader';
+import FileUploader from '../../../../FileUploader/FileUploader';
 import { setInsuranceAR } from '../../../../../../features/insurance/insuranceAccountsReceivableSlice';
 
 const Row = styled.div`
