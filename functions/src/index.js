@@ -7,7 +7,8 @@ import { handleCreateUser } from "./versions/v1/modules/auth/handle/handleCreate
 import { handleUpdateUser, handleUpdateUserWithPermissions, handleChangePassword } from "./versions/v1/modules/auth/handle/handleUpdateUser.js";
 
 export { authLogin, authCheck, authLogout, expireSessions } from "./versions/v1/modules/auth/handle/handleLogin.js";
-//mas tarde
+
+// mas tarde la funcion para actualziar el inventario
 // import { updateStockOnInvoiceCreate } from "./versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js";
 
 export { 
@@ -19,5 +20,5 @@ export {
   handleCreateUser,
   handleUpdateUser,
   handleUpdateUserWithPermissions,
-  handleChangePassword
+  handleChangePassword,
 };
