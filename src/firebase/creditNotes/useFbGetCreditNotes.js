@@ -38,6 +38,11 @@ export const useFbGetCreditNotes = (filters = {}) => {
       queryConstraints.push(where("client.id", "==", filters.clientId));
     }
 
+    // Filtro por estado
+    if (filters.status) {
+      queryConstraints.push(where("status", "==", filters.status));
+    }
+
     const q = query(creditNotesRef, ...queryConstraints);
 
     const unsubscribe = onSnapshot(
@@ -57,7 +62,7 @@ export const useFbGetCreditNotes = (filters = {}) => {
     );
 
     return () => unsubscribe();
-  }, [user?.businessID, filters.startDate, filters.endDate, filters.clientId]);
+  }, [user?.businessID, filters.startDate, filters.endDate, filters.clientId, filters.status]);
 
   return { creditNotes, loading };
 }; 

@@ -27,6 +27,10 @@ export const PaymentMethods = () => {
         transfer: {
             label: 'Transferencia',
             icon: icons.finances.transfer
+        },
+        creditNote: {
+            label: 'Nota de Crédito',
+            icon: icons.finances.money
         }
     }
     
@@ -145,6 +149,17 @@ export const PaymentMethods = () => {
                                                 disabled={!method.status}
                                                 onChange={(e) => handleValueChange(method, e)}
                                                 ref={cashInputRef}
+                                                min={0}
+                                                precision={2}
+                                                step={0.01}
+                                                style={{ width: '100%' }}
+                                            />
+                                        ) : method.method === 'creditNote' ? (
+                                            <InputNumber
+                                                addonBefore={paymentInfo[method.method].icon}
+                                                placeholder='Gestionado por selector'
+                                                value={method.value}
+                                                disabled={true}
                                                 min={0}
                                                 precision={2}
                                                 step={0.01}

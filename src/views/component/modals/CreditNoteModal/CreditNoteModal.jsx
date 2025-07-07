@@ -14,6 +14,7 @@ import { fbAddCreditNote } from '../../../../firebase/creditNotes/fbAddCreditNot
 import { getTotalPrice, getTax } from '../../../../utils/pricing';
 import { fbUpdateCreditNote } from '../../../../firebase/creditNotes/fbUpdateCreditNote';
 import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
+import { useFbGetCreditNoteApplications } from '../../../../hooks/creditNote/useFbGetCreditNoteApplications';
 import { ProductList } from './components/ProductList';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
 import { CreditNotePanel } from './components/CreditNotePanel';
@@ -51,6 +52,11 @@ export const CreditNoteModal = () => {
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(selectedInvoice?.id || null);
   const { creditNotes: invoiceCreditNotes } = useFbGetCreditNotesByInvoice(selectedInvoiceId);
+  
+  // Obtener aplicaciones de la nota de crédito actual
+  const { applications: creditNoteApplications, loading: applicationsLoading } = useFbGetCreditNoteApplications({
+    creditNoteId: creditNoteData?.id
+  });
 
   const creditNoteReceipt = taxReceipt?.find(receipt => 
     (receipt.data?.name?.toLowerCase().includes('nota') && 
@@ -120,7 +126,9 @@ export const CreditNoteModal = () => {
 
   const ALLOWED_EDIT_MS = 2 * 24 * 60 * 60 * 1000; // 2 días
   const createdAtDate = creditNoteData?.createdAt ? (creditNoteData.createdAt.seconds ? new Date(creditNoteData.createdAt.seconds * 1000) : new Date(creditNoteData.createdAt)) : null;
-  const isEditAllowed = mode === 'edit' && createdAtDate ? (Date.now() - createdAtDate.getTime() <= ALLOWED_EDIT_MS) : mode === 'edit';
+  const hasApplications = creditNoteApplications?.length > 0; // Usar las aplicaciones de la nueva colección
+  const isTimeAllowed = mode === 'edit' && createdAtDate ? (Date.now() - createdAtDate.getTime() <= ALLOWED_EDIT_MS) : mode === 'edit';
+  const isEditAllowed = isTimeAllowed && !hasApplications; // No se puede editar si ya se aplicó
   const effectiveIsView = mode === 'view' || (mode === 'edit' && !isEditAllowed);
   const effectiveIsEdit = mode === 'edit' && isEditAllowed;
 
@@ -647,6 +655,70 @@ export const CreditNoteModal = () => {
               )}
             </Tabs.TabPane>
 
+            {/* TAB: Historial de Aplicaciones */}
+            {(effectiveIsView || effectiveIsEdit) && creditNoteApplications?.length > 0 && (
+              <Tabs.TabPane tab={`Historial (${creditNoteApplications.length})`} key="historial">
+                <ApplicationHistorySection>
+                  <ApplicationHistoryTitle>Historial de Aplicaciones</ApplicationHistoryTitle>
+                  {applicationsLoading ? (
+                    <div>Cargando historial...</div>
+                  ) : (
+                    <>
+                      <ApplicationHistoryList>
+                        {creditNoteApplications.map((app, index) => (
+                          <ApplicationHistoryItem key={app.id || index}>
+                            <ApplicationHistoryHeader>
+                              <ApplicationHistoryDate>
+                                {app.appliedAt?.seconds 
+                                  ? dayjs(new Date(app.appliedAt.seconds * 1000)).format('DD/MM/YYYY HH:mm')
+                                  : dayjs(app.appliedAt).format('DD/MM/YYYY HH:mm')
+                                }
+                              </ApplicationHistoryDate>
+                              <ApplicationHistoryAmount>
+                                {memoizedFormatPrice(app.amountApplied)}
+                              </ApplicationHistoryAmount>
+                            </ApplicationHistoryHeader>
+                            <ApplicationHistoryDetails>
+                              <ApplicationHistoryDetail>
+                                <strong>Factura Aplicada:</strong> {app.invoiceNcf || app.invoiceId}
+                              </ApplicationHistoryDetail>
+                              {app.invoiceNumber && (
+                                <ApplicationHistoryDetail>
+                                  <strong>Número:</strong> {app.invoiceNumber}
+                                </ApplicationHistoryDetail>
+                              )}
+                              <ApplicationHistoryDetail>
+                                <strong>Saldo Anterior:</strong> {memoizedFormatPrice(app.previousBalance)}
+                                {' → '}
+                                <strong>Saldo Nuevo:</strong> {memoizedFormatPrice(app.newBalance)}
+                              </ApplicationHistoryDetail>
+                              {app.appliedBy && (
+                                <ApplicationHistoryDetail>
+                                  <strong>Aplicado por:</strong> {app.appliedBy.displayName || 'Usuario'}
+                                </ApplicationHistoryDetail>
+                              )}
+                            </ApplicationHistoryDetails>
+                          </ApplicationHistoryItem>
+                        ))}
+                      </ApplicationHistoryList>
+                      <ApplicationHistorySummary>
+                        <ApplicationHistorySummaryItem>
+                          <strong>Total Aplicado:</strong> {memoizedFormatPrice(
+                            creditNoteApplications.reduce((sum, app) => sum + (app.amountApplied || 0), 0)
+                          )}
+                        </ApplicationHistorySummaryItem>
+                        <ApplicationHistorySummaryItem>
+                          <strong>Saldo Disponible:</strong> {memoizedFormatPrice(
+                            creditNoteData?.availableAmount ?? (creditNoteData?.totalAmount || 0)
+                          )}
+                        </ApplicationHistorySummaryItem>
+                      </ApplicationHistorySummary>
+                    </>
+                  )}
+                </ApplicationHistorySection>
+              </Tabs.TabPane>
+            )}
+
             {/* TAB: Notas Relacionadas */}
             <Tabs.TabPane tab={`Notas Relacionadas (${relatedCreditNotes.length})`} key="relacionadas">
               {relatedCreditNotes.length > 0 ? (
@@ -699,7 +771,12 @@ export const CreditNoteModal = () => {
         </ActionButtons>
         {effectiveIsEdit && (
           <CountdownText>
-            {isEditAllowed ? `Tiempo restante para editar: ${Math.max(0, Math.floor((ALLOWED_EDIT_MS - (Date.now() - createdAtDate.getTime()))/ (60*60*1000)))}h` : 'Edición expirada'}
+            {isTimeAllowed && !hasApplications 
+              ? `Tiempo restante para editar: ${Math.max(0, Math.floor((ALLOWED_EDIT_MS - (Date.now() - createdAtDate.getTime()))/ (60*60*1000)))}h` 
+              : hasApplications 
+                ? 'No se puede editar: nota ya aplicada'
+                : 'Edición expirada'
+            }
           </CountdownText>
         )}
       </Container>
@@ -950,6 +1027,89 @@ const InfoItemValue = styled.span`
 const QtyDisplayContainer = styled.div`
   display: flex;
   align-items: center;
+`;
+
+// Estilos para el historial de aplicaciones
+const ApplicationHistorySection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const ApplicationHistoryTitle = styled.h3`
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${props => props.theme?.text?.primary || '#333'};
+`;
+
+const ApplicationHistoryList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const ApplicationHistoryItem = styled.div`
+  border: 1px solid ${props => props.theme?.border?.color || '#d9d9d9'};
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: ${props => props.theme?.background?.secondary || '#fafafa'};
+`;
+
+const ApplicationHistoryHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const ApplicationHistoryDate = styled.span`
+  font-size: 0.875rem;
+  color: ${props => props.theme?.text?.secondary || '#666'};
+  font-weight: 500;
+`;
+
+const ApplicationHistoryAmount = styled.span`
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${props => props.theme?.text?.primary || '#333'};
+  font-family: monospace;
+`;
+
+const ApplicationHistoryDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const ApplicationHistoryDetail = styled.div`
+  font-size: 0.875rem;
+  color: ${props => props.theme?.text?.secondary || '#666'};
+  
+  strong {
+    color: ${props => props.theme?.text?.primary || '#333'};
+  }
+`;
+
+const ApplicationHistorySummary = styled.div`
+  border-top: 1px solid ${props => props.theme?.border?.color || '#d9d9d9'};
+  padding-top: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const ApplicationHistorySummaryItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  
+  strong {
+    color: ${props => props.theme?.text?.primary || '#333'};
+  }
 `;
 
 export default CreditNoteModal;

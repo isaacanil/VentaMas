@@ -15,7 +15,7 @@ import { useBusinessDataConfig } from '../../../../features/auth/useBusinessData
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
 import ROUTES_NAME from '../../../../routes/routesName';
-import { CREDIT_NOTE_STATUS_LABEL, CREDIT_NOTE_STATUS_COLOR } from '../../../../constants/creditNoteStatus';
+import { CREDIT_NOTE_STATUS, CREDIT_NOTE_STATUS_LABEL, CREDIT_NOTE_STATUS_COLOR } from '../../../../constants/creditNoteStatus';
 
 export const CreditNoteList = () => {
     const dispatch = useDispatch();
@@ -26,7 +26,8 @@ export const CreditNoteList = () => {
     const [filters, setFilters] = useState({
         startDate: dayjs().startOf('day'),
         endDate: dayjs().endOf('day'),
-        clientId: null
+        clientId: null,
+        status: null
     });
 
     const { creditNotes, loading: creditNotesLoading } = useFbGetCreditNotes(filters);
@@ -66,10 +67,33 @@ export const CreditNoteList = () => {
 
     const canEditRecord = (record) => {
         const created = record.createdAt?.seconds ? new Date(record.createdAt.seconds * 1000) : new Date(record.createdAt);
-        return Date.now() - created.getTime() <= ALLOWED_EDIT_MS;
+        const isTimeAllowed = Date.now() - created.getTime() <= ALLOWED_EDIT_MS;
+        // Verificar si tiene aplicaciones basándose en el estado o saldo disponible
+        const hasApplications = record.status === CREDIT_NOTE_STATUS.APPLIED || record.status === CREDIT_NOTE_STATUS.FULLY_USED || 
+                               (record.availableAmount !== undefined && record.availableAmount < record.totalAmount);
+        return isTimeAllowed && !hasApplications; // No se puede editar si ya se aplicó
     };
 
     const columns = [
+        {
+            Header: 'Fecha',
+            accessor: 'createdAt',
+            minWidth: '120px',
+            maxWidth: '150px',
+            sortable: true,
+            cell: ({ value }) => {
+                if (!value) return '-';
+                const date = value.seconds ? new Date(value.seconds * 1000) : new Date(value);
+                return (
+                    <div>
+                        <div>{date.toLocaleDateString()}</div>
+                        <div style={{ fontSize: '0.8em', color: '#666' }}>
+                            {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                    </div>
+                );
+            }
+        },
         {
             Header: 'Número',
             accessor: 'ncf',
@@ -132,51 +156,46 @@ export const CreditNoteList = () => {
             )
         },
         {
+            Header: 'Estado de Uso',
+            accessor: 'status',
+            minWidth: '100px',
+            maxWidth: '120px',
+            align: 'center',
+            cell: ({ value }) => {
+                const record = creditNotes.find(cn => cn.status === value);
+                const hasApplications = value === CREDIT_NOTE_STATUS.APPLIED || value === CREDIT_NOTE_STATUS.FULLY_USED || 
+                                       (record?.availableAmount !== undefined && record.availableAmount < record.totalAmount);
+                
+                return hasApplications ? (
+                    <Tag color="green">
+                        {value === CREDIT_NOTE_STATUS.FULLY_USED ? 'Totalmente Usada' : 'Parcialmente Usada'}
+                    </Tag>
+                ) : (
+                    <Tag color="default">
+                        Sin Aplicar
+                    </Tag>
+                );
+            }
+        },
+        {
             Header: 'Monto',
             accessor: 'totalAmount',
             minWidth: '120px',
             maxWidth: '150px',
             align: 'right',
             sortable: true,
-            cell: ({ value }) => (
-                <div style={{ fontFamily: 'monospace', fontWeight: 600 }}>
-                    {useFormatPrice(value || 0)}
-                </div>
-            )
-        },
-        {
-            Header: 'Fecha',
-            accessor: 'createdAt',
-            minWidth: '120px',
-            maxWidth: '150px',
-            sortable: true,
             cell: ({ value }) => {
-                if (!value) return '-';
-                const date = value.seconds ? new Date(value.seconds * 1000) : new Date(value);
+                const record = creditNotes.find(cn => cn.totalAmount === value);
+                const availableAmount = record?.availableAmount ?? value;
                 return (
-                    <div>
-                        <div>{date.toLocaleDateString()}</div>
-                        <div style={{ fontSize: '0.8em', color: '#666' }}>
-                            {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
+                    <div style={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                        <div>{useFormatPrice(value || 0)}</div>
+                        {availableAmount !== value && (
+                            <div style={{ fontSize: '0.8em', color: '#666' }}>
+                                Disponible: {useFormatPrice(availableAmount)}
+                            </div>
+                        )}
                     </div>
-                );
-            }
-        },
-        {
-            Header: 'Estado',
-            accessor: 'status',
-            minWidth: '100px',
-            maxWidth: '120px',
-            cell: ({ value }) => {
-                const record = creditNotes.find(cn => cn.status === value);
-                const isEditable = record ? canEditRecord(record) : false;
-                const label = CREDIT_NOTE_STATUS_LABEL[value] || 'Emitida';
-                const color = CREDIT_NOTE_STATUS_COLOR[value] || (isEditable ? 'green' : 'default');
-                return (
-                    <Tag color={color}>
-                        {label}
-                    </Tag>
                 );
             }
         },
@@ -213,7 +232,12 @@ export const CreditNoteList = () => {
                                 />
                             </Tooltip>
                         ) : (
-                            <Tooltip title="Edición deshabilitada (fuera de plazo)">
+                            <Tooltip title={
+                                (record.status === CREDIT_NOTE_STATUS.APPLIED || record.status === CREDIT_NOTE_STATUS.FULLY_USED || 
+                                 (record.availableAmount !== undefined && record.availableAmount < record.totalAmount))
+                                    ? "No se puede editar: nota ya aplicada" 
+                                    : "Edición deshabilitada (fuera de plazo)"
+                            }>
                                 <Button
                                     icon={<LockOutlined />}
                                     disabled

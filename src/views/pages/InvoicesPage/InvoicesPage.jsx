@@ -7,7 +7,7 @@ import { selectUser } from '../../../features/auth/userSlice'
 import { useFbGetInvoicesWithFilters } from '../../../firebase/invoices/useFbGetInvoicesWithFilters'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
 import { getDateRange } from '../../../utils/date/getDateRange'
-import SalesReport from './ReportsSale/ReportsSale'
+import SalesAnalyticsPanel from './SalesAnalyticsPanel/SalesAnalyticsPanel'
 import { SaleRecordList } from './SaleRecordList/RecordList'
 import { FilterBar } from './components/FilterBar/FilterBar'
 import dayjs from 'dayjs'
@@ -87,7 +87,7 @@ export const InvoicesPage = () => {
           )
         }
       </Container>
-      <SalesReport isOpen={isReportSaleOpen} onOpen={onReportSaleOpen} sales={invoices} />
+      <SalesAnalyticsPanel isOpen={isReportSaleOpen} onOpen={onReportSaleOpen} sales={invoices} />
     </Fragment>
   )
 }

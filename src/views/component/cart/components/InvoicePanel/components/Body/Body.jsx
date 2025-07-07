@@ -9,22 +9,27 @@ import { ReceivableManagementPanel } from './components/ReceivableManagementPane
 import { InsuranceManagementPanel } from './components/InsuranceManagementPanel/InsuranceManagementPanel'
 import { InvoiceComment } from './components/InvoiceComment/InvoiceComment'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice'
 import { useCreditLimitCheck } from '../../../../../../../hooks/accountsReceivable/useCheckAccountReceivable'
 import { useCreditLimitRealtime } from '../../../../../../../hooks/accountsReceivable/useCreditLimitRealtime'
-import { SelectCartData } from '../../../../../../../features/cart/cartSlice'
+import { SelectCartData, selectCreditNotePayment, setCreditNotePayment, recalcTotals } from '../../../../../../../features/cart/cartSlice'
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
 import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'
 import { Alert, Form } from 'antd'
 import AccountsReceivableManager from './components/AccountsReceivableManager/AccountsReceivableManager'
+import CreditSelector from '../CreditSelector/CreditSelector'
 
-export const Body = ({ form }) => {    const user = useSelector(selectUser);
+
+export const Body = ({ form }) => {
+    const dispatch = useDispatch();
+    const user = useSelector(selectUser);
     const client = useSelector(selectClient);
     const cartData = useSelector(SelectCartData);
+    const selectedCreditNotes = useSelector(selectCreditNotePayment);
     const clientId = client.id;
     const insuranceEnabled = useInsuranceEnabled();   
-     const { abilities, loading: abilitiesLoading } = userAccess();
+    const { abilities, loading: abilitiesLoading } = userAccess();
 
     const { creditLimit, error, isLoading } = useCreditLimitRealtime(user, clientId);    const {
         activeAccountsReceivableCount,
@@ -42,6 +47,13 @@ export const Body = ({ form }) => {    const user = useSelector(selectUser);
     const isChangeNegative = cartData.change.value < 0;
     const hasAccountReceivablePermission = abilities.can('manage', 'accountReceivable');
 
+    // Manejar selección de notas de crédito
+    const handleCreditNoteSelect = (creditNoteSelections) => {
+        dispatch(setCreditNotePayment(creditNoteSelections));
+        // Recalcular totales después de cambiar las notas de crédito
+        dispatch(recalcTotals());
+    };
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -58,6 +70,15 @@ export const Body = ({ form }) => {    const user = useSelector(selectUser);
             <Container>
                 <ChargedSection />                
                 <PaymentMethods />
+                {clientId && clientId !== 'GC-0000' && (
+                    <CreditSelector
+                        clientId={clientId}
+                        onCreditNoteSelect={handleCreditNoteSelect}
+                        selectedCreditNotes={selectedCreditNotes}
+                        totalPurchase={cartData.totalPurchase.value}
+                        paymentMethods={cartData.paymentMethod}
+                    />
+                )}
                 <PaymentSummary />
                 <AccountsReceivableManager
                     hasAccountReceivablePermission={hasAccountReceivablePermission}

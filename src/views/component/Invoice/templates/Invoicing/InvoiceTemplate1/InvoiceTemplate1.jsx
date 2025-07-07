@@ -11,7 +11,8 @@ import { ReceiptComponent } from './Style'
 import { ThankYouMessage } from './components/ThankYouMessage'
 import { selectBusinessData } from '../../../../../../features/auth/businessSlice'
 import { selectInsuranceData } from '../../../../../../features/insurance/insuranceSlice'
-import { selectInsuranceEnabled, SelectInvoiceComment } from '../../../../../../features/cart/cartSlice'
+import { selectInsuranceEnabled, SelectInvoiceComment, selectCreditNotePayment } from '../../../../../../features/cart/cartSlice'
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 
 
 export const InvoiceTemplate1 = React.forwardRef(({ data, ignoreHidden }, ref) => {
@@ -19,6 +20,7 @@ export const InvoiceTemplate1 = React.forwardRef(({ data, ignoreHidden }, ref) =
     const insuranceStatus = data?.insuranceEnabled;
     const insuranceData = useSelector(selectInsuranceData)
     const invoiceComment = useSelector(SelectInvoiceComment)
+    const creditNotes = data?.creditNotePayment || [];
     
     function getReceiptInfo(code) {
         if (!code) {
@@ -69,6 +71,20 @@ export const InvoiceTemplate1 = React.forwardRef(({ data, ignoreHidden }, ref) =
                     <ProductList data={data} />
                     <Line />
                     <PaymentArea P={P} data={data} />
+                    {creditNotes.length > 0 && (
+                        <CreditNotesSection>
+                            <Line />
+                            <P align="center">Notas de Crédito Aplicadas</P>
+                            <Line />
+                            {creditNotes.map((note, index) => (
+                                <Row key={index} cols='2' space>
+                                    <P>NCF: {note.ncf}</P>
+                                    <P align="right">{useFormatPrice(note.amountUsed)}</P>
+                                </Row>
+                            ))}
+                            <Line />
+                        </CreditNotesSection>
+                    )}
                     {insuranceStatus && (
                         <InsuranceInfo>
                             <P align="center">Cobertura de Seguro Aplicada</P>
@@ -171,4 +187,11 @@ const CommentSection = styled.div`
         word-wrap: break-word;
         white-space: pre-wrap;
     }
+`;
+
+const CreditNotesSection = styled.div`
+    margin: 0.5em 0;
+    padding: 0.5em 0;
+    border-top: 1px dashed black;
+    border-bottom: 1px dashed black;
 `;

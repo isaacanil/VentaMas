@@ -14,6 +14,7 @@ import { Timestamp } from "firebase/firestore";
 import { DateTime } from "luxon";
 import { getInsurance } from "../../firebase/insurance/insuranceService";
 import { addInsuranceAuth } from "../../firebase/insurance/insuranceAuthService";
+import { fbConsumeCreditNotes } from "../../firebase/creditNotes/fbConsumeCreditNotes";
 
 const NCF_TYPES = {
     'CREDITO FISCAL': 'CREDITO FISCAL',
@@ -71,6 +72,11 @@ export async function processInvoice({
             : await generateFinalInvoice({ user, cart, clientData, ncfCode, cashCount, dueDate });
 
         await adjustProductInventory({ user, products: cart.products, invoice });
+
+        // Consumir notas de crédito si se aplicaron
+        if (cart?.creditNotePayment?.length > 0) {
+            await fbConsumeCreditNotes(user, cart.creditNotePayment, invoice.id, invoice);
+        }
 
         // Procesar cuentas por cobrar normales si existen
         if (cart?.isAddedToReceivables && accountsReceivable?.totalInstallments) {
@@ -296,7 +302,14 @@ async function processTestModeInvoice({
         // Simular tiempo de procesamiento
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-
+        // En modo de prueba, solo simular el consumo de notas de crédito
+        if (cart?.creditNotePayment?.length > 0) {
+            console.log(`🧪 [MODO PRUEBA] Simulando consumo de ${cart.creditNotePayment.length} notas de crédito`);
+            cart.creditNotePayment.forEach(note => {
+                console.log(`🧪 [MODO PRUEBA] Nota ${note.ncf}: -${note.amountUsed}`);
+            });
+            console.log(`🧪 [MODO PRUEBA] Simulando creación de registros de aplicación para factura ${mockInvoice.id}`);
+        }
 
         return { invoice: mockInvoice };
 

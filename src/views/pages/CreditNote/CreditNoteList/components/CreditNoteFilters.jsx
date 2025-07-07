@@ -4,6 +4,7 @@ import { ClearOutlined, FilterOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import { DatePicker } from '../../../../../components/common/DatePicker';
 import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
+import { CREDIT_NOTE_STATUS, CREDIT_NOTE_STATUS_LABEL } from '../../../../../constants/creditNoteStatus';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
@@ -60,11 +61,19 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
         });
     };
 
+    const handleStatusChange = (status) => {
+        onFiltersChange({
+            ...filters,
+            status: status || null
+        });
+    };
+
     const handleClearFilters = () => {
         onFiltersChange({
             startDate: dayjs().startOf('day'),
             endDate: dayjs().endOf('day'),
-            clientId: null
+            clientId: null,
+            status: null
         });
     };
 
@@ -148,6 +157,25 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                     </MobileFilterGroup>
 
                     <MobileFilterGroup>
+                        <MobileFilterLabel>Estado:</MobileFilterLabel>
+                        <Select
+                            value={filters.status || ''}
+                            onChange={handleStatusChange}
+                            placeholder="Todos los estados"
+                            allowClear
+                            style={{ width: '100%' }}
+                            size="middle"
+                        >
+                            <Option value="">Todos</Option>
+                            {Object.entries(CREDIT_NOTE_STATUS).map(([key, value]) => (
+                                <Option key={value} value={value}>
+                                    {CREDIT_NOTE_STATUS_LABEL[value]}
+                                </Option>
+                            ))}
+                        </Select>
+                    </MobileFilterGroup>
+
+                    <MobileFilterGroup>
                         <Button
                             icon={<ClearOutlined />}
                             onClick={handleClearFilters}
@@ -223,6 +251,25 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                                 <Option key={client.id} value={client.id}>
                                     {client.name}
                                     {client.rnc && ` (${client.rnc})`}
+                                </Option>
+                            ))}
+                        </Select>
+                    </FilterGroup>
+
+                    <FilterGroup>
+                        <FilterLabel>Estado:</FilterLabel>
+                        <Select
+                            value={filters.status || ''}
+                            onChange={handleStatusChange}
+                            placeholder="Todos"
+                            allowClear
+                            style={{ width: '100%', minWidth: 120, maxWidth: 180 }}
+                            size="middle"
+                        >
+                            <Option value="">Todos</Option>
+                            {Object.entries(CREDIT_NOTE_STATUS).map(([key, value]) => (
+                                <Option key={value} value={value}>
+                                    {CREDIT_NOTE_STATUS_LABEL[value]}
                                 </Option>
                             ))}
                         </Select>
