@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import Typography from '../../../../templates/system/Typografy/Typografy'
-import { Button } from '../../../..'
+import { Button } from '../../../../templates/system/Button/Button';
 import { icons } from '../../../../../constants/icons/icons'
 
 /**

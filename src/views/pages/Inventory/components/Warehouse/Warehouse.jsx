@@ -2,7 +2,7 @@ import React, { useMemo, useEffect } from 'react'
 import styled from "styled-components"
 import { ResizableSidebar } from '../../../../component/ResizebleSidebar/ResizebleSidebar'
 import { useTransformedWarehouseData } from '../../../../../firebase/warehouse/warehouseNestedServise'
-import { MenuApp } from '../../../..'
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import { DetailView } from './components/DetailView/DetailView'
 import Sidebar from './components/Sidebar/Sidebar'
 import { Outlet, useParams, useNavigate } from 'react-router-dom'

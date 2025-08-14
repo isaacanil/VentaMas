@@ -1,5 +1,6 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react'
-import { Product, Grid } from '../../../..'
+import { Product } from '../../../../templates/system/Product/Product/Product';
+import { Grid } from '../../../../templates/system/Grid/Grid';
 import { useDispatch, useSelector } from "react-redux";
 import { CustomProduct } from '../../../../templates/system/Product/CustomProduct'
 import { selectIsRow } from '../../../../../features/setting/settingSlice';

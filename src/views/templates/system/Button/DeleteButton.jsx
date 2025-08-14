@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { FloatingMessage } from '../../../'
+import { FloatingMessage } from '../FloatingMessage/FloatingMessage';
 
 export const DeleteButton = ({fn}) => {
     return (

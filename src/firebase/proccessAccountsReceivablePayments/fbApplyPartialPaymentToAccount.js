@@ -1,97 +1,99 @@
 import { db } from "../firebaseconfig";
-import { collection, query, where, orderBy, getDocs, doc, setDoc, getDoc, Timestamp, runTransaction } from "firebase/firestore";
-import { nanoid } from "nanoid";
-import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
-import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
+import { doc, getDoc, Timestamp, runTransaction } from "firebase/firestore";
 import { fbGetInvoice } from "../invoices/fbGetInvoice";
-
-const THRESHOLD = 1e-10;
-
-const roundToTwoDecimals = (num) => Math.round(num * 100) / 100;
-
-const getInstallmentsByArId = async (user, arId) => {
-    const installmentsRef = collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments');
-    const q = query(installmentsRef, where('arId', '==', arId), orderBy('installmentDate', 'asc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-};
+import { fbAddAccountReceivablePaymentReceipt } from "../accountsReceivable/fbAddAccountReceivablePaymentReceipt";
+import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
+import { 
+    getInstallmentsByArId,
+    createPaymentRecord,
+    processInstallmentPayment,
+    updateAccountReceivableState,
+    updateInvoiceTotals,
+    formatPaidInstallments,
+    validateAccountHasPendingBalance,
+    validatePaymentAmount
+} from "./arPaymentUtils";
 
 export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) => {
     const { totalPaid, clientId, arId, paymentMethods, comments } = paymentDetails;
 
     try {
-        // Fetch all necessary data outside the transaction
-        const accountInstallments = await getInstallmentsByArId(user, arId);
-        const accountsReceivableRef = doc(db, "businesses", user.businessID, "accountsReceivable", arId);
-        const accountSnapshot = await getDoc(accountsReceivableRef);
-
-        if (!accountSnapshot.exists()) {
-            throw new Error("Account not found");
+        // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente
+        console.log("🔍 Debug - Validating account balance for arId:", arId);
+        const accountValidation = await validateAccountHasPendingBalance(user, arId);
+        
+        if (!accountValidation.isValid) {
+            console.warn("⚠️ Account validation failed:", accountValidation.error);
+            throw new Error(`Account validation failed: ${accountValidation.error}`);
         }
 
-        const accountData = accountSnapshot.data();
+        const accountData = accountValidation.account;
+        const currentBalance = accountValidation.balance;
+
+        console.log("✅ Account validation passed:", {
+            arId,
+            currentBalance,
+            isActive: accountData.isActive,
+            isClosed: accountData.isClosed
+        });
+
+        // 🔍 VALIDACIÓN 2: Validar que el monto del pago sea válido
+        const paymentValidation = validatePaymentAmount(totalPaid, currentBalance);
+        
+        if (!paymentValidation.isValid) {
+            console.warn("⚠️ Payment amount validation failed:", paymentValidation.error);
+            if (!paymentValidation.exceedsBalance) {
+                throw new Error(`Payment validation failed: ${paymentValidation.error}`);
+            }
+        }
+
+        console.log("✅ Payment amount validation passed:", {
+            requestedAmount: totalPaid,
+            accountBalance: currentBalance,
+            exceedsBalance: paymentValidation.exceedsBalance
+        });
+
+        // Fetch all necessary data outside the transaction
+        const accountInstallments = await getInstallmentsByArId(user, arId);
+        
+        // Ya no necesitamos obtener la cuenta de nuevo, la tenemos de la validación
+        // const accountsReceivableRef = doc(db, "businesses", user.businessID, "accountsReceivable", arId);
+        // const accountSnapshot = await getDoc(accountsReceivableRef);
+
+        // if (!accountSnapshot.exists()) {
+        //     throw new Error("Account not found");
+        // }
+
+        // const accountData = accountSnapshot.data(); // Eliminamos esta línea
+
         const invoice = await fbGetInvoice(user.businessID, accountData.invoiceId);
 
-        return await runTransaction(db, async (transaction) => {
+        const transactionResult = await runTransaction(db, async (transaction) => {
             let remainingAmount = totalPaid;
-            const id = nanoid();
-            const paymentsRef = doc(db, "businesses", user.businessID, "accountsReceivablePayments", id);
-            const paymentData = {
-                ...defaultPaymentsAR,
-                id,
-                paymentMethods,
-                totalPaid,
-                createdAt: Timestamp.now(),
-                updatedAt: Timestamp.now(),
-                comments,
-                createdUserId: user?.uid,
-                updatedUserId: user?.uid,
-                isActive: true
-            };
-
-            transaction.set(paymentsRef, paymentData);
+            
+            // Crear el registro de pago usando la utilidad
+            const paymentId = createPaymentRecord(transaction, { user, paymentDetails });
 
             const paidInstallments = new Set();
-            const installmentUpdates = [];
-            const installmentPayments = [];
 
             for (const installment of accountInstallments) {
                 if (remainingAmount <= THRESHOLD) break;
 
-                const amountToApply = Math.min(remainingAmount, installment.installmentBalance);
-                const newInstallmentBalance = roundToTwoDecimals(installment.installmentBalance - amountToApply);
-
-                installmentUpdates.push({
-                    ref: doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id),
-                    data: { 
-                        installmentBalance: newInstallmentBalance, 
-                        isActive: newInstallmentBalance > THRESHOLD
-                    }
+                // Usar la utilidad para procesar el pago de la cuota
+                const result = processInstallmentPayment(transaction, {
+                    user,
+                    installment,
+                    remainingAmount,
+                    paymentId,
+                    clientId,
+                    arId
                 });
 
-                installmentPayments.push({
-                    ref: doc(collection(db, "businesses", user.businessID, "accountsReceivableInstallmentPayments")),
-                    data: {
-                        ...defaultInstallmentPaymentsAR,
-                        id: nanoid(),
-                        installmentId: installment.id,
-                        paymentId: id,
-                        createdAt: Timestamp.now(),
-                        updatedAt: Timestamp.now(),
-                        paymentAmount: roundToTwoDecimals(amountToApply),
-                        createdBy: user.uid,
-                        updatedBy: user.uid,
-                        isActive: true,
-                        clientId,
-                        arId,
-                    }
-                });
-
-                if (newInstallmentBalance <= THRESHOLD) {
+                if (result.isPaid) {
                     paidInstallments.add(installment.id);
                 }
 
-                remainingAmount = roundToTwoDecimals(remainingAmount - amountToApply);
+                remainingAmount = roundToTwoDecimals(remainingAmount - result.amountToApply);
             }
 
             let newArBalance = roundToTwoDecimals(accountData.arBalance - totalPaid);
@@ -103,37 +105,37 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
                 remainingAmount = 0;
             }
 
-            const updatedPaidInstallments = [
-                ...(accountData.paidInstallments || []), 
-                ...Array.from(paidInstallments)
-            ];
-
-            transaction.update(accountsReceivableRef, {
-                arBalance: newArBalance,
-                lastPaymentDate: Timestamp.now(),
-                lastPayment: totalPaid,
-                isActive: newArBalance > THRESHOLD,
-                isClosed: newArBalance <= THRESHOLD,
-                paidInstallments: updatedPaidInstallments
+            // Actualizar el estado de la cuenta usando la utilidad
+            updateAccountReceivableState(transaction, {
+                businessId: user.businessID,
+                arId,
+                totalPaid,
+                newArBalance,
+                paidInstallmentIds: Array.from(paidInstallments),
+                existingPaidInstallments: accountData.paidInstallments || []
             });
 
-            // Apply all updates
-            installmentUpdates.forEach(update => transaction.update(update.ref, update.data));
-            installmentPayments.forEach(payment => transaction.set(payment.ref, payment.data));
+            // Actualizar la factura relacionada
+            if (invoice) {
+                updateInvoiceTotals(transaction, {
+                    businessId: user.businessID,
+                    invoiceId: accountData.invoiceId,
+                    amountPaid: totalPaid,
+                    invoice
+                });
+            }
+
+            // Crear el recibo de pago usando las utilidades
+            const paidInstallmentsData = formatPaidInstallments(Array.from(paidInstallments), accountInstallments);
 
             const paymentReceipt = {
                 accounts: [{
                     arNumber: accountData.numberId,
-                    invoiceNumber: invoice.data.numberID,
-                    invoiceId: invoice.data.id,
+                    invoiceNumber: invoice?.numberID,
+                    invoiceId: accountData.invoiceId,
                     arId: accountData.id,
-                    paidInstallments: Array.from(paidInstallments).map(id => ({
-                        number: accountInstallments.find(installment => installment.id === id).installmentNumber,
-                        id,
-                        amount: roundToTwoDecimals(accountInstallments.find(installment => installment.id === id).installmentBalance),
-                        status: 'paid'
-                    })),
-                    remainingInstallments: accountData.totalInstallments - updatedPaidInstallments.length,
+                    paidInstallments: paidInstallmentsData,
+                    remainingInstallments: accountData.totalInstallments - (accountData.paidInstallments?.length || 0) - paidInstallments.size,
                     totalInstallments: accountData.totalInstallments,
                     totalPaid: totalPaid,
                     arBalance: newArBalance,
@@ -144,6 +146,13 @@ export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) =
             };
 
             return paymentReceipt;
+        });
+
+        // Guardar el recibo de pago en la base de datos
+        return fbAddAccountReceivablePaymentReceipt({ 
+            user, 
+            clientId, 
+            paymentReceipt: transactionResult 
         });
     } catch (error) {
         console.error("Error processing partial payment for account:", error);

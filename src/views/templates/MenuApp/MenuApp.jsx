@@ -189,7 +189,7 @@ const Group = styled.div`
   
   @media (max-width: 768px) {
     gap: 0.5em;
-    grid-template-columns: auto auto auto 1fr;
+    grid-template-columns: auto auto auto auto;
   }
   
   @media (max-width: 480px) {

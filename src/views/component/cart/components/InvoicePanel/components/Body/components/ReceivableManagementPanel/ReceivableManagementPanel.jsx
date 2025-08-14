@@ -4,7 +4,7 @@ import { DatePicker, Input, InputNumber, Select, Form, Modal } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
 import { SelectCartData, toggleReceivableStatus } from '../../../../../../../../../features/cart/cartSlice'
 import { calculateInvoiceChange } from '../../../../../../../../../utils/invoice';
-import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
+import { formatPrice } from '../../../../../../../../../utils/formatPrice';
 import { selectAR, setAR, resetAR } from '../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
 import { calculateAmountPerInstallment } from '../../../../../../../../../utils/accountsReceivable/accountsReceivable';
 import usePaymentDates from './usePaymentDates';
@@ -300,7 +300,7 @@ export const ReceivableManagementPanel = ({
       <PanelContainer>
         <Header>
           <Label>Balance pendiente</Label>
-          <Label>{useFormatPrice(getPositive(currentBalance))}</Label>
+          <Label>{formatPrice(getPositive(currentBalance))}</Label>
         </Header>
           <Form layout="vertical" form={form}>
             <Group>
@@ -343,7 +343,7 @@ export const ReceivableManagementPanel = ({
               </FormItem>
               <FormItem label="Monto por Cuota">
                 <div style={{ fontWeight: 600 }}>
-                  <span>{useFormatPrice(installmentAmount)}</span>
+                  <span>{formatPrice(installmentAmount)}</span>
                 </div>
               </FormItem>
             </Group>
@@ -362,11 +362,11 @@ export const ReceivableManagementPanel = ({
           <Footer>
             <Header>
               <Label>Total a Crédito.</Label>
-              <Label>{useFormatPrice(getPositive(change))}</Label>
+              <Label>{formatPrice(getPositive(change))}</Label>
             </Header>
             <Header>
               <Label>Balance General</Label>
-              <Label>{useFormatPrice(getPositive(generalBalance))} / {useFormatPrice(creditLimit?.creditLimit?.value || 0)}</Label>
+              <Label>{formatPrice(getPositive(generalBalance))} / {formatPrice(creditLimit?.creditLimit?.value || 0)}</Label>
             </Header>
           </Footer>
         </PanelContainer>

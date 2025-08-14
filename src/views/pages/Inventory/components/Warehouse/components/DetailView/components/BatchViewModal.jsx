@@ -146,7 +146,7 @@ const BatchViewModal = ({ visible, onClose, batchData }) => {
                                         '0%': '#1890ff',
                                         '100%': '#52c41a',
                                     }}
-                                    strokeWidth={12}
+                                    size={12}
                                     status={calculatePercentage() < 20 ? 'exception' : 'normal'}
                                 />
                             </Col>

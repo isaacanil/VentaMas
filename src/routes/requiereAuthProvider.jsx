@@ -1,5 +1,5 @@
 import React from 'react'
-import { RequireAuth } from '../views'
+import { RequireAuth } from '../views/component/RequireAuth';
 import { ErrorBoundary } from '../views/pages/ErrorElement/ErrorBoundary'
 
 /**

@@ -100,13 +100,20 @@ const TaxReceiptAuthorizationModal = ({ visible, onCancel, taxReceipts, onAuthor
         return;
       }
       
+      // Mantener el sequenceLength original (o un default) para no reducirlo a la longitud escrita (ej. '34' => 2)
+      const resolveSequenceLength = () => {
+        if (typeof receiptData.sequenceLength === 'number') return receiptData.sequenceLength;
+        if (receiptData.type === 'B') return 8;
+        return 10;
+      };
+
       const updatedReceipt = {
         ...receiptData,
         id: receiptData.id,
         // Solo actualizar secuencia si es mayor que la actual para evitar retrocesos
         sequence: newStartSequence > currentSequence ? values.startSequence : receiptData.sequence,
         quantity: newStartSequence > currentSequence ? values.approvedQuantity : receiptData.quantity,
-        sequenceLength: values.startSequence.length,
+        sequenceLength: resolveSequenceLength(),
         // Agregamos la nueva autorización al historial
         authorizations: [...authorizations, authorizationData]
       };

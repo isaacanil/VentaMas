@@ -8,6 +8,7 @@ import { MarkAsReceivableButton } from './components/MarkAsReceivableButton/Mark
 import { ReceivableManagementPanel } from './components/ReceivableManagementPanel/ReceivableManagementPanel'
 import { InsuranceManagementPanel } from './components/InsuranceManagementPanel/InsuranceManagementPanel'
 import { InvoiceComment } from './components/InvoiceComment/InvoiceComment'
+import { CreditNotesSummary } from './components/CreditNotesSummary'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice'
@@ -19,7 +20,6 @@ import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'
 import { Alert, Form } from 'antd'
 import AccountsReceivableManager from './components/AccountsReceivableManager/AccountsReceivableManager'
 import CreditSelector from '../CreditSelector/CreditSelector'
-
 
 export const Body = ({ form }) => {
     const dispatch = useDispatch();
@@ -39,18 +39,14 @@ export const Body = ({ form }) => {
         change
     } = useCreditLimitCheck(creditLimit, cartData.change.value, clientId, user.businessID);
 
-
-
     const isAddedToReceivables = cartData?.isAddedToReceivables;
     const receivableStatus = isAddedToReceivables && isWithinCreditLimit;
 
     const isChangeNegative = cartData.change.value < 0;
     const hasAccountReceivablePermission = abilities.can('manage', 'accountReceivable');
 
-    // Manejar selección de notas de crédito
     const handleCreditNoteSelect = (creditNoteSelections) => {
         dispatch(setCreditNotePayment(creditNoteSelections));
-        // Recalcular totales después de cambiar las notas de crédito
         dispatch(recalcTotals());
     };
 
@@ -79,6 +75,10 @@ export const Body = ({ form }) => {
                         paymentMethods={cartData.paymentMethod}
                     />
                 )}
+                <CreditNotesSummary 
+                    selectedCreditNotes={selectedCreditNotes}
+                    totalPurchase={cartData.totalPurchase.value}
+                />
                 <PaymentSummary />
                 <AccountsReceivableManager
                     hasAccountReceivablePermission={hasAccountReceivablePermission}

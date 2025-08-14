@@ -6654,7 +6654,7 @@ var init_html2canvas_esm = __esm({
                     if (styles.webkitTextStrokeWidth && text2.text.trim().length) {
                       _this.ctx.strokeStyle = asString(styles.webkitTextStrokeColor);
                       _this.ctx.lineWidth = styles.webkitTextStrokeWidth;
-                      _this.ctx.lineJoin = !!window.chrome ? "miter" : "round";
+                      _this.ctx.lineJoin = window.chrome ? "miter" : "round";
                       _this.ctx.strokeText(text2.text, text2.bounds.left, text2.bounds.top + baseline);
                     }
                     _this.ctx.strokeStyle = "";

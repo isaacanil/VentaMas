@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import * as  ant from 'antd';
 const { Upload, Button, message, Typography, Progress } = ant;
 import { ArrowLeftOutlined, InboxOutlined, PictureOutlined, DeleteOutlined } from '@ant-design/icons';
-import noImg from '../../../../../assets/producto/noImg.png';
+import noImg from '../../../../../assets/producto/noimg.png';
 import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg';
 import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData';
 import { selectUser } from '../../../../../features/auth/userSlice';

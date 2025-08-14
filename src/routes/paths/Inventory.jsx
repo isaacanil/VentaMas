@@ -1,4 +1,6 @@
-import { Inventory, CategoryAdmin, MultimediaManager } from "../../views";
+import { Inventory } from "../../views/pages/Inventario/pages/ItemsManager/Inventario";
+import { CategoryAdmin } from "../../views/pages/Category/CategoryAdmin";
+import { MultimediaManager } from "../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager";
 import ROUTES_NAME from "../routesName";
 import { ProductOutflow } from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
 // import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";

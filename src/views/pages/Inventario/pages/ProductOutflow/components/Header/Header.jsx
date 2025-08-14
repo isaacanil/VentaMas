@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Button } from '../../../../../../templates/system/Button/Button'
 import { useDispatch } from 'react-redux'
 import { toggleAddProductOutflow } from '../../../../../../../features/modals/modalSlice'
-import { MenuApp } from '../../../../../..'
+import { MenuApp } from '../../../../../../templates/MenuApp/MenuApp';
 import { FormattedValue } from '../../../../../../templates/system/FormattedValue/FormattedValue'
 
 export const Header = () => {

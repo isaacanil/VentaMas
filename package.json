@@ -17,6 +17,8 @@
     "deploy:staging": "firebase deploy --only hosting:staging",
     "deploy:vercel": "vercel --prod",
     "serve": "npx serve dist",
+    "check-unused-exports": "pwsh -File .\\check-unused-exports.ps1",
+    "check-unused-exports:saveCsv": "pwsh -File .\\check-unused-exports.ps1 -SaveCsv",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -51,6 +53,7 @@
     "barcode-parser": "^2.3.0",
     "bcryptjs": "^2.4.3",
     "browser-image-compression": "^2.0.2",
+    "bwip-js": "^4.7.0",
     "chart.js": "^4.4.0",
     "chroma-js": "^2.4.2",
     "classnames": "^2.5.1",

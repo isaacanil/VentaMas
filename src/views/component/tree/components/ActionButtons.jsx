@@ -30,7 +30,7 @@ const ActionButton = styled.button`
 const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' como prop
   return (
     <ActionButtonsContainer>
-      {actions.map((action) => {
+      {actions.filter(action => action && action.handler).map((action) => {
         // Verificar la propiedad "show" si está definida
         if (action.show && !action.show(node, level)) {
           return null;
@@ -57,23 +57,22 @@ const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' co
           return (
             <Dropdown
               key={action.name}
-              overlay={
-                <Menu>
-                  {items.map((item) => (
-                    <Menu.Item
-                      key={item.name}
-                      onClick={(e) => {
-                        e.domEvent.stopPropagation();
-                        item.handler(node, level, path); // Pasar 'path' al handler
-                      }}
-                      danger={item.name.toLowerCase().includes('eliminar')}
-                    >
+              menu={{
+                items: items.map((item) => ({
+                  key: item.name,
+                  label: (
+                    <>
                       <FontAwesomeIcon icon={item.icon} style={{ marginRight: '5px' }} />
                       {item.name}
-                    </Menu.Item>
-                  ))}
-                </Menu>
-              }
+                    </>
+                  ),
+                  danger: item.name.toLowerCase().includes('eliminar'),
+                  onClick: (e) => {
+                    e.domEvent.stopPropagation();
+                    item.handler(node, level, path);
+                  }
+                }))
+              }}
               trigger={['click']}
             >
               <ActionButton onClick={(e) => e.stopPropagation()} title={action.name}>
@@ -94,7 +93,7 @@ ActionButtons.propTypes = {
       name: PropTypes.string.isRequired,
       type: PropTypes.oneOf(['button', 'dropdown']).isRequired,
       icon: PropTypes.object.isRequired, // Asegúrate de que los íconos sean objetos válidos de FontAwesome
-      handler: PropTypes.func.isRequired,
+      handler: PropTypes.func, // Cambiar a opcional
       show: PropTypes.func, // Opcional
       items: PropTypes.oneOfType([
         PropTypes.arrayOf(

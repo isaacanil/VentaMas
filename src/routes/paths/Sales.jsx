@@ -1,4 +1,5 @@
-import { InvoicesPage, Sales } from '../../views'
+import { InvoicesPage } from '../../views/pages/InvoicesPage/InvoicesPage';
+import { Sales } from '../../views/pages/Venta/Ventas';
 import { CashReconciliation } from '../../views/pages/CashReconciliation/CashReconciliation';
 import { Preorder } from '../../views/pages/PreorderSale/PreorderSale';
 

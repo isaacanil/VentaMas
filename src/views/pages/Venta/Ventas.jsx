@@ -2,12 +2,9 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import {
-  Cart,
-  MenuApp,
-  MenuComponents,
-  MultiDisplayControl,
-} from '../../'
+import { Cart } from '../../component/Cart/Cart.jsx'
+import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx'
+import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx'  
 
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
@@ -111,7 +108,7 @@ export const Sales = () => {
             borderRadius={'bottom-right'}
             searchData={searchData}
             setSearchData={setSearchData}
-          // showNotificationButton={true}
+            showNotificationButton={true}
           />
           < ProductControlEfficient
             productsLoading={productsLoading}

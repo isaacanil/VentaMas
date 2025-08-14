@@ -332,8 +332,8 @@ export const useListenProductsStockByLocation = (location = null) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Si no hay location.id o no hay user, limpiamos y salimos.
-    if (!location || !user) {
+    // Si no hay location, user o businessID, limpiamos y salimos.
+    if (!location || !user || !user.businessID) {
       setData([]);
       setLoading(false);
       return;
@@ -365,7 +365,7 @@ export const useListenProductsStock = (productId = null) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!productId || !stableUser) {
+    if (!productId || !stableUser || !stableUser.businessID) {
       setData([]);
       setLoading(false);
       return;

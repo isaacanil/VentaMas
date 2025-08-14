@@ -14,7 +14,7 @@ import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreat
 import { useBusinessDataConfig } from './features/auth/useBusinessDataConfig';
 import { routes } from './routes/routes';
 import { useAbilities, useLoadUserAbilities } from './hooks/abilities/useAbilities';
-import { ModalManager } from './views';
+import { ModalManager } from './views/component/modals/ModalManager';
 import { AnimatePresence } from 'framer-motion';
 import { useFbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
@@ -31,7 +31,6 @@ import { useDeveloperCommands } from './hooks/useDeveloperCommands';
 import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';
 import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
 
-
 // Componente para rastrear la navegación dentro del Router
 const NavigationTracker = () => {
   useNavigationTracker();
@@ -41,6 +40,13 @@ const NavigationTracker = () => {
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+
+  // Permitir selección de texto solo para desarrolladores
+  useEffect(() => {
+    const isDeveloper = user?.role === 'dev';
+    document.body.style.userSelect = isDeveloper ? 'auto' : 'none';
+    document.body.style.webkitUserSelect = isDeveloper ? 'auto' : 'none';
+  }, [user?.role]);
 
   useTaxReceiptsFix();
   useDeveloperCommands(); // Activar comandos de desarrollador

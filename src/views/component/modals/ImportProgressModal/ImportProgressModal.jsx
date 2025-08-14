@@ -29,7 +29,7 @@ const ImportProgressModal = ({ visible, progress }) => {
         <Progress 
           percent={percentage} 
           status={percentage === 100 ? "success" : "active"}
-          strokeWidth={15}
+          size={15}
         />
         <StatsContainer>
           <StyledCard>

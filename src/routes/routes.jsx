@@ -1,4 +1,4 @@
-import { NotFound } from "../views";
+import { NotFound } from "../views/pages/NotFound/NotFound";
 import basic from "./paths/Basic";
 import auth from "./paths/Auth";
 import inventory from "./paths/Inventory";

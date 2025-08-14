@@ -5,7 +5,7 @@ import { quotationPdf } from "./modules/quotation/quotationGenerate/quotationGen
 import { keepSupabaseAlive } from "./modules/supabase/controllers/keepSupabaseAlive.controller.js";
 import { handleCreateUser } from "./versions/v1/modules/auth/handle/handleCreateUser.js";
 import { handleUpdateUser, handleUpdateUserWithPermissions, handleChangePassword } from "./versions/v1/modules/auth/handle/handleUpdateUser.js";
-
+import { updatePendingBalance } from "./versions/v1/modules/accountsReceivable/triggers/updatePendingBalance.js";
 export { authLogin, authCheck, authLogout, expireSessions } from "./versions/v1/modules/auth/handle/handleLogin.js";
 
 // mas tarde la funcion para actualziar el inventario
@@ -21,4 +21,5 @@ export {
   handleUpdateUser,
   handleUpdateUserWithPermissions,
   handleChangePassword,
+  updatePendingBalance // muy importante
 };

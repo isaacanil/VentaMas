@@ -71,11 +71,6 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
   const isValidFileType = (file) => {
     const validTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel',
-      'application/x-excel',
-      'application/x-msexcel',
-      'application/excel',
-      'application/spreadsheet',
       'text/csv',
       'application/csv',
       'text/x-csv',
@@ -88,8 +83,32 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
       return true;
     }
 
-    const validExtensions = ['xlsx', 'xls', 'csv'];
+    const validExtensions = ['xlsx', 'csv'];
     const extension = file.name.split('.').pop().toLowerCase();
+    
+    // Verificar específicamente archivos .xls y mostrar error informativo
+    if (extension === 'xls') {
+      message.error({
+        content: (
+          <div>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+              ❌ Archivo .xls no compatible
+            </div>
+            <div style={{ marginBottom: '4px' }}>
+              💡 <strong>Soluciones:</strong>
+            </div>
+            <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+              • Guarda el archivo como .xlsx desde Excel<br/>
+              • Exporta como CSV desde Excel<br/>
+              • Usa LibreOffice para convertir a .xlsx
+            </div>
+          </div>
+        ),
+        duration: 8
+      });
+      return false;
+    }
+    
     return validExtensions.includes(extension);
   };
 
@@ -118,7 +137,8 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
       label: 'Importar Datos',
       children: (
         <Section>
-          <p>Selecciona un archivo Excel (.xlsx, .xls) para importar datos al sistema.</p>
+          <p>Selecciona un archivo Excel (.xlsx) o CSV para importar datos al sistema.</p>
+          <p>⚠️ <strong>Nota:</strong> Los archivos .xls antiguos no son compatibles. Por favor, guárdalos como .xlsx o CSV desde Excel.</p>
           <p>Asegúrate de que los datos estén organizados de acuerdo a la plantilla de importación.</p>
 
           <Upload

@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import style from './ControlSearchProductStyle.module.scss'
-import { Product, Grid } from '../../'
+import { Product } from '../../templates/system/Product/Product/Product';
+import { Grid } from '../../templates/system/Grid/Grid';
 
 export const SearchList = ({ dataSearch }) => {
   const [products, setProduct] = useState()

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button } from '../../index'
+import { Button } from '../../templates/system/Button/Button'
 import styled from 'styled-components'
 import { ButtonGroup } from '../../templates/system/Button/Button'
 import { motion } from 'framer-motion'

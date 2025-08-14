@@ -22,11 +22,15 @@ import useInsuranceEnabled from '../../../../../../hooks/useInsuranceEnabled';
 // Importamos el componente FileUploader
 import FileUploader from '../../../../FileUploader/FileUploader';
 import { setInsuranceAR } from '../../../../../../features/insurance/insuranceAccountsReceivableSlice';
+// Importamos los componentes de médicos
+import DoctorSelector from '../../../../../../components/DoctorSelector/DoctorSelector';
+import DoctorModal from '../../../../../../components/DoctorModal/DoctorModal';
+import { useFbGetDoctors } from '../../../../../../firebase/doctors/useFbGetDoctors';
 
 const Row = styled.div`
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 `;
 
 const Col = styled.div`
@@ -116,9 +120,13 @@ export const InsuranceAuthModal = () => {
   // Añadimos un estado para guardar la aseguradora seleccionada completa
   const [selectedInsuranceData, setSelectedInsuranceData] = useState(null);
   const [prescriptionFiles, setPrescriptionFiles] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   // Escuchamos la configuración de seguros (aseguradoras + tipos)
   const { data: insuranceConfigData, loading: configLoading } = useListenInsuranceConfig();
+  // Escuchamos los médicos disponibles
+  const { doctors, loading: doctorsLoading } = useFbGetDoctors();
 
   // Función para encontrar una aseguradora por ID
   const findInsuranceById = useCallback((id) => {
@@ -204,21 +212,55 @@ export const InsuranceAuthModal = () => {
     // Reseteamos el tipo de seguro
     form.setFieldValue('insuranceType', undefined);
     
-    // Guardar inmediatamente el cambio
-    saveSpecificFieldsToClientInsurance('insuranceId', value);
+    // Solo actualizar Redux, no guardar inmediatamente
+    dispatch(updateAuthField({ field: 'insuranceId', value }));
   };
 
   // Handler para cambio de tipo de seguro
   const handleInsuranceTypeChange = (value) => {
-    // Guardar inmediatamente el cambio
-    saveSpecificFieldsToClientInsurance('insuranceType', value);
+    // Solo actualizar Redux, no guardar inmediatamente
+    dispatch(updateAuthField({ field: 'insuranceType', value }));
   };
 
   // Handler para cambio de fecha de nacimiento
   const handleBirthDateChange = (date) => {
     if (date) {
-      saveSpecificFieldsToClientInsurance('birthDate', date);
+      // Solo actualizar Redux, no guardar inmediatamente
+      dispatch(updateAuthField({ field: 'birthDate', value: date.toISOString() }));
     }
+  };
+
+  // Handler para cambio de médico
+  const handleDoctorChange = (doctor) => {
+    setSelectedDoctor(doctor);
+    
+    // Actualizar los campos en el formulario
+    if (doctor) {
+      form.setFieldsValue({
+        doctorId: doctor.id,
+        doctor: doctor.name,
+        specialty: doctor.specialty
+      });
+      
+      // Actualizar Redux
+      dispatch(updateAuthField({ field: 'doctorId', value: doctor.id }));
+      dispatch(updateAuthField({ field: 'doctor', value: doctor.name }));
+      dispatch(updateAuthField({ field: 'specialty', value: doctor.specialty }));
+    } else {
+      form.setFieldsValue({
+        doctorId: undefined,
+        doctor: undefined,
+        specialty: undefined
+      });
+      
+      // Limpiar Redux
+      dispatch(updateAuthField({ field: 'doctorId', value: null }));
+      dispatch(updateAuthField({ field: 'doctor', value: null }));
+      dispatch(updateAuthField({ field: 'specialty', value: null }));
+    }
+    
+    // Validar completitud
+    validateFormCompletion();
   };
 
   // Función para validar que todos los campos requeridos estén completos
@@ -239,10 +281,7 @@ export const InsuranceAuthModal = () => {
         'insuranceType',
         'affiliateNumber',
         'authNumber',
-        'doctor',
-        'specialty',
-        'indicationDate',
-        // Eliminamos birthDate de los campos requeridos
+        // Eliminamos birthDate e indicationDate de los campos requeridos
       ];
       
       // Verificar si todos los campos requeridos tienen valor
@@ -251,13 +290,17 @@ export const InsuranceAuthModal = () => {
         return value !== undefined && value !== null && value !== '';
       });
       
-      setFormComplete(allFieldsComplete);
-      return allFieldsComplete;
+      // También verificar que el médico esté seleccionado
+      const doctorSelected = selectedDoctor !== null;
+      
+      const isComplete = allFieldsComplete && doctorSelected;
+      setFormComplete(isComplete);
+      return isComplete;
     } catch (error) {
       console.error('Error validando completitud del formulario:', error);
       return false;
     }
-  }, [form, insuranceEnabled]);
+  }, [form, insuranceEnabled, selectedDoctor]);
   
   // Esta función será llamada automáticamente cuando cambie cualquier valor del formulario
   const handleFormValuesChange = useCallback((changedValues) => {
@@ -274,6 +317,7 @@ export const InsuranceAuthModal = () => {
   // Load insurance auth data from Firebase when modal opens
   useEffect(() => {
     if (open && client?.id && user && !authData?.clientId) {
+      console.log('🔍 Cargando datos de seguro para cliente:', client.id);
       dispatch(fetchInsuranceAuthByClientId({
         user,
         clientId: client.id
@@ -281,12 +325,22 @@ export const InsuranceAuthModal = () => {
     }
   }, [open, client?.id, user, authData?.clientId, dispatch]);
 
+  // Separate effect for initial load only
   useEffect(() => {
-    if (open) {
+    if (open && authData && !initialDataLoaded) {
+      console.log('📋 Datos cargados desde Redux:', authData);
       const formValues = authData || {};
 
       if (formValues.insuranceId) {
         setSelectedInsurance(formValues.insuranceId);
+      }
+
+      // Set selected doctor if available
+      if (formValues.doctorId) {
+        const doctor = doctors.find(d => d.id === formValues.doctorId);
+        if (doctor) {
+          setSelectedDoctor(doctor);
+        }
       }
 
       // Convert ISO date strings to dayjs objects for DatePicker
@@ -294,20 +348,60 @@ export const InsuranceAuthModal = () => {
       
       // Properly format dates for the form
       if (formattedValues.birthDate) {
+        console.log('📅 Fecha de nacimiento encontrada:', formattedValues.birthDate);
         formattedValues.birthDate = dayjs(formattedValues.birthDate);
+      } else {
+        console.log('❌ No se encontró fecha de nacimiento');
       }
       if (formattedValues.indicationDate) {
         formattedValues.indicationDate = dayjs(formattedValues.indicationDate);
       }
 
-      // Configuramos los valores del formulario
+      console.log('✍️ Estableciendo valores en formulario:', formattedValues);
+      // Configuramos los valores del formulario SOLO en la carga inicial
       form.setFieldsValue(formattedValues);
       setHasDependent(formValues.hasDependent || false);
+      
+      // Marcar que los datos iniciales ya fueron cargados
+      setInitialDataLoaded(true);
       
       // Validar completitud después de cargar datos
       setTimeout(() => validateFormCompletion(), 300);
     }
-  }, [open, authData, form, validateFormCompletion]);
+  }, [open, authData, doctors, initialDataLoaded, form, validateFormCompletion]);
+
+  // Reset initialDataLoaded when modal closes
+  useEffect(() => {
+    if (!open) {
+      // Limpiar todos los estados locales cuando se cierra el modal
+      setInitialDataLoaded(false);
+      setSelectedDoctor(null);
+      setSelectedInsurance(null);
+      setSelectedInsuranceData(null);
+      setPrescriptionFiles([]);
+      setHasDependent(false);
+      
+      // También resetear el formulario cuando se cierra el modal
+      form.resetFields();
+    }
+  }, [open, form]);
+  
+  // Reset form when authData is cleared (after invoice completion or cancellation)
+  useEffect(() => {
+    // Si authData es null o tiene valores iniciales (significa que se limpió), resetear formulario
+    if (open && authData && (
+      authData.clientId === null || 
+      (authData.insuranceId === null && authData.birthDate === null && authData.affiliateNumber === '')
+    )) {
+      console.log('🧹 Limpiando formulario porque authData se reseteo:', authData);
+      form.resetFields();
+      setSelectedDoctor(null);
+      setSelectedInsurance(null);
+      setSelectedInsuranceData(null);
+      setPrescriptionFiles([]);
+      setHasDependent(false);
+    }
+  }, [authData, open, form]);
 
   // Validamos las fechas para que no sean del futuro
   const disabledFutureDate = (current) => {
@@ -359,6 +453,18 @@ export const InsuranceAuthModal = () => {
   }, [open, authData?.prescription]);
 
   const handleCancel = () => {
+    // Limpiar estados locales del componente
+    setSelectedDoctor(null);
+    setSelectedInsurance(null);
+    setSelectedInsuranceData(null);
+    setPrescriptionFiles([]);
+    setHasDependent(false);
+    setInitialDataLoaded(false);
+    
+    // Resetear el formulario explícitamente
+    form.resetFields();
+    
+    // Cerrar el modal
     dispatch(closeModal());
   };
 
@@ -373,7 +479,11 @@ export const InsuranceAuthModal = () => {
         birthDate: values.birthDate ? values.birthDate.toISOString() : null,
         indicationDate: values.indicationDate ? values.indicationDate.toISOString() : null,
         // Incluimos los archivos de receta
-        prescription: prescriptionFiles
+        prescription: prescriptionFiles,
+        // Incluimos la información del médico seleccionado
+        doctorId: selectedDoctor?.id || null,
+        doctor: selectedDoctor?.name || null,
+        specialty: selectedDoctor?.specialty || null
       };
 
       // Guardamos en el estado de Redux
@@ -571,24 +681,17 @@ export const InsuranceAuthModal = () => {
             </Col>
           </Row>
 
-          {/* Grupo de información médica - Ahora en sección de seguro */}
+          {/* Selector de médico - Ahora en sección de seguro */}
           <Row>
             <Col>
-              <Form.Item
-                name="doctor"
-                label="Médico"
-                rules={[{ required: true, message: 'Por favor ingrese el nombre del médico' }]}
-              >
-                <Input placeholder="Nombre del médico" autoComplete="off" />
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item
-                name="specialty"
-                label="Especialidad del Médico"
-                rules={[{ required: true, message: 'Por favor ingrese la especialidad del médico' }]}
-              >
-                <Input placeholder="Especialidad del médico" autoComplete="off" />
+              <Form.Item label="Médico">
+                <DoctorSelector
+                  doctors={doctors}
+                  selectedDoctor={selectedDoctor}
+                  onSelectDoctor={handleDoctorChange}
+                  validateStatus={!selectedDoctor && insuranceEnabled ? 'error' : ''}
+                  help={!selectedDoctor && insuranceEnabled ? 'Por favor seleccione un médico' : ''}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -598,14 +701,15 @@ export const InsuranceAuthModal = () => {
             <Col>
               <Form.Item
                 name="indicationDate"
-                label="Fecha de Indicación"
-                rules={[{ required: true, message: 'Por favor seleccione la fecha de indicación' }]}
+                label="Fecha de Indicación (opcional)"
+                rules={[{ required: false }]}
               >
                 <DatePicker
                   style={{ width: '100%' }}
                   autoComplete="off"
                   format="DD/MM/YYYY"
                   disabledDate={disabledFutureDate}
+                  placeholder="Seleccionar fecha (opcional)"
                 />
               </Form.Item>
             </Col>
@@ -650,8 +754,8 @@ export const InsuranceAuthModal = () => {
             <Col>
               <Form.Item
                 name="birthDate"
-                label="Fecha de Nacimiento"
-                rules={[{ required: false, message: 'Por favor seleccione la fecha de nacimiento' }]}
+                label="Fecha de Nacimiento (opcional)"
+                rules={[{ required: false }]}
               >
                 <DatePicker
                   style={{ width: '100%' }}
@@ -659,6 +763,7 @@ export const InsuranceAuthModal = () => {
                   format="DD/MM/YYYY"
                   disabledDate={disabledFutureDate}
                   onChange={handleBirthDateChange}
+                  placeholder="Seleccionar fecha (opcional)"
                 />
               </Form.Item>
             </Col>
@@ -673,6 +778,9 @@ export const InsuranceAuthModal = () => {
           />
         </Form>
       )}
+      
+      {/* Modal para agregar/editar médicos */}
+      <DoctorModal />
     </Modal>
   );
 };

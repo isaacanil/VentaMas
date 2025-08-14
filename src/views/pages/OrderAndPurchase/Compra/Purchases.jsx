@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'react-router-dom'
 import { PurchaseTable } from './components/PurchasesTable/PurchasesTable'
-import { MenuApp } from '../../../'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { PurchasesReport } from './components/PurchasesReport/PurchasesReport'
 import { FilterBar } from './components/FilterBar/FilterBar'
 import createFilterConfig from './config/filterConfig'

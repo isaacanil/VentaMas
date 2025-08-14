@@ -18,7 +18,15 @@ const Wrapper = styled.div`
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 `;
 
-export const ClientGeneralInfo = ({ form, customerData, creditLimitForm }) => {
+export const ClientGeneralInfo = ({ 
+    form, 
+    customerData, 
+    creditLimitForm, 
+    isUpdating, 
+    handleSubmit, 
+    loading: submitLoading, 
+    submitted 
+}) => {
     const user = useSelector(selectUser);
     const dispatch = useDispatch();
     const update = OPERATION_MODES.UPDATE.id;
@@ -46,19 +54,32 @@ export const ClientGeneralInfo = ({ form, customerData, creditLimitForm }) => {
     }, [customerData]);
 
     const handleDeleteUser = async () => {
-        try {
-            await fbDeleteClient(user.businessID, customerData.id);
+        antd.Modal.confirm({
+            title: '¿Está seguro de eliminar este cliente?',
+            content: `Se eliminará permanentemente el cliente "${customerData.name}". Esta acción no se puede deshacer.`,
+            okText: 'Sí, eliminar',
+            okType: 'danger',
+            cancelText: 'Cancelar',
+            onOk: async () => {
+                try {
+                    await fbDeleteClient(user.businessID, customerData.id);
 
-            form.resetFields();
-            creditLimitForm.resetFields();
+                    form.resetFields();
+                    creditLimitForm.resetFields();
 
-            notification.success({
-                message: 'Cliente Actualizado',
-                description: 'Eliminado Correctamente'
-            });
-            dispatch(toggleClientModal({ mode: create }))        } catch (error) {
-            // Handle error appropriately
-        }
+                    notification.success({
+                        message: 'Cliente Eliminado',
+                        description: 'El cliente ha sido eliminado correctamente'
+                    });
+                    dispatch(toggleClientModal({ mode: create }));
+                } catch (error) {
+                    notification.error({
+                        message: 'Error al eliminar',
+                        description: 'No se pudo eliminar el cliente. Inténtelo de nuevo.'
+                    });
+                }
+            }
+        });
     }
 
     const handleRNCSearch = (value) => {
@@ -74,8 +95,10 @@ export const ClientGeneralInfo = ({ form, customerData, creditLimitForm }) => {
         }
     };
 
+    const hasRncPanel = loading || rncInfo;
+
     return (
-        <Wrapper>
+        <Wrapper $hasRnc={hasRncPanel}>
             <div>
                 {differences.length > 0 && (
                     <DgiiSyncAlert
@@ -190,13 +213,34 @@ export const ClientGeneralInfo = ({ form, customerData, creditLimitForm }) => {
                     >
                         <Input />
                     </Form.Item>
-                    <Button danger onClick={handleDeleteUser} >Eliminar Usuarios</Button>
+                    
+                    <ButtonContainer>
+                        <DeleteButtonContainer>
+                            <Button danger onClick={handleDeleteUser}>
+                                Eliminar Cliente
+                            </Button>
+                        </DeleteButtonContainer>
+                        {isUpdating && (
+                            <UpdateButtonContainer>
+                                <Button 
+                                    type="primary" 
+                                    style={{width: '100%'}}
+                                    onClick={handleSubmit}
+                                    loading={submitLoading || submitted}
+                                    disabled={submitLoading || submitted}
+                                >
+                                    Actualizar Cliente
+                                </Button>
+                            </UpdateButtonContainer>
+                        )}
+                    </ButtonContainer>
                 </Form>
             </div>
-            <div>
-
-                { <RncPanel rncInfo={rncInfo} loading={loading} />}
-            </div>
+            {hasRncPanel && (
+              <div>
+                <RncPanel rncInfo={rncInfo} loading={loading} />
+              </div>
+            )}
         </Wrapper>
     )
 }
@@ -205,4 +249,21 @@ const FlexContainer = styled.div`
     display: flex;
     gap: 1em;
     flex-grow: 1;
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin-top: 1em;
+`;
+
+const UpdateButtonContainer = styled.div`
+    display: flex;
+
+`;
+
+const DeleteButtonContainer = styled.div`
+    display: flex;
+    justify-content: flex-start;
 `;

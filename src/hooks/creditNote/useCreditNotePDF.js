@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { message } from 'antd';
-import printJS from 'print-js';
+import { printPdfBase64 } from '../../utils/printPdf';
 import { selectBusinessData } from '../../features/auth/businessSlice';
 import { generateCreditNoteLetterPdf } from '../../pdf/creditNote/templates/template1/CreditNoteLetterPdf';
 
@@ -57,12 +57,8 @@ export const useCreditNotePDF = () => {
         try {
             const pdfBase64 = await generateCreditNoteLetterPdf(business, creditNoteData);
             
-            printJS({ 
-                printable: pdfBase64, 
-                type: 'pdf', 
-                base64: true,
-                showModal: true,
-            });
+            // Cross-platform print helper with mobile fallback
+            printPdfBase64(pdfBase64);
 
         } catch (error) {
             console.error("❌ Error al generar el PDF para imprimir:", error);

@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 import routesName from '../../../../../routes/routesName'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { ButtonGroup } from '../../../..'
+import { ButtonGroup } from '../../../system/Button/ButtonGroup';
 import { togglePurchaseChartModal } from '../../../../../features/purchase/purchaseUISlice'
 
 export const PurchaseToolbar = ({ side = 'left' }) => {

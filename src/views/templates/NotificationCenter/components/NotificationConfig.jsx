@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { Switch } from 'antd';
 
 const NotificationConfig = () => {
   const [widgetSettings, setWidgetSettings] = useState({
     fiscalReceipts: true,
+    accountsReceivable: true,
     inventory: true,
     sales: true,
     system: true
@@ -30,6 +31,17 @@ const NotificationConfig = () => {
           <Switch 
             checked={widgetSettings.fiscalReceipts}
             onChange={(checked) => handleToggleWidget('fiscalReceipts', checked)}
+          />
+        </WidgetSettingItem>
+        
+        <WidgetSettingItem>
+          <WidgetInfo>
+            <WidgetName>Cuentas por Cobrar</WidgetName>
+            <WidgetDescription>Alertas sobre cuentas próximas a vencer</WidgetDescription>
+          </WidgetInfo>
+          <Switch 
+            checked={widgetSettings.accountsReceivable}
+            onChange={(checked) => handleToggleWidget('accountsReceivable', checked)}
           />
         </WidgetSettingItem>
         

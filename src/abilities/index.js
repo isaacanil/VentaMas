@@ -24,8 +24,11 @@ export async function defineAbilitiesForWithDynamic(user) {
   // Obtener permisos base del rol
   const baseAbilities = getBaseAbilitiesForRole(user);
   
-  // Si no hay user.uid, solo devolver permisos base
-  if (!user?.uid) {
+  // Si no hay user.uid o businessID, solo devolver permisos base
+  if (!user?.uid || !user?.businessID) {
+    if (!user?.businessID) {
+      console.warn('defineAbilitiesForWithDynamic: user missing businessID, using base abilities only');
+    }
     return baseAbilities;
   }
   

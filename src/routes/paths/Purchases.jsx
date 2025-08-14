@@ -1,4 +1,5 @@
-import { Purchases, Orders } from "../../views";
+import { Purchases } from "../../views/pages/OrderAndPurchase/Compra/Purchases";
+import { Orders } from "../../views/pages/OrderAndPurchase/Order/Orders";
 import OrderManagement from "../../views/pages/OrderAndPurchase/OrderManagement/OrderManagement";
 import PurchaseManagement from "../../views/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement";
 import BackOrders from "../../views/pages/OrderAndPurchase/BackOrders/BackOrders";

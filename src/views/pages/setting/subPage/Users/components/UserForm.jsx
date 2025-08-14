@@ -14,16 +14,18 @@ import { fbUpdateUser } from '../../../../../../firebase/Auth/fbAuthV2/fbUpdateU
 
 export const SignUpModal = () => {
     const [form] = Form.useForm();
-    const user = useSelector(selectUser);    const [isOpenChangePassword, setIsOpenChangePassword] = useState(false)
+    const user = useSelector(selectUser);
+    const [isOpenChangePassword, setIsOpenChangePassword] = useState(false)
     const [isOpenPermissions, setIsOpenPermissions] = useState(false)
     const [showDowngradeModal, setShowDowngradeModal] = useState(false)
     const [pendingFormValues, setPendingFormValues] = useState(null)
     const [loading, setLoading] = useState(false)
     const signUpModal = useSelector(SelectSignUpUserModal)
-    const { isOpen, data } = signUpModal;    
+    const { isOpen, data } = signUpModal;
     const [fbError, setFbError] = useState(null);
     const dispatch = useDispatch()
-    const { abilities } = userAccess()    // Verificar permisos para gestionar usuarios
+    const { abilities } = userAccess()
+    // Verificar permisos para gestionar usuarios
     const canManageUsers = abilities.can('manage', 'User')
     const canCreateUsers = abilities.can('create', 'User') || canManageUsers
     const canUpdateUsers = abilities.can('update', 'User') || canManageUsers
@@ -37,7 +39,9 @@ export const SignUpModal = () => {
 
     const handleIsOpenPermissions = () => {
         setIsOpenPermissions(!isOpenPermissions);
-    };    const handleSubmit = async (values) => {
+    };
+    
+    const handleSubmit = async (values) => {
         // Verificar permisos antes de proceder
         if (data && !canUpdateUsers) {
             message.error('No tienes permisos para actualizar usuarios');
@@ -107,12 +111,14 @@ export const SignUpModal = () => {
     useEffect(() => {
         form.resetFields();
         setFbError(null);
-    }, [isOpen]);    useEffect(() => {
+    }, [isOpen, form]);
+    
+    useEffect(() => {
         if (data) {
             form.setFieldsValue(data)
             setFbError(null);
         }
-    }, [data]);
+    }, [data, form]);
     
     const handleClose = () => {
         dispatch(toggleSignUpUser({ isOpen: false }))
@@ -175,7 +181,9 @@ export const SignUpModal = () => {
                             help="Elige un identificador único para acceder al sistema."
                         >
                             <Input />
-                        </Form.Item>                        <Form.Item
+                        </Form.Item>
+                        
+                        <Form.Item
                             label="Rol"
                             name="role"
                             rules={[{ required: true, message: 'Por favor, selecciona un rol!' }]}
@@ -191,7 +199,8 @@ export const SignUpModal = () => {
                             !data && (
                                 <Form.Item
                                     label="Contraseña"
-                                    name="password"                                    rules={[
+                                    name="password"
+                                    rules={[
                                         { required: true, message: 'Por favor, ingresa tu contraseña!' },
                                         { pattern: /(?=.*[A-Z])/, message: 'La contraseña debe tener al menos una letra mayúscula.' },
                                         { pattern: /(?=.*[a-z])/, message: 'La contraseña debe tener al menos  una letra minúscula.' },
@@ -217,7 +226,9 @@ export const SignUpModal = () => {
                                             unCheckedChildren="Inactivo"
                                             onChange={(checked) => form.setFieldsValue({ active: checked })}
                                         />
-                                    </Form.Item>                                    <Button
+                                    </Form.Item>
+                                    
+                                    <Button
                                         onClick={handleIsOpenChangePassWord}
                                     >
                                         Cambiar Contraseña

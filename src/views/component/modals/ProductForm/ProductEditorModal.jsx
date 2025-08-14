@@ -38,7 +38,7 @@ export const ProductEditorModal = ({ isOpen }) => {
         <Modal
             centered={true}
             open={isOpen}
-            width={1000}
+            width={1200}
             style={{ top: 5 }}
             title={status === "update" ? `Editar: ${product.name}` : "Nuevo Producto"}
             onCancel={handleCloseModal}

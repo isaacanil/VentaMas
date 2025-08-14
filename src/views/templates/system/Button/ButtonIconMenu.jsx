@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-export const ButtonIconMenu = ({icon, onClick}) => {
+export const ButtonIconMenu = ({icon, onClick, ...rest}) => {
     return (
-        <Container onClick={onClick}>
+        <Container onClick={onClick} {...rest}>
             {icon}
         </Container>
     )

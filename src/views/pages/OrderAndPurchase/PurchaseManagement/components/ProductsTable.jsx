@@ -191,11 +191,6 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
       editable: true,
     },
     {
-      title: 'Unid. Medida',
-      dataIndex: 'unitMeasurement',
-      editable: true
-    },
-    {
       title: 'Costo Base',
       dataIndex: 'baseCost',
       render: (value) => formatMoney(value),

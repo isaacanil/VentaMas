@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { MenuApp } from '../../../'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { OrdersTable } from './components/OrderListTable/OrdersTable'
 import { FilterBar } from '../Compra/components/FilterBar/FilterBar'
 import { useListenOrders } from '../../../../hooks/useOrders'

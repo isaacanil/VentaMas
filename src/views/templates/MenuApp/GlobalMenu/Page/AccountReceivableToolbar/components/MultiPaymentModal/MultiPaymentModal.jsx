@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Form, Typography, Divider, message, notification, Steps } from 'antd';
 import { useReactToPrint } from 'react-to-print';
-import { ShowcaseList } from '../../../../../../../templates/system/Showcase/ShowcaseList';
+import { ShowcaseList } from '../../../../../../../templates/system/ShowCase/ShowcaseList';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import styled from 'styled-components';

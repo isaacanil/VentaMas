@@ -125,7 +125,6 @@ const TreeNode = memo(({
           <NodeName
             title={node.name}
             isMatch={match}
-            children={node.children}
             isLoading={node.isLoading}
             searchTerm={searchTerm}
             config={config}

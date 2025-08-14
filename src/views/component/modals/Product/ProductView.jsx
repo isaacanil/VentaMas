@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { useParams } from 'react-router-dom';
 import { useListenProduct } from '../../../../firebase/products/fbGetProduct';
-import noImg from '../../../../assets/producto/noImg.png';
+import noImg from '../../../../assets/producto/noimg.png';
 
 const defaultProduct = {
     name: 'Producto No Encontrado',

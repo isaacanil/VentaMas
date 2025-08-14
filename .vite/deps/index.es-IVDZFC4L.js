@@ -21,8 +21,8 @@ var require_global = __commonJS({
       return it && it.Math === Math && it;
     };
     module.exports = // eslint-disable-next-line es/no-global-this -- safe
-    check(typeof globalThis == "object" && globalThis) || check(typeof window == "object" && window) || // eslint-disable-next-line no-restricted-globals -- safe
-    check(typeof self == "object" && self) || check(typeof global == "object" && global) || check(typeof exports == "object" && exports) || // eslint-disable-next-line no-new-func -- fallback
+    check(typeof globalThis == "object" && globalThis) || check(typeof window == "object" && window) ||  
+    check(typeof self == "object" && self) || check(typeof global == "object" && global) || check(typeof exports == "object" && exports) ||  
     /* @__PURE__ */ function() {
       return this;
     }() || Function("return this")();

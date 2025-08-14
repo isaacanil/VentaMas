@@ -163,35 +163,36 @@ export const ClientControl = () => {
       />
 
       {
-        taxReceiptSettingEnabled && (
-          <SelectContainer>
-            <Select
-              style={{ width: 200 }}
-              value={nfcType}
-              onChange={(e) => dispatch(selectTaxReceiptType(e))}
-            >
-              <Select.OptGroup label="Comprobantes Fiscal" >
-                {
-                  taxReceiptData.taxReceipt
-                    .filter(receipt => !receipt.data?.disabled) // Solo mostrar comprobantes activos
-                    .map(({ data }, index) => (
-                      <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
-                    ))
-                }
-              </Select.OptGroup>
-            </Select>
-            {
-              business?.businessType === 'pharmacy' && (
-                <Checkbox
-                  onChange={handleInsuranceChange}
-                  disabled={!client?.id}
-                  checked={insuranceEnabled} // Directly use cart's insurance status
-                >
-                  Seguro
-                </Checkbox>
-              )
-            }
-          </SelectContainer>
+        (taxReceiptSettingEnabled || business?.businessType === 'pharmacy') && (
+          <ControlsContainer>
+            {taxReceiptSettingEnabled && (
+              <Select
+                style={{ width: 200 }}
+                value={nfcType}
+                onChange={(e) => dispatch(selectTaxReceiptType(e))}
+              >
+                <Select.OptGroup label="Comprobantes Fiscal" >
+                  {
+                    taxReceiptData.taxReceipt
+                      .filter(receipt => !receipt.data?.disabled) // Solo mostrar comprobantes activos
+                      .map(({ data }, index) => (
+                        <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
+                      ))
+                  }
+                </Select.OptGroup>
+              </Select>
+            )}
+            
+            {business?.businessType === 'pharmacy' && (
+              <Checkbox
+                onChange={handleInsuranceChange}
+                disabled={!client?.id}
+                checked={insuranceEnabled} // Directly use cart's insurance status
+              >
+                Seguro
+              </Checkbox>
+            )}
+          </ControlsContainer>
         )
       }
     </Container>
@@ -251,12 +252,12 @@ const ClientButton = styled(AntButton)`
    }
 `
 
-const SelectContainer = styled.div`
+const ControlsContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   padding: 0 6px;
+  gap: 12px;
 
   .ant-select {
     width: 200px;
@@ -264,5 +265,10 @@ const SelectContainer = styled.div`
 
   .ant-select:hover {
     border-color: var(--primary-color);
+  }
+
+  .ant-checkbox-wrapper {
+    white-space: nowrap;
+    margin-left: auto;
   }
 `

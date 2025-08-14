@@ -257,19 +257,19 @@ function createDOMPurify() {
     ALLOWED_NAMESPACES = "ALLOWED_NAMESPACES" in cfg ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
     URI_SAFE_ATTRIBUTES = "ADD_URI_SAFE_ATTR" in cfg ? addToSet(
       clone(DEFAULT_URI_SAFE_ATTRIBUTES),
-      // eslint-disable-line indent
+       
       cfg.ADD_URI_SAFE_ATTR,
-      // eslint-disable-line indent
+       
       transformCaseFunc
-      // eslint-disable-line indent
+       
     ) : DEFAULT_URI_SAFE_ATTRIBUTES;
     DATA_URI_TAGS = "ADD_DATA_URI_TAGS" in cfg ? addToSet(
       clone(DEFAULT_DATA_URI_TAGS),
-      // eslint-disable-line indent
+       
       cfg.ADD_DATA_URI_TAGS,
-      // eslint-disable-line indent
+       
       transformCaseFunc
-      // eslint-disable-line indent
+       
     ) : DEFAULT_DATA_URI_TAGS;
     FORBID_CONTENTS = "FORBID_CONTENTS" in cfg ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
     FORBID_TAGS = "FORBID_TAGS" in cfg ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : {};
@@ -500,7 +500,7 @@ function createDOMPurify() {
     return createNodeIterator.call(
       root.ownerDocument || root,
       root,
-      // eslint-disable-next-line no-bitwise
+       
       NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT | NodeFilter.SHOW_PROCESSING_INSTRUCTION | NodeFilter.SHOW_CDATA_SECTION,
       null,
       false
@@ -941,12 +941,12 @@ var init_purify_es = __esm({
     ARIA_ATTR = seal(/^aria-[\-\w]+$/);
     IS_ALLOWED_URI = seal(
       /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
-      // eslint-disable-line no-useless-escape
+       
     );
     IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
     ATTR_WHITESPACE = seal(
       /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
-      // eslint-disable-line no-control-regex
+       
     );
     DOCTYPE_NAME = seal(/^html$/i);
     CUSTOM_ELEMENT = seal(/^[a-z][.\w]*(-[.\w]+)+$/i);

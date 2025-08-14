@@ -127,14 +127,15 @@ const Dependent = ({ form }) => {
 
           <Form.Item
             name="birthDate"
-            label="Fecha de Nacimiento"
-            rules={[{ required: true, message: 'Por favor seleccione la fecha de nacimiento' }]}
+            label="Fecha de Nacimiento (opcional)"
+            rules={[{ required: false }]}
           >
             <DatePicker
               style={{ width: '100%' }}
               autoComplete="off"
               format="DD/MM/YYYY"
               disabledDate={disabledFutureDate}
+              placeholder="Seleccionar fecha (opcional)"
             />
           </Form.Item>
           

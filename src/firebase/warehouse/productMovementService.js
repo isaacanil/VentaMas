@@ -218,6 +218,10 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
     setLoading(true);
     const movementsRef = collection(db, 'businesses', user.businessID, 'movements');
 
+    // Obtener el primer día del mes actual
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
     const q = query(
       movementsRef,
       and(
@@ -225,7 +229,8 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
           where('sourceLocation', '==', locationId),
           where('destinationLocation', '==', locationId)
         ),
-        where('isDeleted', '==', false)
+        where('isDeleted', '==', false),
+        where('createdAt', '>=', startOfMonth)
       ),
       orderBy('createdAt', 'desc')
     );

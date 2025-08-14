@@ -1,5 +1,6 @@
 import { WebName } from "../system/WebName/WebName"
-import { Account, Button } from "../../"
+import { Account } from "../Account/Account";
+import { Button } from "../system/Button/Button";
 import ROUTES_PATH from "../../../routes/routesName"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"

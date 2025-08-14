@@ -1,10 +1,8 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  MenuApp,
-  Button,
-} from '../../../'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { Button } from '../../../templates/system/Button/Button';
 
 
 import { filterData } from '../../../../hooks/search/useSearch'

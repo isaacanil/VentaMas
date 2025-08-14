@@ -6,7 +6,7 @@ const { Table } = antd;
 
 const Products = ({ products }) => {
     return (
-        <div className="mt-4">
+        <div>
             <StyledTitle>Productos</StyledTitle>
             <ProductTable
                 products={products}
@@ -22,7 +22,7 @@ const ProductsContainer = styled.div``;
 const StyledTitle = styled.h2`
   font-weight: 600;
   margin: 0 0 1em;
-  font-size: 1.2rem;
+  font-size: 1rem;
 `;
 
 const ProductTable = ({ products }) => {

@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
-import { ClientControl } from '../../index'
+import { ClientControl } from '../contact/ClientControl/ClienteControl'
 import {
   SelectCartIsOpen,
 } from '../../../features/cart/cartSlice'

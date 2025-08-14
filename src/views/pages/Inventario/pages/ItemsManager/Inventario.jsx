@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import {MenuApp,} from '../../../../index';
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 import { ProductsTable } from './components/ProductTable/ProductsTable';

@@ -12,12 +12,13 @@ import { setAccountPayment } from '../../../../../features/accountsReceivable/ac
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
 import  useInsuranceEnabled  from '../../../../../hooks/useInsuranceEnabled'
 import { setAR } from '../../../../../features/accountsReceivable/accountsReceivableSlice'
+import { useClientPendingBalance } from '../../../../../firebase/accountsReceivable/useClientPendingBalance'
 
 export const ClientDetails = ({ mode }) => {
     const dispatch = useDispatch()
     const client = useSelector(selectClient)
     const isMenuVisible = ((client?.name && (client?.name !== 'Generic Client')) || mode)
-    const [pendingBalance, setPendingBalance] = useState(0)
+    // const [pendingBalance, setPendingBalance] = useState(0)
     const user = useSelector(selectUser)
     const businessID = user.businessID
     const [isExpanded, setIsExpanded] = useState(false)
@@ -31,13 +32,7 @@ export const ClientDetails = ({ mode }) => {
       'mousedown'
     );
 
-    const changePendingBalance = (balance) => {
-      
-      setPendingBalance(balance)
-      dispatch(setAR({ currentBalance: balance }));
-    }
-
-    usePendingBalance(businessID, client.id, changePendingBalance);
+    const {balance: pendingBalance} = useClientPendingBalance({user, clientId: client.id})
   
     const handlePayment = () => {
       dispatch(setAccountPayment({
@@ -131,7 +126,7 @@ export const ClientDetails = ({ mode }) => {
                   label='Bal general'
                   size='small'
                   labelVariant='primary'
-                  value={useFormatPrice(pendingBalance)}
+                  value={`${useFormatPrice(pendingBalance)}`}
                   autoComplete='off'
                   buttons={[
                     {

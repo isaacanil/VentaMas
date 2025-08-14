@@ -4,7 +4,7 @@ import { selectUser } from "../features/auth/userSlice";
 import { subscribeToPurchase, processPurchase, getProvider } from "../firebase/purchase/fbGetPurchases";
 import { sortPurchases } from '../utils/filterUtils';
 import { subscribeSinglePurchase } from "../firebase/purchase/fbGetPurchase";
-import { selectPurchaseList, updatePurchases } from "../features/Purchase/purchasesSlice";
+import { selectPurchaseList, updatePurchases } from "../features/purchase/purchasesSlice";
 
 // Función auxiliar para convertir timestamps
 const convertTimestamps = (data) => {

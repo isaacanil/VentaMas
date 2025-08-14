@@ -81,6 +81,21 @@ export const getUserDynamicPermissions = async (userId, currentUser = null) => {
     // Por ahora, esto requerirá que siempre se pase currentUser
     throw new Error('currentUser es requerido para obtener permisos dinámicos');
   }
+  
+  // Validar que currentUser tenga businessID
+  if (!currentUser.businessID) {
+    console.warn('currentUser no tiene businessID, devolviendo permisos vacíos');
+    return {
+      userId: userId,
+      businessID: null,
+      additionalPermissions: [],
+      restrictedPermissions: [],
+      createdAt: null,
+      updatedAt: null,
+      createdBy: null
+    };
+  }
+  
   try {
     const docRef = doc(db, 'businesses', currentUser.businessID, 'userPermissions', userId);
     const docSnap = await getDoc(docRef);
@@ -102,7 +117,7 @@ export const getUserDynamicPermissions = async (userId, currentUser = null) => {
     console.error('Error al obtener permisos dinámicos:', error);
     return {
       userId: userId,
-      businessID: currentUser.businessID,
+      businessID: currentUser?.businessID || null,
       additionalPermissions: [],
       restrictedPermissions: [],
       createdAt: null,

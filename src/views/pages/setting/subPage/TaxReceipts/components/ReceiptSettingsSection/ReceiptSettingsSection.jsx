@@ -3,26 +3,45 @@ import React from 'react';
 import styled from 'styled-components';
 import { Typography } from 'antd';
 import { Switch } from '../../../../../../templates/system/Switch/Switch';
+import FiscalReceiptsAlertWidget from '../FiscalReceiptsAlertWidget/FiscalReceiptsAlertWidget';
 
 const { Title, Text } = Typography;
 
 export function ReceiptSettingsSection({ enabled, onToggle }) {
     return (
         <Container>
-            <Info>
-                <Title level={4}>Opción para Deshabilitar Comprobantes</Title>
-                <Text>Activa o desactiva los comprobantes en el punto de venta</Text>
-            </Info>
-            <Switch checked={enabled} onChange={onToggle} />
+            <SectionContainer>
+                <Info>
+                    <Title level={4}>Opción para Deshabilitar Comprobantes</Title>
+                    <Text>Activa o desactiva los comprobantes en el punto de venta</Text>
+                </Info>
+                <Switch checked={enabled} onChange={onToggle} />
+            </SectionContainer>
+            
+            <AlertsContainer>
+                <FiscalReceiptsAlertWidget />
+            </AlertsContainer>
         </Container>
     );
 }
 
 const Container = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const SectionContainer = styled.div`
+  display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1em;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+`;
+
+const AlertsContainer = styled.div`
   padding: 16px;
   background-color: #f9f9f9;
   border-radius: 8px;

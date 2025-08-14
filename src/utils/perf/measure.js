@@ -12,7 +12,7 @@ export async function measure(label, fn) {
 
     // Log using high-resolution time if available
     const duration = (end - start).toFixed(2);
-    // eslint-disable-next-line no-console
+     
     console.log(`⏱️  ${label} → ${duration} ms`);
     return result;
 } 

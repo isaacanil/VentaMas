@@ -1,10 +1,8 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
-import {
-  MenuApp,
-  Button,
-} from '../../../'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { Button } from '../../../templates/system/Button/Button';
 
 import { ProviderTable } from './components/OrderListTable/ProviderTable'
 import { ToolBar } from './ToolBar'

@@ -7231,12 +7231,12 @@ function loadGapi(auth) {
     }
     if ((_b = (_a = _window().gapi) === null || _a === void 0 ? void 0 : _a.iframes) === null || _b === void 0 ? void 0 : _b.Iframe) {
       resolve(gapi.iframes.getContext());
-    } else if (!!((_c = _window().gapi) === null || _c === void 0 ? void 0 : _c.load)) {
+    } else if ((_c = _window().gapi) === null || _c === void 0 ? void 0 : _c.load) {
       loadGapiIframe();
     } else {
       const cbName = _generateCallbackName("iframefcb");
       _window()[cbName] = () => {
-        if (!!gapi.load) {
+        if (gapi.load) {
           loadGapiIframe();
         } else {
           reject(_createError(

@@ -152,7 +152,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
             if (accountData.invoiceId) {
                 const invoice = await fbGetInvoice(user.businessID, accountData.invoiceId);
                 if (invoice) {
-                    invoiceData = invoice.data;
+                    invoiceData = invoice; // Los datos de la factura se devuelven directamente
                 }
             }
             
@@ -259,7 +259,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
                     arNumber: accountData.numberId,
                     arId: accountData.id,
                     invoiceNumber: invoiceData?.numberID,
-                    invoiceId: invoiceData?.id,
+                    invoiceId: accountData.invoiceId,
                     paidInstallments,
                     remainingInstallments: accountData.totalInstallments - updatedPaidInstallments.length,
                     totalInstallments: accountData.totalInstallments,

@@ -59,6 +59,7 @@ import insuranceAuthReducer from '../features/insurance/insuranceAuthSlice';
 import insuranceAccountsReceivableReducer from '../features/insurance/insuranceAccountsReceivableSlice';
 import navigationReducer from '../features/navigation/navigationSlice'
 import creditNoteModalReducer from "../features/creditNote/creditNoteModalSlice";
+import doctorsReducer from '../features/doctors/doctorsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -135,6 +136,7 @@ export const store = configureStore({
     insurance: insuranceReducer,
     insuranceConfigModal: insuranceConfigModalReducer,
     insuranceAuth: insuranceAuthReducer,
+    doctors: doctorsReducer,
   },
   middleware: (getDefault) => getDefault().prepend(totalsListener.middleware),
   devTools: process.env.NODE_ENV !== "production",

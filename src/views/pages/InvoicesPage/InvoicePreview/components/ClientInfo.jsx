@@ -1,18 +1,31 @@
 import { useFormatPhoneNumber } from "../../../../../hooks/useFormatPhoneNumber";
+import { useState } from 'react';
 import { InfoCard } from "../../../../templates/system/InfoCard/InfoCard";
 
 export const ClientInfoCard = ({ client }) => {
 
-    const formattedPhoneNumber = useFormatPhoneNumber(client.tel) ?? 'N/A';
+    const formattedPhoneNumber = client.tel ? useFormatPhoneNumber(client.tel) : null;
+    const [showFullAddress, setShowFullAddress] = useState(false);
   
-    const elements = [
-      { label: 'Nombre', value: client.name ?? 'N/A' },
-      { label: 'Teléfono', value: formattedPhoneNumber },
-      { label: 'Dirección', value: client.address ?? 'N/A' }
-    ];
+    const addressElement = client.address ? (
+      client.address.length > 40 && !showFullAddress ? (
+        <>
+          {client.address.slice(0, 40)}...
+          <span style={{ color: '#2563eb', cursor: 'pointer' }} onClick={() => setShowFullAddress(true)}> ver más</span>
+        </>
+      ) : client.address
+    ) : null;
+  
+    const elements = [];
+    if (formattedPhoneNumber) {
+      elements.push({ label: 'Teléfono', value: formattedPhoneNumber });
+    }
+    if (addressElement) {
+      elements.push({ label: 'Dirección', value: addressElement });
+    }
   
     return (
-      <InfoCard title="Cliente" elements={elements} />
+      <InfoCard title={client.name ?? 'Sin Cliente'} elements={elements} />
     );
   };
   

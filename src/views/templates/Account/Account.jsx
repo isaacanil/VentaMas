@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import Style from './Account.module.scss'
 import { Link } from 'react-router-dom'
-import { Button } from '../../'
+import { Button } from '../system/Button/Button';
 import { auth } from '../../../firebase/firebaseconfig.jsx'
 import { logout, selectUser } from '../../../features/auth/userSlice'
 import { useDispatch, useSelector } from 'react-redux'

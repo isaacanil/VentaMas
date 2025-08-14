@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
 import { Form, Button, Spin, Card, Space, Row, Col, notification, Image as AntdImage } from 'antd';
@@ -22,10 +22,16 @@ export const General = ({ showImageManager }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const [submit, setSubmit] = useState(false)
-    const [form] = Form.useForm(); const { product, status } = useSelector(selectUpdateProductData);
+    const [form] = Form.useForm(); 
+    const { product, status } = useSelector(selectUpdateProductData);
+
+    // Actualizar los valores del formulario cuando cambie el producto
+    useEffect(() => {
+        form.setFieldsValue(product);
+    }, [product, form]);
 
     const handleChangeValues = (changeValue, allValues) => {
-        const key = Object.keys(changeValue)[0]; // Obtiene la clave del valor que cambió
+        const key = Object.keys(changeValue)[0];
         const value = changeValue[key];
 
         // Verifica si el campo que cambió es 'stock' y convierte su valor a número

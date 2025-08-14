@@ -2202,7 +2202,7 @@ function useGlobalCache(prefix2, keyPath, cacheFn, onCacheRemove, onCacheEffect)
     },
     /* eslint-disable react-hooks/exhaustive-deps */
     [fullPathStr]
-    /* eslint-enable */
+     
   );
   var cacheEntity = globalCache.opGet(fullPathStr);
   if (!cacheEntity) {
@@ -2296,7 +2296,7 @@ function useCacheToken(theme, tokens) {
     var mergedDerivativeToken = compute ? compute(mergedToken, override, theme) : getComputedToken(mergedToken, override, theme, formatToken2);
     var actualToken = _objectSpread2({}, mergedDerivativeToken);
     var cssVarsStr = "";
-    if (!!cssVar) {
+    if (cssVar) {
       var _transformToken = transformToken(mergedDerivativeToken, cssVar.key, {
         prefix: cssVar.prefix,
         ignore: cssVar.ignore,
@@ -16200,7 +16200,7 @@ var Paragraph = (props) => {
     rows
   } = props;
   const rowList = _toConsumableArray(Array(rows)).map((_, index3) => (
-    // eslint-disable-next-line react/no-array-index-key
+     
     React99.createElement("li", {
       key: index3,
       style: {
@@ -22845,7 +22845,7 @@ function RawList(props, ref) {
   }
   var keepInHorizontalRange = function keepInHorizontalRange2(nextOffsetLeft) {
     var tmpOffsetLeft = nextOffsetLeft;
-    var max = !!scrollWidth ? scrollWidth - size.width : 0;
+    var max = scrollWidth ? scrollWidth - size.width : 0;
     tmpOffsetLeft = Math.max(tmpOffsetLeft, 0);
     tmpOffsetLeft = Math.min(tmpOffsetLeft, max);
     return tmpOffsetLeft;
@@ -28187,7 +28187,7 @@ var ScrollNumber = React186.forwardRef((props, ref) => {
       prefixCls,
       count: Number(count),
       value: num,
-      // eslint-disable-next-line react/no-array-index-key
+       
       key: numberList.length - i
     })));
   }
@@ -44147,7 +44147,7 @@ var getSlideCount = function getSlideCount2(spec) {
 };
 var checkSpecKeys = function checkSpecKeys2(spec, keysArray) {
   return (
-    // eslint-disable-next-line no-prototype-builtins
+     
     keysArray.reduce(function(value, key) {
       return value && spec.hasOwnProperty(key);
     }, true) ? null : console.error("Keys Missing:", spec)
@@ -48076,7 +48076,7 @@ function highlightKeyword(str, lowerKeyword, prefixCls) {
     let originWorld = str.slice(start, end);
     start = end;
     if (index3 % 2 === 1) {
-      originWorld = // eslint-disable-next-line react/no-array-index-key
+      originWorld =  
       React323.createElement("span", {
         className: `${prefixCls}-menu-item-keyword`,
         key: `separator-${index3}`
@@ -56993,7 +56993,7 @@ var ColorPresets = (_ref2) => {
       }, Array.isArray(preset === null || preset === void 0 ? void 0 : preset.colors) && ((_a = preset.colors) === null || _a === void 0 ? void 0 : _a.length) > 0 ? preset.colors.map((presetColor, index3) => import_react134.default.createElement(
         ColorBlock_default,
         {
-          // eslint-disable-next-line react/no-array-index-key
+           
           key: `preset-${index3}-${presetColor.toHexString()}`,
           color: generateColor3(presetColor).toRgbString(),
           prefixCls,
@@ -66517,7 +66517,7 @@ var InternalItem2 = import_react169.default.forwardRef((props, ref) => {
     key: "actions",
     style: moduleStyle("actions")
   }, actions.map((action, i) => (
-    // eslint-disable-next-line react/no-array-index-key
+     
     import_react169.default.createElement("li", {
       key: `${prefixCls}-item-action-${i}`
     }, action, i !== actions.length - 1 && import_react169.default.createElement("em", {
@@ -84463,7 +84463,7 @@ var TimelineItemList = (_a) => {
     } = item, itemProps = __rest99(item, ["className"]);
     return React558.createElement(TimelineItem_default, Object.assign({}, itemProps, {
       className: (0, import_classnames252.default)([itemClassName, !reverse && !!pending ? pendingClass : readyClass, getPositionCls((_a2 = item === null || item === void 0 ? void 0 : item.position) !== null && _a2 !== void 0 ? _a2 : "", idx)]),
-      /* eslint-disable-next-line react/no-array-index-key */
+       
       key: (item === null || item === void 0 ? void 0 : item.key) || idx
     }));
   });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { MenuApp } from '../..'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
 import Typography from '../../templates/system/Typografy/Typografy'

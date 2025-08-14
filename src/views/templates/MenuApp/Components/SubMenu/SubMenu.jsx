@@ -4,7 +4,7 @@ import { Button } from '../../../system/Button/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { MenuLink } from '../MenuLink';
-import { Group, MenuLinkList } from '../SideBar';
+// import { Group, MenuLinkList } from '../SideBar';
 
 
 export const SubMenu = ({ isOpen, item, MenuItemsLink, showSubMenu }) => {
@@ -49,9 +49,17 @@ export const SubMenu = ({ isOpen, item, MenuItemsLink, showSubMenu }) => {
 const GroupTitle = styled.h3`
     /* Estilos para el título del grupo */
 `;
-// const Group = styled.div`
-//     overflow: hidden;
-// `
+const Group = styled.div`
+    overflow: hidden;
+`
+
+const MenuLinkList = styled.div`
+    background-color: ${props => props.theme.bg.shade};
+    border-radius: var(--border-radius, 8px);
+    padding: 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+`
 const Body = styled.div`
     /* position: relative; */
     background-color: var(--color2);
