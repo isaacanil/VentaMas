@@ -1,15 +1,18 @@
-import React from 'react'
 import styled from 'styled-components'
 
 const Container = styled('div')`
   display: flex;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.200);
-  padding: 0 0.8em;
+  padding: 0 0.6em;
   height: 2em;
   width: min-content;
   white-space: nowrap;
-  border-radius: 100px;
+  border-radius: 8px;
+  @media(width < 768px){
+    height: 2.3em;
+    padding: 0 0.8em;
+  }
 `
 const WebNameItem = styled('span')`
   font-size: 1.2em;

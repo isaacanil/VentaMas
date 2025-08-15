@@ -15,7 +15,7 @@ import { icons } from '../../../../constants/icons/icons'
 import { MenuLink } from './MenuLink'
 import { UserSection } from '../UserSection'
 import { WebName } from '../../system/WebName/WebName'
-import { Button } from '../../system/Button/Button'
+import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu'
 
 const SIDEBAR_VARIANTS = {
     open: {
@@ -114,19 +114,13 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
                         <WebName />
                     </HeaderContent>
                     <ActionButtons>
-                        <Button
-                            startIcon={icons.system.notification}
-                            color='info'
-                            size='icon32'
-                            borderRadius='normal'
+                        <ButtonIconMenu
+                            icon={icons.system.notification}
                             onClick={handleOpenNotifications}
                             aria-label="Open notifications"
                         />
-                        <Button
-                            startIcon={icons.operationModes.setting}
-                            color='info'
-                            size='icon32'
-                            borderRadius='normal'
+                        <ButtonIconMenu
+                            icon={icons.operationModes.setting}
                             onClick={handleGoToSetting}
                             aria-label="Open settings"
                         />
@@ -211,7 +205,7 @@ const MenuContainer = styled.div`
     overflow: hidden;
 `
 const Header = styled.div`
-    height: 2.75rem;
+    height: 2.75em;
     width: 100%;
     padding: 1rem;
     display: flex;
@@ -223,7 +217,7 @@ const Header = styled.div`
     z-index: 10;
 
     @media (max-width: 768px) {
-        height: 3.2rem;
+        height: 2.75em;
     }
 `
 
@@ -233,7 +227,6 @@ const HeaderContent = styled.div`
 `
 
 const LogoContainer = styled.div`
-    height: 2.75rem;
-    width: 3rem;
-    background-color: ${props => props.theme.bg.color};
+    height: 2em;
+    width: 2.4rem;
 `
