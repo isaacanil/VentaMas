@@ -8,7 +8,8 @@ const {
     PRODUCT_IMAGES_MANAGER, 
     PRODUCT_OUTFLOW, 
     WAREHOUSE,
-    SERVICE_OUTFLOW
+    SERVICE_OUTFLOW,
+    INVENTORY_CONTROL,
 } = ROUTES_NAME.INVENTORY_TERM
 
 const ChevronRight = icons.arrows.chevronRight
@@ -26,6 +27,12 @@ const inventory = [
                 title: 'Administrar Productos',
                 route: INVENTORY_ITEMS,
                 icon: icons.inventory.items,
+                group: 'inventoryItems'
+            },
+            {
+                title: 'Control de Inventario',
+                route: INVENTORY_CONTROL,
+                icon: icons.menu.unSelected.inventory,
                 group: 'inventoryItems'
             },
             {

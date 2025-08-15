@@ -58,6 +58,8 @@ const INVENTORY_TERM = {
     CREATE_PRODUCT: `${INVENTORY_BASE_PATH}/create-product`,
     PRODUCT: `${INVENTORY_BASE_PATH}/product/:productId`,
     INVENTORY_ITEMS: '/inventory/items',
+    INVENTORY_CONTROL: '/inventory/control',
+    INVENTORY_CONTROL_SESSION: '/inventory/control/:sessionId',
     CATEGORIES: '/inventory/categories',
     WAREHOUSES: `${WAREHOUSES_PATH}`, // Listado de almacenes
     WAREHOUSE: `${WAREHOUSE_BASE_PATH}`, // Detalle de un almacén

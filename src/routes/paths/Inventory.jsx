@@ -1,6 +1,8 @@
 import { Inventory } from "../../views/pages/Inventario/pages/ItemsManager/Inventario";
 import { CategoryAdmin } from "../../views/pages/Category/CategoryAdmin";
 import { MultimediaManager } from "../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager";
+import { InventoryControl } from "../../views/pages/InventoryControl/InventoryControl";
+import InventorySessionsList from "../../views/pages/InventoryControl/InventorySessionsList";
 import ROUTES_NAME from "../routesName";
 import { ProductOutflow } from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
 // import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";
@@ -19,6 +21,8 @@ const {
     PRODUCTS_STOCK,
     PRODUCT_STOCK,  
     INVENTORY_SERVICES,
+    INVENTORY_CONTROL,
+    INVENTORY_CONTROL_SESSION,
     PRODUCT_IMAGES_MANAGER,
     PRODUCT_OUTFLOW,
     CREATE_PRODUCT,
@@ -30,6 +34,14 @@ const Routes = [
     {
         path: INVENTORY_ITEMS,
         element: <Inventory />,
+    },
+    {
+        path: INVENTORY_CONTROL,
+        element: <InventorySessionsList />,
+    },
+    {
+        path: INVENTORY_CONTROL_SESSION,
+        element: <InventoryControl />,
     },
     {
         path: PRODUCT,
