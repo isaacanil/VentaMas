@@ -32,12 +32,23 @@ export const TableBody = ({
   onRowClick, 
   emptyText, 
   isWideScreen,
-  isWideLayout 
+  isWideLayout,
+  expandedRowRender,
+  rowExpandable,
+  getRowId
 }) => {
   const activeColumns = columnOrder.filter(col => col.status === 'active');
   
   const handleCellClick = (e, col, row) => {
     if (onRowClick && col?.clickable !== false) onRowClick(row);
+  };
+
+  // Estado local de filas expandidas
+  const [expanded, setExpanded] = React.useState({});
+  const toggleRow = (row) => {
+    const id = getRowId ? getRowId(row) : row?.id ?? row?.key;
+    if (id == null) return;
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const tableContent = (
@@ -64,22 +75,39 @@ export const TableBody = ({
             ))}
           </Fragment>
         ))
-        : currentData.map((row, rowIndex) => (
-          <Row key={rowIndex} columns={activeColumns} isWideScreen={isWideScreen} isWideLayout={isWideLayout}>
-            {activeColumns.map((col, colIndex) => (
-              <BodyCell 
-                key={colIndex} 
-                align={col.align}
-                fixed={col.fixed}
-                clickable={col?.clickable !== false ? true : false} 
-                columns={activeColumns} 
-                onClick={(e) => handleCellClick(e, col, row)}
-              >
-                {renderCell(col, row[col.accessor])}
-              </BodyCell>
-            ))}
-          </Row>
-        ))}
+        : currentData.map((row, rowIndex) => {
+          const rowId = getRowId ? getRowId(row, rowIndex) : row?.id ?? row?.key ?? rowIndex;
+          const canExpand = !!expandedRowRender && (rowExpandable ? rowExpandable(row) : true);
+          const rowWithExpanderData = canExpand
+            ? {
+                ...row,
+                _expander: { expanded: !!expanded[rowId], toggle: () => toggleRow(row) }
+              }
+            : row;
+          return (
+            <Fragment key={rowId}>
+              <Row columns={activeColumns} isWideScreen={isWideScreen} isWideLayout={isWideLayout}>
+                {activeColumns.map((col, colIndex) => (
+                  <BodyCell 
+                    key={colIndex} 
+                    align={col.align}
+                    fixed={col.fixed}
+                    clickable={col?.clickable !== false ? true : false} 
+                    columns={activeColumns} 
+                    onClick={(e) => handleCellClick(e, col, row)}
+                  >
+                    {renderCell(col, rowWithExpanderData[col.accessor])}
+                  </BodyCell>
+                ))}
+              </Row>
+              {canExpand && expanded[rowId] && (
+                <ExpandedRow>
+                  {expandedRowRender(row)}
+                </ExpandedRow>
+              )}
+            </Fragment>
+          );
+        })}
       {!currentData.length && <CenteredText text={emptyText} />}
     </Container>
   );

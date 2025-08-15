@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
 import { filterData } from '../../../../hooks/search/useSearch';
@@ -14,6 +14,7 @@ import { useColumnOrder } from './hooks/useColumnOrder';
 import { FilterUI } from './components/MenuFilter/MenuFilter';
 import { DatePicker } from '../Dates/DatePicker/DatePicker';
 import { useWindowWidth } from '../../../../hooks/useWindowWidth';
+import { icons } from '../../../../constants/icons/icons';
 
 /**
  * AdvancedTable es un componente de tabla personalizado que acepta los siguientes props:
@@ -77,16 +78,50 @@ export const AdvancedTable = memo(({
   //Misc
   emptyText = 'No hay datos para mostrar',
   onRowClick,
-  title 
+  title,
+
+  // Expandable rows (optional)
+  expandedRowRender, // function(row) => ReactNode
+  rowExpandable,     // function(row) => boolean
+  getRowId,          // function(row, index) => string | number
 }) => {
 
   const wrapperRef = useRef(null);
   const user = useSelector(selectUser)
 
+  // Build columns with optional expander
+  const columnsWithExpander = useMemo(() => {
+    if (!expandedRowRender) return columns;
+    const expanderCol = {
+      Header: '',
+      accessor: '_expander',
+      minWidth: '36px',
+      maxWidth: '36px',
+      keepWidth: true,
+      fixed: 'left',
+      sortable: false,
+      clickable: false,
+      cell: ({ value }) => {
+        const isExpanded = !!value?.expanded;
+        const toggle = value?.toggle;
+        return (
+          <ExpanderButton
+            type="button"
+            aria-label={isExpanded ? 'Contraer' : 'Expandir'}
+            onClick={(e) => { e.stopPropagation(); toggle && toggle(); }}
+          >
+            {isExpanded ? icons.arrows.caretDown : icons.arrows.caretRight}
+          </ExpanderButton>
+        );
+      }
+    };
+    return [expanderCol, ...columns];
+  }, [columns, expandedRowRender]);
+
   //Reordenamiento de Columnas
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
   const [columnOrder, setColumnOrder, resetColumnOrder] = useColumnOrder(
-    columns, 
+    columnsWithExpander, 
     tableName, 
     user?.uid
   );
@@ -103,7 +138,7 @@ export const AdvancedTable = memo(({
   const searchTermFilteredData = searchTerm ? filterData(filteredData, searchTerm) : filteredData;
 
   //Ordenación y agrupación
-  const { handleSort, sortedData, sortConfig } = useTableSorting(searchTermFilteredData, columns)
+  const { handleSort, sortedData, sortConfig } = useTableSorting(searchTermFilteredData, columnsWithExpander)
   const { currentData, nextPage, prevPage, firstPage, lastPage, currentPage, pageCount } = useTablePagination(data, sortedData, searchTermFilteredData, numberOfElementsPerPage, wrapperRef);
   const shouldGroup = (sortConfig.direction === 'none' || sortConfig.key === null) && groupBy;
   const groupedData = shouldGroup ? groupDataByField(currentData, groupBy) : sortedData;
@@ -172,6 +207,9 @@ export const AdvancedTable = memo(({
             loading={loading}
             isWideScreen={isWideScreen}
             isWideLayout={isWideLayout}
+            expandedRowRender={expandedRowRender}
+            rowExpandable={rowExpandable}
+            getRowId={getRowId}
           />
         </Wrapper>
         <TableFooter
@@ -273,6 +311,28 @@ const Wrapper = styled.div`
     background: #888;
     border-radius: 4px;
   }
+`;
+
+export const ExpanderButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--Gray7);
+  &:hover { color: var(--Gray9); }
+`;
+
+export const ExpandedRow = styled.div`
+  grid-column: 1 / -1;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-left: 2px solid var(--Gray3);
+  border-right: 2px solid var(--Gray3);
+  border-bottom: 1px dashed var(--Gray3);
 `;
 
 export const Row = styled.div`
