@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { Body } from './components/Body/Body'
 import { Button, notification, Spin, Form, Modal as AntdModal, message } from 'antd'
@@ -49,9 +49,10 @@ const calculateDueDate = (duePeriod, hasDueDate) => {
 
     const currentDate = dayjs();
     return currentDate
-        .add(duePeriod.months || 0, 'month')
-        .add(duePeriod.weeks || 0, 'week')
-        .add(duePeriod.days || 0, 'day');
+        .add(duePeriod.months ?? 0, 'month')
+        .add(duePeriod.weeks ?? 0, 'week')
+        .add(duePeriod.days ?? 0, 'day')
+        .valueOf();
 }
 
 export const handleCancelShipping = ({ dispatch, viewport, closeInvoicePanel = true }) => {
@@ -78,12 +79,15 @@ export const InvoicePanel = () => {
     })
 
     const viewport = useViewportWidth();
-    const handleInvoicePanel = () => dispatch(toggleInvoicePanelOpen())
+    const handleInvoicePanel = useDispatch(() => dispatch(toggleInvoicePanelOpen()), [dispatch]);
     const cart = useSelector(SelectCartData)
     const cartSettings = useSelector(SelectSettingCart)
     const invoicePanel = cartSettings.isInvoicePanelOpen;
     const shouldPrintInvoice = cartSettings.printInvoice;
-    const { duePeriod, hasDueDate } = cartSettings?.billing;
+
+    const billing = cartSettings?.billing ?? {};
+    const { duePeriod, hasDueDate } = billing;
+
     const componentToPrintRef = useRef();
     const user = useSelector(selectUser)
     const client = useSelector(selectClient)
@@ -94,10 +98,12 @@ export const InvoicePanel = () => {
     const isAddedToReceivables = cart?.isAddedToReceivables;
     const business = useSelector(selectBusinessData) || {};
     const insuranceEnabled = useInsuranceEnabled();
-    // Determine if any payment method is enabled
-    const paymentMethods = cart?.paymentMethod || [];
-    const isAnyPaymentEnabled = paymentMethods.some(method => method.status);
-    const change = cart?.change?.value;
+    const paymentMethods = cart?.paymentMethod ?? [];
+    const isAnyPaymentEnabled = useMemo(
+        () => paymentMethods.some(method => method.status),
+        [paymentMethods]
+    )
+    const change = Number(cart?.change?.value ?? 0);
     const isChangeNegative = change < 0;
     const insuranceAR = useSelector(selectInsuranceAR);
     const insuranceAuth = useSelector(selectInsuranceAuthData) || null;
@@ -142,99 +148,103 @@ export const InvoicePanel = () => {
             },
         });
     };
-    const handleInvoicePriting = async (invoice) => {
+
+    const handleInvoicePrinting = useCallback(async (inv) => {
         if (invoiceType === 'template2') {
             try {
-             
-                await measure('downloadInvoiceLetterPdf', () => downloadInvoiceLetterPdf(business, invoice, handleAfterPrint));
+                // Use the freshly generated invoice passed as argument, not the (possibly stale) state
+                await measure('downloadInvoiceLetterPdf', () =>
+                    downloadInvoiceLetterPdf(business, inv, handleAfterPrint)
+                );
             } catch (e) {
                 notification.error({
                     message: 'Error al imprimir',
                     description: `No se pudo generar el PDF: ${e.message}`,
                     duration: 4
                 });
-          
-            }
-        } else {
-            setTimeout(() => handlePrint(), 1000);
-        }
-    }
-
-    async function handleSubmit() {
-        try {
-            setLoading({ status: true, message: '' })
-            if (cart?.isAddedToReceivables) {
-                await form.validateFields()
-            }
-
-            const dueDate = calculateDueDate(duePeriod, hasDueDate);
-
-            // Extract all comments from products and join them for the invoice
-            const invoiceComment = cart?.products
-                ?.filter(product => product.comment)
-                ?.map(product => `${product.name}: ${product.comment}`)
-                ?.join('; ');
-
-            const { invoice } = await measure('processInvoice', () => processInvoice({
-                cart,
-                user,
-                client,
-                accountsReceivable,
-                taxReceiptEnabled,
-                ncfType,
-                setLoading,
-                dispatch,
-                dueDate: dueDate?.valueOf(), // Convert to milliseconds
-                insuranceEnabled: insuranceEnabled,
-                insuranceAR: insuranceAR,
-                insuranceAuth,
-                invoiceComment, // Add comments from products to the invoice
-                isTestMode, // Pass test mode to service
-            }))
-
-            // const invoice = await runInvoice({
-            //     cart,
-            //     user,
-            //     client,
-            //     accountsReceivable,
-            //     taxReceiptEnabled,
-            //     ncfType,
-            //     dueDate: dueDate?.valueOf(), // Convert to milliseconds
-            //     insuranceEnabled,
-            //     insuranceAR,
-            //     insuranceAuth,
-            // })
-
-            if (shouldPrintInvoice) {
-                setInvoice(invoice);
-                await measure('handleInvoicePrinting', () => handleInvoicePriting(invoice));
-            }
-            if (!shouldPrintInvoice) {
-                setInvoice({});
+                // Finalizar flujo aunque falle la impresión, la venta ya fue procesada
                 handleAfterPrint();
             }
+        } else {
+            await new Promise(r => requestAnimationFrame(r)); 
+            handlePrint()
+        }
+    }, [invoiceType, business, handlePrint, handleAfterPrint]);
 
-        } catch (error) {
-            notification.error({
-                message: 'Error de Proceso',
-                description: error.message,
-                duration: 4
-            })
-            setLoading({ status: false, message: '' })
-            setSubmitted(false)
-            console.error('Error processing invoice:', error)
-        } 
-    }
+    async function handleSubmit() {
+            try {
+                setLoading({ status: true, message: '' })
+                if (cart?.isAddedToReceivables) {
+                    await form.validateFields()
+                }
+
+                const dueDate = calculateDueDate(duePeriod, hasDueDate);
+
+                // Extract all comments from products and join them for the invoice
+                const invoiceComment = cart?.products
+                    ?.filter(product => product.comment)
+                    ?.map(product => `${product.name}: ${product.comment}`)
+                    ?.join('; ');
+
+                const { invoice } = await measure('processInvoice', () => processInvoice({
+                    cart,
+                    user,
+                    client,
+                    accountsReceivable,
+                    taxReceiptEnabled,
+                    ncfType,
+                    dispatch,
+                    dueDate,
+                    insuranceEnabled: insuranceEnabled,
+                    insuranceAR: insuranceAR,
+                    insuranceAuth,
+                    invoiceComment, // Add comments from products to the invoice
+                    isTestMode, // Pass test mode to service
+                }))
+
+                // const invoice = await runInvoice({
+                //     cart,
+                //     user,
+                //     client,
+                //     accountsReceivable,
+                //     taxReceiptEnabled,
+                //     ncfType,
+                //     dueDate: dueDate?.valueOf(), // Convert to milliseconds
+                //     insuranceEnabled,
+                //     insuranceAR,
+                //     insuranceAuth,
+                // })
+
+                if (shouldPrintInvoice) {
+                    setInvoice(invoice);
+                    await measure('handleInvoicePrinting', () => handleInvoicePrinting(invoice));
+                }
+                if (!shouldPrintInvoice) {
+                    setInvoice({});
+                    handleAfterPrint();
+                }
+
+            } catch (error) {
+                notification.error({
+                    message: 'Error de Proceso',
+                    description: error.message,
+                    duration: 4
+                })
+                setLoading({ status: false, message: '' })
+                setSubmitted(false)
+                console.error('Error processing invoice:', error)
+            }
+        }
 
     // const installments = generateInstallments({ ar: accountsReceivable, user })
 
     useEffect(() => {
-        form.setFieldsValue({
-            frequency: 'monthly',
-            totalInstallments: 1,
-            paymentDate: DateUtils.convertMillisToDayjs(Date.now()),
-        });
-    }, []);
+            form.setFieldsValue({
+                frequency: 'monthly',
+                totalInstallments: 1,
+                paymentDate: DateUtils.convertMillisToDayjs(Date.now()),
+            });
+        }, []);
     useEffect(() => {
         form.setFieldsValue({
             ...accountsReceivable,
@@ -277,36 +287,35 @@ export const InvoicePanel = () => {
                     }
                 }
             }
-            } // end of invoicePanel check
-    }, [invoicePanel]); // Solo depende de si el panel está abierto o cerrado
+        }
+    }, [invoicePanel]);
 
     return (
         <Modal
             style={{ top: 10 }}
             open={invoicePanel}
             title='Pago de Factura'
-            onCancel={handleInvoicePanel} // This handles closing via 'X' or outside click
+            onCancel={handleInvoicePanel}
             styles={modalStyles}
             footer={
-                [,
-                <Button
-                    key="close"
-                    type='default'
-                    disabled={loading.status || submitted}
-                    onClick={handleInvoicePanel} // Simply close the modal
-                >
-                    Atrás
-                </Button>,
-                <Button
-                    key="submit"
-                    type='primary'
-                    loading={loading.status}
-                    // Disable if submitted, no payment method enabled, or negative change without receivables
-                    disabled={submitted || !isAnyPaymentEnabled || (isChangeNegative && !isAddedToReceivables)}
-                    onClick={handleSubmit}
-                >
-                    Facturar
-                </Button>
+                [
+                    <Button
+                        key="close"
+                        type='default'
+                        disabled={loading.status || submitted}
+                        onClick={handleInvoicePanel}
+                    >
+                        Atrás
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type='primary'
+                        loading={loading.status}
+                        disabled={submitted || !isAnyPaymentEnabled || (isChangeNegative && !isAddedToReceivables)}
+                        onClick={handleSubmit}
+                    >
+                        Facturar
+                    </Button>
                 ]
             }
         >
@@ -322,7 +331,7 @@ export const InvoicePanel = () => {
                     key="cancel"
                     type='default'
                     danger
-                    style={{ width: '100%'  }}
+                    style={{ width: '100%' }}
                     disabled={loading.status || submitted}
                     onClick={showCancelSaleConfirm} // Use confirmation modal
                 >

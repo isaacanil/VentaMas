@@ -30,19 +30,16 @@ export async function processInvoice({
     insuranceAuth,
     ncfType,
     taxReceiptEnabled = false,
-    setLoading = () => { },
     dispatch,
     dueDate = null,
     insuranceEnabled = false,
     isTestMode = false,
 }) {
     try {
-        setLoading({ status: true, message: "Procesando factura..." });
         verifyCartItems(cart);
 
         // En modo de prueba, mostrar notificación y procesar sin guardar en base de datos
         if (isTestMode) {
-            setLoading({ status: true, message: "Procesando factura en modo prueba..." });
             return await processTestModeInvoice({
                 user,
                 cart,
@@ -93,7 +90,7 @@ export async function processInvoice({
             await manageInsuranceReceivableAccounts({ user, arData, invoice, insuranceAuth, authDataId });
         }
 
-        return { invoice }
+    return { invoice }
 
     } catch (error) {
         throw error
@@ -159,7 +156,9 @@ async function retrieveAndUpdateClientData({ user, client }) {
 }
 
 async function adjustProductInventory({ user, products, invoice }) {
-    await fbUpdateProductsStock(products, user, invoice)
+    if(Array.isArray(products) && products.length) { 
+        await fbUpdateProductsStock(products, user, invoice)
+    }
 }
 
 async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, dueDate }) {
@@ -235,8 +234,8 @@ async function manageInsuranceReceivableAccounts({ user, arData, invoice, insura
 
 async function generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode }) {
     try {
-        if (!cart?.preorderDetails?.isOrWasPreorder || !cart?.status == "pending") {
-            throw new Error("Invalid preorder data");
+        if (!cart?.preorderDetails?.isOrWasPreorder || cart?.status != "pending") {
+            throw new Error("Datos de preorden inválidos");
         }
         const bill = {
             ...cart,

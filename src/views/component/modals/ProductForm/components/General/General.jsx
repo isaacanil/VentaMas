@@ -34,20 +34,22 @@ export const General = ({ showImageManager }) => {
         const key = Object.keys(changeValue)[0];
         const value = changeValue[key];
 
-        // Verifica si el campo que cambió es 'stock' y convierte su valor a número
-        if (key === 'cost') {
-            changeValue[key] = value ? { unit: value.unit, total: value.unit } : 0; // Convertir a número o cero si es vacío
-        } if (key === 'tax') {
-            // Si el valor es un string que representa un número, parsearlo
-            if (typeof value === 'string') {
-                changeValue[key] = parseFloat(value) || initTaxes[0];
-            } else {
-                changeValue[key] = value || initTaxes[0];
-            }
-        }
+        // Normalización específica de campos anidados dentro de pricing
         if (key === 'pricing') {
-            dispatch(changeProductPrice({ pricing: value }));
-            return
+            const normalizedPricing = { ...value };
+            // Asegurar que tax sea numérico
+            if (normalizedPricing?.tax !== undefined) {
+                const t = normalizedPricing.tax;
+                normalizedPricing.tax = typeof t === 'string' ? parseFloat(t) || initTaxes[0] : Number(t);
+            }
+            // Asegurar que cost sea numérico
+            if (normalizedPricing?.cost !== undefined) {
+                normalizedPricing.cost = typeof normalizedPricing.cost === 'string'
+                    ? parseFloat(normalizedPricing.cost) || 0
+                    : Number(normalizedPricing.cost || 0);
+            }
+            dispatch(changeProductPrice({ pricing: normalizedPricing }));
+            return;
         }
         if (key === 'weightDetail') {
             dispatch(ChangeProductData({ product: { weightDetail: { ...product?.weightDetail, ...changeValue?.weightDetail } } }));
@@ -211,7 +213,6 @@ export const General = ({ showImageManager }) => {
                     <Button
                         type="primary"
                         htmlType="submit"
-                        onClick={onFinish}
                         disabled={submit}
                     >
                         {status === "update" ? 'Actualizar' : 'Crear'}

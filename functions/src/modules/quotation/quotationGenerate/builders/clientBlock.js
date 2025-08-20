@@ -1,16 +1,25 @@
 export function buildClientBlock(d) {
-  const name = !d.client?.name || d.client.name.toLowerCase() === 'generic client'
-    ? 'Cliente Genérico'
-    : d.client.name
+  const rawName = d.client?.name?.trim() || '';
+  const esGenerico = !rawName || rawName.toLowerCase() === 'generic client';
+  const name = esGenerico ? 'Cliente Genérico' : rawName;
 
-  const left = [{ text: `Cliente: ${name}`, style: 'headerInfo' }]
-  if (d.client?.address && name !== 'Cliente Genérico') left.push({ text: `Dirección: ${d.client.address}`, style: 'headerInfo' })
+  const left = [
+    { text: [{ text: 'Cliente:  ', bold: true }, { text: name, color: '#111' }], style: 'headerInfo' },
+    ...(!esGenerico && d.client?.address?.trim()
+       ? [{ text: [{ text: 'Dirección:  ', bold: true }, { text: d.client.address.trim(), color: '#111' }], style: 'headerInfo' }]
+       : [])
+  ];
 
-  const right = []
-  if (d.client?.tel && name !== 'Cliente Genérico') right.push({ text: `Tel: ${d.client.tel}`, style: 'headerInfo' })
-  if (d.client?.personalID && name !== 'Cliente Genérico') right.push({ text: `RNC cliente: ${d.client.personalID}`, style: 'headerInfo' })
+  const right = [
+    ...(!esGenerico && d.client?.tel?.trim()
+       ? [{ text: [{ text: 'Tel:  ', bold: true }, { text: d.client.tel.trim(), color: '#111' }], style: 'headerInfo', noWrap: true }]
+       : []),
+    ...(!esGenerico && d.client?.personalID?.trim()
+       ? [{ text: [{ text: 'RNC cliente:  ', bold: true }, { text: d.client.personalID.trim(), color: '#111' }], style: 'headerInfo', noWrap: true }]
+       : [])
+  ];
 
-  if (!left.length && !right.length) return null
+  if (!left.length && !right.length) return null;
 
-  return { columns: [{ width: '*', stack: left }, { width: '*', stack: right }] }
+  return { columns: [{ width: '*', stack: left }, { width: 'auto', stack: right }] };
 }

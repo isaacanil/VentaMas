@@ -1,10 +1,10 @@
 import React from 'react';
-import BarcodePrintPage from '../../../pages/test/pages/barcodePrint/barcodePrint';
+import BusinessPriceAudit from '../../../pages/test/pages/checkProductPriceField/BusinessPriceAudit';
 
 
 export const Prueba = () => {
   return (
-      <BarcodePrintPage />
+      <BusinessPriceAudit />
   );
 };
 

@@ -23,15 +23,13 @@ export const ProductEditorModal = ({ isOpen }) => {
         dispatch(clearUpdateProductData())
     }
     useEffect(() => {
-        if(product.id === '') return;
-        const handleData = (data) => dispatch(setProduct(data))
-        
+        if (!user || !product?.id) return;
+        const handleData = (data) => dispatch(setProduct(data));
         const handleError = (error) => console.error('Error al escuchar el producto:', error);
 
         const unsubscribe = listenToProduct(user, product.id, handleData, handleError);
-
-        return () => unsubscribe();
-    }, [user])
+        return () => unsubscribe && unsubscribe();
+    }, [user, product?.id, dispatch])
    
     
      return (

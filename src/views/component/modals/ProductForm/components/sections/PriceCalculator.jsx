@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { InputNumber, Table, Form }from 'antd';
+import { InputNumber, Table, Form } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import {  changeProductPrice, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+import { changeProductPrice, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
 
 const columns = [
@@ -131,13 +131,9 @@ export const PriceCalculator = () => {
         const newTableData = calculateTableData(product);
         setTableData(newTableData);
     }, [product.pricing.cost, product.pricing.tax, product.pricing.listPrice, product.pricing.avgPrice, product.pricing.minPrice, taxReceiptEnabled]);
-    
-    useEffect(() => {
-        const finalPrice = Number(tableData[0]?.finalPrice) || 0;
-        if (finalPrice > 0 && finalPrice !== product.pricing.price) {
-            dispatch(changeProductPrice({ pricing: { price: finalPrice } }))
-        }
-    }, [tableData, dispatch])
+    // Nota: Ya no sincronizamos pricing.price con el precio final (con ITBIS).
+    // El campo pricing.price debe almacenar exclusivamente el listPrice (sin impuestos).
+    // La sincronización a listPrice ocurre en el reducer changeProductPrice cuando cambia pricing.listPrice.
 
     return (
         <Table

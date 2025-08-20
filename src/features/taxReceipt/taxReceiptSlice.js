@@ -46,7 +46,10 @@ export function getUpdatedSequenceForInvoice(comprobanteName, comprobantes) {
 
 const initialState = {
     settings: {
+        // Valor inicial conservador; el listener en tiempo real lo actualizará.
         taxReceiptEnabled: false,
+        // Indica si ya recibimos el valor real desde Firestore (o lo hidratamos localmente)
+        settingsLoaded: false,
     },
     data: [],
     ncfCode: null,
@@ -85,7 +88,18 @@ export const taxReceiptSlice = createSlice({
             }
         },
         toggleTaxReceiptSettings: (state, action) => {
-            state.settings.taxReceiptEnabled = action.payload; // Cambia el estado de activación
+            const enabled = !!action.payload;
+            state.settings.taxReceiptEnabled = enabled; // Cambia el estado de activación
+            state.settings.settingsLoaded = true;
+            try {
+                // Persistimos para hidratar en cargas directas posteriores
+                localStorage.setItem('taxReceiptEnabled', JSON.stringify(enabled));
+            } catch (e) {
+                // ignore storage errors (private mode, etc.)
+            }
+        },
+        setTaxReceiptSettingsLoaded: (state, action) => {
+            state.settings.settingsLoaded = !!action.payload;
         },
         updateTaxCreditInFirebase: (state) => {
             const taxReceipt = state.data
@@ -109,7 +123,8 @@ export const {
     IncreaseSpecificReceipt, 
     selectTaxReceiptType, 
     updateTaxCreditInFirebase, 
-    toggleTaxReceiptSettings 
+    toggleTaxReceiptSettings,
+    setTaxReceiptSettingsLoaded
 } = taxReceiptSlice.actions;
 
 //selectors
@@ -119,5 +134,6 @@ export const selectTaxReceiptData = (state) => state.taxReceipt.data;
 export const selectNcfType = (state) => state.taxReceipt.ncfType;
 export const selectNcfCode = (state) => state.taxReceipt.ncfCode;
 export const selectTaxReceiptEnabled = (state) => state.taxReceipt.settings.taxReceiptEnabled;
+export const selectTaxReceiptSettingsLoaded = (state) => state.taxReceipt.settings.settingsLoaded;
 export const selectTaxReceipt = (state) => state.taxReceipt;
 export const selectAvailableReceiptTypes = (state) => state.taxReceipt.availableTypes;

@@ -1,4 +1,4 @@
-import PdfPrinter from 'pdfmake/build/pdfmake'
+import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 import { calcFooterHeight, calcHeaderHeight } from './utils/documentHeightCalculator'
 import { buildHeader } from './builders/header'
@@ -6,8 +6,6 @@ import { buildContent } from './builders/content'
 import { buildFooter } from './builders/footer'
 
 pdfMake.vfs = pdfFonts.vfs;
-
-const printer = new PdfPrinter(fonts)
 
 export const generateQuotationPdf = async (req) => {
     const { business: biz, data: d } = req.data;
@@ -22,8 +20,9 @@ export const generateQuotationPdf = async (req) => {
     }
 
     const top = calcHeaderHeight(biz, d)
-    const bottom = calcFooterHeight(d)
+    const bottom = calcFooterHeight(biz, d)
     const docDefinition = {
+        images,
         pageSize: 'A4',
         pageMargins: [32, top, 32, bottom],
         defaultStyle: { font: 'Roboto', fontSize: 10, lineHeight: 1.15 },
@@ -37,15 +36,15 @@ export const generateQuotationPdf = async (req) => {
         },
         header: buildHeader(biz, d, images),
         content: buildContent(d),
-        footer: buildFooter(d),
-        images
+        footer: buildFooter(biz, d),
     }
 
-    const pdfDoc = printer.createPdfKitDocument(docDefinition)
-    const chunks = []
-    return new Promise(res => {
-        pdfDoc.on('data', c => chunks.push(c))
-        pdfDoc.on('end', () => res(Buffer.concat(chunks).toString('base64')))
-        pdfDoc.end()
-    })
+    try {
+        const base64 = await new Promise((res, rej) =>
+            pdfMake.createPdf(docDefinition).getBase64(res, rej));
+        return base64;
+    } catch (error) {
+        console.error('❌ PDF creation failed:', error);
+        throw error;
+    }
 }

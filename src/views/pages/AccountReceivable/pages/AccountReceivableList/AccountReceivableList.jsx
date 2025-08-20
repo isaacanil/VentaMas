@@ -105,6 +105,7 @@ export const AccountReceivableList = () => {
     return (
         <Container>
             <MenuApp
+                data={processedAccount}
                 searchData={searchTerm}
                 setSearchData={setSearchTerm}
             />

@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
 export const PriceInfo = () => {
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+    const taxOptions = initTaxes.map((tax) => ({ value: tax, label: taxLabel(tax) }));
     return (
         <Card
             title="Información de precio"
@@ -49,19 +50,10 @@ export const PriceInfo = () => {
                         label="Impuesto"
                         help={taxReceiptEnabled ? "" : "El impuesto no se aplicará a la venta del producto. La facturación de impuestos está desactivada."}
                         rules={[{ required: true }]}>
-                        <Select defaultActiveFirstOption >
-                            {
-                                initTaxes.map((tax, index) => (
-                                    <Option
-                                        key={tax}
-                                        value={JSON.stringify(tax)}
-                                    >
-                                        {taxLabel(tax)}
-                                    </Option>
-                                ))
-                            }
-
-                        </Select>
+                        <Select
+                            options={taxOptions}
+                            popupMatchSelectWidth={false}
+                        />
                     </Form.Item>
                 </Col>
 

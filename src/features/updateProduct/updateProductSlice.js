@@ -81,20 +81,21 @@ export const updateProductSlice = createSlice({
         ChangeProductImage: (state, action) => {
             state.product.image = action.payload
         },        changeProductPrice: (state, action) => {
-      
+
             state.product.pricing = {
                 ...state.product.pricing,
                 ...action?.payload?.pricing
             }
-            // Si se actualiza el listPrice, también actualizar el price principal
-            if (action?.payload?.pricing?.listPrice) {
-                state.product.pricing.price = action?.payload?.pricing?.listPrice
+            const hasPricing = action?.payload?.pricing && typeof action.payload.pricing === 'object';
+            // Si se actualiza el listPrice (aunque sea 0), también actualizar el price principal
+            if (hasPricing && Object.prototype.hasOwnProperty.call(action.payload.pricing, 'listPrice')) {
+                state.product.pricing.price = action.payload.pricing.listPrice;
             }
-            // Si se actualiza el price directamente, mantenerlo
-            if (action?.payload?.pricing?.price) {
-                state.product.pricing.price = action?.payload?.pricing?.price
+            // Si se actualiza el price directamente, mantenerlo (tiene prioridad explícita)
+            if (hasPricing && Object.prototype.hasOwnProperty.call(action.payload.pricing, 'price')) {
+                state.product.pricing.price = action.payload.pricing.price;
             }
-      
+
         },
         // Activa o desactiva la venta por unidades
         toggleSaleUnits: (state, action) => {

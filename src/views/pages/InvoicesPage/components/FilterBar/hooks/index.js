@@ -9,10 +9,11 @@ export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
   const [sortDirection, setSortDirection] = useState('asc');
 
   const sortInvoices = useCallback((arr, by, dir) => {
-    if (by === 'defaultCriteria') return arr;
-    
-    return [...arr].sort((a, b) => {
-      const getValue = (obj) => by.split('.').reduce((x, k) => (x ? x[k] : ''), obj);
+  const safeArr = Array.isArray(arr) ? arr : [];
+  if (by === 'defaultCriteria') return safeArr;
+
+    return [...safeArr].sort((a, b) => {
+      const getValue = (obj) => by.split('.').reduce((x, k) => (x != null ? x[k] : ''), obj);
       let valueA = getValue(a);
       let valueB = getValue(b);
       
@@ -33,9 +34,10 @@ export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
   const sortAndSetInvoices = useCallback(() => {
     const sorted = sortInvoices(processedInvoices, sortCriteria, sortDirection);
     // Evitar actualizaciones redundantes de estado
+    const current = Array.isArray(processedInvoices) ? processedInvoices : [];
     const isSameOrder =
-      sorted.length === processedInvoices.length &&
-      sorted.every((item, idx) => item === processedInvoices[idx]);
+      sorted.length === current.length &&
+      sorted.every((item, idx) => item === current[idx]);
     if (!isSameOrder) {
       setProcessedInvoices(sorted);
     }
@@ -63,7 +65,7 @@ export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
 
 export const useFilterHandlers = (filters, onFiltersChange) => {
   const createFilterHandler = useCallback((filterKey) => (value) => {
-    onFiltersChange?.({ ...filters, [filterKey]: value || null });
+    onFiltersChange?.({ ...(filters ?? {}), [filterKey]: value ?? null });
   }, [filters, onFiltersChange]);
 
   const handlers = useMemo(() => ({
@@ -74,12 +76,12 @@ export const useFilterHandlers = (filters, onFiltersChange) => {
   }), [createFilterHandler]);
 
   const handleClearFilters = useCallback(() => {
-    onFiltersChange?.({ 
-      ...filters, 
-      clientId: null, 
-      paymentMethod: null, 
-      minAmount: null, 
-      maxAmount: null 
+    onFiltersChange?.({
+      ...(filters ?? {}),
+      clientId: null,
+      paymentMethod: null,
+      minAmount: null,
+      maxAmount: null,
     });
   }, [filters, onFiltersChange]);
 
@@ -94,7 +96,7 @@ export const useClientOptions = () => {
   const { clients: fetchedClients, loading: clientsLoading } = useFbGetClientsOnOpen({ isOpen: true });
   
   const clientOptions = useMemo(() => {
-    const clients = fetchedClients.map((c) => c.client);
+  const clients = (fetchedClients || []).map((c) => c?.client).filter(Boolean);
     return [
       { value: '', label: 'Todos' },
       ...clients.map(client => ({
@@ -124,8 +126,8 @@ export const useResponsiveLayout = () => {
   
   return useMemo(() => ({
     isMobile: vw <= BREAKPOINTS.mobile,
-    isTablet: vw > BREAKPOINTS.mobile && vw <= BREAKPOINTS.desktop,
-    isDesktop: vw > BREAKPOINTS.mobile,
+  isTablet: vw > BREAKPOINTS.mobile && vw <= BREAKPOINTS.desktop,
+  isDesktop: vw > BREAKPOINTS.desktop,
     currentBreakpoint: vw <= BREAKPOINTS.mobile ? 'mobile' : 
                       vw <= BREAKPOINTS.desktop ? 'tablet' : 'desktop'
   }), [vw]);

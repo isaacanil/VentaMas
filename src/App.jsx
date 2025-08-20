@@ -30,6 +30,7 @@ import { useBackfillUserNumbers } from './firebase/Auth/fbBackfillUserNumbers';
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';
 import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';
 import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
+import { useHydrateTaxReceiptSettings } from './features/taxReceipt/useHydrateTaxReceiptSettings';
 
 // Componente para rastrear la navegación dentro del Router
 const NavigationTracker = () => {
@@ -43,9 +44,9 @@ function App() {
 
   // Permitir selección de texto solo para desarrolladores
   useEffect(() => {
-    const isDeveloper = user?.role === 'dev';
-    document.body.style.userSelect = isDeveloper ? 'auto' : 'none';
-    document.body.style.webkitUserSelect = isDeveloper ? 'auto' : 'none';
+    const isDev = user?.role === 'dev';
+    document.body.style.userSelect = isDev ? 'auto' : 'none';
+    return () => { document.body.style.userSelect = ''; };
   }, [user?.role]);
 
   useTaxReceiptsFix();
@@ -73,6 +74,9 @@ function App() {
   useAbilities()// establece la abilidad que puede usar el usuario actual
 
   fbAutoCreateDefaultTaxReceipt()// crea el comprobante fiscal por defecto
+
+  // Hidratar taxReceiptEnabled desde localStorage tan pronto como sea posible.
+  useHydrateTaxReceiptSettings();
 
   useFbTaxReceiptToggleStatus()// obtiene el estado del comprobante fiscal
 
