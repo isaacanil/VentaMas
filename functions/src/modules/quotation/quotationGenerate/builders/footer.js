@@ -11,37 +11,6 @@ const PAYMENT_METHODS = {
 
 export function buildFooter(biz, d) {
   return (current, total) => {
-    /* Métodos de pago */
-    const paymentStack = d.paymentMethod?.filter(m => m?.status).length
-      ? [
-          { text: 'Métodos de Pago:', bold: true, margin: [0, 0, 0, 4] },
-          {
-            ul: d.paymentMethod
-              .filter(m => m?.status)
-              .map(m => ({
-                text:
-                  `${PAYMENT_METHODS[m.method?.toLowerCase()] || m.method}: ` +
-                  money(m.value || 0) +
-                  (m.reference ? ` - Ref: ${m.reference}` : ''),
-                margin: [0, 0, 0, 0]
-              }))
-          }
-        ]
-      : [];
-
-    /* Notas de crédito aplicadas */
-    const creditNotesStack = d.creditNotePayment?.length
-      ? [
-          { text: 'Notas de Crédito Aplicadas:', bold: true, margin: [0, 8, 0, 4] },
-          {
-            ul: d.creditNotePayment.map(note => ({
-              text: `NCF: ${note.ncf} - ${money(note.amountUsed)}`,
-              margin: [0, 0, 0, 0]
-            }))
-          }
-        ]
-      : [];
-
     /* Calcular descuentos */
     const individualDiscounts = getProductsIndividualDiscounts(d.products || []);
     const hasIndividualDisc = hasIndividualDiscounts(d.products || []);
@@ -72,7 +41,7 @@ export function buildFooter(biz, d) {
         {
           columnGap: 25,
           columns: [
-            { width: '*', stack: [...paymentStack, ...creditNotesStack] },
+            { width: '*', text: '' }, // Columna vacía
             { width: '*', text: '' }, // Columna vacía donde estaría la firma
             {
               width: '*',
