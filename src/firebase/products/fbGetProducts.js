@@ -4,12 +4,13 @@ import { db } from "../firebaseconfig"
 import { collection, query, orderBy, where, onSnapshot, limit, getDocs } from "firebase/firestore"
 import { useEffect, useState } from "react"
 import { SelectActiveIngredients, SelectCategories, SelectCategoryList, SelectCategoryStatus } from "../../features/category/categorySlicer"
-import { selectCriterio, selectInventariable, selectItbis, selectOrden } from "../../features/filterProduct/filterProductsSlice"
+import { SelectSettingCart } from "../../features/cart/cartSlice"
+import { selectCriterio, selectInventariable, selectItbis, selectOrden, selectStockAvailability, selectStockAlertLevel, selectStockRequirement } from "../../features/filterProduct/filterProductsSlice"
 import { filter } from "lodash"
 import { getTax } from "../../utils/pricing"
 
 
-function filterProducts(productsArray, inventariable, itbis) {
+function filterProducts(productsArray, inventariable, itbis, stockAvailability, stockAlertLevel, stockRequirement, thresholds) {
   // Filtro por Inventariable
   if (inventariable === 'si') {
     productsArray = filter(productsArray, product => product.trackInventory === true);
@@ -21,6 +22,48 @@ function filterProducts(productsArray, inventariable, itbis) {
   if (itbis !== 'todos') {
     const itbisValue = parseFloat(itbis);
     productsArray = filter(productsArray, product => product.pricing.tax === itbisValue);
+  }
+
+  // Filtro disponibilidad de stock
+  if (stockAvailability === 'conStock') {
+    productsArray = filter(productsArray, product => (product.stock ?? 0) > 0);
+  } else if (stockAvailability === 'sinStock') {
+    productsArray = filter(productsArray, product => (product.stock ?? 0) === 0);
+  }
+
+  // Filtro por requerimiento de stock
+  // Campo fuente: product.restrictSaleWithoutStock (boolean)
+  //  - true  => El producto NO se puede vender si no hay stock ("requiere")
+  //  - false | undefined => El producto permite vender sin stock ("noRequiere")
+  if (stockRequirement === 'requiere') {
+    productsArray = filter(productsArray, product => product.restrictSaleWithoutStock === true);
+  } else if (stockRequirement === 'noRequiere') {
+    productsArray = filter(productsArray, product => product.restrictSaleWithoutStock !== true); // false o undefined
+  }
+
+  // Filtro por nivel de alerta de stock (usa thresholds dinámicos)
+  if (stockAlertLevel !== 'todos') {
+    const { lowThreshold, criticalThreshold } = thresholds || {};
+    const low = Number.isFinite(lowThreshold) ? lowThreshold : 20;
+    const critical = Number.isFinite(criticalThreshold) ? criticalThreshold : Math.min(low, 10);
+
+    productsArray = filter(productsArray, product => {
+      if (!product.trackInventory) return stockAlertLevel === 'normal'; // Productos sin control se consideran 'normal'
+      const stock = product.stock ?? 0;
+      if (stock <= 0) {
+        return stockAlertLevel === 'critico';
+      }
+      if (stock > 0 && stock <= critical) {
+        return stockAlertLevel === 'critico';
+      }
+      if (stock > critical && stock <= low) {
+        return stockAlertLevel === 'bajo';
+      }
+      if (stock > low) {
+        return stockAlertLevel === 'normal';
+      }
+      return true;
+    });
   }
 
   return productsArray;
@@ -106,6 +149,17 @@ export function useGetProducts(trackInventory = false) {
 
   const inventariable = useSelector(selectInventariable)
   const itbis = useSelector(selectItbis)
+  const stockAvailability = useSelector(selectStockAvailability);
+  const stockAlertLevel = useSelector(selectStockAlertLevel);
+  const stockRequirement = useSelector(selectStockRequirement);
+
+  // Thresholds desde billing settings
+  const settingsCart = useSelector(SelectSettingCart);
+  const billing = settingsCart?.billing || {}; // reutilizamos estructura existente
+  const thresholds = {
+    lowThreshold: Number.isFinite(billing?.stockLowThreshold) ? billing.stockLowThreshold : 20,
+    criticalThreshold: Number.isFinite(billing?.stockCriticalThreshold) ? billing.stockCriticalThreshold : Math.min(Number.isFinite(billing?.stockLowThreshold) ? billing.stockLowThreshold : 20, 10)
+  };
 
   const activeIngredients = useSelector(SelectActiveIngredients);
   const categories = useSelector(SelectCategories);
@@ -146,7 +200,7 @@ export function useGetProducts(trackInventory = false) {
         );
 
 
-        productsArray = filterProducts(productsArray, inventariable, itbis);
+  productsArray = filterProducts(productsArray, inventariable, itbis, stockAvailability, stockAlertLevel, stockRequirement, thresholds);
         productsArray = orderingProducts(productsArray, criterio, orden);
 
         productsArray = productsArray.sort((a, b) => a?.custom === true ? -1 : 1);
@@ -165,7 +219,7 @@ export function useGetProducts(trackInventory = false) {
       console.error("Ocurrió un error al obtener los productos:", error);
     }
 
-  }, [user?.businessID, trackInventory, categories, activeIngredients, categoriesStatus, criterio, orden, inventariable, itbis]);
+  }, [user?.businessID, trackInventory, categories, activeIngredients, categoriesStatus, criterio, orden, inventariable, itbis, stockAvailability, stockAlertLevel, stockRequirement, billing?.stockLowThreshold, billing?.stockCriticalThreshold]);
 
   return { products, error, loading, setLoading };
 }

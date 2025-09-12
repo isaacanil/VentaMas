@@ -8,6 +8,8 @@ import { useListenMovementsByLocation } from '../../../../../../../../firebase/w
 import { useNavigate } from 'react-router-dom';
 import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
 import { MovementReason } from '../../../../../../../../models/Warehouse/Movement';
+import ROUTES_NAME from '../../../../../../../../routes/routesName';
+import { Button } from 'antd';
 
 const StyledCard = styled.div`
   margin-top: 16px;
@@ -51,12 +53,6 @@ const LocationCell = styled.div`
         ? 'rgba(76, 175, 80, 0.2)'
         : 'rgba(239, 83, 80, 0.2)'};
   }
-`;
-
-const LocationWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
 `;
 
 const LocationName = styled.div`
@@ -219,20 +215,29 @@ const getExternalLocationText = (movement) => {
 };
 
 const getLocationDisplay = (movement) => {
-  // Para casos especiales que no tienen ubicación de origen/destino
+  // Casos especiales de baja definitiva
   const specialCases = ['damaged', 'expired', 'lost', 'other'];
   if (specialCases.includes(movement.movementReason)) {
     return 'Baja de Inventario';
+  }
+
+  // Ajustes: mostrar siempre la ubicación interna (la que NO es el placeholder 'adjustment')
+  if (movement.movementReason === 'adjustment') {
+    const internalLocationName = [
+      movement.sourceLocation === 'adjustment' ? null : movement.sourceLocationName,
+      movement.destinationLocation === 'adjustment' ? null : movement.destinationLocationName
+    ].find(name => name && !/Ubicación no encontrada|N\/A|Error/i.test(name));
+    if (internalLocationName) return internalLocationName;
+    return 'Ajuste de Inventario';
   }
 
   const isEntry = movement.movementType === 'in';
   const locationName = isEntry ? movement.sourceLocationName : movement.destinationLocationName;
   const location = isEntry ? movement.sourceLocation : movement.destinationLocation;
 
-  if (!location || !locationName) {
+  if (!location || !locationName || /Ubicación no encontrada|N\/A|Error/i.test(locationName)) {
     return getExternalLocationText(movement);
   }
-
   return locationName;
 };
 
@@ -279,6 +284,7 @@ export const MovementsTable = ({ location }) => {
   const user = useSelector(selectUser);
   const navigate = useNavigate();
   const { data: movementsData, loading } = useListenMovementsByLocation(user, location, location);
+  const { INVENTORY_MOVEMENTS } = ROUTES_NAME.INVENTORY_TERM;
 
   // Transform the data to include date as property
   const transformedData = movementsData.map(mov => {
@@ -370,10 +376,19 @@ export const MovementsTable = ({ location }) => {
     }
   ];
 
+  const headerComponent = (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', width: '100%' }}>
+      <div style={{ fontWeight: 600, fontSize: '1rem' }}>Historial de Movimientos</div>
+      <Button type="link" onClick={() => navigate(INVENTORY_MOVEMENTS)}>
+        Ver todos los movimientos
+      </Button>
+    </div>
+  );
+
   return (
     <StyledCard title="Últimos Movimientos">
       <AdvancedTable
-        title="Historial de Movimientos" // Add this line to show the title
+        headerComponent={headerComponent}
         columns={columns}
         data={transformedData}
         loading={loading}

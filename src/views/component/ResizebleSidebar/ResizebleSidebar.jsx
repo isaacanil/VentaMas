@@ -1,7 +1,4 @@
 // src/components/ResizableSidebar.js
-
-import React from "react";
-import { ResizableBox } from "react-resizable";
 import styled from "styled-components";
 import "react-resizable/css/styles.css"; // Importar estilos básicos para el resizer
 
@@ -9,10 +6,7 @@ const Container = styled.div`
     display: grid;
     grid-template-columns: auto 1fr;
     height: 100%;
-   
-
     overflow-y: hidden;
-    
 `
 
 const Content = styled.div`

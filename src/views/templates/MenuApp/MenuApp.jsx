@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useRef, useEffect } from 'react'
+import { useState, Fragment, useRef, useEffect } from 'react'
 import { useClickOutSide } from '../../../hooks/useClickOutSide'
 import styled from 'styled-components'
 import { SideBar } from './Components/SideBar'
@@ -77,7 +77,7 @@ export const MenuApp = ({
           
           {/* Input de búsqueda para desktop */}
           {setSearchData && (
-            <SearchInputWrapper>
+            <SearchInputWrapper data-role="search-wrapper">
               <Input
                 prefix={icons.operationModes.search}
                 placeholder={`Buscar ${displayName || sectionName || ""}...`}
@@ -123,17 +123,12 @@ const Backdrop = styled.div`
   }}
 `
 const Container = styled.div`
-
-  user-select: none;
   background-color: ${props => props.theme.bg.color}; 
-  
   width: 100%;
   height: 2.75em;
   display: flex;
-  align-items: center;
-  align-content: center;
   padding: 0 1em;
-  gap: 1em;
+  gap: 0.4em;
   
   @media (max-width: 768px) {
     height: 3.2em;
@@ -141,16 +136,13 @@ const Container = styled.div`
     gap: 1em;
   }
   
-  // z-index: 9;
   ${props => {
     switch (props.isOpen) {
       case true:
         return `
-          //z-index: 9;
         `
       case false:
         return `
-       // z-index: 10;
         transition-property: z-index;
         transition-delay: 400ms;
       `
@@ -175,12 +167,21 @@ const Container = styled.div`
   }}
 `
 const Group = styled.div`
-  display: grid;
-  grid-template-columns: auto auto auto auto;
-  width: 100%;
+  display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 0.4em;
-  justify-content: start;
+  flex-wrap: nowrap;
+
+  /* Evita que los botones u otros elementos se achiquen excesivamente */
+  & > * { flex-shrink: 0; }
+
+  /* Solo el wrapper del input puede crecer y encogerse para absorber espacio */
+  & > [data-role='search-wrapper'] {
+    flex: 1 1 auto;
+    min-width: 160px;
+    flex-shrink: 1;
+  }
 
   // Mejoras para móviles más grandes
   @media (max-width: 1024px) {
@@ -189,30 +190,11 @@ const Group = styled.div`
   
   @media (max-width: 768px) {
     gap: 0.5em;
-    grid-template-columns: auto auto auto auto;
   }
   
   @media (max-width: 480px) {
     gap: 0.4em;
   }
-`
-const AutoHidden = styled.div`
-  height: 100%;
-  display: flex;
-  align-items: center;
-  transition: opacity 1s linear;
-  ${props => {
-    switch (props.menuIsOpen) {
-      case true:
-        return `  
-        opacity: 0; 
-        `
-      default:
-        break;
-    }
-  }}
-  
-    
 `
 const SectionName = styled.div`
   display: flex;
@@ -256,7 +238,10 @@ const SectionName = styled.div`
 
 const SearchInputWrapper = styled.div`
   display: flex;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 160px;
+  width: auto;
+  overflow: hidden;
   
   @media (max-width: 1024px) {
     max-width: 350px;

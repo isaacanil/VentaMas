@@ -1,9 +1,12 @@
 import React, { Fragment, useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { toggleDeveloperModal } from '../../../../features/modals/modalSlice'
 import { NavLink, useLocation, useMatch } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 import { SubMenu } from './SubMenu/SubMenu'
 import { Tag } from "antd"
-export const MenuLink = ({ item, Items }) => {
+export const MenuLink = ({ item, Items, onActionDone }) => {
+  const dispatch = useDispatch();
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const location = useLocation();
 
@@ -26,11 +29,21 @@ export const MenuLink = ({ item, Items }) => {
   }, [isCurrentRoute]);
 
   const showSubMenu = () => { setIsOpenSubMenu(!isOpenSubMenu) };
+
+  const handleAction = (e) => {
+    e.preventDefault();
+    if (!item?.action) return;
+    if (item.action === 'openDeveloperModal') {
+      dispatch(toggleDeveloperModal());
+    }
+    // Cerrar el overlay del submenu si viene callback del padre
+    if (typeof onActionDone === 'function') onActionDone();
+  };
   const Component = item?.route ? MenuItemLink : MenuItemDiv;
   return (
     <Fragment>
       <Component
-        onClick={item.submenu ? showSubMenu : null}
+        onClick={item.submenu ? showSubMenu : (item.action ? handleAction : null)}
         to={item?.route || "#"}
         className={isExactMatch ? 'active' : ''}
       >

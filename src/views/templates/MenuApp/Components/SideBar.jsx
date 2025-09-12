@@ -9,6 +9,7 @@ import { selectBusinessData } from '../../../../features/auth/businessSlice'
 import { SelectSettingCart } from '../../../../features/cart/cartSlice'
 import { openNotificationCenter } from '../../../../features/notification/notificationCenterSlice'
 import { getMenuData } from '../MenuData/MenuData'
+import { hasDeveloperAccess } from '../../../../utils/menuAccess'
 import ROUTES_PATH from '../../../../routes/routesName'
 import { icons } from '../../../../constants/icons/icons'
 
@@ -74,13 +75,18 @@ const useMenuFiltering = () => {
             return acc
         }, [])
 
-        return filteredLinks.reduce((acc, item) => {
+        const grouped = filteredLinks.reduce((acc, item) => {
             if (!acc[item.group]) {
                 acc[item.group] = []
             }
             acc[item.group].push(item)
             return acc
         }, {})
+        // Remove developer group if user lacks developer access
+        if (!hasDeveloperAccess() && grouped.developer) {
+            delete grouped.developer
+        }
+        return grouped
     }, [links, billingMode, businessType])
 }
 
@@ -156,7 +162,7 @@ const Container = styled(motion.div)`
     
     border-radius: 0 10px 10px 0;
     overflow: hidden;
-    background-color: ${props => props.theme.bg.shade};
+    background-color: white;
     border-right: 1px solid rgba(0, 0, 0, 0.1);
     box-shadow: 
         5px 0 15px rgba(0, 0, 0, 0.1),

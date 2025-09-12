@@ -62,6 +62,83 @@ export const syncProductsStock = async (businessID) => {
   }
 };
 
+/**
+ * Sincroniza product.stock usando la suma de productsStock por producto.
+ * Opcionalmente acepta una lista de productIds para limitar el alcance, y un modo dry-run para solo calcular.
+ * Filtros: por defecto toma solo stocks activos (isDeleted=false, status='active').
+ *
+ * @param {string} businessID
+ * @param {{ productIds?: string[], filterActive?: boolean, dryRun?: boolean }} [options]
+ * @returns {Promise<{updates: Array<{productId: string, from: number, to: number}>, totalProducts: number}>}
+ */
+export const syncProductsStockFromProductsStock = async (
+  businessID,
+  { productIds = undefined, filterActive = true, dryRun = false } = {}
+) => {
+  try {
+    const stockColl = collection(db, 'businesses', businessID, 'productsStock');
+
+    const addActiveFilters = (base = []) => (
+      filterActive ? [...base, where('isDeleted', '==', false), where('status', '==', 'active')] : base
+    );
+
+    const updates = [];
+
+    if (Array.isArray(productIds) && productIds.length > 0) {
+      // Modo por lista específica de productos: 1 query por producto
+      for (const pid of productIds) {
+        const qref = query(stockColl, ...addActiveFilters([where('productId', '==', pid)]));
+        const snap = await getDocs(qref);
+        const total = snap.docs.reduce((acc, d) => acc + (d.data().quantity || 0), 0);
+
+        const productRef = doc(db, 'businesses', businessID, 'products', pid);
+        if (!dryRun) {
+          await updateDoc(productRef, {
+            stock: total,
+            lastStockSyncFromProductsStock: new Date().toISOString(),
+          });
+        }
+        updates.push({ productId: pid, from: undefined, to: total });
+      }
+
+      return { updates, totalProducts: productIds.length };
+    }
+
+    // Modo global: reducir todos los productsStock en un solo recorrido
+    const globalQ = query(stockColl, ...addActiveFilters());
+    const stockSnap = await getDocs(globalQ);
+    const byProduct = new Map();
+    stockSnap.docs.forEach(d => {
+      const { productId, quantity } = d.data();
+      if (!productId) return;
+      const key = String(productId);
+      byProduct.set(key, (byProduct.get(key) || 0) + (quantity || 0));
+    });
+
+    // Leer todos los productos para actualizar mismatches y también poner 0 a los que no están en el mapa
+    const products = await getAllProducts(businessID);
+    for (const p of products) {
+      const computed = byProduct.get(String(p.id)) || 0;
+      const declared = typeof p.stock === 'number' ? p.stock : 0;
+      if (declared !== computed) {
+        const productRef = doc(db, 'businesses', businessID, 'products', p.id);
+        if (!dryRun) {
+          await updateDoc(productRef, {
+            stock: computed,
+            lastStockSyncFromProductsStock: new Date().toISOString(),
+          });
+        }
+        updates.push({ productId: p.id, from: declared, to: computed });
+      }
+    }
+
+    return { updates, totalProducts: products.length };
+  } catch (error) {
+    console.error('Error sincronizando stock desde productsStock:', error);
+    throw error;
+  }
+};
+
 // Hook personalizado para ejecutar la sincronización automáticamente
 export const useAutoStockSync = (intervalMinutes = 720) => { // 720 minutos = 12 horas
   const user = useSelector(selectUser);

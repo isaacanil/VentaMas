@@ -6,7 +6,7 @@ import {
   deleteProductStock,
   getProductStockByBatch
 } from './productStockService';
-import { doc, getDocs, query, serverTimestamp, setDoc, where, or, collection, onSnapshot, getDoc, and, orderBy } from 'firebase/firestore';
+import { doc, getDocs, query, serverTimestamp, setDoc, where, or, collection, onSnapshot, getDoc, and, orderBy, Timestamp, limit } from 'firebase/firestore';
 import { db } from '../firebaseconfig';
 import { useState, useEffect } from 'react';
 import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
@@ -209,7 +209,7 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !locationId) {
+    if (!user || !user.businessID || !locationId) {
       setData([]);
       setLoading(false);
       return;
@@ -218,10 +218,6 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
     setLoading(true);
     const movementsRef = collection(db, 'businesses', user.businessID, 'movements');
 
-    // Obtener el primer día del mes actual
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
     const q = query(
       movementsRef,
       and(
@@ -229,10 +225,10 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
           where('sourceLocation', '==', locationId),
           where('destinationLocation', '==', locationId)
         ),
-        where('isDeleted', '==', false),
-        where('createdAt', '>=', startOfMonth)
+        where('isDeleted', '==', false)
       ),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
+      limit(20)
     );
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -308,7 +304,75 @@ export const useListenMovementsByLocation = (user, locationId, currentLocationId
     });
 
     return () => unsubscribe();
-  }, [user, locationId, currentLocationId]);
+  }, [user, user?.businessID, locationId, currentLocationId]);
+
+  return { data, loading };
+};
+
+// Nuevo: Hook para escuchar todos los movimientos por rango de fechas (empresa completa)
+export const useListenAllMovementsByDateRange = (user, range = {}) => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { startDate, endDate } = range || {};
+
+  useEffect(() => {
+    const hasValidUser = !!(user && user.businessID);
+    const hasValidDates = typeof startDate === 'number' && typeof endDate === 'number' && !Number.isNaN(startDate) && !Number.isNaN(endDate);
+    if (!hasValidUser || !hasValidDates) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+  const movementsRef = collection(db, 'businesses', user.businessID, 'movements');
+
+  const startTs = Timestamp.fromMillis(startDate);
+  const endTs = Timestamp.fromMillis(endDate);
+
+    // Escucha todos los movimientos de esta empresa en el rango dado
+    const q = query(
+      movementsRef,
+      and(
+        where('isDeleted', '==', false),
+        where('createdAt', '>=', startTs),
+        where('createdAt', '<=', endTs)
+      ),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      try {
+        const movementsPromises = snapshot.docs.map(async (d) => {
+          const mv = d.data();
+          const [sourceName, destName] = await Promise.all([
+            getLocationName(user, mv.sourceLocation),
+            getLocationName(user, mv.destinationLocation)
+          ]);
+
+          return {
+            ...mv,
+            id: d.id,
+            sourceLocationName: sourceName,
+            destinationLocationName: destName,
+          };
+        });
+        const movements = await Promise.all(movementsPromises);
+        setData(movements);
+      } catch (e) {
+        console.error('Error al mapear movimientos:', e);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    }, (err) => {
+      console.error('Error al escuchar movimientos:', err);
+      setData([]);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user?.businessID, startDate, endDate]);
 
   return { data, loading };
 };

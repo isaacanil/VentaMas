@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { ProductItem } from './ProductCard/ProductItem'
@@ -23,12 +23,13 @@ import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
 import * as antd from 'antd'
 //quiero el iconos d elos tres punto verticales
 
-import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined, CloseOutlined } from '@ant-design/icons';
 import { store } from '../../../../../../../app/store'
 import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
 import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
 import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar'
 import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
+import { filterData } from '../../../../../../../hooks/search/useSearch'
 const { Button, Dropdown, Menu } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
@@ -36,6 +37,8 @@ export const ProductsTable = ({ products, searchTerm }) => {
   const user = useSelector(selectUser);
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const { setDialogConfirm } = useDialog();
+  const [isAtBottom, setIsAtBottom] = useState(false)
+  const [totalsDismissed, setTotalsDismissed] = useState(false)
 
   const handleDeleteProduct = useCallback((id) => {
     let docId = id?.product?.id ? id?.product?.id : id?.id
@@ -185,19 +188,59 @@ export const ProductsTable = ({ products, searchTerm }) => {
     category: product.category,
   }));
 
+  // Totales (filtrados por el término de búsqueda actual)
+  const filteredProducts = useMemo(() => filterData(products, searchTerm), [products, searchTerm])
+  const totals = useMemo(() => {
+    let stock = 0
+    let cost = 0
+    let listPrice = 0
+    for (const p of filteredProducts) {
+      const qty = Number(p?.stock) || 0
+      const unitCost = Number(p?.pricing?.cost) || 0
+      // Preferir listPrice; si no hay, usar price como aproximación
+      const unitListPrice = (typeof p?.pricing?.listPrice === 'number' && p.pricing.listPrice)
+      stock += qty
+      cost += qty * unitCost
+      listPrice += qty * unitListPrice
+    }
+    return { stock, cost, listPrice }
+  }, [filteredProducts])
+
+  // Recibe métricas de scroll del cuerpo de la tabla para ocultar la píldora al llegar abajo
+  const handleScrollMetrics = useCallback(({ isAtBottom }) => {
+    setIsAtBottom(!!isAtBottom)
+  }, [])
+
   return (
-
-        <AdvancedTable
-          data={data}
-          columns={columns}
-          searchTerm={searchTerm}
-          headerComponent={ <ProductCategoryBar  />}
-          tableName={'inventory_items_table'}
-          elementName={'productos'}
-          onRowClick={(row) => handleUpdateProduct(row.action)}
-          groupBy={'category'}
-        />
-
+    <>
+      <AdvancedTable
+        data={data}
+        columns={columns}
+        searchTerm={searchTerm}
+        headerComponent={<ProductCategoryBar />}
+        tableName={'inventory_items_table'}
+        elementName={'productos'}
+        onRowClick={(row) => handleUpdateProduct(row.action)}
+        groupBy={'category'}
+        onScrollMetrics={handleScrollMetrics}
+      />
+      <FloatingTotals $hidden={isAtBottom || totalsDismissed}>
+        <TotalsContainer>
+          <span>Stock: {useFormatNumber(totals.stock)}</span>
+          <Divider>|</Divider>
+          <span>Costo: {useFormatPrice(totals.cost)}</span>
+          <Divider>|</Divider>
+          <span>Precio lista: {useFormatPrice(totals.listPrice)}</span>
+          <CloseButton
+            type="text"
+            size="small"
+            aria-label="Ocultar totales"
+            onClick={() => setTotalsDismissed(true)}
+            icon={<CloseOutlined />}
+          />
+        </TotalsContainer>
+      </FloatingTotals>
+    </>
   )
 }
 const ProductName = styled.div`
@@ -207,123 +250,49 @@ const ProductName = styled.div`
   gap: 1.2em;
 `
 
-
-const ProductCountDisplay = styled.div`
-  position: absolute;
-  left: 10px;
-
-`
-
-const Table = styled.div`
-  position: relative;
-  margin: 0 auto;
- 
-  background-color: white;
-  overflow-y: auto;
-  
-  height: 100%;
-  width: 100%;
-  display: grid;
-  grid-template-rows: min-content min-content 1fr min-content; /* nuevo estilo */
-`;
-const Categories = styled.div`
-position: sticky;
-top: 0;
-z-index: 2;
-
-`
-const TableBody = styled.div`
-  display: grid;
-  align-items: flex-start;
-  align-content: flex-start;
-  height: 100%;
-  gap: 0.4em;
-  width: 100%;
-  color: rgb(70, 70, 70);
-`;
-
-const Row = styled.div`
-  display: grid;
+// Totales en el pie de tabla
+const TotalsContainer = styled.div`
+  display: flex;
   align-items: center;
-  height: 3em;
-  width: 100%;
-  gap: 1vw;
-  grid-template-columns: 
-  minmax(80px, 0.1fr) //Image
-  minmax(200px, 1fr) //Name
-  minmax(70px, 0.4fr) //cost
-  minmax(70px, 0.4fr) //stock
-  minmax(70px, 0.5fr) //precio
-  minmax(70px, 0.5fr) //precio
-  minmax(100px, 0.1fr); //acción
-  @media (max-width: 800px){
-    gap: 0;
+  gap: 1em;
+  font-weight: 600;
+  white-space: nowrap;
+`
+
+const Divider = styled.span`
+  color: var(--Gray6);
+`
+
+// Píldora flotante con totales
+const FloatingTotals = styled.div`
+  position: fixed;
+  right: 16px;
+  bottom: 50px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  padding: 8px 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  opacity: ${p => p.$hidden ? 0 : 1};
+  transform: translateY(${p => p.$hidden ? '8px' : '0'});
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: ${p => p.$hidden ? 'none' : 'auto'};
+  @media (max-width: 600px) {
+    right: 8px;
+    bottom: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
- 
-  ${(props) => {
-    switch (props.type) {
-      case 'header':
-        return `    
-          background-color: var(--White);
-          border-top: var(--border-primary);
-          border-bottom: var(--border-primary);
-          
-          position: sticky;
-          top: 2.60em;
-          z-index: 1;
-        `
-      default:
-        break;
-    }
-  }}
 `
 
-const Col = styled.div`
-  padding: 0 0.6em;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  ${props => {
-    switch (props.position) {
-      case 'right':
-        return `
-          justify-content: right;
-        `;
-
-      default:
-        break;
-    }
-  }}
-  ${(props) => {
-    switch (props.size) {
-      case 'limit':
-        return `
-          width: 100%;
-          
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;  
-          //white-space: nowrap;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          `
-
-      default:
-        break;
-    }
-  }}
-`
-
-const Footer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
- border-top: var(--border-primary);
-  height: 3em;
-  position: sticky;
-  background-color: white;
-  bottom: 0;
-  z-index: 1;
+// Botón de cerrar con estilo mínimo (reutiliza antd Button)
+const CloseButton = styled(antd.Button)`
+  margin-left: 8px;
+  color: var(--Gray6);
+  &:hover {
+    color: var(--Gray3);
+  }
 `

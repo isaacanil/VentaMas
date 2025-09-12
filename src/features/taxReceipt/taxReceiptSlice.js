@@ -54,7 +54,8 @@ const initialState = {
     data: [],
     ncfCode: null,
     ncfType: "",
-    availableTypes: [] // Lista de tipos de comprobantes disponibles
+    availableTypes: [], // Lista de tipos de comprobantes disponibles
+    ncfTypeLocked: false // Evita cambios mientras se procesa la factura
 }
 
 export const taxReceiptSlice = createSlice({
@@ -106,11 +107,21 @@ export const taxReceiptSlice = createSlice({
             fbUpdateTaxReceipt(taxReceipt)
         },
         selectTaxReceiptType: (state, actions) => {
+            // Evitar cambiar el comprobante mientras está bloqueado
+            if (state.ncfTypeLocked) return;
             state.ncfType = actions.payload;
         },
         clearTaxReceiptData: (state) => {
             state.ncfStatus = false
             state.ncfCode = null
+            // Al limpiar datos aseguramos desbloqueo
+            state.ncfTypeLocked = false
+        },
+        lockTaxReceiptType: (state) => {
+            state.ncfTypeLocked = true;
+        },
+        unlockTaxReceiptType: (state) => {
+            state.ncfTypeLocked = false;
         }
     }
 })
@@ -124,7 +135,9 @@ export const {
     selectTaxReceiptType, 
     updateTaxCreditInFirebase, 
     toggleTaxReceiptSettings,
-    setTaxReceiptSettingsLoaded
+    setTaxReceiptSettingsLoaded,
+    lockTaxReceiptType,
+    unlockTaxReceiptType
 } = taxReceiptSlice.actions;
 
 //selectors
@@ -137,3 +150,4 @@ export const selectTaxReceiptEnabled = (state) => state.taxReceipt.settings.taxR
 export const selectTaxReceiptSettingsLoaded = (state) => state.taxReceipt.settings.settingsLoaded;
 export const selectTaxReceipt = (state) => state.taxReceipt;
 export const selectAvailableReceiptTypes = (state) => state.taxReceipt.availableTypes;
+export const selectNcfTypeLocked = (state) => state.taxReceipt.ncfTypeLocked;

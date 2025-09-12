@@ -16,10 +16,14 @@ export const Sidebar = ({ items }) => {
     return (
         <SidebarContainer isCompact={isCompact}>
             <SidebarMenu>
-                {items && items.map((item, index) => (
-                    <SidebarItem item={item}/>
-                   
-                    ))}
+        {items && items.map((item, index) => (
+          <SidebarItem 
+            key={item.label + index}
+            item={item}
+            isActive={activeMenuIndex === index}
+            onClick={() => handleMenuItemClick(index)}
+          />
+        ))}
             </SidebarMenu>
         </SidebarContainer>
     )

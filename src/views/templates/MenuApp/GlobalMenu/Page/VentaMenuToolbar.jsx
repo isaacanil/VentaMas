@@ -75,14 +75,13 @@ export const VentaMenuToolbar = ({ side = 'left' }) => {
                         <Group >
                             <ButtonIconMenu
                                 tooltipDescription={FullScreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
-                                tooltipPlacement={'bottom-end'}
                                 icon={FullScreen ? <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpand} />}
                                 onClick={() => handleFullScreenFN()}
                             />
-                            <InventoryFilterAndSort />
                             <ButtonIconMenu
                                 icon={icons.operationModes.setting}
                                 onClick={handleSettings}
+                                tooltipDescription={'Configuración'}
                             />
                             {/* <DropdownMenu
                                 title={icons.operationModes.setting}
@@ -94,13 +93,22 @@ export const VentaMenuToolbar = ({ side = 'left' }) => {
                         </Group>
                     )
                 }
+                {
+                    side === 'left' && (
+                        <InventoryFilterAndSort 
+                            tooltip={'Filtrar y Ordenar'}
+                            tooltipDescription={'Filtrar y Ordenar'}
+                            tooltipPlacement={'bottom-start'}
+                        />
+                    )
+
+                }
 
             </Container>
         )
     )
 }
 const Container = styled.div`
-
 `
 const Group = styled.div`
   display: flex;

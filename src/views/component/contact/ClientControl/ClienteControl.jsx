@@ -10,7 +10,7 @@ import { useWindowWidth } from '../../../../hooks/useWindowWidth'
 import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
 import { OPERATION_MODES } from '../../../../constants/modes.js'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
-import { selectNcfType, selectTaxReceipt, selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice.js'
+import { selectNcfType, selectTaxReceipt, selectTaxReceiptType, selectNcfTypeLocked } from '../../../../features/taxReceipt/taxReceiptSlice.js'
 import { Input, Button as AntButton, Checkbox, Select, Button } from 'antd';
 import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
 import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
@@ -28,6 +28,7 @@ export const ClientControl = () => {
   const [inputIcon, setInputIcon] = useState()
   const taxReceiptData = fbGetTaxReceipt()
   const nfcType = useSelector(selectNcfType)
+  const ncfTypeLocked = useSelector(selectNcfTypeLocked)
   const insuranceEnabled = useInsuranceEnabled();
   const closeMenu = () => dispatch(setIsOpen(false))
   const setSearchTerm = (e) => dispatch(setClientSearchTerm(e))
@@ -170,11 +171,28 @@ export const ClientControl = () => {
                 style={{ width: 200 }}
                 value={nfcType}
                 onChange={(e) => dispatch(selectTaxReceiptType(e))}
+                disabled={ncfTypeLocked}
+                placeholder="Selecciona comprobante"
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) => (option?.children ?? '').toLowerCase().includes(input.toLowerCase())}
               >
                 <Select.OptGroup label="Comprobantes Fiscal" >
                   {
                     taxReceiptData.taxReceipt
-                      .filter(receipt => !receipt.data?.disabled) // Solo mostrar comprobantes activos
+                      .filter(receipt => !receipt.data?.disabled)
+                      .filter(receipt => {
+                        const rawName = receipt?.data?.name || '';
+                        // Normalizar acentos
+                        const name = rawName.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+                        const serie = (receipt?.data?.serie || '').toString().padStart(2, '0');
+                        // Regla principal: excluir serie 04 (Notas de Crédito en RD) o nombres que contengan ambos tokens
+                        const containsNota = name.includes('nota');
+                        const containsCredito = name.includes('credito');
+                        const isCreditNoteBySerie = serie === '04';
+                        const isCreditNoteByName = containsNota && containsCredito;
+                        return !(isCreditNoteBySerie || isCreditNoteByName);
+                      })
                       .map(({ data }, index) => (
                         <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
                       ))

@@ -22,18 +22,13 @@ const Container = styled.div`
    --btnMenuItem-bg-color: var(--menu-items);
    --btnMenuItem-width: 1.6em;
    --btnMenuItem-height: 2px;
-
 }
-      justify-self: start;
-  max-height: 2em;
-  min-width: 2em;
-  min-height: 2em;
-  max-width: 2em;
-  width: 2em;
-  height: 2em;
+  justify-self: start;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 2em;
+  height: 2em;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -41,14 +36,9 @@ const Container = styled.div`
   z-index: ${props => props.isOpen ? 10000 : 0};
   transition-delay: ${props => !props.isOpen && '1s'};
 
-  // Adaptación responsive para móviles
   @media (max-width: 768px) {
     width: 2.3em;
     height: 2.3em;
-    min-width: 2.3em;
-    min-height: 2.3em;
-    max-width: 2.3em;
-    max-height: 2.3em;
   }
 
 `

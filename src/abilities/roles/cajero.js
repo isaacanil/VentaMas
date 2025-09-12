@@ -10,6 +10,7 @@ function defineBaseAbilities(can, cannot) {
     CONTACT_TERM,
     BASIC_TERM,
     INVENTORY_TERM,
+    PURCHASE_TERM,
     CASH_RECONCILIATION_TERM,
     CREDIT_NOTE_TERM
   } = routesName;
@@ -29,6 +30,7 @@ function defineBaseAbilities(can, cannot) {
   const { HOME } = BASIC_TERM;
   const { INVENTORY_ITEMS } = INVENTORY_TERM;
   const { CREDIT_NOTE_LIST } = CREDIT_NOTE_TERM;
+  const { BACKORDERS } = PURCHASE_TERM;
 
   // Permisos que SÍ puede hacer
   can('manage', 'Bill');
@@ -49,6 +51,7 @@ function defineBaseAbilities(can, cannot) {
   can('access', CLIENTS);
   can('access', INVENTORY_ITEMS);
   can('access', CREDIT_NOTE_LIST);
+  can('access', BACKORDERS);
   can('manage', 'accountReceivable');
   can('manage', 'CreditNote');
   can('read', 'User');

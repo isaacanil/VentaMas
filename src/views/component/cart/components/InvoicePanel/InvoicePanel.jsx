@@ -8,7 +8,7 @@ import { processInvoice } from '../../../../../services/invoice/invoiceService'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { deleteClient, selectClient } from '../../../../../features/clientCart/clientCartSlice'
 import { selectAR } from '../../../../../features/accountsReceivable/accountsReceivableSlice'
-import { clearTaxReceiptData, selectNcfType, selectTaxReceipt } from '../../../../../features/taxReceipt/taxReceiptSlice'
+import { clearTaxReceiptData, selectNcfType, selectTaxReceipt, lockTaxReceiptType, unlockTaxReceiptType, selectTaxReceiptType } from '../../../../../features/taxReceipt/taxReceiptSlice'
 import { useReactToPrint } from 'react-to-print'
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 import DateUtils from '../../../../../utils/date/dateUtils'
@@ -55,12 +55,14 @@ const calculateDueDate = (duePeriod, hasDueDate) => {
         .valueOf();
 }
 
-export const handleCancelShipping = ({ dispatch, viewport, closeInvoicePanel = true }) => {
+export const handleCancelShipping = ({ dispatch, viewport, closeInvoicePanel = true, clearTaxReceipt = false }) => {
     if (dispatch === undefined) return;
     if (viewport !== undefined && viewport <= 800) dispatch(toggleCart());
     if (closeInvoicePanel) dispatch(toggleInvoicePanel());
     dispatch(resetCart());
-    dispatch(clearTaxReceiptData());
+    if (clearTaxReceipt) {
+        dispatch(clearTaxReceiptData());
+    }
     dispatch(deleteClient());
     dispatch(clearAuthData());
 };
@@ -69,6 +71,8 @@ export const InvoicePanel = () => {
     const dispatch = useDispatch()
     const [form] = Form.useForm()
     const [invoice, setInvoice] = useState({})
+    // Flag para coordinar la impresión una vez que el estado de invoice se haya renderizado con productos
+    const [pendingPrint, setPendingPrint] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
     const { processInvoice: runInvoice } = useInvoice();
@@ -79,7 +83,12 @@ export const InvoicePanel = () => {
     })
 
     const viewport = useViewportWidth();
-    const handleInvoicePanel = useDispatch(() => dispatch(toggleInvoicePanelOpen()), [dispatch]);
+    // Handler para cerrar/volver atrás del panel de factura.
+    // Antes estaba mal implementado usando useDispatch(argumento) lo cual hacía que al hacer click
+    // se ejecutara dispatch(event) y fallara porque recibía el SyntheticEvent en vez de una action.
+    const handleInvoicePanel = useCallback(() => {
+        dispatch(toggleInvoicePanelOpen());
+    }, [dispatch]);
     const cart = useSelector(SelectCartData)
     const cartSettings = useSelector(SelectSettingCart)
     const invoicePanel = cartSettings.isInvoicePanelOpen;
@@ -93,7 +102,8 @@ export const InvoicePanel = () => {
     const client = useSelector(selectClient)
     const ncfType = useSelector(selectNcfType);
     const accountsReceivable = useSelector(selectAR)
-    const { settings: { taxReceiptEnabled } } = useSelector(selectTaxReceipt);
+    const taxReceiptState = useSelector(selectTaxReceipt);
+    const { settings: { taxReceiptEnabled } } = taxReceiptState;
     const total = cart?.payment?.value;
     const isAddedToReceivables = cart?.isAddedToReceivables;
     const business = useSelector(selectBusinessData) || {};
@@ -114,7 +124,14 @@ export const InvoicePanel = () => {
     //function para despues de imprimir la factura
     const handleAfterPrint = () => {
         setInvoice({});
-        handleCancelShipping({ dispatch, viewport });
+        // Limpiamos el carrito y opcionalmente el comprobante, luego volvemos a default
+        handleCancelShipping({ dispatch, viewport, clearTaxReceipt: true });
+        // Seleccionar comprobante por defecto (CONSUMIDOR FINAL si existe, si no el primero)
+        const defaultReceipt = taxReceiptState?.data?.find(r => r?.data?.name?.toUpperCase() === 'CONSUMIDOR FINAL')
+            || taxReceiptState?.data?.[0];
+        if (defaultReceipt?.data?.name) {
+            dispatch(selectTaxReceiptType(defaultReceipt.data.name));
+        }
         notification.success({
             message: 'Venta Procesada',
             description: 'La venta ha sido procesada con éxito',
@@ -122,6 +139,8 @@ export const InvoicePanel = () => {
         })
         setLoading({ status: false, message: '' });
         setSubmitted(true)
+        // Liberamos el tipo de comprobante una vez finalizado todo el flujo
+        dispatch(unlockTaxReceiptType());
     }
 
 
@@ -129,6 +148,22 @@ export const InvoicePanel = () => {
         content: () => componentToPrintRef.current,
         onAfterPrint: () => handleAfterPrint(),
     })
+
+    // Efecto: cuando invoice se llena (tiene id o productos) y hay una impresión pendiente, ejecutar impresión.
+    useEffect(() => {
+        if (!pendingPrint) return;
+        // Verificamos que haya productos o al menos un identificador antes de imprimir
+        const hasProducts = Array.isArray(invoice?.products) && invoice.products.length > 0;
+        const hasId = !!invoice?.id;
+        if (hasProducts || hasId) {
+            // Damos un pequeño margen para asegurar el layout (sobre todo en modo concurrent/render estricto)
+            const timeout = setTimeout(() => {
+                handlePrint();
+                setPendingPrint(false);
+            }, 80); // 2 frames aprox (~16ms * 2) + margen
+            return () => clearTimeout(timeout);
+        }
+    }, [invoice, pendingPrint, handlePrint]);
 
     // Reinstate the showCancelSaleConfirm function
     const showCancelSaleConfirm = () => {
@@ -141,7 +176,8 @@ export const InvoicePanel = () => {
             cancelText: 'NO',
             onOk() {
                 message.success('Venta cancelada', 2.5)
-                handleCancelShipping({ dispatch, viewport })
+                handleCancelShipping({ dispatch, viewport, clearTaxReceipt: false })
+                dispatch(unlockTaxReceiptType());
             },
             onCancel() {
                 message.info('Continuando con la venta', 2.5)
@@ -152,7 +188,6 @@ export const InvoicePanel = () => {
     const handleInvoicePrinting = useCallback(async (inv) => {
         if (invoiceType === 'template2') {
             try {
-                // Use the freshly generated invoice passed as argument, not the (possibly stale) state
                 await measure('downloadInvoiceLetterPdf', () =>
                     downloadInvoiceLetterPdf(business, inv, handleAfterPrint)
                 );
@@ -162,17 +197,18 @@ export const InvoicePanel = () => {
                     description: `No se pudo generar el PDF: ${e.message}`,
                     duration: 4
                 });
-                // Finalizar flujo aunque falle la impresión, la venta ya fue procesada
                 handleAfterPrint();
             }
         } else {
-            await new Promise(r => requestAnimationFrame(r)); 
-            handlePrint()
+            // Para plantillas térmicas/compactas esperamos a que el estado se hydrate antes de imprimir
+            setPendingPrint(true);
         }
-    }, [invoiceType, business, handlePrint, handleAfterPrint]);
+    }, [invoiceType, business, handleAfterPrint]);
 
     async function handleSubmit() {
             try {
+                // Bloqueamos el tipo de comprobante para que no cambie durante el proceso
+                dispatch(lockTaxReceiptType());
                 setLoading({ status: true, message: '' })
                 if (cart?.isAddedToReceivables) {
                     await form.validateFields()
@@ -216,7 +252,7 @@ export const InvoicePanel = () => {
                 // })
 
                 if (shouldPrintInvoice) {
-                    setInvoice(invoice);
+                    setInvoice(invoice); // Actualizamos estado primero
                     await measure('handleInvoicePrinting', () => handleInvoicePrinting(invoice));
                 }
                 if (!shouldPrintInvoice) {
@@ -233,6 +269,8 @@ export const InvoicePanel = () => {
                 setLoading({ status: false, message: '' })
                 setSubmitted(false)
                 console.error('Error processing invoice:', error)
+                // En caso de error liberamos el bloqueo para que el usuario pueda cambiar el comprobante
+                dispatch(unlockTaxReceiptType());
             }
         }
 

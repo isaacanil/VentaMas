@@ -8,8 +8,6 @@ import { clearUpdateProductData, selectUpdateProductData, setProduct } from '../
 import { listenToProduct } from '../../../../firebase/products/fbListenProduct';
 import { selectUser } from '../../../../features/auth/userSlice';
 
-// Definir las columnas de la tabla
-
 export const ProductEditorModal = ({ isOpen }) => {
     const [view, setView] = useState('product-form')
     const dispatch = useDispatch();

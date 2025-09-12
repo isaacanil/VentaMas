@@ -35,7 +35,9 @@ export const TableBody = ({
   isWideLayout,
   expandedRowRender,
   rowExpandable,
-  getRowId
+  getRowId,
+  rowSize = 'medium',
+  rowBorder
 }) => {
   const activeColumns = columnOrder.filter(col => col.status === 'active');
   
@@ -51,14 +53,25 @@ export const TableBody = ({
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const containerStyle = typeof rowBorder === 'string' ? { ['--row-border-color']: rowBorder } : undefined;
   const tableContent = (
-    <Container columns={activeColumns}>
+    <Container 
+      columns={activeColumns} 
+      data-border={rowBorder ? 'on' : 'off'} 
+      style={containerStyle}
+    >
       {shouldGroup
         ? Object.entries(groupedData).map(([groupKey, groupItems]) => (
           <Fragment key={groupKey}>
             <GroupHeader>{groupKey}</GroupHeader>
             {groupItems.map((row, rowIndex) => (
-              <Row key={rowIndex} columns={activeColumns} isWideScreen={isWideScreen} isWideLayout={isWideLayout}>
+              <Row 
+                key={rowIndex} 
+                columns={activeColumns} 
+                isWideScreen={isWideScreen} 
+                isWideLayout={isWideLayout}
+                data-border={rowBorder ? 'on' : undefined}
+              >
                 {activeColumns.map((col, colIndex) => (
                   <BodyCell 
                     key={colIndex} 
@@ -66,6 +79,7 @@ export const TableBody = ({
                     fixed={col.fixed}
                     clickable={col?.clickable !== false ? true : false} 
                     columns={activeColumns} 
+                    data-size={rowSize}
                     onClick={(e) => handleCellClick(e, col, row)}
                   >
                     {renderCell(col, row[col.accessor])}
@@ -86,7 +100,12 @@ export const TableBody = ({
             : row;
           return (
             <Fragment key={rowId}>
-              <Row columns={activeColumns} isWideScreen={isWideScreen} isWideLayout={isWideLayout}>
+              <Row 
+                columns={activeColumns} 
+                isWideScreen={isWideScreen} 
+                isWideLayout={isWideLayout}
+                data-border={rowBorder ? 'on' : undefined}
+              >
                 {activeColumns.map((col, colIndex) => (
                   <BodyCell 
                     key={colIndex} 
@@ -94,6 +113,7 @@ export const TableBody = ({
                     fixed={col.fixed}
                     clickable={col?.clickable !== false ? true : false} 
                     columns={activeColumns} 
+                    data-size={rowSize}
                     onClick={(e) => handleCellClick(e, col, row)}
                   >
                     {renderCell(col, rowWithExpanderData[col.accessor])}
@@ -122,10 +142,11 @@ export const TableBody = ({
 };
 
 const Container = styled.div`
- display: grid;
-   align-content: flex-start;
-   gap: 0.2em 1em;
-`
+  display: grid;
+  align-content: flex-start;
+  gap: 0.2em 1em;
+  &[data-border='on'] { row-gap: 0; }
+`;
 const GroupHeader = styled.div`
   background-color: #f0f0f09e;
   padding: 10px;
@@ -137,7 +158,10 @@ const BodyCell = styled.div`
   align-items: center;
   padding: 0 10px;
   height: 100%;
+  /* base (medium) height */
   height: 3.4em;
+  &[data-size='small'] { height: 2.6em; }
+  &[data-size='large'] { height: 4.6em; }
   position: ${props => props.fixed ? 'sticky' : 'relative'};
   ${props => props.fixed === 'left' && `
     left: 0;

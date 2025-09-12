@@ -1,7 +1,6 @@
 {
   "projects": {
-    "default": "ventamaxpos",
-    "ventamaxpos": "ventamaxpos"
+    "default": "ventamaxpos"
   },
   "targets": {
     "ventamaxpos": {

@@ -117,7 +117,6 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
                                 borderRadius='normal'
                             />
                             <AddProductButton />
-                            <InventoryFilterAndSort />
                         </ButtonGroup>
                         <ImportModal
                             open={importDialogOpen}
@@ -129,6 +128,15 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
                             visible={showProgress}
                             progress={importProgress}
                         />
+                    </Fragment>
+                )}
+                {side === 'left' && (
+                    <Fragment>
+                        <ButtonGroup>
+                   
+                            <InventoryFilterAndSort />
+                        </ButtonGroup>
+                  
                     </Fragment>
                 )}
             </Container>

@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
-import { SelectProduct } from "../../../../../../features/cart/cartSlice";
+import { SelectProduct, SelectSettingCart } from "../../../../../../features/cart/cartSlice";
 import { useEffect, useMemo } from "react";
-import { isStockExceeded, isStockLow, isStockRestricted, isStockZero } from "../utils/stock.utils";
+import { isStockExceeded, isStockRestricted, isStockZero } from "../utils/stock.utils";
 
 /**
  * Hook personalizado para verificar si un producto está en el carrito
@@ -41,21 +41,40 @@ export const useProductInCart = (productId) => {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useProductStockStatus = (productInCart, originalProduct) => {
+    // Read dynamic stock alert settings
+    const settingsCart = useSelector(SelectSettingCart);
+    const billing = settingsCart?.billing || {};
+    const lowThreshold = useMemo(() => (
+        Number.isFinite(billing?.stockLowThreshold) ? billing.stockLowThreshold : 20
+    ), [billing?.stockLowThreshold]);
+    const criticalThreshold = useMemo(() => (
+        Number.isFinite(billing?.stockCriticalThreshold)
+            ? billing.stockCriticalThreshold
+            : Math.min(lowThreshold, 10)
+    ), [billing?.stockCriticalThreshold, lowThreshold]);
 
     if (!productInCart && !originalProduct) {
-        return { isLowStock: false, isOutOfStock: false };
+        return { isLowStock: false, isCriticalStock: false, isOutOfStock: false };
     }
 
     const productToCheck = productInCart ?? originalProduct;
     const inCart = Boolean(productInCart);
 
-    const isLowStock = useMemo(() => {
+    const remaining = (productToCheck?.stock ?? 0) - (productToCheck?.amountToBuy ?? 0);
+
+    const criticalStock = useMemo(() => {
         if (!isStockRestricted(productToCheck)) return false;
-        return isStockLow(productToCheck);
-    }, [productToCheck]);
+        return remaining > 0 && remaining <= criticalThreshold;
+    }, [productToCheck, remaining, criticalThreshold]);
+
+    const lowStock = useMemo(() => {
+        if (!isStockRestricted(productToCheck)) return false;
+        // Low stock excludes critical range
+        return remaining > criticalThreshold && remaining <= lowThreshold;
+    }, [productToCheck, remaining, lowThreshold, criticalThreshold]);
 
     // Verifica si el producto está fuera de stock o si el carrito supera el stock disponible
-    const isOutOfStock = useMemo(() => {
+    const outOfStock = useMemo(() => {
         if (!isStockRestricted(productToCheck)) return false;
         return (
             isStockExceeded(inCart, productToCheck) ||
@@ -63,5 +82,5 @@ export const useProductStockStatus = (productInCart, originalProduct) => {
         );
     }, [productToCheck, inCart]);
 
-    return { isLowStock, isOutOfStock };
+    return { isLowStock: lowStock, isCriticalStock: criticalStock, isOutOfStock: outOfStock };
 };

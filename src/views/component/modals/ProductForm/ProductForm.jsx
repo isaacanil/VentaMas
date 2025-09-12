@@ -14,18 +14,18 @@ export const ProductForm = ({ showImageManager }) => {
             label: 'General',
             children: <General showImageManager={showImageManager} />
         },
-        {
-            key: '2',
-            label: 'Lote',
-            disabled: status === "create",
-            children: <BatchList/>
-        },
-        {
-            key: '3',
-            label: 'Unidades de Venta', // Nuevo label para la tercera pestaña
-            disabled: status === "create",
-            children: <SaleUnitsConfig />
-        },
+        // {
+        //     key: '2',
+        //     label: 'Lote',
+        //     disabled: status === "create",
+        //     children: <BatchList/>
+        // },
+        // {
+        //     key: '3',
+        //     label: 'Unidades de Venta', // Nuevo label para la tercera pestaña
+        //     disabled: status === "create",
+        //     children: <SaleUnitsConfig />
+        // },
     ]
     return (
         <Tabs

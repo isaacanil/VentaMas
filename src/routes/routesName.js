@@ -21,6 +21,9 @@ const DEV_VIEW_TERM = {
     CREATE_BUSINESS: '/dev/business/create',
     BUSINESSES: '/dev/businesses',
     ALL_USERS: '/all-users',
+    PRUEBA: '/prueba',
+    INVENTORY_MIGRATION: '/dev/tools/inventory-migration',
+    SYNC_DIAGNOSTICS: '/dev/tools/sync-diagnostics',
     CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
     CHANGELOG_MANAGE: CHANGELOG_TERM.CHANGELOG_MANAGE,
     APP_CONFIG: {
@@ -58,6 +61,7 @@ const INVENTORY_TERM = {
     CREATE_PRODUCT: `${INVENTORY_BASE_PATH}/create-product`,
     PRODUCT: `${INVENTORY_BASE_PATH}/product/:productId`,
     INVENTORY_ITEMS: '/inventory/items',
+    INVENTORY_SUMMARY: '/inventory/summary',
     INVENTORY_CONTROL: '/inventory/control',
     INVENTORY_CONTROL_SESSION: '/inventory/control/:sessionId',
     CATEGORIES: '/inventory/categories',
@@ -74,6 +78,7 @@ const INVENTORY_TERM = {
     PRODUCT_IMAGES_MANAGER: '/inventory/product-images-manager',
     PRODUCT_OUTFLOW: '/inventory/product_outflow',
     SERVICE_OUTFLOW: '/inventory/service_outflow',
+    INVENTORY_MOVEMENTS: '/inventory/movements',
 }
 const CONTACT_TERM = {
     CLIENTS: '/contact',

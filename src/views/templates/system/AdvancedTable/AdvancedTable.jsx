@@ -54,6 +54,9 @@ export const AdvancedTable = memo(({
   groupBy,
   numberOfElementsPerPage = 30,
   loading = false,
+  // UI sizing
+  rowSize = 'medium', // 'small' | 'medium' | 'large'
+  rowBorder, // undefined (no border, backward compatible) | true (default style) | string CSS border value
 
   // Custom UI hooks
   headerComponent,
@@ -79,6 +82,9 @@ export const AdvancedTable = memo(({
   emptyText = 'No hay datos para mostrar',
   onRowClick,
   title,
+  // Scroll events (optional)
+  onScroll,
+  onScrollMetrics,
 
   // Expandable rows (optional)
   expandedRowRender, // function(row) => ReactNode
@@ -152,6 +158,43 @@ export const AdvancedTable = memo(({
   const isWideScreen = useWindowWidth(1366);
   const isWideLayout = useWideLayout();
 
+  const handleWrapperScroll = useMemo(() => {
+    return (e) => {
+      try { typeof onScroll === 'function' && onScroll(e); } catch {}
+      if (typeof onScrollMetrics === 'function') {
+        const el = e.currentTarget;
+        const scrollTop = el.scrollTop || 0;
+        const scrollHeight = el.scrollHeight || 0;
+        const clientHeight = el.clientHeight || 0;
+        const isAtTop = scrollTop <= 0;
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 8; // threshold 8px
+        try { onScrollMetrics({ scrollTop, scrollHeight, clientHeight, isAtTop, isAtBottom }); } catch {}
+      }
+    }
+  }, [onScroll, onScrollMetrics]);
+
+  // Emit initial metrics after mount
+  useEffect(() => {
+    if (typeof onScrollMetrics !== 'function') return;
+    const el = wrapperRef.current;
+    if (!el) return;
+    const emit = () => {
+      const scrollTop = el.scrollTop || 0;
+      const scrollHeight = el.scrollHeight || 0;
+      const clientHeight = el.clientHeight || 0;
+      const isAtTop = scrollTop <= 0;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 8;
+      try { onScrollMetrics({ scrollTop, scrollHeight, clientHeight, isAtTop, isAtBottom }); } catch {}
+    };
+    emit();
+    // On resize of container
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => emit());
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+  }, [onScrollMetrics]);
+
   return (
     <Container
       headerComponent={filterUI || headerComponent}
@@ -189,6 +232,7 @@ export const AdvancedTable = memo(({
         <Wrapper
           ref={wrapperRef}
           isWideScreen={isWideScreen}
+          onScroll={handleWrapperScroll}
         >
           <TableHeader
             columnOrder={columnOrder}
@@ -196,6 +240,7 @@ export const AdvancedTable = memo(({
             sortConfig={sortConfig}
             isWideScreen={isWideScreen}
             isWideLayout={isWideLayout}
+            rowSize={rowSize}
           />
           <TableBody
             columnOrder={columnOrder}
@@ -210,6 +255,8 @@ export const AdvancedTable = memo(({
             expandedRowRender={expandedRowRender}
             rowExpandable={rowExpandable}
             getRowId={getRowId}
+            rowSize={rowSize}
+            rowBorder={rowBorder}
           />
         </Wrapper>
         <TableFooter
@@ -357,6 +404,10 @@ export const Row = styled.div`
   position: relative;
   min-width: fit-content;
   width: 100%;
+  &[data-border='on'] {
+  /* Lighter default (menos opaco) using semi-transparent fallback */
+  border-bottom: 1px solid var(--row-border-color, rgba(0,0,0,0.07));
+  }
 `;
 
 

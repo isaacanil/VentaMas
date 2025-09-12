@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { ClientControl } from '../contact/ClientControl/ClienteControl'
 import {
   SelectCartIsOpen,

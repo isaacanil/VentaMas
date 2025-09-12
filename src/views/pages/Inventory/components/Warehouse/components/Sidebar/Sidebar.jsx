@@ -30,9 +30,10 @@ import { useLocation } from 'react-router-dom';
 import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
 
 const SidebarContainer = styled.div`
-  padding: 10px;
+  padding: 10px 0em;
   display: grid;
   height: 100%;
+  border-right: 1px solid #eee;
 `;
 
 // Function to get level actions (no change needed here)
@@ -114,10 +115,7 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
 
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
   const { WAREHOUSE, SHELF, ROW, SEGMENT, PRODUCT_STOCK } = ROUTES_PATH.INVENTORY_TERM
-
-    // State to control which tree is displayed
     const [displayProducts, setDisplayProducts] = useState(false);
-
 
   const handleWarehouseNodeClick = (node, level) => {
       const path = findPathToNode(items, node.id);

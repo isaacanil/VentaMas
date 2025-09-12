@@ -20,9 +20,9 @@ const StatusBadge = styled.div`
   align-self: center;
   text-transform: capitalize;
   font-weight: 500;
-  background: ${props => props.status === 'pending' ? '#fff7e6' : '#e6f7ff'};
-  color: ${props => props.status === 'pending' ? '#d46b08' : '#096dd9'};
-  border: 1px solid ${props => props.status === 'pending' ? '#ffd591' : '#91d5ff'};
+  background: ${props => props.status === 'pending' ? '#fff7e6' : props.status === 'reserved' ? '#e6f7ff' : '#f5f5f5'};
+  color: ${props => props.status === 'pending' ? '#d46b08' : props.status === 'reserved' ? '#096dd9' : '#595959'};
+  border: 1px solid ${props => props.status === 'pending' ? '#ffd591' : props.status === 'reserved' ? '#91d5ff' : '#d9d9d9'};
 `;
 
 const InfoContainer = styled.div`
@@ -52,7 +52,7 @@ const BackorderCard = ({ item, index }) => {
       transition={{ duration: 0.15, delay: index * 0.02 }}
     >
       <StatusBadge status={item.status}>
-        {item.status === 'pending' ? 'Pendiente' : 'En proceso'}
+        {item.status === 'pending' ? 'Pendiente' : item.status === 'reserved' ? 'Reservado' : item.status}
       </StatusBadge>
       
       <InfoContainer>
@@ -60,7 +60,7 @@ const BackorderCard = ({ item, index }) => {
           {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Time>
         <Quantity>
-          {item.pendingQuantity} unidades
+          {item.pendingQuantity}/{item.initialQuantity} unidades
         </Quantity>
       </InfoContainer>
     </Card>

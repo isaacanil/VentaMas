@@ -1,14 +1,12 @@
-import { Button } from '../system/Button/Button'
 import React from 'react'
 import styled from 'styled-components'
 import { auth } from '../../../firebase/firebaseconfig'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout, selectUser } from '../../../features/auth/userSlice'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRightFromBracket, faUser } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons'
 import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
 import { useNavigate } from 'react-router-dom'
-import { icons } from '../../../constants/icons/icons'
 import { useDialog } from '../../../Context/Dialog/DialogContext'
 import { selectBusinessData } from '../../../features/auth/businessSlice'
 import * as antd from 'antd'
@@ -44,27 +42,36 @@ export const UserSection = () => {
     return user?.displayName && user.displayName.trim() !== '' ? user.displayName : user?.username
   }
 
+  const getInitial = (name) => {
+    const n = (name || '').trim()
+    return n ? n.charAt(0).toUpperCase() : 'U'
+  }
+
   return (
-    <Container>
-      <UserInfo>
-        <Avatar>
-          <Icon>
-            <FontAwesomeIcon icon={faUser} />
-          </Icon>
-          <Username>{<span>{getDisplayName(user)} </span>}</Username>
-        </Avatar>
-        <Action>
-          <Button
-            startIcon={icons.operationModes.logout}
-            color={'gray-contained'}
-            title={'Salir'}
-            size="medium"
-            borderRadius='normal'
-            onClick={logoutOfApp}
-          />
-        </Action>
-      </UserInfo>
-      <Business color='blue'>{user === null ? null : <span>{business?.name} </span>}</Business>
+    <Container role="group" aria-label="Usuario">
+      <Left>
+        <AvatarCircle aria-hidden>
+          {getInitial(getDisplayName(user) || user?.email || 'Usuario')}
+        </AvatarCircle>
+        <Info>
+          <Username title={getDisplayName(user) || 'Usuario'}>
+            {getDisplayName(user) || 'Usuario'}
+          </Username>
+          <BusinessPill color="blue">
+            <span>{business?.name || 'Negocio'}</span>
+          </BusinessPill>
+        </Info>
+      </Left>
+      <Action>
+        <IconButton
+          type="button"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          onClick={logoutOfApp}
+        >
+          <FontAwesomeIcon icon={faArrowRightFromBracket} />
+        </IconButton>
+      </Action>
     </Container>
   )
 }
@@ -72,62 +79,103 @@ export const UserSection = () => {
 
 
 const Container = styled.div`
-
-  display: grid;
-  gap: 0.6em;
-    padding: 0.8em 1em;
-    overflow: hidden;
-  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8em;
+  padding: 0.8em 1em;
+  border-radius: var(--border-radius);
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 `
-const Icon = styled.div`
-  background-color: var(--color2);
-  max-height: 2em; 
-  max-width: 2em;
-  height: 2em; 
-  width: 2em;
+
+const Left = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  min-width: 0; /* enable text truncation */
+`
+
+const Info = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  min-width: 0;
+`
+
+const Username = styled.div`
+  font-weight: 600;
+  color: #1f1f1f;
+  text-transform: capitalize;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`
+
+const AvatarCircle = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--border-radius-light);
-  color: #555555;
-
-`
-
-const UserInfo = styled.div`
- display: flex;
- gap: 0.4em;
- justify-content: space-between;
-`
-const Username = styled.div`
   font-weight: 600;
-  color: #636262;
-  text-transform: capitalize;
+  color: #ffffff;
+  background: linear-gradient(135deg, #7C4DFF 0%, #8E2DE2 100%);
+  flex: none;
+  user-select: none;
 `
-const Avatar = styled.div` 
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
 
-`
-const Business = styled(Tag)`  
-white-space: nowrap;
-width: 100%;
-overflow: hidden;
-text-overflow: ellipsis;
-font-size: 14px;
-padding: 0.4em 0.8em;
-border-radius: var(--border-radius);
-  
+const BusinessPill = styled(Tag)`
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  align-self: flex-start;
+
   span {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 `
+
 const Action = styled.div`
   display: flex;
   align-items: center;
-  gap: 1em;
-  
   justify-content: center;
+`
+
+const IconButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #e8e8e8;
+  background: #ffffff;
+  color: #595959;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    background: #f5f5f5;
+    color: #262626;
+  }
+
+  &:active {
+    transform: translateY(0.5px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #7C4DFF;
+    outline-offset: 2px;
+  }
 `

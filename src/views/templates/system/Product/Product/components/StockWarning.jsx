@@ -18,6 +18,9 @@ const WarningWrapper = styled.div`
         return isSelected
           ? 'linear-gradient(180deg, rgba(239, 83, 80, 0), #ef5350 50%)'
           : 'linear-gradient(180deg, rgba(158, 158, 158, 0), #9e9e9e 50%)';
+      case 'criticalStock':
+        // Stronger orange/red gradient for critical
+        return 'linear-gradient(180deg, rgba(255, 112, 67, 0), #ff7043 50%)';
       case 'lowStock':
         return 'linear-gradient(180deg, rgba(251, 140, 0, 0), #fb8c00 50%)';
       default:
@@ -37,8 +40,8 @@ const WarningWrapper = styled.div`
  * @param {'top'|'bottom'} position  - Posición de la etiqueta
  * @param {boolean} isSelected - Estado de selección (cambia degradado)
  * @param {boolean} show       - Control de visibilidad
- * @param {'outOfStock'|'lowStock'} variant - Tipo de advertencia
- */
+ * @param {'outOfStock'|'lowStock'|'criticalStock'} variant - Tipo de advertencia
+*/
 export const StockWarning = ({ message, position = 'top', isSelected = false, show = false, variant = 'outOfStock' }) => {
   if (!show) return null;
   return (

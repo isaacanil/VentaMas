@@ -35,7 +35,7 @@ export const SubMenu = ({ isOpen, item, MenuItemsLink, showSubMenu }) => {
                                 {/* <GroupTitle>{group}</GroupTitle>  */}
                                 <MenuLinkList>
                                     {groupedSubmenus[group].map((submenu, index) => (
-                                        <MenuLink item={submenu} key={index}></MenuLink>
+                                        <MenuLink item={submenu} key={index} onActionDone={showSubMenu} />
                                     ))}
                                 </MenuLinkList>
                             </Group>

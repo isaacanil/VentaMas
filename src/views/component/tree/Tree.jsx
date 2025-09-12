@@ -2,7 +2,6 @@ import React, { useMemo, useCallback, memo } from "react";
 import styled from "styled-components";
 import { traverse } from "./utils/traverseUtils";
 import { defaultFilterNodes } from "./utils/filterUtils";
-import { expandMatchingNodes } from "./utils/expandUtils";
 import TreeHeader from "./components/TreeHeader";
 import TreeContent from "./components/TreeContent";
 import TreeNode from "./components/TreeNode";
@@ -13,24 +12,29 @@ import useSelectedNode from "./hooks/useSelectedNode";
 import { findPathToNode } from "./utils/nodeUtils";
 
 const Container = styled.div`
-  font-family: Arial, sans-serif;
   height: 100%;
   display: grid;
   grid-template-rows: min-content 1fr;
-  resize: horizontal;
   overflow: hidden;
   min-width: 250px;
   max-width: 400px;
-  padding: 8px; 
+  padding: 8px;
+`;
+
+const InfoMessage = styled.div`
+  padding: 8px 16px;
+  color: #666;
+  font-size: 0.9em;
+  text-align: center;
 `;
 
 const Tree = memo(({ data = [], config = {}, selectedId }) => {
   // Establecer valores por defecto para la configuración
-  const defaultConfig = {
+  const resolvedConfig = useMemo(() => ({
     showAllOnSearch: true,
     initialVisibleCount: undefined,
-    ...config
-  };
+    ...config,
+  }), [config]);
 
   const {
     expandedNodes,
@@ -52,26 +56,32 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
     setSelectedNode(node.id);
   }, [setSelectedNode]);
 
-  const filteredData = useMemo(() => 
-    (defaultConfig.filterNodes || defaultFilterNodes)(data, searchTerm, defaultConfig),
-    [data, searchTerm, defaultConfig]
+  const filteredData = useMemo(() =>
+    (resolvedConfig.filterNodes || defaultFilterNodes)(data, searchTerm, resolvedConfig),
+    [data, searchTerm, resolvedConfig]
   );
 
   const visibleData = useMemo(() => {
-    const filtered = (defaultConfig.filterNodes || defaultFilterNodes)(data, searchTerm, defaultConfig);
-    
-    // Si hay término de búsqueda, siempre mostrar todos (por defecto)
-    if (searchTerm) {
-      return filtered;
+    if (searchTerm) return filteredData;
+    if (!searchTerm && resolvedConfig.initialVisibleCount) {
+      return filteredData.slice(0, resolvedConfig.initialVisibleCount);
     }
-    
-    // Solo aplicar límite inicial si está configurado
-    if (!searchTerm && defaultConfig.initialVisibleCount) {
-      return filtered.slice(0, defaultConfig.initialVisibleCount);
-    }
-    
-    return filtered;
-  }, [data, searchTerm, defaultConfig]);
+    return filteredData;
+  }, [filteredData, searchTerm, resolvedConfig]);
+
+  // Precalcular mapa de path por id para evitar recomputes costosos
+  const idToPath = useMemo(() => {
+    const map = new Map();
+    const dfs = (nodes, acc = []) => {
+      nodes?.forEach(n => {
+        const current = [...acc, n.id];
+        map.set(n.id, current);
+        if (n.children?.length) dfs(n.children, current);
+      });
+    };
+    dfs(data, []);
+    return map;
+  }, [data]);
 
   return (
     <Container>
@@ -79,10 +89,11 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
         handleToggleAll={handleToggleAll}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
+        allExpanded={Object.keys(manualExpandedNodes || {}).length > 0}
       />
       <TreeContent filteredData={filteredData} selectedId={selectedId}>
         {visibleData.map((node) => {
-          const path = findPathToNode(data, node.id);
+          const path = idToPath.get(node.id) || findPathToNode(data, node.id) || [node.id];
           return (
             <TreeNode
               key={node.id}
@@ -93,7 +104,7 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
               searchTerm={searchTerm}
               selectedNode={selectedNode}
               setSelectedNode={setSelectedNode}
-              config={defaultConfig}
+              config={resolvedConfig}
               traverse={traverse}
               renderHighlightedText={renderHighlightedText}
               path={path}
@@ -102,16 +113,10 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
             />
           );
         })}
-        {!searchTerm && defaultConfig.initialVisibleCount && filteredData.length > defaultConfig.initialVisibleCount && (
-          <div style={{ 
-            padding: '8px 16px', 
-            color: '#666', 
-            fontSize: '0.9em',
-            textAlign: 'center' 
-          }}>
-            Mostrando {defaultConfig.initialVisibleCount} de {filteredData.length} elementos.
-            Use la búsqueda para ver más.
-          </div>
+        {!searchTerm && resolvedConfig.initialVisibleCount && filteredData.length > resolvedConfig.initialVisibleCount && (
+          <InfoMessage>
+            Mostrando {resolvedConfig.initialVisibleCount} de {filteredData.length} elementos. Use la búsqueda para ver más.
+          </InfoMessage>
         )}
       </TreeContent>
     </Container>

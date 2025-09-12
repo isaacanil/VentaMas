@@ -2,14 +2,14 @@
 import React from 'react'
 import styled from 'styled-components';
 
-export const SidebarItem = ({item}) => {
+export const SidebarItem = ({ item, isActive, onClick }) => {
   return (
-    <Container>   
+    <Container onClick={onClick} isActive={isActive}>
       <Icon>
-            {item.icon}
+        {item.icon}
       </Icon>
       <Label>
-            {item.label}
+        {item.label}
       </Label>
     </Container>
   )
@@ -19,12 +19,14 @@ const Container = styled.li`
   gap: 0.2em;
   align-items: center;
   justify-content: center;
-
+  padding: 0.6em 0.4em;
+  border-radius: 8px;
   width: 100%;
   color: ${({ isActive }) => (isActive ? '#fff' : '#333')};
   background-color: ${({ isActive }) =>
         isActive ? '#1E90FF' : 'transparent'};
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover {
     background-color: ${({ isActive }) =>
