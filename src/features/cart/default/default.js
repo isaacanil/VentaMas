@@ -91,7 +91,8 @@ const initialState = {
         totalInsurance: {
             value: 0
         },
-        invoiceComment: ''
+        invoiceComment: '',
+        creditNotePayment: []
     },
 }
 /*los estados pueden ser:

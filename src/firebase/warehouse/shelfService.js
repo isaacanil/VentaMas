@@ -28,7 +28,7 @@ const getShelfCollectionRef = (businessId) => {
 // Crear un nuevo estante
 const createShelf = async (user, warehouseId, data) => {
     const id = nanoid();
-    console.log('data', data);
+
     try {
         const shelfCollectionRef = getShelfCollectionRef(user.businessID);
         const shelfDocRef = doc(shelfCollectionRef, id);

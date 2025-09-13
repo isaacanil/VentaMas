@@ -40,7 +40,7 @@ export async function fbRegisterNcfUsage(user, ncfCode, ncfType, client = null, 
         const ncfUsageRef = doc(db, `businesses/${user.businessID}/ncfUsage/${ncfUsageData.id}`);
         await setDoc(ncfUsageRef, ncfUsageData);
 
-        console.log(`NCF Usage registrado exitosamente: ${ncfCode} - ID: ${ncfUsageData.id}`);
+        console.info(`NCF Usage registered successfully: ${ncfCode}`);
         return ncfUsageData.id;
 
     } catch (error) {
@@ -85,7 +85,7 @@ export async function fbUpdateNcfUsageStatus(user, ncfCode, newStatus, invoiceId
         };
 
         await updateDoc(docRef, updateData);
-        console.log(`NCF Usage actualizado exitosamente: ${ncfCode} -> ${newStatus}`);
+        console.info(`NCF Usage updated successfully: ${ncfCode}`);
         return true;
 
     } catch (error) {

@@ -1,24 +1,58 @@
 
-import { getDiscount, money } from "../utils/formatters.js";
+import { getDiscount, money, getProductsIndividualDiscounts, hasIndividualDiscounts } from "../utils/formatters.js";
 
-export function buildFooter(d) {
-  return (current, total) => ({
-    margin: [40, 0, 40, 0],
-    columns: [
-      { width: '*', text: '' },
-      {
-        width: 'auto',
-        table: {
-          body: [
-            ['Sub-Total:', { text: money(d.totalPurchaseWithoutTaxes.value), style: 'totalsValue' }],
-            ['ITBIS:', { text: money(d.totalTaxes.value), style: 'totalsValue' }],
-            d.discount?.value && ['Descuento:', { text: `-${money(getDiscount(d))}`, style: 'totalsValue' }],
-            d.delivery?.status && ['Delivery:', { text: money(d.delivery.value), style: 'totalsValue' }],
-            [{ text: 'Total:', style: 'totalsLabel' }, { text: money(d.totalPurchase.value), style: 'totalsValue' }]
-          ].filter(Boolean)
+/* Mapeo a texto de los métodos de pago */
+const PAYMENT_METHODS = {
+  cash:     'Efectivo',
+  transfer: 'Transferencia',
+  card:     'Tarjeta',
+  creditNote: 'Nota de Crédito'
+};
+
+export function buildFooter(biz, d) {
+  return (current, total) => {
+    /* Calcular descuentos */
+    const individualDiscounts = getProductsIndividualDiscounts(d.products || []);
+    const hasIndividualDisc = hasIndividualDiscounts(d.products || []);
+    const generalDiscount = hasIndividualDisc ? 0 : getDiscount(d);
+
+    /* Tabla de totales */
+    const totalsBody = [
+      ['Sub-Total:', { text: money(d.totalPurchaseWithoutTaxes.value), style: 'totalsValue', margin: [0, 0] }],
+      ['ITBIS:',     { text: money(d.totalTaxes.value),                style: 'totalsValue', margin: [0, 0] }],
+      !hasIndividualDisc && d.discount?.value && [
+        'Descuento General:', { text: `-${money(generalDiscount)}`, style: 'totalsValue', margin: [0, 0] }
+      ],
+      hasIndividualDisc && [
+        'Descuentos Productos:', { text: `-${money(individualDiscounts)}`, style: 'totalsValue', margin: [0, 0] }
+      ],
+      d.delivery?.status && [
+        'Delivery:', { text: money(d.delivery.value), style: 'totalsValue', margin: [0, 0] }
+      ],
+      [
+        { text: 'Total:', bold: true, margin: [0, 4, 0, 2] },
+        { text: money(d.totalPurchase.value), style: 'totalsValue', bold: true, margin: [0, 4, 0, 2] }
+      ]
+    ].filter(Boolean);
+
+    return {
+      margin: [32, 0, 32, 0],
+      stack: [
+        {
+          columnGap: 25,
+          columns: [
+            { width: '*', text: '' }, // Columna vacía
+            { width: '*', text: '' }, // Columna vacía donde estaría la firma
+            {
+              width: '*',
+              margin: [0, 2, 0, 0],
+              table: { widths: ['*', '*'], body: totalsBody },
+              layout: 'noBorders'
+            }
+          ]
         },
-        layout: 'noBorders'
-      }
-    ]
-  })
+        ...(d.invoiceComment ? [{ text: d.invoiceComment, margin: [0, 8, 0, 0] }] : [])
+      ]
+    };
+  };
 }

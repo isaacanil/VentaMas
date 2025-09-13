@@ -1,10 +1,10 @@
 import * as antd from "antd";
 import { useEffect, useRef, useState } from "react";
-import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
+import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption, setCreditNotePayment } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-import { ShowcaseList } from "../../../templates/system/Showcase/ShowcaseList";
-import { Modal, modalStyles } from "../../cart/components/InvoicePanel/InvoicePanel";
+import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
+import { Modal, modalStyles } from "../../Cart/components/InvoicePanel/InvoicePanel";
 import { PaymentFields } from "./components/PaymentFields";
 import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
 import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
@@ -12,6 +12,7 @@ import { selectUser } from "../../../../features/auth/userSlice";
 import { selectClient } from "../../../../features/clientCart/clientCartSlice";
 import { AccountsReceivablePaymentReceipt } from "../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt";
 import { useReactToPrint } from "react-to-print";
+import CreditSelector from "../../Cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
 
 const { Form, Checkbox, Input, Select, Button, Radio, notification } = antd;
 const { Option } = Select;
@@ -24,11 +25,14 @@ export const PaymentForm = () => {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [receipt, setReceipt] = useState(null);
+    const client = useSelector(selectClient);
 
     const {
         isOpen,
         paymentDetails,
     } = useSelector(selectAccountsReceivablePayment);
+
+    const selectedCreditNotes = paymentDetails.creditNotePayment || [];
 
     useEffect(() => {
         if (isOpen && paymentDetails.arId) {
@@ -44,70 +48,29 @@ export const PaymentForm = () => {
 
     const handlePaymentConceptChange = (value) => dispatch(setPaymentOption({ paymentOption: value }));
 
-    const handleAmountChange = (changedValues, allValues) => {
-        const { paymentMethods } = paymentDetails; // Obtener paymentMethods del estado
-        const cashMethod = allValues['cash']
-        const updatedPaymentMethods = paymentMethods.map(paymentMethod => {
-            // Verificar si el método de pago es 'cash'
-            const isCash = paymentMethod.method === 'cash';
+    // Calculamos el change automáticamente
+    const change = (paymentDetails.totalPaid || 0) - paymentDetails.totalAmount;
 
-            // Obtener el valor del método de pago del objeto allValues
-            const paymentValue = Number(allValues[paymentMethod.method]) || 0;
-
-            // Obtener la referencia del método de pago del objeto allValues, si no es 'cash'
-            let reference;
-            if (!isCash) {
-                reference = allValues[`${paymentMethod.method}Reference`] || paymentMethod.reference;
-            }
-
-            // Obtener el estado del método de pago del objeto allValues
-            const status = typeof allValues[paymentMethod.method] === 'boolean' ?
-                allValues[paymentMethod.method] :
-                paymentMethod.status;
-
-            // Crear un nuevo objeto actualizado con los valores calculados
-            const updatedMethod = {
-                ...paymentMethod,  // Mantener todas las propiedades originales del método de pago
-                value: paymentValue,  // Establecer el valor del método de pago
-                ...(reference && { reference }),  // Incluir la referencia si existe y no es 'cash'
-                status: status  // Establecer el estado del método de pago
-            };
-
-            return updatedMethod;
-        });
-
-
-        const totalPaid = updatedPaymentMethods.reduce((total, pm) => {
-            if (pm.status) {
-                return total + (Number(pm.value) || 0);
-            }
-            return total;
-        }, 0);
-
-        dispatch(setPaymentDetails({
-            paymentMethods: updatedPaymentMethods,
-            totalPaid
-        }));
+    const handleCreditNoteSelect = (creditNoteSelections) => {
+        dispatch(setCreditNotePayment(creditNoteSelections));
     };
 
     const validate = () => {
         if (paymentDetails.totalAmount <= 0) {
             throw new Error('El monto total debe ser mayor a cero.');
         }
-        if (paymentDetails.paymentOptions === "balance" || paymentDetails.paymentOptions === "installment") {
-            if (paymentDetails.totalPaid < paymentDetails.totalAmount) {
-                throw new Error('Debe de pagar el monto total');
-            }
+        // Si es pago de cuota específica ('installment') se debe cubrir el monto completo
+        if (paymentDetails.paymentOption === "installment" && paymentDetails.totalPaid < paymentDetails.totalAmount) {
+            throw new Error('Debe de pagar el monto total de la cuota seleccionada.');
         }
 
-        // Validar métodos de pago
         const activeMethods = paymentDetails.paymentMethods.filter(method => method.status);
         if (activeMethods.length === 0) {
             throw new Error('Debe seleccionar al menos un método de pago.');
         }
 
         for (const method of activeMethods) {
-            if (method.method !== 'cash' && !method.reference) {
+            if (method.method !== 'cash' && method.method !== 'creditNote' && !method.reference) {
                 throw new Error(`El método de pago ${method.method} requiere una referencia.`);
             }
             if (method.value <= 0) {
@@ -115,7 +78,6 @@ export const PaymentForm = () => {
             }
         }
 
-        // Validar longitud de comentarios
         if (paymentDetails.comments.length > 500) {
             throw new Error('Los comentarios no pueden exceder los 500 caracteres.');
         }
@@ -156,7 +118,7 @@ export const PaymentForm = () => {
         } catch (error) {
             setSubmitted(false)
             if (error.name === 'ValidationError') {
-                console.log('Validate Failed:', error);
+                console.error('Payment form validation failed:', error);
             } else {
                 antd.notification.error({
                     message: 'Error al procesar el pago',
@@ -169,7 +131,6 @@ export const PaymentForm = () => {
     };
 
     const paymentOptions = Object.values(PAYMENT_OPTIONS);
-    const change = (paymentDetails.totalPaid || 0) - paymentDetails.totalAmount
 
     return (
         <Modal
@@ -195,7 +156,6 @@ export const PaymentForm = () => {
                     paymentConcept: paymentDetails?.paymentScope,
                     totalAmountDue: paymentDetails?.totalAmountDue
                 }}
-                onValuesChange={handleAmountChange}
             >
                 <FormWrapper>
                     {
@@ -239,9 +199,18 @@ export const PaymentForm = () => {
                         )
                     }
 
-                    <PaymentFields
-                        handleAmountChange={handleAmountChange}
-                    />
+                    <PaymentFields />
+
+                    {/* Selector de notas de crédito */}
+                    {client?.id && client.id !== 'GC-0000' && (
+                        <CreditSelector
+                            clientId={client.id}
+                            onCreditNoteSelect={handleCreditNoteSelect}
+                            selectedCreditNotes={selectedCreditNotes}
+                            totalPurchase={paymentDetails.totalAmount}
+                            paymentMethods={paymentDetails.paymentMethods}
+                        />
+                    )}
                     
                     <ShowcaseList
                         showcases={[

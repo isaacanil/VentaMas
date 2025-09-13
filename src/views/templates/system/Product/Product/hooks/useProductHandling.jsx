@@ -1,11 +1,12 @@
 import { useRef, useState, useMemo, useCallback } from "react"; 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { notification } from 'antd'; 
 import { addProduct, deleteProduct } from '../../../../../../features/cart/cartSlice'; 
 import { openProductStockSimple } from '../../../../../../features/productStock/productStockSimpleSlice'; 
 import { useProductStockCheck } from '../../../../../../hooks/useProductStockCheck'; 
 import { getTotalPrice } from '../../../../../../utils/pricing'; 
 import { useProductInCart, useProductStockStatus } from "./useProductCartAndStock";
+import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
 export const useProductHandling = (product, taxReceiptEnabled) => {
   const dispatch = useDispatch();
   const [productState, setProductState] = useState({
@@ -21,37 +22,47 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
   const noStockReminderShownRef = useRef(false);
 
   const { status: isProductInCart, product: productInCart } = useProductInCart(product.id);
-  const { isLowStock, isOutOfStock } = useProductStockStatus(productInCart, product);
+  const { isLowStock, isCriticalStock, isOutOfStock } = useProductStockStatus(productInCart, product);
   const { checkProductStock } = useProductStockCheck();
+
+  // Dynamic billing settings for stock alerts
+  const settingsCart = useSelector(SelectSettingCart) || {};
+  const billing = settingsCart.billing || {};
+  const alertsEnabled = !!billing.stockAlertsEnabled;
+  const lowThreshold = Number.isFinite(billing.stockLowThreshold) ? billing.stockLowThreshold : 20;
+  const criticalThreshold = Number.isFinite(billing.stockCriticalThreshold)
+    ? billing.stockCriticalThreshold
+    : Math.min(lowThreshold, 10);
 
   const price = useMemo(() => getTotalPrice(product, taxReceiptEnabled), [product, taxReceiptEnabled]);
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(false);
 
   const handleGetThisProduct = useCallback(async () => {
     try {
+
       setIsFirebaseLoading(true);
       if (isOutOfStock) {
-        notification.warning({
-          message: 'Alerta de Stock Agotado',
-          description: `El stock de ${product.name} está agotado`,
-        });
+        if (alertsEnabled) {
+          notification.warning({
+            message: 'Alerta de Stock Agotado',
+            description: `El stock de ${product.name} está agotado`,
+          });
+        }
         return;
       }
-      // Show low-stock notification only once when not already selected
-      if (isLowStock && !isProductInCart && !lowStockWarningShownRef.current) {
-        notification.warning({
-          message: 'Alerta de Stock Bajo',
-          description: `El stock de ${product.name} está por debajo de 20 unidades`,
-        });
-        lowStockWarningShownRef.current = true;
-      }
-      // Additionally, warn when stock reaches 5 units (only once)
-      if (product.stock === 5 && !criticalStockWarningShownRef.current) {
+      // Critical stock notification has priority over low stock
+      if (alertsEnabled && isCriticalStock && !criticalStockWarningShownRef.current) {
         notification.info({
           message: 'Stock Crítico',
-          description: `Solo quedan 5 unidades de ${product.name}`,
+          description: `Stock crítico de ${product.name}`,
         });
         criticalStockWarningShownRef.current = true;
+      } else if (alertsEnabled && isLowStock && !isProductInCart && !lowStockWarningShownRef.current) {
+        notification.warning({
+          message: 'Alerta de Stock Bajo',
+          description: `El stock de ${product.name} está por debajo de ${lowThreshold} unidades`,
+        });
+        lowStockWarningShownRef.current = true;
       }
       // NEW: Remind user when no stock exists (for non-strict stock products) only once.
       if ((!product?.stock || product.stock <= 0) && !product?.restrictSaleWithoutStock && !noStockReminderShownRef.current) {
@@ -72,10 +83,12 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
       }
       const productStocks = await checkProductStock(product);
       if (productStocks.length === 0 && product?.restrictSaleWithoutStock) {
-        notification.info({
-          message: 'Stock no disponible',
-          description: `Para vender ${product.name} necesitas tener stock disponible.`,
-        });
+        if (alertsEnabled) {
+          notification.info({
+            message: 'Stock no disponible',
+            description: `Para vender ${product.name} necesitas tener stock disponible.`,
+          });
+        }
         return;
       }
       if (productStocks.length > 1) {
@@ -105,9 +118,13 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
     product,
     isOutOfStock,
     isLowStock,
+    isCriticalStock,
     productInCart,
     dispatch,
     checkProductStock,
+    alertsEnabled,
+    lowThreshold,
+    criticalThreshold,
   ]);
 
   const deleteProductFromCart = useCallback(
@@ -124,6 +141,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
     isProductInCart,
     productInCart,
     isLowStock,
+    isCriticalStock,
     isOutOfStock,
     price,
     handleGetThisProduct,

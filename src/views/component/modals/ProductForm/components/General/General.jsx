@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
-import { Form, Button, Spin, Card, Space, Row, Col, notification } from 'antd';
+import { Form, Button, Spin, Card, Space, Row, Col, notification, Image as AntdImage } from 'antd';
 import styled from 'styled-components';
 import { ProductInfo } from '../sections/ProductInfo';
 import { InventoryInfo } from '../sections/InventoryInfo';
@@ -22,26 +22,34 @@ export const General = ({ showImageManager }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const [submit, setSubmit] = useState(false)
-    const [form] = Form.useForm(); const { product, status } = useSelector(selectUpdateProductData);
+    const [form] = Form.useForm(); 
+    const { product, status } = useSelector(selectUpdateProductData);
+
+    // Actualizar los valores del formulario cuando cambie el producto
+    useEffect(() => {
+        form.setFieldsValue(product);
+    }, [product, form]);
 
     const handleChangeValues = (changeValue, allValues) => {
-        const key = Object.keys(changeValue)[0]; // Obtiene la clave del valor que cambió
+        const key = Object.keys(changeValue)[0];
         const value = changeValue[key];
 
-        // Verifica si el campo que cambió es 'stock' y convierte su valor a número
-        if (key === 'cost') {
-            changeValue[key] = value ? { unit: value.unit, total: value.unit } : 0; // Convertir a número o cero si es vacío
-        } if (key === 'tax') {
-            // Si el valor es un string que representa un número, parsearlo
-            if (typeof value === 'string') {
-                changeValue[key] = parseFloat(value) || initTaxes[0];
-            } else {
-                changeValue[key] = value || initTaxes[0];
-            }
-        }
+        // Normalización específica de campos anidados dentro de pricing
         if (key === 'pricing') {
-            dispatch(changeProductPrice({ pricing: value }));
-            return
+            const normalizedPricing = { ...value };
+            // Asegurar que tax sea numérico
+            if (normalizedPricing?.tax !== undefined) {
+                const t = normalizedPricing.tax;
+                normalizedPricing.tax = typeof t === 'string' ? parseFloat(t) || initTaxes[0] : Number(t);
+            }
+            // Asegurar que cost sea numérico
+            if (normalizedPricing?.cost !== undefined) {
+                normalizedPricing.cost = typeof normalizedPricing.cost === 'string'
+                    ? parseFloat(normalizedPricing.cost) || 0
+                    : Number(normalizedPricing.cost || 0);
+            }
+            dispatch(changeProductPrice({ pricing: normalizedPricing }));
+            return;
         }
         if (key === 'weightDetail') {
             dispatch(ChangeProductData({ product: { weightDetail: { ...product?.weightDetail, ...changeValue?.weightDetail } } }));
@@ -159,7 +167,7 @@ export const General = ({ showImageManager }) => {
                                     <ImageContent>
                                         {
                                             product?.image &&
-                                            <antd.Image
+                                            <AntdImage
                                                 height={150}
                                                 src={product?.image}
                                             />
@@ -180,7 +188,7 @@ export const General = ({ showImageManager }) => {
                                         }}
                                         onClick={showImageManager}
                                     >
-                                        {product?.productImageURL ? "Actualizar" : "Agregar"} imagen
+                                        {product?.image ? "Actualizar" : "Agregar"} imagen
                                     </Button>
 
                                 </Space>
@@ -205,7 +213,6 @@ export const General = ({ showImageManager }) => {
                     <Button
                         type="primary"
                         htmlType="submit"
-                        onClick={onFinish}
                         disabled={submit}
                     >
                         {status === "update" ? 'Actualizar' : 'Crear'}
@@ -220,6 +227,9 @@ export const General = ({ showImageManager }) => {
 const ImageContent = styled.div`
     border-radius: 5px;
     height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
 `
 const ImageContainer = styled.div`

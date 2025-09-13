@@ -153,6 +153,22 @@ const widgets = {
     textColor: baseColors.status.warning
   },
   
+  // Widget de cuentas por cobrar
+  accountsReceivable: {
+    icon: '📅',
+    borderColor: baseColors.status.error,
+    progressColor: baseColors.status.error,
+    textColor: baseColors.status.error,
+    dueSoon: {
+      bg: '#FFF6E9',
+      text: baseColors.status.warning
+    },
+    overdue: {
+      bg: '#FFEBEB',
+      text: baseColors.status.error
+    }
+  },
+  
   // Widget de inventario
   inventory: {
     icon: '📦',

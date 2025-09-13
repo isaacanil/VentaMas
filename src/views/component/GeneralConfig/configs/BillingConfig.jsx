@@ -7,6 +7,7 @@ import BillingSection from './components/BillingSection';
 import BillingModeConfig from './components/BillingModeConfig';
 import InvoiceSettingsSection from './components/InvoiceSettingsSection';
 import QuoteSettingsSection from './components/QuoteSettingsSection';
+import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 
 const StyledCard = styled.div`
   margin-top: 16px;
@@ -36,6 +37,14 @@ const BillingConfig = () => {
         description="Configure los parámetros predeterminados para sus cotizaciones."
       >
         <QuoteSettingsSection />
+      </BillingSection>
+      
+      {/* Sección temporalmente oculta hasta finalizar configuración */}
+      <BillingSection
+        title="Reportes de Inventario"
+        description="Configura reportes por correo: stock (umbrales bajo/crítico) y vencimientos (días de antelación), frecuencia y hora de envío."
+      >
+        <StockAlertSettingsSection />
       </BillingSection>
     
     </StyledCard>

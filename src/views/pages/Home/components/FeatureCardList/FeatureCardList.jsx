@@ -60,7 +60,7 @@ export const FeatureCardList = ({ title, cardData }) => {
 }
 const Container = styled.div`
     display: grid;
-    gap: 1em;
+    gap: 0.8em;
     background-color: #fff;
     padding: 1em;
     border-radius: 10px;
@@ -69,8 +69,8 @@ const Container = styled.div`
 
 const Wrapper = styled.div`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1em;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.8em;
     @media (max-width: 768px) {
         grid-template-columns: 1fr;
     }
@@ -88,7 +88,7 @@ const Category = styled.div`
 const FeatureContainer = styled.div`
     display: grid;
     grid-template-columns: ${props => props.cardsCount === 1 ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))'};
-    gap: 0.6em;
+    gap: 0.4em;
 `
 
 const Title = styled(Typography.Title)`

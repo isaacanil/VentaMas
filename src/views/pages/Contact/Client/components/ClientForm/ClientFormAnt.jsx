@@ -11,7 +11,6 @@ import { addClient, setClientMode } from '../../../../../../features/clientCart/
 import { CLIENT_MODE_BAR } from '../../../../../../features/clientCart/clientMode';
 import { ClientGeneralInfo } from './components/ClientGeneralInfo';
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
-import { fbUpsertCreditLimit } from '../../../../../../firebase/accountsReceivable/fbUpsertCreditLimit';
 const { Modal, Form, Input, Button, Tabs, notification, message } = ant;
 /**
  *
@@ -96,7 +95,7 @@ const ClientFormAnt = ({
             setSubmitted(true); // Marcar como enviado
             let clientCreated = null;
             const values = await form.validateFields();
-            const creditLimitData = await creditLimitForm.validateFields();
+            // const creditLimitData = await creditLimitForm.validateFields(); // Ya no necesario aquí
 
             delete values.clear;
 
@@ -107,11 +106,7 @@ const ClientFormAnt = ({
 
             if (isUpdating) {
                 await fbUpdateClient(user, client)
-                await fbUpsertCreditLimit({
-                    user,
-                    client,
-                    creditLimitData
-                })
+                // fbUpsertCreditLimit se maneja ahora en CreditLimitModal
                 notification.success({
                     message: 'Cliente Actualizado',
                     description: 'La información del cliente ha sido actualizada con éxito.'
@@ -163,6 +158,9 @@ const ClientFormAnt = ({
                     customerData={customerData}
                     isUpdating={isUpdating}
                     setIsSubmitButtonDisabled={setIsSubmitButtonDisabled}
+                    handleSubmit={handleSubmit}
+                    loading={loading}
+                    submitted={submitted}
                 />
             ),
         },
@@ -184,10 +182,7 @@ const ClientFormAnt = ({
             style={{ top: 10 }}
             open={isOpen}
             title={isUpdating ? "Editar Cliente" : "Nuevo Cliente"}
-            okText={isUpdating ? "Actualizar" : "Crear"}
             cancelText="Cerrar"
-            confirmLoading={loading || submitted}
-            okButtonProps={{ disabled: loading || submitted }}
             width={1000}
             styles={{
                 content: {
@@ -195,9 +190,26 @@ const ClientFormAnt = ({
                 }
             }}
             onCancel={handleCancel}
-            onOk={handleSubmit}
+            footer={[
+                <Button key="cancel" onClick={handleCancel}>
+                    Cerrar
+                </Button>,
+                // Solo mostrar el botón crear cuando no está actualizando
+                !isUpdating && (
+                    <Button 
+                        key="create" 
+                        type="primary" 
+                        loading={loading || submitted}
+                        disabled={loading || submitted}
+                        onClick={handleSubmit}
+                    >
+                        Crear
+                    </Button>
+                )
+            ]}
         >
             <Tabs defaultActiveKey="1" items={items} />
+            <br />
         </Modal>
     );
 };

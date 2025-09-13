@@ -49,7 +49,7 @@ const handleClose = () => {
       handleClose();
     } catch (error) {
       // Manejar errores de validación o de las operaciones asíncronas
-      console.log('Validate Failed:', error);
+              console.error('Active ingredient validation failed:', error);
       // Opcionalmente, puedes mostrar un mensaje de error al usuario
       message.error('Hubo un error al procesar la solicitud.');
     }

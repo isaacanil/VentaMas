@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Fragment, useEffect, useState, Suspense, lazy } from 'react'
 import styled from 'styled-components'
-import { MenuApp } from '../..'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import { getDateRange } from '../../../utils/date/getDateRange'
 import { FilterBar } from './components/FilterBar/FilterBar'
 import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts'
@@ -54,8 +54,7 @@ export const ReceivablePaymentReceipt = () => {
   )
 }
 const Container = styled(motion.div)`
-  max-height: calc(100vh);
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   display: grid;
   background-color: var(--color2);

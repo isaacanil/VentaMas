@@ -9,10 +9,10 @@ export const useProductStockCheck = () => {
     const user = useSelector(selectUser);
 
     const checkProductStock = useCallback(async (product) => {
-        console.log('Checking stock for product ID:', product.id); // Debugging log
+    
         try {
             const stockData = await getProductStockByProductId(user, { productId: product.id });
-            console.log('Fetched stock data:', stockData); // Debugging log
+    
 
             // Si hay más de una ubicación para el mismo producto
             if (stockData.length > 1) {

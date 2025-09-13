@@ -1,19 +1,24 @@
-import { motion } from "framer-motion"
-import { useSelector, useDispatch } from "react-redux"
-import styled from "styled-components"
-import { selectUser } from "../../../../features/auth/userSlice"
-import { MenuLink } from "./MenuLink"
-import { UserSection } from "../UserSection"
-import { WebName } from "../../system/WebName/WebName"
-import { getMenuData } from "../MenuData/MenuData"
-import { Button } from "../../system/Button/Button"
-import { icons } from "../../../../constants/icons/icons"
-import ROUTES_PATH from "../../../../routes/routesName"
-import { useNavigate } from "react-router-dom"
-import { SelectSettingCart } from "../../../../features/cart/cartSlice"
-import { openNotificationCenter } from "../../../../features/notification/notificationCenterSlice"
+import React, { useMemo, useCallback } from 'react'
+import { motion } from 'framer-motion'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
-const sidebarVariant = {
+import { selectUser } from '../../../../features/auth/userSlice'
+import { selectBusinessData } from '../../../../features/auth/businessSlice'
+import { SelectSettingCart } from '../../../../features/cart/cartSlice'
+import { openNotificationCenter } from '../../../../features/notification/notificationCenterSlice'
+import { getMenuData } from '../MenuData/MenuData'
+import { hasDeveloperAccess } from '../../../../utils/menuAccess'
+import ROUTES_PATH from '../../../../routes/routesName'
+import { icons } from '../../../../constants/icons/icons'
+
+import { MenuLink } from './MenuLink'
+import { UserSection } from '../UserSection'
+import { WebName } from '../../system/WebName/WebName'
+import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu'
+
+const SIDEBAR_VARIANTS = {
     open: {
         x: 0,
         transition: {
@@ -32,116 +37,115 @@ const sidebarVariant = {
             restDelta: 2
         }
     }
-};
+}
+
+const useMenuFiltering = () => {
+    const { billing: { billingMode } } = useSelector(SelectSettingCart)
+    const business = useSelector(selectBusinessData)
+    const businessType = business?.businessType || null
+    const links = getMenuData()
+
+    return useMemo(() => {
+        const filteredLinks = links.reduce((acc, item) => {
+            let includeItem = true
+            if (item.key && item.condition) {
+                includeItem = item.condition({ billingMode, businessType })
+            }
+
+            if (!includeItem) return acc
+
+            const newItem = { ...item }
+
+            if (item.submenu) {
+                const filteredSubmenu = item.submenu.filter(subItem => {
+                    if (subItem.key && subItem.condition) {
+                        return subItem.condition({ billingMode })
+                    }
+                    return true
+                })
+
+                if (filteredSubmenu.length > 0) {
+                    newItem.submenu = filteredSubmenu
+                } else {
+                    delete newItem.submenu
+                }
+            }
+
+            acc.push(newItem)
+            return acc
+        }, [])
+
+        const grouped = filteredLinks.reduce((acc, item) => {
+            if (!acc[item.group]) {
+                acc[item.group] = []
+            }
+            acc[item.group].push(item)
+            return acc
+        }, {})
+        // Remove developer group if user lacks developer access
+        if (!hasDeveloperAccess() && grouped.developer) {
+            delete grouped.developer
+        }
+        return grouped
+    }, [links, billingMode, businessType])
+}
 
 export const SideBar = ({ isOpen, handleOpenMenu }) => {
-    const dispatch = useDispatch();
-    const user = useSelector(selectUser);
-    const { billing: { billingMode } } = useSelector(SelectSettingCart);
-    const businessType = user?.business?.businessType || null;
-    const links = getMenuData();
-    const { SETTINGS } = ROUTES_PATH.SETTING_TERM;
-    const navigate = useNavigate();    // Filtrar los enlaces basados en 'key' y 'condition'
-    const filteredLinks = links.reduce((acc, item) => {
-        // Verificar si el elemento principal tiene una 'key' y una 'condition' y evaluarla
-        let includeItem = true;
-        if (item.key && item.condition) {
-            includeItem = item.condition({ billingMode, businessType });
-        }
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const user = useSelector(selectUser)
+    const groupedLinks = useMenuFiltering()
+    
+    const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM
 
-        // Si el elemento no cumple la condición, lo omitimos
-        if (!includeItem) {
-            return acc;
-        }
+    const handleGoToSetting = useCallback(() => {
+        navigate(GENERAL_CONFIG_BUSINESS)
+    }, [navigate, GENERAL_CONFIG_BUSINESS])
 
-        // Crear una copia del elemento para evitar mutaciones
-        const newItem = { ...item };
-
-        // Si el elemento tiene un 'submenu', aplicamos el filtrado al 'submenu'
-        if (item.submenu) {
-            const filteredSubmenu = item.submenu.filter(subItem => {
-                // Verificar si el subelemento tiene una 'key' y una 'condition' y evaluarla
-                if (subItem.key && subItem.condition) {
-                    return subItem.condition({ billingMode });
-                }
-                return true; // Incluir subelementos sin 'key' o sin 'condition'
-            });
-
-            // Si después del filtrado hay elementos en el 'submenu', lo asignamos
-            if (filteredSubmenu.length > 0) {
-                newItem.submenu = filteredSubmenu;
-            } else {
-                // Si no hay elementos en el 'submenu', eliminamos la propiedad 'submenu'
-                delete newItem.submenu;
-            }
-        }
-
-        // Añadir el elemento filtrado al acumulador
-        acc.push(newItem);
-        return acc;
-    }, []);
-
-    // Agrupar los enlaces filtrados por 'group'
-    const groupedLinks = filteredLinks.reduce((acc, item) => {
-        if (!acc[item.group]) {
-            acc[item.group] = [];
-        }
-        acc[item.group].push(item);
-        return acc;
-    }, {}); 
-    const handleGoToSetting = () => {
-        navigate(SETTINGS)
-    }
-
-    const handleOpenNotifications = () => {
-        dispatch(openNotificationCenter('taxReceipt'));
+    const handleOpenNotifications = useCallback(() => {
+        dispatch(openNotificationCenter('taxReceipt'))
         handleOpenMenu()
-    }
+    }, [dispatch, handleOpenMenu])
 
     return (
         <Container
-            variants={sidebarVariant}
+            variants={SIDEBAR_VARIANTS}
             initial='closed'
             animate={isOpen ? 'open' : 'closed'}
         >
             <Wrapper>
-                <Head>
-                    <div>
-                        <EmptyBox />
-                        <WebName></WebName>
-                    </div>
-                    <ButtonGroup>
-                        <Button
-                            startIcon={icons.system.notification}
-                            color='info'
-                            size='icon32'
-                            borderRadius='normal'
+                <Header>
+                    <HeaderContent>
+                        <LogoContainer />
+                        <WebName />
+                    </HeaderContent>
+                    <ActionButtons>
+                        <ButtonIconMenu
+                            icon={icons.system.notification}
                             onClick={handleOpenNotifications}
+                            aria-label="Open notifications"
                         />
-                        <Button
-                            startIcon={icons.operationModes.setting}
-                            color='info'
-                            size='icon32'
-                            borderRadius='normal'
+                        <ButtonIconMenu
+                            icon={icons.operationModes.setting}
                             onClick={handleGoToSetting}
+                            aria-label="Open settings"
                         />
-                    </ButtonGroup>
-                </Head>
-                <UserSection user={user}></UserSection>
-                <Body>
-                    <Links>
-                        {Object.keys(groupedLinks).map(group => (
-                            <Group key={group}>
-                                {/* <GroupTitle>{group}</GroupTitle> */}
-                                <MenuLinkList>
-                                    {groupedLinks[group].map((item, index) => (
-                                        <MenuLink item={item} key={index}></MenuLink>
+                    </ActionButtons>
+                </Header>
+                <UserSection user={user} />
+                <NavigationBody>
+                    <NavigationLinks>
+                        {Object.entries(groupedLinks).map(([group, items]) => (
+                            <MenuGroup key={group}>
+                                <MenuContainer>
+                                    {items.map((item, index) => (
+                                        <MenuLink item={item} key={`${group}-${index}`} />
                                     ))}
-                                </MenuLinkList>
-                            </Group>
+                                </MenuContainer>
+                            </MenuGroup>
                         ))}
-                    </Links>
-                </Body>
+                    </NavigationLinks>
+                </NavigationBody>
             </Wrapper>
         </Container>
     )
@@ -152,87 +156,83 @@ const Container = styled(motion.div)`
     z-index: 9900;
     top: 0;
     left: 0;
-
-    /*Box */
     max-width: 400px;
     width: 100%;
-    height: 100vh;
-
-    border-radius: 10px;
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
-
+    height: 100%;
+    
+    border-radius: 0 10px 10px 0;
     overflow: hidden;
-    transform: translateX(-100%); 
-    transition: transform 400ms ease;
-    background-color: ${props => props.theme.bg.shade};  
-    border-right: 1px solid rgb(0, 0, 0, 0.1);
-    box-shadow: 5px 0 5px rgba(0, 0, 0, 0.1), 10px 0 5px rgba(0, 0, 0, 0.05);
+    background-color: white;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 
+        5px 0 15px rgba(0, 0, 0, 0.1),
+        10px 0 25px rgba(0, 0, 0, 0.05);
 `
 
-const ButtonGroup = styled.div`
+const ActionButtons = styled.div`
     display: flex;
-    gap: 0.4em;
+    align-items: center;
+    gap: 0.5rem;
 `
 
 const Wrapper = styled.div`
-    /*Box */
     width: 100%;
     height: 100%;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    overflow: hidden;
+    
+    @media (max-width: 600px) {
+        max-width: 500px;
+    }
+`
+const NavigationBody = styled.div`
+    background-color: ${props => props.theme.bg.color2};
+    padding: 0.6em 0.9em;
     overflow-y: auto;
     overflow-x: hidden;
-    display: grid;
-    grid-template-rows: min-content min-content 1fr;
-    @media (max-width: 600px) {
-            max-width: 500px;
-            resize: none;
-    }
-   
-`
-const Body = styled.div`
-    /* position: relative; */
-    background-color: ${props => props.theme.bg.color2}; 
-    padding: 0.8em;
-    overflow-y: auto;
 `
 
-const Links = styled.ul`
+const NavigationLinks = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 0.4rem;
     padding: 0;
-    gap: 0.6em;
+`
+const MenuGroup = styled.div`
+    overflow: hidden;
+`
 
-    `
-export const Group = styled.div`
-    overflow: hidden;
-`
-export const MenuLinkList = styled.div`
+const MenuContainer = styled.div`
     background-color: ${props => props.theme.bg.shade};
-    border-radius: var(--border-radius);
-    padding: 0.2em;
-    border: 1px solid rgb(0, 0, 0, 0.1);
+    border-radius: var(--border-radius, 8px);
+    padding: 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     overflow: hidden;
-  
 `
-const Head = styled.div`
-   height: 2.75em;
+const Header = styled.div`
+    height: 2.75em;
     width: 100%;
-    padding: 1em 1em 1em;
+    padding: 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: ${props => props.theme.bg.color}; 
+    background-color: ${props => props.theme.bg.color};
     position: sticky;
     top: 0;
+    z-index: 10;
 
-    div{
-        display: flex;
-        align-items: center;
+    @media (max-width: 768px) {
+        height: 2.75em;
     }
-     
 `
-const EmptyBox = styled.div`
-    height: 2.75em;
-    width:3em;
-    background-color: ${props => props.theme.bg.color}; 
-    `
+
+const HeaderContent = styled.div`
+    display: flex;
+    align-items: center;
+`
+
+const LogoContainer = styled.div`
+    height: 2em;
+    width: 2.4rem;
+`

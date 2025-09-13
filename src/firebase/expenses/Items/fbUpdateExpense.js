@@ -1,6 +1,6 @@
 import { Timestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
-import { isFirebaseStorageUrl } from "../../../utils/url/isValidUrl";
+import { isFirebaseStorageUrl } from "../../../utils/url/isValidURL";
 import { fbDeleteImage } from "../../img/fbDeleteImage";
 import { fbUploadFile } from "../../img/fbUploadFileAndGetURL";
 import { isImageFile } from "../../../utils/file/isValidFile";
@@ -57,13 +57,9 @@ export const fbUpdateExpense = async (
                 message: "Procesando archivos adjuntos..."
             });
 
-            console.log("Processing file attachments:", files);
-
             const uploadPromises = files.map((f) => fbUploadFile(user, 'expensesReceiptImg', f.file));
 
             const urls = await Promise.all(uploadPromises);
-
-            console.log("Uploaded URLs:", urls);
             // Create new attachments array with both existing remote files (correctly formatted)
             const existingAttachments = (modifiedExpense.attachments || []);
 
@@ -88,9 +84,6 @@ export const fbUpdateExpense = async (
 
         // Sanitizar los datos antes de guardarlos
         const sanitizedExpense = sanitizeFirebaseData(modifiedExpense);
-        
-        console.log("Expense antes de sanitizar:", modifiedExpense);
-        console.log("Expense sanitizado:", sanitizedExpense);
 
         const expenseRef = doc(db, 'businesses', user.businessID, 'expenses', sanitizedExpense.id);
         await updateDoc(expenseRef, { expense: sanitizedExpense });

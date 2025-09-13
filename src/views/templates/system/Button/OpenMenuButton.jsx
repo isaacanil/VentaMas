@@ -22,24 +22,24 @@ const Container = styled.div`
    --btnMenuItem-bg-color: var(--menu-items);
    --btnMenuItem-width: 1.6em;
    --btnMenuItem-height: 2px;
-
 }
-      justify-self: start;
-  max-height: 2em;
-  min-width: 2em;
-  min-height: 2em;
-  max-width: 2em;
-  width: 2em;
-  height: 2em;
+  justify-self: start;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 2em;
+  height: 2em;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: var(--border-radius);
   cursor: pointer;
 
   z-index: ${props => props.isOpen ? 10000 : 0};
   transition-delay: ${props => !props.isOpen && '1s'};
+
+  @media (max-width: 768px) {
+    width: 2.3em;
+    height: 2.3em;
+  }
 
 `
 const MenuIcon = styled.div`
@@ -49,7 +49,12 @@ const MenuIcon = styled.div`
   height: 2px;
   background-color: var(--menu-items);
   transition: all 1s ease-in-out;
- 
+  
+  // Iconos más grandes en móviles
+  @media (max-width: 768px) {
+    width: 1.4em;
+    height: 2.5px;
+  }
 
   &:after {
     content: '';
@@ -60,6 +65,12 @@ const MenuIcon = styled.div`
     background-color: var(--menu-items);
     margin-top: 6px;
     transition: all 0.4s ease-in-out;
+    
+    @media (max-width: 768px) {
+      width: 1.4em;
+      height: 2.5px;
+      margin-top: 7px;
+    }
   }
 
   &::before {
@@ -71,6 +82,12 @@ const MenuIcon = styled.div`
     background-color: var(--menu-items);
     margin-top: -6px;
     transition: all 0.4s ease-in-out;
+    
+    @media (max-width: 768px) {
+      width: 1.4em;
+      height: 2.5px;
+      margin-top: -7px;
+    }
   }
   ${props => {
     switch (props.isOpen) {
@@ -81,6 +98,12 @@ const MenuIcon = styled.div`
          height: 2px;
          background-color: transparent;
          transition: all 0.2s ease-in-out;
+         
+         @media (max-width: 768px) {
+           width: 1.4em;
+           height: 2.5px;
+         }
+         
         &::after {
             content: '';
             position: absolute;
@@ -91,7 +114,10 @@ const MenuIcon = styled.div`
             transform: rotate(-45deg);
             transition: all 0.4s ease-in-out;
 
-
+            @media (max-width: 768px) {
+              width: 1.4em;
+              height: 2.5px;
+            }
          }
 
          &::before {
@@ -103,6 +129,11 @@ const MenuIcon = styled.div`
             margin-top: 0;
             transform: rotate(45deg);
             transition: all 0.4s ease-in-out;
+            
+            @media (max-width: 768px) {
+              width: 1.4em;
+              height: 2.5px;
+            }
          }
         `
       default:

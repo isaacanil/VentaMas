@@ -4,7 +4,8 @@ import { getDiscount, money, getProductsIndividualDiscounts, hasIndividualDiscou
 const PAYMENT_METHODS = {
   cash:     'Efectivo',
   transfer: 'Transferencia',
-  card:     'Tarjeta'
+  card:     'Tarjeta',
+  creditNote: 'Nota de Crédito'
 };
 
 /* ───── bloque firma + etiqueta opcional ───── */
@@ -37,6 +38,20 @@ export function buildFooter(biz, d) {
         }
       ]
     : [];
+
+  /* Notas de crédito aplicadas */
+  const creditNotesStack = d.creditNotePayment?.length
+    ? [
+        { text: 'Notas de Crédito Aplicadas:', bold: true, margin: [0, 8, 0, 4] },
+        {
+          ul: d.creditNotePayment.map(note => ({
+            text: `NCF: ${note.ncf} - ${money(note.amountUsed)}`,
+            margin: [0, 0, 0, 0]
+          }))
+        }
+      ]
+    : [];
+
   /* Calcular descuentos */
   const individualDiscounts = getProductsIndividualDiscounts(d.products || []);
   const hasIndividualDisc = hasIndividualDiscounts(d.products || []);
@@ -67,8 +82,9 @@ export function buildFooter(biz, d) {
       {
         columnGap: 25,
         columns: [
-          { width: '*', stack: [signatureBlock('Despachado Por:'), ...paymentStack] },
-          { width: '*', stack: [signatureBlock('Recibido Conforme:', d.copyType || 'COPIA')] },          {
+          { width: '*', stack: [signatureBlock('Despachado Por:'), ...paymentStack, ...creditNotesStack] },
+          { width: '*', stack: [signatureBlock('Recibido Conforme:', d.copyType || 'COPIA')] },
+          {
             width: '*',
             margin: [0, 2, 0, 0],
             table: { widths: ['*', '*'], body: totalsBody },

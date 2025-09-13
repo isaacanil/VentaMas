@@ -2,7 +2,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore"
 import { db } from "../firebaseconfig"
 
 export const fbUpdateClient = async (user, client) => {
-    console.log('user from fbUpdateClient', client)
+    // Updating client data
     if(!user || !user.businessID) return
 
     const clientRef = doc(db, "businesses", user.businessID, 'clients', client.id)

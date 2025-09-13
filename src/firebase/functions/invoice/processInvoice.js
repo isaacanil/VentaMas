@@ -13,11 +13,11 @@ export async function testInvoiceFunction(inputData) {
         type: "test-request"
       };
   
-      console.log("Llamando a la función processInvoiceEndpoint con:", dataToSend);
+      // Calling invoice processing function
       const result = await callProcessInvoice(dataToSend);
   
       // result.data contiene lo que tu función backend retornó
-      console.log("Respuesta de la función (result.data):", result.data); 
+      console.info("Invoice function executed successfully"); 
       
       // Retornar los datos para mostrarlos en la UI
       return result.data;

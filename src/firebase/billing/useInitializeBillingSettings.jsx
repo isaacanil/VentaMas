@@ -20,7 +20,13 @@ export const useInitializeBillingSettings = () => {
             try {
                 const docSnapshot = await getDoc(userDocRef);
                 if (!docSnapshot.exists()) {
-                    await setDoc(userDocRef, { billingMode: 'direct' });
+                    await setDoc(userDocRef, { 
+                        billingMode: 'direct',
+                        stockAlertsEnabled: false,
+                        stockLowThreshold: 20,
+                        stockCriticalThreshold: 10,
+                        stockAlertEmail: ''
+                    });
                 }
             } catch (error) {
                 console.error('Error al inicializar la configuración de facturación:', error);
@@ -30,7 +36,14 @@ export const useInitializeBillingSettings = () => {
         initializeSettings();
 
         const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
-            const data = docSnapshot.data() || { billingMode: 'direct', invoiceType: 'template1' };
+            const data = docSnapshot.data() || { 
+                billingMode: 'direct', 
+                invoiceType: 'template1',
+                stockAlertsEnabled: false,
+                stockLowThreshold: 20,
+                stockCriticalThreshold: 10,
+                stockAlertEmail: ''
+            };
 
             queryClient.setQueryData(['billingSettings', user.businessID], data)
 

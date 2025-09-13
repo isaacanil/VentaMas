@@ -5,15 +5,30 @@ import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice'
 import { fbGetCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbGetCreditLimit';
 import { selectUser } from '../../../../../../../../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import CreditLimitModal from './CreditLimitModal';
+import { EditOutlined } from '@ant-design/icons';
+import {formatPrice} from '../../../../../../../../../utils/formatPrice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+    faFileInvoice, 
+    faCreditCard, 
+    faMoneyBillWave,
+    faExclamationTriangle,
+    faCheckCircle,
+    faTimesCircle,
+    faEdit
+} from '@fortawesome/free-solid-svg-icons';
 
-const { Checkbox, Input, Form, InputNumber, Alert } = antd;
+const { Alert, Button } = antd;
 
 export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
-    const [invoiceStatus, setInvoiceStatus] = useState(creditLimitForm.getFieldValue(['invoice', 'status']));
-    const [creditLimitStatus, setCreditLimitStatus] = useState(creditLimitForm.getFieldValue(['creditLimit', 'status']));
+    const [invoiceStatus, setInvoiceStatus] = useState(false);
+    const [creditLimitStatus, setCreditLimitStatus] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
     const user = useSelector(selectUser);
     const clientId = client.id;
+    const queryClient = useQueryClient();
     
     const { data: creditLimitState, error, isLoading } = useQuery({
         queryKey: ['creditLimit', user, clientId],
@@ -29,53 +44,27 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
             setCreditLimitStatus(creditLimitState?.creditLimit?.status);
         }
     }, [creditLimitState]);
-    
-    const handleFormChange = (changedValues, allValues) => {
-        setInvoiceStatus(allValues.invoice?.status);
-        setCreditLimitStatus(allValues.creditLimit?.status);
-        clearValidationErrors(allValues);
+
+    const handleEditLimits = () => {
+        setModalVisible(true);
     };
-    const clearValidationErrors = (allValues) => {
-        if (!allValues.invoice?.status) {
-            creditLimitForm.setFieldsValue({
-                invoice: { value: null }
-            });
-            creditLimitForm.setFields([
-                {
-                    name: ['invoice', 'value'],
-                    errors: [],
-                },
-            ]);
-        }
-        if (!allValues.creditLimit?.status) {
-            creditLimitForm.setFieldsValue({
-                creditLimit: { value: null }
-            });
-            creditLimitForm.setFields([
-                {
-                    name: ['creditLimit', 'value'],
-                    errors: [],
-                },
-            ]);
+
+    const handleModalSave = async (values) => {
+        try {
+            // Actualizar el formulario padre
+            creditLimitForm.setFieldsValue(values);
+            setInvoiceStatus(values.invoice?.status);
+            setCreditLimitStatus(values.creditLimit?.status);
+            
+            // Invalidar la query para refrescar los datos
+            queryClient.invalidateQueries(['creditLimit', user, clientId]);
+        } catch (error) {
+            console.error('Error updating form:', error);
         }
     };
-    const validateMinLength = (rule, value) => {
-        if (value == null && !creditLimitStatus || !invoiceStatus) {
-            return Promise.resolve()
-        }
-        if (value && value.toString().length < 0) {
-            return Promise.reject('El valor debe tener al menos 6 caracteres');
-        }
-        return Promise.resolve();
-    };
-    const validatePositiveNumber = (rule, value) => {
-        if (value == null && !creditLimitStatus || !invoiceStatus) {
-            return Promise.resolve()
-        }
-        if (value <= 0) {
-            return Promise.reject('El valor debe ser mayor a cero');
-        }
-        return Promise.resolve();
+
+    const handleModalClose = () => {
+        setModalVisible(false);
     };
 
     if (isLoading) {
@@ -85,170 +74,216 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
     if (error) {
         return <div>Error loading credit limit</div>;
     }
-    
+
+    // Función para obtener el ícono del crédito disponible
+    const getCreditIcon = (availableCredit) => {
+        if (availableCredit < 0) return faTimesCircle;
+        if (availableCredit === 0) return faExclamationTriangle;
+        return faCheckCircle;
+    };
     
     return (
         <div>
-
-        <Form
-            form={creditLimitForm}
-            layout="vertical"
-            name="creditLimitForm"
-            onValuesChange={handleFormChange}
-        >
             <Container>
-                <Title>Límites de crédito</Title>
-                <Content>
-                    <FormItem
-                        label="Facturas"
-                        valuePropNameStatus={'checked'}
-                        nameStatus={["invoice", "status"]}
-                        nameValue={["invoice", "value"]}
-                        type='number'
-                        rules={invoiceStatus ? [
-                            { required: true, message: 'Por favor, ingresa el valor de la factura' },
-                            { validator: validateMinLength },
-                            { validator: validatePositiveNumber}
-                        ] : []}
-                        disabled={!invoiceStatus}
-                        checkboxLabel={true}
-                    />
+                <Header>
+                    <Title>Configuración de límites</Title>
+                </Header>
+                
+                <SummaryGrid>
+                    <SummaryCard>
+                        <SummaryIcon>
+                            <FontAwesomeIcon icon={faFileInvoice} />
+                        </SummaryIcon>
+                        <SummaryContent>
+                            <SummaryLabel>Límite de facturas</SummaryLabel>
+                            <SummaryValue>
+                                {creditLimitState?.invoice?.status && creditLimitState?.invoice?.value 
+                                    ? creditLimitState.invoice.value 
+                                    : 'No configurado'
+                                }
+                            </SummaryValue>
+                        </SummaryContent>
+                        <EditButton onClick={handleEditLimits}>
+                            <FontAwesomeIcon icon={faEdit} />
+                        </EditButton>
+                    </SummaryCard>
 
-                    <FormItem
-                        label={"Límite de crédito"}
-                        type='number'
-                        valuePropNameStatus={'checked'}
-                        checkboxLabel={true}
-                        rules={creditLimitStatus ? [
-                            { required: true, message: 'Por favor, ingresa el límite de crédito' },
-                            { validator: validateMinLength },
-                            { validator: validatePositiveNumber}
-                        ] : []}
-                        nameStatus={['creditLimit', 'status']}
-                        nameValue={["creditLimit", "value"]}
-                        disabled={!creditLimitStatus}
-                    />
-                    <FormItem
-                        label="Crédito disponible"
-                        readOnly={true}
-                        value={useFormatPrice(creditLimitState?.creditLimit?.value - arBalance || 0)}
-                    />
-                </Content>
-            </Container>
-        </Form>
-        {
-           creditLimitState?.creditLimit?.status && (creditLimitState?.creditLimit?.value < arBalance)  && (
-                <Alert
-                message="Advertencia"
-                description="El límite de crédito es menor que el balance disponible."
-                type="warning"
-                showIcon
-            />
-            )
-        }
-          {!creditLimitStatus && (
-                        <Alert
-                            message="Advertencia"
-                            description={`El límite de crédito no está activado para el cliente ${client.name}. No podrás usar las funcionalidades de cuentas por cobrar hasta que actives el límite de crédito.`}
-                            type="warning"
-                            showIcon
-                        />
+                    <SummaryCard>
+                        <SummaryIcon>
+                            <FontAwesomeIcon icon={faCreditCard} />
+                        </SummaryIcon>
+                        <SummaryContent>
+                            <SummaryLabel>Límite de crédito</SummaryLabel>
+                            <SummaryValue>
+                                {creditLimitState?.creditLimit?.status && creditLimitState?.creditLimit?.value 
+                                    ? formatPrice(creditLimitState.creditLimit.value)
+                                    : 'No configurado'
+                                }
+                            </SummaryValue>
+                        </SummaryContent>
+                        <EditButton onClick={handleEditLimits}>
+                            <FontAwesomeIcon icon={faEdit} />
+                        </EditButton>
+                    </SummaryCard>
+
+                    {creditLimitState?.creditLimit?.status && creditLimitState?.creditLimit?.value && (
+                        <SummaryCard>
+                            <SummaryIcon creditValue={creditLimitState.creditLimit.value - arBalance}>
+                                <FontAwesomeIcon 
+                                    icon={getCreditIcon(creditLimitState.creditLimit.value - arBalance)} 
+                                />
+                            </SummaryIcon>
+                            <SummaryContent>
+                                <SummaryLabel>
+                                    Crédito disponible
+                                    {(() => {
+                                        const availableCredit = creditLimitState.creditLimit.value - arBalance;
+                                        if (availableCredit < 0) return ' (Sobregiro)';
+                                        if (availableCredit === 0) return ' (Límite alcanzado)';
+                                        return '';
+                                    })()}
+                                </SummaryLabel>
+                                <SummaryValue creditValue={creditLimitState.creditLimit.value - arBalance}>
+                                    {formatPrice(creditLimitState.creditLimit.value - arBalance || 0)}
+                                </SummaryValue>
+                            </SummaryContent>
+                        </SummaryCard>
                     )}
+                </SummaryGrid>
+            </Container>
+
+            <CreditLimitModal
+                visible={modalVisible}
+                onClose={handleModalClose}
+                onSave={handleModalSave}
+                initialValues={creditLimitState}
+                client={client}
+                arBalance={arBalance}
+            />
+
+            {/* Alerts */}
+            {creditLimitState?.creditLimit?.status && (creditLimitState?.creditLimit?.value < arBalance) && (
+                <Alert
+                    message="Advertencia"
+                    description="El límite de crédito es menor que el balance disponible."
+                    type="warning"
+                    showIcon
+                    style={{ marginTop: 16 }}
+                />
+            )}
+            
+            {!creditLimitStatus && (
+                <Alert
+                    message="Advertencia"
+                    description={`El límite de crédito no está activado para el cliente ${client.name}. No podrás usar las funcionalidades de cuentas por cobrar hasta que actives el límite de crédito.`}
+                    type="warning"
+                    showIcon
+                    style={{ marginTop: 16 }}
+                />
+            )}
         </div>
     );
 };
 
 // Estilos con Styled Components
 const Container = styled.div`
-  border: 1px solid #ccc;
-  border-left: 0;
-    border-right: 0;
-  padding: 16px 0;
+    border-radius: 6px;
+    padding: 0px 12px 8px;
+`;
 
+const Header = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
 `;
 
 const Title = styled.h2`
-  margin-bottom: 16px;
-  font-size: 18px;
-  color: #333;
+    font-size: 1rem;
+    font-weight: 500;
+    color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
+    line-height: 1.4;
+    margin: 0;
 `;
 
-const Content = styled.div`
-  display: grid;
-    grid-template-columns: min-content  1fr 1fr;
-    gap: 1em;
+const SummaryGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
 `;
 
-const CheckboxContainer = styled.div`
-  display: flex;
-  align-items: center;
+const SummaryCard = styled.div`
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: ${({ theme }) => theme.bg?.light || '#ffffff'};
+    border: 1px solid ${({ theme }) => theme.border?.light || '#e8e8e8'};
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 `;
 
-const Label = styled.label`
-  margin-left: 8px;
+const SummaryIcon = styled.div`
+    font-size: 1rem;
+    margin-right: 10px;
+    line-height: 1;
+    color: ${props => {
+        if (props.creditValue !== undefined) {
+            if (props.creditValue < 0) return '#ff4d4f';
+            if (props.creditValue === 0) return '#faad14';
+            return '#2e7d32';
+        }
+        return '#1890ff';
+    }};
 `;
 
-const InputContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+const SummaryContent = styled.div`
+    flex: 1;
 `;
 
-const FormItem = ({
-    label,
-    value,
-    type = "text",
-    checkboxLabel = false,
-    valuePropNameStatus,
-    disabled = false,
-    readOnly = false,
-    rules = [],
-    nameValue,
-    nameStatus,
-}) => {
+const SummaryLabel = styled.div`
+    font-size: 0.75rem;
+    color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+    font-weight: 500;
+    line-height: 1.5;
+    margin-bottom: 4px;
+`;
 
-    return (
-        <Form.Item
-            name={nameValue}
-            rules={rules}
-            label={
-                checkboxLabel ?
-                    <Form.Item
-                        name={nameStatus}
-                        valuePropName={valuePropNameStatus}
-                        noStyle
-                    >
-                        <Checkbox
-                            style={{
-                                whiteSpace: "nowrap"
-                            }}
-                        >
-                            {label}
-                        </Checkbox>
-                    </Form.Item>
-                    : label
-            }
-        >
-            {
-                type === "number" ?
-                    <InputNumber
-                        readOnly={readOnly}
-                        disabled={disabled}
-                        value={value}
-                        style={{
-                            width: '100%'
+const SummaryValue = styled.div`
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: ${props => {
+        if (props.creditValue !== undefined) {
+            // Para crédito disponible
+            if (props.creditValue < 0) return '#d32f2f'; // Rojo más oscuro para negativo (sobregiro)
+            if (props.creditValue === 0) return '#f57c00'; // Naranja más oscuro para cero
+            return '#2e7d32'; // Verde más oscuro para positivo
+        }
+        return props.theme?.text?.primary || 'rgba(0, 0, 0, 0.87)'; // Color por defecto
+    }};
+`;
 
-                        }}
-                    />
-                    :
-                    <Input
-                        readOnly={readOnly}
-                        disabled={disabled}
-                        value={value}
-                    />
-            }
-
-        </Form.Item>
-    )
-}
+const EditButton = styled.button`
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    margin-left: 8px;
+    color: #666;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+        color: #1890ff;
+        background-color: #f0f0f0;
+    }
+    
+    &:active {
+        transform: scale(0.95);
+    }
+`;
 

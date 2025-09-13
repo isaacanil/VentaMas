@@ -10,8 +10,8 @@ import { useWindowWidth } from '../../../../hooks/useWindowWidth'
 import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
 import { OPERATION_MODES } from '../../../../constants/modes.js'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
-import { selectNcfType, selectTaxReceipt, selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice.js'
-import { Input, Button as AntButton, Checkbox, Select } from 'antd';
+import { selectNcfType, selectTaxReceipt, selectTaxReceiptType, selectNcfTypeLocked } from '../../../../features/taxReceipt/taxReceiptSlice.js'
+import { Input, Button as AntButton, Checkbox, Select, Button } from 'antd';
 import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
 import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
 import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
@@ -28,6 +28,7 @@ export const ClientControl = () => {
   const [inputIcon, setInputIcon] = useState()
   const taxReceiptData = fbGetTaxReceipt()
   const nfcType = useSelector(selectNcfType)
+  const ncfTypeLocked = useSelector(selectNcfTypeLocked)
   const insuranceEnabled = useInsuranceEnabled();
   const closeMenu = () => dispatch(setIsOpen(false))
   const setSearchTerm = (e) => dispatch(setClientSearchTerm(e))
@@ -111,6 +112,15 @@ export const ClientControl = () => {
   return (
     <Container ref={searchClientRef}>
       <Header>
+              {!limitByWindowWidth && (
+            <Button
+              onClick={handleCloseCart}
+              data-client-control-input="true"
+              icon={icons.arrows.chevronLeft}
+            >
+              Atrás
+            </Button>
+          )}
         <InputWrapper data-client-control-input="true">
           <Input
             prefix={inputIcon}
@@ -146,14 +156,7 @@ export const ClientControl = () => {
             </ClientButton>
           )}
 
-          {!limitByWindowWidth && (
-            <ClientButton
-              onClick={handleCloseCart}
-              data-client-control-input="true"
-            >
-              Volver
-            </ClientButton>
-          )}
+          
         </InputWrapper>
       </Header>
       <ClientDetails
@@ -161,35 +164,53 @@ export const ClientControl = () => {
       />
 
       {
-        taxReceiptSettingEnabled && (
-          <SelectContainer>
-            <Select
-              style={{ width: 200 }}
-              value={nfcType}
-              onChange={(e) => dispatch(selectTaxReceiptType(e))}
-            >
-              <Select.OptGroup label="Comprobantes Fiscal" >
-                {
-                  taxReceiptData.taxReceipt
-                    .filter(receipt => !receipt.data?.disabled) // Solo mostrar comprobantes activos
-                    .map(({ data }, index) => (
-                      <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
-                    ))
-                }
-              </Select.OptGroup>
-            </Select>
-            {
-              business?.businessType === 'pharmacy' && (
-                <Checkbox
-                  onChange={handleInsuranceChange}
-                  disabled={!client?.id}
-                  checked={insuranceEnabled} // Directly use cart's insurance status
-                >
-                  Seguro
-                </Checkbox>
-              )
-            }
-          </SelectContainer>
+        (taxReceiptSettingEnabled || business?.businessType === 'pharmacy') && (
+          <ControlsContainer>
+            {taxReceiptSettingEnabled && (
+              <Select
+                style={{ width: 200 }}
+                value={nfcType}
+                onChange={(e) => dispatch(selectTaxReceiptType(e))}
+                disabled={ncfTypeLocked}
+                placeholder="Selecciona comprobante"
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) => (option?.children ?? '').toLowerCase().includes(input.toLowerCase())}
+              >
+                <Select.OptGroup label="Comprobantes Fiscal" >
+                  {
+                    taxReceiptData.taxReceipt
+                      .filter(receipt => !receipt.data?.disabled)
+                      .filter(receipt => {
+                        const rawName = receipt?.data?.name || '';
+                        // Normalizar acentos
+                        const name = rawName.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+                        const serie = (receipt?.data?.serie || '').toString().padStart(2, '0');
+                        // Regla principal: excluir serie 04 (Notas de Crédito en RD) o nombres que contengan ambos tokens
+                        const containsNota = name.includes('nota');
+                        const containsCredito = name.includes('credito');
+                        const isCreditNoteBySerie = serie === '04';
+                        const isCreditNoteByName = containsNota && containsCredito;
+                        return !(isCreditNoteBySerie || isCreditNoteByName);
+                      })
+                      .map(({ data }, index) => (
+                        <Select.Option value={data.name} key={index}>{data.name}</Select.Option>
+                      ))
+                  }
+                </Select.OptGroup>
+              </Select>
+            )}
+            
+            {business?.businessType === 'pharmacy' && (
+              <Checkbox
+                onChange={handleInsuranceChange}
+                disabled={!client?.id}
+                checked={insuranceEnabled} // Directly use cart's insurance status
+              >
+                Seguro
+              </Checkbox>
+            )}
+          </ControlsContainer>
         )
       }
     </Container>
@@ -212,6 +233,7 @@ const Header = styled.div`
    height: 2.75em;
    position: relative;
    z-index: 10;
+   gap: 0.5em;
    background-color: var(--Gray8);
    border-bottom-left-radius: var(--border-radius-light);
    padding: 0.5em;
@@ -248,12 +270,12 @@ const ClientButton = styled(AntButton)`
    }
 `
 
-const SelectContainer = styled.div`
+const ControlsContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   padding: 0 6px;
+  gap: 12px;
 
   .ant-select {
     width: 200px;
@@ -261,5 +283,10 @@ const SelectContainer = styled.div`
 
   .ant-select:hover {
     border-color: var(--primary-color);
+  }
+
+  .ant-checkbox-wrapper {
+    white-space: nowrap;
+    margin-left: auto;
   }
 `

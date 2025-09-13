@@ -81,7 +81,7 @@ export const addInsuranceAuth = async (user, authData, clientId) => {
       deleted: false
     });
 
-    console.log(`New authorization created for client: ${clientId}, auth ID: ${id}`);
+            // New authorization created successfully
     return id;
   } catch (error) {
     console.error("Error adding/updating insurance authorization:", error);
@@ -260,7 +260,7 @@ export const getInsuranceAuthByClientId = async (user, clientId) => {
     const querySnapshot = await getDocs(clientAuthQuery);
 
     if (querySnapshot.empty) {
-      console.log(`No insurance authorization found for client: ${clientId}`);
+                  // No insurance authorization found for client
       return null;
     }
 

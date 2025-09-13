@@ -117,7 +117,7 @@ export const Header = ({ Row, Group, newProduct, setNewProduct, initialState, se
                     id: nanoid(8)
                 })
             } catch (error) {
-                console.log(error)
+                console.error('Error updating product:', error)
             }
         }
     }, [productSelected, IngredientListNameSelected, isComplete])
@@ -147,7 +147,7 @@ export const Header = ({ Row, Group, newProduct, setNewProduct, initialState, se
         }
     }, [product?.pricing?.price])
 
-    console.log("?? NEW PRODUCT: ", newProduct)
+    
 
     return (
         <Container>

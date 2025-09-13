@@ -3,17 +3,22 @@ import styled from "styled-components";
 import Products from "./components/Products";
 import { closeInvoicePreviewModal, selectInvoicePreview } from "../../../../features/invoice/invoicePreviewSlice";
 import { useDispatch, useSelector } from "react-redux";
-import * as antd from "antd";
+import { Modal }  from "antd";
 import { ClientInfoCard } from "./components/ClientInfo";
 import SummaryInfoCard from "./components/SummaryInfoCard";
 import { PaymentMethodInfoCard } from "./components/PaymentMethodInfoCard";
-const { Modal } = antd;
+import { CreditNotesInfoCard } from "./components/CreditNotesInfoCard";
+import { useFbGetCreditNoteApplicationsByInvoice } from "../../../../hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice";
+import { useFbGetCreditNotesByInvoice } from "../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice";
+
 export const InvoicePreview = () => {
   const dispatch = useDispatch();
   const invoicePreviewSelected = useSelector(selectInvoicePreview);
   const isOpen = invoicePreviewSelected?.isOpen;
+  
   // Destructuración segura con optional chaining y valores predeterminados
   const {
+    id: invoiceId,
     client = {},
     products = [],
     paymentMethod = [],
@@ -24,8 +29,16 @@ export const InvoicePreview = () => {
     totalShoppingItems = {},
     totalTaxes = {},
     payment = {},
-    totalPurchaseWithoutTaxes = {}
+    totalPurchaseWithoutTaxes = {},
+    creditNotePayment = []
   } = invoicePreviewSelected?.data || {};
+
+  // Obtener aplicaciones de notas de crédito para esta factura
+  const { applications: creditNoteApplications } = useFbGetCreditNoteApplicationsByInvoice(invoiceId);
+  
+  // Obtener notas de crédito generadas desde esta factura
+  const { creditNotes: generatedCreditNotes } = useFbGetCreditNotesByInvoice(invoiceId);
+
   const handleClose = () => {
     dispatch(closeInvoicePreviewModal());
   }
@@ -35,17 +48,19 @@ export const InvoicePreview = () => {
       <Modal
         open={isOpen}
         onCancel={handleClose}
+        title={"Factura"}
         footer={null}
         style={{ top: 10 }}
         width={800}
       >
-        <div className="flex justify-between items-center">
-          <Title>Detalles de la Factura</Title>
-        </div>
+        <Container>
+        <ClientInfoCard client={client} />
         <Products products={products} />
         <Group>
-          <ClientInfoCard client={client} />
-          <PaymentMethodInfoCard paymentMethod={paymentMethod} />
+          <PaymentMethodInfoCard 
+            paymentMethod={paymentMethod} 
+            creditNoteApplications={creditNoteApplications}
+          />
           <SummaryInfoCard summaryData={{
             sourceOfPurchase,
             totalShoppingItems,
@@ -54,10 +69,24 @@ export const InvoicePreview = () => {
             payment
           }} />
         </Group>
+        
+        {/* Mostrar información de notas de crédito generadas si existen */}
+        {generatedCreditNotes.length > 0 && (
+          <CreditNotesInfoCard 
+            creditNotes={generatedCreditNotes}
+          />
+        )}
+        </Container>
+
       </Modal>
     )
   )
 };
+
+const Container = styled.div`
+  display: grid;
+  gap: 1em;
+`
 
 const Group = styled.div`
   display: grid;

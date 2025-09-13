@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { TableUser } from './TableUser'
 import { fbGetUser } from '../../../../../firebase/Auth/fbGetUser'
 import * as antd from 'antd'
-import { MenuApp } from '../../../..'
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 const { Table, Button, Input } = antd
 export const Users = () => {
   const [users, setUsers] = useState([])

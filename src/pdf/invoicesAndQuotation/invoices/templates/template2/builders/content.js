@@ -8,7 +8,7 @@ export function buildContent(d) {  /* cabecera de la tabla */
   /* cuerpo */
   const body = [
     headerRow,
-    ...d.products.flatMap(p => {
+  ...((d && Array.isArray(d.products)) ? d.products : []).flatMap(p => {
       const price = +p.pricing?.price || 0;
       const taxP  = +p.pricing?.tax   || 0;         // porcentaje
       const tax   = price * (taxP / 100);

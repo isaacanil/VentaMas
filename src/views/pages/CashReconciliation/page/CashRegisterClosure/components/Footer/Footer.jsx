@@ -15,6 +15,7 @@ const Container = styled.div`
     padding: 0.4em;
     position: sticky;
     bottom: 2px;
+    z-index: 1000;
     border-radius: var(--border-radius);
     border: var(--border-primary);
 `

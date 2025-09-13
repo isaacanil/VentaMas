@@ -10,7 +10,9 @@ import changelogs from './items/changelogs'
 import utility from './items/utility'
 import accountsReceivable from './items/accountsReceivable'
 import insurance from './items/insurance'
+import creditNote from './items/creditNote'
 import { filterMenuItemsByAccess } from '../../../../utils/menuAccess'
+import developer from './items/developer'
 
 export const ChevronRight = <FontAwesomeIcon icon={faChevronRight} />
 export const ChevronLeft = <FontAwesomeIcon icon={faChevronLeft} />
@@ -27,6 +29,8 @@ export const getMenuData = () => {
         ...contacts,
         ...admin,
         ...changelogs,
+        ...creditNote,
+        ...developer,
     ]
 
     return filterMenuItemsByAccess(allMenuItems, true);

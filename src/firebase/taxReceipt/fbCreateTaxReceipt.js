@@ -18,12 +18,12 @@ export const fbCreateTaxReceipt = async (taxReceipt, user) => {
     const docSnap = await getDoc(taxReceiptRef);
 
     if (docSnap.exists()) {
-      console.log("El recibo fiscal con la serie", taxReceipt.id, "ya existe.");
+              console.info("Tax receipt already exists:", taxReceipt.id);
       return;
     }
 
     await setDoc(taxReceiptRef, { data: taxReceipt });
   } catch (err) {
-    console.log(err)
+            console.error("Error creating tax receipt:", err);
   }
 }

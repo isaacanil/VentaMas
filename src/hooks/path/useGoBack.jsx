@@ -8,7 +8,7 @@ export function useGoBack(defaultRoute = "/") {
 
   const goBackOrToDefault = () => {
  
-    console.log(location.key, 'location.key')
+
     if (location.key !== 'default') { // Verificar si hay un historial previo
       navigate(-1);
     } else {

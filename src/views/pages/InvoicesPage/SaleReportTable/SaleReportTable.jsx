@@ -18,7 +18,7 @@ const SaleReportTable = ({ bills = [], searchTerm }) => {
       payment: data?.payment?.value,
       products: getTotalItems(data?.products),
       change: data?.change?.value,
-      total: getProductsTotalPrice(data?.products, 0, 0, nfc),
+      total: data?.totalPurchase?.value || 0,
       ver: { data },
       accion: { data },
       dateGroup: DateTime.fromMillis(data?.date?.seconds * 1000).toLocaleString(DateTime.DATE_FULL)

@@ -25,7 +25,7 @@ export default function useInvoice() {
     }) => {
         setLoading(true);
         setError(null);
-        console.log("-------", {user, cart, client, accountsReceivable, insuranceAR, insuranceAuth, ncfType, taxReceiptEnabled, dueDate, insuranceEnabled});
+
         try {
             
             // const invoiceData = await submitInvoice({
@@ -54,10 +54,11 @@ export default function useInvoice() {
                 cashCountStrategy.handleConfirm();
                 return;
             }else{
-                console.log("Error:", JSON.stringify(err, null, 2));
-                console.error("Error code:", errorCode);
-                console.error("Error message:", errorMessage);
-                console.error("Error details:", errorDetails);
+                console.error("Invoice processing error:", {
+                    code: errorCode,
+                    message: errorMessage,
+                    details: errorDetails
+                });
             }
 
             return;

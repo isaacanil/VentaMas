@@ -88,7 +88,7 @@ export const MultimediaManager = () => {
   )
 }
 const Container = styled.div`
-  height: 100vh;
+  height: 100%;
   display: grid;
   grid-template-rows: min-content min-content 1fr;
   grid-template-columns: 1fr;

@@ -1,4 +1,6 @@
-import { Setting, TaxReceiptSetting, UserAdmin } from "../../views";
+import { Setting } from "../../views/pages/setting/setting";
+import { TaxReceiptSetting } from "../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting";
+import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
 import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
 import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
 import BillingConfig from "../../views/component/GeneralConfig/configs/BillingConfig";

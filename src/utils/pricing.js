@@ -58,6 +58,7 @@ export function getDiscount(product) {
 
 export function getTotalPrice(product, taxReceiptEnabled = true, useAmountToBuy = true) {
   if (!product) return 0;
+  console.log('taxReceiptEnabled', taxReceiptEnabled);
   const { price, isSoldByWeight,  } = getPricingDetails(product, useAmountToBuy);
   if (!isValidNumber(price)) return 0;
 
@@ -155,7 +156,7 @@ export function getProductsTax(products = [], taxReceiptEnabled = true) {
   return products.reduce((acc, product) => acc + getTax(product, taxReceiptEnabled), 0);
 }
 
-export function getProductsDiscount(products) {
+export function getProductsDiscount(products = []) {
   return products.reduce((acc, product) => acc + getDiscount(product), 0);
 }
 
@@ -194,11 +195,12 @@ export function getProductIndividualDiscount(product) {
   }
 }
 
-export function getTotalItems(products) {
-  return products.reduce((acc, product) => acc + product?.amountToBuy || 1, 0);
+export function getTotalItems(products = []) {
+  // Sum amountToBuy, defaulting each product to 1; avoid precedence pitfalls
+  return products.reduce((acc, product) => acc + (product?.amountToBuy ?? 1), 0);
 }
 
-export function getProductsTotalPrice(products, totalDiscountPercentage = 0, totalDelivery = 0, taxReceiptEnabled = true) {
+export function getProductsTotalPrice(products = [], totalDiscountPercentage = 0, totalDelivery = 0, taxReceiptEnabled = true) {
   if (!isValidNumber(totalDelivery)) {
     totalDelivery = 0;
   }
@@ -222,7 +224,7 @@ export function getProductsTotalPrice(products, totalDiscountPercentage = 0, tot
 }
 
 export function convertDecimalToPercentage(valorDecimal) {
-  const num = Number(decimalValue);
+  const num = Number(valorDecimal);
   if (isNaN(num)) {
     return 0;
   }

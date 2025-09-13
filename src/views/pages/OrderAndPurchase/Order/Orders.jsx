@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { MenuApp } from '../../../'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { OrdersTable } from './components/OrderListTable/OrdersTable'
 import { FilterBar } from '../Compra/components/FilterBar/FilterBar'
 import { useListenOrders } from '../../../../hooks/useOrders'
@@ -65,7 +65,7 @@ export const Orders = () => {
 
 const Container = styled.div`
   width: 100%;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   background-color: var(--color2);
   display: grid;

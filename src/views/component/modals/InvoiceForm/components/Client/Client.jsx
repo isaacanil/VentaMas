@@ -9,10 +9,8 @@ const { Form, Input, Switch, Row, Col, Divider, Descriptions, Select, Collapse }
 
 export const Client = ({ invoice }) => {
     const clientData = invoice?.client
-    console.log(invoice)
     const dispatch = useDispatch()
     const { clients } = useFbGetClients();
-    console.log(clients)
     const options = clients.map(({ client }) => {
         return {
             label: client.name,
@@ -50,7 +48,7 @@ export const Client = ({ invoice }) => {
         }
     ]
 
-    console.log(options)
+    
     return (
         <div>
             <Divider style={{ marginTop: 0 }} orientation='left' orientationMargin={false}>Informacion Cliente</Divider>

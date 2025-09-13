@@ -2,12 +2,9 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import {
-  Cart,
-  MenuApp,
-  MenuComponents,
-  MultiDisplayControl,
-} from '../../'
+import { Cart } from '../../component/Cart/Cart.jsx'
+import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx'
+import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx'  
 
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
@@ -18,14 +15,14 @@ import { motion } from 'framer-motion'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import { notification } from 'antd'
-import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
-import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
+import { InvoicePanel } from '../../component/Cart/components/InvoicePanel/InvoicePanel.jsx'
 import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js'
 import { deleteClient } from '../../../features/clientCart/clientCartSlice.js'
 
 import { ProductBatchModal } from '../Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx'
 import { selectUser } from '../../../features/auth/userSlice.js'
 import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx'
+import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('');
@@ -111,7 +108,7 @@ export const Sales = () => {
             borderRadius={'bottom-right'}
             searchData={searchData}
             setSearchData={setSearchData}
-          // showNotificationButton={true}
+            showNotificationButton={true}
           />
           < ProductControlEfficient
             productsLoading={productsLoading}
@@ -128,7 +125,7 @@ export const Sales = () => {
 }
 
 const Container = styled(motion.div)`
-  height: 100vh;
+  height: 100%;
   display: grid;
   overflow-y: hidden;
   grid-template-columns: 1fr min-content;
@@ -140,11 +137,8 @@ const Container = styled(motion.div)`
 }
   `
 const ProductContainer = styled.div`
-    display: grid;
-    overflow: hidden;
-    grid-template-rows: min-content min-content;
-    @media(max-width: 800px) {
-      position: relative;
-      grid-template-rows: min-content min-content 1fr;
-}
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
 `

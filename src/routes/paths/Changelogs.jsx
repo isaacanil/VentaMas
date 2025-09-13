@@ -1,4 +1,4 @@
-import { ChangelogList } from "../../views/controlPanel/ChangeLogControl/ChangeLogList/ChangeLogList";
+import { ChangelogList } from "../../views/controlPanel/ChangeLogControl/ChangelogList/ChangelogList";
 import { ChangelogManage } from "../../views/controlPanel/ChangeLogControl/ChangelogManage/ChangelogManage";
 import RoutesName from "../routesName"
 

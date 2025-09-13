@@ -16,7 +16,7 @@ export const transferProductCategories = async (businessIdA, businessIdB, limit 
     const categorySnapshot = await getDocs(categoryQuery);
     const totalCategories = categorySnapshot.docs.length;
 
-    console.log(`Total categorías encontradas en el negocio origen (${businessIdA}): ${totalCategories}`);
+    console.info(`Found ${totalCategories} categories to transfer`);
 
     const batch = writeBatch(db);
     categorySnapshot.docs.forEach(item => {
@@ -27,5 +27,5 @@ export const transferProductCategories = async (businessIdA, businessIdB, limit 
     });
 
     await batch.commit();
-    console.log(`Transferencia de categorías de negocio origen (${businessIdA}) a negocio destino (${businessIdB}) completada.`);
+    console.info("Category transfer completed successfully");
 };

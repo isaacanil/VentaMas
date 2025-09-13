@@ -2,14 +2,20 @@ import { icons } from "../../../../../constants/icons/icons";
 import ROUTES_NAME from "../../../../../routes/routesName";
 
 const {
-    CATEGORIES, 
-    INVENTORY_ITEMS, 
+    CATEGORIES,
+    INVENTORY_ITEMS,
     INVENTORY_SERVICES,
-    PRODUCT_IMAGES_MANAGER, 
-    PRODUCT_OUTFLOW, 
-    WAREHOUSE,
-    SERVICE_OUTFLOW
+    PRODUCT_IMAGES_MANAGER,
+    PRODUCT_OUTFLOW,
+    WAREHOUSES,
+    SERVICE_OUTFLOW,
+    INVENTORY_CONTROL,
+    INVENTORY_MOVEMENTS,
+    INVENTORY_SUMMARY,
 } = ROUTES_NAME.INVENTORY_TERM
+
+// BackOrders proviene del término de compras
+const { BACKORDERS } = ROUTES_NAME.PURCHASE_TERM
 
 const ChevronRight = icons.arrows.chevronRight
 const ChevronLeft = icons.arrows.chevronLeft
@@ -26,38 +32,50 @@ const inventory = [
                 title: 'Administrar Productos',
                 route: INVENTORY_ITEMS,
                 icon: icons.inventory.items,
-                group: 'inventoryItems'
+                group: 'products'
+            },
+            {
+                title: 'Control de Inventario',
+                route: INVENTORY_CONTROL,
+                icon: icons.menu.unSelected.inventory,
+                group: 'inventoryControl'
+            },
+            {
+                title: 'Resumen Inventario',
+                route: INVENTORY_SUMMARY,
+                icon: icons.menu.unSelected.inventory,
+                group: 'inventoryControl'
+            },
+            {
+                title: 'BackOrders',
+                route: BACKORDERS,
+                icon: icons.menu.unSelected.order,
+                group: 'inventoryControl'
             },
             {
                 title: 'Almacenes',
-                route: WAREHOUSE,
+                route: WAREHOUSES,
                 icon: icons.inventory.warehouse,
-                group: 'inventoryItems'
+                group: 'inventoryControl'
             },
             {
-                title: 'Categoría',
+                title: 'Movimientos de Inventario',
+                route: INVENTORY_MOVEMENTS,
+                icon: icons.menu.unSelected.inventory,
+                group: 'inventoryControl'
+            },
+            {
+                title: 'Categoría de Productos',
                 icon: icons.menu.unSelected.category,
                 route: CATEGORIES,
-                group: 'inventoryItems'
+                group: 'products'
             },
             {
-                title: 'Administrador de Imágenes',
+                title: 'Administrador de Imágenes de Productos',
                 route: PRODUCT_IMAGES_MANAGER,
                 icon: icons.inventory.multimediaManager,
-                group: 'inventoryItems'
+                group: 'products'
             },
-            // {
-            //     title: 'Administrar Servicios',
-            //     route: INVENTORY_SERVICES,
-            //     icon: icons.inventory.services,
-            //     group: 'inventoryServices'
-            // },
-            // {
-            //     title: 'Salidas de Productos',
-            //     route: PRODUCT_OUTFLOW,
-            //     icon: icons.inventory.productOutFlow,
-            //     group: 'inventoryItems'
-            // }
         ]
     },
 ]

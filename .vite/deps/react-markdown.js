@@ -1949,7 +1949,7 @@ function run(arr, str) {
     tmp = arr[i];
     beg += tmp.open;
     end += tmp.close;
-    if (!!~str.indexOf(tmp.close)) {
+    if (~str.indexOf(tmp.close)) {
       str = str.replace(tmp.rgx, tmp.close + tmp.open);
     }
   }
@@ -7494,8 +7494,8 @@ function decodeNumericCharacterReference(value, base2) {
     code2 < codes.ht || code2 === codes.vt || code2 > codes.cr && code2 < codes.space || // Control character (DEL) of C0, and C1 controls.
     code2 > codes.tilde && code2 < 160 || // Lone high surrogates and low surrogates.
     code2 > 55295 && code2 < 57344 || // Noncharacters.
-    code2 > 64975 && code2 < 65008 || /* eslint-disable no-bitwise */
-    (code2 & 65535) === 65535 || (code2 & 65535) === 65534 || /* eslint-enable no-bitwise */
+    code2 > 64975 && code2 < 65008 ||  
+    (code2 & 65535) === 65535 || (code2 & 65535) === 65534 ||  
     // Out of range
     code2 > 1114111
   ) {

@@ -10,6 +10,7 @@ import ProductImage from './components/ImagenBlock';
 import ProductHeader from './components/ProductHeader';
 import { StockWarning } from './components/StockWarning';
 import { ProductFooter } from './components/ProductFooter';
+import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 
 const Container = styled(motion.li)`
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.02);
@@ -42,6 +43,8 @@ const Content = styled.div`
 
 export const Product = memo(({ product }) => {
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+  const settingsCart = useSelector(SelectSettingCart) || {};
+  const alertsEnabled = !!(settingsCart.billing?.stockAlertsEnabled);
 
   const {
     productState,
@@ -49,6 +52,7 @@ export const Product = memo(({ product }) => {
     isProductInCart,
     productInCart,
     isLowStock,
+    isCriticalStock,
     isOutOfStock,
     price,
     handleGetThisProduct,
@@ -56,7 +60,7 @@ export const Product = memo(({ product }) => {
     isFirebaseLoading, // Agregar esta línea
   } = useProductHandling(product, taxReceiptEnabled);
 
-  const isDisabled = isOutOfStock || isLowStock;
+  const isDisabled = isOutOfStock || isCriticalStock || isLowStock;
 
   return (
     <Fragment>
@@ -70,6 +74,7 @@ export const Product = memo(({ product }) => {
         isDisabled={isDisabled}
         isOutOfStock={isOutOfStock}
         isLowStock={isLowStock}
+        isCriticalStock={isCriticalStock}
         hasStrictStock={product?.restrictSaleWithoutStock}
       >
         <ProductImage
@@ -83,15 +88,23 @@ export const Product = memo(({ product }) => {
           message="Sin stock"
           position="bottom"
           isSelected={isProductInCart}
-          show={isOutOfStock}
+          show={alertsEnabled && isOutOfStock}
           variant="outOfStock"
+        />
+
+        <StockWarning
+          message="Stock crítico"
+          position="bottom"
+          isSelected={isProductInCart}
+          show={alertsEnabled && !isOutOfStock && isCriticalStock}
+          variant="criticalStock"
         />
 
         <StockWarning
           message="Stock bajo"
           position="bottom"
           isSelected={isProductInCart}
-          show={isLowStock && !isOutOfStock}
+          show={alertsEnabled && isLowStock && !isOutOfStock && !isCriticalStock}
           variant="lowStock"
         />
 
@@ -105,11 +118,12 @@ export const Product = memo(({ product }) => {
             productState={productState}
             productInCart={productInCart}
             product={product}
-            price={price}
-            isProductInCart={isProductInCart}
-            isLowStock={isLowStock}
-            isOutOfStock={isOutOfStock}
-          />
+          price={price}
+          isProductInCart={isProductInCart}
+          isLowStock={isLowStock}
+          isCriticalStock={isCriticalStock}
+          isOutOfStock={isOutOfStock}
+        />
         </Content>
       </Container>
 

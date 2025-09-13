@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Showcase } from './Showcase';
+import { Showcase } from './ShowCase';
 
 
 export const ShowcaseList = ({ showcases }) => {

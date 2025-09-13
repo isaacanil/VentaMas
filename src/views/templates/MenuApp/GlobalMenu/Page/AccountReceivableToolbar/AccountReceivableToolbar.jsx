@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 import { Button } from '../../../../system/Button/Button';
-import { BankOutlined } from '@ant-design/icons';
+import { BankOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { MultiPaymentModal } from './components/MultiPaymentModal/MultiPaymentModal';
 import { useListenAccountsReceivable } from '../../../../../../firebase/accountsReceivable/accountReceivableServices';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { getDateRange } from '../../../../../../utils/date/getDateRange';
 import DateUtils from '../../../../../../utils/date/dateUtils';
+import { message } from 'antd';
+import exportToExcel from '../../../../../../hooks/exportToExcel/useExportToExcel';
+import { applyProfessionalStyling, addTotalsRow, addReportHeader, formatCurrencyColumns } from '../../../../../../hooks/exportToExcel/exportConfig';
+import { DateTime } from 'luxon';
 
-export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchData }) => {
+export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchData, data }) => {
     const matchWithAccountsReceivable = useMatch("/account-receivable/list");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [processedAccounts, setProcessedAccounts] = useState([]);
@@ -48,6 +52,7 @@ export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchD
                     insurance: invoiceData?.insurance?.name || account?.account?.insurance?.name || "N/A",
                     hasInsurance: !!(invoiceData?.insurance?.name || account?.account?.insurance?.name),
                     date: dateInMillis, // Timestamp convertido a milisegundos
+                    lastPaymentDate: account?.lastPaymentDate || null,
                     initialAmount: account?.initialAmountAr || 0,
                     totalPaid: totalPaid,
                     balance: (account?.balance || 0),
@@ -68,6 +73,84 @@ export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchD
         }
     }, [accounts]);
 
+    const buildExportRows = (rows = []) => {
+        // Determinar si debemos incluir la columna de Aseguradora
+        const includeInsurance = rows.some(r => r?.type === 'insurance' || r?.hasInsurance);
+
+        return rows.map((row) => {
+            // Soportar Timestamp de Firestore o milisegundos
+            let createdAtDate;
+            if (row?.date?.seconds) {
+                createdAtDate = DateTime.fromMillis(row.date.seconds * 1000);
+            } else if (typeof row?.date === 'number') {
+                createdAtDate = DateTime.fromMillis(row.date);
+            } else {
+                createdAtDate = null;
+            }
+
+            const lastPay = row?.lastPaymentDate?.seconds
+                ? DateTime.fromMillis(row.lastPaymentDate.seconds * 1000)
+                : null;
+
+            const base = {
+                'Cliente': row?.client || 'N/A',
+                'Cédula/RNC': row?.rnc || '',
+                'Factura': row?.invoiceNumber || 'N/A',
+                'Fecha': createdAtDate ? createdAtDate.toFormat('dd/MM/yyyy HH:mm') : 'N/A',
+                'Monto inicial': Number(row?.initialAmount || 0),
+                'Último pago': lastPay ? lastPay.toFormat('dd/MM/yyyy HH:mm') : 'Sin pagos',
+                'Total pagado': Number(row?.totalPaid || 0),
+                'Balance': Number(row?.balance || 0),
+            };
+
+            if (includeInsurance) {
+                return {
+                    'Aseguradora': row?.insurance || 'N/A',
+                    ...base,
+                };
+            }
+            return base;
+        });
+    };
+
+    const handleExportExcel = async () => {
+        try {
+            // Preferimos los datos del listado (exactamente lo que ve el usuario)
+            const source = Array.isArray(data) && data.length > 0 ? data : processedAccounts;
+            if (!source || source.length === 0) {
+                message.error('No hay cuentas por cobrar para exportar');
+                return;
+            }
+
+            const rows = buildExportRows(source);
+            const sheetName = 'Cuentas por cobrar';
+            const fileName = `cuentas_por_cobrar_${DateTime.now().toFormat('ddMMyyyy')}.xlsx`;
+
+            const onBeforeExport = (ws, exportData, columns) => {
+                addReportHeader(ws, 'REPORTE DE CUENTAS POR COBRAR');
+                applyProfessionalStyling(ws, exportData.length);
+                // Re-estilizar la fila de encabezados que queda en la fila 4
+                const head = ws.getRow(4);
+                head.height = 35;
+                head.font   = { bold: true, color: { argb: 'FF333333' }, size: 12 };
+                head.fill   = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } };
+                head.alignment = { vertical: 'middle', horizontal: 'center' };
+
+                // Formatear columnas monetarias
+                const moneyCols = ['Monto inicial', 'Total pagado', 'Balance'];
+                formatCurrencyColumns(ws, columns, moneyCols);
+                // Totales
+                addTotalsRow(ws, exportData, columns, moneyCols, 'TOTALES');
+            };
+
+            await exportToExcel(rows, sheetName, fileName, onBeforeExport);
+            message.success('Exportación completada');
+        } catch (err) {
+            console.error(err);
+            message.error('No se pudo exportar el Excel');
+        }
+    };
+
     const handleOpenMultiPayment = () => {
         setIsModalVisible(true);
     };
@@ -81,6 +164,12 @@ export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchD
             <Container>
                 {side === 'right' && (
                     <>
+                        <Button
+                            onClick={handleExportExcel}
+                            title={`Exportar Excel`}
+                            borderRadius={'light'}
+                            icon={<FileExcelOutlined />}
+                        />
                         <Button
                             onClick={handleOpenMultiPayment}
                             title={`Pago múltiple de aseguradoras`}
@@ -102,4 +191,5 @@ export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchD
 const Container = styled.div`
     display: flex;
     align-items: center;
+    gap: 10px;
 `;

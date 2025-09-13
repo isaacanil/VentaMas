@@ -16,13 +16,14 @@ export function ProductControlEfficient({ products, productsLoading }) {
 const Container = styled.div`
   height: 100%;
   background-color: ${props => props.theme.bg.color2}; 
-  overflow: hidden;
+  
   border-radius: var(--border-radius-light);
-  display: grid;
-  grid-template-rows: min-content 1fr;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
-  
   position: relative;
 `

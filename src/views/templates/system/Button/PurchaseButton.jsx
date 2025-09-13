@@ -1,4 +1,4 @@
-import { FloatingMessage} from '../../../'
+import { FloatingMessage } from '../FloatingMessage/FloatingMessage';
 
 export const PurchaseButton = () => {
   return (

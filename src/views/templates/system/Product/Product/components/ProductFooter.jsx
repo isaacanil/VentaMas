@@ -74,9 +74,10 @@ export const ProductFooter = ({
   price,
   isProductInCart,
   isLowStock,
+  isCriticalStock,
   isOutOfStock,
 }) => {
-  const isDisabled = isOutOfStock || isLowStock;
+  const isDisabled = isOutOfStock || isCriticalStock || isLowStock;
   const stock = productInCart?.stock ?? product.stock;
 
   return (
@@ -85,6 +86,7 @@ export const ProductFooter = ({
         <AmountToBuy
           isDisabled={isDisabled}
           isOutOfStock={isOutOfStock}
+          isCriticalStock={isCriticalStock}
           isLowStock={isLowStock}
           isSelected={isProductInCart}
           hasStrictStock={product.restrictSaleWithoutStock}
@@ -99,6 +101,7 @@ export const ProductFooter = ({
           <Price
             isDisabled={isDisabled}
             isOutOfStock={isOutOfStock}
+            isCriticalStock={isCriticalStock}
             isLowStock={isLowStock}
             isSelected={isProductInCart}
             hasStrictStock={product.restrictSaleWithoutStock}
@@ -109,6 +112,7 @@ export const ProductFooter = ({
           <Price
             isDisabled={isDisabled}
             isOutOfStock={isOutOfStock}
+            isCriticalStock={isCriticalStock}
             isLowStock={isLowStock}
             isSelected={isProductInCart}
             hasStrictStock={product.restrictSaleWithoutStock}

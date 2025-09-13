@@ -87,7 +87,7 @@ export const LoginV2 = () => {
   };
 
   return (
-    <div style={{ position: "relative", height: "100vh", width: "100vw" }}>
+    <div style={{ position: "relative", height: "100%", width: "100vw" }}>
       <Spin spinning={loading} tip="Cargando..." size="large">
         <Background>
           <Container>
@@ -197,7 +197,7 @@ const Imagen = styled.div`
 
 const ImagenContainer = styled.div`
   padding: 1em;
-  height: 100vh;
+  height: 100%;
   max-height: 800px;
   position: relative;
   padding-right: 0;
@@ -224,7 +224,7 @@ const Container = styled.div`
   grid-template-columns: 1fr 1fr;
   max-width: 1366px;
   max-height: 800px;
-  height: 100vh;
+  height: 100%;
   margin: 0 auto;
 
   @media (max-width: 1000px) {

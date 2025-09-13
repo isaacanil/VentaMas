@@ -1,37 +1,60 @@
-import { useEffect, useState } from 'react';
-import { Button, Card, Tabs, Pagination } from 'antd';
+import { useState } from 'react';
+import { Button, Card, Pagination } from 'antd';
+import { FilterBar } from './components/FilterBar';
 import styled from 'styled-components';
 import { ClientBalanceInfo } from './components/ClientBalanceInfo';
 import { CreditLimits } from './components/CreditLimits';
 import { AccountCard } from './AccountCard/AccountCard';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { calculateTotalActiveBalance, convertAccountsData } from '../../../../../../../../utils/accountsReceivable/accountsReceivable';
-import { fbGetClientAccountsReceivable } from '../../../../../../../../firebase/accountsReceivable/fbGetClientAccountsReceivable';
+import { convertAccountsData } from '../../../../../../../../utils/accountsReceivable/accountsReceivable';
+import { useClientPendingBalance } from '../../../../../../../../firebase/accountsReceivable/useClientPendingBalance';
+import { useClientAccountsReceivableCounts } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivableCounts';
+import { useClientAccountsReceivable } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivable';
+import { usePendingBalance } from '../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+    faFileInvoiceDollar,
+    faReceipt
+} from '@fortawesome/free-solid-svg-icons';
+
 
 const ClientFinancialInfo = ({ client, creditLimitForm }) => {
-  const [accounts, setAccounts] = useState([])
   const user = useSelector(selectUser);
-  const [pendingBalance, setPendingBalance] = useState(0)
-  
 
   const [currentPageOpen, setCurrentPageOpen] = useState(1);
   const [currentPageClosed, setCurrentPageClosed] = useState(1);
-  const pageSize = 5; 
-  
-  const closedAccounts = accounts.filter((account) => !account.isActive);
-  const closedAccountsCount = closedAccounts.length;
-  const openAccounts = accounts.filter((account) => account.isActive);
-  const openAccountsCount = openAccounts.length;
+  const [filterStatus, setFilterStatus] = useState('open');
+  const isActiveValue = filterStatus === 'open';
+  const [pendingBalance2, setPendingBalance2] = useState(0)
 
-  const clientId = client?.id;
+  // listener dinámico según filtro
+  const { accounts: displayedAccountsRaw } = useClientAccountsReceivable({
+    user,
+    clientId: client?.id,
+    isActive: isActiveValue,
+    orderField: 'numberId',
+    orderDirection: 'desc',
+  });
+
+  const displayedAccounts = convertAccountsData(displayedAccountsRaw);
+
+  // counts para la barra de filtros
+  const { open: openAccountsCount, closed: closedAccountsCount } = useClientAccountsReceivableCounts({
+    user,
+    clientId: client?.id,
+  });
   
-  const handleConvertAccountsData = (data) => {
-    setPendingBalance(calculateTotalActiveBalance(data))
-    setAccounts(convertAccountsData(data))
+
+  const { balance: pendingBalance } = useClientPendingBalance({ user, clientId: client?.id });
+  const changePendingBalance = (balance) => {
+    setPendingBalance2(balance)
   }
+  usePendingBalance(user.businessID, client.id, changePendingBalance);
+  
 
-  // Funciones para paginación
+  const pageSize = 4; 
+  
   const getPaginatedAccounts = (accountsList, currentPage) => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
@@ -46,91 +69,14 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
     setCurrentPageClosed(page);
   };
 
-  const paginatedOpenAccounts = getPaginatedAccounts(openAccounts, currentPageOpen);
-  const paginatedClosedAccounts = getPaginatedAccounts(closedAccounts, currentPageClosed);
+  const paginatedDisplayedAccounts = getPaginatedAccounts(
+    displayedAccounts,
+    filterStatus === 'open' ? currentPageOpen : currentPageClosed
+  );
 
-  useEffect(() => {
-    const unsubscribe = fbGetClientAccountsReceivable({ user, clientId, onUpdate: handleConvertAccountsData })
-    return () => { if (unsubscribe) { unsubscribe() } }
-  }, [user, clientId])
-
-  const tabItems = [
-    {
-      key: '1',
-      label: `Abiertas ${openAccountsCount}`,
-      children: (
-        <div>
-          <Accounts>
-            {paginatedOpenAccounts.map((account) => (
-              <AccountCard
-                key={account.arId}
-                account={account}
-                accountNumber={account.numberId}
-                date={account.date}
-                frequency={account.frequency}
-                balance={account.balance}
-                installments={account.installments}
-                installmentAmount={account.installmentAmount}
-                lastPayment={account.lastPayment}
-                isActive={account.isActive}
-              />
-            ))}
-          </Accounts>
-          {openAccountsCount > pageSize && (
-            <PaginationContainer>
-              <Pagination
-                current={currentPageOpen}
-                total={openAccountsCount}
-                pageSize={pageSize}
-                onChange={handleOpenPageChange}
-                showSizeChanger={false}
-                showTotal={(total, range) => 
-                  `${range[0]}-${range[1]} de ${total} cuentas`
-                }
-              />
-            </PaginationContainer>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: '2',
-      label: `Cerradas ${closedAccountsCount}`,
-      children: (
-        <div>
-          <Accounts>
-            {paginatedClosedAccounts.map((account) => (
-              <AccountCard
-                key={account.accountNumber}
-                accountNumber={account.accountNumber}
-                date={account.date}
-                frequency={account.frequency}
-                balance={account.balance}
-                installments={account.installments}
-                installmentAmount={account.installmentAmount}
-                lastPayment={account.lastPayment}
-                isActive={account.isActive}
-                account={account}
-              />
-            ))}
-          </Accounts>          {closedAccountsCount > pageSize && (
-            <PaginationContainer>
-              <Pagination
-                current={currentPageClosed}
-                total={closedAccountsCount}
-                pageSize={pageSize}
-                onChange={handleClosedPageChange}
-                showSizeChanger={false}
-                showTotal={(total, range) => 
-                  `${range[0]}-${range[1]} de ${total} cuentas`
-                }
-              />
-            </PaginationContainer>
-          )}
-        </div>
-      ),
-    },
-  ];
+  const displayedAccountsCount = displayedAccounts.length;
+  const currentPage = filterStatus === 'open' ? currentPageOpen : currentPageClosed;
+  const handlePageChange = filterStatus === 'open' ? handleOpenPageChange : handleClosedPageChange;
 
   return (
     <Container>
@@ -140,8 +86,50 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
       />
       <CreditLimits creditLimitForm={creditLimitForm} client={client} arBalance={pendingBalance || 0}/>
       <AccountsReceivable>
-        <SectionTitle>Cuentas por cobrar</SectionTitle>
-        <Tabs defaultActiveKey="1" items={tabItems} />
+        <SectionTitle>
+          <FontAwesomeIcon icon={faFileInvoiceDollar} />
+          <span>Cuentas por cobrar</span>
+        </SectionTitle>
+        <FilterBar
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+          openAccountsCount={openAccountsCount}
+          closedAccountsCount={closedAccountsCount}
+        />
+        <Accounts>
+          {paginatedDisplayedAccounts.length > 0 ? (
+            paginatedDisplayedAccounts.map((account) => (
+              <AccountCard
+                key={account.arId || account.accountNumber}
+                account={account}
+                accountNumber={account.numberId || account.accountNumber}
+                date={account.date}
+                frequency={account.frequency}
+                balance={account.balance}
+                installments={account.installments}
+                installmentAmount={account.installmentAmount}
+                lastPayment={account.lastPayment}
+                isActive={account.isActive}
+              />
+            ))
+          ) : (
+            <NoAccountsMessage>
+              <FontAwesomeIcon icon={faReceipt} />
+              <span>No hay cuentas por cobrar {filterStatus === 'open' ? 'abiertas' : 'cerradas'}</span>
+            </NoAccountsMessage>
+          )}
+        </Accounts>
+        {displayedAccountsCount > pageSize && (
+          <PaginationContainer>
+            <Pagination
+              current={currentPage}
+              total={displayedAccountsCount}
+              pageSize={pageSize}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+            />
+          </PaginationContainer>
+        )}
       </AccountsReceivable>  
     </Container>
   );
@@ -149,72 +137,136 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
 
 export default ClientFinancialInfo;
 
+// Contenedor principal
 export const Container = styled.div`
   display: grid;
-  gap: 1em;
+  gap: 1rem;
 `;
 
+// Encabezado de sección
 export const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
+// Títulos y texto
 export const CodeTitle = styled.p`
-  font-weight: bold;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
+  line-height: 1.4;
+  margin: 0;
 `;
 
 export const ClientName = styled.p`
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+  line-height: 1.5;
+  margin: 0;
   font-style: italic;
 `;
 
+// Cards de balance
 export const BalanceCard = styled(Card)`
   text-align: center;
+  
+  .ant-card-body {
+    padding: 12px;
+  }
 `;
 
 export const BalanceTitle = styled.div`
-  font-weight: bold;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
 `;
 
 export const BalanceAmount = styled.div`
-  color: red;
-
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ff4d4f;
+  line-height: 1.3;
+  margin: 0;
 `;
 
+// Cards de límite de crédito
 export const CreditLimitCard = styled(Card)`
   text-align: center;
+  
+  .ant-card-body {
+    padding: 12px;
+  }
 `;
 
 export const CreditAvailableCard = styled(Card)`
   text-align: center;
+  
+  .ant-card-body {
+    padding: 12px;
+  }
 `;
 
 export const LimitTitle = styled.div`
-  font-weight: bold;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
 `;
 
 export const LimitAmount = styled.div`
-
-`;
-
-export const StyledButton = styled(Button)`
-  margin-top: 10px;
-`;
-
-export const AccountsReceivable = styled.div`
-
-`;
-
-export const SectionTitle = styled.h2`
-  font-weight: bold;
-  font-size: 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
+  line-height: 1.3;
   margin: 0;
 `;
 
+// Botón estilizado
+export const StyledButton = styled(Button)`
+  margin-top: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+`;
+
+// Sección de cuentas por cobrar
+export const AccountsReceivable = styled.div`
+  display: grid;
+  padding: 0 12px;  
+  gap: 1rem;
+`;
+
+export const SectionTitle = styled.h2`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
+  line-height: 1.4;
+  margin: 0;
+  
+  svg {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    color: #1890ff;
+  }
+`;
+
 export const OpenAccountsTitle = styled.div`
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+  line-height: 1.5;
   margin-bottom: 10px;
 `;
 
+// Sección de pagos
 export const Payments = styled.div`
   margin-top: 10px;
 `;
@@ -223,23 +275,80 @@ export const PaymentRow = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
+  
+  span {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
+    line-height: 1.5;
+  }
 `;
 
+// Sección general
 export const Section = styled.section`
+  margin: 0.75rem 0;
+`;
 
-`
+// Línea divisoria
 export const Line = styled.div`
-    border-bottom: 1px solid #ccc;
-`
+  border-bottom: 1px solid ${({ theme }) => theme.divider || 'rgba(0, 0, 0, 0.12)'};
+  margin: 0.5rem 0;
+`;
 
+// Contenedor de cuentas
 const Accounts = styled.div`
   display: grid;
-  gap: 0.4em;
- `
+  gap: 0.4rem;
+`;
 
+// Contenedor de paginación
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin-top: 1em;
-  padding: 1em 0;
-`
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  
+  .ant-pagination {
+    font-size: 0.875rem;
+    
+    .ant-pagination-item {
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    
+    .ant-pagination-total-text {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+    }
+  }
+`;
+
+export const NoAccountsMessage = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 200px;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.divider || 'rgba(0, 0, 0, 0.12)'};
+  margin: 1rem 0;
+
+  svg {
+    font-size: 2.5rem;
+    opacity: 0.6;
+    color: #bfbfbf;
+  }
+  
+  span {
+    text-align: center;
+    font-size: 1rem;
+    color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+  }
+`;

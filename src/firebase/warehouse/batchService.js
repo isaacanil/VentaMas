@@ -164,7 +164,7 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
         (docSnapshot) => {
           if (docSnapshot.exists()) {
             const updatedBatch = { id: docSnapshot.id, ...docSnapshot.data() };
-            console.log('Updated batch:', updatedBatch);
+      
 
             // Actualizar el estado de los batches
             callback((prevBatches) => {

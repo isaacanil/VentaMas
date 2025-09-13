@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
-import { Spin, Tag } from 'antd';
+import { Spin, Tag, Button, Modal } from 'antd';
 import { CheckCircleOutlined, WarningOutlined, StopOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { createElement } from 'react';
+import { createElement, useState } from 'react';
 
 const Panel = styled.div`
   padding: 24px;
@@ -197,6 +197,8 @@ export const RncPanel = ({ rncInfo, loading }) => {
 
   if (!rncInfo && !loading) return null;
 
+  const [isStatusModalVisible, setStatusModalVisible] = useState(false);
+
   const status = rncInfo?.status;
   const statusInfo = STATUS_INFO[status] || {
     color: 'default',
@@ -256,28 +258,40 @@ export const RncPanel = ({ rncInfo, loading }) => {
         </Field>
       </Info>
 
-      <StatusBox $status={status}>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-          <span className="icon" style={{ fontSize: '20px' }}>
-            {createElement(statusInfo.icon)}
-          </span>
-          <div>
-            <div style={{ fontWeight: 500, marginBottom: '4px' }}>
-              {statusInfo.title}
-            </div>
-            <div style={{ fontSize: '14px' }}>
-              {statusInfo.description}
-            </div>
-            {statusInfo.details && (
-              <div className="details-section">
-                <ul className="details-list">
-                  {formatDetails(statusInfo.details)}
-                </ul>
+      <Button type="link"  onClick={() => setStatusModalVisible(true)} style={{ marginTop: '12px' }}>
+        Más información
+      </Button>
+
+      <Modal
+        open={isStatusModalVisible}
+        footer={null}
+        onCancel={() => setStatusModalVisible(false)}
+        title="Estado del RNC"
+        centered
+      >
+        <StatusBox $status={status}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+            <span className="icon" style={{ fontSize: '20px' }}>
+              {createElement(statusInfo.icon)}
+            </span>
+            <div>
+              <div style={{ fontWeight: 500, marginBottom: '4px' }}>
+                {statusInfo.title}
               </div>
-            )}
+              <div style={{ fontSize: '14px' }}>
+                {statusInfo.description}
+              </div>
+              {statusInfo.details && (
+                <div className="details-section">
+                  <ul className="details-list">
+                    {formatDetails(statusInfo.details)}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </StatusBox>
+        </StatusBox>
+      </Modal>
     </Panel>
   );
 };

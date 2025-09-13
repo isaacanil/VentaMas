@@ -4,9 +4,8 @@ import { Row } from '../../../AdvancedTable'
 import { motion } from 'framer-motion'
 import { icons } from '../../../../../../../constants/icons/icons'
 
-export const TableHeader = ({ handleSort, columnOrder, sortConfig, isWideScreen, isWideLayout }) => {
+export const TableHeader = ({ handleSort, columnOrder, sortConfig, isWideScreen, isWideLayout, rowSize = 'medium' }) => {
 
-  // Filtrar columnOrder para incluir solo columnas con estado 'active'
   const activeColumns = columnOrder.filter(col => col.status === 'active');
 
   return (
@@ -19,6 +18,7 @@ export const TableHeader = ({ handleSort, columnOrder, sortConfig, isWideScreen,
             fixed={col.fixed}
             minWidth={col.minWidth}
             maxWidth={col.maxWidth}
+            data-size={rowSize}
             onClick={() => col.sortable ? handleSort(col.accessor) : null}
           >
             {col.Header}
@@ -51,11 +51,19 @@ const Container = styled.div`
     z-index: 1;
     width: 100%;
 `
+const sizeHeights = {
+  small: '2.1em',
+  medium: '2.75em', // existing
+  large: '3.4em' // slightly larger than previous 3.25em
+};
+
 const HeaderCell = styled.div`
   display: flex;
   align-items: center;
   padding: 0 10px;
-  height: 2.75em;
+  height: ${() => sizeHeights.medium};
+  &[data-size='small'] { height: ${sizeHeights.small}; }
+  &[data-size='large'] { height: ${sizeHeights.large}; }
   font-weight: bold;
   gap: 0.6em;
   position: ${props => props.fixed ? 'sticky' : 'relative'};

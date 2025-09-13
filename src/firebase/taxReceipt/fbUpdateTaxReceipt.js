@@ -35,7 +35,7 @@ export const fbUpdateTaxReceipt = async (user, taxReceiptArray) => {
 
         // Confirmar la transacción por lotes
         await batch.commit();
-        console.log("Comprobantes fiscales actualizados con éxito.");
+        console.info("Tax receipts updated successfully");
         
     } catch (error) {
         console.error("Error al actualizar los comprobantes fiscales:", error);

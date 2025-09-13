@@ -124,7 +124,6 @@ export const fbAddPurchase = async (user, purchase, fileList = [], setLoading) =
         const purchasesRef = doc(db, "businesses", user.businessID, "purchases", id);
         setLoading({ isOpen: true, message: "Iniciando proceso de registro de Compra" });
         
-        console.log("purchase------: ", purchase)
         const nextID = await getNextID(user, 'lastPurchaseNumberId');
         
         // Convert replenishment expirationDates to Timestamps
@@ -152,7 +151,6 @@ export const fbAddPurchase = async (user, purchase, fileList = [], setLoading) =
         setLoading({ isOpen: true, message: "Actualizando stock de productos..." });
         await fbUpdateProdStockForReplenish(user, data.replenishments);
 
-        console.log("*************data: ", data)
         await setDoc(purchasesRef, { data });
         setLoading({ isOpen: false, message: "" });
         return data;

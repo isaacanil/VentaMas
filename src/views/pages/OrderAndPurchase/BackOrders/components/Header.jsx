@@ -1,9 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Input, DatePicker, Select } from 'antd';
+import { Input, DatePicker, Select, Button } from 'antd';
 import {
   SearchOutlined,
   SortAscendingOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 
 const { RangePicker } = DatePicker;
@@ -42,11 +43,26 @@ const StatBox = styled.div`
 
 const FiltersWrapper = styled.div`
   display: flex;
-  gap: 6px;
+  gap: 12px;
   flex-wrap: wrap;
+  align-items: flex-end;
+`;
+
+const FilterField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+`;
+
+const Label = styled.span`
+  font-size: 11px;
+  color: #8c8c8c;
 `;
 
 const sortOptions = [
+  { value: 'name-asc', label: 'Nombre (A–Z)' },
+  { value: 'name-desc', label: 'Nombre (Z–A)' },
   { value: 'pending-desc', label: 'Mayor cantidad pendiente' },
   { value: 'pending-asc', label: 'Menor cantidad pendiente' },
   { value: 'date-desc', label: 'Más recientes' },
@@ -55,7 +71,24 @@ const sortOptions = [
   { value: 'progress-asc', label: 'Menor progreso' }
 ];
 
-const Header = ({ stats, searchText, setSearchText, dateRange, setDateRange, sortBy, setSortBy }) => {
+const Header = ({
+  stats,
+  searchText,
+  setSearchText,
+  dateRange,
+  setDateRange,
+  sortBy,
+  setSortBy,
+  statusFilter,
+  setStatusFilter,
+  onExport,
+  exportDisabled
+}) => {
+  const statusOptions = [
+    { value: 'all', label: 'Todos los estados' },
+    { value: 'pending', label: 'Pendientes' },
+    { value: 'reserved', label: 'Reservados' },
+  ];
   return (
     <HeaderContainer>
       <HeaderStats>
@@ -74,31 +107,64 @@ const Header = ({ stats, searchText, setSearchText, dateRange, setDateRange, sor
       </HeaderStats>
 
       <FiltersWrapper>
-        <Input
-          placeholder="Buscar producto"
-          prefix={<SearchOutlined />}
-          value={searchText}
-          onChange={e => setSearchText(e.target.value)}
-          style={{ width: '180px' }}
-        />
-        <RangePicker
-          onChange={setDateRange}
-          placeholder={['Inicio', 'Fin']}
-          style={{ width: 'auto' }}
-        />
-        <Select
-          value={sortBy}
-          onChange={setSortBy}
-          style={{ width: '160px' }}
-          placeholder="Ordenar por"
-          suffixIcon={<SortAscendingOutlined />}
-        >
-          {sortOptions.map(option => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Select>
+        <FilterField>
+          <Label>Buscar</Label>
+          <Input
+            placeholder="Producto"
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            style={{ width: '180px' }}
+          />
+        </FilterField>
+
+        <FilterField>
+          <Label>Fecha</Label>
+          <RangePicker
+            onChange={setDateRange}
+            placeholder={['Inicio', 'Fin']}
+            style={{ width: 'auto' }}
+          />
+        </FilterField>
+
+        <FilterField>
+          <Label>Estado</Label>
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            style={{ width: '160px' }}
+            placeholder="Estado"
+          >
+            {statusOptions.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </FilterField>
+
+        <FilterField>
+          <Label>Ordenar por</Label>
+          <Select
+            value={sortBy}
+            onChange={setSortBy}
+            style={{ width: '160px' }}
+            placeholder="Ordenar por"
+            suffixIcon={<SortAscendingOutlined />}
+          >
+            {sortOptions.map(option => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </FilterField>
+
+        <div style={{ marginLeft: 'auto' }}>
+          <Button type="default" icon={<DownloadOutlined />} disabled={exportDisabled} onClick={onExport}>
+            Exportar Excel
+          </Button>
+        </div>
       </FiltersWrapper>
     </HeaderContainer>
   );

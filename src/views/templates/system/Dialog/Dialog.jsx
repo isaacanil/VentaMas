@@ -295,7 +295,7 @@ const getDialogSize = (size) => {
 
 const Backdrop = styled(motion.div)`
     position: fixed;
-    height: 100vh;
+    height: 100%;
     width: 100vw;
     backdrop-filter: blur(4px) brightness(0.7);
     display: flex;

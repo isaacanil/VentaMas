@@ -20,7 +20,7 @@ import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseC
 
 const Container = styled.div`
   display: grid;
-  height: 100vh;
+  height: 100%;
   grid-template-rows: min-content 1fr min-content;
   overflow-y: hidden;
 `

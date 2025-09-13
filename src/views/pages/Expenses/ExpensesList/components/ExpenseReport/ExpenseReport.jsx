@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import styled from 'styled-components';
 import { AnimatePresence, motion } from 'framer-motion';
 import Typography from '../../../../../templates/system/Typografy/Typografy';
-import { Button } from '../../../../..';
+import { Button } from '../../../../../templates/system/Button/Button';
 import { useClickOutSide } from '../../../../../../hooks/useClickOutSide';
 import { DailyExpenseBarChart } from './reports/DailyExpensesBarChart';
 import { CategoryExpenseBarChart } from './reports/CategoryExpenseBarChart';

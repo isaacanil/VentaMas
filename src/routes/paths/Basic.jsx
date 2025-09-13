@@ -1,4 +1,5 @@
-import { Home, Welcome } from "../../views";
+import { Home } from "../../views/pages/Home/Home";
+import { Welcome } from "../../views/pages/Welcome/Welcome";
 import ROUTES_NAME from "../routesName";
 
 const { BASIC_TERM } = ROUTES_NAME;

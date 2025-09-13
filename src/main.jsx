@@ -2,9 +2,8 @@ import { StrictMode, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './firebase/firebaseconfig';
 import App from './App';
-import './index.css';
-import './App.css';
 import './styles/normalize/normalize.css';
+import './index.css';
 import './variable.css';
 import './styles/typography/typographyStyle.scss';
 import './styles/theme.css';
@@ -19,6 +18,13 @@ import { AntConfigProvider } from './ant/AntConfigProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {App as AntApp} from "antd";
 import { HelmetProvider } from 'react-helmet-async';
+import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill';
+
+(async () => {
+  if (shouldPolyfill()) {
+    await import('@formatjs/intl-segmenter/polyfill-force');
+  }
+})();
 
 const queryClient = new QueryClient();
 

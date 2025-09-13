@@ -6,7 +6,7 @@ import { getNextID } from "../Tools/getNextID";
 export const fbAddClient = async (user, client) => {
     try {
         if (!user || !user.businessID) throw new Error('No user or businessID');
-      console.log('cliente', client)
+        // Processing client data
         client = { ...client, 
             id: nanoid(8) ,
             numberId: await getNextID(user, "lastClientId")

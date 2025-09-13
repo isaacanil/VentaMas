@@ -12,16 +12,16 @@ export const fbUpdateProductOutflow = async (user, newItem) => {
     try {
         const currentItem = await getCurrentProductOutflow(productOutflowRef);
         if (!currentItem) {
-            console.log("No existe el documento!");
+            console.warn("Product outflow document not found");
             return;
         }
 
         const updates = calculateDifferences(currentItem.productList, newItem.productList);
-        console.log(updates)
+        // Applying updates
         await fbUpdateStock(user, updates);
         await updateDoc(productOutflowRef, newItem);
     } catch (error) {
-        console.log("Error al actualizar el flujo de salida de productos: ", error);
+        console.error("Error updating product outflow:", error);
     }
 };
 

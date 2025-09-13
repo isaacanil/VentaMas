@@ -18,6 +18,6 @@ export const fbAddRncData = async (rncData) => {
         await batch.commit();
 
         // Opcional: Mostrar progreso
-        console.log(`Lote procesado: ${end} de ${rncData.length}`);
+        // Batch processed
     }
 };

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import noImg from '../../../../../../../assets/producto/noImg.png'
+import noImg from '../../../../../../../assets/producto/noimg.png'
 
 import useImageFallback from '../../../../../../../hooks/image/useImageFallback';
 import styled from 'styled-components';

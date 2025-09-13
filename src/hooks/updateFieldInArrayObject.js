@@ -26,7 +26,7 @@ export const findPropertyObjectArray = (array, id, property) => {
         if (ObjectSelected) {
             setArray(ObjectSelected[property])
         }
-        console.log(array)
+    
     }, [array])
     return array
 }

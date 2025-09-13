@@ -6,7 +6,9 @@ import {
   faShoppingCart, 
   faCube, 
   faFileText, 
-  faCog 
+  faCog,
+  faBoxesStacked,
+  faWarehouse
 } from '@fortawesome/free-solid-svg-icons'
 import { Line } from 'react-chartjs-2'
 
@@ -29,6 +31,14 @@ export const HomeScreen = () => {  const items = [
     {
       icon: <FontAwesomeIcon icon={faCube}/>,
       label: 'Inventario',
+    },
+    {
+      icon: <FontAwesomeIcon icon={faBoxesStacked}/> ,
+      label: 'Control de Inventario',
+    },
+    {
+      icon: <FontAwesomeIcon icon={faWarehouse}/> ,
+      label: 'Almacenes',
     },
     {
       icon: <FontAwesomeIcon icon={faFileText} />,

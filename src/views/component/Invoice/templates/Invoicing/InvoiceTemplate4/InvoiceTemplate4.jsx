@@ -300,7 +300,8 @@ export const renderPaymentArea = (
   const paymentLabel = {
     cash: "Efectivo",
     card: "Tarjeta",
-    transfer: "Transferencia"
+    transfer: "Transferencia",
+    creditNote: "Nota de Credito"
   };
 
   // Items a mostrar en la sección de pago
@@ -361,6 +362,24 @@ export const renderPaymentArea = (
       paymentText += renderSingleValueItem(item) + '\n';
     }
   });
+
+  // Sección de notas de crédito aplicadas
+  const creditNotes = data?.creditNotePayment || [];
+  if (creditNotes.length > 0) {
+    paymentText += separatorLine() + '\n';
+    paymentText += centerText('NOTAS DE CREDITO APLICADAS') + '\n';
+    paymentText += separatorLine() + '\n';
+    
+    creditNotes.forEach(note => {
+      const ncfText = `NCF: ${note.ncf}`;
+      const amountText = formatNumber(note.amountUsed);
+      const left = formatColumn(ncfText, 20, 'left');
+      const right = formatColumn(amountText, 20, 'right');
+      paymentText += left + right + '\n';
+    });
+    
+    paymentText += separatorLine() + '\n';
+  }
 
   paymentText += '\n'; // Cierre con salto de línea
   return paymentText;

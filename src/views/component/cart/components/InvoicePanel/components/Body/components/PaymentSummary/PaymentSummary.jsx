@@ -1,7 +1,7 @@
 import React from 'react'
 import * as andt from 'antd'
 import styled from 'styled-components'
-import { Showcase } from '../../../../../../../../templates/system/Showcase/Showcase'
+import { Showcase } from '../../../../../../../../templates/system/ShowCase/ShowCase'
 import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice'
 import { useSelector } from 'react-redux'
 import { selectCart } from '../../../../../../../../../features/cart/cartSlice'

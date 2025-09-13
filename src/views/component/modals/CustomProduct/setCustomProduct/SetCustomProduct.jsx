@@ -55,7 +55,7 @@ export const SetCustomProduct = ({ isOpen }) => {
             dispatch(addProduct(newProduct))
             return Promise.resolve();
         } catch (error) {
-            console.log(error)
+            console.error('Error in SetCustomProduct:', error)
             dispatch(addNotification({ id: nanoid(), message: 'Error al agregar producto', type: 'error' }))
         }
 

@@ -24,7 +24,7 @@ const getSegmentCollectionRef = (businessId) => {
 const createSegment = async ({ user, segmentData }) => {
     const id = nanoid();
     try {
-        console.log(segmentData)
+        // Segment data processed
         if (!segmentData.name || typeof segmentData.capacity !== 'number') {
             throw new Error('Datos inválidos para crear un segmento');
         }

@@ -226,7 +226,6 @@ export const cartSlice = createSlice({
             state.data.change.value  = 0;
         },
         resetCart: (state) => ({
-
             ...initialState,
             settings: {
                 ...initialState.settings,
@@ -319,6 +318,74 @@ export const cartSlice = createSlice({
                 updateAllTotals(state);
             }
         },
+        setCreditNotePayment: (state, action) => {
+            const creditNoteSelections = action.payload || [];
+            
+            // Calcular el total de notas de crédito aplicadas
+            const totalCreditNoteAmount = creditNoteSelections.reduce((sum, selection) => 
+                sum + (selection.amountToUse || 0), 0
+            );
+            
+            // Calcular cuánto se ha pagado con otros métodos
+            const totalOtherPayments = state.data.paymentMethod
+                .filter(method => method.status && method.method !== 'creditNote')
+                .reduce((sum, method) => sum + (Number(method.value) || 0), 0);
+            
+            // Validar que el total no exceda el monto de la compra
+            const totalPurchase = state.data.totalPurchase?.value || 0;
+            const remainingToPay = Math.max(0, totalPurchase - totalOtherPayments);
+            const validCreditNoteAmount = Math.min(totalCreditNoteAmount, remainingToPay);
+            
+            // Si el monto de notas de crédito es válido, aplicarlo
+            if (validCreditNoteAmount >= 0) {
+                state.data.creditNotePayment = creditNoteSelections
+                    .filter(selection => selection.amountToUse > 0)
+                    .map(selection => ({
+                        id: selection.id,
+                        ncf: selection.creditNote?.ncf || selection.creditNote?.number || '',
+                        amountUsed: selection.amountToUse,
+                        originalAmount: selection.creditNote?.totalAmount || 0,
+                        appliedDate: new Date().toISOString()
+                    }));
+            }
+            
+            // Actualizar el método de pago de notas de crédito
+            const creditNoteMethodIndex = state.data.paymentMethod.findIndex(
+                method => method.method === 'creditNote'
+            );
+            
+            if (creditNoteMethodIndex !== -1) {
+                state.data.paymentMethod[creditNoteMethodIndex] = {
+                    ...state.data.paymentMethod[creditNoteMethodIndex],
+                    value: validCreditNoteAmount,
+                    status: validCreditNoteAmount > 0
+                };
+            } else if (validCreditNoteAmount > 0) {
+                // Si no existe el método de pago de notas de crédito, agregarlo
+                state.data.paymentMethod.push({
+                    method: 'creditNote',
+                    name: 'Notas de Crédito',
+                    value: validCreditNoteAmount,
+                    status: true
+                });
+            }
+        },
+        clearCreditNotePayment: (state) => {
+            state.data.creditNotePayment = [];
+            
+            // Desactivar el método de pago de notas de crédito
+            const creditNoteMethodIndex = state.data.paymentMethod.findIndex(
+                method => method.method === 'creditNote'
+            );
+            
+            if (creditNoteMethodIndex !== -1) {
+                state.data.paymentMethod[creditNoteMethodIndex] = {
+                    ...state.data.paymentMethod[creditNoteMethodIndex],
+                    value: 0,
+                    status: false
+                };
+            }
+        },
 
     }
 })
@@ -363,10 +430,13 @@ export const {
     setBillingSettings,
     updateProductInsurance,
     recalcTotals,
-    updateInsuranceStatus,    addInvoiceComment,
+    updateInsuranceStatus,
+    addInvoiceComment,
     deleteInvoiceComment,
     updateProductDiscount,
-    clearCxcAutoRemovalNotification
+    clearCxcAutoRemovalNotification,
+    setCreditNotePayment,
+    clearCreditNotePayment
 } = cartSlice.actions
 
 export const SelectProduct = (state) => state.cart.data.products;
@@ -422,5 +492,9 @@ export const selectTotalIndividualDiscounts = (state) => {
         return total;
     }, 0);
 };
+
+export const selectCreditNotePayment = (state) => state.cart.data.creditNotePayment;
+export const selectTotalCreditNotePayment = (state) => 
+    state.cart.data.creditNotePayment.reduce((sum, selection) => sum + (selection.amountUsed || 0), 0);
 
 export default cartSlice.reducer

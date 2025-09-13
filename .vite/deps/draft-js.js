@@ -4580,7 +4580,7 @@ var require_getRangesForDraftEntity = __commonJS({
           end
         });
       });
-      !!!ranges.length ? true ? invariant(false, "Entity key not found in this range.") : invariant(false) : void 0;
+      !ranges.length ? true ? invariant(false, "Entity key not found in this range.") : invariant(false) : void 0;
       return ranges;
     }
     module.exports = getRangesForDraftEntity;
@@ -6023,7 +6023,7 @@ var require_DraftEntity = __commonJS({
        */
       __get: function __get(key) {
         var instance = instances.get(key);
-        !!!instance ? true ? invariant(false, "Unknown DraftEntity key: %s.", key) : invariant(false) : void 0;
+        !instance ? true ? invariant(false, "Unknown DraftEntity key: %s.", key) : invariant(false) : void 0;
         return instance;
       },
       /**
@@ -7432,7 +7432,7 @@ var require_ua_parser = __commonJS({
               break;
             }
             matches = regex[j++].exec(ua);
-            if (!!matches) {
+            if (matches) {
               for (p = 0; p < props.length; p++) {
                 match = matches[++k];
                 q = props[p];

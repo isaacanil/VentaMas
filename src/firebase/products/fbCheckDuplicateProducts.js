@@ -58,9 +58,9 @@ export async function fbCheckDuplicateProducts(businessID) {
     // Verifica si hay documentos para eliminar
     if (uniqueProducts.size < productSnapshot.size) { // Corregido aquí
       await batch.commit(); // Ejecuta las operaciones en el batch
-      console.log(`Eliminados duplicados, manteniendo ${uniqueProducts.size} productos únicos.`);
+              console.info(`Duplicate cleanup completed. Kept ${uniqueProducts.size} unique products.`);
     } else {
-      console.log("No se encontraron productos duplicados para eliminar.");
+              console.info("No duplicate products found to remove.");
     }
   } catch (error) {
     console.error("Error al procesar productos duplicados:", error);

@@ -10,25 +10,41 @@ const createMenuItems = (items) => items.map((item, index) => ({ ...item, id: in
 const menuItems = createMenuItems([
   { title: 'Venta', icon: icons.menu.unSelected.sale, route: ROUTES_NAME.SALES_TERM.SALES, category: 'Ventas' },
   { title: 'Facturas', icon: icons.menu.unSelected.register, route: ROUTES_NAME.SALES_TERM.BILLS, category: 'Ventas' },
+  { title: 'Productos', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_ITEMS, category: 'Inventario' },
   { title: 'Preventas', icon: <FontAwesomeIcon icon={faTicket} />, route: ROUTES_NAME.SALES_TERM.PREORDERS, category: 'Ventas' },
   { title: 'Compras', icon: icons.menu.unSelected.purchase, route: ROUTES_NAME.PURCHASE_TERM.PURCHASES, category: 'Operaciones' },
   { title: 'Ordenes', icon: icons.menu.unSelected.order, route: ROUTES_NAME.ORDER_TERM.ORDERS, category: 'Operaciones' },
+  { title: 'BackOrders', icon: icons.menu.unSelected.order, route: ROUTES_NAME.PURCHASE_TERM.BACKORDERS, category: 'Inventario' },
   { title: 'Cuentas por Cobrar', icon: icons.menu.unSelected.accountsReceivable, route: ROUTES_NAME.ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST, category: 'Finanzas' },
-  { title: 'Productos', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_ITEMS, category: 'Inventario' },
+  { title: 'Notas de Crédito', icon: icons.finances.fileInvoiceDollar, route: ROUTES_NAME.CREDIT_NOTE_TERM.CREDIT_NOTE_LIST, category: 'Finanzas' },
+  { title: 'Control Inventario', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_CONTROL, category: 'Inventario' },
+  { title: 'Resumen Inventario', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_SUMMARY, category: 'Inventario' },
   { title: 'Almacenes', icon: <FontAwesomeIcon icon={faWarehouse} />, route: ROUTES_NAME.INVENTORY_TERM.WAREHOUSES, category: 'Inventario' },
+  { title: 'Movimientos', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_MOVEMENTS, category: 'Inventario' },
   { title: 'Clientes', icon: icons.users.client, route: ROUTES_NAME.CONTACT_TERM.CLIENTS, category: 'Contactos' },
   { title: 'Proveedores', icon: icons.users.provider, route: ROUTES_NAME.CONTACT_TERM.SUPPLIERS, category: 'Contactos' },
   { title: 'Cuadre de Caja', icon: icons.menu.unSelected.cashReconciliation, route: ROUTES_NAME.CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST, category: 'Finanzas' },
 ]);
 
 const developerItems = createMenuItems([
-  { title: 'Panel Desarrollador', icon: <BugOutlined />, action: 'openDeveloperModal', category: 'Desarrollador' },
-  { title: 'Cambiar Negocio', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS, category: 'Desarrollador' },
-  { title: 'Gestionar Negocios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.BUSINESSES, category: 'Desarrollador' },
-  { title: 'Gestionar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_MANAGE, category: 'Desarrollador' },
-  { title: 'Documentar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_CREATE, category: 'Desarrollador' },
-  { title: 'Todos los usuarios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.ALL_USERS, category: 'Desarrollador' },
-  { title: 'Configuración de App', icon: icons.menu.selected.settings, route: ROUTES_NAME.DEV_VIEW_TERM.APP_CONFIG.ROOT, category: 'Desarrollador' },
+  // Herramientas
+  { title: 'Panel Desarrollador', icon: <BugOutlined />, action: 'openDeveloperModal', category: 'Herramientas' },
+  { title: 'Pruebas', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.PRUEBA, category: 'Herramientas' },
+  // Negocio
+  { title: 'Cambiar Negocio', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS, category: 'Negocio' },
+  { title: 'Gestionar Negocios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.BUSINESSES, category: 'Negocio' },
+
+  // Usuarios
+  { title: 'Todos los usuarios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.ALL_USERS, category: 'Usuarios' },
+
+  // Changelogs
+  { title: 'Gestionar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_MANAGE, category: 'Changelogs' },
+  { title: 'Documentar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_CREATE, category: 'Changelogs' },
+
+  // Configuración
+  { title: 'Configuración de App', icon: icons.menu.selected.settings, route: ROUTES_NAME.DEV_VIEW_TERM.APP_CONFIG.ROOT, category: 'Configuración' },
+
+  // { title: 'Migración Inventario', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.INVENTORY_MIGRATION, category: 'Herramientas' },
 ]);
 
 export const getMenuCardData = () => {

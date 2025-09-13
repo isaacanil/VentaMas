@@ -585,7 +585,7 @@ export default function ARSummaryModal({ }) {
     }));
   }, [data?.installments]);
 
-  console.log('data', data.invoice)
+  
   return (
     <>
       <Modal

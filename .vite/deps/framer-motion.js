@@ -5626,7 +5626,7 @@ function createProjectionNode({ attachResizeListener, defaultParent, measureScro
         this.forceRelativeParentToResolveTarget();
         calcRelativeBox(this.target, this.relativeTarget, this.relativeParent.target);
       } else if (this.targetDelta) {
-        if (Boolean(this.resumingFrom)) {
+        if (this.resumingFrom) {
           this.target = this.applyTransform(this.layout.layoutBox);
         } else {
           copyBoxInto(this.target, this.layout.layoutBox);

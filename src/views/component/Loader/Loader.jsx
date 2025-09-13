@@ -10,7 +10,7 @@ const LoaderWrapper = styled.div`
 
 const LoadingOverlay = styled.div`
   transition: opacity 0.5s ease-in-out;
-  opacity: ${props => (props.fadeOut ? 0 : 1)};
+  opacity: ${props => (props.$fadeOut ? 0 : 1)};
   position: absolute;
   top: 0;
   left: 0;
@@ -38,7 +38,7 @@ const Spinner = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  opacity: ${props => (props.loading ? 0.6 : 1)};
+  opacity: ${props => (props.$loading ? 0.6 : 1)};
   transition: opacity 0.3s ease-in-out;
   height: 100%;
   display: grid;
@@ -83,11 +83,11 @@ const Loader = ({
   return (
     <LoaderWrapper minHeight={minHeight}>
       {showLoader && overlay && (
-        <LoadingOverlay fadeOut={fadeOut}>
+        <LoadingOverlay $fadeOut={fadeOut}>
           <Spinner />
         </LoadingOverlay>
       )}
-      <ContentWrapper loading={loading}>
+      <ContentWrapper $loading={loading}>
         {children}
       </ContentWrapper>
     </LoaderWrapper>

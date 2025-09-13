@@ -15,10 +15,10 @@ export const fbUpdateProductStructure = async (user, id) => {
 
                 await setDoc(docRef, newProduct)
             }else{
-                console.log("No product data")
+                console.warn("No product data found");
             }
         } else {
-            console.log("No such document!");
+            console.warn("Product document not found");
         }
     }
     catch (e) {

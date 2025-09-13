@@ -10,7 +10,7 @@ export const fbAddProductOutFlow =  async (user, productOutflow) => {
         return;
     }
 
-    console.log(productOutflow, user.uid)
+    // Processing product outflow
     
     const updates = productOutflow.productList.map(product => ({
         product: product.product,
@@ -24,7 +24,7 @@ export const fbAddProductOutFlow =  async (user, productOutflow) => {
         createdBy: user.uid,
         isDeleted: false,
     }
-    console.log(productOutflowData)
+            // Product outflow data processed
     const productOutFlowRef = doc(db, "businesses", user.businessID, 'productOutflow', productOutflowData.id)
 
     try {

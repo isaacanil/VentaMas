@@ -12,7 +12,7 @@ export const UserAdmin = () => {
 }
 
 const Container = styled.div`
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
     display: grid;
     grid-template-rows: min-content 1fr;

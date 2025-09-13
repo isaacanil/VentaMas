@@ -14,6 +14,7 @@ import { Timestamp } from "firebase/firestore";
 import { DateTime } from "luxon";
 import { getInsurance } from "../../firebase/insurance/insuranceService";
 import { addInsuranceAuth } from "../../firebase/insurance/insuranceAuthService";
+import { fbConsumeCreditNotes } from "../../firebase/creditNotes/fbConsumeCreditNotes";
 
 const NCF_TYPES = {
     'CREDITO FISCAL': 'CREDITO FISCAL',
@@ -29,19 +30,16 @@ export async function processInvoice({
     insuranceAuth,
     ncfType,
     taxReceiptEnabled = false,
-    setLoading = () => { },
     dispatch,
     dueDate = null,
     insuranceEnabled = false,
     isTestMode = false,
 }) {
     try {
-        setLoading({ status: true, message: "Procesando factura..." });
         verifyCartItems(cart);
 
         // En modo de prueba, mostrar notificación y procesar sin guardar en base de datos
         if (isTestMode) {
-            setLoading({ status: true, message: "Procesando factura en modo prueba..." });
             return await processTestModeInvoice({
                 user,
                 cart,
@@ -72,6 +70,11 @@ export async function processInvoice({
 
         await adjustProductInventory({ user, products: cart.products, invoice });
 
+        // Consumir notas de crédito si se aplicaron
+        if (cart?.creditNotePayment?.length > 0) {
+            await fbConsumeCreditNotes(user, cart.creditNotePayment, invoice.id, invoice);
+        }
+
         // Procesar cuentas por cobrar normales si existen
         if (cart?.isAddedToReceivables && accountsReceivable?.totalInstallments) {
             await manageReceivableAccounts({ user, accountsReceivable, invoice });
@@ -87,7 +90,7 @@ export async function processInvoice({
             await manageInsuranceReceivableAccounts({ user, arData, invoice, insuranceAuth, authDataId });
         }
 
-        return { invoice }
+    return { invoice }
 
     } catch (error) {
         throw error
@@ -132,7 +135,7 @@ async function validateCashReconciliation({ user, dispatch, transaction }) {
 
 async function handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType }) {
     if (!user || !taxReceiptEnabled) return null;
-    
+
     try {
         return await fbGetAndUpdateTaxReceipt(user, ncfType);
     } catch (error) {
@@ -153,7 +156,9 @@ async function retrieveAndUpdateClientData({ user, client }) {
 }
 
 async function adjustProductInventory({ user, products, invoice }) {
-    await fbUpdateProductsStock(products, user, invoice)
+    if(Array.isArray(products) && products.length) { 
+        await fbUpdateProductsStock(products, user, invoice)
+    }
 }
 
 async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, dueDate }) {
@@ -186,9 +191,7 @@ async function manageReceivableAccounts({ user, accountsReceivable, invoice }) {
 
 async function manageInsuranceReceivableAccounts({ user, arData, invoice, insuranceAuth, authDataId }) {
     try {
-        // Log the input object to see what's being passed
-        console.log("------------------------------------------------insuranceAR Object:", JSON.stringify(arData));
-        console.log("insuranceAuth Object:", JSON.stringify(insuranceAuth));
+        // Validate input data
         if (!arData?.totalInstallments) {
             throw new Error('Datos de cuotas de seguro faltantes');
         }
@@ -220,13 +223,9 @@ async function manageInsuranceReceivableAccounts({ user, arData, invoice, insura
             comments: arData.comments || ''
         };
 
-        // Log the normalized object to verify it has the correct properties
-        console.log("Normalized AR Object:", JSON.stringify(normalizedAR, null, 2));
-
         // Usar las mismas funciones que para cuentas por cobrar normales
         const ar = await fbAddAR({ user, accountsReceivable: normalizedAR });
         await fbAddInstallmentAR({ user, ar });
-        console.log("ar created: ------------------- ", ar)
     } catch (error) {
         console.error("Error en manageInsuranceReceivableAccounts:", error);
         throw new Error(`Error al gestionar cuentas por cobrar de seguro: ${error.message}`);
@@ -235,8 +234,8 @@ async function manageInsuranceReceivableAccounts({ user, arData, invoice, insura
 
 async function generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode }) {
     try {
-        if (!cart?.preorderDetails?.isOrWasPreorder || !cart?.status == "pending") {
-            throw new Error("Invalid preorder data");
+        if (!cart?.preorderDetails?.isOrWasPreorder || cart?.status != "pending") {
+            throw new Error("Datos de preorden inválidos");
         }
         const bill = {
             ...cart,
@@ -268,16 +267,16 @@ async function processTestModeInvoice({
     insuranceEnabled,
 }) {
     try {
-        console.log('🧪 Procesando factura en MODO PRUEBA - No se guardará en base de datos');
-        
+
+
         // Generar un mock de NCF para prueba
         const mockNcfCode = taxReceiptEnabled ? `TEST-${ncfType}-${Date.now()}` : null;
-        
+
         // Generar datos mock del cliente
-        const mockClientData = client || { 
-            id: 'test-client-id', 
+        const mockClientData = client || {
+            id: 'test-client-id',
             name: 'Cliente de Prueba',
-            ...GenericClient 
+            ...GenericClient
         };
 
         // Crear factura mock con estructura similar a la real
@@ -302,8 +301,15 @@ async function processTestModeInvoice({
         // Simular tiempo de procesamiento
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log('✅ Factura de prueba generada exitosamente:', mockInvoice);
-        
+        // En modo de prueba, solo simular el consumo de notas de crédito
+        if (cart?.creditNotePayment?.length > 0) {
+            console.log(`🧪 [MODO PRUEBA] Simulando consumo de ${cart.creditNotePayment.length} notas de crédito`);
+            cart.creditNotePayment.forEach(note => {
+                console.log(`🧪 [MODO PRUEBA] Nota ${note.ncf}: -${note.amountUsed}`);
+            });
+            console.log(`🧪 [MODO PRUEBA] Simulando creación de registros de aplicación para factura ${mockInvoice.id}`);
+        }
+
         return { invoice: mockInvoice };
 
     } catch (error) {

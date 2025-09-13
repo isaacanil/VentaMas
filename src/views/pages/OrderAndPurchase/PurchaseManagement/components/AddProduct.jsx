@@ -217,18 +217,6 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Unidad de Medida'>
-            <StyledFormItem
-              name="unitMeasurement"
-              label="Unid. Medida"
-              rules={[{ required: isProductSelected }]}
-            >
-              <Input
-                placeholder="Unidad"
-                disabled={!isProductSelected}
-              />
-            </StyledFormItem>
-          </Tooltip>
 
           <Tooltip title='Costo Base'>
             <StyledFormItem
@@ -349,7 +337,6 @@ const FieldsRow = styled.div`
     1.2fr 
     100px 
     min-content 
-    120px 
     105px 
     min-content  
     min-content 

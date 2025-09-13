@@ -40,11 +40,55 @@ const BackOrdersModal = ({
         }
     };
 
+    const handleSelectAll = (checked) => {
+        if (checked) {
+            const availableBackOrders = backOrders.filter(record => {
+                const recordSourceId = record.orderId || record.purchaseId;
+                return !(record.status === 'reserved' && (!backOrderAssociationId || recordSourceId !== backOrderAssociationId));
+            }).map(record => ({
+                id: record.id,
+                quantity: record.pendingQuantity,
+                productId: record.productId,
+                orderId: record.orderId || record.purchaseId
+            }));
+            setLocalSelectedBackOrders(availableBackOrders);
+            // Auto-ajustar cantidad mínima cuando se seleccionan todos
+            const totalQuantity = availableBackOrders.reduce((sum, bo) => sum + bo.quantity, 0);
+            if (purchaseQuantity < totalQuantity) {
+                setPurchaseQuantity(totalQuantity);
+            }
+        } else {
+            setLocalSelectedBackOrders([]);
+        }
+    };
+
+    const getSelectAllState = () => {
+        const availableBackOrders = backOrders.filter(record => {
+            const recordSourceId = record.orderId || record.purchaseId;
+            return !(record.status === 'reserved' && (!backOrderAssociationId || recordSourceId !== backOrderAssociationId));
+        });
+        
+        if (availableBackOrders.length === 0) return false;
+        
+        const selectedCount = localSelectedBackOrders.length;
+        if (selectedCount === 0) return false;
+        if (selectedCount === availableBackOrders.length) return true;
+        return 'indeterminate';
+    };
+
     const columns = [
         {
-            title: 'Seleccionar',
+            title: (
+                <Checkbox
+                    checked={getSelectAllState() === true}
+                    indeterminate={getSelectAllState() === 'indeterminate'}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                >
+                    Seleccionar
+                </Checkbox>
+            ),
             dataIndex: 'id',
-            width: 100,
+            width: 120,
             render: (_, record) => {
                 const recordSourceId = record.orderId || record.purchaseId;
                 const isDisabled = record.status === 'reserved' && (!backOrderAssociationId || recordSourceId !== backOrderAssociationId);
@@ -59,21 +103,27 @@ const BackOrdersModal = ({
             },
         },
         {
-            title: 'Estado',
-            dataIndex: 'status',
-            width: 100,
-            render: (status, record) => (record.status === 'reserved' && record.orderId !== backOrderAssociationId ? 'Reservado' : status || 'Pendiente')
-        },
-        {
-            title: 'Cantidad Pendiente',
+            title: 'Cantidad',
             dataIndex: 'pendingQuantity',
-            width: 150,
+            width: 100,
+            render: (qty) => <span style={{fontWeight: 500}}>{qty}</span>
         },
         {
             title: 'Fecha',
             dataIndex: 'createdAt',
-            width: 200,
-            render: (date) => dayjs(date).format('DD/MM/YYYY HH:mm'),
+            width: 120,
+            render: (date) => dayjs(date).format('DD/MM/YY'),
+        },
+        {
+            title: 'Estado',
+            dataIndex: 'status',
+            width: 80,
+            render: (status, record) => {
+                const isReserved = record.status === 'reserved' && record.orderId !== backOrderAssociationId;
+                return isReserved ? 
+                    <span style={{color: '#ff4d4f', fontSize: '12px'}}>Reservado</span> : 
+                    <span style={{color: '#52c41a', fontSize: '12px'}}>Disponible</span>
+            }
         }
     ];
 
@@ -105,28 +155,23 @@ const BackOrdersModal = ({
             cancelText="Cancelar"
         >
             <ModalContent>
-                {backOrderAssociationId}
-                <StatsSection>
+                <CompactStatsSection>
                     <QuantityInputSection>
-                        <label>Cantidad total a comprar:</label>
+                        <label>Cantidad a comprar:</label>
                         <InputNumber
                             value={purchaseQuantity}
                             onChange={(value) => setPurchaseQuantity(value || 0)}
-                            min={0}
+                            min={totalBackordersQuantity}
                             style={{ width: 120 }}
+                            placeholder={totalBackordersQuantity}
                         />
                     </QuantityInputSection>
-                    <StatsGrid>
-                        <StatItem>
-                            <label>BackOrders seleccionados:</label>
-                            <span>{totalBackordersQuantity} unidades</span>
-                        </StatItem>
-                        <StatItem>
-                            <label>Cantidad restante:</label>
-                            <span>{remainingQuantity} unidades</span>
-                        </StatItem>
-                    </StatsGrid>
-                </StatsSection>
+                    <QuickStats>
+                        <span>{localSelectedBackOrders.length} backorders seleccionados</span>
+                        <span>{totalBackordersQuantity} unidades</span>
+                        {remainingQuantity > 0 && <span style={{color: '#52c41a'}}>+{remainingQuantity} extra</span>}
+                    </QuickStats>
+                </CompactStatsSection>
 
                 {localSelectedBackOrders.length > 0 && purchaseQuantity < totalBackordersQuantity && (
                     <Alert
@@ -136,7 +181,7 @@ const BackOrdersModal = ({
                     />
                 )}
 
-                <p>Opcionalmente, seleccione los backorders que desea cubrir con esta compra:</p>
+                <SectionTitle>Selecciona los pedidos pendientes a cubrir:</SectionTitle>
                 <Table
                     dataSource={backOrders}
                     columns={columns}
@@ -158,44 +203,43 @@ const ModalContent = styled.div`
     gap: 16px;
 `;
 
-const StatsSection = styled.div`
+const CompactStatsSection = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
-    background-color: #f5f5f5;
-    border-radius: 4px;
+    padding: 12px 16px;
+    background-color: #fafafa;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
 `;
 
 const QuantityInputSection = styled.div`
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 8px;
 
     label {
-        font-size: 12px;
-        color: #666;
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
     }
 `;
 
-const StatsGrid = styled.div`
+const QuickStats = styled.div`
     display: flex;
-    gap: 24px;
-`;
-
-const StatItem = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    
-    label {
-        font-size: 12px;
-        color: #666;
-    }
+    gap: 16px;
+    align-items: center;
     
     span {
-        font-size: 16px;
-        font-weight: 500;
-        color: ${props => props.$warning ? '#ff4d4f' : 'inherit'};
+        font-size: 13px;
+        color: #666;
+        white-space: nowrap;
     }
+`;
+
+const SectionTitle = styled.h4`
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
 `;

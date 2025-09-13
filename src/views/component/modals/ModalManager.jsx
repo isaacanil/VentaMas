@@ -1,6 +1,6 @@
 import { Fragment } from "react"
-import { AddClientModal } from "./AddClient/AddClientModal"
-import { SetCustomProduct } from "./CustomProduct/SetCustomProduct/SetCustomProduct"
+import { AddClientModal } from "./addClient/AddClientModal"
+import { SetCustomProduct } from "./CustomProduct/setCustomProduct/SetCustomProduct"
 import { useSelector } from "react-redux"
 import {
   SelectAddClientModal,
@@ -52,6 +52,7 @@ import ARSummaryModal from "./ARInfoModal/ARSummaryModal"
 import EvidenceUploadDrawer from "../../pages/OrderAndPurchase/PurchaseManagement/components/EvidenceUploadDrawer/EvidenceUploadDrawer"
 import { DeleteProductStockModal } from "../../pages/Inventory/components/Warehouse/components/DeleteProductStock/DeleteProductStockModal"
 import { DeveloperModal } from "../../../components/modals/DeveloperModal/DeveloperModal"
+import { CreditNoteModal } from "./CreditNoteModal/CreditNoteModal"
 
 export const ModalManager = () => {
 
@@ -167,6 +168,9 @@ export const ModalManager = () => {
         />
         <DeveloperModal
           key={'modal-developer'}
+        />
+        <CreditNoteModal
+          key={'modal-credit-note'}
         />
       </AnimatePresence>
       <NoteModal />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button } from '../../index'
+import { Button } from '../../templates/system/Button/Button'
 import styled from 'styled-components'
 import { ButtonGroup } from '../../templates/system/Button/Button'
 import { motion } from 'framer-motion'
@@ -92,7 +92,7 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
 }
 const Backdrop = styled(motion.div)`
      width: 100%;
-    height: 100vh;
+    height: 100%;
     background-color: var(--BlackOp);
     backdrop-filter: blur(var(--blur));
     display: flex;
@@ -119,9 +119,9 @@ const Container = styled(motion.div)`
  position: relative;
  @media (max-width: 768px) {
     width: 100vw;
-    height: 100vh;
+    height: 100%;
     max-width: 100vw;
-    max-height: 100vh;
+    max-height: 100%;
     border-radius: 0;
  }
  ${props => {

@@ -57,7 +57,7 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit, descripti
             } catch (err) {
                 setLoading(false);
                 setError('An error occurred. Please try again.');
-                console.log(err);
+                console.error('Peer review authorization error:', err);
             }
 
             resetForm()

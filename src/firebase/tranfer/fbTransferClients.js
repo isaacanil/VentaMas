@@ -22,13 +22,13 @@ export const transferClients = async (businessA, businessB, limit = 0) => {
         const querySnapshot = await getDocs(clientsQuery);
         let totalClients = querySnapshot.docs.length;
 
-        console.log(`Total clientes encontrados en el negocio origen (${businessA}): ${totalClients}`);
+        console.info(`Found ${totalClients} clients to transfer`);
 
         if (limit > 0 && limit < totalClients) {
             totalClients = limit;
         }
 
-        console.log(`Total clientes a transferir: ${totalClients}`);
+        // Processing client transfer
 
         const batchSize = 500;
         let batchCount = 0;
@@ -44,10 +44,10 @@ export const transferClients = async (businessA, businessB, limit = 0) => {
 
             await batch.commit();
             batchCount++;
-            console.log(`Lote ${batchCount} de ${Math.ceil(totalClients / batchSize)} procesado para negocio destino (${businessB}).`);
+            // Batch processed
         }
 
-        console.log(`Transferencia de clientes de negocio origen (${businessA}) a negocio destino (${businessB}) completada.`);
+        console.info("Client transfer completed successfully");
     } catch (error) {
         console.error("Error al transferir clientes: ", error);
     }

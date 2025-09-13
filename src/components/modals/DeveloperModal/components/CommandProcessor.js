@@ -46,6 +46,7 @@ class CommandProcessor {
   async loadUsersList() {
     try {
       const usersList = await fbGetUsers();
+      // Users list processed
       console.log(usersList)
       return usersList;
     } catch (error) {

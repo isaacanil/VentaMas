@@ -11,8 +11,8 @@ export const fbDeleteImage = async (imgUrl) => {
 
         // Si el archivo existe, procedemos a eliminarlo
         await deleteObject(imgRef);
-        console.log(`deleted ${imgUrl}`);
+        // Image deleted successfully
     } catch (error) {
-        console.log(`Error deleting image: ${error}`);
+        console.error(`Error deleting image: ${error}`);
     }
 }

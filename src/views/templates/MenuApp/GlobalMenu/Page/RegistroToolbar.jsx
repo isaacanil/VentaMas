@@ -1,22 +1,25 @@
 import React, { useState } from 'react'
 import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { message } from 'antd'
+import { message, Button } from 'antd'
 import routesName from '../../../../../routes/routesName'
 import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faListAlt, faTable, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faListAlt, faTable, faSpinner, faChartPie, faDownload, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 import { formatBill } from '../../../../../hooks/exportToExcel/formatBill'
 import { DateTime } from 'luxon'
 import { getBillExportCallback, createProfessionalReportCallback } from '../../../../../hooks/exportToExcel/exportConfig'
+import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 
-export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData }) => {
+export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData, onReportSaleOpen }) => {
   const [isExporting, setIsExporting] = useState(false)
   const { BILLS } = routesName.SALES_TERM;
   const matchWithCashReconciliation = useMatch(BILLS);
   const invoices = data;
   const currentDate = DateTime.now().toFormat('ddMMyyyy');
+  const vw = useViewportWidth();
+  const isMobile = vw <= 768;
 
   const transformedResumenBillsData = () => invoices.map((invoice) => {
     return formatBill({ data: invoice.data, type: 'Resumen' });
@@ -106,10 +109,19 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
       <Container>
         {
           side === 'right' && (
-            <DropdownMenu
-              title={'Exportar excel'}
-              options={options}
-            />
+            <>
+              <Button 
+                icon={<FontAwesomeIcon icon={faChartPie} />}
+                onClick={onReportSaleOpen}
+              >
+                {isMobile ? 'Gráficos' : 'Gráfico de ventas'}
+              </Button>
+              <DropdownMenu
+                title={isMobile ? 'Exportar' : 'Exportar'}
+                icon={<FontAwesomeIcon icon={faDownload} />}
+                options={options}
+              />
+            </>
           )
         }
       </Container>
@@ -118,7 +130,9 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
 }
 
 const Container = styled.div`
-  
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
 `;
 
 const SpinningIcon = styled(FontAwesomeIcon)`

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'react-router-dom'
 import { PurchaseTable } from './components/PurchasesTable/PurchasesTable'
-import { MenuApp } from '../../../'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { PurchasesReport } from './components/PurchasesReport/PurchasesReport'
 import { FilterBar } from './components/FilterBar/FilterBar'
 import createFilterConfig from './config/filterConfig'
@@ -84,7 +84,7 @@ export const Purchases = () => {
 
 const Container = styled.div`
   width: 100%;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   background-color: var(--color2);
   display: grid;

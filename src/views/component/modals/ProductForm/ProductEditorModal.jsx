@@ -8,8 +8,6 @@ import { clearUpdateProductData, selectUpdateProductData, setProduct } from '../
 import { listenToProduct } from '../../../../firebase/products/fbListenProduct';
 import { selectUser } from '../../../../features/auth/userSlice';
 
-// Definir las columnas de la tabla
-
 export const ProductEditorModal = ({ isOpen }) => {
     const [view, setView] = useState('product-form')
     const dispatch = useDispatch();
@@ -23,22 +21,20 @@ export const ProductEditorModal = ({ isOpen }) => {
         dispatch(clearUpdateProductData())
     }
     useEffect(() => {
-        if(product.id === '') return;
-        const handleData = (data) => dispatch(setProduct(data))
-        
+        if (!user || !product?.id) return;
+        const handleData = (data) => dispatch(setProduct(data));
         const handleError = (error) => console.error('Error al escuchar el producto:', error);
 
         const unsubscribe = listenToProduct(user, product.id, handleData, handleError);
-
-        return () => unsubscribe();
-    }, [user])
+        return () => unsubscribe && unsubscribe();
+    }, [user, product?.id, dispatch])
    
     
      return (
         <Modal
             centered={true}
             open={isOpen}
-            width={1000}
+            width={1200}
             style={{ top: 5 }}
             title={status === "update" ? `Editar: ${product.name}` : "Nuevo Producto"}
             onCancel={handleCloseModal}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { MenuApp } from '../..'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
 import Typography from '../../templates/system/Typografy/Typografy'
@@ -86,7 +86,7 @@ export const Utility = ({ isOpen = true }) => {
     )
 }
 const Container = styled.div`
-height: 100vh;
+height: 100%;
     display: grid;
     overflow: hidden;
     grid-template-rows: min-content 1fr;

@@ -1,9 +1,9 @@
-import { Button } from "./Button";
 import { useDispatch, useSelector } from "react-redux";
 import { openModalUpdateProd } from "../../../../features/modals/modalSlice";
 import { ChangeProductData, selectUpdateProductData } from "../../../../features/updateProduct/updateProductSlice";
 import { OPERATION_MODES } from "../../../../constants/modes";
 import { icons } from "../../../../constants/icons/icons";
+import { Button as AntdButton } from "antd";
 
 export const AddProductButton = () => {
     const dispatch = useDispatch();
@@ -15,10 +15,12 @@ export const AddProductButton = () => {
     }
 
     return (
-        <Button
-            startIcon={icons.operationModes.add}
+        <AntdButton
             title="Producto"
-            onClick={Open}>
-        </Button>
+            onClick={Open}
+            icon={icons.operationModes.add}
+        >
+            Producto
+        </AntdButton>
     )
 }

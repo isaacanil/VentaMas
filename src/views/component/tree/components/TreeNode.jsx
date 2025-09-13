@@ -91,6 +91,8 @@ const TreeNode = memo(({
     }
   }, [hasChildren, node.id, node.isLoading, onToggleNode]);
 
+  const currentPath = useMemo(() => ([...(path || []), node.id]), [path, node.id]);
+
   return (
     <div>
       <NodeContainer
@@ -125,7 +127,6 @@ const TreeNode = memo(({
           <NodeName
             title={node.name}
             isMatch={match}
-            children={node.children}
             isLoading={node.isLoading}
             searchTerm={searchTerm}
             config={config}
@@ -135,7 +136,7 @@ const TreeNode = memo(({
           <LoadingIndicator isLoading={node.isLoading} />
         </div>
 
-        <ActionButtons node={node} actions={config.actions} level={level} path={path} /> {/* Usar 'path' prop */}
+        <ActionButtons node={node} actions={config.actions} level={level} path={currentPath} /> {/* Usar 'path' prop */}
       </NodeContainer>
 
       {isExpanded && hasChildren && (
@@ -152,7 +153,7 @@ const TreeNode = memo(({
             config={config}
             traverse={traverse}
             renderHighlightedText={renderHighlightedText}
-            path={path}
+            path={currentPath}
             onToggleNode={onToggleNode} // Ensure onToggleNode is passed to children
           />
         ))

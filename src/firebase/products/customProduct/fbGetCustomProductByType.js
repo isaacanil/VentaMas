@@ -7,6 +7,6 @@ export const fbGetProductsQueryByType = async (setProducts, type, size, user) =>
     const q = query(productsRef, where("type", "==", type), where("size", "==", size), orderBy("name", "asc"));
     const { docs } = await getDocs(q);
     const array = docs.map((item) => item.data());
-    console.log(array)
+    // Custom products retrieved
     setProducts(array)
 }

@@ -332,8 +332,8 @@ export const useListenProductsStockByLocation = (location = null) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Si no hay location.id o no hay user, limpiamos y salimos.
-    if (!location || !user) {
+    // Si no hay location, user o businessID, limpiamos y salimos.
+    if (!location || !user || !user.businessID) {
       setData([]);
       setLoading(false);
       return;
@@ -365,7 +365,7 @@ export const useListenProductsStock = (productId = null) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!productId || !stableUser) {
+    if (!productId || !stableUser || !stableUser.businessID) {
       setData([]);
       setLoading(false);
       return;
@@ -397,10 +397,7 @@ export const getProductStockByBatch = async (
   user,
   { productId, batchId, location } = {}
 ) => {
-  console.log("businessId: ", user.businessID);
-  console.log("productId: ", productId);
-  console.log("batchId: ", batchId);
-  console.log("location: ", location);
+  
 
   const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
   if (!productStockCollectionRef) return [];
@@ -431,7 +428,7 @@ export const getProductStockByProductId = async (
   user,
   { productId } = {}
 ) => {
-  console.log("Fetching stock for productId:", productId); // Debugging log
+  
   const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
   if (!productStockCollectionRef) return [];
 
@@ -444,7 +441,7 @@ export const getProductStockByProductId = async (
 
   const snapshot = await getDocs(q);
   const data = snapshot.docs.map(doc => doc.data());
-  console.log('Fetched product stock:', data); // Debugging log
+  
   return data;
 };
 

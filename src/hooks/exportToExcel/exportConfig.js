@@ -260,3 +260,44 @@ export const createProfessionalReportCallback = (type, title) => {
     }
   };
 };
+
+/* ------------------------------------------------------------------------- *
+ *  CALLBACK ESPECÍFICO PARA NOTAS DE CRÉDITO                               *
+ * ------------------------------------------------------------------------- */
+export const getCreditNoteExportCallback = (type) => {
+  switch (type) {
+    case 'Resumen':
+      return (ws, data, cols) => {
+        applyProfessionalStyling(ws, data.length);
+        formatCurrencyColumns(ws, cols, ['Monto Total']);
+        formatNumberColumns(ws, cols, ['Cantidad Items']);
+        addTotalsRow(ws, data, cols,
+          ['Cantidad Items', 'Monto Total']);
+      };
+    case 'Detailed':
+      return (ws, data, cols) => {
+        applyProfessionalStyling(ws, data.length);
+        formatCurrencyColumns(ws, cols, ['Precio Unitario', 'Total Item', 'Total NC']);
+        formatNumberColumns(ws, cols, ['Cantidad']);
+        addTotalsRow(ws, data, cols, ['Cantidad', 'Precio Unitario', 'Total Item', 'Total NC']);
+      };
+    default:
+      return null;
+  }
+};
+
+export const createProfessionalCreditNoteReportCallback = (type, title) => {
+  const base = getCreditNoteExportCallback(type);
+  return (ws, data, cols) => {
+    addReportHeader(ws, title);
+    if (base) {
+      base(ws, data, cols);              // ya aplica styling, formatos, totales
+      // Re-estilizar fila de encabezados que quedó en 4
+      const head = ws.getRow(4);
+      head.height = 35;
+      head.font   = { bold: true, color: { argb: CORPORATE_COLORS.headerText }, size: 12 };
+      head.fill   = { type: 'pattern', pattern: 'solid', fgColor: { argb: CORPORATE_COLORS.headerBg } };
+      head.alignment = { vertical: 'middle', horizontal: 'center' };
+    }
+  };
+};

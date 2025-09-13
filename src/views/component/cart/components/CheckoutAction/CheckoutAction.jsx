@@ -26,7 +26,7 @@ export const CheckoutAction = ({
             onOk() {
                 // Aquí manejas la confirmación de la cancelación
                 antd.message.success('Venta cancelada', 2.5)
-                console.log('Venta cancelada');
+        
                 handleCancelShipping()
             },
             onCancel() {

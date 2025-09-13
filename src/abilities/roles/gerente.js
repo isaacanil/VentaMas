@@ -10,7 +10,9 @@ export function defineAbilitiesForManager() {
     CONTACT_TERM,
     BASIC_TERM,
     INVENTORY_TERM,
-    CASH_RECONCILIATION_TERM
+    PURCHASE_TERM,
+    CASH_RECONCILIATION_TERM,
+    CREDIT_NOTE_TERM
   } = routesName;
 
   const { CLIENTS } = CONTACT_TERM;
@@ -25,12 +27,15 @@ export function defineAbilitiesForManager() {
   const { SALES, BILLS } = SALES_TERM;
   const { HOME } = BASIC_TERM;
   const { INVENTORY_ITEMS } = INVENTORY_TERM;
+  const { CREDIT_NOTE_LIST } = CREDIT_NOTE_TERM;
+  const { BACKORDERS } = PURCHASE_TERM;
 
   can('manage', 'Bill');
   can('manage', 'Product');
   can('manage', 'CashCount');
   can('manage', 'User');
   can('manage', 'Business');
+  can('manage', 'CreditNote');
 
   can(['read', 'create', 'update'], 'Client');
   can(['read', 'create', 'update'], 'Provider');
@@ -44,6 +49,8 @@ export function defineAbilitiesForManager() {
   can('access', BILLS);
   can('access', CLIENTS);
   can('access', INVENTORY_ITEMS);
+  can('access', CREDIT_NOTE_LIST);
+  can('access', BACKORDERS);
 
   return rules;
 }

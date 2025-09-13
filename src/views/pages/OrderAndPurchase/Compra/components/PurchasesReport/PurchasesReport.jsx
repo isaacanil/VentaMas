@@ -1,15 +1,15 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectPurchaseList } from '../../../../../../features/Purchase/purchasesSlice';
 import { selectPurchaseChartModal, togglePurchaseChartModal } from '../../../../../../features/purchase/purchaseUISlice';
 import { DailyPurchasesBarChart } from './reports/DailyPurchasesBarChart';
 import Typography from '../../../../../templates/system/Typografy/Typografy';
-import { Button } from '../../../../..';
+import { Button } from '../../../../../templates/system/Button/Button';
 import { ProviderPurchasesBarChart } from './reports/ProvidersPurchasesBarChart';
 import { CategoryPurchasesBarChart } from './reports/CategoryPurchasesBarChart';
 import { MonthlyAndAccumulatedPurchaseCharts } from './reports/MonthlyAndAccumulatedPurchaseCharts/MonthlyAndAccumulatedPurchaseCharts';
+import { selectPurchaseList } from '../../../../../../features/purchase/purchasesSlice';
 
 const variantsBackdrop = {
     open: { opacity: 1, zIndex: 1 },

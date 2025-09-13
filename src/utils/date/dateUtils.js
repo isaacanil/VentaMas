@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Timestamp } from 'firebase/firestore';
 import { DateTime } from 'luxon';
+import { toMillis } from './toMillis';
 
 dayjs.extend(customParseFormat);
 
@@ -86,7 +87,8 @@ const DateUtils = {
     // Format Luxon Date to Date Only
     formatLuxonDate: (dateTime) => {
         if (!dateTime) return '';
-        if (!(dateTime instanceof DateTime)) dateTime = DateUtils.convertMillisToLuxonDate(dateTime);
+        const millis = toMillis(dateTime);
+        if (!(dateTime instanceof DateTime)) dateTime = DateUtils.convertMillisToLuxonDate(millis);
         return dateTime?.toFormat('dd/MM/yyyy') || '';
     },
 

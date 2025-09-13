@@ -16,15 +16,15 @@ const BreadcrumbLink = styled.span`
 export const BreadcrumbNav = ({ breadcrumbs }) => {
   const dispatch = useDispatch();
 
+  const items = breadcrumbs.map((item, index) => ({
+    title: (
+      <BreadcrumbLink onClick={() => dispatch(navigateToBreadcrumb(index))}>
+        {item.title}
+      </BreadcrumbLink>
+    )
+  }));
+
   return breadcrumbs.length > 0 ? (
-    <StyledBreadcrumb>
-      {breadcrumbs.map((item, index) => (
-        <Breadcrumb.Item key={index}>
-          <BreadcrumbLink onClick={() => dispatch(navigateToBreadcrumb(index))}>
-            {item.title}
-          </BreadcrumbLink>
-        </Breadcrumb.Item>
-      ))}
-    </StyledBreadcrumb>
+    <StyledBreadcrumb items={items} />
   ) : null;
 };

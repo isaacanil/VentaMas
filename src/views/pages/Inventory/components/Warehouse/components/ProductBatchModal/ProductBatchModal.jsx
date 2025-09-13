@@ -269,7 +269,7 @@ export function ProductBatchModal() {
                                 </div>
                                 <div className="info-column">
                                     <div className="info-row quantity">
-                                        <span className="text">{stock.quantity} / {stock.initialQuantity} unidades</span>
+                                        <span className="text">{stock.quantity} unidades</span>
                                     </div>
                                     <div className="info-row">
                                         <CalendarOutlined className="icon" />

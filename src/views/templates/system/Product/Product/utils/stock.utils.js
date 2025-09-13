@@ -1,6 +1,4 @@
 // stock.utils.js
-export const LOW_STOCK_THRESHOLD = 20;
-
 export const isStockRestricted = (p) => p?.restrictSaleWithoutStock;
 export const isStockExceeded = (inCart, p) => {
     if (!inCart || !p) return false;
@@ -9,8 +7,10 @@ export const isStockExceeded = (inCart, p) => {
 };
 
 export const isStockZero = (p) => p?.stock <= 0;
-export const isStockLow = (p) => {
+
+// Dynamic low-stock check using provided threshold (defaults to 20)
+export const isStockLow = (p, lowThreshold = 20) => {
     if (!p) return false;
     const remaining = (p.stock ?? 0) - (p.amountToBuy ?? 0);
-    return remaining < LOW_STOCK_THRESHOLD && remaining > 0;
+    return remaining > 0 && remaining <= (Number.isFinite(lowThreshold) ? lowThreshold : 20);
 };

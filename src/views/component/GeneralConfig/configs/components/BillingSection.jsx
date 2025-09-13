@@ -40,7 +40,8 @@ const MotionContent = styled(motion.div)`
   padding: 16px 0;
 `;
 
-const BillingSection = ({ title, description, children }) => {
+const BillingSection = ({ title, description, children, hidden = false }) => {
+  if (hidden) return null;
   const [isExpanded, setIsExpanded] = useState(false);
   const sectionRef = useRef(null);
   

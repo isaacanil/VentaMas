@@ -87,7 +87,7 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
                                 {MESSAGES.GO_HOME}
                             </Button>
                         </ButtonGroup>
-
+                        <br />
                         {user?.role === 'dev' && (
                             <ErrorDetails
                                 errorStackTrace={errorStackTrace}
@@ -107,14 +107,10 @@ ErrorElement.propTypes = {
 };
 
 const Container = styled(motion.div)`
-    min-height: 100vh;
-    height: 100%;
+    height: 100vh;
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 2rem;
-    background: linear-gradient(145deg, var(--color-background-light) 0%, var(--color-background-dark) 100%);
-    overflow: hidden;
+   overflow-y: auto;
 `;
 
 const LogoWrapper = styled(motion.div)`

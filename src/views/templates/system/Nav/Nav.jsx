@@ -315,7 +315,7 @@ const MobileMenuGroupItems = styled.div`
 const AppLayout = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   background: #f0f2f5;
   overflow: hidden;
 `;

@@ -4,7 +4,7 @@ import { CashDenominationCalculator } from '../../resource/CashDenominationCalcu
 import { useDispatch, useSelector } from 'react-redux'
 import { clearCashCount, selectCashCount, setCashCountOpeningBanknotes, setCashCountOpeningComments, setCashCountOpeningDate, setCashCountOpeningEmployee, } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { Comments } from '../CashRegisterClosure/Comments/Comments'
-import { Header } from './components/headers/header'
+import { Header } from './components/Headers/Header'
 import { ConfirmCancelButtons } from '../../resource/ConfirmCancelButtons/ConfirmCancelButtons'
 import { Footer } from './components/Footer/Footer'
 import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
@@ -83,7 +83,7 @@ const Backdrop = styled.div`
 `
 const Container = styled.div`
   max-width: 500px;
-  height: 100vh;
+  height: 100%;
   position: relative;
   margin: 0 auto;
   display: grid;
