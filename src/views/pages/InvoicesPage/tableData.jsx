@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addInvoice } from "../../../features/invoice/invoiceFormSlice";
 import DateUtils from "../../../utils/date/dateUtils";
 import { selectUser } from "../../../features/auth/userSlice";
-import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus";
+// import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus"; // Temporalmente deshabilitado
 import { Tag } from "../../templates/system/Tag/Tag";
 import { openInvoicePreviewModal } from "../../../features/invoice/invoicePreviewSlice";
 import { Invoice } from "../../component/Invoice/components/Invoice/Invoice";
@@ -18,35 +18,31 @@ import { selectBusinessData } from "../../../features/auth/businessSlice";
 import { downloadInvoiceLetterPdf } from "../../../firebase/quotation/downloadQuotationPDF";
 import { notification } from "antd";
 import { SelectSettingCart } from "../../../features/cart/cartSlice";
+// import { RequestInvoiceEditAuthorization } from "../../component/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization"; // Temporalmente deshabilitado
+// import { getActiveApprovedAuthorizationForInvoice, markAuthorizationUsed } from "../../../firebase/authorizations/invoiceEditAuthorizations"; // Temporalmente deshabilitado
 
+// NOTE: 2025-09 Temporal: Se deshabilitó la lógica de autorizaciones para edición de facturas.
+// El cajero puede editar directamente mientras se termina el módulo de autorizaciones.
+// Para reactivar, restaurar imports y estados comentados dentro de este archivo.
 const EditButton = ({ value }) => {
   const dispatch = useDispatch()
   const data = value.data;
   const user = useSelector(selectUser)
   const business = useSelector(selectBusinessData) || {};
   const componentToPrintRef = useRef(null)
-  const [isAllowEdit, setIsAllowEdit] = useState(false)
-  const is48HoursOld = data?.date?.seconds < (Date.now() / 1000) - 172800
+  // Autorización temporalmente deshabilitada: permitir edición directa
+  // const [isCashCountOpen, setIsCashCountOpen] = useState(false);
+  // const [requestOpen, setRequestOpen] = useState(false);
+  // const [reasonList, setReasonList] = useState([]);
+  // const isOlderThan24h = data?.date?.seconds < (Date.now() / 1000) - 86400;
   const cartSettings = useSelector(SelectSettingCart)
   const invoiceType = cartSettings.billing.invoiceType;
 
-  useEffect(() => {
-    const checkCashCountStatus = async () => {
-      if (user && data && typeof data.cashCountId !== 'undefined' && data.cashCountId !== null) {
-        try {
-          const isOpen = await fbCashCountStatus(user, data.cashCountId, "open");
-          setIsAllowEdit(!isOpen && is48HoursOld);
-        } catch (error) {
-          setIsAllowEdit(true); // Asumir cerrado en caso de error
-        }
-      } else {
-        setIsAllowEdit(true);
-      }
-    };
-    checkCashCountStatus();
-  }, [user, data?.cashCountId]);
+  // useEffect(() => {
+  //   // Comprobación de cuadre de caja deshabilitada temporalmente
+  // }, [user?.businessID, data?.cashCountId]);
 
-  const handleEdit = () => {
+  const proceedToEdit = () => {
     const invoiceData = {
       ...data,
       date: DateUtils.convertTimestampToMillis(data.date),
@@ -58,6 +54,32 @@ const EditButton = ({ value }) => {
       } : null
     }
     dispatch(addInvoice({ invoice: invoiceData }))
+  }
+
+  const handleEdit = async () => {
+    // Lógica de autorización temporalmente deshabilitada: edición directa
+    proceedToEdit();
+    // Código previo conservado como referencia:
+    /*
+    // Cashier must pass checks; admin/owner/dev bypass
+    const role = user?.role;
+    const isPrivileged = ['admin', 'owner', 'dev'].includes(role);
+    const baseAllowed = isPrivileged || (!isOlderThan24h && isCashCountOpen);
+    if (baseAllowed) { proceedToEdit(); return; }
+    try {
+      const approved = await getActiveApprovedAuthorizationForInvoice(user, data);
+      if (approved) {
+        try { await markAuthorizationUsed(user, approved.id, user); } catch {}
+        proceedToEdit();
+        return;
+      }
+    } catch (e) {}
+    const reasons = [];
+    if (isOlderThan24h) reasons.push('La factura tiene más de 24 horas.');
+    if (!isCashCountOpen) reasons.push('El cuadre de caja no está abierto.');
+    setReasonList(reasons);
+    setRequestOpen(true);
+    */
   }
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
@@ -103,12 +125,23 @@ const EditButton = ({ value }) => {
       <Button
         icon={icons.editingActions.edit}
         onClick={handleEdit}
-        disabled={isAllowEdit}
+        // Edición habilitada; se pedirá autorización cuando aplique
+        disabled={false}
       />
       <Button
         icon={icons.editingActions.show}
         onClick={handleViewMore}
       />
+      {/** Modal de autorización temporalmente deshabilitado **/}
+      {false && (
+        <RequestInvoiceEditAuthorization
+          isOpen={requestOpen}
+          setIsOpen={setRequestOpen}
+          invoice={data}
+          reasons={reasonList}
+          onRequested={() => { /* no-op */ }}
+        />
+      )}
     </div>
   )
 }

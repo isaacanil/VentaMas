@@ -12,7 +12,7 @@ export async function addInstallmentReceivable(tx, { user, ar }) {
 
   const installments = generateInstallments({ ar, user });
   if (!Array.isArray(installments) || installments.length === 0) {
-    logger.info('No hay cuotas para generar', { arId: arRef.id });
+    logger.info('No hay cuotas para generar', { arId: ar?.id });
     return;
   }
 
@@ -27,6 +27,6 @@ export async function addInstallmentReceivable(tx, { user, ar }) {
       installmentDate: Timestamp.fromMillis(inst.installmentDate),
     };
     tx.set(instRef, instData);
-    logger.info(`Cuota creada (tx): ${inst.id}`, { arId: arRef.id });
+    logger.info(`Cuota creada (tx): ${inst.id}`, { arId: ar?.id });
   }
 }

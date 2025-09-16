@@ -15,6 +15,7 @@ import utility from "./paths/Utility";
 import accountReceivable from './paths/AccountReceivable';
 import insurance from './paths/Insurance';
 import creditNote from './paths/CreditNote';
+import authorizations from './paths/Authorizations';
 import { processRoute } from "./requiereAuthProvider";
 import { ROUTE_STATUS } from './routeMeta';
 import { registerRoutes } from './routeVisibility';
@@ -108,6 +109,7 @@ const baseRawRoutes = [
     ...accountReceivable,
     ...insurance,
     ...creditNote,
+    ...authorizations,
     {
         path: "*",
         element: <NotFound />,

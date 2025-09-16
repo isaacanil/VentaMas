@@ -8,10 +8,15 @@ import { handleCreateUser } from "./versions/v1/modules/auth/handle/handleCreate
 import { handleUpdateUser, handleUpdateUserWithPermissions, handleChangePassword } from "./versions/v1/modules/auth/handle/handleUpdateUser.js";
 import { updatePendingBalance } from "./versions/v1/modules/accountsReceivable/triggers/updatePendingBalance.js";
 export { authLogin, authCheck, authLogout, expireSessions } from "./versions/v1/modules/auth/handle/handleLogin.js";
+import { createInvoiceV2 } from "./versions/v2/invoice/controllers/createInvoice.controller.js";
+import { createInvoiceV2Http } from "./versions/v2/invoice/controllers/createInvoiceHttp.controller.js";
+import { getInvoiceV2Http } from "./versions/v2/invoice/controllers/getInvoiceHttp.controller.js";
 
 // mas tarde la funcion para actualziar el inventario
 // import { updateStockOnInvoiceCreate } from "./versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js";
 import { finalizeInventorySession } from "./versions/v1/modules/inventory/handlers/finalizeInventorySession.js";
+import { processInvoiceOutbox } from "./versions/v2/invoice/triggers/outbox.worker.js";
+import { processInvoiceCompensation } from "./versions/v2/invoice/triggers/compensation.worker.js";
 
 export { 
   keepSupabaseAlive, 
@@ -25,4 +30,9 @@ export {
   handleChangePassword,
   updatePendingBalance, // muy importante
   finalizeInventorySession,
+  createInvoiceV2,
+  createInvoiceV2Http,
+  getInvoiceV2Http,
+  processInvoiceOutbox,
+  processInvoiceCompensation,
 };
