@@ -3,8 +3,7 @@ import styled from 'styled-components'
 import { Body } from './components/Body/Body'
 import { Button, notification, Spin, Form, Modal as AntdModal, message } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
-import { resetCart, SelectCartData, SelectSettingCart, toggleCart, toggleInvoicePanel, toggleInvoicePanelOpen, setPaymentMethod, recalcTotals } from '../../../../../features/cart/cartSlice'
-import { processInvoice } from '../../../../../services/invoice/invoiceService'
+import { resetCart, SelectCartData, SelectSettingCart, toggleCart, toggleInvoicePanel, toggleInvoicePanelOpen, setPaymentMethod } from '../../../../../features/cart/cartSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { deleteClient, selectClient } from '../../../../../features/clientCart/clientCartSlice'
 import { selectAR } from '../../../../../features/accountsReceivable/accountsReceivableSlice'
@@ -104,7 +103,6 @@ export const InvoicePanel = () => {
     const accountsReceivable = useSelector(selectAR)
     const taxReceiptState = useSelector(selectTaxReceipt);
     const { settings: { taxReceiptEnabled } } = taxReceiptState;
-    const total = cart?.payment?.value;
     const isAddedToReceivables = cart?.isAddedToReceivables;
     const business = useSelector(selectBusinessData) || {};
     const insuranceEnabled = useInsuranceEnabled();
@@ -222,38 +220,34 @@ export const InvoicePanel = () => {
                     ?.map(product => `${product.name}: ${product.comment}`)
                     ?.join('; ');
 
-                const { invoice } = await measure('processInvoice', () => processInvoice({
+                const resolvedBusinessId = business?.id || business?.businessID || user?.businessID;
+                if (!resolvedBusinessId) {
+                    throw new Error('No se encontró el negocio asociado para procesar la factura.');
+                }
+                const invoiceResult = await measure('processInvoice', () => runInvoice({
                     cart,
                     user,
                     client,
                     accountsReceivable,
                     taxReceiptEnabled,
                     ncfType,
-                    dispatch,
                     dueDate,
-                    insuranceEnabled: insuranceEnabled,
-                    insuranceAR: insuranceAR,
+                    insuranceEnabled,
+                    insuranceAR,
                     insuranceAuth,
-                    invoiceComment, // Add comments from products to the invoice
-                    isTestMode, // Pass test mode to service
-                }))
-
-                // const invoice = await runInvoice({
-                //     cart,
-                //     user,
-                //     client,
-                //     accountsReceivable,
-                //     taxReceiptEnabled,
-                //     ncfType,
-                //     dueDate: dueDate?.valueOf(), // Convert to milliseconds
-                //     insuranceEnabled,
-                //     insuranceAR,
-                //     insuranceAuth,
-                // })
+                    invoiceComment, // Comentarios agregados desde los productos
+                    isTestMode,
+                    businessId: resolvedBusinessId,
+                    business,
+                }));
+                const createdInvoice = invoiceResult?.invoice;
+                if (!createdInvoice) {
+                    throw new Error('No se pudo recuperar la factura generada desde el backend.');
+                }
 
                 if (shouldPrintInvoice) {
-                    setInvoice(invoice); // Actualizamos estado primero
-                    await measure('handleInvoicePrinting', () => handleInvoicePrinting(invoice));
+                    setInvoice(createdInvoice); // Actualizamos estado primero
+                    await measure('handleInvoicePrinting', () => handleInvoicePrinting(createdInvoice));
                 }
                 if (!shouldPrintInvoice) {
                     setInvoice({});
