@@ -21,6 +21,7 @@ import { selectBusinessData } from '../../../../../features/auth/businessSlice'
 import { downloadInvoiceLetterPdf } from '../../../../../firebase/quotation/downloadQuotationPDF'
 import { selectAppMode } from '../../../../../features/appModes/appModeSlice'
 import { measure } from '../../../../../utils/perf/measure'
+import { nanoid } from 'nanoid'
 
 export const modalStyles = {
     mask: {
@@ -224,6 +225,20 @@ export const InvoicePanel = () => {
                 if (!resolvedBusinessId) {
                     throw new Error('No se encontró el negocio asociado para procesar la factura.');
                 }
+                // Generamos una llave idempotente estable basada en el carrito si existe, de lo contrario un nanoid
+                const idempotencyKey =
+                    (cart?.id && `cart:${cart.id}`) ||
+                    (cart?.cartId && `cart:${cart.cartId}`) ||
+                    (cart?.cartIdRef && `cart:${cart.cartIdRef}`) ||
+                    `gen:${nanoid()}`;
+
+                console.info('[InvoicePanel] processInvoice -> started', {
+                    cartId: cart?.id ?? cart?.cartId ?? cart?.cartIdRef ?? null,
+                    businessId: resolvedBusinessId,
+                    userId: user?.uid ?? null,
+                    testMode: Boolean(isTestMode),
+                    idempotencyKey,
+                });
                 const invoiceResult = await measure('processInvoice', () => runInvoice({
                     cart,
                     user,
@@ -239,11 +254,18 @@ export const InvoicePanel = () => {
                     isTestMode,
                     businessId: resolvedBusinessId,
                     business,
+                    idempotencyKey,
                 }));
                 const createdInvoice = invoiceResult?.invoice;
                 if (!createdInvoice) {
                     throw new Error('No se pudo recuperar la factura generada desde el backend.');
                 }
+
+                console.info('[InvoicePanel] processInvoice -> completed', {
+                    invoiceId: createdInvoice?.id ?? invoiceResult?.invoiceId ?? null,
+                    status: invoiceResult?.status ?? null,
+                    reused: Boolean(invoiceResult?.reused),
+                });
 
                 if (shouldPrintInvoice) {
                     setInvoice(createdInvoice); // Actualizamos estado primero
@@ -262,7 +284,13 @@ export const InvoicePanel = () => {
                 })
                 setLoading({ status: false, message: '' })
                 setSubmitted(false)
-                console.error('Error processing invoice:', error)
+                console.error('[InvoicePanel] processInvoice -> failed', {
+                    message: error?.message,
+                    code: error?.code,
+                    invoiceId: error?.invoiceId ?? error?.invoice?.id ?? null,
+                    idempotencyKey: error?.idempotencyKey ?? null,
+                    reused: error?.reused ?? null,
+                }, error)
                 // En caso de error liberamos el bloqueo para que el usuario pueda cambiar el comprobante
                 dispatch(unlockTaxReceiptType());
             }

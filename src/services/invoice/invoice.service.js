@@ -13,8 +13,9 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const normalizeUser = (user) => {
     if (!user) return null;
     const businessId = user.businessID || user.businessId || user.business?.id || user.business?.businessID || null;
+    const uid = user.uid || user.id || user.userId || user.user_id || user.uuid || null;
     return {
-        uid: user.uid,
+        uid,
         businessID: businessId,
     };
 };

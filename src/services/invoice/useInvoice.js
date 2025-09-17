@@ -114,6 +114,7 @@ export default function useInvoice() {
         }
 
         const { signal, ...submissionPayload } = params || {};
+        
         submission = await submitInvoice(submissionPayload);
 
         const result = await waitForInvoiceResult({

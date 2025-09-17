@@ -44,6 +44,7 @@ const useMenuFiltering = () => {
     const business = useSelector(selectBusinessData)
     const businessType = business?.businessType || null
     const links = getMenuData()
+    const canSeeDeveloperGroup = hasDeveloperAccess()
 
     return useMemo(() => {
         const filteredLinks = links.reduce((acc, item) => {
@@ -83,11 +84,11 @@ const useMenuFiltering = () => {
             return acc
         }, {})
         // Remove developer group if user lacks developer access
-        if (!hasDeveloperAccess() && grouped.developer) {
+        if (!canSeeDeveloperGroup && grouped.developer) {
             delete grouped.developer
         }
         return grouped
-    }, [links, billingMode, businessType])
+    }, [links, billingMode, businessType, canSeeDeveloperGroup])
 }
 
 export const SideBar = ({ isOpen, handleOpenMenu }) => {
@@ -236,3 +237,4 @@ const LogoContainer = styled.div`
     height: 2em;
     width: 2.4rem;
 `
+

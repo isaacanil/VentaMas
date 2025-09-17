@@ -1,20 +1,50 @@
-import { firestore, logger } from 'firebase-functions';
+import { logger } from 'firebase-functions';
+import { firestore } from 'firebase-functions/v1';
 import { db, FieldValue } from '../../../../core/config/firebase.js';
-import { collectInventoryPrereqs } from '../../../../modules/Inventory/services/getInventory.service.js';
-import { adjustProductInventory } from '../../../../modules/Inventory/services/Inventory.service.js';
-import { collectReceivablePrereqs } from '../../../../modules/accountReceivable/services/getAccountReceivable.service.js';
-import { addAccountReceivable } from '../../../../modules/accountReceivable/services/addAccountReceivable.js';
-import { addInstallmentReceivable } from '../../../../modules/accountReceivable/services/addInstallmentsAccountReceivable.js';
-import { consumeCreditNotesTx } from '../services/creditNotes.service.js';
-import { attemptFinalizeInvoice } from '../services/finalize.service.js';
-import getCashCount from '../../../../modules/cashCount/utils/cashCountQueries.js';
-import { checkOpenCashCount } from '../../../../modules/cashCount/utils/cashCountCheck.js';
-import { getNextIDTransactionalSnap, applyNextIDTransactional } from '../../../../core/utils/getNextID.js';
 import { Timestamp } from '../../../../core/config/firebase.js';
-import { upsertClientTx } from '../services/client.service.js';
-import { getInsurance } from '../../../../modules/insurance/services/insurance.service.js';
-import { addInsuranceAuth } from '../../../../modules/accountReceivable/services/insuranceAuth.js';
-import { auditTx, auditSafe } from '../services/audit.service.js';
+
+let depsPromise;
+async function loadDeps() {
+  if (!depsPromise) {
+    depsPromise = Promise.all([
+      import('../../../../modules/Inventory/services/getInventory.service.js'),
+      import('../../../../modules/Inventory/services/Inventory.service.js'),
+      import('../../../../modules/accountReceivable/services/getAccountReceivable.service.js'),
+      import('../../../../modules/accountReceivable/services/addAccountReceivable.js'),
+      import('../../../../modules/accountReceivable/services/addInstallmentsAccountReceivable.js'),
+      import('../services/creditNotes.service.js'),
+      import('../services/finalize.service.js'),
+      import('../../../../modules/cashCount/utils/cashCountQueries.js'),
+      import('../../../../modules/cashCount/utils/cashCountCheck.js'),
+      import('../../../../core/utils/getNextID.js'),
+      import('../services/client.service.js'),
+      import('../../../../modules/insurance/services/insurance.service.js'),
+      import('../../../../modules/accountReceivable/services/insuranceAuth.js'),
+      import('../services/audit.service.js'),
+    ]).then(([inventoryQueries, inventoryService, receivablePrereqs, addAccountReceivableMod, addInstallmentMod, creditNotesService, finalizeService, cashCountQueries, cashCountCheckMod, nextIdMod, clientService, insuranceService, insuranceAuthMod, auditService]) => {
+      const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
+      return {
+        collectInventoryPrereqs: inventoryQueries.collectInventoryPrereqs,
+        adjustProductInventory: inventoryService.adjustProductInventory,
+        collectReceivablePrereqs: receivablePrereqs.collectReceivablePrereqs,
+        addAccountReceivable: addAccountReceivableMod.addAccountReceivable,
+        addInstallmentReceivable: addInstallmentMod.addInstallmentReceivable,
+        consumeCreditNotesTx: creditNotesService.consumeCreditNotesTx,
+        attemptFinalizeInvoice: finalizeService.attemptFinalizeInvoice,
+        getCashCount: cashCountHelpers,
+        checkOpenCashCount: cashCountCheckMod.checkOpenCashCount,
+        getNextIDTransactionalSnap: nextIdMod.getNextIDTransactionalSnap,
+        applyNextIDTransactional: nextIdMod.applyNextIDTransactional,
+        upsertClientTx: clientService.upsertClientTx,
+        getInsurance: insuranceService.getInsurance,
+        addInsuranceAuth: insuranceAuthMod.addInsuranceAuth,
+        auditTx: auditService.auditTx,
+        auditSafe: auditService.auditSafe,
+      };
+    });
+  }
+  return depsPromise;
+}
 
 export const processInvoiceOutbox = firestore
   .document('businesses/{businessId}/invoicesV2/{invoiceId}/outbox/{taskId}')
@@ -30,6 +60,25 @@ export const processInvoiceOutbox = firestore
       logger.info('Outbox task not pending, skipping', { invoiceId, taskId, status });
       return null;
     }
+
+    const {
+      collectInventoryPrereqs,
+      adjustProductInventory,
+      collectReceivablePrereqs,
+      addAccountReceivable,
+      addInstallmentReceivable,
+      consumeCreditNotesTx,
+      attemptFinalizeInvoice,
+      getCashCount,
+      checkOpenCashCount,
+      getNextIDTransactionalSnap,
+      applyNextIDTransactional,
+      upsertClientTx,
+      getInsurance,
+      addInsuranceAuth,
+      auditTx,
+      auditSafe,
+    } = await loadDeps();
 
     try {
       await db.runTransaction(async (tx) => {
@@ -286,3 +335,4 @@ export const processInvoiceOutbox = firestore
     }
     return null;
   });
+

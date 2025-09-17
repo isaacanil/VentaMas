@@ -1,10 +1,28 @@
 import { https, logger } from 'firebase-functions';
 import { admin } from '../../../../core/config/firebase.js';
 import { nanoid } from 'nanoid';
-import { validateInvoiceCart } from '../../../modules/invoice/utils/invoiceValidation.js';
-import { createPendingInvoice } from '../services/orchestrator.service.js';
-import getCashCount from '../../../modules/cashCount/utils/cashCountQueries.js';
-import { checkOpenCashCount } from '../../../modules/cashCount/utils/cashCountCheck.js';
+import { resolveIdempotencyKey } from '../utils/idempotency.util.js';
+
+let depsPromise;
+async function loadDeps() {
+  if (!depsPromise) {
+    depsPromise = Promise.all([
+      import('../../../../modules/invoice/utils/invoiceValidation.js'),
+      import('../services/orchestrator.service.js'),
+      import('../../../../modules/cashCount/utils/cashCountQueries.js'),
+      import('../../../../modules/cashCount/utils/cashCountCheck.js'),
+    ]).then(([validation, orchestrator, cashCountQueries, cashCountCheck]) => {
+      const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
+      return {
+        validateInvoiceCart: validation.validateInvoiceCart,
+        createPendingInvoice: orchestrator.createPendingInvoice,
+        getOpenCashCountDoc: cashCountHelpers?.getOpenCashCountDoc,
+        checkOpenCashCount: cashCountCheck.checkOpenCashCount,
+      };
+    });
+  }
+  return depsPromise;
+}
 
 function setCors(res) {
   res.set('Access-Control-Allow-Origin', '*');
@@ -23,16 +41,16 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
 
   const traceId = req.headers['x-cloud-trace-context']?.toString()?.split('/')?.[0] ?? nanoid();
   try {
-    const idempotencyKey = req.headers['idempotency-key'] || req.get('Idempotency-Key') || req.body?.idempotencyKey;
+    const { validateInvoiceCart, createPendingInvoice, getOpenCashCountDoc, checkOpenCashCount } = await loadDeps();
+    const idempotencyKey = resolveIdempotencyKey({ rawRequest: req, data: req.body });
     if (!idempotencyKey) {
       return res.status(400).json({ error: 'Idempotency-Key es requerido' });
     }
 
-    // Auth: ID token en Authorization: Bearer <token>
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) {
-      return res.status(401).json({ error: 'Autenticación requerida' });
+      return res.status(401).json({ error: 'Autenticacion requerida' });
     }
     const decoded = await admin.auth().verifyIdToken(token);
     const authUid = decoded?.uid;
@@ -47,20 +65,17 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
       return res.status(403).json({ error: 'userId no coincide con el usuario autenticado' });
     }
 
-    // Validación NCF mínima
     const ncfEnabled = !!(data?.ncf?.enabled || data?.taxReceiptEnabled);
     const ncfType = data?.ncf?.type || data?.ncfType;
     if (ncfEnabled && !ncfType) {
-      return res.status(400).json({ error: 'ncfType es requerido cuando NCF está habilitado' });
+      return res.status(400).json({ error: 'ncfType es requerido cuando NCF esta habilitado' });
     }
 
-    // Validar carrito
     const validation = validateInvoiceCart(data?.cart);
     if (!validation?.isValid) {
-      return res.status(412).json({ error: `Carrito inválido: ${validation?.message || 'error'}` });
+      return res.status(412).json({ error: 'Carrito invalido: ' + (validation?.message || 'error') });
     }
 
-    // Validar datos de cuentas por cobrar cuando el carrito las requiere
     const isAddedToReceivables = !!data?.cart?.isAddedToReceivables;
     if (isAddedToReceivables) {
       const arData = data?.accountsReceivable || null;
@@ -69,10 +84,9 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
         return res.status(400).json({ error: 'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true' });
       }
     }
-    // Validar cuadre abierto (early validation)
     try {
       const user = { businessID: businessId, uid: userId };
-      const ccSnap = await getCashCount.getOpenCashCountDoc(user);
+      const ccSnap = await getOpenCashCountDoc?.(user);
       await checkOpenCashCount({ cashCountSnap: ccSnap, user });
     } catch (e) {
       return res.status(412).json({ error: 'No hay cuadre de caja abierto' });
@@ -96,4 +110,3 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
     return res.status(500).json({ error: 'Error interno al iniciar la factura', traceId, message: err?.message || String(err) });
   }
 });
-

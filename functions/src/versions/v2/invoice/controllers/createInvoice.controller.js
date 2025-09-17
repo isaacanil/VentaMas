@@ -1,53 +1,102 @@
 import { https, logger } from 'firebase-functions';
 import { nanoid } from 'nanoid';
-import { validateInvoiceCart } from '../../../modules/invoice/utils/invoiceValidation.js';
-import { createPendingInvoice } from '../services/orchestrator.service.js';
-import getCashCount from '../../../modules/cashCount/utils/cashCountQueries.js';
-import { checkOpenCashCount } from '../../../modules/cashCount/utils/cashCountCheck.js';
+import { resolveIdempotencyKey } from '../utils/idempotency.util.js';
+
+let depsPromise;
+async function loadDeps() {
+  if (!depsPromise) {
+    depsPromise = Promise.all([
+      import('../../../../modules/invoice/utils/invoiceValidation.js'),
+      import('../services/orchestrator.service.js'),
+      import('../../../../modules/cashCount/utils/cashCountQueries.js'),
+      import('../../../../modules/cashCount/utils/cashCountCheck.js'),
+      import('../../../../core/config/firebase.js'),
+      import('../utils/hash.util.js'),
+    ]).then(([validation, orchestrator, cashCountQueries, cashCountCheck, firebaseConfig, hashUtil]) => {
+      const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
+      const { db } = firebaseConfig;
+      return {
+        validateInvoiceCart: validation.validateInvoiceCart,
+        createPendingInvoice: orchestrator.createPendingInvoice,
+        getOpenCashCountDoc: cashCountHelpers?.getOpenCashCountDoc,
+        checkOpenCashCount: cashCountCheck.checkOpenCashCount,
+        stableHash: hashUtil.stableHash,
+        /** Obtiene snapshot del usuario */
+        getUserSnap: async (userId) => {
+          if (!userId) return null;
+            try {
+              return await db.doc(`users/${userId}`).get();
+            } catch (e) {
+              return null;
+            }
+        },
+      };
+    });
+  }
+  return depsPromise;
+}
 
 /**
- * V2 - Endpoint (callable) para iniciar la creación de una factura.
- * Primera fase: sólo garantiza idempotencia y crea la factura en estado 'pending'.
- * Requiere header `Idempotency-Key` o campo `idempotencyKey` en el body (data).
+ * V2 - Endpoint (callable) para iniciar la creacion de una factura.
+ * Primera fase: solo garantiza idempotencia y crea la factura en estado 'pending'.
+ * Requiere header 'Idempotency-Key' o campo 'idempotencyKey' en el body (data).
  */
 export const createInvoiceV2 = https.onCall(async (data, context) => {
   const traceId = context.rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ?? nanoid();
   try {
-    if (!context?.auth?.uid) {
-      throw new https.HttpsError('unauthenticated', 'Autenticación requerida');
-    }
-    const idempotencyKey = context.rawRequest?.headers?.['idempotency-key'] || data?.idempotencyKey;
+    const { validateInvoiceCart, createPendingInvoice, getOpenCashCountDoc, checkOpenCashCount, getUserSnap, stableHash } = await loadDeps();
+    const rawRequest = context.rawRequest;
+    let idempotencyKey = resolveIdempotencyKey({ rawRequest, data });
     const businessId = data?.businessId || data?.user?.businessID;
-    const userId = data?.userId || data?.user?.uid;
+    const userId = data?.userId || data?.user?.uid; // ya no dependemos de context.auth
 
+    // Fallback automático si no se envía Idempotency-Key: usar cartId o hash estable del carrito
     if (!idempotencyKey) {
-      logger.warn('Missing Idempotency-Key', { traceId });
-      throw new https.HttpsError('invalid-argument', 'Idempotency-Key es requerido');
+      const cartId = data?.cart?.id || data?.cartId || data?.cartIdRef;
+      if (cartId) {
+        idempotencyKey = `cart:${cartId}`;
+      } else if (data?.cart) {
+        try {
+          idempotencyKey = 'hash:' + stableHash(data.cart);
+        } catch {}
+      }
+      if (!idempotencyKey) {
+        logger.warn('Missing Idempotency-Key and cannot derive fallback', { traceId });
+        throw new https.HttpsError('invalid-argument', 'Idempotency-Key es requerido');
+      } else {
+        logger.info('Derived Idempotency-Key fallback', { traceId, idempotencyKey });
+      }
     }
     if (!businessId || !userId) {
       logger.warn('Missing businessId or userId', { traceId, businessId: !!businessId, userId: !!userId });
       throw new https.HttpsError('invalid-argument', 'businessId y userId son requeridos');
     }
-    if (userId !== context.auth.uid) {
-      logger.warn('UserId mismatch with auth uid', { traceId, userId, authUid: context.auth.uid });
-      throw new https.HttpsError('permission-denied', 'userId no coincide con el usuario autenticado');
+
+    // Validación de existencia de usuario y pertenencia al negocio (sin Firebase Auth)
+    const userSnap = await getUserSnap(userId);
+    if (!userSnap || !userSnap.exists) {
+      logger.warn('User not found', { traceId, userId });
+      throw new https.HttpsError('invalid-argument', 'Usuario no existe');
+    }
+    // El campo puede estar en root (businessID) o anidado (user.businessID) según versiones
+    const userBiz = userSnap.get('businessID') || userSnap.get('user.businessID');
+    if (userBiz && userBiz !== businessId) {
+      logger.warn('User-business mismatch', { traceId, userId, userBiz, businessId });
+      throw new https.HttpsError('permission-denied', 'Usuario no pertenece al negocio');
     }
 
-    // Validación ligera de NCF si viene habilitado
     const ncfEnabled = !!(data?.ncf?.enabled || data?.taxReceiptEnabled);
     const ncfType = data?.ncf?.type || data?.ncfType;
     if (ncfEnabled && !ncfType) {
       logger.warn('NCF enabled but type missing', { traceId });
-      throw new https.HttpsError('invalid-argument', 'ncfType es requerido cuando NCF está habilitado');
+      throw new https.HttpsError('invalid-argument', 'ncfType es requerido cuando NCF esta habilitado');
     }
 
-    // Validar carrito mínimo
     const validation = validateInvoiceCart(data?.cart);
     if (!validation?.isValid) {
-      throw new https.HttpsError('failed-precondition', `Carrito inválido: ${validation?.message || 'error'}`);
+      throw new https.HttpsError('failed-precondition', 'Carrito invalido: ' + (validation?.message || 'error'));
     }
 
-    // Validar datos de cuentas por cobrar cuando el carrito las requiere
     const isAddedToReceivables = !!data?.cart?.isAddedToReceivables;
     if (isAddedToReceivables) {
       const arData = data?.accountsReceivable || null;
@@ -56,10 +105,9 @@ export const createInvoiceV2 = https.onCall(async (data, context) => {
         throw new https.HttpsError('invalid-argument', 'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true');
       }
     }
-    // Validar cuadre de caja abierto (early validation)
     try {
       const user = { businessID: businessId, uid: userId };
-      const ccSnap = await getCashCount.getOpenCashCountDoc(user);
+      const ccSnap = await getOpenCashCountDoc?.(user);
       await checkOpenCashCount({ cashCountSnap: ccSnap, user });
     } catch (e) {
       throw new https.HttpsError('failed-precondition', 'No hay cuadre de caja abierto');
@@ -87,4 +135,3 @@ export const createInvoiceV2 = https.onCall(async (data, context) => {
     });
   }
 });
-

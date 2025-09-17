@@ -1,7 +1,25 @@
-import { firestore, logger } from 'firebase-functions';
+import { logger } from 'firebase-functions';
+import { firestore } from 'firebase-functions/v1';
 import { db, FieldValue } from '../../../../core/config/firebase.js';
-import { compensateAR, compensateCreditNotes, markNcfVoidedIfPending, deleteCanonicalInvoice, detachFromCashCount } from '../services/compensation.service.js';
-import { auditTx, auditSafe } from '../services/audit.service.js';
+let depsPromise;
+async function loadDeps() {
+  if (!depsPromise) {
+    depsPromise = Promise.all([
+      import('../services/compensation.service.js'),
+      import('../services/audit.service.js'),
+    ]).then(([compensationService, auditService]) => ({
+      compensateAR: compensationService.compensateAR,
+      compensateCreditNotes: compensationService.compensateCreditNotes,
+      markNcfVoidedIfPending: compensationService.markNcfVoidedIfPending,
+      deleteCanonicalInvoice: compensationService.deleteCanonicalInvoice,
+      detachFromCashCount: compensationService.detachFromCashCount,
+      auditTx: auditService.auditTx,
+      auditSafe: auditService.auditSafe,
+    }));
+  }
+  return depsPromise;
+}
+
 
 export const processInvoiceCompensation = firestore
   .document('businesses/{businessId}/invoicesV2/{invoiceId}/compensations/{compId}')
@@ -14,6 +32,16 @@ export const processInvoiceCompensation = firestore
     const invoiceRef = db.doc(`businesses/${businessId}/invoicesV2/${invoiceId}`);
 
     if (status !== 'pending') return null;
+
+    const {
+      compensateAR,
+      compensateCreditNotes,
+      markNcfVoidedIfPending,
+      deleteCanonicalInvoice,
+      detachFromCashCount,
+      auditTx,
+      auditSafe,
+    } = await loadDeps();
 
     try {
       await db.runTransaction(async (tx) => {
@@ -91,3 +119,4 @@ export const processInvoiceCompensation = firestore
     }
     return null;
   });
+
