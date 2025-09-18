@@ -1,7 +1,6 @@
 import { logger } from 'firebase-functions';
 import { firestore } from 'firebase-functions/v1';
-import { db, FieldValue } from '../../../../core/config/firebase.js';
-import { Timestamp } from '../../../../core/config/firebase.js';
+import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 
 let depsPromise;
 async function loadDeps() {
@@ -17,11 +16,10 @@ async function loadDeps() {
       import('../../../../modules/cashCount/utils/cashCountQueries.js'),
       import('../../../../modules/cashCount/utils/cashCountCheck.js'),
       import('../../../../core/utils/getNextID.js'),
-      import('../services/client.service.js'),
       import('../../../../modules/insurance/services/insurance.service.js'),
       import('../../../../modules/accountReceivable/services/insuranceAuth.js'),
       import('../services/audit.service.js'),
-    ]).then(([inventoryQueries, inventoryService, receivablePrereqs, addAccountReceivableMod, addInstallmentMod, creditNotesService, finalizeService, cashCountQueries, cashCountCheckMod, nextIdMod, clientService, insuranceService, insuranceAuthMod, auditService]) => {
+    ]).then(([inventoryQueries, inventoryService, receivablePrereqs, addAccountReceivableMod, addInstallmentMod, creditNotesService, finalizeService, cashCountQueries, cashCountCheckMod, nextIdMod, insuranceService, insuranceAuthMod, auditService]) => {
       const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
       return {
         collectInventoryPrereqs: inventoryQueries.collectInventoryPrereqs,
@@ -35,7 +33,6 @@ async function loadDeps() {
         checkOpenCashCount: cashCountCheckMod.checkOpenCashCount,
         getNextIDTransactionalSnap: nextIdMod.getNextIDTransactionalSnap,
         applyNextIDTransactional: nextIdMod.applyNextIDTransactional,
-        upsertClientTx: clientService.upsertClientTx,
         getInsurance: insuranceService.getInsurance,
         addInsuranceAuth: insuranceAuthMod.addInsuranceAuth,
         auditTx: auditService.auditTx,
@@ -73,7 +70,6 @@ export const processInvoiceOutbox = firestore
       checkOpenCashCount,
       getNextIDTransactionalSnap,
       applyNextIDTransactional,
-      upsertClientTx,
       getInsurance,
       addInsuranceAuth,
       auditTx,
@@ -103,85 +99,113 @@ export const processInvoiceOutbox = firestore
         }
 
         const invoice = invoiceSnap.data();
-        auditTx(tx, { businessId, invoiceId, event: 'task_start', data: { taskId, type, attempts: t.attempts || 0 } });
-        if (invoice.status === 'pending') {
-          tx.update(invoiceRef, {
-            status: 'committing',
-            statusTimeline: FieldValue.arrayUnion({ status: 'committing', at: FieldValue.serverTimestamp() }),
-            updatedAt: FieldValue.serverTimestamp(),
-          });
-        }
+        let invoiceStatus = invoice?.status || null;
+        const ensureTaskStart = (() => {
+          let logged = false;
+          return () => {
+            if (logged) return;
+            logged = true;
+            auditTx(tx, { businessId, invoiceId, event: 'task_start', data: { taskId, type, attempts: t.attempts || 0 } });
+            if (invoiceStatus === 'pending') {
+              tx.update(invoiceRef, {
+                status: 'committing',
+                statusTimeline: FieldValue.arrayUnion({ status: 'committing', at: Timestamp.now() }),
+                updatedAt: FieldValue.serverTimestamp(),
+              });
+              invoiceStatus = 'committing';
+            }
+          };
+        })();
 
         const payload = t.payload || {};
         const user = { uid: payload.userId, businessID: payload.businessId || businessId };
 
         if (type === 'updateInventory') {
           const products = Array.isArray(payload.products) ? payload.products : [];
+          let inventoryPrereqs = [];
           if (products.length > 0) {
-            const prereqs = await collectInventoryPrereqs(tx, { user, products });
-            await adjustProductInventory(tx, { user, products, sale: { id: invoiceId }, inventoryPrevreqs: prereqs });
+            inventoryPrereqs = await collectInventoryPrereqs(tx, { user, products });
+          }
+          ensureTaskStart();
+          if (products.length > 0) {
+            await adjustProductInventory(tx, { user, products, sale: { id: invoiceId }, inventoryPrevreqs: inventoryPrereqs });
           }
           tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'inventory_done', at: FieldValue.serverTimestamp() }),
+            statusTimeline: FieldValue.arrayUnion({ status: 'inventory_done', at: Timestamp.now() }),
             updatedAt: FieldValue.serverTimestamp(),
           });
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else if (type === 'createCanonicalInvoice') {
-          // Idempotencia: si ya existe la factura canónica, marcar done
           const canonRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
           const canonSnap = await tx.get(canonRef);
+          const cart = payload.cart || {};
+          const client = payload.client || invoice?.snapshot?.client || null;
+          const userRef = db.doc(`users/${user.uid}`);
+          const dueDateMs = payload?.dueDate || null;
+          const dueDateTs = dueDateMs ? Timestamp.fromMillis(dueDateMs) : null;
+          const ncfCode = invoice?.snapshot?.ncf?.code || null;
+
           if (!canonSnap.exists) {
-            // Validar cashCount abierto y obtener ID
             const ccSnap = await getCashCount.getOpenCashCountDocFromTx(tx, user);
-            const { cashCount, cashCountId } = await checkOpenCashCount({ cashCountSnap: ccSnap, user });
-
-            // Generar numberID
+            const { cashCountId } = await checkOpenCashCount({ cashCountSnap: ccSnap, user });
             const nextIdSnap = await getNextIDTransactionalSnap(tx, user, 'lastInvoiceId');
-            const numberID = applyNextIDTransactional(tx, nextIdSnap, 1);
-
-            const userRef = db.doc(`users/${user.uid}`);
-            const ncfCode = invoice?.snapshot?.ncf?.code || null;
-            const cart = payload.cart || {};
-            const client = payload.client || invoice?.snapshot?.client || null;
-            // Upsert cliente si corresponde
+            let clientRef = null;
+            let clientSnap = null;
             if (client?.id) {
-              await upsertClientTx(tx, { businessId, client });
+              clientRef = db.doc(`businesses/${businessId}/clients/${client.id}`);
+              clientSnap = await tx.get(clientRef);
             }
-            const dueDateMs = payload?.dueDate || null;
-            const dueDate = dueDateMs ? Timestamp.fromMillis(dueDateMs) : null;
+            ensureTaskStart();
+            if (clientRef) {
+              const existingClient = clientSnap?.exists ? clientSnap.data() || {} : {};
+              const clientPayload = {
+                ...existingClient,
+                ...client,
+                updatedAt: FieldValue.serverTimestamp(),
+              };
+              if (!clientSnap?.exists) {
+                clientPayload.createdAt = FieldValue.serverTimestamp();
+              }
+              tx.set(clientRef, clientPayload, { merge: true });
+            }
+            const numberID = applyNextIDTransactional(tx, nextIdSnap, 1);
             const bill = {
               ...cart,
               id: invoiceId,
               NCF: ncfCode,
               client,
-              cashCountId: cashCountId,
+              cashCountId,
               date: FieldValue.serverTimestamp(),
               numberID,
               userID: user.uid,
               user: userRef,
               status: 'completed',
-              ...(dueDate ? { dueDate, hasDueDate: true } : {}),
             };
+            if (dueDateTs) {
+              bill.dueDate = dueDateTs;
+              bill.hasDueDate = true;
+            }
             if (payload?.invoiceComment) {
               bill.invoiceComment = payload.invoiceComment;
             }
             tx.set(canonRef, { data: bill }, { merge: true });
+          } else {
+            ensureTaskStart();
           }
           tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'invoice_doc_done', at: FieldValue.serverTimestamp() }),
+            statusTimeline: FieldValue.arrayUnion({ status: 'invoice_doc_done', at: Timestamp.now() }),
             updatedAt: FieldValue.serverTimestamp(),
           });
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else if (type === 'closePreorder') {
-          // Añadir entrada de historial y asegurar status 'completed'
+          ensureTaskStart();
           const canonRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
           const historyEntry = {
             type: 'invoice',
             status: 'completed',
-            date: FieldValue.serverTimestamp(),
+            date: Timestamp.now(),
             userID: user.uid,
           };
-          // Usar merge para no pisar otros campos
           tx.set(
             canonRef,
             {
@@ -193,13 +217,14 @@ export const processInvoiceOutbox = firestore
             { merge: true }
           );
           tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'preorder_closed', at: FieldValue.serverTimestamp() }),
+            statusTimeline: FieldValue.arrayUnion({ status: 'preorder_closed', at: Timestamp.now() }),
             updatedAt: FieldValue.serverTimestamp(),
           });
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else if (type === 'attachToCashCount') {
           const ccSnap = await getCashCount.getOpenCashCountDocFromTx(tx, user);
           const { cashCountId } = await checkOpenCashCount({ cashCountSnap: ccSnap, user });
+          ensureTaskStart();
           const ccRef = ccSnap.ref;
           const ccData = ccSnap.data();
           const sales = ccData?.cashCount?.sales || [];
@@ -211,39 +236,46 @@ export const processInvoiceOutbox = firestore
             });
           }
           tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'cash_count_done', at: FieldValue.serverTimestamp() }),
+            statusTimeline: FieldValue.arrayUnion({ status: 'cash_count_done', at: Timestamp.now() }),
             updatedAt: FieldValue.serverTimestamp(),
           });
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else if (type === 'setupAR') {
           const ar = payload.ar || null;
+          let accountReceivableNextIDSnap = null;
           if (ar && Number(ar?.totalInstallments) > 0) {
-            const { accountReceivableNextIDSnap } = await collectReceivablePrereqs(tx, { user, accountsReceivable: ar });
+            const prereqs = await collectReceivablePrereqs(tx, { user, accountsReceivable: ar });
+            accountReceivableNextIDSnap = prereqs?.accountReceivableNextIDSnap || null;
+          }
+          ensureTaskStart();
+          if (ar && Number(ar?.totalInstallments) > 0 && accountReceivableNextIDSnap) {
             const arRecord = await addAccountReceivable(tx, { user, ar, accountReceivableNextIDSnap });
             await addInstallmentReceivable(tx, { user, ar: arRecord });
             tx.set(taskRef, { result: { arId: arRecord.id } }, { merge: true });
           }
           tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'ar_done', at: FieldValue.serverTimestamp() }),
+            statusTimeline: FieldValue.arrayUnion({ status: 'ar_done', at: Timestamp.now() }),
             updatedAt: FieldValue.serverTimestamp(),
           });
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else if (type === 'consumeCreditNotes') {
           const creditNotes = Array.isArray(payload.creditNotes) ? payload.creditNotes : [];
+          let consumeResult = null;
           if (creditNotes.length > 0) {
-            const res = await consumeCreditNotesTx(tx, {
+            consumeResult = await consumeCreditNotesTx(tx, {
               businessId,
               userId: user.uid,
               invoiceId,
               creditNotes,
               invoiceSnapshot: invoice,
             });
-            if (res?.applicationIds?.length) {
-              tx.set(taskRef, { result: { applicationIds: res.applicationIds } }, { merge: true });
-            }
+          }
+          ensureTaskStart();
+          if (consumeResult?.applicationIds?.length) {
+            tx.set(taskRef, { result: { applicationIds: consumeResult.applicationIds } }, { merge: true });
           }
           tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'credit_notes_done', at: FieldValue.serverTimestamp() }),
+            statusTimeline: FieldValue.arrayUnion({ status: 'credit_notes_done', at: Timestamp.now() }),
             updatedAt: FieldValue.serverTimestamp(),
           });
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
@@ -251,16 +283,16 @@ export const processInvoiceOutbox = firestore
           const insAR = payload.insuranceAR || null;
           const insAuth = payload.insuranceAuth || null;
           const clientId = payload.clientId || invoice?.snapshot?.client?.id || null;
+          let accountReceivableNextIDSnap = null;
+          let insuranceData = null;
+          let authId = null;
           if (insAR && insAuth && clientId && Number(insAR?.totalInstallments) > 0) {
-            // Obtener nextID para AR
-            const { accountReceivableNextIDSnap } = await collectReceivablePrereqs(tx, { user, accountsReceivable: insAR });
-            // Obtener datos del seguro
-            const insuranceData = await getInsurance(tx, { user, insuranceId: insAuth.insuranceId });
+            const prereqs = await collectReceivablePrereqs(tx, { user, accountsReceivable: insAR });
+            accountReceivableNextIDSnap = prereqs?.accountReceivableNextIDSnap || null;
+            insuranceData = await getInsurance(tx, { user, insuranceId: insAuth.insuranceId });
+            authId = await addInsuranceAuth(tx, { user, authData: insAuth, clientId });
+            ensureTaskStart();
             const insuranceName = insuranceData?.name || insuranceData?.insuranceName || 'Seguro';
-            // Crear auth de seguro
-            const authId = await addInsuranceAuth(tx, { user, authData: insAuth, clientId });
-
-            // Normalizar AR de seguros
             const nowMs = Date.now();
             const normalizedAR = {
               ...insAR,
@@ -285,18 +317,21 @@ export const processInvoiceOutbox = firestore
               },
               comments: insAR.comments || '',
             };
-
-            const arRecord = await addAccountReceivable(tx, { user, ar: normalizedAR, accountReceivableNextIDSnap });
-            await addInstallmentReceivable(tx, { user, ar: arRecord });
-            tx.set(taskRef, { result: { arId: arRecord.id, authId } }, { merge: true });
+            if (accountReceivableNextIDSnap) {
+              const arRecord = await addAccountReceivable(tx, { user, ar: normalizedAR, accountReceivableNextIDSnap });
+              await addInstallmentReceivable(tx, { user, ar: arRecord });
+              tx.set(taskRef, { result: { arId: arRecord.id, authId } }, { merge: true });
+            }
+          } else {
+            ensureTaskStart();
           }
           tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'insurance_ar_done', at: FieldValue.serverTimestamp() }),
+            statusTimeline: FieldValue.arrayUnion({ status: 'insurance_ar_done', at: Timestamp.now() }),
             updatedAt: FieldValue.serverTimestamp(),
           });
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else {
-          // Unsupported types: mark as done to avoid deadlocks
+          ensureTaskStart();
           logger.info('Unsupported outbox type, marking done', { taskId, type });
         }
 
@@ -312,7 +347,6 @@ export const processInvoiceOutbox = firestore
           { merge: true }
         );
       });
-      // Intentar commit final post-tarea (si quedan pendientes, no hará nada)
       try {
         await attemptFinalizeInvoice({ businessId, invoiceId });
       } catch (e) {
@@ -335,4 +369,5 @@ export const processInvoiceOutbox = firestore
     }
     return null;
   });
+
 

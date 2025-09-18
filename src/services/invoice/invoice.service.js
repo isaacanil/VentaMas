@@ -10,6 +10,33 @@ const DEFAULT_TIMEOUT_MS = 45000;
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const isPlainObject = (value) => {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+        return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+};
+
+const sanitizeNumericValues = (input) => {
+    if (Array.isArray(input)) {
+        return input.map(sanitizeNumericValues);
+    }
+
+    if (isPlainObject(input)) {
+        return Object.entries(input).reduce((acc, [key, value]) => {
+            acc[key] = sanitizeNumericValues(value);
+            return acc;
+        }, {});
+    }
+
+    if (typeof input === "number") {
+        return Number.isFinite(input) ? input : null;
+    }
+
+    return input;
+};
+
 const normalizeUser = (user) => {
     if (!user) return null;
     const businessId = user.businessID || user.businessId || user.business?.id || user.business?.businessID || null;
@@ -96,7 +123,7 @@ export const buildInvoiceRequestPayload = ({
         throw new Error("userId es requerido para iniciar la factura");
     }
 
-    return payload;
+    return sanitizeNumericValues(payload);
 };
 
 export const submitInvoice = async (params) => {

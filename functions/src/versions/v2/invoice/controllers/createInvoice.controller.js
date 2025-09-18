@@ -1,6 +1,7 @@
 import { https, logger } from 'firebase-functions';
 import { nanoid } from 'nanoid';
 import { resolveIdempotencyKey } from '../utils/idempotency.util.js';
+import { onCall } from 'firebase-functions/https';
 
 let depsPromise;
 async function loadDeps() {
@@ -41,14 +42,14 @@ async function loadDeps() {
  * Primera fase: solo garantiza idempotencia y crea la factura en estado 'pending'.
  * Requiere header 'Idempotency-Key' o campo 'idempotencyKey' en el body (data).
  */
-export const createInvoiceV2 = https.onCall(async (data, context) => {
+export const createInvoiceV2 = onCall(async ({data}, context) => {
   const traceId = context.rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ?? nanoid();
   try {
     const { validateInvoiceCart, createPendingInvoice, getOpenCashCountDoc, checkOpenCashCount, getUserSnap, stableHash } = await loadDeps();
     const rawRequest = context.rawRequest;
     let idempotencyKey = resolveIdempotencyKey({ rawRequest, data });
     const businessId = data?.businessId || data?.user?.businessID;
-    const userId = data?.userId || data?.user?.uid; // ya no dependemos de context.auth
+    const userId = data?.userId || data?.user?.uid; 
 
     // Fallback automático si no se envía Idempotency-Key: usar cartId o hash estable del carrito
     if (!idempotencyKey) {
@@ -128,10 +129,25 @@ export const createInvoiceV2 = https.onCall(async (data, context) => {
     };
   } catch (err) {
     if (err instanceof https.HttpsError) throw err;
-    logger.error('Unhandled error in createInvoiceV2', { traceId, err });
+    // Normalize error for logging
+    let errorInfo = {};
+    if (err instanceof Error) {
+      errorInfo = {
+        message: err.message,
+        stack: err.stack,
+        name: err.name,
+      };
+    } else if (typeof err === 'object' && err !== null) {
+      errorInfo = { ...err };
+    } else {
+      errorInfo = { message: String(err) };
+    }
+    logger.error('Unhandled error in createInvoiceV2', { traceId, errorInfo });
     throw new https.HttpsError('internal', 'Error interno al iniciar la factura', {
       traceId,
-      message: err?.message || String(err),
+      message: errorInfo.message || String(err),
+      stack: errorInfo.stack,
+      name: errorInfo.name,
     });
   }
 });

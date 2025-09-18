@@ -1,6 +1,6 @@
 import { logger } from 'firebase-functions';
 import { firestore } from 'firebase-functions/v1';
-import { db, FieldValue } from '../../../../core/config/firebase.js';
+import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 let depsPromise;
 async function loadDeps() {
   if (!depsPromise) {
@@ -10,7 +10,6 @@ async function loadDeps() {
     ]).then(([compensationService, auditService]) => ({
       compensateAR: compensationService.compensateAR,
       compensateCreditNotes: compensationService.compensateCreditNotes,
-      markNcfVoidedIfPending: compensationService.markNcfVoidedIfPending,
       deleteCanonicalInvoice: compensationService.deleteCanonicalInvoice,
       detachFromCashCount: compensationService.detachFromCashCount,
       auditTx: auditService.auditTx,
@@ -36,7 +35,6 @@ export const processInvoiceCompensation = firestore
     const {
       compensateAR,
       compensateCreditNotes,
-      markNcfVoidedIfPending,
       deleteCanonicalInvoice,
       detachFromCashCount,
       auditTx,
@@ -53,7 +51,21 @@ export const processInvoiceCompensation = firestore
         if (!invoiceSnap.exists) return;
         const invoice = invoiceSnap.data();
 
-        auditTx(tx, { businessId, invoiceId, event: 'compensation_start', data: { compId, type } });
+        const usageId = invoice?.snapshot?.ncf?.usageId;
+        let usageSnap = null;
+        if (usageId) {
+          const usageRef = db.doc(`businesses/${businessId}/ncfUsage/${usageId}`);
+          usageSnap = await tx.get(usageRef);
+        }
+
+        const ensureCompStart = (() => {
+          let logged = false;
+          return () => {
+            if (logged) return;
+            logged = true;
+            auditTx(tx, { businessId, invoiceId, event: 'compensation_start', data: { compId, type } });
+          };
+        })();
 
         if (type === 'setupAR') {
           const arId = cData?.result?.arId || null;
@@ -63,9 +75,7 @@ export const processInvoiceCompensation = firestore
           const applicationIds = cData?.result?.applicationIds || [];
           await compensateCreditNotes(tx, { businessId, invoiceId, creditNotes, applicationIds });
         } else if (type === 'updateInventory') {
-          // Por seguridad no revertimos inventario automáticamente en v2 Fase 6 inicial.
-          // Se puede implementar un compensador específico más adelante.
-          logger.warn('Compensación de inventario marcada para manejo manual', { invoiceId, compId });
+          logger.warn('Compensacion de inventario marcada para manejo manual', { invoiceId, compId });
         } else if (type === 'setupInsuranceAR') {
           const arId = cData?.result?.arId || null;
           await compensateAR(tx, { businessId, arId });
@@ -75,22 +85,31 @@ export const processInvoiceCompensation = firestore
           const userId = cData?.payload?.userId;
           await detachFromCashCount(tx, { businessId, invoiceId, userId });
         } else if (type === 'closePreorder') {
-          // No-op compensación: solo historial/status. Podemos dejar evidencia con otro entry si se requiere.
-          // Aquí marcamos un entry de 'reverted' si el documento existe.
           const canonRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
           const canonSnap = await tx.get(canonRef);
           if (canonSnap.exists) {
+            ensureCompStart();
             tx.set(
               canonRef,
-              { data: { history: FieldValue.arrayUnion({ type: 'invoice', status: 'reverted', date: FieldValue.serverTimestamp() }) } },
+              { data: { history: FieldValue.arrayUnion({ type: 'invoice', status: 'reverted', date: Timestamp.now() }) } },
               { merge: true }
             );
           }
         }
 
-        // Marcar NCF como voided si sigue en pending
-        await markNcfVoidedIfPending(tx, { businessId, invoice });
+        if (usageSnap && usageSnap.exists) {
+          const usageData = usageSnap.data() || {};
+          if (usageData.status === 'pending') {
+            ensureCompStart();
+            tx.update(usageSnap.ref, {
+              status: 'voided',
+              voidedAt: FieldValue.serverTimestamp(),
+              updatedAt: FieldValue.serverTimestamp(),
+            });
+          }
+        }
 
+        ensureCompStart();
         tx.set(
           compRef,
           {
@@ -119,4 +138,5 @@ export const processInvoiceCompensation = firestore
     }
     return null;
   });
+
 

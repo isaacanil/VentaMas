@@ -1,4 +1,5 @@
-import { db, FieldValue } from '../../../../core/config/firebase.js';
+import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
+import { https } from 'firebase-functions';
 import { nanoid } from 'nanoid';
 import { stableHash } from '../utils/hash.util.js';
 import { getIdempotencyRef } from './idempotency.service.js';
@@ -66,7 +67,7 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
       requestHash,
       cartHash,
       statusTimeline: [
-        { status: 'pending', at: FieldValue.serverTimestamp() },
+        { status: 'pending', at: Timestamp.now() },
       ],
       snapshot: {
         ncf: payload?.ncf || null,
@@ -86,7 +87,7 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     let ncfReservation = null;
     if (ncfEnabled) {
       if (!ncfType) {
-        throw new Error('ncfType requerido cuando ncf.enabled=true');
+        throw new https.HttpsError('invalid-argument', 'ncfType requerido cuando ncf.enabled=true', { reason: 'missing-ncf-type' });
       }
       ncfReservation = await reserveNcf(tx, { businessId, userId, ncfType });
       baseDoc.snapshot.ncf = {
@@ -96,7 +97,7 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
         usageId: ncfReservation.usageId,
         status: 'reserved',
       };
-      baseDoc.statusTimeline.push({ status: 'ncf_reserved', at: FieldValue.serverTimestamp() });
+      baseDoc.statusTimeline.push({ status: 'ncf_reserved', at: Timestamp.now() });
     }
 
     tx.set(invoiceRef, baseDoc);
@@ -219,7 +220,7 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     if (isAddedToReceivables) {
       const totalInstallments = Number(arData?.totalInstallments);
       if (!arData || !Number.isFinite(totalInstallments) || totalInstallments <= 0) {
-        throw new Error('accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true');
+        throw new https.HttpsError('invalid-argument', 'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true', { reason: 'invalid-accounts-receivable' });
       }
     }
     if (isAddedToReceivables && arData && Number(arData?.totalInstallments) > 0) {

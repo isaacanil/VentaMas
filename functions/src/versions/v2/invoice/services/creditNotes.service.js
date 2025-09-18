@@ -1,4 +1,5 @@
 import { db, FieldValue } from '../../../../core/config/firebase.js';
+import { https } from 'firebase-functions';
 
 /**
  * Consume notas de crédito y crea registros de aplicación en una transacción.

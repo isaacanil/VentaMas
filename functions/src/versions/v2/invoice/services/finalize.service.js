@@ -1,4 +1,4 @@
-import { db, FieldValue } from '../../../../core/config/firebase.js';
+import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 import { scheduleCompensationsInTx } from './compensation.service.js';
 import { auditTx } from './audit.service.js';
 
@@ -40,7 +40,7 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
       auditTx(tx, { businessId, invoiceId, event: 'finalize_failed', level: 'warn', data: { failed: true } });
       tx.update(invoiceRef, {
         status: 'failed',
-        statusTimeline: FieldValue.arrayUnion({ status: 'failed', at: FieldValue.serverTimestamp() }),
+        statusTimeline: FieldValue.arrayUnion({ status: 'failed', at: Timestamp.now() }),
         updatedAt: FieldValue.serverTimestamp(),
       });
       // Opcional: marcar idempotency como failed
@@ -61,7 +61,7 @@ export async function attemptFinalizeInvoice({ businessId, invoiceId }) {
     tx.update(invoiceRef, {
       status: 'committed',
       committedAt: FieldValue.serverTimestamp(),
-      statusTimeline: FieldValue.arrayUnion({ status: 'committed', at: FieldValue.serverTimestamp() }),
+      statusTimeline: FieldValue.arrayUnion({ status: 'committed', at: Timestamp.now() }),
       updatedAt: FieldValue.serverTimestamp(),
     });
     auditTx(tx, { businessId, invoiceId, event: 'finalize_committed', data: { committed: true } });

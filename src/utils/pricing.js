@@ -58,7 +58,6 @@ export function getDiscount(product) {
 
 export function getTotalPrice(product, taxReceiptEnabled = true, useAmountToBuy = true) {
   if (!product) return 0;
-  console.log('taxReceiptEnabled', taxReceiptEnabled);
   const { price, isSoldByWeight,  } = getPricingDetails(product, useAmountToBuy);
   if (!isValidNumber(price)) return 0;
 
