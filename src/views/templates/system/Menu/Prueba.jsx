@@ -3,13 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Button,
-  Card,
-  DatePicker,
-  Descriptions,
   Empty,
   List,
+  Progress,
+  Select,
   Space,
-  Spin,
   Tag,
   Typography,
   message,
@@ -19,8 +17,8 @@ import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebas
 import { db } from '../../../../firebase/firebaseconfig';
 import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
 import { userAccess } from '../../../../hooks/abilities/useAbilities';
-
-const { RangePicker } = DatePicker;
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const sanitizeNcf = (value) => {
   if (value === null || value === undefined) {
@@ -30,6 +28,32 @@ const sanitizeNcf = (value) => {
     return String(value).trim().toUpperCase();
   }
   return '';
+};
+
+// Crea una clave canónica a partir de un NCF: prefijo letras + parte numérica sin ceros a la izquierda
+// Ej: B020000000020 -> B02 + 20000000020 -> "B0220000000020"? No. Mejor: extraer prefijo alfabético al inicio y el resto dígitos.
+// Si no hay match claro, usa ncf saneado tal cual.
+const canonicalizeNcf = (raw) => {
+  const ncf = sanitizeNcf(raw);
+  if (!ncf) return '';
+  const match = ncf.match(/^([A-Z]+)?(\d+)$/);
+  if (match) {
+    const prefix = match[1] || '';
+    const digits = match[2] || '';
+    // eliminar ceros a la izquierda en la parte numérica
+    const normalizedNumber = digits.replace(/^0+/, '') || '0';
+    return `${prefix}${normalizedNumber}`;
+  }
+  // fallback: quitar separadores comunes y volver a intentar
+  const compact = ncf.replace(/[^A-Z0-9]/g, '');
+  const match2 = compact.match(/^([A-Z]+)?(\d+)$/);
+  if (match2) {
+    const prefix = match2[1] || '';
+    const digits = match2[2] || '';
+    const normalizedNumber = digits.replace(/^0+/, '') || '0';
+    return `${prefix}${normalizedNumber}`;
+  }
+  return ncf;
 };
 
 const parseInvoiceDate = (rawDate) => {
@@ -57,31 +81,37 @@ const parseInvoiceDate = (rawDate) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
-const formatDate = (date) => (date ? dayjs(date).format('YYYY-MM-DD HH:mm') : 'Sin fecha');
 
 const analyzeInvoices = (invoices) => {
   let invoicesWithNcf = 0;
   let missingNcf = 0;
   let skippedWithoutDate = 0;
   const lengthStatsMap = new Map();
-  const duplicatesMap = new Map();
+  const duplicatesMap = new Map(); // exactos por NCF
+  const normalizedMap = new Map(); // por clave canónica
   const timelineEntries = [];
+  let non11Count = 0;
 
   invoices.forEach((invoice) => {
     const invoiceData = invoice?.data || {};
     const rawNcfValue = invoiceData?.NCF ?? invoice?.NCF ?? '';
     const ncf = sanitizeNcf(rawNcfValue);
+    const canonical = canonicalizeNcf(rawNcfValue);
     const invoiceNumberValue = invoiceData?.numberID ?? invoice?.numberID ?? invoice?.id ?? '';
     const invoiceNumber = typeof invoiceNumberValue === 'string' || typeof invoiceNumberValue === 'number'
       ? String(invoiceNumberValue).trim()
       : '';
     const invoiceDate = parseInvoiceDate(invoiceData?.date ?? invoice?.date ?? null);
 
+    const status = invoiceData?.status ?? invoice?.status ?? '';
     const entry = {
       invoiceId: invoice?.id || invoiceNumber || ncf,
       invoiceNumber,
       ncf,
+      canonical,
       date: invoiceDate,
+      status: status || 'Sin estado',
+      length: ncf ? ncf.length : 0,
     };
 
     if (ncf) {
@@ -108,9 +138,17 @@ const analyzeInvoices = (invoices) => {
       }
       lengthStatsMap.set(lengthKey, stats);
 
+      if (lengthKey !== 11) {
+        non11Count += 1;
+      }
+
       const duplicateEntry = duplicatesMap.get(ncf) || { ncf, occurrences: [] };
       duplicateEntry.occurrences.push(entry);
       duplicatesMap.set(ncf, duplicateEntry);
+
+      const normEntry = normalizedMap.get(canonical) || { canonical, occurrences: [] };
+      normEntry.occurrences.push({ ...entry, canonical });
+      normalizedMap.set(canonical, normEntry);
     } else {
       missingNcf += 1;
     }
@@ -160,6 +198,22 @@ const analyzeInvoices = (invoices) => {
     }))
     .sort((a, b) => b.count - a.count || a.ncf.localeCompare(b.ncf));
 
+  const duplicatesNormalized = Array.from(normalizedMap.values())
+    .filter((item) => item.occurrences.length > 1)
+    .map((item) => ({
+      canonical: item.canonical,
+      count: item.occurrences.length,
+      distinctNcfs: Array.from(new Set(item.occurrences.map((o) => o.ncf))).length,
+      occurrences: item.occurrences.sort((a, b) => {
+        if (a.date && b.date) return a.date - b.date;
+        if (a.date) return -1;
+        if (b.date) return 1;
+        return (a.invoiceNumber || '').localeCompare(b.invoiceNumber || '');
+      }),
+    }))
+    // Orden: más ocurrencias primero, luego más NCF distintos, luego por canonical
+    .sort((a, b) => b.count - a.count || b.distinctNcfs - a.distinctNcfs || a.canonical.localeCompare(b.canonical));
+
   const observedLengths = Array.from(lengthStatsMap.keys()).sort((a, b) => a - b);
   const currentLength = timelineEntries.length
     ? timelineEntries[timelineEntries.length - 1].ncf.length
@@ -173,9 +227,11 @@ const analyzeInvoices = (invoices) => {
     ncfLengthStats,
     lengthChangeEvents,
     duplicates: duplicateList,
+    duplicatesNormalized,
     uniqueNcfCount: duplicatesMap.size,
     observedLengths,
     currentLength,
+    non11Count,
   };
 };
 
@@ -183,13 +239,101 @@ export const Prueba = () => {
   const navigate = useNavigate();
   const { abilities, loading } = userAccess();
   const [processing, setProcessing] = useState(false);
-  const [dateRange, setDateRange] = useState(() => {
-    const end = dayjs();
-    const start = end.subtract(30, 'day');
-    return [start, end];
-  });
+  const [exporting, setExporting] = useState(false);
+  const [progressTotal, setProgressTotal] = useState(0);
+  const [progressDone, setProgressDone] = useState(0);
+  const [currentBusiness, setCurrentBusiness] = useState(null);
+  const [exportingBusiness, setExportingBusiness] = useState(null);
+  const presets = [
+    { label: 'Hoy', value: 'today' },
+    { label: 'Ayer', value: 'yesterday' },
+    { label: 'Este mes', value: 'this_month' },
+    { label: 'Mes pasado', value: 'last_month' },
+    { label: 'Últimos 3 meses', value: 'last_3_months' },
+    { label: 'Últimos 90 días', value: 'last_90_days' },
+    { label: 'Trimestre 1 (Ene-Mar)', value: 'q1' },
+    { label: 'Trimestre 2 (Abr-Jun)', value: 'q2' },
+    { label: 'Trimestre 3 (Jul-Sep)', value: 'q3' },
+    { label: 'Trimestre 4 (Oct-Dic)', value: 'q4' },
+    { label: 'Este año', value: 'this_year' },
+    { label: 'Año pasado', value: 'last_year' },
+    { label: 'Todas (sin filtro de fechas)', value: 'all' },
+  ];
+
+  const [selectedPreset, setSelectedPreset] = useState('last_90_days');
+
+  const getRangeFromPreset = (preset) => {
+    const now = dayjs();
+    switch (preset) {
+      case 'today':
+        return { start: now.startOf('day'), end: now.endOf('day') };
+      case 'yesterday': {
+        const y = now.subtract(1, 'day');
+        return { start: y.startOf('day'), end: y.endOf('day') };
+      }
+      case 'this_month':
+        return { start: now.startOf('month'), end: now.endOf('month') };
+      case 'last_month': {
+        const lm = now.subtract(1, 'month');
+        return { start: lm.startOf('month'), end: lm.endOf('month') };
+      }
+      case 'last_3_months':
+        return { start: now.subtract(3, 'month').startOf('day'), end: now.endOf('day') };
+      case 'last_90_days':
+        return { start: now.subtract(90, 'day').startOf('day'), end: now.endOf('day') };
+      case 'q1': {
+        const year = now.year();
+        return { start: dayjs(`${year}-01-01`).startOf('day'), end: dayjs(`${year}-03-31`).endOf('day') };
+      }
+      case 'q2': {
+        const year = now.year();
+        return { start: dayjs(`${year}-04-01`).startOf('day'), end: dayjs(`${year}-06-30`).endOf('day') };
+      }
+      case 'q3': {
+        const year = now.year();
+        return { start: dayjs(`${year}-07-01`).startOf('day'), end: dayjs(`${year}-09-30`).endOf('day') };
+      }
+      case 'q4': {
+        const year = now.year();
+        return { start: dayjs(`${year}-10-01`).startOf('day'), end: dayjs(`${year}-12-31`).endOf('day') };
+      }
+      case 'this_year': {
+        const year = now.year();
+        return { start: dayjs(`${year}-01-01`).startOf('day'), end: dayjs(`${year}-12-31`).endOf('day') };
+      }
+      case 'last_year': {
+        const year = now.year() - 1;
+        return { start: dayjs(`${year}-01-01`).startOf('day'), end: dayjs(`${year}-12-31`).endOf('day') };
+      }
+      case 'all':
+        return { start: null, end: null };
+      default:
+        return { start: now.subtract(90, 'day').startOf('day'), end: now.endOf('day') };
+    }
+  };
+
+  const toFriendlyFirestoreError = (err) => {
+    const code = err?.code;
+    switch (code) {
+      case 'permission-denied':
+        return 'Permisos insuficientes para leer datos de este negocio.';
+      case 'unauthenticated':
+        return 'Sesión no autenticada. Por favor, vuelve a iniciar sesión.';
+      case 'unavailable':
+        return 'Servicio no disponible o sin conexión. Intenta de nuevo más tarde.';
+      case 'deadline-exceeded':
+        return 'La consulta tardó demasiado en responder.';
+      case 'not-found':
+        return 'Recurso no encontrado.';
+      case 'aborted':
+        return 'Operación cancelada o en conflicto. Intenta de nuevo.';
+      default:
+        return err?.message || 'Fallo desconocido';
+    }
+  };
   const [results, setResults] = useState([]);
   const [errors, setErrors] = useState([]);
+  const businessesWithDuplicates = results.filter((item) => item.duplicates && item.duplicates.length > 0);
 
   useEffect(() => {
     if (!loading) {
@@ -202,26 +346,22 @@ export const Prueba = () => {
   }, [abilities, loading, navigate]);
 
   const handleAnalyze = useCallback(async () => {
-    if (!dateRange || dateRange.length !== 2 || !dateRange[0] || !dateRange[1]) {
-      message.warning('Selecciona un rango de fechas.');
-      return;
-    }
-
-    const start = dateRange[0].startOf('day');
-    const end = dateRange[1].endOf('day');
-
-    if (end.isBefore(start)) {
-      message.warning('El rango de fechas no es valido.');
+    const { start, end } = getRangeFromPreset(selectedPreset);
+    if (start && end && end.isBefore(start)) {
+      message.warning('El rango de fechas no es válido.');
       return;
     }
 
     setProcessing(true);
     setResults([]);
     setErrors([]);
+    setProgressTotal(0);
+    setProgressDone(0);
+    setCurrentBusiness(null);
 
     try {
-      const startDate = start.toDate();
-      const endDate = end.toDate();
+  const startDate = start ? start.toDate() : null;
+  const endDate = end ? end.toDate() : null;
       const businesses = await fbGetBusinessesList();
 
       if (!businesses.length) {
@@ -229,6 +369,8 @@ export const Prueba = () => {
         setProcessing(false);
         return;
       }
+
+      setProgressTotal(businesses.length);
 
       const aggregated = [];
       const issues = [];
@@ -240,21 +382,45 @@ export const Prueba = () => {
           || business?.id;
 
         try {
+          setCurrentBusiness(businessName);
           const taxSettingsRef = doc(db, 'businesses', business.id, 'settings', 'taxReceipt');
           const taxSettingsSnap = await getDoc(taxSettingsRef);
           const taxEnabled = taxSettingsSnap.exists() && !!taxSettingsSnap.data()?.taxReceiptEnabled;
 
           if (!taxEnabled) {
+            // Igual contamos como procesado para el progreso
+            aggregated.push({
+              businessId: business.id,
+              businessName,
+              totalInvoices: 0,
+              invoicesWithNcf: 0,
+              missingNcf: 0,
+              skippedWithoutDate: 0,
+              ncfLengthStats: [],
+              lengthChangeEvents: [],
+              duplicates: [],
+              uniqueNcfCount: 0,
+              observedLengths: [],
+              currentLength: null,
+            });
             continue;
           }
 
           const invoicesRef = collection(db, 'businesses', business.id, 'invoices');
-          const invoicesQuery = query(
-            invoicesRef,
-            where('data.date', '>=', startDate),
-            where('data.date', '<=', endDate),
-            orderBy('data.date', 'asc'),
-          );
+          let invoicesQuery;
+          if (startDate && endDate) {
+            invoicesQuery = query(
+              invoicesRef,
+              where('data.date', '>=', startDate),
+              where('data.date', '<=', endDate),
+              orderBy('data.date', 'asc'),
+            );
+          } else {
+            invoicesQuery = query(
+              invoicesRef,
+              orderBy('data.date', 'asc'),
+            );
+          }
 
           const invoicesSnapshot = await getDocs(invoicesQuery);
 
@@ -294,8 +460,10 @@ export const Prueba = () => {
           issues.push({
             businessId: business.id,
             businessName,
-            message: businessError?.message || 'Fallo desconocido',
+            message: toFriendlyFirestoreError(businessError),
           });
+        } finally {
+          setProgressDone((d) => d + 1);
         }
       }
 
@@ -317,17 +485,168 @@ export const Prueba = () => {
       }
 
       if (issues.length) {
-        message.warning('Algunos negocios no se pudieron analizar. Revisa los avisos.');
+        message.warning(`Algunos negocios no se pudieron analizar (${issues.length}). Revisa los avisos.`);
       }
     } catch (error) {
       console.error('Error general al analizar comprobantes', error);
-      message.error('Ocurrio un error al generar el analisis.');
-      setErrors([{ businessId: 'general', businessName: 'General', message: error?.message || 'Fallo desconocido' }]);
+      message.error('Ocurrió un error al generar el análisis.');
+      setErrors([{ businessId: 'general', businessName: 'General', message: toFriendlyFirestoreError(error) }]);
       setResults([]);
     } finally {
       setProcessing(false);
+      setCurrentBusiness(null);
     }
-  }, [dateRange]);
+  }, [selectedPreset]);
+
+  const sanitizeFileName = (name) => {
+    const base = (name || 'negocio').toString().trim();
+    return base
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+      .replace(/[^a-zA-Z0-9-_\s.]/g, '')
+      .replace(/\s+/g, '_')
+      .substring(0, 80);
+  };
+
+  const exportBusinessWorkbook = async (result, start, end) => {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'VentaMax';
+    wb.created = new Date();
+
+    // Resumen sheet
+    const resumen = wb.addWorksheet('Resumen');
+    resumen.columns = [
+      { header: 'Campo', key: 'field', width: 28 },
+      { header: 'Valor', key: 'value', width: 60 },
+    ];
+
+    const estado = result.duplicates?.length ? 'CON DUPLICADOS' : 'OK';
+
+    const resumenRows = [
+      { field: 'Negocio', value: result.businessName },
+      { field: 'ID', value: result.businessId },
+      { field: 'Rango', value: start && end ? `${dayjs(start).format('YYYY-MM-DD')} a ${dayjs(end).format('YYYY-MM-DD')}` : 'Todas las fechas' },
+      { field: 'Facturas analizadas', value: String(result.totalInvoices) },
+      { field: 'Facturas con NCF', value: String(result.invoicesWithNcf) },
+      { field: 'NCF únicos', value: String(result.uniqueNcfCount) },
+      { field: 'Comprobantes faltantes', value: String(result.missingNcf) },
+      { field: 'Sin fecha', value: String(result.skippedWithoutDate || 0) },
+      { field: 'Duplicados detectados', value: String(result.duplicates?.length || 0) },
+      { field: 'Longitud actual', value: result.currentLength ?? 'N/D' },
+      { field: 'Longitudes vistas', value: (result.observedLengths || []).join(', ') || '—' },
+      { field: 'Repetidos por clave normalizada', value: String(result.duplicatesNormalized?.length || 0) },
+      { field: 'NCF longitud ≠ 11', value: String(result.non11Count || 0) },
+      { field: 'Estado', value: estado },
+    ];
+    resumen.addRows(resumenRows);
+    resumen.getColumn('field').font = { bold: true };
+
+    // Longitudes sheet
+    const longitudes = wb.addWorksheet('Longitudes');
+    longitudes.columns = [
+      { header: 'Longitud', key: 'length', width: 12 },
+      { header: 'Conteo', key: 'count', width: 12 },
+      { header: 'Primera fecha', key: 'first', width: 22 },
+      { header: 'Última fecha', key: 'last', width: 22 },
+      { header: 'Sin fecha', key: 'missing', width: 12 },
+    ];
+    (result.ncfLengthStats || []).forEach((s) => {
+      longitudes.addRow({
+        length: s.length,
+        count: s.count,
+        first: s.firstDate ? dayjs(s.firstDate).format('YYYY-MM-DD HH:mm') : '—',
+        last: s.lastDate ? dayjs(s.lastDate).format('YYYY-MM-DD HH:mm') : '—',
+        missing: s.missingDateCount || 0,
+      });
+    });
+
+    // Duplicados detail sheet
+    const duplicados = wb.addWorksheet('Duplicados');
+    duplicados.columns = [
+      { header: 'Factura', key: 'invoice', width: 18 },
+      { header: 'Comprobante fiscal', key: 'ncf', width: 26 },
+      { header: 'Clave normalizada', key: 'canonical', width: 26 },
+      { header: 'Fecha', key: 'date', width: 22 },
+      { header: 'Estado', key: 'status', width: 16 },
+      { header: 'Longitud', key: 'length', width: 12 },
+      { header: 'Ocurrencia #', key: 'idx', width: 14 },
+      { header: 'ID interno', key: 'invoiceId', width: 20 },
+    ];
+    (result.duplicates || []).forEach((dup) => {
+      dup.occurrences.forEach((occ, idx) => {
+        const lengthValue = occ.length || (occ.ncf ? occ.ncf.length : null);
+        duplicados.addRow({
+          invoice: occ.invoiceNumber || null,
+          ncf: dup.ncf,
+          canonical: occ.canonical || canonicalizeNcf(dup.ncf),
+          date: occ.date ? dayjs(occ.date).format('YYYY-MM-DD HH:mm') : null,
+          status: occ.status || 'Sin estado',
+          length: typeof lengthValue === 'number' ? lengthValue : null,
+          idx: idx + 1,
+          invoiceId: occ.invoiceId || null,
+        });
+      });
+    });
+
+    // Normalizados
+    const norm = wb.addWorksheet('Duplicados (norm)');
+    norm.columns = [
+      { header: 'Clave normalizada', key: 'canonical', width: 26 },
+      { header: 'Factura', key: 'invoice', width: 18 },
+      { header: 'Comprobante fiscal', key: 'ncf', width: 26 },
+      { header: 'Fecha', key: 'date', width: 22 },
+      { header: 'Estado', key: 'status', width: 16 },
+      { header: 'Longitud', key: 'length', width: 12 },
+      { header: 'Ocurrencia #', key: 'idx', width: 14 },
+      { header: 'ID interno', key: 'invoiceId', width: 20 },
+    ];
+    (result.duplicatesNormalized || []).forEach((group) => {
+      group.occurrences.forEach((occ, idx) => {
+        const lengthValue = occ.length || (occ.ncf ? occ.ncf.length : null);
+        norm.addRow({
+          canonical: group.canonical,
+          invoice: occ.invoiceNumber || null,
+          ncf: occ.ncf,
+          date: occ.date ? dayjs(occ.date).format('YYYY-MM-DD HH:mm') : null,
+          status: occ.status || 'Sin estado',
+          length: typeof lengthValue === 'number' ? lengthValue : null,
+          idx: idx + 1,
+          invoiceId: occ.invoiceId || null,
+        });
+      });
+    });
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const fileName = `${sanitizeFileName(result.businessName)}_${dayjs().format('YYYYMMDD-HHmm')}.xlsx`;
+    saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), fileName);
+  };
+
+  const handleExportBusiness = async (businessResult) => {
+    if (!businessResult?.duplicates?.length) {
+      message.info('Este negocio no tiene comprobantes duplicados para exportar.');
+      return;
+    }
+
+    const { start, end } = getRangeFromPreset(selectedPreset);
+    const startDate = start ? start.toDate() : null;
+    const endDate = end ? end.toDate() : null;
+
+    setExporting(true);
+    setExportingBusiness({
+      id: businessResult.businessId,
+      name: businessResult.businessName,
+    });
+
+    try {
+      await exportBusinessWorkbook(businessResult, startDate, endDate);
+      message.success(`Reporte exportado para ${businessResult.businessName}.`);
+    } catch (err) {
+      console.error('Error exportando Excel', err);
+      message.error('Ocurrió un error durante la exportación.');
+    } finally {
+      setExporting(false);
+      setExportingBusiness(null);
+    }
+  };
 
   if (loading) {
     return null;
@@ -347,12 +666,12 @@ export const Prueba = () => {
       </Typography.Paragraph>
 
       <Space size="small" wrap style={{ marginBottom: 16 }}>
-        <RangePicker
-          value={dateRange}
-          onChange={(value) => setDateRange(value || [])}
-          allowClear={false}
+        <Select
+          value={selectedPreset}
+          onChange={setSelectedPreset}
+          options={presets}
+          style={{ minWidth: 280 }}
           disabled={processing}
-          format="YYYY-MM-DD"
         />
         <Button type="primary" onClick={handleAnalyze} loading={processing}>
           Analizar
@@ -371,133 +690,96 @@ export const Prueba = () => {
       ))}
 
       {processing && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
-          <Spin tip="Analizando comprobantes..." />
+        <div style={{ marginTop: 16 }}>
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <div>
+              <Typography.Text strong>Analizando comprobantes...</Typography.Text>
+              {currentBusiness ? (
+                <Typography.Text style={{ marginLeft: 8 }} type="secondary">
+                  {currentBusiness}
+                </Typography.Text>
+              ) : null}
+            </div>
+            <Progress
+              percent={progressTotal ? Math.round((progressDone / progressTotal) * 100) : 0}
+              status="active"
+            />
+          </Space>
         </div>
       )}
 
-      {!processing && results.length === 0 && (
+      {!processing && !results.length && (
         <Empty description="Ejecuta el analisis para ver resultados." />
       )}
 
-      {!processing && results.map((result) => (
-        <Card key={result.businessId} style={{ marginBottom: 24 }}>
-          <Space size={8} wrap style={{ marginBottom: 12 }}>
-            <Typography.Title level={4} style={{ margin: 0 }}>
-              {result.businessName}
-            </Typography.Title>
-            <Tag>{result.businessId}</Tag>
-            {result.currentLength !== null && (
-              <Tag color="blue">Longitud actual: {result.currentLength}</Tag>
-            )}
-            {result.observedLengths.length > 1 && (
-              <Tag color="purple">Longitudes vistas: {result.observedLengths.join(', ')}</Tag>
-            )}
-          </Space>
+      {!processing && results.length > 0 && !businessesWithDuplicates.length && (
+        <Empty description="No se detectaron negocios con comprobantes duplicados en el rango seleccionado." />
+      )}
 
-          <Descriptions size="small" bordered column={1}>
-            <Descriptions.Item label="Facturas analizadas">{result.totalInvoices}</Descriptions.Item>
-            <Descriptions.Item label="Facturas con NCF">{result.invoicesWithNcf}</Descriptions.Item>
-            <Descriptions.Item label="NCF unicos">{result.uniqueNcfCount}</Descriptions.Item>
-            <Descriptions.Item label="Comprobantes faltantes">{result.missingNcf}</Descriptions.Item>
-            {result.skippedWithoutDate ? (
-              <Descriptions.Item label="Facturas sin fecha">{result.skippedWithoutDate}</Descriptions.Item>
-            ) : null}
-            <Descriptions.Item label="Comprobantes repetidos detectados">{result.duplicates.length}</Descriptions.Item>
-          </Descriptions>
 
-          <div style={{ marginTop: 16 }}>
-            <Typography.Title level={5}>Longitudes detectadas</Typography.Title>
-            {result.ncfLengthStats.length ? (
-              <List
-                size="small"
-                dataSource={result.ncfLengthStats}
-                renderItem={(item) => (
-                  <List.Item key={`${result.businessId}-length-${item.length}`}>
+      {exporting && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ margin: '16px 0' }}
+          message={
+            exportingBusiness ? (
+              <span>
+                Exportando reporte de <strong>{exportingBusiness.name}</strong>...
+              </span>
+            ) : (
+              'Generando reporte...'
+            )
+          }
+        />
+      )}
+
+      {!processing && businessesWithDuplicates.length > 0 && (
+        <List
+          itemLayout="horizontal"
+          dataSource={businessesWithDuplicates}
+          renderItem={(result) => {
+            const isExportingThis = exporting && exportingBusiness?.id === result.businessId;
+            return (
+              <List.Item
+                key={result.businessId}
+                actions={[
+                  <Button
+                    key="export"
+                    type="primary"
+                    onClick={() => handleExportBusiness(result)}
+                    loading={isExportingThis}
+                    disabled={exporting && !isExportingThis}
+                  >
+                    Exportar reporte
+                  </Button>,
+                ]}
+              >
+                <List.Item.Meta
+                  title={
                     <Space size={8} wrap>
-                      <Tag color="geekblue">Longitud {item.length}</Tag>
-                      <span>{item.count} comprobantes</span>
-                      <span>Primera factura: {item.firstDate ? formatDate(item.firstDate) : 'Sin fecha'}</span>
-                      <span>Ultima factura: {item.lastDate ? formatDate(item.lastDate) : 'Sin fecha'}</span>
-                      {item.missingDateCount ? <Tag color="orange">{item.missingDateCount} sin fecha</Tag> : null}
+                      <Typography.Text strong>{result.businessName}</Typography.Text>
+                      <Tag>{result.businessId}</Tag>
                     </Space>
-                  </List.Item>
-                )}
-              />
-            ) : (
-              <Typography.Text type="secondary">Sin comprobantes con NCF en el rango seleccionado.</Typography.Text>
-            )}
-          </div>
+                  }
+                  description={
+                    <Space size={8} wrap>
+                      <Tag color="red">{`${result.duplicates.length} NCF duplicados`}</Tag>
+                      {result.duplicatesNormalized && result.duplicatesNormalized.length ? (
+                        <Tag color="volcano">{`${result.duplicatesNormalized.length} claves normalizadas`}</Tag>
+                      ) : null}
+                      <Typography.Text type="secondary">
+                        {`${result.invoicesWithNcf} comprobantes con NCF analizados`}
+                      </Typography.Text>
+                    </Space>
+                  }
+                />
+              </List.Item>
+            );
+          }}
+        />
+      )}
 
-          <div style={{ marginTop: 16 }}>
-            <Typography.Title level={5}>Cambios de longitud por fecha</Typography.Title>
-            {result.lengthChangeEvents.length ? (
-              <List
-                size="small"
-                dataSource={result.lengthChangeEvents}
-                renderItem={(item, index) => (
-                  <List.Item key={`${result.businessId}-change-${index}`}>
-                    <div>
-                      <strong>{formatDate(item.date)}:</strong> cambio de {item.fromLength} a {item.toLength} con {item.ncf}
-                      {item.invoiceNumber ? ` (factura ${item.invoiceNumber})` : ''}.
-                      {item.previousInvoiceNumber ? ` Registro previo: factura ${item.previousInvoiceNumber}` : ''}
-                    </div>
-                  </List.Item>
-                )}
-              />
-            ) : (
-              <Typography.Text type="secondary">Sin cambios de longitud detectados en el rango.</Typography.Text>
-            )}
-          </div>
-
-          <div style={{ marginTop: 16 }}>
-            <Typography.Title level={5}>Comprobantes repetidos</Typography.Title>
-            {result.duplicates.length ? (
-              <List
-                size="small"
-                dataSource={result.duplicates}
-                renderItem={(duplicate) => {
-                  const firstOccurrence = duplicate.occurrences[0];
-                  const lastOccurrence = duplicate.occurrences[duplicate.occurrences.length - 1];
-                  return (
-                    <List.Item key={`${result.businessId}-dup-${duplicate.ncf}`}>
-                      <div style={{ width: '100%' }}>
-                        <Space size={8} wrap>
-                          <Tag color="red">{duplicate.ncf}</Tag>
-                          <span>{duplicate.count} facturas</span>
-                          {firstOccurrence?.invoiceNumber ? (
-                            <span>Primera factura {firstOccurrence.invoiceNumber}</span>
-                          ) : null}
-                          {firstOccurrence?.date ? (
-                            <span>{formatDate(firstOccurrence.date)}</span>
-                          ) : null}
-                          {lastOccurrence?.invoiceNumber && lastOccurrence?.invoiceNumber !== firstOccurrence?.invoiceNumber ? (
-                            <span>Ultima factura {lastOccurrence.invoiceNumber}</span>
-                          ) : null}
-                          {lastOccurrence?.date && lastOccurrence?.date !== firstOccurrence?.date ? (
-                            <span>{formatDate(lastOccurrence.date)}</span>
-                          ) : null}
-                        </Space>
-                        <ul style={{ marginTop: 8, paddingLeft: 20 }}>
-                          {duplicate.occurrences.map((occurrence, index) => (
-                            <li key={`${duplicate.ncf}-${occurrence.invoiceId || index}`}>
-                              {occurrence.invoiceNumber ? `Factura ${occurrence.invoiceNumber}` : 'Factura sin numero'}
-                              {' - '}
-                              {formatDate(occurrence.date)}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </List.Item>
-                  );
-                }}
-              />
-            ) : (
-              <Typography.Text type="secondary">Sin comprobantes repetidos en el rango.</Typography.Text>
-            )}
-          </div>
-        </Card>
-      ))}
     </div>
   );
 };
