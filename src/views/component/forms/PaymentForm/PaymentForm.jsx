@@ -4,7 +4,7 @@ import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivable
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
-import { Modal, modalStyles } from "../../Cart/components/InvoicePanel/InvoicePanel";
+import { Modal, modalStyles } from "../../cart/components/InvoicePanel/InvoicePanel";
 import { PaymentFields } from "./components/PaymentFields";
 import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
 import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
@@ -12,7 +12,7 @@ import { selectUser } from "../../../../features/auth/userSlice";
 import { selectClient } from "../../../../features/clientCart/clientCartSlice";
 import { AccountsReceivablePaymentReceipt } from "../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt";
 import { useReactToPrint } from "react-to-print";
-import CreditSelector from "../../Cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
+import CreditSelector from "../../cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
 
 const { Form, Checkbox, Input, Select, Button, Radio, notification } = antd;
 const { Option } = Select;

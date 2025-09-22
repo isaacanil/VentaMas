@@ -145,6 +145,8 @@ export const processInvoiceOutbox = firestore
           const dueDateTs = dueDateMs ? Timestamp.fromMillis(dueDateMs) : null;
           const ncfCode = invoice?.snapshot?.ncf?.code || null;
 
+          const alreadyFrontendReady = invoiceStatus === 'frontend_ready' || Boolean(invoice?.frontendReadyAt);
+
           if (!canonSnap.exists) {
             const ccSnap = await getCashCount.getOpenCashCountDocFromTx(tx, user);
             const { cashCountId } = await checkOpenCashCount({ cashCountSnap: ccSnap, user });
@@ -192,10 +194,38 @@ export const processInvoiceOutbox = firestore
           } else {
             ensureTaskStart();
           }
-          tx.update(invoiceRef, {
-            statusTimeline: FieldValue.arrayUnion({ status: 'invoice_doc_done', at: Timestamp.now() }),
+          const timelineEntries = [{ status: 'invoice_doc_done', at: Timestamp.now() }];
+          if (!alreadyFrontendReady) {
+            timelineEntries.push({ status: 'frontend_ready', at: Timestamp.now() });
+          }
+
+          const updatePayload = {
+            statusTimeline: FieldValue.arrayUnion(...timelineEntries),
             updatedAt: FieldValue.serverTimestamp(),
-          });
+          };
+
+          if (!alreadyFrontendReady) {
+            updatePayload.status = 'frontend_ready';
+            updatePayload.frontendReadyAt = FieldValue.serverTimestamp();
+          }
+
+          tx.update(invoiceRef, updatePayload);
+
+          if (!alreadyFrontendReady) {
+            invoiceStatus = 'frontend_ready';
+          }
+
+          if (!alreadyFrontendReady && invoice?.idempotencyKey) {
+            const idemRef = db.doc(`businesses/${businessId}/idempotency/${invoice.idempotencyKey}`);
+            tx.set(
+              idemRef,
+              {
+                status: 'frontend_ready',
+                updatedAt: FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+          }
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else if (type === 'closePreorder') {
           ensureTaskStart();
@@ -369,5 +399,3 @@ export const processInvoiceOutbox = firestore
     }
     return null;
   });
-
-

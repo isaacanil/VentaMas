@@ -1,11 +1,9 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createSelector } from "@reduxjs/toolkit";
 import { initialState, defaultDelivery } from "./default/default";
 import { GenericClient } from "../clientCart/clientCartSlice";
 import { roundDecimals } from "../../utils/pricing";
 import { nanoid } from "nanoid";
 import { updateAllTotals } from "./utils/updateAllTotals";
-
-const calculateChange = (payment, totalPurchase) => (payment - totalPurchase);
 
 export const cartSlice = createSlice({
     name: 'factura',
@@ -452,7 +450,7 @@ export const SelectSourceOfPurchase = (state) => state.cart.data.sourceOfPurchas
 export const SelectPaymentValue = (state) => state.cart.data.payment.value;
 export const SelectDiscount = (state) => state.cart.data.discount.value;
 export const SelectNCF = (state) => state.cart.data.NCF;
-export const SelectCartPermission = () => state.cart.permission
+export const SelectCartPermission = (state) => state.cart.permission;
 export const SelectCartIsOpen = (state) => state.cart.isOpen
 export const SelectCartData = (state) => state.cart.data
 export const SelectInvoiceComment = (state) => state.cart.data.invoiceComment
@@ -460,38 +458,31 @@ export const SelectSettingCart = (state) => state.cart.settings
 export const SelectCxcAutoRemovalNotification = (state) => state.cart.showCxcAutoRemovalNotification
 export const selectCart = (state) => state.cart
 export const selectInsuranceEnabled = (state) => state.cart.data.insuranceEnabled;
-export const selectProductsWithIndividualDiscounts = (state) => 
-    state.cart.data.products.filter(product => product.discount && product.discount.value > 0);
-export const selectTotalIndividualDiscounts = (state) => {
-    const products = state.cart.data.products;
-    const taxReceiptEnabled = state.taxReceipt?.enabled ?? true;
-    
-    return products.reduce((total, product) => {
-        if (product.discount && product.discount.value > 0) {
+export const selectProductsWithIndividualDiscounts = createSelector(
+    [(state) => state.cart.data.products],
+    (products = []) => products.filter(product => product.discount && product.discount.value > 0)
+);
+
+export const selectTotalIndividualDiscounts = createSelector(
+    [selectProductsWithIndividualDiscounts, (state) => state.taxReceipt?.enabled ?? true],
+    (discountedProducts, taxReceiptEnabled) =>
+        discountedProducts.reduce((total, product) => {
             const productPrice = product.pricing?.price || product.price || 0;
             const taxPercentage = Number(product.pricing?.tax) || 0;
             const quantity = product.amountToBuy || 1;
-            
-            // Precio unitario con impuestos
-            const unitPriceWithTax = taxReceiptEnabled ? 
-                productPrice * (1 + taxPercentage / 100) : 
-                productPrice;
+
+            const unitPriceWithTax = taxReceiptEnabled
+                ? productPrice * (1 + taxPercentage / 100)
+                : productPrice;
             const totalPriceWithTax = unitPriceWithTax * quantity;
-            
-            let discountAmount = 0;
-            
+
             if (product.discount.type === 'percentage') {
-                discountAmount = totalPriceWithTax * (product.discount.value / 100);
-            } else {
-                // Para monto fijo, el descuento ya considera impuestos
-                discountAmount = product.discount.value;
+                return total + totalPriceWithTax * (product.discount.value / 100);
             }
-            
-            return total + discountAmount;
-        }
-        return total;
-    }, 0);
-};
+
+            return total + product.discount.value;
+        }, 0)
+);
 
 export const selectCreditNotePayment = (state) => state.cart.data.creditNotePayment;
 export const selectTotalCreditNotePayment = (state) => 

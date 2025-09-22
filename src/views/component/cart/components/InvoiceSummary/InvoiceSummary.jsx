@@ -16,7 +16,7 @@ import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled';
 import useInsuranceFormComplete from '../../../../../hooks/useInsuranceFormComplete';
 import { ActionMenu } from './components/ActionMenu/Actionmenu';
 import { icons } from '../../../../../constants/icons/icons';
-import { handleCancelShipping } from '../InvoicePanel/InvoicePanel';
+import { handleCancelShipping } from '../InvoicePanel/handleCancelShipping';
 import { Quotation } from '../../../Quotation/components/Quotation/Quotation';
 import { useReactToPrint } from 'react-to-print';
 import { addQuotation } from '../../../../../firebase/quotation/quotationService';

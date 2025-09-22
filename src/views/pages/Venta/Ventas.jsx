@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import { Cart } from '../../component/Cart/Cart.jsx'
+import { Cart } from '../../component/cart/cart.jsx'
 import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx'
 import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx'  
 
@@ -15,7 +15,7 @@ import { motion } from 'framer-motion'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import { notification } from 'antd'
-import { InvoicePanel } from '../../component/Cart/components/InvoicePanel/InvoicePanel.jsx'
+import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
 import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js'
 import { deleteClient } from '../../../features/clientCart/clientCartSlice.js'
 

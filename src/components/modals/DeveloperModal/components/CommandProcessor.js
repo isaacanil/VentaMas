@@ -559,50 +559,95 @@ Ejemplos:
   BUSINESS SWITCH abc123xyz   - Cambio directo por ID
   BUSINESS RETURN             - Volver al original
   BUSINESS STATUS             - Estado actual`;
-          break; case cmd === 'role list':
-          const availableRoles = getAvailableRoles(this.user).map(role =>
-            `${role.label} - ID: ${role.id}`
-          ).join('\n');
+          break;
+        case cmd === 'role list':
+          const availableRolesForUser = getAvailableRoles(this.user);
+          const rolesForDisplay = [...availableRolesForUser];
 
-          if (availableRoles.length === 0) {
+          if (this.isTemporaryRoleMode && this.originalRole) {
+            const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+            if (originalRoleData && !rolesForDisplay.some(role => role.id === originalRoleData.id)) {
+              rolesForDisplay.unshift(originalRoleData);
+            }
+          }
+
+          const availableRolesOutput = rolesForDisplay.map(role => {
+            const parts = [role.label];
+            if (this.user?.role === role.id) {
+              parts.push('(Actual)');
+            }
+            if (this.isTemporaryRoleMode && this.originalRole === role.id) {
+              parts.push('(Rol original)');
+            }
+            return `${parts.join(' ')} - ID: ${role.id}`;
+          }).join('\n');
+
+          if (availableRolesOutput.length === 0) {
             result = 'No tiene roles disponibles para cambio temporal.';
           } else {
-            result = `Lista de roles disponibles para su usuario:\n\n${availableRoles}\n\nPara cambiar de role use: ROLE SWITCH [ID]\nPara modo interactivo use: ROLE SELECT`;
+            result = `Lista de roles disponibles para su usuario:\n\n${availableRolesOutput}\n\nPara cambiar de role use: ROLE SWITCH [ID]\nPara modo interactivo use: ROLE SELECT`;
           }
-          break; case cmd === 'role select':
+          break;
+        case cmd === 'role select':
           // Preparar items para el modo de selección usando roles disponibles para el usuario
-          const userAvailableRoles = getAvailableRoles(this.user);
+          const userRolesForSelection = getAvailableRoles(this.user);
+          const hasOriginalRoleOption = this.isTemporaryRoleMode && this.originalRole;
 
-          if (userAvailableRoles.length === 0) {
+          if (userRolesForSelection.length === 0 && !hasOriginalRoleOption) {
             result = 'No tiene roles disponibles para cambio temporal.';
             break;
           }
-          const roleSelectionItems = userAvailableRoles.map(role => {
+          const roleSelectionItems = userRolesForSelection.map(role => {
             const isCurrent = role.id === this.user?.role;
+            const isOriginal = hasOriginalRoleOption && this.originalRole === role.id;
+            const labelParts = [role.label];
+
+            if (isCurrent) {
+              labelParts.push('(Actual)');
+            }
+
+            if (isOriginal) {
+              labelParts.push('(Rol original)');
+            }
 
             return {
               id: role.id,
-              display: `${role.label}${isCurrent ? ' (Actual)' : ''} - ID: ${role.id}`,
+              display: `${labelParts.join(' ')} - ID: ${role.id}`,
               label: role.label,
               roleData: role,
-              isCurrent: isCurrent
+              isCurrent,
+              isOriginal,
             };
           });
+
+          if (hasOriginalRoleOption && !roleSelectionItems.some(item => item.id === this.originalRole)) {
+            const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+            if (originalRoleData) {
+              const isCurrent = this.user?.role === originalRoleData.id;
+              const displayLabel = `${originalRoleData.label} (Rol original)${isCurrent ? ' (Actual)' : ''} - ID: ${originalRoleData.id}`;
+
+              roleSelectionItems.unshift({
+                id: originalRoleData.id,
+                display: displayLabel,
+                label: originalRoleData.label,
+                roleData: originalRoleData,
+                isCurrent,
+                isOriginal: true,
+              });
+            }
+          }
 
           // Entrar en modo de selección
           this.enterSelectionMode(
             roleSelectionItems,
             '👤 Seleccionar Role:', (selectedItem) => {
               // Callback cuando se selecciona un item
-              if (selectedItem.isCurrent) {
-                // Si está en modo temporal de role y selecciona el role actual (que es el original)
-                if (this.isTemporaryRoleMode && selectedItem.id === this.originalRole) {
-                  this.dispatch(returnToOriginalRole());
-                  this.addOutput(`🔄 Regresando al role original: ${selectedItem.label}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`);
-                } else {
-                  // No está en modo temporal, solo mostrar mensaje
-                  this.addOutput(`🔄 Ya tiene asignado el role: ${selectedItem.label}\nID: ${selectedItem.id}`);
-                }
+              if (selectedItem.isOriginal) {
+                this.dispatch(returnToOriginalRole());
+                this.addOutput(`🔄 Regresando al role original: ${selectedItem.label}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`);
+              } else if (selectedItem.isCurrent) {
+                // No está en modo temporal, solo mostrar mensaje
+                this.addOutput(`🔄 Ya tiene asignado el role: ${selectedItem.label}\nID: ${selectedItem.id}`);
               } else {
                 this.dispatch(switchToRole(selectedItem.id));
                 this.addOutput(`✅ Cambiado al role: ${selectedItem.label}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`);
@@ -621,10 +666,15 @@ Ejemplos:
             // Verificar si el role está disponible para este usuario
             const userAvailableRolesForSwitch = getAvailableRoles(this.user);
             const targetRole = userAvailableRolesForSwitch.find(r => r.id === targetRoleId);
+            const isOriginalTarget = this.isTemporaryRoleMode && this.originalRole === targetRoleId;
 
             if (targetRole) {
               this.dispatch(switchToRole(targetRoleId));
               result = `✅ Cambiado al role: ${targetRole.label}\nID: ${targetRoleId}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`;
+            } else if (isOriginalTarget) {
+              const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+              this.dispatch(returnToOriginalRole());
+              result = `🔄 Regresando al role original: ${originalRoleData?.label || 'Sin nombre'}\nID: ${this.originalRole}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`;
             } else {
               result = `Error: No tiene permisos para cambiar al role "${targetRoleId}" o el role no existe.\nUse ROLE LIST para ver los roles disponibles para su usuario.`;
             }

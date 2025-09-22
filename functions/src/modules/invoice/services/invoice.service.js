@@ -76,14 +76,14 @@ export async function processInvoiceData({
     const { cashCount, state, cashCountId } = await checkOpenCashCount({ user, cashCountSnap });
 
     // Verificar si el usuario tiene permisos para el cuadre de caja
-    const code = await getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxReceiptName: ncfType, taxReceiptSnap });
+  const code = await getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxReceiptName: ncfType, taxReceiptSnap });
 
     // Actualizar cliente
     const clientData = await retrieveAndUpdateClient(tx, { user, client, clientSnap });
 
     const invoice = cart.preorderDetails?.isOrWasPreorder
-      ? await generateInvoiceFromPreorder(tx, { user, cart, cashCountId, ncfCode, clientData, cashCountSnap })
-      : await generateFinalInvoice(tx, { user, cart, clientData, ncfCode, cashCountId, dueDate, cashCountSnap });
+      ? await generateInvoiceFromPreorder(tx, { user, cart, cashCountId, ncfCode: code, clientData, cashCountSnap })
+      : await generateFinalInvoice(tx, { user, cart, clientData, ncfCode: code, cashCountId, dueDate, cashCountSnap });
     logger.info("Invoice generated (tx)", { traceId, invoiceId: invoice.id });
 
     await adjustProductInventory(tx, { user, products: cart.products, sale: invoice, inventoryPrevreqs });

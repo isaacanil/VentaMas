@@ -22,6 +22,7 @@ const DEV_VIEW_TERM = {
     BUSINESSES: '/dev/businesses',
     ALL_USERS: '/all-users',
     PRUEBA: '/prueba',
+    FISCAL_RECEIPTS_AUDIT: '/dev/tools/fiscal-receipts-audit',
     INVENTORY_MIGRATION: '/dev/tools/inventory-migration',
     SYNC_DIAGNOSTICS: '/dev/tools/sync-diagnostics',
     CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,

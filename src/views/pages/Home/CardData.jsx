@@ -3,7 +3,7 @@ import { icons } from '../../../constants/icons/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTicket, faWarehouse } from '@fortawesome/free-solid-svg-icons';
 import { filterMenuItemsByAccess, hasDeveloperAccess } from '../../../utils/menuAccess';
-import { BugOutlined } from '@ant-design/icons';
+import { developerShortcuts } from '../../../constants/devtools/developerShortcuts.jsx';
 
 const createMenuItems = (items) => items.map((item, index) => ({ ...item, id: index + 1 }));
 
@@ -26,26 +26,7 @@ const menuItems = createMenuItems([
   { title: 'Cuadre de Caja', icon: icons.menu.unSelected.cashReconciliation, route: ROUTES_NAME.CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST, category: 'Finanzas' },
 ]);
 
-const developerItems = createMenuItems([
-  // Herramientas
-  { title: 'Panel Desarrollador', icon: <BugOutlined />, action: 'openDeveloperModal', category: 'Herramientas' },
-  { title: 'Pruebas', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.PRUEBA, category: 'Herramientas' },
-  // Negocio
-  { title: 'Cambiar Negocio', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS, category: 'Negocio' },
-  { title: 'Gestionar Negocios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.BUSINESSES, category: 'Negocio' },
-
-  // Usuarios
-  { title: 'Todos los usuarios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.ALL_USERS, category: 'Usuarios' },
-
-  // Changelogs
-  { title: 'Gestionar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_MANAGE, category: 'Changelogs' },
-  { title: 'Documentar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_CREATE, category: 'Changelogs' },
-
-  // Configuración
-  { title: 'Configuración de App', icon: icons.menu.selected.settings, route: ROUTES_NAME.DEV_VIEW_TERM.APP_CONFIG.ROOT, category: 'Configuración' },
-
-  // { title: 'Migración Inventario', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.INVENTORY_MIGRATION, category: 'Herramientas' },
-]);
+const developerItems = createMenuItems(developerShortcuts);
 
 export const getMenuCardData = () => {
   return filterMenuItemsByAccess(menuItems);

@@ -29,6 +29,7 @@ import { useInitializeBillingSettings } from './firebase/billing/useInitializeBi
 import { useBackfillUserNumbers } from './firebase/Auth/fbBackfillUserNumbers';
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';
 import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';
+import DeveloperSessionHelper from './components/devtools/DeveloperSessionHelper';
 import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
 import { useHydrateTaxReceiptSettings } from './features/taxReceipt/useHydrateTaxReceiptSettings';
 
@@ -92,8 +93,9 @@ function App() {
 
   return (
     <Fragment>
-      <ViewportContainer>
-        <Router>
+      <Router>
+        <ViewportContainer>
+          <DeveloperSessionHelper />
           <NavigationTracker />
           <SessionManager />
           <SEO />
@@ -116,8 +118,8 @@ function App() {
             <ModalManager />
           </AnimatePresence>
           <NotificationCenter />
-        </Router>
-      </ViewportContainer>
+        </ViewportContainer>
+      </Router>
     </Fragment>
   )
 }

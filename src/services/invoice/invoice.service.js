@@ -189,7 +189,10 @@ export const waitForInvoiceResult = async ({
                 throw error;
             }
 
-            if (invoiceData.status === "committed") {
+            const isFrontendReady = invoiceData.status === "frontend_ready";
+            const isCommitted = invoiceData.status === "committed";
+
+            if (isFrontendReady || isCommitted) {
                 const canonicalSnap = await getDoc(canonicalRef);
                 if (canonicalSnap.exists()) {
                     const canonicalData = canonicalSnap.data();

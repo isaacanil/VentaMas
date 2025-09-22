@@ -13,26 +13,53 @@ import { ChangePassword } from './EditUser/ChangePassword/ChangePassword';
 import { fbUpdateUser } from '../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
 
 export const SignUpModal = () => {
-    const [form] = Form.useForm();
     const user = useSelector(selectUser);
-    const [isOpenChangePassword, setIsOpenChangePassword] = useState(false)
-    const [isOpenPermissions, setIsOpenPermissions] = useState(false)
-    const [showDowngradeModal, setShowDowngradeModal] = useState(false)
-    const [pendingFormValues, setPendingFormValues] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const signUpModal = useSelector(SelectSignUpUserModal)
+    const signUpModal = useSelector(SelectSignUpUserModal);
+    const dispatch = useDispatch();
+    const { abilities } = userAccess();
+
+    const canManageUsers = abilities.can('manage', 'User');
+    const canCreateUsers = abilities.can('create', 'User') || canManageUsers;
+    const canUpdateUsers = abilities.can('update', 'User') || canManageUsers;
+    const canManagePermissions = abilities.can('manage', 'users');
+
+    const assignableRoles = getAssignableRoles(user);
+
+    if (!canManageUsers && !canCreateUsers && !canUpdateUsers) {
+        return null;
+    }
+
+    return (
+        <SignUpModalInner
+            user={user}
+            signUpModal={signUpModal}
+            dispatch={dispatch}
+            assignableRoles={assignableRoles}
+            canCreateUsers={canCreateUsers}
+            canUpdateUsers={canUpdateUsers}
+            canManagePermissions={canManagePermissions}
+        />
+    );
+};
+
+const SignUpModalInner = ({
+    user,
+    signUpModal,
+    dispatch,
+    assignableRoles,
+    canCreateUsers,
+    canUpdateUsers,
+    canManagePermissions,
+}) => {
+    const [form] = Form.useForm();
+    const [isOpenChangePassword, setIsOpenChangePassword] = useState(false);
+    const [isOpenPermissions, setIsOpenPermissions] = useState(false);
+    const [showDowngradeModal, setShowDowngradeModal] = useState(false);
+    const [pendingFormValues, setPendingFormValues] = useState(null);
+    const [loading, setLoading] = useState(false);
     const { isOpen, data } = signUpModal;
     const [fbError, setFbError] = useState(null);
-    const dispatch = useDispatch()
-    const { abilities } = userAccess()
-    // Verificar permisos para gestionar usuarios
-    const canManageUsers = abilities.can('manage', 'User')
-    const canCreateUsers = abilities.can('create', 'User') || canManageUsers
-    const canUpdateUsers = abilities.can('update', 'User') || canManageUsers
-    const canManagePermissions = abilities.can('manage', 'users') // Para permisos dinámicos
 
-    // Obtener roles que el usuario actual puede asignar
-    const assignableRoles = getAssignableRoles(user);
     const handleIsOpenChangePassWord = () => {
         setIsOpenChangePassword(!isOpenChangePassword);
     };
@@ -40,7 +67,7 @@ export const SignUpModal = () => {
     const handleIsOpenPermissions = () => {
         setIsOpenPermissions(!isOpenPermissions);
     };
-    
+
     const handleSubmit = async (values) => {
         // Verificar permisos antes de proceder
         if (data && !canUpdateUsers) {
@@ -121,13 +148,8 @@ export const SignUpModal = () => {
     }, [data, form]);
     
     const handleClose = () => {
-        dispatch(toggleSignUpUser({ isOpen: false }))
-    }
-
-    // Si no tiene permisos para gestionar usuarios, no mostrar el modal
-    if (!canManageUsers && !canCreateUsers && !canUpdateUsers) {
-        return null;
-    }
+        dispatch(toggleSignUpUser({ isOpen: false }));
+    };
 
     return (
         <Fragment>

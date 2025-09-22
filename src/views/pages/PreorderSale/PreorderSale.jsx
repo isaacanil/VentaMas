@@ -7,7 +7,7 @@ import { PreSaleTable } from './components/PreSaleTable/PreSaleTable';
 import { fbGetPreorders } from '../../../firebase/invoices/fbGetPreorders';
 import { selectUser } from '../../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
-import { InvoicePanel } from '../../component/Cart/components/InvoicePanel/InvoicePanel';
+import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel';
 
 const SearchContainer = styled.div`
   margin: 1rem;

@@ -9,7 +9,8 @@ import AppConfig from "../../views/controlPanel/AppConfig/AppConfig";
 import LoginImageConfig from "../../views/controlPanel/AppConfig/LoginImageConfig";
 
 import Menu from "../../views/templates/system/Menu/Menu";
-import { Prueba } from "../../views/templates/system/Menu/Prueba";
+import { FiscalReceiptsAudit } from "../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit";
+import TestPlayground from "../../views/pages/DevTools/TestPlayground";
 
 import RoutesName from "../routesName"
 import InventoryMigrationTool from "../../views/pages/DevTools/InventoryMigrationTool";
@@ -23,7 +24,6 @@ const routes = [
     {
         path: BUSINESSES,
         element: <BusinessControl />,
-        devOnly: true,
         status: ROUTE_STATUS.WIP,
     },
     {
@@ -43,10 +43,13 @@ const routes = [
         devOnly: true,
     },
     {
-        path: '/prueba',
-        element: <Prueba />,
-        devOnly: true,
+        path: RoutesName.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT,
+        element: <FiscalReceiptsAudit />,
         // enabledEnvs: ['development'] // Ejemplo: sólo en dev incluso si se fuerza dev routes en staging
+    },
+    {
+        path: RoutesName.DEV_VIEW_TERM.PRUEBA,
+        element: <TestPlayground />,
     },
     {
         path: INVENTORY_MIGRATION,

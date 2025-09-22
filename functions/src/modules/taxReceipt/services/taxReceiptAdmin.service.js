@@ -84,27 +84,87 @@ export async function getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxR
 
   const taxReceipt = taxReceiptSnap.data().data;
 
-  const { ncfCode, updatedData } = generateNCFCode(taxReceipt);
+  // Helper: check if an NCF is already used in any invoice (old or new)
+  const isNcfAlreadyUsed = async (code) => {
+    const invoicesQuery = db
+      .collection('businesses')
+      .doc(businessId)
+      .collection('invoices')
+      .where('data.NCF', '==', code)
+      .limit(1);
+    const snap = await tx.get(invoicesQuery);
+    return !snap.empty;
+  };
+
+  // Avoid infinite loops; reasonably cap the number of retries
+  const MAX_ATTEMPTS = 50;
+
+  // Compute candidate codes by advancing sequence without decrementing quantity per skip
+  const type = taxReceipt.type;
+  const serie = taxReceipt.serie;
+  const baseSequence = taxReceipt.sequence; // string
+  const inc = taxReceipt.increase;          // number (or numeric string)
+  const qtyBefore = BigInt(taxReceipt.quantity);
+  const incValue = BigInt(inc);
+
+  if (qtyBefore < incValue) {
+    throw new https.HttpsError('failed-precondition', `Cantidad insuficiente para generar NCF`);
+  }
+
+  const padSeq = (seqStr, max = 10) => seqStr.toString().slice(-max).padStart(max, '0');
+  const computeSeq = (baseSeqStr, increase, steps, max = 10) => {
+    const base = BigInt(baseSeqStr);
+    const stepInc = BigInt(increase) * BigInt(steps);
+    return padSeq((base + stepInc).toString(), max);
+  };
+
+  let chosenSeq = null;
+  let candidateNCF = null;
+  let attempts = 0;
+  while (attempts < MAX_ATTEMPTS) {
+    const steps = attempts + 1; // first try is +increase once
+    const seq = computeSeq(baseSequence, inc, steps, 10);
+    const code = `${type}${serie}${seq}`;
+    const exists = await isNcfAlreadyUsed(code);
+    if (!exists) {
+      chosenSeq = seq;
+      candidateNCF = code;
+      break;
+    }
+    attempts += 1;
+  }
+
+  if (!candidateNCF || !chosenSeq) {
+    throw new https.HttpsError('failed-precondition', 'No se pudo encontrar un NCF no duplicado antes de agotar los intentos');
+  }
+
+  // Only decrement quantity ONCE (for the final selected NCF), even if we skipped duplicates
+  const updatedData = {
+    ...taxReceipt,
+    sequence: chosenSeq,
+    quantity: (qtyBefore - incValue).toString(),
+  };
 
   const usageId = nanoid();
-
   const usageRef = db.collection('businesses')
     .doc(businessId)
     .collection('ncfUsage')
     .doc(usageId);
 
+  // Persist updated tax receipt data reflecting any sequence advances
   tx.update(taxReceiptSnap.ref, { data: updatedData });
 
+  // Register usage as pending; will be marked used/cancelled later in the flow
   tx.set(usageRef, {
     id: usageId,
-    ncfCode,
+    ncfCode: candidateNCF,
     taxReceiptName,
     generatedAt: serverTimestamp(),
     userId: user.uid,
     status: 'pending' // Puede ser 'pending', 'used', 'voided'
   });
 
-  logger.info("Tax receipt code generated", { traceId, ncfCode, usageId });
+  logger.info("Tax receipt code generated", { ncfCode: candidateNCF, usageId, businessId, userId: user.uid });
 
-  return ncfCode;
+  return candidateNCF;
 }

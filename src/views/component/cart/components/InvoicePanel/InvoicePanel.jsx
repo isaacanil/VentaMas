@@ -3,11 +3,11 @@ import styled from 'styled-components'
 import { Body } from './components/Body/Body'
 import { Button, notification, Spin, Form, Modal as AntdModal, message } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
-import { resetCart, SelectCartData, SelectSettingCart, toggleCart, toggleInvoicePanel, toggleInvoicePanelOpen, setPaymentMethod } from '../../../../../features/cart/cartSlice'
+import { SelectCartData, SelectSettingCart, toggleInvoicePanelOpen, setPaymentMethod } from '../../../../../features/cart/cartSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
-import { deleteClient, selectClient } from '../../../../../features/clientCart/clientCartSlice'
+import { selectClient } from '../../../../../features/clientCart/clientCartSlice'
 import { selectAR } from '../../../../../features/accountsReceivable/accountsReceivableSlice'
-import { clearTaxReceiptData, selectNcfType, selectTaxReceipt, lockTaxReceiptType, unlockTaxReceiptType, selectTaxReceiptType } from '../../../../../features/taxReceipt/taxReceiptSlice'
+import { selectNcfType, selectTaxReceipt, lockTaxReceiptType, unlockTaxReceiptType, selectTaxReceiptType } from '../../../../../features/taxReceipt/taxReceiptSlice'
 import { useReactToPrint } from 'react-to-print'
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 import DateUtils from '../../../../../utils/date/dateUtils'
@@ -15,13 +15,14 @@ import { Invoice } from '../../../Invoice/components/Invoice/Invoice'
 import dayjs from 'dayjs'
 import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled'
 import { selectInsuranceAR } from '../../../../../features/insurance/insuranceAccountsReceivableSlice'
-import { selectInsuranceAuthData, clearAuthData } from '../../../../../features/insurance/insuranceAuthSlice'
+import { selectInsuranceAuthData } from '../../../../../features/insurance/insuranceAuthSlice'
 import useInvoice from '../../../../../services/invoice/useInvoice'
 import { selectBusinessData } from '../../../../../features/auth/businessSlice'
 import { downloadInvoiceLetterPdf } from '../../../../../firebase/quotation/downloadQuotationPDF'
 import { selectAppMode } from '../../../../../features/appModes/appModeSlice'
 import { measure } from '../../../../../utils/perf/measure'
 import { nanoid } from 'nanoid'
+import { handleCancelShipping } from './handleCancelShipping'
 
 export const modalStyles = {
     mask: {
@@ -55,18 +56,6 @@ const calculateDueDate = (duePeriod, hasDueDate) => {
         .valueOf();
 }
 
-export const handleCancelShipping = ({ dispatch, viewport, closeInvoicePanel = true, clearTaxReceipt = false }) => {
-    if (dispatch === undefined) return;
-    if (viewport !== undefined && viewport <= 800) dispatch(toggleCart());
-    if (closeInvoicePanel) dispatch(toggleInvoicePanel());
-    dispatch(resetCart());
-    if (clearTaxReceipt) {
-        dispatch(clearTaxReceiptData());
-    }
-    dispatch(deleteClient());
-    dispatch(clearAuthData());
-};
-
 export const InvoicePanel = () => {
     const dispatch = useDispatch()
     const [form] = Form.useForm()
@@ -74,6 +63,8 @@ export const InvoicePanel = () => {
     // Flag para coordinar la impresión una vez que el estado de invoice se haya renderizado con productos
     const [pendingPrint, setPendingPrint] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+
+    const fallbackIdempotencyKeyRef = useRef(null);
 
     const { processInvoice: runInvoice } = useInvoice();
 
@@ -119,6 +110,37 @@ export const InvoicePanel = () => {
     const invoiceType = cartSettings.billing.invoiceType;
     // Test mode selector
     const isTestMode = useSelector(selectAppMode);
+
+    const invoiceComment = useMemo(() => {
+        if (!Array.isArray(cart?.products)) return null;
+        const comments = cart.products
+            .filter(product => product.comment)
+            .map(product => `${product.name}: ${product.comment}`);
+        return comments.length ? comments.join('; ') : null;
+    }, [cart?.products]);
+
+    const resolvedBusinessId = useMemo(() => {
+        return business?.id
+            || business?.businessID
+            || business?.businessId
+            || user?.businessID
+            || user?.businessId
+            || null;
+    }, [business, user]);
+
+    const idempotencyKey = useMemo(() => {
+        const derived = (cart?.id && `cart:${cart.id}`)
+            || (cart?.cartId && `cart:${cart.cartId}`)
+            || (cart?.cartIdRef && `cart:${cart.cartIdRef}`);
+        if (derived) {
+            fallbackIdempotencyKeyRef.current = null;
+            return derived;
+        }
+        if (!fallbackIdempotencyKeyRef.current) {
+            fallbackIdempotencyKeyRef.current = `gen:${nanoid()}`;
+        }
+        return fallbackIdempotencyKeyRef.current;
+    }, [cart?.id, cart?.cartId, cart?.cartIdRef]);
 
     //function para despues de imprimir la factura
     const handleAfterPrint = () => {
@@ -215,23 +237,9 @@ export const InvoicePanel = () => {
 
                 const dueDate = calculateDueDate(duePeriod, hasDueDate);
 
-                // Extract all comments from products and join them for the invoice
-                const invoiceComment = cart?.products
-                    ?.filter(product => product.comment)
-                    ?.map(product => `${product.name}: ${product.comment}`)
-                    ?.join('; ');
-
-                const resolvedBusinessId = business?.id || business?.businessID || user?.businessID;
                 if (!resolvedBusinessId) {
                     throw new Error('No se encontró el negocio asociado para procesar la factura.');
                 }
-                // Generamos una llave idempotente estable basada en el carrito si existe, de lo contrario un nanoid
-                const idempotencyKey =
-                    (cart?.id && `cart:${cart.id}`) ||
-                    (cart?.cartId && `cart:${cart.cartId}`) ||
-                    (cart?.cartIdRef && `cart:${cart.cartIdRef}`) ||
-                    `gen:${nanoid()}`;
-
                 console.info('[InvoicePanel] processInvoice -> started', {
                     cartId: cart?.id ?? cart?.cartId ?? cart?.cartIdRef ?? null,
                     businessId: resolvedBusinessId,
@@ -269,7 +277,7 @@ export const InvoicePanel = () => {
 
                 if (shouldPrintInvoice) {
                     setInvoice(createdInvoice); // Actualizamos estado primero
-                    await measure('handleInvoicePrinting', () => handleInvoicePrinting(createdInvoice));
+                    void measure('handleInvoicePrinting', () => handleInvoicePrinting(createdInvoice));
                 }
                 if (!shouldPrintInvoice) {
                     setInvoice({});
@@ -314,6 +322,7 @@ export const InvoicePanel = () => {
     useEffect(() => {
         if (!invoicePanel) {
             setSubmitted(false);
+            fallbackIdempotencyKeyRef.current = null;
         }
     }, [invoicePanel]);    // Efecto para inicializar el método de pago cuando se abre el panel
     useEffect(() => {
