@@ -12,7 +12,6 @@ import { useReactToPrint } from 'react-to-print'
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 import DateUtils from '../../../../../utils/date/dateUtils'
 import { Invoice } from '../../../Invoice/components/Invoice/Invoice'
-import dayjs from 'dayjs'
 import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled'
 import { selectInsuranceAR } from '../../../../../features/insurance/insuranceAccountsReceivableSlice'
 import { selectInsuranceAuthData } from '../../../../../features/insurance/insuranceAuthSlice'
@@ -23,38 +22,14 @@ import { selectAppMode } from '../../../../../features/appModes/appModeSlice'
 import { measure } from '../../../../../utils/perf/measure'
 import { nanoid } from 'nanoid'
 import { handleCancelShipping } from './handleCancelShipping'
+import { modalStyles } from './constants/modalStyles'
+import { calculateDueDate } from './utils/calculateDueDate'
+import { getInvoiceErrorNotification } from './utils/getInvoiceErrorNotification'
+import { isTaxReceiptDepletedError } from './utils/isTaxReceiptDepletedError'
+import { TaxReceiptDepletedModal } from './components/TaxReceiptDepletedModal/TaxReceiptDepletedModal'
+import { getTaxReceiptAvailability } from './utils/getTaxReceiptAvailability'
 
-export const modalStyles = {
-    mask: {
-        backdropFilter: 'blur(2px)',
-        display: 'grid',
-        overflow: 'hidden'
-    },
-    content: {
-        padding: 0,
-        width: '100%',
-        height: '100%',
-        margin: 0,
-        overflowY: 'hidden',
-        display: 'grid',
-    },
-    body: {
-        margin: 0,
-        padding: '1em',
-        overflowY: 'auto'
-    }
-}
-
-const calculateDueDate = (duePeriod, hasDueDate) => {
-    if (!hasDueDate) return null;
-
-    const currentDate = dayjs();
-    return currentDate
-        .add(duePeriod.months ?? 0, 'month')
-        .add(duePeriod.weeks ?? 0, 'week')
-        .add(duePeriod.days ?? 0, 'day')
-        .valueOf();
-}
+export { modalStyles } from './constants/modalStyles'
 
 export const InvoicePanel = () => {
     const dispatch = useDispatch()
@@ -63,6 +38,7 @@ export const InvoicePanel = () => {
     // Flag para coordinar la impresión una vez que el estado de invoice se haya renderizado con productos
     const [pendingPrint, setPendingPrint] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [taxReceiptModalOpen, setTaxReceiptModalOpen] = useState(false);
 
     const fallbackIdempotencyKeyRef = useRef(null);
 
@@ -74,12 +50,11 @@ export const InvoicePanel = () => {
     })
 
     const viewport = useViewportWidth();
-    // Handler para cerrar/volver atrás del panel de factura.
-    // Antes estaba mal implementado usando useDispatch(argumento) lo cual hacía que al hacer click
-    // se ejecutara dispatch(event) y fallara porque recibía el SyntheticEvent en vez de una action.
+
     const handleInvoicePanel = useCallback(() => {
         dispatch(toggleInvoicePanelOpen());
     }, [dispatch]);
+
     const cart = useSelector(SelectCartData)
     const cartSettings = useSelector(SelectSettingCart)
     const invoicePanel = cartSettings.isInvoicePanelOpen;
@@ -99,6 +74,7 @@ export const InvoicePanel = () => {
     const business = useSelector(selectBusinessData) || {};
     const insuranceEnabled = useInsuranceEnabled();
     const paymentMethods = cart?.paymentMethod ?? [];
+
     const isAnyPaymentEnabled = useMemo(
         () => paymentMethods.some(method => method.status),
         [paymentMethods]
@@ -108,7 +84,6 @@ export const InvoicePanel = () => {
     const insuranceAR = useSelector(selectInsuranceAR);
     const insuranceAuth = useSelector(selectInsuranceAuthData) || null;
     const invoiceType = cartSettings.billing.invoiceType;
-    // Test mode selector
     const isTestMode = useSelector(selectAppMode);
 
     const invoiceComment = useMemo(() => {
@@ -170,6 +145,14 @@ export const InvoicePanel = () => {
         onAfterPrint: () => handleAfterPrint(),
     })
 
+    const handleSelectTaxReceiptFromModal = useCallback((value) => {
+        dispatch(selectTaxReceiptType(value));
+    }, [dispatch]);
+
+    const closeTaxReceiptModal = useCallback(() => {
+        setTaxReceiptModalOpen(false);
+    }, []);
+
     // Efecto: cuando invoice se llena (tiene id o productos) y hay una impresión pendiente, ejecutar impresión.
     useEffect(() => {
         if (!pendingPrint) return;
@@ -226,10 +209,23 @@ export const InvoicePanel = () => {
         }
     }, [invoiceType, business, handleAfterPrint]);
 
-    async function handleSubmit() {
+    async function handleSubmit({ bypassTaxReceiptOverride = false } = {}) {
             try {
-                // Bloqueamos el tipo de comprobante para que no cambie durante el proceso
-                dispatch(lockTaxReceiptType());
+                const effectiveTaxReceiptEnabled = !bypassTaxReceiptOverride && taxReceiptEnabled;
+
+                if (effectiveTaxReceiptEnabled) {
+                    const { depleted } = getTaxReceiptAvailability(taxReceiptState?.data, ncfType);
+                    if (depleted) {
+                        setTaxReceiptModalOpen(true);
+                        dispatch(unlockTaxReceiptType());
+                        return;
+                    }
+                    // Bloqueamos el tipo de comprobante para que no cambie durante el proceso
+                    dispatch(lockTaxReceiptType());
+                } else {
+                    dispatch(unlockTaxReceiptType());
+                }
+
                 setLoading({ status: true, message: '' })
                 if (cart?.isAddedToReceivables) {
                     await form.validateFields()
@@ -245,6 +241,7 @@ export const InvoicePanel = () => {
                     businessId: resolvedBusinessId,
                     userId: user?.uid ?? null,
                     testMode: Boolean(isTestMode),
+                    taxReceiptEnabled: effectiveTaxReceiptEnabled,
                     idempotencyKey,
                 });
                 const invoiceResult = await measure('processInvoice', () => runInvoice({
@@ -252,8 +249,8 @@ export const InvoicePanel = () => {
                     user,
                     client,
                     accountsReceivable,
-                    taxReceiptEnabled,
-                    ncfType,
+                    taxReceiptEnabled: effectiveTaxReceiptEnabled,
+                    ncfType: effectiveTaxReceiptEnabled ? ncfType : null,
                     dueDate,
                     insuranceEnabled,
                     insuranceAR,
@@ -267,6 +264,37 @@ export const InvoicePanel = () => {
                 const createdInvoice = invoiceResult?.invoice;
                 if (!createdInvoice) {
                     throw new Error('No se pudo recuperar la factura generada desde el backend.');
+                }
+
+                const invoiceStatus = invoiceResult?.status ?? null;
+                const invoiceReused = Boolean(invoiceResult?.reused);
+
+                if (invoiceReused) {
+                    notification.info({
+                        message: 'Factura reutilizada',
+                        description: 'Detectamos que esta venta ya estaba en proceso y reutilizamos la factura existente para evitar duplicados.',
+                        duration: 6,
+                    });
+                }
+
+                if (invoiceStatus && invoiceStatus !== 'committed') {
+                    const statusMessages = {
+                        frontend_ready: {
+                            message: 'Factura en proceso',
+                            description: 'Seguimos finalizando la factura en segundo plano. Los totales se actualizarán en breve.',
+                        },
+                        'test-preview': {
+                            message: 'Modo prueba activo',
+                            description: 'Generamos una vista previa de la factura, pero no se guardó en la base de datos.',
+                        },
+                    };
+
+                    const info = statusMessages[invoiceStatus];
+                    notification.info({
+                        message: info?.message ?? 'Estado de factura',
+                        description: info?.description ?? `La factura quedó en estado "${invoiceStatus}".`,
+                        duration: 6,
+                    });
                 }
 
                 console.info('[InvoicePanel] processInvoice -> completed', {
@@ -285,22 +313,31 @@ export const InvoicePanel = () => {
                 }
 
             } catch (error) {
-                notification.error({
-                    message: 'Error de Proceso',
-                    description: error.message,
-                    duration: 4
-                })
-                setLoading({ status: false, message: '' })
-                setSubmitted(false)
+                const taxReceiptDepleted = isTaxReceiptDepletedError(error);
+                if (!taxReceiptDepleted) {
+                    const errorNotification = getInvoiceErrorNotification(error);
+                    notification.error({
+                        message: errorNotification.message,
+                        description: errorNotification.description,
+                        duration: errorNotification.duration ?? 6
+                    });
+                }
+                setLoading({ status: false, message: '' });
+                setSubmitted(false);
                 console.error('[InvoicePanel] processInvoice -> failed', {
                     message: error?.message,
                     code: error?.code,
                     invoiceId: error?.invoiceId ?? error?.invoice?.id ?? null,
                     idempotencyKey: error?.idempotencyKey ?? null,
                     reused: error?.reused ?? null,
-                }, error)
+                    failedTask: error?.failedTask ?? null,
+                    invoiceMeta: error?.invoiceMeta ?? null,
+                }, error);
                 // En caso de error liberamos el bloqueo para que el usuario pueda cambiar el comprobante
                 dispatch(unlockTaxReceiptType());
+                if (taxReceiptDepleted) {
+                    setTaxReceiptModalOpen(true);
+                }
             }
         }
 
@@ -323,6 +360,7 @@ export const InvoicePanel = () => {
         if (!invoicePanel) {
             setSubmitted(false);
             fallbackIdempotencyKeyRef.current = null;
+            setTaxReceiptModalOpen(false);
         }
     }, [invoicePanel]);    // Efecto para inicializar el método de pago cuando se abre el panel
     useEffect(() => {
@@ -359,55 +397,77 @@ export const InvoicePanel = () => {
         }
     }, [invoicePanel]);
 
+    const retryWithTaxReceipt = () => {
+        setTaxReceiptModalOpen(false);
+        void handleSubmit();
+    };
+
+    const continueWithoutTaxReceipt = () => {
+        setTaxReceiptModalOpen(false);
+        void handleSubmit({ bypassTaxReceiptOverride: true });
+    };
+
     return (
-        <Modal
-            style={{ top: 10 }}
-            open={invoicePanel}
-            title='Pago de Factura'
-            onCancel={handleInvoicePanel}
-            styles={modalStyles}
-            footer={
-                [
-                    <Button
-                        key="close"
-                        type='default'
-                        disabled={loading.status || submitted}
-                        onClick={handleInvoicePanel}
-                    >
-                        Atrás
-                    </Button>,
-                    <Button
-                        key="submit"
-                        type='primary'
-                        loading={loading.status}
-                        disabled={submitted || !isAnyPaymentEnabled || (isChangeNegative && !isAddedToReceivables)}
-                        onClick={handleSubmit}
-                    >
-                        Facturar
-                    </Button>
-                ]
-            }
-        >
-            <Invoice ref={componentToPrintRef} data={invoice} />
-            <Spin
-                spinning={loading.status}
+        <>
+            <Modal
+                style={{ top: 10 }}
+                open={invoicePanel}
+                title='Pago de Factura'
+                onCancel={handleInvoicePanel}
+                styles={modalStyles}
+                footer={
+                    [
+                        <Button
+                            key="close"
+                            type='default'
+                            disabled={loading.status || submitted}
+                            onClick={handleInvoicePanel}
+                        >
+                            Atrás
+                        </Button>,
+                        <Button
+                            key="submit"
+                            type='primary'
+                            loading={loading.status}
+                            disabled={submitted || !isAnyPaymentEnabled || (isChangeNegative && !isAddedToReceivables)}
+                            onClick={handleSubmit}
+                        >
+                            Facturar
+                        </Button>
+                    ]
+                }
             >
-                <Body
-                    form={form}
-                />
-                <br />
-                <Button
-                    key="cancel"
-                    type='default'
-                    danger
-                    style={{ width: '100%' }}
-                    disabled={loading.status || submitted}
-                    onClick={showCancelSaleConfirm} // Use confirmation modal
+                <Invoice ref={componentToPrintRef} data={invoice} />
+                <Spin
+                    spinning={loading.status}
                 >
-                    Cancelar venta
-                </Button>
-            </Spin>
-        </Modal>
+                    <Body
+                        form={form}
+                    />
+                    <br />
+                    <Button
+                        key="cancel"
+                        type='default'
+                        danger
+                        style={{ width: '100%' }}
+                        disabled={loading.status || submitted}
+                        onClick={showCancelSaleConfirm} // Use confirmation modal
+                    >
+                        Cancelar venta
+                    </Button>
+                </Spin>
+            </Modal>
+            <TaxReceiptDepletedModal
+                open={taxReceiptModalOpen}
+                receipts={taxReceiptState?.data}
+                currentReceipt={ncfType}
+                loading={loading.status}
+                onSelectReceipt={handleSelectTaxReceiptFromModal}
+                onRetry={retryWithTaxReceipt}
+                onContinueWithout={continueWithoutTaxReceipt}
+                onCancel={closeTaxReceiptModal}
+            />
+        </>
     )
 }
 
