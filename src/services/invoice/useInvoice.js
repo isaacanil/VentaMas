@@ -1,7 +1,11 @@
 import { useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
 import { getCashCountStrategy } from "../../notification/cashCountNotification/cashCountNotificacion";
-import { submitInvoice, waitForInvoiceResult } from "./invoice.service";
+import {
+  submitInvoice,
+  waitForInvoiceResult,
+  generateIdempotencyKey,
+} from "./invoice.service";
 import { GenericClient } from "../../features/clientCart/clientCartSlice";
 
 const simulateDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -92,29 +96,21 @@ export default function useInvoice() {
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
-  const processInvoice = useCallback(
-    async (params) => {
-      setLoading(true);
-      setError(null);
+  const shouldRetryWithFreshInvoice = (err) => {
+    if (!err) return false;
+    if (err.code !== "invoice-failed") return false;
+    if (!err.reused) return false;
+    const message = [err.message, err.failedTask?.lastError].filter(Boolean).join(" ");
+    return /value for argument "seconds" is not a valid integer/i.test(message);
+  };
 
+  const performInvoiceAttempt = useCallback(
+    async (params = {}, attemptLabel = "primary") => {
       let submission = null;
 
-      try {
-        // Modo prueba: no toca backend real
-        if (params?.isTestMode) {
-          const testResult = await buildTestModeInvoice(params);
-          return {
-            invoice: testResult.invoice,
-            invoiceId: testResult.invoiceId,
-            invoiceMeta: { status: "test-preview", testMode: true },
-            status: "test-preview",
-            reused: false,
-            idempotencyKey: null,
-          };
-        }
+      const { signal, ...submissionPayload } = params;
 
-        const { signal, ...submissionPayload } = params || {};
-        
+      try {
         submission = await submitInvoice(submissionPayload);
 
         const result = await waitForInvoiceResult({
@@ -131,20 +127,44 @@ export default function useInvoice() {
           status: result.invoiceMeta?.status || submission.status || "pending",
           reused: Boolean(submission.reused),
           idempotencyKey: submission.idempotencyKey,
+          attempt: attemptLabel,
         };
       } catch (err) {
-        // Enriquecer el error con metadatos si alcanzamos a crear submission
         if (submission) {
           safeAssign(err, "invoiceId", submission.invoiceId);
           safeAssign(err, "idempotencyKey", submission.idempotencyKey);
-          const reused =
-            typeof submission.reused === "boolean" ? submission.reused : Boolean(submission.reused);
           if (typeof err.reused !== "boolean") {
-            safeAssign(err, "reused", reused);
+            safeAssign(err, "reused", Boolean(submission.reused));
           }
         }
+        throw err;
+      }
+    },
+    []
+  );
 
-        // Detectar estado de cash count y disparar estrategia
+  const processInvoice = useCallback(
+    async (params) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        if (params?.isTestMode) {
+          const testResult = await buildTestModeInvoice(params);
+          return {
+            invoice: testResult.invoice,
+            invoiceId: testResult.invoiceId,
+            invoiceMeta: { status: "test-preview", testMode: true },
+            status: "test-preview",
+            reused: false,
+            idempotencyKey: null,
+            attempt: "test",
+          };
+        }
+
+        const firstAttempt = await performInvoiceAttempt(params, "primary");
+        return firstAttempt;
+      } catch (err) {
         const cashCountState = extractCashCountState(err);
         if (cashCountState) {
           const strategy = getCashCountStrategy(cashCountState, dispatch);
@@ -162,13 +182,29 @@ export default function useInvoice() {
           throw formattedError;
         }
 
+        if (shouldRetryWithFreshInvoice(err)) {
+          try {
+            const recoveryAttempt = await performInvoiceAttempt(
+              {
+                ...params,
+                idempotencyKey: `recovery:${generateIdempotencyKey()}`,
+              },
+              "recovery"
+            );
+            return recoveryAttempt;
+          } catch (recoveryError) {
+            setError(recoveryError);
+            throw recoveryError;
+          }
+        }
+
         setError(err);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [dispatch]
+    [dispatch, performInvoiceAttempt]
   );
 
   return {

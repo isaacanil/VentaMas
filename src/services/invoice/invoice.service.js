@@ -56,6 +56,95 @@ const normalizeNcf = ({ taxReceiptEnabled, ncfType, ncf }) => {
     return { enabled: true, type };
 };
 
+const toMilliseconds = (value) => {
+    if (value == null) {
+        return null;
+    }
+
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : null;
+    }
+
+    if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (!trimmed) return null;
+        const parsed = Number(trimmed);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    if (value instanceof Date) {
+        const millis = value.getTime();
+        return Number.isFinite(millis) ? millis : null;
+    }
+
+    if (typeof value?.toMillis === "function") {
+        const millis = value.toMillis();
+        return Number.isFinite(millis) ? millis : null;
+    }
+
+    if (typeof value === "object") {
+        const seconds = value?.seconds ?? value?._seconds;
+        const nanos = value?.nanoseconds
+            ?? value?.nanosecond
+            ?? value?._nanoseconds
+            ?? value?.nanoSeconds
+            ?? value?.nanos
+            ?? 0;
+
+        if (Number.isFinite(seconds)) {
+            const secondsNumber = Number(seconds);
+            if (Number.isFinite(secondsNumber)) {
+                const nanosNumber = Number(nanos);
+                if (Number.isFinite(nanosNumber)) {
+                    return (secondsNumber * 1000) + Math.floor(nanosNumber / 1e6);
+                }
+            }
+        }
+
+        if (typeof value.valueOf === "function") {
+            const raw = value.valueOf();
+            if (typeof raw === "number") {
+                return Number.isFinite(raw) ? raw : null;
+            }
+            const numeric = Number(raw);
+            return Number.isFinite(numeric) ? numeric : null;
+        }
+    }
+
+    return null;
+};
+
+const normalizeReceivablePayload = (receivable, { requirePaymentDate = false } = {}) => {
+    if (!receivable) {
+        if (requirePaymentDate) {
+            throw new Error("La configuración de cuentas por cobrar es requerida para completar la venta a crédito.");
+        }
+        return null;
+    }
+
+    if (typeof receivable !== "object") {
+        throw new Error("Formato inválido para la cuenta por cobrar.");
+    }
+
+    const now = Date.now();
+    const createdAt = toMilliseconds(receivable.createdAt) ?? now;
+    const updatedAt = toMilliseconds(receivable.updatedAt) ?? now;
+    const paymentDate = toMilliseconds(receivable.paymentDate);
+    const lastPaymentDate = toMilliseconds(receivable.lastPaymentDate);
+
+    if (requirePaymentDate && paymentDate == null) {
+        throw new Error("Debes seleccionar la fecha del primer pago para continuar.");
+    }
+
+    return {
+        ...receivable,
+        createdAt,
+        updatedAt,
+        paymentDate: paymentDate ?? null,
+        lastPaymentDate: lastPaymentDate ?? null,
+    };
+};
+
 export const generateIdempotencyKey = () => nanoid(21);
 
 export const buildInvoiceRequestPayload = ({
@@ -93,8 +182,12 @@ export const buildInvoiceRequestPayload = ({
         userId: resolvedUserId,
         cart: cart ?? null,
         client: client ?? null,
-        accountsReceivable: accountsReceivable ?? null,
-        insuranceAR: insuranceAR ?? null,
+        accountsReceivable: cart?.isAddedToReceivables
+            ? normalizeReceivablePayload(accountsReceivable, { requirePaymentDate: true })
+            : null,
+        insuranceAR: insuranceEnabled
+            ? normalizeReceivablePayload(insuranceAR ?? null)
+            : null,
         insuranceAuth: insuranceAuth ?? null,
         insuranceEnabled: Boolean(insuranceEnabled),
         taxReceiptEnabled: Boolean(taxReceiptEnabled),
