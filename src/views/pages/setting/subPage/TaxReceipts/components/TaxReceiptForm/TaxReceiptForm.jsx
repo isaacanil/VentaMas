@@ -7,16 +7,19 @@
   TODO: Migrar modelo → renombrar 'type'→'serie' y 'serie'→'type' y ajustar referencias.
 */
 import { Button, Form, Grid, Input, message, Modal, Switch } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { updateTaxReceipt } from "../../../../../../../firebase/taxReceipt/updateTaxReceipt";
+import { logSequenceWarning } from "../../../../../../../firebase/taxReceipt/logSequenceWarning";
 import NcfSequenceSummary from "./components/NcfSequenceSummary";
 import { useSequenceFinder } from "./hooks/useSequenceFinder";
 import { confirmSequenceWarnings } from "./utils/confirmSequenceWarnings";
 import { buildSequencePreview } from "./utils/sequencePreview";
 import { createSequenceLengthResolver } from "./utils/sequenceLength";
 import { createSequenceConflictChecker } from "./utils/sequenceConflicts";
+import { buildPrefix, toDigits } from "./utils/ncfUtils";
+import SequenceLedgerInsights from "./components/SequenceLedgerInsights";
 import {
   AsidePanel,
   DesktopOnly,
@@ -42,6 +45,8 @@ export default function TaxReceiptForm({
   const user = useSelector(selectUser);
   const [isSaving, setIsSaving] = useState(false);
   const screens = Grid.useBreakpoint();
+  const [sequenceAnalysis, setSequenceAnalysis] = useState({ status: 'idle', result: null, error: null });
+  const analysisRequestRef = useRef(0);
 
   const normalizeDisabled = (value) => value === true || value === "true";
 
@@ -99,9 +104,10 @@ export default function TaxReceiptForm({
     () =>
       createSequenceConflictChecker({
         businessID: user?.businessID,
+        userID: user?.uid,
         resolveSequenceLength,
       }),
-    [user?.businessID, resolveSequenceLength]
+    [user?.businessID, user?.uid, resolveSequenceLength]
   );
 
   const { findingNextSequence, handleFindNextAvailableSequence } = useSequenceFinder({
@@ -113,6 +119,49 @@ export default function TaxReceiptForm({
   const currentNcfPreview = previewData.current;
   const nextNcfPreview = previewData.next;
   const lastNcfPreview = previewData.last;
+  const previewSequenceLength = previewData.sequenceLength;
+  const previewPrefix = previewData.prefix;
+
+  useEffect(() => {
+    if (!checkSequenceConflicts) return undefined;
+
+    const prefix = buildPrefix(serieValue, tipoValue);
+    const digits = toDigits(sequenceValue ?? "");
+    if (!prefix || !digits) {
+      setSequenceAnalysis({ status: 'idle', result: null, error: null });
+      return undefined;
+    }
+
+    const pendingValues = form.getFieldsValue([
+      'type',
+      'serie',
+      'sequence',
+      'sequenceLength',
+      'increase',
+      'quantity',
+    ]);
+
+    const requestId = analysisRequestRef.current + 1;
+    analysisRequestRef.current = requestId;
+
+    const handle = setTimeout(() => {
+      setSequenceAnalysis((prev) => ({ status: 'loading', result: prev.result, error: null }));
+
+      checkSequenceConflicts(pendingValues)
+        .then((result) => {
+          if (analysisRequestRef.current !== requestId) return;
+          setSequenceAnalysis({ status: 'success', result, error: null });
+        })
+        .catch((error) => {
+          if (analysisRequestRef.current !== requestId) return;
+          setSequenceAnalysis({ status: 'error', result: null, error });
+        });
+    }, 350);
+
+    return () => {
+      clearTimeout(handle);
+    };
+  }, [checkSequenceConflicts, form, serieValue, tipoValue, sequenceValue, sequenceLengthValue, increaseValue, quantityValue]);
 
   const confirmZeroQuantity = (quantity) => {
     const numericQuantity = Number(quantity);
@@ -198,12 +247,12 @@ export default function TaxReceiptForm({
 
           const conflictMessageBase =
             conflictExamples.length === 1
-              ? `El NCF ${conflictExamples[0]} ya existe en facturas.`
+              ? `El próximo NCF (${conflictExamples[0]}) ya fue emitido.`
               : conflictExamples.length > 1
-              ? `Los NCF ${conflictExamples.join(", ")} ya existen en facturas.`
+              ? `Los próximos NCF (${conflictExamples.join(", ")}) ya fueron emitidos.`
               : nextCandidate
-              ? `El NCF ${nextCandidate} ya fue utilizado en facturas.`
-              : "La secuencia indicada ya fue utilizada en facturas.";
+              ? `El próximo NCF (${nextCandidate}) ya fue emitido.`
+              : "La secuencia indicada ya fue utilizada previamente.";
 
           const conflictMessage = `${conflictMessageBase} Ajusta la secuencia actual para que el próximo comprobante esté libre.`;
           form.setFields([{ name: "sequence", errors: [conflictMessage] }]);
@@ -216,17 +265,32 @@ export default function TaxReceiptForm({
         } else {
           const conflictMessage =
             nextCandidate
-              ? `El NCF ${nextCandidate} ya fue utilizado en facturas. Ajusta la secuencia actual para que el próximo comprobante esté libre.`
-              : "La secuencia indicada ya fue utilizada en facturas.";
+              ? `El próximo NCF (${nextCandidate}) ya fue emitido. Ajusta la secuencia actual para que el próximo comprobante esté libre.`
+              : "La secuencia indicada ya fue utilizada previamente.";
           message.error(conflictMessage);
           return;
         }
       }
 
-      const confirmed = await confirmSequenceWarnings(sequenceValidation.insights);
-      if (!confirmed) {
+      const warningDecision = await confirmSequenceWarnings(sequenceValidation);
+      if (!warningDecision.accepted) {
         message.info("Guardado cancelado para revisar la secuencia.");
         return;
+      }
+
+      if (warningDecision.warned) {
+        try {
+          await logSequenceWarning({
+            businessId: user?.businessID,
+            userId: user?.uid,
+            userEmail: user?.email,
+            receiptId: currentEditItem?.id,
+            formValues: values,
+            validation: sequenceValidation,
+          });
+        } catch (auditError) {
+          console.error("No se pudo registrar la auditoría de advertencia de NCF:", auditError);
+        }
       }
 
       const { isActive, ...restValues } = values;
@@ -380,6 +444,11 @@ export default function TaxReceiptForm({
                     quantity={quantityValue}
                     increment={increaseValue}
                   />
+                  <SequenceLedgerInsights
+                    analysisState={sequenceAnalysis}
+                    displayLength={previewSequenceLength}
+                    prefix={previewPrefix}
+                  />
                 </Span12>
 
                 <Span6>
@@ -400,6 +469,11 @@ export default function TaxReceiptForm({
                 last={lastNcfPreview}
                 quantity={quantityValue}
                 increment={increaseValue}
+              />
+              <SequenceLedgerInsights
+                analysisState={sequenceAnalysis}
+                displayLength={previewSequenceLength}
+                prefix={previewPrefix}
               />
             </AsidePanel>
           </DesktopOnly>

@@ -23,6 +23,7 @@ const DEV_VIEW_TERM = {
     ALL_USERS: '/all-users',
     PRUEBA: '/prueba',
     FISCAL_RECEIPTS_AUDIT: '/dev/tools/fiscal-receipts-audit',
+    B_SERIES_INVOICES: '/dev/tools/b-series-invoices',
     INVENTORY_MIGRATION: '/dev/tools/inventory-migration',
     SYNC_DIAGNOSTICS: '/dev/tools/sync-diagnostics',
     CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
@@ -96,11 +97,13 @@ const SETTING_TERM = {
     APP_INFO: '/app-info',
     BUSINESS_INFO: '/business-info',
     TAX_RECEIPT: '/tax-receipt',
+    AUTHORIZATION_CONFIG: '/authorization-config',
     GENERAL_CONFIG_BILLING: '/general-config/billing',
     GENERAL_CONFIG_BUSINESS: '/general-config/business',
     GENERAL_CONFIG_TAX_RECEIPT: '/general-config/tax-receipt',
     GENERAL_CONFIG_USERS: '/general-config/users',
     GENERAL_CONFIG_APP_INFO: '/general-config/app-info',
+    GENERAL_CONFIG_AUTHORIZATION: '/general-config/authorization',
 }
 const PURCHASE_TERM = {
     PURCHASES: '/purchases',
@@ -134,6 +137,7 @@ const CREDIT_NOTE_TERM = {
 
 const AUTHORIZATIONS_TERM = {
     AUTHORIZATIONS_LIST: '/authorizations',
+    AUTHORIZATION_CONFIG: '/settings/authorization-config',
 }
 
 const INSURANCE_TERM = {

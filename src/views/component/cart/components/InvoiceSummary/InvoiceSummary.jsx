@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState, useEffect, useMemo } from 'react';
+import React, { Fragment, useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import CustomInput from '../../../../templates/system/Inputs/CustomInput';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,13 +24,24 @@ import { generateInvoicePDF } from '../../../../../utils/pdf/pdfGenerator';
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import WarningPill from './components/WarningPill/WarningPill';
 import { downloadQuotationPdf } from '../../../../../firebase/quotation/downloadQuotationPDF';
+import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
+import { PinAuthorizationModal } from '../../../modals/PinAuthorizationModal/PinAuthorizationModal';
+
+const resolveAuthorizerName = (authorizer) => (
+  authorizer?.displayName ||
+  authorizer?.name ||
+  authorizer?.username ||
+  authorizer?.email ||
+  authorizer?.uid ||
+  'usuario autorizado'
+);
 
 const InvoiceSummary = () => {
   const [isCartValid, setIsCartValid] = useState(false);
   const cart = useSelector(selectCart);
   const user = useSelector(selectUser);
   const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] = useState(false);
-  const cartData = useSelector(SelectCartData);  const insuranceExtra = cartData?.totalInsurance?.value || 0;
+  const cartData = useSelector(SelectCartData); const insuranceExtra = cartData?.totalInsurance?.value || 0;
   const billingSettings = cart?.settings?.billing;
   const business = useSelector(selectBusinessData) || {};
   const total = cartData?.totalPurchase?.value;
@@ -42,7 +53,8 @@ const InvoiceSummary = () => {
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(false);
   const discount = getTotalDiscount(subTotal, discountPercent);
   const { billing } = useSelector(SelectSettingCart);
-  
+  const authorizationFlowEnabled = Boolean(billing?.authorizationFlowEnabled);
+
   // Nuevos selectores para descuentos individuales
   const productsWithIndividualDiscounts = useSelector(selectProductsWithIndividualDiscounts);
   const totalIndividualDiscounts = useSelector(selectTotalIndividualDiscounts);
@@ -51,6 +63,42 @@ const InvoiceSummary = () => {
   const dispatch = useDispatch();
   const insuranceEnabled = useInsuranceEnabled();
   const { shouldDisableButton: insuranceFormIncomplete } = useInsuranceFormComplete();
+  const isCashier = user?.role === 'cashier';
+  const shouldRequirePinForDiscount = authorizationFlowEnabled && isCashier;
+  const [isDiscountAuthorized, setIsDiscountAuthorized] = useState(!shouldRequirePinForDiscount);
+  const [discountAuthorizer, setDiscountAuthorizer] = useState(null);
+
+  const {
+    showModal: showDiscountPinModal,
+    modalProps: discountPinModalProps,
+    isModalOpen: isDiscountPinModalOpen,
+  } = useAuthorizationPin({
+    onAuthorized: (authorizer) => {
+      setIsDiscountAuthorized(true);
+      setDiscountAuthorizer(authorizer);
+      message.success(`Descuento autorizado por ${resolveAuthorizerName(authorizer)}`);
+    },
+    module: 'invoices',
+    allowedRoles: ['admin', 'owner', 'manager', 'dev'],
+    description: 'Se requiere autorización con PIN para aplicar descuentos en facturas.',
+    reasonList: ['Aplicar o modificar descuentos en la factura.'],
+    allowPasswordFallback: false,
+  });
+
+  const authorizedByName = useMemo(
+    () => (discountAuthorizer ? resolveAuthorizerName(discountAuthorizer) : ''),
+    [discountAuthorizer]
+  );
+
+  useEffect(() => {
+    if (!shouldRequirePinForDiscount) {
+      setIsDiscountAuthorized(true);
+      setDiscountAuthorizer(null);
+      return;
+    }
+    setIsDiscountAuthorized(false);
+    setDiscountAuthorizer(null);
+  }, [shouldRequirePinForDiscount, cartData?.id]);
 
   const validateInsuranceCoverage = useMemo(() => {
     if (!insuranceEnabled) return { isValid: true, message: null };
@@ -139,6 +187,16 @@ const InvoiceSummary = () => {
     }
   }
 
+  const handleDiscountAccess = useCallback(() => {
+    if (!shouldRequirePinForDiscount || isDiscountAuthorized) {
+      return true;
+    }
+    if (!isDiscountPinModalOpen) {
+      showDiscountPinModal();
+    }
+    return false;
+  }, [shouldRequirePinForDiscount, isDiscountAuthorized, isDiscountPinModalOpen, showDiscountPinModal]);
+
   const handlePrint = useReactToPrint({
     content: () => quotationPrintRef.current,
     onAfterPrint: () => {
@@ -168,7 +226,7 @@ const InvoiceSummary = () => {
 
   async function handlePrintQuotation() {
     const data = await addQuotation(user, cartData, billingSettings);
- 
+
     setQuotationData(data);
     setTimeout(() => handlePrint(), 1000);
   };
@@ -296,19 +354,29 @@ const InvoiceSummary = () => {
           <Label>ITBIS:</Label>
           <Label>{useFormatPrice(itbis)}</Label>
         </LineItem>
-        <Delivery />        <LineItem>
+        <Delivery />
+        <LineItem>
           <Label>Descuento:</Label>
           {hasIndividualDiscounts ? (
             <Label style={{ color: '#52c41a', fontWeight: 600 }}>
               -{useFormatPrice(totalIndividualDiscounts)}
             </Label>
           ) : (
-            <CustomInput
-              discount={discount}
-              value={discountPercent}
-              options={["10", "20", "30", "40", "50"]}
-              disabled={hasIndividualDiscounts}
-            />
+            <DiscountInputContainer>
+              <CustomInput
+                discount={discount}
+                value={discountPercent}
+                options={["10", "20", "30", "40", "50"]}
+                disabled={hasIndividualDiscounts}
+                onRequestAccess={handleDiscountAccess}
+              />
+              {shouldRequirePinForDiscount && !isDiscountAuthorized && (
+                <AuthorizationNote $tone="warning">Requiere autorización con PIN</AuthorizationNote>
+              )}
+              {shouldRequirePinForDiscount && isDiscountAuthorized && authorizedByName && (
+                <AuthorizationNote>Autorizado por {authorizedByName}</AuthorizationNote>
+              )}
+            </DiscountInputContainer>
           )}
         </LineItem>
         {insuranceEnabled && (
@@ -336,6 +404,7 @@ const InvoiceSummary = () => {
           </TotalLabel>
         </TotalLine>
       </SummaryContainer>
+      <PinAuthorizationModal {...discountPinModalProps} />
       <PreorderConfirmation
         open={isOpenPreorderConfirmation}
         onCancel={() => setIsOpenPreorderConfirmation(false)}
@@ -367,6 +436,17 @@ export const LineItem = styled.div`
   }
  
   align-items: center;
+`;
+
+const DiscountInputContainer = styled.div`
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+`;
+
+const AuthorizationNote = styled.span`
+  font-size: 0.75rem;
+  color: ${({ $tone }) => ($tone === 'warning' ? '#d48806' : '#595959')};
 `;
 
 const TotalLine = styled(LineItem)`

@@ -4,6 +4,7 @@ import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
 import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
 import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
 import BillingConfig from "../../views/component/GeneralConfig/configs/BillingConfig";
+import AuthorizationFlowConfig from "../../views/component/GeneralConfig/configs/AuthorizationFlowConfig";
 import AppInfo from "../../views/pages/setting/subPage/AppInfo/AppInfo";
 import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
 import BusinessCreator from "../../views/pages/setting/subPage/BusinessEditor/BusinessCreator";
@@ -26,6 +27,7 @@ const {
     GENERAL_CONFIG_BUSINESS,
     GENERAL_CONFIG_TAX_RECEIPT,
     GENERAL_CONFIG_USERS,
+    GENERAL_CONFIG_AUTHORIZATION,
 } = ROUTES_NAME.SETTING_TERM;
 
 const basePath = SETTINGS;
@@ -63,6 +65,10 @@ const Routes = [
             {
                 path: getRelativePath(GENERAL_CONFIG_USERS, SETTING),
                 element: <UserList />,
+            },
+            {
+                path: getRelativePath(GENERAL_CONFIG_AUTHORIZATION, SETTING),
+                element: <AuthorizationFlowConfig />,
             },
             {
                 path: getRelativePath(GENERAL_CONFIG_APP_INFO, SETTING),

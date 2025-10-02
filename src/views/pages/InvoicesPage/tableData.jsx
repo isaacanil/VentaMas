@@ -3,13 +3,11 @@ import { useFormatPrice } from "../../../hooks/useFormatPrice";
 import { getTimeElapsed } from "../../../hooks/useFormatTime";
 import { faPrint, faReceipt } from "@fortawesome/free-solid-svg-icons";
 import { useReactToPrint } from "react-to-print";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { icons } from "../../../constants/icons/icons";
 import {Button} from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { addInvoice } from "../../../features/invoice/invoiceFormSlice";
-import DateUtils from "../../../utils/date/dateUtils";
-import { selectUser } from "../../../features/auth/userSlice";
 // import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus"; // Temporalmente deshabilitado
 import { Tag } from "../../templates/system/Tag/Tag";
 import { openInvoicePreviewModal } from "../../../features/invoice/invoicePreviewSlice";
@@ -20,67 +18,28 @@ import { notification } from "antd";
 import { SelectSettingCart } from "../../../features/cart/cartSlice";
 // import { RequestInvoiceEditAuthorization } from "../../component/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization"; // Temporalmente deshabilitado
 // import { getActiveApprovedAuthorizationForInvoice, markAuthorizationUsed } from "../../../firebase/authorizations/invoiceEditAuthorizations"; // Temporalmente deshabilitado
+import { prepareInvoiceForEdit } from "../../../utils/invoice";
+import useInvoiceEditAuthorization from "./hooks/useInvoiceEditAuthorization.jsx";
 
-// NOTE: 2025-09 Temporal: Se deshabilitó la lógica de autorizaciones para edición de facturas.
-// El cajero puede editar directamente mientras se termina el módulo de autorizaciones.
-// Para reactivar, restaurar imports y estados comentados dentro de este archivo.
 const EditButton = ({ value }) => {
   const dispatch = useDispatch()
   const data = value.data;
-  const user = useSelector(selectUser)
   const business = useSelector(selectBusinessData) || {};
   const componentToPrintRef = useRef(null)
-  // Autorización temporalmente deshabilitada: permitir edición directa
-  // const [isCashCountOpen, setIsCashCountOpen] = useState(false);
-  // const [requestOpen, setRequestOpen] = useState(false);
-  // const [reasonList, setReasonList] = useState([]);
-  // const isOlderThan24h = data?.date?.seconds < (Date.now() / 1000) - 86400;
   const cartSettings = useSelector(SelectSettingCart)
   const invoiceType = cartSettings.billing.invoiceType;
 
-  // useEffect(() => {
-  //   // Comprobación de cuadre de caja deshabilitada temporalmente
-  // }, [user?.businessID, data?.cashCountId]);
-
-  const proceedToEdit = () => {
-    const invoiceData = {
-      ...data,
-      date: DateUtils.convertTimestampToMillis(data.date),
-      payWith: data?.paymentMethod.find((method) => method.status === true)?.value,
-      updateAt: DateUtils.convertTimestampToMillis(data?.updateAt),
-      cancel: data?.cancel ? {
-        ...data.cancel,
-        cancelledAt: DateUtils.convertTimestampToMillis(data?.cancel?.cancelledAt),
-      } : null
+  const proceedToEdit = useCallback(() => {
+    const preparedInvoice = prepareInvoiceForEdit(data);
+    if (preparedInvoice) {
+      dispatch(addInvoice({ invoice: preparedInvoice }));
     }
-    dispatch(addInvoice({ invoice: invoiceData }))
-  }
+  }, [data, dispatch]);
 
-  const handleEdit = async () => {
-    // Lógica de autorización temporalmente deshabilitada: edición directa
-    proceedToEdit();
-    // Código previo conservado como referencia:
-    /*
-    // Cashier must pass checks; admin/owner/dev bypass
-    const role = user?.role;
-    const isPrivileged = ['admin', 'owner', 'dev'].includes(role);
-    const baseAllowed = isPrivileged || (!isOlderThan24h && isCashCountOpen);
-    if (baseAllowed) { proceedToEdit(); return; }
-    try {
-      const approved = await getActiveApprovedAuthorizationForInvoice(user, data);
-      if (approved) {
-        try { await markAuthorizationUsed(user, approved.id, user); } catch {}
-        proceedToEdit();
-        return;
-      }
-    } catch (e) {}
-    const reasons = [];
-    if (isOlderThan24h) reasons.push('La factura tiene más de 24 horas.');
-    if (!isCashCountOpen) reasons.push('El cuadre de caja no está abierto.');
-    setReasonList(reasons);
-    setRequestOpen(true);
-    */
-  }
+  const { handleEdit, authorizationModal, isProcessing } = useInvoiceEditAuthorization({
+    invoice: data,
+    onAuthorized: proceedToEdit,
+  });
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
   })
@@ -125,23 +84,13 @@ const EditButton = ({ value }) => {
       <Button
         icon={icons.editingActions.edit}
         onClick={handleEdit}
-        // Edición habilitada; se pedirá autorización cuando aplique
-        disabled={false}
+        loading={isProcessing}
       />
       <Button
         icon={icons.editingActions.show}
         onClick={handleViewMore}
       />
-      {/** Modal de autorización temporalmente deshabilitado **/}
-      {false && (
-        <RequestInvoiceEditAuthorization
-          isOpen={requestOpen}
-          setIsOpen={setRequestOpen}
-          invoice={data}
-          reasons={reasonList}
-          onRequested={() => { /* no-op */ }}
-        />
-      )}
+      {authorizationModal}
     </div>
   )
 }
@@ -329,5 +278,3 @@ export const tableData = {
   ],
   messageNoData: 'No hay datos para mostrar',
 };
-
-

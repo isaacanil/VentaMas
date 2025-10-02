@@ -6,7 +6,7 @@ import {
   toDigits,
 } from "./ncfUtils";
 
-const EMPTY_PREVIEW = { current: "", next: "", last: "" };
+const EMPTY_PREVIEW = { current: "", next: "", last: "", prefix: "", sequenceLength: 0 };
 
 export const buildSequencePreview = ({
   serieValue,
@@ -25,27 +25,40 @@ export const buildSequencePreview = ({
     return EMPTY_PREVIEW;
   }
 
-  if (!digits) {
-    return { current: prefix || "", next: prefix || "", last: "" };
-  }
-
-  const normalizedCurrent = normalizeDigits(digits);
-  const baseNumber = Number(normalizedCurrent);
   const resolver =
     typeof resolveSequenceLength === "function"
       ? resolveSequenceLength
       : (length) => length;
 
-  const fallbackLength = resolver(
-    normalizedCurrent.length,
-    sequenceLengthValue
-  );
+  const normalizedCurrent = normalizeDigits(digits);
+  const baseLengthCandidate = normalizedCurrent.length || Number(sequenceLengthValue) || 0;
+  const resolvedLengthBase = resolver(baseLengthCandidate, sequenceLengthValue);
+
+  if (!digits) {
+    return {
+      current: prefix || "",
+      next: prefix || "",
+      last: "",
+      prefix: prefix || "",
+      sequenceLength: resolvedLengthBase || 0,
+    };
+  }
+
+  const baseNumber = Number(normalizedCurrent);
+
+  const fallbackLength = resolvedLengthBase;
   const fallbackCurrent = prefix
     ? `${prefix}${normalizedCurrent.padStart(fallbackLength, "0")}`
     : "";
 
   if (!Number.isFinite(baseNumber)) {
-    return { current: fallbackCurrent, next: fallbackCurrent, last: "" };
+    return {
+      current: fallbackCurrent,
+      next: fallbackCurrent,
+      last: "",
+      prefix: prefix || "",
+      sequenceLength: resolvedLengthBase || 0,
+    };
   }
 
   const increment = resolveIncrement(increaseValue);
@@ -89,5 +102,7 @@ export const buildSequencePreview = ({
     current: prefix ? `${prefix}${paddedCurrent}` : "",
     next: prefix ? `${prefix}${paddedNext}` : "",
     last: prefix && paddedLast ? `${prefix}${paddedLast}` : "",
+    prefix: prefix || "",
+    sequenceLength: resolvedLength || 0,
   };
 };

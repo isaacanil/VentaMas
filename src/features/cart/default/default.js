@@ -43,9 +43,11 @@ const initialState = {
         isInvoicePanelOpen: false,
         billing: {
             billingMode: 'direct',
+            authorizationFlowEnabled: false,
             isLoading: false,
             isError: null
-        }    },
+        }
+    },
     isOpen: false,
     showCxcAutoRemovalNotification: false,
     data: {

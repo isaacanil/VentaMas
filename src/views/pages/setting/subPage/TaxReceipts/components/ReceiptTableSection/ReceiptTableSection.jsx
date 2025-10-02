@@ -17,6 +17,8 @@ export const ReceiptTableSection = ({
   setItemsLocal, 
   onAddBlank,
   onAddPredefined,
+  onRebuildLedger,
+  rebuildInProgress = false,
 }) => {
   const [disabledModalVisible, setDisabledModalVisible] = useState(false);
   const [authModalVisible, setAuthModalVisible] = useState(false);
@@ -38,6 +40,16 @@ export const ReceiptTableSection = ({
         <Left>
           {/* El botón de comprobantes inactivos se movió a la parte inferior */}
         </Left>        <Right>
+          {onRebuildLedger && (
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={onRebuildLedger}
+              loading={rebuildInProgress}
+              disabled={rebuildInProgress}
+            >
+              Reconstruir ledger
+            </Button>
+          )}
           <Button icon={<PlusOutlined />} type="primary" onClick={onAddPredefined}>
             Comprobante
           </Button>

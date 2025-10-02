@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { CashDenominationCalculator } from '../../resource/CashDenominationCalculator/CashDenominationCalculator'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,17 +7,17 @@ import { Comments } from '../CashRegisterClosure/Comments/Comments'
 import { Header } from './components/Headers/Header'
 import { ConfirmCancelButtons } from '../../resource/ConfirmCancelButtons/ConfirmCancelButtons'
 import { Footer } from './components/Footer/Footer'
-import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
+import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
+import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbCashCountOpening } from '../../../../../firebase/cashCount/opening/fbCashCountOpening'
+import { message } from 'antd'
 
 import { DateSection } from '../CashRegisterClosure/components/Header/DateSection'
 import { DateTime } from 'luxon'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 export const CashRegisterOpening = () => {
-  const [peerReviewAuthorizationIsOpen, setPeerReviewAuthorizationIsOpen] = useState(false)
-
   const cashCount = useSelector(selectCashCount)
   const { banknotes } = cashCount.opening;
   const [openingDate, setOpeningDate] = useState(DateTime.now())
@@ -27,6 +27,7 @@ export const CashRegisterOpening = () => {
   const location = useLocation();
 
   const dispatch = useDispatch()
+  const actualUser = useSelector(selectUser)
 
   const handleChangesBanknotes = (banknotes) => {
     dispatch(setCashCountOpeningBanknotes(banknotes))
@@ -34,13 +35,41 @@ export const CashRegisterOpening = () => {
   const handleChangesComments = (comments) => {
     dispatch(setCashCountOpeningComments(comments))
   }
-  const handleOpenPeerReviewAuthorization = () => { setPeerReviewAuthorizationIsOpen(true) }
 
-  const actualUser = useSelector(selectUser)
+  const handleAuthorizationSuccess = useCallback(async (approvalEmployee) => {
+    try {
+      if (!approvalEmployee?.uid) {
+        throw new Error('No se pudo identificar al autorizador.');
+      }
 
-  const handleSubmit = (approvalEmployee) => {
-    fbCashCountOpening(actualUser, cashCount, actualUser.uid, approvalEmployee.uid, openingDate.toMillis())
-  }
+      const response = await fbCashCountOpening(
+        actualUser,
+        cashCount,
+        actualUser.uid,
+        approvalEmployee.uid,
+        openingDate.toMillis()
+      )
+
+      if (response !== 'success') {
+        throw response instanceof Error ? response : new Error('No se pudo autorizar la apertura.');
+      }
+
+      message.success('Apertura autorizada correctamente.');
+      dispatch(clearCashCount())
+      navigate(-1)
+    } catch (error) {
+      const errorMessage = error?.message || 'No se pudo autorizar la apertura.';
+      message.error(errorMessage)
+    }
+  }, [actualUser, cashCount, dispatch, navigate, openingDate])
+
+  const { showModal: showPinModal, modalProps: pinModalProps } = useAuthorizationPin({
+    onAuthorized: handleAuthorizationSuccess,
+    module: 'accountsReceivable',
+    allowedRoles: ['admin', 'owner', 'dev', 'manager', 'cashier'],
+    description: 'Autoriza la apertura del cuadre de caja con tu PIN o contraseña.',
+  })
+
   const handleCancel = () => {
     if (location.state?.from === 'factura') {
       navigate('/sales');
@@ -65,13 +94,9 @@ export const CashRegisterOpening = () => {
           label='Comentario de Apertura'
           onChange={e => handleChangesComments(e.target.value)}
         />
-        <Footer onSubmit={handleOpenPeerReviewAuthorization} onCancel={handleCancel} />
+        <Footer onSubmit={showPinModal} onCancel={handleCancel} />
       </Container>
-      <PeerReviewAuthorization
-        isOpen={peerReviewAuthorizationIsOpen}
-        setIsOpen={setPeerReviewAuthorizationIsOpen}
-        onSubmit={handleSubmit}
-      />
+      <PinAuthorizationModal {...pinModalProps} />
     </Backdrop>
   )
 }

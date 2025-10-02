@@ -1,3 +1,6 @@
+import DateUtils from './date/dateUtils';
+import { isReference } from './refereceUtils';
+
 export function isInvoicePaidInFull(invoice) {
     // Extract the paid amount and the total purchase amount from the invoice
     const paidAmount = invoice.payment.value;
@@ -67,4 +70,81 @@ export function countInvoices(invoices) {
 
 export const calculateInvoiceChange = (invoice) => invoice.payment.value - invoice.totalPurchase.value;
 
+const isFirestoreTimestampLike = (value) =>
+    typeof value === 'object' && value !== null && typeof value.seconds === 'number' && typeof value.nanoseconds === 'number';
 
+const normalizeTimestamp = (input) => {
+    if (!input) return null;
+    if (typeof input === 'number') {
+        return input > 1e12 ? input : input * 1000;
+    }
+    if (input instanceof Date) {
+        return input.getTime();
+    }
+    if (isFirestoreTimestampLike(input)) {
+        return DateUtils.convertTimestampToMillis(input);
+    }
+    return null;
+};
+
+const sanitizeForRedux = (value) => {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+
+    if (typeof value === 'function') {
+        return undefined;
+    }
+
+    if (Array.isArray(value)) {
+        return value
+            .map(sanitizeForRedux)
+            .filter((item) => item !== undefined);
+    }
+
+    if (isReference(value)) {
+        return {
+            path: value.path,
+            id: value.id,
+        };
+    }
+
+    if (isFirestoreTimestampLike(value)) {
+        return DateUtils.convertTimestampToMillis(value);
+    }
+
+    if (typeof value === 'object') {
+        const result = {};
+        Object.entries(value).forEach(([key, entryValue]) => {
+            const sanitized = sanitizeForRedux(entryValue);
+            if (sanitized !== undefined) {
+                result[key] = sanitized;
+            }
+        });
+        return result;
+    }
+
+    return value;
+};
+
+export const prepareInvoiceForEdit = (invoice) => {
+    if (!invoice) return null;
+
+    const activePayment = Array.isArray(invoice.paymentMethod)
+        ? invoice.paymentMethod.find((method) => method.status === true)
+        : null;
+
+    const normalized = {
+        ...invoice,
+        date: normalizeTimestamp(invoice.date),
+        updateAt: normalizeTimestamp(invoice.updateAt),
+        payWith: activePayment?.value ?? activePayment?.method ?? null,
+        cancel: invoice?.cancel
+            ? {
+                ...invoice.cancel,
+                cancelledAt: normalizeTimestamp(invoice.cancel.cancelledAt),
+            }
+            : null,
+    };
+
+    return sanitizeForRedux(normalized);
+};

@@ -40,7 +40,8 @@ const SIDEBAR_VARIANTS = {
 }
 
 const useMenuFiltering = () => {
-    const { billing: { billingMode } } = useSelector(SelectSettingCart)
+    const settings = useSelector(SelectSettingCart)
+    const { billing: { billingMode, authorizationFlowEnabled } } = settings
     const business = useSelector(selectBusinessData)
     const businessType = business?.businessType || null
     const links = getMenuData()
@@ -50,7 +51,7 @@ const useMenuFiltering = () => {
         const filteredLinks = links.reduce((acc, item) => {
             let includeItem = true
             if (item.key && item.condition) {
-                includeItem = item.condition({ billingMode, businessType })
+                includeItem = item.condition({ billingMode, businessType, authorizationFlowEnabled })
             }
 
             if (!includeItem) return acc
@@ -60,7 +61,7 @@ const useMenuFiltering = () => {
             if (item.submenu) {
                 const filteredSubmenu = item.submenu.filter(subItem => {
                     if (subItem.key && subItem.condition) {
-                        return subItem.condition({ billingMode })
+                        return subItem.condition({ billingMode, authorizationFlowEnabled })
                     }
                     return true
                 })
@@ -88,7 +89,7 @@ const useMenuFiltering = () => {
             delete grouped.developer
         }
         return grouped
-    }, [links, billingMode, businessType, canSeeDeveloperGroup])
+    }, [links, billingMode, businessType, authorizationFlowEnabled, canSeeDeveloperGroup])
 }
 
 export const SideBar = ({ isOpen, handleOpenMenu }) => {

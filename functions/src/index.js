@@ -17,6 +17,14 @@ import { getInvoiceV2Http } from "./versions/v2/invoice/controllers/getInvoiceHt
 import { finalizeInventorySession } from "./versions/v1/modules/inventory/handlers/finalizeInventorySession.js";
 import { processInvoiceOutbox } from "./versions/v2/invoice/triggers/outbox.worker.js";
 import { processInvoiceCompensation } from "./versions/v2/invoice/triggers/compensation.worker.js";
+import {
+  clientLogin,
+  clientValidateUser,
+  clientSignUp,
+  clientUpdateUser,
+  clientChangePassword,
+  clientSetUserPassword,
+} from "./versions/v2/auth/controllers/clientAuth.controller.js";
 
 export { 
   keepSupabaseAlive, 
@@ -35,4 +43,10 @@ export {
   getInvoiceV2Http,
   processInvoiceOutbox,
   processInvoiceCompensation,
+  clientLogin,
+  clientValidateUser,
+  clientSignUp,
+  clientUpdateUser,
+  clientChangePassword,
+  clientSetUserPassword,
 };

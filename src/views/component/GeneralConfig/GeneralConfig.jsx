@@ -6,7 +6,8 @@ import {
   faFileInvoice,
   faUsers,
   faInfoCircle,
-  faQuestionCircle // Add icon for Help/Other group
+  faQuestionCircle, // Add icon for Help/Other group
+  faKey
 } from '@fortawesome/free-solid-svg-icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux'; // Import useSelector
@@ -36,6 +37,8 @@ export default function GeneralConfig() {
       setActiveTab('taxReceipt');
     } else if (currentPath.includes('users')) {
       setActiveTab('users');
+    } else if (currentPath.includes('authorization')) {
+      setActiveTab('authorization');
     } else if (currentPath.includes('app-info')) {
       setActiveTab('appInfo');
     } else if (currentPath.includes('/general-config')) { // Default case if directly on /general-config
@@ -63,6 +66,9 @@ export default function GeneralConfig() {
         break;
       case 'users':
         navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_USERS);
+        break;
+      case 'authorization':
+        navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_AUTHORIZATION);
         break;
       case 'appInfo':
         navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_APP_INFO);
@@ -101,6 +107,14 @@ export default function GeneralConfig() {
       icon: <FontAwesomeIcon icon={faUsers} />,
       label: 'Administración de Usuarios',
       group: 'advanced', // Keep group key distinct if needed, or merge if desired
+      groupLabel: 'Configuración Avanzada',
+      groupType: 'labelled'
+    },
+    {
+      key: 'authorization',
+      icon: <FontAwesomeIcon icon={faKey} />,
+      label: 'Flujo de Autorizaciones',
+      group: 'advanced',
       groupLabel: 'Configuración Avanzada',
       groupType: 'labelled'
     },

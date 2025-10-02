@@ -15,7 +15,9 @@ const admin = [
       title: 'Autorizaciones',
       icon: icons.menu.unSelected.settings,
       route: AUTHORIZATIONS_LIST,
-      group: 'admin'
+      group: 'admin',
+      key: 'authorizations',
+      condition: ({ authorizationFlowEnabled }) => authorizationFlowEnabled === true,
   },
   
     

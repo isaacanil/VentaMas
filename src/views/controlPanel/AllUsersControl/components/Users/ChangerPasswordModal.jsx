@@ -1,13 +1,16 @@
 import { useState } from 'react'
-import { Modal, Form, Input, Button, Typography } from 'antd'
+import { Modal, Form, Input, Button, Typography, message } from 'antd'
 import { fbUpdateUserPassword } from '../../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword'
 
 export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
     const [newPassword, setNewPassword] = useState('')
-    const handleOk = () => {
-      
-        fbUpdateUserPassword(data.user.id, newPassword)
-        onClose()
+    const handleOk = async () => {
+        try {
+            await fbUpdateUserPassword(data.user.id, newPassword)
+            onClose()
+        } catch (error) {
+            message.error(error?.message || 'Error actualizando la contraseña')
+        }
     };
 
     const handleCancel = () => {

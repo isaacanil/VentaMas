@@ -5,7 +5,8 @@ import { icons } from '../icons/icons';
 
 export const developerShortcuts = [
   { id: 'dev-console', title: 'Panel Desarrollador', icon: <BugOutlined />, action: 'openDeveloperModal', category: 'Herramientas' },
-  { id: 'fiscal-audit', title: 'Análisis de comprobantes', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT, category: 'Herramientas' },
+  { id: 'fiscal-audit', title: 'Análisis de comprobantes', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT, category: 'Comprobantes Fiscal' },
+  { id: 'b-series-invoices', title: 'Facturas Serie B', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.B_SERIES_INVOICES, category: 'Comprobantes Fiscal' },
   { id: 'test-playground', title: 'Pruebas', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.PRUEBA, category: 'Herramientas' },
   { id: 'switch-business', title: 'Cambiar Negocio', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS, category: 'Negocio' },
   { id: 'manage-businesses', title: 'Gestionar Negocios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.BUSINESSES, category: 'Negocio' },

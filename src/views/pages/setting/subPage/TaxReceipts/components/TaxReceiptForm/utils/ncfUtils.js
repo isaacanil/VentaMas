@@ -21,10 +21,25 @@ export const resolveIncrement = (value) => {
   return numeric;
 };
 
+const isNumericSerie = (value) => /^\d+$/.test(value);
+
 export const buildPrefix = (type, serie) => {
-  const seriePart = sanitizePart(type).toUpperCase();
-  const typePart = sanitizePart(serie).toUpperCase();
-  const prefix = `${seriePart}${typePart}`;
+  const firstPart = sanitizePart(type).toUpperCase();
+  const secondPart = sanitizePart(serie).toUpperCase();
+
+  if (!firstPart && !secondPart) return "";
+
+  const firstIsNumeric = isNumericSerie(firstPart);
+  const secondIsNumeric = isNumericSerie(secondPart);
+
+  const typePart = firstIsNumeric && !secondIsNumeric ? secondPart : firstPart;
+  const seriePart = firstIsNumeric && !secondIsNumeric ? firstPart : secondPart;
+
+  const normalizedSerie = isNumericSerie(seriePart)
+    ? seriePart.padStart(2, "0")
+    : seriePart;
+
+  const prefix = `${typePart}${normalizedSerie}`;
   return prefix;
 };
 

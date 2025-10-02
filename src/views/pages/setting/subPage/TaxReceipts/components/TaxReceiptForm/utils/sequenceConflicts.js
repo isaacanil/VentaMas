@@ -1,5 +1,6 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../../../../../../firebase/firebaseconfig";
+import { getNcfLedgerInsights } from "../../../../../../../../firebase/taxReceipt/getNcfLedgerInsights";
 import {
   MAX_IN_QUERY_VALUES,
   buildCandidateCodes,
@@ -18,8 +19,51 @@ const MAX_SEQUENCE_REPORT_ITEMS = 12;
 
 const DEFAULT_RESOLVER = (normalizedDigitsLength) => normalizedDigitsLength ?? 0;
 
+const adaptLedgerResponse = ({ ledgerResult, sequenceLengthEstimate }) => {
+  if (!ledgerResult || ledgerResult.source !== "ledger") {
+    return null;
+  }
+
+  const nextDigitsRaw = ledgerResult.nextDigits
+    ?? normalizeDigits((ledgerResult.nextNumber ?? "").toString());
+  const sequenceLength = Math.max(
+    sequenceLengthEstimate,
+    nextDigitsRaw?.length ?? 0,
+    ledgerResult.normalizedDigits?.length ?? 0
+  );
+
+  const nextDigits = (nextDigitsRaw ?? "").padStart(sequenceLength, "0");
+
+  return {
+    ok: ledgerResult.ok !== false,
+    reason: ledgerResult.reason,
+    prefix: ledgerResult.prefix,
+    nextNumber: ledgerResult.nextNumber,
+    nextDigits,
+    nextDigitsLength: nextDigits.length,
+    sequenceLength,
+    hasCurrentConflict: !!ledgerResult.hasCurrentConflict,
+    hasImmediateNextConflict: !!ledgerResult.hasImmediateNextConflict,
+    conflicts: Array.isArray(ledgerResult.conflicts) ? ledgerResult.conflicts : [],
+    insights: ledgerResult.insights ?? {},
+    metadata: ledgerResult.metadata ?? null,
+    source: "ledger",
+  };
+};
+
+const fetchLedgerInsightsSafe = async (payload) => {
+  try {
+    const result = await getNcfLedgerInsights(payload);
+    return result;
+  } catch (error) {
+    console.error("Error al consultar el ledger de NCF:", error);
+    return { source: "ledger-error", error: error?.message };
+  }
+};
+
 export const createSequenceConflictChecker = ({
   businessID,
+  userID,
   resolveSequenceLength,
 } = {}) => {
   const resolver = typeof resolveSequenceLength === "function"
@@ -65,6 +109,33 @@ export const createSequenceConflictChecker = ({
     );
 
     const backwardSteps = Math.min(MAX_SEQUENCE_LOOKBEHIND, forwardSteps);
+
+    const shouldUseLedger = Boolean(userID);
+    if (shouldUseLedger) {
+      const ledgerPayload = {
+        businessId: businessID,
+        userId: userID,
+        prefix,
+        sequenceNumber: baseNumber,
+        normalizedDigits,
+        increment,
+        windowBefore: backwardSteps,
+        windowAfter: forwardSteps,
+        quantitySteps,
+        sequenceLength: sequenceLengthEstimate,
+      };
+
+      const ledgerResult = await fetchLedgerInsightsSafe(ledgerPayload);
+      if (ledgerResult?.source === "ledger") {
+        const adapted = adaptLedgerResponse({
+          ledgerResult,
+          sequenceLengthEstimate,
+        });
+        if (adapted) {
+          return adapted;
+        }
+      }
+    }
 
     const codeMap = new Map();
     const queryCodes = new Set();
@@ -296,6 +367,7 @@ export const createSequenceConflictChecker = ({
       nextNumber,
       nextDigits: normalizedNextDigits,
       nextDigitsLength: normalizedNextDigits.length,
+      sequenceLength: sequenceLengthEstimate,
       conflicts: conflictInvoices,
       insights,
       hasCurrentConflict,

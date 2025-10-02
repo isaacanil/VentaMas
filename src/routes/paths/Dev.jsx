@@ -11,6 +11,7 @@ import LoginImageConfig from "../../views/controlPanel/AppConfig/LoginImageConfi
 import Menu from "../../views/templates/system/Menu/Menu";
 import { FiscalReceiptsAudit } from "../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit";
 import TestPlayground from "../../views/pages/DevTools/TestPlayground";
+import BSeriesInvoices from "../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices";
 
 import RoutesName from "../routesName"
 import InventoryMigrationTool from "../../views/pages/DevTools/InventoryMigrationTool";
@@ -46,6 +47,11 @@ const routes = [
         path: RoutesName.DEV_VIEW_TERM.FISCAL_RECEIPTS_AUDIT,
         element: <FiscalReceiptsAudit />,
         // enabledEnvs: ['development'] // Ejemplo: sólo en dev incluso si se fuerza dev routes en staging
+    },
+    {
+        path: RoutesName.DEV_VIEW_TERM.B_SERIES_INVOICES,
+        element: <BSeriesInvoices />,
+        status: ROUTE_STATUS.BETA,
     },
     {
         path: RoutesName.DEV_VIEW_TERM.PRUEBA,

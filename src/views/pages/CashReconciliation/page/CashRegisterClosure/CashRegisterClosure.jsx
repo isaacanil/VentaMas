@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { notification } from 'antd'
+import { notification, message } from 'antd'
 import { selectUser } from './../../../../../features/auth/userSlice'
 import { Header } from './components/Header/Header'
 import { Body } from './components/Body/Body'
 import { Footer } from './components/Footer/Footer'
-import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
+import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
+import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
 import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { useNavigate } from 'react-router-dom'
 import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
@@ -18,7 +19,6 @@ export const CashRegisterClosure = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const [peerReviewAuthorizationIsOpen, setPeerReviewAuthorizationIsOpen] = useState(false)
   const [closingDate, setClosingDate] = useState(DateTime.now())
 
   const actualUser = useSelector(selectUser)
@@ -38,17 +38,6 @@ export const CashRegisterClosure = () => {
     };
   }, [cashCount])
 
-  const handleOpenPeerReviewAuthorization = () => {
-    if ((cashCount.opening.employee.id !== actualUser.uid) && actualUser.role !== "admin") {
-      notification.error({
-        message: 'Error',
-        description: 'No tienes permisos para realizar esta acción',
-      });
-      return
-    }
-    setPeerReviewAuthorizationIsOpen(true)
-  };
-
   const handleCancel = async () => {
     if (cashCount.state === 'closing' || cashCount.state === 'open') {
       fbCashCountChangeState(cashCount, actualUser, 'open')
@@ -57,12 +46,50 @@ export const CashRegisterClosure = () => {
     navigate('/cash-reconciliation')
   }
 
-  const handleSubmit = async (approvalEmployee) => {
+  const handleAuthorizationSuccess = useCallback(async (approvalEmployee) => {
     try {
-      await fbCashCountClosed(actualUser, cashCount, actualUser.uid, approvalEmployee.uid, closingDate.toMillis())    } catch (error) {
-      // Handle error appropriately
+      if (!approvalEmployee?.uid) {
+        throw new Error('No se pudo identificar al autorizador.');
+      }
+
+      const response = await fbCashCountClosed(
+        actualUser,
+        cashCount,
+        actualUser.uid,
+        approvalEmployee.uid,
+        closingDate.toMillis()
+      )
+
+      if (response !== 'success') {
+        throw response instanceof Error ? response : new Error('No se pudo autorizar el cierre.');
+      }
+
+      message.success('Cierre autorizado correctamente.');
+      dispatch(clearCashCount())
+      navigate(-1)
+    } catch (error) {
+      const errorMessage = error?.message || 'No se pudo autorizar el cierre.';
+      message.error(errorMessage)
     }
-  }
+  }, [actualUser, cashCount, closingDate, dispatch, navigate])
+
+  const { showModal: showPinModal, modalProps: pinModalProps } = useAuthorizationPin({
+    onAuthorized: handleAuthorizationSuccess,
+    module: 'accountsReceivable',
+    allowedRoles: ['admin', 'owner', 'dev', 'manager', 'cashier'],
+    description: 'Autoriza el cierre del cuadre de caja con tu PIN o contraseña.',
+  })
+
+  const handleOpenAuthorizationModal = () => {
+    if ((cashCount.opening.employee.id !== actualUser.uid) && actualUser.role !== "admin") {
+      notification.error({
+        message: 'Error',
+        description: 'No tienes permisos para realizar esta acción',
+      });
+      return
+    }
+    showPinModal();
+  };
 
   const cashCountActual = useFbGetCashCount(cashCount?.id)
 
@@ -72,16 +99,11 @@ export const CashRegisterClosure = () => {
         <Header state={cashCountActual?.cashCount?.state} />
         <Body closingDate={closingDate} />
         <Footer
-          onSubmit={!cashCountIsClosed ? handleOpenPeerReviewAuthorization : null}
+          onSubmit={!cashCountIsClosed ? handleOpenAuthorizationModal : null}
           onCancel={handleCancel}
         />
       </Container>
-      <PeerReviewAuthorization
-        isOpen={peerReviewAuthorizationIsOpen}
-        setIsOpen={setPeerReviewAuthorizationIsOpen}
-        description={'Permite a un segundo usuario autorizar el cierre de la caja después de una revisión.'}
-        onSubmit={handleSubmit}
-      />
+      <PinAuthorizationModal {...pinModalProps} />
     </Backdrop>
   )
 }

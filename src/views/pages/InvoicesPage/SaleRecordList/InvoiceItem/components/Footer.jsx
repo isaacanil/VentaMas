@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import * as antd from 'antd';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,9 +10,10 @@ import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
 import { Receipt } from '../../../../checkout/Receipt';
 import { useReactToPrint } from 'react-to-print';
 import { useDispatch } from 'react-redux';
-import DateUtils from '../../../../../../utils/date/dateUtils';
 import { addInvoice } from '../../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../../features/invoice/invoicePreviewSlice';
+import { prepareInvoiceForEdit } from '../../../../../../utils/invoice';
+import useInvoiceEditAuthorization from '../../../hooks/useInvoiceEditAuthorization.jsx';
 
 export const Footer = ({ data }) => {
     const componentToPrintRef = useRef(null)
@@ -22,19 +23,17 @@ export const Footer = ({ data }) => {
     const handleRePrint = useReactToPrint({
         content: () => componentToPrintRef.current,
     })
-    const handleEdit = () => {
-        const invoiceData = {
-            ...data,
-            date: DateUtils.convertTimestampToMillis(data.date),
-            payWith: data?.paymentMethod.find((method) => method.status === true)?.value,
-            updateAt: DateUtils.convertTimestampToMillis(data?.updateAt),
-            cancel: data?.cancel ? {
-                ...data.cancel,
-                cancelledAt: DateUtils.convertTimestampToMillis(data?.cancel?.cancelledAt),
-            } : null
+    const proceedToEdit = useCallback(() => {
+        const preparedInvoice = prepareInvoiceForEdit(data);
+        if (preparedInvoice) {
+            dispatch(addInvoice({ invoice: preparedInvoice }));
         }
-        dispatch(addInvoice({ invoice: invoiceData }))
-    }
+    }, [data, dispatch]);
+
+    const { handleEdit, authorizationModal, isProcessing } = useInvoiceEditAuthorization({
+        invoice: data,
+        onAuthorized: proceedToEdit,
+    });
     const handleViewMore = () => {
         dispatch(openInvoicePreviewModal(data))
     }
@@ -48,6 +47,7 @@ export const Footer = ({ data }) => {
                         startIcon={icons.operationModes.edit}
                         title={vw > 600 && "Editar"}
                         onClick={handleEdit}
+                        disabled={isProcessing}
                     />
                     <Button
                         type="primary"
@@ -65,6 +65,7 @@ export const Footer = ({ data }) => {
                     {isCredit ? "Contado" : "Crédito"}
                 </Tag>
             </Container>
+            {authorizationModal}
         </>
     )
 }
