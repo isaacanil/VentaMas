@@ -1,11 +1,12 @@
-import { InvoicesPage } from '../../views/pages/InvoicesPage/InvoicesPage';
-import { Sales } from '../../views/pages/Venta/Ventas';
-import { CashReconciliation } from '../../views/pages/CashReconciliation/CashReconciliation';
-import { Preorder } from '../../views/pages/PreorderSale/PreorderSale';
-
 import ROUTES_NAME from '../routesName';
+import { lazyImport } from '../lazyImport';
 
 const { SALES, BILLS, CASH_RECONCILIATION, PREORDERS } = ROUTES_NAME.SALES_TERM;
+
+const Sales = lazyImport(() => import('../../views/pages/Venta/Ventas'), 'Sales');
+const InvoicesPage = lazyImport(() => import('../../views/pages/InvoicesPage/InvoicesPage'), 'InvoicesPage');
+const CashReconciliation = lazyImport(() => import('../../views/pages/CashReconciliation/CashReconciliation'), 'CashReconciliation');
+const Preorder = lazyImport(() => import('../../views/pages/PreorderSale/PreorderSale'), 'Preorder');
 
 const Routes = [
     {

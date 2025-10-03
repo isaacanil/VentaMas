@@ -1,6 +1,8 @@
-import { ChangelogList } from "../../views/controlPanel/ChangeLogControl/ChangelogList/ChangelogList";
-import { ChangelogManage } from "../../views/controlPanel/ChangeLogControl/ChangelogManage/ChangelogManage";
 import RoutesName from "../routesName"
+import { lazyImport } from "../lazyImport";
+
+const ChangelogList = lazyImport(() => import("../../views/controlPanel/ChangeLogControl/ChangelogList/ChangelogList"), "ChangelogList");
+const ChangelogManage = lazyImport(() => import("../../views/controlPanel/ChangeLogControl/ChangelogManage/ChangelogManage"), "ChangelogManage");
 
 const { CHANGELOG_LIST, CHANGELOG_MANAGE} = RoutesName.CHANGELOG_TERM;
 

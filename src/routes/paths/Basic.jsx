@@ -1,6 +1,8 @@
-import { Home } from "../../views/pages/Home/Home";
-import { Welcome } from "../../views/pages/Welcome/Welcome";
 import ROUTES_NAME from "../routesName";
+import { lazyImport } from "../lazyImport";
+
+const Home = lazyImport(() => import("../../views/pages/Home/Home"), "Home");
+const Welcome = lazyImport(() => import("../../views/pages/Welcome/Welcome"), "Welcome");
 
 const { BASIC_TERM } = ROUTES_NAME;
 const { HOME, WELCOME } = BASIC_TERM;

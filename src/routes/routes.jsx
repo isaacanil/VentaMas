@@ -1,4 +1,3 @@
-import { NotFound } from "../views/pages/NotFound/NotFound";
 import basic from "./paths/Basic";
 import auth from "./paths/Auth";
 import inventory from "./paths/Inventory";
@@ -19,6 +18,9 @@ import authorizations from './paths/Authorizations';
 import { processRoute } from "./requiereAuthProvider";
 import { ROUTE_STATUS } from './routeMeta';
 import { registerRoutes } from './routeVisibility';
+import { lazyImport } from "./lazyImport";
+
+const NotFound = lazyImport(() => import("../views/pages/NotFound/NotFound"), "NotFound");
 
 // Procesa recursivamente las rutas y sus hijos para aplicar la protección
 const processRoutes = (routes) => {
