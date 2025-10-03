@@ -8,7 +8,9 @@ import { Header } from './components/Headers/Header'
 import { ConfirmCancelButtons } from '../../resource/ConfirmCancelButtons/ConfirmCancelButtons'
 import { Footer } from './components/Footer/Footer'
 import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
+import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
 import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
+import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbCashCountOpening } from '../../../../../firebase/cashCount/opening/fbCashCountOpening'
 import { message } from 'antd'
@@ -22,12 +24,15 @@ export const CashRegisterOpening = () => {
   const { banknotes } = cashCount.opening;
   const [openingDate, setOpeningDate] = useState(DateTime.now())
   const [calculatorIsOpen, setCalculatorIsOpen] = useState(true)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const dispatch = useDispatch()
   const actualUser = useSelector(selectUser)
+  const { shouldUsePinForModule } = useAuthorizationModules()
+  const usePinAuth = shouldUsePinForModule('accountsReceivable')
 
   const handleChangesBanknotes = (banknotes) => {
     dispatch(setCashCountOpeningBanknotes(banknotes))
@@ -70,6 +75,20 @@ export const CashRegisterOpening = () => {
     description: 'Autoriza la apertura del cuadre de caja con tu PIN o contraseña.',
   })
 
+  // Handler para autorización con contraseña clásica
+  const handlePasswordAuth = async (user) => {
+    setShowPasswordModal(false)
+    await handleAuthorizationSuccess(user)
+  }
+
+  const handleOpenAuthorization = () => {
+    if (usePinAuth) {
+      showPinModal()
+    } else {
+      setShowPasswordModal(true)
+    }
+  }
+
   const handleCancel = () => {
     if (location.state?.from === 'factura') {
       navigate('/sales');
@@ -94,9 +113,18 @@ export const CashRegisterOpening = () => {
           label='Comentario de Apertura'
           onChange={e => handleChangesComments(e.target.value)}
         />
-        <Footer onSubmit={showPinModal} onCancel={handleCancel} />
+        <Footer onSubmit={handleOpenAuthorization} onCancel={handleCancel} />
       </Container>
-      <PinAuthorizationModal {...pinModalProps} />
+      {usePinAuth ? (
+        <PinAuthorizationModal {...pinModalProps} />
+      ) : (
+        <PeerReviewAuthorization
+          isOpen={showPasswordModal}
+          setIsOpen={setShowPasswordModal}
+          onValidate={handlePasswordAuth}
+          description="Autoriza la apertura del cuadre de caja con tu contraseña."
+        />
+      )}
     </Backdrop>
   )
 }

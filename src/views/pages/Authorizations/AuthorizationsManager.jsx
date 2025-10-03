@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { Tabs, Typography } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Tabs, Alert } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../features/auth/userSlice';
+import { useAuthorizationModules } from '../../../hooks/useAuthorizationModules';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
 import { AuthorizationRequests } from './components/AuthorizationRequests';
 import { PersonalPinManagement } from './components/PersonalPinManagement';
-
-const { Title } = Typography;
 
 const Container = styled.div`
   display: grid;
@@ -35,25 +34,46 @@ const StyledTabs = styled(Tabs)`
 export const AuthorizationsManager = () => {
   const user = useSelector(selectUser);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('requests');
+  const { 
+    authorizationFlowEnabled, 
+    hasActiveModules 
+  } = useAuthorizationModules();
 
   // Solo admin, owner, dev pueden ver solicitudes
   const canViewRequests = ['admin', 'owner', 'dev'].includes(user?.role);
 
-  const tabs = [
-    // Tab de solicitudes solo para admins
-    ...(canViewRequests ? [{
-      key: 'requests',
-      label: 'Solicitudes de Autorización',
-      children: <AuthorizationRequests searchTerm={searchTerm} />,
-    }] : []),
-    // Tab de PIN personal - todos los usuarios
-    {
-      key: 'mypin',
-      label: 'Mi PIN Personal',
-      children: <PersonalPinManagement />,
-    },
-  ];
+  const modulesActive = hasActiveModules();
+
+  const tabs = useMemo(() => {
+    const items = [];
+
+    if (canViewRequests && modulesActive) {
+      items.push({
+        key: 'requests',
+        label: 'Solicitudes de Autorización',
+        children: <AuthorizationRequests searchTerm={searchTerm} />,
+      });
+    }
+
+    if (modulesActive) {
+      items.push({
+        key: 'mypin',
+        label: 'Mi PIN Personal',
+        children: <PersonalPinManagement />,
+      });
+    }
+
+    return items;
+  }, [canViewRequests, modulesActive, searchTerm]);
+
+  const defaultTabKey = tabs[0]?.key ?? 'mypin';
+  const [activeTab, setActiveTab] = useState(defaultTabKey);
+
+  useEffect(() => {
+    if (!tabs.some(({ key }) => key === activeTab)) {
+      setActiveTab(defaultTabKey);
+    }
+  }, [activeTab, defaultTabKey, tabs]);
 
   return (
     <Container>
@@ -64,12 +84,26 @@ export const AuthorizationsManager = () => {
         showNotificationButton={false}
       />
       <Content>
-        <StyledTabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={tabs}
-          destroyOnHidden={false}
-        />
+        {!authorizationFlowEnabled || !modulesActive ? (
+          <Alert
+            message="Autorizaciones Desactivadas"
+            description={
+              !authorizationFlowEnabled
+                ? "El flujo de autorizaciones está desactivado. Ve a Configuración > Flujo de Autorizaciones para activarlo."
+                : "No hay módulos de autorización activos. Ve a Configuración > Flujo de Autorizaciones para activar al menos un módulo."
+            }
+            type="warning"
+            showIcon
+            style={{ margin: '20px 0' }}
+          />
+        ) : (
+          <StyledTabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={tabs}
+            destroyOnHidden={false}
+          />
+        )}
       </Content>
     </Container>
   );

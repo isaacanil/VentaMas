@@ -16,6 +16,8 @@ import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import ROUTES_NAME from '../../../routes/routesName';
 // Import the factory instead of the direct selector
 import { makeSelectPreviousRelevantRoute } from '../../../features/navigation/navigationSlice';
+import { userAccess } from '../../../hooks/abilities/useAbilities';
+import { selectUser } from '../../../features/auth/userSlice';
 
 // Create a specific selector instance using the factory
 const selectPreviousRouteIgnoringConfig = makeSelectPreviousRelevantRoute('/general-config');
@@ -26,9 +28,29 @@ export default function GeneralConfig() {
   const currentPath = location.pathname;
   const [activeTab, setActiveTab] = useState('billing');
   const previousRelevantRoute = useSelector(selectPreviousRouteIgnoringConfig);
+  const user = useSelector(selectUser);
+  const { abilities } = userAccess();
+  const abilityRules = abilities?.rules || [];
+  const hasAbilityData = abilityRules.length > 0;
+  const isCashierRole = ['cashier', 'specialCashier1', 'specialCashier2'].includes(user?.role);
+  const canManageBusinessSettings = hasAbilityData && (abilities.can('manage', 'Business') || abilities.can('manage', 'business-settings'));
+  const shouldBlockGeneralConfig = isCashierRole || (hasAbilityData && !canManageBusinessSettings);
+
+  useEffect(() => {
+    if (shouldBlockGeneralConfig) {
+      const fallbackPath = previousRelevantRoute?.pathname || '/home';
+      if (currentPath !== fallbackPath) {
+        navigate(fallbackPath, { replace: true });
+      }
+    }
+  }, [shouldBlockGeneralConfig, currentPath, navigate, previousRelevantRoute]);
 
   // Effect to determine the active tab based on current path
   useEffect(() => {
+    if (!canManageBusinessSettings) {
+      return;
+    }
+
     if (currentPath.includes('billing')) {
       setActiveTab('billing');
     } else if (currentPath.includes('business')) {
@@ -45,7 +67,7 @@ export default function GeneralConfig() {
       setActiveTab('billing');
       navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BILLING, { replace: true });
     }
-  }, [currentPath, navigate]);
+  }, [canManageBusinessSettings, currentPath, navigate]);
 
   // Updated handleBackClick to use the route from Redux state
   const handleBackClick = () => {
@@ -130,6 +152,14 @@ export default function GeneralConfig() {
     },
   ];
 
+
+  if (!hasAbilityData && !isCashierRole) {
+    return null;
+  }
+
+  if (shouldBlockGeneralConfig) {
+    return null;
+  }
 
   return (
     <Nav

@@ -11,10 +11,8 @@ export { authLogin, authCheck, authLogout, expireSessions } from "./versions/v1/
 import { createInvoiceV2 } from "./versions/v2/invoice/controllers/createInvoice.controller.js";
 import { createInvoiceV2Http } from "./versions/v2/invoice/controllers/createInvoiceHttp.controller.js";
 import { getInvoiceV2Http } from "./versions/v2/invoice/controllers/getInvoiceHttp.controller.js";
-
-// mas tarde la funcion para actualziar el inventario
-// import { updateStockOnInvoiceCreate } from "./versions/v1/modules/inventory/triggers/updateStockOnInvoiceCreate.js";
 import { finalizeInventorySession } from "./versions/v1/modules/inventory/handlers/finalizeInventorySession.js";
+
 import { processInvoiceOutbox } from "./versions/v2/invoice/triggers/outbox.worker.js";
 import { processInvoiceCompensation } from "./versions/v2/invoice/triggers/compensation.worker.js";
 import {
@@ -25,6 +23,15 @@ import {
   clientChangePassword,
   clientSetUserPassword,
 } from "./versions/v2/auth/controllers/clientAuth.controller.js";
+import {
+  generateModulePins,
+  deactivateModulePins,
+  getUserModulePinStatus,
+  getBusinessPinsSummary,
+  validateModulePin,
+  getUserModulePins,
+  autoRotateModulePins,
+} from "./versions/v2/auth/controllers/pin.controller.js";
 
 export { 
   keepSupabaseAlive, 
@@ -36,7 +43,7 @@ export {
   handleUpdateUser,
   handleUpdateUserWithPermissions,
   handleChangePassword,
-  updatePendingBalance, // muy importante
+  updatePendingBalance, 
   finalizeInventorySession,
   createInvoiceV2,
   createInvoiceV2Http,
@@ -49,4 +56,11 @@ export {
   clientUpdateUser,
   clientChangePassword,
   clientSetUserPassword,
+  generateModulePins,
+  deactivateModulePins,
+  getUserModulePinStatus,
+  getBusinessPinsSummary,
+  validateModulePin,
+  getUserModulePins,
+  autoRotateModulePins,
 };

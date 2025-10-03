@@ -44,6 +44,11 @@ const initialState = {
         billing: {
             billingMode: 'direct',
             authorizationFlowEnabled: false,
+            enabledAuthorizationModules: {
+                invoices: true,
+                accountsReceivable: true,
+                cashRegister: true
+            },
             isLoading: false,
             isError: null
         }

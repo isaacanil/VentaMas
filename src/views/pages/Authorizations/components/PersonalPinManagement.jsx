@@ -4,6 +4,7 @@ import { KeyOutlined, ReloadOutlined, ClockCircleOutlined, SafetyOutlined, LockO
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { fbGetUserPinStatus, fbGenerateUserPin, fbDeactivateUserPin } from '../../../../firebase/authorization/pinAuth';
+import { useAuthorizationModules } from '../../../../hooks/useAuthorizationModules';
 import styled from 'styled-components';
 import { RequestPinModal } from './RequestPinModal';
 import { GeneratePinModal } from '../../../pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
@@ -332,7 +333,7 @@ const ModuleActions = styled.div`
 const ModulesGrid = styled.div`
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 `;
 
 /**
@@ -342,6 +343,7 @@ const ModulesGrid = styled.div`
  */
 export const PersonalPinManagement = () => {
   const user = useSelector(selectUser);
+  const { enabledModules, authorizationFlowEnabled } = useAuthorizationModules();
   const [pinStatus, setPinStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [requestModalVisible, setRequestModalVisible] = useState(false);
@@ -354,6 +356,11 @@ export const PersonalPinManagement = () => {
 
   // Dev y Owner pueden generar su propio PIN
   const canSelfGenerate = ['dev', 'owner'].includes(user?.role);
+
+  // Filtrar solo módulos activos según configuración
+  const activeAvailableModules = authorizationFlowEnabled
+    ? AVAILABLE_MODULES.filter(module => enabledModules[module.value] !== false)
+    : [];
 
   const loadPinStatus = async () => {
     setLoading(true);
@@ -524,24 +531,23 @@ export const PersonalPinManagement = () => {
     });
   }
 
-  // Preparar lista de módulos
-  const modulesList = pinStatus?.moduleDetails
-    ? Object.entries(pinStatus.moduleDetails).map(([moduleKey, detail]) => {
-        const expiresDisplay = detail?.expiresAt ? formatDateTime(detail.expiresAt) : 'Sin expiración';
-        const statusLabel = detail?.isActive
-          ? 'Activo'
-          : detail?.isExpired
-            ? 'Expirado'
-            : 'Inactivo';
-        const tone = detail?.isActive ? 'success' : detail?.isExpired ? 'danger' : 'warning';
-        return {
-          module: moduleKey,
-          label: MODULE_LABELS[moduleKey] || moduleKey,
-          status: statusLabel,
-          tone,
-          expiresDisplay,
-        };
-      })
+  // Preparar lista de módulos - solo mostrar módulos que están activos en configuración Y tienen PIN activo
+  const modulesList = authorizationFlowEnabled && pinStatus?.moduleDetails
+    ? Object.entries(pinStatus.moduleDetails)
+        .filter(([moduleKey, detail]) => {
+          // Filtrar solo módulos activos en configuración Y con PIN activo
+          return enabledModules[moduleKey] !== false && detail?.isActive === true;
+        })
+        .map(([moduleKey, detail]) => {
+          const expiresDisplay = detail?.expiresAt ? formatDateTime(detail.expiresAt) : 'Sin expiración';
+          return {
+            module: moduleKey,
+            label: MODULE_LABELS[moduleKey] || moduleKey,
+            status: 'Activo',
+            tone: 'success',
+            expiresDisplay,
+          };
+        })
     : [];
 
   return (
@@ -587,8 +593,11 @@ export const PersonalPinManagement = () => {
                 ))}
               </HeroBadges>
              
-              {modulesList.length === 0 && (
-                <HeroLabel style={{ opacity: 0.6 }}>Sin módulos habilitados</HeroLabel>
+              {modulesList.length === 0 && activeAvailableModules.length === 0 && (
+                <HeroLabel style={{ opacity: 0.6 }}>No hay módulos activos en el sistema</HeroLabel>
+              )}
+              {modulesList.length === 0 && activeAvailableModules.length > 0 && (
+                <HeroLabel style={{ opacity: 0.6 }}>Sin módulos habilitados en tu PIN</HeroLabel>
               )}
             </HeroHeaderLeft>
           </HeroHeader>
@@ -605,6 +614,7 @@ export const PersonalPinManagement = () => {
                     icon={<KeyOutlined />}
                     onClick={() => setGenerateModalVisible(true)}
                     loading={loading}
+                    disabled={!authorizationFlowEnabled || activeAvailableModules.length === 0}
                   >
                     {pinStatus?.hasPin ? 'Regenerar mi PIN' : 'Generar mi PIN'}
                   </Button>
@@ -624,13 +634,23 @@ export const PersonalPinManagement = () => {
                   type="primary"
                   icon={<KeyOutlined />}
                   onClick={() => setRequestModalVisible(true)}
+                  disabled={!authorizationFlowEnabled || activeAvailableModules.length === 0}
                 >
                   {pinStatus?.hasPin ? 'Solicitar regeneración' : 'Solicitar PIN'}
                 </Button>
               )}
             </ActionGroup>
 
-            {!pinStatus?.hasPin && (
+            {activeAvailableModules.length === 0 && authorizationFlowEnabled && (
+              <HelperAlert
+                showIcon
+                type="warning"
+                message="Sin Módulos Activos"
+                description="No puedes generar un PIN porque no hay módulos de autorización activos. Un administrador debe activar al menos un módulo desde Configuración."
+              />
+            )}
+
+            {activeAvailableModules.length > 0 && !pinStatus?.hasPin && (
               <HelperAlert
                 showIcon
                 type="info"
@@ -643,7 +663,7 @@ export const PersonalPinManagement = () => {
               />
             )}
 
-            {pinStatus?.hasPin && (pinStatus.isExpired || !pinStatus.isActive) && (
+            {activeAvailableModules.length > 0 && pinStatus?.hasPin && (pinStatus.isExpired || !pinStatus.isActive) && (
               <HelperAlert
                 showIcon
                 type="warning"
@@ -662,32 +682,28 @@ export const PersonalPinManagement = () => {
               <ActionsTitle strong style={{ marginBottom: 16, display: 'block' }}>Mis módulos con PIN</ActionsTitle>
               <ModulesGrid>
                 {modulesList.map((item) => {
-                  const tagColor = item.tone === 'success' ? 'green' : item.tone === 'danger' ? 'volcano' : 'gold';
-                  
                   return (
-                    <ModuleCard key={item.module} $active={item.tone === 'success'}>
+                    <ModuleCard key={item.module} $active={true}>
                       <ModuleMeta>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Text strong style={{ fontSize: 16 }}>{item.label}</Text>
-                          <Tag color={tagColor}>{item.status}</Tag>
+                          <Tag color="green">Activo</Tag>
                         </div>
-                        <Text type="secondary">Acceso: {item.status === 'Activo' ? 'Habilitado' : item.status === 'Expirado' ? 'Expirado' : 'Restringido'}</Text>
+                        <Text type="secondary">Acceso: Habilitado</Text>
                         <Text type="secondary">Expira: {item.expiresDisplay}</Text>
                       </ModuleMeta>
                       <ModuleActions>
                         <Button
                           block
-                          type={item.tone === 'success' ? 'primary' : 'default'}
+                          type="primary"
                           icon={<EyeOutlined />}
                           onClick={() => {
                             setSelectedModule({ key: item.module, label: item.label });
                             setViewPinModalVisible(true);
                           }}
-                          disabled={item.status !== 'Activo'}
                         >
-                          {item.status === 'Activo' ? 'Ver PIN' : 'No disponible'}
+                          Ver PIN
                         </Button>
-                     
                       </ModuleActions>
                     </ModuleCard>
                   );
@@ -721,7 +737,7 @@ export const PersonalPinManagement = () => {
           hasPin: pinStatus?.hasPin,
           pinModules: pinStatus?.modules || [],
         }}
-        availableModules={AVAILABLE_MODULES}
+        availableModules={activeAvailableModules}
       />
 
       <PinDetailsModal

@@ -19,6 +19,11 @@ export const useInitializeBillingSettings = () => {
             billingMode: 'direct',
             invoiceType: 'template1',
             authorizationFlowEnabled: false,
+            enabledAuthorizationModules: {
+                invoices: true,
+                accountsReceivable: true,
+                cashRegister: true
+            },
             stockAlertsEnabled: false,
             stockLowThreshold: 20,
             stockCriticalThreshold: 10,

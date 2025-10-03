@@ -25,6 +25,7 @@ import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import WarningPill from './components/WarningPill/WarningPill';
 import { downloadQuotationPdf } from '../../../../../firebase/quotation/downloadQuotationPDF';
 import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
+import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules';
 import { PinAuthorizationModal } from '../../../modals/PinAuthorizationModal/PinAuthorizationModal';
 
 const resolveAuthorizerName = (authorizer) => (
@@ -53,7 +54,7 @@ const InvoiceSummary = () => {
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(false);
   const discount = getTotalDiscount(subTotal, discountPercent);
   const { billing } = useSelector(SelectSettingCart);
-  const authorizationFlowEnabled = Boolean(billing?.authorizationFlowEnabled);
+  const { shouldUsePinForModule, isInvoicesModuleEnabled } = useAuthorizationModules();
 
   // Nuevos selectores para descuentos individuales
   const productsWithIndividualDiscounts = useSelector(selectProductsWithIndividualDiscounts);
@@ -64,7 +65,8 @@ const InvoiceSummary = () => {
   const insuranceEnabled = useInsuranceEnabled();
   const { shouldDisableButton: insuranceFormIncomplete } = useInsuranceFormComplete();
   const isCashier = user?.role === 'cashier';
-  const shouldRequirePinForDiscount = authorizationFlowEnabled && isCashier;
+  // Solo requiere PIN si el módulo de facturación está activo y es cajero
+  const shouldRequirePinForDiscount = shouldUsePinForModule('invoices') && isCashier;
   const [isDiscountAuthorized, setIsDiscountAuthorized] = useState(!shouldRequirePinForDiscount);
   const [discountAuthorizer, setDiscountAuthorizer] = useState(null);
 

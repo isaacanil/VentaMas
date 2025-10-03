@@ -7,7 +7,9 @@ import { Header } from './components/Header/Header'
 import { Body } from './components/Body/Body'
 import { Footer } from './components/Footer/Footer'
 import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
+import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
 import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
+import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules'
 import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { useNavigate } from 'react-router-dom'
 import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
@@ -20,9 +22,12 @@ export const CashRegisterClosure = () => {
   const navigate = useNavigate()
 
   const [closingDate, setClosingDate] = useState(DateTime.now())
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   const actualUser = useSelector(selectUser)
   const cashCount = useSelector(selectCashCount)
+  const { shouldUsePinForModule } = useAuthorizationModules()
+  const usePinAuth = shouldUsePinForModule('accountsReceivable')
 
   const cashCountIsOpen = cashCount?.state === 'open';
   const cashCountIsClosed = cashCount?.state === 'closed';
@@ -80,6 +85,12 @@ export const CashRegisterClosure = () => {
     description: 'Autoriza el cierre del cuadre de caja con tu PIN o contraseña.',
   })
 
+  // Handler para autorización con contraseña clásica
+  const handlePasswordAuth = async (user) => {
+    setShowPasswordModal(false)
+    await handleAuthorizationSuccess(user)
+  }
+
   const handleOpenAuthorizationModal = () => {
     if ((cashCount.opening.employee.id !== actualUser.uid) && actualUser.role !== "admin") {
       notification.error({
@@ -88,7 +99,12 @@ export const CashRegisterClosure = () => {
       });
       return
     }
-    showPinModal();
+    
+    if (usePinAuth) {
+      showPinModal()
+    } else {
+      setShowPasswordModal(true)
+    }
   };
 
   const cashCountActual = useFbGetCashCount(cashCount?.id)
@@ -103,7 +119,16 @@ export const CashRegisterClosure = () => {
           onCancel={handleCancel}
         />
       </Container>
-      <PinAuthorizationModal {...pinModalProps} />
+      {usePinAuth ? (
+        <PinAuthorizationModal {...pinModalProps} />
+      ) : (
+        <PeerReviewAuthorization
+          isOpen={showPasswordModal}
+          setIsOpen={setShowPasswordModal}
+          onValidate={handlePasswordAuth}
+          description="Autoriza el cierre del cuadre de caja con tu contraseña."
+        />
+      )}
     </Backdrop>
   )
 }

@@ -10,11 +10,13 @@ import { useAppNavigation } from '../../../../../hooks/useAppNavigation'
 import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
 import { toggleTheme } from '../../../../../features/theme/themeSlice'
 import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu'
+import { selectUser } from '../../../../../features/auth/userSlice'
 
 export const VentaMenuToolbar = ({ side = 'left' }) => {
     const navigation = useAppNavigation();
     const dispatch = useDispatch()
     const location = useLocation()
+    const user = useSelector(selectUser)
     const ImageHidden = useSelector(selectImageHidden)
     const viewRowModeRef = useSelector(selectIsRow)
     const categoryGrouped = useSelector(selectCategoryGrouped)
@@ -78,11 +80,13 @@ export const VentaMenuToolbar = ({ side = 'left' }) => {
                                 icon={FullScreen ? <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpand} />}
                                 onClick={() => handleFullScreenFN()}
                             />
-                            <ButtonIconMenu
-                                icon={icons.operationModes.setting}
-                                onClick={handleSettings}
-                                tooltipDescription={'Configuración'}
-                            />
+                            {user?.role !== 'cashier' && (
+                                <ButtonIconMenu
+                                    icon={icons.operationModes.setting}
+                                    onClick={handleSettings}
+                                    tooltipDescription={'Configuración'}
+                                />
+                            )}
                             {/* <DropdownMenu
                                 title={icons.operationModes.setting}
                                 options={options}

@@ -6,13 +6,14 @@ import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { icons } from "../../../constants/icons/icons"
 import { useDialog } from "../../../Context/Dialog/DialogContext"
-import { useDispatch } from "react-redux"
-import { logout } from "../../../features/auth/userSlice"
+import { useDispatch, useSelector } from "react-redux"
+import { logout, selectUser } from "../../../features/auth/userSlice"
 import { fbSignOut } from "../../../firebase/Auth/fbAuthV2/fbSignOut"
 
 export const MenuWebsite = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const user = useSelector(selectUser)
     const { dialog, onClose, setDialogConfirm } = useDialog();
     const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM
     const handleSetting = () => navigate(GENERAL_CONFIG_BUSINESS)
@@ -48,11 +49,13 @@ export const MenuWebsite = () => {
                     width={'icon32'}
                     onClick={logoutOfApp}
                 />
-                <Button
-                    width={'icon32'}
-                    title={icons.operationModes.setting}
-                    onClick={handleSetting}
-                />
+                {user?.role !== 'cashier' && (
+                    <Button
+                        width={'icon32'}
+                        title={icons.operationModes.setting}
+                        onClick={handleSetting}
+                    />
+                )}
             </UserSection>
         </Container>
     )

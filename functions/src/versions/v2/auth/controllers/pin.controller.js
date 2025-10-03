@@ -1,383 +1,166 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { logger } from 'firebase-functions';
-import crypto from 'node:crypto';
-import { db, Timestamp, FieldValue } from '../../../core/config/firebase.js';
+import { db, Timestamp, FieldValue } from '../../../../core/config/firebase.js';
 import { compare as bcryptCompare } from 'bcryptjs';
 
-const EXPIRATION_HOURS = 24;
-const ADMIN_CAN_GENERATE_ROLES = new Set(['admin', 'owner', 'dev']);
-const SELF_CAN_GENERATE_ROLES = new Set(['admin', 'owner', 'dev']);
-const ALLOWED_MODULES = new Set(['invoices', 'accountsReceivable']);
+import {
+  ADMIN_CAN_GENERATE_ROLES,
+  SELF_CAN_GENERATE_ROLES,
+  PIN_ROTATION_SCHEDULE,
+  PIN_ROTATION_TIMEZONE,
+  SYSTEM_ACTOR,
+} from '../pin/pin.constants.js';
+import { generatePinValue, encryptPin, decryptPin } from '../pin/pin.crypto.js';
+import {
+  normalizeModules,
+  toIsoString,
+  calcExpiration,
+  summarizeModules,
+  buildLegacyStatus,
+  formatStatusResponse,
+} from '../pin/pin.status.js';
+import { loadUserDoc, resolveActorContext, ensureBusinessMatch } from '../pin/pin.users.js';
+import { extractUserData } from '../pin/pin.utils.js';
+import { logPinAction } from '../pin/pin.audit.js';
+import { handleError } from '../pin/pin.errors.js';
 
-let cachedEncryptionKey = null;
-
-const ensureEncryptionKey = () => {
-  if (cachedEncryptionKey) return cachedEncryptionKey;
-  const rawKey = process.env.PIN_ENCRYPTION_KEY || '';
-  if (!rawKey) {
-    throw new HttpsError(
-      'failed-precondition',
-      'PIN_ENCRYPTION_KEY is not configured. Set it as a base64-encoded 32-byte value.'
-    );
-  }
-  try {
-    const key = Buffer.from(rawKey, 'base64');
-    if (key.length !== 32) {
-      throw new HttpsError(
-        'failed-precondition',
-        'PIN_ENCRYPTION_KEY must decode to 32 bytes (AES-256 key).'
-      );
-    }
-    cachedEncryptionKey = key;
-    return cachedEncryptionKey;
-  } catch (error) {
-    if (error instanceof HttpsError) throw error;
-    throw new HttpsError('failed-precondition', 'Invalid PIN_ENCRYPTION_KEY configuration.');
-  }
-};
-
-const generatePinValue = () => {
-  const value = crypto.randomInt(0, 1_000_000);
-  return value.toString().padStart(6, '0');
-};
-
-const encryptPin = (pin) => {
-  const key = ensureEncryptionKey();
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-  const ciphertext = Buffer.concat([cipher.update(pin, 'utf8'), cipher.final()]);
-  const authTag = cipher.getAuthTag();
-
-  return {
-    cipherText: ciphertext.toString('base64'),
-    iv: iv.toString('base64'),
-    authTag: authTag.toString('base64'),
-    algorithm: 'aes-256-gcm',
-    version: 2,
-  };
-};
-
-const decryptPin = (encryptedRecord) => {
-  const key = ensureEncryptionKey();
-  try {
-    const decipher = crypto.createDecipheriv(
-      encryptedRecord.algorithm || 'aes-256-gcm',
-      key,
-      Buffer.from(encryptedRecord.iv, 'base64')
-    );
-    decipher.setAuthTag(Buffer.from(encryptedRecord.authTag, 'base64'));
-    const decrypted = Buffer.concat([
-      decipher.update(Buffer.from(encryptedRecord.cipherText, 'base64')),
-      decipher.final(),
-    ]);
-    return decrypted.toString('utf8');
-  } catch (error) {
-    logger.error('[pinAuth] Failed to decrypt PIN', { error });
-    throw new HttpsError('internal', 'No se pudo validar el PIN cifrado.');
-  }
-};
-
-const normalizeModules = (modules) => {
-  if (!Array.isArray(modules)) return [];
-  const unique = new Set(
-    modules
-      .map((m) => (typeof m === 'string' ? m.trim() : ''))
-      .filter((m) => m && ALLOWED_MODULES.has(m))
-  );
-  return Array.from(unique);
-};
-
-const toIsoString = (value) => {
-  if (!value) return null;
-  try {
-    if (value instanceof Timestamp) {
-      return value.toDate().toISOString();
-    }
-    if (value?.toDate) {
-      return value.toDate().toISOString();
-    }
-    if (value instanceof Date) {
-      return value.toISOString();
-    }
-    return new Date(value).toISOString();
-  } catch (error) {
-    return null;
-  }
-};
-
-const calcExpiration = (originTimestamp = Timestamp.now()) => {
-  const base = originTimestamp instanceof Timestamp ? originTimestamp : Timestamp.now();
-  const expiresMs = base.toMillis() + EXPIRATION_HOURS * 60 * 60 * 1000;
-  return Timestamp.fromMillis(expiresMs);
-};
-
-const loadUserDoc = async (uid) => {
-  if (!uid) return null;
-  const ref = db.collection('users').doc(uid);
-  const snap = await ref.get();
-  if (!snap.exists) return null;
-  return snap;
-};
-
-const extractUserData = (snap) => {
-  const raw = snap?.data?.() || {};
-  return {
-    user: raw.user || {},
-    authorizationPins: raw.authorizationPins || null,
-    legacyPin: raw.authorizationPin || null,
-  };
-};
-
-const resolveActorContext = async (req) => {
-  const actorPayload = req.data?.actor || req.data?.currentUser || req.data?.user || null;
-  const candidateIds = [
-    req.auth?.uid,
-    actorPayload?.uid,
-    actorPayload?.id,
-    req.data?.actorUid,
-    req.data?.uid,
-  ].filter((value) => typeof value === 'string' && value.trim().length > 0);
-
-  const actorUid = candidateIds[0];
-
-  if (!actorUid) {
-    throw new HttpsError('unauthenticated', 'Debes iniciar sesión para realizar esta operación.');
-  }
-
-  const actorSnap = await loadUserDoc(actorUid);
-  if (!actorSnap) {
-    throw new HttpsError('permission-denied', 'No se encontró tu usuario.');
-  }
-
-  const { user: actorUser } = extractUserData(actorSnap) || {};
-  if (!actorUser) {
-    throw new HttpsError('permission-denied', 'Perfil de usuario inválido.');
-  }
-
-  const expectedBusinessId =
-    actorPayload?.businessID ||
-    req.data?.businessId ||
-    req.data?.businessID ||
-    null;
-
-  if (expectedBusinessId && actorUser.businessID && actorUser.businessID !== expectedBusinessId) {
-    throw new HttpsError('permission-denied', 'El negocio indicado no coincide con tu sesión.');
-  }
-
-  if (!actorUser.businessID) {
-    throw new HttpsError('permission-denied', 'Tu usuario no tiene un negocio asignado.');
-  }
-
-  if (actorUser.active === false) {
-    throw new HttpsError('permission-denied', 'Tu usuario está inactivo.');
-  }
-
-  return {
-    actorUid,
-    actorUser,
-    actorSnap,
-    actorPayload,
-  };
-};
-
-const ensureBusinessMatch = (actor, target) => {
-  const actorBusiness = actor?.businessID;
-  const targetBusiness = target?.businessID;
-  if (!actorBusiness || !targetBusiness || actorBusiness !== targetBusiness) {
-    throw new HttpsError('permission-denied', 'No tienes permisos para operar sobre este usuario.');
-  }
-  return actorBusiness;
-};
-
-const buildModuleStatus = (moduleKey, payload, nowMillis) => {
-  if (!payload) return null;
-  const expiresAtMillis = payload.expiresAt?.toMillis?.() ?? payload.expiresAt ?? 0;
-  const isExpired = expiresAtMillis > 0 && expiresAtMillis < nowMillis;
-  const isActive = Boolean(payload.isActive) && !isExpired;
-  const status = isActive ? 'active' : isExpired ? 'expired' : 'inactive';
-
-  return {
-    module: moduleKey,
-    status,
-    isActive,
-    isExpired,
-    createdAt: toIsoString(payload.createdAt),
-    updatedAt: toIsoString(payload.updatedAt),
-    expiresAt: toIsoString(payload.expiresAt),
-    deactivatedAt: toIsoString(payload.deactivatedAt),
-    lastGeneratedAt: toIsoString(payload.lastGeneratedAt || payload.createdAt),
-    createdBy: payload.createdBy || null,
-    lastGeneratedBy: payload.lastGeneratedBy || null,
-    schema: 'v2',
-  };
-};
-
-const buildLegacyStatus = (legacyPin, nowMillis) => {
-  if (!legacyPin?.pin) return null;
-  const modules = Array.isArray(legacyPin.modules) && legacyPin.modules.length
-    ? legacyPin.modules
-    : ['invoices'];
-  const expiresAtMillis = legacyPin.expiresAt?.toMillis?.() ?? legacyPin.expiresAt ?? 0;
-  const isExpired = expiresAtMillis > 0 && expiresAtMillis < nowMillis;
-  const isActive = Boolean(legacyPin.isActive) && !isExpired;
-  const status = isActive ? 'active' : isExpired ? 'expired' : 'inactive';
-
-  const moduleStatuses = modules.reduce((acc, module) => {
-    acc[module] = {
-      module,
-      status,
-      isActive,
-      isExpired,
-      createdAt: toIsoString(legacyPin.createdAt),
-      updatedAt: toIsoString(legacyPin.updatedAt || legacyPin.createdAt),
-      expiresAt: toIsoString(legacyPin.expiresAt),
-      deactivatedAt: toIsoString(legacyPin.deactivatedAt),
-      schema: 'legacy',
-      createdBy: legacyPin.createdBy || null,
-      lastGeneratedBy: legacyPin.createdBy || null,
-    };
-    return acc;
-  }, {});
-
-  return {
-    moduleDetails: moduleStatuses,
-    summary: {
-      schema: 'legacy',
-      hasPin: true,
-      isActive,
-      isExpired,
-      modules,
-      activeModules: isActive ? modules : [],
-      createdAt: toIsoString(legacyPin.createdAt),
-      expiresAt: toIsoString(legacyPin.expiresAt),
-      createdBy: legacyPin.createdBy || null,
-      updatedAt: toIsoString(legacyPin.updatedAt || legacyPin.createdAt),
+export const autoRotateModulePins = onSchedule(
+  {
+    schedule: PIN_ROTATION_SCHEDULE,
+    timeZone: PIN_ROTATION_TIMEZONE,
+    retryConfig: {
+      retryCount: 3,
     },
-  };
-};
+  },
+  async () => {
+    try {
+      const snapshot = await db
+        .collection('users')
+        .where('authorizationPins.version', '==', 2)
+        .get();
 
-const summarizeModules = (modulesMap) => {
-  const nowMillis = Date.now();
-  const entries = Object.entries(modulesMap || {});
-  if (!entries.length) {
-    return {
-      moduleDetails: {},
-      summary: {
-        schema: 'v2',
-        hasPin: false,
-        isActive: false,
-        isExpired: false,
-        modules: [],
-        activeModules: [],
-        createdAt: null,
-        expiresAt: null,
-        updatedAt: null,
-      },
-    };
-  }
-
-  const moduleDetails = {};
-  let anyActive = false;
-  let allExpired = true;
-  let earliestExpiration = null;
-  let latestCreation = null;
-
-  for (const [moduleKey, payload] of entries) {
-    const status = buildModuleStatus(moduleKey, payload, nowMillis);
-    if (!status) continue;
-    moduleDetails[moduleKey] = status;
-    if (status.isActive) anyActive = true;
-    if (!status.isExpired) allExpired = false;
-
-    if (status.expiresAt) {
-      if (!earliestExpiration || status.expiresAt < earliestExpiration) {
-        earliestExpiration = status.expiresAt;
+      if (snapshot.empty) {
+        logger.info('[pinAuth] Auto-rotation: no candidates found');
+        return;
       }
-    }
-    if (status.createdAt) {
-      if (!latestCreation || status.createdAt > latestCreation) {
-        latestCreation = status.createdAt;
+
+      logger.info('[pinAuth] Auto-rotation: processing users', { candidates: snapshot.size });
+
+      for (const docSnap of snapshot.docs) {
+        try {
+          const { user: targetUser, authorizationPins, legacyPin } = extractUserData(docSnap);
+          const modulesPayload = authorizationPins?.modules;
+          const businessID = targetUser?.businessID || null;
+
+          const now = Timestamp.now();
+          const nowMillis = now.toMillis();
+          const newExpiresAt = calcExpiration(now);
+          const modulesRotated = [];
+
+          if (modulesPayload && typeof modulesPayload === 'object') {
+            const updatedModules = { ...modulesPayload };
+
+            for (const [moduleKey, payload] of Object.entries(modulesPayload)) {
+              if (!payload) continue;
+
+              const expiresAtMillis = payload.expiresAt?.toMillis?.() ?? payload.expiresAt ?? 0;
+              const isExpired = expiresAtMillis > 0 && expiresAtMillis <= nowMillis;
+              const isActive = payload.status !== 'inactive' && payload.isActive !== false;
+
+              if (!isActive && !isExpired) {
+                continue;
+              }
+
+              const pinValue = generatePinValue();
+              const encrypted = encryptPin(pinValue);
+
+              updatedModules[moduleKey] = {
+                ...encrypted,
+                module: moduleKey,
+                isActive: true,
+                status: 'active',
+                createdAt: now,
+                updatedAt: now,
+                lastGeneratedAt: now,
+                expiresAt: newExpiresAt,
+                createdBy: SYSTEM_ACTOR,
+                lastGeneratedBy: SYSTEM_ACTOR,
+              };
+
+              modulesRotated.push(moduleKey);
+            }
+
+            if (modulesRotated.length) {
+              await docSnap.ref.set(
+                {
+                  authorizationPins: {
+                    ...authorizationPins,
+                    modules: updatedModules,
+                    updatedAt: now,
+                    lastGeneratedAt: now,
+                    lastGeneratedBy: SYSTEM_ACTOR,
+                    expiresAt: newExpiresAt,
+                  },
+                  authorizationPin: FieldValue.delete(),
+                },
+                { merge: true }
+              );
+
+              await logPinAction({
+                businessID,
+                actor: SYSTEM_ACTOR,
+                targetUserId: docSnap.id,
+                targetUser,
+                modules: modulesRotated,
+                action: 'auto_rotate',
+                reason: 'scheduled_rotation',
+              });
+            }
+          }
+
+          if (!modulesRotated.length && legacyPin?.pin) {
+            const legacyExpiresAtMillis = legacyPin.expiresAt?.toMillis?.() ?? legacyPin.expiresAt ?? 0;
+            const legacyExpired = legacyExpiresAtMillis > 0 && legacyExpiresAtMillis <= nowMillis;
+
+            if (legacyPin.isActive && legacyExpired) {
+              await docSnap.ref.set(
+                {
+                  authorizationPin: {
+                    ...legacyPin,
+                    isActive: false,
+                    deactivatedAt: now,
+                    updatedAt: now,
+                  },
+                },
+                { merge: true }
+              );
+
+              await logPinAction({
+                businessID,
+                actor: SYSTEM_ACTOR,
+                targetUserId: docSnap.id,
+                targetUser,
+                action: 'legacy_auto_deactivate',
+                reason: 'scheduled_rotation',
+              });
+            }
+          }
+        } catch (userError) {
+          logger.error('[pinAuth] Auto-rotation: failed for user', {
+            userId: docSnap.id,
+            error: userError,
+          });
+        }
       }
+
+      logger.info('[pinAuth] Auto-rotation: completed successfully');
+    } catch (error) {
+      logger.error('[pinAuth] Auto-rotation: job failed', { error });
+      throw error;
     }
   }
-
-  const modulesList = Object.keys(moduleDetails);
-  const activeModules = modulesList.filter((m) => moduleDetails[m].isActive);
-
-  return {
-    moduleDetails,
-    summary: {
-      schema: 'v2',
-      hasPin: modulesList.length > 0,
-      isActive: anyActive,
-      isExpired: modulesList.length > 0 ? allExpired : false,
-      modules: modulesList,
-      activeModules,
-      createdAt: latestCreation,
-      expiresAt: earliestExpiration,
-      updatedAt: latestCreation,
-    },
-  };
-};
-
-const formatStatusResponse = (moduleStatus, createdBy) => {
-  if (!moduleStatus) {
-    return {
-      hasPin: false,
-      isActive: false,
-      isExpired: false,
-      createdAt: null,
-      expiresAt: null,
-      modules: [],
-      activeModules: [],
-      moduleDetails: {},
-      schema: 'v2',
-      createdBy: createdBy || null,
-      updatedAt: null,
-    };
-  }
-
-  const { moduleDetails, summary } = moduleStatus;
-  return {
-    hasPin: summary.hasPin,
-    isActive: summary.isActive,
-    isExpired: summary.isExpired,
-    createdAt: summary.createdAt,
-    expiresAt: summary.expiresAt,
-    modules: summary.modules,
-    activeModules: summary.activeModules,
-    moduleDetails,
-    schema: summary.schema,
-    createdBy: summary.createdBy || createdBy || null,
-    updatedAt: summary.updatedAt,
-  };
-};
-
-const logPinAction = async ({ businessID, actor, targetUserId, targetUser, action, reason, module, modules }) => {
-  if (!businessID) return;
-  try {
-    const logsRef = db.collection('businesses').doc(businessID).collection('pinAuthLogs');
-    await logsRef.add({
-      action,
-      reason: reason || null,
-      module: module || null,
-      modules: modules || null,
-      targetUserId: targetUserId || null,
-      targetUserName: targetUser?.displayName || targetUser?.name || null,
-      performedBy: actor,
-      timestamp: Timestamp.now(),
-      businessID,
-    });
-  } catch (error) {
-    logger.error('[pinAuth] Failed to write audit log', { error });
-  }
-};
-
-const handleError = (error, fallbackMessage = 'Error procesando la solicitud de PIN') => {
-  if (error instanceof HttpsError) throw error;
-  logger.error('[pinAuth] Unhandled error', { error });
-  throw new HttpsError('internal', fallbackMessage);
-};
+);
 
 export const generateModulePins = onCall(async (req) => {
   try {

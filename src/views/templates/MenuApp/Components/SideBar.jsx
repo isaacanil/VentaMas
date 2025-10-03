@@ -17,6 +17,7 @@ import { MenuLink } from './MenuLink'
 import { UserSection } from '../UserSection'
 import { WebName } from '../../system/WebName/WebName'
 import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu'
+import { userAccess } from '../../../../hooks/abilities/useAbilities'
 
 const SIDEBAR_VARIANTS = {
     open: {
@@ -97,12 +98,15 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
     const navigate = useNavigate()
     const user = useSelector(selectUser)
     const groupedLinks = useMenuFiltering()
+    const { abilities } = userAccess()
+    const canAccessGeneralConfig = abilities.can('manage', 'Business') || abilities.can('manage', 'business-settings')
     
     const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM
 
     const handleGoToSetting = useCallback(() => {
+        if (!canAccessGeneralConfig) return
         navigate(GENERAL_CONFIG_BUSINESS)
-    }, [navigate, GENERAL_CONFIG_BUSINESS])
+    }, [canAccessGeneralConfig, navigate, GENERAL_CONFIG_BUSINESS])
 
     const handleOpenNotifications = useCallback(() => {
         dispatch(openNotificationCenter('taxReceipt'))
@@ -127,11 +131,13 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
                             onClick={handleOpenNotifications}
                             aria-label="Open notifications"
                         />
-                        <ButtonIconMenu
-                            icon={icons.operationModes.setting}
-                            onClick={handleGoToSetting}
-                            aria-label="Open settings"
-                        />
+                        {canAccessGeneralConfig && (
+                            <ButtonIconMenu
+                                icon={icons.operationModes.setting}
+                                onClick={handleGoToSetting}
+                                aria-label="Open settings"
+                            />
+                        )}
                     </ActionButtons>
                 </Header>
                 <UserSection user={user} />
@@ -238,4 +244,3 @@ const LogoContainer = styled.div`
     height: 2em;
     width: 2.4rem;
 `
-
