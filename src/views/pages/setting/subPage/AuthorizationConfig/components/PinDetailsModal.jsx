@@ -1,5 +1,5 @@
 import { Modal, Typography, Button } from 'antd';
-import { SafetyOutlined, CopyOutlined, PrinterOutlined } from '@ant-design/icons';
+import { SafetyOutlined, CopyOutlined, PrinterOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -8,8 +8,8 @@ const { Title, Text } = Typography;
 const ModalBody = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 8px 0 4px;
+  gap: 18px;
+  padding: 4px 0 0;
 `;
 
 const Header = styled.div`
@@ -17,214 +17,153 @@ const Header = styled.div`
 `;
 
 const IconBadge = styled.div`
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
-  margin: 0 auto 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  margin: 0 auto 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #52c41a 0%, #13c2c2 100%);
+  background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
   color: #fff;
-  font-size: 32px;
+  font-size: 28px;
 `;
 
 const Subtitle = styled(Text)`
   color: #8c8c8c !important;
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
 `;
 
 const PinCard = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 16px;
-  background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
-  border-radius: 20px;
-  padding: 32px 24px;
-  position: relative;
-  overflow: hidden;
-  color: #fff;
-  box-shadow: 0 12px 32px rgba(20, 30, 48, 0.25);
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: -40%;
-    right: -30%;
-    width: 260px;
-    height: 260px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 50%;
-    filter: blur(0);
-  }
-`;
-
-const PinLabel = styled(Text)`
-  font-size: 13px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  opacity: 0.7;
-  color: #fff !important;
-  z-index: 1;
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px 20px 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.08);
 `;
 
 const ModulePins = styled.div`
   display: grid;
-  gap: 18px;
+  gap: 12px;
   width: 100%;
-  z-index: 1;
 `;
 
 const ModulePinRow = styled.div`
-  display: grid;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: inset 0 0 0 1px rgba(24, 144, 255, 0.08);
+`;
+
+const ModuleHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
 `;
 
 const ModuleLabel = styled.span`
-  font-size: 12px;
-  letter-spacing: 0.18em;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.75;
+  color: #1f1f1f;
 `;
 
 const PinNumber = styled.div`
-  font-size: 46px;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: 8px;
+  letter-spacing: 6px;
   font-family: 'Roboto Mono', 'Courier New', monospace;
-  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  padding: 6px 0;
+  color: #141414;
+`;
+
+const PinPlaceholder = styled.div`
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+  text-align: center;
+  padding: 6px 0;
+  opacity: 0.35;
+  color: #141414;
 `;
 
 const ModuleMeta = styled.span`
   font-size: 12px;
-  opacity: 0.75;
+  color: #595959;
+  text-align: center;
+  display: block;
 `;
 
-const PinHint = styled.span`
-  font-size: 13px;
-  opacity: 0.8;
-  z-index: 1;
-`;
-
-const PinActions = styled.div`
+const ModuleActions = styled.div`
   display: flex;
-  gap: 12px;
-  z-index: 1;
+  gap: 6px;
+  justify-content: flex-end;
 `;
 
-const CopyButton = styled(Button)`
+const ModuleButton = styled(Button)`
   && {
-    background: rgba(255, 255, 255, 0.18);
-    border: none;
-    color: #fff;
-    padding: 0 18px;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    color: #262626;
+    font-size: 12px;
+    height: 30px;
+    padding: 0 12px;
 
     &:hover,
     &:focus {
-      background: rgba(255, 255, 255, 0.28);
-      color: #fff;
+      background: #e6f7ff;
+      border-color: #91d5ff;
+      color: #0050b3;
+    }
+
+    &:disabled {
+      background: #f5f5f5;
+      border-color: #d9d9d9;
+      color: rgba(0, 0, 0, 0.25);
     }
   }
 `;
 
 const PrintButton = styled(Button)`
   && {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #1890ff;
+    border: none;
     color: #fff;
-    padding: 0 18px;
+    padding: 0 16px;
+    height: 36px;
 
     &:hover,
     &:focus {
-      background: rgba(255, 255, 255, 0.18);
-      border-color: transparent;
+      background: #40a9ff;
       color: #fff;
     }
   }
 `;
 
-const Section = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const SectionTitle = styled(Text)`
-  font-size: 16px;
-  font-weight: 600;
-  color: #434343 !important;
-`;
-
-const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  background: #fafafa;
-  border-radius: 16px;
-  padding: 20px 24px;
-  border: 1px solid #f0f0f0;
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const InfoLabel = styled.span`
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #8c8c8c;
-`;
-
-const InfoValue = styled.span`
-  font-size: 16px;
-  color: #262626;
-  font-weight: 500;
-`;
-
-const ModulesList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const ModulePill = styled.span`
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: #e6f7ff;
-  color: #096dd9;
-  font-size: 13px;
-  font-weight: 500;
-`;
-
-const NoteCard = styled.div`
-  background: linear-gradient(120deg, #fff7e6 0%, #ffe7ba 100%);
-  border-radius: 16px;
-  padding: 20px 24px;
-  border: 1px solid #ffd591;
-  color: #ad6800;
-`;
-
-const NoteList = styled.ul`
-  margin: 12px 0 0;
-  padding-left: 18px;
-  color: inherit;
-`;
 
 const ActionBar = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 4px;
 `;
 
 export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
-  const [copied, setCopied] = useState(false);
+  const [visiblePins, setVisiblePins] = useState({});
+  const [copiedModules, setCopiedModules] = useState({});
 
   const moduleNames = useMemo(() => ({
     invoices: 'Facturación',
@@ -242,18 +181,20 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
     }));
   }, [pinData?.pins, moduleNames]);
 
-  const hasPin = pinEntries.some((entry) => entry.pin);
+  const togglePinVisibility = (moduleKey) => {
+    setVisiblePins(prev => ({
+      ...prev,
+      [moduleKey]: !prev[moduleKey]
+    }));
+  };
 
-  const handleCopy = () => {
-    if (!hasPin) return;
-    const clipboardText = pinEntries
-      .filter((entry) => entry.pin)
-      .map((entry) => `${entry.moduleName}: ${entry.pin}`)
-      .join('\n');
-    if (!clipboardText) return;
-    navigator.clipboard.writeText(clipboardText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyModule = (moduleKey, pin) => {
+    if (!pin) return;
+    navigator.clipboard.writeText(pin);
+    setCopiedModules(prev => ({ ...prev, [moduleKey]: true }));
+    setTimeout(() => {
+      setCopiedModules(prev => ({ ...prev, [moduleKey]: false }));
+    }, 2000);
   };
 
   const handlePrint = () => {
@@ -377,45 +318,12 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
     }, 250);
   };
 
-  const modulesContent = useMemo(() => {
-    if (!pinEntries.length) {
-      return <InfoValue>-</InfoValue>;
-    }
-
-    return (
-      <ModulesList>
-        {pinEntries.map((entry) => (
-          <ModulePill key={entry.module}>{entry.moduleName}</ModulePill>
-        ))}
-      </ModulesList>
-    );
-  }, [pinEntries]);
-
-  const createdAtDisplay = useMemo(() => {
-    if (pinData?.metadata?.generatedAt instanceof Date) {
-      return pinData.metadata.generatedAt.toLocaleString();
-    }
-    const firstWithTimestamp = pinEntries.find((entry) => entry.createdAt);
-    return firstWithTimestamp?.createdAt ? firstWithTimestamp.createdAt.toLocaleString() : new Date().toLocaleString();
-  }, [pinData?.metadata?.generatedAt, pinEntries]);
-
-  const expiresAtDisplay = useMemo(() => {
-    if (pinData?.metadata?.expiresAt instanceof Date) {
-      return pinData.metadata.expiresAt.toLocaleString();
-    }
-    const activeExpires = pinEntries
-      .map((entry) => entry.expiresAt)
-      .filter(Boolean)
-      .sort((a, b) => a.getTime() - b.getTime());
-    return activeExpires.length ? activeExpires[0].toLocaleString() : '-';
-  }, [pinData?.metadata?.expiresAt, pinEntries]);
-
   return (
     <Modal
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={640}
+      width={560}
       centered
       destroyOnClose
     >
@@ -424,69 +332,49 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
           <IconBadge>
             <SafetyOutlined />
           </IconBadge>
-          <Title level={3}>PIN generado exitosamente</Title>
-          <Subtitle>Guárdalo en un lugar seguro. Sólo se mostrará esta vez.</Subtitle>
+          <Title level={3}>PINs generados exitosamente</Title>
+          <Subtitle>Guárdalos en un lugar seguro.</Subtitle>
         </Header>
 
         <PinCard>
-          <PinLabel>PIN de autorización</PinLabel>
           <ModulePins>
             {pinEntries.map((entry) => (
               <ModulePinRow key={entry.module}>
-                <ModuleLabel>{entry.moduleName}</ModuleLabel>
-                <PinNumber>{entry.pin || '------'}</PinNumber>
+                <ModuleHeader>
+                  <ModuleLabel>{entry.moduleName}</ModuleLabel>
+                  <ModuleActions>
+                    <ModuleButton 
+                      icon={visiblePins[entry.module] ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                      onClick={() => togglePinVisibility(entry.module)}
+                      size="small"
+                    >
+                      {visiblePins[entry.module] ? 'Ocultar' : 'Ver PIN'}
+                    </ModuleButton>
+                    <ModuleButton 
+                      icon={<CopyOutlined />}
+                      onClick={() => handleCopyModule(entry.module, entry.pin)}
+                      disabled={!entry.pin}
+                      size="small"
+                    >
+                      {copiedModules[entry.module] ? 'Copiado' : 'Copiar'}
+                    </ModuleButton>
+                  </ModuleActions>
+                </ModuleHeader>
+                {visiblePins[entry.module] ? (
+                  <PinNumber>{entry.pin || '------'}</PinNumber>
+                ) : (
+                  <PinPlaceholder>••••••</PinPlaceholder>
+                )}
                 <ModuleMeta>
                   Expira: {entry.expiresAt ? entry.expiresAt.toLocaleString() : 'Sin expiración'}
                 </ModuleMeta>
               </ModulePinRow>
             ))}
           </ModulePins>
-          <PinActions>
-            <CopyButton icon={<CopyOutlined />} onClick={handleCopy} disabled={!hasPin}>
-              {copied ? 'Copiado' : 'Copiar PIN'}
-            </CopyButton>
-            <PrintButton icon={<PrinterOutlined />} onClick={handlePrint}>
-              Imprimir
-            </PrintButton>
-          </PinActions>
-          <PinHint>Nadie más verá este código. Compártelo sólo con personas autorizadas.</PinHint>
+          <PrintButton icon={<PrinterOutlined />} onClick={handlePrint} block>
+            Imprimir Todos
+          </PrintButton>
         </PinCard>
-
-        <Section>
-          <SectionTitle>Detalles de la autorización</SectionTitle>
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>Usuario</InfoLabel>
-              <InfoValue>{user?.displayName || '-'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Nombre de usuario</InfoLabel>
-              <InfoValue>{user?.name || '-'}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Módulos habilitados</InfoLabel>
-              {modulesContent}
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Creado</InfoLabel>
-              <InfoValue>{createdAtDisplay}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>Expira</InfoLabel>
-              <InfoValue>{expiresAtDisplay}</InfoValue>
-            </InfoItem>
-          </InfoGrid>
-        </Section>
-
-        <NoteCard>
-          <strong>Buenas prácticas</strong>
-          <NoteList>
-            <li>Ingresa tu usuario y este PIN cuando se solicite autorización adicional.</li>
-            <li>El PIN sólo funciona en los módulos seleccionados para esta solicitud.</li>
-            <li>Caduca automáticamente al llegar la fecha de expiración indicada.</li>
-            <li>No compartas este código por chats o correos inseguros.</li>
-          </NoteList>
-        </NoteCard>
 
         <ActionBar>
           <Button onClick={onClose}>Cerrar</Button>

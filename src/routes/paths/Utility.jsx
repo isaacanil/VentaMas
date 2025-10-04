@@ -1,7 +1,5 @@
+import { Utility } from "../../views/pages/Utility/Utility";
 import ROUTES_NAME from "../routesName";
-import { lazyImport } from "../lazyImport";
-
-const Utility = lazyImport(() => import("../../views/pages/Utility/Utility"), "Utility");
 
 const {
     UTILITY,

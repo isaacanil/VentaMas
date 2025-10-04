@@ -149,7 +149,7 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
       const pinSecrets = await fbViewUserPins(user, user.uid);
       
       if (!pinSecrets?.pins || pinSecrets.pins.length === 0) {
-        message.error('No tienes un PIN configurado');
+        message.error('No tienes PINs configurados');
         return;
       }
 
@@ -216,13 +216,13 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
           Verificación de Identidad
         </Title>
         <Text type="secondary">
-          Por seguridad, ingresa tu contraseña para ver tu PIN
+          Por seguridad, ingresa tu contraseña para ver el PIN
         </Text>
       </div>
 
       <Alert
         message="Seguridad"
-        description="Tu PIN es confidencial. Solo se mostrará después de verificar tu identidad con tu contraseña."
+        description="El PIN es confidencial. Solo se mostrará después de verificar tu identidad con tu contraseña."
         type="info"
         showIcon
       />
@@ -259,7 +259,7 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
 
       <div>
         <Text strong style={{ fontSize: 16, display: 'block', marginBottom: 12 }}>
-          Tu PIN
+          PIN del Módulo
         </Text>
         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
           Haz clic en el botón para revelar tu PIN. Se ocultará automáticamente después de 30 segundos.

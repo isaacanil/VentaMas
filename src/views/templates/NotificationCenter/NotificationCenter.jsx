@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import NotificationWidgets from './components/NotificationWidgets';
+import ModulesNavigator from './components/ModulesNavigator';
 import { selectNotificationCenter, closeNotificationCenter } from '../../../features/notification/notificationCenterSlice';
 import { useFiscalReceiptsAlerts } from '../../../hooks/useFiscalReceiptsAlerts';
 import useScrollHeader from '../../../hooks/useScrollHeader';
@@ -131,7 +132,7 @@ const NotificationCenter = () => {
         </Header>
 
         <TabsContainer ref={scrollContainerRef}>
-          <NotificationWidgets data={notificationData} />
+          <ModulesNavigator fiscalReceiptsData={fiscalReceiptsData} />
         </TabsContainer>
       </Container>
     </>

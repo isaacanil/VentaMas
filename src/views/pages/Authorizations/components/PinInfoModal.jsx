@@ -153,13 +153,13 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
         Ingresa tu <Highlight>usuario</Highlight> y tu <Highlight>PIN de 6 dígitos</Highlight> cada vez que el sistema lo solicite.
       </>
     ),
-    'Mantén tu PIN en privado: cada usuario tiene su propio código temporal.',
-    'Tu PIN expira de forma periódica para mantener la seguridad de tus operaciones.',
+    'Mantén los PINs en privado: cada usuario tiene sus propios códigos temporales.',
+    'Los PINs expiran de forma periódica para mantener la seguridad de las operaciones.',
     'Si lo prefieres, siempre puedes usar tu contraseña completa para autorizarte.',
   ];
 
   const securityTips = [
-    'Guardamos tu PIN encriptado; nadie puede verlo en texto plano.',
+    'Guardamos los PINs encriptados; nadie puede verlos en texto plano.',
     'El código caduca automáticamente para reducir riesgos.',
     canSelfGenerate
       ? 'Cuando venza, puedes regenerarlo tú mismo sin depender de otro usuario.'
@@ -196,9 +196,9 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
           <IconBadge>
             <SafetyOutlined />
           </IconBadge>
-          <HeaderTitle level={4}>Conoce cómo funciona tu PIN</HeaderTitle>
+          <HeaderTitle level={4}>Conoce cómo funcionan los PINs</HeaderTitle>
           <Subtitle>
-            Usa tu código temporal para autorizar operaciones de manera ágil, manteniendo la seguridad de tu cuenta.
+            Usa códigos temporales para autorizar operaciones de manera ágil, manteniendo la seguridad de tu cuenta.
           </Subtitle>
         </Header>
 
@@ -209,7 +209,7 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
             </SectionIcon>
             <SectionHeaderTexts>
               <SectionLabel>Uso diario</SectionLabel>
-              <SectionHeading level={5}>Cómo aprovechar tu PIN</SectionHeading>
+              <SectionHeading level={5}>Cómo aprovechar los PINs</SectionHeading>
             </SectionHeaderTexts>
           </SectionHeader>
           <TipsList>{renderTips(usageTips, 'usage')}</TipsList>

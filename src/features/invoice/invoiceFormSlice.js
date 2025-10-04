@@ -123,7 +123,8 @@ const initialState = {
     modal: {
         isOpen: false,
         mode: "add",
-    }
+    },
+    authorizationRequest: null,
 };
 
 const invoiceFormSlice = createSlice({
@@ -131,7 +132,7 @@ const invoiceFormSlice = createSlice({
     initialState,
     reducers: {
         addInvoice(state, action) {
-            const { mode, invoice } = action.payload;
+            const { mode, invoice, authorizationRequest = null } = action.payload;
 
             // Asegúrate de que todos los productos tengan los cálculos correctos
             const products = invoice.products.map(product => {
@@ -171,6 +172,7 @@ const invoiceFormSlice = createSlice({
 
             state.modal.mode = mode || "add";
             state.modal.isOpen = true;
+            state.authorizationRequest = authorizationRequest;
 
 
 
@@ -327,6 +329,7 @@ const invoiceFormSlice = createSlice({
 
             const clear = action?.payload?.clear || true;
             state.modal.isOpen = false;
+            state.authorizationRequest = null;
 
             if (clear) {
                 state.invoice = invoice;
@@ -337,6 +340,7 @@ const invoiceFormSlice = createSlice({
             state.invoice = invoice;
             state.modal.mode = "add";
             state.modal.isOpen = false;
+            state.authorizationRequest = null;
 
         },
     },

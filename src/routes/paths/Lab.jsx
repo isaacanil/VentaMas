@@ -1,6 +1,4 @@
-import { lazyImport } from "../lazyImport";
-
-const Lab = lazyImport(() => import("../../Lab"), "Lab");
+import { Lab } from "../../Lab";
 
 const routes = [
     {

@@ -243,35 +243,20 @@ export const GeneratePinModal = ({
             <KeyOutlined />
           </IconBadge>
           <Title level={4} style={{ margin: 0 }}>
-            {isRegenerating ? 'Regenerar PIN de autorización' : 'Generar PIN de autorización'}
+            {isRegenerating ? 'Regenerar PINs' : 'Generar PINs'}
           </Title>
           <Subtitle>
-            Consulta los módulos habilitados y comparte el nuevo código sólo con el usuario indicado.
+            Se generará un PIN de 6 dígitos para cada módulo activo.
           </Subtitle>
         </Header>
 
         <UserCard>
           <UserLabel>Usuario</UserLabel>
           <UserName>{user?.displayName || 'Sin nombre'}</UserName>
-          <Username>Usuario interno: {user?.name || 'N/A'}</Username>
         </UserCard>
 
-        {isRegenerating && (
-          <AlertCard>
-            <AlertIcon>
-              <ExclamationCircleOutlined />
-            </AlertIcon>
-            <AlertContent>
-              <AlertTitle>Regenerar PIN</AlertTitle>
-              <AlertDescription>
-                El PIN actual será reemplazado. El usuario deberá usar el nuevo PIN para autorizarse.
-              </AlertDescription>
-            </AlertContent>
-          </AlertCard>
-        )}
-
         <Section>
-          <SectionTitle>Módulos disponibles para este PIN</SectionTitle>
+          <SectionTitle>Módulos disponibles</SectionTitle>
           {activeModules.length ? (
             <ModulesGrid>
               {activeModules.map((module) => (
@@ -284,26 +269,14 @@ export const GeneratePinModal = ({
               ))}
             </ModulesGrid>
           ) : (
-            <Text type="secondary">No hay módulos habilitados para este PIN.</Text>
+            <Text type="secondary">No hay módulos habilitados.</Text>
           )}
         </Section>
-
-        <SecurityCard>
-          <SecurityIcon>
-            <InfoCircleOutlined />
-          </SecurityIcon>
-          <SecurityContent>
-            <SecurityTitle>Información de seguridad</SecurityTitle>
-            <SecurityDescription>
-              El PIN generado tendrá 6 dígitos numéricos, es personal e intransferible y expirará automáticamente en 24 horas.
-            </SecurityDescription>
-          </SecurityContent>
-        </SecurityCard>
 
         <ActionBar>
           <Button onClick={onCancel}>Cancelar</Button>
           <Button type="primary" onClick={handleConfirm} disabled={!canConfirm}>
-            {isRegenerating ? 'Regenerar PIN' : 'Generar PIN'}
+            {isRegenerating ? 'Regenerar PINs' : 'Generar PINs'}
           </Button>
         </ActionBar>
       </ModalContent>

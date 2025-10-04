@@ -1,10 +1,8 @@
+import { CashReconciliation } from "../../views/pages/CashReconciliation/CashReconciliation";
+import { CashRegisterClosure } from "../../views/pages/CashReconciliation/page/CashRegisterClosure/CashRegisterClosure";
+import { CashRegisterOpening } from "../../views/pages/CashReconciliation/page/CashRegisterOpening/CashRegisterOpening";
+import { CashupInvoicesOverview } from "../../views/pages/CashReconciliation/page/CashupInvoicesOverview/CashupInvoicesOverview";
 import ROUTES_NAME from "../routesName";
-import { lazyImport } from "../lazyImport";
-
-const CashReconciliation = lazyImport(() => import("../../views/pages/CashReconciliation/CashReconciliation"), "CashReconciliation");
-const CashRegisterClosure = lazyImport(() => import("../../views/pages/CashReconciliation/page/CashRegisterClosure/CashRegisterClosure"), "CashRegisterClosure");
-const CashRegisterOpening = lazyImport(() => import("../../views/pages/CashReconciliation/page/CashRegisterOpening/CashRegisterOpening"), "CashRegisterOpening");
-const CashupInvoicesOverview = lazyImport(() => import("../../views/pages/CashReconciliation/page/CashupInvoicesOverview/CashupInvoicesOverview"), "CashupInvoicesOverview");
 
 const {CASH_RECONCILIATION_CLOSURE, CASH_RECONCILIATION_LIST, CASH_RECONCILIATION_OPENING, CASH_RECONCILIATION_INVOICE_OVERVIEW} = ROUTES_NAME.CASH_RECONCILIATION_TERM;
 

@@ -50,13 +50,12 @@ export const InvoicesPage = () => {
 
   return (
     <Fragment>
-      <Container
-      
-      >
+      <Container>
         <MenuApp
           displayName='Facturas'
           data={invoices}
           searchData={searchTerm}
+          showNotificationButton={true}
           setSearchData={setSearchTerm}
           onReportSaleOpen={onReportSaleOpen}
         />

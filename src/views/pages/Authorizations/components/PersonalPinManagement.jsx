@@ -76,14 +76,6 @@ const SummaryCard = styled.div`
  
 `;
 
-const toneTokens = {
-  success: { bg: '#f6ffed', border: '#b7eb8f', text: '#237804' },
-  warning: { bg: '#fff7e6', border: '#ffc069', text: '#ad6800' },
-  info: { bg: '#f0f5ff', border: '#adc6ff', text: '#2f54eb' },
-  danger: { bg: '#fff1f0', border: '#ffa39e', text: '#a8071a' },
-  muted: { bg: '#fafafa', border: '#d9d9d9', text: '#595959' },
-};
-
 const heroTokens = {
   success: {
     bg: 'linear-gradient(135deg, #d1f5d3 0%, #63d471 100%)',
@@ -142,51 +134,11 @@ const HeroPanel = styled.div`
   }
 `;
 
-const HeroIcon = styled.div`
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
-  font-size: 26px;
-  background: ${({ $tone }) => heroTokens[$tone]?.iconBg || heroTokens.muted.iconBg};
-  color: inherit;
-`;
-
-const HeroTitle = styled(Title)`
-  && {
-    margin: 0;
-    color: inherit;
-  }
-`;
-
-const HeroDescription = styled(Paragraph)`
-  && {
-    margin: 0;
-    color: inherit;
-    opacity: 0.85;
-  }
-`;
-
 const HeroLabel = styled.span`
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   opacity: 0.75;
-`;
-
-const HeroStats = styled.div`
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-`;
-
-const HeroStatValue = styled.span`
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.2;
-  word-break: break-word;
-  white-space: pre-line;
 `;
 
 const HeroHeader = styled.div`
@@ -223,36 +175,10 @@ const HeroBadge = styled.span`
   opacity: 0.95;
 `;
 
-const ModulesList = styled.ul`
-  margin: 0;
-  padding-left: 18px;
-  list-style: disc;
-  
-  li {
-    margin: 4px 0;
-    line-height: 1.4;
-  }
-`;
-
 const DetailsColumn = styled.div`
   display: grid;
   gap: 24px;
   align-content: start;
-`;
-
-const MetaGrid = styled.div`
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-`;
-
-const MetaItem = styled.div`
-  border-radius: 12px;
-  padding: 16px;
-  background: ${({ $tone }) => (toneTokens[$tone]?.bg || '#fafafa')};
-  border: 1px solid ${({ $tone }) => (toneTokens[$tone]?.border || '#f0f0f0')};
-  display: grid;
-  gap: 6px;
 `;
 
 const MetaLabel = styled.span`
@@ -400,8 +326,8 @@ export const PersonalPinManagement = () => {
 
   const handleDeactivatePin = () => {
     Modal.confirm({
-      title: '¿Desactivar tu PIN?',
-      content: '¿Está seguro de desactivar tu PIN? Deberás regenerarlo para volver a usarlo.',
+      title: '¿Desactivar PIN?',
+      content: '¿Está seguro de desactivar el PIN? Deberás regenerarlo para volver a usarlo.',
       okText: 'Desactivar',
       okType: 'danger',
       cancelText: 'Cancelar',
@@ -427,8 +353,8 @@ export const PersonalPinManagement = () => {
         icon: <LockOutlined />,
         title: 'Sin PIN configurado',
         description: canSelfGenerate
-          ? 'Aún no tienes un PIN activo. Genera uno para autorizar operaciones de forma rápida.'
-          : 'Solicita a un administrador que genere tu PIN para poder autorizar operaciones.',
+          ? 'Aún no tienes PINs activos. Genera uno para autorizar operaciones de forma rápida.'
+          : 'Solicita a un administrador que genere PINs para poder autorizar operaciones.',
         tone: 'info',
       };
     }
@@ -437,8 +363,8 @@ export const PersonalPinManagement = () => {
         icon: <ClockCircleOutlined />,
         title: 'PIN expirado',
         description: canSelfGenerate
-          ? 'Tu PIN venció. Genera uno nuevo para seguir autorizando operaciones.'
-          : 'Tu PIN venció. Solicita a un administrador que lo regenere para continuar.',
+          ? 'El PIN venció. Genera uno nuevo para seguir autorizando operaciones.'
+          : 'El PIN venció. Solicita a un administrador que lo regenere para continuar.',
         tone: 'warning',
       };
     }
@@ -446,7 +372,7 @@ export const PersonalPinManagement = () => {
       return {
         icon: <SafetyOutlined />,
         title: 'PIN activo',
-        description: 'Tu PIN está listo para usarse en los módulos habilitados.',
+        description: 'Los PINs están listos para usarse en los módulos habilitados.',
         tone: 'success',
       };
     }
@@ -454,8 +380,8 @@ export const PersonalPinManagement = () => {
       icon: <LockOutlined />,
       title: 'PIN inactivo',
       description: canSelfGenerate
-        ? 'Tu PIN está inactivo. Puedes generarlo de nuevo cuando lo necesites.'
-        : 'Tu PIN está inactivo. Solicita apoyo al administrador para reactivarlo.',
+        ? 'El PIN está inactivo. Puedes generarlo de nuevo cuando lo necesites.'
+        : 'El PIN está inactivo. Solicita apoyo al administrador para reactivarlo.',
       tone: 'danger',
     };
   };
@@ -499,23 +425,6 @@ export const PersonalPinManagement = () => {
   // Preparar badges para el header
   const heroBadges = [];
   
-  // Badge de expiración
-  if (pinStatus?.expiresAt) {
-    heroBadges.push({
-      key: 'expiration',
-      label: `Expira: ${timeRemainingText} (${expiresDisplay})`,
-      tone: timeRemaining?.tone || statusDisplay.tone,
-    });
-  }
-  
-  if (createdDisplay !== '-') {
-    heroBadges.push({
-      key: 'lastRegeneration',
-      label: `Regenerado: ${createdDisplay}`,
-      tone: statusDisplay.tone,
-    });
-  }
-  
   heroBadges.push({
     key: 'role',
     label: `Rol: ${roleDisplay}`,
@@ -557,7 +466,7 @@ export const PersonalPinManagement = () => {
           <KeyOutlined />
         </HeaderIcon>
         <Title level={3} style={{ marginBottom: 0 }}>
-          Mi PIN de Autorización
+          Mis PINs de Autorización
         </Title>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button
@@ -579,12 +488,10 @@ export const PersonalPinManagement = () => {
       <SummaryCard bordered={false}>
         <HeroPanel $tone={statusDisplay.tone}>
           <HeroHeader>
-            <HeroIcon $tone={statusDisplay.tone}>
-              {statusDisplay.icon}
-            </HeroIcon>
+          
 
             <HeroHeaderLeft>
-              <HeroTitle level={4}>{statusTitle}</HeroTitle>
+              {/* <HeroTitle level={4}>{statusTitle}</HeroTitle> */}
               <HeroBadges>
                 {heroBadges.map(({ key, label, tone }) => (
                   <HeroBadge key={key} $tone={tone}>
@@ -597,7 +504,7 @@ export const PersonalPinManagement = () => {
                 <HeroLabel style={{ opacity: 0.6 }}>No hay módulos activos en el sistema</HeroLabel>
               )}
               {modulesList.length === 0 && activeAvailableModules.length > 0 && (
-                <HeroLabel style={{ opacity: 0.6 }}>Sin módulos habilitados en tu PIN</HeroLabel>
+                <HeroLabel style={{ opacity: 0.6 }}>Sin módulos habilitados</HeroLabel>
               )}
             </HeroHeaderLeft>
           </HeroHeader>
@@ -616,7 +523,7 @@ export const PersonalPinManagement = () => {
                     loading={loading}
                     disabled={!authorizationFlowEnabled || activeAvailableModules.length === 0}
                   >
-                    {pinStatus?.hasPin ? 'Regenerar mi PIN' : 'Generar mi PIN'}
+                    {pinStatus?.hasPin ? 'Regenerar PIN' : 'Generar PIN'}
                   </Button>
                   {pinStatus?.hasPin && pinStatus?.isActive && (
                     <Button
@@ -646,7 +553,7 @@ export const PersonalPinManagement = () => {
                 showIcon
                 type="warning"
                 message="Sin Módulos Activos"
-                description="No puedes generar un PIN porque no hay módulos de autorización activos. Un administrador debe activar al menos un módulo desde Configuración."
+                description="No puedes generar PINs porque no hay módulos de autorización activos. Un administrador debe activar al menos un módulo desde Configuración."
               />
             )}
 
@@ -654,11 +561,11 @@ export const PersonalPinManagement = () => {
               <HelperAlert
                 showIcon
                 type="info"
-                message="No tienes un PIN configurado"
+                message="No tienes PINs configurados"
                 description={
                   canSelfGenerate
-                    ? 'Genera tu PIN para autorizar operaciones sin depender de otro usuario.'
-                    : 'Envía una solicitud a tu administrador para que configure tu PIN.'
+                    ? 'Genera PINs para autorizar operaciones sin depender de otro usuario.'
+                    : 'Envía una solicitud a tu administrador para que configure los PINs.'
                 }
               />
             )}
@@ -667,7 +574,7 @@ export const PersonalPinManagement = () => {
               <HelperAlert
                 showIcon
                 type="warning"
-                message={pinStatus.isExpired ? 'Tu PIN ha expirado' : 'Tu PIN está inactivo'}
+                message={pinStatus.isExpired ? 'El PIN ha expirado' : 'El PIN está inactivo'}
                 description={
                   canSelfGenerate
                     ? 'Genera un nuevo PIN para volver a autorizar operaciones.'

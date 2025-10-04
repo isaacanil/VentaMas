@@ -22,8 +22,8 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
 
       message.success(
         hasCurrentPin
-          ? 'Solicitud enviada. Un administrador regenerará tu PIN pronto.'
-          : 'Solicitud enviada. Un administrador configurará tu PIN pronto.'
+          ? 'Solicitud enviada. Un administrador regenerará el PIN pronto.'
+          : 'Solicitud enviada. Un administrador configurará el PIN pronto.'
       );
 
       form.resetFields();
@@ -53,8 +53,8 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
       <div style={{ marginBottom: 16 }}>
         <p>
           {hasCurrentPin
-            ? 'Tu PIN actual ha expirado o está inactivo. Solicita a un administrador que genere uno nuevo.'
-            : 'No tienes un PIN configurado. Solicita a un administrador que genere uno para ti.'}
+            ? 'El PIN actual ha expirado o está inactivo. Solicita a un administrador que genere uno nuevo.'
+            : 'No tienes PINs configurados. Solicita a un administrador que genere uno para ti.'}
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
             rows={3}
             placeholder={
               hasCurrentPin
-                ? 'Ej: Mi PIN expiró y lo necesito para aprobar operaciones'
+                ? 'Ej: El PIN expiró y lo necesito para aprobar operaciones'
                 : 'Ej: Necesito un PIN para autorizar operaciones en mi turno'
             }
             maxLength={200}
@@ -77,7 +77,7 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
       </Form>
 
       <p style={{ fontSize: '0.9em', color: '#8c8c8c', marginTop: 16 }}>
-        Un administrador recibirá tu solicitud y configurará tu PIN. Te notificaremos cuando esté listo.
+        Un administrador recibirá tu solicitud y configurará el PIN. Te notificaremos cuando esté listo.
       </p>
     </Modal>
   );

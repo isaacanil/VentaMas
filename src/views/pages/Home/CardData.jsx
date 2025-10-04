@@ -1,7 +1,7 @@
 import ROUTES_NAME from '../../../routes/routesName';
 import { icons } from '../../../constants/icons/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTicket, faWarehouse } from '@fortawesome/free-solid-svg-icons';
+import { faTicket, faWarehouse, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { filterMenuItemsByAccess, hasDeveloperAccess } from '../../../utils/menuAccess';
 import { developerShortcuts } from '../../../constants/devtools/developerShortcuts.jsx';
 
@@ -24,12 +24,19 @@ const menuItems = createMenuItems([
   { title: 'Clientes', icon: icons.users.client, route: ROUTES_NAME.CONTACT_TERM.CLIENTS, category: 'Contactos' },
   { title: 'Proveedores', icon: icons.users.provider, route: ROUTES_NAME.CONTACT_TERM.SUPPLIERS, category: 'Contactos' },
   { title: 'Cuadre de Caja', icon: icons.menu.unSelected.cashReconciliation, route: ROUTES_NAME.CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST, category: 'Finanzas' },
+  { title: 'Autorizaciones', icon: <FontAwesomeIcon icon={faShieldAlt} />, route: ROUTES_NAME.AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST, category: 'Administración', roles: ['admin', 'owner', 'dev', 'manager'] },
 ]);
 
 const developerItems = createMenuItems(developerShortcuts);
 
-export const getMenuCardData = () => {
-  return filterMenuItemsByAccess(menuItems);
+export const getMenuCardData = (user) => {
+  return filterMenuItemsByAccess(menuItems).filter(item => {
+    // Si el item tiene roles definidos, verificar que el usuario tenga uno de esos roles
+    if (item.roles && Array.isArray(item.roles)) {
+      return item.roles.includes(user?.role);
+    }
+    return true;
+  });
 };
 
 export const getDeveloperFeaturesData = () => {

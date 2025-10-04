@@ -1,22 +1,22 @@
-import RoutesName from "../routesName"
-import { ROUTE_STATUS } from "../routeMeta";
-import { lazyImport } from "../lazyImport";
+import { AllUsersControl } from "../../views/controlPanel/AllUsersControl/AllUsersControl";
+import ChangeLogCreate from "../../views/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate";
+import { BusinessControl } from "../../views/controlPanel/CreateBusinessControl/BusinessControl";
+import { CreateBusiness } from "../../views/controlPanel/CreateBusinessControl/CreateBusiness";
+import { Dev } from "../../views/controlPanel/Dev/Dev";
+import BusinessCreator from "../../views/pages/setting/subPage/BusinessEditor/BusinessCreator";
+import { Doc } from "../../views/templates/system/AdvancedTable/Doc";
+import AppConfig from "../../views/controlPanel/AppConfig/AppConfig";
+import LoginImageConfig from "../../views/controlPanel/AppConfig/LoginImageConfig";
 
-const AllUsersControl = lazyImport(() => import("../../views/controlPanel/AllUsersControl/AllUsersControl"), "AllUsersControl");
-const ChangeLogCreate = lazyImport(() => import("../../views/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate"));
-const BusinessControl = lazyImport(() => import("../../views/controlPanel/CreateBusinessControl/BusinessControl"), "BusinessControl");
-// const CreateBusiness = lazyImport(() => import("../../views/controlPanel/CreateBusinessControl/CreateBusiness"), "CreateBusiness");
-// const Dev = lazyImport(() => import("../../views/controlPanel/Dev/Dev"), "Dev");
-const BusinessCreator = lazyImport(() => import("../../views/pages/setting/subPage/BusinessEditor/BusinessCreator"));
-const Doc = lazyImport(() => import("../../views/templates/system/AdvancedTable/Doc"), "Doc");
-const AppConfig = lazyImport(() => import("../../views/controlPanel/AppConfig/AppConfig"));
-const LoginImageConfig = lazyImport(() => import("../../views/controlPanel/AppConfig/LoginImageConfig"));
-const Menu = lazyImport(() => import("../../views/templates/system/Menu/Menu"));
-const FiscalReceiptsAudit = lazyImport(() => import("../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit"), "FiscalReceiptsAudit");
-const TestPlayground = lazyImport(() => import("../../views/pages/DevTools/TestPlayground"));
-const BSeriesInvoices = lazyImport(() => import("../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices"));
-const InventoryMigrationTool = lazyImport(() => import("../../views/pages/DevTools/InventoryMigrationTool"));
-const SyncDiagnostics = lazyImport(() => import("../../views/pages/DevTools/SyncDiagnostics"));
+import Menu from "../../views/templates/system/Menu/Menu";
+import { FiscalReceiptsAudit } from "../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit";
+import TestPlayground from "../../views/pages/DevTools/TestPlayground";
+import BSeriesInvoices from "../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices";
+
+import RoutesName from "../routesName"
+import InventoryMigrationTool from "../../views/pages/DevTools/InventoryMigrationTool";
+import SyncDiagnostics from "../../views/pages/DevTools/SyncDiagnostics";
+import { ROUTE_STATUS } from "../routeMeta";
 const { CREATE_BUSINESS, BUSINESSES, CHANGELOG_CREATE, CHANGELOG_MANAGE, ALL_USERS, APP_CONFIG, INVENTORY_MIGRATION, SYNC_DIAGNOSTICS } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES

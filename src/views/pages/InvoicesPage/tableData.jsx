@@ -29,10 +29,16 @@ const EditButton = ({ value }) => {
   const cartSettings = useSelector(SelectSettingCart)
   const invoiceType = cartSettings.billing.invoiceType;
 
-  const proceedToEdit = useCallback(() => {
+  const proceedToEdit = useCallback((authorization) => {
     const preparedInvoice = prepareInvoiceForEdit(data);
     if (preparedInvoice) {
-      dispatch(addInvoice({ invoice: preparedInvoice }));
+      dispatch(
+        addInvoice({
+          invoice: preparedInvoice,
+          mode: 'edit',
+          authorizationRequest: authorization || null,
+        })
+      );
     }
   }, [data, dispatch]);
 

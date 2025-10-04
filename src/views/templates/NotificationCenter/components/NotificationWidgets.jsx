@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import FiscalReceiptsNotificationWidget from './FiscalReceiptsNotificationWidget';
 import AccountsReceivableWidget from './AccountsReceivableWidget/AccountsReceivableWidget';
+import AuthorizationsWidget from './AuthorizationsWidget';
 
 /**
  * Componente que muestra todos los widgets de notificaciones
@@ -26,6 +27,23 @@ const NotificationWidgets = ({ data }) => {
         },
       }}
     >
+      <WidgetItem
+        variants={{
+          hidden: { y: 20, opacity: 0 },
+          visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+              type: 'tween',
+              ease: [0.25, 0.46, 0.45, 0.94],
+              duration: 0.4,
+            },
+          },
+        }}
+      >
+        <AuthorizationsWidget />
+      </WidgetItem>
+
       <WidgetItem
         variants={{
           hidden: { y: 20, opacity: 0 },

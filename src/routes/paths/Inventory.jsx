@@ -1,20 +1,18 @@
+import { Inventory } from "../../views/pages/Inventario/pages/ItemsManager/Inventario";
+import { CategoryAdmin } from "../../views/pages/Category/CategoryAdmin";
+import { MultimediaManager } from "../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager";
+import { InventoryControl } from "../../views/pages/InventoryControl/InventoryControl";
+import { InventorySummary } from "../../views/pages/InventorySummary/InventorySummary";
+import InventorySessionsList from "../../views/pages/InventorySessionsList/InventorySessionsList";
 import ROUTES_NAME from "../routesName";
 import { ROUTE_STATUS } from "../routeMeta";
-import { lazyImport } from "../lazyImport";
-
-const Inventory = lazyImport(() => import("../../views/pages/Inventario/pages/ItemsManager/Inventario"), "Inventory");
-const CategoryAdmin = lazyImport(() => import("../../views/pages/Category/CategoryAdmin"), "CategoryAdmin");
-const MultimediaManager = lazyImport(() => import("../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager"), "MultimediaManager");
-const InventoryControl = lazyImport(() => import("../../views/pages/InventoryControl/InventoryControl"), "InventoryControl");
-const InventorySummary = lazyImport(() => import("../../views/pages/InventorySummary/InventorySummary"), "InventorySummary");
-const InventorySessionsList = lazyImport(() => import("../../views/pages/InventorySessionsList/InventorySessionsList"));
-const ProductOutflow = lazyImport(() => import("../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow"), "ProductOutflow");
-// const ProductForm = lazyImport(() => import("../../views/pages/Inventario/pages/ProductForm/ProductForm"), "ProductForm");
-const Warehouse = lazyImport(() => import("../../views/pages/Inventory/components/Warehouse/Warehouse"), "Warehouse");
-const ProductView = lazyImport(() => import("../../views/component/modals/Product/ProductView"));
-const DetailView = lazyImport(() => import("../../views/pages/Inventory/components/Warehouse/components/DetailView/DetailView"));
-const ProductStockOverview = lazyImport(() => import("../../views/pages/Inventory/components/Warehouse/components/ProductStockOverview/ProductStockOverview"));
-const AllMovements = lazyImport(() => import("../../views/pages/Inventory/components/AllMovements/AllMovements"));
+import { ProductOutflow } from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
+// import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";
+import { Warehouse } from "../../views/pages/Inventory/components/Warehouse/Warehouse";
+import ProductView from "../../views/component/modals/Product/ProductView";
+import DetailView from "../../views/pages/Inventory/components/Warehouse/components/DetailView/DetailView";
+import ProductStockOverview from "../../views/pages/Inventory/components/Warehouse/components/ProductStockOverview/ProductStockOverview";
+import AllMovements from "../../views/pages/Inventory/components/AllMovements/AllMovements";
 
 const {
     INVENTORY_ITEMS,
@@ -100,3 +98,4 @@ const Routes = [
 ]
 
 export default Routes;
+

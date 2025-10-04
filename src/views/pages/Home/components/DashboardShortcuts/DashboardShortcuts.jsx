@@ -8,7 +8,7 @@ import styled from 'styled-components';
 
 export const DashboardShortcuts = () => {
     const user = useSelector(selectUser)
-    const cardData = getMenuCardData()
+    const cardData = getMenuCardData(user)
     const developer = getDeveloperFeaturesData(user)
     const { abilities } = userAccess();
     return (

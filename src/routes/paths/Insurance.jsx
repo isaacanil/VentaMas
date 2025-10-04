@@ -1,8 +1,6 @@
+import InsuranceConfig from "../../views/pages/Insurance/InsuranceConfig/InsuraceConfig";
 import { ROUTES } from '../routesName';
-import { lazyImport } from "../lazyImport";
-
-const InsuranceConfig = lazyImport(() => import("../../views/pages/Insurance/InsuranceConfig/InsuraceConfig"));
-const InsuranceConfigForm = lazyImport(() => import("../../views/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm"));
+import InsuranceConfigForm from "../../views/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm";
 
 const { INSURANCE_CONFIG, INSURANCE_CREATE } = ROUTES.INSURANCE_TERM;
 

@@ -1,19 +1,17 @@
+import { Setting } from "../../views/pages/setting/setting";
+import { TaxReceiptSetting } from "../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting";
+import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
+import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
+import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
+import BillingConfig from "../../views/component/GeneralConfig/configs/BillingConfig";
+import AuthorizationFlowConfig from "../../views/component/GeneralConfig/configs/AuthorizationFlowConfig";
+import AppInfo from "../../views/pages/setting/subPage/AppInfo/AppInfo";
+import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
+import BusinessCreator from "../../views/pages/setting/subPage/BusinessEditor/BusinessCreator";
+import EditUser from "../../views/pages/setting/subPage/Users/components/EditUser/EditUser";
+import { UserList } from "../../views/pages/setting/subPage/Users/components/UsersList/UserList";
 import ROUTES_NAME from "../routesName";
 import { getRelativePath } from "../getConfigRoute";
-import { lazyImport } from "../lazyImport";
-
-const Setting = lazyImport(() => import("../../views/pages/setting/setting"), "Setting");
-const TaxReceiptSetting = lazyImport(() => import("../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting"), "TaxReceiptSetting");
-const UserAdmin = lazyImport(() => import("../../views/pages/setting/subPage/Users/UserAdmin"), "UserAdmin");
-const SwitchBusiness = lazyImport(() => import("../../views/pages/dev/SwitchBusiness"));
-const GeneralConfig = lazyImport(() => import("../../views/component/GeneralConfig/GeneralConfig"));
-const BillingConfig = lazyImport(() => import("../../views/component/GeneralConfig/configs/BillingConfig"));
-const AuthorizationFlowConfig = lazyImport(() => import("../../views/component/GeneralConfig/configs/AuthorizationFlowConfig"));
-const AppInfo = lazyImport(() => import("../../views/pages/setting/subPage/AppInfo/AppInfo"));
-const BusinessInfo = lazyImport(() => import("../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile"));
-const BusinessCreator = lazyImport(() => import("../../views/pages/setting/subPage/BusinessEditor/BusinessCreator"));
-// const EditUser = lazyImport(() => import("../../views/pages/setting/subPage/Users/components/EditUser/EditUser"));
-const UserList = lazyImport(() => import("../../views/pages/setting/subPage/Users/components/UsersList/UserList"), "UserList");
 
 const {
     SETTINGS,

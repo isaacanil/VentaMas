@@ -4,44 +4,79 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../features/auth/userSlice';
 import { SelectSettingCart } from '../../../../features/cart/cartSlice';
-import { getActiveApprovedAuthorizationForInvoice, markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
-import { fbCashCountStatus } from '../../../../firebase/cashCount/fbCashCountStatus';
+import { getActiveApprovedAuthorizationForInvoice } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
+import { fbGetCashCountState } from '../../../../firebase/cashCount/fbCashCountStatus';
 import RequestInvoiceEditAuthorization from '../../../component/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization';
 
 const PRIVILEGED_ROLES = new Set(['admin', 'owner', 'dev', 'manager']);
-const SECONDS_IN_DAY = 86400;
+const MAX_EDIT_WINDOW_SECONDS = 48 * 60 * 60;
 
 const extractTimestampSeconds = (value) => {
   if (!value) return null;
   if (typeof value === 'number') {
-    // Si el valor es muy grande asumimos que ya está en milisegundos
     return value > 1e12 ? value / 1000 : value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) return null;
+    return parsed > 1e12 ? parsed / 1000 : parsed;
   }
   if (value instanceof Date) {
     return value.getTime() / 1000;
   }
-  if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return value.seconds;
+  if (typeof value === 'object') {
+    if (typeof value.seconds === 'number') {
+      return value.seconds;
+    }
+    if (typeof value.toMillis === 'function') {
+      return value.toMillis() / 1000;
+    }
   }
   return null;
 };
 
-const buildReasons = ({ isOlderThan24h, cashCountOpen }) => {
+const resolveInvoiceTimestamp = (invoice) => (
+  extractTimestampSeconds(invoice?.date) ??
+  extractTimestampSeconds(invoice?.createdAt) ??
+  extractTimestampSeconds(invoice?.created_at) ??
+  extractTimestampSeconds(invoice?.created)
+);
+
+const buildValidationFailures = ({ isOlderThan48h, hasCashCount, cashCountInfo }) => {
   const reasons = [];
-  if (isOlderThan24h) {
-    reasons.push('La factura tiene más de 24 horas.');
+  if (isOlderThan48h) {
+    reasons.push('La factura supera el límite de 48 horas para solicitar la edición.');
   }
-  if (cashCountOpen === false) {
-    reasons.push('El cuadre de caja relacionado no está abierto.');
+
+  if (!hasCashCount) {
+    return reasons;
   }
-  if (cashCountOpen === null) {
+
+  if (!cashCountInfo) {
+    reasons.push('No se pudo verificar el estado del cuadre de caja relacionado.');
+    return reasons;
+  }
+
+  if (!cashCountInfo.exists) {
     reasons.push('No se encontró el cuadre de caja relacionado.');
+    return reasons;
   }
-  if (!reasons.length) {
-    reasons.push('Se requiere autorización de un supervisor para editar esta factura.');
+
+  if (cashCountInfo.state && cashCountInfo.state !== 'open') {
+    if (cashCountInfo.state === 'closed') {
+      reasons.push('El cuadre de caja relacionado ya está cerrado.');
+    } else {
+      reasons.push('El cuadre de caja relacionado no está abierto.');
+    }
   }
+
   return reasons;
 };
+
+const buildRequestReasons = () => [
+  'Se requiere autorización de un supervisor para editar esta factura.',
+  'La solicitud será revisada desde la pantalla de autorizaciones.',
+];
 
 export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
   const user = useSelector(selectUser);
@@ -51,17 +86,20 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
   const [reasons, setReasons] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const seconds = useMemo(() => extractTimestampSeconds(invoice?.date), [invoice?.date]);
-  const isOlderThan24h = useMemo(() => {
-    if (!seconds) return false;
-    return seconds < (Date.now() / 1000) - SECONDS_IN_DAY;
-  }, [seconds]);
+  const invoiceSeconds = useMemo(() => resolveInvoiceTimestamp(invoice), [invoice]);
+  const isOlderThan48h = useMemo(() => {
+    if (!invoiceSeconds) return false;
+    return invoiceSeconds < (Date.now() / 1000) - MAX_EDIT_WINDOW_SECONDS;
+  }, [invoiceSeconds]);
 
-  const proceed = useCallback(() => {
-    if (typeof onAuthorized === 'function') {
-      onAuthorized();
-    }
-  }, [onAuthorized]);
+  const proceed = useCallback(
+    (authorization) => {
+      if (typeof onAuthorized === 'function') {
+        onAuthorized(authorization);
+      }
+    },
+    [onAuthorized]
+  );
 
   const handleEdit = useCallback(async () => {
     if (!invoice) return;
@@ -78,33 +116,37 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
 
     setIsProcessing(true);
     try {
-      let cashCountOpen = null;
-      if (invoice?.cashCountId && user?.businessID) {
+      const cashCountId = invoice?.cashCountId ?? invoice?.cashCountID ?? null;
+      const hasCashCount = Boolean(cashCountId);
+      let cashCountInfo = null;
+
+      if (hasCashCount && user?.businessID) {
         try {
-          cashCountOpen = await fbCashCountStatus(user, invoice.cashCountId, 'open');
+          cashCountInfo = await fbGetCashCountState(user, cashCountId);
         } catch (statusError) {
           console.warn('No se pudo verificar el estado del cuadre de caja', statusError);
-          cashCountOpen = null;
+          cashCountInfo = null;
         }
       }
 
-      if (!isOlderThan24h && cashCountOpen) {
-        proceed();
-        return;
-      }
+      const validationFailures = buildValidationFailures({
+        isOlderThan48h,
+        hasCashCount,
+        cashCountInfo,
+      });
 
       const approved = await getActiveApprovedAuthorizationForInvoice(user, invoice);
       if (approved) {
-        try {
-          await markAuthorizationUsed(user, approved.id, user);
-        } catch (markError) {
-          console.warn('No se pudo marcar la autorización como usada', markError);
-        }
-        proceed();
+        proceed(approved);
         return;
       }
 
-      setReasons(buildReasons({ isOlderThan24h, cashCountOpen }));
+      if (validationFailures.length) {
+        message.warning(`No puedes solicitar la edición de esta factura. ${validationFailures.join(' ')}`);
+        return;
+      }
+
+      setReasons(buildRequestReasons());
       setIsModalOpen(true);
     } catch (error) {
       console.error('Error validando autorización de edición de factura', error);
@@ -112,7 +154,7 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [invoice, user, proceed, isOlderThan24h, authorizationFlowEnabled]);
+  }, [invoice, user, proceed, isOlderThan48h, authorizationFlowEnabled]);
 
   useEffect(() => {
     if (!authorizationFlowEnabled && isModalOpen) {

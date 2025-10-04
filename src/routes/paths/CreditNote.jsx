@@ -1,8 +1,6 @@
 import ROUTES_NAME from "../routesName";
+import { CreditNoteList } from "../../views/pages/CreditNote";
 import { ROUTE_STATUS } from "../routeMeta";
-import { lazyImport } from "../lazyImport";
-
-const CreditNoteList = lazyImport(() => import("../../views/pages/CreditNote"), "CreditNoteList");
 
 const { CREDIT_NOTE_LIST } = ROUTES_NAME.CREDIT_NOTE_TERM;
 

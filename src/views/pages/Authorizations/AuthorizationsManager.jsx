@@ -5,7 +5,7 @@ import { selectUser } from '../../../features/auth/userSlice';
 import { useAuthorizationModules } from '../../../hooks/useAuthorizationModules';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
-import { AuthorizationRequests } from './components/AuthorizationRequests';
+import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';
 import { PersonalPinManagement } from './components/PersonalPinManagement';
 
 const Container = styled.div`
@@ -15,7 +15,7 @@ const Container = styled.div`
 `;
 
 const Content = styled.div`
-  padding: 16px;
+  padding: 0 16px;
   overflow-y: auto;
 `;
 
@@ -29,7 +29,7 @@ const StyledTabs = styled(Tabs)`
  * Pantalla unificada de gestión de autorizaciones
  * Combina:
  * - Solicitudes de autorización (facturas, cuentas por cobrar, etc.) - Solo admin/owner/dev
- * - Mi PIN personal (cada usuario ve solo su propio PIN)
+ * - Mis PINs (cada usuario gestiona sus propios PINs)
  */
 export const AuthorizationsManager = () => {
   const user = useSelector(selectUser);
@@ -58,7 +58,7 @@ export const AuthorizationsManager = () => {
     if (modulesActive) {
       items.push({
         key: 'mypin',
-        label: 'Mi PIN Personal',
+        label: 'Mis PINs',
         children: <PersonalPinManagement />,
       });
     }

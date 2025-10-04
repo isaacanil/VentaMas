@@ -1,5 +1,5 @@
 import { scan } from 'react-scan'; // import this BEFORE react
-import { Fragment, Suspense, useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 
 //importando componentes de react-router-dom
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -32,7 +32,6 @@ import { ViewportContainer } from './components/layout/ViewportContainer/Viewpor
 import DeveloperSessionHelper from './components/devtools/DeveloperSessionHelper';
 import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
 import { useHydrateTaxReceiptSettings } from './features/taxReceipt/useHydrateTaxReceiptSettings';
-import GenericLoader from './views/templates/system/loader/GenericLoader';
 
 // Componente para rastrear la navegación dentro del Router
 const NavigationTracker = () => {
@@ -101,21 +100,19 @@ function App() {
           <SessionManager />
           <SEO />
           <AnimatePresence mode="wait">
-            <Suspense fallback={<GenericLoader />}>
-              <Routes>
-                {routes.map((route, index) => (
-                  <Route key={index} path={route.path} element={route.element}>
-                    {route.children && route.children.map((childRoute, childIndex) => (
-                      <Route
-                        key={childIndex}
-                        path={childRoute?.path}
-                        element={childRoute?.element}
-                      />
-                    ))}
-                  </Route>
-                ))}
-              </Routes>
-            </Suspense>
+            <Routes>
+              {routes.map((route, index) => (
+                <Route key={index} path={route.path} element={route.element}>
+                  {route.children && route.children.map((childRoute, childIndex) => (
+                    <Route
+                      key={childIndex}
+                      path={childRoute?.path}
+                      element={childRoute?.element}
+                    />
+                  ))}
+                </Route>
+              ))}
+            </Routes>
           </AnimatePresence>
           <AnimatePresence>
             <ModalManager />

@@ -10,6 +10,7 @@ const { Form, Input, InputNumber, Button, Modal, DatePicker, Select, Row, Col } 
 const { Option } = Select;
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
+import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { InvoiceInfoExtras } from './components/InvoiceInfoExtras/InvoiceInfoExtras';
 
@@ -18,19 +19,32 @@ export const InvoiceForm = ({ }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [shouldRenderModal, setShouldRenderModal] = useState(false);
-  const { invoice, modal } = useSelector(selectInvoice)
+  const { invoice, modal, authorizationRequest } = useSelector(selectInvoice)
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
   const handleOk = async () => {
     try {
-      const values = await form.validateFields();
+      setLoading(true);
+      await form.validateFields();
       await fbUpdateInvoice(user, invoice);
+
+      if (authorizationRequest?.id) {
+        try {
+          await markAuthorizationUsed(user, authorizationRequest.id, user);
+        } catch (markError) {
+          console.warn('No se pudo marcar la autorización como usada', markError);
+          antd.message.warning('Factura actualizada, pero la autorización no pudo marcarse como usada.');
+        }
+      }
+
       dispatch(closeInvoiceForm());
       antd.message.success('Factura actualizada correctamente');
     } catch (info) {
       antd.message.error('Error al actualizar factura');
       console.error('Validate Failed or Update Failed:', info);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,6 +65,7 @@ export const InvoiceForm = ({ }) => {
     }
   }, [modal.isOpen]);
   const handleCancel = () => {
+    if (loading) return;
     dispatch(closeInvoiceForm())
   };
 
@@ -110,10 +125,10 @@ export const InvoiceForm = ({ }) => {
           </div>
         </div>,
 
-        <Button key="back" onClick={handleCancel}>
+        <Button key="back" onClick={handleCancel} disabled={loading}>
           Cancelar
         </Button>,
-        <Button key="submit" type="primary" onClick={handleOk}>
+        <Button key="submit" type="primary" onClick={handleOk} loading={loading}>
           Guardar
         </Button>,
       ]}
@@ -130,7 +145,6 @@ export const InvoiceForm = ({ }) => {
     </Modal>)
 }
   ;
-
 
 
 
