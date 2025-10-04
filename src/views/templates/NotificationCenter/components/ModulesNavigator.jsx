@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { CheckCircleOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../features/auth/userSlice';
-import AuthorizationsWidget from './AuthorizationsWidget';
-import FiscalReceiptsNotificationWidget from './FiscalReceiptsNotificationWidget';
-import AccountsReceivableWidget from './AccountsReceivableWidget/AccountsReceivableWidget';
+import AuthorizationsPanel from './panels/AuthorizationsPanel';
+import AccountsReceivablePanel from './panels/AccountsReceivablePanel';
+import FiscalReceiptsPanel from './panels/FiscalReceiptsPanel/FiscalReceiptsPanel';
 
 /**
  * Sistema de módulos con navegación por tabs
@@ -24,13 +24,13 @@ const ModulesNavigator = ({ fiscalReceiptsData }) => {
         key: 'authorizations',
         label: 'Autorizaciones',
         icon: <CheckCircleOutlined />,
-        component: <AuthorizationsWidget />,
+        component: <AuthorizationsPanel />,
       },
       {
         key: 'fiscal-receipts',
         label: 'Comprobantes Fiscales',
         icon: <FileTextOutlined />,
-        component: <FiscalReceiptsNotificationWidget data={fiscalReceiptsData} />,
+        component: <FiscalReceiptsPanel data={fiscalReceiptsData} />,
       },
     ];
 
@@ -40,7 +40,7 @@ const ModulesNavigator = ({ fiscalReceiptsData }) => {
         key: 'accounts-receivable',
         label: 'Cuentas por Cobrar',
         icon: <DollarOutlined />,
-        component: <AccountsReceivableWidget showQuickStats={false} daysThreshold={7} />,
+        component: <AccountsReceivablePanel showQuickStats={false} daysThreshold={7} />,
       });
     }
 
@@ -75,15 +75,18 @@ const ModulesNavigator = ({ fiscalReceiptsData }) => {
 const Container = styled.div`
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr;
   overflow: hidden;
+  gap: 8px;
+  min-height: 0;
 `;
 
 const ModulesBar = styled.div`
   display: flex;
-  gap: 6px;
+  gap: 4px;
   padding: 12px 16px;
+  margin: 16px 24px 0 24px;
   background: linear-gradient(to bottom, #ffffff, #f8fafc);
   border-bottom: 1px solid #e5e7eb;
   border-radius: 10px;
@@ -138,32 +141,11 @@ const ModuleLabel = styled.span`
 
 const ContentWrapper = styled.div`
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0;
-  
-  /* Scrollbar personalizado */
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-    
-    &:hover {
-      background: #94a3b8;
-    }
-  }
-
-  /* Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 24px;
+  min-height: 0;
 `;
 
 export default ModulesNavigator;

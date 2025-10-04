@@ -1,19 +1,19 @@
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import FiscalReceiptsNotificationWidget from './FiscalReceiptsNotificationWidget';
-import AccountsReceivableWidget from './AccountsReceivableWidget/AccountsReceivableWidget';
-import AuthorizationsWidget from './AuthorizationsWidget';
+import FiscalReceiptsNotificationPanel from './FiscalReceiptsNotificationPanel';
+import AccountsReceivablePanel from './AccountsReceivablePanel';
+import AuthorizationsPanel from './AuthorizationsPanel';
 
 /**
- * Componente que muestra todos los widgets de notificaciones
- * Recibe los datos de las notificaciones y renderiza cada widget
+ * Componente que muestra todos los paneles de notificaciones
+ * Recibe los datos de las notificaciones y renderiza cada panel
  */
-const NotificationWidgets = ({ data }) => {
+const NotificationPanels = ({ data }) => {
   const { fiscalReceipts, inventory, sales, system } = data;
 
   return (
-    <WidgetsContainer
+    <PanelsContainer
       initial="hidden"
       animate="visible"
       variants={{
@@ -27,7 +27,7 @@ const NotificationWidgets = ({ data }) => {
         },
       }}
     >
-      <WidgetItem
+      <PanelItem
         variants={{
           hidden: { y: 20, opacity: 0 },
           visible: {
@@ -41,10 +41,10 @@ const NotificationWidgets = ({ data }) => {
           },
         }}
       >
-        <AuthorizationsWidget />
-      </WidgetItem>
+        <AuthorizationsPanel />
+      </PanelItem>
 
-      <WidgetItem
+      <PanelItem
         variants={{
           hidden: { y: 20, opacity: 0 },
           visible: {
@@ -58,10 +58,10 @@ const NotificationWidgets = ({ data }) => {
           },
         }}
       >
-        <FiscalReceiptsNotificationWidget data={fiscalReceipts} />
-      </WidgetItem>
+        <FiscalReceiptsNotificationPanel data={fiscalReceipts} />
+      </PanelItem>
 
-      <WidgetItem
+      <PanelItem
         variants={{
           hidden: { y: 20, opacity: 0 },
           visible: {
@@ -75,13 +75,13 @@ const NotificationWidgets = ({ data }) => {
           },
         }}
       >
-        <AccountsReceivableWidget showQuickStats={false} daysThreshold={7} />
-      </WidgetItem>
-    </WidgetsContainer>
+        <AccountsReceivablePanel showQuickStats={false} daysThreshold={7} />
+      </PanelItem>
+    </PanelsContainer>
   );
 };
 
-const WidgetsContainer = styled(motion.div)`
+const PanelsContainer = styled(motion.div)`
   padding: 0;
   background: transparent;
   display: flex;
@@ -89,24 +89,8 @@ const WidgetsContainer = styled(motion.div)`
   gap: 0em;
 `;
 
-const WidgetItem = styled(motion.div)`
+const PanelItem = styled(motion.div)`
   will-change: transform, opacity;
 `;
 
-const WidgetGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  margin-top: 20px;
-  
-  /* Media query para pantallas más grandes */
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-`;
-
-export default NotificationWidgets;
+export default NotificationPanels;

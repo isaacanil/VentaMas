@@ -305,6 +305,7 @@ export const PinAuthorizationModal = ({
       onCancel={handleCancel}
       centered
       width={480}
+      zIndex={99990}
       destroyOnClose
       footer={[
         <Button key="cancel" onClick={handleCancel} disabled={loading}>

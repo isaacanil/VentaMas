@@ -832,7 +832,7 @@ File
 ./src/views/templates/MenuApp/MenuData/MenuData.jsx                                                                                         
 ./src/views/templates/MenuApp/MenuData/MenuData.jsx                                                                                         
 ./src/views/templates/MenuComponents/MenuComponents.jsx                                                                                     
-./src/views/templates/NotificationCenter/components/AccountsReceivableWidget/index.js                                                       
+./src/views/templates/NotificationCenter/components/panels/AccountsReceivablePanel/index.js                                                       
 ./src/views/templates/NotificationCenter/components/NotificationConfig.jsx                                                                  
 ./src/views/templates/NotificationCenter/test/AccountsReceivableTestPage.jsx                                                                
 ./src/views/templates/NotificationCenter/theme/notificationTheme.js                                                                         

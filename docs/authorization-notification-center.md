@@ -6,7 +6,7 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
 
 ### ✨ Características Principales
 
-1. **Widget de Autorizaciones** (`AuthorizationsWidget`)
+1. **Panel de Autorizaciones** (`AuthorizationsPanel`)
    - Vista diferenciada por rol (cajeros vs admins)
    - Actualización en tiempo real con Firebase listeners
    - Acciones de aprobar/rechazar para administradores
@@ -61,10 +61,10 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
 
 ### Nuevos Archivos
 
-1. **`AuthorizationsWidget.jsx`**
+1. **`AuthorizationsPanel.jsx`**
    ```
-   src/views/templates/NotificationCenter/components/AuthorizationsWidget/
-   ├── AuthorizationsWidget.jsx
+   src/views/templates/NotificationCenter/components/panels/AuthorizationsPanel/
+   ├── AuthorizationsPanel.jsx
    └── index.js
    ```
 
@@ -80,12 +80,12 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
    - Importado `onSnapshot` de Firestore
 
 2. **`NotificationCenter.jsx`**
-   - Integrado `ModulesNavigator` en lugar de `NotificationWidgets`
+   - Integrado `ModulesNavigator` en lugar de `NotificationPanels`
    - Mantiene la estructura y animaciones existentes
 
-3. **`NotificationWidgets.jsx`**
-   - Agregado import de `AuthorizationsWidget`
-   - Widget colocado como primero en la lista
+3. **`panels/NotificationPanels.jsx`**
+   - Agregado import de `AuthorizationsPanel`
+   - Panel colocado como primero en la lista
 
 4. **`RequestInvoiceEditAuthorization.jsx`**
    - Simplificado para cajeros (removido campo de nota)

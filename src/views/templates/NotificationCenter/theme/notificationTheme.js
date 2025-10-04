@@ -143,9 +143,9 @@ const zIndex = {
   base: 1
 };
 
-// Widgets específicos
-const widgets = {
-  // Widget de comprobantes fiscales
+// Paneles específicos
+const panels = {
+  // Panel de comprobantes fiscales
   fiscalReceipt: {
     icon: '📄',
     borderColor: baseColors.status.warning,
@@ -153,7 +153,7 @@ const widgets = {
     textColor: baseColors.status.warning
   },
   
-  // Widget de cuentas por cobrar
+  // Panel de cuentas por cobrar
   accountsReceivable: {
     icon: '📅',
     borderColor: baseColors.status.error,
@@ -169,7 +169,7 @@ const widgets = {
     }
   },
   
-  // Widget de inventario
+  // Panel de inventario
   inventory: {
     icon: '📦',
     borderColor: baseColors.status.error,
@@ -185,7 +185,7 @@ const widgets = {
     }
   },
   
-  // Widget de ventas
+  // Panel de ventas
   sales: {
     icon: '📈',
     borderColor: baseColors.status.success,
@@ -193,7 +193,7 @@ const widgets = {
     textColor: baseColors.status.success
   },
   
-  // Widget de sistema
+  // Panel de sistema
   system: {
     icon: '🔄',
     borderColor: baseColors.primary.main,
@@ -213,11 +213,11 @@ const notificationTheme = {
   shadows,
   transitions,
   zIndex,
-  widgets,
+  panels,
   
-  // Función de ayuda para obtener un tema de widget específico
-  getWidgetTheme: (widgetType) => {
-    return widgets[widgetType] || {};
+  // Función de ayuda para obtener un tema de panel específico
+  getPanelTheme: (panelType) => {
+    return panels[panelType] || {};
   }
 };
 
