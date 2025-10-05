@@ -7,6 +7,7 @@ import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
 import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';
 import { PersonalPinManagement } from './components/PersonalPinManagement';
+import { useSearchParams } from 'react-router-dom';
 
 const Container = styled.div`
   display: grid;
@@ -33,6 +34,7 @@ const StyledTabs = styled(Tabs)`
  */
 export const AuthorizationsManager = () => {
   const user = useSelector(selectUser);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const { 
     authorizationFlowEnabled, 
@@ -66,14 +68,39 @@ export const AuthorizationsManager = () => {
     return items;
   }, [canViewRequests, modulesActive, searchTerm]);
 
-  const defaultTabKey = tabs[0]?.key ?? 'mypin';
-  const [activeTab, setActiveTab] = useState(defaultTabKey);
+  const tabKeys = useMemo(() => tabs.map(({ key }) => key), [tabs]);
+  const defaultTabKey = tabKeys[0] ?? 'mypin';
+  const tabParam = searchParams.get('tab');
+  const resolvedActiveTab = useMemo(() => {
+    if (tabParam && tabKeys.includes(tabParam)) {
+      return tabParam;
+    }
+    return defaultTabKey;
+  }, [defaultTabKey, tabKeys, tabParam]);
+
+  const [activeTab, setActiveTab] = useState(resolvedActiveTab);
 
   useEffect(() => {
-    if (!tabs.some(({ key }) => key === activeTab)) {
-      setActiveTab(defaultTabKey);
+    if (resolvedActiveTab && resolvedActiveTab !== activeTab) {
+      setActiveTab(resolvedActiveTab);
     }
-  }, [activeTab, defaultTabKey, tabs]);
+  }, [resolvedActiveTab, activeTab]);
+
+  useEffect(() => {
+    if (!resolvedActiveTab) return;
+    if (tabParam !== resolvedActiveTab) {
+      const params = new URLSearchParams(searchParams);
+      params.set('tab', resolvedActiveTab);
+      setSearchParams(params, { replace: true });
+    }
+  }, [resolvedActiveTab, tabParam, searchParams, setSearchParams]);
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', key);
+    setSearchParams(params);
+  };
 
   return (
     <Container>
@@ -99,7 +126,7 @@ export const AuthorizationsManager = () => {
         ) : (
           <StyledTabs
             activeKey={activeTab}
-            onChange={setActiveTab}
+            onChange={handleTabChange}
             items={tabs}
             destroyOnHidden={false}
           />

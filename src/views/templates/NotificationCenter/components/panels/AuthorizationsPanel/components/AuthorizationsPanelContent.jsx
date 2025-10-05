@@ -9,9 +9,14 @@ const AuthorizationsPanelContent = ({
   processingId,
   onApprove,
   onReject,
+  onNavigateToRequests,
 }) => (
   <PanelContainer>
-    <AuthorizationsHeader pendingCount={pendingCount} isAdmin={isAdmin} />
+    <AuthorizationsHeader
+      pendingCount={pendingCount}
+      isAdmin={isAdmin}
+      onNavigate={onNavigateToRequests}
+    />
     <AuthorizationsList
       authorizations={authorizations}
       isAdmin={isAdmin}

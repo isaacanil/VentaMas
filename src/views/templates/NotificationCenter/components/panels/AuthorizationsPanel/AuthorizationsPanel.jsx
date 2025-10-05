@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectUser } from '../../../../../../features/auth/userSlice';
+import { useNavigate } from 'react-router-dom';
+import ROUTES_PATH from '../../../../../../routes/routesName';
+import { closeNotificationCenter } from '../../../../../../features/notification/notificationCenterSlice';
 import {
   listenToAuthorizationsByStatus,
   approveAuthorizationRequest,
@@ -43,10 +46,18 @@ const sortAuthorizations = (items) =>
 
 const AuthorizationsPanel = () => {
   const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [authorizations, setAuthorizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
+
+  const handleNavigateToRequests = useCallback(() => {
+    const targetPath = ROUTES_PATH.AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST;
+    dispatch(closeNotificationCenter());
+    navigate(`${targetPath}?tab=requests&status=pending`);
+  }, [dispatch, navigate]);
 
   const pendingCount = useMemo(
     () => authorizations.reduce((count, auth) => (auth.status === 'pending' ? count + 1 : count), 0),
@@ -143,6 +154,7 @@ const AuthorizationsPanel = () => {
         processingId={processingId}
         onApprove={handleApprove}
         onReject={handleReject}
+        onNavigateToRequests={handleNavigateToRequests}
       />
       <PinAuthorizationModal
         {...modalProps}

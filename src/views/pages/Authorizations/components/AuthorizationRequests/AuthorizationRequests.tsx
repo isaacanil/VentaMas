@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import { Button, Card, Pagination, Select, Spin } from 'antd';
 import type { SelectProps } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
@@ -18,18 +19,41 @@ interface AuthorizationRequestsProps {
   searchTerm?: string;
 }
 
-const STATUS_OPTIONS: SelectProps<StatusFilterValue>['options'] = [
-  { value: 'pending', label: 'Pendientes' },
-  { value: 'completed', label: 'Completadas' },
-  { value: 'approved', label: 'Aprobadas' },
-  { value: 'rejected', label: 'Rechazadas' },
-  { value: 'used', label: 'Usadas' },
-  { value: 'expired', label: 'Expiradas' },
-  { value: 'all', label: 'Todas' },
+const STATUS_VALUES: StatusFilterValue[] = [
+  'pending',
+  'completed',
+  'approved',
+  'rejected',
+  'used',
+  'expired',
+  'all',
 ];
+
+const STATUS_LABELS: Record<StatusFilterValue, string> = {
+  pending: 'Pendientes',
+  completed: 'Completadas',
+  approved: 'Aprobadas',
+  rejected: 'Rechazadas',
+  used: 'Usadas',
+  expired: 'Expiradas',
+  all: 'Todas',
+};
+
+const STATUS_OPTIONS: SelectProps<StatusFilterValue>['options'] = STATUS_VALUES.map((value) => ({
+  value,
+  label: STATUS_LABELS[value],
+}));
+
+const STATUS_VALUE_SET = new Set<StatusFilterValue>(STATUS_VALUES);
+const DEFAULT_STATUS: StatusFilterValue = 'pending';
 
 export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequestsProps) => {
   const user = useSelector(selectUser);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusParam = searchParams.get('status');
+  const normalizedStatusParam = statusParam && STATUS_VALUE_SET.has(statusParam as StatusFilterValue)
+    ? (statusParam as StatusFilterValue)
+    : null;
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
   const {
@@ -49,6 +73,34 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
     closeDetailModal,
     filteredRequests,
   } = useAuthorizationRequests(user, searchTerm, dateRange);
+
+  useEffect(() => {
+    if (normalizedStatusParam && normalizedStatusParam !== statusFilter) {
+      setStatusFilter(normalizedStatusParam);
+    }
+  }, [normalizedStatusParam, setStatusFilter, statusFilter]);
+
+  useEffect(() => {
+    if (!statusParam) {
+      const params = new URLSearchParams(searchParams);
+      params.set('status', DEFAULT_STATUS);
+      setSearchParams(params, { replace: true });
+      return;
+    }
+
+    if (statusParam && !normalizedStatusParam) {
+      const params = new URLSearchParams(searchParams);
+      params.set('status', DEFAULT_STATUS);
+      setSearchParams(params, { replace: true });
+    }
+  }, [normalizedStatusParam, searchParams, setSearchParams, statusParam]);
+
+  const handleStatusChange = (value: StatusFilterValue) => {
+    setStatusFilter(value);
+    const params = new URLSearchParams(searchParams);
+    params.set('status', value);
+    setSearchParams(params);
+  };
 
   const { showModal: showPinModal, modalProps } = useAuthorizationPin({
     onAuthorized: (authorizer) => {
@@ -95,7 +147,7 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
               <Select<StatusFilterValue>
                 value={statusFilter}
                 style={{ width: 200 }}
-                onChange={(value) => setStatusFilter(value)}
+                onChange={handleStatusChange}
                 options={STATUS_OPTIONS}
               />
             </FilterGroup>

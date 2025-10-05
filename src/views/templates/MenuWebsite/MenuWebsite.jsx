@@ -9,6 +9,7 @@ import { useDialog } from "../../../Context/Dialog/DialogContext"
 import { useDispatch, useSelector } from "react-redux"
 import { logout, selectUser } from "../../../features/auth/userSlice"
 import { fbSignOut } from "../../../firebase/Auth/fbAuthV2/fbSignOut"
+import { NotificationButton } from "../MenuApp/Components/NotificationButton/NotificationButton"
 
 export const MenuWebsite = () => {
     const navigate = useNavigate()
@@ -40,7 +41,10 @@ export const MenuWebsite = () => {
 
     return (
         <Container>
-            <WebName></WebName>
+            <LeftSection>
+                <WebName/>
+                <NotificationButton />
+            </LeftSection>
             <UserSection>
                 <Button
                     title={icons.operationModes.logout}
@@ -66,12 +70,21 @@ const Container = styled.div`
     color: white;
     background-color: var(--color);
     margin: 0;
-    display: grid;
+    display: flex;
     align-items: center;
-    grid-template-columns: 1fr auto;
+    justify-content: space-between;
     padding: 0 1em;
-    .UserSection{
-        
+    gap: 0.8em;
+`
+
+const LeftSection = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    min-width: 0;
+    
+    & > * {
+        min-width: 0;
     }
 `
 const UserSection = styled.div`

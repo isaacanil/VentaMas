@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Card, message, Alert, Typography, Modal, Input, Space, Tag } from 'antd';
+import { Button, Card, message, Alert, Typography, Modal, Tag, Spin } from 'antd';
 import { KeyOutlined, ReloadOutlined, ClockCircleOutlined, SafetyOutlined, LockOutlined, EyeOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../features/auth/userSlice';
@@ -23,12 +23,6 @@ const MODULE_LABELS = AVAILABLE_MODULES.reduce((acc, module) => {
   acc[module.value] = module.label;
   return acc;
 }, {});
-
-const MODULE_STATUS_COLORS = {
-  success: '#237804',
-  warning: '#ad6800',
-  danger: '#a8071a',
-};
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -188,13 +182,6 @@ const MetaLabel = styled.span`
   color: #8c8c8c;
 `;
 
-const MetaValue = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-  color: #262626;
-  word-break: break-word;
-`;
-
 const ActionsSection = styled.div`
   display: grid;
   gap: 16px;
@@ -216,17 +203,6 @@ const ActionGroup = styled.div`
 const HelperAlert = styled(Alert)`
   border-radius: 10px;
   border: none;
-`;
-
-const InfoGrid = styled.div`
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-`;
-
-const InfoCard = styled(Card)`
-  border-radius: 14px;
-  border: 1px solid #f0f0f0;
 `;
 
 const ModuleCard = styled.div`
@@ -460,7 +436,14 @@ export const PersonalPinManagement = () => {
     : [];
 
   return (
-    <PageContainer>
+    <Spin
+      spinning={loading}
+      size="large"
+      tip="Procesando..."
+      delay={250}
+      style={{ width: '100%' }}
+    >
+      <PageContainer>
       <PageHeader>
         <HeaderIcon>
           <KeyOutlined />
@@ -673,7 +656,8 @@ export const PersonalPinManagement = () => {
           moduleLabel={selectedModule.label}
         />
       )}
-    </PageContainer>
+      </PageContainer>
+    </Spin>
   );
 };
 
