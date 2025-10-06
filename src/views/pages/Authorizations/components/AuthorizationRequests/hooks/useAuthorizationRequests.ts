@@ -12,7 +12,23 @@ import type {
   AppUser,
   AuthorizationRequest,
   AuthorizationRequestListItem,
+  RequestedBy,
 } from '../types';
+
+type RecordAuthorizationApprovalPayload = {
+  businessId?: string | null;
+  module?: string;
+  action?: string;
+  description?: string;
+  requestedBy?: AppUser | RequestedBy | null;
+  authorizer: AppUser;
+  targetUser?: AppUser | RequestedBy | null;
+  target?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+const fbRecordAuthorizationApprovalTyped =
+  fbRecordAuthorizationApproval as (payload: RecordAuthorizationApprovalPayload) => Promise<void>;
 
 const DEFAULT_COLLECTION_KEY = 'authorizationRequests';
 const LEGACY_COLLECTION_KEY = 'invoiceEditAuthorizations';
@@ -144,7 +160,7 @@ export const useAuthorizationRequests = (
       setPendingApproval(null);
       const moduleForLog = resolveRequestModule(requestSnapshot);
       const requestedBySnapshot = requestSnapshot?.requestedBy || null;
-      await fbRecordAuthorizationApproval({
+      await fbRecordAuthorizationApprovalTyped({
         businessId: user?.businessID,
         module: moduleForLog,
         action: 'authorization-request-approve',
@@ -152,7 +168,7 @@ export const useAuthorizationRequests = (
           requestSnapshot?.requestNote ||
           requestSnapshot?.note ||
           'Aprobación de solicitud de autorización',
-        requestedBy: requestedBySnapshot || user || null,
+        requestedBy: requestedBySnapshot ?? user ?? null,
         authorizer,
         targetUser: requestedBySnapshot || null,
         target: {
