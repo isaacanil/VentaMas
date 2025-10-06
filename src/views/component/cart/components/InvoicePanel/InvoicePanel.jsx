@@ -16,6 +16,7 @@ import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled'
 import { selectInsuranceAR } from '../../../../../features/insurance/insuranceAccountsReceivableSlice'
 import { selectInsuranceAuthData } from '../../../../../features/insurance/insuranceAuthSlice'
 import useInvoice from '../../../../../services/invoice/useInvoice'
+import logInvoiceAuthorizations from '../../../../../services/invoice/logInvoiceAuthorizations'
 import { selectBusinessData } from '../../../../../features/auth/businessSlice'
 import { downloadInvoiceLetterPdf } from '../../../../../firebase/quotation/downloadQuotationPDF'
 import { selectAppMode } from '../../../../../features/appModes/appModeSlice'
@@ -264,6 +265,15 @@ export const InvoicePanel = () => {
                 const createdInvoice = invoiceResult?.invoice;
                 if (!createdInvoice) {
                     throw new Error('No se pudo recuperar la factura generada desde el backend.');
+                }
+
+                if (invoiceResult?.status !== 'test-preview') {
+                    await logInvoiceAuthorizations({
+                        user,
+                        invoice: createdInvoice,
+                        authorizationContext: cart?.authorizationContext,
+                        cart,
+                    });
                 }
 
                 const invoiceStatus = invoiceResult?.status ?? null;

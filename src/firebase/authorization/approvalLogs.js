@@ -7,6 +7,7 @@ import {
   orderBy,
   query,
   where,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '../firebaseconfig';
 
@@ -111,7 +112,7 @@ const normalizeLogEntry = (docSnap) => {
 
 export const fbListApprovalLogs = async (
   currentUser,
-  { limitCount = 150, module: moduleFilter, authorizerId } = {}
+  { limitCount = 150, module: moduleFilter, authorizerId, startDate, endDate } = {}
 ) => {
   if (!currentUser?.businessID) {
     throw new Error('Falta businessID del usuario para listar la bitácora.');
@@ -126,6 +127,14 @@ export const fbListApprovalLogs = async (
 
   if (authorizerId) {
     constraints.push(where('authorizer.uid', '==', authorizerId));
+  }
+
+  if (startDate) {
+    constraints.push(where('createdAt', '>=', Timestamp.fromMillis(Number(startDate))));
+  }
+
+  if (endDate) {
+    constraints.push(where('createdAt', '<=', Timestamp.fromMillis(Number(endDate))));
   }
 
   constraints.push(orderBy('createdAt', 'desc'));

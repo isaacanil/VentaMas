@@ -67,8 +67,7 @@ const EditButton = ({ value }) => {
             display: 'flex',
             gap: '10px',
         }}>
-         
-                <PreorderModal/>
+            <PreorderModal preorder={data} />
             <antd.Button
                 icon={icons.editingActions.complete}
                 onClick={handleInvoicePanelOpen}

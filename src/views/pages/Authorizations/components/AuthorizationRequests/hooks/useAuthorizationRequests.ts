@@ -155,37 +155,90 @@ export const useAuthorizationRequests = (
         row.key === id || row.id === id || String(row.id) === String(id)
       );
 
-  await approveAuthorizationRequestTyped(user, id, authorizer);
-  message.success('Solicitud aprobada');
+      if (!requestSnapshot) {
+        throw new Error('No se encontró la solicitud seleccionada.');
+      }
+
+      await approveAuthorizationRequestTyped(user, id, authorizer);
+      message.success('Solicitud aprobada');
       setPendingApproval(null);
+
       const moduleForLog = resolveRequestModule(requestSnapshot);
       const requestedBySnapshot = requestSnapshot?.requestedBy || null;
+      const requestMetadata =
+        (typeof requestSnapshot?.metadata === 'object' && requestSnapshot.metadata !== null
+          ? (requestSnapshot.metadata as Record<string, unknown>)
+          : null) || null;
+
+      const isInvoiceEdit =
+        requestSnapshot?.type === 'invoice-edit' ||
+        (typeof requestMetadata?.['type'] === 'string' && requestMetadata['type'] === 'invoice-edit');
+
+      const actionForLog = isInvoiceEdit ? 'invoice-edit-approve' : 'authorization-request-approve';
+
+      const descriptionForLog = isInvoiceEdit
+        ? requestSnapshot?.requestNote ||
+          requestSnapshot?.note ||
+          `Se autorizó la edición de la factura ${
+            requestSnapshot?.invoiceNumber || requestSnapshot?.reference || ''
+          }`.trim()
+        : requestSnapshot?.requestNote ||
+          requestSnapshot?.note ||
+          'Aprobación de solicitud de autorización';
+
+      const targetForLog = isInvoiceEdit
+        ? {
+            type: 'invoice',
+            id:
+              (typeof requestSnapshot?.invoiceId === 'string' && requestSnapshot.invoiceId) ||
+              (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId'] as string) : ''),
+            name: requestSnapshot?.invoiceNumber
+              ? `Factura ${requestSnapshot.invoiceNumber}`
+              : requestSnapshot?.reference || requestSnapshot?.invoiceId || '',
+            details: {
+              requestId: id,
+              status: requestSnapshot?.status || 'pending',
+              authorizationType: 'invoice-edit',
+            },
+          }
+        : {
+            type: 'authorizationRequest',
+            id,
+            name: requestSnapshot?.reference || '',
+            details: {
+              status: requestSnapshot?.status || 'pending',
+              module: moduleForLog,
+            },
+          };
+
+      const metadataForLog: Record<string, unknown> = {
+        collectionKey: requestSnapshot?.collectionKey || null,
+        module: moduleForLog,
+        reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
+        requestId: id,
+      };
+
+      if (isInvoiceEdit) {
+        metadataForLog.reference = null;
+        metadataForLog.invoiceId =
+          (typeof requestSnapshot?.invoiceId === 'string' && requestSnapshot.invoiceId) ||
+          (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId'] as string) : null);
+        metadataForLog.invoiceNumber =
+          requestSnapshot?.invoiceNumber ||
+          (typeof requestMetadata?.['invoiceNumber'] === 'string' ? (requestMetadata['invoiceNumber'] as string) : null);
+        metadataForLog.authorizationType = 'invoice-edit';
+      }
+
       await fbRecordAuthorizationApprovalTyped({
         businessId: user?.businessID,
         module: moduleForLog,
-        action: 'authorization-request-approve',
-        description:
-          requestSnapshot?.requestNote ||
-          requestSnapshot?.note ||
-          'Aprobación de solicitud de autorización',
+        action: actionForLog,
+        description: descriptionForLog,
         requestedBy: requestedBySnapshot ?? user ?? null,
         authorizer,
         targetUser: requestedBySnapshot || null,
-        target: {
-          type: 'authorizationRequest',
-          id,
-          name: requestSnapshot?.reference || '',
-          details: {
-            status: requestSnapshot?.status || 'pending',
-            expiresAt: requestSnapshot?.expiresAt || null,
-            module: moduleForLog,
-          },
-        },
-        metadata: {
-          collectionKey: requestSnapshot?.collectionKey || null,
-          module: moduleForLog,
-          reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
-        },
+        target: targetForLog,
+        metadata: metadataForLog,
       });
       load();
     } catch (error) {

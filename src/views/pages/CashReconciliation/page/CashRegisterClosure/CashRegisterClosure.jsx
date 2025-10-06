@@ -72,7 +72,7 @@ export const CashRegisterClosure = () => {
 
       await fbRecordAuthorizationApproval({
         businessId: actualUser.businessID,
-        module: 'accountsReceivable',
+        module: 'cashRegister',
         action: 'cash-register-closing',
         description: 'Cierre del cuadre de caja',
         requestedBy: actualUser,

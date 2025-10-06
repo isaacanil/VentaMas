@@ -126,6 +126,9 @@ export const renderBusinessHeader = (business, formatPhoneNumber) => {
   header += wrapAndCenter(business.name || 'Nombre del Negocio') + '\n';
   header += wrapAndCenter(business.address || 'Dirección del Negocio') + '\n';
   header += wrapAndCenter(formatPhoneNumber(business.tel) || 'Teléfono') + '\n';
+  if (business.rnc) {
+    header += wrapAndCenter(`RNC: ${business.rnc}`) + '\n';
+  }
   header += separatorLine() + '\n';
 
   return header;

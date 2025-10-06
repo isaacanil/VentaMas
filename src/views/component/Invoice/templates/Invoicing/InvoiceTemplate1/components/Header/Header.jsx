@@ -45,6 +45,9 @@ export const Header = ({ data, Space }) => {
             <Title>{business?.name}</Title>
             <InfoItem align='center' label={business?.address} justifyContent='center' />
             <InfoItem align='center' label={useFormatPhoneNumber(business?.tel)} justifyContent='center' />
+            {business?.rnc && (
+                <InfoItem align='center' label="RNC" value={business.rnc} justifyContent='center' />
+            )}
 
             <Spacing size={'large'} />
 

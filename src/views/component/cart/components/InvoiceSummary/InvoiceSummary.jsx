@@ -27,6 +27,7 @@ import { downloadQuotationPdf } from '../../../../../firebase/quotation/download
 import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
 import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules';
 import { PinAuthorizationModal } from '../../../modals/PinAuthorizationModal/PinAuthorizationModal';
+import { useSearchParams } from 'react-router-dom';
 
 const resolveAuthorizerName = (authorizer) => (
   authorizer?.displayName ||
@@ -53,6 +54,7 @@ const InvoiceSummary = () => {
   const quotationPrintRef = useRef();
   const [quotationData, setQuotationData] = useState();
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(false);
+  const [isSavingPreorder, setIsSavingPreorder] = useState(false);
   const discount = getTotalDiscount(subTotal, discountPercent);
   const { billing } = useSelector(SelectSettingCart);
   const { shouldUsePinForModule, isInvoicesModuleEnabled } = useAuthorizationModules();
@@ -70,6 +72,10 @@ const InvoiceSummary = () => {
   const shouldRequirePinForDiscount = shouldUsePinForModule('invoices') && isCashier;
   const [isDiscountAuthorized, setIsDiscountAuthorized] = useState(!shouldRequirePinForDiscount);
   const [discountAuthorizer, setDiscountAuthorizer] = useState(null);
+  const [searchParams] = useSearchParams();
+  const isPreorderRoute = searchParams.get('mode') === 'preorder';
+  const isPreorderCart = cartData?.type === 'preorder';
+  const isEditingPreorder = isPreorderRoute && isPreorderCart;
 
   const {
     showModal: showDiscountPinModal,
@@ -219,7 +225,9 @@ const InvoiceSummary = () => {
     const { isValid, message } = validateInvoiceCart(cartData)
     if (isValid) {
       dispatch(setCashPaymentToTotal())
-      dispatch(toggleInvoicePanelOpen())
+      if (!cart?.settings?.isInvoicePanelOpen) {
+        dispatch(toggleInvoicePanelOpen())
+      }
       dispatch(setCartId())
     } else {
       notification.error({
@@ -304,18 +312,36 @@ const InvoiceSummary = () => {
   }
 
   const handleSavePreOrder = async () => {
-    const { isValid, message } = validateInvoiceCart(cartData);
-    try {
+    if (isSavingPreorder) return;
 
-      await fbAddPreOrder(user, cartData)
-      handleCancelShipping()
-      setIsOpenPreorderConfirmation(false)
+    const { isValid, message: validationMessage } = validateInvoiceCart(cartData);
+
+    if (!isValid) {
+      notification.warning({
+        message: 'No se puede completar la preorden',
+        description: validationMessage || 'Verifica los datos del carrito antes de continuar.'
+      });
+      return;
+    }
+
+    try {
+      setIsSavingPreorder(true);
+
+      await fbAddPreOrder(user, cartData);
+      handleCancelShipping({ dispatch, closeInvoicePanel: false });
+      setIsOpenPreorderConfirmation(false);
       notification.success({
         message: 'Preorden guardada con éxito',
         type: 'success'
-      })
+      });
     } catch (error) {
-      console.error('Error al guardar la preorden:', error)
+      console.error('Error al guardar la preorden:', error);
+      notification.error({
+        message: 'No se pudo guardar la preorden',
+        description: error?.message || 'Intenta nuevamente en unos segundos.'
+      });
+    } finally {
+      setIsSavingPreorder(false);
     }
   };
 
@@ -339,7 +365,11 @@ const InvoiceSummary = () => {
       action: handleInvoicePanelOpen,
       disabled: isButtonDisabled
     },
-    deferred: {
+    deferred: isEditingPreorder ? {
+      text: 'Completar',
+      action: handleInvoicePanelOpen,
+      disabled: isButtonDisabled
+    } : {
       text: 'Preventa',
       action: () => setIsOpenPreorderConfirmation(true),
       disabled: isButtonDisabled
@@ -451,6 +481,7 @@ const InvoiceSummary = () => {
         onCancel={() => setIsOpenPreorderConfirmation(false)}
         onConfirm={handleSavePreOrder}
         preorder={{ data: cartData }}
+        loading={isSavingPreorder}
       />
     </Fragment>
   );

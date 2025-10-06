@@ -62,7 +62,7 @@ export const CashRegisterOpening = () => {
 
       await fbRecordAuthorizationApproval({
         businessId: actualUser.businessID,
-        module: 'accountsReceivable',
+        module: 'cashRegister',
         action: 'cash-register-opening',
         description: 'Apertura del cuadre de caja',
         requestedBy: actualUser,

@@ -2,6 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 import { DateTime } from 'luxon';
+import { Select, Button, Tooltip } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
+// @ts-ignore - legacy JS component without type declarations
+import { DatePicker as CommonDatePicker } from '../../../../../components/common/DatePicker';
+import { getDateRange } from '../../../../../utils/date/getDateRange';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { fbListApprovalLogs } from '../../../../../firebase/authorization/approvalLogs';
 
@@ -37,6 +44,8 @@ interface ApprovalLogsProps {
   searchTerm?: string;
 }
 
+type RangeValue = [Dayjs | null, Dayjs | null];
+
 const Wrapper = styled.div`
   display: grid;
   gap: 16px;
@@ -55,51 +64,6 @@ const FilterGroup = styled.div`
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-`;
-
-const SelectControl = styled.select`
-  min-width: 200px;
-  padding: 8px 32px 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #ffffff url('data:image/svg+xml,%3Csvg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M1 1L5 5L9 1" stroke="%236B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/%3E%3C/svg%3E') no-repeat right 10px center;
-  appearance: none;
-  font-size: 13px;
-  color: #1f2937;
-
-  &:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-  }
-`;
-
-const RefreshButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid #2563eb;
-  background: #2563eb;
-  color: #ffffff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: #1d4ed8;
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
-  }
-
-  &:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-  }
-`;
-
-const RefreshSymbol = styled.span`
-  font-size: 14px;
 `;
 
 const TableContainer = styled.div`
@@ -235,12 +199,14 @@ const PaginationInfo = styled.span`
 const MODULE_LABELS: Record<string, string> = {
   invoices: 'Facturación',
   accountsReceivable: 'Cuentas por cobrar',
+  cashRegister: 'Cuadre de caja',
   authorizationRequests: 'Solicitudes',
 };
 
 const MODULE_COLORS: Record<string, string> = {
   invoices: '#2563eb',
   accountsReceivable: '#f97316',
+  cashRegister: '#059669',
   authorizationRequests: '#8b5cf6',
   generic: '#6b7280',
 };
@@ -251,6 +217,7 @@ const ACTION_LABELS: Record<string, string> = {
   'cash-register-opening': 'Apertura autorizada',
   'cash-register-closing': 'Cierre autorizado',
   'invoice-discount-override': 'Autorización de descuento',
+  'invoice-edit-approve': 'Edición de factura autorizada',
   authorization: 'Autorizada',
 };
 
@@ -260,6 +227,7 @@ const ACTION_COLORS: Record<string, string> = {
   'cash-register-opening': '#22c55e',
   'cash-register-closing': '#9333ea',
   'invoice-discount-override': '#22d3ee',
+  'invoice-edit-approve': '#f59e0b',
   authorization: '#0ea5e9',
 };
 
@@ -278,6 +246,17 @@ const ROLE_LABELS: Record<string, string> = {
   cashier: 'Cajero',
 };
 
+const isCashRegisterEntry = (entry: ApprovalLogEntry) => {
+  const action = entry.action || '';
+  const targetType = entry.target?.type || '';
+  const metadataModule =
+    entry.metadata && typeof entry.metadata === 'object' && typeof entry.metadata.module === 'string'
+      ? entry.metadata.module
+      : '';
+
+  return action.startsWith('cash-register') || targetType === 'cashCount' || metadataModule === 'cashRegister';
+};
+
 const resolveName = (user?: UserSnapshot | null) =>
   user?.name || user?.email || user?.uid || '—';
 
@@ -285,6 +264,21 @@ const resolveUserSummary = (user?: UserSnapshot | null) => {
   if (!user) return '—';
   const roleLabel = user.role ? ROLE_LABELS[user.role] || user.role : '';
   return roleLabel ? `${resolveName(user)} (${roleLabel})` : resolveName(user);
+};
+
+const resolveTargetUserSummary = (entry: ApprovalLogEntry) => {
+  if (!entry.targetUser) {
+    return '—';
+  }
+
+  const targetSummary = resolveUserSummary(entry.targetUser);
+
+  if (!entry.requestedBy) {
+    return targetSummary;
+  }
+
+  const samePrincipal = resolveName(entry.requestedBy) === resolveName(entry.targetUser);
+  return samePrincipal ? `${targetSummary} • Mismo solicitante` : targetSummary;
 };
 
 const formatDateTime = (value: Date | null) => {
@@ -326,13 +320,27 @@ const PAGE_SIZE = 15;
 
 const resolveModuleLabel = (module: string) => MODULE_LABELS[module] || module || 'General';
 
+const resolveModuleLabelForEntry = (entry: ApprovalLogEntry) => {
+  if (isCashRegisterEntry(entry)) {
+    return MODULE_LABELS.cashRegister;
+  }
+  return resolveModuleLabel(entry.module);
+};
+
+const resolveModuleColorForEntry = (entry: ApprovalLogEntry) => {
+  if (isCashRegisterEntry(entry)) {
+    return MODULE_COLORS.cashRegister || MODULE_COLORS.generic;
+  }
+  return MODULE_COLORS[entry.module] || MODULE_COLORS.generic;
+};
+
 const resolveActionLabel = (action: string) => ACTION_LABELS[action] || action || 'Acción';
 
 const resolveActionColor = (action: string) => ACTION_COLORS[action] || '#0ea5e9';
 
 const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   const target = entry.target;
-  const metadata = entry.metadata || {};
+  const metadata = (entry.metadata || {}) as Record<string, unknown>;
 
   const pieces: string[] = [];
 
@@ -344,6 +352,22 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
     pieces.push(resolveModuleLabel(metadata.module));
   }
 
+  const targetDetails =
+    target?.details && typeof target.details === 'object'
+      ? (target.details as Record<string, unknown>)
+      : null;
+
+  const authorizationType =
+    typeof (metadata as Record<string, unknown>).authorizationType === 'string'
+      ? String((metadata as Record<string, unknown>).authorizationType)
+      : targetDetails && typeof targetDetails.authorizationType === 'string'
+      ? String(targetDetails.authorizationType)
+      : null;
+
+  if (authorizationType === 'invoice-edit') {
+    pieces.push('Edición de factura');
+  }
+
   if (metadata.reference) {
     pieces.push(`Ref. ${metadata.reference}`);
   } else if (metadata.invoiceNumber || metadata.invoiceId) {
@@ -351,10 +375,6 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
     pieces.push(`Factura ${invoiceRef}`);
   } else if (target?.name) {
     pieces.push(String(target.name));
-  }
-
-  if (target?.id && !pieces.some((piece) => piece.includes(String(target.id)))) {
-    pieces.push(`ID ${target.id}`);
   }
 
   if (target?.details && typeof target.details === 'object') {
@@ -367,6 +387,14 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   return pieces.length ? pieces.join(' • ') : '—';
 };
 
+const matchesModuleFilter = (entry: ApprovalLogEntry, moduleFilter?: string) => {
+  if (!moduleFilter) return true;
+  if (moduleFilter === 'cashRegister') {
+    return isCashRegisterEntry(entry);
+  }
+  return entry.module === moduleFilter;
+};
+
 const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(false);
@@ -374,6 +402,38 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
   const [moduleFilter, setModuleFilter] = useState<string | undefined>();
   const [loadError, setLoadError] = useState<string>('');
   const [page, setPage] = useState<number>(1);
+  const [datePickerValue, setDatePickerValue] = useState<RangeValue | null>(() => {
+    const { startDate, endDate } = getDateRange('today');
+    if (typeof startDate === 'number' && typeof endDate === 'number') {
+      return [dayjs(startDate), dayjs(endDate)];
+    }
+    return null;
+  });
+
+  const startDateFilter = datePickerValue?.[0]
+    ? datePickerValue[0]!.startOf('day').valueOf()
+    : undefined;
+  const endDateFilter = datePickerValue?.[1]
+    ? datePickerValue[1]!.endOf('day').valueOf()
+    : undefined;
+
+  const handleDatePickerChange = useCallback(
+    (value: Dayjs | RangeValue | null) => {
+      if (!value) {
+        setDatePickerValue(null);
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        const [start, end] = value;
+        setDatePickerValue([start || null, end || null]);
+        return;
+      }
+
+      setDatePickerValue([value, value]);
+    },
+    []
+  );
 
   const loadLogs = useCallback(async () => {
     if (!user?.businessID) {
@@ -383,7 +443,15 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
 
     setLoading(true);
     try {
-      const data = (await fbListApprovalLogs(user, { limitCount: 200 })) as ApprovalLogEntry[];
+      const queryOptions: any = { limitCount: 200 };
+      if (typeof startDateFilter === 'number') {
+        queryOptions.startDate = startDateFilter;
+      }
+      if (typeof endDateFilter === 'number') {
+        queryOptions.endDate = endDateFilter;
+      }
+
+      const data = (await fbListApprovalLogs(user, queryOptions)) as ApprovalLogEntry[];
       setLogs(data);
       setLoadError('');
     } catch (error: unknown) {
@@ -393,7 +461,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, startDateFilter, endDateFilter]);
 
   useEffect(() => {
     loadLogs();
@@ -401,19 +469,45 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
 
   const modulesAvailable = useMemo(() => {
     const set = new Set<string>();
+    let cashRegisterFound = false;
+
     logs.forEach((entry) => {
       if (entry.module) {
         set.add(entry.module);
       }
+      if (!cashRegisterFound && isCashRegisterEntry(entry)) {
+        cashRegisterFound = true;
+      }
     });
+
+    if (cashRegisterFound) {
+      set.add('cashRegister');
+    }
+
     return Array.from(set).sort();
   }, [logs]);
+
+  const moduleOptions = useMemo(
+    () =>
+      modulesAvailable.map((module) => ({
+        value: module,
+        label: resolveModuleLabel(module),
+      })),
+    [modulesAvailable]
+  );
+
+  const handleModuleFilterChange = useCallback(
+    (value: string | undefined) => {
+      setModuleFilter(value && value.length ? value : undefined);
+    },
+    []
+  );
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   const filteredLogs = useMemo(() => {
     return logs.filter((entry) => {
-      if (moduleFilter && entry.module !== moduleFilter) {
+      if (!matchesModuleFilter(entry, moduleFilter)) {
         return false;
       }
 
@@ -444,7 +538,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
 
   useEffect(() => {
     setPage(1);
-  }, [moduleFilter, normalizedSearch, filteredLogs.length]);
+  }, [moduleFilter, normalizedSearch, filteredLogs.length, startDateFilter, endDateFilter]);
 
   const paginatedRows = useMemo(
     () => tableRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
@@ -455,23 +549,38 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
     <Wrapper>
       <Controls>
         <FilterGroup>
-          <SelectControl
-            value={moduleFilter ?? ''}
-            onChange={(event) => setModuleFilter(event.target.value || undefined)}
-          >
-            <option value="">Todos los módulos</option>
-            {modulesAvailable.map((module) => (
-              <option key={module} value={module}>
-                {resolveModuleLabel(module)}
-              </option>
-            ))}
-          </SelectControl>
+          <CommonDatePicker
+            mode="range"
+            value={datePickerValue ?? undefined}
+            onChange={handleDatePickerChange}
+            placeholder="Rango de fechas"
+            allowClear
+            size="middle"
+            className="approval-logs-date-picker"
+            style={{ minWidth: 260 }}
+          />
         </FilterGroup>
 
-        <RefreshButton onClick={loadLogs} disabled={loading}>
-          <RefreshSymbol>↻</RefreshSymbol>
+        <FilterGroup>
+          <Select
+            placeholder="Todos los módulos"
+            allowClear
+            value={moduleFilter}
+            onChange={(value) => handleModuleFilterChange(value as string | undefined)}
+            options={moduleOptions}
+            style={{ minWidth: 220 }}
+            size="middle"
+          />
+        </FilterGroup>
+
+        <Button
+          type="primary"
+          icon={<ReloadOutlined />}
+          onClick={loadLogs}
+          loading={loading}
+        >
           Actualizar
-        </RefreshButton>
+        </Button>
       </Controls>
 
       {loadError && <ErrorBanner>{loadError}</ErrorBanner>}
@@ -499,13 +608,17 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
                   <TableHeadCell>Descripción</TableHeadCell>
                   <TableHeadCell>Solicitado por</TableHeadCell>
                   <TableHeadCell>Autorizado por</TableHeadCell>
-                  <TableHeadCell>Autorizado para</TableHeadCell>
+                  <TableHeadCell>
+                    <Tooltip title="Usuario que recibe el permiso. Coincide con el solicitante cuando autorizan para sí mismos.">
+                      Autorizado para
+                    </Tooltip>
+                  </TableHeadCell>
                   <TableHeadCell>Resumen</TableHeadCell>
                 </tr>
               </thead>
               <tbody>
                 {paginatedRows.map(({ id, entry }) => {
-                  const moduleColor = MODULE_COLORS[entry.module] || MODULE_COLORS.generic;
+                  const moduleColor = resolveModuleColorForEntry(entry);
 
                   return (
                     <TableRow key={id}>
@@ -513,7 +626,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
                         <Text>{formatDateTime(entry.createdAt)}</Text>
                       </TableCell>
                       <TableCell>
-                        <TagPill $color={moduleColor}>{resolveModuleLabel(entry.module)}</TagPill>
+                        <TagPill $color={moduleColor}>{resolveModuleLabelForEntry(entry)}</TagPill>
                         <TagPill $color={resolveActionColor(entry.action)}>{resolveActionLabel(entry.action)}</TagPill>
                         {entry.sameUser && <TagPill $color="#f59e0b">Mismo usuario</TagPill>}
                       </TableCell>
@@ -527,7 +640,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
                         <Text>{resolveUserSummary(entry.authorizer)}</Text>
                       </TableCell>
                       <TableCell>
-                        <Text>{resolveUserSummary(entry.targetUser)}</Text>
+                        <Text>{resolveTargetUserSummary(entry)}</Text>
                       </TableCell>
                       <TableCell>
                         <Text>{resolveTargetSummary(entry)}</Text>
