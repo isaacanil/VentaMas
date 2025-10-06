@@ -15,6 +15,7 @@ import { DateTime } from "luxon";
 import { getInsurance } from "../../firebase/insurance/insuranceService";
 import { addInsuranceAuth } from "../../firebase/insurance/insuranceAuthService";
 import { fbConsumeCreditNotes } from "../../firebase/creditNotes/fbConsumeCreditNotes";
+import { fbRecordAuthorizationApproval } from "../../firebase/authorization/approvalLogs";
 
 const NCF_TYPES = {
     'CREDITO FISCAL': 'CREDITO FISCAL',
@@ -164,13 +165,25 @@ async function adjustProductInventory({ user, products, invoice }) {
 async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, dueDate }) {
     try {
         const cartWithDueDate = dueDate ? checkIfHasDueDate({ cart, dueDate }) : cart;
+        const { authorizationContext = null, ...cartPayload } = cartWithDueDate || {};
+
         const bill = {
-            ...cartWithDueDate,
+            ...cartPayload,
             NCF: ncfCode,
             client: clientData.client,
             cashCountId: cashCount.id
-        }
-        return await fbAddInvoice(bill, user) || bill;
+        };
+
+        const invoice = await fbAddInvoice(bill, user) || bill;
+
+        await logInvoiceAuthorizations({
+            user,
+            invoice,
+            authorizationContext,
+            cart: cartWithDueDate,
+        });
+
+        return invoice;
     } catch (error) {
         throw new Error(`Error al generar la factura final: ${error.message}`);
     }
@@ -247,6 +260,73 @@ async function generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode }) {
     } catch (error) {
         console.error(error);
         throw error;
+    }
+}
+
+const extractAmount = (value) => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'object') {
+        if (typeof value.value === 'number') return value.value;
+        if (typeof value.amount === 'number') return value.amount;
+    }
+    return null;
+};
+
+const sanitizeUserSnapshot = (userLike) => {
+    if (!userLike || typeof userLike !== 'object') {
+        return null;
+    }
+
+    return {
+        uid: userLike.uid || userLike.id || '',
+        name: userLike.displayName || userLike.name || '',
+        role: userLike.role || '',
+        email: userLike.email || '',
+    };
+};
+
+async function logInvoiceAuthorizations({ user, invoice, authorizationContext, cart }) {
+    const discountAuth = authorizationContext?.discount;
+    if (!discountAuth?.authorizer) {
+        return;
+    }
+
+    try {
+        const requestedBy = discountAuth.requestedBy || sanitizeUserSnapshot(cart?.seller || user);
+        const targetUser = discountAuth.targetUser || requestedBy;
+
+        const description = discountAuth.description || `Autorización aplicada en factura ${invoice?.numberID || ''}`.trim();
+
+        await fbRecordAuthorizationApproval({
+            businessId: user?.businessID,
+            module: discountAuth.module || 'invoices',
+            action: discountAuth.action || 'invoice-discount-override',
+            description,
+            requestedBy,
+            authorizer: discountAuth.authorizer,
+            targetUser,
+            target: {
+                type: 'invoice',
+                id: invoice?.id || '',
+                name: invoice?.numberID ? `Factura ${invoice.numberID}` : invoice?.id || '',
+                details: {
+                    invoiceNumber: invoice?.numberID || null,
+                    cartId: discountAuth.metadata?.cartId || cart?.id || null,
+                    clientId: discountAuth.metadata?.clientId || cart?.client?.id || null,
+                    clientName: discountAuth.metadata?.clientName || cart?.client?.name || '',
+                },
+            },
+            metadata: {
+                ...discountAuth.metadata,
+                invoiceId: invoice?.id || null,
+                invoiceNumber: invoice?.numberID || null,
+                total: extractAmount(invoice?.totalPurchase) ?? extractAmount(discountAuth.metadata?.total) ?? null,
+                discountPercent: extractAmount(invoice?.discount) ?? extractAmount(discountAuth.metadata?.discountPercent) ?? null,
+            },
+        });
+    } catch (error) {
+        console.error('Error registrando autorización de factura:', error);
     }
 }
 

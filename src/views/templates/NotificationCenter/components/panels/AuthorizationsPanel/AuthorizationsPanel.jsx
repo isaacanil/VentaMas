@@ -9,11 +9,28 @@ import {
   approveAuthorizationRequest,
   rejectAuthorizationRequest,
 } from '../../../../../../firebase/authorizations/invoiceEditAuthorizations';
+import { fbRecordAuthorizationApproval } from '../../../../../../firebase/authorization/approvalLogs';
 import { LoadingState, EmptyState, AuthorizationsPanelContent } from './components';
-import { useAuthorizationPin } from '../../../../../../hooks/useAuthorizationPin';
-import { PinAuthorizationModal } from '../../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { message, Modal } from 'antd';
 
 const PRIVILEGED_ROLES = new Set(['admin', 'owner', 'dev', 'manager']);
+
+const resolveRequestModule = (request) => {
+  if (!request || typeof request !== 'object') return 'authorizationRequests';
+
+  const metadataModule =
+    request.metadata && typeof request.metadata === 'object' && typeof request.metadata.module === 'string'
+      ? request.metadata.module
+      : null;
+
+  return (
+    (typeof request.module === 'string' && request.module) ||
+    (typeof request.type === 'string' && request.type) ||
+    metadataModule ||
+    (typeof request.collectionKey === 'string' && request.collectionKey) ||
+    'authorizationRequests'
+  );
+};
 
 const toMillis = (value) => {
   if (!value) return 0;
@@ -51,7 +68,6 @@ const AuthorizationsPanel = () => {
   const [authorizations, setAuthorizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
-  const [pendingAction, setPendingAction] = useState(null);
 
   const handleNavigateToRequests = useCallback(() => {
     const targetPath = ROUTES_PATH.AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST;
@@ -90,51 +106,122 @@ const AuthorizationsPanel = () => {
     return () => unsubscribe?.();
   }, [businessID, isAdmin, user?.uid]);
 
-  const performPendingAction = useCallback(
-    async (authorizer) => {
-      if (!pendingAction) return;
+  const executeAction = useCallback(
+    async (authId, type) => {
+      if (!user) {
+        message.warning('Debes iniciar sesión para gestionar autorizaciones.');
+        return;
+      }
 
-      const { id, type } = pendingAction;
-      setProcessingId(id);
+      if (!PRIVILEGED_ROLES.has(user.role ?? '')) {
+        message.warning('No tienes permisos para gestionar esta autorización.');
+        return;
+      }
+
+      setProcessingId(authId);
 
       try {
+        const requestSnapshot = authorizations.find((item) => item.id === authId || item.key === authId);
+        const moduleForLog = resolveRequestModule(requestSnapshot);
+        const requestedBySnapshot = requestSnapshot?.requestedBy || null;
+
         if (type === 'approve') {
-          await approveAuthorizationRequest(user, id, authorizer);
+          await approveAuthorizationRequest(user, authId, user);
+          message.success('Solicitud aprobada');
+          await fbRecordAuthorizationApproval({
+            businessId: user?.businessID,
+            module: moduleForLog,
+            action: 'authorization-request-approve',
+            description:
+              requestSnapshot?.note ||
+              requestSnapshot?.requestNote ||
+              'Aprobación desde panel de notificaciones',
+            requestedBy: requestedBySnapshot || user || null,
+            authorizer: user,
+            targetUser: requestedBySnapshot || null,
+            target: {
+              type: 'authorizationRequest',
+              id: authId,
+              name: requestSnapshot?.reference || '',
+              details: {
+                status: requestSnapshot?.status || 'pending',
+                module: moduleForLog,
+              },
+            },
+            metadata: {
+              context: 'notification-panel',
+              module: moduleForLog,
+              reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
+            },
+          });
         } else {
-          await rejectAuthorizationRequest(user, id, authorizer);
+          await rejectAuthorizationRequest(user, authId, user);
+          message.info('Solicitud rechazada');
+          await fbRecordAuthorizationApproval({
+            businessId: user?.businessID,
+            module: moduleForLog,
+            action: 'authorization-request-reject',
+            description:
+              requestSnapshot?.note ||
+              requestSnapshot?.requestNote ||
+              'Rechazo desde panel de notificaciones',
+            requestedBy: requestedBySnapshot || user || null,
+            authorizer: user,
+            targetUser: requestedBySnapshot || null,
+            target: {
+              type: 'authorizationRequest',
+              id: authId,
+              name: requestSnapshot?.reference || '',
+              details: {
+                status: requestSnapshot?.status || 'pending',
+                module: moduleForLog,
+              },
+            },
+            metadata: {
+              context: 'notification-panel',
+              module: moduleForLog,
+              reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
+            },
+          });
         }
       } catch (error) {
-        const actionLabel = type === 'approve' ? 'aprobando' : 'rechazando';
-        console.error(`Error ${actionLabel}:`, error);
+        const actionLabel = type === 'approve' ? 'aprobar' : 'rechazar';
+        console.error(`Error al ${actionLabel} la autorización:`, error);
+        message.error(`No se pudo ${actionLabel} la autorización.`);
       } finally {
         setProcessingId(null);
-        setPendingAction(null);
       }
     },
-    [pendingAction, user]
+    [authorizations, user]
   );
-
-  const { showModal: showPinModal, modalProps } = useAuthorizationPin({
-    onAuthorized: performPendingAction,
-    module: 'authorizationRequests',
-    description: 'Se requiere autorización para aprobar o rechazar esta solicitud.',
-    allowedRoles: Array.from(PRIVILEGED_ROLES),
-  });
 
   const handleApprove = useCallback(
     (authId) => {
-      setPendingAction({ id: authId, type: 'approve' });
-      showPinModal();
+      Modal.confirm({
+        title: '¿Confirmar autorización?',
+        content: 'Esta acción aprobará la solicitud seleccionada y se registrará en el historial.',
+        okText: 'Autorizar',
+        zIndex: 9999,
+        cancelText: 'Cancelar',
+        onOk: () => executeAction(authId, 'approve'),
+      });
     },
-    [showPinModal]
+    [executeAction]
   );
 
   const handleReject = useCallback(
     (authId) => {
-      setPendingAction({ id: authId, type: 'reject' });
-      showPinModal();
+      Modal.confirm({
+        title: '¿Rechazar solicitud?',
+        content: 'Esta acción rechazará la solicitud y no podrá deshacerse.',
+        okText: 'Rechazar',
+        cancelText: 'Cancelar',
+        zIndex: 9999,
+        okButtonProps: { danger: true },
+        onOk: () => executeAction(authId, 'reject'),
+      });
     },
-    [showPinModal]
+    [executeAction]
   );
 
   if (loading) {
@@ -155,15 +242,6 @@ const AuthorizationsPanel = () => {
         onApprove={handleApprove}
         onReject={handleReject}
         onNavigateToRequests={handleNavigateToRequests}
-      />
-      <PinAuthorizationModal
-        {...modalProps}
-        setIsOpen={(value) => {
-          modalProps.setIsOpen(value);
-          if (!value) {
-            setPendingAction(null);
-          }
-        }}
       />
     </>
   );

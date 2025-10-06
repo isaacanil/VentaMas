@@ -6,6 +6,7 @@ import { useAuthorizationModules } from '../../../hooks/useAuthorizationModules'
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
 import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';
+import ApprovalLogs from './components/ApprovalLogs/ApprovalLogs';
 import { PersonalPinManagement } from './components/PersonalPinManagement';
 import { useSearchParams } from 'react-router-dom';
 
@@ -36,13 +37,14 @@ export const AuthorizationsManager = () => {
   const user = useSelector(selectUser);
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const { 
-    authorizationFlowEnabled, 
-    hasActiveModules 
+  const {
+    authorizationFlowEnabled,
+    hasActiveModules,
   } = useAuthorizationModules();
 
   // Solo admin, owner, dev pueden ver solicitudes
   const canViewRequests = ['admin', 'owner', 'dev'].includes(user?.role);
+  const canViewLogs = ['admin', 'owner', 'dev', 'manager'].includes(user?.role);
 
   const modulesActive = hasActiveModules();
 
@@ -57,6 +59,14 @@ export const AuthorizationsManager = () => {
       });
     }
 
+    if (canViewLogs && modulesActive) {
+      items.push({
+        key: 'approvalLogs',
+        label: 'Historial de Autorizaciones',
+        children: <ApprovalLogs searchTerm={searchTerm} />,
+      });
+    }
+
     if (modulesActive) {
       items.push({
         key: 'mypin',
@@ -66,7 +76,7 @@ export const AuthorizationsManager = () => {
     }
 
     return items;
-  }, [canViewRequests, modulesActive, searchTerm]);
+  }, [canViewRequests, canViewLogs, modulesActive, searchTerm]);
 
   const tabKeys = useMemo(() => tabs.map(({ key }) => key), [tabs]);
   const defaultTabKey = tabKeys[0] ?? 'mypin';

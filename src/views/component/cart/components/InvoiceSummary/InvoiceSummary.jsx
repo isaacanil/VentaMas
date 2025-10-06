@@ -2,7 +2,7 @@ import React, { Fragment, useRef, useState, useEffect, useMemo, useCallback } fr
 import styled from 'styled-components';
 import CustomInput from '../../../../templates/system/Inputs/CustomInput';
 import { useDispatch, useSelector } from 'react-redux';
-import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoicePanelOpen, setPaymentMethod, recalcTotals, setCashPaymentToTotal, selectProductsWithIndividualDiscounts, selectTotalIndividualDiscounts } from '../../../../../features/cart/cartSlice';
+import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoicePanelOpen, setPaymentMethod, recalcTotals, setCashPaymentToTotal, selectProductsWithIndividualDiscounts, selectTotalIndividualDiscounts, setDiscountAuthorizationContext, clearDiscountAuthorizationContext } from '../../../../../features/cart/cartSlice';
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { Delivery } from './components/Delivery/Delivery';
 import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
@@ -43,6 +43,7 @@ const InvoiceSummary = () => {
   const user = useSelector(selectUser);
   const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] = useState(false);
   const cartData = useSelector(SelectCartData); const insuranceExtra = cartData?.totalInsurance?.value || 0;
+  const discountAuthorizationContext = cartData?.authorizationContext?.discount || null;
   const billingSettings = cart?.settings?.billing;
   const business = useSelector(selectBusinessData) || {};
   const total = cartData?.totalPurchase?.value;
@@ -78,6 +79,37 @@ const InvoiceSummary = () => {
     onAuthorized: (authorizer) => {
       setIsDiscountAuthorized(true);
       setDiscountAuthorizer(authorizer);
+
+      const authorizedAt = new Date().toISOString();
+      const cartId = cartData?.id || cart?.id || '';
+      const clientId = cartData?.client?.id || cart?.client?.id || '';
+      const clientName = cartData?.client?.name || cart?.client?.name || '';
+
+      const requesterSnapshot = {
+        uid: user?.uid || '',
+        name: resolveAuthorizerName(user),
+        role: user?.role || '',
+        email: user?.email || '',
+      };
+
+      dispatch(setDiscountAuthorizationContext({
+        module: 'invoices',
+        action: 'invoice-discount-override',
+        description: 'Autorización para aplicar descuentos en facturación.',
+        authorizer,
+        requestedBy: requesterSnapshot,
+        targetUser: requesterSnapshot,
+        metadata: {
+          cartId,
+          clientId,
+          clientName,
+          total: cartData?.totalPurchase?.value ?? null,
+          discountPercent: cartData?.discount?.value ?? null,
+          hasIndividualDiscounts,
+          authorizedAt,
+        },
+      }));
+
       message.success(`Descuento autorizado por ${resolveAuthorizerName(authorizer)}`);
     },
     module: 'invoices',
@@ -96,11 +128,18 @@ const InvoiceSummary = () => {
     if (!shouldRequirePinForDiscount) {
       setIsDiscountAuthorized(true);
       setDiscountAuthorizer(null);
+      dispatch(clearDiscountAuthorizationContext());
       return;
     }
-    setIsDiscountAuthorized(false);
-    setDiscountAuthorizer(null);
-  }, [shouldRequirePinForDiscount, cartData?.id]);
+
+    if (discountAuthorizationContext) {
+      setIsDiscountAuthorized(true);
+      setDiscountAuthorizer(discountAuthorizationContext.authorizer || null);
+    } else {
+      setIsDiscountAuthorized(false);
+      setDiscountAuthorizer(null);
+    }
+  }, [shouldRequirePinForDiscount, discountAuthorizationContext, dispatch]);
 
   const validateInsuranceCoverage = useMemo(() => {
     if (!insuranceEnabled) return { isValid: true, message: null };

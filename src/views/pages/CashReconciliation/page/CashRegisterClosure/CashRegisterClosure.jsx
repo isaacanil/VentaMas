@@ -13,6 +13,7 @@ import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationMo
 import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { useNavigate } from 'react-router-dom'
 import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
+import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs'
 import { DateTime } from 'luxon'
 import { fbCashCountChangeState } from '../../../../../firebase/cashCount/closing/fbCashCountClosing'
 import { useFbGetCashCount } from '../../../../../firebase/cashCount/fbGetCashCount'
@@ -68,6 +69,24 @@ export const CashRegisterClosure = () => {
       if (response !== 'success') {
         throw response instanceof Error ? response : new Error('No se pudo autorizar el cierre.');
       }
+
+      await fbRecordAuthorizationApproval({
+        businessId: actualUser.businessID,
+        module: 'accountsReceivable',
+        action: 'cash-register-closing',
+        description: 'Cierre del cuadre de caja',
+        requestedBy: actualUser,
+        authorizer: approvalEmployee,
+        targetUser: actualUser,
+        target: {
+          type: 'cashCount',
+          id: cashCount?.id || '',
+          details: { stage: 'closing' },
+        },
+        metadata: {
+          closingDate: closingDate?.toISO?.() || closingDate?.toString?.() || null,
+        },
+      });
 
       message.success('Cierre autorizado correctamente.');
       dispatch(clearCashCount())

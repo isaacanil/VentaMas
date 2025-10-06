@@ -93,6 +93,7 @@
     "react-virtualized-auto-sizer": "^1.0.24",
     "react-window": "^1.8.10",
     "react-zoom-pan-pinch": "^3.1.0",
+    "scss": "^0.2.4",
     "styled-components": "^5.3.6",
     "yet-another-react-lightbox": "^3.21.7",
     "yup": "^1.0.2"
@@ -124,6 +125,7 @@
     "playwright": "^1.53.1",
     "postcss": "^8.5.3",
     "prop-types": "^15.8.1",
+    "sass-embedded": "^1.93.2",
     "source-map-explorer": "^2.5.3",
     "storybook": "^9.0.14",
     "tailwindcss": "^4.1.5",

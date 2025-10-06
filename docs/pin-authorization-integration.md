@@ -73,6 +73,35 @@ function MiComponente() {
 }
 ```
 
+### Registro de Auditoría
+
+Cada autorización debe dejar trazabilidad en Firestore. Utiliza el helper
+`fbRecordAuthorizationApproval` para guardar quién autorizó, qué autorizó y a quién se le
+autorizó.
+
+```jsx
+import { fbRecordAuthorizationApproval } from '../firebase/authorization/approvalLogs';
+
+const { showModal, modalProps } = useAuthorizationPin({
+  onAuthorized: async (authorizer) => {
+    await fbRecordAuthorizationApproval({
+      businessId: currentUser.businessID,
+      module: 'invoices',
+      action: 'invoice-discount-override',
+      description: 'Autorización para aplicar descuento',
+      requestedBy: currentUser,
+      authorizer,
+      targetUser: currentUser,
+      target: { type: 'cart', id: cartId },
+      metadata: { total, discountPercent },
+    });
+
+    performSensitiveOperation(authorizer);
+  },
+  module: 'invoices',
+});
+```
+
 ### Opción 2: Usando el Modal Directamente
 
 ```jsx
@@ -106,6 +135,14 @@ function MiComponente() {
   );
 }
 ```
+
+### Visualización del Historial
+
+Los administradores pueden revisar todo el historial desde **Autorizaciones → Historial de
+Autorizaciones**. Esta pestaña toma los registros guardados en la colección
+`approvalLogs` y permite filtrar por módulo, buscar por nombre y refrescar los eventos más
+recientes. Las acciones asociadas a facturación se registran automáticamente cuando la factura
+termina de generarse, de modo que el número de comprobante queda enlazado al evento.
 
 ## Ejemplo: Integración en Cuentas por Cobrar
 

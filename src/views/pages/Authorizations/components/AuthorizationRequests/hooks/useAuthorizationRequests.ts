@@ -5,6 +5,7 @@ import {
   approveAuthorizationRequest,
   rejectAuthorizationRequest,
 } from '../../../../../../firebase/authorizations/invoiceEditAuthorizations';
+import { fbRecordAuthorizationApproval } from '../../../../../../firebase/authorization/approvalLogs';
 import { formatDateTime } from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
 import type {
@@ -15,6 +16,24 @@ import type {
 
 const DEFAULT_COLLECTION_KEY = 'authorizationRequests';
 const LEGACY_COLLECTION_KEY = 'invoiceEditAuthorizations';
+
+const resolveRequestModule = (request?: AuthorizationRequest | null) => {
+  if (!request) return DEFAULT_COLLECTION_KEY;
+
+  const metadataModule =
+    typeof request.metadata === 'object' && request.metadata !== null &&
+    typeof (request.metadata as Record<string, unknown>)?.['module'] === 'string'
+      ? String((request.metadata as Record<string, unknown>)['module'])
+      : null;
+
+  return (
+    (typeof request.module === 'string' && request.module) ||
+    (typeof request.type === 'string' && request.type) ||
+    metadataModule ||
+    (typeof request.collectionKey === 'string' && request.collectionKey) ||
+    DEFAULT_COLLECTION_KEY
+  );
+};
 
 export type StatusFilterValue =
   | 'pending'
@@ -116,9 +135,42 @@ export const useAuthorizationRequests = (
   const performApproval = async (id: string, authorizer: AppUser) => {
     try {
       setLoading(true);
-      await approveAuthorizationRequestTyped(user, id, authorizer);
-      message.success('Solicitud aprobada con PIN');
+      const requestSnapshot = rows.find((row) =>
+        row.key === id || row.id === id || String(row.id) === String(id)
+      );
+
+  await approveAuthorizationRequestTyped(user, id, authorizer);
+  message.success('Solicitud aprobada');
       setPendingApproval(null);
+      const moduleForLog = resolveRequestModule(requestSnapshot);
+      const requestedBySnapshot = requestSnapshot?.requestedBy || null;
+      await fbRecordAuthorizationApproval({
+        businessId: user?.businessID,
+        module: moduleForLog,
+        action: 'authorization-request-approve',
+        description:
+          requestSnapshot?.requestNote ||
+          requestSnapshot?.note ||
+          'Aprobación de solicitud de autorización',
+        requestedBy: requestedBySnapshot || user || null,
+        authorizer,
+        targetUser: requestedBySnapshot || null,
+        target: {
+          type: 'authorizationRequest',
+          id,
+          name: requestSnapshot?.reference || '',
+          details: {
+            status: requestSnapshot?.status || 'pending',
+            expiresAt: requestSnapshot?.expiresAt || null,
+            module: moduleForLog,
+          },
+        },
+        metadata: {
+          collectionKey: requestSnapshot?.collectionKey || null,
+          module: moduleForLog,
+          reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
+        },
+      });
       load();
     } catch (error) {
       const messageText =

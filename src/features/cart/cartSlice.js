@@ -247,6 +247,17 @@ export const cartSlice = createSlice({
             const value = action.payload;
             state.data.discount.value = Number(value);
         },
+        setDiscountAuthorizationContext: (state, action) => {
+            if (!state.data.authorizationContext) {
+                state.data.authorizationContext = {};
+            }
+            state.data.authorizationContext.discount = action.payload || null;
+        },
+        clearDiscountAuthorizationContext: (state) => {
+            if (state.data.authorizationContext) {
+                state.data.authorizationContext.discount = null;
+            }
+        },
         addSourceOfPurchase: (state, actions) => {
             const source = actions.payload
             state.data.sourceOfPurchase = source
@@ -395,6 +406,8 @@ export const {
     setPaymentAmount,
     addPaymentMethod,
     addDiscount,
+    setDiscountAuthorizationContext,
+    clearDiscountAuthorizationContext,
     addPaymentMethodAutoValue,
     togglePrintWarranty,
     addProduct,

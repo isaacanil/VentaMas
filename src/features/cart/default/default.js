@@ -99,7 +99,10 @@ const initialState = {
             value: 0
         },
         invoiceComment: '',
-        creditNotePayment: []
+        creditNotePayment: [],
+        authorizationContext: {
+            discount: null,
+        },
     },
 }
 /*los estados pueden ser:

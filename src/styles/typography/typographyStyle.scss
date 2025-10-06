@@ -1,4 +1,4 @@
-@import "../mixin/breakpoint.scss";
+@use "../mixin/breakpoint" as bp;
 
 :root {
     --font-primary: sans-serif;
@@ -106,19 +106,19 @@ p {
 
 
 
-@include breakpoint(md) {
+@include bp.breakpoint(md) {
     :root {
         --text-base-size: 1em;
         --text-scale-ratio: 1.2;
     }
 }
-@include breakpoint(lg) {
+@include bp.breakpoint(lg) {
     :root {
         --text-base-size: 1em;
         --text-scale-ratio: 1.2;
     }
 }
-@include breakpoint(xl) {
+@include bp.breakpoint(xl) {
     :root {
         --text-base-size: 1em;
         --text-scale-ratio: 1.2;

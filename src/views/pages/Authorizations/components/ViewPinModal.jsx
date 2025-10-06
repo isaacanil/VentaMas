@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { Modal, Input, Button, message, Typography, Space, Alert, Tag } from 'antd';
-import { LockOutlined, SafetyOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Modal, Button, message, Typography, Space } from 'antd';
+import { SafetyOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { fbGetUserPinStatus, fbViewUserPins } from '../../../../firebase/authorization/pinAuth';
-import { fbValidateUser } from '../../../../firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser';
+import { fbViewUserPins } from '../../../../firebase/authorization/pinAuth';
 
 const { Text, Title } = Typography;
 
@@ -97,19 +96,15 @@ const ModuleActions = styled.div`
 `;
 
 export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel }) => {
-  const [step, setStep] = useState('auth'); // 'auth' | 'view'
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [pinValue, setPinValue] = useState(null);
   const [isPinVisible, setIsPinVisible] = useState(false);
   const pinVisibilityTimer = useRef(null);
-  const passwordInputRef = useRef(null);
+  const resolvedModuleLabel = moduleLabel || MODULE_LABELS[moduleKey] || moduleKey;
 
   // Reset state when modal closes
   useEffect(() => {
     if (!visible) {
-      setStep('auth');
-      setPassword('');
       setPinValue(null);
       setIsPinVisible(false);
       if (pinVisibilityTimer.current) {
@@ -119,62 +114,39 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
     }
   }, [visible]);
 
-  // Auto-focus en el input de contraseña cuando el modal se abre en el paso de autenticación
-  useEffect(() => {
-    if (visible && step === 'auth' && passwordInputRef.current) {
-      const timer = setTimeout(() => {
-        passwordInputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [visible, step]);
-
-  const handleAuthenticate = async () => {
-    if (!password.trim()) {
-      message.warning('Por favor ingresa tu contraseña');
+  const loadPin = useCallback(async () => {
+    if (!visible || !user?.uid || !moduleKey) {
       return;
     }
 
     setLoading(true);
     try {
-      const username = user?.username || user?.name;
-      const { response } = await fbValidateUser({ name: username, password }, user?.uid);
-
-      if (response?.error) {
-        message.error(response.error);
-        return;
-      }
-      
-      // Si la autenticación es exitosa, obtener el PIN del módulo específico
       const pinSecrets = await fbViewUserPins(user, user.uid);
-      
+
       if (!pinSecrets?.pins || pinSecrets.pins.length === 0) {
         message.error('No tienes PINs configurados');
         return;
       }
 
-      // Buscar el PIN del módulo específico
-      const modulePinData = pinSecrets.pins.find(p => p.module === moduleKey);
-      
+      const modulePinData = pinSecrets.pins.find((p) => p.module === moduleKey);
+
       if (!modulePinData || !modulePinData.pin) {
-        message.error(`No se encontró el PIN para ${moduleLabel}`);
+        message.error(`No se encontró el PIN para ${resolvedModuleLabel}`);
         return;
       }
 
       setPinValue(modulePinData.pin);
-      setStep('view');
-      message.success('Autenticación exitosa');
     } catch (error) {
-      console.error('Error autenticando:', error);
-      if (error.message === 'Usuario no encontrado' || error.message === 'Contraseña incorrecta') {
-        message.error(error.message);
-      } else {
-        message.error(error?.message || 'Error al autenticar');
-      }
+      console.error('Error obteniendo el PIN:', error);
+      message.error(error?.message || 'No se pudo obtener el PIN.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [moduleKey, resolvedModuleLabel, user, visible]);
+
+  useEffect(() => {
+    loadPin();
+  }, [loadPin]);
 
   const handleTogglePinVisibility = () => {
     if (isPinVisible) {
@@ -187,12 +159,12 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
     } else {
       // Mostrar PIN
       setIsPinVisible(true);
-      message.success(`Mostrando el PIN de ${moduleLabel} por 30 segundos`);
+  message.success(`Mostrando el PIN de ${resolvedModuleLabel} por 30 segundos`);
       
       // Auto-ocultar después de 30 segundos
       pinVisibilityTimer.current = setTimeout(() => {
         setIsPinVisible(false);
-        message.info(`El PIN de ${moduleLabel} se ocultó por seguridad`);
+  message.info(`El PIN de ${resolvedModuleLabel} se ocultó por seguridad`);
         pinVisibilityTimer.current = null;
       }, 30000);
     }
@@ -208,51 +180,15 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
 
 
 
-  const renderAuthStep = () => (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
-      <div style={{ textAlign: 'center' }}>
-        <LockOutlined style={{ fontSize: 48, color: '#1890ff' }} />
-        <Title level={4} style={{ marginTop: 16 }}>
-          Verificación de Identidad
-        </Title>
-        <Text type="secondary">
-          Por seguridad, ingresa tu contraseña para ver el PIN
-        </Text>
-      </div>
-
-      <Alert
-        message="Seguridad"
-        description="El PIN es confidencial. Solo se mostrará después de verificar tu identidad con tu contraseña."
-        type="info"
-        showIcon
-      />
-
-      <div>
-        <Text strong style={{ display: 'block', marginBottom: 8 }}>
-          Contraseña:
-        </Text>
-        <Input.Password
-          ref={passwordInputRef}
-          size="large"
-          placeholder="Ingresa tu contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onPressEnter={handleAuthenticate}
-          autoFocus
-        />
-      </div>
-    </Space>
-  );
-
-  const renderViewStep = () => (
+  const renderView = () => (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       <div style={{ textAlign: 'center' }}>
         <SafetyOutlined style={{ fontSize: 48, color: '#52c41a' }} />
         <Title level={4} style={{ marginTop: 16 }}>
-          PIN de {moduleLabel}
+          PIN de {resolvedModuleLabel}
         </Title>
         <Text type="secondary">
-          Módulo: {moduleLabel}
+          Módulo: {resolvedModuleLabel}
         </Text>
       </div>
 
@@ -272,6 +208,8 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
               block
               type={isPinVisible ? 'default' : 'primary'}
               icon={isPinVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              loading={loading}
+              disabled={!pinValue}
               onClick={handleTogglePinVisibility}
               size="large"
             >
@@ -287,32 +225,18 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
     <Modal
       open={visible}
       onCancel={onClose}
-      footer={
-        step === 'auth' ? [
-          <Button key="cancel" onClick={onClose}>
-            Cancelar
-          </Button>,
-          <Button
-            key="verify"
-            type="primary"
-            onClick={handleAuthenticate}
-            loading={loading}
-          >
-            Verificar
-          </Button>,
-        ] : [
-          <Button key="close" type="primary" onClick={onClose}>
-            Cerrar
-          </Button>,
-        ]
-      }
+      footer={[
+        <Button key="close" type="primary" onClick={onClose}>
+          Cerrar
+        </Button>,
+      ]}
       width={500}
       centered
       destroyOnClose
       title={null}
     >
       <div style={{ padding: '8px 0' }}>
-        {step === 'auth' ? renderAuthStep() : renderViewStep()}
+        {renderView()}
       </div>
     </Modal>
   );

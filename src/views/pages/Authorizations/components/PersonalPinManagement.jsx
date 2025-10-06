@@ -107,7 +107,7 @@ const HeroPanel = styled.div`
   position: relative;
   display: grid;
   gap: 18px;
-  padding: 28px 26px;
+  padding: 10px 16px;
   border-radius: 20px;
   background: ${({ $tone }) => heroTokens[$tone]?.bg || heroTokens.muted.bg};
   color: ${({ $tone }) => heroTokens[$tone]?.text || heroTokens.muted.text};
@@ -401,11 +401,7 @@ export const PersonalPinManagement = () => {
   // Preparar badges para el header
   const heroBadges = [];
   
-  heroBadges.push({
-    key: 'role',
-    label: `Rol: ${roleDisplay}`,
-    tone: statusDisplay.tone,
-  });
+
 
   if (Array.isArray(pinStatus?.modules) && pinStatus.modules.length > 0) {
     const activeCount = Array.isArray(pinStatus.activeModules) ? pinStatus.activeModules.length : 0;

@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Card, Pagination, Select, Spin } from 'antd';
+import { Button, Card, Pagination, Select, Spin, message, Modal } from 'antd';
 import type { SelectProps } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import { DatePicker } from '../../../../../components/common/DatePicker/DatePicker';
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal';
-import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
 import { useAuthorizationRequests, type StatusFilterValue } from './hooks/useAuthorizationRequests';
 import { RequestCard } from './components/RequestCard';
 import { DetailModal } from './components/DetailModal';
@@ -60,8 +58,6 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
     loading,
     statusFilter,
     setStatusFilter,
-    pendingApproval,
-    setPendingApproval,
     detailRequest,
     currentPage,
     setCurrentPage,
@@ -102,16 +98,7 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
     setSearchParams(params);
   };
 
-  const { showModal: showPinModal, modalProps } = useAuthorizationPin({
-    onAuthorized: (authorizer) => {
-      if (pendingApproval) {
-        performApproval(pendingApproval, authorizer);
-      }
-    },
-    module: 'authorizationRequests',
-    description: 'Se requiere autorización para completar esta solicitud.',
-    allowedRoles: ['admin', 'owner', 'dev', 'manager'],
-  });
+  const APPROVER_ROLES = ['admin', 'owner', 'dev', 'manager'];
 
   const totalRequests = filteredRequests.length;
   const totalPages = Math.max(1, Math.ceil((totalRequests || 1) / ITEMS_PER_PAGE));
@@ -130,11 +117,28 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
   const shouldShowPagination = totalRequests > ITEMS_PER_PAGE;
 
   const onApprove = async (id: string) => {
-    const approvalId = await handleApprove(id);
-    if (approvalId) {
-      setPendingApproval(approvalId);
-      showPinModal();
+    if (!user) {
+      message.warning('Debes iniciar sesión para aprobar solicitudes.');
+      return;
     }
+
+    if (user.role && !APPROVER_ROLES.includes(user.role)) {
+      message.warning('No tienes permisos para aprobar esta solicitud.');
+      return;
+    }
+
+    Modal.confirm({
+      title: '¿Confirmar autorización?',
+      content: 'Esta acción aprobará la solicitud y quedará registrada en el historial.',
+      okText: 'Autorizar',
+      cancelText: 'Cancelar',
+      onOk: async () => {
+        const approvalId = await handleApprove(id);
+        if (approvalId) {
+          await performApproval(approvalId, user);
+        }
+      },
+    });
   };
 
   return (
@@ -216,7 +220,6 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
         onReject={handleReject}
       />
 
-      <PinAuthorizationModal {...modalProps} />
     </>
   );
 };

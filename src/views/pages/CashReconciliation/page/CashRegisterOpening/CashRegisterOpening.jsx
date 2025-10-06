@@ -14,6 +14,7 @@ import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationMo
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbCashCountOpening } from '../../../../../firebase/cashCount/opening/fbCashCountOpening'
 import { message } from 'antd'
+import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs'
 
 import { DateSection } from '../CashRegisterClosure/components/Header/DateSection'
 import { DateTime } from 'luxon'
@@ -58,6 +59,24 @@ export const CashRegisterOpening = () => {
       if (response !== 'success') {
         throw response instanceof Error ? response : new Error('No se pudo autorizar la apertura.');
       }
+
+      await fbRecordAuthorizationApproval({
+        businessId: actualUser.businessID,
+        module: 'accountsReceivable',
+        action: 'cash-register-opening',
+        description: 'Apertura del cuadre de caja',
+        requestedBy: actualUser,
+        authorizer: approvalEmployee,
+        targetUser: actualUser,
+        target: {
+          type: 'cashCount',
+          id: cashCount?.id || '',
+          details: { stage: 'opening' },
+        },
+        metadata: {
+          openingDate: openingDate?.toISO?.() || openingDate?.toString?.() || null,
+        },
+      });
 
       message.success('Apertura autorizada correctamente.');
       dispatch(clearCashCount())
