@@ -41,8 +41,6 @@ export function buildHeader(biz, d, images) {
       }
     ].filter(Boolean);
 
-    const ts = d.date.seconds * 1000 + Math.floor(d.date.nanoseconds / 1e6);
-
     /* columna derecha (datos de la factura / recibo) */
     const rightStack = [
       {
@@ -50,7 +48,7 @@ export function buildHeader(biz, d, images) {
         style: 'title',
         alignment: 'right'
       },
-      {
+      d.date && {
         text: `Fecha: ${formatDate(d.date)}`,
         style: 'headerInfo',
         alignment: 'right'

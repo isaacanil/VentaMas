@@ -16,7 +16,39 @@ export const cartSlice = createSlice({
         loadCart: (state, actions) => {
             const cart = actions.payload;
             if (cart?.id) {
-                state.data = cart;
+                // Convert Firestore Timestamps to milliseconds for serialization
+                const processedCart = { ...cart };
+                
+                // Convert preorderDetails.date if it exists
+                if (processedCart.preorderDetails?.date) {
+                    const date = processedCart.preorderDetails.date;
+                    // Check if it's a Firestore Timestamp (has seconds and nanoseconds)
+                    if (date.seconds !== undefined && date.nanoseconds !== undefined) {
+                        processedCart.preorderDetails = {
+                            ...processedCart.preorderDetails,
+                            date: date.seconds * 1000 // Convert to milliseconds
+                        };
+                    }
+                }
+                
+                // Convert history array dates if they exist
+                if (processedCart.history && Array.isArray(processedCart.history)) {
+                    processedCart.history = processedCart.history.map(historyItem => {
+                        if (historyItem?.date) {
+                            const date = historyItem.date;
+                            // Check if it's a Firestore Timestamp
+                            if (date.seconds !== undefined && date.nanoseconds !== undefined) {
+                                return {
+                                    ...historyItem,
+                                    date: date.seconds * 1000 // Convert to milliseconds
+                                };
+                            }
+                        }
+                        return historyItem;
+                    });
+                }
+                
+                state.data = processedCart;
             }
 
         },

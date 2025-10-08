@@ -8,10 +8,12 @@ export function money(n) {
 }
 
 export function formatDate(ts) {
+  if (!ts) return '';
+  
   const ms =
     ts instanceof Date
       ? ts.getTime()
-      : typeof ts.toMillis === 'function'
+      : typeof ts?.toMillis === 'function'
       ? ts.toMillis()
       : ts?.seconds
       ? ts.seconds * 1000
@@ -22,11 +24,18 @@ export function formatDate(ts) {
 }
 
 export function getDiscount(d) {
-  const subtotal = d.products.reduce(
-    (sum, p) => sum + p.pricing.price * p.amountToBuy,
-    0
-  );
-  return subtotal * (d.discount.value / 100);
+  const products = Array.isArray(d?.products) ? d.products : [];
+  const discountValue = Number(d?.discount?.value) || 0;
+
+  if (!discountValue || products.length === 0) return 0;
+
+  const subtotal = products.reduce((sum, p) => {
+    const price = Number(p?.pricing?.price) || 0;
+    const qty = Number(p?.amountToBuy) || 0;
+    return sum + price * qty;
+  }, 0);
+
+  return subtotal * (discountValue / 100);
 }
 
 export function getProductIndividualDiscount(product) {

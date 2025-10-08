@@ -42,8 +42,9 @@ return (
                                     setVisible(false);
                                 }}
                                 disabled={option.disabled}
+                                $theme={option.theme}
                             >
-                                {option.icon && <IconWrapper>{option.icon}</IconWrapper>}
+                                {option.icon && <IconWrapper $theme={option.theme}>{option.icon}</IconWrapper>}
                                 {option.text}
                             </MenuItem>
                         ))}
@@ -122,7 +123,7 @@ const MenuItem = styled.button`
   gap: 8px; 
   padding: 10px;  
   border: none;
-  background: #ffffff;
+  background: ${props => props.$theme?.background || '#ffffff'};
   border-radius: 6px; 
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   opacity: ${props => props.disabled ? 0.6 : 1};
@@ -130,12 +131,18 @@ const MenuItem = styled.button`
   text-align: left;
   font-size: 15px;
   font-weight: 500;
-  color: #475569;
+  color: ${props => props.$theme?.color || '#475569'};
   transition: all 0.2s;
   
   &:hover {
-    background: ${props => !props.disabled && '#f0f0f0'};
-    color: ${props => !props.disabled && '#0f172a'};
+    background: ${props => {
+      if (props.disabled) return props.$theme?.background || '#ffffff';
+      return props.$theme?.backgroundHover || '#f0f0f0';
+    }};
+    color: ${props => {
+      if (props.disabled) return props.$theme?.color || '#475569';
+      return props.$theme?.colorHover || '#0f172a';
+    }};
   }
 `;
 
@@ -143,7 +150,7 @@ const IconWrapper = styled.span`
   display: flex;
   align-items: center;
   font-size: 16px;
-  color: #64748b;
+  color: ${props => props.$theme?.iconColor || '#64748b'};
 `;
 
 const CloseButton = styled.button`

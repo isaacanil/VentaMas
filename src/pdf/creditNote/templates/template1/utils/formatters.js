@@ -9,10 +9,12 @@ export function money(n) {
 }
 
 export function formatDate(ts) {
+  if (!ts) return '';
+  
   const ms =
     ts instanceof Date
       ? ts.getTime()
-      : typeof ts.toMillis === 'function'
+      : typeof ts?.toMillis === 'function'
       ? ts.toMillis()
       : ts?.seconds
       ? ts.seconds * 1000

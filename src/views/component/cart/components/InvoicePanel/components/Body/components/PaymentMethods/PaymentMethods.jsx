@@ -124,81 +124,77 @@ export const PaymentMethods = () => {
 
     return (
         <Container>
-            <Form
-                layout='vertical'
-            >
-                <Items>
-                    {
-                        paymentMethods.map((method) => {
-                            return (
-                                <Row
-                                    key={method.method}
-                                >
-                                    <Checkbox
-                                        checked={method.status}
-                                        onChange={(e) => handleStatusChange(method, e.target.checked)}
-                                    />
-                                    <FormItem
-                                        placeholder='Método de pago'
-                                        label={paymentInfo[method.method].label}
-                                    >                                        {method.method === 'cash' ? (
-                                            <InputNumber
-                                                addonBefore={paymentInfo[method.method].icon}
-                                                placeholder='$$$'
-                                                value={method.value}
+            <Items>
+                {
+                    paymentMethods.map((method) => {
+                        return (
+                            <Row
+                                key={method.method}
+                            >
+                                <Checkbox
+                                    checked={method.status}
+                                    onChange={(e) => handleStatusChange(method, e.target.checked)}
+                                />
+                                <FormItem
+                                    placeholder='Método de pago'
+                                    label={paymentInfo[method.method].label}
+                                >                                        {method.method === 'cash' ? (
+                                        <InputNumber
+                                            addonBefore={paymentInfo[method.method].icon}
+                                            placeholder='$$$'
+                                            value={method.value}
+                                            disabled={!method.status}
+                                            onChange={(e) => handleValueChange(method, e)}
+                                            ref={cashInputRef}
+                                            min={0}
+                                            precision={2}
+                                            step={0.01}
+                                            style={{ width: '100%' }}
+                                        />
+                                    ) : method.method === 'creditNote' ? (
+                                        <InputNumber
+                                            addonBefore={paymentInfo[method.method].icon}
+                                            placeholder='Gestionado por selector'
+                                            value={method.value}
+                                            disabled={true}
+                                            min={0}
+                                            precision={2}
+                                            step={0.01}
+                                            style={{ width: '100%' }}
+                                        />
+                                    ) : (
+                                        <InputNumber
+                                            addonBefore={paymentInfo[method.method].icon}
+                                            placeholder='$$$'
+                                            value={method.value}
+                                            disabled={!method.status}
+                                            onChange={(e) => handleValueChange(method, e)}
+                                            min={0}
+                                            precision={2}
+                                            step={0.01}
+                                            style={{ width: '100%' }}
+                                        />
+                                    )}
+                                </FormItem>
+                                {
+                                    (method.reference !== undefined) && (
+                                        <FormItem
+                                            placeholder='Método de pago'
+                                            label='Referencia'
+                                        >
+                                            <Input
+                                                placeholder='Referencia'
                                                 disabled={!method.status}
-                                                onChange={(e) => handleValueChange(method, e)}
-                                                ref={cashInputRef}
-                                                min={0}
-                                                precision={2}
-                                                step={0.01}
-                                                style={{ width: '100%' }}
+                                                onChange={(e) => handleReferenceChange(method, e.target.value)}
                                             />
-                                        ) : method.method === 'creditNote' ? (
-                                            <InputNumber
-                                                addonBefore={paymentInfo[method.method].icon}
-                                                placeholder='Gestionado por selector'
-                                                value={method.value}
-                                                disabled={true}
-                                                min={0}
-                                                precision={2}
-                                                step={0.01}
-                                                style={{ width: '100%' }}
-                                            />
-                                        ) : (
-                                            <InputNumber
-                                                addonBefore={paymentInfo[method.method].icon}
-                                                placeholder='$$$'
-                                                value={method.value}
-                                                disabled={!method.status}
-                                                onChange={(e) => handleValueChange(method, e)}
-                                                min={0}
-                                                precision={2}
-                                                step={0.01}
-                                                style={{ width: '100%' }}
-                                            />
-                                        )}
-                                    </FormItem>
-                                    {
-                                        (method.reference !== undefined) && (
-                                            <FormItem
-                                                placeholder='Método de pago'
-                                                label='Referencia'
-                                            >
-                                                <Input
-                                                    placeholder='Referencia'
-                                                    disabled={!method.status}
-                                                    onChange={(e) => handleReferenceChange(method, e.target.value)}
-                                                />
-                                            </FormItem>
-                                        )
-                                    }
-                                </Row>
-                            )
-                        })
-                    }
-                </Items>
-            </Form>
+                                        </FormItem>
+                                    )
+                                }
+                            </Row>
+                        )
+                    })
+                }
+            </Items>
         </Container>
     )
 }

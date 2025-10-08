@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { Modal, Select, notification } from 'antd';
+import { Modal, Select, App } from 'antd';
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -239,6 +239,7 @@ const STATUS_LABELS = {
 };
 
 export const usePreorderModal = () => {
+  const { notification } = App.useApp();
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const cart = useSelector(selectCart);
@@ -328,9 +329,19 @@ export const usePreorderModal = () => {
         client: data?.client?.name || 'Cliente sin nombre',
         total: Number(data?.totalPurchase?.value || 0),
         status: data?.status || 'pending',
-        createdAt: data?.preorderDetails?.date?.seconds
-          ? new Date(data.preorderDetails.date.seconds * 1000)
-          : null,
+        createdAt: (() => {
+          const date = data?.preorderDetails?.date;
+          if (!date) return null;
+          // Handle Firestore Timestamp (with seconds)
+          if (date.seconds !== undefined) {
+            return new Date(date.seconds * 1000);
+          }
+          // Handle already converted milliseconds
+          if (typeof date === 'number') {
+            return new Date(date);
+          }
+          return null;
+        })(),
       };
     });
   }, [preorders]);
@@ -361,6 +372,29 @@ export const usePreorderModal = () => {
     entries.find((entry) => entry.key === selectedPreorderKey) || null
   ), [entries, selectedPreorderKey]);
 
+  const convertTimestampsToMillis = (obj) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    
+    if (Array.isArray(obj)) {
+      return obj.map(item => convertTimestampsToMillis(item));
+    }
+    
+    const converted = {};
+    for (const key in obj) {
+      const value = obj[key];
+      
+      // Check if it's a Firestore Timestamp
+      if (value && typeof value === 'object' && value.seconds !== undefined && value.nanoseconds !== undefined) {
+        converted[key] = value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
+      } else if (value && typeof value === 'object') {
+        converted[key] = convertTimestampsToMillis(value);
+      } else {
+        converted[key] = value;
+      }
+    }
+    return converted;
+  };
+
   const handleLoadPreorder = (preorder) => {
     if (!preorder) {
       return;
@@ -374,16 +408,19 @@ export const usePreorderModal = () => {
       return;
     }
 
-    dispatch(loadCart(preorder));
+    // Convert all Firestore Timestamps to milliseconds before dispatching to Redux
+    const serializedPreorder = convertTimestampsToMillis(preorder);
+
+    dispatch(loadCart(serializedPreorder));
     dispatch(setCartId());
-    if (preorder?.client) {
-      dispatch(selectClientWithAuth(preorder.client));
+    if (serializedPreorder?.client) {
+      dispatch(selectClientWithAuth(serializedPreorder.client));
     }
 
     const params = new URLSearchParams(location.search);
     params.set('mode', 'preorder');
-    if (preorder?.id) {
-      params.set('preorderId', preorder.id);
+    if (serializedPreorder?.id) {
+      params.set('preorderId', serializedPreorder.id);
     } else {
       params.delete('preorderId');
     }
@@ -391,7 +428,7 @@ export const usePreorderModal = () => {
 
     notification.success({
       message: 'Preventa cargada',
-      description: `Se cargó la preventa ${preorder?.preorderDetails?.numberID || ''} del cliente ${preorder?.client?.name || 'sin nombre'}.`
+      description: `Se cargó la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} del cliente ${serializedPreorder?.client?.name || 'sin nombre'}.`
     });
     setIsOpen(false);
   };

@@ -59,8 +59,8 @@ export function buildFooter(biz, d) {
 
   /* Tabla de totales */
   const totalsBody = [
-    ['Sub-Total:', { text: money(d.totalPurchaseWithoutTaxes.value), style: 'totalsValue', margin: [0, 0] }],
-    ['ITBIS:',     { text: money(d.totalTaxes.value),                style: 'totalsValue', margin: [0, 0] }],
+    ['Sub-Total:', { text: money(d.totalPurchaseWithoutTaxes?.value ?? 0), style: 'totalsValue', margin: [0, 0] }],
+    ['ITBIS:',     { text: money(d.totalTaxes?.value ?? 0),                style: 'totalsValue', margin: [0, 0] }],
     !hasIndividualDisc && d.discount?.value && [
       'Descuento General:', { text: `-${money(generalDiscount)}`, style: 'totalsValue', margin: [0, 0] }
     ],
@@ -68,11 +68,11 @@ export function buildFooter(biz, d) {
       'Descuentos Productos:', { text: `-${money(individualDiscounts)}`, style: 'totalsValue', margin: [0, 0] }
     ],
     d.delivery?.status && [
-      'Delivery:', { text: money(d.delivery.value), style: 'totalsValue', margin: [0, 0] }
+      'Delivery:', { text: money(d.delivery?.value ?? 0), style: 'totalsValue', margin: [0, 0] }
     ],
     [
       { text: 'Total:', bold: true, margin: [0, 4, 0, 2] },
-      { text: money(d.totalPurchase.value), style: 'totalsValue', bold: true, margin: [0, 4, 0, 2] }
+      { text: money(d.totalPurchase?.value ?? 0), style: 'totalsValue', bold: true, margin: [0, 4, 0, 2] }
     ]
   ].filter(Boolean);
   /* devolución de la función factory */

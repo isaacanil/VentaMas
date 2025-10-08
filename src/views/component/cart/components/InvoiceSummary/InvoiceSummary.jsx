@@ -28,6 +28,7 @@ import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
 import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules';
 import { PinAuthorizationModal } from '../../../modals/PinAuthorizationModal/PinAuthorizationModal';
 import { useSearchParams } from 'react-router-dom';
+import { usePreorderModal } from '../../../../pages/Venta/components/PreorderQuickActions';
 
 const resolveAuthorizerName = (authorizer) => (
   authorizer?.displayName ||
@@ -58,6 +59,7 @@ const InvoiceSummary = () => {
   const discount = getTotalDiscount(subTotal, discountPercent);
   const { billing } = useSelector(SelectSettingCart);
   const { shouldUsePinForModule, isInvoicesModuleEnabled } = useAuthorizationModules();
+  const { openModal: openPreorderModal, Modal: PreorderModal } = usePreorderModal();
 
   // Nuevos selectores para descuentos individuales
   const productsWithIndividualDiscounts = useSelector(selectProductsWithIndividualDiscounts);
@@ -390,16 +392,30 @@ const InvoiceSummary = () => {
       icon: isLoadingQuotation ? <Spin size="small" /> : icons.quotation.quote,
       disabled: isButtonDisabled || isLoadingQuotation
     },
+    billing?.billingMode === 'deferred' && {
+      text: 'Cargar Preventa',
+      action: openPreorderModal,
+      icon: icons.finances.fileInvoiceDollar,
+      disabled: false // Siempre habilitado - no requiere elementos en el carrito
+    },
     {
       text: 'Cancelar venta',
       action: () => handleCancelShipping({ dispatch, closeInvoicePanel: false }),
       icon: icons.operationModes.close,
-      disabled: !isCartValid && !billing?.isLoading,
+      disabled: false, // Siempre habilitado
+      theme: {
+        background: '#ffe6e6',
+        backgroundHover: '#ffd4d4',
+        color: '#d32f2f',
+        colorHover: '#b71c1c',
+        iconColor: '#d32f2f'
+      }
     },
   ].filter(Boolean);
 
   return (
     <Fragment>
+      {PreorderModal}
       {isLoadingQuotation && (
         <div style={{
           position: 'fixed',
@@ -466,7 +482,7 @@ const InvoiceSummary = () => {
             {text}
           </Button>
           <ActionMenu
-            disabled={disabled}
+           
             options={menuOptions}
           />
           <Quotation ref={quotationPrintRef} data={quotationData} />
