@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 
 const COLLECTION = 'authorizationRequests';
@@ -30,10 +30,12 @@ const shouldExpire = (data: any): boolean => {
   return typeof expiresMillis === 'number' && expiresMillis < Date.now();
 };
 
-export const expireAuthorizationRequests = functions.pubsub
-  .schedule('every 5 minutes')
-  .timeZone('America/Santo_Domingo')
-  .onRun(async () => {
+export const expireAuthorizationRequests = onSchedule(
+  {
+    schedule: 'every 5 minutes',
+    timeZone: 'America/Santo_Domingo',
+  },
+  async (_event) => {
     const db = getFirestore();
     const businessesSnap = await db.collection('businesses').get();
 
@@ -55,6 +57,6 @@ export const expireAuthorizationRequests = functions.pubsub
     }
 
     await Promise.allSettled(updates);
-    return null;
-  });
+  }
+);
 
