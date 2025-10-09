@@ -319,7 +319,7 @@ export const usePreorderModal = () => {
   };
 
   const entries = useMemo(() => {
-    return preorders.map((preorder, index) => {
+    const mappedEntries = preorders.map((preorder, index) => {
       const data = preorder?.data || {};
       return {
         key: data.id || data?.preorderDetails?.numberID || `preorder-${index}`,
@@ -344,6 +344,18 @@ export const usePreorderModal = () => {
         })(),
       };
     });
+
+    // Sort entries to show the most recent ones first
+    mappedEntries.sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+      if (a.createdAt) return -1;
+      if (b.createdAt) return 1;
+      return 0;
+    });
+
+    return mappedEntries;
   }, [preorders]);
 
   useEffect(() => {
@@ -436,8 +448,10 @@ export const usePreorderModal = () => {
   useEffect(() => {
     if (location.pathname !== '/sales') return;
     const params = new URLSearchParams(location.search);
-    if (params.get('mode') === 'preorder' && cart?.data?.type !== 'preorder') {
-      params.delete('mode');
+    const mode = params.get('mode');
+    const preorderIdParam = params.get('preorderId');
+
+    if (mode === 'preorder' && preorderIdParam && cart?.data?.type !== 'preorder') {
       params.delete('preorderId');
       navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
     }

@@ -20,6 +20,7 @@
     "check-unused-exports": "pwsh -File .\\check-unused-exports.ps1",
     "check-unused-exports:saveCsv": "pwsh -File .\\check-unused-exports.ps1 -SaveCsv",
     "storybook": "storybook dev -p 6006",
+    "push:alt": "bash ./tools/push-to-alt-as-main.sh",
     "build-storybook": "storybook build"
   },
   "dependencies": {

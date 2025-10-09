@@ -6,7 +6,7 @@ import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoice
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { Delivery } from './components/Delivery/Delivery';
 import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
-import { notification, Modal, Spin, message } from 'antd'
+import { notification, Modal, Spin, message, Tooltip } from 'antd'
 import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
 import { fbAddPreOrder } from '../../../../../firebase/invoices/fbAddPreocer';
 import { selectUser } from '../../../../../features/auth/userSlice';
@@ -74,10 +74,37 @@ const InvoiceSummary = () => {
   const shouldRequirePinForDiscount = shouldUsePinForModule('invoices') && isCashier;
   const [isDiscountAuthorized, setIsDiscountAuthorized] = useState(!shouldRequirePinForDiscount);
   const [discountAuthorizer, setDiscountAuthorizer] = useState(null);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isPreorderRoute = searchParams.get('mode') === 'preorder';
   const isPreorderCart = cartData?.type === 'preorder';
   const isEditingPreorder = isPreorderRoute && isPreorderCart;
+  const defaultMode = billing?.billingMode === 'deferred' ? 'preorder' : 'sale';
+
+  const updateMode = useCallback((modeValue, { preorderId } = {}) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (modeValue) {
+      params.set('mode', modeValue);
+    } else {
+      params.delete('mode');
+    }
+
+    if (preorderId) {
+      params.set('preorderId', preorderId);
+    } else {
+      params.delete('preorderId');
+    }
+
+    setSearchParams(params, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const activateSaleMode = useCallback(() => {
+    updateMode(defaultMode);
+  }, [defaultMode, updateMode]);
+
+  const activatePreorderMode = useCallback(() => {
+    updateMode('preorder');
+  }, [updateMode]);
 
   const {
     showModal: showDiscountPinModal,
@@ -332,6 +359,7 @@ const InvoiceSummary = () => {
       await fbAddPreOrder(user, cartData);
       handleCancelShipping({ dispatch, closeInvoicePanel: false });
       setIsOpenPreorderConfirmation(false);
+      activateSaleMode();
       notification.success({
         message: 'Preorden guardada con éxito',
         type: 'success'
@@ -373,7 +401,10 @@ const InvoiceSummary = () => {
       disabled: isButtonDisabled
     } : {
       text: 'Preventa',
-      action: () => setIsOpenPreorderConfirmation(true),
+      action: () => {
+        activatePreorderMode();
+        setIsOpenPreorderConfirmation(true);
+      },
       disabled: isButtonDisabled
     },
     default: {
@@ -384,6 +415,22 @@ const InvoiceSummary = () => {
   }
 
   const { text, action, disabled } = billingButtons[billing?.billingMode] || billingButtons.default;
+
+  const tooltipTitle = useMemo(() => {
+    if (disabled) {
+      return warningMessage;
+    }
+    switch (text) {
+      case 'Facturar':
+        return 'Proceder a facturar';
+      case 'Completar':
+        return 'Completar la preventa';
+      case 'Preventa':
+        return 'Guardar como preventa';
+      default:
+        return '';
+    }
+  }, [disabled, warningMessage, text]);
 
   const menuOptions = [
     billingSettings?.quoteEnabled && {
@@ -400,7 +447,10 @@ const InvoiceSummary = () => {
     },
     {
       text: 'Cancelar venta',
-      action: () => handleCancelShipping({ dispatch, closeInvoicePanel: false }),
+      action: () => {
+        activateSaleMode();
+        handleCancelShipping({ dispatch, closeInvoicePanel: false });
+      },
       icon: icons.operationModes.close,
       disabled: false, // Siempre habilitado
       theme: {
@@ -474,13 +524,14 @@ const InvoiceSummary = () => {
         )}
         {warningMessage && <WarningPill message={warningMessage} />}
         <TotalLine>
-          <Button
-            onClick={action}
-            disabled={disabled}
-            title={warningMessage || ""}
-          >
-            {text}
-          </Button>
+          <Tooltip title={tooltipTitle}>
+            <Button
+              onClick={action}
+              disabled={disabled}
+            >
+              {text}
+            </Button>
+          </Tooltip>
           <ActionMenu
            
             options={menuOptions}
@@ -494,7 +545,10 @@ const InvoiceSummary = () => {
       <PinAuthorizationModal {...discountPinModalProps} />
       <PreorderConfirmation
         open={isOpenPreorderConfirmation}
-        onCancel={() => setIsOpenPreorderConfirmation(false)}
+        onCancel={() => {
+          setIsOpenPreorderConfirmation(false);
+          activateSaleMode();
+        }}
         onConfirm={handleSavePreOrder}
         preorder={{ data: cartData }}
         loading={isSavingPreorder}

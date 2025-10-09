@@ -122,6 +122,10 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
     });
 
     logger.info('createInvoiceV2 completed', { traceId, invoiceId: result.invoiceId, reused: result.alreadyExists });
+    logger.info('data', { traceId, data: { ...data, cart: 'omitted' } });
+    logger.info('idempotencyKey', { traceId, idempotencyKey });
+    logger.info('result', { traceId, result });
+
     return {
       status: 'pending',
       invoiceId: result.invoiceId,

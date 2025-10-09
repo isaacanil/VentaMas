@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
+import { Tooltip } from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import { SelectTotalShoppingItems } from '../../../../../../../features/cart/cartSlice'
@@ -12,18 +13,20 @@ export const ProductCounter = ({ products }) => {
     const productLength = products?.length || 0
 
     return (
-        <Container title="Productos seleccionados">
-            <FontAwesomeIcon icon={faShoppingCart} size="sm" />
-            <CounterContent>
-                {totalShoppingItems ? (
-                    <>
-                        <AnimatedNumber value={`${useFormatNumber(totalShoppingItems)}`} />
-                        <CounterSeparator>/</CounterSeparator>
-                    </>
-                ) : null}
-                <AnimatedNumber value={useFormatNumber(productLength)} />
-            </CounterContent>
-        </Container>
+        <Tooltip title="Productos en el carrito">
+            <Container>
+                <FontAwesomeIcon icon={faShoppingCart} size="sm" />
+                <CounterContent>
+                    {totalShoppingItems ? (
+                        <>
+                            <AnimatedNumber value={`${useFormatNumber(totalShoppingItems)}`} />
+                            <CounterSeparator>/</CounterSeparator>
+                        </>
+                    ) : null}
+                    <AnimatedNumber value={useFormatNumber(productLength)} />
+                </CounterContent>
+            </Container>
+        </Tooltip>
     )
 }
 

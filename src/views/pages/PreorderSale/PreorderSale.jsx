@@ -27,6 +27,8 @@ export const Preorder = () => {
     return () => { unsubscribe() };
   }, [user]);
 
+  console.log(preorders);
+
   const handleSearch = (term) => {
     const lowerTerm = term.toLowerCase();
     setSearchTerm(term);

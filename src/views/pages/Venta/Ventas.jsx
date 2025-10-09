@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+import { useSearchParams } from 'react-router-dom'
 
 import { Cart } from '../../component/cart/cart.jsx'
 import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx'
@@ -9,7 +10,7 @@ import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.js
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import useFilter from '../../../hooks/search/useSearch' // Cambiar importación
-import { addProduct, resetCart, toggleCart } from '../../../features/cart/cartSlice'
+import { addProduct, resetCart, toggleCart, SelectSettingCart } from '../../../features/cart/cartSlice'
 import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodeScanner'
 import { motion } from 'framer-motion'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
@@ -26,9 +27,11 @@ import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
 
 export const Sales = () => {
   const [searchData, setSearchData] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
   const user = useSelector(selectUser);
   const categoryGrouped = useSelector(selectCategoryGrouped)
   const { products, loading: productsLoading, setLoading, error } = useGetProducts()
+  const cartSettings = useSelector(SelectSettingCart);
 
   const viewport = useViewportWidth();
   const dispatch = useDispatch()
@@ -94,6 +97,28 @@ export const Sales = () => {
     }
     handleCancelShipping()
   }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    const currentMode = params.get('mode');
+    const billingMode = cartSettings?.billing?.billingMode;
+    const desiredMode = billingMode === 'deferred' ? 'preorder' : 'sale';
+    let hasChanges = false;
+
+    if (currentMode !== desiredMode) {
+      params.set('mode', desiredMode);
+      hasChanges = true;
+    }
+
+    if (desiredMode !== 'preorder' && params.has('preorderId')) {
+      params.delete('preorderId');
+      hasChanges = true;
+    }
+
+    if (hasChanges) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [cartSettings?.billing?.billingMode, searchParams, setSearchParams])
 
   return (
     <>

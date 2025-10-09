@@ -138,62 +138,131 @@ export const processInvoiceOutbox = firestore
         } else if (type === 'createCanonicalInvoice') {
           const canonRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
           const canonSnap = await tx.get(canonRef);
+          const existingCanon = canonSnap.exists ? canonSnap.data()?.data || {} : {};
           const cart = payload.cart || {};
           const client = payload.client || invoice?.snapshot?.client || null;
           const userRef = db.doc(`users/${user.uid}`);
           const dueDateMs = payload?.dueDate || null;
           const dueDateTs = dueDateMs ? Timestamp.fromMillis(dueDateMs) : null;
-          const ncfCode = invoice?.snapshot?.ncf?.code || null;
+          const ncfCode = invoice?.snapshot?.ncf?.code || cart?.NCF || existingCanon?.NCF || null;
 
           const alreadyFrontendReady = invoiceStatus === 'frontend_ready' || Boolean(invoice?.frontendReadyAt);
 
-          if (!canonSnap.exists) {
-            const ccSnap = await getCashCount.getOpenCashCountDocFromTx(tx, user);
-            const { cashCountId } = await checkOpenCashCount({ cashCountSnap: ccSnap, user });
-            const nextIdSnap = await getNextIDTransactionalSnap(tx, user, 'lastInvoiceId');
-            let clientRef = null;
-            let clientSnap = null;
-            if (client?.id) {
-              clientRef = db.doc(`businesses/${businessId}/clients/${client.id}`);
-              clientSnap = await tx.get(clientRef);
-            }
-            ensureTaskStart();
-            if (clientRef) {
-              const existingClient = clientSnap?.exists ? clientSnap.data() || {} : {};
-              const clientPayload = {
-                ...existingClient,
-                ...client,
-                updatedAt: FieldValue.serverTimestamp(),
-              };
-              if (!clientSnap?.exists) {
-                clientPayload.createdAt = FieldValue.serverTimestamp();
-              }
-              tx.set(clientRef, clientPayload, { merge: true });
-            }
-            const numberID = applyNextIDTransactional(tx, nextIdSnap, 1);
-            const bill = {
-              ...cart,
-              id: invoiceId,
-              NCF: ncfCode,
-              client,
-              cashCountId,
-              date: FieldValue.serverTimestamp(),
-              numberID,
-              userID: user.uid,
-              user: userRef,
-              status: 'completed',
-            };
-            if (dueDateTs) {
-              bill.dueDate = dueDateTs;
-              bill.hasDueDate = true;
-            }
-            if (payload?.invoiceComment) {
-              bill.invoiceComment = payload.invoiceComment;
-            }
-            tx.set(canonRef, { data: bill }, { merge: true });
-          } else {
-            ensureTaskStart();
+          let clientRef = null;
+          let clientSnap = null;
+          if (client?.id) {
+            clientRef = db.doc(`businesses/${businessId}/clients/${client.id}`);
+            clientSnap = await tx.get(clientRef);
           }
+
+          let cashCountId = existingCanon?.cashCountId || cart?.cashCountId || null;
+          if (!cashCountId) {
+            const ccSnap = await getCashCount.getOpenCashCountDocFromTx(tx, user);
+            const openCashCount = await checkOpenCashCount({ cashCountSnap: ccSnap, user });
+            cashCountId = openCashCount?.cashCountId || null;
+          }
+
+          let numberID = existingCanon?.numberID || cart?.numberID || null;
+          if (!numberID) {
+            const nextIdSnap = await getNextIDTransactionalSnap(tx, user, 'lastInvoiceId');
+            numberID = applyNextIDTransactional(tx, nextIdSnap, 1);
+          }
+
+          ensureTaskStart();
+
+          if (clientRef) {
+            const existingClient = clientSnap?.exists ? clientSnap.data() || {} : {};
+            const clientPayload = {
+              ...existingClient,
+              ...client,
+              updatedAt: FieldValue.serverTimestamp(),
+            };
+            if (!clientSnap?.exists) {
+              clientPayload.createdAt = FieldValue.serverTimestamp();
+            }
+            tx.set(clientRef, clientPayload, { merge: true });
+          }
+
+          const historyFromCart = Array.isArray(cart?.history) ? cart.history : [];
+          const historyExisting = Array.isArray(existingCanon?.history) ? existingCanon.history : [];
+          const mergedHistory = (() => {
+            const result = [];
+            const dedupe = new Set();
+            for (const entry of [...historyFromCart, ...historyExisting]) {
+              if (!entry || typeof entry !== 'object') continue;
+              const key = JSON.stringify(entry);
+              if (dedupe.has(key)) continue;
+              dedupe.add(key);
+              result.push(entry);
+            }
+            return result;
+          })();
+
+          const statusCandidates = [cart?.status, existingCanon?.status].filter(Boolean);
+          const resolvedStatus =
+            statusCandidates.find((status) => status && status !== 'pending') || 'completed';
+          const resolvedDate = existingCanon?.date || cart?.date || FieldValue.serverTimestamp();
+          const resolvedDueDate = dueDateTs || existingCanon?.dueDate || null;
+          const resolvedInvoiceComment =
+            payload?.invoiceComment ??
+            existingCanon?.invoiceComment ??
+            cart?.invoiceComment ??
+            null;
+          const resolvedClient = client || existingCanon?.client || cart?.client || null;
+          const resolvedNcf = ncfCode || existingCanon?.NCF || cart?.NCF || null;
+          const resolvedCashCountId = cashCountId || existingCanon?.cashCountId || cart?.cashCountId || null;
+
+          const canonicalData = {
+            ...cart,
+            id: invoiceId,
+            status: resolvedStatus,
+            userID: user.uid,
+            user: userRef,
+            date: resolvedDate,
+          };
+
+          if (resolvedNcf) {
+            canonicalData.NCF = resolvedNcf;
+          }
+
+          if (resolvedClient) {
+            canonicalData.client = resolvedClient;
+          }
+
+          if (resolvedCashCountId) {
+            canonicalData.cashCountId = resolvedCashCountId;
+          }
+
+          if (numberID != null) {
+            canonicalData.numberID = numberID;
+          }
+
+          if (resolvedDueDate) {
+            canonicalData.dueDate = resolvedDueDate;
+            canonicalData.hasDueDate = true;
+          }
+
+          if (resolvedInvoiceComment !== undefined && resolvedInvoiceComment !== null) {
+            canonicalData.invoiceComment = resolvedInvoiceComment;
+          }
+
+          if (mergedHistory.length > 0) {
+            canonicalData.history = mergedHistory;
+          }
+
+          if (canonicalData.preorderDetails && typeof canonicalData.preorderDetails === 'object') {
+            canonicalData.preorderDetails = {
+              ...canonicalData.preorderDetails,
+              status: resolvedStatus,
+            };
+          }
+
+          const sanitizedCanonicalData = Object.fromEntries(
+            Object.entries(canonicalData).filter(([, value]) => value !== undefined)
+          );
+
+          tx.set(canonRef, { data: sanitizedCanonicalData }, { merge: true });
+
           const timelineEntries = [{ status: 'invoice_doc_done', at: Timestamp.now() }];
           if (!alreadyFrontendReady) {
             timelineEntries.push({ status: 'frontend_ready', at: Timestamp.now() });

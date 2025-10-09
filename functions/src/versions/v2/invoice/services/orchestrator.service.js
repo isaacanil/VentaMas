@@ -24,7 +24,18 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
       return { invoiceId: data.invoiceId, alreadyExists: true };
     }
 
-    const newInvoiceId = nanoid();
+    const isPreorder =
+      !!(payload?.preorder?.isPreorder || payload?.cart?.preorderDetails?.isOrWasPreorder);
+    const preorderCartId = isPreorder
+      ? (
+        payload?.cart?.id
+        || payload?.cart?.cartId
+        || payload?.cart?.cartIdRef
+        || payload?.cartId
+        || null
+      )
+      : null;
+    const newInvoiceId = preorderCartId || nanoid();
     const invoiceRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}`);
 
     // Derivar dueDate si no llega y hay configuración en billing
@@ -55,7 +66,6 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     } catch {}
 
     // Base doc
-    const isPreorder = !!(payload?.preorder?.isPreorder || payload?.cart?.preorderDetails?.isOrWasPreorder);
     const baseDoc = {
       version: 2,
       status: 'pending',
@@ -75,6 +85,7 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
         totals: payload?.cart?.payment || null,
         meta: {
           preorder: isPreorder,
+          preorderId: isPreorder ? (preorderCartId || null) : null,
         },
         dueDate: derivedDueDate || null,
         invoiceComment: derivedInvoiceComment || null,
@@ -328,5 +339,4 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
 
   return { invoiceId, status: 'pending', alreadyExists };
 }
-
 

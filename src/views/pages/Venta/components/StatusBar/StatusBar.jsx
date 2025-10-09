@@ -1,9 +1,16 @@
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
+import { Tooltip } from 'antd'
 import { BusinessIndicator } from './components/BusinessIndicator/BusinessIndicator'
 import { ProductCounter } from './components/Card/Card'
+import { useSelector } from 'react-redux'
+import { selectCart } from '../../../../../features/cart/cartSlice'
 
 export const StatusBar = ({ products }) => {
+    const cart = useSelector(selectCart)
+    const isPreorder = cart?.data?.type === 'preorder'
+    const preorderNumber = cart?.data?.preorderDetails?.numberID
+
     return (
         <Pill
             as={motion.div}
@@ -13,10 +20,31 @@ export const StatusBar = ({ products }) => {
             style={{ position: 'absolute', bottom: '0.5rem', right: '0.9rem', zIndex: 100 }}
         >
             <BusinessIndicator />
+            {isPreorder && preorderNumber && (
+                <Tooltip title="Número de Preventa">
+                    <PreorderIndicator>
+                        #{preorderNumber}
+                    </PreorderIndicator>
+                </Tooltip>
+            )}
             <ProductCounter products={products} />
         </Pill>
     )
 }
+
+const PreorderIndicator = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 14px;
+    background: rgba(255, 182, 4, 0.2);
+    color: #ffb604;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+`;
 
 const Pill = styled.div`
   display: flex;

@@ -231,7 +231,7 @@ export const InvoicePanel = () => {
                 if (cart?.isAddedToReceivables) {
                     await form.validateFields()
                 }
-
+                
                 const dueDate = calculateDueDate(duePeriod, hasDueDate);
 
                 if (!resolvedBusinessId) {
@@ -244,6 +244,7 @@ export const InvoicePanel = () => {
                     testMode: Boolean(isTestMode),
                     taxReceiptEnabled: effectiveTaxReceiptEnabled,
                     idempotencyKey,
+                    invoice: cart
                 });
                 const invoiceResult = await measure('processInvoice', () => runInvoice({
                     cart,
@@ -311,6 +312,7 @@ export const InvoicePanel = () => {
                     invoiceId: createdInvoice?.id ?? invoiceResult?.invoiceId ?? null,
                     status: invoiceResult?.status ?? null,
                     reused: Boolean(invoiceResult?.reused),
+                    invoice: createdInvoice,
                 });
 
                 if (shouldPrintInvoice) {

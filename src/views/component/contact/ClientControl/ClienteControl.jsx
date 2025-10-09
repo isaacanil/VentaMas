@@ -11,7 +11,7 @@ import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
 import { OPERATION_MODES } from '../../../../constants/modes.js'
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
 import { selectNcfType, selectTaxReceipt, selectTaxReceiptType, selectNcfTypeLocked } from '../../../../features/taxReceipt/taxReceiptSlice.js'
-import { Input, Button as AntButton, Checkbox, Select, Button } from 'antd';
+import { Input, Button as AntButton, Checkbox, Select, Button, Tooltip } from 'antd';
 import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
 import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
 import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
@@ -108,6 +108,7 @@ export const ClientControl = () => {
   const handleCloseCart = () => dispatch(toggleCart())
 
   const limitByWindowWidth = useWindowWidth();
+  const comprobanteTooltipTitle = nfcType ? `Comprobante seleccionado: ${nfcType}` : "Seleccionar el tipo de comprobante fiscal para la factura";
 
   return (
     <Container ref={searchClientRef}>
@@ -134,26 +135,30 @@ export const ClientControl = () => {
             data-client-control-input="true"
           />
           {mode === CLIENT_MODE_BAR.SEARCH.id && (
-            <ClientButton
-              color='blue'
-              variant="solid"
-              icon={icons.operationModes.add}
-              onClick={openAddClientModal}
-              data-client-control-input="true"
-            >
-              Cliente
-            </ClientButton>
+            <Tooltip title="Agregar nuevo cliente">
+              <ClientButton
+                color='blue'
+                variant="solid"
+                icon={icons.operationModes.add}
+                onClick={openAddClientModal}
+                data-client-control-input="true"
+              >
+                Cliente
+              </ClientButton>
+            </Tooltip>
           )}
 
           {mode === CLIENT_MODE_BAR.UPDATE.id && (
-            <ClientButton
-              type="primary"
-              icon={icons.operationModes.edit}
-              onClick={openUpdateClientModal}
-              data-client-control-input="true"
-            >
-              Cliente
-            </ClientButton>
+            <Tooltip title="Editar cliente seleccionado">
+              <ClientButton
+                type="primary"
+                icon={icons.operationModes.edit}
+                onClick={openUpdateClientModal}
+                data-client-control-input="true"
+              >
+                Cliente
+              </ClientButton>
+            </Tooltip>
           )}
 
           
@@ -176,6 +181,7 @@ export const ClientControl = () => {
                 showSearch
                 optionFilterProp="children"
                 filterOption={(input, option) => (option?.children ?? '').toLowerCase().includes(input.toLowerCase())}
+                title={comprobanteTooltipTitle}
               >
                 <Select.OptGroup label="Comprobantes Fiscal" >
                   {

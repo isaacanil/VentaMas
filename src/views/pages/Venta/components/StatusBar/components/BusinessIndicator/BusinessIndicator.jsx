@@ -2,6 +2,7 @@ import { faStore, faUsers } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { Tooltip } from 'antd'
 import { selectIsTemporaryMode, selectUser } from '../../../../../../../features/auth/userSlice'
 import { useSelector } from 'react-redux'
 import { ReturnToBusinessModal } from '../ReturnToBusinessModal'
@@ -31,16 +32,17 @@ export const BusinessIndicator = () => {
     if (user.role !== "dev") return null;
     return (
         <>
-            <Container
-                $color={businessIndicator.color}
-                $bgColor={businessIndicator.bgColor}
-                $isClickable={isTemporaryMode}
-                title={isTemporaryMode ? 'Haz clic para regresar a tu negocio' : 'Estás en tu negocio'}
-                onClick={handleClick}
-            >
-                <FontAwesomeIcon icon={businessIndicator.icon} size="sm" />
-                <BusinessText>{businessIndicator.text}</BusinessText>
-            </Container>
+            <Tooltip title={isTemporaryMode ? 'Haz clic para regresar a tu negocio' : 'Estás en tu negocio'}>
+                <Container
+                    $color={businessIndicator.color}
+                    $bgColor={businessIndicator.bgColor}
+                    $isClickable={isTemporaryMode}
+                    onClick={handleClick}
+                >
+                    <FontAwesomeIcon icon={businessIndicator.icon} size="sm" />
+                    <BusinessText>{businessIndicator.text}</BusinessText>
+                </Container>
+            </Tooltip>
 
             <ReturnToBusinessModal 
                 visible={modalVisible}
