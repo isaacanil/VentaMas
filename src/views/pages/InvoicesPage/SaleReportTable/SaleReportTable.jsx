@@ -1,10 +1,11 @@
 import { DateTime } from 'luxon'
-import styled from 'styled-components'
-import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { columns } from '../tableData'
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable'
-import { getProductsTax, getProductsTotalPrice, getTotalItems } from '../../../../utils/pricing'
 import { useMemo } from 'react'
+import styled from 'styled-components'
+
+import { useFormatPrice } from '../../../../hooks/useFormatPrice'
+import { getProductsTax, getTotalItems } from '../../../../utils/pricing'
+import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable'
+import { columns } from '../tableData'
 
 const SaleReportTable = ({ bills = [], searchTerm }) => {
   const data = bills?.map(({ data }) => {

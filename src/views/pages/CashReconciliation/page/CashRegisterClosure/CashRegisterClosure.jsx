@@ -1,22 +1,25 @@
+import { notification, message } from 'antd'
+import { DateTime } from 'luxon'
 import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
-import { notification, message } from 'antd'
-import { selectUser } from './../../../../../features/auth/userSlice'
-import { Header } from './components/Header/Header'
-import { Body } from './components/Body/Body'
-import { Footer } from './components/Footer/Footer'
-import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
-import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
-import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
-import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules'
-import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { useNavigate } from 'react-router-dom'
-import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
+import styled from 'styled-components'
+
+
+import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
 import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs'
-import { DateTime } from 'luxon'
+import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
 import { fbCashCountChangeState } from '../../../../../firebase/cashCount/closing/fbCashCountClosing'
 import { useFbGetCashCount } from '../../../../../firebase/cashCount/fbGetCashCount'
+import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules'
+import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
+import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
+import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
+
+import { selectUser } from './../../../../../features/auth/userSlice'
+import { Body } from './components/Body/Body'
+import { Footer } from './components/Footer/Footer'
+import { Header } from './components/Header/Header'
 
 export const CashRegisterClosure = () => {
   const dispatch = useDispatch()

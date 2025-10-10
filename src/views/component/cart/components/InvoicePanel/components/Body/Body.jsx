@@ -1,25 +1,28 @@
-import { Fragment } from 'react'
+import { Form } from 'antd'
+import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
+import { selectUser } from '../../../../../../../features/auth/userSlice'
+import { SelectCartData, selectCreditNotePayment, setCreditNotePayment, recalcTotals } from '../../../../../../../features/cart/cartSlice'
+import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice'
+import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
+import { useCreditLimitCheck } from '../../../../../../../hooks/accountsReceivable/useCheckAccountReceivable'
+import { useCreditLimitRealtime } from '../../../../../../../hooks/accountsReceivable/useCreditLimitRealtime'
+import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'
+import CreditSelector from '../CreditSelector/CreditSelector'
+
+import AccountsReceivableManager from './components/AccountsReceivableManager/AccountsReceivableManager'
 import { ChargedSection } from './components/ChargedSection/ChargedSection'
+import { CreditNotesSummary } from './components/CreditNotesSummary'
+import { InsuranceManagementPanel } from './components/InsuranceManagementPanel/InsuranceManagementPanel'
+import { InvoiceComment } from './components/InvoiceComment/InvoiceComment'
 import { PaymentMethods } from './components/PaymentMethods/PaymentMethods'
 import { PaymentSummary } from './components/PaymentSummary/PaymentSummary'
 import { PrintControl } from './components/PrintControl/PrintControl'
-import { MarkAsReceivableButton } from './components/MarkAsReceivableButton/MarkAsReceivableButton'
-import { ReceivableManagementPanel } from './components/ReceivableManagementPanel/ReceivableManagementPanel'
-import { InsuranceManagementPanel } from './components/InsuranceManagementPanel/InsuranceManagementPanel'
-import { InvoiceComment } from './components/InvoiceComment/InvoiceComment'
-import { CreditNotesSummary } from './components/CreditNotesSummary'
-import { selectUser } from '../../../../../../../features/auth/userSlice'
-import { useSelector, useDispatch } from 'react-redux'
-import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice'
-import { useCreditLimitCheck } from '../../../../../../../hooks/accountsReceivable/useCheckAccountReceivable'
-import { useCreditLimitRealtime } from '../../../../../../../hooks/accountsReceivable/useCreditLimitRealtime'
-import { SelectCartData, selectCreditNotePayment, setCreditNotePayment, recalcTotals } from '../../../../../../../features/cart/cartSlice'
-import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
-import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'
-import { Alert, Form } from 'antd'
-import AccountsReceivableManager from './components/AccountsReceivableManager/AccountsReceivableManager'
-import CreditSelector from '../CreditSelector/CreditSelector'
+
+
+
+
 
 export const Body = ({ form }) => {
     const dispatch = useDispatch();

@@ -1,6 +1,7 @@
 import { https, logger } from 'firebase-functions';
-import { admin } from '../../../../core/config/firebase.js';
 import { nanoid } from 'nanoid';
+
+import { admin } from '../../../../core/config/firebase.js';
 import { resolveIdempotencyKey } from '../utils/idempotency.util.js';
 
 let depsPromise;
@@ -88,7 +89,8 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
       const user = { businessID: businessId, uid: userId };
       const ccSnap = await getOpenCashCountDoc?.(user);
       await checkOpenCashCount({ cashCountSnap: ccSnap, user });
-    } catch (e) {
+    } catch (error) {
+      logger.warn('Cash count validation failed (HTTP)', { traceId, reason: error?.message ?? error });
       return res.status(412).json({ error: 'No hay cuadre de caja abierto' });
     }
 

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { useEffect, useRef } from 'react'
 
 /**
  * Hook para registrar la presencia del usuario en una sesión de inventario.

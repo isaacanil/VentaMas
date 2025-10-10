@@ -1,6 +1,6 @@
-import useFormatTimestamp from "../useFormatTimeStamp";
 import { CREDIT_NOTE_STATUS_LABEL } from '../../constants/creditNoteStatus';
 import { getTax, getTotalPrice } from '../../utils/pricing';
+import useFormatTimestamp from "../useFormatTimeStamp";
 
 const ensureNumber = (value) => {
   const num = Number(value);

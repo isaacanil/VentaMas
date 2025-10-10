@@ -1,12 +1,16 @@
-import React, { useRef, useMemo } from 'react';
+import { faFileInvoice, faFilter, faPlus, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { InvoiceItem } from './InvoiceItem/InvoiceItem';
-import { InvoiceItemWide } from './InvoiceItem/InvoiceItemWide';
+import React, { useRef, useMemo } from 'react';
+import styled from 'styled-components';
+
 import { filterData } from '../../../../hooks/search/useSearch';
 import { useMediaQuery } from '../../../../hooks/useMediaQuery';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileInvoice, faFilter, faPlus, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+
+import { InvoiceItem } from './InvoiceItem/InvoiceItem';
+import { InvoiceItemWide } from './InvoiceItem/InvoiceItemWide';
+
+
 
 export const SaleRecordList = ({ invoices, searchTerm }) => {
   const parentRef = useRef(null);

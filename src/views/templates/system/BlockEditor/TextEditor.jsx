@@ -1,8 +1,9 @@
+import { Editor, EditorState } from 'draft-js';
 import React, { useState } from 'react';
-import { Editor, EditorState, RichUtils } from 'draft-js';
 import 'draft-js/dist/Draft.css';
-import Toolbar from './Toolbar/Toolbar';
 import styled from 'styled-components';
+
+import Toolbar from './Toolbar/Toolbar';
 
 function MyEditor() {
     const [editorState, setEditorState] = useState(() => EditorState.createEmpty());

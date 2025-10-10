@@ -1,11 +1,12 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarAlt,
   faExclamationTriangle,
   faFileInvoice,
   faShieldAlt,
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
+
 import { formatNumber } from '../../../../../../../utils/formatNumber';
 import {
   PanelRow,

@@ -1,8 +1,8 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { SelectSettingCart } from '../../../../features/cart/cartSlice'
-import { SubTitle } from '../Receipt'
 import styled from 'styled-components'
+
+import { SubTitle } from '../Receipt'
+
 
 export const WarrantyArea = ({ data }) => {
     const someProductHaveWarranty = data.products.some((product) => product?.warranty?.status)

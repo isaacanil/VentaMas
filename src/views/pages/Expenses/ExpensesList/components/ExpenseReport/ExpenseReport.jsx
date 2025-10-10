@@ -1,16 +1,18 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import styled from 'styled-components';
 import { AnimatePresence, motion } from 'framer-motion';
-import Typography from '../../../../../templates/system/Typografy/Typografy';
-import { Button } from '../../../../../templates/system/Button/Button';
-import { useClickOutSide } from '../../../../../../hooks/useClickOutSide';
-import { DailyExpenseBarChart } from './reports/DailyExpensesBarChart';
-import { CategoryExpenseBarChart } from './reports/CategoryExpenseBarChart';
-import { MonthlyExpenseBarChart,  } from './reports/MonthlyExpenseBarChart';
-import { MonthlyAndAccumulatedExpenseCharts } from './reports/MonthlyAndAccumulatedExpenseCharts/MonthlyAndAccumulatedExpenseCharts';
+import React, { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectExpenseList } from '../../../../../../features/expense/expensesListSlice';
 import { selectExpenseChartModal, toggleExpenseChartModal } from '../../../../../../features/expense/expenseUISlice';
+import { Button } from '../../../../../templates/system/Button/Button';
+import Typography from '../../../../../templates/system/Typografy/Typografy';
+
+import { CategoryExpenseBarChart } from './reports/CategoryExpenseBarChart';
+import { DailyExpenseBarChart } from './reports/DailyExpensesBarChart';
+import { MonthlyAndAccumulatedExpenseCharts } from './reports/MonthlyAndAccumulatedExpenseCharts/MonthlyAndAccumulatedExpenseCharts';
+
+
 
 export const ExpenseChart = () => {
     const dispatch = useDispatch();

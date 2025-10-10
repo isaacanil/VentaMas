@@ -1,10 +1,11 @@
-import { Selector } from '../../../../components/common/Selector/Selector';
 import {
     faCheckCircle,
     faClock,
     faBan,
     faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
+
+import { Selector } from '../../../../components/common/Selector/Selector';
 
 const defaultStatusOptions = [
     {

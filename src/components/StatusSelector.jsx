@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from 'react';
+
 import { useClickOutSide } from '../../hooks/useClickOutSide';
 
 const StatusSelector = () => {

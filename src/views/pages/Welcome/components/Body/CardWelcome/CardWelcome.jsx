@@ -1,16 +1,16 @@
-import React from 'react'
-import styled from 'styled-components'
-import { Logo } from '../../../../../../assets/logo/Logo'
-import Typography from '../../../../../templates/system/Typografy/Typografy'
-import { Button, Card, Space } from 'antd'
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { 
   RocketOutlined, 
   SafetyOutlined, 
   ThunderboltOutlined,
   StarOutlined 
 } from '@ant-design/icons'
+import { Button, Card, Space } from 'antd'
+import { motion } from 'framer-motion'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { Logo } from '../../../../../../assets/logo/Logo'
 
 export const CardWelcome = ({ welcomeData }) => {
     const loginPath = '/login'

@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
+import { Form, Input } from 'antd'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectOrder, setOrder } from '../../../../../features/addOrder/addOrderSlice'
+import styled from 'styled-components'
+
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
-import { Form, DatePicker, Input } from 'antd'
-import { SelectStyle } from '../../CreatePurchase/CreatePurchase'
+import { selectOrder, setOrder } from '../../../../../features/addOrder/addOrderSlice'
 import { fromMillisToDayjs } from '../../../../../utils/date/convertMillisecondsToDayjs'
-import FileList from '../../CreatePurchase/components/FileList'
 import { InputMultipleFiles } from '../../../../templates/system/Form/InputFile/InputMultipleFiles'
+import FileList from '../../CreatePurchase/components/FileList'
+import { SelectStyle } from '../../CreatePurchase/CreatePurchase'
 
 const dateFormat = 'DD/MM/YYYY';
 

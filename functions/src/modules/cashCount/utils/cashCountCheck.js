@@ -1,5 +1,4 @@
 import { https, logger } from "firebase-functions";
-import { db } from "../../../core/config/firebase.js";
 
 /**
  * Comprueba si hay un cuadre de caja abierto para el negocio.

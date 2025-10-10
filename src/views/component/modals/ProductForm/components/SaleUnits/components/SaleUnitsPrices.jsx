@@ -1,7 +1,8 @@
+import { Card } from 'antd'
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Card } from 'antd'
 import styled from 'styled-components'
+
 import { selectIsSoldInUnits, selectSelectedSaleUnit } from '../../../../../../../features/updateProduct/updateProductSlice'
 
 const PricesContainer = styled.div`

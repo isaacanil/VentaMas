@@ -1,8 +1,9 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useLocation } from 'react-router-dom';
 import { Button } from 'antd';
+import React from 'react';
 import { useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { icons } from '../../../../../constants/icons/icons';
 import { toggleSignUpUser } from '../../../../../features/modals/modalSlice';
 

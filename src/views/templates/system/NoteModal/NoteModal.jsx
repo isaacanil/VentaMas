@@ -1,7 +1,8 @@
+import { Modal, Typography, Button } from 'antd';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import { clearNote, selectNote } from '../../../../features/noteModal/noteModalSlice';
-import { Modal, Typography, Button } from 'antd';
 
 const { Title, Paragraph } = Typography;
 

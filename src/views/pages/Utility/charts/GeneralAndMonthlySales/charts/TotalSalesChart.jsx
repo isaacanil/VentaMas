@@ -1,7 +1,7 @@
 // Importando el componente Bar de react-chartjs-2
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
-import Typography from '../../../../../templates/system/Typografy/Typografy';
+
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 
 const TotalSalesChart = ({ totalSales }) => {

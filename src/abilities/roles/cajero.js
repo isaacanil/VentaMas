@@ -1,11 +1,10 @@
 import { AbilityBuilder, PureAbility } from '@casl/ability';
-import { useMatch } from 'react-router-dom';
+
 import routesName from '../../routes/routesName';
 
 function defineBaseAbilities(can, cannot) {
   const {
     SALES_TERM,
-    SETTING_TERM,
     ACCOUNT_RECEIVABLE,
     CONTACT_TERM,
     BASIC_TERM,
@@ -21,7 +20,6 @@ function defineBaseAbilities(can, cannot) {
 
   const {
     CASH_RECONCILIATION_CLOSURE,
-    CASH_RECONCILIATION_INVOICE_OVERVIEW,
     CASH_RECONCILIATION_LIST,
     CASH_RECONCILIATION_OPENING
   } = CASH_RECONCILIATION_TERM;
@@ -65,7 +63,7 @@ function defineBaseAbilities(can, cannot) {
   cannot('manage', 'business-settings');
 }
 
-export function defineAbilitiesForCashier(user) {
+export function defineAbilitiesForCashier() {
   const { can, cannot, rules } = new AbilityBuilder(PureAbility);
   defineBaseAbilities(can, cannot);
 

@@ -1,9 +1,10 @@
-import { doc, setDoc, Timestamp, writeBatch, getDoc } from "firebase/firestore";
-import { db } from '../firebaseconfig';
+import { doc, writeBatch, getDoc } from "firebase/firestore";
+
 import { fbAddAccountReceivablePaymentReceipt } from "../accountsReceivable/fbAddAccountReceivablePaymentReceipt";
-import { fbGetInvoice } from "../invoices/fbGetInvoice";
 import { fbAddPayment } from "../accountsReceivable/payment/fbAddPayment";
-import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
+import { db } from '../firebaseconfig';
+import { fbGetInvoice } from "../invoices/fbGetInvoice";
+
 import { 
     getSortedClientAccountsAR,
     getActiveInstallmentsByArId,
@@ -12,6 +13,7 @@ import {
     validateBasicPaymentParams,
     validateAccountHasPendingBalance
 } from "./arPaymentUtils";
+import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 
 export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
     const { clientId, paymentMethods } = paymentDetails;

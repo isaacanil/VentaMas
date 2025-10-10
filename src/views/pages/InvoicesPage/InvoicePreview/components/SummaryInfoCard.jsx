@@ -1,8 +1,9 @@
+import { faFileInvoice, faShoppingCart, faCalculator, faDollarSign, faTag } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Card, Divider } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Card, Divider } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileInvoice, faShoppingCart, faCalculator, faDollarSign, faTag } from '@fortawesome/free-solid-svg-icons';
+
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 
 const SummaryInfoCard = ({ summaryData }) => {

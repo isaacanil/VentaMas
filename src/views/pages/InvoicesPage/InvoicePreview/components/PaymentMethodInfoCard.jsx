@@ -1,8 +1,10 @@
+import { Card, Divider } from 'antd';
+import dayjs from 'dayjs';
 import React from 'react';
 import styled from 'styled-components';
-import { Card, Divider, Tag } from 'antd';
+
 import { formatPrice } from '../../../../../utils/formatPrice';
-import dayjs from 'dayjs';
+
 
 const paymentmethodLabel = {
     cash: 'Efectivo',

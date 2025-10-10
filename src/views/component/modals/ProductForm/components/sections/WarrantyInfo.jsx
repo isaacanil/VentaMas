@@ -1,6 +1,7 @@
-import React from 'react'
 import * as ant from 'antd'
+import React from 'react'
 import styled from 'styled-components'
+
 const { Card, Space, InputNumber, Form, Checkbox, Select, Col, Row } = ant
 export const warrantyOptions = [
     {

@@ -1,13 +1,14 @@
-import { Button, Alert, notification } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { SelectCartData, toggleReceivableStatus } from '../../../../../../../../../features/cart/cartSlice';
-import { calculateInvoiceChange } from '../../../../../../../../../utils/invoice';
-import { Fragment, useEffect, useMemo, useState } from 'react';
-import { resetAR, selectAR, setAR } from '../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
-import styled from 'styled-components';
-import { selectUser } from '../../../../../../../../../features/auth/userSlice';
-import { fbGetActiveARCount } from '../../../../../../../../../firebase/accountsReceivable/fbGetActiveARCount';
 import { useQuery } from '@tanstack/react-query';
+import { Button, notification } from 'antd';
+import { Fragment, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { resetAR, selectAR, setAR } from '../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
+import { selectUser } from '../../../../../../../../../features/auth/userSlice';
+import { SelectCartData, toggleReceivableStatus } from '../../../../../../../../../features/cart/cartSlice';
+import { fbGetActiveARCount } from '../../../../../../../../../firebase/accountsReceivable/fbGetActiveARCount';
+import { calculateInvoiceChange } from '../../../../../../../../../utils/invoice';
 
 
 // Hook personalizado para manejar la lógica de AR

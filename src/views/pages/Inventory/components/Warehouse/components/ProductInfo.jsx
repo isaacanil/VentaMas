@@ -1,8 +1,8 @@
+import { faBox, faBarcode, faTag } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Card, Descriptions, Skeleton } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Card, Descriptions, Skeleton } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBox, faBarcode, faTag } from '@fortawesome/free-solid-svg-icons';
 
 const ProductCard = styled(Card)`
   margin-bottom: 16px;

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 export const updateObject = (object, e) => {
     const { name, type } = e.target;
     let value;

@@ -1,7 +1,7 @@
+import { FileOutlined, DeleteOutlined, EyeOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { Tag, Empty, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { Tag, Empty, Tooltip } from 'antd';
-import { FileOutlined, DeleteOutlined, EyeOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
 
 const FileListContainer = styled.div`
   max-height: 300px;

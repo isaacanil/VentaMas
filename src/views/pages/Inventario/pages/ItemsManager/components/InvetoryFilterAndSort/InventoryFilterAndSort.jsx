@@ -1,14 +1,16 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
-import styled from 'styled-components'
-import { motion, useReducedMotion } from 'framer-motion'
-import { useSelector, useDispatch } from 'react-redux'
 import { Button } from 'antd';
+import { motion, useReducedMotion } from 'framer-motion'
+import { useRef, useState, useEffect, useCallback } from 'react'
+import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
 
 import { icons } from '../../../../../../../constants/icons/icons'
-import { Header } from './components/Header/Header'
-import { Body } from './components/Body/Body'
+import { resetFilters } from '../../../../../../../features/filterProduct/filterProductsSlice'
 import { ButtonIconMenu } from '../../../../../../templates/system/Button/ButtonIconMenu'
-import { resetFilters, selectCriterio, selectInventariable, selectItbis, selectOrden } from '../../../../../../../features/filterProduct/filterProductsSlice'
+
+import { Body } from './components/Body/Body'
+import { Header } from './components/Header/Header'
+
 
 // Easing curves inspiradas en Material & Human Interface Guidelines
 // (valores cubic-bezier para desacelerar suave y acelerar sutil)

@@ -1,7 +1,8 @@
 import { collection, getDocs, addDoc, query, where, Timestamp } from "firebase/firestore";
-import { db } from "../firebaseconfig";
+
 import { calculateAmountPerInstallment } from "../../utils/accountsReceivable/accountsReceivable";
 import { generatePaymentDates } from "../../utils/accountsReceivable/generatePaymentDates";
+import { db } from "../firebaseconfig";
 
 export async function fbAddInsuranceAR({ user, insuranceData }) {
     try {

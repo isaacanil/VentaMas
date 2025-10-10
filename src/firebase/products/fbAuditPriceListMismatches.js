@@ -1,4 +1,6 @@
 // src/lib/price-audit-export.js
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import {
   collection,
   collectionGroup,
@@ -14,9 +16,8 @@ import {
   getCountFromServer,
   doc,
 } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 
 /* ───────────────────────────── Números seguros ───────────────────────────── */
 /** Parser estricto de dinero: null si el texto es ambiguo o malformado. */

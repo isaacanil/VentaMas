@@ -1,10 +1,11 @@
+import { LoadingOutlined } from '@ant-design/icons';
+import { Spin } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+
 import noImg from '../../../../../../assets/producto/noimg.png';
-import { useCheckForInternetConnection } from '../../../../../../hooks/useCheckForInternetConnection';
 import useImageFallback from '../../../../../../hooks/image/useImageFallback';
+import { useCheckForInternetConnection } from '../../../../../../hooks/useCheckForInternetConnection';
 
 const ImageWrapper = styled.div`
   position: absolute;

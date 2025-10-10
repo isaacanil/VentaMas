@@ -1,5 +1,7 @@
 import { httpsCallable } from 'firebase/functions';
+
 import { functions } from '../../firebaseconfig';
+
 import { fbCheckIfUserExists } from "./fbCheckIfUserExists";
 
 const clientUpdateUserCallable = httpsCallable(functions, 'clientUpdateUser');

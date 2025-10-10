@@ -1,8 +1,9 @@
 
 import { doc } from "firebase/firestore";
+
 import { compareObjects } from "../../utils/object/compareObject";
-import { fbGetDoc, fbSetDoc, fbUpdateDoc, } from "../firebaseOperations";
 import { db } from "../firebaseconfig";
+import { fbGetDoc, fbSetDoc, fbUpdateDoc, } from "../firebaseOperations";
 
 export async function fbUpsertClient(user, client, transaction = null) {
     try {

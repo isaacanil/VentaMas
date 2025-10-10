@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { Table, Button, Input, Form, InputNumber, DatePicker, Modal } from 'antd';
 import { DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
-import { formatMoney, formatPercentage } from '../../../../../utils/formatters';
+import { Table, Button, Input, Form, InputNumber, DatePicker, Modal } from 'antd';
 import dayjs from 'dayjs';
+import React, { useState } from 'react';
+
+import { formatMoney, formatPercentage } from '../../../../../utils/formatters';
+
 
 const EditableCell = ({
   editing,

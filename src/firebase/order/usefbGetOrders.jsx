@@ -1,8 +1,9 @@
 import { collection, getDoc, onSnapshot, query, where } from "firebase/firestore"
-import { db } from "../firebaseconfig"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
+
 import { selectUser } from "../../features/auth/userSlice"
+import { db } from "../firebaseconfig"
 import { convertFirestoreTimestamps } from "../purchase/fbGetPurchases"
 
 export const useFbGetOrders = () => {

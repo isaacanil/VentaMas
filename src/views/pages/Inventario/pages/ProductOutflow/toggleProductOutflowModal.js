@@ -1,5 +1,5 @@
-import React from 'react'
 import { OPERATION_MODES } from '../../../../../constants/modes';
+
 const EmptyProductsOutflow = []
 
 const EmptyProduct = {

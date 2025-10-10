@@ -1,4 +1,5 @@
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 async function fetchAccountsReceivableDetails(user, id) {

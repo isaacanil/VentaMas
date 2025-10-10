@@ -1,8 +1,9 @@
 import React from 'react'
-import Typography from '../../../../../../templates/system/Typografy/Typografy'
 import styled from 'styled-components'
+
 import { icons } from '../../../../../../../constants/icons/icons'
 import { Button } from '../../../../../../templates/system/Button/Button'
+import Typography from '../../../../../../templates/system/Typografy/Typografy'
 
 export const Header = () => {
   return (

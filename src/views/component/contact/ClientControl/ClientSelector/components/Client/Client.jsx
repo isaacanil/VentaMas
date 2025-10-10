@@ -1,13 +1,16 @@
-import styled from "styled-components";
-import { useDispatch, useSelector } from 'react-redux';
-import { highlightSearch } from "../highlight/Highlight";
-import { addClient } from "../../../../features/clientCart/clientCartSlice";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
-import { Button, Modal, Tag, Tooltip } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { clearAuthData, fetchInsuranceAuthByClientId } from "../../../../features/insurance/insuranceAuthSlice";
+import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, Modal, Tag, Tooltip } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from "styled-components";
+
 import { selectUser } from "../../../../features/auth/userSlice";
+import { addClient } from "../../../../features/clientCart/clientCartSlice";
+import { clearAuthData } from "../../../../features/insurance/insuranceAuthSlice";
+import { highlightSearch } from "../highlight/Highlight";
+
+
 
 const Container = styled.li`
     list-style: none;

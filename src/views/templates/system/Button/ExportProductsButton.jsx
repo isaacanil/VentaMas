@@ -1,11 +1,15 @@
-import { Button } from './Button'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileExport } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useSelector } from 'react-redux'
+
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
 import { useGetProducts } from '../../../../firebase/products/fbGetProducts'
 import { ExportProducts } from '../../../../hooks/exportToExcel/useExportProducts'
 import { getProducts } from '../../../../utils/pricing'
-import { useSelector } from 'react-redux'
-import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice'
+
+
+
+import { Button } from './Button'
 
 export const ExportProductsButton = () => {
   const {products} = useGetProducts()

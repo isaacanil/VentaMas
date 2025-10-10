@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Radio, InputNumber, Button, Typography, Divider } from 'antd';
 import { PercentageOutlined, DollarOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Modal, Radio, InputNumber, Button, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { updateProductDiscount } from '../../../features/cart/cartSlice';
+import { selectTaxReceiptEnabled } from '../../../features/taxReceipt/taxReceiptSlice';
 import { useFormatPrice } from '../../../hooks/useFormatPrice';
 import { getTotalPrice } from '../../../utils/pricing';
-import { selectTaxReceiptEnabled } from '../../../features/taxReceipt/taxReceiptSlice';
 
 const { Text, Title } = Typography;
 

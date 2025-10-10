@@ -1,9 +1,11 @@
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import styled from 'styled-components';
+
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { SessionInfoModal } from './components/SessionInfoModal';
+import { selectUser } from '../../../../../features/auth/userSlice';
+
 import { CombinedPill } from './components/CombinedPill';
+import { SessionInfoModal } from './components/SessionInfoModal';
 
 const PersonalizedGreeting = () => {
   const user = useSelector(selectUser);

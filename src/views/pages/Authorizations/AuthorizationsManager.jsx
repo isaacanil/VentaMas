@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
 import { Tabs, Alert } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../features/auth/userSlice';
 import { useAuthorizationModules } from '../../../hooks/useAuthorizationModules';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import styled from 'styled-components';
-import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';
+
 import ApprovalLogs from './components/ApprovalLogs/ApprovalLogs';
+import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';
 import { PersonalPinManagement } from './components/PersonalPinManagement';
-import { useSearchParams } from 'react-router-dom';
+
 
 const Container = styled.div`
   display: grid;

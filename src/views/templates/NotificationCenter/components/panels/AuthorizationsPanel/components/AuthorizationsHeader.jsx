@@ -1,5 +1,5 @@
-import { Badge } from 'antd';
 import { RightOutlined } from '@ant-design/icons';
+import { Badge } from 'antd';
 import styled from 'styled-components';
 
 const AuthorizationsHeader = ({ pendingCount, isAdmin, onNavigate }) => (

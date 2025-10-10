@@ -1,14 +1,17 @@
-import { doc, getDoc, updateDoc, serverTimestamp, collection, addDoc, writeBatch, setDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp, writeBatch, setDoc } from "firebase/firestore";
+import { nanoid } from "nanoid";
+
+import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
 import { db } from "../firebaseconfig";
 import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
-import { deleteRemovedFiles, findRemovedAttachments } from "./fbUpdatePurchase";
+import { getNextID } from "../Tools/getNextID";
 import { createBatch } from "../warehouse/batchService";
 import { createProductStock } from "../warehouse/productStockService";
 import { getDefaultWarehouse } from "../warehouse/warehouseService";
+
 import { safeTimestamp, updateLocalAttachmentsWithRemoteURLs } from "./fbAddPurchase";
-import { getNextID } from "../Tools/getNextID";
-import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
-import { nanoid } from "nanoid";
+import { deleteRemovedFiles, findRemovedAttachments } from "./fbUpdatePurchase";
+
 
 const updatePurchaseWarehouseStock = async (user, purchase, defaultWarehouse) => {
     const productBatches = {};

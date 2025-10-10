@@ -1,10 +1,11 @@
 
-import React from 'react';
 import { Form, Card, Tabs } from 'antd';
+import React from 'react';
+
+import EvidenceTab from './Tabs/EvidenceTab';
 import GeneralTab from './Tabs/GeneralTab';
 import ProductsTab from './Tabs/ProductsTab';
 import TotalsTab from './Tabs/TotalsTab';
-import EvidenceTab from './Tabs/EvidenceTab';
 
 const { TabPane } = Tabs;
 

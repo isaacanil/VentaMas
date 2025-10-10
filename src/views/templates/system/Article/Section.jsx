@@ -1,8 +1,10 @@
 
 import styled from "styled-components";
+
+import Typography from "../Typografy/Typografy";
+
 import parseText from "./parseText";
 import renderText from "./renderText";
-import Typography from "../Typografy/Typografy";
 
 const Section = ({title, rawText}) => {
     const parsedText = parseText(rawText);

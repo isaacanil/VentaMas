@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import styled from 'styled-components';
 import {
     UserOutlined,
     ShoppingOutlined,
@@ -8,7 +6,9 @@ import {
     DownOutlined,
     UpOutlined,
 } from '@ant-design/icons';
-import { icons } from '../../../../constants/icons/icons';
+import { useState } from 'react';
+import styled from 'styled-components';
+
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 
 const IconLabel = styled.span`

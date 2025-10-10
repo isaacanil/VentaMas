@@ -1,6 +1,7 @@
 import { collection, onSnapshot } from "firebase/firestore"
-import { db } from "../firebaseconfig"
 import { useEffect, useState } from "react";
+
+import { db } from "../firebaseconfig"
 
 export const useGetChangelogs = () => {
     const [changelogs, setChangelogs] = useState([]);

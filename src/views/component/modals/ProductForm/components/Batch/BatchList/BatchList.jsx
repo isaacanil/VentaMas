@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { List, Modal, notification, Tag } from "antd";
 import { DateTime } from 'luxon';
-import styled from "styled-components";
-import { List, Button, Modal, notification, Tag, Switch } from "antd";
-import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import { BatchForm } from "../BatchForm";
-import { Form } from "antd";
-import { deleteBatch, listenAllBatches } from "../../../../../../../firebase/warehouse/batchService";
-import { selectUser } from "../../../../../../../features/auth/userSlice";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import styled from "styled-components";
+
+import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { ChangeProductData, selectUpdateProductData } from "../../../../../../../features/updateProduct/updateProductSlice";
 import { fbUpdateProduct } from "../../../../../../../firebase/products/fbUpdateProduct";
+import { deleteBatch, listenAllBatches } from "../../../../../../../firebase/warehouse/batchService";
 
 // Styled Components
 const StyledContainer = styled.div`

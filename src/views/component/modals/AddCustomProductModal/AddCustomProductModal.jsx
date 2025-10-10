@@ -1,18 +1,20 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import { Button } from '../../../templates/system/Button/Button'
-import { PlusIconButton } from '../../../templates/system/Button/PlusIconButton'
-import { nanoid } from 'nanoid'
-import { addIngredientTypePizza } from '../../../../firebase/firebaseconfig.jsx'
-import { fbGetCustomProduct } from '../../../../firebase/products/customProduct/fbGetCustomProductTypePizza'
-import { useEffect } from 'react'
 import { isEmpty } from '@firebase/util'
-import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard'
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { selectUser } from '../../../../features/auth/userSlice'
+import { nanoid } from 'nanoid'
+import React, { useState } from 'react'
+import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../../features/auth/userSlice'
+import { addIngredientTypePizza } from '../../../../firebase/firebaseconfig.jsx'
+import { fbGetCustomProduct } from '../../../../firebase/products/customProduct/fbGetCustomProductTypePizza'
+import { Button } from '../../../templates/system/Button/Button'
+import { PlusIconButton } from '../../../templates/system/Button/PlusIconButton'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4.jsx'
+import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard'
+
 
 export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
     const user = useSelector(selectUser)

@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Button, Table, Tag, Space, Typography, message, Modal, Checkbox, Card, Statistic } from 'antd';
 import { KeyOutlined, ReloadOutlined, StopOutlined, ClockCircleOutlined, SafetyOutlined } from '@ant-design/icons';
+import { Button, Table, Tag, Space, Typography, message, Modal, Card, Statistic } from 'antd';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
 import {
   fbGetUsersWithPinStatus,
@@ -9,7 +11,7 @@ import {
   fbDeactivateUserPin
 } from '../../../../../firebase/authorization/pinAuth';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
-import styled from 'styled-components';
+
 import { GeneratePinModal } from './components/GeneratePinModal';
 import { PinDetailsModal } from './components/PinDetailsModal';
 

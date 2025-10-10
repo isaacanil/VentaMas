@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../features/auth/userSlice';
+import { SearchOutlined, DatabaseOutlined } from '@ant-design/icons';
+import { algoliasearch } from "algoliasearch";
 import {
   Button,
   Card,
@@ -12,16 +11,6 @@ import {
   Alert,
   Spin,
 } from 'antd';
-import { SearchOutlined, DatabaseOutlined } from '@ant-design/icons';
-import _ from 'lodash';
-import { algoliasearch } from "algoliasearch";
-
-const { Title, Text } = Typography;
-const ALGOLIA_APP_ID = '2GBM9XH33Y';
-const ALGOLIA_SEARCH_KEY = 'eb98e5ddbe22530b98832c64a6c006cb';
-const ALGOLIA_INDEX = 'products_index';
-
-// src/utils/backfillAllBusinessesPaged.js
 import {
   collection,
   doc,
@@ -33,6 +22,19 @@ import {
   startAfter,
   writeBatch,
 } from 'firebase/firestore';
+import _ from 'lodash';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../../../features/auth/userSlice';
+
+const { Title, Text } = Typography;
+const ALGOLIA_APP_ID = '2GBM9XH33Y';
+const ALGOLIA_SEARCH_KEY = 'eb98e5ddbe22530b98832c64a6c006cb';
+const ALGOLIA_INDEX = 'products_index';
+
+// src/utils/backfillAllBusinessesPaged.js
+
 import { db } from '../../../../firebase/firebaseconfig';
 
 const PAGE_SIZE = 300;   // nº docs que leerás por bloque (ajusta a tu gusto)
@@ -55,7 +57,7 @@ export async function backfillAllBusinessesPaged() {
 
     // --- paginación sobre accountsReceivable ---
     let last = null;
-    /* eslint-disable no-await-in-loop */ // procesamos secuencialmente
+      // procesamos secuencialmente
     while (true) {
       const arQuery = query(
         collection(db, `businesses/${bid}/accountsReceivable`),

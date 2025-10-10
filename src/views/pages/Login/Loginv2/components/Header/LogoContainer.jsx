@@ -1,7 +1,8 @@
-import React from 'react'
-import { Logo } from '../../../../../../assets/logo/Logo'
-import styled from 'styled-components'
 import * as antd from 'antd'
+import React from 'react'
+import styled from 'styled-components'
+
+import { Logo } from '../../../../../../assets/logo/Logo'
 
 const { Typography } = antd
 

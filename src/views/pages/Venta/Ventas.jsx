@@ -1,30 +1,30 @@
+import { notification } from 'antd'
+import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
 import { useSearchParams } from 'react-router-dom'
+import styled from 'styled-components'
 
+import { selectUser } from '../../../features/auth/userSlice.js'
+import { addProduct, resetCart, toggleCart, SelectSettingCart, SelectCartData } from '../../../features/cart/cartSlice'
+import { deleteClient } from '../../../features/clientCart/clientCartSlice.js'
+import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
+import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js'
+import { useGetProducts } from '../../../firebase/products/fbGetProducts'
+import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodeScanner'
+import { useCashCountClosingPrompt } from '../../../hooks/cashCount/useCashCountClosingPrompt'
+import useFilter from '../../../hooks/search/useSearch' // Cambiar importación
+import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
+import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
 import { Cart } from '../../component/cart/cart.jsx'
+import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
+import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx'
 import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx'
 import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx'  
-
-import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
-import { useGetProducts } from '../../../firebase/products/fbGetProducts'
-import useFilter from '../../../hooks/search/useSearch' // Cambiar importación
-import { addProduct, resetCart, toggleCart, SelectSettingCart, SelectCartData } from '../../../features/cart/cartSlice'
-import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodeScanner'
-import { motion } from 'framer-motion'
-import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
-import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
-import { notification } from 'antd'
-import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel.jsx'
-import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js'
-import { deleteClient } from '../../../features/clientCart/clientCartSlice.js'
-
 import { ProductBatchModal } from '../Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx'
-import { selectUser } from '../../../features/auth/userSlice.js'
-import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx'
-import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
-import { useCashCountClosingPrompt } from '../../../hooks/cashCount/useCashCountClosingPrompt'
+
+import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
+
 
 export const Sales = () => {
   useCashCountClosingPrompt();
@@ -100,9 +100,10 @@ export const Sales = () => {
     }
 
     const initialMode = searchParams.get('mode');
-    const isPreorderContext = initialMode === 'preorder' || cartData?.type === 'preorder';
+    const shouldPreserveCart = searchParams.get('preserveCart') === '1';
+    const shouldSkipCleanup = initialMode === 'preorder' || shouldPreserveCart;
 
-    if (!isPreorderContext) {
+    if (!shouldSkipCleanup) {
       if (viewport <= 800) dispatch(toggleCart());
       dispatch(resetCart());
       dispatch(clearTaxReceiptData());
@@ -110,7 +111,13 @@ export const Sales = () => {
     }
 
     hasInitializedRef.current = true;
-  }, [cartData?.type, dispatch, searchParams, viewport])
+
+    if (shouldPreserveCart) {
+      const cleanedParams = new URLSearchParams(searchParams);
+      cleanedParams.delete('preserveCart');
+      setSearchParams(cleanedParams, { replace: true });
+    }
+  }, [dispatch, searchParams, setSearchParams, viewport])
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);

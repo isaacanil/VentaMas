@@ -1,6 +1,7 @@
 // App.js
 import React, { useState } from "react";
 import styled from "styled-components";
+
 import { generateResponse } from "./generateResponse";
 
 const Container = styled.div`

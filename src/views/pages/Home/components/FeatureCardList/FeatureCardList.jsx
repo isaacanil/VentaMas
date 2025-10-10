@@ -1,9 +1,11 @@
+import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from "antd"
 import React from 'react'
 import styled from 'styled-components'
+
 import { FeatureCard } from './FeatureCard'
-import * as antd from "antd"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+
 const { Typography } = antd;
 
 export const FeatureCardList = ({ title, cardData }) => {

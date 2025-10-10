@@ -1,6 +1,6 @@
+import { analyzeBarcodeStructure } from './analyzer';
 import { calculateGTIN13CheckDigit, calculateEAN8CheckDigit, calculateUPCACheckDigit, calculateGTIN14CheckDigit } from './digits';
 import { expandUPCEToUPCA } from './expansion';
-import { analyzeBarcodeStructure } from './analyzer';
 
 /**
  * Genera sugerencias de corrección para un código de barras

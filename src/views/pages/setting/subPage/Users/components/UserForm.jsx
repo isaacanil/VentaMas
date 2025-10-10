@@ -1,16 +1,19 @@
-import { Fragment, useEffect, useState } from 'react';
 import { Modal, Form, Input, Button, Select, message, Alert, Spin, Typography, Switch } from 'antd';
+import { Fragment, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { fbSignUp } from '../../../../../../firebase/Auth/fbAuthV2/fbSignUp';
-import { userAccess } from '../../../../../../hooks/abilities/useAbilities';
-import { SelectSignUpUserModal, toggleSignUpUser } from '../../../../../../features/modals/modalSlice';
-import { getAssignableRoles } from '../../../../../../abilities/roles';
-import DynamicPermissionsManager from './DynamicPermissionsManager';
-import RoleDowngradeConfirmationModal from './RoleDowngradeConfirmationModal';
 import { useDispatch } from 'react-redux';
-import { ChangePassword } from './EditUser/ChangePassword/ChangePassword';
+
+import { getAssignableRoles } from '../../../../../../abilities/roles';
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { SelectSignUpUserModal, toggleSignUpUser } from '../../../../../../features/modals/modalSlice';
+import { fbSignUp } from '../../../../../../firebase/Auth/fbAuthV2/fbSignUp';
 import { fbUpdateUser } from '../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
+import { userAccess } from '../../../../../../hooks/abilities/useAbilities';
+
+import DynamicPermissionsManager from './DynamicPermissionsManager';
+import { ChangePassword } from './EditUser/ChangePassword/ChangePassword';
+import RoleDowngradeConfirmationModal from './RoleDowngradeConfirmationModal';
+
 
 export const SignUpModal = () => {
     const user = useSelector(selectUser);

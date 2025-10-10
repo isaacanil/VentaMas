@@ -1,19 +1,20 @@
 import React, { useRef, useState } from 'react';
-import styled from 'styled-components';
-import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
-import { icons } from '../../../constants/icons/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { addItem, deleteAllItems, SelectCategoryList, SelectCategoryState } from '../../../features/category/categorySlicer';
-import { CategoryBar } from './components/CategoryBar/CategoryBar';
-import { useClickOutSide } from '../../../hooks/useClickOutSide';
-import { fbAddFavoriteProductCategory } from '../../../firebase/categories/fbAddFavoriteProductCategory';
-import { fbRemoveFavoriteProductCategory } from '../../../firebase/categories/fbRemoveFavoriteProductCategory';
+import styled from 'styled-components';
+
+
 import { selectUser } from '../../../features/auth/userSlice';
-import { filterFavoriteProductCategories } from '../../../utils/data/products/category'
-import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
+import { addItem, deleteAllItems, SelectCategoryList, SelectCategoryState } from '../../../features/category/categorySlicer';
 import { useGetFavoriteProductCategories } from '../../../firebase/categories/fbGetFavoriteProductCategories';
-import { useListenActiveIngredients } from '../../../firebase/products/activeIngredient/activeIngredients';
+import { fbRemoveFavoriteProductCategory } from '../../../firebase/categories/fbRemoveFavoriteProductCategory';
 import { fbToggleFavoriteProductCategory } from '../../../firebase/categories/fbToggleFavoriteProductCategory';
+import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
+import { useListenActiveIngredients } from '../../../firebase/products/activeIngredient/activeIngredients';
+import { useClickOutSide } from '../../../hooks/useClickOutSide';
+import { filterFavoriteProductCategories } from '../../../utils/data/products/category'
+
+import { CategoryBar } from './components/CategoryBar/CategoryBar';
+import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
 
 export const CategorySelector = ({ }) => {
   const dispatch = useDispatch()

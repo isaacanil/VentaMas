@@ -1,8 +1,8 @@
-import React from 'react';
+import { CloseOutlined, SaveOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Modal, Button, Input, Tooltip } from 'antd';
-import { CloseOutlined, SaveOutlined, ExclamationCircleOutlined, CheckOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import React from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import {  fetchCorrections, parseCorrections, showCorrectionsModal } from './commentUtils';
 
 const { TextArea } = Input;

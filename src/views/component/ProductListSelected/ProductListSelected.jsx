@@ -1,8 +1,9 @@
+import { Table, Input, Button }from 'antd';
 import React from 'react'
 import styled from 'styled-components'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import { Table, Input, Button }from 'antd';
+
 import { icons } from '../../../constants/icons/icons'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
 
 export const ProductListSelected = ({
   productsSelected,

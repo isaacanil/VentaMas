@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react'; // Removed useRef
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCreditCard,
   faBuilding,
@@ -9,15 +7,18 @@ import {
   faQuestionCircle, // Add icon for Help/Other group
   faKey
 } from '@fortawesome/free-solid-svg-icons';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState, useEffect } from 'react'; // Removed useRef
 import { useSelector } from 'react-redux'; // Import useSelector
-import { Nav } from '../../templates/system/Nav/Nav';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import ROUTES_NAME from '../../../routes/routesName';
-// Import the factory instead of the direct selector
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+
+import { selectUser } from '../../../features/auth/userSlice';
 import { makeSelectPreviousRelevantRoute } from '../../../features/navigation/navigationSlice';
 import { userAccess } from '../../../hooks/abilities/useAbilities';
-import { selectUser } from '../../../features/auth/userSlice';
+import ROUTES_NAME from '../../../routes/routesName';
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { Nav } from '../../templates/system/Nav/Nav';
+// Import the factory instead of the direct selector
 
 // Create a specific selector instance using the factory
 const selectPreviousRouteIgnoringConfig = makeSelectPreviousRelevantRoute('/general-config');

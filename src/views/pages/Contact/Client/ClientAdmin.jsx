@@ -1,14 +1,13 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { Button } from '../../../templates/system/Button/Button';
-
-
-import { filterData } from '../../../../hooks/search/useSearch'
-import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
-import { ToolBar } from './ToolBar'
 import { useFbGetClients } from '../../../../firebase/client/useFbGetClients'
+import { filterData } from '../../../../hooks/search/useSearch'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+
+
+import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
+
 export const ClientAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const { clients } = useFbGetClients()

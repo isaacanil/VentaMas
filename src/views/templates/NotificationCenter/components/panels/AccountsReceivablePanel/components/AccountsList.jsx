@@ -1,5 +1,6 @@
-import AccountRow from './AccountRow';
 import { ScrollArea } from '../../shared/PanelPrimitives';
+
+import AccountRow from './AccountRow';
 
 const buildAccountKey = (account) => {
   if (!account) return 'account-row';

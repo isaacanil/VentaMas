@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { isPresetActive } from '../utils/dateUtils';
 
 const PresetsContainer = styled.div`

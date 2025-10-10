@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { createStyleImportPlugin } from 'vite-plugin-style-import';
+import { defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
+import { createStyleImportPlugin } from 'vite-plugin-style-import';
 // import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({

@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+
 export const CardList = ({
     maxWidth = 800,
     data = [],

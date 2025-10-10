@@ -1,4 +1,5 @@
 import { logger } from 'firebase-functions';
+
 import { Timestamp, db } from '../../../../core/config/firebase.js';
 
 export const logPinAction = async ({ businessID, actor, targetUserId, targetUser, action, reason, module, modules }) => {

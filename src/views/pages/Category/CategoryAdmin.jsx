@@ -1,7 +1,8 @@
 import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
+
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import { Button } from '../../templates/system/Button/Button';
+
 import {  CategoriesTable } from './components/CategoriesTable/CategoriesTable'
 
 export const CategoryAdmin = () => {

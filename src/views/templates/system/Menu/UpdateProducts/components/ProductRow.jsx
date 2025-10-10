@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { TableRow, TableCell } from '../code/styledComponents';
 
 const ProductRow = ({ product, original, index, style }) => {

@@ -1,5 +1,5 @@
 // features/businesses/businessesSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export const fetchBusinesses = createAsyncThunk(
     'businesses/fetchBusinesses',

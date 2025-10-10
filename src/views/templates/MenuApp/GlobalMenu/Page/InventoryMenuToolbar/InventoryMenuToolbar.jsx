@@ -1,26 +1,29 @@
-import React, { Fragment, useState } from 'react'
-import styled from 'styled-components'
-import { useMatch } from 'react-router-dom'
-import { AddProductButton } from '../../../../system/Button/AddProductButton'
-import { ButtonGroup } from '../../../../system/Button/Button'
-import ROUTES_NAME from '../../../../../../routes/routesName'
-import { useSelector } from 'react-redux'
-import { InventoryFilterAndSort } from '../../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
-import { DropdownMenu } from '../../../../system/DropdownMenu/DropdowMenu'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileExport, faFileImport, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
-import ImportModal from '../../../../../component/modals/ImportModal/ImportModal'
-import { createProductTemplate, importProductData } from '../../../../../../utils/import/product'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { message } from 'antd'
-import { fbAddProducts } from '../../../../../../firebase/products/fbAddProducts'
+import React, { Fragment, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useMatch } from 'react-router-dom'
+import styled from 'styled-components'
+
 import { selectUser } from '../../../../../../features/auth/userSlice'
-import { getProducts } from '../../../../../../utils/pricing'
+import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
+import { fbAddProducts } from '../../../../../../firebase/products/fbAddProducts'
 import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
 import { ExportProducts } from '../../../../../../hooks/exportToExcel/useExportProducts'
-import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
-import { fbAddActiveIngredients } from './fbAddActiveIngredients'
-import ImportProgressModal from '../../../../../component/modals/ImportProgressModal/ImportProgressModal';
 import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
+import ROUTES_NAME from '../../../../../../routes/routesName'
+import { createProductTemplate, importProductData } from '../../../../../../utils/import/product'
+import { getProducts } from '../../../../../../utils/pricing'
+import ImportModal from '../../../../../component/modals/ImportModal/ImportModal'
+import ImportProgressModal from '../../../../../component/modals/ImportProgressModal/ImportProgressModal';
+import { InventoryFilterAndSort } from '../../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
+import { AddProductButton } from '../../../../system/Button/AddProductButton'
+import { ButtonGroup } from '../../../../system/Button/Button'
+import { DropdownMenu } from '../../../../system/DropdownMenu/DropdowMenu'
+
+import { fbAddActiveIngredients } from './fbAddActiveIngredients'
+
 
 export const InventoryMenuToolbar = ({ side = 'left' }) => {
     const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM

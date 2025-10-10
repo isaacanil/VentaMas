@@ -1,9 +1,10 @@
 // VentamaxLoader.js
-import React, { useRef } from "react";
-import styled from "styled-components";
+import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { SplitText } from "gsap/SplitText";
-import { useGSAP } from "@gsap/react";
+import React, { useRef } from "react";
+import styled from "styled-components";
+
 import logo from "./ventamax.svg";
 
 // registra los plugins una sola vez

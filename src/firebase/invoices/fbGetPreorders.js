@@ -1,4 +1,5 @@
-import { collection, getDocs, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 // Function to get preorders from Firebase

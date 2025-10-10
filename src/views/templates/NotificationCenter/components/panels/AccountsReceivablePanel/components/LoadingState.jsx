@@ -1,7 +1,9 @@
 import { Spin } from 'antd';
 import styled from 'styled-components';
-import PanelHeader from './PanelHeader';
+
 import { PanelCard } from '../../shared/PanelPrimitives';
+
+import PanelHeader from './PanelHeader';
 
 const LoadingState = ({ title, icon }) => (
   <PanelCard>

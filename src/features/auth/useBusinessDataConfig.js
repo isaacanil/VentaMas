@@ -1,8 +1,10 @@
-import { useDispatch, useSelector } from "react-redux"
-import { selectUser } from "./userSlice"
 import { useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+
 import { subscribeToBusinessInfo } from "../../firebase/businessInfo/fbGetBusinessInfo"
+
 import { setBusiness } from "./businessSlice"
+import { selectUser } from "./userSlice"
 
 export const useBusinessDataConfig = () => {
     const dispatch = useDispatch();

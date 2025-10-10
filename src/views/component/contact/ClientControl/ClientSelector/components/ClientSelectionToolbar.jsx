@@ -1,5 +1,5 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilter, faPlus, faCopy } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Button, Tooltip, Dropdown, Badge, Typography } from 'antd'
 import { memo } from 'react'
 import styled from 'styled-components'

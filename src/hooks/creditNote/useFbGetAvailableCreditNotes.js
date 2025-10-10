@@ -1,9 +1,10 @@
+import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+
+import { CREDIT_NOTE_STATUS } from '../../constants/creditNoteStatus';
 import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../../firebase/firebaseconfig';
-import { CREDIT_NOTE_STATUS } from '../../constants/creditNoteStatus';
 
 export const useFbGetAvailableCreditNotes = (clientId) => {
   const user = useSelector(selectUser);

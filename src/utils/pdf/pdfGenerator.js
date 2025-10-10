@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { resolveDocumentIdentity } from '../invoice/documentIdentity.js';
 
 // Función de formateo de precios (ajústala según necesites)
 const formatPrice = (value) => `$${Number(value).toFixed(2)}`;
@@ -50,18 +51,6 @@ export function generateInvoicePDF({ business, data }) {
     // Lado derecho del header
     const rightX = pageWidth - 80;
     let headerRightY = 20;
-    const getComprobanteInfo = (comprobante) => {
-      if (!comprobante) {
-        return { title: 'RECIBO DE PAGO', label: 'Número de Recibo' };
-      }
-      if (comprobante.startsWith('B01')) {
-        return { title: 'FACTURA DE CRÉDITO FISCAL', label: 'NCF' };
-      }
-      if (comprobante.startsWith('B02')) {
-        return { title: 'FACTURA DE CONSUMO', label: 'NCF' };
-      }
-      return { title: 'COMPROBANTE FISCAL', label: 'NCF' };
-    };
     const formatDate = (dateObj) => {
       if (!dateObj) return '';
       if (dateObj.seconds) {
@@ -69,14 +58,24 @@ export function generateInvoicePDF({ business, data }) {
       }
       return '';
     };
-    const comprobanteInfo = getComprobanteInfo(data?.NCF);
+    const documentIdentity = resolveDocumentIdentity(data);
+    const isPreorderDocument = documentIdentity.type === 'preorder';
     doc.setFontSize(12);
-    doc.text(comprobanteInfo.title, rightX, headerRightY);
+    doc.text(documentIdentity.title, rightX, headerRightY);
     headerRightY += 6;
     doc.text(`Fecha: ${formatDate(data?.date)}`, rightX, headerRightY);
     headerRightY += 6;
-    const invoiceType = data?.type === 'preorder' ? 'Pedido' : data?.type;
-    doc.text(`Factura ${invoiceType} # ${data?.numberID}`, rightX, headerRightY);
+    if (documentIdentity.label && !isPreorderDocument) {
+      doc.text(`${documentIdentity.label}: ${documentIdentity.value || '-'}`, rightX, headerRightY);
+      headerRightY += 6;
+    }
+    const referenceLabel = isPreorderDocument
+      ? 'Preventa'
+      : `Factura ${data?.type || ''}`.trim();
+    const referenceValue = isPreorderDocument
+      ? (documentIdentity.value || data?.numberID || '-')
+      : (data?.numberID || '-');
+    doc.text(`${referenceLabel} # ${referenceValue}`, rightX, headerRightY);
     headerRightY += 6;
     if (data?.preorderDetails?.date) {
       doc.text(`Fecha de pedido: ${formatDate(data.preorderDetails.date)}`, rightX, headerRightY);
@@ -84,10 +83,6 @@ export function generateInvoicePDF({ business, data }) {
     }
     if (data?.dueDate) {
       doc.text(`Fecha que vence: ${formatDate(data.dueDate)}`, rightX, headerRightY);
-      headerRightY += 6;
-    }
-    if (data?.NCF) {
-      doc.text(`NCF: ${data.NCF}`, rightX, headerRightY);
       headerRightY += 6;
     }
   };

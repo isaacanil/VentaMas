@@ -1,6 +1,7 @@
-import { BugOutlined, RocketOutlined, ToolOutlined, TeamOutlined, ApartmentOutlined, ProfileOutlined } from '@ant-design/icons';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import { BugOutlined, ToolOutlined, TeamOutlined, ApartmentOutlined, ProfileOutlined } from '@ant-design/icons';
+
 import { icons } from '../../../../../constants/icons/icons';
+import ROUTES_NAME from '../../../../../routes/routesName';
 
 // Developer section grouped with multiple useful entries and a submenu for specific tools.
 const dev = ROUTES_NAME.DEV_VIEW_TERM;

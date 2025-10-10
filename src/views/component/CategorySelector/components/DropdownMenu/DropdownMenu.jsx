@@ -1,9 +1,12 @@
+import * as antd from 'antd';
 import React, { forwardRef, useState } from 'react'
 import styled from 'styled-components'
-import { Category } from './Category';
-import * as antd from 'antd';
-import { filterData } from '../../../../../hooks/search/useSearch';
+
 import { icons } from '../../../../../constants/icons/icons';
+import { filterData } from '../../../../../hooks/search/useSearch';
+
+import { Category } from './Category';
+
 const { Input, Typography, Button } = antd;
 
 export const DropdownMenu = forwardRef(({

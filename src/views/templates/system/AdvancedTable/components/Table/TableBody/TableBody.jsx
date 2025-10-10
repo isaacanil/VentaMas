@@ -1,8 +1,9 @@
 import React, { Fragment } from 'react';
-import { Row } from '../../../AdvancedTable';
 import styled from 'styled-components';
-import { CenteredText } from '../../../../CentredText';
+
 import Loader from '../../../../../../component/Loader/Loader';
+import { CenteredText } from '../../../../CentredText';
+import { Row } from '../../../AdvancedTable';
 import { CellRenderer } from '../../CellRenderer/CellRenderer';
 
 const Body = styled.div`

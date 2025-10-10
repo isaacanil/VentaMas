@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { PureAbility } from '@casl/ability';
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
+
 import {
     selectAbilities,
     selectAbilitiesLoading,
     selectAbilitiesError,
-    setAbilities,
     loadUserAbilities
 } from '../../features/abilities/abilitiesSlice';
 import { selectUser } from '../../features/auth/userSlice';
-import { PureAbility } from '@casl/ability';
 
 export const useAbilities = () => {
     const abilities = useSelector(selectAbilities);

@@ -1,10 +1,11 @@
 // Importamos Firestore
 import { doc, getDoc, setDoc, updateDoc, increment, collection, onSnapshot, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebaseconfig';
 import { nanoid } from 'nanoid';
-import { selectUser } from '../../../features/auth/userSlice';
-import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../../features/auth/userSlice';
+import { db } from '../../firebaseconfig';
 
 // Función para actualizar o crear una unidad de venta en la subcolección saleUnits
 export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {

@@ -1,5 +1,5 @@
-import { collection, deleteField, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore'
-import React from 'react'
+import { collection, deleteField, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
+
 import { db } from '../firebaseconfig'
 
 export async function fbUpdateClientsWithIncrementalNumber({ setMessage }) {

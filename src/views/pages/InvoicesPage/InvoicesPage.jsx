@@ -2,15 +2,16 @@ import { motion } from 'framer-motion'
 import { Fragment, useEffect, useState, Suspense, lazy } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
+
 import { selectUser } from '../../../features/auth/userSlice'
 import { useFbGetInvoicesWithFilters } from '../../../firebase/invoices/useFbGetInvoicesWithFilters'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
 import { getDateRange } from '../../../utils/date/getDateRange'
-import SalesAnalyticsPanel from './SalesAnalyticsPanel/SalesAnalyticsPanel'
-import { SaleRecordList } from './SaleRecordList/RecordList'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
+
 import { FilterBar } from './components/FilterBar/FilterBar'
-import dayjs from 'dayjs'
+import { SaleRecordList } from './SaleRecordList/RecordList'
+import SalesAnalyticsPanel from './SalesAnalyticsPanel/SalesAnalyticsPanel'
 
 const SaleReportTable = lazy(() => import('./SaleReportTable/SaleReportTable'));
 

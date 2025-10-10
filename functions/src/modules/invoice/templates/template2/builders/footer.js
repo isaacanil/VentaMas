@@ -1,4 +1,3 @@
-import { buildClientBlock } from "./clientBlock.js";
 import { getDiscount, money } from "../utils/formatters.js";
 
 const PAYMENT_METHODS = {

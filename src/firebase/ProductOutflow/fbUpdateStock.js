@@ -1,5 +1,6 @@
+import { doc, increment, writeBatch } from 'firebase/firestore';
+
 import { db } from "../firebaseconfig";
-import { doc, updateDoc, increment, writeBatch } from 'firebase/firestore';
 
 export const fbUpdateStock = async (user, updates) => {
     if (!user?.businessID || !Array.isArray(updates) || updates.length === 0) return;

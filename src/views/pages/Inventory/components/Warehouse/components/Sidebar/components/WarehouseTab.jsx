@@ -1,17 +1,18 @@
+import { PlusOutlined } from '@ant-design/icons';
+import { Tree, Button, Tooltip } from 'antd';
+import { AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { Tree, Button, Tooltip } from 'antd';
-import { PlusOutlined, WarningOutlined } from '@ant-design/icons';
-import { useListenWarehouses } from '../../../../../../../../firebase/warehouse/warehouseService';
-import { useListenShelves } from '../../../../../../../../firebase/warehouse/shelfService';
+
 import { useListenRowShelves } from '../../../../../../../../firebase/warehouse/RowShelfService';
 import { useListenAllSegments } from '../../../../../../../../firebase/warehouse/segmentService';
-import { AnimatePresence, motion } from 'framer-motion';
-import { WarehouseForm } from '../../../forms/WarehouseForm/WarehouseForm';
-import { ShelfForm } from '../../../forms/ShelfForm/ShelfForm';
+import { useListenShelves } from '../../../../../../../../firebase/warehouse/shelfService';
+import { useListenWarehouses } from '../../../../../../../../firebase/warehouse/warehouseService';
 import RowForm from '../../../forms/RowShelfForm/RowShelfForm';
 import SegmentForm from '../../../forms/SegmentForm/SegmentForm';
+import { ShelfForm } from '../../../forms/ShelfForm/ShelfForm';
+import { WarehouseForm } from '../../../forms/WarehouseForm/WarehouseForm';
 
 const TabContent = styled.div`
   padding: 16px;

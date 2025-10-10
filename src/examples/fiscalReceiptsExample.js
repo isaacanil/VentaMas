@@ -4,7 +4,8 @@
  */
 
 // Ejemplo de datos reales de comprobantes fiscales (simulación)
-export const EXAMPLE_TAX_RECEIPTS = [
+/* eslint-disable no-undef */
+export const fiscalReceiptsExample = [
   {
     id: 'receipt_1',
     data: {

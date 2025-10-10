@@ -5,11 +5,11 @@ import {
     query, 
     where, 
     doc, 
-    setDoc, 
     addDoc, 
     writeBatch, 
     updateDoc 
   } from 'firebase/firestore';
+
 import { db } from '../../../../../../firebase/firebaseconfig';
 
   

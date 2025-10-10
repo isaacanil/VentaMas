@@ -1,8 +1,11 @@
-import { getNextID } from '../Tools/getNextID';
-import { getBarcodeSettings } from './barcodeSettings';
-import { generateGTIN13RD } from '../../utils/barcode/barcode';
 import { doc, getDoc } from 'firebase/firestore';
+
+import { generateGTIN13RD } from '../../utils/barcode/barcode';
 import { db } from '../firebaseconfig';
+import { getNextID } from '../Tools/getNextID';
+
+import { getBarcodeSettings } from './barcodeSettings';
+
 
 /**
  * Genera automáticamente el siguiente Item Reference para un negocio

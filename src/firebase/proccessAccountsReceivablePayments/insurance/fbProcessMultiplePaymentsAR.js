@@ -1,10 +1,11 @@
-import { collection, doc, getDoc, getDocs, query, runTransaction, Timestamp, where, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, Timestamp, where, writeBatch } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
-import { db } from '../../firebaseconfig';
-import { defaultPaymentsAR } from '../../../schema/accountsReceivable/paymentAR';
+
 import { defaultInstallmentPaymentsAR } from '../../../schema/accountsReceivable/installmentPaymentsAR';
-import { fbGetInvoice } from '../../invoices/fbGetInvoice';
+import { defaultPaymentsAR } from '../../../schema/accountsReceivable/paymentAR';
 import { fbAddAccountReceivablePaymentReceipt } from '../../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
+import { db } from '../../firebaseconfig';
+import { fbGetInvoice } from '../../invoices/fbGetInvoice';
 
 const THRESHOLD = 1e-10;
 // Función mejorada para redondear a dos decimales y evitar problemas de precisión

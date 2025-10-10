@@ -1,6 +1,7 @@
+import { motion } from "framer-motion";
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import { motion } from "framer-motion";
+
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 
 const itemVariants = {

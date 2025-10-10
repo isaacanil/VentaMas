@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Button, Select, DatePicker, message, Typography, Divider, Space, Row, Col, Card } from 'antd';
-import { useSelector } from 'react-redux';
-import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
-import styled from 'styled-components';
 import { FileAddOutlined, NumberOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Button, Select, DatePicker, message, Typography, Divider, Row, Col } from 'antd';
 import dayjs from 'dayjs';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
+
 
 const { Title, Text } = Typography;
 const { Option } = Select;

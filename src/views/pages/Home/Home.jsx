@@ -1,8 +1,10 @@
-import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
 import styled from 'styled-components'
+
+import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite'
+
+import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts'
 import PersonalizedGreeting from './components/PersonalizedGreeting/PersonalizedGreeting'
 import Footer from './Footer/Footer'
-import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts'
 
 export const Home = () => {
   return (

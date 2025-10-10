@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import * as antd from 'antd';
+
 const { Form, Input, Col, Row, Button, Modal, Alert, Typography, Spin } = antd;
-import { DateTime, Duration } from 'luxon';
-import { Client } from '../Client/Client';
+import { DateTime } from 'luxon';
 import { useDispatch, useSelector } from 'react-redux';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
-import { cancelInvoice, closeInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice';
-import { InvoiceResume } from './components/InvoiceResume';
+import { closeInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice';
 import { fbCancelInvoice } from '../../../../../../firebase/invoices/fbCancelInvoice';
+import { Client } from '../Client/Client';
+
+import { InvoiceResume } from './components/InvoiceResume';
 
 export const InvoiceInfo = ({ invoice }) => {
   const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] = useState(false)

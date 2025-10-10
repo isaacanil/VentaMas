@@ -1,6 +1,7 @@
 import * as antd from 'antd';
-import FileList from '../../../pages/OrderAndPurchase/CreatePurchase/components/FileList';
 import { useDispatch } from 'react-redux';
+
+import FileList from '../../../pages/OrderAndPurchase/CreatePurchase/components/FileList';
 
 const { Button, Tag, Modal, Typography, Empty } = antd;
 const { Text, Title, Paragraph } = Typography;

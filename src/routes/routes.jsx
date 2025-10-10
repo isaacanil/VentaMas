@@ -1,21 +1,22 @@
 import { NotFound } from "../views/pages/NotFound/NotFound";
-import basic from "./paths/Basic";
+
+import accountReceivable from './paths/AccountReceivable';
 import auth from "./paths/Auth";
-import inventory from "./paths/Inventory";
-import contacts from "./paths/Contact";
-import settings from "./paths/Setting";
-import sales from "./paths/Sales";
-import purchases from "./paths/Purchases";
-import lab from "./paths/Lab";
+import authorizations from './paths/Authorizations';
+import basic from "./paths/Basic";
 import cashReconciliation from "./paths/CashReconciliztion";
+import changelogs from "./paths/Changelogs";
+import contacts from "./paths/Contact";
+import creditNote from './paths/CreditNote';
 import dev from "./paths/Dev"; // Contiene rutas sólo para desarrollo (marcadas con devOnly)
 import expenses from "./paths/Expenses";
-import changelogs from "./paths/Changelogs";
-import utility from "./paths/Utility";
-import accountReceivable from './paths/AccountReceivable';
 import insurance from './paths/Insurance';
-import creditNote from './paths/CreditNote';
-import authorizations from './paths/Authorizations';
+import inventory from "./paths/Inventory";
+import lab from "./paths/Lab";
+import purchases from "./paths/Purchases";
+import sales from "./paths/Sales";
+import settings from "./paths/Setting";
+import utility from "./paths/Utility";
 import { processRoute } from "./requiereAuthProvider";
 import { ROUTE_STATUS } from './routeMeta';
 import { registerRoutes } from './routeVisibility';

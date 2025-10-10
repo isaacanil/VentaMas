@@ -59,14 +59,14 @@ export const canonicalizeNcf = (value) => {
     if (Number.isFinite(numeric)) {
       sequenceNumber = numeric;
     }
-  } catch (_) {
+  } catch {
     sequenceNumber = null;
   }
 
   let sequenceBigInt = null;
   try {
     sequenceBigInt = BigInt(normalizedDigits || '0');
-  } catch (_) {
+  } catch {
     sequenceBigInt = null;
   }
 

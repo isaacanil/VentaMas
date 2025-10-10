@@ -1,7 +1,7 @@
 // FilterInput.js
+import { Button } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from 'antd';
 
 const StyledInputContainer = styled.div`
   display: flex;

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Drawer, Select, Card, Button, Tooltip, message, Badge, Typography } from 'antd';
-import { countryComprobantes, getAvailableCountries } from '../../../../../../../firebase/taxReceipt/taxReceiptTemplates';
-import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
 // Importar Redux y la función para agregar a Firebase
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { addTaxReceipt } from '../../../../../../../firebase/taxReceipt/addTaxReceipt'; // Asumiendo que esta función existe
+import { countryComprobantes, getAvailableCountries } from '../../../../../../../firebase/taxReceipt/taxReceiptTemplates';
 
 const { Option } = Select;
 const { Title, Text } = Typography;

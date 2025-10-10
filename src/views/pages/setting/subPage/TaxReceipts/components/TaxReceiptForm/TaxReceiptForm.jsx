@@ -9,17 +9,14 @@
 import { Button, Form, Grid, Input, message, Modal, Switch } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+
 import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { updateTaxReceipt } from "../../../../../../../firebase/taxReceipt/updateTaxReceipt";
 import { logSequenceWarning } from "../../../../../../../firebase/taxReceipt/logSequenceWarning";
+import { updateTaxReceipt } from "../../../../../../../firebase/taxReceipt/updateTaxReceipt";
+
 import NcfSequenceSummary from "./components/NcfSequenceSummary";
-import { useSequenceFinder } from "./hooks/useSequenceFinder";
-import { confirmSequenceWarnings } from "./utils/confirmSequenceWarnings";
-import { buildSequencePreview } from "./utils/sequencePreview";
-import { createSequenceLengthResolver } from "./utils/sequenceLength";
-import { createSequenceConflictChecker } from "./utils/sequenceConflicts";
-import { buildPrefix, toDigits } from "./utils/ncfUtils";
 import SequenceLedgerInsights from "./components/SequenceLedgerInsights";
+import { useSequenceFinder } from "./hooks/useSequenceFinder";
 import {
   AsidePanel,
   DesktopOnly,
@@ -33,6 +30,11 @@ import {
   Span6,
   Span8,
 } from "./TaxReceiptForm.styled";
+import { confirmSequenceWarnings } from "./utils/confirmSequenceWarnings";
+import { buildPrefix, toDigits } from "./utils/ncfUtils";
+import { createSequenceConflictChecker } from "./utils/sequenceConflicts";
+import { createSequenceLengthResolver } from "./utils/sequenceLength";
+import { buildSequencePreview } from "./utils/sequencePreview";
 
 /* ===== Lógica original ===== */
 

@@ -1,8 +1,8 @@
 // accountsReceivableSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { defaultAR } from '../../schema/accountsReceivable/accountsReceivable';
-import { DateTime } from 'luxon';
+
 import { getAccountReceivableDetails } from '../../firebase/accountsReceivable/fbGetAccountReceivableDetails'; // Asegúrate de que la ruta es correcta
+import { defaultAR } from '../../schema/accountsReceivable/accountsReceivable';
 import { applyUpdates } from '../../utils/reduxStateUtils';
 
 // Estado inicial con un único objeto defaultAR

@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { KeyOutlined } from '@ant-design/icons';
 import { Modal, Typography, Button } from 'antd';
-import { KeyOutlined, ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
 const { Title, Text } = Typography;

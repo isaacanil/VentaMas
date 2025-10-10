@@ -1,9 +1,9 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { SelectSettingCart } from '../../../../features/cart/cartSlice'
 import { SubTitle } from '../Receipt'
-import styled from 'styled-components'
-import { convertTimeToSpanish } from '../../../component/modals/ProductForm/components/sections/WarrantyInfo'
 
 
 export const WarrantyArea = ({ data }) => {

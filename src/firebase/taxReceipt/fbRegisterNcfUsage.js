@@ -1,4 +1,5 @@
-import { collection, addDoc, Timestamp, query, where, getDocs, updateDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { collection, Timestamp, query, where, getDocs, updateDoc, serverTimestamp, setDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 /**

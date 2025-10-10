@@ -3,9 +3,10 @@ import {
     getDocs,
     writeBatch,
 } from "firebase/firestore";
-import { useSelector } from "react-redux";
-import { selectUser } from "../../../features/auth/userSlice";
 import { useCallback, useEffect } from "react";
+import { useSelector } from "react-redux";
+
+import { selectUser } from "../../../features/auth/userSlice";
 import { db } from "../../firebaseconfig";
 
 export const updateTaxReceipt = async (user) => {

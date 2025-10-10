@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../features/auth/userSlice';
 
 // Servicios de escucha
-import { listenAllWarehouses } from './warehouseService';
-import { listenAllShelves } from './shelfService';
+import { listenAllProductStockByLocation } from './productStockService';
 import { listenAllRowShelves } from './RowShelfService';
 import { listenAllSegments } from './segmentService';
-import { listenAllProductStockByLocation } from './productStockService';
+import { listenAllShelves } from './shelfService';
+import { listenAllWarehouses } from './warehouseService';
 
 export const useWarehouseHierarchy = () => {
   const user = useSelector(selectUser);

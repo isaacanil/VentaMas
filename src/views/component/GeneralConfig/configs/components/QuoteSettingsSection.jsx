@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
 import { Form, Input, InputNumber, Checkbox, message } from 'antd';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
 const ConfigItem = styled.div`
   padding-left: ${(props) => (props.level || 0) * 16}px;

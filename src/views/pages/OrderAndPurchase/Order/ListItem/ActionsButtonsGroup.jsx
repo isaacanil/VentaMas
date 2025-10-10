@@ -1,18 +1,18 @@
 
-import React, { Fragment, useEffect, useState } from 'react'
+import * as antd from 'antd'
+import React, { Fragment } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { getOrderData } from '../../../../../features/purchase/addPurchaseSlice'
-import { Button } from '../../../../templates/system/Button/Button'
-import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
-import { getOrderData as getOrderDataToOrder } from '../../../../../features/addOrder/addOrderSlice'
+
 import { icons } from '../../../../../constants/icons/icons'
-import { useDialog } from '../../../../../Context/Dialog/DialogContext'
-import { selectUser } from '../../../../../features/auth/userSlice'
 import { OPERATION_MODES } from '../../../../../constants/modes'
-import { fbDeleteOrder } from '../../../../../firebase/order/fbDeleteOrder'
+import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+import { getOrderData as getOrderDataToOrder } from '../../../../../features/addOrder/addOrderSlice'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import { addNotification } from '../../../../../features/notification/notificationSlice'
-import * as antd from 'antd'
+import { getOrderData } from '../../../../../features/purchase/addPurchaseSlice'
+import { fbDeleteOrder } from '../../../../../firebase/order/fbDeleteOrder'
+import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
 
 export const ActionsButtonsGroup = ({ orderData }) => {
     const dispatch = useDispatch();

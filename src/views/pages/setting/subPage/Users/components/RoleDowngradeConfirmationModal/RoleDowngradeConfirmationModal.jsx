@@ -1,10 +1,10 @@
-import { Modal } from 'antd';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faExclamationTriangle, 
   faArrowDown
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal } from 'antd';
+import styled from 'styled-components';
 
 const RoleDowngradeConfirmationModal = ({ 
   isOpen, 

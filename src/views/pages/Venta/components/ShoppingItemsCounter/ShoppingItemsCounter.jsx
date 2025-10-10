@@ -1,10 +1,10 @@
 import React from 'react'
-import { SelectTotalShoppingItems } from '../../../../../features/cart/cartSlice'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { motion } from 'framer-motion'
-import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber'
+
+import { SelectTotalShoppingItems } from '../../../../../features/cart/cartSlice'
 import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
+import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber'
 
 export const ShoppingItemsCounter = ({ products }) => {
   const productLength = products?.length || 0;

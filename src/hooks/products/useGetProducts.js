@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
 
 export const useGetProducts = (db) => {
   const [products, setProducts] = useState([]);

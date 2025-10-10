@@ -1,5 +1,6 @@
 
 import styled from 'styled-components';
+
 import palette from '../../../../theme/colors/light/Palette';
 
 export function Doc() {

@@ -1,6 +1,6 @@
+import { Drawer, Image, Spin, Alert } from 'antd';
 import React, { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
-import { Drawer, Image, Spin, Alert } from 'antd';
 
 const PreviewContainer = styled.div`
   max-width: 100%;

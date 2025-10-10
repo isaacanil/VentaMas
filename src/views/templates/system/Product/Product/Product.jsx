@@ -1,16 +1,19 @@
-import { Fragment, memo } from 'react';
-import styled from 'styled-components';
-import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
+import { Fragment, memo } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice';
-import { getContainerOutline } from './utils/stockTheme';
-import { useProductHandling } from './hooks/useProductHandling';
-import { containerVariants } from './utils/variants';
+
 import ProductImage from './components/ImagenBlock';
+import { ProductFooter } from './components/ProductFooter';
 import ProductHeader from './components/ProductHeader';
 import { StockWarning } from './components/StockWarning';
-import { ProductFooter } from './components/ProductFooter';
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { useProductHandling } from './hooks/useProductHandling';
+import { getContainerOutline } from './utils/stockTheme';
+import { containerVariants } from './utils/variants';
+
 
 const Container = styled(motion.li)`
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.02);

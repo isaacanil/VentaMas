@@ -17,7 +17,6 @@ const SUBJECTS = {
   USER: 'user',
   CLIENT: 'client',
   PROVIDER: 'provider',
-  USER: 'user',
   CATEGORY: 'category',
   Invoice: 'invoice',
   ORDER: 'order',

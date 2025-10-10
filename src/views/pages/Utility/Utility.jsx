@@ -1,17 +1,19 @@
-import React, { useState } from 'react'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import styled from 'styled-components'
 import { motion } from 'framer-motion'
-import Typography from '../../templates/system/Typografy/Typografy'
+import React, { useState } from 'react'
+import styled from 'styled-components'
+
 import { useFbGetExpenses } from '../../../firebase/expenses/Items/useFbGetExpenses'
-import { getDateRange } from '../../../utils/date/getDateRange'
-import { DatePicker } from '../../templates/system/Dates/DatePicker/DatePicker'
 import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
-import DailySalesWithAverageChart from './charts/DailySalesWithAverageChart/DailySalesWithAverageChart'
-import WeeklySalesWithAverageChart from './charts/WeeklySalesWithAverageChart/WeeklySalesWithAverageChart'
+import { getDateRange } from '../../../utils/date/getDateRange'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
+import { DatePicker } from '../../templates/system/Dates/DatePicker/DatePicker'
+import Typography from '../../templates/system/Typografy/Typografy'
+
 import BiWeeklySalesWithAverageChart from './charts/BiWeeklySalesWithAverageChart/BiWeeklySalesWithAverageChart'
+import DailySalesWithAverageChart from './charts/DailySalesWithAverageChart/DailySalesWithAverageChart'
 import GeneralAndMonthlySales from './charts/GeneralAndMonthlySales/GeneralAndMonthlySales'
 import { MonthlyFinancialReportChart } from './charts/MonthlyFinancialReportChart/MonthlyFinancialReportChart'
+import WeeklySalesWithAverageChart from './charts/WeeklySalesWithAverageChart/WeeklySalesWithAverageChart'
 
 export const Utility = ({ isOpen = true }) => {
     const [datesSelected, setDatesSelected] = useState(getDateRange('thisMonth'));    const { expenses } = useFbGetExpenses(datesSelected);

@@ -1,6 +1,7 @@
-import React from 'react'
-import { db } from '../firebaseconfig';
 import { doc, getDoc } from 'firebase/firestore';
+
+import { db } from '../firebaseconfig';
+
 
 /**
  * Fetches a client from the database by ID to check if they exist.

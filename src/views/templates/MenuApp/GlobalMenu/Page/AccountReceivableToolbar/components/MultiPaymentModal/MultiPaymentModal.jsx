@@ -1,14 +1,18 @@
+import { Modal, Button, Form, message, notification, Steps } from 'antd';
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Form, Typography, Divider, message, notification, Steps } from 'antd';
-import { useReactToPrint } from 'react-to-print';
-import { ShowcaseList } from '../../../../../../../templates/system/ShowCase/ShowcaseList';
 import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
-import { formatMoney } from '../../../../../../../../utils/formatters';
-import DateUtils from '../../../../../../../../utils/date/dateUtils';
-import { FilterBar, AccountsTable, PaymentMethodsForm, PaymentReceipt } from './components';
+
+import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { fbProcessMultiplePaymentsAR } from '../../../../../../../../firebase/proccessAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR';
+import DateUtils from '../../../../../../../../utils/date/dateUtils';
+import { formatMoney } from '../../../../../../../../utils/formatters';
+import { ShowcaseList } from '../../../../../../../templates/system/ShowCase/ShowcaseList';
+
+
+import { FilterBar, AccountsTable, PaymentMethodsForm, PaymentReceipt } from './components';
+
 
 /**
  * Componente principal para el Modal de Pagos Múltiples

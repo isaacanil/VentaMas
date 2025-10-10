@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
-import styled from 'styled-components';
-import { Card, Table, Button } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Table, Button } from 'antd';
+import React, { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import styled from 'styled-components';
 
 const Container = styled.div`
   max-width: 50rem;

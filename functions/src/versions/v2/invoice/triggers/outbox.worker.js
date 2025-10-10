@@ -1,5 +1,6 @@
 import { logger } from 'firebase-functions';
 import { firestore } from 'firebase-functions/v1';
+
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 
 let depsPromise;
@@ -322,7 +323,7 @@ export const processInvoiceOutbox = firestore
           auditTx(tx, { businessId, invoiceId, event: 'task_success', data: { taskId, type } });
         } else if (type === 'attachToCashCount') {
           const ccSnap = await getCashCount.getOpenCashCountDocFromTx(tx, user);
-          const { cashCountId } = await checkOpenCashCount({ cashCountSnap: ccSnap, user });
+          await checkOpenCashCount({ cashCountSnap: ccSnap, user });
           ensureTaskStart();
           const ccRef = ccSnap.ref;
           const ccData = ccSnap.data();
@@ -464,7 +465,9 @@ export const processInvoiceOutbox = firestore
           { merge: true }
         );
         await auditSafe({ businessId, invoiceId, event: 'task_failed', level: 'error', data: { taskId, type, error: err?.message || String(err) } });
-      } catch {}
+      } catch {
+        /* suppress audit failure to keep worker running */
+      }
     }
     return null;
   });

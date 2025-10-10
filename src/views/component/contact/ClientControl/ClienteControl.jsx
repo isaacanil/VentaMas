@@ -1,21 +1,23 @@
-import { useState, useEffect, useRef } from 'react'
-import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux'
-import { setClient as setClientInClientCart, setChange, toggleCart, totalPurchase, updateInsuranceStatus, selectInsuranceEnabled, setDefaultClient } from '../../../../features/cart/cartSlice'
-import { ClientDetails } from './ClientDetails/ClientDetails.jsx'
-import { updateObject } from '../../../../utils/object/updateObject'
-import { deleteClient, selectClient, selectClientMode, selectClientSearchTerm, selectIsOpen, selectLabelClientMode, setClient, setClientMode, setClientSearchTerm, setIsOpen } from '../../../../features/clientCart/clientCartSlice'
-import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode'
-import { useWindowWidth } from '../../../../hooks/useWindowWidth'
-import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
-import { OPERATION_MODES } from '../../../../constants/modes.js'
-import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
-import { selectNcfType, selectTaxReceipt, selectTaxReceiptType, selectNcfTypeLocked } from '../../../../features/taxReceipt/taxReceiptSlice.js'
 import { Input, Button as AntButton, Checkbox, Select, Button, Tooltip } from 'antd';
-import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
-import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
-import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
+import { useState, useEffect, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { icons } from '../../../../constants/icons/icons.jsx'
+import { OPERATION_MODES } from '../../../../constants/modes.js'
+import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
+import { setClient as setClientInClientCart, toggleCart, updateInsuranceStatus, setDefaultClient } from '../../../../features/cart/cartSlice'
+import { deleteClient, selectClient, selectClientMode, selectClientSearchTerm, setClient, setClientSearchTerm, setIsOpen } from '../../../../features/clientCart/clientCartSlice'
+import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode'
+import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
+import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
+import { selectNcfType, selectTaxReceipt, selectTaxReceiptType, selectNcfTypeLocked } from '../../../../features/taxReceipt/taxReceiptSlice.js'
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
+import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
+import { useWindowWidth } from '../../../../hooks/useWindowWidth'
+import { updateObject } from '../../../../utils/object/updateObject'
+
+import { ClientDetails } from './ClientDetails/ClientDetails.jsx'
 
 export const ClientControl = () => {
   const dispatch = useDispatch()

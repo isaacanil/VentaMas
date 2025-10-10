@@ -1,4 +1,5 @@
 import { collection, doc, writeBatch } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export const fbUpdateTaxReceipt = async (user, taxReceiptArray) => {

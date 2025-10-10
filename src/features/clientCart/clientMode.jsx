@@ -1,6 +1,5 @@
 import { faMagnifyingGlass, faUserPen, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { sync } from "framer-motion";
 import { nanoid } from "nanoid";
 
 export const CLIENT_MODE_BAR = Object.freeze(

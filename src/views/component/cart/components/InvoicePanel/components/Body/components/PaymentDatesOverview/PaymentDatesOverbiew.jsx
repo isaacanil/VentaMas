@@ -1,8 +1,8 @@
+import { CalendarOutlined } from '@ant-design/icons';
+import { Button, Modal, List, Calendar, Badge } from 'antd';
+import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Button, Modal, List, Calendar, Badge, Tooltip } from 'antd';
-import { CalendarOutlined } from '@ant-design/icons';
-import { DateTime } from 'luxon';
 
 const PaymentDatesOverview = ({ paymentDates, nextPaymentDate, frequency, installments }) => {
     const [isModalVisible, setIsModalVisible] = useState(false);

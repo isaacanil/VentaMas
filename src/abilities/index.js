@@ -1,10 +1,12 @@
-import { defineAbilitiesForManager } from './roles/gerente';
+import { getUserDynamicPermissions } from '../services/dynamicPermissions';
+
+import { defineAbilitiesForAdmin } from './roles/admin';
 import { defineAbilitiesForCashier } from './roles/cajero';
 import { defineAbilitiesForBuyer } from './roles/comprador';
-import { defineAbilitiesForAdmin } from './roles/admin';
-import { defineAbilitiesForOwner } from './roles/owner';
 import { defineAbilitiesForDev } from './roles/dev';
-import { getUserDynamicPermissions } from '../services/dynamicPermissions';
+import { defineAbilitiesForManager } from './roles/gerente';
+import { defineAbilitiesForOwner } from './roles/owner';
+
 
 
 const ROLE_ABILITIES = {

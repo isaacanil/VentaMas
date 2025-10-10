@@ -1,19 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
-import { Form, Button, Drawer, Modal } from 'antd';
 import { FilterOutlined, MoreOutlined } from '@ant-design/icons';
+import { Form, Button, Drawer, Modal } from 'antd';
+import PropTypes from 'prop-types';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 // Imports locales
-import { ACCESSIBILITY_CONFIG } from './constants';
-import {
-  useInvoiceSorting,
-  useFilterHandlers,
-  useClientOptions,
-  useDrawerState,
-  useResponsiveLayout,
-  useFilterCollapse,
-} from './hooks';
 import {
   CollapsibleItem,
   DateRangeFilter,
@@ -24,6 +15,15 @@ import {
   ClearFiltersButton,
   TotalsDisplay,
 } from './components';
+import { ACCESSIBILITY_CONFIG } from './constants';
+import {
+  useInvoiceSorting,
+  useFilterHandlers,
+  useClientOptions,
+  useDrawerState,
+  useResponsiveLayout,
+  useFilterCollapse,
+} from './hooks';
 
 // Estilos del componente
 const Bar = styled.div`

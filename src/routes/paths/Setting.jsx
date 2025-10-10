@@ -1,17 +1,16 @@
-import { Setting } from "../../views/pages/setting/setting";
-import { TaxReceiptSetting } from "../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting";
-import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
-import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
-import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
-import BillingConfig from "../../views/component/GeneralConfig/configs/BillingConfig";
 import AuthorizationFlowConfig from "../../views/component/GeneralConfig/configs/AuthorizationFlowConfig";
+import BillingConfig from "../../views/component/GeneralConfig/configs/BillingConfig";
+import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
+import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
+import { Setting } from "../../views/pages/setting/setting";
 import AppInfo from "../../views/pages/setting/subPage/AppInfo/AppInfo";
-import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
 import BusinessCreator from "../../views/pages/setting/subPage/BusinessEditor/BusinessCreator";
-import EditUser from "../../views/pages/setting/subPage/Users/components/EditUser/EditUser";
+import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
+import { TaxReceiptSetting } from "../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting";
 import { UserList } from "../../views/pages/setting/subPage/Users/components/UsersList/UserList";
-import ROUTES_NAME from "../routesName";
+import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
 import { getRelativePath } from "../getConfigRoute";
+import ROUTES_NAME from "../routesName";
 
 const {
     SETTINGS,

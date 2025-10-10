@@ -1,7 +1,10 @@
-import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 import { DateTime } from 'luxon';
-import { columns } from './tableConfig'
+
+import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
 import { calculateOrderTotals } from '../../../OrderManagement/utils/orderCalculationsUtil';
+
+import { columns } from './tableConfig'
+
 
 const calculatePaymentDate = (createdAt, conditionId) => {
   if (!createdAt) return null;

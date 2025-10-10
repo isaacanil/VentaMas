@@ -1,24 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import * as antd from 'antd';
-import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
-import { fbGetCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbGetCreditLimit';
-import { selectUser } from '../../../../../../../../../features/auth/userSlice';
-import { useSelector } from 'react-redux';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import CreditLimitModal from './CreditLimitModal';
-import { EditOutlined } from '@ant-design/icons';
-import {formatPrice} from '../../../../../../../../../utils/formatPrice';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faFileInvoice, 
-    faCreditCard, 
-    faMoneyBillWave,
+    faCreditCard,
     faExclamationTriangle,
     faCheckCircle,
     faTimesCircle,
     faEdit
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as antd from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectUser } from '../../../../../../../../../features/auth/userSlice';
+import { fbGetCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbGetCreditLimit';
+import {formatPrice} from '../../../../../../../../../utils/formatPrice';
+
+import CreditLimitModal from './CreditLimitModal';
+
 
 const { Alert, Button } = antd;
 

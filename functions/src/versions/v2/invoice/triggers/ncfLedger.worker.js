@@ -1,5 +1,6 @@
-import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { logger } from 'firebase-functions';
+import { onDocumentWritten } from 'firebase-functions/v2/firestore';
+
 import {
   extractInvoiceDataFromChange,
   syncLedgerForChange,

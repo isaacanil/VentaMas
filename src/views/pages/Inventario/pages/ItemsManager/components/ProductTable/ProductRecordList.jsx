@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ProductItem } from './ProductCard/ProductItem';
-
+import React, { useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { filterData } from '../../../../../../../hooks/search/useSearch';
+
 import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
+import { filterData } from '../../../../../../../hooks/search/useSearch';
+
+import { ProductItem } from './ProductCard/ProductItem';
 
 export const ProductRecordList = ({ products, searchTerm }) => {
   const parentRef = useRef(null);

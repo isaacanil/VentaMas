@@ -1,8 +1,8 @@
 import { Timestamp, doc, getDoc, increment, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { deleteObject, ref } from "firebase/storage";
+
 import { db, storage } from "../firebaseconfig";
 import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
-import { isImageFile, isPDFFile } from '../../utils/file/isValidFile';
-import { deleteObject, ref } from "firebase/storage";
 
 const saveCurrentPurchaseVersion = async (user, currentPurchase) => {
     const purchaseId = currentPurchase.id;

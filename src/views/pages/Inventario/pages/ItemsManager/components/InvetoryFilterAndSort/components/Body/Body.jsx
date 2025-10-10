@@ -1,6 +1,7 @@
 // Body.js
 import React from 'react';
 import styled from 'styled-components';
+
 import { FilterPanel } from './components/FilterPanel/FilterPanel';
 import { SortPanel } from './components/SortPanel/SortPanel';
 

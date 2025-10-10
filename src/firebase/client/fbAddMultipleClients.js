@@ -1,5 +1,7 @@
 import { doc, writeBatch } from "firebase/firestore"
+
 import { db } from "../firebaseconfig"
+
 import { clients } from "./clients"
 
 export const fbAAddMultipleClients = (user) => {

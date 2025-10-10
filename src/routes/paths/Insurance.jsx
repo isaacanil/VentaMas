@@ -1,6 +1,6 @@
 import InsuranceConfig from "../../views/pages/Insurance/InsuranceConfig/InsuraceConfig";
-import { ROUTES } from '../routesName';
 import InsuranceConfigForm from "../../views/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm";
+import { ROUTES } from '../routesName';
 
 const { INSURANCE_CONFIG, INSURANCE_CREATE } = ROUTES.INSURANCE_TERM;
 

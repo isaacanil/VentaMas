@@ -1,12 +1,15 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Modal, Form, Input, DatePicker, Select, message, Spin } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { useListenInsuranceConfig } from '../../../../../../firebase/insurance/insuranceService';
-import { selectClient } from '../../../../../../features/clientCart/clientCartSlice';
+import { Modal, Form, Input, DatePicker, Select, message, Spin } from 'antd';
 import dayjs from 'dayjs'; // Import dayjs for date handling
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import DoctorModal from '../../../../../../components/DoctorModal/DoctorModal';
+import DoctorSelector from '../../../../../../components/DoctorSelector/DoctorSelector';
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { selectClient } from '../../../../../../features/clientCart/clientCartSlice';
+import { setInsuranceAR } from '../../../../../../features/insurance/insuranceAccountsReceivableSlice';
 import {
   setAuthData,
   selectInsuranceAuthData,
@@ -16,16 +19,16 @@ import {
   fetchInsuranceAuthByClientId,
   updateAuthField
 } from '../../../../../../features/insurance/insuranceAuthSlice';
-import { createClientInsurance, updateClientInsurance, getClientInsuranceByClientId } from '../../../../../../firebase/insurance/clientInsuranceService';
-import Dependent from './components/Dependent/Dependent';
-import useInsuranceEnabled from '../../../../../../hooks/useInsuranceEnabled';
-// Importamos el componente FileUploader
-import FileUploader from '../../../../FileUploader/FileUploader';
-import { setInsuranceAR } from '../../../../../../features/insurance/insuranceAccountsReceivableSlice';
-// Importamos los componentes de médicos
-import DoctorSelector from '../../../../../../components/DoctorSelector/DoctorSelector';
-import DoctorModal from '../../../../../../components/DoctorModal/DoctorModal';
 import { useFbGetDoctors } from '../../../../../../firebase/doctors/useFbGetDoctors';
+import { createClientInsurance, updateClientInsurance, getClientInsuranceByClientId } from '../../../../../../firebase/insurance/clientInsuranceService';
+import { useListenInsuranceConfig } from '../../../../../../firebase/insurance/insuranceService';
+import useInsuranceEnabled from '../../../../../../hooks/useInsuranceEnabled';
+import FileUploader from '../../../../FileUploader/FileUploader';
+
+import Dependent from './components/Dependent/Dependent';
+
+// Importamos el componente FileUploader
+// Importamos los componentes de médicos
 
 const Row = styled.div`
   display: flex;

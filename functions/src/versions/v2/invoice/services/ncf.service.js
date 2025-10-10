@@ -35,7 +35,7 @@ export async function reserveNcf(tx, { businessId, userId, ncfType }) {
     try {
       const normalized = value === undefined || value === null || value === '' ? '0' : String(value);
       return BigInt(normalized);
-    } catch (err) {
+    } catch {
       throw new Error(`Valor inválido para ${label}`);
     }
   };

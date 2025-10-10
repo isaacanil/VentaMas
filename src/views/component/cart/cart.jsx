@@ -1,11 +1,13 @@
-import styled from 'styled-components'
 import { useSelector } from 'react-redux'
-import { ClientControl } from '../contact/ClientControl/ClienteControl'
+import styled from 'styled-components'
+
 import {
   SelectCartIsOpen,
 } from '../../../features/cart/cartSlice'
-import { ProductsList } from './components/ProductsList/ProductsLit'
+import { ClientControl } from '../contact/ClientControl/ClienteControl'
+
 import InvoiceSummary from './components/InvoiceSummary/InvoiceSummary'
+import { ProductsList } from './components/ProductsList/ProductsLit'
 
 export const Cart = () => {
   const isOpen = useSelector(SelectCartIsOpen)

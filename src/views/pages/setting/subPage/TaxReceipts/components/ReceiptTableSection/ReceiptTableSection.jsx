@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Button, Dropdown, Badge } from 'antd';
 import {
   PlusOutlined,
-  SaveOutlined,
   ReloadOutlined,
   FileAddOutlined
 } from '@ant-design/icons';
-import { TableTaxReceipt } from '../TableTaxReceipt/TableTaxReceipt';
+import { Button, Badge } from 'antd';
+import React, { useState } from 'react';
+import styled from 'styled-components';
+
 import DisabledReceiptsModal from '../DisabledReceiptsModal/DisabledReceiptsModal';
+import { TableTaxReceipt } from '../TableTaxReceipt/TableTaxReceipt';
 import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal';
 
 export const ReceiptTableSection = ({

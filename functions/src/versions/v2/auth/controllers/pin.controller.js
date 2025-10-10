@@ -1,9 +1,10 @@
+import { compare as bcryptCompare } from 'bcryptjs';
+import { logger } from 'firebase-functions';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { logger } from 'firebase-functions';
-import { db, Timestamp, FieldValue } from '../../../../core/config/firebase.js';
-import { compare as bcryptCompare } from 'bcryptjs';
 
+import { db, Timestamp, FieldValue } from '../../../../core/config/firebase.js';
+import { logPinAction } from '../pin/pin.audit.js';
 import {
   ADMIN_CAN_GENERATE_ROLES,
   SELF_CAN_GENERATE_ROLES,
@@ -12,6 +13,7 @@ import {
   SYSTEM_ACTOR,
 } from '../pin/pin.constants.js';
 import { generatePinValue, encryptPin, decryptPin } from '../pin/pin.crypto.js';
+import { handleError } from '../pin/pin.errors.js';
 import {
   normalizeModules,
   toIsoString,
@@ -22,8 +24,6 @@ import {
 } from '../pin/pin.status.js';
 import { loadUserDoc, resolveActorContext, ensureBusinessMatch } from '../pin/pin.users.js';
 import { extractUserData } from '../pin/pin.utils.js';
-import { logPinAction } from '../pin/pin.audit.js';
-import { handleError } from '../pin/pin.errors.js';
 
 export const autoRotateModulePins = onSchedule(
   {

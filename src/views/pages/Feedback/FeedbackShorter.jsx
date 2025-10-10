@@ -1,6 +1,6 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FiSend } from 'react-icons/fi';
+import styled from 'styled-components';
 
 const FeedbackContainer = styled.div`
   position: fixed;

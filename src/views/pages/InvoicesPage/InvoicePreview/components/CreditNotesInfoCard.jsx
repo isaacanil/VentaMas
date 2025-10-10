@@ -1,10 +1,12 @@
+import { faCreditCard, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Card, Tag, Tooltip } from "antd";
+import dayjs from "dayjs";
 import React from "react";
 import styled from "styled-components";
-import { Card, Tag, Tooltip, Empty } from "antd";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCreditCard, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+
 import { formatPrice } from "../../../../../utils/formatPrice";
-import dayjs from "dayjs";
+
 
 export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
   if (!creditNotes.length) {

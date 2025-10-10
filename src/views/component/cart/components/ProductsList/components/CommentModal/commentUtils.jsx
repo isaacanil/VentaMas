@@ -1,6 +1,7 @@
-import { Modal } from "antd";
-import { generativeModel } from "../../../../../../../firebase/firebaseconfig";
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Modal } from "antd";
+
+import { generativeModel } from "../../../../../../../firebase/firebaseconfig";
 
 export function applyCorrections(original, correctionsText) {
     let updated = original;

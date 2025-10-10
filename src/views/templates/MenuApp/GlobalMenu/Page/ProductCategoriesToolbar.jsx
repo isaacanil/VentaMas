@@ -1,11 +1,12 @@
 
 import React from 'react'
-import { Button } from '../../../system/Button/Button'
-import styled from 'styled-components'
-import ROUTES_NAME from '../../../../../routes/routesName'
-import { icons } from '../../../../../constants/icons/icons'
 import { useMatch } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../constants/icons/icons'
 import { useCategoryState } from '../../../../../Context/CategoryContext/CategoryContext'
+import ROUTES_NAME from '../../../../../routes/routesName'
+import { Button } from '../../../system/Button/Button'
 
 export const ProductCategoriesToolbar = ({ side = 'left' }) => {
 

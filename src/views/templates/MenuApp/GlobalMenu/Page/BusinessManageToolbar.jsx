@@ -1,10 +1,10 @@
-import React from 'react'
-import styled from 'styled-components'
-import { useMatch, useNavigate } from 'react-router-dom'
 import { Button } from 'antd'
-import { icons } from '../../../../../constants/icons/icons'
+import React from 'react'
 import { useDispatch } from 'react-redux'
-import { toggleSignUpUser } from '../../../../../features/modals/modalSlice'
+import { useMatch, useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../constants/icons/icons'
 import ROUTES_PATH from '../../../../../routes/routesName'
 
 const BusinessManagerToolbar = ({ side = 'left' }) => {

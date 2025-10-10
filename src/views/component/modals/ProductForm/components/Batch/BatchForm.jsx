@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import * as antd from "antd";
+
 const { Form, Input, InputNumber, DatePicker, Select, Button, notification, Modal } = antd;
 import { CalendarOutlined, PlusOutlined, EditOutlined } from "@ant-design/icons";
 import { DateTime } from "luxon";
-import { nanoid } from "nanoid";
-import { createBatch, updateBatch } from "../../../../../../firebase/warehouse/batchService";
-import { selectUser } from "../../../../../../features/auth/userSlice";
 import { useSelector } from "react-redux";
+
+import { selectUser } from "../../../../../../features/auth/userSlice";
 import { selectUpdateProductData } from "../../../../../../features/updateProduct/updateProductSlice";
+import { createBatch, updateBatch } from "../../../../../../firebase/warehouse/batchService";
 import DateUtils from "../../../../../../utils/date/dateUtils";
 
 // Styled Components

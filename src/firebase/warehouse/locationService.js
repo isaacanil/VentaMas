@@ -1,4 +1,5 @@
 import { getDoc, doc } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
 
 export const getLocationName = async (user, locationId) => {

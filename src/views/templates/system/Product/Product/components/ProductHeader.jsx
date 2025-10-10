@@ -1,9 +1,10 @@
-import React, { memo } from 'react';
 import PropTypes from 'prop-types';
+import React, { memo } from 'react';
 import styled from 'styled-components';
-import { Button } from '../../../Button/Button';
+
 import { icons } from '../../../../../../constants/icons/icons';
 import { truncateString } from '../../../../../../utils/text/truncateString';
+import { Button } from '../../../Button/Button';
 
 const Header = styled.div`
   display: flex;

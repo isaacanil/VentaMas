@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
 import * as antd from 'antd';
 import dayjs from 'dayjs';
+import React, { useState } from 'react';
+
+import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { getTotalPrice } from '../../../../../../utils/pricing';
-import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
 
 const { Table, Typography, Divider } = antd;
 

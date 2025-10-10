@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
 import { InputNumber, Table, Form } from 'antd';
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { changeProductPrice, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
+import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
 
 const columns = [
     {

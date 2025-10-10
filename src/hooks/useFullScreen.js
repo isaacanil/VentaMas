@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
+
 import { selectFullScreen } from "../features/setting/settingSlice";
 
 export function useFullScreen() {

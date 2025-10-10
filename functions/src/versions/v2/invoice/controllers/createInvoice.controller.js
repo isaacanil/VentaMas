@@ -1,7 +1,8 @@
 import { https, logger } from 'firebase-functions';
-import { nanoid } from 'nanoid';
-import { resolveIdempotencyKey } from '../utils/idempotency.util.js';
 import { onCall } from 'firebase-functions/https';
+import { nanoid } from 'nanoid';
+
+import { resolveIdempotencyKey } from '../utils/idempotency.util.js';
 
 let depsPromise;
 async function loadDeps() {
@@ -27,7 +28,7 @@ async function loadDeps() {
           if (!userId) return null;
             try {
               return await db.doc(`users/${userId}`).get();
-            } catch (e) {
+            } catch {
               return null;
             }
         },
@@ -59,7 +60,9 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
       } else if (data?.cart) {
         try {
           idempotencyKey = 'hash:' + stableHash(data.cart);
-        } catch {}
+        } catch {
+          /* fallback to validation below */
+        }
       }
       if (!idempotencyKey) {
         logger.warn('Missing Idempotency-Key and cannot derive fallback', { traceId });
@@ -110,7 +113,8 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
       const user = { businessID: businessId, uid: userId };
       const ccSnap = await getOpenCashCountDoc?.(user);
       await checkOpenCashCount({ cashCountSnap: ccSnap, user });
-    } catch (e) {
+    } catch (error) {
+      logger.warn('Cash count validation failed', { traceId, reason: error?.message ?? error });
       throw new https.HttpsError('failed-precondition', 'No hay cuadre de caja abierto');
     }
 

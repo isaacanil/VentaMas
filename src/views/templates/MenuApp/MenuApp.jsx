@@ -1,17 +1,22 @@
-import { useState, Fragment, useRef, useEffect } from 'react'
-import { useClickOutSide } from '../../../hooks/useClickOutSide'
-import styled from 'styled-components'
-import { SideBar } from './Components/SideBar'
-import { useDispatch } from 'react-redux'
-import { toggleOpenMenu } from '../../../features/nav/navSlice'
-import { OpenMenuButton } from '../system/Button/OpenMenuButton'
-import { GlobalMenu } from './GlobalMenu/GlobalMenu'
-import { icons } from '../../../constants/icons/icons'
-import { GoBackButton } from '../system/Button/GoBackButton'
 import { Input } from 'antd';
-import { NotificationButton } from './Components/NotificationButton/NotificationButton'
-import { ButtonIconMenu } from '../system/Button/ButtonIconMenu'
+import { useState, Fragment, useRef, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
 import { SearchPanel } from '../../../components/common/SearchPanel/SearchPanel'
+import { icons } from '../../../constants/icons/icons'
+import { toggleOpenMenu } from '../../../features/nav/navSlice'
+import { useClickOutSide } from '../../../hooks/useClickOutSide'
+import { ButtonIconMenu } from '../system/Button/ButtonIconMenu'
+import { GoBackButton } from '../system/Button/GoBackButton'
+import { OpenMenuButton } from '../system/Button/OpenMenuButton'
+
+import { NotificationButton } from './Components/NotificationButton/NotificationButton'
+import { SideBar } from './Components/SideBar'
+import { GlobalMenu } from './GlobalMenu/GlobalMenu'
+
+
+
 
 export const MenuApp = ({ 
   data, 

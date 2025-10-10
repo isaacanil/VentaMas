@@ -1,10 +1,11 @@
+import * as antd from 'antd'
 import React from 'react'
 import styled from 'styled-components'
+
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { ButtonGroup } from '../../../../templates/system/Button/Button'
 import { Receipt } from '../../../../pages/checkout/Receipt'
-import * as antd from 'antd'
-import { icons } from '../../../../../constants/icons/icons'
+import { ButtonGroup } from '../../../../templates/system/Button/Button'
+
 const { Typography, Modal } = antd
 export const CheckoutAction = ({
     TotalPurchaseRef,

@@ -1,6 +1,7 @@
-import { nanoid } from "nanoid"
-import { db } from "../firebaseconfig"
 import { doc, setDoc, Timestamp } from "firebase/firestore"
+import { nanoid } from "nanoid"
+
+import { db } from "../firebaseconfig"
 
 export const fbAddDoctor = async (doctor, user) => {
     if(!user || !user?.businessID) return 

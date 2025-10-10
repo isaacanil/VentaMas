@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { truncateString } from '../utils/text/truncateString';
+
 
 export function getTimeElapsed(timestamp, friendlyLimit = 1440) {
   const now = DateTime.now();

@@ -1,16 +1,19 @@
 import { logger, https } from "firebase-functions";
-import { validateInvoiceCart } from "../utils/invoiceValidation.js";
-import { checkOpenCashCount } from "../../cashCount/utils/cashCountCheck.js";
-import { getAndUpdateTaxReceipt } from "../../taxReceipt/services/taxReceiptAdmin.service.js";
-import { retrieveAndUpdateClient } from "../../client/services/clientAdmin.service.js";
-import { generateFinalInvoice, generateInvoiceFromPreorder } from "./invoiceGeneration.service.js";
-import { adjustProductInventory } from "../../Inventory/services/Inventory.service.js";
-import { manageReceivableAccounts } from "../../accountReceivable/services/accountReceivable.service.js";
-import { manageInsuranceReceivableAccounts } from "../../accountReceivable/services/insuranceAccountReceivable.service.js";
+
 import { db } from "../../../core/config/firebase.js";
-import { collectInvoicePrereqs } from "./invoiceRead.service.js";
-import { collectInventoryPrereqs } from "../../Inventory/services/getInventory.service.js";
+import { manageReceivableAccounts } from "../../accountReceivable/services/accountReceivable.service.js";
 import { collectReceivablePrereqs } from "../../accountReceivable/services/getAccountReceivable.service.js";
+import { manageInsuranceReceivableAccounts } from "../../accountReceivable/services/insuranceAccountReceivable.service.js";
+import { checkOpenCashCount } from "../../cashCount/utils/cashCountCheck.js";
+import { retrieveAndUpdateClient } from "../../client/services/clientAdmin.service.js";
+import { collectInventoryPrereqs } from "../../Inventory/services/getInventory.service.js";
+import { adjustProductInventory } from "../../Inventory/services/Inventory.service.js";
+import { getAndUpdateTaxReceipt } from "../../taxReceipt/services/taxReceiptAdmin.service.js";
+import { validateInvoiceCart } from "../utils/invoiceValidation.js";
+
+import { generateFinalInvoice, generateInvoiceFromPreorder } from "./invoiceGeneration.service.js";
+import { collectInvoicePrereqs } from "./invoiceRead.service.js";
+
 
 /**
  * Procesa los datos recibidos del frontend relacionados con una factura.
@@ -73,7 +76,7 @@ export async function processInvoiceData({
  
 
     // Verificar si el usuario tiene un cuadre de caja abierto
-    const { cashCount, state, cashCountId } = await checkOpenCashCount({ user, cashCountSnap });
+  const { cashCount, cashCountId } = await checkOpenCashCount({ user, cashCountSnap });
 
     // Verificar si el usuario tiene permisos para el cuadre de caja
   const code = await getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxReceiptName: ncfType, taxReceiptSnap });

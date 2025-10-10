@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../features/auth/userSlice';
+
 import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import { selectUser } from '../../../../../../features/auth/userSlice';
 
 export const SessionInfoModal = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

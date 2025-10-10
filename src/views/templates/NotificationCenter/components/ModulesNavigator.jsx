@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import styled from 'styled-components';
 import { CheckCircleOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../features/auth/userSlice';
-import AuthorizationsPanel from './panels/AuthorizationsPanel';
+
 import AccountsReceivablePanel from './panels/AccountsReceivablePanel';
+import AuthorizationsPanel from './panels/AuthorizationsPanel';
 import FiscalReceiptsPanel from './panels/FiscalReceiptsPanel/FiscalReceiptsPanel';
 
 /**

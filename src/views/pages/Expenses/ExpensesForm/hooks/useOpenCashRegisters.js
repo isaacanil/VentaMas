@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import { collection, doc, getDoc, onSnapshot, query, where } from "firebase/firestore";
+import { useEffect, useState } from "react";
+
 import { db } from "../../../../../firebase/firebaseconfig";
 
 export const useOpenCashRegisters = (businessID, isOpen) => {

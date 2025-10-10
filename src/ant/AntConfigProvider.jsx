@@ -1,6 +1,8 @@
 import * as antd from 'antd'
+
 const { ConfigProvider } = antd
 import React from 'react'
+
 const modalCustomStyles = {
     // Estilos para el "backdrop"
     mask: {

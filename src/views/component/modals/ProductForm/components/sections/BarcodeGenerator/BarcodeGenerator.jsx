@@ -1,7 +1,15 @@
+import { CalculatorOutlined, DisconnectOutlined } from '@ant-design/icons';
+import { Modal, Form, Button, Space, Typography, notification } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Button, Space, Typography, notification, Tag, Card } from 'antd';
-import { CalculatorOutlined, SettingOutlined, QrcodeOutlined, WifiOutlined, DisconnectOutlined, ShopOutlined, GlobalOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+import { generateNextItemReference } from '../../../../../../../firebase/barcode/barcodeGeneration';
+import { fbUpdateProduct } from '../../../../../../../firebase/products/fbUpdateProduct';
+import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
+import useProductRealtimeListener from '../../../../../../../hooks/product/useProductRealtimeListener';
 import { 
   generateGTIN13RD,
   generateInternalGTIN13RD,
@@ -10,24 +18,17 @@ import {
   generateGTIN13CO,
   generateGTIN13AR,
   generateGTIN13CL,
-  generateGTIN13PE,
-  INTERNAL_MODE_STRUCTURES
+  generateGTIN13PE
 } from '../../../../../../../utils/barcode/barcode';
 import {
   analyzeBarcodeStructure,
-  getBarcodeInfo,
   isGS1RDCode,
   extractCompanyPrefix,
   extractItemReference
 } from '../../../../../../../utils/barcode/barcode';
-import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
-import useProductRealtimeListener from '../../../../../../../hooks/product/useProductRealtimeListener';
+
 import { GenerateTab, ConfigurationTab } from './components';
-import { fbUpdateProduct } from '../../../../../../../firebase/products/fbUpdateProduct';
-import { generateNextItemReference } from '../../../../../../../firebase/barcode/barcodeGeneration';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+
 
 const { Text } = Typography;
 

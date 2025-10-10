@@ -1,4 +1,5 @@
 import { collection, query, where, getDocs } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
 
 export const fbCheckDoctorExists = async (businessID, name, specialty, currentDoctorId = null) => {

@@ -1,6 +1,7 @@
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
-import ROUTES_NAME from "../../../../../routes/routesName";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import ROUTES_NAME from "../../../../../routes/routesName";
 
 const { CHANGELOG_LIST } = ROUTES_NAME.CHANGELOG_TERM
 

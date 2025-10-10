@@ -2,6 +2,7 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
 import { toggleAddCategory } from '../../../features/modals/modalSlice'
 import { Button } from '../../templates/system/Button/Button'
 

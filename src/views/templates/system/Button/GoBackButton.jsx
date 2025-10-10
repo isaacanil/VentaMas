@@ -1,7 +1,10 @@
-import styled from 'styled-components'
-import { icons } from '../../../../constants/icons/icons'
 import { useNavigate } from 'react-router-dom'
+
+import { icons } from '../../../../constants/icons/icons'
+
+
 import { ButtonIconMenu } from './ButtonIconMenu';
+
 export const GoBackButton = ({onClick = null}) => {
     const navigate = useNavigate();
     const handleGoBack = () => {

@@ -1,11 +1,13 @@
 // components/forms/SegmentForm.jsx
-import React, { useEffect } from "react";
 import * as antd from "antd";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { createSegment, updateSegment } from "../../../../../../../firebase/warehouse/segmentService";
-import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
 import { clearSegmentForm, closeSegmentForm, selectSegmentState, updateSegmentFormData } from "../../../../../../../features/warehouse/segmentModalSlice";
+import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
+import { createSegment, updateSegment } from "../../../../../../../firebase/warehouse/segmentService";
+
 const { Form, Input, Button, Modal, message } = antd;
 
 export default function SegmentForm() {

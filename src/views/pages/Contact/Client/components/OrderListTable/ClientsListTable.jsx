@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
+
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
+
 import { tableConfig } from './tableConfig'
-import { useSelector } from 'react-redux'
-import { selectUser } from '../../../../../../features/auth/userSlice'
 
 export const ClientsListTable = ({ clients = [] }) => {
   

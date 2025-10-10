@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import styled from 'styled-components';
-import { Input, Empty, Spin } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { faTimesCircle, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { Input, Empty, Spin } from 'antd';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { openDeleteModal } from '../../../../../../../features/productStock/deleteProductStockSlice';
 import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
 import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
+
 import BatchGroup from './components/BatchGroup';
 import StockSummary from './components/StockSummary';
-import { openDeleteModal } from '../../../../../../../features/productStock/deleteProductStockSlice';
-import { useDispatch } from 'react-redux';
+
 
 const Container = styled.div`
   padding: 16px;

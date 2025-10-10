@@ -1,14 +1,15 @@
-import { getOrderConditionByID, getOrderStateByID } from "../../../../../../constants/orderAndPurchaseState";
 import {
     ShoppingCartOutlined,
     EditOutlined,
     DeleteOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
+
 import { ActionIcon } from '../../../../../../config/statusActionConfig';
-import TextCell from "../../../../../templates/system/AdvancedTable/components/Cells/Text/TextCerll";
-import { ROUTES } from "../../../../../../routes/routesName";
+import { getOrderConditionByID, getOrderStateByID } from "../../../../../../constants/orderAndPurchaseState";
 import { replacePathParams } from "../../../../../../routes/replacePathParams";
+import { ROUTES } from "../../../../../../routes/routesName";
+import TextCell from "../../../../../templates/system/AdvancedTable/components/Cells/Text/TextCerll";
 
 function ProviderCell({ value }) {
     if (!value) return null; // Añadir esta línea para manejar valores undefined

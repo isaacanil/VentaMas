@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useAutomaticLogin } from '../../../firebase/Auth/fbAuthV2/fbSignIn/checkSession';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../../features/auth/userSlice';
+import { useAutomaticLogin } from '../../../firebase/Auth/fbAuthV2/fbSignIn/checkSession';
+
 import VentamaxLoader from './loader/GenericLoader';
 
 export const SessionManager = () => {

@@ -1,7 +1,6 @@
-import React from 'react';
 import * as ant from 'antd';
+import React from 'react';
 import styled from 'styled-components';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 /**
  * BarcodeFixTooltip

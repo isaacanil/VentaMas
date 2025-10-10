@@ -1,16 +1,17 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCompress, faExpand, faHeading, faImage, faListAlt } from '@fortawesome/free-solid-svg-icons'
-import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
-import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDispatch, useSelector } from 'react-redux'
-import ROUTES_NAME from '../../../../../routes/routesName'
+import { useLocation, useMatch } from 'react-router-dom'
+import styled from 'styled-components'
+
 import { icons } from '../../../../../constants/icons/icons'
-import { useLocation, useMatch, useNavigate } from 'react-router-dom'
-import { useAppNavigation } from '../../../../../hooks/useAppNavigation'
-import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
-import { toggleTheme } from '../../../../../features/theme/themeSlice'
-import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu'
 import { selectUser } from '../../../../../features/auth/userSlice'
+import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
+import { toggleTheme } from '../../../../../features/theme/themeSlice'
+import { useAppNavigation } from '../../../../../hooks/useAppNavigation'
+import ROUTES_NAME from '../../../../../routes/routesName'
+import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
+import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu'
 
 export const VentaMenuToolbar = ({ side = 'left' }) => {
     const navigation = useAppNavigation();

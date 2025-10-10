@@ -1,7 +1,7 @@
+import { Modal, Button, Form, Typography, Alert } from 'antd';
 import { useState } from 'react';
-import { Modal, Button, Form, Input, Typography, Alert } from 'antd';
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../../../features/auth/userSlice';
 import { requestInvoiceEditAuthorization } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
 

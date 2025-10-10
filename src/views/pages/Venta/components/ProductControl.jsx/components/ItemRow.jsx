@@ -1,9 +1,10 @@
-import { memo } from 'react';
-import styled from 'styled-components';
-import { Product } from '../../../../../templates/system/Product/Product/Product';
-import { CustomProduct } from '../../../../../templates/system/Product/CustomProduct';
 import PropTypes from 'prop-types';
+import { memo } from 'react';
 import { useMemo } from 'react';
+import styled from 'styled-components';
+
+import { CustomProduct } from '../../../../../templates/system/Product/CustomProduct';
+import { Product } from '../../../../../templates/system/Product/Product/Product';
 
 const StyledItemRow = styled.div`
   display: grid;

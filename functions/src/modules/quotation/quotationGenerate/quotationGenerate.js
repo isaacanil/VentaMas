@@ -1,13 +1,15 @@
-import functions, { logger } from 'firebase-functions'
-import PdfPrinter from 'pdfmake'
-import axios from 'axios'
 import { readFileSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { calcFooterHeight, calcHeaderHeight } from './utils/documentHeightCalculator.js'
-import { buildHeader } from './builders/header.js'
+
+import axios from 'axios'
+import functions from 'firebase-functions'
+import PdfPrinter from 'pdfmake'
+
 import { buildContent } from './builders/content.js'
 import { buildFooter } from './builders/footer.js'
+import { buildHeader } from './builders/header.js'
+import { calcFooterHeight, calcHeaderHeight } from './utils/documentHeightCalculator.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -32,7 +34,7 @@ export const quotationPdf = functions.https.onCall(async (req) => {
     if (biz.logoUrl) {
         try {
             const resp = await axios.get(biz.logoUrl, { responseType: 'arraybuffer' })
-            const ext = biz.logoUrl.split('.').pop().split(/[\?#]/)[0].toLowerCase()
+            const ext = biz.logoUrl.split('.').pop().split(/[?#]/)[0].toLowerCase()
             const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png'
             images.logo = `data:${mime};base64,${Buffer.from(resp.data).toString('base64')}`
         } catch (error) {

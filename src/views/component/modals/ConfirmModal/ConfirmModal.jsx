@@ -1,6 +1,7 @@
 // ConfirmModal.jsx
-import React from 'react';
 import * as antd from 'antd';
+import React from 'react';
+
 const { Modal, Button } = antd;
 
 export const ConfirmModal = ({ open, onConfirm, onCancel, title, message, danger = false, type, confirmText = "Confirmar", cancelText = "Cancelar", data }) => {

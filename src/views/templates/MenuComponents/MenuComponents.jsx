@@ -1,7 +1,8 @@
-import styled from 'styled-components'
-import { MenuConfig } from './MenuConfig'
-import { useDispatch } from 'react-redux'
 import { Button } from 'antd'
+import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
+import { MenuConfig } from './MenuConfig'
 
 export const MenuComponents = () => {
     const dispatch = useDispatch()

@@ -1,14 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { selectUser } from "../../../../features/auth/userSlice";
-import { Login } from "./Login";
 import { Button, Spin, Skeleton } from "antd";
-import { icons } from "../../../../constants/icons/icons";
 import { ref, getDownloadURL, listAll } from "firebase/storage";
-import { storage } from "../../../../firebase/firebaseconfig";
 import { motion } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+
+import { icons } from "../../../../constants/icons/icons";
+import { selectUser } from "../../../../features/auth/userSlice";
+import { storage } from "../../../../firebase/firebaseconfig";
+
+import { Login } from "./Login";
+
+
+
 
 export const LoginV2 = () => {
   const navigate = useNavigate();

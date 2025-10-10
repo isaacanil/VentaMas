@@ -1,4 +1,5 @@
 import { collection, onSnapshot } from "firebase/firestore"
+
 import { db } from "../../firebaseconfig"
 
 export const fbGetBusinesses = async (setBusinesses) => {

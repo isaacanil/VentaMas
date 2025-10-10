@@ -1,10 +1,11 @@
-import React from 'react'
-import { Modal, Button, Typography, Space } from 'antd'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faStore, faArrowLeft, faUsers } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Modal, Button, Typography } from 'antd'
+import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../../../../../features/auth/userSlice'
 import styled from 'styled-components'
+
+import { selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../../../../../features/auth/userSlice'
 
 const { Title, Text } = Typography
 

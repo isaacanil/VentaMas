@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import * as antd from 'antd';
+import React, { useState, useEffect } from 'react';
+
 import { getTotalPrice } from '../../../../utils/pricing';
 import { addProduct } from '../../../../features/cart/cartSlice';
+
 const { Modal, Input, Form, Button } = antd;
 import { useDispatch } from 'react-redux';
+
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+
 export const ProductWeightEntryModal = ({ isVisible, onCancel, onAdd, product }) => {
     const [form] = Form.useForm();
     const [totalPrice, setTotalPrice] = useState(0);

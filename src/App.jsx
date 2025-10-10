@@ -1,37 +1,38 @@
-import { scan } from 'react-scan'; // import this BEFORE react
+import { AnimatePresence } from 'framer-motion';
 import { Fragment, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { scan } from 'react-scan'; // import this BEFORE react
 
 //importando componentes de react-router-dom
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 //redux config
-import { useDispatch, useSelector } from 'react-redux'
-import { selectUser, logout } from './features/auth/userSlice'
-import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
-import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
-import { useFullScreen } from './hooks/useFullScreen';
-import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreateDefaultReceipt';
-import { useBusinessDataConfig } from './features/auth/useBusinessDataConfig';
-import { routes } from './routes/routes';
-import { useAbilities, useLoadUserAbilities } from './hooks/abilities/useAbilities';
-import { ModalManager } from './views/component/modals/ModalManager';
-import { AnimatePresence } from 'framer-motion';
-import { useFbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
-import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
-import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer';
-import SEO from './Seo/Seo';
-import { SessionManager } from './views/templates/system/SessionManager';
-import { useAutoStockSync } from './firebase/warehouse/stockSyncService';
-import { useNavigationTracker } from './hooks/routes/useNavigationTracker';
-import { useTaxReceiptsFix } from './hooks/useTaxReceiptsFix';
-import NotificationCenter from './views/templates/NotificationCenter/NotificationCenter';
-import { useInitializeBillingSettings } from './firebase/billing/useInitializeBillingSettings';
-import { useBackfillUserNumbers } from './firebase/Auth/fbBackfillUserNumbers';
-import { useDeveloperCommands } from './hooks/useDeveloperCommands';
-import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';
+
 import DeveloperSessionHelper from './components/devtools/DeveloperSessionHelper';
-import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
+import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';
+import { useBusinessDataConfig } from './features/auth/useBusinessDataConfig';
+import { selectUser } from './features/auth/userSlice'
+import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useHydrateTaxReceiptSettings } from './features/taxReceipt/useHydrateTaxReceiptSettings';
+import { useUserDocListener } from './firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
+import { useBackfillUserNumbers } from './firebase/Auth/fbBackfillUserNumbers';
+import { useInitializeBillingSettings } from './firebase/billing/useInitializeBillingSettings';
+import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer';
+import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
+import { useFbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
+import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreateDefaultReceipt';
+import { useAutoStockSync } from './firebase/warehouse/stockSyncService';
+import { useAbilities, useLoadUserAbilities } from './hooks/abilities/useAbilities';
+import { useNavigationTracker } from './hooks/routes/useNavigationTracker';
+import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
+import { useDeveloperCommands } from './hooks/useDeveloperCommands';
+import { useFullScreen } from './hooks/useFullScreen';
+import { useTaxReceiptsFix } from './hooks/useTaxReceiptsFix';
+import { routes } from './routes/routes';
+import SEO from './Seo/Seo';
+import { ModalManager } from './views/component/modals/ModalManager';
+import NotificationCenter from './views/templates/NotificationCenter/NotificationCenter';
+import { SessionManager } from './views/templates/system/SessionManager';
 
 // Componente para rastrear la navegación dentro del Router
 const NavigationTracker = () => {

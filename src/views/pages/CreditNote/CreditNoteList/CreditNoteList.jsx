@@ -1,21 +1,24 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Button, Space, Tooltip, Tag, Alert, Result, Empty, Spin } from 'antd';
-import { EyeOutlined, EditOutlined, LockOutlined, SettingOutlined, WarningOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { EyeOutlined, EditOutlined, LockOutlined, WarningOutlined } from '@ant-design/icons';
+import { Button, Space, Tooltip, Tag } from 'antd';
 import dayjs from 'dayjs';
+import React, { useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { useFbGetCreditNotes } from '../../../../firebase/creditNotes/useFbGetCreditNotes';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
-import { CreditNoteFilters } from './components/CreditNoteFilters';
+import styled from 'styled-components';
+
+import { CREDIT_NOTE_STATUS } from '../../../../constants/creditNoteStatus';
 import { useBusinessDataConfig } from '../../../../features/auth/useBusinessDataConfig';
-import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
+import { useFbGetCreditNotes } from '../../../../firebase/creditNotes/useFbGetCreditNotes';
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import ROUTES_NAME from '../../../../routes/routesName';
-import { CREDIT_NOTE_STATUS, CREDIT_NOTE_STATUS_LABEL, CREDIT_NOTE_STATUS_COLOR } from '../../../../constants/creditNoteStatus';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
+
+import { CreditNoteFilters } from './components/CreditNoteFilters';
+
 
 export const CreditNoteList = () => {
     const dispatch = useDispatch();

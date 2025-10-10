@@ -1,14 +1,17 @@
-import React from 'react'
-import { useFormatPhoneNumber } from '../../../../../hooks/useFormatPhoneNumber'
 import { DateTime } from 'luxon';
-import styled from 'styled-components';
-import DateUtils from '../../../../../utils/date/dateUtils';
+import React from 'react'
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
+import { useFormatPhoneNumber } from '../../../../../hooks/useFormatPhoneNumber'
+import DateUtils from '../../../../../utils/date/dateUtils';
+import { resolveDocumentIdentity } from '../../../../../utils/invoice/documentIdentity.js';
 import { InfoItem, Spacing } from '../../Style';
 
 export const Header = ({ data, Space }) => {
     let business = useSelector(selectBusinessData) || ""
+    const documentIdentity = resolveDocumentIdentity(data);
     const fechaActual = data?.date 
       ? DateUtils.convertMillisToISODate(DateUtils.convertTimestampToMillis(data.date), "dd/MM/yyyy HH:mm") 
       : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
@@ -21,7 +24,9 @@ export const Header = ({ data, Space }) => {
                 <Spacing size={'large'} />
 
                 <InfoItem label={"Fecha"} value={fechaActual} />
-                {data?.NCF && <InfoItem label={"NCF"} value={data?.NCF} />}
+                {documentIdentity.label && (
+                    <InfoItem label={documentIdentity.label} value={documentIdentity.value || '-'} />
+                )}
                 <Spacing />
             {
                 data?.client && (

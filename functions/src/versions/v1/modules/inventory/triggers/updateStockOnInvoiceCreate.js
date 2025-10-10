@@ -1,6 +1,7 @@
-import { firestore, logger } from 'firebase-functions';
-import { handleUpdateProductsStock } from '../handlers/handleUpdateProductsStock.js';
+import { logger } from 'firebase-functions';
 import { onDocumentCreated } from 'firebase-functions/firestore';
+
+import { handleUpdateProductsStock } from '../handlers/handleUpdateProductsStock.js';
 
 export const updateStockOnInvoiceCreate = onDocumentCreated(
     'businesses/{bid}/invoices/{iid}',
@@ -17,7 +18,7 @@ export const updateStockOnInvoiceCreate = onDocumentCreated(
             '[updateStockOnInvoiceCreate] invoice',
             invoice
         );
-        const { bid: businessID, iid: invoiceID } = event.params;
+    const { bid: businessID } = event.params;
 
         if (!invoice || invoice?.stockDone) return null;
 

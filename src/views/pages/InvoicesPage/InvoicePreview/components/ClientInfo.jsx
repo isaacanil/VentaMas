@@ -1,5 +1,6 @@
-import { useFormatPhoneNumber } from "../../../../../hooks/useFormatPhoneNumber";
 import { useState } from 'react';
+
+import { useFormatPhoneNumber } from "../../../../../hooks/useFormatPhoneNumber";
 import { InfoCard } from "../../../../templates/system/InfoCard/InfoCard";
 
 export const ClientInfoCard = ({ client }) => {

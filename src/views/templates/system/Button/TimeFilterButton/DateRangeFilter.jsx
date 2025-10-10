@@ -1,15 +1,18 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { DateTime } from 'luxon';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
-import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
+import { DateTime } from 'luxon';
+import React, { useMemo, useRef, useState } from 'react';
 import { usePopper } from 'react-popper';
-import Typography from '../../Typografy/Typografy';
-import { truncateString } from '../../../../../utils/text/truncateString';
-import { useMenuOptions } from './useMenuOptions';
+import styled from 'styled-components';
+
+import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
+import { truncateString } from '../../../../../utils/text/truncateString';
+import Typography from '../../Typografy/Typografy';
+
+import { useMenuOptions } from './useMenuOptions';
+
 
 export const DateRangeFilter = ({ setDates, dates }) => {
     const [referenceElement, setReferenceElement] = useState(null);

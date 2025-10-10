@@ -1,31 +1,32 @@
+import { SearchOutlined, PrinterOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Typography, Alert, message, Input, InputNumber, Grid, Skeleton, Tooltip, Tabs } from 'antd';
+import dayjs from 'dayjs';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Checkbox, Typography, Alert, message, Table, Input, InputNumber, Grid, Skeleton, Tooltip, Tabs } from 'antd';
 import styled from 'styled-components';
-import { SearchOutlined, PrinterOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { closeCreditNoteModal, selectCreditNoteModal, openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
+
+import { selectBusinessData } from '../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
+import { closeCreditNoteModal, selectCreditNoteModal, openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
+import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { useFbGetClientsOnOpen } from '../../../../firebase/client/useFbGetClientsOnOpen';
-import { useFbGetInvoicesByClient } from '../../../../firebase/invoices/useFbGetInvoicesByClient';
-import { formatPrice } from '../../../../utils/formatPrice';
 import { fbAddCreditNote } from '../../../../firebase/creditNotes/fbAddCreditNote';
-import { getTotalPrice, getTax } from '../../../../utils/pricing';
 import { fbUpdateCreditNote } from '../../../../firebase/creditNotes/fbUpdateCreditNote';
 import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
+import { useFbGetInvoicesByClient } from '../../../../firebase/invoices/useFbGetInvoicesByClient';
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { useCreditNotePDF } from '../../../../hooks/creditNote/useCreditNotePDF';
 import { useFbGetCreditNoteApplications } from '../../../../hooks/creditNote/useFbGetCreditNoteApplications';
+import { formatPrice } from '../../../../utils/formatPrice';
+import { getTotalPrice, getTax } from '../../../../utils/pricing';
+
+import ClientSelector from './components/ClientSelector';
+import { CreditNotePanel } from './components/CreditNotePanel';
+import InvoiceSelector from './components/InvoiceSelector';
 import { ProductList } from './components/ProductList';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
-import { CreditNotePanel } from './components/CreditNotePanel';
-import ClientSelector from './components/ClientSelector';
-import InvoiceSelector from './components/InvoiceSelector';
-import { generateCreditNoteLetterPdf } from '../../../../pdf/creditNote/templates/template1/CreditNoteLetterPdf';
-import { selectBusinessData } from '../../../../features/auth/businessSlice';
-import { useCreditNotePDF } from '../../../../hooks/creditNote/useCreditNotePDF';
-import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
-import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
-import dayjs from 'dayjs';
+
+
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;

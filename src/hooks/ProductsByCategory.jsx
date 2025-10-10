@@ -1,4 +1,3 @@
-import React from "react";
 
 // Creamos el componente Products
 export const ProductsByCategory = ({ products }) => {

@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from 'react'
-import styled from 'styled-components'
 import * as antd from 'antd'
-import { icons } from '../../../../../../../../../constants/icons/icons'
+import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../../../../../constants/icons/icons'
 import { selectCart, setPaymentMethod, recalcTotals, SelectCxcAutoRemovalNotification, clearCxcAutoRemovalNotification } from '../../../../../../../../../features/cart/cartSlice'
+
 const { Radio, Input, Form, Checkbox, InputNumber, message, notification } = antd
 
 export const PaymentMethods = () => {

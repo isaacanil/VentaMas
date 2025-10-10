@@ -1,8 +1,9 @@
+import { faImage } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Drawer, Input, message, Pagination } from 'antd';
 import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Drawer, Input, message, Pagination } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faImage } from '@fortawesome/free-solid-svg-icons';
+
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts';
 import { filterData } from '../../../../../hooks/search/useSearch';
 

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Card, Layout, Spin, notification } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { fbSignIn } from '../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
+import { Form, Input, Button, Card, Layout, Spin, notification } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+
+import { fbSignIn } from '../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
 
 const { Header, Content } = Layout;
 

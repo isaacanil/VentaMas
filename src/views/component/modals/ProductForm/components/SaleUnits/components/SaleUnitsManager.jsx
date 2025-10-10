@@ -1,16 +1,19 @@
 // SaleUnitsManager.jsx
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { List, Button, Modal, Popconfirm, Tooltip, Form, Switch } from 'antd'
 import { PlusOutlined, } from '@ant-design/icons'
+import { Button } from 'antd'
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import SaleUnitForm from './SaleUnitForm'
-import {  selectUpdateProductData, } from '../../../../../../../features/updateProduct/updateProductSlice'
-import { SaleUnit } from './SaleUnit'
-import { fbDeleteSaleUnit, useListenSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit'
+
 import { selectUser } from '../../../../../../../features/auth/userSlice'
+import {  selectUpdateProductData, } from '../../../../../../../features/updateProduct/updateProductSlice'
+import { fbDeleteSaleUnit, useListenSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit'
+
+import { SaleUnit } from './SaleUnit'
+import SaleUnitForm from './SaleUnitForm'
+
 
 const ManagerContainer = styled.div`
   margin-bottom: 20px;

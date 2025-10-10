@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-
+import { useSelector } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
+
+import { selectThemeMode } from '../features/theme/themeSlice';
+
 import { lightTheme, darkTheme } from './ColorTheme';  // Asegúrate de poner el camino correcto
-import { selectThemeMode, setTheme } from '../features/theme/themeSlice';
-import { useDispatch, useSelector } from 'react-redux';
+
 
 const ThemeColorProvider = ({ children }) => {
     const theme = useSelector(selectThemeMode);

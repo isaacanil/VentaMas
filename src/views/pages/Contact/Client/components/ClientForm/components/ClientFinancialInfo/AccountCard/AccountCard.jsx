@@ -1,18 +1,15 @@
-import React from 'react'
-import styled from 'styled-components'
-import { Payment } from './components/Payment';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarAlt,
-  faReceipt,
-  faCreditCard,
-  faCalendarCheck,
-  faMoneyBillWave,
-  faClock
+  faReceipt
 } from '@fortawesome/free-solid-svg-icons';
-import { DateTime } from 'luxon';
-import { formatPrice } from '../../../../../../../../../utils/formatPrice'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react'
+import styled from 'styled-components'
+
 import { formatDate } from '../../../../../../../../../utils/formatDate';
+import { formatPrice } from '../../../../../../../../../utils/formatPrice'
+
+import { Payment } from './components/Payment';
 
 
 export const AccountCard = ({ account, accountNumber, date, frequency, balance, installments, installmentAmount, lastPayment, lastPaymentDate, isActive }) => {

@@ -1,5 +1,6 @@
-import React from 'react';
 import { Drawer } from 'antd';
+import React from 'react';
+
 import FileList from './FileList';
 
 /**

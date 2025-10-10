@@ -1,6 +1,6 @@
 // UserPill component - displays user name in a pill style
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import styled from 'styled-components';
 
 export const UserPill = ({ userName }) => {

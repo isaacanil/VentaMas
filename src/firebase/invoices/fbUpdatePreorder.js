@@ -1,4 +1,5 @@
 import { doc, serverTimestamp, Timestamp, updateDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 const toFirestoreTimestamp = (value) => {
@@ -47,8 +48,11 @@ export const fbUpdatePreOrder = async (user, cartData) => {
     preorderDetails.date = serverTimestamp();
   }
 
+  const normalizedSelectedType = preorderDetails?.selectedTaxReceiptType ?? cartData?.selectedTaxReceiptType ?? null;
+
   const payload = {
     ...cartData,
+    selectedTaxReceiptType: normalizedSelectedType,
     type: 'preorder',
     status: cartData?.status || 'pending',
     preorderDetails,

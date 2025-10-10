@@ -1,5 +1,5 @@
 // ARSummaryModal.js
-import React, { useEffect, useState } from "react";
+import { DownloadOutlined, CalendarOutlined } from "@ant-design/icons";
 import {
   Modal,
   Card,
@@ -14,9 +14,11 @@ import {
   Alert,
   Space,
 } from "antd";
-import { PrinterOutlined, DownloadOutlined, CalendarOutlined } from "@ant-design/icons";
-import styled from "styled-components";
+import jsPDF from 'jspdf';
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
+import styled from "styled-components";
+
 import {
   fetchAccountReceivableDetails,
   selectARInfo,
@@ -26,7 +28,8 @@ import {
   selectARDetailsModal,
   setARDetailsModal
 } from '../../../../features/accountsReceivable/accountsReceivableSlice'; // Ajusta la ruta según tu estructura
-import jsPDF from 'jspdf';
+
+
 import 'jspdf-autotable';
 import { selectUser } from "../../../../features/auth/userSlice";
 

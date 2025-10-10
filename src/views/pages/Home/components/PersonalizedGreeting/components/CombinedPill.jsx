@@ -1,11 +1,11 @@
 // CombinedPill component - combines business and user information in a single pill
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
-import { faStore } from '@fortawesome/free-solid-svg-icons/faStore';
 import { faBriefcase } from '@fortawesome/free-solid-svg-icons/faBriefcase';
+import { faStore } from '@fortawesome/free-solid-svg-icons/faStore';
+import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import PropTypes from 'prop-types';
+import React from 'react';
+import styled from 'styled-components';
 
 export const CombinedPill = ({ logoUrl, businessName, userName }) => {
   return (

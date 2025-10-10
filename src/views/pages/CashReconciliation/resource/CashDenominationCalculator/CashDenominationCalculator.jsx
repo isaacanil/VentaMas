@@ -1,12 +1,15 @@
+import { motion } from 'framer-motion'
 import { useRef } from 'react'
 import styled from 'styled-components'
+
+import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue'
+
+import { BillRow } from './components/BillRow'
 import { OpenControllerSmall } from './OpenControllerSmall'
 import { OpenControllerWithMessage } from './OpenControllerWithMessage'
-import { motion } from 'framer-motion'
-import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
-import { BillRow } from './components/BillRow'
+
 
 export const CashDenominationCalculator = ({ isExpanded = null, readOnly = false, inputDisabled = null, banknotes, setBanknotes, setIsExpanded, datetime, title, width, columns }) => {
 

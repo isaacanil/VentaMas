@@ -1,18 +1,17 @@
-import { Inventory } from "../../views/pages/Inventario/pages/ItemsManager/Inventario";
-import { CategoryAdmin } from "../../views/pages/Category/CategoryAdmin";
-import { MultimediaManager } from "../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager";
-import { InventoryControl } from "../../views/pages/InventoryControl/InventoryControl";
-import { InventorySummary } from "../../views/pages/InventorySummary/InventorySummary";
-import InventorySessionsList from "../../views/pages/InventorySessionsList/InventorySessionsList";
-import ROUTES_NAME from "../routesName";
-import { ROUTE_STATUS } from "../routeMeta";
-import { ProductOutflow } from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
-// import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";
-import { Warehouse } from "../../views/pages/Inventory/components/Warehouse/Warehouse";
 import ProductView from "../../views/component/modals/Product/ProductView";
+import { CategoryAdmin } from "../../views/pages/Category/CategoryAdmin";
+import { Inventory } from "../../views/pages/Inventario/pages/ItemsManager/Inventario";
+import { MultimediaManager } from "../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager";
+import { ProductOutflow } from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
+import AllMovements from "../../views/pages/Inventory/components/AllMovements/AllMovements";
 import DetailView from "../../views/pages/Inventory/components/Warehouse/components/DetailView/DetailView";
 import ProductStockOverview from "../../views/pages/Inventory/components/Warehouse/components/ProductStockOverview/ProductStockOverview";
-import AllMovements from "../../views/pages/Inventory/components/AllMovements/AllMovements";
+import { Warehouse } from "../../views/pages/Inventory/components/Warehouse/Warehouse";
+import { InventoryControl } from "../../views/pages/InventoryControl/InventoryControl";
+import InventorySessionsList from "../../views/pages/InventorySessionsList/InventorySessionsList";
+import { InventorySummary } from "../../views/pages/InventorySummary/InventorySummary";
+import ROUTES_NAME from "../routesName";
+// import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";
 
 const {
     INVENTORY_ITEMS,

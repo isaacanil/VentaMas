@@ -1,5 +1,6 @@
 // functions/src/modules/client/services/clientAdmin.service.js
 import { https, logger } from "firebase-functions";
+
 import { serverTimestamp, db } from "../../../core/config/firebase.js";
 
 /**

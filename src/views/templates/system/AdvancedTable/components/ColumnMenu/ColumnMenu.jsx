@@ -1,9 +1,11 @@
+import { Modal, Tabs, Button, Typography } from 'antd';
+import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useClickOutSide } from '../../../../../../hooks/useClickOutSide';
+
 import { icons } from '../../../../../../constants/icons/icons';
-import { Modal, Tabs, Button, Typography } from 'antd';
+import { useClickOutSide } from '../../../../../../hooks/useClickOutSide';
+
 
 const { TabPane } = Tabs;
 

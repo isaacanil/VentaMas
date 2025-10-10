@@ -1,5 +1,6 @@
 import { logger } from 'firebase-functions';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+
 import { admin, db } from '../../../../core/config/firebase.js';
 import {
   extractInvoiceDataFromSnapshot,
@@ -7,6 +8,7 @@ import {
   wipeLedgerPrefixes,
   canonicalizeInvoice,
 } from '../services/ncfLedger.service.js';
+
 import {
   evaluateLedgerAccess,
   normalizePrefixes,
@@ -95,7 +97,6 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
 
   try {
     while (true) {
-      // eslint-disable-next-line no-await-in-loop
       const snap = await query.get();
       if (snap.empty) {
         break;
@@ -136,7 +137,6 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
           continue;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         await rebuildLedgerForInvoice({ businessId, invoiceId, invoiceData });
         written += 1;
       }

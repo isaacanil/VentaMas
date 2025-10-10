@@ -1,12 +1,14 @@
+import { faSpinner, faCircle } from "@fortawesome/free-solid-svg-icons";
 import React, { memo, useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { faSpinner, faCircle } from "@fortawesome/free-solid-svg-icons";
+
 import { selectNode } from "../helpers/nodeHelper";
+
+import ActionButtons from "./ActionButtons";
+import LevelGroup from "./LevelGroup";
+import { LoadingIndicator } from "./LoadingIndicator";
 import { NavigationButton } from "./NavigationButton";
 import NodeName from "./NodeName";
-import LevelGroup from "./LevelGroup";
-import ActionButtons from "./ActionButtons";
-import { LoadingIndicator } from "./LoadingIndicator";
 
 // Estilos con styled-components
 const NodeContainer = styled.div`

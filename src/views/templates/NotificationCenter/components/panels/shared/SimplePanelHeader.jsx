@@ -1,5 +1,6 @@
-import { Badge, Tooltip } from 'antd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Badge, Tooltip } from 'antd';
+
 import {
   PanelHeader as PanelHeaderContainer,
   PanelTitle,

@@ -1,7 +1,8 @@
+import { Select } from 'antd';
 import React from 'react';
-import { Form, Select } from 'antd';
-import ProviderSelector from '../ProviderSelector';
+
 import OrderSelector from '../OrderSelector';
+import ProviderSelector from '../ProviderSelector';
 
 const { Option } = Select;
 

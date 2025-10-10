@@ -1,8 +1,9 @@
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { useClickOutSide } from '../../../../../../../hooks/useClickOutSide';
 
 export const ActionMenu = ({ options = [], disabled }) => {

@@ -1,6 +1,6 @@
-import { transferProducts } from "./fbTransferProducts";
-import { transferProductCategories } from "./fbTransferProductCategories";
 import { transferClients } from "./fbTransferClients";
+import { transferProductCategories } from "./fbTransferProductCategories";
+import { transferProducts } from "./fbTransferProducts";
 
 
 /**

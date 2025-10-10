@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../features/auth/userSlice';
 import { getLocationName } from '../firebase/warehouse/locationService';
 

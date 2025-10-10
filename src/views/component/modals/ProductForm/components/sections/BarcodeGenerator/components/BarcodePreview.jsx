@@ -1,7 +1,8 @@
-import React from 'react';
 import { Form, Typography, Space, Tag } from 'antd';
+import React from 'react';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
+
 import { isGS1RDCode } from '../../../../../../../../utils/barcode/barcode';
 
 const { Text } = Typography;

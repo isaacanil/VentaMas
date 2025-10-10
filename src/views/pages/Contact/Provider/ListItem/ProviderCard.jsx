@@ -1,17 +1,17 @@
 import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
+import { icons } from '../../../../../constants/icons/icons'
+import { OPERATION_MODES } from '../../../../../constants/modes'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { toggleProviderModal } from '../../../../../features/modals/modalSlice'
+import { fbDeleteProvider } from '../../../../../firebase/provider/fbDeleteProvider'
+import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
 import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
-import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
-import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
 import { Message } from '../../../../templates/system/message/Message'
-import { toggleProviderModal } from '../../../../../features/modals/modalSlice'
-import { OPERATION_MODES } from '../../../../../constants/modes'
-import { useDispatch, useSelector } from 'react-redux'
-import { icons } from '../../../../../constants/icons/icons'
-import { fbDeleteProvider } from '../../../../../firebase/provider/fbDeleteProvider'
-import { selectUser } from '../../../../../features/auth/userSlice'
+
 export const ProviderCard = ({ e, Row, Col }) => {
     const updateMode = OPERATION_MODES.UPDATE.id
     const user = useSelector(selectUser)

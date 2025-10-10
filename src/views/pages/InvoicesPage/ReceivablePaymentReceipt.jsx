@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion'
 import { Fragment, useEffect, useState, Suspense, lazy } from 'react'
 import styled from 'styled-components'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import { getDateRange } from '../../../utils/date/getDateRange'
-import { FilterBar } from './components/FilterBar/FilterBar'
+
 import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts'
+import { getDateRange } from '../../../utils/date/getDateRange'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
+
+import { FilterBar } from './components/FilterBar/FilterBar'
+
 
 const SaleReportTable = lazy(() => import('./SaleReportTable/SaleReportTable'));
 

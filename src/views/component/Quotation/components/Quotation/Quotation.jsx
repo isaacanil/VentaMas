@@ -1,9 +1,9 @@
 import React from 'react';
-import { InvoiceTemplate1 } from '../../templates/Invoicing/InvoiceTemplate1/InvoiceTemplate1';
-import { QuotationTemplate2 } from '../../templates/Invoicing/QuotationTemplate2/QuotationTemplate2';
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { QuotationTemplate2 } from '../../templates/Invoicing/QuotationTemplate2/QuotationTemplate2';
 
 const InvoiceWrapper = styled.div`
   ${props => props.template === 'template2' && `

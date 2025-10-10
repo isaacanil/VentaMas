@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+
 import AuthorizationRow from './AuthorizationRow';
 
 const AuthorizationsList = ({ authorizations, isAdmin, processingId, onApprove, onReject }) => (

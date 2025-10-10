@@ -1,6 +1,7 @@
 import React from 'react'
-import { icons } from '../../../../../constants/icons/icons'
 import styled from 'styled-components'
+
+import { icons } from '../../../../../constants/icons/icons'
 
 export const OpenControllerSmall = ({isExpanded, onClick}) => {
   return (

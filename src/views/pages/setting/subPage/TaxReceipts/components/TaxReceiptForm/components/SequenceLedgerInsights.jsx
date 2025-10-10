@@ -1,5 +1,6 @@
-import React from "react";
 import { Alert, Space, Typography } from "antd";
+import React from "react";
+
 import { normalizeDigits } from "../utils/ncfUtils";
 
 const { Text } = Typography;

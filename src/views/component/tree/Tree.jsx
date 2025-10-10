@@ -1,15 +1,16 @@
 import React, { useMemo, useCallback, memo } from "react";
 import styled from "styled-components";
-import { traverse } from "./utils/traverseUtils";
-import { defaultFilterNodes } from "./utils/filterUtils";
-import TreeHeader from "./components/TreeHeader";
+
 import TreeContent from "./components/TreeContent";
+import TreeHeader from "./components/TreeHeader";
 import TreeNode from "./components/TreeNode";
-import { renderHighlightedText } from "./utils/textUtils";
 import useExpandedNodes from "./hooks/useExpandedNodes";
 import useSearchTerm from "./hooks/useSearchTerm";
 import useSelectedNode from "./hooks/useSelectedNode";
+import { defaultFilterNodes } from "./utils/filterUtils";
 import { findPathToNode } from "./utils/nodeUtils";
+import { renderHighlightedText } from "./utils/textUtils";
+import { traverse } from "./utils/traverseUtils";
 
 const Container = styled.div`
   height: 100%;

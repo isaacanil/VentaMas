@@ -1,4 +1,5 @@
-import { collection, getDocs, updateDoc, doc, deleteField } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteField } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
 
 export async function fbDeleteFieldFromAllClients(fieldName) {

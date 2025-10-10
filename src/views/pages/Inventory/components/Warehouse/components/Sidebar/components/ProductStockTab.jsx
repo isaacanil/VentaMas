@@ -1,11 +1,11 @@
+import { SearchOutlined } from '@ant-design/icons';
+import { faBoxes, faEye } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Input, Empty, Spin } from 'antd';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Input, Empty, Spin } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxes, faEye } from '@fortawesome/free-solid-svg-icons';
-import ProductStockOverview from '../../ProductStockOverview';
+
 import Tree from '../../../../../../../component/tree/Tree';
 
 const TabContent = styled.div`

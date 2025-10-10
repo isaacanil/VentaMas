@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
 import { Modal, Button, DatePicker, Tag, InputNumber, Dropdown, message, Tooltip } from 'antd';
 import dayjs from 'dayjs';
+import { useMemo } from 'react';
 import styled from 'styled-components';
+
 import { formatNumber, formatInputDate, shortenLocationPath, EditorsList, Diff, SummaryBar } from './inventoryTableUtils.jsx';
 
 export function GroupedLotsModal({

@@ -1,15 +1,15 @@
+import * as antd from "antd"
 import { useDispatch, useSelector } from "react-redux"
+
 import { icons } from "../../../../../../constants/icons/icons"
-import { Message } from "../../../../../templates/system/message/Message"
-import { fbDeleteClient } from "../../../../../../firebase/client/fbDeleteClient"
-import { toggleClientModal } from "../../../../../../features/modals/modalSlice"
 import { OPERATION_MODES } from "../../../../../../constants/modes"
+import { selectUser } from "../../../../../../features/auth/userSlice"
+import { toggleClientModal } from "../../../../../../features/modals/modalSlice"
+import { fbDeleteClient } from "../../../../../../firebase/client/fbDeleteClient"
 import { useFormatPhoneNumber } from "../../../../../../hooks/useFormatPhoneNumber"
 import { truncateString } from "../../../../../../utils/text/truncateString"
-import { selectUser } from "../../../../../../features/auth/userSlice"
-
-import * as antd from "antd"
 import { ButtonGroup } from "../../../../../templates/system/Button/Button"
+import { Message } from "../../../../../templates/system/message/Message"
 
 const { Button } = antd
 

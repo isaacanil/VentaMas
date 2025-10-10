@@ -1,6 +1,7 @@
 // src/components/PreventaList.jsx
 import React from 'react';
 import styled from 'styled-components';
+
 import PreventaCard from '../PreventaCard/PreventaCard';
 
 

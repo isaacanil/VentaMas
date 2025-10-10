@@ -1,13 +1,14 @@
-import { useSelector } from "react-redux"
-import { selectUser } from "../../features/auth/userSlice"
-import { db } from "../firebaseconfig"
-import { collection, query, orderBy, where, onSnapshot, limit, getDocs } from "firebase/firestore"
-import { useEffect, useState } from "react"
-import { SelectActiveIngredients, SelectCategories, SelectCategoryList, SelectCategoryStatus } from "../../features/category/categorySlicer"
-import { SelectSettingCart } from "../../features/cart/cartSlice"
-import { selectCriterio, selectInventariable, selectItbis, selectOrden, selectStockAvailability, selectStockAlertLevel, selectStockRequirement } from "../../features/filterProduct/filterProductsSlice"
+import { collection, query, where, onSnapshot, getDocs } from "firebase/firestore"
 import { filter } from "lodash"
+import { useEffect, useState } from "react"
+import { useSelector } from "react-redux"
+
+import { selectUser } from "../../features/auth/userSlice"
+import { SelectSettingCart } from "../../features/cart/cartSlice"
+import { SelectActiveIngredients, SelectCategories, SelectCategoryStatus } from "../../features/category/categorySlicer"
+import { selectCriterio, selectInventariable, selectItbis, selectOrden, selectStockAvailability, selectStockAlertLevel, selectStockRequirement } from "../../features/filterProduct/filterProductsSlice"
 import { getTax } from "../../utils/pricing"
+import { db } from "../firebaseconfig"
 
 
 function filterProducts(productsArray, inventariable, itbis, stockAvailability, stockAlertLevel, stockRequirement, thresholds) {

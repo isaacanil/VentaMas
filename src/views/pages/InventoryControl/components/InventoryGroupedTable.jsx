@@ -1,9 +1,11 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { UnorderedListOutlined } from '@ant-design/icons';
 import { InputNumber, Tag, Tooltip, Empty, Button, DatePicker, Dropdown, Modal } from 'antd';
 import dayjs from 'dayjs';
-import { UnorderedListOutlined } from '@ant-design/icons';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
+
 import { GroupedLotsModal } from './GroupedLotsModal';
 import { formatNumber, formatInputDate, formatDate, shortenLocationPath, EditorsList, getTsMs, Diff, TagsWrap } from './inventoryTableUtils.jsx';
 

@@ -1,9 +1,10 @@
-import { useDispatch } from 'react-redux'
 import { Card, Button, Input, Row, Col, Select, Form } from 'antd'
+import { useDispatch } from 'react-redux'
+
 import { icons } from '../../../../../../constants/icons/icons'
-import { useFbGetCategories } from '../../../../../../firebase/categories/useFbGetCategories'
 import { useCategoryState } from '../../../../../../Context/CategoryContext/CategoryContext'
 import { openModal } from '../../../../../../features/activeIngredients/activeIngredientsSlice'
+import { useFbGetCategories } from '../../../../../../firebase/categories/useFbGetCategories'
 import { useListenActiveIngredients } from '../../../../../../firebase/products/activeIngredient/activeIngredients'
 
 export const ProductInfo = ({ product }) => {

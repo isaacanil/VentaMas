@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+
 const API_KEY = import.meta.env.VITE_GOOGLE_GENAI_API_KEY
 // Función para generar texto usando la API de Google Generative AI
 export async function generateTextFromPrompt(prompt) {

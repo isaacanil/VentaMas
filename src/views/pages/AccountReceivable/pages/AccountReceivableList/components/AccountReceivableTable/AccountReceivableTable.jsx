@@ -1,7 +1,8 @@
 import React from 'react'
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
 
 import useBusiness from '../../../../../../../hooks/useBusiness';
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
+
 import { getColumns } from './columns';
 
 export const AccountReceivableTable = ({

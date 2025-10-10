@@ -1,10 +1,13 @@
 import * as antd from 'antd'
+
 const { Button, Input, Form } = antd
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
 import { icons } from '../../../../../../../../constants/icons/icons'
 import { changeAmountToBuyProduct } from '../../../../../../../../features/invoice/invoiceFormSlice'
-import { useDispatch } from 'react-redux'
+
 export const Product = ({ product, index, invoice }) => {
 
   const dispatch = useDispatch()

@@ -1,9 +1,11 @@
-import { Timestamp, doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { fbAddBillToOpenCashCount } from "../cashCount/fbAddBillToOpenCashCount";
+import { doc, serverTimestamp } from "firebase/firestore";
 import { nanoid } from "nanoid";
-import { getNextID } from "../Tools/getNextID";
+
+import { fbAddBillToOpenCashCount } from "../cashCount/fbAddBillToOpenCashCount";
+import { db } from "../firebaseconfig";
 import { fbSetDoc } from "../firebaseOperations";
+import { getNextID } from "../Tools/getNextID";
+
 import { fbGetInvoice } from "./fbGetInvoice";
 
 export const fbAddInvoice = async (data, user) => {

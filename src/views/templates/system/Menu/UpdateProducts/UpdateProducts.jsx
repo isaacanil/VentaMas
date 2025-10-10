@@ -1,22 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
+
 import { updatePrices, exportProductsToExcel } from './code/excelUtils';
-import { updateProductsBatch } from './firebaseUpdate';
 import { Container, PageTitle } from './code/styledComponents';
+import { FLOW_STATES, DEFAULT_UPDATE_CONFIG } from './code/updateProductsConfig';
+import InitialForm from './components/InitialForm';
+import PriceUpdateConfig from './components/PriceUpdateConfig';
+import ProductPreview from './components/ProductPreview';
+import ProgressModal from './components/ProgressModal';
+import ResultsView from './components/ResultsView';
+import { updateProductsBatch } from './firebaseUpdate';
 
 // Import custom hooks
 import useFileProcessing from './hooks/useFileProcessing';
 
 // Import components
-import InitialForm from './components/InitialForm';
-import ProductPreview from './components/ProductPreview';
-import PriceUpdateConfig from './components/PriceUpdateConfig';
-import ResultsView from './components/ResultsView';
-import ProgressModal from './components/ProgressModal';
 
 // Import config
-import { FLOW_STATES, DEFAULT_UPDATE_CONFIG } from './code/updateProductsConfig';
 
 const UpdateProducts = () => {
     // User data

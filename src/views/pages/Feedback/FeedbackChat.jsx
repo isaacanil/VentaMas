@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import { generateResponse } from "./generateResponse";
 import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+
+import { generateResponse } from "./generateResponse";
 
 const Container = styled.div`
   position: fixed;

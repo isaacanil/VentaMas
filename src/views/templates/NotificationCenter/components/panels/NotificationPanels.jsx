@@ -1,9 +1,10 @@
+import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import FiscalReceiptsNotificationPanel from './FiscalReceiptsNotificationPanel';
+
 import AccountsReceivablePanel from './AccountsReceivablePanel';
 import AuthorizationsPanel from './AuthorizationsPanel';
+import FiscalReceiptsNotificationPanel from './FiscalReceiptsNotificationPanel';
 
 /**
  * Componente que muestra todos los paneles de notificaciones

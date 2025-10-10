@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
-import { monetarySymbols } from '../../../../constants/monetarySymbols'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { monetarySymbols } from '../../../../constants/monetarySymbols'
 import { SelectDelivery, SelectTotalTaxes,  SelectChange, setPaymentAmount, SelectPaymentValue, } from '../../../../features/cart/cartSlice'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import CustomInput from '../../../templates/system/Inputs/CustomInput'

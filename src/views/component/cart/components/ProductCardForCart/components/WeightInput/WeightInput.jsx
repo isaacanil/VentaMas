@@ -1,6 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
 import { changeProductWeight } from '../../../../../../../features/cart/cartSlice';
 
 export const WeightInput = ({ item }) => {

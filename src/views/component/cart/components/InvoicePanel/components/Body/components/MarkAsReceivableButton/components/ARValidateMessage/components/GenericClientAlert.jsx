@@ -1,20 +1,21 @@
-import { Button } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { toggleClientModal } from '../../../../../../../../../../../../features/modals/modalSlice';
-import { selectClient } from '../../../../../../../../../../../../features/clientCart/clientCartSlice';
-import { OPERATION_MODES } from '../../../../../../../../../../../../constants/modes';
 import { 
   ExclamationCircleOutlined, 
-  InfoCircleOutlined, 
   WarningOutlined,
   UserOutlined,
   CreditCardOutlined,
   FileTextOutlined,
-  CheckCircleOutlined,
   LockOutlined
 } from '@ant-design/icons';
-import { MiniClientSelector } from './MiniClientSelector/MiniClientSelector';
+import { Button } from 'antd';
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { OPERATION_MODES } from '../../../../../../../../../../../../constants/modes';
+import { selectClient } from '../../../../../../../../../../../../features/clientCart/clientCartSlice';
+import { toggleClientModal } from '../../../../../../../../../../../../features/modals/modalSlice';
+
+import { MiniClientSelector } from './MiniClientSelector/MiniClientSelector';
+
 
 const UnifiedARAlert = ({
   isGenericClient,

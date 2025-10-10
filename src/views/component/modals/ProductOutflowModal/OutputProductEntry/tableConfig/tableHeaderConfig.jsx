@@ -1,8 +1,9 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
-import { Button } from "../../../../../templates/system/Button/Button"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useSelector } from "react-redux"
+
 import { SelectProductSelected } from "../../../../../../features/productOutflow/productOutflow"
+import { Button } from "../../../../../templates/system/Button/Button"
 
 
 export const tableHeaderColumns = ({Group }) => {

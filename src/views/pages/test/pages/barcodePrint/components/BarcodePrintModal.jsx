@@ -1,10 +1,12 @@
+import { Modal, Select, Form, Spin, Alert } from 'antd';
 import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import styled from 'styled-components';
-import { Modal, Select, Form, Spin, Alert } from 'antd';
-import QuantitySelector from './QuantitySelector';
-import BarcodeItem from './BarcodeItem';
 import ReactToPrint from 'react-to-print';
+import styled from 'styled-components';
+
+import BarcodeItem from './BarcodeItem';
+import QuantitySelector from './QuantitySelector';
+
 
 const BarcodeGrid = styled.div`
   /* Pantalla: 1 columna (sin columnas visuales) */

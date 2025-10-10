@@ -1,41 +1,23 @@
-import React, { Fragment } from 'react'
-import styled from 'styled-components'
-import { ProductList } from './components/ProductList'
-import { PaymentArea } from './components/PaymentArea'
-import { Row } from './components/Table/Row'
+import React from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { selectBusinessData } from '../../../features/auth/businessSlice'
+import { resolveDocumentIdentity } from '../../../utils/invoice/documentIdentity.js'
+
 import { Header } from './components/Header/Header'
+import { PaymentArea } from './components/PaymentArea'
+import { ProductList } from './components/ProductList'
+import { Row } from './components/Table/Row'
+import { ThankYouMessage } from './components/ThankYouMessage'
 import { WarrantySignature } from './components/WarrantySignature'
 import { ReceiptComponent } from './Style'
-import { ThankYouMessage } from './components/ThankYouMessage'
 
 
 export const Receipt = React.forwardRef(({ data, ignoreHidden }, ref) => {
       const business = useSelector(selectBusinessData) || ""
-    function getReceiptInfo(code) {
-        if (!code) {
-            return { type: 'Desconocido', description: 'RECIBO  DE PAGO' };
-        }
-
-        // Asegurarse de que se extrae correctamente el código relevante de la cadena
-        const pattern = /(B0\d)/; // Esta expresión regular busca el patrón exacto "B0" seguido de un dígito
-        const found = code.match(pattern);
-
-        const receiptTypes = {
-            B01: { type: 'Crédito Fiscal', description: 'FACTURA PARA CREDITO FISCAL' },
-            B02: { type: 'Consumidor Final', description: 'FACTURA PARA CONUMIDOR FINAL' },
-            // ... include other receipt types with their corresponding information
-        };
-
-        if (found && found[0] && receiptTypes[found[0]]) {
-            return receiptTypes[found[0]];
-        } else {
-            return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
-        }
-    }
-
-    const ncfType = getReceiptInfo(data?.NCF)?.description
+    const documentIdentity = resolveDocumentIdentity(data);
+    const ncfType = documentIdentity.description;
 
     return (
         data ? (

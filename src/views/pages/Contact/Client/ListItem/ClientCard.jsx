@@ -1,18 +1,16 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 
+import { icons } from '../../../../../constants/icons/icons'
+import { OPERATION_MODES } from '../../../../../constants/modes'
+import { toggleClientModal } from '../../../../../features/modals/modalSlice'
+import { fbDeleteClient } from '../../../../../firebase/client/fbDeleteClient'
+import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
 import { Button } from '../../../../templates/system/Button/Button'
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
-import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
-import {useFormatPhoneNumber} from '../../../../../hooks/useFormatPhoneNumber'
-
 import { Message } from '../../../../templates/system/message/Message'
-import { useDispatch } from 'react-redux'
-import { toggleClientModal } from '../../../../../features/modals/modalSlice'
-import { OPERATION_MODES } from '../../../../../constants/modes'
-import { icons } from '../../../../../constants/icons/icons'
-import { fbDeleteClient } from '../../../../../firebase/client/fbDeleteClient'
-import { ClientAdmin } from '../ClientAdmin'
+
 export const OrderItem = ({ client, index, Row, Col }) => {
     const updateMode = OPERATION_MODES.UPDATE.id
     const noData = <Message title='(vacio)' fontSize='small' bgColor='error'/>

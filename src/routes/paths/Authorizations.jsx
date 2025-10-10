@@ -1,6 +1,6 @@
-import ROUTES_NAME from "../routesName";
-import { ROUTE_STATUS } from "../routeMeta";
 import { AuthorizationsManager } from "../../views/pages/Authorizations/AuthorizationsManager";
+import { ROUTE_STATUS } from "../routeMeta";
+import ROUTES_NAME from "../routesName";
 
 const { AUTHORIZATIONS_LIST } = ROUTES_NAME.AUTHORIZATIONS_TERM;
 

@@ -5,11 +5,10 @@ import {
   setDoc, 
   updateDoc, 
   deleteDoc,
-  query,
-  where,
   getDocs,
   serverTimestamp
 } from 'firebase/firestore';
+
 import { db } from '../firebase/firebaseconfig';
 
 /**

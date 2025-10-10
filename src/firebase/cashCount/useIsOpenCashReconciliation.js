@@ -1,8 +1,9 @@
-import { collection, doc, getDocs, onSnapshot, query, where } from "firebase/firestore"
-import { db } from "../firebaseconfig"
+import { collection, doc, onSnapshot, query, where } from "firebase/firestore"
 import { useEffect, useState } from "react";
-import { selectUser } from "../../features/auth/userSlice";
 import { useDispatch, useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
+import { db } from "../firebaseconfig"
 import { fbGetDocs } from "../firebaseOperations";
 
 export function useIsOpenCashReconciliation() {

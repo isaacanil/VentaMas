@@ -1,5 +1,8 @@
 import { useState, useMemo, lazy, Suspense } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+
+import { OPERATION_MODES } from '../../../../../constants/modes'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import {
   selectClient,
   selectClientMode,
@@ -9,12 +12,10 @@ import {
   setIsOpen
 } from '../../../../../features/clientCart/clientCartSlice'
 import { CLIENT_MODE_BAR } from '../../../../../features/clientCart/clientMode'
-import { filtrarDatos } from '../../../../../hooks/useSearchFilter'
 import { toggleClientModal } from '../../../../../features/modals/modalSlice'
-import { OPERATION_MODES } from '../../../../../constants/modes'
 import { fbDeleteClient } from '../../../../../firebase/client/fbDeleteClient'
-import { selectUser } from '../../../../../features/auth/userSlice'
 import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen'
+import { filtrarDatos } from '../../../../../hooks/useSearchFilter'
 
 const ClientSelectionModal = lazy(() => import('./components/ClientSelectionModal').then(module => ({ default: module.ClientSelectionModal })))
 const ClientSelectionToolbar = lazy(() => import('./components/ClientSelectionToolbar').then(module => ({ default: module.ClientSelectionToolbar })))

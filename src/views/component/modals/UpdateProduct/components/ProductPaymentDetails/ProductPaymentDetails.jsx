@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import Typography from '../../../../../templates/system/Typografy/Typografy';
+
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import Typography from '../../../../../templates/system/Typografy/Typografy';
 
 const PaymentDetailsContainer = styled.div`
   padding: 20px;

@@ -1,19 +1,21 @@
-import { useMemo, useState, useEffect } from 'react'
+import { CalculatorOutlined, CheckCircleOutlined, ExclamationCircleOutlined, PrinterOutlined } from '@ant-design/icons'
 import * as ant from 'antd'
-import styled from 'styled-components'
+import { useMemo, useState, useEffect } from 'react'
 import Barcode from 'react-barcode'
+import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../../../../features/auth/userSlice'
+import { ChangeProductData } from '../../../../../../features/updateProduct/updateProductSlice'
+import useBarcodeSettings from '../../../../../../hooks/barcode/useBarcodeSettings'
+import { getBarcodeInfo, PRINT_DPI, getGS1Geometry } from '../../../../../../utils/barcode/barcode'
+import BarcodePrintModal from '../../../../../pages/test/pages/barcodePrint/components/BarcodePrintModal'
 
 import { BarcodeGenerator } from './BarcodeGenerator/BarcodeGenerator'
-import { CalculatorOutlined, CheckCircleOutlined, ExclamationCircleOutlined, PrinterOutlined } from '@ant-design/icons'
-import { useDispatch, useSelector } from 'react-redux'
-import { ChangeProductData } from '../../../../../../features/updateProduct/updateProductSlice'
-import { selectUser } from '../../../../../../features/auth/userSlice'
-import useBarcodeSettings from '../../../../../../hooks/barcode/useBarcodeSettings'
-import { getBarcodeInfo, generateCorrectionSuggestions, PRINT_DPI, getGS1Geometry } from '../../../../../../utils/barcode/barcode'
 import BarcodeFixTooltip from './BarcodeGenerator/components/BarcodeFixTooltip'
 import { BarcodeInfoModal } from './BarcodeInfoModal/BarcodeInfoModal'
 import BarcodePreviewModal from './BarcodeInfoModal/BarcodePreviewModal'
-import BarcodePrintModal from '../../../../../pages/test/pages/barcodePrint/components/BarcodePrintModal'
+
 
 // Hook para geometría GS1 precisa usando util
 const useGS1Geometry = (dpi = PRINT_DPI, barcodeType) => getGS1Geometry(dpi, barcodeType)

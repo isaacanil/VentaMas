@@ -1,10 +1,14 @@
-import { Counter } from '../../Counter/Counter'
-import style from './ProductCardForCartStyle.module.scss'
-import { separator } from '../../../../../hooks/separator'
-import { useDispatch } from 'react-redux'
-import { totalShoppingItems, deleteProduct } from '../../../../../features/cart/cartSlice'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useDispatch } from 'react-redux'
+
+import { totalShoppingItems, deleteProduct } from '../../../../../features/cart/cartSlice'
+import { separator } from '../../../../../hooks/separator'
+import { Counter } from '../../Counter/Counter'
+
+import style from './ProductCardForCartStyle.module.scss'
+
+
 
 export const ProductCardForCart = ({ item }) => {
   const dispatch = useDispatch()

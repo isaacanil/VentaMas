@@ -1,20 +1,21 @@
-import React, { useEffect, useMemo } from 'react';
-import styled from 'styled-components';
 import { InputNumber, Select, Form, DatePicker, Input } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { SelectCartData } from '../../../../../../../../../features/cart/cartSlice';
-import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
 import { AnimatePresence, motion } from 'framer-motion';
-import DateUtils from '../../../../../../../../../utils/date/dateUtils';
-import { setNumPrecision } from '../../../../../../../../../utils/pricing';
-import { getMaxInstallments } from '../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
-import { calculateAmountPerInstallment } from '../../../../../../../../../utils/accountsReceivable/accountsReceivable';
-import usePaymentDates from '../ReceivableManagementPanel/usePaymentDates';
+import React, { useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { SelectCartData } from '../../../../../../../../../features/cart/cartSlice';
+import { selectClient } from '../../../../../../../../../features/clientCart/clientCartSlice';
 import { 
     selectInsuranceAR, 
     setInsuranceAR
 } from '../../../../../../../../../features/insurance/insuranceAccountsReceivableSlice';
-import { selectClient } from '../../../../../../../../../features/clientCart/clientCartSlice';
+import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
+import { calculateAmountPerInstallment } from '../../../../../../../../../utils/accountsReceivable/accountsReceivable';
+import { getMaxInstallments } from '../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
+import DateUtils from '../../../../../../../../../utils/date/dateUtils';
+import { setNumPrecision } from '../../../../../../../../../utils/pricing';
+import usePaymentDates from '../ReceivableManagementPanel/usePaymentDates';
 
 const { Option } = Select;
 const { TextArea } = Input;

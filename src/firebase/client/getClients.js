@@ -1,6 +1,7 @@
 //crea una funcion para obtener todos los usuarios de firebase que rebiba user y user compruebas user.businessID y devuelve la lista de clientes
 
 import { collection, getDocs } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export async function getClients(user) {

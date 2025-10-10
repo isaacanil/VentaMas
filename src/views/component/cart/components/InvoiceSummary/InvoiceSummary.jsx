@@ -1,35 +1,38 @@
-import React, { Fragment, useRef, useState, useEffect, useMemo, useCallback } from 'react';
-import styled from 'styled-components';
-import CustomInput from '../../../../templates/system/Inputs/CustomInput';
-import { useDispatch, useSelector } from 'react-redux';
-import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoicePanelOpen, setPaymentMethod, recalcTotals, setCashPaymentToTotal, selectProductsWithIndividualDiscounts, selectTotalIndividualDiscounts, setDiscountAuthorizationContext, clearDiscountAuthorizationContext } from '../../../../../features/cart/cartSlice';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import { Delivery } from './components/Delivery/Delivery';
-import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
 import { notification, Modal, Spin, message, Tooltip } from 'antd'
-import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
+import React, { Fragment, useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
+import { useReactToPrint } from 'react-to-print';
+import styled from 'styled-components';
+
+import { icons } from '../../../../../constants/icons/icons';
+import { selectBusinessData } from '../../../../../features/auth/businessSlice';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoicePanelOpen, setCashPaymentToTotal, selectProductsWithIndividualDiscounts, selectTotalIndividualDiscounts, setDiscountAuthorizationContext, clearDiscountAuthorizationContext } from '../../../../../features/cart/cartSlice';
 import { fbAddPreOrder } from '../../../../../firebase/invoices/fbAddPreocer';
 import { fbUpdatePreOrder } from '../../../../../firebase/invoices/fbUpdatePreorder';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
-import { getTotalDiscount } from '../../../../../utils/pricing';
+import { downloadQuotationPdf } from '../../../../../firebase/quotation/downloadQuotationPDF';
+import { addQuotation } from '../../../../../firebase/quotation/quotationService';
+import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules';
+import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled';
 import useInsuranceFormComplete from '../../../../../hooks/useInsuranceFormComplete';
-import { ActionMenu } from './components/ActionMenu/Actionmenu';
-import { icons } from '../../../../../constants/icons/icons';
-import { handleCancelShipping } from '../InvoicePanel/handleCancelShipping';
-import { Quotation } from '../../../Quotation/components/Quotation/Quotation';
-import { useReactToPrint } from 'react-to-print';
-import { addQuotation } from '../../../../../firebase/quotation/quotationService';
-import { generateInvoicePDF } from '../../../../../utils/pdf/pdfGenerator';
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import WarningPill from './components/WarningPill/WarningPill';
-import { downloadQuotationPdf } from '../../../../../firebase/quotation/downloadQuotationPDF';
-import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
-import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules';
-import { PinAuthorizationModal } from '../../../modals/PinAuthorizationModal/PinAuthorizationModal';
-import { useSearchParams } from 'react-router-dom';
+import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
+import { getTotalDiscount } from '../../../../../utils/pricing';
 import { usePreorderModal } from '../../../../pages/Venta/components/PreorderQuickActions';
+import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
+import CustomInput from '../../../../templates/system/Inputs/CustomInput';
+import { PinAuthorizationModal } from '../../../modals/PinAuthorizationModal/PinAuthorizationModal';
+import { Quotation } from '../../../Quotation/components/Quotation/Quotation';
+import { handleCancelShipping } from '../InvoicePanel/handleCancelShipping';
+import { selectNcfType, selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice';
+
+import { ActionMenu } from './components/ActionMenu/Actionmenu';
+import { Delivery } from './components/Delivery/Delivery';
+import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
+import WarningPill from './components/WarningPill/WarningPill';
+
 
 const resolveAuthorizerName = (authorizer) => (
   authorizer?.displayName ||
@@ -45,7 +48,10 @@ const InvoiceSummary = () => {
   const cart = useSelector(selectCart);
   const user = useSelector(selectUser);
   const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] = useState(false);
-  const cartData = useSelector(SelectCartData); const insuranceExtra = cartData?.totalInsurance?.value || 0;
+  const cartData = useSelector(SelectCartData);
+  const insuranceExtra = cartData?.totalInsurance?.value || 0;
+  const selectedNcfType = useSelector(selectNcfType);
+  const isTaxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const discountAuthorizationContext = cartData?.authorizationContext?.discount || null;
   const billingSettings = cart?.settings?.billing;
   const business = useSelector(selectBusinessData) || {};
@@ -357,7 +363,8 @@ const InvoiceSummary = () => {
     try {
       setIsSavingPreorder(true);
 
-      await fbAddPreOrder(user, cartData);
+      const preorderPayload = buildPreorderPayload() || cartData;
+      await fbAddPreOrder(user, preorderPayload);
       handleCancelShipping({ dispatch, closeInvoicePanel: false });
       setIsOpenPreorderConfirmation(false);
       activateSaleMode();
@@ -392,7 +399,8 @@ const InvoiceSummary = () => {
     try {
       setIsSavingPreorder(true);
 
-      await fbUpdatePreOrder(user, cartData);
+      const preorderPayload = buildPreorderPayload() || cartData;
+      await fbUpdatePreOrder(user, preorderPayload);
 
       handleCancelShipping({ dispatch, closeInvoicePanel: false });
       activateSaleMode();
@@ -425,6 +433,22 @@ const InvoiceSummary = () => {
     }
     return null;
   }, [insuranceFormIncomplete, validateInsuranceCoverage]);
+
+  const buildPreorderPayload = useCallback(() => {
+    if (!cartData) return cartData;
+
+    const basePreorderDetails = cartData?.preorderDetails ?? {};
+    const normalizedSelectedType = isTaxReceiptEnabled ? (selectedNcfType || null) : null;
+
+    return {
+      ...cartData,
+      selectedTaxReceiptType: normalizedSelectedType,
+      preorderDetails: {
+        ...basePreorderDetails,
+        selectedTaxReceiptType: normalizedSelectedType,
+      },
+    };
+  }, [cartData, isTaxReceiptEnabled, selectedNcfType]);
 
   const billingButtons = {
     direct: {

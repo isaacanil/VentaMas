@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { Checkbox, Divider, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const { Title, Text } = Typography;

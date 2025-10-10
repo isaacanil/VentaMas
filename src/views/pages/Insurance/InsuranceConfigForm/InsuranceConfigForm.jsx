@@ -1,13 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Form, Input, Modal, Button, Space, message } from 'antd';
 import { PlusOutlined, DeleteOutlined, BankOutlined, SafetyCertificateOutlined, NumberOutlined, CalendarOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { saveInsuranceConfig } from '../../../../firebase/insurance/insuranceService';
-import { closeInsuranceConfigModal, selectInsuranceConfigModal } from '../../../../features/insurance/insuranceConfigModalSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
-import styled from 'styled-components';
-import { PeriodSelectionModal } from './components/PeriodSelectionModal';
 import { nanoid } from '@reduxjs/toolkit';
+import { Form, Input, Modal, Button, Space, message } from 'antd';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectUser } from '../../../../features/auth/userSlice';
+import { closeInsuranceConfigModal, selectInsuranceConfigModal } from '../../../../features/insurance/insuranceConfigModalSlice';
+import { saveInsuranceConfig } from '../../../../firebase/insurance/insuranceService';
+
+
+import { PeriodSelectionModal } from './components/PeriodSelectionModal';
+
 
 // Styled Components
 const StyledFormSection = styled.div`

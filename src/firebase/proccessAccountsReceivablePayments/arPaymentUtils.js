@@ -1,9 +1,10 @@
-import { db } from "../firebaseconfig";
 import { collection, query, where, orderBy, getDocs, doc, getDoc, Timestamp, setDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
+
 import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
 import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
-import { fbGetInvoice } from "../invoices/fbGetInvoice";
+import { db } from "../firebaseconfig";
+
 import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 
 /**

@@ -1,7 +1,8 @@
+import { DateTime } from 'luxon';
 import React from 'react';
 import styled from 'styled-components';
+
 import { isSameDay } from '../utils/dateUtils';
-import { DateTime } from 'luxon';
 
 /**
  * Componente que representa un día en el calendario

@@ -1,4 +1,5 @@
 import { https, logger } from "firebase-functions";
+
 import { addAccountReceivable } from "./addAccountReceivable.js";
 import { addInstallmentReceivable } from "./addInstallmentsAccountReceivable.js";
 

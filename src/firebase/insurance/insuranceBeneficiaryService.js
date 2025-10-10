@@ -1,6 +1,7 @@
-import { collection, doc, setDoc, getDocs, onSnapshot, query, where } from "firebase/firestore";
+import { collection, doc, setDoc, onSnapshot, query, where } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { useState, useEffect } from "react";
+
 import { db } from "../firebaseconfig";
 
 /**

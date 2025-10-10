@@ -1,8 +1,9 @@
+import * as Icons from '@ant-design/icons'
+import { Card, Row, Col, Typography } from 'antd'
+import { motion } from 'framer-motion'
 import React from 'react'
 import styled from 'styled-components'
-import { motion } from 'framer-motion'
-import { Card, Row, Col, Typography } from 'antd'
-import * as Icons from '@ant-design/icons'
+
 import welcomeData from '../../WelcomeData.json'
 
 const { Title, Paragraph } = Typography;

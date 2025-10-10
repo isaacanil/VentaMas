@@ -1,6 +1,7 @@
 import React from 'react';
-import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList as List } from 'react-window';
+
 import {
     Card,
     SectionTitle,
@@ -14,6 +15,7 @@ import {
     Alert,
     VirtualizedListContainer
 } from '../code/styledComponents';
+
 import ProductRow from './ProductRow';
 
 const ProductPreview = ({

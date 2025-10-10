@@ -1,9 +1,10 @@
+import { Card, Typography, Space, Button, Table, Tag, Statistic, Row, Col, Alert, message, Popconfirm } from 'antd';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../../features/auth/userSlice';
 import { db } from '../../../firebase/firebaseconfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { Card, Typography, Space, Button, Table, Tag, Statistic, Row, Col, Divider, Alert, message, Popconfirm } from 'antd';
 import { syncProductsStockFromProductsStock } from '../../../firebase/warehouse/stockSyncService';
 
 // Developer Sync Diagnostics

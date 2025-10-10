@@ -1,17 +1,18 @@
-import { useNavigate } from "react-router-dom";
-import { ActionIcon } from "../../../../../../config/statusActionConfig";
-import { getOrderConditionByID, getOrderStateByID } from "../../../../../../constants/orderAndPurchaseState";
 import {
   ShoppingCartOutlined,
   EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
-import { ROUTES } from "../../../../../../routes/routesName";
-import { replacePathParams } from "../../../../../../routes/replacePathParams";
-import { useDialog } from "../../../../../../Context/Dialog/DialogContext";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+import { ActionIcon } from "../../../../../../config/statusActionConfig";
+import { getOrderConditionByID, getOrderStateByID } from "../../../../../../constants/orderAndPurchaseState";
+import { useDialog } from "../../../../../../Context/Dialog/DialogContext";
 import { selectUser } from "../../../../../../features/auth/userSlice";
 import { fbDeleteOrder } from "../../../../../../firebase/order/fbDeleteOrder";
+import { replacePathParams } from "../../../../../../routes/replacePathParams";
+import { ROUTES } from "../../../../../../routes/routesName";
 
 function ActionButtons({ order }) {
   const navigate = useNavigate();

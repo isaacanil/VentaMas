@@ -1,14 +1,14 @@
 import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { Button, ButtonGroup } from '../../../system/Button/Button'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import routesName from '../../../../../routes/routesName'
-import { openModalAddOrder, toggleAddPurchaseModal, toggleProviderModal } from '../../../../../features/modals/modalSlice'
 
-import { AddProductButton } from '../../../system/Button/AddProductButton'
 import { OPERATION_MODES } from '../../../../../constants/modes'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { toggleProviderModal } from '../../../../../features/modals/modalSlice'
+import routesName from '../../../../../routes/routesName'
+import { AddProductButton } from '../../../system/Button/AddProductButton'
+import { ButtonGroup } from '../../../system/Button/Button'
 
 export const CreatePurchaseToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const {  PURCHASES_CREATE  } = routesName.PURCHASE_TERM;

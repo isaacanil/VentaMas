@@ -1,8 +1,9 @@
+import { faFlask, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { notification } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
-import { notification } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFlask, faTimes } from '@fortawesome/free-solid-svg-icons';
+
 import { selectAppMode, toggleMode } from '../../../../features/appModes/appModeSlice';
 
 export const TestModeIndicator = () => {

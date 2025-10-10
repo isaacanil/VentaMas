@@ -1,9 +1,10 @@
+import { message } from 'antd';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../features/auth/userSlice';
-import { getBarcodeSettings, setBarcodeSettings } from '../../firebase/barcode/barcodeSettings';
 import { generateAutoBarcode, previewNextItemReference } from '../../firebase/barcode/barcodeGeneration';
-import { message } from 'antd';
+import { getBarcodeSettings, setBarcodeSettings } from '../../firebase/barcode/barcodeSettings';
 
 /**
  * Hook para manejar la configuración de códigos de barras

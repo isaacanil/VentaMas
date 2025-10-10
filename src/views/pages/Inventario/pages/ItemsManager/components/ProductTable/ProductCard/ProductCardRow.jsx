@@ -1,17 +1,18 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
+
+import noImg from '../../../../../../../../assets/producto/noimg.png';
+import { icons } from '../../../../../../../../constants/icons/icons';
+import { OPERATION_MODES } from '../../../../../../../../constants/modes';
 import { handleDeleteProductAlert } from '../../../../../../../../features/Alert/AlertSlice';
 import { openModalUpdateProd } from '../../../../../../../../features/modals/modalSlice';
 import { ChangeProductData } from '../../../../../../../../features/updateProduct/updateProductSlice';
-import { useCheckForInternetConnection } from '../../../../../../../../hooks/useCheckForInternetConnection';
 import useImageFallback from '../../../../../../../../hooks/image/useImageFallback';
-import { Button, ButtonGroup } from '../../../../../../../templates/system/Button/Button';
-import noImg from '../../../../../../../../assets/producto/noimg.png';
-import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
+import { useCheckForInternetConnection } from '../../../../../../../../hooks/useCheckForInternetConnection';
 import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
-import { icons } from '../../../../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../../../../constants/modes';
+import { Button, ButtonGroup } from '../../../../../../../templates/system/Button/Button';
+import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
 
 
 export const ProductCardRow = ({ product, Col, Row }) => {

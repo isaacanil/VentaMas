@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Select, Space, Button, Drawer } from 'antd';
 import { ClearOutlined, FilterOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
-import { DatePicker } from '../../../../../components/common/DatePicker';
-import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
-import { CREDIT_NOTE_STATUS, CREDIT_NOTE_STATUS_LABEL } from '../../../../../constants/creditNoteStatus';
+import { Select, Button, Drawer } from 'antd';
 import dayjs from 'dayjs';
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+
+import { DatePicker } from '../../../../../components/common/DatePicker';
+import { CREDIT_NOTE_STATUS, CREDIT_NOTE_STATUS_LABEL } from '../../../../../constants/creditNoteStatus';
+import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
+
 
 const { Option } = Select;
 

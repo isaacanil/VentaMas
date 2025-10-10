@@ -1,9 +1,10 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment } from 'react'
 import styled from 'styled-components'
+
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
+import { Col } from '../../../components/Table/Col'
 import { Row } from '../../../components/Table/Row'
 import { Paragraph, Spacing, Subtitle } from '../../../Style'
-import { Col } from '../../../components/Table/Col'
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 
 function calculateTotal(paymentMethods) {
     return paymentMethods?.reduce((total, payment) => total + payment.value, 0);

@@ -1,6 +1,7 @@
-import React, { Fragment, useState } from 'react'
-import Style from './ProductControl.module.scss'
+import React, { Fragment } from 'react'
 import { useMatch } from 'react-router-dom'
+
+import Style from './ProductControl.module.scss'
 
 export const ControlSearchProduct = ({ searchData, setSearchData }) => {
 

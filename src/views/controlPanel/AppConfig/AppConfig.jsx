@@ -1,10 +1,11 @@
-import React from 'react';
+import { SettingOutlined } from '@ant-design/icons';
 import { Card, List } from 'antd';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import ROUTES_NAME from '../../../routes/routesName';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import styled from 'styled-components';
-import { SettingOutlined } from '@ant-design/icons';
 
 const AppConfig = () => {
     const navigate = useNavigate();

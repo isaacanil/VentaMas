@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { TypographyStyle, variantToComponentMap } from './style/TypographyStyles';
 
 /**

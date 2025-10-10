@@ -1,10 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { message } from 'antd';
-import FileList from './FileList';
-import DragOverlay from './DragOverlay';
-import PreviewContent from './PreviewContent';
-import ImageLightbox from './ImageLightbox';
-import FileUploadControls from './FileUploadControls';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
 import {
   getLocalURL,
   revokeLocalURL,
@@ -12,6 +8,13 @@ import {
   isPDFFile,
   getFileTypeFromUrl
 } from '../../../../../../utils/fileUtils';
+
+import DragOverlay from './DragOverlay';
+import FileList from './FileList';
+import FileUploadControls from './FileUploadControls';
+import ImageLightbox from './ImageLightbox';
+import PreviewContent from './PreviewContent';
+
 
 const EvidenceUpload = ({
   files = [],

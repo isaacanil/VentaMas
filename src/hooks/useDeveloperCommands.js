@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleDeveloperModal } from '../features/modals/modalSlice';
+
 import { selectUser } from '../features/auth/userSlice';
+import { toggleDeveloperModal } from '../features/modals/modalSlice';
 
 /**
  * Hook para manejar comandos globales de desarrollador

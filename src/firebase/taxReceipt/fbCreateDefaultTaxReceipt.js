@@ -1,7 +1,9 @@
 import { useSelector } from "react-redux"
+
 import { selectUser } from "../../features/auth/userSlice"
 import { validateUser } from "../../utils/userValidation"
 import { db } from "../firebaseconfig"
+
 import { fbCreateTaxReceipt } from "./fbCreateTaxReceipt"
 
 

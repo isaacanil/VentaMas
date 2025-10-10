@@ -1,6 +1,5 @@
 // client/backfillUserNumbers.js
 import {
-    getFirestore,
     doc,
     getDoc,
     collection,
@@ -10,10 +9,12 @@ import {
     getDocs,
     writeBatch
 } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { selectUser } from "../../features/auth/userSlice";
-import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
+import { db } from "../firebaseconfig";
+
 
 
 

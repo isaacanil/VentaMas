@@ -1,11 +1,13 @@
-import { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
-import { MarkAsReceivableButton, useARValidation } from '../MarkAsReceivableButton/MarkAsReceivableButton';
-import { ReceivableManagementPanel } from '../ReceivableManagementPanel/ReceivableManagementPanel';
-import { ARValidateMessage } from '../MarkAsReceivableButton/components/ARValidateMessage/ARValidateMessage';
-import { ReceivableWidget } from '../ReceivableManagementPanel/components/ReceivableWidget/ReceivableWidget';
-import { SelectCartData } from '../../../../../../../../../features/cart/cartSlice';
+import { Fragment, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import { SelectCartData } from '../../../../../../../../../features/cart/cartSlice';
+import { ARValidateMessage } from '../MarkAsReceivableButton/components/ARValidateMessage/ARValidateMessage';
+import { MarkAsReceivableButton, useARValidation } from '../MarkAsReceivableButton/MarkAsReceivableButton';
+import { ReceivableWidget } from '../ReceivableManagementPanel/components/ReceivableWidget/ReceivableWidget';
+import { ReceivableManagementPanel } from '../ReceivableManagementPanel/ReceivableManagementPanel';
+
 
 const AccountsReceivableManager = ({
   hasAccountReceivablePermission,

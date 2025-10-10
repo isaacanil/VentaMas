@@ -1,6 +1,7 @@
 import { Timestamp, collection, getDocs, writeBatch, doc } from "firebase/firestore";
-import { db } from "../firebaseconfig";
 import { nanoid } from "nanoid";
+
+import { db } from "../firebaseconfig";
 
 export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, businessIdB) => {
     const categoriesBusinessA = collection(db, `businesses/${businessIdA}/categories`);

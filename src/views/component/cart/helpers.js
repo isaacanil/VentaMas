@@ -1,8 +1,8 @@
 import { notification } from 'antd';
+
 import { resetCart, toggleCart } from "../../../features/cart/cartSlice";
 import { deleteClient, handleClient } from "../../../features/clientCart/clientCartSlice";
 import { IncreaseEndConsumer, IncreaseTaxCredit, clearTaxReceiptData } from "../../../features/taxReceipt/taxReceiptSlice";
-import { selectAppMode } from "../../../features/appModes/appModeSlice";
 import { fbAddInvoice } from "../../../firebase/invoices/fbAddInvoice";
 import { fbUpdateProductsStock } from "../../../firebase/products/fbUpdateProductStock";
 import { fbUpdateTaxReceipt } from "../../../firebase/taxReceipt/fbUpdateTaxReceipt";

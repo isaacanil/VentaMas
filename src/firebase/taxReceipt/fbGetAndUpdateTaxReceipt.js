@@ -1,4 +1,5 @@
 import { collection, getDocs, query, updateDoc, where } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 /** 8 dígitos para B, 10 para E */

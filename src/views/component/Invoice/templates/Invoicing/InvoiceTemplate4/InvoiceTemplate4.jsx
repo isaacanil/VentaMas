@@ -1,9 +1,14 @@
-import React from 'react';
 import { DateTime } from 'luxon';
+import React from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
+import { separator } from '../../../../../../hooks/separator';
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
 import DateUtils from '../../../../../../utils/date/dateUtils';
-import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 import {
   getTotalPrice,
   getTax,
@@ -14,11 +19,9 @@ import {
   getProductIndividualDiscount,
   getProductsIndividualDiscounts
 } from '../../../../../../utils/pricing';
-import { separator } from '../../../../../../hooks/separator';
-import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
 import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/WarrantyInfo';
-import styled from 'styled-components';
-import { ReceiptComponent } from '../InvoiceTemplate1/Style';
+
+
 
 // Máximo de caracteres por línea
 const CENTER_WIDTH = 40;
@@ -95,25 +98,6 @@ export const getFullProductName = (product) => {
     (product.footer ? ` Pie: [${product.footer}]` : '');
 };
 
-// Determinar tipo de comprobante
-// eslint-disable-next-line react-refresh/only-export-components
-export const getReceiptInfo = (code) => {
-  if (!code) {
-    return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
-  }
-  const pattern = /(B0\d)/;
-  const found = code.match(pattern);
-  const receiptTypes = {
-    B01: { type: 'Crédito Fiscal', description: 'FACTURA PARA CREDITO FISCAL' },
-    B02: { type: 'Consumidor Final', description: 'FACTURA PARA CONSUMIDOR FINAL' },
-  };
-  if (found && found[0] && receiptTypes[found[0]]) {
-    return receiptTypes[found[0]];
-  } else {
-    return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
-  }
-};
-
 /* =========================================================
    Secciones
    ========================================================= */
@@ -138,12 +122,12 @@ export const renderBusinessHeader = (business, formatPhoneNumber) => {
 // eslint-disable-next-line react-refresh/only-export-components
 export const renderInvoiceHeader = (data, fechaActual) => {
   let header = '';
+  const identity = resolveDocumentIdentity(data);
   header += 'Fecha: ' + fechaActual + '\n';
-  if (data?.NCF) {
-    const receiptInfo = getReceiptInfo(data.NCF);
-    header += 'NCF: ' + data.NCF + '\n';
-    header += centerText(receiptInfo.description) + '\n';
+  if (identity.label) {
+    header += identity.label.toUpperCase() + ': ' + (identity.value || '-') + '\n';
   }
+  header += centerText(identity.description || identity.title) + '\n';
   header += separatorLine() + '\n';
 
   // Salto de línea al final de la sección

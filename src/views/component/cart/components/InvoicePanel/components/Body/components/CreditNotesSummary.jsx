@@ -1,7 +1,8 @@
+import { CreditCardOutlined } from '@ant-design/icons';
+import { Card, Divider } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Card, Tag, Divider, Empty } from 'antd';
-import { CreditCardOutlined, InfoCircleOutlined } from '@ant-design/icons';
+
 import { formatPrice } from '../../../../../../../../utils/formatPrice';
 
 

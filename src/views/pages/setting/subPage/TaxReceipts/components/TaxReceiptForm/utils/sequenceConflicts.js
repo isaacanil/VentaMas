@@ -1,6 +1,8 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
+
 import { db } from "../../../../../../../../firebase/firebaseconfig";
 import { getNcfLedgerInsights } from "../../../../../../../../firebase/taxReceipt/getNcfLedgerInsights";
+
 import {
   MAX_IN_QUERY_VALUES,
   buildCandidateCodes,

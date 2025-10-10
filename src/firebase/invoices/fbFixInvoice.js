@@ -1,8 +1,9 @@
-import { collection, doc, getDoc, getDocs, limit, query, where, writeBatch } from "firebase/firestore";
-import { db } from "../firebaseconfig";
+import { collection, doc, getDoc, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { DateTime } from "luxon";
+
 // Asumiendo que estas funciones están implementadas correctamente
 import { convertDecimalToPercentage, getPriceWithoutTax } from "../../utils/pricing";
+import { db } from "../firebaseconfig";
 
 export const fbFixInvoices = async (businessID) => {
     try {

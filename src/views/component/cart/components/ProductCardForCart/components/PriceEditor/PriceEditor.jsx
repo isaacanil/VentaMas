@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button } from 'antd';
+import styled from 'styled-components';
+
 import { icons } from '../../../../../../../constants/icons/icons';
 import { changeProductPrice } from '../../../../../../../features/cart/cartSlice';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
-import { getPriceTotal, getPriceWithoutTax } from '../../../../../../../utils/pricing';
 import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+import { getPriceTotal, getPriceWithoutTax } from '../../../../../../../utils/pricing';
 
 export const PriceEditor = ({ item, onModalOpen }) => {
   const dispatch = useDispatch();

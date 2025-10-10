@@ -1,4 +1,3 @@
-import { useState } from "react"
 
 export const removeMatchesString = (string, matches) => {
     let paragraph = String(string)

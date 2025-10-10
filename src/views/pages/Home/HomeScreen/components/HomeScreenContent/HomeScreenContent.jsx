@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+
 import { Body } from './Body'
 import { Header } from './Header'
 

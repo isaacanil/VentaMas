@@ -1,8 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../features/auth/userSlice';
 import { nanoid } from '@reduxjs/toolkit';
-import { db } from '../firebaseconfig';
 import {
     collection,
     getDocs,
@@ -14,6 +10,12 @@ import {
     query,
     where,
 } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
+
 
 // Obtener referencia de la colección de segmentos de una fila de estante
 const getSegmentCollectionRef = (businessId) => {

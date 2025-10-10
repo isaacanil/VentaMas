@@ -1,6 +1,6 @@
 import { doc, setDoc, updateDoc, getDoc, Timestamp } from "firebase/firestore";
+
 import { db } from '../firebaseconfig';
-import { nanoid } from "nanoid";
 
 export async function fbUpsertCreditLimit({ user, client, creditLimitData }) {
     try {

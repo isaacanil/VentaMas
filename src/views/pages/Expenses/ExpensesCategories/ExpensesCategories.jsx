@@ -1,8 +1,9 @@
 import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 
-import {  ExpensesCategoriesTable } from './components/ExpensesCategoriesTable/ExpensesCategoriesTable'
 import { MenuApp } from '../../../templates/MenuApp/MenuApp'
+
+import {  ExpensesCategoriesTable } from './components/ExpensesCategoriesTable/ExpensesCategoriesTable'
 
 export const ExpensesCategories = () => {
   const [searchTerm, setSearchTerm] = useState('')

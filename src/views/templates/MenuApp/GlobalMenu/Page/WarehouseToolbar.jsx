@@ -1,12 +1,12 @@
 import React, { Fragment, useState } from 'react'
-import { Button } from '../../../system/Button/Button'
-import styled from 'styled-components'
-import ROUTES_NAME from '../../../../../routes/routesName'
-import { useLocation, useMatch } from 'react-router-dom'
-import { icons } from '../../../../../constants/icons/icons'
-import { WarehouseForm } from '../../../../pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm'
 import { useDispatch } from 'react-redux'
+import { useLocation } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../constants/icons/icons'
 import { openWarehouseForm } from '../../../../../features/warehouse/warehouseModalSlice'
+import ROUTES_NAME from '../../../../../routes/routesName'
+import { Button } from '../../../system/Button/Button'
 
 export const WarehouseToolbar = ({ side = 'left' }) => {
     const [isOpen, setIsOpen] = useState(false)

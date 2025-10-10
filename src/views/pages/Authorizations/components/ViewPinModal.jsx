@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Modal, Button, message, Typography, Space } from 'antd';
 import { SafetyOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { Modal, Button, message, Typography, Space } from 'antd';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
+
 import { fbViewUserPins } from '../../../../firebase/authorization/pinAuth';
 
 const { Text, Title } = Typography;

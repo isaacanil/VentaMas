@@ -1,9 +1,10 @@
-import ROUTES_NAME from '../../../routes/routesName';
-import { icons } from '../../../constants/icons/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTicket, faWarehouse, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
-import { filterMenuItemsByAccess, hasDeveloperAccess } from '../../../utils/menuAccess';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import { developerShortcuts } from '../../../constants/devtools/developerShortcuts.jsx';
+import { icons } from '../../../constants/icons/icons';
+import ROUTES_NAME from '../../../routes/routesName';
+import { filterMenuItemsByAccess, hasDeveloperAccess } from '../../../utils/menuAccess';
 
 const createMenuItems = (items) => items.map((item, index) => ({ ...item, id: index + 1 }));
 

@@ -1,10 +1,11 @@
-import { Bar } from 'react-chartjs-2'
-import React, { useEffect, useMemo, useRef } from 'react';
 import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js";
+import React, { useMemo } from 'react';
+import { Bar } from 'react-chartjs-2'
 import styled from 'styled-components';
-import Typography from '../../../../../../templates/system/Typografy/Typografy';
+
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import { getTotalPrice } from '../../../../../../../utils/pricing';
+import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 

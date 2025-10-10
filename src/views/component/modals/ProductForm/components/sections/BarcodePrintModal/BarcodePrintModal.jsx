@@ -1,8 +1,8 @@
-import { useState, useRef, useLayoutEffect, useMemo } from "react";
 import * as ant from "antd";
-import styled, { createGlobalStyle } from "styled-components";
+import { useState, useRef, useLayoutEffect, useMemo } from "react";
 import Barcode from "react-barcode";
 import { useReactToPrint } from "react-to-print";
+import styled, { createGlobalStyle } from "styled-components";
 
 const { Modal, InputNumber, Select, Checkbox } = ant;
 

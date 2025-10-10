@@ -1,18 +1,20 @@
 import * as antd from "antd";
 import { useEffect, useRef, useState } from "react";
-import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption, setCreditNotePayment } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { useReactToPrint } from "react-to-print";
 import styled from "styled-components";
-import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
-import { Modal, modalStyles } from "../../cart/components/InvoicePanel/InvoicePanel";
-import { PaymentFields } from "./components/PaymentFields";
-import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
-import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
+
+import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption, setCreditNotePayment } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
 import { selectUser } from "../../../../features/auth/userSlice";
 import { selectClient } from "../../../../features/clientCart/clientCartSlice";
+import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
+import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
 import { AccountsReceivablePaymentReceipt } from "../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt";
-import { useReactToPrint } from "react-to-print";
+import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
 import CreditSelector from "../../cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
+import { Modal, modalStyles } from "../../cart/components/InvoicePanel/InvoicePanel";
+
+import { PaymentFields } from "./components/PaymentFields";
 
 const { Form, Checkbox, Input, Select, Button, Radio, notification } = antd;
 const { Option } = Select;

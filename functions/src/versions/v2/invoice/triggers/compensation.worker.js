@@ -1,6 +1,8 @@
 import { logger } from 'firebase-functions';
 import { firestore } from 'firebase-functions/v1';
+
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
+
 let depsPromise;
 async function loadDeps() {
   if (!depsPromise) {
@@ -134,9 +136,10 @@ export const processInvoiceCompensation = firestore
           { merge: true }
         );
         await auditSafe({ businessId, invoiceId, event: 'compensation_failed', level: 'error', data: { compId, type, error: err?.message || String(err) } });
-      } catch {}
+      } catch {
+        /* suppress audit failures to avoid retries loops */
+      }
     }
     return null;
   });
-
 

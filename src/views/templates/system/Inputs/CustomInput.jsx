@@ -1,11 +1,13 @@
+import { Typography, InputNumber, message } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
+
 import { addDiscount } from "../../../../features/cart/cartSlice";
 import { quitarCeros } from "../../../../hooks/quitarCeros";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
-import { Typography, InputNumber, message } from "antd";
 import { useFormatPrice } from "../../../../hooks/useFormatPrice";
+
 const { Title, Paragraph } = Typography;
 
 const CustomInput = ({ options, value, discount, disabled = false, onRequestAccess }) => {

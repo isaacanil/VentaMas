@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
-import { icons } from '../../../../constants/icons/icons';
-import { Tag } from 'antd';
 import styled from 'styled-components';
-import { INSURANCE_TYPES, DEFAULT_PRESCRIPTION_VALIDITY } from '../../../../constants/insuranceConfig';
-import { InsuranceStateIndicator } from '../components/InsuranceStateIndicator/InsuranceStateIndicator';
-import InsuranceConfigForm from '../InsuranceConfigForm/InsuranceConfigForm';
+
+import { icons } from '../../../../constants/icons/icons';
 import { openInsuranceConfigModal } from '../../../../features/insurance/insuranceConfigModalSlice';
 import { useListenInsuranceConfig } from '../../../../firebase/insurance/insuranceService';
 import DateUtils from '../../../../utils/date/dateUtils';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
+import InsuranceConfigForm from '../InsuranceConfigForm/InsuranceConfigForm';
+
 import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 
 const InsuranceConfig = () => {

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+
 import { SidebarItem } from './SidebarItem';
+
 export const Sidebar = ({ items }) => {
     const [isCompact, setIsCompact] = useState(false);
     const [activeMenuIndex, setActiveMenuIndex] = useState(null);

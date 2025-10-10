@@ -1,6 +1,3 @@
-import React, { useCallback, useRef } from 'react';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPrint, 
   faEdit, 
@@ -9,14 +6,18 @@ import {
   faReceipt,
   faCreditCard
 } from '@fortawesome/free-solid-svg-icons';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import { abbreviatePaymentMethods, getActivePaymentMethods, isInvoicePaidInFull } from '../../../../../utils/invoice';
-import { useReactToPrint } from 'react-to-print';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
+import styled from 'styled-components';
+
 import { addInvoice } from '../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../features/invoice/invoicePreviewSlice';
-import { Receipt } from '../../../checkout/Receipt';
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import { abbreviatePaymentMethods, getActivePaymentMethods, isInvoicePaidInFull } from '../../../../../utils/invoice';
 import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
+import { Receipt } from '../../../checkout/Receipt';
 import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization.jsx';
 
 export const InvoiceItemWide = ({ data }) => {

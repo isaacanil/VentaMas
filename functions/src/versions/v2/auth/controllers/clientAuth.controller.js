@@ -1,7 +1,8 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { db, Timestamp, FieldValue } from '../../../../core/config/firebase.js';
 import bcrypt from 'bcryptjs';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
+
+import { db, Timestamp, FieldValue } from '../../../../core/config/firebase.js';
 
 const USERS_COLLECTION = 'users';
 const SESSION_COLLECTION = 'sessionTokens';
@@ -36,15 +37,6 @@ async function ensureUserExists(userId) {
   return snap;
 }
 
-function buildUserPayload(doc) {
-  const data = doc.data() || {};
-  const user = data.user || {};
-  return {
-    ...user,
-    id: user.id || doc.id,
-  };
-}
-
 async function cleanupOldTokens(userId, keepTokenId = null) {
   const snapshot = await sessionsCol.where('userId', '==', userId).get();
   if (snapshot.empty) return;
@@ -58,7 +50,7 @@ async function cleanupOldTokens(userId, keepTokenId = null) {
       try {
         const expiresMillis = expiresAt.toMillis ? expiresAt.toMillis() : Number(expiresAt);
         return expiresMillis < threshold.toMillis();
-      } catch (error) {
+      } catch {
         return true;
       }
     })

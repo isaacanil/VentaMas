@@ -11,7 +11,12 @@
 // sobrecarga si la base crece: configurable con DIGEST_BUSINESS_LIMIT.
 // =============================================================
 
+import ExcelJS from 'exceljs';
+import { logger } from 'firebase-functions';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+
+import { db, storage } from '../../../core/config/firebase.js';
+import { sendMail } from '../../../core/config/mailer.js';
 import {
   MAIL_SECRETS,
   DIGEST_CRON as PARAM_DIGEST_CRON,
@@ -23,10 +28,7 @@ import {
   DIGEST_BUSINESS_LIMIT as PARAM_DIGEST_BUSINESS_LIMIT,
   DIGEST_BUSINESS_ORDER_FIELD as PARAM_DIGEST_BUSINESS_ORDER_FIELD,
 } from '../../../core/config/secrets.js';
-import { logger } from 'firebase-functions';
-import { db, storage } from '../../../core/config/firebase.js';
-import { sendMail } from '../../../core/config/mailer.js';
-import ExcelJS from 'exceljs';
+
 
 // Helper para obtener valor de param (defineString / defineSecret) con fallback a process.env
 function val(paramDef, envName, def) {
@@ -35,7 +37,7 @@ function val(paramDef, envName, def) {
       const v = paramDef.value();
       if (v !== undefined && v !== null && String(v).length) return v;
     }
-  } catch (_) { /* noop */ }
+  } catch { /* noop */ }
   const env = process.env[envName];
   if (env !== undefined && env !== null && String(env).length) return env;
   return def;
@@ -208,8 +210,6 @@ export const stockAlertsDailyDigest = onSchedule({
     if (verbose || debug) logger.info('[stockDigest] Procesando negocio con alertas', { bid, criticalCount: criticalList.length, lowCount: lowList.length });
 
     const subjectBase = `[Stock Crítico] ${businessName}`;
-
-    const rows = (arr, label) => arr.map(item => `<tr><td>${label}</td><td>${item.name}</td><td style="text-align:right">${item.qty}</td></tr>`).join('');
     // 2) Productos estrictos + tracking, solo críticos (qty <= critical), por ubicación/lote/expiración
     /* eliminado: definición antigua buildStrictCriticalRows() que devolvía HTML */
     /*
@@ -261,7 +261,7 @@ export const stockAlertsDailyDigest = onSchedule({
                 warehouseMap.set(snap.id, snap.data().name || snap.data().shortName || snap.id);
               }
             });
-          } catch (_) {
+          } catch {
             // ignorar
           }
         }
@@ -354,7 +354,7 @@ export const stockAlertsDailyDigest = onSchedule({
         const warehouseMap = new Map();
         if (uniqueWarehouseIds.size) {
           const refs = Array.from(uniqueWarehouseIds).map(id => db.doc(`businesses/${bid}/warehouses/${id}`));
-          try { const snaps = await Promise.all(refs.map(r => r.get())); snaps.forEach(snap => { if (snap.exists) warehouseMap.set(snap.id, snap.data().name || snap.data().shortName || snap.id); }); } catch {}
+          try { const snaps = await Promise.all(refs.map(r => r.get())); snaps.forEach(snap => { if (snap.exists) warehouseMap.set(snap.id, snap.data().name || snap.data().shortName || snap.id); }); } catch { /* ignore warehouse lookup errors */ }
         }
         const fmtDate = (d) => { try { let dt; if (!d) return ''; if (d.toDate) dt = d.toDate(); else if (typeof d.seconds === 'number') dt = new Date(d.seconds * 1000); else dt = new Date(d); if (!dt || Number.isNaN(dt.getTime())) return ''; const y = dt.getFullYear(); const m = String(dt.getMonth() + 1).padStart(2, '0'); const dd = String(dt.getDate()).padStart(2, '0'); return `${y}-${m}-${dd}`; } catch { return '' } };
         const prodById = new Map(products.map(p => [p.id, p]));
@@ -380,7 +380,7 @@ export const stockAlertsDailyDigest = onSchedule({
                 const fb = await db.doc(`businesses/${businessId}/shelves/${shelfId}`).get();
                 if (fb.exists) { const d = fb.data() || {}; name = d.name || d.shortName || d.title || ''; }
               }
-            } catch(_) { /* noop */ }
+            } catch { /* noop */ }
             if (debug) logger.debug?.('[stockDigest] shelf resolved', { bid: businessId, warehouseId, shelfId, name });
             shelfMap.set(key, name || shelfId);
             return shelfMap.get(key);
@@ -398,7 +398,7 @@ export const stockAlertsDailyDigest = onSchedule({
               const fb = await db.doc(`businesses/${businessId}/rows/${rowId}`).get();
               if (fb.exists) { const d = fb.data() || {}; name = d.name || d.shortName || d.title || ''; }
             }
-          } catch(_) { /* noop */ }
+          } catch { /* noop */ }
           if (debug) logger.debug?.('[stockDigest] row resolved', { bid: businessId, warehouseId, shelfId, rowId, name });
           rowMap.set(key, name || rowId);
           return rowMap.get(key);
@@ -416,7 +416,7 @@ export const stockAlertsDailyDigest = onSchedule({
               const fb = await db.doc(`businesses/${businessId}/segments/${segmentId}`).get();
               if (fb.exists) { const d = fb.data() || {}; name = d.name || d.shortName || d.title || ''; }
             }
-          } catch(_) { /* noop */ }
+          } catch { /* noop */ }
           if (debug) logger.debug?.('[stockDigest] segment resolved', { bid: businessId, warehouseId, shelfId, rowId, segmentId, name });
           segmentMap.set(key, name || segmentId);
           return segmentMap.get(key);
@@ -489,7 +489,7 @@ export const stockAlertsDailyDigest = onSchedule({
         const warehouseMap = new Map();
         if (uniqueWarehouseIds.size) {
           const refs = Array.from(uniqueWarehouseIds).map(id => db.doc(`businesses/${bid}/warehouses/${id}`));
-          try { const snaps = await Promise.all(refs.map(r => r.get())); snaps.forEach(snap => { if (snap.exists) warehouseMap.set(snap.id, snap.data().name || snap.data().shortName || snap.id); }); } catch {}
+          try { const snaps = await Promise.all(refs.map(r => r.get())); snaps.forEach(snap => { if (snap.exists) warehouseMap.set(snap.id, snap.data().name || snap.data().shortName || snap.id); }); } catch { /* ignore warehouse lookup errors */ }
         }
 
         // Caches de niveles inferiores
@@ -506,7 +506,7 @@ export const stockAlertsDailyDigest = onSchedule({
             const snap = await db.doc(`businesses/${businessId}/warehouses/${warehouseId}/shelves/${shelfId}`).get();
             if (snap.exists) { const data = snap.data() || {}; name = data.name || data.shortName || data.title || ''; }
             else { const fb = await db.doc(`businesses/${businessId}/shelves/${shelfId}`).get(); if (fb.exists) { const d = fb.data() || {}; name = d.name || d.shortName || d.title || ''; } }
-          } catch(_) {}
+          } catch { /* noop */ }
           shelfMap.set(key, name || shelfId);
           return shelfMap.get(key);
         }
@@ -520,7 +520,7 @@ export const stockAlertsDailyDigest = onSchedule({
             const snap = await db.doc(`businesses/${businessId}/warehouses/${warehouseId}/shelves/${shelfId}/rows/${rowId}`).get();
             if (snap.exists) { const data = snap.data() || {}; name = data.name || data.shortName || data.title || ''; }
             else { const fb = await db.doc(`businesses/${businessId}/rows/${rowId}`).get(); if (fb.exists) { const d = fb.data() || {}; name = d.name || d.shortName || d.title || ''; } }
-          } catch(_) {}
+          } catch { /* noop */ }
           rowMap.set(key, name || rowId);
           return rowMap.get(key);
         }
@@ -534,7 +534,7 @@ export const stockAlertsDailyDigest = onSchedule({
             const snap = await db.doc(`businesses/${businessId}/warehouses/${warehouseId}/shelves/${shelfId}/rows/${rowId}/segments/${segmentId}`).get();
             if (snap.exists) { const data = snap.data() || {}; name = data.name || data.shortName || data.title || ''; }
             else { const fb = await db.doc(`businesses/${businessId}/segments/${segmentId}`).get(); if (fb.exists) { const d = fb.data() || {}; name = d.name || d.shortName || d.title || ''; } }
-          } catch(_) {}
+          } catch { /* noop */ }
           segmentMap.set(key, name || segmentId);
           return segmentMap.get(key);
         }
@@ -586,14 +586,14 @@ export const stockAlertsDailyDigest = onSchedule({
     const [link] = await file.getSignedUrl({ action: 'read', expires: Date.now() + 1000 * 60 * 60 * 48 });
 
     const subject = `${subjectBase} - ${strictRows.length} items`;
-    const tr = strictRows.map(r => `<tr><td>${r.productName}</td><td>${r.batchNo || '-'}</td><td>${r.exp || '-'}</td><td>${r.location || '-'}</td><td style=\"text-align:right\">${r.qty}</td></tr>`).join('');
+    const tr = strictRows.map(r => `<tr><td>${r.productName}</td><td>${r.batchNo || '-'}</td><td>${r.exp || '-'}</td><td>${r.location || '-'}</td><td style="text-align:right">${r.qty}</td></tr>`).join('');
     // Sección adicional: próximos a vencer (<= 3 meses)
     const expRows = await buildExpiringSoonRows();
-    const expTr = (expRows || []).map(r => `<tr><td>${r.productName}</td><td>${r.batchNo || '-'}</td><td>${r.exp || '-'}</td><td>${r.location || '-'}</td><td style=\"text-align:right\">${r.qty}</td></tr>`).join('');
+    const expTr = (expRows || []).map(r => `<tr><td>${r.productName}</td><td>${r.batchNo || '-'}</td><td>${r.exp || '-'}</td><td>${r.location || '-'}</td><td style="text-align:right">${r.qty}</td></tr>`).join('');
     const expSection = (expRows && expRows.length)
-      ? `\n      <h3 style=\"margin:16px 0 8px\">Proximos a vencer (<= 3 meses)</h3>\n      <table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse;font-family:Arial, sans-serif;font-size:13px;\">\n        <thead>\n          <tr style=\"background:#f2f2f2\"><th>Producto</th><th>Lote</th><th>Vencimiento</th><th>Ubicacion</th><th>Cantidad</th></tr>\n        </thead>\n        <tbody>${expTr}</tbody>\n      </table>`
-      : `\n      <h3 style=\"margin:16px 0 8px\">Proximos a vencer (<= 3 meses)</h3>\n      <p style=\"font-size:13px;color:#555\">No hay productos con vencimiento dentro de los proximos 90 dias.</p>`;
-    const html = `\n      <h2>Stock crítico (estricto) — ${businessName}</h2>\n      <p>Umbral crítico: ${critical}</p>\n      <p><a href=\"${link}\" target=\"_blank\" rel=\"noopener\">Descargar Excel</a></p>\n      <table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse;font-family:Arial, sans-serif;font-size:13px;\">\n        <thead>\n          <tr style=\"background:#f2f2f2\"><th>Producto</th><th>Lote</th><th>Vencimiento</th><th>Ubicación</th><th>Cantidad</th></tr>\n        </thead>\n        <tbody>${tr}</tbody>\n      </table>\n      <p style=\"font-size:11px;color:#555\">Generado: ${new Date().toLocaleString('es-DO', { hour12:false })}</p>\n    `;
+      ? `\n      <h3 style="margin:16px 0 8px">Proximos a vencer (<= 3 meses)</h3>\n      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial, sans-serif;font-size:13px;">\n        <thead>\n          <tr style="background:#f2f2f2"><th>Producto</th><th>Lote</th><th>Vencimiento</th><th>Ubicacion</th><th>Cantidad</th></tr>\n        </thead>\n        <tbody>${expTr}</tbody>\n      </table>`
+      : `\n      <h3 style="margin:16px 0 8px">Proximos a vencer (<= 3 meses)</h3>\n      <p style="font-size:13px;color:#555">No hay productos con vencimiento dentro de los proximos 90 dias.</p>`;
+    const html = `\n      <h2>Stock crítico (estricto) — ${businessName}</h2>\n      <p>Umbral crítico: ${critical}</p>\n      <p><a href="${link}" target="_blank" rel="noopener">Descargar Excel</a></p>\n      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial, sans-serif;font-size:13px;">\n        <thead>\n          <tr style="background:#f2f2f2"><th>Producto</th><th>Lote</th><th>Vencimiento</th><th>Ubicación</th><th>Cantidad</th></tr>\n        </thead>\n        <tbody>${tr}</tbody>\n      </table>\n      <p style="font-size:11px;color:#555">Generado: ${new Date().toLocaleString('es-DO', { hour12:false })}</p>\n    `;
     const text = `Stock crítico (estricto) — ${businessName}\\nItems: ${strictRows.length}`;
 
     try {

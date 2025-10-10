@@ -1,5 +1,6 @@
-import React from 'react'
 import * as ant from 'antd'
+import React from 'react'
+
 const { Card, Space, Input, Form } = ant
 export const QRCode = ({ product }) => {
     return (

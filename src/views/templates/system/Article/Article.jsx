@@ -1,7 +1,9 @@
-import styled from "styled-components";
-import Typography from "../Typografy/Typografy";
-import Section from "./Section";
 import PropTypes from 'prop-types';
+import styled from "styled-components";
+
+import Typography from "../Typografy/Typografy";
+
+import Section from "./Section";
 
 const Article = ({ title, sections, }) => {
     return (

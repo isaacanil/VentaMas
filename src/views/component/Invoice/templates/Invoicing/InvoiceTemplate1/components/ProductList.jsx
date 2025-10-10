@@ -1,14 +1,15 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
+
+import { SelectSettingCart } from '../../../../../../../features/cart/cartSlice'
 import { separator } from '../../../../../../../hooks/separator'
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
+import { getTax, getTotalPrice, resetAmountToBuyForProduct, getProductIndividualDiscount } from '../../../../../../../utils/pricing'
+import { convertTimeToSpanish } from '../../../../../../component/modals/ProductForm/components/sections/WarrantyInfo'
+
 import { Col } from './Table/Col'
 import { Row } from './Table/Row'
-import { getPriceTotal, getTax, getTotal, getTotalPrice, resetAmountToBuyForProduct, getProductIndividualDiscount } from '../../../../../../../utils/pricing'
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { useDispatch, useSelector } from 'react-redux'
-import { SelectSettingCart, selectInsuranceEnabled } from '../../../../../../../features/cart/cartSlice'
-import { convertTimeToSpanish } from '../../../../../../component/modals/ProductForm/components/sections/WarrantyInfo'
-import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'
 
 export const ProductList = ({ data }) => {
     const { products, NCF } = data

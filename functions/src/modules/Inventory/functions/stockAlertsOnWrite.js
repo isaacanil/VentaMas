@@ -54,8 +54,9 @@
 //   - Guardar log en collection `stockAlertLogs` para auditoría.
 // =============================================================
 
-import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { logger } from 'firebase-functions';
+import { onDocumentWritten } from 'firebase-functions/v2/firestore';
+
 import { db, FieldValue } from '../../../core/config/firebase.js';
 import { sendMail } from '../../../core/config/mailer.js';
 

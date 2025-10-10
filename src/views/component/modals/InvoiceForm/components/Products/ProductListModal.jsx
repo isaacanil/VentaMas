@@ -1,7 +1,9 @@
-import React from 'react';
 import * as antd  from 'antd';
-import { getTotalPrice } from '../../../../../../utils/pricing';
+import React from 'react';
+
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import { getTotalPrice } from '../../../../../../utils/pricing';
+
 const { Modal, Table, Button } = antd;
 
 export const ProductListModal = ({ isVisible, onClose, products, onAddProduct }) => {

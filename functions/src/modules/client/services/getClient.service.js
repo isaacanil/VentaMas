@@ -1,4 +1,5 @@
 import { https, logger } from "firebase-functions";
+
 import { db } from "../../../core/config/firebase.js";
 
 /**

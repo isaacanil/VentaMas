@@ -1,14 +1,16 @@
 import React, { forwardRef } from 'react'
-import { InfoItem, ReceiptComponent, Subtitle } from '../../Style'
-import { Header } from '../../components/Header/Header'
 import styled from 'styled-components';
-import { Line } from '../../Receipt';
-import { Row } from '../../components/Table/Row';
-import { PaymentArea } from './components/PaymentArea'
-import { GeneralBalance } from './components/GeneralBalance';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+
 import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import { Header } from '../../components/Header/Header'
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
+import { Row } from '../../components/Table/Row';
+import { Line } from '../../Receipt';
+import { InfoItem, ReceiptComponent, Subtitle } from '../../Style'
+
+import { GeneralBalance } from './components/GeneralBalance';
+import { PaymentArea } from './components/PaymentArea'
 
 export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
   const statusSpanish = {

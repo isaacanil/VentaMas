@@ -1,13 +1,18 @@
 
 
-import React, { useRef, useState } from 'react';
 import * as antd from 'antd';
+import React, { useRef, useState } from 'react';
+
 const { Modal, Input, Button, Form, Checkbox, Spin } = antd;
-import { SelectBarcodePrintModal, toggleBarcodeModal } from '../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
 import { useDispatch, useSelector } from 'react-redux'
+
+import { SelectBarcodePrintModal, toggleBarcodeModal } from '../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
+
 import { BarCode } from './Barcode';
+
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+
 export const BarcodePrintModal = () => {
     const { isOpen, product } = useSelector(SelectBarcodePrintModal)
     const [loading, setLoading] = useState(false)

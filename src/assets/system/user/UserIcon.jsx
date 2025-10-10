@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Style from './UserIcon.module.scss'
+
 export const UserIcon = () => {
   return (
     <div>

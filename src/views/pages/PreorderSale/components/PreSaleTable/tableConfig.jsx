@@ -1,23 +1,31 @@
-import { getTimeElapsed } from "../../../../../hooks/useFormatTime";
-import { Tag } from "../../../../templates/system/Tag/Tag";
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { useDispatch, useSelector } from "react-redux";
+import { EyeOutlined, MoreOutlined, PrinterOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import * as antd from "antd";
 import { useState, useCallback, useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
-import { EyeOutlined, MoreOutlined, PrinterOutlined, ShoppingCartOutlined } from "@ant-design/icons";
-import { selectUser } from "../../../../../features/auth/userSlice";
-import * as antd from "antd";
+
 import { icons } from "../../../../../constants/icons/icons";
-import { loadCart, setCartId, toggleInvoicePanelOpen, SelectSettingCart } from "../../../../../features/cart/cartSlice";
-import { selectClientWithAuth } from "../../../../../features/clientCart/clientCartSlice";
-import { validateInvoiceCart } from "../../../../../utils/invoiceValidation";
-import { ConfirmModal } from "../../../../component/modals/ConfirmModal/ConfirmModal";
-import { fbCancelPreorder } from "../../../../../firebase/invoices/fbCancelPreorder";
-import PreorderModal from "../../../../component/modals/PreorderModal/PreorderModal";
-import { Invoice } from "../../../../component/Invoice/components/Invoice/Invoice";
-import { downloadInvoiceLetterPdf } from "../../../../../firebase/quotation/downloadQuotationPDF";
 import { selectBusinessData } from "../../../../../features/auth/businessSlice";
+import { selectUser } from "../../../../../features/auth/userSlice";
+import { loadCart, setCartId, toggleInvoicePanelOpen, SelectSettingCart } from "../../../../../features/cart/cartSlice";
+import { selectTaxReceiptType } from "../../../../../features/taxReceipt/taxReceiptSlice";
+import { selectClientWithAuth } from "../../../../../features/clientCart/clientCartSlice";
+import { fbCancelPreorder } from "../../../../../firebase/invoices/fbCancelPreorder";
+import { downloadInvoiceLetterPdf } from "../../../../../firebase/quotation/downloadQuotationPDF";
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
+import { getTimeElapsed } from "../../../../../hooks/useFormatTime";
+import { validateInvoiceCart } from "../../../../../utils/invoiceValidation";
+import { Invoice } from "../../../../component/Invoice/components/Invoice/Invoice";
+import { ConfirmModal } from "../../../../component/modals/ConfirmModal/ConfirmModal";
+import PreorderModal from "../../../../component/modals/PreorderModal/PreorderModal";
+import { Tag } from "../../../../templates/system/Tag/Tag";
+
+const resolvePreorderTaxReceiptType = (preorder) =>
+    preorder?.selectedTaxReceiptType ??
+    preorder?.preorderDetails?.selectedTaxReceiptType ??
+    preorder?.preorderDetails?.taxReceipt?.type ??
+    null;
 
 // Cell renderer components to avoid hook violations
 const PriceCell = ({ value }) => {
@@ -155,6 +163,10 @@ const EditButton = ({ value }) => {
 
         dispatch(loadCart(serializedPreorder));
         dispatch(setCartId());
+        const storedTaxReceiptType = resolvePreorderTaxReceiptType(serializedPreorder);
+        if (storedTaxReceiptType) {
+            dispatch(selectTaxReceiptType(storedTaxReceiptType));
+        }
 
         if (serializedPreorder?.client) {
             dispatch(selectClientWithAuth(serializedPreorder.client));
@@ -165,6 +177,7 @@ const EditButton = ({ value }) => {
         if (serializedPreorder?.id) {
             params.set('preorderId', serializedPreorder.id);
         }
+        params.set('preserveCart', '1');
 
         navigate({ pathname: '/sales', search: `?${params.toString()}` });
 
@@ -189,9 +202,13 @@ const EditButton = ({ value }) => {
     const handleInvoicePanelOpen = () => {
         const { isValid, message } = validateInvoiceCart(data);
         if (isValid) {
-            dispatch(toggleInvoicePanelOpen());
             dispatch(loadCart(data));
             dispatch(setCartId());
+            const storedTaxReceiptType = resolvePreorderTaxReceiptType(data);
+            if (storedTaxReceiptType) {
+                dispatch(selectTaxReceiptType(storedTaxReceiptType));
+            }
+            dispatch(toggleInvoicePanelOpen());
         } else {
             antd.notification.error({
                 description: message

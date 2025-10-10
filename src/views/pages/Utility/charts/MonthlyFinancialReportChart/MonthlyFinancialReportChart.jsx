@@ -1,5 +1,3 @@
-import React, { useEffect, useRef } from 'react'
-import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -10,11 +8,14 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
-import { getTotalSalesPerMonth, getTotalExpensesPerMonth } from './utils.js';
-
+import React, { useEffect, useRef } from 'react'
+import { Line } from 'react-chartjs-2';
 import styled from 'styled-components';
-import Typography from '../../../../templates/system/Typografy/Typografy.jsx';
+
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice.js';
+import Typography from '../../../../templates/system/Typografy/Typografy.jsx';
+
+import { getTotalSalesPerMonth, getTotalExpensesPerMonth } from './utils.js';
 
 ChartJS.register(
     CategoryScale,

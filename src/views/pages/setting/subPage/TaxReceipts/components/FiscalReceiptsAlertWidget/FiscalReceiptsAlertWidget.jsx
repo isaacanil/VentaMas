@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Drawer, Button } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
+import { Drawer, Button } from 'antd';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+
 import FiscalReceiptsAlertSettings from '../FiscalReceiptsAlertSettings/FiscalReceiptsAlertSettings';
 
 /**

@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import styled from 'styled-components';
-import { nanoid } from 'nanoid';
-import { Button as AntButton, Input as AntInput, Switch as AntSwitch } from 'antd';
 import { faPlus, faPencilAlt, faTrashAlt, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button as AntButton, Input as AntInput, Switch as AntSwitch } from 'antd';
+import { nanoid } from 'nanoid';
+import { useState } from 'react';
+import styled from 'styled-components';
 
 // Styled Components Definitions
 const Container = styled.div`

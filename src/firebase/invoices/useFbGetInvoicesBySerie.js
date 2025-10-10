@@ -1,10 +1,10 @@
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 
 import { selectUser } from "../../features/auth/userSlice";
-import { db } from "../firebaseconfig";
 import { validateUser } from "../../utils/userValidation";
+import { db } from "../firebaseconfig";
 
 const getSerieBounds = (serie) => {
   if (!serie) return null;

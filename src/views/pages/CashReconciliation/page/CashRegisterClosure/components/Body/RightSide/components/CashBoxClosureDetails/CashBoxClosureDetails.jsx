@@ -1,10 +1,11 @@
-import styled from 'styled-components'
-import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel'
-import { useSelector } from 'react-redux'
-import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice'
-import { CashCountMetaData } from '../../CashCountMetaData'
 import { Spin } from 'antd'
+import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { useFormatNumber } from '../../../../../../../../../../hooks/useFormatNumber'
+import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel'
+import { CashCountMetaData } from '../../CashCountMetaData'
 
 export const CashBoxClosureDetails = ({ invoices, loading, expenses = [], expensesLoading = false }) => {
   const cashCount = useSelector(selectCashCount)

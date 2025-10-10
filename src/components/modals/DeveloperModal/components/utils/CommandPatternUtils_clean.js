@@ -2,8 +2,8 @@
  * Command Pattern Utilities
  * Simplifica la implementación de handlers reduciendo código repetitivo
  */
-import { ValidationUtils } from './ValidationUtils';
 import { OutputUtils } from './OutputUtils';
+import { ValidationUtils } from './ValidationUtils';
 
 export class CommandPatternUtils {
   
@@ -138,7 +138,7 @@ export class CommandPatternUtils {
    */
   static handleToggleCommand(setting, getCurrentState, toggleFunction, addOutput, messages) {
     try {
-      const currentState = getCurrentState();
+      
       const newState = toggleFunction();
       
       const message = newState 

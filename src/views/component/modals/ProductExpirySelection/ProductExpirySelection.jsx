@@ -1,11 +1,12 @@
 import { Modal, Button, Spin } from 'antd';
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { clearProductExpirySelector, selectModalOpen, selectProductId, setModalOpen, updateInventory, } from '../../../../features/warehouse/productExpirySelectionSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import InventoryCard from './components/InventoryCard';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../features/auth/userSlice';
-import { fetchAllInventoryData, useGetAllInventoryData } from './fbFetchAllInventoryData';
+import { clearProductExpirySelector, selectModalOpen, selectProductId, setModalOpen, } from '../../../../features/warehouse/productExpirySelectionSlice';
+
+import InventoryCard from './components/InventoryCard';
+import { useGetAllInventoryData } from './fbFetchAllInventoryData';
 
 const StyledPageContainer = styled.div`
   padding: 20px;

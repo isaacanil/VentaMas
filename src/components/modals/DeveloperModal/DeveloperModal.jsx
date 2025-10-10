@@ -4,16 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 // Redux
-import { toggleDeveloperModal, SelectDeveloperModal } from '../../../features/modals/modalSlice';
-import { selectUser, selectIsTemporaryMode, selectOriginalBusinessId, selectIsTemporaryRoleMode, selectOriginalRole } from '../../../features/auth/userSlice';
 import { selectAppMode } from '../../../features/appModes/appModeSlice';
+import { selectUser, selectIsTemporaryMode, selectOriginalBusinessId, selectIsTemporaryRoleMode, selectOriginalRole } from '../../../features/auth/userSlice';
+import { toggleDeveloperModal, SelectDeveloperModal } from '../../../features/modals/modalSlice';
 
 // Componentes
-import { Modal } from './components/Modal';
-import { Header } from './components/Header';
-import Console from './components/Console';
-import SelectionMode from './components/SelectionMode';
 import CommandProcessor from './components/CommandProcessor';
+import Console from './components/Console';
+import { Header } from './components/Header';
+import { Modal } from './components/Modal';
+import SelectionMode from './components/SelectionMode';
 
 /**
  * Modal de desarrollador con consola de comandos

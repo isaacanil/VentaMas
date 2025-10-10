@@ -1,8 +1,9 @@
+import { message, Checkbox } from 'antd';
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { message, Checkbox } from 'antd';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';

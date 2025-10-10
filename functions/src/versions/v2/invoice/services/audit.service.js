@@ -15,7 +15,7 @@ export function auditTx(tx, { businessId, invoiceId, event, level = 'info', data
       data: sanitize(data),
       at: FieldValue.serverTimestamp(),
     });
-  } catch (_) {
+  } catch {
     // ignore audit failures inside tx to not break business flow
   }
 }
@@ -31,7 +31,7 @@ export async function auditSafe({ businessId, invoiceId, event, level = 'info', 
       data: sanitize(data),
       at: FieldValue.serverTimestamp(),
     });
-  } catch (_) {
+  } catch {
     // swallow
   }
 }

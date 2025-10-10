@@ -1,9 +1,10 @@
-import { Timestamp, doc, getDoc, setDoc, updateDoc, serverTimestamp, writeBatch } from "firebase/firestore";
-import { db } from "../firebaseconfig";
+import { Timestamp, doc, setDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { nanoid } from "nanoid";
-import { getNextID } from "../Tools/getNextID";
+
+import { db } from "../firebaseconfig";
 import { fbUploadFiles } from "../img/fbUploadFileAndGetURL";
 import { safeTimestamp, updateLocalAttachmentsWithRemoteURLs } from "../purchase/fbAddPurchase";
+import { getNextID } from "../Tools/getNextID";
 
 export const fbAddOrder = async (user, value, fileList = []) => {
     try {

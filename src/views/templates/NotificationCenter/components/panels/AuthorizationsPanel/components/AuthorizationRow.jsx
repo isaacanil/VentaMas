@@ -1,4 +1,3 @@
-import { Button } from 'antd';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -6,9 +5,11 @@ import {
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import styled from 'styled-components';
+import { Button } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import styled from 'styled-components';
+
 import 'dayjs/locale/es';
 import { resolveModuleMeta } from '../../../../../../pages/Authorizations/components/AuthorizationRequests/utils/utils';
 

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle, faCheckCircle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { removeNotification, selectCurrentNotification } from '../../../../features/notification/notificationSlice';
-import { motion } from 'framer-motion';
-import { Button } from '../Button/Button';
+
 import { icons } from '../../../../constants/icons/icons';
+import { removeNotification, selectCurrentNotification } from '../../../../features/notification/notificationSlice';
+import { Button } from '../Button/Button';
 
 const getTimerByType = (type) => {
     switch (type) {

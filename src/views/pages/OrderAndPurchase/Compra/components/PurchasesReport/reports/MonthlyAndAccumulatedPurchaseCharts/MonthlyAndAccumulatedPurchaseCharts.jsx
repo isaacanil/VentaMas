@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { accumulatePurchaseData } from './utils/accumulatePurchaseData';
-import TotalAccumulatedPurchaseChart from './charts/TotalAccumulatedPurchasesChart';
-import MonthlyPurchasesChart from './charts/MonthlyPurchasesChart';
-import { options } from './chartOptions';
+
 import Typography from '../../../../../../../templates/system/Typografy/Typografy';
+
+import { options } from './chartOptions';
+import MonthlyPurchasesChart from './charts/MonthlyPurchasesChart';
+import TotalAccumulatedPurchaseChart from './charts/TotalAccumulatedPurchasesChart';
+import { accumulatePurchaseData } from './utils/accumulatePurchaseData';
+
 
 export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }) => {
     if (!purchases || !Array.isArray(purchases)) {

@@ -1,6 +1,7 @@
-import { useSelector } from 'react-redux';
-import { selectAbilities, selectAbilitiesLoading } from '../../features/abilities/abilitiesSlice';
 import { PureAbility } from '@casl/ability';
+import { useSelector } from 'react-redux';
+
+import { selectAbilities, selectAbilitiesLoading } from '../../features/abilities/abilitiesSlice';
 
 /**
  * Hook mejorado para usar permisos de usuario

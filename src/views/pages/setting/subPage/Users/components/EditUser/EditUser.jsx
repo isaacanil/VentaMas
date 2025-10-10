@@ -1,18 +1,20 @@
 import { Fragment, useState } from 'react'
-import styled from 'styled-components'
-import { InputV4 } from '../../../../../../templates/system/Inputs/GeneralInput/InputV4'
-import ElemLabel from '../../../../../../templates/system/ElemLabel/ElemLabel'
-import { icons } from '../../../../../../../constants/icons/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
-import { ErrorComponent } from '../../../../../../templates/system/ErrorComponent/ErrorComponent'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../../../constants/icons/icons'
 import { clear, selectUserManager, setErrors, updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
-import { ChangePassword } from './ChangePassword/ChangePassword'
-import { Select } from '../../../../../../templates/system/Select/Select'
 import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
-import DynamicPermissionsManager from '../DynamicPermissionsManager'
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
+import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
+import ElemLabel from '../../../../../../templates/system/ElemLabel/ElemLabel'
+import { ErrorComponent } from '../../../../../../templates/system/ErrorComponent/ErrorComponent'
+import { InputV4 } from '../../../../../../templates/system/Inputs/GeneralInput/InputV4'
+import { Select } from '../../../../../../templates/system/Select/Select'
+import DynamicPermissionsManager from '../DynamicPermissionsManager'
+
+import { ChangePassword } from './ChangePassword/ChangePassword'
 
 const formIcon = icons.forms
 

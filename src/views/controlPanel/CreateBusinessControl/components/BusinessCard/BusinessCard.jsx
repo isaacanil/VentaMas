@@ -1,9 +1,9 @@
-import styled from "styled-components"
-import { useMemo } from "react"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit, faMapMarkerAlt, faPhone, faIdCard, faCalendarAlt } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Tooltip } from 'antd'
 import { DateTime } from "luxon"
+import { useMemo } from "react"
+import styled from "styled-components"
 
 export const BusinessCard = ({ business, onEditBusiness }) => {
     // Función para formatear el tiempo transcurrido desde la creación

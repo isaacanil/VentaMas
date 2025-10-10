@@ -1,5 +1,5 @@
-import { collection, doc, onSnapshot, query, where } from 'firebase/firestore'
-import React from 'react'
+import { collection, onSnapshot, query, where } from 'firebase/firestore'
+
 import { db } from '../firebaseconfig'
 
 export const fbGetClientAccountsReceivable = ({ user, clientId, onUpdate }) => {

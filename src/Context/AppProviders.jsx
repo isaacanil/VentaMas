@@ -2,6 +2,7 @@
 // Importa otros proveedores aquí
 
 import ThemeColorProvider from "../theme/ThemeProvider";
+
 import { CategoryProvider } from "./CategoryContext/CategoryContext";
 import { DialogProvider } from "./Dialog/DialogContext";
 

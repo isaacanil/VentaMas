@@ -1,8 +1,7 @@
-import { InvoicesPage } from '../../views/pages/InvoicesPage/InvoicesPage';
-import { Sales } from '../../views/pages/Venta/Ventas';
 import { CashReconciliation } from '../../views/pages/CashReconciliation/CashReconciliation';
+import { InvoicesPage } from '../../views/pages/InvoicesPage/InvoicesPage';
 import { Preorder } from '../../views/pages/PreorderSale/PreorderSale';
-
+import { Sales } from '../../views/pages/Venta/Ventas';
 import ROUTES_NAME from '../routesName';
 
 const { SALES, BILLS, CASH_RECONCILIATION, PREORDERS } = ROUTES_NAME.SALES_TERM;

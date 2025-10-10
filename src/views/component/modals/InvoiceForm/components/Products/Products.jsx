@@ -1,15 +1,18 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import { Product } from './components/Product/Product'
 import * as antd from 'antd'
+import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { addProductInvoiceForm, changeAmountToBuyProduct, deleteProductInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice'
+import styled from 'styled-components'
+
 import { icons } from '../../../../../../constants/icons/icons'
+import { addProductInvoiceForm, changeAmountToBuyProduct, deleteProductInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
-import { ProductListModal } from './ProductListModal'
+
 const { Button, Input, Table } = antd
 import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
 import { getTotalPrice } from '../../../../../../utils/pricing'
+
+import { ProductListModal } from './ProductListModal'
+
 export const Products = ({ invoice }) => {
     const dispatch = useDispatch()
     const [isProductListModalVisible, setProductListModalVisible] = useState(false)

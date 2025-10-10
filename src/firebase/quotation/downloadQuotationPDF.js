@@ -1,8 +1,9 @@
 import { httpsCallable } from "firebase/functions"
-import { functions } from "../firebaseconfig"
-import { printPdfBase64 } from '../../utils/printPdf';
-// import { generateInvoiceLetterPdf, generateInvoiceLetterPdfNoLogo } from "../../pdf/invoices/templates/template2-pdf-lib/InvoiceLetterPdf";
+
 import { generateInvoiceLetterPdf } from "../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf";
+import { printPdfBase64 } from '../../utils/printPdf';
+import { functions } from "../firebaseconfig"
+// import { generateInvoiceLetterPdf, generateInvoiceLetterPdfNoLogo } from "../../pdf/invoices/templates/template2-pdf-lib/InvoiceLetterPdf";
 
 export function sanitizeNumbers(obj) {
   return JSON.parse(JSON.stringify(obj, (k, v) =>

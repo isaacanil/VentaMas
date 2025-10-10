@@ -1,18 +1,17 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useRef, useState } from 'react'
-import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { setAccountPayment } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import { selectClient, setClient } from '../../../../../features/clientCart/clientCartSlice'
+import { useClientPendingBalance } from '../../../../../firebase/accountsReceivable/useClientPendingBalance'
+import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
+import  useInsuranceEnabled  from '../../../../../hooks/useInsuranceEnabled'
 import { updateObject } from '../../../../../utils/object/updateObject'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
-import { AnimatePresence, motion } from 'framer-motion'
-import { usePendingBalance } from '../../../../../firebase/accountsReceivable/fbGetPendingBalance'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { setAccountPayment } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
-import  useInsuranceEnabled  from '../../../../../hooks/useInsuranceEnabled'
-import { setAR } from '../../../../../features/accountsReceivable/accountsReceivableSlice'
-import { useClientPendingBalance } from '../../../../../firebase/accountsReceivable/useClientPendingBalance'
 
 export const ClientDetails = ({ mode }) => {
     const dispatch = useDispatch()

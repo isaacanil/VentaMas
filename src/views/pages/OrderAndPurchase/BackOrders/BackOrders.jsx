@@ -1,17 +1,19 @@
-import React, { useState, useMemo } from 'react';
-import styled from 'styled-components';
 import { Spin, Empty, message } from 'antd';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { useEnrichedBackOrders, updateBackOrder } from '../../../../firebase/warehouse/backOrderService';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../features/auth/userSlice';
 import { AnimatePresence } from 'framer-motion';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import React, { useState, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectUser } from '../../../../features/auth/userSlice';
+import { useEnrichedBackOrders, updateBackOrder } from '../../../../firebase/warehouse/backOrderService';
 import InventoryMenu from '../../../pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+
+import FulfillModal from './components/FulfillModal';
 import Header from './components/Header';
 import ProductGroup from './components/ProductGroup';
-import FulfillModal from './components/FulfillModal';
 
 const Container = styled.div`
   height: 100vh;

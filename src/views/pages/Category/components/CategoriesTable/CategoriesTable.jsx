@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { OrderItem } from '../ListItem/OrderItem'
+
 import { useFbGetCategories } from '../../../../../firebase/categories/useFbGetCategories'
 import { filterData } from '../../../../../hooks/search/useSearch'
+import { OrderItem } from '../ListItem/OrderItem'
 
 export const CategoriesTable = ({searchTerm}) => {
 

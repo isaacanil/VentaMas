@@ -1,6 +1,6 @@
-import React from 'react';
-import * as antd from 'antd';
 import { FilePdfOutlined, FileImageOutlined, FileOutlined } from '@ant-design/icons';
+import * as antd from 'antd';
+import React from 'react';
 import styled from 'styled-components';
 
 const { Image, Card } = antd;

@@ -1,16 +1,21 @@
+import * as  ant from 'antd';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import * as  ant from 'antd';
+
 const { Upload, Button, message, Typography, Progress } = ant;
 import { ArrowLeftOutlined, InboxOutlined, PictureOutlined, DeleteOutlined } from '@ant-design/icons';
-import noImg from '../../../../../assets/producto/noimg.png';
+
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { ChangeProductImage, selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice';
 import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg';
 import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData';
-import { selectUser } from '../../../../../features/auth/userSlice';
+
 import { useDispatch, useSelector } from 'react-redux';
+
 import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg';
+
 import { Gallery } from './components/Gallery';
-import { ChangeProductImage, selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice';
+
 
 const Container = styled.div`
   display: flex;

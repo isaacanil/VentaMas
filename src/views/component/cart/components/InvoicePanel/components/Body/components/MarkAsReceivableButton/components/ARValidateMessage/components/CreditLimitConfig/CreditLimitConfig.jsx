@@ -1,5 +1,5 @@
+import { Modal, Form, InputNumber, Switch, Button, Typography } from 'antd';
 import { useState } from 'react';
-import { Modal, Form, InputNumber, Switch, Button, Space, Typography } from 'antd';
 
 const { Text } = Typography;
 

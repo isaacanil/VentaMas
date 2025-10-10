@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+
 import { deleteIngredientTypePizza } from '../../../../../firebase/firebaseconfig.jsx'
 import { ButtonGroup } from '../../Button/ButtonGroup'
 import { DeleteButton } from '../../Button/DeleteButton'

@@ -1,8 +1,11 @@
 import styled, { css } from "styled-components";
-import { variants } from "./variants";
+
+import { getFontSize } from "../../../../../helper/styleHelper";
+
 import { colors } from "./colors"
 import { fontSize } from "./fontSize"
-import { getFontSize } from "../../../../../helper/styleHelper";
+import { variants } from "./variants";
+
 
 const variantToSizeMap = {
   app: {

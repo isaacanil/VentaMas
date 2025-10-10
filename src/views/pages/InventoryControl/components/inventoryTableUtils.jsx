@@ -1,6 +1,6 @@
+import { Tag, Tooltip } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Tag, Tooltip } from 'antd';
 
 // ===== Formatting Helpers =====
 export function formatNumber(n) {

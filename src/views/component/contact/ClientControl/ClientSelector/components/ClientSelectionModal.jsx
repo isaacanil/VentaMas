@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 
 const GlobalStyle = createGlobalStyle`

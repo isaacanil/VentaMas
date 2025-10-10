@@ -1,7 +1,7 @@
+import { Button } from 'antd';
+import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { Button } from 'antd';
 // Removed per-item BackorderCard view in favor of compact summaries
 
 const ProductGroupContainer = styled(motion.div)`

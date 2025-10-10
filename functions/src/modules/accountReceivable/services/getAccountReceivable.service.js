@@ -1,5 +1,6 @@
 // src/accountsReceivable/utils/receivableAccountQueries.js
 import { https } from 'firebase-functions';
+
 import { db } from '../../../core/config/firebase.js';
 import { getNextIDTransactionalSnap } from '../../../core/utils/getNextID.js';
 import { getInsurance } from '../../insurance/services/insurance.service.js';
@@ -51,7 +52,7 @@ export default receivableQueries;
  * @param {Array<{ id:string; installmentIds?:string[] }>} accountsReceivable
  * @returns {Promise<Array<{ ar:object; arSnap:DocumentSnapshot; installmentSnaps:FirebaseFirestore.DocumentSnapshot[] }>>}
  */
-export async function collectReceivablePrereqs(tx, { user, accountsReceivable, insuranceId }) {
+export async function collectReceivablePrereqs(tx, { user, insuranceId }) {
 
   const accountReceivableNextIDSnap = await getNextIDTransactionalSnap(tx, user, 'lastAccountReceivableId');
   const insurance = getInsurance(tx, {user, insuranceId});

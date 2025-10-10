@@ -1,17 +1,19 @@
-import { Form, Input, InputNumber, DatePicker, Statistic, Button, message, Tooltip } from 'antd';
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { icons } from '../../../../../constants/icons/icons';
-import { SelectProduct, selectProductSelected, setSelectedBackOrders, setPurchaseQuantity, clearSelectedBackOrders, selectOrder } from '../../../../../features/addOrder/addOrderSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import ProductModal from './ProductModal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Form, InputNumber, Statistic, Button, message, Tooltip } from 'antd';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
+import { icons } from '../../../../../constants/icons/icons';
+import { SelectProduct, selectProductSelected, setSelectedBackOrders, clearSelectedBackOrders, selectOrder } from '../../../../../features/addOrder/addOrderSlice';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
 import { formatMoney } from '../../../../../utils/formatters';
 import BackOrdersModal from '../../PurchaseManagement/components/BackOrdersModal';
-import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
-import { selectUser } from '../../../../../features/auth/userSlice';
+
+import ProductModal from './ProductModal';
+
 
 function AddProductForm({ onSave, onClear, mode }) {
     const dispatch = useDispatch();

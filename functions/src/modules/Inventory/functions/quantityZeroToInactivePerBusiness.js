@@ -8,9 +8,10 @@
 // - Para queries con quantity <= 0 (INCLUDE_NEGATIVES=true): el compuesto anterior es imprescindible por la desigualdad.
 // Repite el índice para cada collection group usado (batches, productsStock).
 
-import { db, FieldValue } from '../../../core/config/firebase.js'
-import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { logger } from 'firebase-functions'
+import { onSchedule } from 'firebase-functions/v2/scheduler'
+
+import { db, FieldValue } from '../../../core/config/firebase.js'
 
 // ==== CONFIGURACIÓN ====
 const TIME_ZONE = process.env.QUANTITY_CRON_TIME_ZONE || 'America/Santo_Domingo'
@@ -105,7 +106,7 @@ export const quantityZeroToInactivePerBusiness = onSchedule(
       return false
     })
 
-    writer.onWriteResult((ref /*, result*/) => {
+  writer.onWriteResult(() => {
       // Cuenta escrituras confirmadas por Firestore
       if (!DRY_RUN) updatedOkTotal++
     })

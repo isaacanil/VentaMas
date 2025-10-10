@@ -1,33 +1,32 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWarehouse, faBoxes } from '@fortawesome/free-solid-svg-icons';
-import styled from "styled-components";
 import { faPlus, faEdit, faTrash, faEllipsisH } from "@fortawesome/free-solid-svg-icons";
-import Tree from "../../../../../../component/tree/Tree";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  selectWarehouse,
-} from "../../../../../../../features/warehouse/warehouseSlice";
-import { openShelfForm } from "../../../../../../../features/warehouse/shelfModalSlice";
-import { openRowShelfForm } from "../../../../../../../features/warehouse/rowShelfModalSlice";
-import { WarehouseForm } from "../../forms/WarehouseForm/WarehouseForm";
-import { deleteSegment } from "../../../../../../../firebase/warehouse/segmentService";
-import { openSegmentForm } from "../../../../../../../features/warehouse/segmentModalSlice";
-import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { Modal, message } from "antd";
-import { deleteShelf } from "../../../../../../../firebase/warehouse/shelfService";
-import { deleteRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
-import { deleteWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom';
+import styled from "styled-components";
+
+import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { openRowShelfForm } from "../../../../../../../features/warehouse/rowShelfModalSlice";
+import { openSegmentForm } from "../../../../../../../features/warehouse/segmentModalSlice";
+import { openShelfForm } from "../../../../../../../features/warehouse/shelfModalSlice";
 import {
   openWarehouseForm
 } from "../../../../../../../features/warehouse/warehouseModalSlice";
-import { useNavigate } from 'react-router-dom'
-import { useState, useMemo, useEffect, useCallback } from "react";
+import {
+  selectWarehouse,
+} from "../../../../../../../features/warehouse/warehouseSlice";
 import { useGetProducts } from '../../../../../../../firebase/products/fbGetProducts';
+import { deleteRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
+import { deleteSegment } from "../../../../../../../firebase/warehouse/segmentService";
+import { deleteShelf } from "../../../../../../../firebase/warehouse/shelfService";
+import { deleteWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
+import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
 import { filterData } from '../../../../../../../hooks/search/useSearch';
 import { replacePathParams } from '../../../../../../../routes/replacePathParams';
 import ROUTES_PATH from '../../../../../../../routes/routesName';
-import { useLocation } from 'react-router-dom';
-import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
+import Tree from "../../../../../../component/tree/Tree";
+import { WarehouseForm } from "../../forms/WarehouseForm/WarehouseForm";
 
 const SidebarContainer = styled.div`
   padding: 10px 0em;

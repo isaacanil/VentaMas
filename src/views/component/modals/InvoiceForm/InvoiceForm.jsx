@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
 import * as antd from 'antd';
+
 import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';
-import { Products } from './components/Products/Products';
-import { useDispatch, useSelector } from 'react-redux';
-import { addInvoice, changeClientInvoiceForm, changeValueInvoiceForm, closeInvoiceForm, selectInvoice } from '../../../../features/invoice/invoiceFormSlice';
-import { Client } from './components/Client/Client';
+
 import { DateTime } from 'luxon';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 const { Form, Input, InputNumber, Button, Modal, DatePicker, Select, Row, Col } = antd;
 const { Option } = Select;
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
-import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
-import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
 import { selectUser } from '../../../../features/auth/userSlice';
+import { changeClientInvoiceForm, changeValueInvoiceForm, closeInvoiceForm, selectInvoice } from '../../../../features/invoice/invoiceFormSlice';
+import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
+import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
+import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+
 import { InvoiceInfoExtras } from './components/InvoiceInfoExtras/InvoiceInfoExtras';
+import { Products } from './components/Products/Products';
 
 export const InvoiceForm = ({ }) => {
 

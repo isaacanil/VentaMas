@@ -1,11 +1,12 @@
 import React from 'react'
-import styled from 'styled-components'
-import { Row } from '../../../../../../../../templates/system/Table/Row'
-import { fbDeleteUser } from '../../../../../../../../../firebase/users/fbDeleteUser'
-import { useNavigate } from 'react-router-dom'
-import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
 import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice'
+import { fbDeleteUser } from '../../../../../../../../../firebase/users/fbDeleteUser'
+import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities'
+import { Row } from '../../../../../../../../templates/system/Table/Row'
 
 export const Item = ({ data, num, colWidth }) => {
   const navigate = useNavigate()

@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { ProductCardColumn } from './ProductCardColumn'
+
 import { ProductCardRow } from './ProductCardRow'
+
 export const ProductInventoryCard = ({ product, handleUpdateProduct, handleDeleteProduct }) => {
     return (
         <Container>

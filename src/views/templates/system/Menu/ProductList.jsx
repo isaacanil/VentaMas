@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 
 // Datos de productos agrupados por categoría

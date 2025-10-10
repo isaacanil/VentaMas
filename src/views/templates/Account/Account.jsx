@@ -1,14 +1,17 @@
-import { useState } from 'react'
-
-import Style from './Account.module.scss'
-import { Link } from 'react-router-dom'
-import { Button } from '../system/Button/Button';
-import { auth } from '../../../firebase/firebaseconfig.jsx'
-import { logout, selectUser } from '../../../features/auth/userSlice'
-import { useDispatch, useSelector } from 'react-redux'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCog } from '@fortawesome/free-solid-svg-icons';
 import { faExternalLink } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { Link } from 'react-router-dom'
+
+import { logout } from '../../../features/auth/userSlice'
+import { auth } from '../../../firebase/firebaseconfig.jsx'
+import { Button } from '../system/Button/Button';
+
+import Style from './Account.module.scss'
+
+
 export const Account = () => {
   const dispatch = useDispatch();
   const [isOpen, SetIsOpen] = useState(false)

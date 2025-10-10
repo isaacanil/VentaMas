@@ -1,6 +1,6 @@
+import { InboxOutlined } from '@ant-design/icons';
 import React from 'react';
 import styled from 'styled-components';
-import { InboxOutlined } from '@ant-design/icons';
 
 const Button = styled.button`
   display: flex;

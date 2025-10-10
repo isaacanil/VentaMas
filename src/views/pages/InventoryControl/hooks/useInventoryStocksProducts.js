@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
+import { useEffect, useMemo, useState } from 'react'
 
 /**
  * Escucha stocks y productos activos; construye augmentedStocks que incluye

@@ -1,10 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import styled from 'styled-components';
-import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import ModulesNavigator from './components/ModulesNavigator';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+
 import { selectNotificationCenter, closeNotificationCenter } from '../../../features/notification/notificationCenterSlice';
 import { useFiscalReceiptsAlerts } from '../../../hooks/useFiscalReceiptsAlerts';
+
+import ModulesNavigator from './components/ModulesNavigator';
 
 // Animaciones optimizadas para apertura/cierre
 const notificationVariants = {

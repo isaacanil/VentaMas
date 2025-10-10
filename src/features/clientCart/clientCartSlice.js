@@ -1,10 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { CLIENT_MODE_BAR } from './clientMode'
+
 import { fbAddClient } from '../../firebase/client/fbAddClient'
 import { fbUpdateClient } from '../../firebase/client/fbUpdateClient'
 import { useCompareObjectsInState } from '../../hooks/useCompareObject'
-import { useDispatch } from 'react-redux'
 import { fetchInsuranceAuthByClientId } from '../insurance/insuranceAuthSlice'
+
+import { CLIENT_MODE_BAR } from './clientMode'
 
 export const GenericClient = {
     name: 'Generic Client',

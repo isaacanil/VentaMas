@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import SaleUnitsManager from './components/SaleUnitsManager'
+
 import PricingModal from './components/PricingModal'
+import SaleUnitsManager from './components/SaleUnitsManager'
 
 const ConfigurationContainer = styled.div`
 

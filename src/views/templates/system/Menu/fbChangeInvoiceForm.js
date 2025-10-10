@@ -1,6 +1,7 @@
 import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
-import { db } from "../../../../firebase/firebaseconfig";
 import { DateTime } from "luxon"; // Asegúrate de añadir esta importación
+
+import { db } from "../../../../firebase/firebaseconfig";
 
 async function getInvoiceFromYesterday(invoiceRef) {
     const yesterday = DateTime.now().minus({ days: 1 }).startOf('day');

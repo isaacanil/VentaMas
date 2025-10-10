@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
-import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/WarrantyInfo'
 import { nanoid } from 'nanoid';
+
+import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/WarrantyInfo'
+import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
 
 const createEmptyProduct = () => ({
     name: '',

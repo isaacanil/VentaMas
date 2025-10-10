@@ -1,10 +1,11 @@
 import { faStore, faUsers } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState } from 'react'
-import styled from 'styled-components'
 import { Tooltip } from 'antd'
-import { selectIsTemporaryMode, selectUser } from '../../../../../../../features/auth/userSlice'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { selectIsTemporaryMode, selectUser } from '../../../../../../../features/auth/userSlice'
 import { ReturnToBusinessModal } from '../ReturnToBusinessModal'
 
 export const BusinessIndicator = () => {

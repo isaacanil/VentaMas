@@ -1,6 +1,7 @@
 import * as ant from 'antd';
-import styled from 'styled-components';
 import Barcode from 'react-barcode';
+import styled from 'styled-components';
+
 import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
 
 const { Modal, Typography } = ant;

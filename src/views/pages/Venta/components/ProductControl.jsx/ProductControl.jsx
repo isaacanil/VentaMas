@@ -1,22 +1,18 @@
-import React, { Fragment, useState, useEffect, useRef } from 'react'
-import { Product } from '../../../../templates/system/Product/Product/Product';
-import { Grid } from '../../../../templates/system/Grid/Grid';
-import { useDispatch, useSelector } from "react-redux";
-import { CustomProduct } from '../../../../templates/system/Product/CustomProduct'
-import { selectIsRow } from '../../../../../features/setting/settingSlice';
-import { Carrusel } from '../../../../component/Carrusel/Carrusel';
-import styled from 'styled-components';
-import Loader from '../../../../templates/system/loader/Loader';
-import useScroll from '../../../../../hooks/useScroll';
-import { CenteredText } from '../../../../templates/system/CentredText';
 import { motion } from 'framer-motion';
-import { icons } from '../../../../../constants/icons/icons';
-import { openModalUpdateProd } from '../../../../../features/modals/modalSlice';
-import { OPERATION_MODES } from '../../../../../constants/modes';
-import { ChangeProductData } from '../../../../../features/updateProduct/updateProductSlice';
+import React, { Fragment, useEffect, useRef } from 'react'
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
-import findRouteByName from '../../../../templates/MenuApp/findRouteByName';
+import styled from 'styled-components';
+
+import { selectIsRow } from '../../../../../features/setting/settingSlice';
+import useScroll from '../../../../../hooks/useScroll';
 import ROUTES_NAME from '../../../../../routes/routesName';
+import { Carrusel } from '../../../../component/Carrusel/Carrusel';
+import { CenteredText } from '../../../../templates/system/CentredText';
+import { Grid } from '../../../../templates/system/Grid/Grid';
+import Loader from '../../../../templates/system/loader/Loader';
+import { CustomProduct } from '../../../../templates/system/Product/CustomProduct'
+import { Product } from '../../../../templates/system/Product/Product/Product';
 import { CategoriesGrouped } from '../CategoriesProductsGrouped/CategoriesGrouped';
 import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
 

@@ -1,12 +1,13 @@
-import React, { Fragment } from 'react';
-import { Card, Badge, Divider, Spin } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTag, faBox, faShoppingCart, faDollarSign, faTruck, faCalendar } from '@fortawesome/free-solid-svg-icons';
-import styled from 'styled-components';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Card, Badge, Divider, Spin } from 'antd';
+import React, { Fragment } from 'react';
 import { useParams } from 'react-router-dom';
-import { useListenProduct } from '../../../../firebase/products/fbGetProduct';
+import styled from 'styled-components';
+
 import noImg from '../../../../assets/producto/noimg.png';
+import { useListenProduct } from '../../../../firebase/products/fbGetProduct';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 
 const defaultProduct = {
     name: 'Producto No Encontrado',

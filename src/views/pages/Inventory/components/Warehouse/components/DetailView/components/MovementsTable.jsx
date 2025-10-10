@@ -1,15 +1,15 @@
+import { Button } from 'antd';
 import React from 'react';
-import styled from 'styled-components';
-import { Card } from 'antd';
-import { EyeOutlined } from "@ant-design/icons";
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { useListenMovementsByLocation } from '../../../../../../../../firebase/warehouse/productMovementService';
-import { useNavigate } from 'react-router-dom';
-import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
 import { MovementReason } from '../../../../../../../../models/Warehouse/Movement';
 import ROUTES_NAME from '../../../../../../../../routes/routesName';
-import { Button } from 'antd';
+import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
+
 
 const StyledCard = styled.div`
   margin-top: 16px;

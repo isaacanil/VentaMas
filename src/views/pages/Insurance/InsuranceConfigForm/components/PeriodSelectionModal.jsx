@@ -1,5 +1,6 @@
 import { Button, Card, Checkbox, InputNumber, Modal, Select, Space } from "antd";
 import { useEffect, useState } from "react";
+
 import { PAYMENT_TERMS, TIME_UNITS } from "../InsuranceConfigForm";
 
 

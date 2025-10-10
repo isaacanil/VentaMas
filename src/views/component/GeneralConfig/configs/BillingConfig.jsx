@@ -1,10 +1,11 @@
 import React from 'react';
-import styled from 'styled-components';
-import { Divider } from 'antd';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { SelectSettingCart } from '../../../../features/cart/cartSlice';
-import BillingSection from './components/BillingSection';
+
 import BillingModeConfig from './components/BillingModeConfig';
+import BillingSection from './components/BillingSection';
 import InvoiceSettingsSection from './components/InvoiceSettingsSection';
 import QuoteSettingsSection from './components/QuoteSettingsSection';
 import StockAlertSettingsSection from './components/StockAlertSettingsSection';

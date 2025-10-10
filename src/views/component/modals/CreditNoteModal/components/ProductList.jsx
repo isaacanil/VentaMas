@@ -1,7 +1,9 @@
-import React from 'react';
 import { Table, Pagination } from 'antd';
-import { ProductCard } from './ProductCard';
+import React from 'react';
 import styled from 'styled-components';
+
+import { ProductCard } from './ProductCard';
+
 
 export const ProductList = ({
   products,

@@ -1,15 +1,15 @@
+import { DateTime } from 'luxon'
 import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { getRoleLabelById, userRoles } from '../../../../../../../abilities/roles'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
+import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice'
+import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
 import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers'
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
-import { useNavigate } from 'react-router-dom'
-import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
-import { DateTime } from 'luxon'
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
-import { getRoleLabelById, userRoles } from '../../../../../../../abilities/roles'
-import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice'
 
 const columns = [
   {

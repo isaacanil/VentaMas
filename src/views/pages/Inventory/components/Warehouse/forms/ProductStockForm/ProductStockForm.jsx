@@ -1,6 +1,11 @@
-import React, { useEffect } from "react";
 import { Button, InputNumber, Form, Modal, Select, message, Spin, Alert, Progress } from "antd";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
+
+import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { closeProductStock, selectProductStock, setProductStockClear, updateProductStockFormData, openProductStock } from "../../../../../../../features/productStock/productStockSlice";
+import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
 import {
   createProductStock,
   updateProductStock,
@@ -8,11 +13,7 @@ import {
 } from "../../../../../../../firebase/warehouse/productStockService";
 import { useGetProductsWithBatch } from "../../../../../../../hooks/products/useGetProductsWithBatch";
 import useListenBatches from "../../../../../../../hooks/products/useListenBatch";
-import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { closeProductStock, selectProductStock, setProductStockClear, updateProductStockFormData, openProductStock } from "../../../../../../../features/productStock/productStockSlice";
 import { useFormatNumber } from "../../../../../../../hooks/useFormatNumber";
-import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
 
 const { Option } = Select;
 

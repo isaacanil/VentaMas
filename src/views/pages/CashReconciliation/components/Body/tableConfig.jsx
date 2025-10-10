@@ -1,8 +1,9 @@
-import { useFormatPrice } from "../../../../../hooks/useFormatPrice"
-import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator/CashCountStateIndicator"
-import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData"
 import { Tag } from 'antd'
+
+import { useFormatPrice } from "../../../../../hooks/useFormatPrice"
 import DateUtils from "../../../../../utils/date/dateUtils";
+import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData"
+import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator/CashCountStateIndicator"
 
 export const tableConfig = () => {
   let columns = [

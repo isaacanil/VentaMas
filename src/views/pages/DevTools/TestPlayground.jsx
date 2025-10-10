@@ -1,6 +1,7 @@
-import React from 'react';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import { Alert, Typography } from 'antd';
+import React from 'react';
+
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
 
 const { Title, Paragraph, Text } = Typography;
 

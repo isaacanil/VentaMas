@@ -1,9 +1,11 @@
 import React, { useRef } from 'react'
-import { Header } from './Header'
+import styled from 'styled-components'
+
+import useScroll from '../../../../hooks/useScroll'
+
 import { Body } from './Body'
 import { Footer } from './Footer'
-import styled from 'styled-components'
-import useScroll from '../../../../hooks/useScroll'
+import { Header } from './Header'
 
 
 export const Table = ({

@@ -1,12 +1,9 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useRef, useState } from 'react';
-import { Product } from '../../../../templates/system/Product/Product/Product';
-import { Carrusel } from '../../../../component/Carrusel/Carrusel';
 import styled from 'styled-components';
-import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
-import { CustomProduct } from '../../../../templates/system/Product/CustomProduct';
-import { CategorySelector } from '../../../../component/CategorySelector/CategorySelector';
+
 import { ProductCategoryBar } from '../../../../component/ProductCategoryBar/ProductCategoryBar';
+import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
 
 const columnByWidth =  {
   600: 1,

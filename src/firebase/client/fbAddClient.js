@@ -1,6 +1,7 @@
 import { doc, setDoc } from "firebase/firestore"
-import { db } from "../firebaseconfig"
 import { nanoid } from "nanoid"
+
+import { db } from "../firebaseconfig"
 import { getNextID } from "../Tools/getNextID";
 
 export const fbAddClient = async (user, client) => {

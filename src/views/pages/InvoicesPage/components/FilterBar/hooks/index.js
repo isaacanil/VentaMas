@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
-import { useOverflowCollapse } from '../../../../../../hooks/useOverflowCollapse';
+
 import { useFbGetClientsOnOpen } from '../../../../../../firebase/client/useFbGetClientsOnOpen';
+import { useOverflowCollapse } from '../../../../../../hooks/useOverflowCollapse';
+import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
 import { BREAKPOINTS } from '../constants';
 
 export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {

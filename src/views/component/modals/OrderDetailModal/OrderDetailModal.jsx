@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { Button } from '../../../templates/system/Button/Button';
+
 import { Header } from './Header';
 
 const ModalWrapper = styled.div`

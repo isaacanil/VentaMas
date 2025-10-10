@@ -1,6 +1,7 @@
+import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
 import { nanoid } from "nanoid";
+
 import { db } from "../firebaseconfig";
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 
 
 export async function createClientInsurance(user, insuranceData) {

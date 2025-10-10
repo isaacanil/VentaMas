@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import Style from './MultiDisplayControl.module.scss'
+
 import {PlusIcon} from '../../../assets/index'
+
+import Style from './MultiDisplayControl.module.scss'
 
 export const MultiDisplayControl = () => {
   const [isOpen, SetIsOpen] = useState(false)

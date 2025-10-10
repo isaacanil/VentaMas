@@ -1,10 +1,11 @@
 import React from 'react'
 import QRCode from 'react-qr-code';
-import styled from 'styled-components';
-import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4';
-import { setProduct } from '../../../../../../features/updateProduct/updateProductSlice';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
 import { icons } from '../../../../../../constants/icons/icons';
+import { setProduct } from '../../../../../../features/updateProduct/updateProductSlice';
+import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4';
 
 
 export const QRCodeControl = ({ product, value }) => {

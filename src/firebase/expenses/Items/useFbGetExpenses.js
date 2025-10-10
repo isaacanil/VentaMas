@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
 
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { selectUser } from "../../../features/auth/userSlice";
-import { db } from "../../firebaseconfig";
 import { selectExpenseList, setExpenseList } from "../../../features/expense/expensesListSlice";
 import { toMillis } from "../../../utils/date/toMillis";
+import { db } from "../../firebaseconfig";
 
 export const useFbGetExpenses = (range) => {
     const dispatch = useDispatch();

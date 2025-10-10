@@ -1,15 +1,17 @@
-import React, { useEffect, Suspense } from 'react'
-import { useSelector } from 'react-redux'
-import { Link, useMatch, useNavigate } from 'react-router-dom'
-import { selectUser } from '../../../features/auth/userSlice'
-import styled from 'styled-components'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Helmet } from 'react-helmet-async'
 import { Spin } from 'antd'
-import Header from './components/Header'
+import { motion, AnimatePresence } from 'framer-motion'
+import React, { useEffect, Suspense } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../features/auth/userSlice'
 import ROUTES_PATH from '../../../routes/routesName'
-import { Footer } from './components/Footer/Footer'
+
 import ErrorBoundary from './components/ErrorBoundary'
+import { Footer } from './components/Footer/Footer'
+import Header from './components/Header'
 
 // Lazy loading de componentes
 const Body = React.lazy(() => import('./components/Body/Body'))

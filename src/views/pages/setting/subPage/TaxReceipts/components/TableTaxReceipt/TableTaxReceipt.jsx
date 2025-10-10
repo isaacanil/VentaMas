@@ -1,13 +1,14 @@
+import { FileOutlined, ExclamationCircleOutlined, EditOutlined, StopOutlined } from '@ant-design/icons'
+import { Tooltip, Modal, message, Form } from 'antd'
 import React, { useState } from 'react'
-import styled from 'styled-components'
-import { settingDataTaxTable } from '../../taxConfigTable'
-import { FileOutlined, ExclamationCircleOutlined, EditOutlined, StopOutlined, FileAddOutlined, PlusOutlined } from '@ant-design/icons'
-import { Tooltip, Modal, message, Form, Button } from 'antd'
-import TaxReceiptForm from '../TaxReceiptForm/TaxReceiptForm'
-import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt'
+import { settingDataTaxTable } from '../../taxConfigTable'
+import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal'
+import TaxReceiptForm from '../TaxReceiptForm/TaxReceiptForm'
 
 export const TableTaxReceipt = ({ array, setData }) => {
   const [form] = Form.useForm();

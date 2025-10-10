@@ -1,7 +1,8 @@
 import { Timestamp, doc, setDoc, updateDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 import { fbUploadFiles } from "../img/fbUploadFileAndGetURL";
-import { isImageFile, isPDFFile } from "../../utils/file/isValidFile";
+
 import { fbUpdateProdStockForReplenish } from "./fbUpdateProdStockForReplenish";
 
 const updateOrder = async (user, order) => {

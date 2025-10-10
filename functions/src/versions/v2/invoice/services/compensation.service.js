@@ -113,7 +113,6 @@ export async function deleteCanonicalInvoice(tx, { businessId, invoiceId }) {
 
 export async function detachFromCashCount(tx, { businessId, invoiceId, userId }) {
   // Find open or closing cash count for the user and remove invoice ref from sales array if present
-  const user = { businessID: businessId, uid: userId };
   // We cannot query with tx for both open/closing removal, so best-effort: remove from any doc matching
   const cashCountsCol = db.collection(`businesses/${businessId}/cashCounts`);
   const userRef = db.doc(`users/${userId}`);

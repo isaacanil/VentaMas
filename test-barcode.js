@@ -1,12 +1,10 @@
 // Prueba de funciones de generación de códigos de barras
 import { 
   generateGTIN13, 
-  generateGTIN14, 
   generateGTIN,
   GS1_PREFIXES,
   validateGenerationConfig,
-  isGS1RDCode,
-  getBarcodeInfo 
+  isGS1RDCode 
 } from './utils/barcode/barcode';
 
 console.log('🧪 Probando sistema de códigos de barras...');
@@ -59,3 +57,4 @@ Object.keys(GS1_PREFIXES).slice(0, 5).forEach(country => {
 });
 
 console.log('🧪 Pruebas completadas');
+/* eslint-env node */

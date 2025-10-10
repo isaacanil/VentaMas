@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
+import { getRoleLabelById } from '../../abilities/roles';
+import { developerShortcuts } from '../../constants/devtools/developerShortcuts.jsx';
 import {
   selectIsTemporaryRoleMode,
   selectOriginalRole,
@@ -12,9 +14,7 @@ import {
   selectOriginalBusinessId,
   returnToOriginalBusiness,
 } from '../../features/auth/userSlice';
-import { getRoleLabelById } from '../../abilities/roles';
 import { toggleDeveloperModal } from '../../features/modals/modalSlice';
-import { developerShortcuts } from '../../constants/devtools/developerShortcuts.jsx';
 import { hasDeveloperAccess } from '../../utils/menuAccess';
 
 const BUTTON_SIZE = 48;

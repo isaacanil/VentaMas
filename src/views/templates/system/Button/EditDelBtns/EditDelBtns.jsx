@@ -1,8 +1,9 @@
-import { useDispatch } from "react-redux";
-import { useDialog } from "../../../../../Context/Dialog/DialogContext";
-import { icons } from "../../../../../constants/icons/icons";
-import { ButtonGroup } from "../Button"
 import { Button } from "antd";
+import { useDispatch } from "react-redux";
+
+import { icons } from "../../../../../constants/icons/icons";
+import { useDialog } from "../../../../../Context/Dialog/DialogContext";
+import { ButtonGroup } from "../Button"
 
 export const EditDelBtns = ({ onUpdate, onDelete = async () => { } }) => {
     const dispatch = useDispatch();

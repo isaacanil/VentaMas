@@ -1,5 +1,5 @@
-import React from 'react'
 import { Modal, Descriptions, Button } from 'antd'
+import React from 'react'
 
 const PricingModal = ({ visible, unit, onClose }) => {
   return (

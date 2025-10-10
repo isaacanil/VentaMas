@@ -3,17 +3,18 @@ import { nanoid } from 'nanoid'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+
+import { selectUser } from '../../../../../../features/auth/userSlice'
 import { SelectIngredientsListName, selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice'
 import { addNotification } from '../../../../../../features/notification/notificationSlice'
-
+import { fbGetProductsQueryByType } from '../../../../../../firebase/products/customProduct/fbGetCustomProductByType'
 import { removeMatchesString } from '../../../../../../hooks/removeMatchesString'
 import { separator } from '../../../../../../hooks/separator'
 import { getPizzaType } from '../../getPizzaType'
 import customPizzaData from '../customPizza.json'
+
 import { getPrice } from './getPrice'
 
-import { fbGetProductsQueryByType } from '../../../../../../firebase/products/customProduct/fbGetCustomProductByType'
-import { selectUser } from '../../../../../../features/auth/userSlice'
 
 const EmptyProduct = {
     id: '',

@@ -1,9 +1,10 @@
 import { doc, setDoc, Timestamp } from "firebase/firestore";
 import { nanoid } from "nanoid";
-import { db } from "../firebaseconfig";
-import { getNextID } from "../Tools/getNextID";
-import { fbGetAndUpdateTaxReceipt } from "../taxReceipt/fbGetAndUpdateTaxReceipt";
+
 import { CREDIT_NOTE_STATUS } from "../../constants/creditNoteStatus";
+import { db } from "../firebaseconfig";
+import { fbGetAndUpdateTaxReceipt } from "../taxReceipt/fbGetAndUpdateTaxReceipt";
+import { getNextID } from "../Tools/getNextID";
 
 /**
  * Guarda una Nota de Crédito en Firestore bajo el negocio del usuario.

@@ -1,10 +1,11 @@
-import React from 'react';
-import styled from 'styled-components';
-import { Button } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CalendarOutlined } from '@ant-design/icons';
 import { faBoxes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button } from 'antd';
+import React from 'react';
+import styled from 'styled-components';
+
 import ProductStock from './ProductStock';
 
 const BatchContainer = styled.div`

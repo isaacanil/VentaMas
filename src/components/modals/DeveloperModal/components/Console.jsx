@@ -1,6 +1,7 @@
+import { motion } from 'framer-motion';
 import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+
 import AutoComplete from './AutoComplete';
 
 // Variantes de animación para los elementos de la consola

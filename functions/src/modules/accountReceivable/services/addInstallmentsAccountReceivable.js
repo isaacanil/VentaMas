@@ -1,4 +1,5 @@
 import { https, logger } from "firebase-functions";
+
 import { db, Timestamp } from "../../../core/config/firebase.js";
 import { generateInstallments } from "../utils/generateInstallments.js";
 

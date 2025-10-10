@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react';
 import { toCanvas } from 'bwip-js';
+import { useRef, useEffect, useState } from 'react';
 
 const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
   const canvasRef = useRef(null);

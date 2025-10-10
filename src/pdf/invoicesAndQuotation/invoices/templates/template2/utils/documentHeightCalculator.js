@@ -1,3 +1,5 @@
+import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
+
 // src/utils/documentHeightCalculator.js
 
 // Constantes basadas en los estilos del PDF
@@ -95,15 +97,28 @@ export function calcHeaderHeight(biz, d) {
   let invoiceInfoHeight = 0;
   
   // Título del comprobante
-  const comprobanteTitle = getComprobanteTitle(d.NCF || d.comprobante);
+  const {
+    title: comprobanteTitle,
+    label: comprobanteLabel,
+    value: comprobanteValue,
+    type: comprobanteType
+  } = resolveDocumentIdentity(d);
+  const referenceLabel = comprobanteType === 'preorder'
+    ? 'Preventa'
+    : `Factura ${d.type || ''}`.trim();
+  const referenceValue = comprobanteType === 'preorder'
+    ? (comprobanteValue || d.numberID || '-')
+    : (d.numberID || '-');
   // Assuming title might span full width or a specific width, adjust maxWidth if needed
   invoiceInfoHeight += calculateTextHeight(comprobanteTitle, STYLES.title.fontSize, STYLES.title.lineHeight, LAYOUT.headerColumnWidth) + STYLES.title.marginBottom;
-  
+
   // Campos de la factura
   const invoiceFields = [
     `Fecha: ${formatDateForCalculation(d.date)}`,
-    `${getComprobanteLabel(d.NCF || d.comprobante)}: ${d.NCF || d.comprobante || '-'}`,
-    `No: ${d.numberID || '-'}`,
+    comprobanteLabel && comprobanteType !== 'preorder'
+      ? `${comprobanteLabel}: ${comprobanteValue || '-'}`
+      : null,
+    `${referenceLabel} # ${referenceValue}`,
     d.type === 'preorder' && d.preorderDetails?.date ? `Fecha de Pedido: ${formatDateForCalculation(d.preorderDetails.date)}` : null,
     d.dueDate ? `Vence: ${formatDateForCalculation(d.dueDate)}` : null
   ].filter(Boolean);
@@ -203,17 +218,6 @@ export function calcFooterHeight(biz, d) {
 function shouldShowClientBlock(d) {
   const rawName = d.client?.name?.trim() || '';
   return rawName && rawName.toLowerCase() !== 'generic client';
-}
-
-function getComprobanteTitle(ncf) {
-  if (!ncf) return 'RECIBO DE PAGO';
-  if (ncf.startsWith('B01')) return 'FACTURA DE CRÉDITO FISCAL';
-  if (ncf.startsWith('B02')) return 'FACTURA DE CONSUMO';
-  return 'COMPROBANTE FISCAL';
-}
-
-function getComprobanteLabel(ncf) {
-  return ncf ? 'NCF' : 'Número de Recibo';
 }
 
 function formatDateForCalculation(date) {

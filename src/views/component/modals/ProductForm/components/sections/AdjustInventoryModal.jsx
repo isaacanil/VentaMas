@@ -1,5 +1,5 @@
+import { Modal } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { Modal, InputNumber, Button } from 'antd';
 
 const AdjustInventoryModal = ({ visible, onClose, stock, packSize, onSave }) => {
     const [adjustedStock, setAdjustedStock] = useState(stock);

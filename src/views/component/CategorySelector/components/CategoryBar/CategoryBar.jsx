@@ -1,10 +1,11 @@
+import { Button } from 'antd';
 import React, { useRef, forwardRef } from 'react'
-import styled from 'styled-components'
 import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
 import { icons } from '../../../../../constants/icons/icons'
 import { deleteItem } from '../../../../../features/category/categorySlicer'
 import { useMoveScroll } from '../../../../../utils/scroll/moveScroll'
-import { Button } from 'antd';
 import { categoryColors } from '../../categoryColors'
 
 export const CategoryBar = forwardRef(({ open, setOpen, items = [] }, ref) => {

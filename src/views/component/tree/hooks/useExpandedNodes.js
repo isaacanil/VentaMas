@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { expandMatchingNodes } from "../utils/expandUtils";
+
 import { traverse } from "../utils/traverseUtils";
 
 const useExpandedNodes = (data) => {

@@ -1,17 +1,20 @@
+import { DeleteOutlined, SwapOutlined, ClearOutlined, SearchOutlined, UnorderedListOutlined, EllipsisOutlined, SortAscendingOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { Button, Input, DatePicker, Form, Dropdown } from 'antd';
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'; // Add this import
 import styled from 'styled-components';
-import { Button, Input, DatePicker, Form, Dropdown } from 'antd';
-import { DeleteOutlined, SwapOutlined, ClearOutlined, SearchOutlined, UnorderedListOutlined, EllipsisOutlined, SortAscendingOutlined, InfoCircleOutlined } from "@ant-design/icons";
+
+import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { openDeleteModal } from '../../../../../../../../features/productStock/deleteProductStockSlice';
+import { getBatchById } from '../../../../../../../../firebase/warehouse/batchService';
 import { useListenProductsStockByLocation } from '../../../../../../../../firebase/warehouse/productStockService';
 import DateUtils from '../../../../../../../../utils/date/dateUtils';
-import { ProductMovementModal } from './ProductMovementModal';
 import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
-import { useDispatch, useSelector } from 'react-redux';
-import { openDeleteModal } from '../../../../../../../../features/productStock/deleteProductStockSlice';
+
 import BatchViewModal from './BatchViewModal';
-import { getBatchById } from '../../../../../../../../firebase/warehouse/batchService';
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { ProductMovementModal } from './ProductMovementModal';
+
 
 
 const Container = styled.div`

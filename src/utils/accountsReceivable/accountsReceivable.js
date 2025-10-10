@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+
 export function calculateRemainingBalance(totalDue, paymentMade) {
     return totalDue - paymentMade;
 }

@@ -1,7 +1,8 @@
 // File: src/components/TaxReceiptSetting/ReceiptSettingsSection.jsx
+import { Typography } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Typography } from 'antd';
+
 import { Switch } from '../../../../../../templates/system/Switch/Switch';
 import FiscalReceiptsAlertWidget from '../FiscalReceiptsAlertWidget/FiscalReceiptsAlertWidget';
 

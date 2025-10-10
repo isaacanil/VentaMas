@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
+import { SearchOutlined, CheckCircleOutlined, CalendarOutlined } from '@ant-design/icons'
 import { Modal, Button, Input, Empty, Spin } from 'antd'
-import { SearchOutlined, CheckCircleOutlined, CalendarOutlined, BoxPlotOutlined } from '@ant-design/icons'
-import styled from 'styled-components'
+import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components'
+
+import { addProduct, SelectCartData } from '../../../../../../../features/cart/cartSlice';
 import { selectProductStockSimple, closeProductStockSimple } from '../../../../../../../features/productStock/productStockSimpleSlice';
 import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
 import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
-import { addProduct, SelectCartData } from '../../../../../../../features/cart/cartSlice';
 
 const StyledWrapper = styled.div`
   .batch-select-button {

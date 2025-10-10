@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Button, Card, Checkbox, Input, Typography, Alert } from 'antd'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+
 import { migrateAllBusinessesInventoryCounts } from '../InventoryControl/tools/migrateInventoryCounts'
 
 // Simple UI to trigger migration from the app (non Cloud Function)

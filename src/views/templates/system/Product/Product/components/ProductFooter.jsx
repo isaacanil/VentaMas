@@ -1,13 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 
+import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import {
   getAmountBackground,
   getAmountColor,
   getPriceColor,
 } from '../utils/stockTheme';
-import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
 
 // Styled components
 const FooterWrapper = styled.div`

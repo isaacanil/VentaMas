@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Modal, Button, Input, Card, Tooltip } from 'antd';
 import {
-    CommentOutlined,
     SaveOutlined,
     DeleteOutlined,
     ExclamationCircleOutlined,
     CloseOutlined
 } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Modal, Button, Input, Card, Tooltip } from 'antd';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import {
     addInvoiceComment,
     deleteInvoiceComment,

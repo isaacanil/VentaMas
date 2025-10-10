@@ -1,7 +1,8 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
-import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Button, Tooltip, Typography } from 'antd'
+import styled from 'styled-components'
+
 import { ClientFilterDropdown } from './ClientFilterDropdown'
 
 const { Title } = Typography;

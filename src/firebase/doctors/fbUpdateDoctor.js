@@ -1,4 +1,5 @@
 import { doc, updateDoc } from 'firebase/firestore'
+
 import { db } from '../firebaseconfig'
 
 export const fbUpdateDoctor = async (doctor, user) => {

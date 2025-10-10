@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
 import { Form, Select, Checkbox, InputNumber, Button, message } from 'antd';
-import styled from 'styled-components';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
 const OptionContainer = styled.div`
   display: flex;

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { Button, Select, Form } from 'antd';
-import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
-import { DatePicker } from '../../../../../../templates/system/Dates/DatePicker/DatePicker';
-import { DateRangeFilter } from '../../../../../../templates/system/Button/TimeFilterButton/DateRangeFilter';
+import React, { useState } from 'react';
+import styled from 'styled-components';
+
 import { icons } from '../../../../../../../constants/icons/icons';
-import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsReceivable';
 import useBusiness from '../../../../../../../hooks/useBusiness';
+import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
+import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsReceivable';
+import { DateRangeFilter } from '../../../../../../templates/system/Button/TimeFilterButton/DateRangeFilter';
+import { DatePicker } from '../../../../../../templates/system/Dates/DatePicker/DatePicker';
 
 const FilterContainer = styled.div`
   height: 3em;

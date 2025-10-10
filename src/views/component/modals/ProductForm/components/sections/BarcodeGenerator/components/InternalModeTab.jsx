@@ -1,8 +1,9 @@
-import React from 'react';
-import { Form, Input, Button, Space, Alert, Typography, Checkbox, Tooltip } from 'antd';
 import { InfoCircleOutlined, ThunderboltOutlined, CheckCircleOutlined, ShopOutlined } from '@ant-design/icons';
-import { PreviewContainer, PreviewText } from './BarcodePreview';
+import { Form, Input, Button, Space, Alert, Typography, Checkbox, Tooltip } from 'antd';
+import React from 'react';
 import styled from 'styled-components';
+
+import { PreviewContainer, PreviewText } from './BarcodePreview';
 
 const { Text } = Typography;
 

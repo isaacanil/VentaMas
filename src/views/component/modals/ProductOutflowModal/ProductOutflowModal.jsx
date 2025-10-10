@@ -1,19 +1,21 @@
+import { Button, Input } from 'antd'
 import { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+
+import { icons } from '../../../../constants/icons/icons'
+import { selectUser } from '../../../../features/auth/userSlice'
 import { toggleAddProductOutflow } from '../../../../features/modals/modalSlice'
 import { deleteData, deleteProductFromProductOutflow, SelectProductList, SelectProductOutflow, updateProductFromProductOutflow } from '../../../../features/productOutflow/productOutflow'
 import { fbAddProductOutFlow } from '../../../../firebase/ProductOutflow/fbAddProductOutflow'
+import { fbRemoveOutputRestoreQuantity } from '../../../../firebase/ProductOutflow/fbRemoveOutputRestoreQuantity'
 import { fbUpdateProductOutflow } from '../../../../firebase/ProductOutflow/fbUpdateProductOutflow'
 import useScroll from '../../../../hooks/useScroll'
 import { CenteredText } from '../../../templates/system/CentredText'
 import { FormattedValue } from '../../../templates/system/FormattedValue/FormattedValue'
 import { Modal } from '../Modal'
+
 import { OutputProductEntry } from './OutputProductEntry/OutputProductEntry'
-import { fbRemoveOutputRestoreQuantity } from '../../../../firebase/ProductOutflow/fbRemoveOutputRestoreQuantity'
-import { selectUser } from '../../../../features/auth/userSlice'
-import { Button, Input } from 'antd'
-import { icons } from '../../../../constants/icons/icons'
 
 export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
   const outFlowList = useSelector(SelectProductList)

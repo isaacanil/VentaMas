@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../features/auth/userSlice';
 import { selectDeleteModalState } from '../features/productStock/deleteProductStockSlice';
-import { getProductStockById, getProductStockByBatch } from '../firebase/warehouse/productStockService';
 import { getBatchById } from '../firebase/warehouse/batchService';
+import { getProductStockById, getProductStockByBatch } from '../firebase/warehouse/productStockService';
 
 export const useProductStockData = () => {
     const [stockData, setStockData] = useState(null);

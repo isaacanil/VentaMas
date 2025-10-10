@@ -1,8 +1,9 @@
 // src/components/NavBar.jsx
+import { faArrowLeft, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+
 import Button from '../Button/Button';
 
 

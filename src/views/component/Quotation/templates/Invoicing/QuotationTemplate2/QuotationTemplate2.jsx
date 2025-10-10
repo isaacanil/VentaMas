@@ -1,10 +1,12 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
-import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import React, { useLayoutEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import Header from './components/Header';
+import styled from 'styled-components';
+
+import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+
 import Content from './components/Content';
 import Footer from './components/Footer';
+import Header from './components/Header';
 import { calcFooterHeight, calcHeaderHeight } from './documentHeightCalculator';
 
 const Container = styled.div`

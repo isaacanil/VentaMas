@@ -1,6 +1,7 @@
-import styled from "styled-components"
-import { MenuApp } from "../../../../templates/MenuApp/MenuApp"
 import { Outlet } from "react-router-dom"
+import styled from "styled-components"
+
+import { MenuApp } from "../../../../templates/MenuApp/MenuApp"
 
 export const UserAdmin = () => {
     return (

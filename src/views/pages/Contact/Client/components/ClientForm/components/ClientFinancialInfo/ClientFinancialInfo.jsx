@@ -1,22 +1,25 @@
-import { useState } from 'react';
-import { Button, Card, Pagination } from 'antd';
-import { FilterBar } from './components/FilterBar';
-import styled from 'styled-components';
-import { ClientBalanceInfo } from './components/ClientBalanceInfo';
-import { CreditLimits } from './components/CreditLimits';
-import { AccountCard } from './AccountCard/AccountCard';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { convertAccountsData } from '../../../../../../../../utils/accountsReceivable/accountsReceivable';
-import { useClientPendingBalance } from '../../../../../../../../firebase/accountsReceivable/useClientPendingBalance';
-import { useClientAccountsReceivableCounts } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivableCounts';
-import { useClientAccountsReceivable } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivable';
-import { usePendingBalance } from '../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faFileInvoiceDollar,
     faReceipt
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, Card, Pagination } from 'antd';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { usePendingBalance } from '../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import { useClientAccountsReceivable } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivable';
+import { useClientAccountsReceivableCounts } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivableCounts';
+import { useClientPendingBalance } from '../../../../../../../../firebase/accountsReceivable/useClientPendingBalance';
+import { convertAccountsData } from '../../../../../../../../utils/accountsReceivable/accountsReceivable';
+
+import { AccountCard } from './AccountCard/AccountCard';
+import { ClientBalanceInfo } from './components/ClientBalanceInfo';
+import { CreditLimits } from './components/CreditLimits';
+import { FilterBar } from './components/FilterBar';
+
 
 
 const ClientFinancialInfo = ({ client, creditLimitForm }) => {

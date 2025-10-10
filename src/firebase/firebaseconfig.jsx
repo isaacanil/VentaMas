@@ -1,15 +1,14 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { connectFunctionsEmulator, getFunctions } from 'firebase/functions'
 //TODO ***AUTH**************************************
 import { getAuth } from "firebase/auth";
 //TODO ***FIRESTORE***********************************
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore, runTransaction, initializeFirestore, persistentLocalCache, persistentSingleTabManager, connectFirestoreEmulator } from "firebase/firestore";
+import { collection, doc, getDocs, query, updateDoc, where, arrayUnion, arrayRemove, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
+import { getFunctions } from 'firebase/functions'
 //TODO ***STORAGE***********************************
 import { getStorage, } from "firebase/storage"
 import { getVertexAI, getGenerativeModel } from "firebase/vertexai";
-import { onEnv } from "../utils/env";
-import { connectEmulatorsIfAvailable } from "./emulator/emulator";
+
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

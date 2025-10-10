@@ -1,10 +1,12 @@
-import React, { useRef } from 'react';
-import styled from 'styled-components';
-import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import React from 'react';
 import { useSelector } from 'react-redux';
-import Header from './components/Header';
+import styled from 'styled-components';
+
+import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+
 import Content from './components/Content';
 import Footer from './components/Footer';
+import Header from './components/Header';
 
 const Container = styled.div`
 position: relative;

@@ -1,9 +1,8 @@
 import React, { forwardRef, useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendar } from '@fortawesome/free-solid-svg-icons';
-import { useDatePicker } from './hooks/useDatePicker';
+
 import Calendar from './components/Calendar';
+import { useDatePicker } from './hooks/useDatePicker';
 import { formatDate, toDateTime } from './utils/dateUtils';
 
 /**

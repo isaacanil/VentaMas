@@ -1,9 +1,9 @@
-import { opcionesInventariable, opcionesItbis, opcionesVisible } from '../../../../InventoryFilterAndSortMetadata'
-import { useDispatch, useSelector } from 'react-redux';
-import { selectInventariable, selectItbis, setInventariable, setItbis, setStockAvailability, setStockAlertLevel, setStockRequirement, selectStockAvailability, selectStockAlertLevel, selectStockRequirement } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
-import { SubTitle } from '../../../../../../../../../checkout/Receipt';
-import styled from 'styled-components';
 import { Select } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectInventariable, selectItbis, setInventariable, setItbis, setStockAvailability, setStockAlertLevel, setStockRequirement, selectStockAvailability, selectStockAlertLevel, selectStockRequirement } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
+import { opcionesInventariable, opcionesItbis } from '../../../../InventoryFilterAndSortMetadata'
 import { Label } from '../SortPanel/SortPanel';
 
 export const FilterPanel = ({ Group }) => {

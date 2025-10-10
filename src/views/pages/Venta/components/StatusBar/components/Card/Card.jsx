@@ -1,12 +1,13 @@
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Tooltip } from 'antd'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { Tooltip } from 'antd'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
+
 import { SelectTotalShoppingItems } from '../../../../../../../features/cart/cartSlice'
-import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber'
 import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
+import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber'
 
 export const ProductCounter = ({ products }) => {
     const totalShoppingItems = useSelector(SelectTotalShoppingItems)

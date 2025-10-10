@@ -1,12 +1,14 @@
 import React from 'react'
-import { useMatch, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { Button, ButtonGroup } from '../../../system/Button/Button'
-import { useDispatch, useSelector } from 'react-redux'
-import routesName from '../../../../../routes/routesName'
-import { openModalAddOrder, toggleAddPurchaseModal, toggleClientModal, toggleProviderModal } from '../../../../../features/modals/modalSlice'
+
 import { icons } from '../../../../../constants/icons/icons'
 import { OPERATION_MODES } from '../../../../../constants/modes'
+import { toggleClientModal } from '../../../../../features/modals/modalSlice'
+import routesName from '../../../../../routes/routesName'
+import { Button, ButtonGroup } from '../../../system/Button/Button'
+
 export const ClientControlToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const { CLIENTS } = routesName.CONTACT_TERM;
     const matchWithCashReconciliation = useMatch(CLIENTS);

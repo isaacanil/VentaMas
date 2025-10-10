@@ -1,5 +1,6 @@
-import { DatePickerInput } from './DatePickerInput';
 import { fn } from 'storybook/test';
+
+import { DatePickerInput } from './DatePickerInput';
 
 export default {
     title: 'Components/DatePicker/DatePickerInput',

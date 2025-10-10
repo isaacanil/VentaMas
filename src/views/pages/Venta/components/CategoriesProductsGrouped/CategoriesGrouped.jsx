@@ -1,9 +1,10 @@
-import React from 'react';
-import { Grid } from '../../../..';
-import { Product } from '../../../../templates/system/Product/Product/Product';
-import { CustomProduct } from '../../../../templates/system/Product/CustomProduct';
-import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import React from 'react';
+import styled from 'styled-components';
+
+import { Grid } from '../../../..';
+import { CustomProduct } from '../../../../templates/system/Product/CustomProduct';
+import { Product } from '../../../../templates/system/Product/Product/Product';
 
 export const CategoriesGrouped = ({ products, viewRowModeRef }) => {
     const productsByCategory = products.reduce((result, { product }) => {

@@ -1,11 +1,13 @@
-import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
+import { addDays, addWeeks, addMonths } from 'date-fns';
 import { https } from 'firebase-functions';
 import { nanoid } from 'nanoid';
+
+import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
 import { stableHash } from '../utils/hash.util.js';
+
+import { auditTx } from './audit.service.js';
 import { getIdempotencyRef } from './idempotency.service.js';
 import { reserveNcf } from './ncf.service.js';
-import { addDays, addWeeks, addMonths } from 'date-fns';
-import { auditTx } from './audit.service.js';
 
 /**
  * Crea una factura V2 en estado 'pending' y registra la clave de idempotencia.
@@ -52,7 +54,9 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
         if (d) dt = addDays(dt, d);
         derivedDueDate = dt.getTime();
       }
-    } catch {}
+    } catch {
+      /* noop - due date derivation is best effort */
+    }
 
     // Derivar invoiceComment desde productos si no llega
     let derivedInvoiceComment = payload?.invoiceComment || null;
@@ -63,7 +67,9 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
           .map((p) => `${p?.name || p?.id}: ${p.comment}`);
         if (comments.length) derivedInvoiceComment = comments.join('; ');
       }
-    } catch {}
+    } catch {
+      /* noop - comment aggregation is optional */
+    }
 
     // Base doc
     const baseDoc = {
@@ -339,4 +345,3 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
 
   return { invoiceId, status: 'pending', alreadyExists };
 }
-

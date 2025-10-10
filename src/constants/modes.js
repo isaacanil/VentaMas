@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+
 const createMode = (label) => {
     return {
         id: label,

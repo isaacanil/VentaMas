@@ -1,4 +1,5 @@
 import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, doc, collection } from "firebase/firestore";
+
 import { db } from "./firebaseconfig";
 
 // Función para leer datos de Firestore

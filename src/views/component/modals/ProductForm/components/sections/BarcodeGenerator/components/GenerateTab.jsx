@@ -1,7 +1,6 @@
+import { InfoCircleOutlined, ThunderboltOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Space, Typography, Checkbox, Tooltip, Select } from 'antd';
 import React from 'react';
-import { Form, Input, Button, Space, Alert, Typography, Checkbox, Tooltip, Select } from 'antd';
-import { InfoCircleOutlined, ThunderboltOutlined, CheckCircleOutlined, CloseCircleOutlined, SettingOutlined } from '@ant-design/icons';
-import BarcodeResult from './BarcodeResult';
 import styled from 'styled-components';
 
 const { Text } = Typography;

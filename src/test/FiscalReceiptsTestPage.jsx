@@ -1,7 +1,8 @@
 import React from 'react';
-import FiscalReceiptsPanel from '../views/templates/NotificationCenter/components/panels/FiscalReceiptsPanel';
-import { generateFiscalReceiptsWidgetData } from '../utils/fiscalReceiptsUtils';
+
 import { EXAMPLE_TAX_RECEIPTS } from '../examples/fiscalReceiptsExample';
+import { generateFiscalReceiptsWidgetData } from '../utils/fiscalReceiptsUtils';
+import FiscalReceiptsPanel from '../views/templates/NotificationCenter/components/panels/FiscalReceiptsPanel';
 
 /**
  * Componente de prueba para el panel de comprobantes fiscales

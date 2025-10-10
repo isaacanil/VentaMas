@@ -1,15 +1,17 @@
-import React, { useEffect } from 'react'
-import * as antd from 'antd';
-import styled from 'styled-components';
-import { fbDeleteClient } from '../../../../../../../firebase/client/fbDeleteClient';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { toggleClientModal } from '../../../../../../../features/modals/modalSlice';
-import { OPERATION_MODES } from '../../../../../../../constants/modes';
 import { GlobalOutlined } from '@ant-design/icons';
+import * as antd from 'antd';
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { OPERATION_MODES } from '../../../../../../../constants/modes';
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { toggleClientModal } from '../../../../../../../features/modals/modalSlice';
+import { fbDeleteClient } from '../../../../../../../firebase/client/fbDeleteClient';
 import { useRncSearch } from '../../../../../../../hooks/useRncSearch';
 import { DgiiSyncAlert } from '../../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '../../../../../../component/Rnc/RncPanel/RncPanel';
+
 const { Form, Input, Button, notification, Space } = antd;
 
 const Wrapper = styled.div`

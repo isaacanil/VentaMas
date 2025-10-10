@@ -1,4 +1,5 @@
 import { logger } from 'firebase-functions';
+
 import { db, FieldValue, admin } from '../../../../core/config/firebase.js';
 import {
   buildEntryId,
@@ -116,7 +117,7 @@ export const upsertLedgerEntry = async ({
     if (prevMeta.lastNumberString) {
       try {
         prevLastBigInt = BigInt(prevMeta.lastNumberString);
-      } catch (_) {
+      } catch {
         prevLastBigInt = null;
       }
     }
@@ -305,14 +306,13 @@ export const wipeLedgerPrefixes = async ({ businessId, prefixes }) => {
       })))
     : await ledgerRoot.listDocuments();
 
-  let deleted = 0;
-  for (const docRef of targets) {
-    // eslint-disable-next-line no-await-in-loop
-    await admin.firestore().recursiveDelete(docRef);
-    deleted += 1;
+  if (!targets.length) {
+    return { deleted: 0 };
   }
 
-  return { deleted };
+  await Promise.all(targets.map((docRef) => admin.firestore().recursiveDelete(docRef)));
+
+  return { deleted: targets.length };
 };
 
 export const syncLedgerForChange = async ({
@@ -350,10 +350,7 @@ export const syncLedgerForChange = async ({
     );
   }
 
-  for (const task of tasks) {
-    // eslint-disable-next-line no-await-in-loop
-    await task;
-  }
+  await Promise.all(tasks);
 
   return { handled: true };
 };

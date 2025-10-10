@@ -1,5 +1,5 @@
-import { Modal, Typography, Button } from 'antd';
 import { SafetyOutlined, LockOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Modal, Typography, Button } from 'antd';
 import styled from 'styled-components';
 
 const { Title, Text } = Typography;

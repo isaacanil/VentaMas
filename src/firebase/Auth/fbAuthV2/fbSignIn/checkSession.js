@@ -1,11 +1,12 @@
+import { Modal } from 'antd';
 import { getDoc, doc, deleteDoc, setDoc, collection, query, where, getDocs, Timestamp, serverTimestamp } from "firebase/firestore";
-import { db } from "../../../firebaseconfig";
-import { login, logout } from "../../../../features/auth/userSlice";
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
+
 import { SESSION_DURATION, TOKEN_CLEANUP_AGE, INACTIVITY_WARNING, SESSION_CHECK_INTERVAL, ACTIVITY_CHECK_INTERVAL } from '../../../../constants/sessionConfig';
+import { login, logout } from "../../../../features/auth/userSlice";
+import { db } from "../../../firebaseconfig";
 
 let lastActivity = Timestamp.now();
 let isModalVisible = false;

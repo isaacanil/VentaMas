@@ -1,16 +1,17 @@
+import { faListAlt, faTable, faSpinner, faChartPie, faDownload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { message, Button } from 'antd'
+import { DateTime } from 'luxon'
 import React, { useState } from 'react'
 import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { message, Button } from 'antd'
-import routesName from '../../../../../routes/routesName'
-import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faListAlt, faTable, faSpinner, faChartPie, faDownload, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
-import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
+
+import { createProfessionalReportCallback } from '../../../../../hooks/exportToExcel/exportConfig'
 import { formatBill } from '../../../../../hooks/exportToExcel/formatBill'
-import { DateTime } from 'luxon'
-import { getBillExportCallback, createProfessionalReportCallback } from '../../../../../hooks/exportToExcel/exportConfig'
+import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel'
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
+import routesName from '../../../../../routes/routesName'
+import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 
 export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData, onReportSaleOpen }) => {
   const [isExporting, setIsExporting] = useState(false)

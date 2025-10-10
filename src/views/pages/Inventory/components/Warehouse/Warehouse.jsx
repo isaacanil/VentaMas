@@ -1,16 +1,19 @@
 import React, { useMemo, useEffect } from 'react'
-import styled from "styled-components"
-import { ResizableSidebar } from '../../../../component/ResizebleSidebar/ResizebleSidebar'
-import { useTransformedWarehouseData } from '../../../../../firebase/warehouse/warehouseNestedServise'
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
-import { DetailView } from './components/DetailView/DetailView'
-import Sidebar from './components/Sidebar/Sidebar'
-import { Outlet, useParams, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { useListenProductsStockByLocation } from '../../../../../firebase/warehouse/productStockService'
+import { Outlet, useParams, useNavigate } from 'react-router-dom'
+import styled from "styled-components"
+
 import { navigateWarehouse } from '../../../../../features/warehouse/warehouseSlice'
+import { useListenProductsStockByLocation } from '../../../../../firebase/warehouse/productStockService'
+import { useTransformedWarehouseData } from '../../../../../firebase/warehouse/warehouseNestedServise'
 import { useDefaultWarehouse } from '../../../../../firebase/warehouse/warehouseService'
+import { ResizableSidebar } from '../../../../component/ResizebleSidebar/ResizebleSidebar'
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+
 import InventoryMenu from './components/DetailView/InventoryMenu'
+import Sidebar from './components/Sidebar/Sidebar'
+
+
 
 const makePathFromParams = (params) => {
   const path = [];

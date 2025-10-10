@@ -1,6 +1,8 @@
 import styled from 'styled-components';
-import { StatusBar } from '../StatusBar/StatusBar';
+
 import { ProductCategoryBar } from '../../../../component/ProductCategoryBar/ProductCategoryBar';
+import { StatusBar } from '../StatusBar/StatusBar';
+
 import { ProductList } from './components/ProductList';
 
 export function ProductControlEfficient({ products, productsLoading }) {

@@ -1,8 +1,10 @@
 
-import React from 'react';
 import { Form } from 'antd';
+import React from 'react';
 import styled from 'styled-components';
+
 import InvoiceTemplates from '../../../Invoice/components/InvoiceTemplates/InvoiceTemplates';
+
 import DueDateConfig from './DueDateConfig';
 
 const ConfigItem = styled.div`

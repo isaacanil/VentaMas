@@ -1,17 +1,19 @@
-import React from 'react'
-import { CodeTitle, BalanceAmount } from '../ClientFinancialInfo'
-import styled from 'styled-components';
 import * as antd from 'antd';
+import React from 'react'
+import styled from 'styled-components';
+
+
 const { Button, } = antd;
 import { setAccountPayment } from '../../../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
+
 import { useDispatch } from 'react-redux';
+
 import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faUser, 
-    faHashtag, 
-    faMoneyBillWave,
-    faCreditCard
+    faHashtag
 } from '@fortawesome/free-solid-svg-icons';
 
 export const ClientBalanceInfo = ({

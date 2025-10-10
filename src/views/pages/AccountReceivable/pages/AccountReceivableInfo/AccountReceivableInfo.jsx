@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { useQuery } from '@tanstack/react-query';
 import * as antd from 'antd';
 import { DateTime } from 'luxon';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectAR, setAccountReceivableInfo } from '../../../../../features/accountsReceivable/accountsReceivableSlice';
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import fetchAccountsReceivableDetails from '../../../../../firebase/accountsReceivable/fetchAccountsReceivableDetails';
-import { useQuery } from '@tanstack/react-query';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
+import fetchAccountsReceivableDetails from '../../../../../firebase/accountsReceivable/fetchAccountsReceivableDetails';
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import Typography from '../../../../templates/system/Typografy/Typografy';
 import { DetailSummary } from '../../../../component/DetailSummary/DetailSummary';
+import Typography from '../../../../templates/system/Typografy/Typografy';
 
 const { Layout, Descriptions, Tag } = antd;
 

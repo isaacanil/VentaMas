@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
+import { useEffect, useState } from 'react'
+
 import { resolveUserDisplayNamesBatch, collectUIDsForInventoryTable } from '../../../../utils/users/resolveUserDisplayNamesBatch'
 
 /**

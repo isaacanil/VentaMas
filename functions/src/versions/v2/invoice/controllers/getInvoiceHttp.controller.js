@@ -1,4 +1,5 @@
 import { https, logger } from 'firebase-functions';
+
 import { admin, db } from '../../../../core/config/firebase.js';
 
 function setCors(res) {

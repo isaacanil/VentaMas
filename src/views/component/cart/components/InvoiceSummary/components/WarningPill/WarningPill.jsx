@@ -1,7 +1,8 @@
 // components/WarningPill/WarningPill.jsx
+import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { useClickOutSide } from '../../../../../../../hooks/useClickOutSide';
 
 const WarningPill = ({ message, icon = "⚠️" }) => {

@@ -1,24 +1,26 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { CashDenominationCalculator } from '../../resource/CashDenominationCalculator/CashDenominationCalculator'
-import { useDispatch, useSelector } from 'react-redux'
-import { clearCashCount, selectCashCount, setCashCountOpeningBanknotes, setCashCountOpeningComments, setCashCountOpeningDate, setCashCountOpeningEmployee, } from '../../../../../features/cashCount/cashCountManagementSlice'
-import { Comments } from '../CashRegisterClosure/Comments/Comments'
-import { Header } from './components/Headers/Header'
-import { ConfirmCancelButtons } from '../../resource/ConfirmCancelButtons/ConfirmCancelButtons'
-import { Footer } from './components/Footer/Footer'
-import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
-import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
-import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
-import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { fbCashCountOpening } from '../../../../../firebase/cashCount/opening/fbCashCountOpening'
 import { message } from 'antd'
-import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs'
-
-import { DateSection } from '../CashRegisterClosure/components/Header/DateSection'
 import { DateTime } from 'luxon'
+import React, { useCallback, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { clearCashCount, selectCashCount, setCashCountOpeningBanknotes, setCashCountOpeningComments, } from '../../../../../features/cashCount/cashCountManagementSlice'
+import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs'
+import { fbCashCountOpening } from '../../../../../firebase/cashCount/opening/fbCashCountOpening'
+import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules'
+import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
+import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
+import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
+import { CashDenominationCalculator } from '../../resource/CashDenominationCalculator/CashDenominationCalculator'
+import { Comments } from '../CashRegisterClosure/Comments/Comments'
+import { DateSection } from '../CashRegisterClosure/components/Header/DateSection'
+
+import { Footer } from './components/Footer/Footer'
+import { Header } from './components/Headers/Header'
+
+
 
 export const CashRegisterOpening = () => {
   const cashCount = useSelector(selectCashCount)

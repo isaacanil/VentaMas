@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo } from 'react';
-import { opcionesCriterio, opcionesOrden } from '../../../../InventoryFilterAndSortMetadata';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
-import styled from 'styled-components';
-import { SubTitle } from '../../../../../../../../../checkout/Receipt';
 import { Button, Select, Tooltip } from 'antd';
+import { useEffect, useState, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { icons } from '../../../../../../../../../../../constants/icons/icons';
+import { selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
+import { opcionesCriterio } from '../../../../InventoryFilterAndSortMetadata';
 
 export const SortPanel = ({ Group }) => {
     const [isCriterioChanged, setIsCriterioChanged] = useState(false);

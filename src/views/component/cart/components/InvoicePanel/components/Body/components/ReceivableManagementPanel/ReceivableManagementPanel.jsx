@@ -1,21 +1,25 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import styled from 'styled-components'
 import { DatePicker, Input, InputNumber, Select, Form, Modal } from 'antd'
-import { useDispatch, useSelector } from 'react-redux'
-import { SelectCartData, toggleReceivableStatus } from '../../../../../../../../../features/cart/cartSlice'
-import { calculateInvoiceChange } from '../../../../../../../../../utils/invoice';
-import { formatPrice } from '../../../../../../../../../utils/formatPrice';
-import { selectAR, setAR, resetAR } from '../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
-import { calculateAmountPerInstallment } from '../../../../../../../../../utils/accountsReceivable/accountsReceivable';
-import usePaymentDates from './usePaymentDates';
-import { setNumPrecision } from '../../../../../../../../../utils/pricing';
-import { getMaxInstallments } from '../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
-import { useGetPendingBalance, usePendingBalance } from '../../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import { selectClient } from '../../../../../../../../../features/clientCart/clientCartSlice';
-import { selectUser } from '../../../../../../../../../features/auth/userSlice';
-import DateUtils from '../../../../../../../../../utils/date/dateUtils';
-import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverbiew';
 import { DateTime } from 'luxon';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { selectAR, setAR } from '../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
+import { selectUser } from '../../../../../../../../../features/auth/userSlice';
+import { SelectCartData, toggleReceivableStatus } from '../../../../../../../../../features/cart/cartSlice'
+import { selectClient } from '../../../../../../../../../features/clientCart/clientCartSlice';
+import { useGetPendingBalance, usePendingBalance } from '../../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import { calculateAmountPerInstallment } from '../../../../../../../../../utils/accountsReceivable/accountsReceivable';
+import { getMaxInstallments } from '../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
+import DateUtils from '../../../../../../../../../utils/date/dateUtils';
+import { formatPrice } from '../../../../../../../../../utils/formatPrice';
+import { calculateInvoiceChange } from '../../../../../../../../../utils/invoice';
+import { setNumPrecision } from '../../../../../../../../../utils/pricing';
+import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverbiew';
+
+import usePaymentDates from './usePaymentDates';
+
+
 
 const { Option } = Select;
 const { TextArea } = Input;

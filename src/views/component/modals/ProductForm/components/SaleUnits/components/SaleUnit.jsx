@@ -1,7 +1,8 @@
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { Button, Tooltip } from 'antd'
 import React from 'react'
 import styled from 'styled-components'
-import { EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons'
-import { Button, Popconfirm, Tooltip } from 'antd'
+
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
 
 const CustomCardContainer = styled.div`

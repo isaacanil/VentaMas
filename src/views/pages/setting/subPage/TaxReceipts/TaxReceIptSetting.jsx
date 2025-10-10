@@ -1,27 +1,28 @@
+import { Spin, Typography, Modal, message } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
+import { FISCAL_RECEIPTS_ALERT_CONFIG } from '../../../../../config/fiscalReceiptsAlertConfig'
+import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import { getTaxReceiptData, selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
+import { fbGetFiscalAlertsConfig } from '../../../../../firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig'
+import { fbUpdateFiscalAlertsConfig } from '../../../../../firebase/Settings/fiscalAlertsConfig/fbUpdateFiscalAlertsConfig'
+import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt'
 import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt'
 import { fbUpdateTaxReceipt } from '../../../../../firebase/taxReceipt/fbUpdateTaxReceipt'
-import { selectUser } from '../../../../../features/auth/userSlice'
+import { rebuildNcfLedger } from '../../../../../firebase/taxReceipt/rebuildNcfLedger'
 import { useCompareArrays } from '../../../../../hooks/useCompareArrays'
-import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt'
-import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+import { useLoadingStatus } from '../../../../../hooks/useLoadingStatus'
 import { serializeFirestoreDocuments } from '../../../../../utils/serialization/serializeFirestoreData'
-import { fbUpdateFiscalAlertsConfig } from '../../../../../firebase/Settings/fiscalAlertsConfig/fbUpdateFiscalAlertsConfig'
-import { fbGetFiscalAlertsConfig } from '../../../../../firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig'
-import { FISCAL_RECEIPTS_ALERT_CONFIG } from '../../../../../config/fiscalReceiptsAlertConfig'
 
-import { Spin, Typography, Modal, message } from 'antd'
 import AddReceiptDrawer from './components/AddReceiptModal/AddReceiptModal'
 import { ReceiptSettingsSection } from './components/ReceiptSettingsSection/ReceiptSettingsSection'
 import { ReceiptTableSection } from './components/ReceiptTableSection/ReceiptTableSection'
-import { filterPredefinedReceipts, generateNewTaxReceipt } from './utils/taxReceiptUtils'
-import { useLoadingStatus } from '../../../../../hooks/useLoadingStatus'
-import { rebuildNcfLedger } from '../../../../../firebase/taxReceipt/rebuildNcfLedger'
 import { buildPrefix, sanitizePart } from './components/TaxReceiptForm/utils/ncfUtils'
+import { filterPredefinedReceipts, generateNewTaxReceipt } from './utils/taxReceiptUtils'
+
 
 const { Title, Paragraph } = Typography;
 

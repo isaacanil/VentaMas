@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react';
 import * as ant from 'antd';
-import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient';
-import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { Provider, useDispatch, useSelector } from 'react-redux';
-import { nanoid } from 'nanoid';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { OPERATION_MODES } from '../../../../../../constants/modes';
-import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
+import { selectUser } from '../../../../../../features/auth/userSlice';
 import { addClient, setClientMode } from '../../../../../../features/clientCart/clientCartSlice';
 import { CLIENT_MODE_BAR } from '../../../../../../features/clientCart/clientMode';
-import { ClientGeneralInfo } from './components/ClientGeneralInfo';
+import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
+import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
+import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient';
+
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
+import { ClientGeneralInfo } from './components/ClientGeneralInfo';
+
 const { Modal, Form, Input, Button, Tabs, notification, message } = ant;
 /**
  *

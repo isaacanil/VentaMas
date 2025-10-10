@@ -1,9 +1,11 @@
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { debounce } from 'lodash'
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+
 import { selectUser } from '../../features/auth/userSlice'
-import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../../firebase/firebaseconfig'
-import { debounce } from 'lodash'
+
 
 /**
  * Hook para validar códigos de barras duplicados en tiempo real

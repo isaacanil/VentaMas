@@ -1,13 +1,15 @@
-import { useState } from 'react';
-import styled from 'styled-components';
-import imageCompression from 'browser-image-compression';
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Select, message, Card, Typography } from 'antd';
 import { ShopOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
-import { countries } from './countries.json';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { Form, Input, Button, Select, message, Card, Typography } from 'antd';
+import imageCompression from 'browser-image-compression';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { createBusiness } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 import ROUTES_PATH from '../../../../../routes/routesName';
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+
+import { countries } from './countries.json';
 
 const { Option } = Select;
 const { Title, Text } = Typography;

@@ -1,6 +1,12 @@
 import { StrictMode, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+
 import './firebase/firebaseconfig';
+import { HelmetProvider } from 'react-helmet-async';
+import { I18nextProvider } from 'react-i18next';
+import { Provider } from 'react-redux'
+
+import { AntConfigProvider } from './ant/AntConfigProvider';
 import App from './App';
 import './styles/normalize/normalize.css';
 import './index.css';
@@ -9,15 +15,12 @@ import './styles/typography/typographyStyle.scss';
 import './styles/theme.css';
 import './styles/darkTheme.css';
 
-import { Provider } from 'react-redux'
 import { store } from './app/store'
 import AppProviders from './Context/AppProviders';
-import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
-import { AntConfigProvider } from './ant/AntConfigProvider';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {App as AntApp} from "antd";
-import { HelmetProvider } from 'react-helmet-async';
 import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill';
 
 (async () => {

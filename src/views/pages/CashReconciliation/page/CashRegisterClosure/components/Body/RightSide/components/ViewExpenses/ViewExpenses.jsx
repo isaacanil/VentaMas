@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import styled from 'styled-components'
 import { Modal, Tag, Table, Typography, Spin } from 'antd';
-import { useSelector } from 'react-redux'
-import { selectUser } from '../../../../../../../../../../features/auth/userSlice'
+import React, { useState } from 'react'
+import styled from 'styled-components'
+
 import { PillButton } from '../../../../../../../../../component/PillButton/PillButton';
 
 const { Title, Text } = Typography;

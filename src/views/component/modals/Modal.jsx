@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { Button } from '../../templates/system/Button/Button'
-import styled from 'styled-components'
-import { ButtonGroup } from '../../templates/system/Button/Button'
 import { motion } from 'framer-motion'
-import { MotionWrapper } from '../base/animation/MotionWrapper'
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+
 import { icons } from '../../../constants/icons/icons'
+import { Button } from '../../templates/system/Button/Button'
+import { ButtonGroup } from '../../templates/system/Button/Button'
+import { MotionWrapper } from '../base/animation/MotionWrapper'
 
 export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, isOpen, subModal, width }) => {
     const [modalContent, setModalContent] = useState(false)

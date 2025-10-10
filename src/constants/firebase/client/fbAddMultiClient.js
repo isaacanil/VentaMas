@@ -1,4 +1,5 @@
 import { collection, doc, setDoc } from "firebase/firestore";
+
 import { db } from "../../../firebase/firebaseconfig";
 
 export async function fbAddMultiClients(user, clientsData) {
@@ -15,8 +16,7 @@ export async function fbAddMultiClients(user, clientsData) {
   
     try {
       await Promise.all(promises);
-      promises.forEach((promise, index) => {
-      });
     } catch (error) {
+      console.error("Error adding multiple clients", error);
     }
   }

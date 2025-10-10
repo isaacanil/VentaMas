@@ -1,6 +1,7 @@
-import { useSelector } from "react-redux";
-import { SelectProduct, SelectSettingCart } from "../../../../../../features/cart/cartSlice";
 import { useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
+
+import { SelectProduct, SelectSettingCart } from "../../../../../../features/cart/cartSlice";
 import { isStockExceeded, isStockRestricted, isStockZero } from "../utils/stock.utils";
 
 /**

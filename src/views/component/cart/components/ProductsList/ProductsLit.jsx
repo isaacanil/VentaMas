@@ -1,16 +1,20 @@
+import { Modal, Alert } from 'antd';
+import { AnimatePresence, motion } from 'framer-motion'
 import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
+import { ProductDiscountModal } from '../../../../../components/modals/ProductDiscountModal/ProductDiscountModal';
 import { deleteProduct, SelectProduct, updateProductFields } from '../../../../../features/cart/cartSlice'
-import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart'
-import { AnimatePresence, motion } from 'framer-motion'
+import { selectInsuranceData, updateInsuranceData } from '../../../../../features/insurance/insuranceSlice'
+import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled'
 import Typography from '../../../../templates/system/Typografy/Typografy'
 import { InsuranceAuthFields } from '../InsuranceAuthFields/InsuranceAuthFields'
-import { selectInsuranceStatus, selectInsuranceData, updateInsuranceData } from '../../../../../features/insurance/insuranceSlice'
-import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled'
-import { Modal, Alert } from 'antd';
+import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart'
+
+
 import { CommentModal } from './components/CommentModal/CommentModal';
-import { ProductDiscountModal } from '../../../../../components/modals/ProductDiscountModal/ProductDiscountModal';
+
 
 export const ProductsList = () => {
     const dispatch = useDispatch();

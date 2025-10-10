@@ -1,11 +1,14 @@
 import React from 'react'
 import styled from 'styled-components'
+
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
+import { Transition } from '../../templates/system/Transition'
+import Typography from '../../templates/system/Typografy/Typografy'
+
 import { Card } from './Components/Card'
 import { getSettingData } from './SettingData'
 
-import { Transition } from '../../templates/system/Transition'
-import Typography from '../../templates/system/Typografy/Typografy'
+
 export const Setting = () => {
   // Agrupar configuraciones por categoría
   const settingData = getSettingData();

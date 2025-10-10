@@ -1,8 +1,7 @@
-import React, { Fragment, useEffect, useState } from 'react';
-import { Bar, Line } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, BarElement, PointElement } from 'chart.js';
+import React, { Fragment, useState } from 'react';
+import { Bar } from 'react-chartjs-2';
 
-import { getBills } from '../../../../firebase/firebaseconfig';
 import { useBillsByDay } from './countBillsByMonth';
 
 Chart.register(CategoryScale);

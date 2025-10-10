@@ -1,7 +1,9 @@
 import { collection, getDocs,  doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
-import { fbLoadInvoicesForCashCount } from './fbLoadInvoicesForCashCount';
+
 import { CashCountMetaData } from '../../views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
+import { db } from '../firebaseconfig';
+
+import { fbLoadInvoicesForCashCount } from './fbLoadInvoicesForCashCount';
 
 // Esta función recorre todos los negocios y actualiza los cuadres de caja en cada uno
 export const fbUpdateAllBusinessCashCounts = async () => {

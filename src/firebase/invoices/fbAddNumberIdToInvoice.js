@@ -1,6 +1,7 @@
 
+import { writeBatch, collection, query, orderBy, getDocs, doc, runTransaction } from 'firebase/firestore';
+
 import { db } from "../firebaseconfig";
-import { writeBatch, collection, query, orderBy, getDocs, doc, setDoc, runTransaction } from 'firebase/firestore';
 
 async function updateInvoicesInBatches(businessID) {
     

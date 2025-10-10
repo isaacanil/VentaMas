@@ -1,7 +1,8 @@
-import { useSelector } from "react-redux"
-import { selectUser } from "../../features/auth/userSlice"
-import { useEffect, useState } from "react"
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
+import { useEffect, useState } from "react"
+import { useSelector } from "react-redux"
+
+import { selectUser } from "../../features/auth/userSlice"
 import { db } from "../firebaseconfig"
 
 export const useFbGetCategories = () => {

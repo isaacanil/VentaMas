@@ -2,33 +2,7 @@ import { faEnvelope, faPhone } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 
-const getComprobanteInfo = (comprobante) => {
-    if (!comprobante) {
-        return {
-            title: 'RECIBO DE PAGO',
-            label: 'Número de Recibo',
-        };
-    }
-
-    if (comprobante.startsWith('B01')) {
-        return {
-            title: 'FACTURA DE CRÉDITO FISCAL',
-            label: 'NCF',
-        };
-    }
-
-    if (comprobante.startsWith('B02')) {
-        return {
-            title: 'FACTURA DE CONSUMO',
-            label: 'NCF',
-        };
-    }
-
-    return {
-        title: 'COMPROBANTE FISCAL',
-        label: 'NCF',
-    };
-};
+import { resolveDocumentIdentity } from "../../../../../../../../utils/invoice/documentIdentity.js";
 
 const formatDate = (dateObj) => {
     if (!dateObj) return '';
@@ -39,7 +13,15 @@ const formatDate = (dateObj) => {
 };
 
 export default function Header({ business, data }) {
-    const comprobanteInfo = getComprobanteInfo(data?.NCF);
+    const documentIdentity = resolveDocumentIdentity(data);
+    const isPreorder = documentIdentity.type === 'preorder';
+    const referenceNumber = isPreorder
+        ? documentIdentity.value || data?.numberID
+        : data?.numberID;
+    const referenceLabel = isPreorder
+        ? 'Preventa'
+        : `Factura ${data?.type || ''}`.trim();
+    const shouldShowIdentityLine = !isPreorder && documentIdentity.label;
     return (
         <Container>
             {business?.logoUrl && (
@@ -66,21 +48,20 @@ export default function Header({ business, data }) {
                     }
                 </CompanyInfo>
                 <RightAlign>
-                    <Title>{comprobanteInfo.title}</Title>
+                    <Title>{documentIdentity.title}</Title>
                     <p>Fecha: {formatDate(data?.date)}</p>
                     <p>
-                        Factura {data?.type === 'preorder' ? 'Pedido' : data?.type} #{' '}
-                        {data?.numberID}
+                        {referenceLabel} # {referenceNumber || '-'}
                     </p>
+                    {shouldShowIdentityLine && (
+                        <p>
+                            {documentIdentity.label}: {documentIdentity.value || '-'}
+                        </p>
+                    )}
                     {data?.preorderDetails?.date && (
                         <p>Fecha de pedido: {formatDate(data?.preorderDetails?.date)}</p>
                     )}
                     {data?.dueDate && <p>Fecha que vence: {formatDate(data?.dueDate)}</p>}
-                    {data?.NCF && (
-                        <ComprobanteSection>
-                            <p>NCF: {data?.NCF}</p>
-                        </ComprobanteSection>
-                    )}
                 </RightAlign>
             </HeaderInfo>
             <CustomerInfo>
@@ -100,9 +81,9 @@ export default function Header({ business, data }) {
                     </span>
                 </div>
                 <RightAlign>
-                    {data?.comprobante && (
+                    {documentIdentity.label && documentIdentity.type !== 'preorder' && (
                         <p>
-                            {comprobanteInfo.label}: {data.comprobante}
+                            {documentIdentity.label}: {documentIdentity.value || '-'}
                         </p>
                     )}
                 </RightAlign>
@@ -148,13 +129,6 @@ const RightAlign = styled.div`
   text-align: right;
   font-size: 14px;
 `;
-
-const ComprobanteSection = styled.div`
-
-  font-size: 14px;
-  text-align: right;
-`;
-
 
 const LogoContainer = styled.div`
   max-width: 200px;

@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Button, Card, message, Alert, Typography, Modal, Tag, Spin } from 'antd';
 import { KeyOutlined, ReloadOutlined, ClockCircleOutlined, SafetyOutlined, LockOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, message, Alert, Typography, Modal, Tag, Spin } from 'antd';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../features/auth/userSlice';
 import { fbGetUserPinStatus, fbGenerateUserPin, fbDeactivateUserPin } from '../../../../firebase/authorization/pinAuth';
 import { useAuthorizationModules } from '../../../../hooks/useAuthorizationModules';
-import styled from 'styled-components';
-import { RequestPinModal } from './RequestPinModal';
 import { GeneratePinModal } from '../../../pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
 import { PinDetailsModal } from '../../../pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal';
-import { ViewPinModal } from './ViewPinModal.jsx';
+
 import { PinInfoModal } from './PinInfoModal.jsx';
+import { RequestPinModal } from './RequestPinModal';
+import { ViewPinModal } from './ViewPinModal.jsx';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -257,7 +259,7 @@ export const PersonalPinManagement = () => {
   const [selectedModule, setSelectedModule] = useState(null);
 
   // Dev y Owner pueden generar su propio PIN
-  const canSelfGenerate = ['dev', 'owner'].includes(user?.role);
+  const canSelfGenerate = ['dev', 'owner', 'admin'].includes(user?.role);
 
   // Filtrar solo módulos activos según configuración
   const activeAvailableModules = authorizationFlowEnabled

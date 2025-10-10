@@ -1,9 +1,9 @@
-import { useState } from 'react'
 import styled from 'styled-components'
-import { ExpensesTable } from './components/ExpenseTable/ExpensesTable'
-import { useFbGetExpenses } from '../../../../firebase/expenses/Items/useFbGetExpenses'
-import ExpensesForm from '../../Expenses/ExpensesForm/ExpensesForm'
+
 import { MenuApp } from '../../../templates/MenuApp/MenuApp'
+import ExpensesForm from '../../Expenses/ExpensesForm/ExpensesForm'
+
+import { ExpensesTable } from './components/ExpenseTable/ExpensesTable'
 
 export const ExpensesList = () => {
   return (

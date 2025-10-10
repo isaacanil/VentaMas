@@ -1,8 +1,9 @@
+import { motion } from "framer-motion"
 import { useState } from "react"
 import { useDispatch } from "react-redux"
-import { addItem, deleteItem } from "../../../features/category/categorySlicer"
 import styled from "styled-components"
-import { motion } from "framer-motion"
+
+import { addItem, deleteItem } from "../../../features/category/categorySlicer"
 import getIconFromText from "../../../utils/text/getIconFromText"
 
 export const Category = ({ category, ref, onClick, type, icon, themeColor, selected, index }) => {

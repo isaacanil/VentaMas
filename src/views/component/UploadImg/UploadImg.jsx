@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { ChangeProductImage, selectUpdateProductData } from '../../../features/updateProduct/updateProductSlice'
-import { Header } from './components/Header/Header'
-import { Body } from './components/Body/Body'
-import { fbGetProductsImg } from '../../../firebase/products/productsImg/fbGetProductsImg'
+import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { selectUser } from '../../../features/auth/userSlice'
+import { selectUpdateProductData } from '../../../features/updateProduct/updateProductSlice'
+import { fbGetProductsImg } from '../../../firebase/products/productsImg/fbGetProductsImg'
+
+import { Body } from './components/Body/Body'
+import { Header } from './components/Header/Header'
+
 export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
     const { status, product } = useSelector(selectUpdateProductData)
     const [img, setImg] = useState(product?.productImageURL)

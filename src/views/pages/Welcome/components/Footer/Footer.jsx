@@ -1,19 +1,12 @@
 // Importa React, styled-components y los componentes de antd que necesitarás
-import React from 'react';
-import styled from 'styled-components';
-import { Row, Col, Divider, Button } from 'antd';
-import { motion } from 'framer-motion';
-import { 
-  PhoneOutlined, 
-  MailOutlined, 
-  GlobalOutlined,
-  FacebookOutlined,
-  TwitterOutlined,
-  InstagramOutlined,
-  LinkedinOutlined,
+import {
   HeartFilled
 } from '@ant-design/icons';
-import WelcomeData from '../../WelcomeData.json';
+import { Row, Col, Divider, Button } from 'antd';
+import { motion } from 'framer-motion';
+import React from 'react';
+import styled from 'styled-components';
+
 
 // Componente Footer
 export const Footer = () => {

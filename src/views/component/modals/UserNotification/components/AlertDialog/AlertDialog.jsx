@@ -1,10 +1,12 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue'
-import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
 import { motion } from 'framer-motion'
+import React from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { selectCurrentUserNotification } from '../../../../../../features/UserNotification/UserNotificationSlice'
+import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
+import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue'
+
 
 export const AlertDialog = ({onSubmit,  submitBtnName }) => {
   

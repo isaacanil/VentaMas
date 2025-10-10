@@ -1,16 +1,8 @@
 
 import { getDiscount, money, getProductsIndividualDiscounts, hasIndividualDiscounts } from "../utils/formatters.js";
 
-/* Mapeo a texto de los métodos de pago */
-const PAYMENT_METHODS = {
-  cash:     'Efectivo',
-  transfer: 'Transferencia',
-  card:     'Tarjeta',
-  creditNote: 'Nota de Crédito'
-};
-
 export function buildFooter(biz, d) {
-  return (current, total) => {
+  return (currentPage, pageCount) => {
     /* Calcular descuentos */
     const individualDiscounts = getProductsIndividualDiscounts(d.products || []);
     const hasIndividualDisc = hasIndividualDiscounts(d.products || []);
@@ -51,7 +43,13 @@ export function buildFooter(biz, d) {
             }
           ]
         },
-        ...(d.invoiceComment ? [{ text: d.invoiceComment, margin: [0, 8, 0, 0] }] : [])
+        ...(d.invoiceComment ? [{ text: d.invoiceComment, margin: [0, 8, 0, 0] }] : []),
+        ...(biz?.quotation?.footerMessage
+          ? [{ text: biz.quotation.footerMessage, margin: [0, 4, 0, 0] }]
+          : []),
+        ...(pageCount > 1
+          ? [{ text: `Página ${currentPage} de ${pageCount}`, alignment: "right", margin: [0, 4, 0, 0] }]
+          : [])
       ]
     };
   };

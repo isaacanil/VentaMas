@@ -1,6 +1,7 @@
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
-import { scheduleCompensationsInTx } from './compensation.service.js';
+
 import { auditTx } from './audit.service.js';
+import { scheduleCompensationsInTx } from './compensation.service.js';
 
 async function consumeNcfIfReserved(tx, { businessId, invoice, invoiceId }) {
   const ncf = invoice?.snapshot?.ncf;

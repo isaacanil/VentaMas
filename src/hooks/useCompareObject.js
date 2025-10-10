@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
 
 // export const useCompareObjects = (obj1, obj2) => {
 //   const isEqual = useMemo(() => {

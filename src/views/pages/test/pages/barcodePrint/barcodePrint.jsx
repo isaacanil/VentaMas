@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import BarcodeItem from './components/BarcodeItem';
+
 import BarcodePrintModal from './components/BarcodePrintModal';
 // eliminado ReactToPrint, la lógica de impresión vive en el modal
 

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
-import { icons } from '../../../../../../../../constants/icons/icons'
-import styled from 'styled-components'
-import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
 import { Modal, Form, Input, notification, Button }from 'antd'
+import React, { useEffect } from 'react'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../../../../constants/icons/icons'
+import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
 
 const formIcon = icons.forms
 

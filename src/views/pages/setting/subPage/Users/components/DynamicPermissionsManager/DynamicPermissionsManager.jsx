@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Modal, Button, Select, List, Tag, Typography, Space, Divider, Spin, Alert } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Modal, Button, Select, List, Tag, Typography, Space, Spin } from 'antd';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import { 
     getUserDynamicPermissions, 
     setUserDynamicPermissions,
     getAvailablePermissionsForRole,
     getRolePermissionsInfo 
 } from '../../../../../../../services/dynamicPermissions';
-import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
 
 const { Title, Text } = Typography;
 const { Option } = Select;

@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import * as antd from "antd";
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDeleteLeft, faEdit } from "@fortawesome/free-solid-svg-icons";
-import SectionContainer from "./SectionContainer";
-import { WarehouseForm } from "../forms/WarehouseForm/WarehouseForm";
-import { createShelf, deleteShelf, listenAllShelves, updateShelf, useListenShelves } from "../../../../../../firebase/warehouse/shelfService";
-import { selectUser } from "../../../../../../features/auth/userSlice";
+import * as antd from "antd";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
 import { useNavigate, useParams } from "react-router-dom";
-import { useListenWarehouse, useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
+import styled from "styled-components";
+
 import { icons } from "../../../../../../constants/icons/icons";
-import { ProductsSection } from "./ProductsSection";
+import { selectUser } from "../../../../../../features/auth/userSlice";
 import { openShelfForm, setShelfLoading } from "../../../../../../features/warehouse/shelfModalSlice";
+import { navigateWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
+import { deleteShelf, useListenShelves } from "../../../../../../firebase/warehouse/shelfService";
+import { useListenWarehouse } from "../../../../../../firebase/warehouse/warehouseService";
+import { WarehouseForm } from "../forms/WarehouseForm/WarehouseForm";
+
+import { ProductsSection } from "./ProductsSection";
+import SectionContainer from "./SectionContainer";
 
 const { Modal, Button, List, message, Tag } = antd;
 

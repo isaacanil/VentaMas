@@ -1,6 +1,8 @@
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../../firebaseconfig';
+
 import { login } from "../../../../features/auth/userSlice";
+import { functions } from '../../../firebaseconfig';
+
 const clientLoginCallable = httpsCallable(functions, 'clientLogin');
 
 const storeSessionLocally = ({ sessionToken, sessionExpiresAt }) => {

@@ -1,7 +1,7 @@
+import { faChevronRight, faAngleLeft, faAngleRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, Fragment } from 'react'; // Add Fragment
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faAngleLeft, faAngleRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 const Sidebar = styled.div`
   display: none;

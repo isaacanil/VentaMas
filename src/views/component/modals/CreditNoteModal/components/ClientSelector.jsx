@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { Input, Drawer } from 'antd';
 import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
+import { Input, Drawer } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+
 import { normalizeText } from '../../../../../utils/text';
 
 /*

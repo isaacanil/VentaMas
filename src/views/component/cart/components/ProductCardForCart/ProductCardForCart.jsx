@@ -1,21 +1,24 @@
+import { MessageOutlined, PercentageOutlined, MoreOutlined } from '@ant-design/icons';
+import { Tooltip, Badge, Button, Dropdown } from 'antd';
+import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Counter } from '../../../../templates/system/Counter/Counter';
-import { deleteProduct, changeProductPrice } from '../../../../../features/cart/cartSlice';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+
 import { icons } from '../../../../../constants/icons/icons';
-import { motion } from 'framer-motion';
-import { Tooltip, Badge, Button, Dropdown } from 'antd';
-import { getTotalPrice } from '../../../../../utils/pricing';
+import { changeProductPrice } from '../../../../../features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice';
-import PriceAndSaleUnitsModal from '../PriceAndSaleUnitsModal';
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled';
-import { extraerPreciosConImpuesto } from './utils/priceUtils';
+import { getTotalPrice } from '../../../../../utils/pricing';
+import { Counter } from '../../../../templates/system/Counter/Counter';
+import PriceAndSaleUnitsModal from '../PriceAndSaleUnitsModal';
+
+import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCoverage';
 import { PriceEditor } from './components/PriceEditor/PriceEditor';
 import { WeightInput } from './components/WeightInput/WeightInput';
-import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCoverage';
-import { MessageOutlined, PercentageOutlined, MoreOutlined } from '@ant-design/icons';
+import { extraerPreciosConImpuesto } from './utils/priceUtils';
+
 
 const variants = {
     initial: { opacity: 0, y: -90 },

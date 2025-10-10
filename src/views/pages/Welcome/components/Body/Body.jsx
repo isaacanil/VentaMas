@@ -1,12 +1,14 @@
+import { Spin } from 'antd'
+import { motion } from 'framer-motion'
 import React, { Suspense } from 'react'
 import styled from 'styled-components'
-import welcomeData from '../../WelcomeData.json'
-import { CardWelcome } from './CardWelcome/CardWelcome'
-import { motion } from 'framer-motion'
-import { Spin } from 'antd'
+
 import { uiImage } from '../../../../templates/system/FormattedValue/ui/uiImage'
+import welcomeData from '../../WelcomeData.json'
 import Features from '../Features/Features'
-import Testimonials from '../Testimonials/Testimonials'
+
+import { CardWelcome } from './CardWelcome/CardWelcome'
+
 
 // Lazy loading de componentes pesados
 const ImageGallery = React.lazy(() => import('../../../../component/ImageGallery/ImageGallery').then(module => ({ default: module.ImageGallery })))

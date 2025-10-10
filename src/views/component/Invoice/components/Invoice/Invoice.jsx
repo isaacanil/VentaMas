@@ -1,9 +1,10 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { InvoiceTemplate1 } from '../../templates/Invoicing/InvoiceTemplate1/InvoiceTemplate1';
 import { InvoiceTemplate2 } from '../../templates/Invoicing/InvoiceTemplate2/InvoiceTemplate2';
-import styled from 'styled-components';
-import { useSelector } from 'react-redux';
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { InvoiceTemplate3 } from '../../templates/Invoicing/InvoiceTemplate3/InvoiceTemplate3';
 import InvoiceTemplate4 from '../../templates/Invoicing/InvoiceTemplate4/InvoiceTemplate4';
 

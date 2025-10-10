@@ -1,11 +1,13 @@
-import styled from "styled-components"
-import { Input, Button, notification, Form } from 'antd';
 import { UserOutlined, LockOutlined, } from '@ant-design/icons';
-import { LogoContainer } from "./components/Header/LogoContainer";
-import { fbSignIn, updateAppState } from "../../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
+import { Input, Button, notification, Form } from 'antd';
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
+import styled from "styled-components"
+
+import { fbSignIn, updateAppState } from "../../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
 import ROUTES_PATH from "../../../../routes/routesName";
+
+import { LogoContainer } from "./components/Header/LogoContainer";
 
 const Container = styled.div`
    padding: 0 1em;

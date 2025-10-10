@@ -1,16 +1,19 @@
-import { useState } from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useState } from 'react'
+import { useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
+import { addNotification } from '../../../features/notification/notificationSlice'
+import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import { Button } from '../../templates/system/Button/Button'
+import { Tooltip } from '../../templates/system/Button/Tooltip'
 import { InputNumber, InputText } from '../../templates/system/Inputs/Input'
 import { AddProductButton } from '../modals/AddOrder/Button'
 import { ProductFilter } from '../ProductFilter/ProductFilter'
-import { useDispatch } from 'react-redux'
-import { Button } from '../../templates/system/Button/Button'
-import { Tooltip } from '../../templates/system/Button/Tooltip'
-import { useEffect } from 'react'
-import { addNotification } from '../../../features/notification/notificationSlice'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
+
+
 /**
 * Este componente recibe la funcion de agregar el producto y devuelve el componente.
 *

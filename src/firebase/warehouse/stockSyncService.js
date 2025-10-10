@@ -1,8 +1,9 @@
 import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 
 // Función para obtener todos los productos
 const getAllProducts = async (businessID) => {

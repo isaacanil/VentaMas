@@ -1,10 +1,11 @@
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect } from "react";
-import { db } from "../../firebaseconfig";
-import { toggleTaxReceiptSettings } from "../../../features/taxReceipt/taxReceiptSlice";
 import { useDispatch, useSelector } from "react-redux";
+
 import { selectUser } from "../../../features/auth/userSlice";
 import { setTaxReceiptEnabled } from "../../../features/cart/cartSlice";
+import { toggleTaxReceiptSettings } from "../../../features/taxReceipt/taxReceiptSlice";
+import { db } from "../../firebaseconfig";
 
 export const useFbTaxReceiptToggleStatus = () => {
     const user = useSelector(selectUser)

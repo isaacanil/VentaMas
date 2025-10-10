@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from "react";
-import styled from "styled-components";
-import { getWarehouses, useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
-import { useDispatch, useSelector } from "react-redux";
-import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+
 import { MenuApp } from "../../../../..";
+import { navigateWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
+import { useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
 import { filterData } from "../../../../../../hooks/search/useSearch";
+
 import WarehouseCard from "./WarehouseCard";
 
 const Container = styled.div`

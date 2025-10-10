@@ -1,6 +1,7 @@
 import { Timestamp, collection, doc, getDocs, writeBatch } from "firebase/firestore";
-import { db } from "../firebaseconfig";
 import { nanoid } from "nanoid";
+
+import { db } from "../firebaseconfig";
 
 /**
  * Transfiere productos de un negocio a otro.

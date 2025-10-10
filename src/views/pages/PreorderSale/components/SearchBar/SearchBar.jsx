@@ -1,7 +1,7 @@
+import { SearchOutlined } from '@ant-design/icons';
+import { Input, Select } from 'antd';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { Input, Select } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
 
 const FiltersWrapper = styled.div`
   display: flex;

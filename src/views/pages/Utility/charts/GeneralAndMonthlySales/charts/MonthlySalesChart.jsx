@@ -1,6 +1,4 @@
 // MonthlySalesChart.js
-import React, { useEffect, useRef } from 'react';
-import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -12,7 +10,10 @@ import {
     Legend,
 } from 'chart.js';
 import { DateTime } from 'luxon';
+import React, { useEffect, useRef } from 'react';
+import { Line } from 'react-chartjs-2';
 import styled from 'styled-components';
+
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 
 ChartJS.register(

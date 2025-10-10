@@ -1,5 +1,6 @@
 import { doc, setDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
+
 import { db } from "../../firebaseconfig";
 
 export const fbAddProductImgData = async (user, url) => {

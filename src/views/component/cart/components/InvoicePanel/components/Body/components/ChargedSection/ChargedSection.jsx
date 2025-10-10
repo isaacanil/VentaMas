@@ -1,8 +1,9 @@
 import React from 'react'
-import styled from 'styled-components'
-import { Showcase } from '../../../../../../../../templates/system/ShowCase/ShowCase'
-import { selectCart } from '../../../../../../../../../features/cart/cartSlice';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components'
+
+import { selectCart } from '../../../../../../../../../features/cart/cartSlice';
+import { Showcase } from '../../../../../../../../templates/system/ShowCase/ShowCase'
 
 export const ChargedSection = () => {
   const cart = useSelector(selectCart);

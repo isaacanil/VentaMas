@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 import { useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
+import { icons } from '../../../../../constants/icons/icons'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg'
+import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
+import { fbDeleteProductImg } from '../../../../../firebase/products/productsImg/fbDeleteProductImg'
+import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg'
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
-import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg'
-import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
-import { useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { fbDeleteProductImg } from '../../../../../firebase/products/productsImg/fbDeleteProductImg'
-import { icons } from '../../../../../constants/icons/icons'
-import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg'
 
 export const MultimediaManager = () => {
   const [allImg, setAllImg] = useState([])

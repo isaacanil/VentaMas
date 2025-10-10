@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { Checkbox, Input, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
-import { InsuranceAuthModal } from './InsuranceAuthModal/InsuranceAuthModal';
+import { Checkbox, Input, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectUser } from '../../../../../features/auth/userSlice';
 import { selectClient } from '../../../../../features/clientCart/clientCartSlice';
 import { openModal, selectInsuranceAuthData, setAuthData } from '../../../../../features/insurance/insuranceAuthSlice';
 import {
@@ -11,7 +12,8 @@ import {
   updateInsuranceData
 } from '../../../../../features/insurance/insuranceSlice';
 import { getClientInsuranceByClientId } from '../../../../../firebase/insurance/clientInsuranceService';
-import { selectUser } from '../../../../../features/auth/userSlice';
+
+import { InsuranceAuthModal } from './InsuranceAuthModal/InsuranceAuthModal';
 
 export const InsuranceAuthFields = () => {
   const dispatch = useDispatch();

@@ -1,6 +1,7 @@
-import { nanoid } from "nanoid";
-import { db, admin, serverTimestamp } from "../../../core/config/firebase.js";
 import { https, logger } from "firebase-functions";
+import { nanoid } from "nanoid";
+
+import { db, serverTimestamp } from "../../../core/config/firebase.js";
 /**
  * Incrementa una secuencia de números según un valor específico
  * @param {string} sequence - Secuencia actual

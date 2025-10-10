@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import styled from "styled-components";
+
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
+
 import { BreadcrumbNav } from './components/BreadcrumbNav';
 import { InventoryTable } from './components/InventoryTable';
 import { MovementsTable } from './components/MovementsTable';
-import { openProductStock } from "../../../../../../../features/productStock/productStockSlice";
-import { Button } from "antd";
-import { useParams } from "react-router-dom";
-import InventoryMenu from "./InventoryMenu";
+
+
 
 const DetailContainer = styled.div`
   flex: 1;

@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+
 import AnimatedDigit from '../AnimatedDigit/AnimatedDigit'
 
 export const AnimatedNumber = ({ value }) => {

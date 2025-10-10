@@ -1,10 +1,11 @@
 import React from 'react'
-import { userAccess } from '../../../../../hooks/abilities/useAbilities';
-import { FeatureCardList } from '../FeatureCardList/FeatureCardList';
-import { getDeveloperFeaturesData, getMenuCardData } from '../../CardData';
-import { selectUser } from '../../../../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { userAccess } from '../../../../../hooks/abilities/useAbilities';
+import { getDeveloperFeaturesData, getMenuCardData } from '../../CardData';
+import { FeatureCardList } from '../FeatureCardList/FeatureCardList';
 
 export const DashboardShortcuts = () => {
     const user = useSelector(selectUser)

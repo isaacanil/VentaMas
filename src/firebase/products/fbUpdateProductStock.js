@@ -1,8 +1,9 @@
 import { doc, increment, setDoc, writeBatch } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { validateUser } from "../../utils/userValidation";
 import { nanoid } from "nanoid";
+
 import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
+import { validateUser } from "../../utils/userValidation";
+import { db } from "../firebaseconfig";
 
 // Función para dividir el array en subarrays de tamaño máximo size
 function chunkArray(array, size) {

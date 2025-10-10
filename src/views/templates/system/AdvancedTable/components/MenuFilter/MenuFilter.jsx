@@ -1,7 +1,9 @@
 import styled from 'styled-components'
-import { Item } from './Item'
-import { Button } from '../../../Button/Button'
+
 import { icons } from '../../../../../../constants/icons/icons'
+import { Button } from '../../../Button/Button'
+
+import { Item } from './Item'
 
 export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, setDefaultFilter }) => {
 

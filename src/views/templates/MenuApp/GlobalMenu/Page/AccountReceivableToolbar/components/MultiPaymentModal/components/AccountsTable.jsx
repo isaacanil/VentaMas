@@ -1,5 +1,5 @@
-import React from 'react';
 import { Table, Checkbox, Typography, Empty } from 'antd';
+import React from 'react';
 import styled from 'styled-components';
 
 const { Text } = Typography;

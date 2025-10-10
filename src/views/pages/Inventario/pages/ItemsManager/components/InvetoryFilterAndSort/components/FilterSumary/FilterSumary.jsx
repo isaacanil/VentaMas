@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components';
+
 import { icons } from '../../../../../../../../../constants/icons/icons';
 import { FormattedValue } from '../../../../../../../../templates/system/FormattedValue/FormattedValue';
 import { SubTitle } from '../../../../../../../checkout/Receipt';

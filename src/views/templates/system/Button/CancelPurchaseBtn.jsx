@@ -1,8 +1,11 @@
-import { resetCart, } from '../../../../features/cart/cartSlice'
 import { useDispatch } from 'react-redux'
-import { Button } from './Button'
-import { clearTaxReceiptData } from '../../../../features/taxReceipt/taxReceiptSlice'
+
 import { icons } from '../../../../constants/icons/icons'
+import { resetCart, } from '../../../../features/cart/cartSlice'
+import { clearTaxReceiptData } from '../../../../features/taxReceipt/taxReceiptSlice'
+
+import { Button } from './Button'
+
 
 export const CancelPurchaseBtn = () => {
     const dispatch = useDispatch();

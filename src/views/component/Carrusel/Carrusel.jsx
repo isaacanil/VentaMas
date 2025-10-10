@@ -1,16 +1,18 @@
-import React, { useRef, useState } from 'react'
-import styled from 'styled-components'
-import { useScreenSize } from '../../../hooks/useScreenSize'
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useDispatch, useSelector } from 'react-redux'
-import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
 import { motion } from 'framer-motion'
-import { Category } from './Category'
-import { toggleAddCategory } from '../../../features/modals/modalSlice'
+import React, { useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+
 import { icons } from '../../../constants/icons/icons'
-import { SelectCategoryList } from '../../../features/category/categorySlicer'
 import { useCategoryState } from '../../../Context/CategoryContext/CategoryContext'
+import { SelectCategoryList } from '../../../features/category/categorySlicer'
+import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
+import { useScreenSize } from '../../../hooks/useScreenSize'
+
+import { Category } from './Category'
 
 export const Carrusel = ({
     themeColor,

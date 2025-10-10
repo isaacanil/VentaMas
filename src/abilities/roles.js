@@ -94,7 +94,7 @@ export const getAssignableRoles = (user) => {
     switch (currentRole) {
         case 'dev':
             // Los desarrolladores pueden asignar cualquier role
-            assignableRoles = userRoles.filter(role => true); // Todos los roles
+            assignableRoles = userRoles.slice(); // Todos los roles
             break;
 
         case 'admin':

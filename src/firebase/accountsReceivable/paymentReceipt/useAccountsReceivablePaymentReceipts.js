@@ -1,9 +1,10 @@
-import { useSelector } from "react-redux";
-import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { useQuery } from '@tanstack/react-query';
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { useSelector } from "react-redux";
+
 import { selectUser } from "../../../features/auth/userSlice";
-import { db } from "../../firebaseconfig";
 import { validateUser } from "../../../utils/userValidation";
+import { db } from "../../firebaseconfig";
 
 const fetchPaymentReceipts = async ({ queryKey }) => {
   const [_, time, user] = queryKey;

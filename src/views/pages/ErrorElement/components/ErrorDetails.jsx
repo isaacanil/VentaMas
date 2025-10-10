@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
 import { Typography } from 'antd';
+import { motion } from 'framer-motion';
+import PropTypes from 'prop-types';
+import React from 'react';
+import styled from 'styled-components';
 
 const { Title, Paragraph } = Typography;
 

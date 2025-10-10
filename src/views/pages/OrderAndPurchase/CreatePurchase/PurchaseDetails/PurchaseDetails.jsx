@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
+import { Input, Form } from 'antd'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { clearImageViewer, toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
+import styled from 'styled-components'
+
 import { getOrderConditionByID, orderAndDataCondition } from '../../../../../constants/orderAndPurchaseState'
-import { deleteReceiptImageFromPurchase, selectProducts, setPurchase } from '../../../../../features/purchase/addPurchaseSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
+import { clearImageViewer } from '../../../../../features/imageViewer/imageViewerSlice'
+import { deleteReceiptImageFromPurchase, setPurchase } from '../../../../../features/purchase/addPurchaseSlice'
+import DateUtils from '../../../../../utils/date/dateUtils'
 import { getDate } from '../../../../../utils/date/getDate'
 import { InputMultipleFiles } from '../../../../templates/system/Form/InputFile/InputMultipleFiles'
-import { Input, Form } from 'antd'
-import DateUtils from '../../../../../utils/date/dateUtils'
-import { SelectStyle } from '../CreatePurchase'
 import FileList from '../components/FileList'
-import { toggleProviderModal } from '../../../../../features/modals/modalSlice'
+import { SelectStyle } from '../CreatePurchase'
 
 const dateFormat = 'DD/MM/YYYY';
 

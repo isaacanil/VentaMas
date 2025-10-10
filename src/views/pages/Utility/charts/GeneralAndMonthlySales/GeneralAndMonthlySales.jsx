@@ -1,8 +1,10 @@
 import React from 'react';
-import TotalSalesChart from './charts/TotalSalesChart';
-import MonthlySalesChart from './charts/MonthlySalesChart';
 import styled from 'styled-components';
+
 import Typography from '../../../../templates/system/Typografy/Typografy';
+
+import MonthlySalesChart from './charts/MonthlySalesChart';
+import TotalSalesChart from './charts/TotalSalesChart';
 
 
 const GeneralAndMonthlySales = ({ invoices }) => {

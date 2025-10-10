@@ -1,6 +1,6 @@
+import { Drawer, Image } from 'antd';
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { Drawer, Image } from 'antd';
 
 const PreviewContainer = styled.div`
   max-width: 100%;

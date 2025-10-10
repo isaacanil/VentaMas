@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState } from 'react';
-import { selectUser } from '../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
-import { fbAddExpenseCategory } from '../../firebase/expenses/categories/fbAddExpenseCategory';
+
+import { selectUser } from '../../features/auth/userSlice';
 import { fbAddCategory } from '../../firebase/categories/fbAddCategory';
+import { fbAddExpenseCategory } from '../../firebase/expenses/categories/fbAddExpenseCategory';
 
 // Crear el contexto
 export const CategoryContext = createContext();

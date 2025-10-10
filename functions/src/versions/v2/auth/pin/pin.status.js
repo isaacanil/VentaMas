@@ -1,4 +1,5 @@
 import { Timestamp } from '../../../../core/config/firebase.js';
+
 import { ALLOWED_MODULES, EXPIRATION_HOURS } from './pin.constants.js';
 
 export const normalizeModules = (modules) => {
@@ -24,7 +25,7 @@ export const toIsoString = (value) => {
       return value.toISOString();
     }
     return new Date(value).toISOString();
-  } catch (error) {
+  } catch {
     return null;
   }
 };

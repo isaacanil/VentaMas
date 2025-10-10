@@ -1,13 +1,13 @@
+import { doc, updateDoc } from "firebase/firestore"
 import { ref, uploadBytesResumable } from "firebase/storage"
+import { getDownloadURL } from "firebase/storage"
+import { nanoid } from "nanoid"
+
+import { addNotification } from "../../features/notification/notificationSlice"
+import { addReceiptImageToPurchase } from "../../features/purchase/addPurchaseSlice"
+import { SaveImg } from "../../features/uploadImg/uploadImageSlice"
 import { UploadImgLoading, UploadProgress } from "../../features/uploadImg/uploadImageSlice"
 import { db, storage } from "../firebaseconfig"
-import { getDownloadURL } from "firebase/storage"
-import { SaveImg } from "../../features/uploadImg/uploadImageSlice"
-import { addNotification } from "../../features/notification/notificationSlice"
-import { nanoid } from "nanoid"
-import { doc, updateDoc } from "firebase/firestore"
-import { update } from "lodash"
-import { addReceiptImageToPurchase } from "../../features/purchase/addPurchaseSlice"
 
 
 export const fbAddPurchaseReceiptImg = (user, dispatch, file, orderId) => {

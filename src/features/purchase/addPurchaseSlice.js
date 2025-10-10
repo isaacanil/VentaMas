@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { getDefaultTransactionCondition, getDefaultTransactionStatus, transactionConditions } from '../../constants/orderAndPurchaseState'
 import { notification } from 'antd'
 import { DateTime } from 'luxon'
+
+import { getDefaultTransactionCondition, getDefaultTransactionStatus } from '../../constants/orderAndPurchaseState'
 
 const EmptyPurchase = {
     id: null,
@@ -115,7 +116,7 @@ export const addPurchaseSlice = createSlice({
             state.productSelected.product.stock = stock
         },
         setPurchase: (state, actions) => {
-            const { dates, ...rest } = actions.payload;
+            const { ...rest } = actions.payload;
 
             state.purchase = {
                 ...state.purchase,

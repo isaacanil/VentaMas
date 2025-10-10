@@ -1,9 +1,11 @@
-import React from 'react'
 import * as antd from 'antd'
-import styled from 'styled-components'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { SelectSettingCart, togglePrintInvoice } from '../../../../../../../../../features/cart/cartSlice'
 import InvoiceTemplates from '../../../../../../../Invoice/components/InvoiceTemplates/InvoiceTemplates'
+
 const { Switch } = antd
 export const PrintControl = () => {
   const cartSetting = useSelector(SelectSettingCart)

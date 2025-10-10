@@ -1,11 +1,12 @@
-import React from 'react';
-import { Selector } from '../../../../../../../components/common/Selector/Selector';
 import {
     faCheckCircle,
     faClock,
     faBan,
     faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
+import React from 'react';
+
+import { Selector } from '../../../../../../../components/common/Selector/Selector';
 
 const defaultStatusOptions = [
     {

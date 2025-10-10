@@ -1,6 +1,7 @@
-import { createSlice, nanoid } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
-import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTotalInvoice, getTotalItems } from '../../utils/pricing';
+
+import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTotalItems } from '../../utils/pricing';
 
 const roundToTwoDecimals = (num) => {
     return Math.round(num * 100) / 100;
@@ -30,13 +31,11 @@ const calculateTotals = (products) => {
     };
 };
 
-
-const deleteProductAndUpdateTotals = (products, productId) => {
-    const updatedProducts = products.filter(product => product.id !== productId);
-    const { totalPurchase, totalTaxes } = calculateTotals(updatedProducts);
-
-    return { updatedProducts, totalPurchase, totalTaxes };
-};
+// const deleteProductAndUpdateTotals = (products, productId) => {
+//     const updatedProducts = products.filter(product => product.id !== productId);
+//     const { totalPurchase, totalTaxes } = calculateTotals(updatedProducts);
+//     return { updatedProducts, totalPurchase, totalTaxes };
+// };
 
 const calculateTotalItems = (products) => {
     let totalItems = getTotalItems(products);

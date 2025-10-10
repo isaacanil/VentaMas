@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { CreditCardOutlined, InfoCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import { Modal, Skeleton, Alert } from 'antd';
-import { CreditCardOutlined, InfoCircleOutlined, SearchOutlined, CheckOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
-import { formatPrice } from '../../../../../../../utils/formatPrice';
 import dayjs from 'dayjs';
+import React, { useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
+
 import { useFbGetAvailableCreditNotes } from '../../../../../../../hooks/creditNote/useFbGetAvailableCreditNotes';
+import { formatPrice } from '../../../../../../../utils/formatPrice';
+
 
 /**
  * CreditSelector component

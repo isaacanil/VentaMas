@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
 import * as antd from 'antd';
+import React, { useEffect, useState } from 'react';
+
 const { Button, Upload, Modal, message, Tabs } = antd;
 import { FileAddOutlined, UploadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 
-import { importProductData } from '../../../../utils/import/product';
-import { productHeaderMappings } from '../../../../utils/import/product/headerMappings';
 import { getAvailableHeaders } from '../../../../utils/import/product/filterEssentialHeaders';
+import { productHeaderMappings } from '../../../../utils/import/product/headerMappings';
+
 import FieldSelector from './FieldSelector';
 
 export default function ImportModal({ open, onClose, onImport, onCreateTemplate }) {

@@ -1,4 +1,5 @@
 import { collection, getDocs, limit, query } from "firebase/firestore";
+
 import { db } from "../../../../firebase/firebaseconfig";
 
 export async function fbGetStructureData(ref) {

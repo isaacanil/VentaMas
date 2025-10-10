@@ -1,7 +1,7 @@
 import { resetCart, toggleCart, toggleInvoicePanel } from '../../../../../features/cart/cartSlice';
-import { clearTaxReceiptData } from '../../../../../features/taxReceipt/taxReceiptSlice';
 import { deleteClient } from '../../../../../features/clientCart/clientCartSlice';
 import { clearAuthData } from '../../../../../features/insurance/insuranceAuthSlice';
+import { clearTaxReceiptData } from '../../../../../features/taxReceipt/taxReceiptSlice';
 
 export function handleCancelShipping({ dispatch, viewport, closeInvoicePanel = true, clearTaxReceipt = false }) {
     if (!dispatch) return;

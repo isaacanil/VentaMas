@@ -1,9 +1,10 @@
+import { Modal, Form, Checkbox, InputNumber, Space, notification, Alert } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Checkbox, InputNumber, Button, Space, notification, Alert } from 'antd';
-import styled from 'styled-components';
-import { fbUpsertCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbUpsertCreditLimit';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../../../features/auth/userSlice';
+import { fbUpsertCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbUpsertCreditLimit';
 
 const CreditLimitModal = ({ 
     visible, 

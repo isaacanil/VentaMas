@@ -1,6 +1,6 @@
+import { AggregateField } from 'firebase-admin/firestore';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
-import { initializeApp }       from 'firebase-admin/app';
-import { getFirestore, FieldValue, AggregateField } from 'firebase-admin/firestore';
+
 import { db } from '../../../../../core/config/firebase.js';
 
 /**

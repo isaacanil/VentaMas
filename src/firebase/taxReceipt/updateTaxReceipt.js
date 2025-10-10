@@ -1,4 +1,5 @@
-import { doc, updateDoc, getDoc, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { doc, updateDoc, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+
 import { db } from "../firebaseconfig"; // Assuming firebaseconfig.js is in the parent directory
 
 const NUMERIC_FIELDS = ['sequence', 'sequenceLength', 'increase', 'quantity'];

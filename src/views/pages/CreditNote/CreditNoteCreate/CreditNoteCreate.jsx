@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Card, Form, Input, Select, InputNumber, Button, Row, Col, DatePicker, message } from 'antd';
 import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Select, InputNumber, Button, Row, Col, DatePicker, message } from 'antd';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import ROUTES_NAME from '../../../../routes/routesName';
 
 const { Option } = Select;

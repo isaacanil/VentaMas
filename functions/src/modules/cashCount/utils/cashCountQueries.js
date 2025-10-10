@@ -1,5 +1,6 @@
 // src/cashCount/utils/cashCountQueries.js
 import { https } from "firebase-functions";
+
 import { db } from "../../../core/config/firebase.js";
 
 function buildOpenCashCountQuery(user) {

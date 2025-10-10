@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
-import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';
 import { Modal, Typography, Input, Form, notification } from 'antd';
+import { useEffect } from 'react';
+
+import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';
 
 const { Title } = Typography;
 

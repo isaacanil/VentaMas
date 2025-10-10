@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
 import _ from 'lodash';
+import { useMemo } from 'react';
 
 
 export const useCompareArrays = (array1, array2) => {

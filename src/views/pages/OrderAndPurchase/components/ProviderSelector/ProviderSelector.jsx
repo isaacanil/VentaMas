@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { Form, Input, Button, Drawer, message, Dropdown, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, MoreOutlined, CloseOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Drawer, Dropdown, Tooltip } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+
 import { normalizeText } from '../../../../../utils/text';
 import { comprobantesOptions } from '../../../Contact/Provider/components/CreateContact/constants';
 

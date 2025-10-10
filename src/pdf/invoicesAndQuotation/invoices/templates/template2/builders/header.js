@@ -1,20 +1,24 @@
 import { formatDate } from '../utils/formatters.js';
-import { buildClientBlock } from './clientBlock.js';
 
-/* ───── utilitario título/etiqueta según NCF ───── */
-function getComprobanteInfo(ncf) {
-  if (!ncf) return { title: 'RECIBO DE PAGO', label: 'Número de Recibo' };
-  if (ncf.startsWith('B01')) return { title: 'FACTURA DE CRÉDITO FISCAL', label: 'NCF' };
-  if (ncf.startsWith('B02')) return { title: 'FACTURA DE CONSUMO', label: 'NCF' };
-  return { title: 'COMPROBANTE FISCAL', label: 'NCF' };
-}
+import { buildClientBlock } from './clientBlock.js';
+import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 
 /* ──────────────────────────────────────────────── */
 export function buildHeader(biz, d, images) {
   return () => {
     const clientBlock = buildClientBlock(d);
-    const { title: comprobanteTitle, label: comprobanteLabel } =
-      getComprobanteInfo(d.NCF || d.comprobante);
+    const {
+      title: comprobanteTitle,
+      label: comprobanteLabel,
+      value: comprobanteValue,
+      type: comprobanteType
+    } = resolveDocumentIdentity(d);
+    const referenceLabel = comprobanteType === 'preorder'
+      ? 'Preventa'
+      : `Factura ${d.type || ''}`.trim();
+    const referenceValue = comprobanteType === 'preorder'
+      ? (comprobanteValue || d.numberID || '-')
+      : (d.numberID || '-');
 
     /* columna izquierda (datos del negocio) */
     const leftStack = [
@@ -53,14 +57,14 @@ export function buildHeader(biz, d, images) {
         style: 'headerInfo',
         alignment: 'right'
       },
-      {
-        text: `${comprobanteLabel}: ${d.NCF || d.comprobante || '-'}`,
+      comprobanteLabel && comprobanteType !== 'preorder' && {
+        text: `${comprobanteLabel}: ${comprobanteValue || '-'}`,
         style: 'headerInfo',
         alignment: 'right',
         bold: true
       },
       {
-        text: `No: ${d.numberID || '-'}`,
+        text: `${referenceLabel} # ${referenceValue}`,
         style: 'headerInfo',
         alignment: 'right',
         bold: true

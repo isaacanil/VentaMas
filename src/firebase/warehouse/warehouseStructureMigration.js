@@ -1,9 +1,11 @@
-import { getWarehouses } from './warehouseService';
-import { getShelves } from './shelfService';
+import { doc, writeBatch, getDoc } from 'firebase/firestore';
+
+import { db } from '../firebaseconfig';
+
 import { getAllRowShelves } from './RowShelfService';
 import { getAllSegments } from './segmentService';
-import { doc, writeBatch, getDoc } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
+import { getShelves } from './shelfService';
+import { getWarehouses } from './warehouseService';
 
 const createStructureDocument = async (businessId, type) => {
   const structureRef = doc(db, 'businesses', businessId, 'warehouseStructure', type);

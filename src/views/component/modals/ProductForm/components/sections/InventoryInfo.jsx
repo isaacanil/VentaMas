@@ -1,11 +1,15 @@
-import React, { useState } from 'react'
 import * as ant from 'antd'
+import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { unitsOfMeasure } from '../../../../../../constants/unitsOfMeasure'
 import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
-import { useSelector } from 'react-redux'
+
+
 import AdjustInventoryModal from './AdjustInventoryModal'
-import styled from 'styled-components'
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
+
+
 const { Card, Space, InputNumber, Row, Button, Col, Select, Checkbox, Form } = ant
 
 export const InventoryInfo = () => {

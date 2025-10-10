@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
 import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState } from 'react'
+import styled from 'styled-components'
+
 export const Category = ({
     item = {},
     isFavorite = false,

@@ -1,6 +1,7 @@
-import styled from 'styled-components'
-import { memo } from 'react'
 import { Spin } from 'antd'
+import { memo } from 'react'
+import styled from 'styled-components'
+
 import { Client } from '../../../../../templates/system/client/Client'
 
 const Body = styled.div`

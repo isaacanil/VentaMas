@@ -1,9 +1,10 @@
+import { BankOutlined } from '@ant-design/icons'
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { Button } from '../../../system/Button/Button'
-import { useDispatch } from 'react-redux'
-import { BankOutlined } from '@ant-design/icons'
 
 export const MultiPaymentToolbar = ({ side = 'left', searchData, setSearchData }) => {
     const matchWithMultiPayment = useMatch("/accounts-receivable")

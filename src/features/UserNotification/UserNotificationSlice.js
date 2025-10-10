@@ -1,7 +1,6 @@
 import { createSlice, createSerializableStateInvariantMiddleware } from '@reduxjs/toolkit';
-import { initialBanknotes } from '../cashCount/initialBanknotes';
 
-const nonSerializableMiddleware = createSerializableStateInvariantMiddleware({
+createSerializableStateInvariantMiddleware({
   isSerializable: value => typeof value !== 'function',
 });
 

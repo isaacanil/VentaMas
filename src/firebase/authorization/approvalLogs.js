@@ -9,6 +9,7 @@ import {
   where,
   Timestamp,
 } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
 
 const sanitizeUserSnapshot = (userLike) => {

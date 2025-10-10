@@ -1,4 +1,5 @@
 import { updateDoc, doc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export async function fbUpdateNCFInvoices(user, invoices) {

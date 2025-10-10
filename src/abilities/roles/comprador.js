@@ -1,7 +1,8 @@
-import { AbilityBuilder, createMongoAbility, PureAbility } from '@casl/ability';
+import { AbilityBuilder, PureAbility } from '@casl/ability';
+
 import routesName from '../../routes/routesName';
 
-export function defineAbilitiesForBuyer(user) {
+export function defineAbilitiesForBuyer() {
   const { can, rules } = new AbilityBuilder(PureAbility);
   const { PURCHASE_TERM } = routesName;
   const { BACKORDERS } = PURCHASE_TERM;

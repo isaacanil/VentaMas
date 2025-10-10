@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react'
-import styled from 'styled-components'
-import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import { BusinessCard } from './components/BusinessCard/BusinessCard'
-import { BusinessEditModal } from '../BusinessEditModal/BusinessEditModal'
-import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer'
-import { Input, Button, Typography, Divider, Select } from 'antd'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faChevronLeft, 
   faChevronRight, 
   faFilter, 
   faSearch,
-  faMapMarkerAlt,
-  faGlobe,
-  faStoreAlt,
-  faBuilding,
-  faCalendarAlt,
-  faSortAmountDown,
-  faSortAmountUp
+  faStoreAlt
 } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Input, Button } from 'antd'
+import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
+
+import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
+import { BusinessEditModal } from '../BusinessEditModal/BusinessEditModal'
+
+import { BusinessCard } from './components/BusinessCard/BusinessCard'
+import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer'
 
 export const BusinessControl = () => {
   const [businesses, setBusinesses] = useState([])

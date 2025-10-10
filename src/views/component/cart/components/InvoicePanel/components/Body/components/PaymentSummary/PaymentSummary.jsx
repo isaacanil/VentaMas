@@ -1,10 +1,11 @@
-import React from 'react'
 import * as andt from 'antd'
-import styled from 'styled-components'
-import { Showcase } from '../../../../../../../../templates/system/ShowCase/ShowCase'
-import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice'
+import React from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { selectCart } from '../../../../../../../../../features/cart/cartSlice'
+import { Showcase } from '../../../../../../../../templates/system/ShowCase/ShowCase'
+
 const { Statistic } = andt
 export const PaymentSummary = () => {
     const cart = useSelector(selectCart);

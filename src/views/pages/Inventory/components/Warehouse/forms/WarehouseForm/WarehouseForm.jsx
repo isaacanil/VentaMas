@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
 import * as antd from "antd";
-import styled from "styled-components";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import styled from "styled-components";
+
 import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
 import { 
     selectWarehouseModalState, 
     closeWarehouseForm, 
     setWarehouseLoading, 
     setWarehouseError 
 } from "../../../../../../../features/warehouse/warehouseModalSlice";
+import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
 
 const { Button, Input, InputNumber, Form, Spin, Modal } = antd;
 

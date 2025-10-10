@@ -1,20 +1,22 @@
-import React, { useState, useCallback, useEffect } from 'react'
 import { message, Button, Form } from 'antd'
-import styled from 'styled-components'
-import GeneralForm from './components/GeneralForm/GeneralForm'
-import { MenuApp } from '../../../templates/MenuApp/MenuApp'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { cleanOrder, setOrder, selectOrderState } from '../../../../features/addOrder/addOrderSlice'
-import ROUTES_PATH from '../../../../routes/routesName'
 import { useNavigate, useParams } from 'react-router-dom'
-import { defaultsMap, sanitizeData } from './orderLogic'
-import { getLocalURL } from '../../../../utils/files';
-import { addOrder } from '../../../../firebase/order/fbAddOrder'
+import styled from 'styled-components'
+
+import { cleanOrder, setOrder, selectOrderState } from '../../../../features/addOrder/addOrderSlice'
 import { selectUser } from '../../../../features/auth/userSlice'
-import { useListenOrder } from '../../../../hooks/useOrders'
-import Loader from '../../../component/Loader/Loader'
+import { addOrder } from '../../../../firebase/order/fbAddOrder'
 import { fbUpdateOrder } from '../../../../firebase/order/fbUpdateOrder'
+import { useListenOrder } from '../../../../hooks/useOrders'
+import ROUTES_PATH from '../../../../routes/routesName'
+import { getLocalURL } from '../../../../utils/files';
+import Loader from '../../../component/Loader/Loader'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp'
 import { getBackOrderAssociationId } from '../PurchaseManagement/PurchaseManagement'
+
+import GeneralForm from './components/GeneralForm/GeneralForm'
+import { defaultsMap, sanitizeData } from './orderLogic'
 
 const Container = styled.div`
   display: grid;

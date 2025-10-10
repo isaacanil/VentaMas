@@ -1,17 +1,20 @@
-import { useMemo } from 'react';
 import {
   faCalendarAlt,
   faExclamationTriangle,
   faCheckCircle,
 } from '@fortawesome/free-solid-svg-icons';
+import { useMemo } from 'react';
+
 import useDueDatesReceivable from '../../../../../../hooks/accountsReceivable/useDueDatesReceivable';
 import { formatNumber } from '../../../../../../utils/formatNumber';
-import PanelHeader from './components/PanelHeader';
-import EmptyState from './components/EmptyState';
-import LoadingState from './components/LoadingState';
-import ErrorState from './components/ErrorState';
-import AccountsList from './components/AccountsList';
 import { PanelCard } from '../shared/PanelPrimitives';
+
+import AccountsList from './components/AccountsList';
+import EmptyState from './components/EmptyState';
+import ErrorState from './components/ErrorState';
+import LoadingState from './components/LoadingState';
+import PanelHeader from './components/PanelHeader';
+
 
 /**
  * Panel para mostrar cuentas por cobrar próximas a vencer

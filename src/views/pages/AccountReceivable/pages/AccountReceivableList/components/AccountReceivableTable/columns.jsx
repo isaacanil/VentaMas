@@ -1,10 +1,13 @@
+import { EyeOutlined, DollarOutlined } from '@ant-design/icons';
 import { Button } from "antd";
+import { useDispatch } from "react-redux";
+
+import { setAccountPayment } from "../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
+import { setARDetailsModal } from "../../../../../../../features/accountsReceivable/accountsReceivableSlice";
 import { useFormatPrice } from "../../../../../../../hooks/useFormatPrice";
 import { getTimeElapsed } from "../../../../../../../hooks/useFormatTime";
-import { EyeOutlined, DollarOutlined } from '@ant-design/icons';
-import { setAccountPayment } from "../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
-import { useDispatch } from "react-redux";
-import { setARDetailsModal } from "../../../../../../../features/accountsReceivable/accountsReceivableSlice";
+
+
 
 const DetailButton = ({ value }) => {
   const dispatch = useDispatch();

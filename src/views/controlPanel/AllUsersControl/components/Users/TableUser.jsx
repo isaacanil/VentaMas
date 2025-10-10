@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Table, Button } from 'antd';
+import { useState } from 'react';
 import styled from 'styled-components';
+
 import { ChangerPasswordModal } from './ChangerPasswordModal';
 
 export const TableUser = ({ users = [] }) => {

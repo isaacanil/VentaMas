@@ -1,6 +1,6 @@
 import { Modal, Select, Typography, Button } from 'antd';
-import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 
 const buildOptions = (receipts) => {
     if (!Array.isArray(receipts)) return [];

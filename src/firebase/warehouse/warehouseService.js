@@ -1,8 +1,4 @@
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../features/auth/userSlice';
 import { nanoid } from '@reduxjs/toolkit';
-import { db } from '../firebaseconfig';
-import { useEffect, useState } from 'react';
 import {
   collection,
   getDocs,
@@ -15,6 +11,11 @@ import {
   where,
   query,
 } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 import { getNextID } from '../Tools/getNextID';
 
 // Crear un nuevo almacén

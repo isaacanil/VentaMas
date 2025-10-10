@@ -1,7 +1,9 @@
+import * as antd from "antd";
 import React from 'react'
 import styled from 'styled-components';
+
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import * as antd from "antd";
+
 const { Table } = antd;
 
 const Products = ({ products }) => {

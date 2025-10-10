@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
-import { Modal, Input, List, Avatar, Typography, Empty, Spin } from 'antd';
 import { UserOutlined, SearchOutlined } from '@ant-design/icons';
+import { Modal, Input, List, Avatar, Typography, Empty, Spin } from 'antd';
+import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import { selectUser } from '../../../../../../../../../../../../../features/auth/userSlice';
+import { addClient } from '../../../../../../../../../../../../../features/clientCart/clientCartSlice';
 import { useFbGetClientsOnOpen } from '../../../../../../../../../../../../../firebase/client/useFbGetClientsOnOpen';
-import { addClient, setClient } from '../../../../../../../../../../../../../features/clientCart/clientCartSlice';
 import { filtrarDatos } from '../../../../../../../../../../../../../hooks/useSearchFilter';
 
 const { Search } = Input;

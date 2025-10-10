@@ -1,11 +1,13 @@
-import { useState } from 'react'
 import { Modal, Spin, Button, Input, Form } from 'antd'
-import { Header } from './components/Header/Header'
-import { fbValidateUser } from '../../../../firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser'
-import { useNavigate } from 'react-router-dom'
-import { clearCashCount } from '../../../../features/cashCount/cashCountManagementSlice'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+
+import { clearCashCount } from '../../../../features/cashCount/cashCountManagementSlice'
+import { fbValidateUser } from '../../../../firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser'
+
+import { Header } from './components/Header/Header'
 
 const ErrorMessage = styled.div`
   font-size: 1em;

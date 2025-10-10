@@ -1,9 +1,10 @@
-import { collection, doc, getDoc, onSnapshot, orderBy, query, QueryConstraint, where } from "firebase/firestore"
-import { db } from "../../firebaseconfig"
+import { collection, doc, onSnapshot, orderBy, query, where } from "firebase/firestore"
 import { DateTime } from "luxon"
-import { getEmployeeData } from "./getEmployeeData"
-import DateUtils from "../../../utils/date/dateUtils"
+
 import { toMillis } from "../../../utils/firebase/toTimestamp"
+import { db } from "../../firebaseconfig"
+
+import { getEmployeeData } from "./getEmployeeData"
 
 export const buildQueryConstraints = (({
     startDate = null,

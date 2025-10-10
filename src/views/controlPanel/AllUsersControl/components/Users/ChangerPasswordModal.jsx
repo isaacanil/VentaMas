@@ -1,5 +1,6 @@
+import { Modal, Form, Input, Typography, message } from 'antd'
 import { useState } from 'react'
-import { Modal, Form, Input, Button, Typography, message } from 'antd'
+
 import { fbUpdateUserPassword } from '../../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword'
 
 export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {

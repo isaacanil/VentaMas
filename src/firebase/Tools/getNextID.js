@@ -1,4 +1,5 @@
 import { doc, runTransaction } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export async function getNextID(user, name, quantity = 1, transaction = null) {

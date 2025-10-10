@@ -1,6 +1,7 @@
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebaseconfig';
 import { nanoid } from 'nanoid';
+
+import { storage } from '../firebaseconfig';
 
 // Validación de archivos
 export const validateFile = (file, allowedTypes = [], maxSize = null) => {

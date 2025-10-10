@@ -1,14 +1,19 @@
-import styled from "styled-components";
-import { MenuApp } from "../../../../templates/MenuApp/MenuApp";
-import { AccountReceivableTable } from "./components/AccountReceivableTable/AccountReceivableTable";
-import { useEffect, useState } from "react";
-import { FilterAccountReceivable } from "./components/FilterAccountReceivable/FilterAccountReceivable";
-import { useListenAccountsReceivable } from "../../../../../firebase/accountsReceivable/accountReceivableServices";
-import { useSelector } from "react-redux";
-import { selectUser } from "../../../../../features/auth/userSlice";
 import { DateTime } from "luxon";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import styled from "styled-components";
+
+import { selectUser } from "../../../../../features/auth/userSlice";
+import { useListenAccountsReceivable } from "../../../../../firebase/accountsReceivable/accountReceivableServices";
 import { getDateRange } from "../../../../../utils/date/getDateRange";
 import { sortAccounts } from "../../../../../utils/sorts/sortAccountsReceivable";
+import { MenuApp } from "../../../../templates/MenuApp/MenuApp";
+
+import { AccountReceivableTable } from "./components/AccountReceivableTable/AccountReceivableTable";
+import { FilterAccountReceivable } from "./components/FilterAccountReceivable/FilterAccountReceivable";
+
+
+
 
 const Container = styled.div`
     display: grid;

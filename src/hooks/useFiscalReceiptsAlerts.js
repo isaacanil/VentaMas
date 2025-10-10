@@ -1,11 +1,12 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { fbGetTaxReceipt } from '../firebase/taxReceipt/fbGetTaxReceipt';
-import { selectTaxReceiptEnabled } from '../features/taxReceipt/taxReceiptSlice';
-import { selectUser } from '../features/auth/userSlice';
-import { fbGetFiscalAlertsConfig } from '../firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig';
-import { generateFiscalReceiptsWidgetData, processFiscalReceipts } from '../utils/fiscalReceiptsUtils';
+
 import { FISCAL_RECEIPTS_ALERT_CONFIG } from '../config/fiscalReceiptsAlertConfig';
+import { selectUser } from '../features/auth/userSlice';
+import { selectTaxReceiptEnabled } from '../features/taxReceipt/taxReceiptSlice';
+import { fbGetFiscalAlertsConfig } from '../firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig';
+import { fbGetTaxReceipt } from '../firebase/taxReceipt/fbGetTaxReceipt';
+import { generateFiscalReceiptsWidgetData, processFiscalReceipts } from '../utils/fiscalReceiptsUtils';
 
 /**
  * Hook personalizado para manejar las alertas de comprobantes fiscales

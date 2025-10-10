@@ -1,6 +1,3 @@
-import React from 'react';
-import { Drawer, Space, Select, Button, Typography, Divider } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faFilter, 
   faMapMarkerAlt, 
@@ -10,6 +7,9 @@ import {
   faSortAmountDown, 
   faSortAmountUp 
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Drawer, Space, Select, Button, Typography } from 'antd';
+import React from 'react';
 import styled from 'styled-components';
 
 const FilterLabel = styled.div`

@@ -1,7 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { increaseSequence } from './increaseSequence'
+
 import { fbUpdateTaxReceipt } from '../../firebase/taxReceipt/fbUpdateTaxReceipt'
 import { serializeFirestoreData } from '../../utils/serialization/serializeFirestoreData'
+
+import { increaseSequence } from './increaseSequence'
 
 export const updateComprobante = (state, name) => {
     const comprobante = state.data.find((item) => item.data.name === name);
@@ -95,7 +97,7 @@ export const taxReceiptSlice = createSlice({
             try {
                 // Persistimos para hidratar en cargas directas posteriores
                 localStorage.setItem('taxReceiptEnabled', JSON.stringify(enabled));
-            } catch (e) {
+            } catch {
                 // ignore storage errors (private mode, etc.)
             }
         },

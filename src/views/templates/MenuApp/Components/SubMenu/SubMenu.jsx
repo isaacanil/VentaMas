@@ -1,8 +1,9 @@
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react'
 import styled from 'styled-components'
+
 import { Button } from '../../../system/Button/Button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { MenuLink } from '../MenuLink';
 // import { Group, MenuLinkList } from '../SideBar';
 

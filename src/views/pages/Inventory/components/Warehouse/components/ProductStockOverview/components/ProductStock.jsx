@@ -1,10 +1,11 @@
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxes } from '@fortawesome/free-solid-svg-icons';
 import { DeleteOutlined } from '@ant-design/icons';
-import { LocationDisplay } from './LocationDisplay';
+import { faBoxes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { motion } from 'framer-motion';
+import React from 'react';
 import styled from 'styled-components';
+
+import { LocationDisplay } from './LocationDisplay';
 
 const StockInfo = ({ stock, status, onDelete }) => (
     <StockInfoWrapper $status={status}>

@@ -1,9 +1,10 @@
-import { updateDoc, doc, serverTimestamp, setDoc, collection, onSnapshot, getDoc } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
 import { nanoid } from '@reduxjs/toolkit';
-import { selectUser } from '../../features/auth/userSlice';
+import { updateDoc, doc, serverTimestamp, setDoc, collection, onSnapshot, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 
 export const updateInsuranceConfig = async ({ ref, insuranceData }) => await updateDoc(ref, insuranceData);
 

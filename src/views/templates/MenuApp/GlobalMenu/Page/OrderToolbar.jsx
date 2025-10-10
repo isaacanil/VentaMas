@@ -1,13 +1,13 @@
+import * as antd from 'antd'
 import React from 'react'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import * as antd from 'antd'
+
 const { Button } = antd
-import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
+
+import { icons } from '../../../../../constants/icons/icons'
 import routesName from '../../../../../routes/routesName'
 import { Tooltip } from '../../../system/Button/Tooltip'
-import { icons } from '../../../../../constants/icons/icons'
 
 export const OrderToolbar = ({ side = 'left' }) => {
     const { ORDERS, ORDERS_CREATE } = routesName.ORDER_TERM;

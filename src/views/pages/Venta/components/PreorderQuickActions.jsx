@@ -1,15 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
-import styled from 'styled-components';
+import { ReloadOutlined } from '@ant-design/icons';
 import { Modal, Select, App } from 'antd';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../features/auth/userSlice';
-import { fbGetPreorders } from '../../../../firebase/invoices/fbGetPreorders';
 import { SelectSettingCart, loadCart, selectCart, setCartId } from '../../../../features/cart/cartSlice';
-import { validateInvoiceCart } from '../../../../utils/invoiceValidation';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { selectClientWithAuth } from '../../../../features/clientCart/clientCartSlice';
+import { fbGetPreorders } from '../../../../firebase/invoices/fbGetPreorders';
+import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { validateInvoiceCart } from '../../../../utils/invoiceValidation';
+
+const resolvePreorderTaxReceiptType = (preorder) =>
+  preorder?.selectedTaxReceiptType ??
+  preorder?.preorderDetails?.selectedTaxReceiptType ??
+  preorder?.preorderDetails?.taxReceipt?.type ??
+  null;
 
 const FloatingButton = styled.button`
   position: fixed;
@@ -425,6 +433,10 @@ export const usePreorderModal = () => {
 
     dispatch(loadCart(serializedPreorder));
     dispatch(setCartId());
+    const storedTaxReceiptType = resolvePreorderTaxReceiptType(serializedPreorder);
+    if (storedTaxReceiptType) {
+      dispatch(selectTaxReceiptType(storedTaxReceiptType));
+    }
     if (serializedPreorder?.client) {
       dispatch(selectClientWithAuth(serializedPreorder.client));
     }
@@ -436,6 +448,7 @@ export const usePreorderModal = () => {
     } else {
       params.delete('preorderId');
     }
+    params.set('preserveCart', '1');
     navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
 
     notification.success({

@@ -1,7 +1,7 @@
+import { identifyCountryByPrefix } from './country';
 import { calculateGTIN13CheckDigit, calculateEAN8CheckDigit, calculateUPCACheckDigit, calculateGTIN14CheckDigit } from './digits';
 import { expandUPCEToUPCA } from './expansion';
 import { isVariableWeightCode, analyzeVariableWeightCode } from './weight';
-import { identifyCountryByPrefix } from './country';
 
 /**
  * Analiza la estructura de un código de barras

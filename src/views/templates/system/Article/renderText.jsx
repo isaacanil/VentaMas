@@ -1,7 +1,8 @@
 import React from 'react';
-import Typography from "../Typografy/Typografy";
 import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
+
+import Typography from "../Typografy/Typografy";
 
 const renderText = (parsedText) => {
   return parsedText.map((block, index) => {

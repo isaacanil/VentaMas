@@ -1,20 +1,25 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
-import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
-import { filterData } from '../../../../hooks/search/useSearch';
-import useTableSorting from './hooks/useTableSorting';
-import { useTablePagination } from './hooks/usePagination';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { icons } from '../../../../constants/icons/icons';
 import { selectUser } from '../../../../features/auth/userSlice';
-import useTableFiltering, { applyFilters, useDynamicFilterConfig } from './hooks/useTableFilter';
-import { TableHeader } from './components/Table/TableHeader/TableHeader';
+import { filterData } from '../../../../hooks/search/useSearch';
+import { useWindowWidth } from '../../../../hooks/useWindowWidth';
+import { DatePicker } from '../Dates/DatePicker/DatePicker';
+
+import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
+import { FilterUI } from './components/MenuFilter/MenuFilter';
 import { TableBody } from './components/Table/TableBody/TableBody';
 import TableFooter from './components/Table/TableFooter/TableFooter';
+import { TableHeader } from './components/Table/TableHeader/TableHeader';
 import { useColumnOrder } from './hooks/useColumnOrder';
-import { FilterUI } from './components/MenuFilter/MenuFilter';
-import { DatePicker } from '../Dates/DatePicker/DatePicker';
-import { useWindowWidth } from '../../../../hooks/useWindowWidth';
-import { icons } from '../../../../constants/icons/icons';
+import { useTablePagination } from './hooks/usePagination';
+import useTableFiltering, { useDynamicFilterConfig } from './hooks/useTableFilter';
+import useTableSorting from './hooks/useTableSorting';
+
+
+
 
 /**
  * AdvancedTable es un componente de tabla personalizado que acepta los siguientes props:

@@ -1,12 +1,14 @@
 import { useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
+
+import { GenericClient } from "../../features/clientCart/clientCartSlice";
 import { getCashCountStrategy } from "../../notification/cashCountNotification/cashCountNotificacion";
+
 import {
   submitInvoice,
   waitForInvoiceResult,
   generateIdempotencyKey,
 } from "./invoice.service";
-import { GenericClient } from "../../features/clientCart/clientCartSlice";
 
 const simulateDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

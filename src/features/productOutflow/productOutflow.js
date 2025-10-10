@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { DateTime } from 'luxon'
 import { nanoid } from 'nanoid'
+
 import { OPERATION_MODES } from '../../constants/modes'
 
 const EmptyProductsOutflow = []

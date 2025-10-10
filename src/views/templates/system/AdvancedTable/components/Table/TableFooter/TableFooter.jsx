@@ -1,8 +1,9 @@
 import React from 'react'
 import styled from 'styled-components';
-import { Pagination } from '../../Pagination/Pagination';
+
 import { icons } from '../../../../../../../constants/icons/icons';
 import { Button } from '../../../../Button/Button';
+import { Pagination } from '../../Pagination/Pagination';
 
 const TableFooter = ({
   elementsShown,

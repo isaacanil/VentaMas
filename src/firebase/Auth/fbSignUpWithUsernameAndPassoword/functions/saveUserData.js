@@ -1,4 +1,5 @@
 import { doc, setDoc } from "firebase/firestore";
+
 import { db } from "../../../firebaseconfig";
 
 export const saveUserData = async (userAuth, user) => {

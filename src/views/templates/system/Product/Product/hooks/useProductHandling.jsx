@@ -1,12 +1,15 @@
+import { notification } from 'antd'; 
 import { useRef, useState, useMemo, useCallback } from "react"; 
 import { useDispatch, useSelector } from "react-redux";
-import { notification } from 'antd'; 
+
 import { addProduct, deleteProduct } from '../../../../../../features/cart/cartSlice'; 
+import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
 import { openProductStockSimple } from '../../../../../../features/productStock/productStockSimpleSlice'; 
 import { useProductStockCheck } from '../../../../../../hooks/useProductStockCheck'; 
-import { getTotalPrice } from '../../../../../../utils/pricing'; 
+import { getTotalPrice } from '../../../../../../utils/pricing';
+ 
 import { useProductInCart, useProductStockStatus } from "./useProductCartAndStock";
-import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
+
 export const useProductHandling = (product, taxReceiptEnabled) => {
   const dispatch = useDispatch();
   const [productState, setProductState] = useState({

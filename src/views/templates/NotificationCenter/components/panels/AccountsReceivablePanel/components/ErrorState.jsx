@@ -1,6 +1,8 @@
 import styled from 'styled-components';
-import PanelHeader from './PanelHeader';
+
 import { PanelCard, MetaValue } from '../../shared/PanelPrimitives';
+
+import PanelHeader from './PanelHeader';
 
 const ErrorState = ({ title, icon, message }) => (
   <PanelCard>

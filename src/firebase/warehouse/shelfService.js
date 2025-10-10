@@ -1,8 +1,4 @@
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../features/auth/userSlice';
-import { useEffect, useState } from 'react';
 import { nanoid } from '@reduxjs/toolkit';
-import { db } from '../firebaseconfig';
 import {
     collection,
     updateDoc,
@@ -12,9 +8,14 @@ import {
     setDoc,
     query,
     where,
-    orderBy,
     getDocs,
 } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
+
 
 // Obtener referencia de la colección de estantes de un almacén
 const getShelfCollectionRef = (businessId) => {

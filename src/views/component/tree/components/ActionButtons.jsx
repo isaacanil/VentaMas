@@ -1,8 +1,8 @@
 // ActionButtons.jsx
-import React from 'react';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Menu, Dropdown } from 'antd';
+import { Dropdown } from 'antd';
+import PropTypes from 'prop-types';
+import React from 'react';
 import styled from 'styled-components';
 
 const ActionButtonsContainer = styled.div`

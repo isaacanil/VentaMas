@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
-import style from './AddProviderStyle.module.scss'
-import { useDispatch, useSelector } from 'react-redux'
-
 import { nanoid } from 'nanoid'
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+
 export const AddProvider = () => {
     const dispatch = useDispatch()
   

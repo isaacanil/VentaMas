@@ -1,10 +1,11 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useNavigate, useLocation } from 'react-router-dom';
-import ROUTES_PATH from '../../../../../../../routes/routesName';
-import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
+import ROUTES_PATH from '../../../../../../../routes/routesName';
 
 const MenuContainer = styled.div`
     border-bottom: 1px solid #e0e0e0;

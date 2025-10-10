@@ -1,11 +1,12 @@
 import { useRef } from 'react';
-import styled from 'styled-components';
-import { InputV4 } from '../../Inputs/GeneralInput/InputV4';
-import { Button, ButtonGroup } from '../../Button/Button';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
 import { toggleImageViewer } from '../../../../../features/imageViewer/imageViewerSlice';
-import { isFirebaseStorageUrl } from '../../../../../utils/url/isValidUrl';
 import { isImageFile } from '../../../../../utils/file/isValidFile';
+import { isFirebaseStorageUrl } from '../../../../../utils/url/isValidUrl';
+import { Button, ButtonGroup } from '../../Button/Button';
+import { InputV4 } from '../../Inputs/GeneralInput/InputV4';
 
 const InputFile = ({ 
     label = 'Nombre del archivo: ', 

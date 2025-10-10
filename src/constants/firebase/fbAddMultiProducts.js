@@ -1,4 +1,5 @@
 import { collection, setDoc, doc } from 'firebase/firestore';
+
 import { db } from '../../firebase/firebaseconfig';
 
 
@@ -17,9 +18,8 @@ export async function fbAddMultiProducts(user, productsData) {
 
   try {
     await Promise.all(promises);
-    promises.forEach((promise, index) => {
-    });
   } catch (error) {
+    console.error('Error adding multiple products', error);
   }
 }
 

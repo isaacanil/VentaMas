@@ -1,4 +1,5 @@
 import { formatDate } from '../utils/formatters.js';
+
 import { buildClientBlock } from './clientBlock.js';
 
 /* ───── utilitario título/etiqueta para notas de crédito ───── */

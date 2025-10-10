@@ -1,18 +1,19 @@
-import React, { useCallback, useRef } from 'react'
-import * as antd from 'antd';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPrint } from '@fortawesome/free-solid-svg-icons';
-import { isInvoicePaidInFull } from '../../../../../../utils/invoice';
-import { icons } from '../../../../../../constants/icons/icons';
-import { Button } from '../../../../../templates/system/Button/Button';
-import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
-import { Receipt } from '../../../../checkout/Receipt';
-import { useReactToPrint } from 'react-to-print';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from 'antd';
+import React, { useCallback, useRef } from 'react'
 import { useDispatch } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
+import styled from 'styled-components';
+
+import { icons } from '../../../../../../constants/icons/icons';
 import { addInvoice } from '../../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../../features/invoice/invoicePreviewSlice';
+import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
+import { isInvoicePaidInFull } from '../../../../../../utils/invoice';
 import { prepareInvoiceForEdit } from '../../../../../../utils/invoice';
+import { Button } from '../../../../../templates/system/Button/Button';
+import { Receipt } from '../../../../checkout/Receipt';
 import useInvoiceEditAuthorization from '../../../hooks/useInvoiceEditAuthorization.jsx';
 
 export const Footer = ({ data }) => {

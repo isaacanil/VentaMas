@@ -1,9 +1,12 @@
+import { Checkbox, InputNumber} from 'antd'
 import React, { useRef } from 'react'
-import { Label, LineItem } from '../../InvoiceSummary'
-import {Input, Checkbox, InputNumber} from 'antd'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectClient, setClient } from '../../../../../../../features/clientCart/clientCartSlice'
 import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { selectClient, setClient } from '../../../../../../../features/clientCart/clientCartSlice'
+import { Label, LineItem } from '../../InvoiceSummary'
+
+
 
 export const Delivery = () => {
     const dispatch = useDispatch()

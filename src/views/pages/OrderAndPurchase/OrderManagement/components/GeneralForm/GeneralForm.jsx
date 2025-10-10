@@ -1,15 +1,13 @@
-import { Form, Input, Select, DatePicker, message } from 'antd'
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
-import debounce from 'lodash/debounce'
+import { Form, Select, DatePicker, message } from 'antd'
 import dayjs from 'dayjs'
-import styled from 'styled-components'
-import EvidenceUpload from '../EvidenceUpload/EvidenceUpload'
-import ProductsTable from '../ProductsTable'
-import TotalsSummary from '../TotalsSummary'
-import AddProductForm from '../AddProduct'
-import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector'
-import OrderSelector from './components/OrderSelector'
+import { onSnapshot, doc } from 'firebase/firestore'
+import debounce from 'lodash/debounce'
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
+import { OPERATION_MODES } from '../../../../../../constants/modes'
+import { getTransactionConditionById, transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
 import { 
     selectOrder, 
     AddProductToOrder, 
@@ -19,18 +17,22 @@ import {
     updateProduct,
     setOrder 
 } from '../../../../../../features/addOrder/addOrderSlice'
-import { getTransactionConditionById, transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
-import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders'
-import NotesInput from './components/NotesInput'
-import { OPERATION_MODES } from '../../../../../../constants/modes'
-import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
-import { normalizeText } from '../../../../../../utils/text'
-import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
-import { onSnapshot, doc } from 'firebase/firestore'
-import { db } from '../../../../../../firebase/firebaseconfig'
 import { selectUser } from '../../../../../../features/auth/userSlice'
-import BackOrdersModal from "../../../PurchaseManagement/components/BackOrdersModal";
+import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
+import { db } from '../../../../../../firebase/firebaseconfig'
+import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
 import { useBackOrdersByProduct } from "../../../../../../firebase/warehouse/backOrderService";
+import { normalizeText } from '../../../../../../utils/text'
+import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector'
+import BackOrdersModal from "../../../PurchaseManagement/components/BackOrdersModal";
+import AddProductForm from '../AddProduct'
+import EvidenceUpload from '../EvidenceUpload/EvidenceUpload'
+import ProductsTable from '../ProductsTable'
+import TotalsSummary from '../TotalsSummary'
+
+
+import NotesInput from './components/NotesInput'
+
 
 const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors, mode, backOrderAssociationId }) => {
     const dispatch = useDispatch();

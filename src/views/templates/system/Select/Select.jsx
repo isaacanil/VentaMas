@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import styled from 'styled-components'
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
-import { icons } from '../../../../constants/icons/icons';
 import { usePopper } from 'react-popper';
+import styled from 'styled-components'
+
+import { icons } from '../../../../constants/icons/icons';
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { InputV4 } from '../Inputs/GeneralInput/InputV4';
 
 const getValueByKeyOrPath = (obj, keyOrPath) => {

@@ -1,6 +1,7 @@
+import { notification } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { notification } from 'antd';
+
 import { selectAppMode, toggleMode } from '../../../../features/appModes/appModeSlice';
 import { Button } from '../Button/Button';
 

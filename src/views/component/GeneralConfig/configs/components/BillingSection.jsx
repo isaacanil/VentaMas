@@ -1,10 +1,10 @@
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Typography } from 'antd';
+import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
-import { Typography } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
+
 
 const { Title, Paragraph } = Typography;
 

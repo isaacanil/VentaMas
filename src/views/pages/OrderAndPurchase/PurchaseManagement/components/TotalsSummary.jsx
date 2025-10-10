@@ -1,6 +1,6 @@
+import { Statistic } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Statistic } from 'antd';
 
 const Contained = styled.div`
   padding: 1em 0;

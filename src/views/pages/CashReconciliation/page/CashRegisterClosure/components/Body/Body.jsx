@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
+
 import { LeftSide } from './LeftSide/LeftSide'
 import { RightSide } from './RightSide/RightSide'
-import styled from 'styled-components'
 
 export const Body = ({closingDate}) => {
   const [calculationIsOpen, setCalculationIsOpen] = useState(true)

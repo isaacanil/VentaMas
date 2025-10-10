@@ -1,10 +1,12 @@
-import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../features/auth/userSlice";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { useEffect } from "react";
-import { db } from "../firebaseconfig";
-import { collection, limit, onSnapshot, query, where } from "firebase/firestore";
+import { useDispatch, useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
 import { clearCashReconciliation, setCashReconciliation } from "../../features/cashCount/cashStateSlice";
 import DateUtils from "../../utils/date/dateUtils";
+import { db } from "../firebaseconfig";
+
 import { getEmployeeData } from "./fbGetCashCounts/getEmployeeData";
 
 export const useCurrentCashDrawer = () => {
@@ -78,6 +80,11 @@ export const useCurrentCashDrawer = () => {
             });
 
             return () => unsubscribe();
-        } catch (error) { }
+        } catch (error) {
+            // Log unexpected errors from snapshot subscription setup
+            // Don't re-throw to avoid breaking React render lifecycle
+             
+            console.error('useCurrentCashDrawer error:', error);
+        }
     }, [user]);
 }

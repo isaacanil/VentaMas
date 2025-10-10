@@ -1,6 +1,7 @@
 import React from 'react';
-import { Paragraph } from '../../Style';
 import styled from 'styled-components';
+
+import { Paragraph } from '../../Style';
 
 
 export function ReceiptList({ title, list = [], formatReceipt }) {

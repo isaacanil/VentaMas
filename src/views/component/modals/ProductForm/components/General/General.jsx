@@ -1,22 +1,23 @@
+import { LoadingOutlined } from '@ant-design/icons';
+import { Form, Button, Spin, Card, Space, Row, Col, notification, Image as AntdImage } from 'antd';
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
-import { Form, Button, Spin, Card, Space, Row, Col, notification, Image as AntdImage } from 'antd';
 import styled from 'styled-components';
-import { ProductInfo } from '../sections/ProductInfo';
-import { InventoryInfo } from '../sections/InventoryInfo';
-import { PriceInfo } from '../sections/PriceInfo';
-import { QRCode } from '../sections/QRCode';
-import { BarCode } from '../sections/BarCode';
-import { WarrantyInfo } from '../sections/WarrantyInfo';
-import { LoadingOutlined } from '@ant-design/icons';
-import { PriceCalculator } from '../sections/PriceCalculator';
-import { imgFailed } from '../../ImageManager/ImageManager';
-import { closeModalUpdateProd } from '../../../../../../features/modals/modalSlice';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
-import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
+import { closeModalUpdateProd } from '../../../../../../features/modals/modalSlice';
+import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
 import { fbAddProduct } from '../../../../../../firebase/products/fbAddProduct';
+import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
 import { initTaxes } from '../../../UpdateProduct/InitializeData';
+import { imgFailed } from '../../ImageManager/ImageManager';
+import { BarCode } from '../sections/BarCode';
+import { InventoryInfo } from '../sections/InventoryInfo';
+import { PriceCalculator } from '../sections/PriceCalculator';
+import { PriceInfo } from '../sections/PriceInfo';
+import { ProductInfo } from '../sections/ProductInfo';
+import { QRCode } from '../sections/QRCode';
+import { WarrantyInfo } from '../sections/WarrantyInfo';
 
 export const General = ({ showImageManager }) => {
     const dispatch = useDispatch();

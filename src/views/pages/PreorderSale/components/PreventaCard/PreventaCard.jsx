@@ -1,6 +1,3 @@
-import React from 'react';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendar,
   faBox,
@@ -9,7 +6,11 @@ import {
   faTimes,
   faCheck
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as antd from 'antd';
+import React from 'react';
+import styled from 'styled-components';
+
 const { Button, Card, Tag } = antd;
 
 const StyledCard = styled(Card)`

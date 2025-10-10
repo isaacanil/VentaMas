@@ -1,7 +1,8 @@
 import { faClipboard, faClipboardCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { icons } from "../../../../../constants/icons/icons";
 import ROUTES_NAME from "../../../../../routes/routesName";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const { PURCHASES, PURCHASES_CREATE } = ROUTES_NAME.PURCHASE_TERM
 const { ORDERS, ORDERS_CREATE } = ROUTES_NAME.ORDER_TERM

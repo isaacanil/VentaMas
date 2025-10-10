@@ -1,7 +1,10 @@
-import React from 'react';
 import { Select } from 'antd';
-import { FilterField } from './FilterField';
+import React from 'react';
+
 import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
+
+import { FilterField } from './FilterField';
+
 
 export const PaymentMethodFilter = ({ value, onChange }) => (
   <FilterField label={FILTER_CONFIG.paymentMethod.label}>

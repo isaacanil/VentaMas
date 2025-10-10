@@ -1,10 +1,10 @@
-import { switchToBusiness, returnToOriginalBusiness, switchToRole, returnToOriginalRole } from '../../../../features/auth/userSlice';
+import { userRoles, getAvailableRoles } from '../../../../abilities/roles';
 import { toggleMode } from '../../../../features/appModes/appModeSlice';
-import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
-import { userRoles, getRoleLabelById, getAvailableRoles } from '../../../../abilities/roles';
-import { ROUTES } from '../../../../routes/routesName';
+import { switchToBusiness, returnToOriginalBusiness, switchToRole, returnToOriginalRole } from '../../../../features/auth/userSlice';
 import { fbGetUsers, fbSearchUsers } from '../../../../firebase/Auth/fbAuthV2/fbGetUsers';
 import { fbUpdateUserPassword } from '../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
+import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
+import { ROUTES } from '../../../../routes/routesName';
 
 /**
  * Procesa todos los comandos ingresados en la consola de desarrollador
@@ -237,7 +237,7 @@ Para seleccionar, haga clic en una opción y doble clic para confirmar.
 Pulse ESC para cancelar.`;
           break;
 
-        case cmd === 'select test':
+        case cmd === 'select test': {
           const testItems = [
             { id: '1', display: 'Opción 1 - Esta es la primera opción' },
             { id: '2', display: 'Opción 2 - Esta es la segunda opción' },
@@ -254,8 +254,9 @@ Pulse ESC para cancelar.`;
             'select test'
           );
           break;
+        }
 
-        case cmd === 'select colors':
+        case cmd === 'select colors': {
           const colorItems = [
             { id: 'red', display: '🔴 Rojo', value: '#FF0000' },
             { id: 'green', display: '🟢 Verde', value: '#00FF00' },
@@ -276,8 +277,9 @@ Pulse ESC para cancelar.`;
             'select colors'
           );
           break;
+        }
 
-        case cmd === 'select numbers':
+        case cmd === 'select numbers': {
           const numberItems = Array.from({ length: 10 }, (_, i) => ({
             id: String(i + 1),
             display: `Número ${i + 1}`,
@@ -293,6 +295,7 @@ Pulse ESC para cancelar.`;
             'select numbers'
           );
           break;
+        }
 
         case cmd === 'select':
           result = `Comando de selección interactiva.
@@ -359,6 +362,7 @@ Consola de desarrollador: ABIERTA`;
           if (import.meta.env.DEV) {
             if (!this.reactScanLoaded) {
               result = 'Cargando React Scan...';
+              // eslint-disable-next-line import/no-unresolved
               import('https://unpkg.com/react-scan/dist/auto.global.js')
                 .then(() => {
                   this.setReactScanLoaded(true);
@@ -493,7 +497,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
           });
           break;
 
-        case cmd.startsWith('business switch '):
+        case cmd.startsWith('business switch '): {
           const targetBusinessId = cmd.replace('business switch ', '').trim();
           if (!targetBusinessId) {
             result = 'Error: Debe especificar un ID de negocio.\nUso: BUSINESS SWITCH [ID]';
@@ -522,6 +526,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
             result = null;
           }
           break;
+        }
 
         case cmd === 'business return':
           if (!this.isTemporaryMode) {
@@ -560,7 +565,7 @@ Ejemplos:
   BUSINESS RETURN             - Volver al original
   BUSINESS STATUS             - Estado actual`;
           break;
-        case cmd === 'role list':
+        case cmd === 'role list': {
           const availableRolesForUser = getAvailableRoles(this.user);
           const rolesForDisplay = [...availableRolesForUser];
 
@@ -588,7 +593,8 @@ Ejemplos:
             result = `Lista de roles disponibles para su usuario:\n\n${availableRolesOutput}\n\nPara cambiar de role use: ROLE SWITCH [ID]\nPara modo interactivo use: ROLE SELECT`;
           }
           break;
-        case cmd === 'role select':
+        }
+        case cmd === 'role select': {
           // Preparar items para el modo de selección usando roles disponibles para el usuario
           const userRolesForSelection = getAvailableRoles(this.user);
           const hasOriginalRoleOption = this.isTemporaryRoleMode && this.originalRole;
@@ -656,7 +662,8 @@ Ejemplos:
             'role select'
           );
           break;
-        case cmd.startsWith('role switch '):
+        }
+        case cmd.startsWith('role switch '): {
           const targetRoleId = cmd.replace('role switch ', '').trim();
           if (!targetRoleId) {
             result = 'Error: Debe especificar un ID de role.\nUso: ROLE SWITCH [ID]';
@@ -680,6 +687,7 @@ Ejemplos:
             }
           }
           break;
+        }
 
         case cmd === 'role return':
           if (!this.isTemporaryRoleMode) {
@@ -736,38 +744,7 @@ Ejemplos:
           });
           break;
 
-        case cmd === 'users select':
-          result = 'Cargando lista de usuarios para selección...';
-          this.loadUsersList().then((usersList) => {
-            if (usersList.length === 0) {
-              this.addOutput('No se encontraron usuarios disponibles.', 'error');
-            } else {
-              // Preparar items para el modo de selección
-              const selectionItems = usersList.map(({user}) => ({
-                id: user?.id,
-                display: `👤 ${user.name} (${user.email}) - Role: ${user.role}`,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                userData: user
-              }));
-
-              // Entrar en modo de selección
-              this.enterSelectionMode(
-                selectionItems,
-                '👥 Seleccionar Usuario:',
-                (selectedItem) => {
-                  this.addOutput(`Usuario seleccionado:\n\nNombre: ${selectedItem.name}\nEmail: ${selectedItem.email}\nRole: ${selectedItem.role}\nID: ${selectedItem.id}\n\nPara cambiar su contraseña use: USERS PASSWORD`);
-                },
-                'users select'
-              );
-            }
-          }).catch((error) => {
-            this.addOutput('Error al cargar la lista de usuarios: ' + error.message, 'error');
-          });
-          break;
-
-        case cmd.startsWith('users search '):
+        case cmd.startsWith('users search '): {
           const searchTerm = cmd.replace('users search ', '').trim();
           if (!searchTerm) {
             result = 'Error: Debe especificar un término de búsqueda.\nUso: USERS SEARCH [TEXTO]';
@@ -785,6 +762,7 @@ Ejemplos:
             });
           }
           break;
+        }
 
         case cmd === 'users password':
           result = 'Iniciando proceso de cambio de contraseña...';

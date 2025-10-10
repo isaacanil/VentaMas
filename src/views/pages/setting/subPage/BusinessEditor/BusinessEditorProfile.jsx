@@ -1,15 +1,18 @@
+import { PlusOutlined, LoadingOutlined, ShopOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Select, message, Upload, Card, Typography } from 'antd';
+import imageCompression from 'browser-image-compression';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Form, Input, Button, Select, message, Upload, Card, Typography, Divider } from 'antd';
-import { PlusOutlined, LoadingOutlined, ShopOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
-import { fbUpdateBusinessInfo, fbUpdateBusinessLogo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
-import { countries } from './countries.json';
+
+import { selectBusinessData } from '../../../../../features/auth/businessSlice';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { fbUpdateBusinessInfo, fbUpdateBusinessLogo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 import { useWindowWidth } from '../../../../../hooks/useWindowWidth';
-import imageCompression from 'browser-image-compression';
+
+import { countries } from './countries.json';
+
+
 
 const { Option } = Select;
 const { Title, Text } = Typography;

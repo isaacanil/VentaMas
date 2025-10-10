@@ -1,6 +1,6 @@
 import { Timestamp, doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
-import { DateTime } from "luxon";
 
 const saveLastInvoiceChange = async (user, lastInvoiceChange) => {
     const { id } = lastInvoiceChange.data;

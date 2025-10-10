@@ -1,13 +1,16 @@
 import { collection, onSnapshot, runTransaction, doc, serverTimestamp, getDocs } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../features/auth/userSlice";
-import { validateUser } from "../../utils/userValidation";
 import { useEffect } from "react";
-import { taxReceiptDefault } from "./taxReceiptsDefault";
+import { useDispatch, useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
 import { getTaxReceiptData } from "../../features/taxReceipt/taxReceiptSlice";
-import { removeDuplicateTaxReceipts } from "./removeDuplicateTaxReceipts";
 import { serializeFirestoreDocuments } from "../../utils/serialization/serializeFirestoreData";
+import { validateUser } from "../../utils/userValidation";
+import { db } from "../firebaseconfig";
+
+import { removeDuplicateTaxReceipts } from "./removeDuplicateTaxReceipts";
+import { taxReceiptDefault } from "./taxReceiptsDefault";
+
 
 export const fbAutoCreateDefaultTaxReceipt = () => {
     const dispatch = useDispatch();

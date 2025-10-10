@@ -6,25 +6,33 @@
  * @returns {Promise} - Promesa que resuelve con los datos de la preorden guardada.
  */
 
-import { collection, doc, serverTimestamp, setDoc, Timestamp } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc, Timestamp } from "firebase/firestore";
 import { nanoid } from "nanoid";
-import { getNextID } from "../Tools/getNextID";
+
 import { db } from "../firebaseconfig";
+import { getNextID } from "../Tools/getNextID";
 
 export const fbAddPreOrder = async (user, cartData) => {
     try {
+        const existingPreorderDetails = cartData?.preorderDetails ?? {};
+        const selectedTaxReceiptType = existingPreorderDetails?.selectedTaxReceiptType ?? cartData?.selectedTaxReceiptType ?? null;
+        const preorderNumberId = existingPreorderDetails?.numberID ?? await getNextID(user, "preorder");
+
         const data = {
             ...cartData,
+            selectedTaxReceiptType,
             id: nanoid(),
             date: null,
             status: "pending",
             type: "preorder",
             preorderDetails: {
+                ...existingPreorderDetails,
                 date: serverTimestamp(),
                 isOrWasPreorder: true,
-                numberID: await getNextID(user, "preorder"),
+                numberID: preorderNumberId,
                 userID: user.uid,
-                paymentStatus: "unpaid",
+                paymentStatus: existingPreorderDetails?.paymentStatus || "unpaid",
+                selectedTaxReceiptType,
             },
             history: [{
                 type: "preorder",

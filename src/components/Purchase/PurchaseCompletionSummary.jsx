@@ -1,10 +1,10 @@
-import React from 'react';
-import { Modal, Button } from 'antd';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { ShopOutlined, ArrowRightOutlined, CloseOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Modal } from 'antd';
+import { motion } from 'framer-motion';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {

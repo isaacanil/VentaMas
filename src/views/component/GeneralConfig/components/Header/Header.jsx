@@ -1,6 +1,7 @@
-import React from 'react';
 import * as antd from 'antd';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+
 const { Button } = antd;
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

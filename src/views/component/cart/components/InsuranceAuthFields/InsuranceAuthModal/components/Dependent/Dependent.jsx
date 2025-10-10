@@ -1,10 +1,11 @@
+import { Form, Select, Modal, Input, message, DatePicker, Radio } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { Form, Select, Button, Modal, Input, message, DatePicker, Radio } from 'antd';
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
-import { useInsuranceBeneficiaries, addInsuranceBeneficiary } from '../../../../../../../../firebase/insurance/insuranceBeneficiaryService';
+
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { selectClient } from '../../../../../../../../features/clientCart/clientCartSlice';
+import { useInsuranceBeneficiaries, addInsuranceBeneficiary } from '../../../../../../../../firebase/insurance/insuranceBeneficiaryService';
+
 import DependentSelector from './DependentSelector';
 
 const Dependent = ({ form }) => {
