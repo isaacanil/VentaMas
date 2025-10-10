@@ -4,8 +4,11 @@ import { Header } from './components/Header/Header'
 import { CashReconciliationTable } from './components/Body/CashRecociliationTable'
 import { useDispatch } from 'react-redux'
 import { clearCashCount } from '../../../features/cashCount/cashCountManagementSlice'
+import { useCashCountClosingPrompt } from '../../../hooks/cashCount/useCashCountClosingPrompt'
 
 export const CashReconciliation = () => {
+  useCashCountClosingPrompt();
+
   const dispatch = useDispatch()
 
   useEffect(() => {

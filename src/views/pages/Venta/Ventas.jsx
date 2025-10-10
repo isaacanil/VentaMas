@@ -24,8 +24,11 @@ import { ProductBatchModal } from '../Inventory/components/Warehouse/components/
 import { selectUser } from '../../../features/auth/userSlice.js'
 import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
+import { useCashCountClosingPrompt } from '../../../hooks/cashCount/useCashCountClosingPrompt'
 
 export const Sales = () => {
+  useCashCountClosingPrompt();
+
   const [searchData, setSearchData] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const user = useSelector(selectUser);
