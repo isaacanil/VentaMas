@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { useSearchParams } from 'react-router-dom'
@@ -10,7 +10,7 @@ import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.js
 import { selectCategoryGrouped } from '../../../features/setting/settingSlice'
 import { useGetProducts } from '../../../firebase/products/fbGetProducts'
 import useFilter from '../../../hooks/search/useSearch' // Cambiar importación
-import { addProduct, resetCart, toggleCart, SelectSettingCart } from '../../../features/cart/cartSlice'
+import { addProduct, resetCart, toggleCart, SelectSettingCart, SelectCartData } from '../../../features/cart/cartSlice'
 import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodeScanner'
 import { motion } from 'framer-motion'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
@@ -32,6 +32,7 @@ export const Sales = () => {
   const categoryGrouped = useSelector(selectCategoryGrouped)
   const { products, loading: productsLoading, setLoading, error } = useGetProducts()
   const cartSettings = useSelector(SelectSettingCart);
+  const cartData = useSelector(SelectCartData);
 
   const viewport = useViewportWidth();
   const dispatch = useDispatch()
@@ -88,21 +89,32 @@ export const Sales = () => {
   const productFiltered = useFilter(products, searchData)
   const filterProductsByVisibility = productFiltered.filter((product) => product.isVisible !== false);
 
+  const hasInitializedRef = useRef(false);
+
   useEffect(() => {
-    const handleCancelShipping = () => {
-      if (viewport <= 800) dispatch(toggleCart());
-      dispatch(resetCart())
-      dispatch(clearTaxReceiptData())
-      dispatch(deleteClient())
+    if (hasInitializedRef.current) {
+      return;
     }
-    handleCancelShipping()
-  }, [])
+
+    const initialMode = searchParams.get('mode');
+    const isPreorderContext = initialMode === 'preorder' || cartData?.type === 'preorder';
+
+    if (!isPreorderContext) {
+      if (viewport <= 800) dispatch(toggleCart());
+      dispatch(resetCart());
+      dispatch(clearTaxReceiptData());
+      dispatch(deleteClient());
+    }
+
+    hasInitializedRef.current = true;
+  }, [cartData?.type, dispatch, searchParams, viewport])
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     const currentMode = params.get('mode');
     const billingMode = cartSettings?.billing?.billingMode;
-    const desiredMode = billingMode === 'deferred' ? 'preorder' : 'sale';
+    const hasPreorderLoaded = cartData?.type === 'preorder';
+    const desiredMode = hasPreorderLoaded || billingMode === 'deferred' ? 'preorder' : 'sale';
     let hasChanges = false;
 
     if (currentMode !== desiredMode) {
@@ -118,7 +130,7 @@ export const Sales = () => {
     if (hasChanges) {
       setSearchParams(params, { replace: true });
     }
-  }, [cartSettings?.billing?.billingMode, searchParams, setSearchParams])
+  }, [cartData?.type, cartSettings?.billing?.billingMode, searchParams, setSearchParams])
 
   return (
     <>

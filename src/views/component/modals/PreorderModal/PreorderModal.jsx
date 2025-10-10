@@ -221,10 +221,10 @@ const Separator = styled.hr`
     margin: 4px 0;
 `;
 
-export default function PreorderModal({ preorder }) {
-    const [visible, setVisible] = useState(false);
+export default function PreorderModal({ preorder, open, onCancel }) {
     const [isClientExpanded, setIsClientExpanded] = useState(false);
     const isReady = Boolean(preorder);
+    const visible = open ?? false;
     const status = preorder?.status ?? '';
     const products = preorder?.products ?? [];
     const totalPurchaseValue = Number(preorder?.totalPurchase?.value ?? 0);
@@ -270,22 +270,15 @@ export default function PreorderModal({ preorder }) {
 
     const statusTone = getStatusColor(status);
 
-    const openModal = () => {
-        if (!isReady) return;
-        setIsClientExpanded(false);
-        setVisible(true);
-    };
-
     const closeModal = () => {
-        setVisible(false);
         setIsClientExpanded(false);
+        if (onCancel) {
+            onCancel();
+        }
     };
 
     return (
         <>
-            <IconButton onClick={openModal} disabled={!isReady} aria-label="Ver preventa">
-                {icons.editingActions.show}
-            </IconButton>
             {isReady && visible && (
                 <ModalOverlay onClick={closeModal}>
                     <ModalCard onClick={(event) => event.stopPropagation()}>

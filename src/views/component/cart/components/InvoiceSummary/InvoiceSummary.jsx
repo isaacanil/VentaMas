@@ -9,6 +9,7 @@ import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
 import { notification, Modal, Spin, message, Tooltip } from 'antd'
 import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
 import { fbAddPreOrder } from '../../../../../firebase/invoices/fbAddPreocer';
+import { fbUpdatePreOrder } from '../../../../../firebase/invoices/fbUpdatePreorder';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import { getTotalDiscount } from '../../../../../utils/pricing';
@@ -375,8 +376,44 @@ const InvoiceSummary = () => {
     }
   };
 
+  const handleUpdatePreOrder = async () => {
+    if (isSavingPreorder) return;
+
+    const { isValid, message: validationMessage } = validateInvoiceCart(cartData);
+
+    if (!isValid) {
+      notification.warning({
+        message: 'No se puede actualizar la preventa',
+        description: validationMessage || 'Verifica los datos del carrito antes de continuar.'
+      });
+      return;
+    }
+
+    try {
+      setIsSavingPreorder(true);
+
+      await fbUpdatePreOrder(user, cartData);
+
+      handleCancelShipping({ dispatch, closeInvoicePanel: false });
+      activateSaleMode();
+
+      notification.success({
+        message: 'Preventa actualizada con éxito',
+        description: 'Los cambios han sido guardados.'
+      });
+    } catch (error) {
+      console.error('Error al actualizar la preorden:', error);
+      notification.error({
+        message: 'No se pudo actualizar la preventa',
+        description: error?.message || 'Intenta nuevamente en unos segundos.'
+      });
+    } finally {
+      setIsSavingPreorder(false);
+    }
+  };
+
   // Calculamos si el botón debe estar deshabilitado combinando las validaciones
-  const isButtonDisabled = !isCartValid || insuranceFormIncomplete || !validateInsuranceCoverage.isValid;
+  const isButtonDisabled = !isCartValid || insuranceFormIncomplete || !validateInsuranceCoverage.isValid || isSavingPreorder;
 
   // Mensaje de advertencia que incluye ambas validaciones con información más detallada
   const warningMessage = useMemo(() => {
@@ -396,8 +433,8 @@ const InvoiceSummary = () => {
       disabled: isButtonDisabled
     },
     deferred: isEditingPreorder ? {
-      text: 'Completar',
-      action: handleInvoicePanelOpen,
+      text: isSavingPreorder ? 'Actualizando...' : 'Actualizar',
+      action: handleUpdatePreOrder,
       disabled: isButtonDisabled
     } : {
       text: 'Preventa',
@@ -417,22 +454,42 @@ const InvoiceSummary = () => {
   const { text, action, disabled } = billingButtons[billing?.billingMode] || billingButtons.default;
 
   const tooltipTitle = useMemo(() => {
+    if (isSavingPreorder) {
+      return 'Guardando preventa...';
+    }
     if (disabled) {
       return warningMessage;
     }
     switch (text) {
       case 'Facturar':
         return 'Proceder a facturar';
-      case 'Completar':
+      case 'Completar preventa':
         return 'Completar la preventa';
+      case 'Actualizar':
+        return 'Guardar cambios de la preventa';
+      case 'Actualizando...':
+        return 'Guardando cambios de la preventa';
       case 'Preventa':
         return 'Guardar como preventa';
       default:
         return '';
     }
-  }, [disabled, warningMessage, text]);
+  }, [disabled, warningMessage, text, isSavingPreorder]);
 
   const menuOptions = [
+    isEditingPreorder && {
+      text: 'Completar preventa',
+      action: handleInvoicePanelOpen,
+      icon: icons.operationModes.accept,
+      disabled: isButtonDisabled,
+      theme: {
+        background: '#f6ffed',
+        backgroundHover: '#d9f7be',
+        color: '#389e0d',
+        colorHover: '#237804',
+        iconColor: '#389e0d'
+      }
+    },
     billingSettings?.quoteEnabled && {
       text: isLoadingQuotation ? 'Cargando...' : 'Cotización',
       action: handleDownloadQuotation,
@@ -533,7 +590,7 @@ const InvoiceSummary = () => {
             </Button>
           </Tooltip>
           <ActionMenu
-           
+            disabled={isSavingPreorder}
             options={menuOptions}
           />
           <Quotation ref={quotationPrintRef} data={quotationData} />

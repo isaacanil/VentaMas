@@ -144,7 +144,7 @@ export const CashRegisterClosure = () => {
         <PeerReviewAuthorization
           isOpen={showPasswordModal}
           setIsOpen={setShowPasswordModal}
-          onValidate={handlePasswordAuth}
+          onSubmit={handlePasswordAuth}
           description="Autoriza el cierre del cuadre de caja con tu contraseña."
         />
       )}
