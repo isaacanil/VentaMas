@@ -1,161 +1,253 @@
 import React, { useState } from 'react';
 import * as antd from 'antd';
-
-const { Form, Input, Col, Row, Button, Modal, Alert, Typography, Spin } = antd;
-import { DateTime } from 'luxon';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBan, faTriangleExclamation, faWarehouse } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { closeInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice';
 import { fbCancelInvoice } from '../../../../../../firebase/invoices/fbCancelInvoice';
 import { Client } from '../Client/Client';
+import { InvoiceHeader } from '../InvoiceHeader/InvoiceHeader';
+import { PaymentInfo } from '../PaymentInfo/PaymentInfo';
+import { TimeRemainingBadge } from '../TimeRemainingBadge/TimeRemainingBadge';
 
 import { InvoiceResume } from './components/InvoiceResume';
 
-export const InvoiceInfo = ({ invoice }) => {
-  const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] = useState(false)
+const { Form, Input, Modal, Spin, Button } = antd;
 
-  const defaultDate = invoice?.date && DateTime.fromSeconds(invoice?.date).toFormat('yyyy-LL-dd');
-  const handleCloseCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(false)
-  const handleOpenCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(true)
+export const InvoiceInfo = ({ invoice }) => {
+  const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] = useState(false);
+  const isCancelable = !invoice?.NCF;
+
+  const handleCloseCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(false);
+  const handleOpenCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(true);
 
   return (
-    <>
+    <Container>
+      <TimeRemainingBadge invoice={invoice} />
+      <InvoiceHeader invoice={invoice} />
       <Client invoice={invoice} />
-      <antd.Divider orientation='left' orientationMargin={false}>Informacion de Pago</antd.Divider>
-      <Row gutter={16}>
-        <Col span={8}>
-          <Form.Item
-            label="Monto Pagado"
-            name={["payment", "value"]}
-          >
-            <Input type={"number"} />
-          </Form.Item>
-        </Col>
-        <Col span={8}>
-          <Form.Item
-            label="Descuento %"
-            name={["discount", "value"]}
-            help="Ejemplo: 10 = 10%"
-          >
-            <Input type="number" />
-          </Form.Item>
-        </Col>
-      </Row>
+      <PaymentInfo />
       <InvoiceResume invoice={invoice} />
-      <br />
-      < Row gutter={16}>
-        <Col>
-          <Form.Item>
-            <Button danger disabled={invoice.NCF} onClick={
-              handleOpenCancelInvoiceConfirm
-            }>
-              Anular
-            </Button>
-          </Form.Item>
-        </Col>
-      </Row>
+
+      <ActionsRow>
+        <CancelButton
+          danger
+          disabled={!isCancelable}
+          onClick={handleOpenCancelInvoiceConfirm}
+        >
+          <FontAwesomeIcon icon={faBan} />
+          <span>Anular factura</span>
+        </CancelButton>
+      </ActionsRow>
+
       <CancelInvoiceConfirm
         isOpen={isOpenCancelInvoiceConfirm}
         invoice={invoice}
         handleClose={handleCloseCancelInvoiceConfirm}
       />
-    </>
+    </Container>
   );
 };
 
-
 const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
-  const [form] = Form.useForm()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const dispatch = useDispatch()
-  const user = useSelector(selectUser)
+  const [form] = Form.useForm();
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+
   const handleOk = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const values = await form.validateFields();
-      const cancellationReason = values.cancellationReason
-      await fbCancelInvoice(user, invoice, cancellationReason)
-      dispatch(closeInvoiceForm())
-      handleClose()
-      antd.message.success('Factura anulada correctamente')
+      const cancellationReason = values.cancellationReason;
+
+      await fbCancelInvoice(user, invoice, cancellationReason);
+      dispatch(closeInvoiceForm());
+      handleClose();
+      antd.message.success('Factura anulada correctamente');
     } catch (error) {
-      antd.message.error('Error al anular factura')
+      antd.message.error('Error al anular factura');
     } finally {
-      form.resetFields()
-      setIsLoading(false)
+      form.resetFields();
+      setIsLoading(false);
     }
-  }
+  };
+
   const handleCancel = () => {
-    form.resetFields()
-    handleClose()
-  }
+    form.resetFields();
+    handleClose();
+  };
+
   return (
-
     <Modal
-      title="Confirmación de Anulación"
       open={isOpen}
-      onOk={handleOk}
-      okText="Anular"
-      okButtonProps={{ danger: true }}
+      footer={null}
       onCancel={handleCancel}
+      destroyOnClose
+      centered
     >
-      <Spin
-        spinning={isLoading}
-        tip="Cargando..."
-        size="large"
-      >
+      <Spin spinning={isLoading} tip="Cargando..." size="large">
+        <ModalContent>
+          <WarningCard>
+            <WarningHeader>
+              <WarningIcon icon={faTriangleExclamation} />
+              <WarningCopy>
+                <WarningTitle>Confirmación de anulación</WarningTitle>
+                <WarningSubtitle>Esta acción es definitiva</WarningSubtitle>
+              </WarningCopy>
+            </WarningHeader>
 
+            <WarningList>
+              <WarningItem>
+                <ListIcon icon={faTriangleExclamation} />
+                <span>Esta factura se anulará y no se podrá revertir.</span>
+              </WarningItem>
+              <WarningItem>
+                <ListIcon icon={faWarehouse} />
+                <span>Los productos de esta factura volverán al inventario.</span>
+              </WarningItem>
+            </WarningList>
+          </WarningCard>
 
-        <Alert
-          message={"¿Está seguro que desea anular esta factura?"}
-          description={
-            <div>
-              <ul
-                style={
-                  {
-
-                    paddingInlineStart: 0
-                  }
-                }
-              >
-                <li>
-                  <Typography.Text>
-                    Esta factura se anulará y no se podrá revertir
-                  </Typography.Text>
-                </li>
-                <li>
-                  <Typography.Text>
-                    Los productos de esta factura volverán a estar disponibles en el inventario
-                  </Typography.Text>
-                </li>
-              </ul>
-            </div>
-          }
-          type="warning"
-          showIcon
-        />
-        <br />
-        <Form
-          form={form}
-          layout="vertical"
-        >
-          <Form.Item
-            label="Motivo de la anulación"
-            name="cancellationReason"
-            help="Ejemplo: El cliente se arrepintió de la compra"
-            rules={[{ required: true, message: 'Por favor ingrese el motivo de la anulación' }]}
+          <StyledForm
+            form={form}
+            layout="vertical"
+            onFinish={handleOk}
           >
-            <Input
-              type="text"
-              placeholder="Motivo de la anulación"
-            />
-          </Form.Item>
-          <br />
-        </Form>
+            <StyledFormItem
+              label="Motivo de la anulación"
+              name="cancellationReason"
+              help="Ejemplo: El cliente se arrepintió de la compra"
+              rules={[{ required: true, message: 'Por favor ingrese el motivo de la anulación' }]}
+            >
+              <StyledInput
+                type="text"
+                placeholder="Motivo de la anulación"
+              />
+            </StyledFormItem>
+
+            <FormActions>
+              <Button onClick={handleCancel}>
+                Cancelar
+              </Button>
+              <Button
+                type="primary"
+                danger
+                onClick={handleOk}
+                icon={<FontAwesomeIcon icon={faBan} />}
+              >
+                Anular
+              </Button>
+            </FormActions>
+          </StyledForm>
+        </ModalContent>
       </Spin>
     </Modal>
+  );
+};
 
-  )
-}
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`;
+
+const ActionsRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const CancelButton = styled(Button)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+`;
+
+const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const WarningCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: #fff8eb;
+  border: 1px solid #fcd34d;
+`;
+
+const WarningHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const WarningIcon = styled(FontAwesomeIcon)`
+  font-size: 1.75rem;
+  color: #d97706;
+`;
+
+const WarningCopy = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+`;
+
+const WarningTitle = styled.h3`
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1f2937;
+`;
+
+const WarningSubtitle = styled.span`
+  font-size: 0.9rem;
+  color: #6b7280;
+`;
+
+const WarningList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+`;
+
+const WarningItem = styled.li`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  color: #374151;
+`;
+
+const ListIcon = styled(FontAwesomeIcon)`
+  margin-top: 0.15rem;
+  font-size: 1rem;
+  color: #d97706;
+`;
+
+const StyledForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const StyledFormItem = styled(Form.Item)`
+  margin-bottom: 0;
+`;
+
+const StyledInput = styled(Input)`
+  padding: 0.6rem 0.75rem;
+`;
+
+const FormActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+`;

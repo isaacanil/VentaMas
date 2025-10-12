@@ -1,15 +1,22 @@
-import { Alert, Typography } from 'antd';
-import React from 'react';
-
+import { Alert, Tabs, Typography } from 'antd';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import {AlgoliaProductsSearch} from '../test/pages/algoliaProductsSearch/AlgoliaProductsSearch';
 
 const { Title, Paragraph, Text } = Typography;
 
 /**
  * Contenedor simple para agrupar herramientas o experimentos temporales.
- * Mantiene la ruta `/prueba` disponible exclusivamente para ensayos manuales.
+ * Mantiene la ruta `/prueba` disponible para ensayos manuales.
  */
 export default function TestPlayground() {
+  const tabItems = [
+    // {
+    //   key: 'algolia-products',
+    //   label: 'Algolia · Productos',
+    //   children: <AlgoliaProductsSearch />,
+    // },
+  ];
+
   return (
     <>
       <MenuApp sectionName="Zona de pruebas" />
@@ -27,10 +34,16 @@ export default function TestPlayground() {
           message="Recomendación"
           description={
             <Text>
-              Registra brevemente los objetivos de la prueba y elimina cualquier estado temporal una vez concluido
-              para evitar confusiones en el equipo.
+              Registra brevemente los objetivos de la prueba y elimina cualquier estado temporal una vez
+              concluido para evitar confusiones en el equipo.
             </Text>
           }
+          style={{ marginBottom: 24 }}
+        />
+        <Tabs
+          defaultActiveKey="algolia-products"
+          items={tabItems}
+          destroyInactiveTabPane={false}
         />
       </div>
     </>

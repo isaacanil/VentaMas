@@ -14,7 +14,6 @@ import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoi
 import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 
-import { InvoiceInfoExtras } from './components/InvoiceInfoExtras/InvoiceInfoExtras';
 import { Products } from './components/Products/Products';
 
 export const InvoiceForm = ({ }) => {
@@ -82,12 +81,7 @@ export const InvoiceForm = ({ }) => {
       key: "2",
       label: "Productos",
       children: <Products invoice={invoice} />
-    },
-    {
-      key: "3",
-      label: "Más Detalles",
-      children: <InvoiceInfoExtras invoice={invoice} />
-    },
+    }
   ]
   const handleChange = (value) => {
     const key = Object.keys(value)[0]
@@ -105,7 +99,7 @@ export const InvoiceForm = ({ }) => {
   return (
     <Modal
       style={{ top: 10 }}
-      title={`Editar factura: ${invoice?.NCF ? (invoice?.NCF + " / ") : ""}  ${invoice?.date && (DateTime.fromMillis(invoice?.date).toFormat("dd LLL yyyy"))} `}
+      title={`Editar factura: #${invoice?.numberID}   `}
       open={modal.isOpen}
       width={800}
       onCancel={handleCancel}

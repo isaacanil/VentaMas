@@ -13,6 +13,34 @@ import { getTotalPrice } from '../../../../../../utils/pricing'
 
 import { ProductListModal } from './ProductListModal'
 
+const getProductQuantity = (product) => {
+    if (!product) return 1
+    const { amountToBuy } = product
+
+    if (typeof amountToBuy === 'number') {
+        return amountToBuy > 0 ? amountToBuy : 1
+    }
+
+    if (amountToBuy && typeof amountToBuy === 'object') {
+        const total = Number(amountToBuy.total)
+        const unit = Number(amountToBuy.unit)
+
+        if (!Number.isNaN(total) && total > 0) return total
+        if (!Number.isNaN(unit) && unit > 0) return unit
+    }
+
+    return 1
+}
+
+const getFormattedUnitPrice = (product) => {
+    const quantity = getProductQuantity(product)
+    const total = getTotalPrice(product)
+    const unitPrice = quantity > 0 ? total / quantity : total
+    return useFormatPrice(unitPrice)
+}
+
+const getFormattedTotalPrice = (product) => useFormatPrice(getTotalPrice(product))
+
 export const Products = ({ invoice }) => {
     const dispatch = useDispatch()
     const [isProductListModalVisible, setProductListModalVisible] = useState(false)
@@ -54,13 +82,13 @@ export const Products = ({ invoice }) => {
         {
             title: 'Precio Unitario',
             dataIndex: 'price',
-            key: 'price',
-            render: (text, record) => `${useFormatPrice(getTotalPrice(record) )}`,
+            key: 'unitPrice',
+            render: (_, record) => getFormattedUnitPrice(record),
         },
         {
             title: 'Precio Total',
             key: 'totalPrice',
-            render: (text, record) => `${useFormatPrice(getTotalPrice(record) )}`,
+            render: (_, record) => getFormattedTotalPrice(record),
         },
         {
             title: 'Acciones',

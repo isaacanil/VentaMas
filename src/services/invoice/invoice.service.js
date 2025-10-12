@@ -20,6 +20,10 @@ const isPlainObject = (value) => {
 };
 
 const sanitizeNumericValues = (input) => {
+    if (input === undefined) {
+        return null;
+    }
+
     if (Array.isArray(input)) {
         return input.map(sanitizeNumericValues);
     }
@@ -36,6 +40,33 @@ const sanitizeNumericValues = (input) => {
     }
 
     return input;
+};
+
+const normalizeCart = (cart) => {
+    if (cart == null || typeof cart !== "object") {
+        return cart ?? null;
+    }
+
+    const normalizedCart = { ...cart };
+
+    if (Array.isArray(cart.products)) {
+        normalizedCart.products = cart.products.map((product) => {
+            if (product == null || typeof product !== "object") {
+                return product ?? null;
+            }
+
+            const normalizedProduct = { ...product };
+            if (normalizedProduct.productStockId === undefined) {
+                normalizedProduct.productStockId = null;
+            }
+            if (normalizedProduct.batchId === undefined) {
+                normalizedProduct.batchId = null;
+            }
+            return normalizedProduct;
+        });
+    }
+
+    return normalizedCart;
 };
 
 const normalizeUser = (user) => {
@@ -181,7 +212,7 @@ export const buildInvoiceRequestPayload = ({
         idempotencyKey,
         businessId: resolvedBusinessId,
         userId: resolvedUserId,
-        cart: cart ?? null,
+        cart: normalizeCart(cart ?? null),
         client: client ?? null,
         accountsReceivable: cart?.isAddedToReceivables
             ? normalizeReceivablePayload(accountsReceivable, { requirePaymentDate: true })

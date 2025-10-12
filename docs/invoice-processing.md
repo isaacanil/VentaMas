@@ -58,6 +58,7 @@ Flujo principal:
    - Si es preorden: `generalInvoiceFromPreorder` (`invoiceService.js:235`) con `fbGenerateInvoiceFromPreorder`.
    - Si es venta normal: `generateFinalInvoice` (`invoiceService.js:164`) que llama a `fbAddInvoice` y adjunta `NCF`, `client` y `cashCountId`. Considera `dueDate` con `checkIfHasDueDate` (`invoiceService.js:100`).
 7. Inventario: `adjustProductInventory` (`invoiceService.js:158`) con `fbUpdateProductsStock`.
+   - Antes de enviar al backend se normaliza el carrito (`src/services/invoice/invoice.service.js:45`), forzando que cada producto lleve `productStockId` y `batchId` en `null` cuando no existan valores reales. Esto evita que Firestore rechace la factura por campos `undefined` y deja explícito que no hay stock o lote vinculado.
 8. Notas de crédito: si existen en el carrito, `fbConsumeCreditNotes`.
 9. Cuentas por cobrar:
    - AR normal: `manageReceivableAccounts` (`invoiceService.js:179`) usa `fbAddAR` y `fbAddInstallmentAR`.
@@ -137,4 +138,3 @@ Postcondiciones:
 - `src/services/invoice/invoiceService.js:192`
 - `src/services/invoice/invoiceService.js:235`
 - `src/services/invoice/invoiceService.js:257`
-

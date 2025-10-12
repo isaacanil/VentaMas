@@ -43,7 +43,7 @@ Componentes:
 - Header: `Idempotency-Key` (obligatorio, único por operación de checkout)
 - Body:
   - `userId`, `businessId`
-  - `cart`: productos, totales, pagos, `isAddedToReceivables`, `creditNotePayment`, etc.
+  - `cart`: productos, totales, pagos, `isAddedToReceivables`, `creditNotePayment`, etc. (los productos deben enviar `productStockId`/`batchId` en `null` cuando no exista relación real para que Firestore no reciba `undefined`)
   - `client`: `{ id, name, ... }`
   - `ncf`: `{ enabled: boolean, type: string }`
   - `dueDate`: timestamp ms | null
@@ -214,4 +214,3 @@ process(invoiceId):
 ---
 
 Este diseño prioriza robustez e idempotencia, eliminando las condiciones de carrera que hoy pueden ocurrir cuando se disparan varias facturas simultáneamente desde distintos dispositivos o reenvíos de red.
-
