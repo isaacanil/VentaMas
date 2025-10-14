@@ -183,7 +183,6 @@ export const TimeRemainingBadge: FC<TimeRemainingBadgeProps> = ({ invoice }) => 
 };
 
 const Wrapper = styled.div`
-  margin-bottom: 12px;
   display: flex;
   justify-content: flex-end;
 `;

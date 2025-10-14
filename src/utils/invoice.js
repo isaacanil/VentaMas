@@ -73,13 +73,27 @@ export const calculateInvoiceChange = (invoice) => invoice.payment.value - invoi
 const isFirestoreTimestampLike = (value) =>
     typeof value === 'object' && value !== null && typeof value.seconds === 'number' && typeof value.nanoseconds === 'number';
 
-const normalizeTimestamp = (input) => {
+export const normalizeInvoiceTimestamp = (input) => {
     if (!input) return null;
     if (typeof input === 'number') {
         return input > 1e12 ? input : input * 1000;
     }
+    if (typeof input === 'string') {
+        const numeric = Number(input);
+        if (Number.isFinite(numeric)) {
+            return numeric > 1e12 ? numeric : numeric * 1000;
+        }
+        const dateFromString = new Date(input);
+        if (!Number.isNaN(dateFromString.getTime())) {
+            return dateFromString.getTime();
+        }
+    }
     if (input instanceof Date) {
         return input.getTime();
+    }
+    if (typeof input?.toMillis === 'function') {
+        const millis = input.toMillis();
+        return Number.isFinite(millis) ? millis : null;
     }
     if (isFirestoreTimestampLike(input)) {
         return DateUtils.convertTimestampToMillis(input);
@@ -135,16 +149,18 @@ export const prepareInvoiceForEdit = (invoice) => {
 
     const normalized = {
         ...invoice,
-        date: normalizeTimestamp(invoice.date),
-        updateAt: normalizeTimestamp(invoice.updateAt),
+        date: normalizeInvoiceTimestamp(invoice.date),
+        updateAt: normalizeInvoiceTimestamp(invoice.updateAt),
         payWith: activePayment?.value ?? activePayment?.method ?? null,
         cancel: invoice?.cancel
             ? {
                 ...invoice.cancel,
-                cancelledAt: normalizeTimestamp(invoice.cancel.cancelledAt),
+                cancelledAt: normalizeInvoiceTimestamp(invoice.cancel.cancelledAt),
             }
             : null,
     };
 
     return sanitizeForRedux(normalized);
 };
+
+export const convertInvoiceDateToMillis = normalizeInvoiceTimestamp;

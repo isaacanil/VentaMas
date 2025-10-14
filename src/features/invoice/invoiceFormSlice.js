@@ -45,8 +45,16 @@ const calculateTotalItems = (products) => {
     return totalItems;
 };
 
-const applyDiscount = (totalPurchase, discountPercentage) => {
-    const discountAmount = totalPurchase * (discountPercentage / 100);
+const applyDiscount = (totalPurchase, discountValue, discountType = 'percentage') => {
+    let discountAmount = 0;
+    
+    if (discountType === 'percentage') {
+        discountAmount = totalPurchase * (discountValue / 100);
+    } else if (discountType === 'fixed') {
+        // Para descuento fijo, el descuento no puede exceder el total
+        discountAmount = Math.min(discountValue, totalPurchase);
+    }
+    
     return roundToTwoDecimals(totalPurchase - discountAmount);
 };
 
@@ -113,7 +121,8 @@ const invoice = {
         value: 0
     },
     discount: {
-        value: 0
+        value: 0,
+        type: 'percentage' // 'percentage' o 'fixed'
     },
 };
 
@@ -156,7 +165,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (invoice.discount && invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, invoice.discount.value);
+                const discountType = invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, invoice.discount.value, discountType);
             }
 
             // Calcular el cambio si es necesario
@@ -207,7 +217,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             // Calcular el cambio si es necesario
@@ -239,7 +250,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (state.invoice.discount && state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             // Calcular el cambio si es necesario
@@ -272,7 +284,8 @@ const invoiceFormSlice = createSlice({
             state.invoice.totalPurchaseWithoutTaxes.value = calculateTotalPurchaseWithoutTaxes(state.invoice.products);
 
             if (state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             state.invoice.change.value = calculateChange(state.invoice.totalPurchase.value, state.invoice.payment.value);
@@ -316,7 +329,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             // Calcular el cambio

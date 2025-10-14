@@ -1,5 +1,5 @@
-import {Select, Modal} from 'antd'
-import { useMemo, useState } from 'react'
+import {Select, Modal, message} from 'antd'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -8,12 +8,13 @@ import { faUser, faPhone, faIdCard, faMapMarkerAlt, faChevronDown, faChevronUp }
 import { changeClientInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice'
 import { useFbGetClients } from '../../../../../../firebase/client/useFbGetClients'
 
-export const Client = ({ invoice }) => {
+export const Client = ({ invoice, isEditLocked = false }) => {
     const clientData = invoice?.client
     const dispatch = useDispatch()
     const { clients } = useFbGetClients();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const readOnly = isEditLocked;
 
     const genericNames = ['Generic Client', 'Cliente Genérico'];
     const genericIds = ['GC-0000'];
@@ -51,6 +52,10 @@ export const Client = ({ invoice }) => {
     }, [normalizedClients]);
 
     const handleChangeClient = (value) => {
+        if (readOnly) {
+            message.warning('La factura está en modo de solo lectura.');
+            return;
+        }
         const key = typeof value === 'string' ? value : String(value);
         const selectedClient = clientDictionary[key];
 
@@ -66,7 +71,17 @@ export const Client = ({ invoice }) => {
         setIsCollapsed(!isCollapsed)
     }
 
+    useEffect(() => {
+        if (readOnly && isModalOpen) {
+            setIsModalOpen(false);
+        }
+    }, [readOnly, isModalOpen]);
+
     const openModal = () => {
+        if (readOnly) {
+            message.warning('No puedes cambiar el cliente después de 48 horas.');
+            return;
+        }
         setIsModalOpen(true)
     }
 
@@ -94,13 +109,13 @@ export const Client = ({ invoice }) => {
                     <GenericDescription>
                         Agrega un cliente para personalizar la factura y mantener un historial preciso.
                     </GenericDescription>
-                    <GenericButton onClick={openModal}>Agregar cliente</GenericButton>
+                    <GenericButton onClick={openModal} disabled={readOnly}>Agregar cliente</GenericButton>
                 </GenericContainer>
             ) : (
                 <ClientDetailsCard>
                     <CardHeader>
                         <HeaderTitle>Información Cliente</HeaderTitle>
-                        <ChangeClientButton onClick={openModal}>
+                        <ChangeClientButton onClick={openModal} disabled={readOnly}>
                             <span>Cambiar Cliente</span>
                         </ChangeClientButton>
                     </CardHeader>
@@ -172,6 +187,7 @@ export const Client = ({ invoice }) => {
                         value={clientDictionary[clientId] ? clientId : undefined}
                         onChange={handleChangeClient}
                         size="large"
+                        disabled={readOnly}
                     />
                 </ModalContent>
             </Modal>
@@ -188,7 +204,7 @@ const ClientDetailsCard = styled.div`
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-    margin-bottom: 16px;
+    
 `
 
 const CardHeader = styled.div`
@@ -275,11 +291,15 @@ const ChangeClientButton = styled.button`
     font-weight: 500;
     transition: all 0.2s ease;
     white-space: nowrap;
+    opacity: ${props => (props.disabled ? 0.6 : 1)};
+    cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
 
     &:hover {
+        ${props => props.disabled ? '' : `
         background: #1890ff;
         border-color: #1890ff;
         color: #ffffff;
+        `}
     }
 `
 
@@ -307,15 +327,15 @@ const ExpandButton = styled.button`
 `
 
 const DetailLabel = styled.div`
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    color: #8c8c8c;
+    color: #6d6d6dff;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 `
 
 const DetailValue = styled.div`
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #262626;
     word-break: break-word;
@@ -351,14 +371,17 @@ const GenericButton = styled.button`
     background: #1890ff;
     border: 1px solid #1890ff;
     color: #ffffff;
-    cursor: pointer;
+    cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
     font-size: 13px;
     font-weight: 500;
     transition: background 0.2s ease, border-color 0.2s ease;
+    opacity: ${props => (props.disabled ? 0.6 : 1)};
 
     &:hover {
+        ${props => props.disabled ? '' : `
         background: #40a9ff;
         border-color: #40a9ff;
+        `}
     }
 `
 

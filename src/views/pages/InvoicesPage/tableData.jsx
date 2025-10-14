@@ -4,7 +4,7 @@ import {Button} from "antd";
 
 // import { fbCashCountStatus } from "../../../firebase/cashCount/fbCashCountStatus"; // Temporalmente deshabilitado
 import { notification } from "antd";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
 
@@ -18,7 +18,7 @@ import { useFormatPrice } from "../../../hooks/useFormatPrice";
 import { getTimeElapsed } from "../../../hooks/useFormatTime";
 // import { RequestInvoiceEditAuthorization } from "../../component/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization"; // Temporalmente deshabilitado
 // import { getActiveApprovedAuthorizationForInvoice, markAuthorizationUsed } from "../../../firebase/authorizations/invoiceEditAuthorizations"; // Temporalmente deshabilitado
-import { prepareInvoiceForEdit } from "../../../utils/invoice";
+import { prepareInvoiceForEdit, convertInvoiceDateToMillis } from "../../../utils/invoice";
 import { Invoice } from "../../component/Invoice/components/Invoice/Invoice";
 import { Tag } from "../../templates/system/Tag/Tag";
 
@@ -31,6 +31,18 @@ const EditButton = ({ value }) => {
   const componentToPrintRef = useRef(null)
   const cartSettings = useSelector(SelectSettingCart)
   const invoiceType = cartSettings.billing.invoiceType;
+
+  const isEditDisabled = useMemo(() => {
+    const timestampMs = convertInvoiceDateToMillis(data?.date);
+
+    if (!Number.isFinite(timestampMs)) {
+      return true;
+    }
+
+    const elapsedMs = Date.now() - timestampMs;
+
+    return elapsedMs >= 48 * 60 * 60 * 1000;
+  }, [data?.date]);
 
   const proceedToEdit = useCallback((authorization) => {
     const preparedInvoice = prepareInvoiceForEdit(data);
@@ -49,6 +61,15 @@ const EditButton = ({ value }) => {
     invoice: data,
     onAuthorized: proceedToEdit,
   });
+
+  const handleEditClick = useCallback(() => {
+    if (isEditDisabled) {
+      return;
+    }
+
+    handleEdit();
+  }, [handleEdit, isEditDisabled]);
+
   const handleRePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
   })
@@ -92,8 +113,10 @@ const EditButton = ({ value }) => {
       />
       <Button
         icon={icons.editingActions.edit}
-        onClick={handleEdit}
+        onClick={handleEditClick}
         loading={isProcessing}
+        disabled={isEditDisabled}
+        title={isEditDisabled ? 'Las facturas solo se pueden editar durante las primeras 48 horas.' : undefined}
       />
       <Button
         icon={icons.editingActions.show}
@@ -148,8 +171,11 @@ export const columns = [
     sortable: true,
     align: 'left',
     cell: ({ value }) => {
-      const time = value * 1000
-      return (getTimeElapsed(time, 0))
+      const timestampMs = convertInvoiceDateToMillis(value);
+      if (!Number.isFinite(timestampMs)) {
+        return 'Fecha no disponible';
+      }
+      return getTimeElapsed(timestampMs, 0);
     },
     maxWidth: '1fr',
     minWidth: '140px',
@@ -199,91 +225,3 @@ export const columns = [
     cell: ({ value }) => <EditButton value={value} />
   }
 ]
-export const tableData = {
-  title: 'Reporte de ventas',
-  headers: [
-    {
-      Header: 'N°',
-      accessor: 'numberId',
-      sortable: true,
-      align: 'left',
-      maxWidth: '1fr',
-      min: '150px',
-    },
-    {
-      name: 'RNC',
-      align: 'left',
-      description: 'Nombre del vendedor que realizó la venta',
-      max: '1.4fr',
-      min: '150px',
-      cell: ({ value }) => {
-        if (!value) return (
-          <div>Hola</div>
-        )
-        return (
-          <div>
-            {value}
-          </div>
-        )
-      }
-    },
-    {
-      name: 'Cliente',
-      align: 'left',
-      description: 'Nombre del cliente que realizó la compra',
-      max: '1.8fr',
-      min: '170px',
-    },
-    {
-      name: 'Fecha 6',
-      align: 'left',
-      description: 'Fecha en que se realizó la compra',
-      max: '1fr',
-      min: '160px',
-    },
-    {
-      name: 'ITBIS',
-      align: 'right',
-      description: 'Impuesto sobre las ventas',
-      max: '1fr',
-      min: '100px',
-    },
-    {
-      name: 'Pago con',
-      align: 'right',
-      description: 'Forma de pago utilizada',
-      max: '1fr',
-      min: '100px',
-    },
-    {
-      name: 'Cambio',
-      align: 'right',
-      description: 'Cambio entregado al cliente',
-      max: '1fr',
-      min: '100px',
-    },
-    {
-      name: 'TOTAL',
-      align: 'right',
-      description: 'Monto total de la compra',
-      max: '1fr',
-      min: '100px',
-    },
-    {
-      name: 'ver',
-      align: 'right',
-      description: 'Nombre del vendedor que realizó la venta',
-      max: '0.5fr',
-      min: '50px'
-    },
-    {
-      name: 'accion',
-      align: 'right',
-      description: '',
-      max: '0.5fr',
-      min: '50px'
-    }
-
-  ],
-  messageNoData: 'No hay datos para mostrar',
-};

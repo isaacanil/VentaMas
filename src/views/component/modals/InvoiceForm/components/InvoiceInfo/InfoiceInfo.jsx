@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import * as antd from 'antd';
+import { useState } from 'react';
+import { Form, Input, Modal, Spin, Button, message } from 'antd';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBan, faTriangleExclamation, faWarehouse } from '@fortawesome/free-solid-svg-icons';
@@ -10,28 +10,42 @@ import { closeInvoiceForm } from '../../../../../../features/invoice/invoiceForm
 import { fbCancelInvoice } from '../../../../../../firebase/invoices/fbCancelInvoice';
 import { Client } from '../Client/Client';
 import { InvoiceHeader } from '../InvoiceHeader/InvoiceHeader';
-import { PaymentInfo } from '../PaymentInfo/PaymentInfo';
+import { PaymentInfoModal } from '../PaymentInfo/PaymentInfoModal';
 import { TimeRemainingBadge } from '../TimeRemainingBadge/TimeRemainingBadge';
 
 import { InvoiceResume } from './components/InvoiceResume';
 
-const { Form, Input, Modal, Spin, Button } = antd;
-
-export const InvoiceInfo = ({ invoice }) => {
+export const InvoiceInfo = ({ invoice, isEditLocked }) => {
   const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] = useState(false);
+  const [isOpenPaymentInfoModal, setIsOpenPaymentInfoModal] = useState(false);
   const isCancelable = !invoice?.NCF;
 
   const handleCloseCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(false);
   const handleOpenCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(true);
+  const handleOpenPaymentInfoModal = () => {
+    if (isEditLocked) {
+      message.warning('La información de pago es de solo lectura.');
+      return;
+    }
+    setIsOpenPaymentInfoModal(true);
+  };
+  const handleClosePaymentInfoModal = () => setIsOpenPaymentInfoModal(false);
 
   return (
     <Container>
       <TimeRemainingBadge invoice={invoice} />
       <InvoiceHeader invoice={invoice} />
-      <Client invoice={invoice} />
-      <PaymentInfo />
-      <InvoiceResume invoice={invoice} />
-
+      <Client invoice={invoice} isEditLocked={isEditLocked} />
+      <InvoiceResume
+        invoice={invoice}
+        isEditLocked={isEditLocked}
+        onOpenPaymentInfo={handleOpenPaymentInfoModal}
+      />
+      <PaymentInfoModal
+        isOpen={isOpenPaymentInfoModal}
+        handleClose={handleClosePaymentInfoModal}
+        isEditLocked={isEditLocked}
+      />
       <ActionsRow>
         <CancelButton
           danger
@@ -42,7 +56,6 @@ export const InvoiceInfo = ({ invoice }) => {
           <span>Anular factura</span>
         </CancelButton>
       </ActionsRow>
-
       <CancelInvoiceConfirm
         isOpen={isOpenCancelInvoiceConfirm}
         invoice={invoice}
@@ -51,6 +64,8 @@ export const InvoiceInfo = ({ invoice }) => {
     </Container>
   );
 };
+
+
 
 const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
   const [form] = Form.useForm();
@@ -152,7 +167,7 @@ const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 `;
 
 const ActionsRow = styled.div`

@@ -4,17 +4,20 @@ import styled from 'styled-components'
 
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 import { getProductsTax, getTotalItems } from '../../../../utils/pricing'
+import { convertInvoiceDateToMillis } from '../../../../utils/invoice'
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable'
 import { columns } from '../tableData'
 
 const SaleReportTable = ({ bills = [], searchTerm }) => {
   const data = bills?.map(({ data }) => {
-    const nfc = data?.NCF
+    const invoiceDateMs = convertInvoiceDateToMillis(data?.date);
+    const invoiceDateSeconds = Number.isFinite(invoiceDateMs) ? Math.floor(invoiceDateMs / 1000) : null;
+
     return {
       numberID: data?.numberID,
       ncf: data?.NCF,
       client: data?.client?.name || "Generic Client",
-      date: data?.date?.seconds,
+      date: invoiceDateSeconds,
       itbis: getProductsTax(data?.products),
       payment: data?.payment?.value,
       products: getTotalItems(data?.products),
@@ -22,25 +25,34 @@ const SaleReportTable = ({ bills = [], searchTerm }) => {
       total: data?.totalPurchase?.value || 0,
       ver: { data },
       accion: { data },
-      dateGroup: DateTime.fromMillis(data?.date?.seconds * 1000).toLocaleString(DateTime.DATE_FULL)
+      dateGroup: invoiceDateMs
+        ? DateTime.fromMillis(invoiceDateMs).toLocaleString(DateTime.DATE_FULL)
+        : 'Fecha no disponible'
     }
-  })
-      const total = useMemo(
-        () => useFormatPrice((bills.reduce((total, { data }) => total + Number(data?.totalPurchase?.value || 0), 0))),
-        [bills]
-    );
+  });
+
+  const total = useMemo(
+    () =>
+      useFormatPrice(
+        bills.reduce(
+          (total, { data }) => total + Number(data?.totalPurchase?.value || 0),
+          0
+        )
+      ),
+    [bills]
+  );
   return (
-      <AdvancedTable
-        columns={columns}
-        data={data}
-        groupBy={'dateGroup'}
-        emptyText='No se encontraron facturas para la fecha seleccionada. Realice ventas y aparecerán en esta sección'
-        footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
-        searchTerm={searchTerm}
-        elementName={'facturas'}
-        tableName={'Facturas'}
-        numberOfElementsPerPage={40}
-      />
+    <AdvancedTable
+      columns={columns}
+      data={data}
+      groupBy={'dateGroup'}
+      emptyText='No se encontraron facturas para la fecha seleccionada. Realice ventas y aparecerán en esta sección'
+      footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
+      searchTerm={searchTerm}
+      elementName={'facturas'}
+      tableName={'Facturas'}
+      numberOfElementsPerPage={40}
+    />
   )
 }
 

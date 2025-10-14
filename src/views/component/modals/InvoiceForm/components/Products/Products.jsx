@@ -1,5 +1,5 @@
 import * as antd from 'antd'
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 
@@ -7,11 +7,14 @@ import { icons } from '../../../../../../constants/icons/icons'
 import { addProductInvoiceForm, changeAmountToBuyProduct, deleteProductInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice'
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
 
-const { Button, Input, Table } = antd
+const { Button, Input } = antd
 import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
 import { getTotalPrice } from '../../../../../../utils/pricing'
 
 import { ProductListModal } from './ProductListModal'
+import { StyledProductTable } from './ProductTables.styles'
+import { ProductFilterToolbar } from './ProductFilterToolbar'
+import { getCategoryName, getCategoryStats } from './productDataUtils'
 
 const getProductQuantity = (product) => {
     if (!product) return 1
@@ -41,11 +44,67 @@ const getFormattedUnitPrice = (product) => {
 
 const getFormattedTotalPrice = (product) => useFormatPrice(getTotalPrice(product))
 
-export const Products = ({ invoice }) => {
+export const Products = ({ invoice, isEditLocked = false }) => {
     const dispatch = useDispatch()
     const [isProductListModalVisible, setProductListModalVisible] = useState(false)
-    const {products} = useGetProducts()
-   
+    const { products } = useGetProducts()
+    const [searchTerm, setSearchTerm] = useState('')
+    const [sortField, setSortField] = useState('name')
+    const [sortDirection, setSortDirection] = useState('asc')
+    const [categoryFilter, setCategoryFilter] = useState('all')
+
+    const sortOptions = useMemo(
+        () => [
+            { label: 'Producto', value: 'name' },
+            { label: 'Precio', value: 'price' },
+            { label: 'Stock', value: 'stock' },
+        ],
+        [],
+    )
+
+    const invoiceProducts = Array.isArray(invoice?.products) ? invoice.products : []
+    const readOnly = isEditLocked
+    const categoryStats = useMemo(() => getCategoryStats(invoiceProducts), [invoiceProducts])
+
+    useEffect(() => {
+        if (categoryFilter === 'all') return
+        const hasSelectedCategory = categoryStats.entries.some((entry) => entry.name === categoryFilter)
+        if (!hasSelectedCategory) {
+            setCategoryFilter('all')
+        }
+    }, [categoryFilter, categoryStats])
+
+    const displayProducts = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase()
+
+        const filteredBySearch = normalizedSearch
+            ? invoiceProducts.filter((product) => {
+                const name = product?.name?.toLowerCase() ?? ''
+                return name.includes(normalizedSearch)
+            })
+            : [...invoiceProducts]
+
+        const filtered = categoryFilter === 'all'
+            ? filteredBySearch
+            : filteredBySearch.filter((product) => getCategoryName(product?.category) === categoryFilter)
+
+        const directionMultiplier = sortDirection === 'desc' ? -1 : 1
+
+        const sorted = [...filtered].sort((a, b) => {
+            switch (sortField) {
+                case 'price':
+                    return (getTotalPrice(a) - getTotalPrice(b)) * directionMultiplier
+                case 'stock':
+                    return ((a?.stock ?? 0) - (b?.stock ?? 0)) * directionMultiplier
+                case 'name':
+                default:
+                    return ((a?.name ?? '')?.localeCompare(b?.name ?? '')) * directionMultiplier
+            }
+        })
+
+        return sorted
+    }, [invoiceProducts, searchTerm, categoryFilter, sortField, sortDirection])
+
     const columns = [
         {
             title: 'Producto',
@@ -59,22 +118,41 @@ export const Products = ({ invoice }) => {
             render: (text, record, index) => (
                 <Counter>
                     <Button
-                        onClick={() => dispatch(changeAmountToBuyProduct({ product: record, type: "subtract" }))}
+                        onClick={() => {
+                            if (readOnly) {
+                                antd.message.warning('No puedes modificar productos después de 48 horas.');
+                                return;
+                            }
+                            dispatch(changeAmountToBuyProduct({ product: record, type: "subtract" }))
+                        }}
                         icon={icons.mathOperations.subtract}
+                        disabled={readOnly}
                     />
                     <Input
                         value={record.amountToBuy}
                         onChange={(e) => {
+                            if (readOnly) {
+                                antd.message.warning('No puedes modificar productos después de 48 horas.');
+                                return;
+                            }
                             const value = e.target.value;
                             const isValidNumber = !isNaN(parseFloat(value)) && isFinite(value);
                             if (isValidNumber) {
                                 dispatch(changeAmountToBuyProduct({ product: record, amount: Number(value), type: "change" }))
                             }
                         }}
+                        disabled={readOnly}
                     />
                     <Button
-                        onClick={() => dispatch(changeAmountToBuyProduct({ product: record, type: "add" }))}
+                        onClick={() => {
+                            if (readOnly) {
+                                antd.message.warning('No puedes modificar productos después de 48 horas.');
+                                return;
+                            }
+                            dispatch(changeAmountToBuyProduct({ product: record, type: "add" }))
+                        }}
                         icon={icons.operationModes.add}
+                        disabled={readOnly}
                     />
                 </Counter>
             ),
@@ -83,46 +161,92 @@ export const Products = ({ invoice }) => {
             title: 'Precio Unitario',
             dataIndex: 'price',
             key: 'unitPrice',
+            align: 'left',
             render: (_, record) => getFormattedUnitPrice(record),
         },
         {
             title: 'Precio Total',
             key: 'totalPrice',
+            align: 'left',
             render: (_, record) => getFormattedTotalPrice(record),
         },
         {
             title: 'Acciones',
             key: 'actions',
+            align: 'left',
 
             render: (text, record) => (
                 <Button
-                    onClick={() => dispatch(deleteProductInvoiceForm({ product: record, }))}
+                    onClick={() => {
+                        if (readOnly) {
+                            antd.message.warning('No puedes modificar productos después de 48 horas.');
+                            return;
+                        }
+                        dispatch(deleteProductInvoiceForm({ product: record, }))
+                    }}
                     icon={icons.operationModes.delete}
+                    disabled={readOnly}
                 />
             ),
         }
     ];
-    const paginationConfig = {
+    const [paginationState, setPaginationState] = useState({
+        current: 1,
         pageSize: 5,
-        position: ["bottomCenter"]
+    })
+
+    const paginationConfig = {
+        pageSize: paginationState.pageSize,
+        current: paginationState.current,
+        position: ["bottomCenter"],
+        showSizeChanger: false,
+        onChange: (page, pageSize) => {
+            setPaginationState({ current: page, pageSize })
+        },
     }
+
+    useEffect(() => {
+        setPaginationState((prev) => ({
+            ...prev,
+            current: 1,
+        }))
+    }, [searchTerm, categoryFilter, sortField, sortDirection, displayProducts.length])
+
     const showProductListModal = () => {
+        if (readOnly) {
+            antd.message.warning('No puedes modificar productos después de 48 horas.');
+            return;
+        }
         setProductListModalVisible(true)
     }
     const handleAddProduct = (product) => {
+        if (readOnly) return;
         dispatch(addProductInvoiceForm({ product }))
         setProductListModalVisible(false)
     }
     return (
         <Container>
             <ActionsContainer>
-                <Button type="primary" onClick={showProductListModal}>
+                <Button type="primary" onClick={showProductListModal} disabled={readOnly}>
                     Añadir Producto
                 </Button>
             </ActionsContainer>
-            <Table
+            <ProductFilterToolbar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                searchPlaceholder="Buscar producto"
+                categoryFilter={categoryFilter}
+                onCategoryChange={setCategoryFilter}
+                categoryStats={categoryStats}
+                sortField={sortField}
+                sortOptions={sortOptions}
+                onSortFieldChange={setSortField}
+                sortDirection={sortDirection}
+                onToggleSortDirection={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+            />
+            <StyledProductTable
                 size='small'
-                dataSource={invoice?.products}
+                dataSource={displayProducts}
                 columns={columns}
 
                 pagination={paginationConfig}
@@ -133,13 +257,16 @@ export const Products = ({ invoice }) => {
                 onClose={() => setProductListModalVisible(false)}
                 products={products}
                 onAddProduct={handleAddProduct}
+                isReadOnly={readOnly}
             />
         </Container>
     )
 }
 
 const Container = styled.div`
-
+    display: flex;
+  flex-direction: column;
+  gap: 1em;
 `
 const Counter = styled.div`
   display: grid;
@@ -148,5 +275,4 @@ const Counter = styled.div`
 `
 const ActionsContainer = styled.div`
   text-align: right; // Esto alinea tu botón a la derecha
-  margin-bottom: 16px; // Para que no quede tan pegado al input
 `

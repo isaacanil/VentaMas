@@ -1,31 +1,45 @@
 import * as antd from 'antd';
-
-import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';
-
-import { DateTime } from 'luxon';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-const { Form, Input, InputNumber, Button, Modal, DatePicker, Select, Row, Col } = antd;
-const { Option } = Select;
+const { Form, Button, Modal, Alert, message } = antd;
 import { selectUser } from '../../../../features/auth/userSlice';
 import { changeClientInvoiceForm, changeValueInvoiceForm, closeInvoiceForm, selectInvoice } from '../../../../features/invoice/invoiceFormSlice';
 import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
 import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { convertInvoiceDateToMillis } from '../../../../utils/invoice';
 
+import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';
 import { Products } from './components/Products/Products';
 
-export const InvoiceForm = ({ }) => {
+export const InvoiceForm = () => {
 
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [shouldRenderModal, setShouldRenderModal] = useState(false);
+  const ignoreDiscountChangeRef = useRef(false);
   const { invoice, modal, authorizationRequest } = useSelector(selectInvoice)
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
+  const isEditLocked = useMemo(() => {
+    if (!invoice?.date) return true;
+    const timestamp = convertInvoiceDateToMillis(invoice.date);
+    if (!Number.isFinite(timestamp)) return true;
+
+    const elapsedMs = Date.now() - timestamp;
+    const limitMs = 48 * 60 * 60 * 1000;
+
+    return elapsedMs >= limitMs;
+  }, [invoice?.date]);
+
   const handleOk = async () => {
+    if (isEditLocked) {
+      message.warning('Esta factura superó el límite de 48 horas y no puede modificarse.');
+      return;
+    }
+
     try {
       setLoading(true);
       await form.validateFields();
@@ -54,43 +68,80 @@ export const InvoiceForm = ({ }) => {
     form.setFieldsValue(invoice)
   }, [invoice]);
 
-  useEffect(() => {
-    if (modal.isOpen) {
-      setShouldRenderModal(true);
-    } else {
-      // Esperar que la animación de cierre se complete antes de desmontar el modal
-      const timer = setTimeout(() => {
-        setShouldRenderModal(false);
-      }, 600); // Asumiendo que la animación dura 300ms
-
-      return () => clearTimeout(timer);
+  const sections = useMemo(() => ([
+    {
+      key: "1",
+      label: "General",
+      children: <InvoiceInfo invoice={invoice} isEditLocked={isEditLocked} />
+    },
+    {
+      key: "2",
+      label: "Productos",
+      children: <Products invoice={invoice} isEditLocked={isEditLocked} />
     }
-  }, [modal.isOpen]);
+  ]), [invoice, isEditLocked])
+
   const handleCancel = () => {
     if (loading) return;
     dispatch(closeInvoiceForm())
   };
 
-  const sections = [
-    {
-      key: "1",
-      label: "General",
-      children: <InvoiceInfo invoice={invoice} />
-    },
-    {
-      key: "2",
-      label: "Productos",
-      children: <Products invoice={invoice} />
-    }
-  ]
   const handleChange = (value) => {
+    if (isEditLocked) return;
+
     const key = Object.keys(value)[0]
+    if (!key) return;
+
+    if (key === 'discount' && ignoreDiscountChangeRef.current) {
+      ignoreDiscountChangeRef.current = false;
+      return;
+    }
 
     if (key === 'client') {
       dispatch(changeClientInvoiceForm(value))
-      return    }
+      return    
+    }
     if (key === 'discount') {
-      dispatch(changeValueInvoiceForm({ invoice: { [key]: { value: Number(value.discount.value) } } }));
+      const previousValue = Number(invoice?.discount?.value) || 0;
+      const rawValue = Number(value?.discount?.value);
+      const numericValue = Number.isFinite(rawValue) ? rawValue : 0;
+
+      let normalizedValue = Math.max(0, numericValue);
+
+      if (normalizedValue > 99) {
+        message.warning('El descuento no puede superar el 99%.');
+        normalizedValue = 99;
+      }
+
+      if (normalizedValue !== numericValue) {
+        ignoreDiscountChangeRef.current = true;
+        form.setFieldsValue({ discount: { value: normalizedValue } });
+        return;
+      }
+
+      const applyDiscount = (nextValue) => {
+        dispatch(changeValueInvoiceForm({ invoice: { discount: { value: nextValue } } }));
+      }
+
+      if (normalizedValue > 90 && normalizedValue !== previousValue) {
+        Modal.confirm({
+          title: 'Confirmar descuento alto',
+          icon: <ExclamationCircleOutlined />,
+          content: 'Un descuento superior al 90% reduce drásticamente la ganancia. ¿Deseas continuar?',
+          okText: 'Aplicar descuento',
+          cancelText: 'Cancelar',
+          onOk: () => {
+            applyDiscount(normalizedValue);
+          },
+          onCancel: () => {
+            ignoreDiscountChangeRef.current = true;
+            form.setFieldsValue({ discount: { value: previousValue } });
+          }
+        });
+        return;
+      }
+
+      applyDiscount(normalizedValue);
       return
     }
     dispatch(changeValueInvoiceForm({ invoice: value }))
@@ -99,7 +150,7 @@ export const InvoiceForm = ({ }) => {
   return (
     <Modal
       style={{ top: 10 }}
-      title={`Editar factura: #${invoice?.numberID}   `}
+      title={`Editar factura: #${invoice?.numberID}${isEditLocked ? ' (solo lectura)' : ''}`}
       open={modal.isOpen}
       width={800}
       onCancel={handleCancel}
@@ -125,16 +176,26 @@ export const InvoiceForm = ({ }) => {
         <Button key="back" onClick={handleCancel} disabled={loading}>
           Cancelar
         </Button>,
-        <Button key="submit" type="primary" onClick={handleOk} loading={loading}>
+        <Button key="submit" type="primary" onClick={handleOk} loading={loading} disabled={isEditLocked}>
           Guardar
         </Button>,
       ]}
     >
+      {isEditLocked ? (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message="La ventana de edición de 48 horas expiró."
+          description="Puedes consultar la información de la factura, pero no es posible modificarla."
+        />
+      ) : null}
       <Form
         form={form}
         initialValues={invoice}
         layout="vertical"
         onValuesChange={handleChange}
+        disabled={isEditLocked}
       >
 
         <antd.Tabs defaultActiveKey='1' items={sections} />
@@ -142,6 +203,3 @@ export const InvoiceForm = ({ }) => {
     </Modal>)
 }
   ;
-
-
-

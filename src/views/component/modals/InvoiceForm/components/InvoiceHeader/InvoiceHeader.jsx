@@ -51,7 +51,6 @@ export const InvoiceHeader = ({ invoice }) => {
 
 const Container = styled.div`
     width: 100%;
-    margin-bottom: 12px;
 `
 
 const HeaderCard = styled.div`
