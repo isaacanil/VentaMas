@@ -1,4 +1,5 @@
 export { quantityZeroToInactivePerBusiness } from "./modules/Inventory/functions/quantityZeroToInactivePerBusiness.js";
+import { syncProductsStockCron } from "./versions/v2/inventory/syncProductsStockCron.js";
 import { stockAlertsDailyDigest } from "./modules/Inventory/functions/stockAlertsDailyDigest.js";
 import { handleInvoiceRequest } from "./modules/invoice/controllers/invoice.controller.js";
 import { invoiceLetterPdf } from "./modules/invoice/templates/template2/InvoiceLetterPdf.js";
@@ -63,4 +64,5 @@ export {
   validateModulePin,
   getUserModulePins,
   autoRotateModulePins,
+  syncProductsStockCron,
 };
