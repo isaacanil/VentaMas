@@ -20,11 +20,35 @@ const RECEIPT_FALLBACK = {
     type: 'fiscal-generic',
 };
 
-export const isPreorderDocument = (invoice = {}) =>
-    invoice?.type === 'preorder' || invoice?.preorderDetails?.isOrWasPreorder;
+const PREORDER_ACTIVE_STATUSES = new Set(['pending', 'preorder', 'cancelled-preorder']);
+
+export const isPreorderDocument = (invoice = {}, { rawNcf } = {}) => {
+    if (!invoice) {
+        return false;
+    }
+
+    const normalizedNcf = (rawNcf ?? invoice?.NCF ?? invoice?.comprobante ?? '').toString().trim();
+    if (normalizedNcf) {
+        return false;
+    }
+
+    const isExplicitPreorder = invoice?.type === 'preorder';
+    const isMarkedAsPreorder = invoice?.preorderDetails?.isOrWasPreorder === true;
+    if (!isExplicitPreorder && !isMarkedAsPreorder) {
+        return false;
+    }
+
+    const status = invoice?.status ?? 'pending';
+    if (status === 'completed') {
+        return false;
+    }
+
+    return PREORDER_ACTIVE_STATUSES.has(status) || (!invoice?.status && isExplicitPreorder);
+};
 
 export function resolveDocumentIdentity(invoice = {}) {
-    const isPreorder = isPreorderDocument(invoice);
+    const rawNcf = (invoice?.NCF ?? invoice?.comprobante ?? '').toString().trim();
+    const isPreorder = isPreorderDocument(invoice, { rawNcf });
     const preorderNumber =
         invoice?.preorderDetails?.numberID ??
         invoice?.numberID ??
@@ -40,8 +64,6 @@ export function resolveDocumentIdentity(invoice = {}) {
             type: 'preorder',
         };
     }
-
-    const rawNcf = (invoice?.NCF || invoice?.comprobante || '').toString().trim();
 
     if (!rawNcf) {
         return {

@@ -15,9 +15,9 @@ export function buildHeader(biz, d, images) {
     } = resolveDocumentIdentity(d);
     const referenceLabel = comprobanteType === 'preorder'
       ? 'Preventa'
-      : `Factura ${d.type || ''}`.trim();
+      : comprobanteTitle || 'Factura';
     const referenceValue = comprobanteType === 'preorder'
-      ? (comprobanteValue || d.numberID || '-')
+      ? (comprobanteValue || d.preorderDetails?.numberID || d.numberID || '-')
       : (d.numberID || '-');
 
     /* columna izquierda (datos del negocio) */

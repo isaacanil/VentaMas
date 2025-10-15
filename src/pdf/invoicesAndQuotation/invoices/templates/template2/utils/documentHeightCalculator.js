@@ -105,9 +105,9 @@ export function calcHeaderHeight(biz, d) {
   } = resolveDocumentIdentity(d);
   const referenceLabel = comprobanteType === 'preorder'
     ? 'Preventa'
-    : `Factura ${d.type || ''}`.trim();
+    : comprobanteTitle || 'Factura';
   const referenceValue = comprobanteType === 'preorder'
-    ? (comprobanteValue || d.numberID || '-')
+    ? (comprobanteValue || d.preorderDetails?.numberID || d.numberID || '-')
     : (d.numberID || '-');
   // Assuming title might span full width or a specific width, adjust maxWidth if needed
   invoiceInfoHeight += calculateTextHeight(comprobanteTitle, STYLES.title.fontSize, STYLES.title.lineHeight, LAYOUT.headerColumnWidth) + STYLES.title.marginBottom;

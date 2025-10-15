@@ -25,7 +25,6 @@ import TotalsSummary from '../TotalsSummary'
 import NotesInput from './components/NotesInput'
 import OrderSelector from './components/OrderSelector'
 
-
 const { confirm } = Modal;
 
 const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors, backOrderAssociationId }) => {

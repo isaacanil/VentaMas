@@ -156,7 +156,7 @@ function AddProductForm({ onSave, onClear, mode }) {
         <RowContainer>
             <Form
                 form={form}
-                layout="horizontal"
+                layout="vertical"
             >
                 <FieldsRow>
                     <Tooltip title='Nombre del Producto'>
@@ -308,11 +308,10 @@ const StyledFormItem = styled(Form.Item)`
     }
     
     .ant-form-item-label {
-
-    display: flex;
-    align-items: end;
-}
-
+        display: flex;
+        align-items: flex-start;
+        padding-bottom: 4px;
+    }
 
     .ant-form-item-control {
         min-height: unset; // Elimina la altura mínima predeterminada

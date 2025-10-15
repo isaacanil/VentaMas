@@ -56,9 +56,9 @@ export const InvoiceResume = ({ invoice, onOpenPaymentInfo, isEditLocked = false
     const formattedItems = Number(items).toLocaleString()
 
     const changeLabel = changeAmount >= 0 ? 'Cambio' : 'Pendiente'
-    
-    const changeHelper = changeAmount >= 0 
-        ? 'Cambio a devolver al cliente' 
+
+    const changeHelper = changeAmount >= 0
+        ? 'Cambio a devolver al cliente'
         : 'Monto pendiente por cobrar'
 
     const grossTotal = subtotal + taxes
@@ -114,7 +114,7 @@ export const InvoiceResume = ({ invoice, onOpenPaymentInfo, isEditLocked = false
             helper: 'Monto final con descuentos',
             status: 'primary'
         },
-        
+
     )
 
     const paymentMethods = Array.isArray(invoice?.paymentMethod) ? invoice.paymentMethod : []

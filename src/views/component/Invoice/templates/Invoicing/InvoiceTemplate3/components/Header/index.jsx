@@ -16,11 +16,11 @@ export default function Header({ business, data }) {
     const documentIdentity = resolveDocumentIdentity(data);
     const isPreorder = documentIdentity.type === 'preorder';
     const referenceNumber = isPreorder
-        ? documentIdentity.value || data?.numberID
+        ? documentIdentity.value || data?.preorderDetails?.numberID || data?.numberID
         : data?.numberID;
     const referenceLabel = isPreorder
         ? 'Preventa'
-        : `Factura ${data?.type || ''}`.trim();
+        : documentIdentity.title || 'Factura';
     const shouldShowIdentityLine = !isPreorder && documentIdentity.label;
     return (
         <Container>

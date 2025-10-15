@@ -1,12 +1,9 @@
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { Form, Input, InputNumber, DatePicker, Statistic, Button, message, Tooltip } from 'antd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Form, InputNumber, DatePicker, Statistic, Button, message, Tooltip } from 'antd';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-
 import { icons } from '../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../features/auth/userSlice';
 import { 
   SelectProduct, 
   SelectProductSelected, 
@@ -14,12 +11,12 @@ import {
   setPurchaseQuantity, 
   clearSelectedBackOrders 
 } from '../../../../../features/purchase/addPurchaseSlice';
-import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
-import { formatMoney } from '../../../../../utils/formatters';
-
-import BackOrdersModal from './BackOrdersModal';
+import { useDispatch, useSelector } from 'react-redux';
 import ProductModal from './ProductModal';
-
+import BackOrdersModal from './BackOrdersModal';
+import { formatMoney } from '../../../../../utils/formatters';
+import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
+import { selectUser } from '../../../../../features/auth/userSlice';
 
 function AddProductForm({ onSave, onClear }) {
   const dispatch = useDispatch();
@@ -166,7 +163,7 @@ function AddProductForm({ onSave, onClear }) {
     <RowContainer>
       <Form
         form={form}
-        layout="horizontal"
+        layout="vertical"
       >
         <FieldsRow>
           <Tooltip title='Nombre del Producto'>
@@ -220,6 +217,18 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
+          <Tooltip title='Unidad de Medida'>
+            <StyledFormItem
+              name="unitMeasurement"
+              label="Unid. Medida"
+              rules={[{ required: isProductSelected }]}
+            >
+              <Input
+                placeholder="Unidad"
+                disabled={!isProductSelected}
+              />
+            </StyledFormItem>
+          </Tooltip>
 
           <Tooltip title='Costo Base'>
             <StyledFormItem
@@ -340,6 +349,7 @@ const FieldsRow = styled.div`
     1.2fr 
     100px 
     min-content 
+    120px 
     105px 
     min-content  
     min-content 
@@ -386,7 +396,8 @@ const StyledFormItem = styled(Form.Item)`
   
   .ant-form-item-label {
     display: flex;
-    align-items: end;
+    align-items: flex-start;
+    padding-bottom: 4px;
   }
 
   .ant-form-item-control {

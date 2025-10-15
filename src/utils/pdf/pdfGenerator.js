@@ -71,9 +71,9 @@ export function generateInvoicePDF({ business, data }) {
     }
     const referenceLabel = isPreorderDocument
       ? 'Preventa'
-      : `Factura ${data?.type || ''}`.trim();
+      : documentIdentity.title || 'Factura';
     const referenceValue = isPreorderDocument
-      ? (documentIdentity.value || data?.numberID || '-')
+      ? (documentIdentity.value || data?.preorderDetails?.numberID || data?.numberID || '-')
       : (data?.numberID || '-');
     doc.text(`${referenceLabel} # ${referenceValue}`, rightX, headerRightY);
     headerRightY += 6;
