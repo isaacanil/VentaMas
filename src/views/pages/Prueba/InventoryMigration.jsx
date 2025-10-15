@@ -1,60 +1,75 @@
-import { Button, Card, Checkbox, Input, Typography, Alert } from 'antd'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { Alert, Button, Card, Checkbox, Input, Typography } from 'antd'
+import React, { useCallback, useMemo, useState } from 'react'
 
-import { migrateAllBusinessesInventoryCounts } from '../InventoryControl/tools/migrateInventoryCounts'
+import { syncAllBusinessesProductsStock } from '../../../firebase/warehouse/stockSyncService'
 
-// Simple UI to trigger migration from the app (non Cloud Function)
+// Panel para alinear product.stock con la suma de productsStock por negocio.
 // Props:
-// - db: Firestore instance (required)
-// - defaultBusinessIds?: string[] (optional)
-export default function InventoryMigration({ db, defaultBusinessIds = [] }) {
+// - db: Firestore instance (no se utiliza directamente, pero mantiene compatibilidad con el wrapper)
+// - defaultBusinessIds?: string[] (opcional)
+export default function InventoryMigration({ defaultBusinessIds = [] }) {
   const [dryRun, setDryRun] = useState(true)
   const [running, setRunning] = useState(false)
   const [businessIdsInput, setBusinessIdsInput] = useState(defaultBusinessIds.join(','))
-  const [summary, setSummary] = useState(null)
+  const [results, setResults] = useState(null)
   const [error, setError] = useState(null)
-  const logsRef = useRef([])
-  const [tick, setTick] = useState(0)
 
   const parsedBusinessIds = useMemo(() => {
     const raw = String(businessIdsInput || '').trim()
-    if (!raw) return [] // Empty array means "all businesses"
+    if (!raw) return [] // vacío => todos los negocios
     return raw.split(',').map(s => s.trim()).filter(Boolean)
   }, [businessIdsInput])
 
   const handleRun = useCallback(async () => {
-    if (!db) { setError('Firestore db no disponible. Pasa la instancia como prop.'); return }
     setRunning(true)
     setError(null)
-    setSummary(null)
-    logsRef.current = []
+    setResults(null)
     try {
-      const res = await migrateAllBusinessesInventoryCounts(db, {
+      const res = await syncAllBusinessesProductsStock({
         businessIds: parsedBusinessIds,
         dryRun,
-        onProgress: (info) => {
-          if (info?.type === 'log' && info.msg) {
-            logsRef.current.push(info.msg)
-            if (logsRef.current.length > 1000) logsRef.current.shift()
-            setTick(t => t + 1)
-          }
-        }
+        filterActive: true,
       })
-      setSummary(res)
+      setResults(res)
     } catch (e) {
       setError(e?.message || String(e))
     } finally {
       setRunning(false)
     }
-  }, [db, parsedBusinessIds, dryRun])
+  }, [parsedBusinessIds, dryRun])
+
+  const summary = useMemo(() => {
+    if (!Array.isArray(results)) return null
+    const totals = results.reduce(
+      (acc, item) => {
+        if (item?.error) {
+          acc.errors += 1
+          return acc
+        }
+        const updates = Array.isArray(item?.updates) ? item.updates.length : 0
+        const invalid = Array.isArray(item?.invalidProductIds) ? item.invalidProductIds.length : 0
+        acc.businesses += 1
+        acc.updatedProducts += updates
+        acc.totalProducts += typeof item?.totalProducts === 'number' ? item.totalProducts : 0
+        acc.invalidProducts += invalid
+        if (invalid > 0) acc.errors += 1
+        return acc
+      },
+      { businesses: 0, updatedProducts: 0, totalProducts: 0, invalidProducts: 0, errors: 0 }
+    )
+    totals.requested = Array.isArray(parsedBusinessIds) && parsedBusinessIds.length > 0
+      ? parsedBusinessIds.length
+      : results.length
+    return totals
+  }, [results, parsedBusinessIds])
 
   return (
-    <Card title="Inventory Counts Migration" bordered style={{ maxWidth: 900, margin: '16px auto' }}>
+    <Card title="Sincronizar stock declarado" bordered style={{ maxWidth: 900, margin: '16px auto' }}>
       <Typography.Paragraph type="secondary">
-        Actualiza documentos de conteo en sesiones de inventario:
-        copia campos antiguos (conteoReal, stockSistema, diferencia) a los nuevos (realCount, systemStock, difference) y elimina los antiguos.
+        Ajusta el campo <code>products.stock</code> sumando las cantidades activas en <code>productsStock</code>.
+        Puedes simular primero (Dry Run) o aplicar los cambios directamente.
         <br />
-        <strong>Si no especificas Business IDs, se migrarán TODOS los negocios en la base de datos.</strong>
+        <strong>Si dejas la lista vacía se procesarán TODOS los negocios.</strong>
       </Typography.Paragraph>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -91,21 +106,39 @@ export default function InventoryMigration({ db, defaultBusinessIds = [] }) {
       {summary && (
         <Card size="small" style={{ marginTop: 16 }} title="Resumen">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
-            <Stat label="Negocios" value={summary.businesses} />
-            <Stat label="Sesiones" value={summary.sessions} />
-            <Stat label="Docs Escaneados" value={summary.docsScanned} />
-            <Stat label="Docs Actualizados" value={summary.docsUpdated} />
-            <Stat label="Campos Migrados" value={summary.fieldsMigrated} />
+            <Stat label="Negocios solicitados" value={summary.requested} />
+            <Stat label="Negocios sincronizados" value={summary.businesses} />
+            <Stat label="Productos actualizados" value={summary.updatedProducts} />
+            <Stat label="Productos revisados" value={summary.totalProducts} />
+            <Stat label="IDs inválidos" value={summary.invalidProducts} />
             <Stat label="Errores" value={summary.errors} />
           </div>
         </Card>
       )}
 
-      <Card size="small" style={{ marginTop: 16 }} title="Logs">
-        <pre style={{ maxHeight: 300, overflow: 'auto', background: '#0b1021', color: '#d6deeb', padding: 12, borderRadius: 6 }}>
-          {logsRef.current.join('\n')}
-        </pre>
-      </Card>
+      {Array.isArray(results) && results.length > 0 && (
+        <Card size="small" style={{ marginTop: 16 }} title="Detalle por negocio">
+          <pre style={{ maxHeight: 320, overflow: 'auto', background: '#0b1021', color: '#d6deeb', padding: 12, borderRadius: 6 }}>
+            {results.map((item) => {
+              if (item?.error) {
+                return `[${item.businessId}] ❌ ${item.error.message || item.error}`
+              }
+              const updatedCount = Array.isArray(item?.updates) ? item.updates.length : 0
+              const invalidIds = Array.isArray(item?.invalidProductIds) ? item.invalidProductIds : []
+              const invalidLabel = invalidIds.length
+                ? ` | IDs omitidos: ${invalidIds.map((inv) => {
+                    if (typeof inv === 'string') return inv || '(vacío)'
+                    if (inv && typeof inv === 'object') return inv.productId || inv.name || '(sin id)'
+                    return String(inv)
+                  }).join(', ')}`
+                : ''
+              return `[${item.businessId}] ${
+                dryRun ? 'Simulación' : 'Aplicado'
+              } → ${updatedCount} productos (${item.totalProducts ?? 'n/a'} revisados)${invalidLabel}`
+            }).join('\n')}
+          </pre>
+        </Card>
+      )}
     </Card>
   )
 }
@@ -118,4 +151,3 @@ function Stat({ label, value }) {
     </div>
   )
 }
-

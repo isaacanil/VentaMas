@@ -21,7 +21,6 @@ import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer'
 import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
 import { useFbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreateDefaultReceipt';
-import { useAutoStockSync } from './firebase/warehouse/stockSyncService';
 import { useAbilities, useLoadUserAbilities } from './hooks/abilities/useAbilities';
 import { useNavigationTracker } from './hooks/routes/useNavigationTracker';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
@@ -89,8 +88,6 @@ function App() {
   useFullScreen()// establece el modo pantalla completa
 
   useCheckForInternetConnection()// verifica la conexión a internet
-
-  useAutoStockSync();// sincroniza el stock de los productos
 
   return (
     <Fragment>
