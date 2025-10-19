@@ -65,8 +65,9 @@ export const InvoiceForm = () => {
   };
 
   useEffect(() => {
-    form.setFieldsValue(invoice)
-  }, [invoice]);
+    if (!modal?.isOpen) return;
+    form.setFieldsValue(invoice);
+  }, [form, invoice, modal?.isOpen]);
 
   const sections = useMemo(() => ([
     {

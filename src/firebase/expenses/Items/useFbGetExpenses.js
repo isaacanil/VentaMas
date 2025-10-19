@@ -1,6 +1,5 @@
-
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectUser } from "../../../features/auth/userSlice";
@@ -8,67 +7,111 @@ import { selectExpenseList, setExpenseList } from "../../../features/expense/exp
 import { toMillis } from "../../../utils/date/toMillis";
 import { db } from "../../firebaseconfig";
 
-export const useFbGetExpenses = (range) => {
+const SHARED_SCOPE = 'shared';
+const LOCAL_SCOPE = 'local';
+
+export const useFbGetExpenses = (range, options = {}) => {
+    const { scope = SHARED_SCOPE } = options;
+
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
+    const sharedExpenses = useSelector(selectExpenseList);
+
+    const [localExpenses, setLocalExpenses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const expenses = useSelector(selectExpenseList);
-    const setExpenses = (expenses) => dispatch(setExpenseList(expenses));
+    const rangeStart = useMemo(() => toMillis(range?.startDate), [range?.startDate]);
+    const rangeEnd = useMemo(() => toMillis(range?.endDate), [range?.endDate]);
+
+    const setSharedExpenses = useCallback(
+        (list) => {
+            dispatch(setExpenseList(list));
+        },
+        [dispatch]
+    );
+
+    const setExpensesByScope = useCallback(
+        (list) => {
+            if (scope === SHARED_SCOPE) {
+                setSharedExpenses(list);
+            } else {
+                setLocalExpenses(list);
+            }
+        },
+        [scope, setSharedExpenses]
+    );
 
     useEffect(() => {
-        if (!user?.businessID) return;
-
-        const start = toMillis(range?.startDate);
-        const end = toMillis(range?.endDate);
+        if (!user?.businessID) {
+            setLoading(false);
+            setError(null);
+            setExpensesByScope([]);
+            return undefined;
+        }
 
         const expensesRef = collection(db, 'businesses', user.businessID, 'expenses');
 
-        const q = start && end
-            ? query(
-                expensesRef,
-                where('expense.dates.expenseDate', '>=', start),
-                where('expense.dates.expenseDate', '<=', end)
-            )
+        const constraints = [];
+        if (Number.isFinite(rangeStart) && Number.isFinite(rangeEnd)) {
+            constraints.push(
+                where('expense.dates.expenseDate', '>=', rangeStart),
+                where('expense.dates.expenseDate', '<=', rangeEnd)
+            );
+        }
+
+        const expensesQuery = constraints.length
+            ? query(expensesRef, ...constraints)
             : query(expensesRef);
 
-            setLoading(true);
+        if (scope === LOCAL_SCOPE) {
+            setLocalExpenses([]);
+        }
+        setLoading(true);
 
-        const fetchData = () => {
-            const unsubscribe = onSnapshot(q,
-                async (snapshot) => {
-                    const list = snapshot.docs.map((doc) => {
-                        const expense = doc.data()?.expense;
-                        return {
-                            expense: {
-                                ...expense,
-                                dates: {
-                                    ...expense.dates,
-                                    createdAt: expense.dates.createdAt ? expense.dates.createdAt.seconds * 1000  : null,
-                                    expenseDate: expense.dates.expenseDate ? expense.dates.expenseDate.seconds * 1000 : null,
-                                }
-                            }
-                        }
-                    },
-                    );
-                    setLoading(false);
-                    setExpenses(list);
-                    setError(null);
-                },
-                (error) => {
-                    console.error("Error fetching expenses: ", error);
-                    setError(error);
-                    setLoading(false);
-                }
-            );
-            return () => unsubscribe();
+        const unsubscribe = onSnapshot(
+            expensesQuery,
+            (snapshot) => {
+                const list = snapshot.docs.map((doc) => {
+                    const expense = doc.data()?.expense ?? {};
+                    const dates = expense.dates ?? {};
+
+                    return {
+                        expense: {
+                            ...expense,
+                            dates: {
+                                ...dates,
+                                createdAt: dates.createdAt
+                                    ? dates.createdAt.seconds * 1000
+                                    : null,
+                                expenseDate: dates.expenseDate
+                                    ? dates.expenseDate.seconds * 1000
+                                    : null,
+                            },
+                        },
+                    };
+                });
+
+                setExpensesByScope(list);
+                setError(null);
+                setLoading(false);
+            },
+            (listenerError) => {
+                console.error("Error fetching expenses: ", listenerError);
+                setError(listenerError);
+                setLoading(false);
+            }
+        );
+
+        return () => {
+            unsubscribe();
         };
+    }, [user?.businessID, rangeStart, rangeEnd, scope, setExpensesByScope]);
 
-        fetchData();
-
-    }, [user, range]);
+    const expenses = scope === SHARED_SCOPE ? sharedExpenses : localExpenses;
 
     return { expenses, loading, error };
+};
 
-}
+export const useLocalFbGetExpenses = (range) =>
+    useFbGetExpenses(range, { scope: LOCAL_SCOPE });

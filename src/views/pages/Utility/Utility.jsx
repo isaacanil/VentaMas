@@ -1,136 +1,150 @@
-import { motion } from 'framer-motion'
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import React, { useCallback, useEffect, useMemo } from 'react';
+import styled from 'styled-components';
 
-import { useFbGetExpenses } from '../../../firebase/expenses/Items/useFbGetExpenses'
-import { fbGetInvoices } from '../../../firebase/invoices/fbGetInvoices'
-import { getDateRange } from '../../../utils/date/getDateRange'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import { DatePicker } from '../../templates/system/Dates/DatePicker/DatePicker'
-import Typography from '../../templates/system/Typografy/Typografy'
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { designSystemV2 } from '../../../theme/designSystemV2';
+import { DailyPerformanceChart } from './components/DailyPerformanceChart';
+import { RevenueDistributionChart } from './components/RevenueDistributionChart';
+import { UtilityHeader } from './components/UtilityHeader';
+import { RangeComparisonCard } from './components/RangeComparisonCard';
+import { UtilityInsightsTabs } from './components/UtilityInsightsTabs';
+import { exportTransactionsExcel } from './utils/exportTransactionsExcel';
+import { buildTransactionRows } from './utils/transactionRows';
+import { useUtilityDashboard } from './hooks/useUtilityDashboard';
+import './utils/registerCharts';
 
-import BiWeeklySalesWithAverageChart from './charts/BiWeeklySalesWithAverageChart/BiWeeklySalesWithAverageChart'
-import DailySalesWithAverageChart from './charts/DailySalesWithAverageChart/DailySalesWithAverageChart'
-import GeneralAndMonthlySales from './charts/GeneralAndMonthlySales/GeneralAndMonthlySales'
-import { MonthlyFinancialReportChart } from './charts/MonthlyFinancialReportChart/MonthlyFinancialReportChart'
-import WeeklySalesWithAverageChart from './charts/WeeklySalesWithAverageChart/WeeklySalesWithAverageChart'
+const EXPORT_EVENT = 'utility-export-request';
+const AVAILABILITY_EVENT = 'utility-export-availability';
 
-export const Utility = ({ isOpen = true }) => {
-    const [datesSelected, setDatesSelected] = useState(getDateRange('thisMonth'));    const { expenses } = useFbGetExpenses(datesSelected);
-    const { invoices } = fbGetInvoices(datesSelected);
-    
-    const variantsBackdrop = {
-        open: { opacity: 1, zIndex: 1 },
-        close: { opacity: 0, zIndex: -1 },
-    }
-    const variantsContainer = {
-        open: {
-            opacity: 1,
-            y: 0,
-        },
-        close: {
-            opacity: 0,
-            y: '100vh',
+const { colors, spacing } = designSystemV2;
+
+export const Utility = () => {
+    const {
+        rangeComparison,
+        dailyChartData,
+        dailyChartOptions,
+        pieChartData,
+        pieChartOptions,
+        distributionDetails,
+        formatCurrency,
+        formatPercentage,
+        loading,
+        comparisonLoading,
+        selectedPreset,
+        rangeLabel,
+        onPresetSelect,
+        quickRanges,
+        summary,
+        dailyMetrics,
+        productsBreakdown,
+    } = useUtilityDashboard();
+
+    const canExportTransactions = useMemo(
+        () => buildTransactionRows(dailyMetrics).length > 0,
+        [dailyMetrics]
+    );
+
+    const handleExportTransactions = useCallback(async () => {
+        if (canExportTransactions) {
+            try {
+                await exportTransactionsExcel(dailyMetrics);
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('Error al exportar transacciones:', error);
+            }
         }
-    }
- 
+    }, [dailyMetrics, canExportTransactions]);
+
+    useEffect(() => {
+        const listener = () => {
+            void handleExportTransactions();
+        };
+
+        window.addEventListener(EXPORT_EVENT, listener);
+        return () => {
+            window.removeEventListener(EXPORT_EVENT, listener);
+        };
+    }, [handleExportTransactions]);
+
+    useEffect(() => {
+        const event = new CustomEvent(AVAILABILITY_EVENT, {
+            detail: { canExport: canExportTransactions },
+        });
+        window.dispatchEvent(event);
+    }, [canExportTransactions]);
+
     return (
         <Container>
-            <MenuApp 
-                sectionName={'Utilidad'}
-            />
-                <Component
-                    // ref={componentRef}
-                    variants={variantsContainer}
-                    initial="close"
-                    animate={isOpen ? "open" : "close"}
-                    transition={{ duration: 0.5 }}
-                    exit="close"
-                    >
-                    <Header>
-                        <Typography variant='h2'>
-                            Utilidad
-                        </Typography>
-                        {/* <Button
-                                    title='Cerrar'
-                                    onClick={handleOpenExpensesChart}
-                                /> */}
-                    </Header>
-                    <Toolbar>
-                        <DatePicker
-                            dates={datesSelected}
-                            setDates={setDatesSelected}
-                            dateOptionsMenu
-                            datesDefault='thisMonth'
-                        />
-                    </Toolbar>
-                    <Body>
-                        <DailySalesWithAverageChart
-                            invoices={invoices}
-                            
-                        />
-                        <WeeklySalesWithAverageChart  
-                            invoices={invoices}
-                        />
-                        <BiWeeklySalesWithAverageChart 
-                            invoices={invoices}
-                        />
-                        <GeneralAndMonthlySales
-                            invoices={invoices}
-                        />
-                        <MonthlyFinancialReportChart 
-                            expenses={expenses}
-                            invoices={invoices}
-                        />
-                    </Body>
-                </Component>
+            <MenuApp sectionName={'Utilidad'} />
+            <DashboardWrapper>
+                <UtilityHeader
+                    rangeLabel={rangeLabel}
+                    selectedPreset={selectedPreset}
+                    quickRanges={quickRanges}
+                    onPresetSelect={onPresetSelect}
+                />
+                <ComparisonSection>
+                    <RangeComparisonCard
+                        loading={comparisonLoading}
+                        comparison={rangeComparison}
+                        formatCurrency={formatCurrency}
+                        formatPercentage={formatPercentage}
+                    />
+                </ComparisonSection>
+
+                <AnalyticsGrid>
+                    <DailyPerformanceChart
+                        loading={loading}
+                        chartData={dailyChartData}
+                        chartOptions={dailyChartOptions}
+                    />
+                    <RevenueDistributionChart
+                        loading={loading}
+                        chartData={pieChartData}
+                        chartOptions={pieChartOptions}
+                        distributionDetails={distributionDetails}
+                        formatCurrency={formatCurrency}
+                        formatPercentage={formatPercentage}
+                        totalSales={summary.totalSales}
+                    />
+                </AnalyticsGrid>
+
+                <UtilityInsightsTabs
+                    dailyMetrics={dailyMetrics}
+                    formatCurrency={formatCurrency}
+                    summary={summary}
+                    productsBreakdown={productsBreakdown}
+                />
+            </DashboardWrapper>
         </Container>
-    )
-}
+    );
+};
+
 const Container = styled.div`
-height: 100%;
     display: grid;
-    overflow: hidden;
-    grid-template-rows: min-content 1fr;
-`
-const ReportContainer = styled.div`
-  
-`
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+    height: 100vh;
+    background: ${colors.background.canvas};
+    color: ${colors.text.primary};
+`;
 
-const Component = styled(motion.div)`
-  width: 98vw;
-  display: grid;
-  grid-template-rows: min-content 1fr;
-  gap: 1em;
-  margin: 0 auto;
-  height: 100%;
-  background-color: #ffffff;
-  border: 1px solid #1d1d1d37;
-  border-radius: 0.5em;
-  overflow-y: scroll;
-  padding: 0 1em;
- 
-  `;
-const Toolbar = styled.div`
-    position: sticky;
-    top: 0;
-    padding: 0.5em 0;
-    background-color: white;
-    border-bottom: 1px solid #1d1d1d37;
-`
+const DashboardWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.xxl};
+    overflow-y: auto;
+    padding: ${spacing.xxl};
+`;
 
-
-const Header = styled.div`
-  display: grid;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  padding: 1em 1em 0 ;
-  background: white;
-  gap: 1em;
-  `
-const Body = styled.div`
+const ComparisonSection = styled.div`
     display: grid;
-    align-content: start;   
-    gap: 4em;
-  `
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: ${spacing.xl};
+`;
+
+const AnalyticsGrid = styled.div`
+    display: grid;
+    gap: ${spacing.xxl};
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+`;

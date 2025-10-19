@@ -16,6 +16,7 @@ const {
   INSURANCE_TERM,
   CASH_RECONCILIATION_TERM,
   ACCOUNT_RECEIVABLE,
+  UTILITY_TERM,
 } = ROUTES_NAME
 
 /**
@@ -145,5 +146,11 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
     routes: { path: AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST, end: false },
     importFn: () => import('../Page/AuthorizationsToolbar'),
     exportName: 'AuthorizationsToolbar',
+  }),
+  registerToolbar({
+    id: 'utility-toolbar',
+    routes: [UTILITY_TERM.UTILITY, UTILITY_TERM.UTILITY_REPORT],
+    importFn: () => import('../Page/UtilityToolbar'),
+    exportName: 'UtilityToolbar',
   }),
 ]
