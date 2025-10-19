@@ -1,7 +1,7 @@
 import { FC, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { PaymentMethod } from '../types'
+import type { PaymentMethod } from '../types'
 import { getPaymentMethodMeta } from '../utils/paymentMethodMeta'
 import { PaymentMethodRow } from './PaymentMethodRow'
 

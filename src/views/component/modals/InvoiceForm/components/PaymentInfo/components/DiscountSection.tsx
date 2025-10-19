@@ -5,7 +5,7 @@ import { FC, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { DiscountType } from '../types'
+import type { DiscountType } from '../types'
 
 interface DiscountSectionProps {
     discountType: DiscountType

@@ -4,7 +4,7 @@ import styled from 'styled-components'
 
 import { selectUser } from '../../../features/auth/userSlice';
 import { fbGetPreorders } from '../../../firebase/invoices/fbGetPreorders';
-import { InvoicePanel } from '../../component/cart/components/InvoicePanel/InvoicePanel';
+import { InvoicePanel } from '../Sale/components/Cart/components/InvoicePanel/InvoicePanel';
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
 
 import Layout from './components/Layout/Layout'

@@ -6,9 +6,10 @@ import { NoteButton } from '../../../../../component/NoteViewButton/NoteViewButt
 import { ShowFiles } from '../../../../../component/ShowFileButton/ShowFileButton';
 import { Badge } from '../../../../../component/Badge/Badge';
 import styled from 'styled-components';
-import { CellType } from '../../types/ColumnTypes';
 import DateUtils from '../../../../../../utils/date/dateUtils';
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+
+type CellType = import('../../types/ColumnTypes').CellType;
 
 interface CellRendererProps {
   type?: CellType;

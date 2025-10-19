@@ -3,8 +3,8 @@ import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import { ChangeEvent, FC, useCallback } from 'react'
 import styled from 'styled-components'
 
-import { PaymentMethod } from '../types'
-import { PaymentMethodMeta } from '../utils/paymentMethodMeta'
+import type { PaymentMethod } from '../types'
+import type { PaymentMethodMeta } from '../utils/paymentMethodMeta'
 
 interface PaymentMethodRowProps {
     method: PaymentMethod

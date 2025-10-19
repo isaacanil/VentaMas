@@ -1,4 +1,4 @@
-import { AuditInfo } from "./AuditInfo";
+import type { AuditInfo } from "./AuditInfo";
 
 export interface RowShelf {
     id: string; // auto-generated

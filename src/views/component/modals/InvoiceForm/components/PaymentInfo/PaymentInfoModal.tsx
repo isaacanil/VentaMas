@@ -2,7 +2,7 @@ import { Modal } from 'antd'
 import { FC } from 'react'
 
 import { PaymentInfo } from './PaymentInfo'
-import { PaymentInfoModalProps } from './types'
+import type { PaymentInfoModalProps } from './types'
 
 export const PaymentInfoModal: FC<PaymentInfoModalProps> = ({
     isOpen,

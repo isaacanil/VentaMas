@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { AuditInfo } from "./AuditInfo";
+import type { AuditInfo } from "./AuditInfo";
 /**
  * Interface ProductStock
  * 
@@ -23,4 +23,3 @@ export interface ProductStock extends AuditInfo {
   updatedAt?: Timestamp; 
   updatedBy?: string; 
 }
-

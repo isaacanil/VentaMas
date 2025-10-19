@@ -1,4 +1,4 @@
-import { AuditInfo } from "./AuditInfo";
+import type { AuditInfo } from "./AuditInfo";
 
 export interface Segment {
     id: string; // auto-generated

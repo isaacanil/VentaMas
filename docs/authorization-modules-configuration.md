@@ -213,7 +213,7 @@ Cuando módulos están desactivados, se muestran alertas informativas:
 
 El sistema de descuentos en el carrito también depende del módulo de facturación:
 
-**`src/views/component/cart/components/InvoiceSummary/InvoiceSummary.jsx`**
+**`src/views/pages/Sale/components/Cart/components/InvoiceSummary/InvoiceSummary.jsx`**
 - Usa `useAuthorizationModules()` para verificar si requiere PIN
 - Solo cajeros necesitan PIN cuando el módulo de facturación está activo
 - Administradores y managers pueden aplicar descuentos sin restricción

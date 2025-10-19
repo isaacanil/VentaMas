@@ -3,7 +3,7 @@ import React, { cloneElement, FC, ReactElement, ReactNode, isValidElement } from
 import styled from 'styled-components';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ConfigItem } from '../../../config/statusActionConfig';
+import type { ConfigItem } from '../../../config/statusActionConfig';
 
 type BadgeDateConfig = ConfigItem;
 

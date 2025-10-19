@@ -6,7 +6,7 @@ import { selectUser } from '../../../../../../features/auth/userSlice';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../../../firebase/firebaseconfig';
 import { importProductData, createProductTemplate } from '../../../../../../utils/import/product';
-import { CompareResult, MatchType } from './types';
+import type { CompareResult, MatchType, ProductData } from './types';
 import { FileUploader } from './components/FileUploader';
 import { ResultsSummary } from './components/ResultsSummary';
 import { ResultsTable } from './components/ResultsTable';
@@ -108,8 +108,9 @@ export const CompareProducts: React.FC = () => {
       }, {} as Record<string, ProductData[]>);
 
       // Comparar grupos por nombre
-      Object.entries(excelGroups).forEach(([name, excelProducts]) => {
-        const dbProducts = dbGroups[name] || [];
+      const excelGroupEntries = Object.entries(excelGroups) as Array<[string, ProductData[]]>;
+      excelGroupEntries.forEach(([name, excelProducts]) => {
+        const dbProducts: ProductData[] = dbGroups[name] ?? [];
 
         if (excelProducts.length !== dbProducts.length) {
           // Conflicto: Diferente cantidad de productos con el mismo nombre
@@ -137,14 +138,24 @@ export const CompareProducts: React.FC = () => {
               conflictFields.push('barcode');
             }
 
-            if (excelProduct.pricing?.price !== undefined && dbProduct.pricing?.price !== undefined &&
-                parseFloat(excelProduct.pricing.price) !== parseFloat(dbProduct.pricing.price)) {
-              conflictFields.push('price');
+            if (excelProduct.pricing?.price !== undefined && dbProduct.pricing?.price !== undefined) {
+              const excelPriceValue = Number(excelProduct.pricing?.price);
+              const dbPriceValue = Number(dbProduct.pricing?.price);
+
+              if (!Number.isNaN(excelPriceValue) && !Number.isNaN(dbPriceValue) &&
+                  excelPriceValue !== dbPriceValue) {
+                conflictFields.push('price');
+              }
             }
 
-            if (excelProduct.stock !== undefined && dbProduct.stock !== undefined &&
-                parseInt(excelProduct.stock) !== parseInt(dbProduct.stock)) {
-              conflictFields.push('stock');
+            if (excelProduct.stock !== undefined && dbProduct.stock !== undefined) {
+              const excelStockValue = Number(excelProduct.stock);
+              const dbStockValue = Number(dbProduct.stock);
+
+              if (!Number.isNaN(excelStockValue) && !Number.isNaN(dbStockValue) &&
+                  excelStockValue !== dbStockValue) {
+                conflictFields.push('stock');
+              }
             }
 
             if (excelProduct.category !== undefined && dbProduct.category !== undefined &&
@@ -171,7 +182,7 @@ export const CompareProducts: React.FC = () => {
       });
 
       // Agregar productos restantes en la base de datos que no están en Excel
-      Object.values(dbGroups).forEach(dbProducts => {
+      (Object.values(dbGroups) as ProductData[][]).forEach(dbProducts => {
         dbProducts.forEach(product => {
           results.push({
             id: product.id,
