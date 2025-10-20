@@ -6,14 +6,23 @@ import { db, Timestamp, FieldValue } from '../../../../core/config/firebase.js';
 
 const USERS_COLLECTION = 'users';
 const SESSION_COLLECTION = 'sessionTokens';
+const SESSION_LOG_COLLECTION = 'sessionLogs';
 
 const SESSION_DURATION_MS = Number(process.env.CLIENT_AUTH_SESSION_DURATION_MS) || 60 * 24 * 60 * 60 * 1000; // 60 días
 const TOKEN_CLEANUP_MS = Number(process.env.CLIENT_AUTH_TOKEN_CLEANUP_MS) || 60 * 24 * 60 * 60 * 1000; // 60 días
+const SESSION_IDLE_TIMEOUT_MS = Number(process.env.CLIENT_AUTH_MAX_IDLE_MS) || SESSION_DURATION_MS;
 const MAX_LOGIN_ATTEMPTS = Number(process.env.CLIENT_AUTH_MAX_ATTEMPTS) || 5;
 const LOCK_DURATION_MS = Number(process.env.CLIENT_AUTH_LOCK_MS) || 2 * 60 * 60 * 1000; // 2 horas
+const MAX_ACTIVE_SESSIONS = Number(process.env.CLIENT_AUTH_MAX_ACTIVE_SESSIONS) || 10;
+const SESSION_EXTENSION_MS = Number(process.env.CLIENT_AUTH_SESSION_EXTENSION_MS) || SESSION_DURATION_MS;
 
 const usersCol = db.collection(USERS_COLLECTION);
 const sessionsCol = db.collection(SESSION_COLLECTION);
+const sessionLogsCol = db.collection(SESSION_LOG_COLLECTION);
+
+const PRIVILEGED_SESSION_LOG_ROLES = ['admin', 'dev', 'owner'];
+const MAX_SESSION_LOG_LIMIT = Number(process.env.CLIENT_AUTH_SESSION_LOG_LIMIT) || 200;
+const SESSION_LOG_WHITELIST = new Set(['login', 'logout']);
 
 const normalizeName = (name) => (typeof name === 'string' ? name.trim() : '');
 
@@ -42,6 +51,7 @@ async function cleanupOldTokens(userId, keepTokenId = null) {
   if (snapshot.empty) return;
 
   const threshold = Timestamp.fromMillis(Date.now() - TOKEN_CLEANUP_MS);
+  const now = Date.now();
   const deletions = snapshot.docs
     .filter((doc) => {
       if (keepTokenId && doc.id === keepTokenId) return false;
@@ -49,7 +59,10 @@ async function cleanupOldTokens(userId, keepTokenId = null) {
       if (!expiresAt) return true;
       try {
         const expiresMillis = expiresAt.toMillis ? expiresAt.toMillis() : Number(expiresAt);
-        return expiresMillis < threshold.toMillis();
+        if (!Number.isFinite(expiresMillis)) {
+          return true;
+        }
+        return expiresMillis < threshold.toMillis() || expiresMillis <= now;
       } catch {
         return true;
       }
@@ -61,21 +74,302 @@ async function cleanupOldTokens(userId, keepTokenId = null) {
   }
 }
 
-async function createSessionToken(userName, userDocId) {
+const toMillis = (value) => {
+  if (!value) return null;
+  if (typeof value.toMillis === 'function') {
+    return value.toMillis();
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+};
+
+const buildSessionPayload = (doc) => {
+  if (!doc?.exists) return null;
+  const data = doc.data() || {};
+  return {
+    id: doc.id,
+    userId: data.userId,
+    deviceId: data.deviceId || null,
+    deviceLabel: data.deviceLabel || null,
+    userAgent: data.userAgent || null,
+    ipAddress: data.ipAddress || null,
+    status: data.status || 'active',
+    createdAt: toMillis(data.createdAt),
+    lastActivity: toMillis(data.lastActivity),
+    expiresAt: toMillis(data.expiresAt),
+    metadata: data.metadata || null,
+  };
+};
+
+const buildSessionLogPayload = (doc) => {
+  if (!doc?.exists) return null;
+  const data = doc.data() || {};
+  return {
+    id: doc.id,
+    userId: data.userId || null,
+    sessionId: data.sessionId || null,
+    event: data.event || null,
+    context: typeof data.context === 'object' && data.context !== null ? data.context : {},
+    createdAt: toMillis(data.createdAt),
+  };
+};
+
+async function assertCanViewSessionLogs(actorUserId, targetUserId) {
+  if (!actorUserId || !targetUserId) {
+    throw new HttpsError('invalid-argument', 'ID de usuario requerido');
+  }
+  if (actorUserId === targetUserId) {
+    return;
+  }
+
+  const actorSnap = await ensureUserExists(actorUserId);
+  const actorData = actorSnap.data() || {};
+  const actorRole = (actorData.user?.role || '').toLowerCase();
+
+  if (!PRIVILEGED_SESSION_LOG_ROLES.includes(actorRole)) {
+    throw new HttpsError(
+      'permission-denied',
+      'No tienes permiso para consultar los registros de sesiones de otros usuarios.'
+    );
+  }
+
+  await ensureUserExists(targetUserId);
+}
+
+async function logSessionEvent({ userId, sessionId, event, context = {} }) {
+  if (!userId || !sessionId || !event) return;
+  if (!SESSION_LOG_WHITELIST.has(event)) return;
+  try {
+    await sessionLogsCol.add({
+      userId,
+      sessionId,
+      event,
+      context,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+  } catch (error) {
+    console.error('session log error:', error);
+  }
+}
+
+async function updateUserPresence(userId, status) {
+  if (!userId) return;
+  try {
+    await usersCol.doc(userId).set({
+      presence: {
+        status,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+    }, { merge: true });
+  } catch (error) {
+    console.error('presence update error:', error);
+  }
+}
+
+async function terminateSession(docSnap, event = 'revoked', context = {}) {
+  if (!docSnap?.exists) return;
+  const userId = docSnap.get('userId');
+  const sessionId = docSnap.id;
+  const data = docSnap.data() || {};
+  const baseActor = {
+    id: userId,
+    displayName: data.userDisplayName || data.userRealName || null,
+    username: data.username || null,
+  };
+  const mergedContext =
+    context && typeof context === 'object' && !Array.isArray(context) ? { ...context } : {};
+
+  const metadataFromDoc =
+    data.metadata && typeof data.metadata === 'object' && !Array.isArray(data.metadata)
+      ? data.metadata
+      : {};
+  const metadataFromContext =
+    mergedContext.metadata && typeof mergedContext.metadata === 'object' && !Array.isArray(mergedContext.metadata)
+      ? mergedContext.metadata
+      : {};
+
+  const combinedMetadata = { ...metadataFromDoc, ...metadataFromContext };
+  if (Object.keys(combinedMetadata).length) {
+    mergedContext.metadata = combinedMetadata;
+  }
+
+  const ensureContextField = (field, value) => {
+    if (value === undefined || value === null || value === '') return;
+    if (mergedContext[field] === undefined || mergedContext[field] === null || mergedContext[field] === '') {
+      mergedContext[field] = value;
+    }
+  };
+
+  ensureContextField('deviceId', data.deviceId || combinedMetadata.deviceId);
+  ensureContextField('deviceLabel', data.deviceLabel || combinedMetadata.deviceLabel || combinedMetadata.label);
+  ensureContextField('label', data.deviceLabel || combinedMetadata.label || combinedMetadata.deviceLabel);
+  ensureContextField('platform', data.platform || combinedMetadata.platform);
+  ensureContextField('userAgent', data.userAgent || combinedMetadata.userAgent);
+  ensureContextField('ipAddress', data.ipAddress || combinedMetadata.ipAddress);
+  if (!mergedContext.actor || typeof mergedContext.actor !== 'object') {
+    mergedContext.actor = baseActor;
+  } else {
+    mergedContext.actor = {
+      id: mergedContext.actor.id || baseActor.id,
+      displayName: mergedContext.actor.displayName || baseActor.displayName,
+      username: mergedContext.actor.username || baseActor.username,
+    };
+  }
+  try {
+    await docSnap.ref.delete();
+    await logSessionEvent({ userId, sessionId, event, context: mergedContext });
+  } catch (error) {
+    console.error(`terminate session error (${sessionId}):`, error);
+  }
+}
+
+async function enforceSessionLimit(userDocId, { allowSessions = MAX_ACTIVE_SESSIONS, skipTokenId = null } = {}) {
+  if (!allowSessions || allowSessions < 1) return;
+  const snapshot = await sessionsCol.where('userId', '==', userDocId).get();
+  if (snapshot.empty) return;
+
+  const now = Date.now();
+  const revocations = [];
+  const active = [];
+
+  snapshot.docs.forEach((doc) => {
+    if (skipTokenId && doc.id === skipTokenId) {
+      return;
+    }
+    const data = doc.data() || {};
+    const expiresAtMs = toMillis(data.expiresAt);
+    const lastActivityMs = toMillis(data.lastActivity);
+    const expired = !expiresAtMs || expiresAtMs <= now;
+    const idleTooLong =
+      SESSION_IDLE_TIMEOUT_MS > 0 && lastActivityMs && now - lastActivityMs > SESSION_IDLE_TIMEOUT_MS;
+
+    if (expired || idleTooLong) {
+      revocations.push(
+        terminateSession(doc, expired ? 'expired' : 'idle-timeout', { reason: 'stale-session' })
+      );
+    } else {
+      active.push(doc);
+    }
+  });
+
+  if (revocations.length) {
+    await Promise.allSettled(revocations);
+  }
+
+  active.sort((a, b) => {
+    const createdA = toMillis((a.data() || {}).createdAt) || 0;
+    const createdB = toMillis((b.data() || {}).createdAt) || 0;
+    return createdA - createdB;
+  });
+
+  const maxAllowedBeforeNew = allowSessions - 1;
+  const overflowCount = maxAllowedBeforeNew >= 0 ? active.length - maxAllowedBeforeNew : active.length;
+  if (overflowCount <= 0) return;
+
+  const toRevoke = active.slice(0, overflowCount);
+  await Promise.allSettled(
+    toRevoke.map((doc) =>
+      terminateSession(doc, 'auto-revoked', { reason: 'max-sessions-exceeded' })
+    )
+  );
+}
+
+async function getActiveSessions(userId) {
+  if (!userId) return [];
+  const snapshot = await sessionsCol.where('userId', '==', userId).get();
+  if (snapshot.empty) return [];
+
+  const now = Date.now();
+  return snapshot.docs
+    .map((doc) => buildSessionPayload(doc))
+    .filter((session) => session && session.expiresAt && session.expiresAt > now);
+}
+
+async function syncUserPresence(userId) {
+  const sessions = await getActiveSessions(userId);
+  await updateUserPresence(userId, sessions.length ? 'online' : 'offline');
+  return sessions;
+}
+
+const extractRequestInfo = ({ data = {}, rawRequest } = {}) => {
+  const sessionInfo = data.sessionInfo || {};
+  const headers = rawRequest?.headers || {};
+  const ip =
+    sessionInfo.ipAddress ||
+    rawRequest?.ip ||
+    headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    null;
+
+  return {
+    deviceId: sessionInfo.deviceId || null,
+    deviceLabel: sessionInfo.deviceLabel || sessionInfo.label || null,
+    userAgent: sessionInfo.userAgent || headers['user-agent'] || null,
+    platform: sessionInfo.platform || null,
+    ipAddress: ip,
+    metadata: sessionInfo.metadata || null,
+  };
+};
+
+async function ensureActiveSession(tokenId, { eventContext = {} } = {}) {
+  if (!tokenId) {
+    throw new HttpsError('invalid-argument', 'Token de sesión requerido');
+  }
+
+  const snap = await sessionsCol.doc(tokenId).get();
+  if (!snap.exists) {
+    throw new HttpsError('unauthenticated', 'Sesión no encontrada');
+  }
+
+  const now = Date.now();
+  const data = snap.data() || {};
+  const expiresAtMs = toMillis(data.expiresAt);
+  if (!expiresAtMs || expiresAtMs <= now) {
+    await terminateSession(snap, 'expired', eventContext);
+    await updateUserPresence(data.userId, 'offline');
+    throw new HttpsError('unauthenticated', 'La sesión ha expirado');
+  }
+
+  if (SESSION_IDLE_TIMEOUT_MS > 0) {
+    const lastActivityMs = toMillis(data.lastActivity);
+    if (lastActivityMs && now - lastActivityMs > SESSION_IDLE_TIMEOUT_MS) {
+      await terminateSession(snap, 'idle-timeout', eventContext);
+      await updateUserPresence(data.userId, 'offline');
+      throw new HttpsError('unauthenticated', 'Sesión cerrada por inactividad');
+    }
+  }
+
+  return snap;
+}
+
+async function createSessionToken(userDocId, sessionInfo = {}, userProfile = {}) {
   const now = Timestamp.now();
   const expiresAt = Timestamp.fromMillis(now.toMillis() + SESSION_DURATION_MS);
-  const tokenId = `${userName}_${now.toMillis()}`;
+  const tokenId = `${userDocId}_${now.toMillis()}`;
 
   await cleanupOldTokens(userDocId, tokenId);
 
-  await sessionsCol.doc(tokenId).set({
+  const payload = {
     userId: userDocId,
     expiresAt,
     createdAt: FieldValue.serverTimestamp(),
     lastActivity: FieldValue.serverTimestamp(),
-  });
+    status: 'active',
+  };
 
-  return { tokenId, expiresAt };
+  if (sessionInfo.deviceId) payload.deviceId = sessionInfo.deviceId;
+  if (sessionInfo.deviceLabel) payload.deviceLabel = sessionInfo.deviceLabel;
+  if (sessionInfo.userAgent) payload.userAgent = sessionInfo.userAgent;
+  if (sessionInfo.ipAddress) payload.ipAddress = sessionInfo.ipAddress;
+  if (sessionInfo.platform) payload.platform = sessionInfo.platform;
+  if (sessionInfo.metadata) payload.metadata = sessionInfo.metadata;
+  const { displayName, username, realName } = userProfile || {};
+  if (displayName) payload.userDisplayName = displayName;
+  if (username) payload.username = username;
+  if (realName) payload.userRealName = realName;
+
+  await sessionsCol.doc(tokenId).set(payload);
+
+  return { tokenId, expiresAt, payload };
 }
 
 function assertPassword(password) {
@@ -94,8 +388,10 @@ async function ensureUniqueUsername(name, excludeId = null) {
   }
 }
 
-export const clientLogin = onCall(async ({ data }) => {
-  const { username, name, password } = data || {};
+export const clientLogin = onCall(async (request) => {
+  const { data = {} } = request || {};
+  const { username, name, password } = data;
+  const sessionInfo = extractRequestInfo(request);
   const identifier = normalizeName(username || name);
   assertPassword(password);
   if (!identifier) {
@@ -141,7 +437,29 @@ export const clientLogin = onCall(async ({ data }) => {
     };
   });
 
-  const { tokenId, expiresAt } = await createSessionToken(user.name || identifier, userDoc.id);
+  await enforceSessionLimit(userDoc.id);
+  const displayName = user.realName || user.displayName || user.name || identifier;
+  const usernameValue = user.name || identifier;
+
+  const { tokenId, expiresAt } = await createSessionToken(userDoc.id, sessionInfo, {
+    displayName,
+    username: usernameValue,
+    realName: user.realName || null,
+  });
+  const sessionSnap = await sessionsCol.doc(tokenId).get();
+  const session = buildSessionPayload(sessionSnap);
+
+  const logContext = {
+    ...sessionInfo,
+    actor: {
+      id: userDoc.id,
+      displayName,
+      username: usernameValue,
+    },
+  };
+
+  await logSessionEvent({ userId: userDoc.id, sessionId: tokenId, event: 'login', context: logContext });
+  const activeSessions = await syncUserPresence(userDoc.id);
 
   return {
     ok: true,
@@ -152,7 +470,183 @@ export const clientLogin = onCall(async ({ data }) => {
     },
     sessionToken: tokenId,
     sessionExpiresAt: expiresAt.toMillis(),
+    session,
+    activeSessions,
   };
+});
+
+export const clientValidateSession = onCall(async (request) => {
+  const { data = {} } = request || {};
+  const { sessionToken } = data;
+  const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'validate-session' } });
+  const session = buildSessionPayload(snap);
+  return {
+    ok: true,
+    session,
+  };
+});
+
+export const clientRefreshSession = onCall(async (request) => {
+  const { data = {} } = request || {};
+  const { sessionToken, extend = true } = data;
+  const sessionInfo = extractRequestInfo(request);
+
+  const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'refresh-session' } });
+
+  const updates = {
+    lastActivity: FieldValue.serverTimestamp(),
+    status: 'active',
+  };
+
+  if (extend) {
+    updates.expiresAt = Timestamp.fromMillis(Date.now() + SESSION_EXTENSION_MS);
+  }
+  if (sessionInfo.deviceLabel) updates.deviceLabel = sessionInfo.deviceLabel;
+  if (sessionInfo.deviceId) updates.deviceId = sessionInfo.deviceId;
+  if (sessionInfo.userAgent) updates.userAgent = sessionInfo.userAgent;
+  if (sessionInfo.ipAddress) updates.ipAddress = sessionInfo.ipAddress;
+  if (sessionInfo.platform) updates.platform = sessionInfo.platform;
+  if (sessionInfo.metadata) {
+    updates.metadata = {
+      ...(snap.get('metadata') || {}),
+      ...sessionInfo.metadata,
+    };
+  }
+
+  await snap.ref.set(updates, { merge: true });
+  const refreshedSnap = await snap.ref.get();
+  const session = buildSessionPayload(refreshedSnap);
+  const activeSessions = await syncUserPresence(session.userId);
+
+  return {
+    ok: true,
+    session,
+    activeSessions,
+  };
+});
+
+export const clientListSessionLogs = onCall(
+  {
+    cors: true,
+    invoker: 'public',
+  },
+  async (request) => {
+    const { data = {} } = request || {};
+    const { sessionToken, targetUserId = null, limit = 50 } = data;
+    const sessionInfo = extractRequestInfo(request);
+
+    if (!sessionToken) {
+      throw new HttpsError('invalid-argument', 'Token de sesión requerido');
+    }
+
+    const eventContext = {
+      action: 'list-session-logs',
+      targetUserId: targetUserId || null,
+    };
+
+    const actorSnap = await ensureActiveSession(sessionToken, { eventContext });
+    const actorUserId = actorSnap.get('userId');
+    const resolvedTargetUserId = targetUserId || actorUserId;
+
+    await assertCanViewSessionLogs(actorUserId, resolvedTargetUserId);
+
+    const effectiveLimit = Math.max(1, Math.min(Number(limit) || 50, MAX_SESSION_LOG_LIMIT));
+
+    const query = sessionLogsCol
+      .where('userId', '==', resolvedTargetUserId)
+      .orderBy('createdAt', 'desc')
+      .limit(effectiveLimit);
+
+    const snapshot = await query.get();
+    const logs = snapshot.docs.map(buildSessionLogPayload).filter(Boolean);
+
+    if (actorUserId !== resolvedTargetUserId) {
+      await logSessionEvent({
+        userId: actorUserId,
+        sessionId: actorSnap.id,
+        event: 'view-session-logs',
+        context: {
+          ...sessionInfo,
+          targetUserId: resolvedTargetUserId,
+          fetched: logs.length,
+        },
+      });
+    }
+
+    return {
+      ok: true,
+      userId: resolvedTargetUserId,
+      requestedBy: actorUserId,
+      logs,
+    };
+  }
+);
+
+export const clientListSessions = onCall(async (request) => {
+  const { data = {} } = request || {};
+  const { sessionToken } = data;
+  const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'list-sessions' } });
+  const sessions = await syncUserPresence(snap.get('userId'));
+
+  return {
+    ok: true,
+    currentSessionId: snap.id,
+    sessions,
+  };
+});
+
+export const clientRevokeSession = onCall(async (request) => {
+  const { data = {} } = request || {};
+  const { sessionToken, targetToken } = data;
+
+  if (!targetToken) {
+    throw new HttpsError('invalid-argument', 'Token de sesión objetivo requerido');
+  }
+
+  const actorSnap = await ensureActiveSession(sessionToken, {
+    eventContext: { action: 'revoke-session', targetToken },
+  });
+  const userId = actorSnap.get('userId');
+  const targetSnap = await sessionsCol.doc(targetToken).get();
+
+  if (!targetSnap.exists || targetSnap.get('userId') !== userId) {
+    throw new HttpsError('not-found', 'Sesión no encontrada');
+  }
+
+  const eventType = targetToken === sessionToken ? 'logout' : 'revoked';
+  await terminateSession(targetSnap, eventType, { requestedBy: sessionToken });
+  const sessions = await syncUserPresence(userId);
+
+  return {
+    ok: true,
+    terminatedSession: targetToken,
+    sessions,
+  };
+});
+
+export const clientLogout = onCall(async (request) => {
+  const { data = {} } = request || {};
+  const { sessionToken } = data;
+  if (!sessionToken) {
+    return { ok: true };
+  }
+
+  try {
+    const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'logout' } });
+    await terminateSession(snap, 'logout', { requestedBy: sessionToken });
+    await syncUserPresence(snap.get('userId'));
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      if (error.code === 'unauthenticated') {
+        return { ok: true, status: 'already-expired' };
+      }
+      throw error;
+    }
+    console.error('logout error:', error);
+    throw new HttpsError('internal', 'No se pudo cerrar la sesión');
+  }
+
+  return { ok: true };
 });
 
 export const clientValidateUser = onCall(async ({ data }) => {
