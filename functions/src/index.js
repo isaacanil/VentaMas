@@ -39,6 +39,7 @@ import { createInvoiceV2Http } from "./versions/v2/invoice/controllers/createInv
 import { getInvoiceV2Http } from "./versions/v2/invoice/controllers/getInvoiceHttp.controller.js";
 import { processInvoiceCompensation } from "./versions/v2/invoice/triggers/compensation.worker.js";
 import { processInvoiceOutbox } from "./versions/v2/invoice/triggers/outbox.worker.js";
+import { syncRealtimePresence } from "./versions/v2/auth/triggers/presenceSync.js";
 
 export { 
   keepSupabaseAlive, 
@@ -76,5 +77,6 @@ export {
   validateModulePin,
   getUserModulePins,
   autoRotateModulePins,
+  syncRealtimePresence,
   syncProductsStockCron,
 };

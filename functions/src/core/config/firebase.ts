@@ -4,6 +4,7 @@ admin.initializeApp();
 
 const db = admin.firestore();
 const storage = admin.storage();
+const rtdb = admin.database();
 
 // Firestore settings
 export const Timestamp = admin.firestore.Timestamp;
@@ -15,6 +16,6 @@ export const arrayUnion = admin.firestore.FieldValue.arrayUnion;
 export const arrayRemove = admin.firestore.FieldValue.arrayRemove;
 
 
-export { admin, db, storage };
+export { admin, db, storage, rtdb };
 
 export default admin;

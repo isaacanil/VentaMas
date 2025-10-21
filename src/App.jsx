@@ -21,6 +21,7 @@ import { useCurrentCashDrawer } from './firebase/cashCount/useCurrentCashDrawer'
 import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
 import { useFbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { fbAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreateDefaultReceipt';
+import { useRealtimePresence } from './firebase/presence/useRealtimePresence';
 import { useAbilities, useLoadUserAbilities } from './hooks/abilities/useAbilities';
 import { useNavigationTracker } from './hooks/routes/useNavigationTracker';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
@@ -69,6 +70,8 @@ function App() {
   useBackfillUserNumbers();
 
   useUserDocListener(user?.uid); // escucha los cambios en el documento del usuario actual
+
+  useRealtimePresence(user);
 
   useCurrentCashDrawer();// obtiene el cajón actual
 

@@ -42,7 +42,17 @@ Cada documento contiene:
 - Si aún supera el máximo permitido (`CLIENT_AUTH_MAX_ACTIVE_SESSIONS`), revoca las más antiguas (`auto-revoked`).
 
 ### Sincronización de presencia
-`syncUserPresence` calcula cuántas sesiones siguen activas (`getActiveSessions`) y guarda en `users/{id}/presence.status` un estado simple (`online` u `offline`).
+El estado visible en la interfaz combina dos fuentes:
+
+1. **Realtime Database**: Cada cliente web publica su conexión en `presence/{uid}/{connectionId}` usando `onDisconnect` para marcarse como `offline` automáticamente en cuanto se pierde la conexión. El hook `useRealtimePresence` (`src/firebase/presence/useRealtimePresence.js`) gestiona esta escritura tomando el `sessionId`/`deviceId` local.
+2. **Aggregator en Cloud Functions**: `syncRealtimePresence` (`functions/src/versions/v2/auth/triggers/presenceSync.js`) escucha cualquier cambio en esa ruta, calcula cuántas conexiones siguen activas y actualiza `users/{id}/presence` con:
+   - `status`: `online` si existe al menos una conexión activa, `offline` en caso contrario.
+   - `lastSeen`: `Timestamp` del último `updatedAt` recibido desde Realtime Database.
+   - `connectionCount`: número de conexiones activas.
+
+   Como medida anti-zombie, cualquier conexión que permanezca en estado `online` más de ~30 segundos sin nuevos `updatedAt` se fuerza a `offline` automáticamente antes de actualizar Firestore.
+
+Las rutas HTTPS (`clientLogin`, `clientRefreshSession`, etc.) siguen llamando a `syncUserPresence` como redundancia para limpiar sesiones caducadas, pero la señal más precisa proviene de Realtime Database.
 
 ## Registro de eventos en `sessionLogs`
 - `logSessionEvent` solo acepta eventos listados en `SESSION_LOG_WHITELIST` (`login`, `logout`, `view-session-logs`).
