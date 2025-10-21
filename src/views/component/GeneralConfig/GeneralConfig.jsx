@@ -2,7 +2,6 @@ import {
   faCreditCard,
   faBuilding,
   faFileInvoice,
-  faUsers,
   faInfoCircle,
   faQuestionCircle, // Add icon for Help/Other group
   faKey
@@ -52,14 +51,17 @@ export default function GeneralConfig() {
       return;
     }
 
+    if (currentPath.includes('/general-config/users')) {
+      navigate(`${ROUTES_NAME.SETTING_TERM.USERS}/${ROUTES_NAME.SETTING_TERM.USERS_LIST}`, { replace: true });
+      return;
+    }
+
     if (currentPath.includes('billing')) {
       setActiveTab('billing');
     } else if (currentPath.includes('business')) {
       setActiveTab('business');
     } else if (currentPath.includes('tax-receipt')) {
       setActiveTab('taxReceipt');
-    } else if (currentPath.includes('users')) {
-      setActiveTab('users');
     } else if (currentPath.includes('authorization')) {
       setActiveTab('authorization');
     } else if (currentPath.includes('app-info')) {
@@ -86,9 +88,6 @@ export default function GeneralConfig() {
         break;
       case 'taxReceipt':
         navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_TAX_RECEIPT);
-        break;
-      case 'users':
-        navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_USERS);
         break;
       case 'authorization':
         navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_AUTHORIZATION);
@@ -123,14 +122,6 @@ export default function GeneralConfig() {
       label: 'Comprobante Fiscal',
       group: 'basic',
       groupLabel: 'Configuración Básica',
-      groupType: 'labelled'
-    },
-    {
-      key: 'users',
-      icon: <FontAwesomeIcon icon={faUsers} />,
-      label: 'Administración de Usuarios',
-      group: 'advanced', // Keep group key distinct if needed, or merge if desired
-      groupLabel: 'Configuración Avanzada',
       groupType: 'labelled'
     },
     {

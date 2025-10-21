@@ -9,6 +9,7 @@ import styled from "styled-components";
 import { icons } from "../../../../constants/icons/icons";
 import { selectUser } from "../../../../features/auth/userSlice";
 import { storage } from "../../../../firebase/firebaseconfig";
+import { getStoredSession } from "../../../../firebase/Auth/fbAuthV2/sessionClient";
 
 import { Login } from "./Login";
 
@@ -76,10 +77,8 @@ export const LoginV2 = () => {
   /* redirección si hay sesión */
   useEffect(() => {
     if (!user) return;
-    const token   = localStorage.getItem("sessionToken");
-    const expires = localStorage.getItem("sessionExpires");
-
-    if (user || (token && expires && Date.now() < Number(expires))) {
+    const { sessionToken, sessionExpiresAt } = getStoredSession();
+    if (user || (sessionToken && sessionExpiresAt && Date.now() < Number(sessionExpiresAt))) {
       navigate(homePath, { replace: true });
     }
   }, [user, navigate]);

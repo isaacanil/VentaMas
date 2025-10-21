@@ -1,6 +1,6 @@
 import { Alert, Tabs, Typography } from 'antd';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import {AlgoliaProductsSearch} from '../test/pages/algoliaProductsSearch/AlgoliaProductsSearch';
+import SessionTokensCleanup from './test/pages/sessionTokensCleanup/SessionTokensCleanup';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -10,11 +10,11 @@ const { Title, Paragraph, Text } = Typography;
  */
 export default function TestPlayground() {
   const tabItems = [
-    // {
-    //   key: 'algolia-products',
-    //   label: 'Algolia · Productos',
-    //   children: <AlgoliaProductsSearch />,
-    // },
+    {
+      key: 'session-token-cleanup',
+      label: 'SessionTokens',
+      children: <SessionTokensCleanup />,
+    },
   ];
 
   return (
@@ -40,11 +40,7 @@ export default function TestPlayground() {
           }
           style={{ marginBottom: 24 }}
         />
-        <Tabs
-          defaultActiveKey="algolia-products"
-          items={tabItems}
-          destroyInactiveTabPane={false}
-        />
+        <Tabs defaultActiveKey="session-token-cleanup" items={tabItems} destroyInactiveTabPane={false} />
       </div>
     </>
   );

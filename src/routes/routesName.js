@@ -83,6 +83,7 @@ const SETTING_TERM = {
     SETTING: '/general-config',
     USERS: '/users',
     USERS_LIST: 'list',
+    USERS_SESSION_LOGS: 'session-logs',
     CREATE_USER: 'create-user/',
     UPDATE_USER: 'update-user/:id',
     APP_INFO: '/app-info',

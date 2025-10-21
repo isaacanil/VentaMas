@@ -3,7 +3,7 @@ import { AbilityBuilder, PureAbility } from '@casl/ability';
 import routesName from '../../routes/routesName';
 
 export function defineAbilitiesForManager() {
-  const { can, rules } = new AbilityBuilder(PureAbility);
+  const { can, cannot, rules } = new AbilityBuilder(PureAbility);
 
   const {
     SALES_TERM,
@@ -50,7 +50,9 @@ export function defineAbilitiesForManager() {
   can('access', INVENTORY_ITEMS);
   can('access', CREDIT_NOTE_LIST);
   can('access', BACKORDERS);
+  cannot('access', '/users');
+  cannot('access', '/users/list');
+  cannot('access', '/users/session-logs');
 
   return rules;
 }
-

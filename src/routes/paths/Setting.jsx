@@ -9,6 +9,7 @@ import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/Busin
 import { TaxReceiptSetting } from "../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting";
 import { UserList } from "../../views/pages/setting/subPage/Users/components/UsersList/UserList";
 import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
+import { UserSessionLogs } from "../../views/pages/setting/subPage/Users/UserSessionLogs";
 import { getRelativePath } from "../getConfigRoute";
 import ROUTES_NAME from "../routesName";
 
@@ -16,6 +17,7 @@ const {
     SETTINGS,
     USERS,
     USERS_LIST,
+    USERS_SESSION_LOGS,
     TAX_RECEIPT,
     SETTING,
     APP_INFO,
@@ -25,7 +27,6 @@ const {
     GENERAL_CONFIG_BILLING,
     GENERAL_CONFIG_BUSINESS,
     GENERAL_CONFIG_TAX_RECEIPT,
-    GENERAL_CONFIG_USERS,
     GENERAL_CONFIG_AUTHORIZATION,
 } = ROUTES_NAME.SETTING_TERM;
 
@@ -40,6 +41,10 @@ const Routes = [
             {
                 path: USERS_LIST,
                 element: <UserList />,
+            },
+            {
+                path: USERS_SESSION_LOGS,
+                element: <UserSessionLogs />,
             },
         ]
     },    {        path: `${SETTING}`,
@@ -60,10 +65,6 @@ const Routes = [
             {
                 path: getRelativePath(GENERAL_CONFIG_TAX_RECEIPT, SETTING),
                 element: <TaxReceiptSetting />,
-            },
-            {
-                path: getRelativePath(GENERAL_CONFIG_USERS, SETTING),
-                element: <UserList />,
             },
             {
                 path: getRelativePath(GENERAL_CONFIG_AUTHORIZATION, SETTING),

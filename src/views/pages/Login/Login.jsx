@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { fbSignIn } from '../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
+import { fbSignIn, updateAppState } from '../../../firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
 
 const { Header, Content } = Layout;
 
@@ -28,7 +28,9 @@ export const Login = () => {
                name: username,
                password
             };
-            await fbSignIn(user, dispatch, navigate, homePath);
+            const { user: userData } = await fbSignIn(user);
+            updateAppState(dispatch, userData);
+            navigate(homePath, { replace: true });
             notification.success({
                message: 'Inicio de sesión exitoso',
                description: '¡Bienvenido!',

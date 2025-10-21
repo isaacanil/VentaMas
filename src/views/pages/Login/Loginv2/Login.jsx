@@ -58,8 +58,8 @@ export const Login = ({ setLoading = null }) => {
     const handleFinish = async ({ username, password }) => {
         setLoading(true);
         try {
-            const user = await fbSignIn({ name: username, password });
-            updateAppState(dispatch, user);
+            const { user: userData } = await fbSignIn({ name: username, password });
+            updateAppState(dispatch, userData);
             navigate(ROUTES_PATH.BASIC_TERM.HOME);
             notification.success({
                 message: 'Inicio de sesión exitoso',

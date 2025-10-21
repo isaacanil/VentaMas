@@ -1,262 +1,231 @@
 import { Modal } from 'antd';
-import { getDoc, doc, deleteDoc, setDoc, collection, query, where, getDocs, Timestamp, serverTimestamp } from "firebase/firestore";
-import { useEffect } from 'react';
+import { httpsCallable } from 'firebase/functions';
+import { doc, getDoc } from 'firebase/firestore';
+import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { SESSION_DURATION, TOKEN_CLEANUP_AGE, INACTIVITY_WARNING, SESSION_CHECK_INTERVAL, ACTIVITY_CHECK_INTERVAL } from '../../../../constants/sessionConfig';
-import { login, logout } from "../../../../features/auth/userSlice";
-import { db } from "../../../firebaseconfig";
+import {
+  INACTIVITY_WARNING,
+  SESSION_CHECK_INTERVAL,
+  ACTIVITY_CHECK_INTERVAL,
+} from '../../../../constants/sessionConfig';
+import { login, logout } from '../../../../features/auth/userSlice';
+import { db, functions } from '../../../firebaseconfig';
+import {
+  buildSessionInfo,
+  clearStoredSession,
+  getStoredSession,
+  storeSessionLocally,
+} from '../sessionClient';
 
-let lastActivity = Timestamp.now();
-let isModalVisible = false;
+const refreshSessionCallable = httpsCallable(functions, 'clientRefreshSession');
+const logoutCallable = httpsCallable(functions, 'clientLogout');
 
-function updateLastActivity() {
-    lastActivity = Timestamp.now();
-}
+const EXPIRY_WARNING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
+const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart', 'visibilitychange', 'focus'];
 
-function generateNewSessionToken(userId) {
-    const currentTime = Timestamp.now();
-    const expiresAt = Timestamp.fromMillis(currentTime.toMillis() + SESSION_DURATION);
-    return {
-        token: `${userId}_${currentTime.toMillis()}`,
-        expiresAt
-    };
-}
+export function useAutomaticLogin() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-const showSessionExpiredModal = (navigate) => {
-    if (isModalVisible) return;
-    isModalVisible = true;
+  const modalKeyRef = useRef(null);
+  const lastActivityRef = useRef(Date.now());
+  const userIdRef = useRef(null);
+  const isMountedRef = useRef(true);
+  const refreshLockRef = useRef(false);
 
-    Modal.warning({
-        title: 'Sesión Expirada',
+  const openModalOnce = useCallback((key, renderModal) => {
+    if (modalKeyRef.current) return;
+    modalKeyRef.current = key;
+    renderModal(() => {
+      modalKeyRef.current = null;
+    });
+  }, []);
+
+  const handleLogout = useCallback(
+    async ({ redirect = true } = {}) => {
+      const { sessionToken } = getStoredSession();
+      if (sessionToken) {
+        try {
+          await logoutCallable({ sessionToken });
+        } catch (error) {
+          console.error('logout callable error:', error?.message || error);
+        }
+      }
+      clearStoredSession();
+      dispatch(logout());
+      if (redirect) {
+        navigate('/login', { replace: true });
+      }
+    },
+    [dispatch, navigate]
+  );
+
+  const showSessionExpiredModal = useCallback(() => {
+    openModalOnce('session-expired', (reset) => {
+      Modal.warning({
+        title: 'Sesión expirada',
         content: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
         okText: 'Aceptar',
-        onOk: () => {
-            isModalVisible = false;
-            navigate('/login', { replace: true });
-        },
-        afterClose: () => {
-            isModalVisible = false;
-        },
         centered: true,
         maskClosable: false,
         keyboard: false,
+        onOk: () => handleLogout({ redirect: true }),
+        afterClose: reset,
+      });
     });
-};
+  }, [handleLogout, openModalOnce]);
 
-const showInactivityWarningModal = async (sessionToken, dispatch, navigate) => {
-    if (isModalVisible) return;
-    isModalVisible = true;
-
-    Modal.confirm({
-        title: 'Inactividad Prolongada',
-        content: '¿Deseas mantener tu sesión activa? Se cerrará en 5 días por inactividad.',
-        okText: 'Sí, mantener activa',
-        cancelText: 'No, cerrar sesión',
-        centered: true,
-        onCancel: async () => {
-            if (sessionToken) {
-                await deleteDoc(doc(db, 'sessionTokens', sessionToken));
-            }
-            localStorage.clear();
-            dispatch(logout());
-            navigate('/login', { replace: true });
-        },
-        afterClose: () => {
-            isModalVisible = false;
-        }
-    });
-};
-
-const showSessionExpiringWarning = async (sessionToken, dispatch, navigate) => {
-    if (isModalVisible) return;
-    isModalVisible = true;
-
-    Modal.confirm({
-        title: 'Sesión por Expirar',
-        content: 'Tu sesión expirará pronto.',
-        okText: 'Entendido',
+  const showSessionExpiringWarning = useCallback(() => {
+    openModalOnce('session-expiring', (reset) => {
+      Modal.confirm({
+        title: 'Sesión por expirar',
+        content: 'Tu sesión expirará pronto. ¿Deseas mantenerla activa?',
+        okText: 'Mantener activa',
         cancelText: 'Cerrar sesión',
         centered: true,
-        onCancel: async () => {
-            await deleteDoc(doc(db, 'sessionTokens', sessionToken));
-            localStorage.clear();
-            dispatch(logout());
-            navigate('/login', { replace: true });
-        },
-        afterClose: () => {
-            isModalVisible = false;
-        }
+        onOk: () => refreshSession('manual-renew'),
+        onCancel: () => handleLogout({ redirect: true }),
+        afterClose: reset,
+      });
     });
-};
+  }, [handleLogout, openModalOnce]);
 
-const cleanupOldTokens = async (userId, currentToken) => {
-    try {
-        const tokensRef = collection(db, 'sessionTokens');
-        const q = query(tokensRef, where("userId", "==", userId));
-        const tokenSnapshots = await getDocs(q);
-        
-        const cleanupDate = Timestamp.fromMillis(Timestamp.now().toMillis() - TOKEN_CLEANUP_AGE);
-        
-        const deletePromises = tokenSnapshots.docs
-            .filter(doc => {
-                if (doc.id === currentToken) return false;
-                const tokenData = doc.data();
-                return !tokenData.expiresAt || tokenData.expiresAt.toMillis() < cleanupDate.toMillis();
-            })
-            .map(doc => deleteDoc(doc.ref));
-
-        await Promise.all(deletePromises);
-    } catch (error) {
-        console.error('Error limpiando tokens antiguos:', error);
-    }
-};
-
-const migrateOldSession = async (oldSession, dispatch) => {
-    if (!oldSession) return null;
-    
-    const oldUserData = JSON.parse(oldSession);
-    if (!oldUserData?.uid) return null;
-
-    await cleanupOldTokens(oldUserData.uid, null);
-    
-    const { token, expiresAt } = generateNewSessionToken(oldUserData.uid);
-    // Usando serverTimestamp para createdAt
-    await setDoc(doc(db, 'sessionTokens', token), { 
-        userId: oldUserData.uid,
-        expiresAt,
-        createdAt: serverTimestamp(),
-        lastActivity: serverTimestamp() // Agregando lastActivity con serverTimestamp
+  const showInactivityWarning = useCallback(() => {
+    openModalOnce('inactivity-warning', (reset) => {
+      Modal.confirm({
+        title: 'Inactividad prolongada',
+        content: '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
+        okText: 'Sí, mantener activa',
+        cancelText: 'Cerrar sesión',
+        centered: true,
+        onOk: () => refreshSession('inactivity-extend'),
+        onCancel: () => handleLogout({ redirect: true }),
+        afterClose: reset,
+      });
     });
-    
-    localStorage.setItem('sessionToken', token);
-    localStorage.setItem('sessionExpires', expiresAt.toMillis().toString());
-    localStorage.removeItem('user');
-    
-    const userSnapshot = await getDoc(doc(db, 'users', oldUserData.uid));
-    if (userSnapshot.exists()) {
-        const userData = userSnapshot.data().user;
-        dispatch(login({
-            uid: oldUserData.uid,
-            displayName: userData?.realName || userData?.name,
-            username: userData?.name,
-            realName: userData?.realName,
-        }));
-    }
-    
-    return token;
-};
+  }, [handleLogout, openModalOnce]);
 
-const verifyAndUpdateSession = async (sessionToken, sessionExpires, dispatch, navigate) => {
-    if (!sessionToken || !sessionExpires) {
-        dispatch(logout());
-        return;
-    }
-
-    const currentTime = Timestamp.now();
-    const expirationTime = Timestamp.fromMillis(parseInt(sessionExpires));
-    
-    if (currentTime.toMillis() > expirationTime.toMillis()) {
-        await deleteDoc(doc(db, 'sessionTokens', sessionToken));
-        localStorage.clear();
-        dispatch(logout());
-        showSessionExpiredModal(navigate);
-        return;
-    }
-
-    const sessionSnapshot = await getDoc(doc(db, 'sessionTokens', sessionToken));
-    if (!sessionSnapshot.exists()) {
-        localStorage.clear();
-        dispatch(logout());
-        return;
-    }
-
-    // Actualizar lastActivity en Firebase usando serverTimestamp
-    await setDoc(doc(db, 'sessionTokens', sessionToken), {
-        lastActivity: serverTimestamp()
-    }, { merge: true });
-
-    const sessionData = sessionSnapshot.data();
-    const firebaseExpiresAt = sessionData.expiresAt;
-
-    if (firebaseExpiresAt.toMillis() !== parseInt(sessionExpires)) {
-        localStorage.setItem('sessionExpires', firebaseExpiresAt.toMillis().toString());
-        
-        if (currentTime.toMillis() > firebaseExpiresAt.toMillis() - (24 * 60 * 60 * 1000)) {
-            await showSessionExpiringWarning(sessionToken, dispatch, navigate);
+  const loadUserData = useCallback(
+    async (userId) => {
+      if (!userId || userIdRef.current === userId) return;
+      try {
+        const userSnapshot = await getDoc(doc(db, 'users', userId));
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data()?.user;
+          if (userData) {
+            dispatch(
+              login({
+                uid: userSnapshot.id,
+                displayName: userData.realName || userData.name,
+                username: userData.name,
+                realName: userData.realName,
+              })
+            );
+            userIdRef.current = userId;
+          }
         }
-    }
+      } catch (error) {
+        console.error('user data load error:', error?.message || error);
+      }
+    },
+    [dispatch]
+  );
 
-    const userId = sessionData.userId;
-    await cleanupOldTokens(userId, sessionToken);
-
-    const userSnapshot = await getDoc(doc(db, 'users', userId));
-    const userData = userSnapshot?.data()?.user;
-    
-    dispatch(login({
-        uid: userSnapshot?.id,
-        displayName: userData?.realName || userData?.name,
-        username: userData?.name,
-        realName: userData?.realName,
-    }));
-};
-
-const setupActivityListeners = (dispatch, navigate) => {
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-    events.forEach(event => {
-        window.addEventListener(event, updateLastActivity);
-    });
-
-    const activityCheck = setInterval(() => {
-        const inactiveTime = Timestamp.now().toMillis() - lastActivity.toMillis();
-        if (inactiveTime > INACTIVITY_WARNING) {
-            const sessionToken = localStorage.getItem('sessionToken');
-            showInactivityWarningModal(sessionToken, dispatch, navigate);
+  const refreshSession = useCallback(
+    async (source = 'auto', options = {}) => {
+      if (refreshLockRef.current) return null;
+      refreshLockRef.current = true;
+      try {
+        const { sessionToken } = getStoredSession();
+        if (!sessionToken) {
+          await handleLogout({ redirect: true });
+          return null;
         }
+
+        const response = await refreshSessionCallable({
+          sessionToken,
+          extend: options.extend !== false,
+          sessionInfo: buildSessionInfo({
+            metadata: {
+              refreshSource: source,
+              lastActivityMs: Date.now() - lastActivityRef.current,
+            },
+          }),
+        });
+
+        const data = response?.data || {};
+        if (!data.ok || !data.session) {
+          throw new Error(data?.message || 'Sesión inválida');
+        }
+
+        const { session } = data;
+        storeSessionLocally({
+          sessionToken,
+          sessionExpiresAt: session.expiresAt,
+          sessionId: session.id,
+        });
+
+        await loadUserData(session.userId);
+
+        const remaining = session.expiresAt ? session.expiresAt - Date.now() : null;
+        if (remaining !== null && remaining > 0 && remaining < EXPIRY_WARNING_WINDOW_MS) {
+          showSessionExpiringWarning();
+        }
+
+        lastActivityRef.current = Date.now();
+        return session;
+      } catch (error) {
+        console.error('session refresh error:', error?.message || error);
+        showSessionExpiredModal();
+        await handleLogout({ redirect: true });
+        return null;
+      } finally {
+        refreshLockRef.current = false;
+      }
+    },
+    [handleLogout, loadUserData, showSessionExpiredModal, showSessionExpiringWarning]
+  );
+
+  const handleActivity = useCallback(() => {
+    lastActivityRef.current = Date.now();
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    const init = async () => {
+      await refreshSession('initial');
+    };
+
+    init();
+
+    const refreshInterval = setInterval(() => {
+      refreshSession('interval');
+    }, SESSION_CHECK_INTERVAL);
+
+    const inactivityInterval = setInterval(() => {
+      const inactiveMs = Date.now() - lastActivityRef.current;
+      if (inactiveMs > INACTIVITY_WARNING) {
+        showInactivityWarning();
+      }
     }, ACTIVITY_CHECK_INTERVAL);
 
-    return { events, activityCheck };
-};
+    ACTIVITY_EVENTS.forEach((event) => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
 
-export function useAutomaticLogin() {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(refreshInterval);
+      clearInterval(inactivityInterval);
+      ACTIVITY_EVENTS.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
+      modalKeyRef.current = null;
+    };
+  }, [handleActivity, refreshSession, showInactivityWarning]);
 
-    useEffect(() => {
-        const handleSession = async () => {
-            try {
-                const sessionToken = localStorage?.getItem('sessionToken');
-                const sessionExpires = localStorage?.getItem('sessionExpires');
-                const oldSession = localStorage?.getItem('user');
-
-                if (oldSession && !sessionToken) {
-                    await migrateOldSession(oldSession, dispatch);
-                }
-
-                await verifyAndUpdateSession(sessionToken, sessionExpires, dispatch, navigate);
-                
-            } catch (error) {
-                console.error('Error en checkSession:', error);
-                localStorage.clear();
-                dispatch(logout());
-                showSessionExpiredModal(navigate);
-            }
-        };
-
-        handleSession();
-
-        const checkInterval = setInterval(handleSession, SESSION_CHECK_INTERVAL);
-        const { events, activityCheck } = setupActivityListeners(dispatch, navigate);
-
-        return () => {
-            events.forEach(event => {
-                window.removeEventListener(event, updateLastActivity);
-            });
-            clearInterval(activityCheck);
-            clearInterval(checkInterval);
-        };
-    }, []);
-
-    return null;
+  return null;
 }
