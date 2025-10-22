@@ -126,7 +126,8 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
 
     const perProduct = new Map();
     const daily = new Map();
-  
+    const hourly = new Map();
+
 
     const ensureDailyEntry = (millis) => {
         if (!millis) return null;
@@ -142,6 +143,20 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
         return daily.get(isoDate);
     };
 
+    const ensureHourlyEntry = (millis) => {
+        if (!millis) return null;
+        const hourKey = DateTime.fromMillis(millis).startOf('hour').toMillis();
+        if (!hourly.has(hourKey)) {
+            hourly.set(hourKey, {
+                sales: 0,
+                cost: 0,
+                taxes: 0,
+                expenses: 0,
+            });
+        }
+        return hourly.get(hourKey);
+    };
+
     const totalExpenses = safeExpenses.reduce(
         (acc, item) => acc + toNumber(item?.expense?.amount),
         0
@@ -152,9 +167,16 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
             getDateFromData(item?.expense?.dates?.expenseDate) ??
             getDateFromData(item?.expense?.dates?.createdAt);
 
+        const expenseAmount = toNumber(item?.expense?.amount);
+
         const entry = ensureDailyEntry(expenseDate);
         if (entry) {
-            entry.expenses += toNumber(item?.expense?.amount);
+            entry.expenses += expenseAmount;
+        }
+
+        const hourlyEntry = ensureHourlyEntry(expenseDate);
+        if (hourlyEntry) {
+            hourlyEntry.expenses += expenseAmount;
         }
     });
 
@@ -314,6 +336,13 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
             dailyEntry.cost += invoiceCost;
             dailyEntry.taxes += taxesForInvoice;
         }
+
+        const hourlyEntry = ensureHourlyEntry(dateMillis);
+        if (hourlyEntry) {
+            hourlyEntry.sales += invoiceSales;
+            hourlyEntry.cost += invoiceCost;
+            hourlyEntry.taxes += taxesForInvoice;
+        }
     });
 
     summary.profitBeforeExpenses = summary.totalSales - summary.totalCost - summary.totalTaxes;
@@ -342,6 +371,27 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
         }
     }
 
+    if (range?.startDate && range?.endDate) {
+        const startHour = DateTime.fromMillis(range.startDate).startOf('hour');
+        const endHour = DateTime.fromMillis(range.endDate).endOf('hour');
+        const totalHours = Math.max(0, Math.floor(endHour.diff(startHour, 'hours').hours));
+        if (totalHours <= 24 * 7) {
+            let cursor = startHour;
+            while (cursor.toMillis() <= endHour.toMillis()) {
+                const key = cursor.toMillis();
+                if (!hourly.has(key)) {
+                    hourly.set(key, {
+                        sales: 0,
+                        cost: 0,
+                        taxes: 0,
+                        expenses: 0,
+                    });
+                }
+                cursor = cursor.plus({ hours: 1 });
+            }
+        }
+    }
+
     const dailyMetrics = Array.from(daily.entries()).map(([key, value]) => {
         const date = DateTime.fromISO(key);
         const profitBeforeExpenses = value.sales - value.cost - value.taxes;
@@ -362,6 +412,26 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
 
     dailyMetrics.sort((a, b) => a.timestamp - b.timestamp);
 
+    const hourlyMetrics = Array.from(hourly.entries()).map(([key, value]) => {
+        const date = DateTime.fromMillis(key);
+        const profitBeforeExpenses = value.sales - value.cost - value.taxes;
+        const netProfit = profitBeforeExpenses - value.expenses;
+
+        return {
+            isoDate: date.toISO(),
+            timestamp: date.toMillis(),
+            dateLabel: date.setLocale('es').toFormat('HH:mm'),
+            sales: value.sales,
+            cost: value.cost,
+            taxes: value.taxes,
+            expenses: value.expenses,
+            profitBeforeExpenses,
+            netProfit,
+        };
+    });
+
+    hourlyMetrics.sort((a, b) => a.timestamp - b.timestamp);
+
     const productsBreakdown = Array.from(perProduct.values())
         .map((item) => ({
             ...item,
@@ -371,7 +441,7 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
         .filter((item) => item.sales > 0)
         .sort((a, b) => b.sales - a.sales);
 
-    return { summary, productsBreakdown, dailyMetrics };
+    return { summary, productsBreakdown, dailyMetrics, hourlyMetrics };
 };
 
 export const getDistributionDetails = (summary, colors) => {

@@ -1,10 +1,14 @@
 import { Drawer } from 'antd'
-import { Suspense, lazy, memo } from 'react'
+import { Suspense, memo } from 'react'
 import styled from 'styled-components'
 
 import { ExportInvoice } from './components/Header/ExportInvoice'
+import { lazyWithRetry } from '../../../../../utils/lazyWithRetry'
 
-const SaleReportTable = lazy(() => import('../../../InvoicesPage/SaleReportTable/SaleReportTable'));
+const SaleReportTable = lazyWithRetry(
+    () => import('../../../InvoicesPage/SaleReportTable/SaleReportTable'),
+    'SaleReportTable'
+);
 
 const Spinner = () => (
     <div style={{ padding: '2em', textAlign: 'center' }}>Cargando...</div>

@@ -1,7 +1,8 @@
-import { lazy, Suspense, useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
+import { lazyWithRetry } from '../../../../utils/lazyWithRetry'
 import { findToolbarEntry, type ToolbarComponentProps } from './GlobalMenuRegistry'
 
 export interface GlobalMenuProps extends Omit<ToolbarComponentProps, 'side'> {
@@ -21,7 +22,7 @@ export const GlobalMenu: FC<GlobalMenuProps> = (props) => {
       return null
     }
 
-    return lazy(activeEntry.loader)
+    return lazyWithRetry(activeEntry.loader, `GlobalMenu:${activeEntry.id}`)
   }, [activeEntry])
 
   if (!ToolbarComponent || !activeEntry) {

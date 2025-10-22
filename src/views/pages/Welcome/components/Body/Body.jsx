@@ -4,6 +4,7 @@ import React, { Suspense } from 'react'
 import styled from 'styled-components'
 
 import { uiImage } from '../../../../templates/system/FormattedValue/ui/uiImage'
+import { lazyWithRetry } from '../../../../../utils/lazyWithRetry'
 import welcomeData from '../../WelcomeData.json'
 import Features from '../Features/Features'
 
@@ -11,7 +12,11 @@ import { CardWelcome } from './CardWelcome/CardWelcome'
 
 
 // Lazy loading de componentes pesados
-const ImageGallery = React.lazy(() => import('../../../../component/ImageGallery/ImageGallery').then(module => ({ default: module.ImageGallery })))
+const ImageGallery = lazyWithRetry(
+  () => import('../../../../component/ImageGallery/ImageGallery')
+    .then(module => ({ default: module.ImageGallery })),
+  'ImageGallery'
+)
 
 const Body = () => {
   const containerVariants = {

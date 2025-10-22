@@ -5,7 +5,8 @@ import { Line } from 'react-chartjs-2';
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { EmptyState } from './EmptyState';
 
-export const DailyPerformanceChart = ({ loading, chartData, chartOptions }) => {
+export const DailyPerformanceChart = ({ loading, chartData, chartOptions, subtitle }) => {
+    const description = subtitle ?? 'Comportamiento diario en el rango seleccionado.';
     return (
         <ChartCard>
             <SectionHeader>
@@ -13,7 +14,7 @@ export const DailyPerformanceChart = ({ loading, chartData, chartOptions }) => {
                     Evolución de ventas y ganancias
                 </SimpleTypography>
                 <SimpleTypography size="small" color="secondary">
-                    Comportamiento diario en el rango seleccionado.
+                    {description}
                 </SimpleTypography>
             </SectionHeader>
             <ChartBody>

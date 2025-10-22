@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
@@ -30,21 +30,55 @@ const detectPresetKey = (start, end) => {
     return null;
 };
 
-export const UtilityHeader = ({ rangeLabel, selectedRange, onPresetSelect }) => {
+export const UtilityHeader = ({
+    rangeLabel,
+    rangeDetailLabel,
+    presetLabel,
+    selectedRange,
+    onPresetSelect,
+}) => {
+    const [draftRange, setDraftRange] = useState(null);
+
+    useEffect(() => {
+        setDraftRange(null);
+    }, [selectedRange?.startDate, selectedRange?.endDate]);
+
     const pickerValue = useMemo(() => {
+        if (draftRange) return draftRange;
         if (!selectedRange?.startDate || !selectedRange?.endDate) return null;
         return [dayjs(selectedRange.startDate), dayjs(selectedRange.endDate)];
-    }, [selectedRange]);
+    }, [draftRange, selectedRange]);
 
     const handleDateChange = useCallback(
         (value) => {
-            if (!value || !Array.isArray(value) || !value[0] || !value[1]) {
+            if (!value || !Array.isArray(value)) {
+                setDraftRange(null);
                 onPresetSelect('today');
                 return;
             }
 
-            const start = value[0].startOf('day').valueOf();
-            const end = value[1].endOf('day').valueOf();
+            const [startValue, endValue] = value;
+
+            if (!startValue && !endValue) {
+                setDraftRange(null);
+                onPresetSelect('today');
+                return;
+            }
+
+            if (startValue && !endValue) {
+                setDraftRange([startValue, null]);
+                return;
+            }
+
+            if (!startValue || !endValue) {
+                setDraftRange(null);
+                return;
+            }
+
+            setDraftRange(null);
+
+            const start = startValue.startOf('day').valueOf();
+            const end = endValue.endOf('day').valueOf();
 
             const detectedPreset = detectPresetKey(start, end);
             if (detectedPreset) {
@@ -66,9 +100,17 @@ export const UtilityHeader = ({ rangeLabel, selectedRange, onPresetSelect }) => 
                 <SimpleTypography size="medium" color="secondary">
                     Visualiza tus ventas, costos, impuestos y resultado neto en el rango seleccionado.
                 </SimpleTypography>
-                {rangeLabel && (
+                {(rangeDetailLabel || rangeLabel || presetLabel) && (
+                    <RangeInfo>
+                        <SimpleTypography size="small" color="secondary">
+                            Rango seleccionado
+                        </SimpleTypography>
+                        {presetLabel && <PresetPill>{presetLabel}</PresetPill>}
+                    </RangeInfo>
+                )}
+                {(rangeDetailLabel || rangeLabel) && (
                     <SimpleTypography size="small" color="secondary">
-                        Rango seleccionado: {rangeLabel}
+                        {rangeDetailLabel ?? rangeLabel}
                     </SimpleTypography>
                 )}
             </TitleGroup>
@@ -131,4 +173,26 @@ const ControlLabel = styled.span`
     color: ${colors.text.secondary};
     text-transform: uppercase;
     letter-spacing: 0.04em;
+`;
+
+const RangeInfo = styled.div`
+    display: inline-flex;
+    align-items: center;
+    gap: ${spacing.sm};
+    flex-wrap: wrap;
+`;
+
+const PresetPill = styled.span`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 ${spacing.sm};
+    min-height: 24px;
+    border-radius: ${radii.pill};
+    background: ${colors.brand.subtle};
+    color: ${colors.brand.primary};
+    font-size: ${typography.caption.fontSize};
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: capitalize;
 `;

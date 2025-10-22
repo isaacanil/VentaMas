@@ -189,7 +189,7 @@ const MetricLabel = styled.span`
 const MetricValue = styled.span`
     font-size: 0.95rem;
     font-weight: 600;
-    color: ${({ $positive }) => ($positive ? '#16a34a' : '#dc2626')};
+    color: #1f2937;
 `;
 
 const MetricValueNeutral = styled.span`

@@ -8,13 +8,14 @@ import styled from 'styled-components'
 
 import { selectUser } from '../../../features/auth/userSlice'
 import ROUTES_PATH from '../../../routes/routesName'
+import { lazyWithRetry } from '../../../utils/lazyWithRetry'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import { Footer } from './components/Footer/Footer'
 import Header from './components/Header'
 
 // Lazy loading de componentes
-const Body = React.lazy(() => import('./components/Body/Body'))
+const Body = lazyWithRetry(() => import('./components/Body/Body'), 'WelcomeBody')
 
 export const Welcome = () => {
   const user = useSelector(selectUser)
@@ -116,4 +117,3 @@ const LoadingContainer = styled.div`
     font-size: 16px;
   }
 `
-

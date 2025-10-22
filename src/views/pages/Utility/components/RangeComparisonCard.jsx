@@ -43,7 +43,7 @@ export const RangeComparisonCard = ({
     const trendIcon =
         trend === 'up' ? faArrowTrendUp : trend === 'down' ? faArrowTrendDown : faChartLine;
 
-    const title = hasComparison ? comparison.title : 'Comparación del período';
+    const cardTitle = 'Ganancia Neta';
     const previousLabel = hasComparison ? comparison.previousLabel : 'Período anterior';
     const referenceLabel = previousLabel.toLowerCase();
     const formattedCurrent = hasComparison ? formatCurrency(comparison.current) : '—';
@@ -76,7 +76,7 @@ export const RangeComparisonCard = ({
     const hasChangeData = Boolean(percentageChange || deltaAmount);
 
     const changeTooltip = hasComparison
-        ? `Cambio = ((valor actual - ${referenceLabel}) / ${referenceLabel}) × 100`
+        ? `Cambio en ganancia neta = ((valor actual - ${referenceLabel}) / ${referenceLabel}) × 100`
         : undefined;
 
     return (
@@ -87,7 +87,7 @@ export const RangeComparisonCard = ({
             <CardHeader role="heading" aria-level="3">
                 <HeaderInfo>
                     <SimpleTypography as="span" size="medium" weight="bold">
-                        {title}
+                        {cardTitle}
                     </SimpleTypography>
                 </HeaderInfo>
             </CardHeader>

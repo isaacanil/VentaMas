@@ -14,7 +14,19 @@ const rangesAreEqual = (a, b) =>
     a.startDate === b.startDate &&
     a.endDate === b.endDate;
 
-const getComparisonMeta = (preset) => {
+const PRESET_LABELS = {
+    today: 'Hoy',
+    yesterday: 'Ayer',
+    thisWeek: 'Esta semana',
+    lastWeek: 'Semana pasada',
+    thisMonth: 'Este mes',
+    lastMonth: 'Mes pasado',
+    thisYear: 'Este año',
+    lastYear: 'Año pasado',
+    custom: 'Personalizado',
+};
+
+const getComparisonMeta = (preset, { customRangeLabel } = {}) => {
     switch (preset) {
         case 'today':
             return { title: 'Resultados de hoy', previousLabel: 'Ayer' };
@@ -33,9 +45,15 @@ const getComparisonMeta = (preset) => {
         case 'lastYear':
             return { title: 'Año pasado', previousLabel: 'Año anterior' };
         case 'custom':
-            return { title: 'Rango personalizado', previousLabel: 'Período anterior' };
+            return {
+                title: customRangeLabel ?? 'Rango personalizado',
+                previousLabel: 'Período anterior',
+            };
         default:
-            return { title: 'Período seleccionado', previousLabel: 'Período anterior' };
+            return {
+                title: customRangeLabel ?? 'Período seleccionado',
+                previousLabel: 'Período anterior',
+            };
     }
 };
 
@@ -156,8 +174,36 @@ export const useUtilityDashboard = () => {
         };
     }, [weekMetrics, lastWeekMetrics]);
 
+    const rangeLabel = useMemo(() => {
+        if (!datesSelected?.startDate || !datesSelected?.endDate) return '';
+        const start = DateTime.fromMillis(datesSelected.startDate).setLocale('es');
+        const end = DateTime.fromMillis(datesSelected.endDate).setLocale('es');
+        if (start.hasSame(end, 'day')) {
+            return start.toFormat('dd LLL yyyy');
+        }
+        return `${start.toFormat('dd LLL yyyy')} - ${end.toFormat('dd LLL yyyy')}`;
+    }, [datesSelected]);
+
+    const rangeDetailLabel = useMemo(() => {
+        if (!datesSelected?.startDate || !datesSelected?.endDate) return '';
+        const start = DateTime.fromMillis(datesSelected.startDate).setLocale('es');
+        const end = DateTime.fromMillis(datesSelected.endDate).setLocale('es');
+        const format = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+        const startLabel = start.toLocaleString(format);
+        if (start.hasSame(end, 'day')) {
+            return startLabel;
+        }
+        const endLabel = end.toLocaleString(format);
+        return `${startLabel} a ${endLabel}`;
+    }, [datesSelected]);
+
+    const presetLabel = useMemo(
+        () => PRESET_LABELS[selectedPreset] ?? 'Período seleccionado',
+        [selectedPreset]
+    );
+
     const rangeComparison = useMemo(() => {
-        const meta = getComparisonMeta(selectedPreset);
+        const meta = getComparisonMeta(selectedPreset, { customRangeLabel: rangeLabel });
 
         if (selectedPreset === 'thisWeek') {
             return {
@@ -183,10 +229,10 @@ export const useUtilityDashboard = () => {
             title: meta.title,
             previousLabel: meta.previousLabel,
         };
-    }, [selectedPreset, currentMetrics.summary, previousMetrics.summary, weeklyComparison]);
+    }, [selectedPreset, currentMetrics.summary, previousMetrics.summary, weeklyComparison, rangeLabel]);
 
     const salesComparison = useMemo(() => {
-        const meta = getComparisonMeta(selectedPreset);
+        const meta = getComparisonMeta(selectedPreset, { customRangeLabel: rangeLabel });
 
         if (selectedPreset === 'thisWeek') {
             return {
@@ -212,7 +258,7 @@ export const useUtilityDashboard = () => {
             title: meta.title,
             previousLabel: meta.previousLabel,
         };
-    }, [selectedPreset, currentMetrics.summary, previousMetrics.summary, weeklySalesComparison]);
+    }, [selectedPreset, currentMetrics.summary, previousMetrics.summary, weeklySalesComparison, rangeLabel]);
 
     const lastSevenDaysMetrics = useMemo(() => {
         const today = DateTime.local().endOf('day').toMillis();
@@ -268,13 +314,18 @@ export const useUtilityDashboard = () => {
         return Array.from(groups.values()).sort((a, b) => a.timestamp - b.timestamp);
     }, [currentMetrics.dailyMetrics]);
 
-    const chartDailyMetrics = useMemo(() => {
-        if (selectedPreset === 'thisYear') {
-            return yearlyAggregatedMetrics;
+    const isHourlyView = selectedPreset === 'today' || selectedPreset === 'yesterday';
+
+    const chartTimeSeriesMetrics = useMemo(() => {
+        if (isHourlyView) {
+            if (currentMetrics.hourlyMetrics.length) {
+                return currentMetrics.hourlyMetrics;
+            }
+            return lastSevenDaysMetrics;
         }
 
-        if (selectedPreset === 'today' || selectedPreset === 'yesterday') {
-            return lastSevenDaysMetrics;
+        if (selectedPreset === 'thisYear') {
+            return yearlyAggregatedMetrics;
         }
 
         if (selectedPreset === 'thisWeek') {
@@ -285,18 +336,20 @@ export const useUtilityDashboard = () => {
 
         return currentMetrics.dailyMetrics;
     }, [
+        isHourlyView,
         selectedPreset,
-        yearlyAggregatedMetrics,
-        lastSevenDaysMetrics,
-        weekMetrics.dailyMetrics,
+        currentMetrics.hourlyMetrics,
         currentMetrics.dailyMetrics,
+        yearlyAggregatedMetrics,
+        weekMetrics.dailyMetrics,
+        lastSevenDaysMetrics,
     ]);
 
     const dailyChartData = useMemo(() => {
-        if (!chartDailyMetrics.length) return null;
-        const labels = chartDailyMetrics.map((item) => item.dateLabel);
-        const salesData = chartDailyMetrics.map((item) => item.sales);
-        const profitData = chartDailyMetrics.map((item) => item.netProfit);
+        if (!chartTimeSeriesMetrics.length) return null;
+        const labels = chartTimeSeriesMetrics.map((item) => item.dateLabel);
+        const salesData = chartTimeSeriesMetrics.map((item) => item.sales);
+        const profitData = chartTimeSeriesMetrics.map((item) => item.netProfit);
 
         return {
             labels,
@@ -321,7 +374,7 @@ export const useUtilityDashboard = () => {
                 },
             ],
         };
-    }, [chartDailyMetrics]);
+    }, [chartTimeSeriesMetrics]);
 
     const dailyChartOptions = useMemo(
         () => ({
@@ -368,6 +421,16 @@ export const useUtilityDashboard = () => {
         }),
         [formatCurrency]
     );
+
+    const chartSubtitle = useMemo(() => {
+        if (isHourlyView) {
+            return 'Comportamiento por hora en el rango seleccionado.';
+        }
+        if (selectedPreset === 'thisYear') {
+            return 'Comportamiento mensual en el rango seleccionado.';
+        }
+        return 'Comportamiento diario en el rango seleccionado.';
+    }, [isHourlyView, selectedPreset]);
 
     const distributionDetails = useMemo(
         () => getDistributionDetails(currentMetrics.summary, DISTRIBUTION_COLORS),
@@ -429,16 +492,6 @@ export const useUtilityDashboard = () => {
         []
     );
 
-    const rangeLabel = useMemo(() => {
-        if (!datesSelected?.startDate || !datesSelected?.endDate) return '';
-        const start = DateTime.fromMillis(datesSelected.startDate).setLocale('es');
-        const end = DateTime.fromMillis(datesSelected.endDate).setLocale('es');
-        if (start.hasSame(end, 'day')) {
-            return start.toFormat('dd LLL yyyy');
-        }
-        return `${start.toFormat('dd LLL yyyy')} - ${end.toFormat('dd LLL yyyy')}`;
-    }, [datesSelected]);
-
     return {
         rangeComparison,
         dailyChartData,
@@ -448,10 +501,13 @@ export const useUtilityDashboard = () => {
         distributionDetails,
         formatCurrency,
         formatPercentage: formatPercentageValue,
+        chartSubtitle,
         loading,
         comparisonLoading,
         selectedPreset,
         rangeLabel,
+        rangeDetailLabel,
+        presetLabel,
         onPresetSelect: handlePresetSelect,
         selectedRange: datesSelected,
         summary: currentMetrics.summary,

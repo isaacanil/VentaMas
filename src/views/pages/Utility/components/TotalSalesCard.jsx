@@ -44,7 +44,6 @@ export const TotalSalesCard = ({
         trend === 'up' ? faArrowTrendUp : trend === 'down' ? faArrowTrendDown : faDollarSign;
 
     const title = 'Ventas totales';
-    const subtitle = hasComparison ? comparison.title : 'Período seleccionado';
     const previousLabel = hasComparison ? comparison.previousLabel : 'Período anterior';
     const referenceLabel = previousLabel.toLowerCase();
     const formattedCurrent = hasComparison ? formatCurrency(comparison.current) : '—';
@@ -88,9 +87,6 @@ export const TotalSalesCard = ({
                 <HeaderInfo>
                     <SimpleTypography as="span" size="medium" weight="bold">
                         {title}
-                    </SimpleTypography>
-                    <SimpleTypography as="span" size="small" color="secondary">
-                        {subtitle}
                     </SimpleTypography>
                 </HeaderInfo>
             </CardHeader>

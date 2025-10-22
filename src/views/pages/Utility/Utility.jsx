@@ -9,6 +9,7 @@ import { UtilityHeader } from './components/UtilityHeader';
 import { RangeComparisonCard } from './components/RangeComparisonCard';
 import { TotalSalesCard } from './components/TotalSalesCard';
 import { UtilityInsightsTabs } from './components/UtilityInsightsTabs';
+import { BestDayHighlightCard } from './components/BestDayHighlightCard';
 import { exportTransactionsExcel } from './utils/exportTransactionsExcel';
 import { buildTransactionRows } from './utils/transactionRows';
 import { useUtilityDashboard } from './hooks/useUtilityDashboard';
@@ -31,7 +32,10 @@ export const Utility = () => {
         formatPercentage,
         loading,
         comparisonLoading,
+        chartSubtitle,
         rangeLabel,
+        rangeDetailLabel,
+        presetLabel,
         onPresetSelect,
         selectedRange,
         summary,
@@ -80,6 +84,8 @@ export const Utility = () => {
             <DashboardWrapper>
                 <UtilityHeader
                     rangeLabel={rangeLabel}
+                    rangeDetailLabel={rangeDetailLabel}
+                    presetLabel={presetLabel}
                     selectedRange={selectedRange}
                     onPresetSelect={onPresetSelect}
                 />
@@ -96,6 +102,12 @@ export const Utility = () => {
                         formatCurrency={formatCurrency}
                         formatPercentage={formatPercentage}
                     />
+                    <BestDayHighlightCard
+                        loading={loading}
+                        summary={summary}
+                        dailyMetrics={dailyMetrics}
+                        formatCurrency={formatCurrency}
+                    />
                 </ComparisonSection>
 
                 <AnalyticsGrid>
@@ -103,6 +115,7 @@ export const Utility = () => {
                         loading={loading}
                         chartData={dailyChartData}
                         chartOptions={dailyChartOptions}
+                        subtitle={chartSubtitle}
                     />
                     <RevenueDistributionChart
                         loading={loading}
