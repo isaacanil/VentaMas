@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { toggleDeveloperModal } from '../../../../../features/modals/modalSlice'
 
@@ -46,48 +46,6 @@ export const FeatureCard = ({ card }) => {
         </Container>
     )
 }
-const Container = styled(Link)`
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #fff;
-    min-height: 3em;
-    border: 1px solid #eaeaea;
-    width: 100%;
-    padding: 0.6em 1em;
-    display: grid;
-    grid-template-columns: min-content 1fr;
-    gap: 0.8em;
-    align-items: center;
-    text-decoration: none;
-    transition: all 0.2s ease-in-out;
-
-    &:hover {
-        background-color: #f8f9fa;
-        border-color: #0086df;
-    }
-`
-
-const ActionContainer = styled.div`
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #fff;
-    min-height: 3em;
-    border: 1px solid #eaeaea;
-    width: 100%;
-    padding: 0.6em 1em;
-    display: grid;
-    grid-template-columns: min-content 1fr;
-    gap: 0.8em;
-    align-items: center;
-    text-decoration: none;
-    transition: all 0.2s ease-in-out;
-    cursor: pointer;
-
-    &:hover {
-        background-color: #f8f9fa;
-        border-color: #0086df;
-    }
-`;
 
 const FeatureCardIcon = styled.div`
     font-size: 1.3em;
@@ -97,6 +55,8 @@ const FeatureCardIcon = styled.div`
     align-items: center;
     justify-content: center;
     color: #0086df;
+    transition: color 0.2s ease-in-out;
+    flex-shrink: 0;
 `;
 
 const FeatureCardTitle = styled.span`
@@ -106,8 +66,43 @@ const FeatureCardTitle = styled.span`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: color 0.2s ease-in-out;
+    flex: 1;
+`;
 
-    ${Container}:hover & {
+const cardBaseStyles = css`
+    border-radius: 8px;
+    background-color: #fff;
+    min-height: 3em;
+    border: 1px solid #eaeaea;
+    width: 100%;
+    padding: 0.6em 1em;
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    text-decoration: none;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    will-change: background-color, border-color;
+
+    &:hover {
+        background-color: #f8f9fa;
+        border-color: #0086df;
+    }
+
+    &:hover ${FeatureCardTitle} {
         color: #0086df;
     }
+
+    &:hover ${FeatureCardIcon} {
+        color: #0086df;
+    }
+`;
+
+const Container = styled(Link)`
+    ${cardBaseStyles}
+`;
+
+const ActionContainer = styled.div`
+    ${cardBaseStyles}
+    cursor: pointer;
 `;

@@ -22,7 +22,10 @@ export const FeatureCardList = ({ title, cardData }) => {
 
     return (
         <Container>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
+            <div 
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            >
                 <Title level={4}>
                     {title && title}
                 </Title>
@@ -32,7 +35,6 @@ export const FeatureCardList = ({ title, cardData }) => {
                         <FontAwesomeIcon icon={faChevronDown} size="lg" /> : 
                         <FontAwesomeIcon icon={faChevronUp} size="lg" />
                     }
-                    onClick={() => setIsCollapsed(!isCollapsed)}
                     style={{ color: '#2c3e50' }}
                 />
             </div>
