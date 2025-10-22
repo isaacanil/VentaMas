@@ -5,7 +5,7 @@ import { useLocalFbGetExpenses } from '../../../../firebase/expenses/Items/useFb
 import { fbGetInvoices } from '../../../../firebase/invoices/fbGetInvoices';
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { getDateRange } from '../../../../utils/date/getDateRange';
-import { QUICK_RANGES, DISTRIBUTION_COLORS } from '../constants/utilityConstants';
+import { DISTRIBUTION_COLORS } from '../constants/utilityConstants';
 import { buildFinancialMetrics, formatPercentage, getDistributionDetails } from '../utils/metrics';
 import { computePreviousRange } from '../utils/range';
 
@@ -13,6 +13,31 @@ const rangesAreEqual = (a, b) =>
     Boolean(a?.startDate && a?.endDate && b?.startDate && b?.endDate) &&
     a.startDate === b.startDate &&
     a.endDate === b.endDate;
+
+const getComparisonMeta = (preset) => {
+    switch (preset) {
+        case 'today':
+            return { title: 'Resultados de hoy', previousLabel: 'Ayer' };
+        case 'yesterday':
+            return { title: 'Resultados de ayer', previousLabel: 'Anteayer' };
+        case 'thisWeek':
+            return { title: 'Semana actual', previousLabel: 'Semana pasada' };
+        case 'lastWeek':
+            return { title: 'Semana pasada', previousLabel: 'Semana anterior' };
+        case 'thisMonth':
+            return { title: 'Mes actual', previousLabel: 'Mes pasado' };
+        case 'lastMonth':
+            return { title: 'Mes pasado', previousLabel: 'Mes anterior' };
+        case 'thisYear':
+            return { title: 'Año actual', previousLabel: 'Año pasado' };
+        case 'lastYear':
+            return { title: 'Año pasado', previousLabel: 'Año anterior' };
+        case 'custom':
+            return { title: 'Rango personalizado', previousLabel: 'Período anterior' };
+        default:
+            return { title: 'Período seleccionado', previousLabel: 'Período anterior' };
+    }
+};
 
 export const useUtilityDashboard = () => {
     const [datesSelected, setDatesSelected] = useState(() => getDateRange('today'));
@@ -36,7 +61,6 @@ export const useUtilityDashboard = () => {
 
     const { expenses: lastWeekExpenses, loading: lastWeekExpensesLoading } = useLocalFbGetExpenses(lastWeekRange);
     const { invoices: lastWeekInvoices, loading: lastWeekInvoicesLoading } = fbGetInvoices(lastWeekRange);
-    console.log("invoices: ", invoices);
     const currentMetrics = useMemo(
         () => buildFinancialMetrics(invoices, expenses, datesSelected),
         [invoices, expenses, datesSelected]
@@ -105,23 +129,35 @@ export const useUtilityDashboard = () => {
         };
     }, [weekMetrics, lastWeekMetrics]);
 
+    const weeklySalesComparison = useMemo(() => {
+        const today = DateTime.local().startOf('day');
+        const startOfWeek = today.startOf('week');
+        const daysElapsed = Math.max(0, Math.floor(today.diff(startOfWeek, 'days').days));
+        const dayCount = daysElapsed + 1;
+
+        const sumWeekToDate = (metrics) =>
+            metrics.dailyMetrics
+                .slice(0, dayCount)
+                .reduce((acc, day) => acc + day.sales, 0);
+
+        const current = sumWeekToDate(weekMetrics);
+        const previous = sumWeekToDate(lastWeekMetrics);
+        const delta = current - previous;
+        const percentage =
+            previous !== 0 ? (delta / Math.abs(previous || 1)) * 100 : null;
+        const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+
+        return {
+            current,
+            previous,
+            delta,
+            percentage,
+            trend,
+        };
+    }, [weekMetrics, lastWeekMetrics]);
+
     const rangeComparison = useMemo(() => {
-        const meta = (() => {
-            switch (selectedPreset) {
-                case 'today':
-                    return { title: 'Resultados de hoy', previousLabel: 'Ayer' };
-                case 'yesterday':
-                    return { title: 'Resultados de ayer', previousLabel: 'Anteayer' };
-                case 'thisWeek':
-                    return { title: 'Semana actual', previousLabel: 'Semana pasada' };
-                case 'thisMonth':
-                    return { title: 'Mes actual', previousLabel: 'Mes pasado' };
-                case 'thisYear':
-                    return { title: 'Año actual', previousLabel: 'Año pasado' };
-                default:
-                    return { title: 'Período seleccionado', previousLabel: 'Período anterior' };
-            }
-        })();
+        const meta = getComparisonMeta(selectedPreset);
 
         if (selectedPreset === 'thisWeek') {
             return {
@@ -148,6 +184,35 @@ export const useUtilityDashboard = () => {
             previousLabel: meta.previousLabel,
         };
     }, [selectedPreset, currentMetrics.summary, previousMetrics.summary, weeklyComparison]);
+
+    const salesComparison = useMemo(() => {
+        const meta = getComparisonMeta(selectedPreset);
+
+        if (selectedPreset === 'thisWeek') {
+            return {
+                ...weeklySalesComparison,
+                title: meta.title,
+                previousLabel: meta.previousLabel,
+            };
+        }
+
+        const current = currentMetrics.summary.totalSales;
+        const previous = previousMetrics.summary.totalSales;
+        const delta = current - previous;
+        const percentage =
+            previous !== 0 ? (delta / Math.abs(previous || 1)) * 100 : null;
+        const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+
+        return {
+            current,
+            previous,
+            delta,
+            percentage,
+            trend,
+            title: meta.title,
+            previousLabel: meta.previousLabel,
+        };
+    }, [selectedPreset, currentMetrics.summary, previousMetrics.summary, weeklySalesComparison]);
 
     const lastSevenDaysMetrics = useMemo(() => {
         const today = DateTime.local().endOf('day').toMillis();
@@ -348,10 +413,18 @@ export const useUtilityDashboard = () => {
     );
 
     const handlePresetSelect = useCallback(
-        (key) => {
-            const range = getDateRange(key);
+        (key, range) => {
+            if (key === 'custom') {
+                if (range?.startDate && range?.endDate) {
+                    setSelectedPreset(key);
+                    setDatesSelected(range);
+                }
+                return;
+            }
+
+            const computedRange = getDateRange(key);
             setSelectedPreset(key);
-            setDatesSelected(range);
+            setDatesSelected(computedRange);
         },
         []
     );
@@ -380,9 +453,10 @@ export const useUtilityDashboard = () => {
         selectedPreset,
         rangeLabel,
         onPresetSelect: handlePresetSelect,
-        quickRanges: QUICK_RANGES,
+        selectedRange: datesSelected,
         summary: currentMetrics.summary,
         dailyMetrics: currentMetrics.dailyMetrics,
         productsBreakdown: currentMetrics.productsBreakdown,
+        salesComparison,
     };
 };

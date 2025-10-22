@@ -7,6 +7,7 @@ import { DailyPerformanceChart } from './components/DailyPerformanceChart';
 import { RevenueDistributionChart } from './components/RevenueDistributionChart';
 import { UtilityHeader } from './components/UtilityHeader';
 import { RangeComparisonCard } from './components/RangeComparisonCard';
+import { TotalSalesCard } from './components/TotalSalesCard';
 import { UtilityInsightsTabs } from './components/UtilityInsightsTabs';
 import { exportTransactionsExcel } from './utils/exportTransactionsExcel';
 import { buildTransactionRows } from './utils/transactionRows';
@@ -30,13 +31,13 @@ export const Utility = () => {
         formatPercentage,
         loading,
         comparisonLoading,
-        selectedPreset,
         rangeLabel,
         onPresetSelect,
-        quickRanges,
+        selectedRange,
         summary,
         dailyMetrics,
         productsBreakdown,
+        salesComparison,
     } = useUtilityDashboard();
 
     const canExportTransactions = useMemo(
@@ -79,11 +80,16 @@ export const Utility = () => {
             <DashboardWrapper>
                 <UtilityHeader
                     rangeLabel={rangeLabel}
-                    selectedPreset={selectedPreset}
-                    quickRanges={quickRanges}
+                    selectedRange={selectedRange}
                     onPresetSelect={onPresetSelect}
                 />
                 <ComparisonSection>
+                    <TotalSalesCard
+                        loading={comparisonLoading}
+                        comparison={salesComparison}
+                        formatCurrency={formatCurrency}
+                        formatPercentage={formatPercentage}
+                    />
                     <RangeComparisonCard
                         loading={comparisonLoading}
                         comparison={rangeComparison}
@@ -139,7 +145,7 @@ const DashboardWrapper = styled.div`
 
 const ComparisonSection = styled.div`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: ${spacing.xl};
 `;
 

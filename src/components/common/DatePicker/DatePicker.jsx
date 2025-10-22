@@ -42,14 +42,15 @@ const Container = styled.div`
 `;
 
 const DatePickerContent = styled.div`
-    padding: ${props => props.$isMobile ? '1em' : '0px'};
-    min-width: ${props => props.$isMobile ? 'auto' : '320px'};
-    max-width: ${props => props.$isMobile ? '100%' : '400px'};
-    display: grid;
-    grid-template-rows: ${props => props.$isMobile ? 'auto auto auto' : 'auto 1fr auto'};
+    padding: ${({ $isMobile }) => ($isMobile ? '1em' : '10px 0px')};
+    min-width: ${({ $isMobile }) => ($isMobile ? 'auto' : '540px')};
+    max-width: ${({ $isMobile }) => ($isMobile ? '100%' : '680px')};
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-    height: ${props => props.$isMobile ? 'auto' : '100%'};
-    max-height: ${props => props.$isMobile ? 'none' : '500px'};
+    min-height: 0;
+    height: ${({ $isMobile }) => ($isMobile ? 'auto' : '350px')};
+    max-height: ${({ $isMobile }) => ($isMobile ? 'none' : '460px')};
 `;
 
 const ActionsSection = styled.div`
@@ -83,6 +84,34 @@ const ActionButton = styled.button`
             color: #1890ff;
         `}
     }
+`;
+
+const DesktopLayout = styled.div`
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 16px;
+    align-items: stretch;
+    min-height: 0;
+    height: 100%;
+`;
+
+const CalendarPane = styled.div`
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    height: 100%;
+`;
+
+const SidebarPane = styled.aside`
+    display: flex;
+    flex-direction: column;
+    width: 220px;
+    flex: 0 0 220px;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
 `;
 
 export const DatePicker = ({
@@ -127,47 +156,85 @@ export const DatePicker = ({
     const inputValue = formatDisplayValue(value, format, mode);
     const hasValue = inputValue !== '';
 
-    const renderContent = (includeActions = true) => (
-        <DatePickerContent $isMobile={isMobile}>
-            {/* Presets */}
-            <PresetsSection
-                presets={finalPresets}
-                value={value}
-                mode={mode}
-                isMobile={isMobile}
-                onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
-                showPresetsDropdown={showPresetsDropdown}
-                setShowPresetsDropdown={setShowPresetsDropdown}
-                presetsDropdownRef={presetsDropdownRef}
-            />
+    const renderContent = (includeActions = true) => {
+        if (isMobile) {
+            return (
+                <DatePickerContent $isMobile>
+                    <PresetsSection
+                        presets={finalPresets}
+                        value={value}
+                        mode={mode}
+                        isMobile={isMobile}
+                        onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
+                        showPresetsDropdown={showPresetsDropdown}
+                        setShowPresetsDropdown={setShowPresetsDropdown}
+                        presetsDropdownRef={presetsDropdownRef}
+                    />
 
-            {/* Calendar */}
-            <CalendarSection
-                currentDate={currentDate}
-                onNavigateMonth={navigateMonth}
-                onDateClick={handleDateClick}
-                onDateHover={setHoverDate}
-                value={value}
-                mode={mode}
-                currentRangeStart={currentRangeStart}
-                currentRangeEnd={currentRangeEnd}
-                hoverDate={hoverDate}
-            />
+                    <CalendarSection
+                        currentDate={currentDate}
+                        onNavigateMonth={navigateMonth}
+                        onDateClick={handleDateClick}
+                        onDateHover={setHoverDate}
+                        value={value}
+                        mode={mode}
+                        currentRangeStart={currentRangeStart}
+                        currentRangeEnd={currentRangeEnd}
+                        hoverDate={hoverDate}
+                    />
 
-            {/* Actions */}
-            {includeActions && (allowClear || !isMobile) && (
-                <ActionsSection
-                    $isMobile={isMobile}
-                >
-                    {allowClear && (
+                    {includeActions && (allowClear || !isMobile) && (
+                        <ActionsSection $isMobile={isMobile}>
+                            {allowClear && (
+                                <ActionButton onClick={(e) => handleClear(e, finalPresets)}>
+                                    Limpiar
+                                </ActionButton>
+                            )}
+                        </ActionsSection>
+                    )}
+                </DatePickerContent>
+            );
+        }
+
+        return (
+            <DatePickerContent>
+                <DesktopLayout>
+                    <CalendarPane>
+                        <CalendarSection
+                            currentDate={currentDate}
+                            onNavigateMonth={navigateMonth}
+                            onDateClick={handleDateClick}
+                            onDateHover={setHoverDate}
+                            value={value}
+                            mode={mode}
+                            currentRangeStart={currentRangeStart}
+                            currentRangeEnd={currentRangeEnd}
+                            hoverDate={hoverDate}
+                        />
+                    </CalendarPane>
+
+                    <SidebarPane>
+                        <PresetsSection
+                            layout="sidebar"
+                            presets={finalPresets}
+                            value={value}
+                            mode={mode}
+                            isMobile={isMobile}
+                            onPresetClick={(preset) => handlePresetClick(preset, isMobile)}
+                        />
+                    </SidebarPane>
+                </DesktopLayout>
+
+                {includeActions && allowClear && (
+                    <ActionsSection>
                         <ActionButton onClick={(e) => handleClear(e, finalPresets)}>
                             Limpiar
                         </ActionButton>
-                    )}
-                </ActionsSection>
-            )}
-        </DatePickerContent>
-    );
+                    </ActionsSection>
+                )}
+            </DatePickerContent>
+        );
+    };
 
     if (isMobile) {
         return (

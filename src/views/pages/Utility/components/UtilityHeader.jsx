@@ -1,17 +1,62 @@
-import React from 'react';
+import dayjs from 'dayjs';
+import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { designSystemV2 } from '../../../../theme/designSystemV2';
+import { DatePicker } from '../../../../components/common/DatePicker/DatePicker';
+import { getDateRange } from '../../../../utils/date/getDateRange';
 
-const { colors, spacing, radii, shadows, typography, transitions } = designSystemV2;
+const { colors, spacing, radii, shadows, typography } = designSystemV2;
 
-export const UtilityHeader = ({
-    rangeLabel,
-    selectedPreset,
-    quickRanges,
-    onPresetSelect,
-}) => {
+const PRESET_KEYS = [
+    'today',
+    'yesterday',
+    'thisWeek',
+    'lastWeek',
+    'thisMonth',
+    'lastMonth',
+    'thisYear',
+    'lastYear',
+];
+
+const detectPresetKey = (start, end) => {
+    for (const key of PRESET_KEYS) {
+        const range = getDateRange(key);
+        if (range.startDate === start && range.endDate === end) {
+            return key;
+        }
+    }
+    return null;
+};
+
+export const UtilityHeader = ({ rangeLabel, selectedRange, onPresetSelect }) => {
+    const pickerValue = useMemo(() => {
+        if (!selectedRange?.startDate || !selectedRange?.endDate) return null;
+        return [dayjs(selectedRange.startDate), dayjs(selectedRange.endDate)];
+    }, [selectedRange]);
+
+    const handleDateChange = useCallback(
+        (value) => {
+            if (!value || !Array.isArray(value) || !value[0] || !value[1]) {
+                onPresetSelect('today');
+                return;
+            }
+
+            const start = value[0].startOf('day').valueOf();
+            const end = value[1].endOf('day').valueOf();
+
+            const detectedPreset = detectPresetKey(start, end);
+            if (detectedPreset) {
+                onPresetSelect(detectedPreset);
+                return;
+            }
+
+            onPresetSelect('custom', { startDate: start, endDate: end });
+        },
+        [onPresetSelect]
+    );
+
     return (
         <Header>
             <TitleGroup>
@@ -29,18 +74,17 @@ export const UtilityHeader = ({
             </TitleGroup>
 
             <Filters>
-                <QuickRangeGroup>
-                    {quickRanges.map((option) => (
-                        <QuickRangeButton
-                            key={option.key}
-                            type="button"
-                            onClick={() => onPresetSelect(option.key)}
-                            className={selectedPreset === option.key ? 'active' : undefined}
-                        >
-                            {option.label}
-                        </QuickRangeButton>
-                    ))}
-                </QuickRangeGroup>
+                <PickerCard>
+                    <ControlLabel>Rango de fechas</ControlLabel>
+                    <DatePicker
+                        mode="range"
+                        value={pickerValue}
+                        onChange={handleDateChange}
+                        placeholder="Selecciona el rango"
+                        allowClear
+                        style={{ width: '100%' }}
+                    />
+                </PickerCard>
             </Filters>
         </Header>
     );
@@ -68,39 +112,23 @@ const Filters = styled.div`
     justify-content: flex-end;
 `;
 
-const QuickRangeGroup = styled.div`
-    display: inline-flex;
+const PickerCard = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.xs};
+    min-width: 260px;
+    padding: ${spacing.md};
     background: ${colors.background.surface};
     border-radius: ${radii.md};
-    padding: ${spacing.xs};
-    box-shadow: ${shadows.sm};
     border: 1px solid ${colors.stroke.soft};
+    box-shadow: ${shadows.sm};
 `;
 
-const QuickRangeButton = styled.button`
-    border: none;
-    background: transparent;
-    padding: ${spacing.sm} ${spacing.lg};
-    border-radius: ${radii.md};
-    font-size: ${typography.button.fontSize};
-    line-height: ${typography.button.lineHeight};
-    font-weight: ${typography.button.fontWeight};
+const ControlLabel = styled.span`
+    font-size: ${typography.caption.fontSize};
+    line-height: ${typography.caption.lineHeight};
+    font-weight: ${typography.caption.fontWeight};
     color: ${colors.text.secondary};
-    cursor: pointer;
-    transition: ${transitions.base};
-
-    &:hover {
-        background: ${colors.brand.subtle};
-    }
-
-    &.active {
-        background: ${colors.brand.primary};
-        color: ${colors.text.inverse};
-        box-shadow: ${shadows.md};
-    }
-
-    &:focus-visible {
-        outline: none;
-        box-shadow: ${shadows.sm}, 0 0 0 3px ${colors.brand.subtle};
-    }
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 `;
