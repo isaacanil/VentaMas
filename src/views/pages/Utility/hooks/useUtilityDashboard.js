@@ -31,7 +31,7 @@ const getComparisonMeta = (preset, { customRangeLabel } = {}) => {
         case 'today':
             return { title: 'Resultados de hoy', previousLabel: 'Ayer' };
         case 'yesterday':
-            return { title: 'Resultados de ayer', previousLabel: 'Anteayer' };
+            return { title: 'Resultados de ayer', previousLabel: 'Mismo día semana pasada' };
         case 'thisWeek':
             return { title: 'Semana actual', previousLabel: 'Semana pasada' };
         case 'lastWeek':
@@ -120,59 +120,88 @@ export const useUtilityDashboard = () => {
     );
     const formatPercentageValue = useCallback((value) => formatPercentage(value), []);
 
-    const weeklyComparison = useMemo(() => {
-        const today = DateTime.local().startOf('day');
-        const startOfWeek = today.startOf('week');
-        const daysElapsed = Math.max(0, Math.floor(today.diff(startOfWeek, 'days').days));
-        const dayCount = daysElapsed + 1;
+    const computeWeeklySnapshot = useCallback(
+        (accessor) => {
+            if (
+                !thisWeekRange?.startDate ||
+                !thisWeekRange?.endDate ||
+                !lastWeekRange?.startDate ||
+                !lastWeekRange?.endDate
+            ) {
+                return {
+                    current: 0,
+                    previous: 0,
+                    delta: 0,
+                    percentage: null,
+                    trend: 'flat',
+                };
+            }
 
-        const sumWeekToDate = (metrics) =>
-            metrics.dailyMetrics
-                .slice(0, dayCount)
-                .reduce((acc, day) => acc + day.netProfit, 0);
+            const clampDate = (value, min, max) => {
+                if (value.toMillis() < min.toMillis()) return min;
+                if (value.toMillis() > max.toMillis()) return max;
+                return value;
+            };
 
-        const current = sumWeekToDate(weekMetrics);
-        const previous = sumWeekToDate(lastWeekMetrics);
-        const delta = current - previous;
-        const percentage =
-            previous !== 0 ? (delta / Math.abs(previous || 1)) * 100 : null;
-        const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+            const sumUntil = (metrics, cutoff) => {
+                const cutoffMillis = cutoff.toMillis();
+                const hourlyEntries = Array.isArray(metrics.hourlyMetrics)
+                    ? metrics.hourlyMetrics
+                    : [];
+                if (hourlyEntries.length) {
+                    return hourlyEntries
+                        .filter((entry) => entry.timestamp <= cutoffMillis)
+                        .reduce((acc, entry) => acc + accessor(entry), 0);
+                }
 
-        return {
-            current,
-            previous,
-            delta,
-            percentage,
-            trend,
-        };
-    }, [weekMetrics, lastWeekMetrics]);
+                const dailyEntries = Array.isArray(metrics.dailyMetrics)
+                    ? metrics.dailyMetrics
+                    : [];
+                const cutoffDayMillis = cutoff.endOf('day').toMillis();
+                return dailyEntries
+                    .filter((entry) => entry.timestamp <= cutoffDayMillis)
+                    .reduce((acc, entry) => acc + accessor(entry), 0);
+            };
 
-    const weeklySalesComparison = useMemo(() => {
-        const today = DateTime.local().startOf('day');
-        const startOfWeek = today.startOf('week');
-        const daysElapsed = Math.max(0, Math.floor(today.diff(startOfWeek, 'days').days));
-        const dayCount = daysElapsed + 1;
+            const weekStart = DateTime.fromMillis(thisWeekRange.startDate);
+            const weekEnd = DateTime.fromMillis(thisWeekRange.endDate);
+            const lastWeekStart = DateTime.fromMillis(lastWeekRange.startDate);
+            const lastWeekEnd = DateTime.fromMillis(lastWeekRange.endDate);
 
-        const sumWeekToDate = (metrics) =>
-            metrics.dailyMetrics
-                .slice(0, dayCount)
-                .reduce((acc, day) => acc + day.sales, 0);
+            const currentCutoff = clampDate(DateTime.local(), weekStart, weekEnd);
+            const previousCutoff = clampDate(
+                currentCutoff.minus({ weeks: 1 }),
+                lastWeekStart,
+                lastWeekEnd
+            );
 
-        const current = sumWeekToDate(weekMetrics);
-        const previous = sumWeekToDate(lastWeekMetrics);
-        const delta = current - previous;
-        const percentage =
-            previous !== 0 ? (delta / Math.abs(previous || 1)) * 100 : null;
-        const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+            const current = sumUntil(weekMetrics, currentCutoff);
+            const previous = sumUntil(lastWeekMetrics, previousCutoff);
+            const delta = current - previous;
+            const percentage =
+                previous !== 0 ? (delta / Math.abs(previous || 1)) * 100 : null;
+            const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
 
-        return {
-            current,
-            previous,
-            delta,
-            percentage,
-            trend,
-        };
-    }, [weekMetrics, lastWeekMetrics]);
+            return {
+                current,
+                previous,
+                delta,
+                percentage,
+                trend,
+            };
+        },
+        [thisWeekRange, lastWeekRange, weekMetrics, lastWeekMetrics]
+    );
+
+    const weeklyComparison = useMemo(
+        () => computeWeeklySnapshot((entry) => entry.netProfit),
+        [computeWeeklySnapshot]
+    );
+
+    const weeklySalesComparison = useMemo(
+        () => computeWeeklySnapshot((entry) => entry.sales),
+        [computeWeeklySnapshot]
+    );
 
     const rangeLabel = useMemo(() => {
         if (!datesSelected?.startDate || !datesSelected?.endDate) return '';

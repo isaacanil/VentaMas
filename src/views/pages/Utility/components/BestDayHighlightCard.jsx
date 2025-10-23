@@ -90,32 +90,24 @@ export const BestDayHighlightCard = ({
                     {meta.dateLabel && (
                         <DatePill>{meta.dateLabel}</DatePill>
                     )}
-                    <Highlight>
-                        <Indicator $variant={variant}>
-                            <FontAwesomeIcon icon={icon} />
-                        </Indicator>
-                        <SimpleTypography as="span" size="large" weight="bold">
-                            {bestDayInsight.value}
-                        </SimpleTypography>
-                    </Highlight>
-                    <SimpleTypography as="h3" size="medium" weight="bold">
-                        {bestDayInsight.title}
-                    </SimpleTypography>
-                    <SimpleTypography as="p" size="small" color="secondary">
-                        {bestDayInsight.description}
-                    </SimpleTypography>
+
                     {(formattedSales || formattedExpenses) && (
                         <MetaRow>
+                         {bestDayInsight?.value && (
+                                <MetaItem>
+                                    <MetaLabel>Ganancia</MetaLabel>
+                                    <MetaValue>
+                                        {
+                                            bestDayInsight.value
+                                        }
+                                    </MetaValue>
+                                </MetaItem>
+
+                            )}
                             {formattedSales && (
                                 <MetaItem>
                                     <MetaLabel>Ventas</MetaLabel>
                                     <MetaValue>{formattedSales}</MetaValue>
-                                </MetaItem>
-                            )}
-                            {formattedExpenses && (
-                                <MetaItem>
-                                    <MetaLabel>Gastos</MetaLabel>
-                                    <MetaValue>{formattedExpenses}</MetaValue>
                                 </MetaItem>
                             )}
                         </MetaRow>

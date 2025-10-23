@@ -120,6 +120,39 @@ const resolveSaleTotal = (product, taxEnabled) => {
     return 0;
 };
 
+const resolveExpenseAmount = (expenseEntry) => {
+    const expense = expenseEntry?.expense ?? expenseEntry ?? {};
+    const amount = pickNumber(
+        expense?.amount,
+        expense?.value,
+        expense?.total,
+        expense?.amount?.value
+    );
+    return amount ?? 0;
+};
+
+const resolveExpenseTimestamp = (expenseEntry) => {
+    const expense = expenseEntry?.expense ?? expenseEntry ?? {};
+    const dates = expense.dates ?? {};
+    const candidates = [
+        dates.expenseDate,
+        dates.createdAt,
+        dates.updatedAt,
+        expense.expenseDate,
+        expense.createdAt,
+        expense.updatedAt,
+    ];
+
+    for (const candidate of candidates) {
+        const millis = getDateFromData(candidate);
+        if (Number.isFinite(millis)) {
+            return millis;
+        }
+    }
+
+    return null;
+};
+
 export const buildFinancialMetrics = (invoices, expenses, range) => {
     const safeInvoices = Array.isArray(invoices) ? invoices : [];
     const safeExpenses = Array.isArray(expenses) ? expenses : [];
@@ -158,16 +191,13 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
     };
 
     const totalExpenses = safeExpenses.reduce(
-        (acc, item) => acc + toNumber(item?.expense?.amount),
+        (acc, item) => acc + resolveExpenseAmount(item),
         0
     );
 
     safeExpenses.forEach((item) => {
-        const expenseDate =
-            getDateFromData(item?.expense?.dates?.expenseDate) ??
-            getDateFromData(item?.expense?.dates?.createdAt);
-
-        const expenseAmount = toNumber(item?.expense?.amount);
+        const expenseDate = resolveExpenseTimestamp(item);
+        const expenseAmount = resolveExpenseAmount(item);
 
         const entry = ensureDailyEntry(expenseDate);
         if (entry) {
@@ -400,7 +430,7 @@ export const buildFinancialMetrics = (invoices, expenses, range) => {
         return {
             isoDate: key,
             timestamp: date.toMillis(),
-            dateLabel: date.setLocale('es').toFormat('ccc dd LLL'),
+            dateLabel: date.setLocale('es').toFormat('cccc dd/LL/yyyy'),
             sales: value.sales,
             cost: value.cost,
             taxes: value.taxes,

@@ -93,10 +93,20 @@ const InfoMessage = styled.div`
   }
 `;
 
-const PriceAndSaleUnitsModal = ({ isVisible, onClose, item, onSelectPrice, onSelectDefaultUnit, onSelectUnit }) => {
+const PriceAndSaleUnitsModal = ({
+  isVisible,
+  onClose,
+  item,
+  onSelectPrice,
+  onSelectDefaultUnit,
+  onSelectUnit,
+  prices = [],
+  selectedUnit
+}) => {
   const productId = item.id;
-  const [selectedUnitId, setSelectedUnitId] = useState(item.defaultSaleUnitId || 'default');
-  const [combinedPrices, setCombinedPrices] = useState([]);
+  const initialSaleUnitId = selectedUnit?.id || item.defaultSaleUnitId || 'default';
+  const [selectedUnitId, setSelectedUnitId] = useState(initialSaleUnitId);
+  const [combinedPrices, setCombinedPrices] = useState(prices);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const { data: saleUnits } = useListenSaleUnits(productId);
   const navigate = useNavigate();
@@ -155,21 +165,20 @@ const PriceAndSaleUnitsModal = ({ isVisible, onClose, item, onSelectPrice, onSel
   
   const handleSelectUnit = (unit) => {
     setSelectedUnitId(unit.id);
-    onSelectUnit(unit);    const selectedItemPricing = unit.pricing;
+    onSelectUnit(unit);
+    const selectedItemPricing = unit.pricing;
     if (selectedItemPricing) {
-      const prices = extraerPreciosConImpuesto(selectedItemPricing);
+      const pricingOptions = extraerPreciosConImpuesto(selectedItemPricing);
       // Filtrar precios habilitados y con valores válidos (mayor que 0)
-      const enabledPrices = prices.filter(price => 
-        price.enabled && 
-        price.valueWithTax && 
-        !isNaN(price.valueWithTax) && 
-        price.valueWithTax > 0
-      );
-      
+      const enabledPrices = pricingOptions.filter(price => {
+        const value = Number(price?.valueWithTax);
+        return price.enabled && Number.isFinite(value) && value > 0;
+      });
+
       // Obtener el precio por defecto
       const defaultPrice = getDefaultPrice(enabledPrices);
       setSelectedPrice(defaultPrice);
-      
+
       // Llamar a onSelectPrice con el precio por defecto
       if (defaultPrice) {
         onSelectPrice(defaultPrice);
@@ -179,21 +188,22 @@ const PriceAndSaleUnitsModal = ({ isVisible, onClose, item, onSelectPrice, onSel
 
   const handleSelectDefaultUnit = () => {
     setSelectedUnitId('default');
-    onSelectDefaultUnit(item);    const selectedItemPricing = item.pricing;
+    onSelectDefaultUnit(item);
+    const selectedItemPricing = item.pricing;
     if (selectedItemPricing) {
-      const prices = extraerPreciosConImpuesto(selectedItemPricing);
+      const pricingOptions = prices.length > 0
+        ? prices
+        : extraerPreciosConImpuesto(selectedItemPricing);
       // Filtrar precios habilitados y con valores válidos (mayor que 0)
-      const enabledPrices = prices.filter(price => 
-        price.enabled && 
-        price.valueWithTax && 
-        !isNaN(price.valueWithTax) && 
-        price.valueWithTax > 0
-      );
-      
+      const enabledPrices = pricingOptions.filter(price => {
+        const value = Number(price?.valueWithTax);
+        return price.enabled && Number.isFinite(value) && value > 0;
+      });
+
       // Obtener el precio por defecto
       const defaultPrice = getDefaultPrice(enabledPrices);
       setSelectedPrice(defaultPrice);
-      
+
       // Llamar a onSelectPrice con el precio por defecto
       if (defaultPrice) {
         onSelectPrice(defaultPrice);
@@ -201,31 +211,41 @@ const PriceAndSaleUnitsModal = ({ isVisible, onClose, item, onSelectPrice, onSel
     }
   };
 
+  useEffect(() => {
+    if (!isVisible) return;
+    setSelectedUnitId(selectedUnit ? selectedUnit.id : (item.defaultSaleUnitId || 'default'));
+  }, [isVisible, selectedUnit ? selectedUnit.id : undefined, item.defaultSaleUnitId]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    
+    let pricingOptions = [];
+
+    if (selectedUnitId === 'default') {
+      pricingOptions = prices.length > 0
+        ? prices
+        : extraerPreciosConImpuesto(item.pricing);
+    } else {
+      const selectedUnitData = saleUnits?.find(unit => unit.id === selectedUnitId);
+      pricingOptions = extraerPreciosConImpuesto(selectedUnitData?.pricing);
+    }
+
+    const enabledPrices = (pricingOptions || []).filter(price => {
+      const value = Number(price?.valueWithTax);
+      return price?.enabled && Number.isFinite(value) && value > 0;
+    });
+
+    setCombinedPrices(enabledPrices);
+
+    const defaultPrice = getDefaultPrice(enabledPrices);
+    setSelectedPrice(defaultPrice);
+  }, [selectedUnitId, saleUnits, item, isVisible, prices]);
+
   const handleSelectPrice = (price) => {
     setSelectedPrice(price);
     // Pasamos todo el objeto de precio para que ProductCardForCart pueda extraer los valores correctos
     onSelectPrice(price);
   };
-  useEffect(() => {
-    if (!isVisible) return; // No hacer nada si el modal no está visible
-    
-    const selectedItemPricing = selectedUnitId === 'default' ? item.pricing : saleUnits?.find(unit => unit.id === selectedUnitId)?.pricing;
-    if (selectedItemPricing) {
-      const prices = extraerPreciosConImpuesto(selectedItemPricing);
-      // Filtrar precios habilitados y con valores válidos (mayor que 0)
-      const enabledPrices = prices.filter(price => 
-        price.enabled && 
-        price.valueWithTax && 
-        !isNaN(price.valueWithTax) && 
-        price.valueWithTax > 0
-      );
-      setCombinedPrices(enabledPrices);
-
-      // Determinar el precio a seleccionar basado en el precio actual del producto
-      const defaultPrice = getDefaultPrice(enabledPrices);
-      setSelectedPrice(defaultPrice);
-    }
-  }, [selectedUnitId, saleUnits, item, isVisible]);
 
   // Determina si un precio está seleccionado
   const isPriceSelected = (price) => {
@@ -320,4 +340,3 @@ const PriceAndSaleUnitsModal = ({ isVisible, onClose, item, onSelectPrice, onSel
 };
 
 export default PriceAndSaleUnitsModal;
-

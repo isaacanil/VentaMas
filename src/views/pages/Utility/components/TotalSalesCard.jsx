@@ -1,7 +1,14 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import styled, { keyframes } from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowTrendDown, faArrowTrendUp, faDollarSign } from '@fortawesome/free-solid-svg-icons';
+import {
+    faArrowTrendDown,
+    faArrowTrendUp,
+    faDollarSign,
+    faStar,
+} from '@fortawesome/free-solid-svg-icons';
+import { Tooltip } from 'antd';
 
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { designSystemV2 } from '../../../../theme/designSystemV2';
@@ -31,6 +38,19 @@ const TREND_VARIANTS = {
 
 const getTrendVariant = (trend) => TREND_VARIANTS[trend] ?? TREND_VARIANTS.flat;
 
+const formatMultiplier = (ratio) => {
+    if (ratio === null || ratio === undefined) return '';
+    let formatted;
+    if (ratio < 10) {
+        formatted = ratio.toFixed(2);
+    } else if (ratio < 100) {
+        formatted = ratio.toFixed(1);
+    } else {
+        formatted = ratio.toFixed(0);
+    }
+    return `×${Number(formatted)}`;
+};
+
 export const TotalSalesCard = ({
     loading,
     comparison,
@@ -38,45 +58,115 @@ export const TotalSalesCard = ({
     formatPercentage,
 }) => {
     const hasComparison = Boolean(comparison);
-    const trend = hasComparison ? comparison.trend : 'flat';
-
-    const trendIcon =
-        trend === 'up' ? faArrowTrendUp : trend === 'down' ? faArrowTrendDown : faDollarSign;
+    const { current, previous, delta, percentage, trend } = comparison || {};
 
     const title = 'Ventas totales';
     const previousLabel = hasComparison ? comparison.previousLabel : 'Período anterior';
     const referenceLabel = previousLabel.toLowerCase();
-    const formattedCurrent = hasComparison ? formatCurrency(comparison.current) : '—';
+    const formattedCurrent = hasComparison ? formatCurrency(current) : '—';
     const formattedPrevious =
-        hasComparison && comparison.previous !== null ? formatCurrency(comparison.previous) : null;
-    const percentageChange =
-        hasComparison && comparison.percentage !== null
-            ? formatPercentage(comparison.percentage)
-            : null;
-    const deltaValue = hasComparison && typeof comparison.delta === 'number' ? comparison.delta : null;
+        hasComparison && previous !== null ? formatCurrency(previous) : null;
 
-    const formatDeltaAmount = (value) => {
-        if (value === null) {
-            return null;
+    const renderChangeContent = () => {
+        if (!hasComparison) {
+            return (
+                <SimpleTypography as="span" size="small" color="secondary">
+                    Sin datos de comparación
+                </SimpleTypography>
+            );
         }
-        const absolute = Math.abs(value);
-        const formatted = formatCurrency(absolute);
-        if (value > 0) {
-            return `+${formatted}`;
+
+        const isBaselineZero = previous === 0 && current !== 0;
+        const isSignChange = current * previous < 0;
+
+        const formatDeltaAmount = (value) => {
+            if (value === null) return null;
+            const absolute = Math.abs(value);
+            const formatted = formatCurrency(absolute);
+            return `${value > 0 ? '+' : value < 0 ? '-' : ''}${formatted}`;
+        };
+
+        const deltaAmount = formatDeltaAmount(delta);
+        const percentageChange = percentage !== null ? formatPercentage(percentage) : null;
+
+        if (isBaselineZero) {
+            const tooltip = `De ${formatCurrency(0)} a ${formatCurrency(current)}`;
+            return (
+                <Tooltip title={tooltip}>
+                    <ChangeLine aria-label={`Cambio vs ${referenceLabel}`}>
+                        <ChangeIcon trend={current > 0 ? 'up' : 'down'}>
+                            <FontAwesomeIcon icon={faStar} />
+                        </ChangeIcon>
+                        <SimpleTypography
+                            as="span"
+                            size="medium"
+                            weight="medium"
+                            color={current > 0 ? 'success' : 'danger'}
+                        >
+                            {current > 0 ? 'Nuevo' : 'Pérdida Nueva'}
+                        </SimpleTypography>
+                    </ChangeLine>
+                </Tooltip>
+            );
         }
-        if (value < 0) {
-            return `-${formatted}`;
+
+        if (isSignChange) {
+            const tooltip = `Cambio: ${deltaAmount}`;
+            return (
+                <Tooltip title={tooltip}>
+                    <ChangeLine aria-label={`Cambio vs ${referenceLabel}`}>
+                        <SimpleTypography as="span" size="small" weight="medium" color="secondary">
+                            {`De ${formatCurrency(previous)} a ${formatCurrency(current)}`}
+                        </SimpleTypography>
+                    </ChangeLine>
+                </Tooltip>
+            );
         }
-        return formatted;
+
+        const absolutePercentage = percentage !== null ? Math.abs(percentage) : 0;
+        const showMultiplier = absolutePercentage >= 100;
+
+        const trendIcon =
+            trend === 'up' ? faArrowTrendUp : trend === 'down' ? faArrowTrendDown : faDollarSign;
+        const trendColor = trend === 'up' ? 'success' : trend === 'down' ? 'danger' : 'secondary';
+
+        if (showMultiplier) {
+            const ratio = previous !== 0 ? current / previous : 0;
+            const tooltip = `${percentageChange} vs. ${referenceLabel} (${deltaAmount})`;
+            return (
+                <Tooltip title={tooltip}>
+                    <ChangeLine aria-label={`Cambio vs ${referenceLabel}`}>
+                        <ChangeIcon trend={trend}>
+                            <FontAwesomeIcon icon={trendIcon} />
+                        </ChangeIcon>
+                        <SimpleTypography as="span" size="medium" weight="medium" color={trendColor}>
+                            {formatMultiplier(ratio)}
+                        </SimpleTypography>
+                    </ChangeLine>
+                </Tooltip>
+            );
+        }
+
+        // Default percentage view
+        const tooltip = `Cambio en ventas = ((ventas actuales - ${referenceLabel}) / ${referenceLabel}) × 100`;
+        return (
+            <Tooltip title={tooltip}>
+                <ChangeLine aria-label={`Cambio vs ${referenceLabel}`}>
+                    <ChangeIcon trend={trend}>
+                        <FontAwesomeIcon icon={trendIcon} />
+                    </ChangeIcon>
+                    <SimpleTypography as="span" size="medium" weight="medium" color={trendColor}>
+                        {percentageChange}
+                    </SimpleTypography>
+                    {deltaAmount && (
+                        <SimpleTypography as="span" size="small" color="secondary">
+                            {`(${deltaAmount})`}
+                        </SimpleTypography>
+                    )}
+                </ChangeLine>
+            </Tooltip>
+        );
     };
-
-    const deltaAmount = deltaValue !== null ? formatDeltaAmount(deltaValue) : null;
-
-    const hasChangeData = Boolean(percentageChange || deltaAmount);
-
-    const changeTooltip = hasComparison
-        ? `Cambio en ventas = ((ventas actuales - ${referenceLabel}) / ${referenceLabel}) × 100`
-        : undefined;
 
     return (
         <ComparisonCard
@@ -105,46 +195,7 @@ export const TotalSalesCard = ({
                         </SimpleTypography>
                     </ValueHighlight>
 
-                    {hasComparison && (
-                        <ChangeLine
-                            trend={trend}
-                            title={changeTooltip}
-                            aria-label={`Cambio vs ${referenceLabel}`}
-                        >
-                            <ChangeIcon trend={trend}>
-                                <FontAwesomeIcon icon={trendIcon} />
-                            </ChangeIcon>
-                            {hasChangeData ? (
-                                <>
-                                    {percentageChange && (
-                                        <SimpleTypography
-                                            as="span"
-                                            size="medium"
-                                            weight="medium"
-                                            color={
-                                                trend === 'up'
-                                                    ? 'success'
-                                                    : trend === 'down'
-                                                    ? 'danger'
-                                                    : 'secondary'
-                                            }
-                                        >
-                                            {percentageChange}
-                                        </SimpleTypography>
-                                    )}
-                                    {deltaAmount && (
-                                        <SimpleTypography as="span" size="small" color="secondary">
-                                            {percentageChange ? `(${deltaAmount})` : deltaAmount}
-                                        </SimpleTypography>
-                                    )}
-                                </>
-                            ) : (
-                                <SimpleTypography as="span" size="small" color="secondary">
-                                    Sin datos de comparación
-                                </SimpleTypography>
-                            )}
-                        </ChangeLine>
-                    )}
+                    {renderChangeContent()}
 
                     {formattedPrevious && (
                         <SimpleTypography as="span" size="small" color="secondary">

@@ -69,6 +69,16 @@ export const useFbGetExpenses = (range, options = {}) => {
         }
         setLoading(true);
 
+        const normalizeDate = (...candidates) => {
+            for (const candidate of candidates) {
+                const millis = toMillis(candidate);
+                if (Number.isFinite(millis)) {
+                    return millis;
+                }
+            }
+            return null;
+        };
+
         const unsubscribe = onSnapshot(
             expensesQuery,
             (snapshot) => {
@@ -77,16 +87,23 @@ export const useFbGetExpenses = (range, options = {}) => {
                     const dates = expense.dates ?? {};
 
                     return {
+                        id: doc.id,
                         expense: {
                             ...expense,
                             dates: {
                                 ...dates,
-                                createdAt: dates.createdAt
-                                    ? dates.createdAt.seconds * 1000
-                                    : null,
-                                expenseDate: dates.expenseDate
-                                    ? dates.expenseDate.seconds * 1000
-                                    : null,
+                                createdAt: normalizeDate(
+                                    dates.createdAt,
+                                    expense.createdAt,
+                                    expense.updatedAt
+                                ),
+                                expenseDate: normalizeDate(
+                                    dates.expenseDate,
+                                    dates.createdAt,
+                                    expense.expenseDate,
+                                    expense.createdAt,
+                                    doc.createTime?.toMillis?.()
+                                ),
                             },
                         },
                     };
