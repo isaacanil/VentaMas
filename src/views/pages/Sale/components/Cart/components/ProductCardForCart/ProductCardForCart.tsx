@@ -1,8 +1,8 @@
-import { MessageOutlined, PercentageOutlined, MoreOutlined } from '@ant-design/icons';
+import { MessageOutlined, PercentageOutlined, MoreOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Tooltip, Badge, Button, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -60,6 +60,17 @@ interface WeightDetail {
   [key: string]: unknown;
 }
 
+interface BatchInfo {
+  productStockId?: string | null;
+  batchId?: string | null;
+  batchNumber?: string | number | null;
+  quantity?: number | null;
+  expirationDate?: number | string | null;
+  locationId?: string | null;
+  locationName?: string | null;
+  [key: string]: unknown;
+}
+
 interface CartItem {
   id: string;
   name: string;
@@ -70,6 +81,9 @@ interface CartItem {
   amountToBuy?: number;
   stock?: number;
   weightDetail?: WeightDetail;
+  batchId?: string | null;
+  productStockId?: string | null;
+  batchInfo?: BatchInfo | null;
   [key: string]: unknown;
 }
 
@@ -78,6 +92,7 @@ interface ProductCardForCartProps {
   onOpenCommentModal: (item: CartItem) => void;
   onOpenDeleteModal: (item: CartItem) => void;
   onOpenDiscountModal: (item: CartItem) => void;
+  onOpenBatchInfoModal: (item: CartItem) => void;
 }
 
 const variants = {
@@ -102,6 +117,7 @@ export const ProductCardForCart = ({
   onOpenCommentModal,
   onOpenDeleteModal,
   onOpenDiscountModal,
+  onOpenBatchInfoModal,
 }: ProductCardForCartProps) => {
   const dispatch = useDispatch();
   const insuranceEnabled = useInsuranceEnabled();
@@ -109,6 +125,7 @@ export const ProductCardForCart = ({
   const [selectedUnit, setSelectedUnit] = useState<SaleUnit | null>(null);
   const [precios, setPrecios] = useState<PriceOption[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
+  const hasBatchInfo = Boolean(item?.batchInfo || item?.batchId || item?.productStockId);
 
   const updatePricing = (pricing?: PricingInfo) => {
     const pricesWithTax = extraerPreciosConImpuesto(pricing, taxReceiptEnabled) as PriceOption[];
@@ -190,14 +207,54 @@ export const ProductCardForCart = ({
       ),
       onClick: () => onOpenCommentModal(item),
     },
+    ...(hasBatchInfo
+      ? [
+          {
+            key: 'batch-info',
+            label: (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <InfoCircleOutlined style={{ color: '#4096ff' }} />
+                Ver información del lote
+              </span>
+            ),
+            onClick: () => onOpenBatchInfoModal(item),
+          },
+        ]
+      : []),
   ];
 
-  const hasActions = Boolean(item.comment || item.discount);
+  const hasActions = Boolean(item.comment || item.discount || hasBatchInfo);
   const finalPrice = getTotalPrice(item, taxReceiptEnabled) as number;
   const originalPriceValue = item.pricing?.price ?? item.price ?? 0;
   const originalPrice = ensureNumber(originalPriceValue);
   const taxPercentage = ensureNumber(item.pricing?.tax);
   const quantity = item.amountToBuy ?? 1;
+  const badgeColor = item.comment
+    ? '#1890ff'
+    : item.discount
+    ? '#52c41a'
+    : hasBatchInfo
+    ? '#4096ff'
+    : '#8c8c8c';
+  const batchInfo = item.batchInfo ?? null;
+  const locationIdRaw = batchInfo?.locationId ?? item?.locationId ?? item?.location ?? null;
+  const storedLocationName = batchInfo?.locationName;
+  const locationLabelRaw = storedLocationName && storedLocationName !== 'Cargando...' && storedLocationName !== 'N/A'
+    ? storedLocationName
+    : locationIdRaw;
+  const locationLabel = typeof locationLabelRaw === 'string'
+    ? locationLabelRaw
+    : locationLabelRaw != null
+      ? String(locationLabelRaw)
+      : '';
+  const showLocation = Boolean(hasBatchInfo && locationLabel);
+
+  const handleBatchInfoKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onOpenBatchInfoModal(item);
+    }
+  };
 
   const unitPriceWithTax = taxReceiptEnabled
     ? originalPrice * (1 + taxPercentage / 100)
@@ -209,51 +266,90 @@ export const ProductCardForCart = ({
   return (
     <Container variants={variants} initial="initial" animate="animate" transition={{ duration: 0.6 }}>
       <Row>
-        <HeaderContainer>
+        <TopBar>
+          <LeftSlot $hasBatch={hasBatchInfo}>
+            {hasBatchInfo ? (
+              showLocation ? (
+                <LocationInteractive
+                  role="button"
+                  tabIndex={0}
+                  title={locationLabel}
+                  onClick={() => onOpenBatchInfoModal(item)}
+                  onKeyDown={handleBatchInfoKeyDown}
+                >
+                  {locationLabel}
+                </LocationInteractive>
+              ) : (
+                <NameStack>
+                  <TitleLabel>{item.name}</TitleLabel>
+                  {item.comment && (
+                    <CommentPreview title={item.comment}>
+                      {item.comment}
+                    </CommentPreview>
+                  )}
+                </NameStack>
+              )
+            ) : (
+              <NameStack>
+                <TitleLabel>{item.name}</TitleLabel>
+                {item.comment && (
+                  <CommentPreview title={item.comment}>
+                    {item.comment}
+                  </CommentPreview>
+                )}
+              </NameStack>
+            )}
+          </LeftSlot>
+          <RightCluster>
+            <PriceContainer>
+              {hasDiscount && (
+                <OriginalPrice>
+                  {useFormatPrice(basePriceWithTax)}
+                </OriginalPrice>
+              )}
+              <Price hasDiscount={hasDiscount}>
+                {useFormatPrice(finalPrice)}
+              </Price>
+            </PriceContainer>
+            <TopActions>
+              <Tooltip title="Opciones del producto">
+                <Badge dot={hasActions} color={badgeColor} offset={[-2, 2]}>
+                  <Dropdown
+                    menu={{ items: actionMenuItems }}
+                    trigger={['click']}
+                    placement="bottomRight"
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<MoreOutlined style={{ fontSize: '16px', color: hasActions ? badgeColor : '#8c8c8c' }} />}
+                    />
+                  </Dropdown>
+                </Badge>
+              </Tooltip>
+              <Button
+                type="text"
+                size="small"
+                icon={icons.operationModes.discard}
+                onClick={() => onOpenDeleteModal(item)}
+                danger
+              />
+            </TopActions>
+          </RightCluster>
+        </TopBar>
+      </Row>
+      {hasBatchInfo && (
+        <Row>
           <TitleContainer>
-            <Title>{item.name}</Title>
+            <TitleLabel>{item.name}</TitleLabel>
             {item.comment && (
               <CommentPreview title={item.comment}>
                 {item.comment}
               </CommentPreview>
             )}
           </TitleContainer>
-          <PriceContainer>
-            {hasDiscount && (
-              <OriginalPrice>
-                {useFormatPrice(basePriceWithTax)}
-              </OriginalPrice>
-            )}
-            <Price hasDiscount={hasDiscount}>
-              {useFormatPrice(finalPrice)}
-            </Price>
-          </PriceContainer>
-          <ButtonGroup>
-            <Tooltip title="Opciones del producto">
-              <Badge dot={hasActions} color={item.comment ? '#1890ff' : item.discount ? '#52c41a' : '#8c8c8c'} offset={[-2, 2]}>
-                <Dropdown
-                  menu={{ items: actionMenuItems }}
-                  trigger={['click']}
-                  placement="bottomRight"
-                >
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<MoreOutlined style={{ fontSize: '16px', color: hasActions ? (item.comment ? '#1890ff' : '#52c41a') : '#8c8c8c' }} />}
-                  />
-                </Dropdown>
-              </Badge>
-            </Tooltip>
-            <Button
-              type="text"
-              size="small"
-              icon={icons.operationModes.discard}
-              onClick={() => onOpenDeleteModal(item)}
-              danger
-            />
-          </ButtonGroup>
-        </HeaderContainer>
-      </Row>
+        </Row>
+      )}
       <Row>
         <Group>
           <PriceEditor
@@ -317,7 +413,7 @@ const TitleContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0; // Importante para que el texto se corte correctamente
+  min-width: 0;
   flex: 1;
 `;
 
@@ -348,37 +444,82 @@ const CommentPreview = styled.div`
   line-height: 1;
 `;
 
-const HeaderContainer = styled.div`
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: 8px;
-    align-items: start;
-    width: 100%;
+const TopBar = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
 `;
 
-const ButtonGroup = styled.div`
+const LeftSlot = styled.div<{ $hasBatch: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ${props => (props.$hasBatch ? '0' : '2px')};
+  min-width: 0;
+  flex: 1;
+`;
+
+const RightCluster = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
+`;
 
-  button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
+const LocationInteractive = styled.span`
+  display: inline-block;
+  font-size: 12px;
+  color: #1677ff;
+  cursor: pointer;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
-    }
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+    outline: none;
   }
 `;
 
-const Title = styled.span`
+const NameStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const TopActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const TitleLabel = styled.span`
     font-weight: 500;
     line-height: 16px;
     font-size: 14px;
     color: rgb(71, 71, 71);
     text-transform: capitalize;
+    word-break: break-word;
+`;
+
+const TitleInteractive = styled.span`
+    font-weight: 500;
+    line-height: 16px;
+    font-size: 14px;
+    color: rgb(71, 71, 71);
+    text-transform: capitalize;
+    cursor: pointer;
+    display: inline;
+    word-break: break-word;
+
+    &:hover,
+    &:focus {
+        text-decoration: underline;
+        outline: none;
+    }
 `;
 
 const Price = styled.span<{ hasDiscount: boolean }>`

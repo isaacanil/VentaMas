@@ -14,6 +14,7 @@ import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart'
 
 
 import { CommentModal } from './components/CommentModal/CommentModal';
+import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 
 
 export const ProductsList = () => {
@@ -26,6 +27,7 @@ export const ProductsList = () => {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [discountModalOpen, setDiscountModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [batchInfoModalOpen, setBatchInfoModalOpen] = useState(false);
     const [comment, setComment] = useState("");    // Handlers para abrir modales
     const handleOpenCommentModal = (product) => {
         setSelectedProduct(product);
@@ -41,6 +43,12 @@ export const ProductsList = () => {
     const handleOpenDiscountModal = (product) => {
         setSelectedProduct(product);
         setDiscountModalOpen(true);
+    };
+    const handleOpenBatchInfoModal = (product) => {
+        if (product) {
+            setSelectedProduct(product);
+            setBatchInfoModalOpen(true);
+        }
     };
     // Guardar comentario
     const handleSaveComment = () => {
@@ -83,6 +91,7 @@ export const ProductsList = () => {
                                 onOpenCommentModal={handleOpenCommentModal}
                                 onOpenDeleteModal={handleOpenDeleteModal}
                                 onOpenDiscountModal={handleOpenDiscountModal}
+                                onOpenBatchInfoModal={handleOpenBatchInfoModal}
                             />
                         ))}
                     </AnimatePresence>
@@ -106,7 +115,14 @@ export const ProductsList = () => {
                     onValidityChange={handleValidityChange}
                     onAuthNumberChange={handleAuthNumberChange}
                 />
-            )}            <CommentModal
+            )}
+            <BatchInfoModal
+                isOpen={batchInfoModalOpen}
+                onClose={() => setBatchInfoModalOpen(false)}
+                product={selectedProduct}
+            />
+
+            <CommentModal
                 isOpen={commentModalOpen}
                 onClose={() => setCommentModalOpen(false)}
                 selectedProduct={selectedProduct}

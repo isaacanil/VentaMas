@@ -204,10 +204,47 @@ export function ProductBatchModal() {
         setSelectedBatch(selectedBatch === batchId ? null : batchId);
     };
 
+    const normalizeExpirationDate = (value) => {
+        if (!value) return null;
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+            const parsed = Date.parse(value);
+            return Number.isNaN(parsed) ? null : parsed;
+        }
+        if (value.seconds !== undefined) {
+            return value.seconds * 1000;
+        }
+        if (typeof value.toDate === 'function') {
+            return value.toDate().getTime();
+        }
+        return null;
+    };
+
     const handleConfirm = () => {
         if (selectedBatch) {
             const chosenStock = productStocks.find(s => s.id === selectedBatch);
-            dispatch(addProduct({ ...product, productStockId: chosenStock?.id, batchId: chosenStock?.batchId, stock: chosenStock.quantity }));
+
+            if (!chosenStock) {
+                return;
+            }
+
+            const batchInfo = {
+                productStockId: chosenStock.id ?? null,
+                batchId: chosenStock.batchId ?? null,
+                batchNumber: chosenStock.batchNumberId ?? null,
+                quantity: chosenStock.quantity ?? null,
+                expirationDate: normalizeExpirationDate(chosenStock.expirationDate),
+                locationId: chosenStock.location ?? null,
+                locationName: chosenStock.location ? formatLocation(chosenStock.location) : null,
+            };
+
+            dispatch(addProduct({
+                ...product,
+                productStockId: batchInfo.productStockId,
+                batchId: batchInfo.batchId,
+                stock: chosenStock.quantity,
+                batchInfo,
+            }));
             dispatch(closeProductStockSimple());
         }
     };

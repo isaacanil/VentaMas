@@ -197,6 +197,9 @@ export const cartSlice = createSlice({
                     checkingID.productStockId = product.productStockId;
                     checkingID.batchId = product.batchId;
                     checkingID.stock = product.stock;
+                    if (product.batchInfo) {
+                        checkingID.batchInfo = product.batchInfo;
+                    }
                     checkingID.amountToBuy += 1;
                 }
 

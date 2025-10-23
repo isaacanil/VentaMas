@@ -7,11 +7,14 @@ import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
 import { openProductStockSimple } from '../../../../../../features/productStock/productStockSimpleSlice'; 
 import { useProductStockCheck } from '../../../../../../hooks/useProductStockCheck'; 
 import { getTotalPrice } from '../../../../../../utils/pricing';
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { getLocationName } from '../../../../../../firebase/warehouse/locationService';
  
 import { useProductInCart, useProductStockStatus } from "./useProductCartAndStock";
 
 export const useProductHandling = (product, taxReceiptEnabled) => {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [productState, setProductState] = useState({
     imageHidden: false,
     weightEntryModalOpen: false,
@@ -39,6 +42,24 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
 
   const price = useMemo(() => getTotalPrice(product, taxReceiptEnabled), [product, taxReceiptEnabled]);
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(false);
+
+  const normalizeExpirationDate = useCallback((value) => {
+    if (!value) return null;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = Date.parse(value);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    if (typeof value === 'object') {
+      if (value.seconds !== undefined) {
+        return value.seconds * 1000;
+      }
+      if (typeof value.toDate === 'function') {
+        return value.toDate().getTime();
+      }
+    }
+    return null;
+  }, []);
 
   const handleGetThisProduct = useCallback(async () => {
     try {
@@ -100,7 +121,32 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
       }
       if (productStocks.length === 1) {
         const [ps] = productStocks;
-        dispatch(addProduct({ ...product, productStockId: ps.id, batchId: ps.batchId }));
+        let locationName = null;
+        if (ps?.location && user) {
+          try {
+            locationName = await getLocationName(user, ps.location);
+          } catch (error) {
+            console.warn('No se pudo resolver el nombre de la ubicación:', error);
+          }
+        }
+
+        const batchInfo = {
+          productStockId: ps?.id ?? null,
+          batchId: ps?.batchId ?? null,
+          batchNumber: ps?.batchNumberId ?? null,
+          quantity: ps?.quantity ?? null,
+          expirationDate: normalizeExpirationDate(ps?.expirationDate),
+          locationId: ps?.location ?? null,
+          locationName: locationName ?? null,
+        };
+
+        dispatch(addProduct({
+          ...product,
+          productStockId: ps.id,
+          batchId: ps.batchId,
+          stock: ps?.quantity ?? product.stock,
+          batchInfo,
+        }));
         return;
       }
       if (product?.weightDetail?.isSoldByWeight) {
@@ -128,6 +174,8 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
     alertsEnabled,
     lowThreshold,
     criticalThreshold,
+    normalizeExpirationDate,
+    user,
   ]);
 
   const deleteProductFromCart = useCallback(
