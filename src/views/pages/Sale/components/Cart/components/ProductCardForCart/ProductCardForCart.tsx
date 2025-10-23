@@ -272,17 +272,24 @@ export const ProductCardForCart = ({
     : hasBatchInfo
     ? '#4096ff'
     : '#8c8c8c';
-  const locationIdRaw = batchInfo?.locationId ?? item?.locationId ?? item?.location ?? null;
-  const storedLocationName = batchInfo?.locationName;
-  const locationLabelRaw = storedLocationName && storedLocationName !== 'Cargando...' && storedLocationName !== 'N/A'
-    ? storedLocationName
-    : locationIdRaw;
-  const locationLabel = typeof locationLabelRaw === 'string'
-    ? locationLabelRaw
-    : locationLabelRaw != null
-      ? String(locationLabelRaw)
-      : '';
-  const showLocation = Boolean(hasBatchInfo && locationLabel);
+  const rawBatchNumber = batchInfo?.batchNumber
+    ?? batchInfo?.batchNumberId
+    ?? batchInfo?.batchId
+    ?? item?.batchNumber
+    ?? item?.batchId
+    ?? null;
+  const batchNumberLabel = rawBatchNumber != null && rawBatchNumber !== ''
+    ? `Lote ${rawBatchNumber}`
+    : null;
+  const batchSummaryParts: string[] = [];
+  if (batchNumberLabel) {
+    batchSummaryParts.push(batchNumberLabel);
+  }
+  if (formattedExpirationDate) {
+    batchSummaryParts.push(formattedExpirationDate);
+  }
+  const batchSummaryText = batchSummaryParts.join(' · ');
+  const showBatchSummary = Boolean(hasBatchInfo && batchSummaryParts.length > 0);
 
   const handleBatchInfoKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -310,15 +317,26 @@ export const ProductCardForCart = ({
         <TopBar>
           <LeftSlot $hasBatch={hasBatchInfo}>
             {hasBatchInfo ? (
-              showLocation ? (
-                <LocationInteractive
+              showBatchSummary ? (
+                <BatchSummaryInteractive
+                  $expired={isExpired}
                   role="button"
                   tabIndex={0}
-                  title={locationLabel}
+                  title={batchSummaryText}
                   onClick={() => onOpenBatchInfoModal(item)}
                   onKeyDown={handleBatchInfoKeyDown}
                 >
-                  <span className="location-text">{locationLabel}</span>
+                  <span className="summary-text">
+                    {batchNumberLabel && (
+                      <span className="batch-token">{batchNumberLabel}</span>
+                    )}
+                    {batchNumberLabel && formattedExpirationDate && (
+                      <span className="separator"> · </span>
+                    )}
+                    {formattedExpirationDate && (
+                      <span className="expiration-text">{formattedExpirationDate}</span>
+                    )}
+                  </span>
                   {showExpirationIndicator && (
                     <Tooltip title={expirationTooltip}>
                       <StatusIcon
@@ -328,7 +346,7 @@ export const ProductCardForCart = ({
                       />
                     </Tooltip>
                   )}
-                </LocationInteractive>
+                </BatchSummaryInteractive>
               ) : (
                 <NameStack>
                   <TitleRow>
@@ -415,7 +433,7 @@ export const ProductCardForCart = ({
           <TitleContainer>
             <TitleRow>
               <TitleLabel>{item.name}</TitleLabel>
-              {!showLocation && showExpirationIndicator && (
+              {!showBatchSummary && showExpirationIndicator && (
                 <Tooltip title={expirationTooltip}>
                   <StatusIcon
                     icon={isExpired ? faCircleExclamation : faCircleCheck}
@@ -549,11 +567,11 @@ const RightCluster = styled.div`
   gap: 12px;
 `;
 
-const LocationInteractive = styled.span`
+const BatchSummaryInteractive = styled.span<{ $expired: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13.2px;
   color: #1677ff;
   cursor: pointer;
   max-width: 220px;
@@ -563,16 +581,29 @@ const LocationInteractive = styled.span`
 
   &:hover,
   &:focus {
-    text-decoration: underline;
     outline: none;
   }
 
-  .location-text {
+  .summary-text {
     display: inline-block;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .batch-token {
+    text-decoration: underline;
+    font-weight: 600;
+  }
+
+  .separator {
+    color: #64748b;
+  }
+
+  .expiration-text {
+    color: ${props => (props.$expired ? '#dc2626' : '#16a34a')};
+    font-weight: 600;
   }
 `;
 
