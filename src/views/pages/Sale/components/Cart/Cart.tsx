@@ -28,6 +28,7 @@ const Container = styled.div<{ $isOpen: boolean }>`
    overflow: hidden;
    display: grid;
    grid-template-rows: min-content 1fr min-content ;
+   border-left: 1px solid rgba(0, 0, 0, 0.21);
    padding: 0 ;
    margin: 0;
    gap: 0.4em;

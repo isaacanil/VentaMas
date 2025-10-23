@@ -178,8 +178,6 @@ const Container = styled.ul`
     padding: 0.4em;
     overflow-y: scroll;
     position: relative;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.121);
 `
 const EmptyCartMessage = styled(motion.div)`

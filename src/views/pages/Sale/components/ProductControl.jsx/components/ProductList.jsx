@@ -124,7 +124,9 @@ const ProductsListContainer = styled.div`
     padding: 0.4em;
     gap: 0.4em;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-left: none;
+    border-right: none;
+    // border-radius: 4px;
     overflow: auto;
     width: 100%;
     position: relative;

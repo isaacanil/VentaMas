@@ -238,13 +238,12 @@ const Header = styled.div`
    display: flex;
    align-items: center; 
    justify-content: space-between;
-   height: 2.75em;
+   height: 2.64em;
    position: relative;
    z-index: 10;
    gap: 0.5em;
    background-color: var(--Gray8);
-   border-bottom-left-radius: var(--border-radius-light);
-   padding: 0.5em;
+   padding: 0 0.5em;
    
    .ant-input-affix-wrapper {
       border-right: none;

@@ -183,7 +183,6 @@ export const Sales = (): JSX.Element => {
         <ProductContainer>
           <MenuAppComponent
             displayName='Productos'
-            borderRadius={'bottom-right'}
             searchData={searchData}
             setSearchData={setSearchData}
             showNotificationButton={true}
@@ -208,10 +207,10 @@ const Container = styled(motion.div)`
   overflow-y: hidden;
   grid-template-columns: 1fr min-content;
   background-color: ${props => props.theme.bg.shade}; 
-  gap: 0.4em;
+
   @media(max-width: 800px) {
     grid-template-columns: 1fr;
-    gap: 0;
+
 }
   `
 const ProductContainer = styled.div`
@@ -219,4 +218,5 @@ const ProductContainer = styled.div`
     flex-direction: column;
     min-height: 0;
     height: 100%;
+    
 `
