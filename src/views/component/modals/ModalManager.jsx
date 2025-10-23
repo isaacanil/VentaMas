@@ -53,6 +53,7 @@ import ProductExpirySelection from "./ProductExpirySelection/ProductExpirySelect
 import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
 import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
+import ProductBrandModal from "./ProductBrands/ProductBrandModal"
 
 
 
@@ -188,6 +189,7 @@ export const ModalManager = () => {
       <ImageViewer />
       <TestModeIndicator />
       <ConfirmationDialog />
+      <ProductBrandModal />
     </Fragment>
   )
 

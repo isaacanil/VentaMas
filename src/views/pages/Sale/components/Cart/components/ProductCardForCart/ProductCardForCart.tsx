@@ -1,4 +1,6 @@
 import { MessageOutlined, PercentageOutlined, MoreOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip, Badge, Button, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { motion } from 'framer-motion';
@@ -112,6 +114,27 @@ const ensureNumber = (value: number | string | undefined | null): number => {
   return 0;
 };
 
+const normalizeExpirationDate = (value: unknown): number | null => {
+  if (!value) return null;
+  if (typeof value === 'number') return value;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  if (typeof value === 'object') {
+    const maybeTimestamp = value as { seconds?: number; toDate?: () => Date };
+    if (typeof maybeTimestamp.seconds === 'number') {
+      return maybeTimestamp.seconds * 1000;
+    }
+    if (typeof maybeTimestamp.toDate === 'function') {
+      const dateValue = maybeTimestamp.toDate();
+      return dateValue instanceof Date ? dateValue.getTime() : null;
+    }
+  }
+  return null;
+};
+
 export const ProductCardForCart = ({
   item,
   onOpenCommentModal,
@@ -126,6 +149,19 @@ export const ProductCardForCart = ({
   const [precios, setPrecios] = useState<PriceOption[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const hasBatchInfo = Boolean(item?.batchInfo || item?.batchId || item?.productStockId);
+  const batchInfo = item.batchInfo ?? null;
+  const expirationTimestamp = normalizeExpirationDate(batchInfo?.expirationDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTimestamp = today.getTime();
+  const isExpired = expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
+  const formattedExpirationDate = expirationTimestamp
+    ? new Date(expirationTimestamp).toLocaleDateString()
+    : null;
+  const showExpirationIndicator = Boolean(hasBatchInfo && expirationTimestamp !== null);
+  const expirationTooltip = !showExpirationIndicator
+    ? ''
+    : `${isExpired ? 'Lote vencido' : 'Lote vigente'}${formattedExpirationDate ? ` · ${formattedExpirationDate}` : ''}`;
 
   const updatePricing = (pricing?: PricingInfo) => {
     const pricesWithTax = extraerPreciosConImpuesto(pricing, taxReceiptEnabled) as PriceOption[];
@@ -236,7 +272,6 @@ export const ProductCardForCart = ({
     : hasBatchInfo
     ? '#4096ff'
     : '#8c8c8c';
-  const batchInfo = item.batchInfo ?? null;
   const locationIdRaw = batchInfo?.locationId ?? item?.locationId ?? item?.location ?? null;
   const storedLocationName = batchInfo?.locationName;
   const locationLabelRaw = storedLocationName && storedLocationName !== 'Cargando...' && storedLocationName !== 'N/A'
@@ -264,7 +299,13 @@ export const ProductCardForCart = ({
   const hasDiscount = (item.discount?.value ?? 0) > 0;
 
   return (
-    <Container variants={variants} initial="initial" animate="animate" transition={{ duration: 0.6 }}>
+    <Container
+      variants={variants}
+      initial="initial"
+      animate="animate"
+      transition={{ duration: 0.6 }}
+      $expired={isExpired}
+    >
       <Row>
         <TopBar>
           <LeftSlot $hasBatch={hasBatchInfo}>
@@ -277,11 +318,31 @@ export const ProductCardForCart = ({
                   onClick={() => onOpenBatchInfoModal(item)}
                   onKeyDown={handleBatchInfoKeyDown}
                 >
-                  {locationLabel}
+                  <span className="location-text">{locationLabel}</span>
+                  {showExpirationIndicator && (
+                    <Tooltip title={expirationTooltip}>
+                      <StatusIcon
+                        icon={isExpired ? faCircleExclamation : faCircleCheck}
+                        $expired={isExpired}
+                        aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                      />
+                    </Tooltip>
+                  )}
                 </LocationInteractive>
               ) : (
                 <NameStack>
-                  <TitleLabel>{item.name}</TitleLabel>
+                  <TitleRow>
+                    <TitleLabel>{item.name}</TitleLabel>
+                    {showExpirationIndicator && (
+                      <Tooltip title={expirationTooltip}>
+                        <StatusIcon
+                          icon={isExpired ? faCircleExclamation : faCircleCheck}
+                          $expired={isExpired}
+                          aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                        />
+                      </Tooltip>
+                    )}
+                  </TitleRow>
                   {item.comment && (
                     <CommentPreview title={item.comment}>
                       {item.comment}
@@ -291,7 +352,18 @@ export const ProductCardForCart = ({
               )
             ) : (
               <NameStack>
-                <TitleLabel>{item.name}</TitleLabel>
+                <TitleRow>
+                  <TitleLabel>{item.name}</TitleLabel>
+                  {showExpirationIndicator && (
+                    <Tooltip title={expirationTooltip}>
+                      <StatusIcon
+                        icon={isExpired ? faCircleExclamation : faCircleCheck}
+                        $expired={isExpired}
+                        aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                      />
+                    </Tooltip>
+                  )}
+                </TitleRow>
                 {item.comment && (
                   <CommentPreview title={item.comment}>
                     {item.comment}
@@ -341,7 +413,18 @@ export const ProductCardForCart = ({
       {hasBatchInfo && (
         <Row>
           <TitleContainer>
-            <TitleLabel>{item.name}</TitleLabel>
+            <TitleRow>
+              <TitleLabel>{item.name}</TitleLabel>
+              {!showLocation && showExpirationIndicator && (
+                <Tooltip title={expirationTooltip}>
+                  <StatusIcon
+                    icon={isExpired ? faCircleExclamation : faCircleCheck}
+                    $expired={isExpired}
+                    aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                  />
+                </Tooltip>
+              )}
+            </TitleRow>
             {item.comment && (
               <CommentPreview title={item.comment}>
                 {item.comment}
@@ -385,12 +468,12 @@ export const ProductCardForCart = ({
   );
 };
 
-const Container = styled(motion.div)`
+const Container = styled(motion.div)<{ $expired: boolean }>`
     width: 100%;
     height: min-content;
     background-color: #ffffff;
     padding: 0.4em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid ${props => props.$expired ? '#dc2626' : 'rgba(0, 0, 0, 0.1)'};
     border-radius: 8px;
     display: grid;
     gap: 0.2em;
@@ -467,7 +550,9 @@ const RightCluster = styled.div`
 `;
 
 const LocationInteractive = styled.span`
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   color: #1677ff;
   cursor: pointer;
@@ -481,12 +566,27 @@ const LocationInteractive = styled.span`
     text-decoration: underline;
     outline: none;
   }
+
+  .location-text {
+    display: inline-block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 `;
 
 const NameStack = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 `;
 
@@ -529,4 +629,10 @@ const Price = styled.span<{ hasDiscount: boolean }>`
     padding: 0 10px;
     background-color: var(--White1);
     color: ${props => props.hasDiscount ? '#52c41a' : 'var(--Gray6)'};
+`;
+
+const StatusIcon = styled(FontAwesomeIcon)<{ $expired: boolean }>`
+  font-size: 12px;
+  color: ${props => (props.$expired ? '#dc2626' : '#16a34a')};
+  flex-shrink: 0;
 `;

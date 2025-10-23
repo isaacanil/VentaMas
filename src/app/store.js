@@ -5,6 +5,7 @@ import abilitiesReducer from "../features/abilities/abilitiesSlice";
 import accountsReceivablePaymentReducer from "../features/accountsReceivable/accountsReceivablePaymentSlice";
 import accountsReceivableReducer from "../features/accountsReceivable/accountsReceivableSlice";
 import activeIngredientsReducer from "../features/activeIngredients/activeIngredientsSlice";
+import productBrandReducer from "../features/productBrands/productBrandSlice";
 import addOrderReducer from "../features/addOrder/addOrderSlice";
 import alertReducer from "../features/Alert/AlertSlice";
 import appReducer from "../features/appModes/appModeSlice";
@@ -97,6 +98,7 @@ export const store = configureStore({
     customPizza: customPizzaReducer,
     productOutflow: productOutflowReducer,
     activeIngredients: activeIngredientsReducer,
+    productBrand: productBrandReducer,
     
     // Cart & Orders
     cart: cartReducer,

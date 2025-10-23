@@ -6,9 +6,10 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { closeModalUpdateProd } from '../../../../../../features/modals/modalSlice';
-import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
+import { ChangeProductData, PRODUCT_BRAND_DEFAULT, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
 import { fbAddProduct } from '../../../../../../firebase/products/fbAddProduct';
 import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
+import { useListenProductBrands } from '../../../../../../firebase/products/brands/productBrands';
 import { initTaxes } from '../../../UpdateProduct/InitializeData';
 import { imgFailed } from '../../ImageManager/ImageManager';
 import { BarCode } from '../sections/BarCode';
@@ -25,6 +26,7 @@ export const General = ({ showImageManager }) => {
     const [submit, setSubmit] = useState(false)
     const [form] = Form.useForm(); 
     const { product, status } = useSelector(selectUpdateProductData);
+    const { data: productBrands = [] } = useListenProductBrands();
 
     // Actualizar los valores del formulario cuando cambie el producto
     useEffect(() => {
@@ -59,6 +61,17 @@ export const General = ({ showImageManager }) => {
         if (key === 'warranty') {
             dispatch(ChangeProductData({ product: { warranty: { ...product?.warranty, ...changeValue?.warranty } } }))
             return
+        }
+        if (key === 'brand') {
+            const normalizedBrand = typeof value === 'string'
+                ? value.replace(/\s+/g, ' ').trim()
+                : '';
+            const sanitizedBrand = normalizedBrand || PRODUCT_BRAND_DEFAULT;
+            dispatch(ChangeProductData({ product: { brand: sanitizedBrand } }));
+            if (value !== sanitizedBrand) {
+                form.setFieldsValue({ brand: sanitizedBrand });
+            }
+            return;
         }
         dispatch(ChangeProductData({ product: { ...changeValue } }));
     }
@@ -138,6 +151,7 @@ export const General = ({ showImageManager }) => {
                         >
                             <ProductInfo
                                 product={product}
+                                productBrands={productBrands}
                             />
                             <InventoryInfo
                                 product={product}

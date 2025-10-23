@@ -4,8 +4,20 @@ import { nanoid } from 'nanoid';
 import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/WarrantyInfo'
 import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
 
+const DEFAULT_BRAND = 'Sin marca';
+export const PRODUCT_BRAND_DEFAULT = DEFAULT_BRAND;
+
+const normalizeBrand = (value) => {
+    if (typeof value !== 'string') {
+        return DEFAULT_BRAND;
+    }
+    const trimmed = value.replace(/\s+/g, ' ').trim();
+    return trimmed || DEFAULT_BRAND;
+};
+
 const createEmptyProduct = () => ({
     name: '',
+    brand: DEFAULT_BRAND,
     image: '',
     category: '',
     pricing: {
@@ -64,20 +76,28 @@ export const updateProductSlice = createSlice({
     reducers: {
         ChangeProductData: (state, action) => {
             const { status, product } = action.payload
-            if (!state.status) {
+            if (status && !state.status) {
                 state.status = status
             }
-            state.product = {
+            const merged = {
                 ...state.product,
                 ...product,
             };
+            if (product && Object.prototype.hasOwnProperty.call(product, 'brand')) {
+                merged.brand = normalizeBrand(product?.brand);
+            } else {
+                merged.brand = normalizeBrand(merged.brand);
+            }
+            state.product = merged;
         },
         setProduct: (state, action) => {
             const product = action.payload
-            state.product = {
+            const merged = {
                 ...state.product,
                 ...product,
-            }
+            };
+            merged.brand = normalizeBrand(merged.brand);
+            state.product = merged;
         },
         ChangeProductImage: (state, action) => {
             state.product.image = action.payload

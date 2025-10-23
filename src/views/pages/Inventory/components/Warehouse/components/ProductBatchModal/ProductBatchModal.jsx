@@ -141,6 +141,12 @@ const BatchCard = styled.div`
       color: #94a3b8;
     }
 
+    .date-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .text {
       white-space: nowrap;
       overflow: hidden;
@@ -162,6 +168,15 @@ const BatchCard = styled.div`
   }
 `
 
+const StatusBadge = styled.span`
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: ${props => props.$expired ? '#fee2e2' : '#dcfce7'};
+  color: ${props => props.$expired ? '#dc2626' : '#15803d'};
+`
+
 export function ProductBatchModal() {
     const dispatch = useDispatch();
     const { isOpen, productId, product } = useSelector(selectProductStockSimple);
@@ -172,6 +187,10 @@ export function ProductBatchModal() {
     // Obtener datos de productStock en tiempo real
     const { data: productStocks, loading } = useListenProductsStock(productId);
     const { locationNames, fetchLocationName } = useLocationNames();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTimestamp = today.getTime();
 
     const filteredBatches = productStocks.filter(stock =>
         stock.batchNumberId.toString().toLowerCase().includes(searchText.toLowerCase()) ||
@@ -261,11 +280,7 @@ export function ProductBatchModal() {
                     type="primary"
                     onClick={handleConfirm}
                     disabled={!selectedBatch}
-                    style={{
-                        background: '#2563eb',
-                        borderRadius: '8px',
-                        height: '40px'
-                    }}
+                    
                 >
                     Confirmar
                 </Button>
@@ -287,40 +302,53 @@ export function ProductBatchModal() {
                 </div>
             ) : filteredBatches.length > 0 ? (
                 <BatchGrid>
-                    {filteredBatches.map(stock => (
-                        <BatchCard
-                            key={stock.id}
-                            selected={selectedBatch === stock.id}
-                            onClick={() => handleBatchToggle(stock.id)}
-                        >
-                            <div className="card-header">
-                                <div className="batch-number">
-                                    Lote #{stock.batchNumberId}
-                                    <CheckCircleOutlined className="check-icon" />
-                                </div>
-                            </div>
-                            <div className="card-content">
-                                <div className="locations-column">
-                                    <LocationBadge>
-                                        {formatLocation(stock.location)}
-                                    </LocationBadge>
-                                </div>
-                                <div className="info-column">
-                                    <div className="info-row quantity">
-                                        <span className="text">{stock.quantity} unidades</span>
-                                    </div>
-                                    <div className="info-row">
-                                        <CalendarOutlined className="icon" />
-                                        <span className="text">
-                                            {stock.expirationDate 
-                                                ? new Date(stock.expirationDate.seconds * 1000).toLocaleDateString()
-                                                : 'N/A'}
-                                        </span>
+                    {filteredBatches.map(stock => {
+                        const expirationTimestamp = normalizeExpirationDate(stock.expirationDate);
+                        const isExpired = expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
+                        const formattedExpiration = expirationTimestamp
+                            ? new Date(expirationTimestamp).toLocaleDateString()
+                            : null;
+
+                        return (
+                            <BatchCard
+                                key={stock.id}
+                                selected={selectedBatch === stock.id}
+                                onClick={() => handleBatchToggle(stock.id)}
+                            >
+                                <div className="card-header">
+                                    <div className="batch-number">
+                                        Lote #{stock.batchNumberId}
+                                        <CheckCircleOutlined className="check-icon" />
                                     </div>
                                 </div>
-                            </div>
-                        </BatchCard>
-                    ))}
+                                <div className="card-content">
+                                    <div className="locations-column">
+                                        <LocationBadge>
+                                            {formatLocation(stock.location)}
+                                        </LocationBadge>
+                                    </div>
+                                    <div className="info-column">
+                                        <div className="info-row quantity">
+                                            <span className="text">{stock.quantity} unidades</span>
+                                        </div>
+                                        <div className="info-row">
+                                            <CalendarOutlined className="icon" />
+                                            <div className="date-container">
+                                                <span className="text">
+                                                    {formattedExpiration || 'N/A'}
+                                                </span>
+                                                {formattedExpiration && (
+                                                    <StatusBadge $expired={isExpired}>
+                                                        {isExpired ? 'Vencido' : 'Vigente'}
+                                                    </StatusBadge>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </BatchCard>
+                        );
+                    })}
                 </BatchGrid>
             ) : (
                 <Empty
