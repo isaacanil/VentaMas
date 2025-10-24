@@ -137,7 +137,7 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
                     <Fragment>
                         <ButtonGroup>
                    
-                            <InventoryFilterAndSort />
+                            <InventoryFilterAndSort contextKey='inventory' />
                         </ButtonGroup>
                   
                     </Fragment>

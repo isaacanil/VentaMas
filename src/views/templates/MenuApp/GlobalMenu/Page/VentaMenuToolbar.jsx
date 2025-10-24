@@ -104,6 +104,7 @@ export const VentaMenuToolbar = ({ side = 'left' }) => {
                             tooltip={'Filtrar y Ordenar'}
                             tooltipDescription={'Filtrar y Ordenar'}
                             tooltipPlacement={'bottom-start'}
+                            contextKey='sales'
                         />
                     )
 

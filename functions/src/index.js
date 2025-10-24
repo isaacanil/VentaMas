@@ -40,6 +40,7 @@ import { getInvoiceV2Http } from "./versions/v2/invoice/controllers/getInvoiceHt
 import { processInvoiceCompensation } from "./versions/v2/invoice/triggers/compensation.worker.js";
 import { processInvoiceOutbox } from "./versions/v2/invoice/triggers/outbox.worker.js";
 import { syncRealtimePresence } from "./versions/v2/auth/triggers/presenceSync.js";
+import { rebuildNcfLedger } from "./versions/v2/invoice/controllers/rebuildNcfLedger.controller.js";
 
 export { 
   keepSupabaseAlive, 
@@ -58,6 +59,7 @@ export {
   getInvoiceV2Http,
   processInvoiceOutbox,
   processInvoiceCompensation,
+  rebuildNcfLedger,
   clientLogin,
   clientValidateUser,
   clientSignUp,

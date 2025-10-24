@@ -1,7 +1,6 @@
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
-
 import { toggleDeveloperModal } from '../../../../../features/modals/modalSlice'
 
 export const FeatureCard = ({ card }) => {

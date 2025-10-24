@@ -1,10 +1,11 @@
-import { SearchOutlined, CheckCircleOutlined, CalendarOutlined } from '@ant-design/icons'
+import { SearchOutlined, CheckCircleOutlined, CalendarOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { Modal, Button, Input, Empty, Spin } from 'antd'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components'
 
 import { addProduct, SelectCartData } from '../../../../../../../features/cart/cartSlice';
+import { DEFAULT_FILTER_CONTEXT, selectStockLocations } from '../../../../../../../features/filterProduct/filterProductsSlice';
 import { selectProductStockSimple, closeProductStockSimple } from '../../../../../../../features/productStock/productStockSimpleSlice';
 import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
 import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
@@ -84,8 +85,16 @@ const BatchCard = styled.div`
   padding: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 2px solid ${props => props.selected ? '#2563eb' : '#e2e8f0'};
-  box-shadow: ${props => props.selected ? '0 4px 12px rgba(37, 99, 235, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.05)'};
+  border: 2px solid ${({ selected, $expired }) => {
+    if (selected && $expired) return '#dc2626';
+    if (selected) return '#2563eb';
+    return '#e2e8f0';
+  }};
+  box-shadow: ${({ selected, $expired }) => {
+    if (selected && $expired) return '0 4px 12px rgba(220, 38, 38, 0.2)';
+    if (selected) return '0 4px 12px rgba(37, 99, 235, 0.15)';
+    return '0 2px 8px rgba(0, 0, 0, 0.05)';
+  }};
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -183,6 +192,9 @@ export function ProductBatchModal() {
     const [selectedBatch, setSelectedBatch] = useState(null);
     const [searchText, setSearchText] = useState('');
     const {products} = useSelector(SelectCartData);
+    const inventoryLocations = useSelector((state) => selectStockLocations(state, DEFAULT_FILTER_CONTEXT));
+    const salesLocations = useSelector((state) => selectStockLocations(state, 'sales'));
+    const selectedLocations = salesLocations?.length ? salesLocations : inventoryLocations;
     
     // Obtener datos de productStock en tiempo real
     const { data: productStocks, loading } = useListenProductsStock(productId);
@@ -192,20 +204,69 @@ export function ProductBatchModal() {
     today.setHours(0, 0, 0, 0);
     const todayTimestamp = today.getTime();
 
-    const filteredBatches = productStocks.filter(stock =>
-        stock.batchNumberId.toString().toLowerCase().includes(searchText.toLowerCase()) ||
-        stock.location.toLowerCase().includes(searchText.toLowerCase())
-    );
-    
+    const filteredBySearch = useMemo(() => {
+        const term = searchText.trim().toLowerCase();
+        if (!term) return productStocks;
+        return productStocks.filter(stock =>
+            stock.batchNumberId?.toString().toLowerCase().includes(term) ||
+            stock.location?.toLowerCase().includes(term)
+        );
+    }, [productStocks, searchText]);
 
+    const normalizeLocationId = (value) => {
+        if (typeof value !== 'string') return '';
+        return value.trim();
+    };
+
+    const isInSelectedLocations = (locationId, selectedList) => {
+        if (!locationId || !Array.isArray(selectedList) || selectedList.length === 0) {
+            return false;
+        }
+        return selectedList.some((rawSelected) => {
+            const selectedId = normalizeLocationId(rawSelected);
+            if (!selectedId) return false;
+            if (locationId === selectedId) return true;
+            return locationId.startsWith(`${selectedId}/`);
+        });
+    };
+
+    const { prioritizedBatches, otherLocationBatches, hasLocationFilter } = useMemo(() => {
+        const sanitizedSelected = (selectedLocations || [])
+            .map(normalizeLocationId)
+            .filter(Boolean);
+        const filterActive = sanitizedSelected.length > 0;
+        if (!filterActive) {
+            return {
+                prioritizedBatches: filteredBySearch,
+                otherLocationBatches: [],
+                hasLocationFilter: false,
+            };
+        }
+        const preferred = [];
+        const others = [];
+        filteredBySearch.forEach((stock) => {
+            const locationId = normalizeLocationId(stock?.location);
+            if (isInSelectedLocations(locationId, sanitizedSelected)) {
+                preferred.push(stock);
+                return;
+            }
+            others.push(stock);
+        });
+        return {
+            prioritizedBatches: preferred,
+            otherLocationBatches: others,
+            hasLocationFilter: true,
+        };
+    }, [filteredBySearch, selectedLocations]);
+    
     useEffect(() => {
-        const uniqueLocations = [...new Set(filteredBatches.map(stock => stock.location).filter(Boolean))];
+        const uniqueLocations = [...new Set(filteredBySearch.map(stock => normalizeLocationId(stock.location)).filter(Boolean))];
         uniqueLocations.forEach(loc => {
             if (!locationNames[loc]) {
                 fetchLocationName(loc);
             }
         });
-    }, [filteredBatches, locationNames, fetchLocationName]);
+    }, [filteredBySearch, locationNames, fetchLocationName]);
 
     useEffect(() => {
         if (products.length === 0) {
@@ -219,8 +280,29 @@ export function ProductBatchModal() {
         return locationNames[locationId] || 'Cargando...';
     }
 
-    const handleBatchToggle = (batchId) => {
-        setSelectedBatch(selectedBatch === batchId ? null : batchId);
+    const handleBatchToggle = (stock, isExpired) => {
+        if (!stock) return;
+
+        const isCurrentlySelected = selectedBatch === stock.id;
+
+        if (isCurrentlySelected) {
+            setSelectedBatch(null);
+            return;
+        }
+
+        if (isExpired) {
+            Modal.confirm({
+                title: 'Producto vencido',
+                icon: <ExclamationCircleOutlined style={{ color: '#dc2626' }} />,
+                content: 'El lote seleccionado está vencido. ¿Desea continuar?',
+                okText: 'Continuar',
+                cancelText: 'Cancelar',
+                onOk: () => setSelectedBatch(stock.id),
+            });
+            return;
+        }
+
+        setSelectedBatch(stock.id);
     };
 
     const normalizeExpirationDate = (value) => {
@@ -269,93 +351,191 @@ export function ProductBatchModal() {
     };
 
     return (
-        <StyledModal
-            open={isOpen}
-            onCancel={() => dispatch(closeProductStockSimple())}
-            title="Seleccionar Ubicación del Producto"
-            width={800}
-            style={{ top: 10 }}
-            footer={
-                <Button
-                    type="primary"
-                    onClick={handleConfirm}
-                    disabled={!selectedBatch}
-                    
-                >
-                    Confirmar
-                </Button>
-            }
-        >
-            <div className="search-container">
-                <Input
-                    placeholder="Buscar por número de lote o ubicación..."
-                    prefix={<SearchOutlined />}
-                    value={searchText}
-                    onChange={e => setSearchText(e.target.value)}
-                    style={{ borderRadius: '8px' }}
-                />
-            </div>
-
-            {loading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <Spin />
+        <StyledWrapper>
+            <StyledModal
+                open={isOpen}
+                onCancel={() => dispatch(closeProductStockSimple())}
+                title="Seleccionar Ubicación del Producto"
+                width={800}
+                style={{ top: 10 }}
+                footer={
+                    <Button
+                        type="primary"
+                        onClick={handleConfirm}
+                        disabled={!selectedBatch}
+                        
+                    >
+                        Confirmar
+                    </Button>
+                }
+            >
+                <div className="search-container">
+                    <Input
+                        placeholder="Buscar por número de lote o ubicación..."
+                        prefix={<SearchOutlined />}
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
+                        style={{ borderRadius: '8px' }}
+                    />
                 </div>
-            ) : filteredBatches.length > 0 ? (
-                <BatchGrid>
-                    {filteredBatches.map(stock => {
-                        const expirationTimestamp = normalizeExpirationDate(stock.expirationDate);
-                        const isExpired = expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
-                        const formattedExpiration = expirationTimestamp
-                            ? new Date(expirationTimestamp).toLocaleDateString()
-                            : null;
 
-                        return (
-                            <BatchCard
-                                key={stock.id}
-                                selected={selectedBatch === stock.id}
-                                onClick={() => handleBatchToggle(stock.id)}
-                            >
-                                <div className="card-header">
-                                    <div className="batch-number">
-                                        Lote #{stock.batchNumberId}
-                                        <CheckCircleOutlined className="check-icon" />
-                                    </div>
-                                </div>
-                                <div className="card-content">
-                                    <div className="locations-column">
-                                        <LocationBadge>
-                                            {formatLocation(stock.location)}
-                                        </LocationBadge>
-                                    </div>
-                                    <div className="info-column">
-                                        <div className="info-row quantity">
-                                            <span className="text">{stock.quantity} unidades</span>
-                                        </div>
-                                        <div className="info-row">
-                                            <CalendarOutlined className="icon" />
-                                            <div className="date-container">
-                                                <span className="text">
-                                                    {formattedExpiration || 'N/A'}
-                                                </span>
-                                                {formattedExpiration && (
-                                                    <StatusBadge $expired={isExpired}>
-                                                        {isExpired ? 'Vencido' : 'Vigente'}
-                                                    </StatusBadge>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </BatchCard>
-                        );
-                    })}
-                </BatchGrid>
-            ) : (
-                <Empty
-                    description="No se encontraron lotes"
-                    style={{ margin: '40px 0' }}
-                />
-            )}
-        </StyledModal>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <Spin />
+                    </div>
+                ) : (
+                    <>
+                        {hasLocationFilter ? (
+                            <>
+                                {prioritizedBatches.length > 0 ? (
+                                    <Section>
+                                        <SectionTitle>Disponibles en ubicaciones filtradas</SectionTitle>
+                                        <BatchGrid>
+                                            {prioritizedBatches.map((stock) =>
+                                                renderBatchCard({
+                                                    stock,
+                                                    selectedBatch,
+                                                    todayTimestamp,
+                                                    handleBatchToggle,
+                                                    normalizeExpirationDate,
+                                                    formatLocation,
+                                                    normalizeLocationId,
+                                                })
+                                            )}
+                                        </BatchGrid>
+                                    </Section>
+                                ) : (
+                                    <SectionNotice>
+                                        No se encontraron lotes en las ubicaciones seleccionadas.
+                                    </SectionNotice>
+                                )}
+
+                                {otherLocationBatches.length > 0 && (
+                                    <Section>
+                                        <SectionTitle>Disponibles en otras ubicaciones</SectionTitle>
+                                        <BatchGrid>
+                                            {otherLocationBatches.map((stock) =>
+                                                renderBatchCard({
+                                                    stock,
+                                                    selectedBatch,
+                                                    todayTimestamp,
+                                                    handleBatchToggle,
+                                                    normalizeExpirationDate,
+                                                    formatLocation,
+                                                    normalizeLocationId,
+                                                })
+                                            )}
+                                        </BatchGrid>
+                                    </Section>
+                                )}
+
+                                {prioritizedBatches.length === 0 && otherLocationBatches.length === 0 && (
+                                    <Empty
+                                        description="No se encontraron lotes"
+                                        style={{ margin: '40px 0' }}
+                                    />
+                                )}
+                            </>
+                        ) : filteredBySearch.length > 0 ? (
+                            <BatchGrid>
+                            {filteredBySearch.map((stock) =>
+                                renderBatchCard({
+                                    stock,
+                                    selectedBatch,
+                                    todayTimestamp,
+                                    handleBatchToggle,
+                                    normalizeExpirationDate,
+                                    formatLocation,
+                                    normalizeLocationId,
+                                })
+                            )}
+                            </BatchGrid>
+                        ) : (
+                            <Empty
+                                description="No se encontraron lotes"
+                                style={{ margin: '40px 0' }}
+                            />
+                        )}
+                    </>
+                )}
+            </StyledModal>
+        </StyledWrapper>
     );
 }
+
+function renderBatchCard({
+    stock,
+    selectedBatch,
+    todayTimestamp,
+    handleBatchToggle,
+    normalizeExpirationDate,
+    formatLocation,
+    normalizeLocationId,
+}) {
+    const expirationTimestamp = normalizeExpirationDate(stock.expirationDate);
+    const isExpired = expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
+    const formattedExpiration = expirationTimestamp
+        ? new Date(expirationTimestamp).toLocaleDateString()
+        : null;
+    const locationId = normalizeLocationId(stock.location);
+
+    return (
+        <BatchCard
+            key={stock.id}
+            selected={selectedBatch === stock.id}
+            $expired={isExpired}
+            onClick={() => handleBatchToggle(stock, isExpired)}
+        >
+            <div className="card-header">
+                <div className="batch-number">
+                    Lote #{stock.batchNumberId}
+                    <CheckCircleOutlined className="check-icon" />
+                </div>
+            </div>
+            <div className="card-content">
+                <div className="locations-column">
+                    <LocationBadge>
+                        {formatLocation(locationId)}
+                    </LocationBadge>
+                </div>
+                <div className="info-column">
+                    <div className="info-row quantity">
+                        <span className="text">{stock.quantity} unidades</span>
+                    </div>
+                    <div className="info-row">
+                        <CalendarOutlined className="icon" />
+                        <div className="date-container">
+                            <span className="text" style={{ color: isExpired ? '#dc2626' : undefined }}>
+                                {formattedExpiration || 'N/A'}
+                            </span>
+                            {formattedExpiration && (
+                                <StatusBadge $expired={isExpired}>
+                                    {isExpired ? 'Vencido' : 'Vigente'}
+                                </StatusBadge>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </BatchCard>
+    );
+}
+
+const Section = styled.div`
+  & + & {
+    margin-top: 24px;
+  }
+`;
+
+const SectionTitle = styled.h3`
+  margin: 12px 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+`;
+
+const SectionNotice = styled.p`
+  margin: 12px 0;
+  color: #64748b;
+  font-size: 0.9rem;
+`;

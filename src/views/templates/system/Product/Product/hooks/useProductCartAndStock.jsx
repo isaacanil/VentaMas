@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { SelectProduct, SelectSettingCart } from "../../../../../../features/cart/cartSlice";
-import { isStockExceeded, isStockRestricted, isStockZero } from "../utils/stock.utils";
+import { isStockExceeded, isStockRestricted, isStockZero, resolveStock } from "../utils/stock.utils";
 
 /**
  * Hook personalizado para verificar si un producto está en el carrito
@@ -40,7 +40,6 @@ export const useProductInCart = (productId) => {
     };
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useProductStockStatus = (productInCart, originalProduct) => {
     // Read dynamic stock alert settings
     const settingsCart = useSelector(SelectSettingCart);
@@ -61,7 +60,8 @@ export const useProductStockStatus = (productInCart, originalProduct) => {
     const productToCheck = productInCart ?? originalProduct;
     const inCart = Boolean(productInCart);
 
-    const remaining = (productToCheck?.stock ?? 0) - (productToCheck?.amountToBuy ?? 0);
+    const availableStock = resolveStock(productToCheck);
+    const remaining = availableStock - (productToCheck?.amountToBuy ?? 0);
 
     const criticalStock = useMemo(() => {
         if (!isStockRestricted(productToCheck)) return false;

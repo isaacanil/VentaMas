@@ -95,10 +95,13 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
   let skipped = 0;
   let emptyNcf = 0;
 
+  let hasMore = true;
+
   try {
-    while (true) {
+    while (hasMore) {
       const snap = await query.get();
       if (snap.empty) {
+        hasMore = false;
         break;
       }
 
@@ -143,10 +146,12 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
 
       const lastDoc = snap.docs[snap.docs.length - 1];
       if (!lastDoc) {
-        break;
+        hasMore = false;
+      } else if (snap.size < pageSize) {
+        hasMore = false;
+      } else {
+        query = invoicesRef.orderBy(docIdField).startAfter(lastDoc.id).limit(pageSize);
       }
-
-      query = invoicesRef.orderBy(docIdField).startAfter(lastDoc.id).limit(pageSize);
 
       logger.info('rebuildNcfLedger batch completed', {
         traceId,
@@ -160,6 +165,10 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
           emptyNcf,
         },
       });
+
+      if (!hasMore) {
+        break;
+      }
     }
   } catch (error) {
     logger.error('Error reconstruyendo ledger NCF', {

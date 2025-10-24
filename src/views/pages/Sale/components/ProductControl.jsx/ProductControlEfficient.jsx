@@ -5,12 +5,12 @@ import { StatusBar } from '../StatusBar/StatusBar';
 
 import { ProductList } from './components/ProductList';
 
-export function ProductControlEfficient({ products, productsLoading }) {
+export function ProductControlEfficient({ products, productsLoading, statusMeta = {} }) {
   return (
     <Container>
       <ProductCategoryBar />
       <ProductList products={products} productsLoading={productsLoading} />
-      <StatusBar products={products} />
+      <StatusBar products={products} statusMeta={statusMeta} />
     </Container>
   );
 }

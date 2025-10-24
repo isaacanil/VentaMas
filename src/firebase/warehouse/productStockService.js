@@ -12,6 +12,9 @@ import {
   onSnapshot,
   getDoc,
   increment,
+  getAggregateFromServer,
+  sum,
+  count,
 } from 'firebase/firestore';
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
@@ -461,4 +464,57 @@ export const getProductStockById = async (user, productStockId) => {
     console.error('Error al obtener producto en stock por ID:', error);
     throw error;
   }
+};
+
+const buildWarehouseBounds = (warehouseId = '') => {
+  const normalized = String(warehouseId || '').trim();
+  if (!normalized) return null;
+  const upperBound = `${normalized}\uf8ff`;
+  return { lower: normalized, upper: upperBound };
+};
+
+export const getWarehouseStockAggregates = async (user, warehouseId) => {
+  if (!user?.businessID) return { totalQuantity: 0, totalItems: 0 };
+  const bounds = buildWarehouseBounds(warehouseId);
+  if (!bounds) return { totalQuantity: 0, totalItems: 0 };
+
+  const stockRef = getProductStockCollectionRef(user.businessID);
+  if (!stockRef) return { totalQuantity: 0, totalItems: 0 };
+
+  const baseQuery = query(
+    stockRef,
+    where('location', '>=', bounds.lower),
+    where('location', '<', bounds.upper),
+    where('isDeleted', '==', false),
+    where('status', '==', 'active')
+  );
+
+  try {
+    const aggregateSnapshot = await getAggregateFromServer(baseQuery, {
+      totalQuantity: sum('quantity'),
+      totalItems: count(),
+    });
+    const data = aggregateSnapshot.data();
+    return {
+      totalQuantity: data.totalQuantity ?? 0,
+      totalItems: data.totalItems ?? 0,
+    };
+  } catch (error) {
+    console.error('Error al obtener agregados de stock por almacén:', error);
+    return { totalQuantity: 0, totalItems: 0 };
+  }
+};
+
+export const getWarehousesStockAggregates = async (user, warehouseIds = []) => {
+  if (!Array.isArray(warehouseIds) || warehouseIds.length === 0) return {};
+  const summaries = await Promise.all(
+    warehouseIds.map(async (id) => ({
+      id,
+      summary: await getWarehouseStockAggregates(user, id),
+    }))
+  );
+  return summaries.reduce((acc, { id, summary }) => {
+    acc[id] = summary;
+    return acc;
+  }, {});
 };

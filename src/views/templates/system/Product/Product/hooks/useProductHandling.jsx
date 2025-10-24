@@ -1,15 +1,15 @@
-import { notification } from 'antd'; 
-import { useRef, useState, useMemo, useCallback } from "react"; 
+import { notification } from 'antd';
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { addProduct, deleteProduct } from '../../../../../../features/cart/cartSlice'; 
-import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
-import { openProductStockSimple } from '../../../../../../features/productStock/productStockSimpleSlice'; 
-import { useProductStockCheck } from '../../../../../../hooks/useProductStockCheck'; 
-import { getTotalPrice } from '../../../../../../utils/pricing';
 import { selectUser } from '../../../../../../features/auth/userSlice';
+import { addProduct, deleteProduct, SelectSettingCart } from '../../../../../../features/cart/cartSlice';
+import { openProductStockSimple } from '../../../../../../features/productStock/productStockSimpleSlice';
 import { getLocationName } from '../../../../../../firebase/warehouse/locationService';
- 
+import { useProductStockCheck } from '../../../../../../hooks/useProductStockCheck';
+import { getTotalPrice } from '../../../../../../utils/pricing';
+
+import { resolveStock } from "../utils/stock.utils";
 import { useProductInCart, useProductStockStatus } from "./useProductCartAndStock";
 
 export const useProductHandling = (product, taxReceiptEnabled) => {
@@ -41,6 +41,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
     : Math.min(lowThreshold, 10);
 
   const price = useMemo(() => getTotalPrice(product, taxReceiptEnabled), [product, taxReceiptEnabled]);
+  const productAvailableStock = useMemo(() => resolveStock(product), [product]);
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(false);
 
   const normalizeExpirationDate = useCallback((value) => {
@@ -89,7 +90,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
         lowStockWarningShownRef.current = true;
       }
       // NEW: Remind user when no stock exists (for non-strict stock products) only once.
-      if ((!product?.stock || product.stock <= 0) && !product?.restrictSaleWithoutStock && !noStockReminderShownRef.current) {
+      if (productAvailableStock <= 0 && !product?.restrictSaleWithoutStock && !noStockReminderShownRef.current) {
         noStockReminderShownRef.current = true;
       }
       // ...existing logic to handle product addition...
@@ -97,12 +98,12 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
         dispatch(addProduct(productInCart));
         return;
       }
-      if (!product?.stock || product.stock <= 0) {
+      if (productAvailableStock <= 0) {
         if (product?.weightDetail?.isSoldByWeight) {
           setProductState((prev) => ({ ...prev, weightEntryModalOpen: true }));
           return;
         }
-        dispatch(addProduct({ ...product, productStockId: null, batchId: null }));
+        dispatch(addProduct({ ...product, stock: productAvailableStock, productStockId: null, batchId: null }));
         return;
       }
       const productStocks = await checkProductStock(product);
@@ -144,7 +145,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
           ...product,
           productStockId: ps.id,
           batchId: ps.batchId,
-          stock: ps?.quantity ?? product.stock,
+          stock: ps?.quantity ?? productAvailableStock,
           batchInfo,
         }));
         return;
@@ -153,7 +154,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
         setProductState((prev) => ({ ...prev, weightEntryModalOpen: true }));
         return;
       }
-      dispatch(addProduct({ ...product, productStockId: null, batchId: null }));
+      dispatch(addProduct({ ...product, stock: productAvailableStock, productStockId: null, batchId: null }));
     } catch (error) {
       notification.error({
         message: 'Error',
@@ -176,6 +177,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
     criticalThreshold,
     normalizeExpirationDate,
     user,
+    productAvailableStock,
   ]);
 
   const deleteProductFromCart = useCallback(

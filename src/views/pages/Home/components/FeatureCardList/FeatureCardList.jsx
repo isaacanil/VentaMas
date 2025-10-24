@@ -1,12 +1,9 @@
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from "antd"
+import { Typography, Button} from "antd"
 import React from 'react'
 import styled from 'styled-components'
-
 import { FeatureCard } from './FeatureCard'
-
-const { Typography } = antd;
 
 export const FeatureCardList = ({ title, cardData }) => {
     const categories = cardData.reduce((acc, card) => {
@@ -29,7 +26,7 @@ export const FeatureCardList = ({ title, cardData }) => {
                 <Title level={4}>
                     {title && title}
                 </Title>
-                <antd.Button 
+                <Button 
                     type="text"
                     icon={isCollapsed ? 
                         <FontAwesomeIcon icon={faChevronDown} size="lg" /> : 

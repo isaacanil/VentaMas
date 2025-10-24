@@ -1,6 +1,6 @@
 import { Tooltip } from 'antd'
 import React from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 export const ButtonIconMenu = ({
     icon,
@@ -8,6 +8,7 @@ export const ButtonIconMenu = ({
     tooltip,
     tooltipDescription,
     tooltipPlacement = 'top',
+    indicator = false,
     ...rest
 }) => {
     const label = tooltip || tooltipDescription;
@@ -23,6 +24,7 @@ export const ButtonIconMenu = ({
         <Container
             onClick={onClick}
             aria-label={label}
+            $indicator={indicator}
             {...rest}
         >
             {icon}
@@ -55,6 +57,20 @@ const Container = styled.button`
         width: 2.3em;
         height: 2.3em;
     }
+    
+    ${({ $indicator }) => $indicator && css`
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f6573bff;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+        }
+    `}
     
     svg {
         font-size: 1.2em;

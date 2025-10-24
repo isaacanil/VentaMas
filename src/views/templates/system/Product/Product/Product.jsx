@@ -129,15 +129,6 @@ export const Product = memo(({ product }) => {
         />
         </Content>
       </Container>
-
-      {/*
-        Aquí podrías incluir tus modales, por ejemplo:
-        <ProductWeightEntryModal
-          isVisible={productState.weightEntryModalOpen}
-          product={product}
-          ...
-        />
-      */}
     </Fragment>
   );
 });

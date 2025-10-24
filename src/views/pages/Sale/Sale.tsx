@@ -1,6 +1,6 @@
 import { notification } from 'antd'
 import { motion } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -22,7 +22,7 @@ import { Cart } from './components/Cart/Cart'
 import { InvoicePanel } from './components/Cart/components/InvoicePanel/InvoicePanel.jsx'
 import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx'
 import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx'
-import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx'  
+import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx'
 import { ProductBatchModal } from '../Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx'
 
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
@@ -62,7 +62,7 @@ export const Sales = (): JSX.Element => {
   const [searchParams, setSearchParams] = useSearchParams();
   const user = useSelector(selectUser);
   const categoryGrouped = useSelector(selectCategoryGrouped)
-  const { products, loading: productsLoading, setLoading, error } = useGetProducts()
+  const { products, loading: productsLoading, stockMeta = {} } = useGetProducts(false, 'sales')
   const cartSettings = useSelector(SelectSettingCart);
   const cartData = useSelector(SelectCartData);
 
@@ -122,6 +122,22 @@ export const Sales = (): JSX.Element => {
 
   const filteredProducts = (useFilter(productsList, searchData) ?? []) as Product[]
   const filterProductsByVisibility = filteredProducts.filter((product) => product.isVisible !== false);
+  const filteredVisibleStockTotal = useMemo(
+    () =>
+      filterProductsByVisibility.reduce(
+        (sum, product) => sum + (Number(product?.stock ?? 0) || 0),
+        0
+      ),
+    [filterProductsByVisibility]
+  );
+  const statusMeta = useMemo(
+    () => ({
+      ...stockMeta,
+      productCount: filterProductsByVisibility.length,
+      visibleStockTotal: filteredVisibleStockTotal,
+    }),
+    [stockMeta, filterProductsByVisibility.length, filteredVisibleStockTotal]
+  );
 
   const hasInitializedRef = useRef<boolean>(false);
 
@@ -190,13 +206,14 @@ export const Sales = (): JSX.Element => {
           <ProductControlEfficient
             productsLoading={productsLoading}
             products={filterProductsByVisibility}
+            statusMeta={statusMeta}
           />
           <MenuComponents />
         </ProductContainer>
         <Cart />
-        <InvoicePanel />
-        <ProductBatchModal />
       </Container>
+      <InvoicePanel />
+      <ProductBatchModal />
     </>
   )
 }
@@ -218,5 +235,4 @@ const ProductContainer = styled.div`
     flex-direction: column;
     min-height: 0;
     height: 100%;
-    
 `

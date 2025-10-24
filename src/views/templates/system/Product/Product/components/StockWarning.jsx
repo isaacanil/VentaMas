@@ -6,7 +6,7 @@ const WarningWrapper = styled.div`
   position: absolute;
   ${({ position }) => (position === 'top' ? 'top: 0;' : 'bottom: 0;')}
   left: 0;
-  width: 90px;
+  width: 105px;
   text-align: center;
   line-height: 1.2em;
   border-top-right-radius: 7px;

@@ -1,16 +1,42 @@
 import { Button } from 'antd';
 import { motion, useReducedMotion } from 'framer-motion'
-import { useRef, useState, useEffect, useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 import { icons } from '../../../../../../../constants/icons/icons'
-import { resetFilters } from '../../../../../../../features/filterProduct/filterProductsSlice'
+import { resetFilters, DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, loadFilterPreferences, persistFilterPreferences, selectFiltersByContext, selectFilterMeta } from '../../../../../../../features/filterProduct/filterProductsSlice'
+import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { ButtonIconMenu } from '../../../../../../templates/system/Button/ButtonIconMenu'
 
 import { Body } from './components/Body/Body'
 import { Header } from './components/Header/Header'
 
+const normalizeArray = (value = []) =>
+    Array.isArray(value) ? [...value].sort() : [];
+
+const isSameFilterValue = (field, current, comparison) => {
+    const defaultValue = DEFAULT_FILTERS[field];
+    if (Array.isArray(defaultValue)) {
+        const currentArr = normalizeArray(current);
+        const compareArr = normalizeArray(comparison);
+        if (currentArr.length !== compareArr.length) return false;
+        return currentArr.every((item, index) => item === compareArr[index]);
+    }
+    return current === comparison;
+};
+
+const haveFiltersChanged = (prev = {}, next = {}) =>
+    Object.keys(DEFAULT_FILTERS).some((field) => !isSameFilterValue(field, prev[field], next[field]));
+
+const cloneFilters = (filters) => {
+    if (!filters) return filters;
+    try {
+        return JSON.parse(JSON.stringify(filters));
+    } catch (error) {
+        return { ...filters };
+    }
+};
 
 // Easing curves inspiradas en Material & Human Interface Guidelines
 // (valores cubic-bezier para desacelerar suave y acelerar sutil)
@@ -25,7 +51,7 @@ const useOutsideClickIgnoreAntD = (ref, active, onOutside) => {
         const isInAntDOverlay = (el) =>
             !!(
                 el?.closest?.(
-                    '.ant-select-dropdown, .ant-picker-dropdown, .ant-cascader-dropdown, .ant-dropdown, .ant-tooltip, .ant-popover'
+                    '.ant-select-dropdown, .ant-picker-dropdown, .ant-cascader-dropdown, .ant-dropdown, .ant-tooltip, .ant-popover, [data-inventory-selector-overlay=\"true\"]'
                 )
             );
 
@@ -47,24 +73,72 @@ const useOutsideClickIgnoreAntD = (ref, active, onOutside) => {
     }, [active, onOutside, ref]);
 };
 
-export const InventoryFilterAndSort = ({tooltip, tooltipDescription, tooltipPlacement}) => {
+export const InventoryFilterAndSort = ({
+    tooltip,
+    tooltipDescription,
+    tooltipPlacement,
+    contextKey = DEFAULT_FILTER_CONTEXT,
+}) => {
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef(null);
     const reduceMotion = useReducedMotion();
+    const user = useSelector(selectUser);
+    const filters = useSelector((state) => selectFiltersByContext(state, contextKey));
+    const meta = useSelector(selectFilterMeta);
+    const userId = useMemo(() => {
+        if (!user) return null;
+        return user.uid || user.id || user.userId || user.user_id || null;
+    }, [user]);
+    const previousFiltersRef = useRef(cloneFilters(filters));
 
     const handleOpen = useCallback(() => setIsOpen((v) => !v), []);
     const close = useCallback(() => setIsOpen(false), []);
 
     useOutsideClickIgnoreAntD(menuRef, isOpen, close);
 
-    const handleReset = () => dispatch(resetFilters());
+    const handleReset = () => dispatch(resetFilters({ context: contextKey }));
 
     useEffect(() => {
         if (isOpen && menuRef.current) {
             menuRef.current.focus();
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (!userId) return;
+        if (meta?.loading) return;
+        if (meta?.loadedForUser === userId) return;
+        dispatch(loadFilterPreferences({ userId }));
+    }, [dispatch, userId, meta?.loadedForUser, meta?.loading]);
+
+    useEffect(() => {
+        if (!userId) return;
+        if (meta?.loading) return;
+        if (meta?.loadedForUser !== userId) return;
+        if (!meta?.hydratedContexts?.[contextKey]) return;
+        previousFiltersRef.current = cloneFilters(filters);
+    }, [userId, meta?.loadedForUser, meta?.hydratedContexts?.[contextKey], filters, meta?.loading, contextKey]);
+
+    useEffect(() => {
+        if (!userId) return;
+        if (meta?.loading) return;
+        if (meta?.loadedForUser !== userId) return;
+        if (!meta?.hydratedContexts?.[contextKey]) return;
+
+        const prevValues = previousFiltersRef.current;
+        const hasChanged = haveFiltersChanged(prevValues, filters);
+        if (!hasChanged) return;
+        previousFiltersRef.current = cloneFilters(filters);
+        dispatch(persistFilterPreferences({ userId, context: contextKey }));
+    }, [dispatch, userId, filters, meta?.loading, meta?.hydratedContexts?.[contextKey], meta?.loadedForUser, contextKey]);
+
+    const hasActiveFilters = useMemo(() => {
+        if (!filters) return false;
+        return Object.keys(DEFAULT_FILTERS).some(
+            (field) => !isSameFilterValue(field, filters[field], DEFAULT_FILTERS[field])
+        );
+    }, [filters]);
 
     // Variants dependientes de reduced motion (evita animaciones complejas si el usuario lo solicita)
     const menuVariant = reduceMotion ? {
@@ -95,6 +169,7 @@ export const InventoryFilterAndSort = ({tooltip, tooltipDescription, tooltipPlac
             <ButtonIconMenu
                 icon={icons.operationModes.filter}
                 onClick={handleOpen}
+                indicator={hasActiveFilters}
                 tooltip={tooltip}
                 tooltipDescription={tooltipDescription}
                 tooltipPlacement={tooltipPlacement}
@@ -112,7 +187,7 @@ export const InventoryFilterAndSort = ({tooltip, tooltipDescription, tooltipPlac
                 style={{ pointerEvents: isOpen ? 'auto' : 'none' }}
             >
                 <Header onClose={handleOpen} />
-                <Body />
+                <Body contextKey={contextKey} />
                 <Footer>
                     <Actions>
                         <Button onClick={handleReset} >Restablecer</Button>
@@ -172,13 +247,6 @@ const Actions = styled.div`
     align-items: center;
     justify-content: end;
 `;
-
-
-
-
-
-
-
 
 
 

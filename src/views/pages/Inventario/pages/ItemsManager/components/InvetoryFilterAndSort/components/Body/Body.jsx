@@ -5,13 +5,13 @@ import styled from 'styled-components';
 import { FilterPanel } from './components/FilterPanel/FilterPanel';
 import { SortPanel } from './components/SortPanel/SortPanel';
 
-export const Body = ({ }) => {
+export const Body = ({ contextKey }) => {
     return (
         <Container>
             <SectionsWrapper>
-                <SortPanel />
+                <SortPanel contextKey={contextKey} />
                 <Divider aria-hidden="true" />
-                <FilterPanel />
+                <FilterPanel contextKey={contextKey} />
             </SectionsWrapper>
         </Container>
     );
@@ -42,4 +42,3 @@ const Divider = styled.div`
     width:100%;
     background:#e9e9e9;
 `;
-

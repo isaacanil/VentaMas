@@ -9,10 +9,15 @@ import { BusinessIndicator } from './components/BusinessIndicator/BusinessIndica
 import { ProductCounter } from './components/Card/Card'
 
 
-export const StatusBar = ({ products }) => {
+export const StatusBar = ({ products, statusMeta }) => {
     const cart = useSelector(selectCart)
     const isPreorder = cart?.data?.type === 'preorder'
     const preorderNumber = cart?.data?.preorderDetails?.numberID
+    const productCount = statusMeta?.productCount ?? (products?.length || 0)
+    const visibleStockTotal = Number.isFinite(statusMeta?.visibleStockTotal)
+        ? statusMeta.visibleStockTotal
+        : products?.reduce((sum, product) => sum + (Number(product?.stock ?? 0) || 0), 0)
+    const filterActive = !!statusMeta?.filterActive
 
     return (
         <Pill
@@ -30,7 +35,11 @@ export const StatusBar = ({ products }) => {
                     </PreorderIndicator>
                 </Tooltip>
             )}
-            <ProductCounter products={products} />
+            <ProductCounter
+                productCount={productCount}
+                visibleStockTotal={visibleStockTotal}
+                filterActive={filterActive}
+            />
         </Pill>
     )
 }

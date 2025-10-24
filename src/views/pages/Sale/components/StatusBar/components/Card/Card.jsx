@@ -9,22 +9,28 @@ import { SelectTotalShoppingItems } from '../../../../../../../features/cart/car
 import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
 import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber'
 
-export const ProductCounter = ({ products }) => {
+export const ProductCounter = ({ productCount = 0, visibleStockTotal = 0, filterActive = false }) => {
     const totalShoppingItems = useSelector(SelectTotalShoppingItems)
-    const productLength = products?.length || 0
+    const formattedProductCount = useFormatNumber(productCount)
+    const formattedCartItems = totalShoppingItems ? useFormatNumber(totalShoppingItems) : null
+    const showStockBadge = filterActive && Number.isFinite(visibleStockTotal)
+    const formattedVisibleStock = showStockBadge ? useFormatNumber(visibleStockTotal) : null
 
     return (
         <Tooltip title="Productos en el carrito">
             <Container>
                 <FontAwesomeIcon icon={faShoppingCart} size="sm" />
                 <CounterContent>
-                    {totalShoppingItems ? (
+                    {formattedCartItems ? (
                         <>
-                            <AnimatedNumber value={`${useFormatNumber(totalShoppingItems)}`} />
+                            <AnimatedNumber value={formattedCartItems} />
                             <CounterSeparator>/</CounterSeparator>
                         </>
                     ) : null}
-                    <AnimatedNumber value={useFormatNumber(productLength)} />
+                    <AnimatedNumber value={formattedProductCount} />
+                    {showStockBadge && formattedVisibleStock ? (
+                        <UnitsText>{formattedVisibleStock} uds</UnitsText>
+                    ) : null}
                 </CounterContent>
             </Container>
         </Tooltip>
@@ -60,4 +66,14 @@ const CounterSeparator = styled.span`
   margin: 0 0.25rem;
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.7rem;
+`
+
+const UnitsText = styled.span`
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.35rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.68rem;
+  font-weight: 500;
 `

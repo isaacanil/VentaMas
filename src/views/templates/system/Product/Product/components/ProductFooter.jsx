@@ -31,6 +31,7 @@ const Group = styled.div`
 const AmountToBuy = styled.div`
   padding: 0 0.4em;
   height: 1.6em;
+  margin-left: 1.6em;
   width: min-content;
   border-radius: 4px;
   display: flex;
@@ -78,7 +79,16 @@ export const ProductFooter = ({
   isOutOfStock,
 }) => {
   const isDisabled = isOutOfStock || isCriticalStock || isLowStock;
-  const stock = productInCart?.stock ?? product.stock;
+  const stockValue =
+    typeof productInCart?.stock === 'number'
+      ? productInCart.stock
+      : typeof product?.displayStock === 'number'
+        ? product.displayStock
+        : product?.stock;
+  const formattedStock =
+    typeof stockValue === 'number' && !Number.isNaN(stockValue)
+      ? useFormatNumber(stockValue)
+      : '-';
 
   return (
     <FooterWrapper imageHiddenRef={productState.imageHidden}>
@@ -92,7 +102,7 @@ export const ProductFooter = ({
           hasStrictStock={product.restrictSaleWithoutStock}
         >
           {isProductInCart && `${useFormatNumber(productInCart.amountToBuy)} / `}
-          {stock === 0 ? '-' : useFormatNumber(stock)}
+          {stockValue === 0 ? '-' : formattedStock}
         </AmountToBuy>
       </Group>
 

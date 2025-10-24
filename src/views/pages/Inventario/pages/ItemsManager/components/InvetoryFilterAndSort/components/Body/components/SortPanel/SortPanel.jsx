@@ -4,24 +4,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../../../../../../../constants/icons/icons';
-import { selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
+import { DEFAULT_FILTER_CONTEXT, selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
 import { opcionesCriterio } from '../../../../InventoryFilterAndSortMetadata';
 
-export const SortPanel = ({ Group }) => {
+export const SortPanel = ({ Group, contextKey = DEFAULT_FILTER_CONTEXT }) => {
     const [isCriterioChanged, setIsCriterioChanged] = useState(false);
 
     const dispatch = useDispatch();
-    const criterio = useSelector(selectCriterio);
+    const criterio = useSelector((state) => selectCriterio(state, contextKey));
 
     // Función para manejar el cambio de criterio
-    const orden = useSelector(selectOrden);
+    const orden = useSelector((state) => selectOrden(state, contextKey));
 
     const handleCriterioChange = (newCriterio) => {
-        dispatch(setCriterio(newCriterio)); // Suponiendo que setCriterio es tu acción para cambiar el criterio
+        dispatch(setCriterio({ context: contextKey, value: newCriterio }));
         setIsCriterioChanged(true);
     };
 
-    const handleOrdenChange = (nuevoOrden) => { dispatch(setOrden(nuevoOrden)) };
+    const handleOrdenChange = (nuevoOrden) => {
+        dispatch(setOrden({ context: contextKey, value: nuevoOrden }));
+    };
 
     useEffect(() => {
         const ordenPorCriterio = {
@@ -135,4 +137,3 @@ export const Label = styled.label`
     font-size: .72rem;
     font-weight: 500;
 `;
-
