@@ -8,7 +8,7 @@ const LevelContainer = styled.div`
 
 const LevelIndicator = styled.div`
   width: 15px;
-  height: 40px;
+  height: 100%;
   border-right: 1px solid #e0e0e0;
   display: inline-block;
 `;

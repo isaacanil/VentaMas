@@ -94,6 +94,7 @@ const SETTING_TERM = {
     GENERAL_CONFIG_BUSINESS: '/general-config/business',
     GENERAL_CONFIG_TAX_RECEIPT: '/general-config/tax-receipt',
     GENERAL_CONFIG_USERS: '/general-config/users',
+    GENERAL_CONFIG_INVENTORY: '/general-config/inventory',
     GENERAL_CONFIG_APP_INFO: '/general-config/app-info',
     GENERAL_CONFIG_AUTHORIZATION: '/general-config/authorization',
 };

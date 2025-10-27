@@ -1,19 +1,24 @@
 import React, { Fragment, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { Button, Tooltip } from 'antd'
+import { PlusOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { icons } from '../../../../../constants/icons/icons'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import { openWarehouseForm } from '../../../../../features/warehouse/warehouseModalSlice'
 import ROUTES_NAME from '../../../../../routes/routesName'
-import { Button } from '../../../system/Button/Button'
+import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu'
 
 export const WarehouseToolbar = ({ side = 'left' }) => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [_isOpen, _setIsOpen] = useState(false)
     const dispatch = useDispatch()
+    const navigate = useNavigate();
     const { pathname } = useLocation();
+    const user = useSelector(selectUser);
     const { WAREHOUSES, WAREHOUSE, SHELF, ROW, SEGMENT } = ROUTES_NAME.INVENTORY_TERM;
-  
+
     const paths = [WAREHOUSES, WAREHOUSE, SHELF, ROW, SEGMENT];
 
     // Función para comparar rutas dinámicas
@@ -30,6 +35,9 @@ export const WarehouseToolbar = ({ side = 'left' }) => {
     const handleAddWarehouse = () => {
         dispatch(openWarehouseForm())
     }
+    const handleOpenInventorySettings = () => {
+        navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_INVENTORY);
+    };
     return (
         matchWithWarehouses && (
             <Fragment>
@@ -37,23 +45,29 @@ export const WarehouseToolbar = ({ side = 'left' }) => {
                     {
                         side === 'right' && (
                             <Group >
-                                <Button
-                                    tooltipDescription={'Agregar almacén'}
-                                    tooltipPlacement={'bottom-end'}
-                                    startIcon={icons.operationModes.add}
-                                    borderRadius='normal'
-                                    title={'Almacén'}
-                                    onClick={handleAddWarehouse}
-                                />
-
+                                <Tooltip title="Agregar almacén" placement="bottom">
+                                    <Button
+                                        icon={<PlusOutlined />}
+                                        onClick={handleAddWarehouse}
+                                    >
+                                        Almacén
+                                    </Button>
+                                </Tooltip>
+                                {user?.role !== 'cashier' && (
+                                    <ButtonIconMenu
+                                        icon={icons.operationModes.setting}
+                                        onClick={handleOpenInventorySettings}
+                                        tooltipDescription={'Configuración de inventario'}
+                                    />
+                                )}
                             </Group>
                         )
                     }
                 </Container>
-                {/* {isOpen && (
+                {/* {_isOpen && (
                     <WarehouseForm
-                        isOpen={isOpen}
-                        onClose={() => setIsOpen(false)}
+                        isOpen={_isOpen}
+                        onClose={() => _setIsOpen(false)}
                         
                     />
                 )} */}

@@ -475,6 +475,23 @@ const buildLocationBounds = (locationPath = '') => {
 
 const EMPTY_AGGREGATE = Object.freeze({ totalUnits: 0, totalLots: 0 });
 
+const fetchAggregateSnapshot = async (aggregateQuery) => {
+  try {
+    const snapshot = await getAggregateFromServer(aggregateQuery, {
+      totalUnits: sum('quantity'),
+      totalLots: count(),
+    });
+    const data = snapshot.data();
+    return {
+      totalUnits: data?.totalUnits ?? 0,
+      totalLots: data?.totalLots ?? 0,
+    };
+  } catch (error) {
+    console.error('Error al obtener agregados de stock para la ubicación:', error);
+    return EMPTY_AGGREGATE;
+  }
+};
+
 export const getLocationStockAggregates = async (user, locationPath) => {
   if (!user?.businessID) return EMPTY_AGGREGATE;
   const bounds = buildLocationBounds(locationPath);
@@ -491,20 +508,37 @@ export const getLocationStockAggregates = async (user, locationPath) => {
     where('status', '==', 'active')
   );
 
-  try {
-    const aggregateSnapshot = await getAggregateFromServer(baseQuery, {
-      totalUnits: sum('quantity'),
-      totalLots: count(),
-    });
-    const data = aggregateSnapshot.data();
-    return {
-      totalUnits: data.totalUnits ?? 0,
-      totalLots: data.totalLots ?? 0,
-    };
-  } catch (error) {
-    console.error('Error al obtener agregados de stock para la ubicación:', error);
-    return EMPTY_AGGREGATE;
-  }
+  return fetchAggregateSnapshot(baseQuery);
+};
+
+export const getLocationDirectStockAggregates = async (user, locationPath) => {
+  if (!user?.businessID) return EMPTY_AGGREGATE;
+  const normalized = String(locationPath || '').trim();
+  if (!normalized) return EMPTY_AGGREGATE;
+
+  const stockRef = getProductStockCollectionRef(user.businessID);
+  if (!stockRef) return EMPTY_AGGREGATE;
+
+  const baseQuery = query(
+    stockRef,
+    where('location', '==', normalized),
+    where('isDeleted', '==', false),
+    where('status', '==', 'active')
+  );
+
+  return fetchAggregateSnapshot(baseQuery);
+};
+
+export const getLocationStockAggregatesDetailed = async (user, locationPath) => {
+  const totals = await getLocationStockAggregates(user, locationPath);
+  const direct = await getLocationDirectStockAggregates(user, locationPath);
+
+  return {
+    totalUnits: totals.totalUnits,
+    totalLots: totals.totalLots,
+    directUnits: direct.totalUnits,
+    directLots: direct.totalLots,
+  };
 };
 
 export const getWarehouseStockAggregates = async (user, warehouseId) => {
@@ -541,7 +575,7 @@ export const getStockAggregatesByLocationPaths = async (user, locationPaths = []
   const summaries = await Promise.all(
     uniquePaths.map(async (path) => ({
       path,
-      summary: await getLocationStockAggregates(user, path),
+      summary: await getLocationStockAggregatesDetailed(user, path),
     }))
   );
 

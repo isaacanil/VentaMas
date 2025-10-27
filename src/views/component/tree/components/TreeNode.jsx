@@ -8,7 +8,7 @@ import ActionButtons from "./ActionButtons";
 import LevelGroup from "./LevelGroup";
 import { LoadingIndicator } from "./LoadingIndicator";
 import { NavigationButton } from "./NavigationButton";
-import NodeName from "./NodeName";
+import NodeName, { formatLots } from "./NodeName";
 
 // Estilos con styled-components
 const NodeContainer = styled.div`
@@ -16,12 +16,13 @@ const NodeContainer = styled.div`
   grid-template-columns: min-content 1fr min-content;
   align-items: center;
   margin: 0;
-  padding: 0 0.2em;
+  padding: ${({ $hasLabel }) => ($hasLabel ? '6px 0.2em' : '0 0.2em')};
   border-radius: 6px;
   background-color: ${(props) => (props.isSelected ? "#e9e9e9" : "transparent")};
   cursor: pointer; // Replace the 'not-allowed' logic
   opacity: 1; // Remove the disabled opacity
-  height: 40px;
+  min-height: ${({ $hasLabel }) => ($hasLabel ? '48px' : '40px')};
+  height: auto;
   position: relative;
   width: 100%;
   overflow: hidden;
@@ -30,6 +31,25 @@ const NodeContainer = styled.div`
     background-color: ${(props) =>
       !props.disabled && (props.isSelected ? "#f0f0f0" : "#f0f0f0")};
   }
+`;
+
+const CountPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: ${({ $empty }) => ($empty ? 'rgba(148, 163, 184, 0.18)' : 'rgba(22, 119, 255, 0.15)')};
+  color: ${({ $empty }) => ($empty ? '#6b7280' : '#1677ff')};
+`;
+
+const ActionsSlot = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
 `;
 
 const TreeNode = ({
@@ -49,7 +69,13 @@ const TreeNode = ({
   const isExpanded = expandedNodes[node.id] || false;
   const hasChildren = !!node.children?.length;
   const isSelected = selectedNode === node.id;
-  const isDisabled = config.disabledNodes?.includes(node.id);
+  const themeStyles = useMemo(() => {
+    if (node?.theme) return node.theme;
+    if (typeof config?.resolveNodeTheme === 'function') {
+      return config.resolveNodeTheme(node, { level, isSelected, isExpanded });
+    }
+    return null;
+  }, [config, node, level, isSelected, isExpanded]);
 
   const match = useMemo(() => 
     node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -76,10 +102,27 @@ const TreeNode = ({
 
   const currentPath = useMemo(() => ([...(path || []), node.id]), [path, node.id]);
 
+  const showSummary = Boolean(config?.showLocationStockSummary);
+  const directLots = node?.stockSummary?.directLots;
+  const hasDirectInfo = Number.isFinite(directLots);
+  let pillLabel = null;
+  let pillEmpty = false;
+
+  if (showSummary) {
+    if (node.stockSummaryLoading) {
+      pillLabel = '...';
+      pillEmpty = false;
+    } else if (hasDirectInfo) {
+      pillLabel = formatLots(directLots);
+      pillEmpty = (directLots ?? 0) <= 0;
+    }
+  }
+
   return (
     <div>
       <NodeContainer
         isSelected={isSelected}
+        $hasLabel={Boolean(themeStyles?.label)}
         onClick={() =>
           selectNode({
             nodeId: node.id,
@@ -95,7 +138,7 @@ const TreeNode = ({
       >
         <LevelGroup level={level} />
 
-        <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0, marginRight: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0, gap: 6 }}>
           <NavigationButton
             getNodeIcon={getNodeIcon}
             isExpanded={isExpanded}
@@ -115,11 +158,17 @@ const TreeNode = ({
             stockSummary={node.stockSummary}
             stockSummaryLoading={node.stockSummaryLoading}
             renderHighlightedText={renderHighlightedText}
+            themeStyles={themeStyles}
           />
           <LoadingIndicator isLoading={node.isLoading} />
         </div>
 
-        <ActionButtons node={node} actions={config.actions} level={level} path={currentPath} /> {/* Usar 'path' prop */}
+        <ActionsSlot>
+          {pillLabel && (
+            <CountPill $empty={pillEmpty}>{pillLabel}</CountPill>
+          )}
+          <ActionButtons node={node} actions={config.actions} level={level} path={currentPath} />
+        </ActionsSlot> {/* Usar 'path' prop */}
       </NodeContainer>
 
       {isExpanded && hasChildren && (

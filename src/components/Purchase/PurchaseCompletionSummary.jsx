@@ -98,13 +98,23 @@ const ActionButton = styled(motion.button)`
       background: #e8e8e8;
     }
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #d9d9d9;
+    color: #666;
+  }
 `;
 
 export default function PurchaseCompletionSummary({ visible, onClose, purchase }) {
   const navigate = useNavigate();
   const total = purchase?.replenishments?.reduce((sum, item) => 
     sum + (item.subtotal || 0), 0) || 0;
-  const warehouseId = purchase?.warehouse?.id;
+  const destinationWarehouseId = purchase?.destinationWarehouseId || purchase?.warehouse?.id;
+  const warehouseNavigationPath = destinationWarehouseId
+    ? `/inventory/warehouses/warehouse/${destinationWarehouseId}`
+    : null;
 
   const formatProductsList = (products) => {
     if (!products?.length) return '';
@@ -158,12 +168,14 @@ export default function PurchaseCompletionSummary({ visible, onClose, purchase }
             <CloseOutlined /> Cerrar
           </ActionButton>
           <ActionButton
+            disabled={!warehouseNavigationPath}
             onClick={() => {
-              navigate(`/inventory/warehouses/warehouse/:warehouseId`);
+              if (!warehouseNavigationPath) return;
+              navigate(warehouseNavigationPath);
               onClose();
             }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={warehouseNavigationPath ? { scale: 1.02 } : undefined}
+            whileTap={warehouseNavigationPath ? { scale: 0.98 } : undefined}
           >
             Ver Almacén <ArrowRightOutlined />
           </ActionButton>

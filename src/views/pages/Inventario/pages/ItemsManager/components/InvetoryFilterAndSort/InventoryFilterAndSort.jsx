@@ -26,18 +26,6 @@ const isSameFilterValue = (field, current, comparison) => {
     return current === comparison;
 };
 
-const haveFiltersChanged = (prev = {}, next = {}) =>
-    Object.keys(DEFAULT_FILTERS).some((field) => !isSameFilterValue(field, prev[field], next[field]));
-
-const cloneFilters = (filters) => {
-    if (!filters) return filters;
-    try {
-        return JSON.parse(JSON.stringify(filters));
-    } catch (error) {
-        return { ...filters };
-    }
-};
-
 // Easing curves inspiradas en Material & Human Interface Guidelines
 // (valores cubic-bezier para desacelerar suave y acelerar sutil)
 const EASE_OUT_SOFT = [0.05, 0.7, 0.1, 1];     // enfatiza la desaceleración
@@ -90,7 +78,8 @@ export const InventoryFilterAndSort = ({
         if (!user) return null;
         return user.uid || user.id || user.userId || user.user_id || null;
     }, [user]);
-    const previousFiltersRef = useRef(cloneFilters(filters));
+    const isContextHydrated = Boolean(meta?.hydratedContexts?.[contextKey]);
+    const isContextDirty = Boolean(meta?.dirtyContexts?.[contextKey]);
 
     const handleOpen = useCallback(() => setIsOpen((v) => !v), []);
     const close = useCallback(() => setIsOpen(false), []);
@@ -115,23 +104,22 @@ export const InventoryFilterAndSort = ({
     useEffect(() => {
         if (!userId) return;
         if (meta?.loading) return;
+        if (meta?.saving) return;
         if (meta?.loadedForUser !== userId) return;
-        if (!meta?.hydratedContexts?.[contextKey]) return;
-        previousFiltersRef.current = cloneFilters(filters);
-    }, [userId, meta?.loadedForUser, meta?.hydratedContexts?.[contextKey], filters, meta?.loading, contextKey]);
+        if (!isContextHydrated) return;
+        if (!isContextDirty) return;
 
-    useEffect(() => {
-        if (!userId) return;
-        if (meta?.loading) return;
-        if (meta?.loadedForUser !== userId) return;
-        if (!meta?.hydratedContexts?.[contextKey]) return;
-
-        const prevValues = previousFiltersRef.current;
-        const hasChanged = haveFiltersChanged(prevValues, filters);
-        if (!hasChanged) return;
-        previousFiltersRef.current = cloneFilters(filters);
         dispatch(persistFilterPreferences({ userId, context: contextKey }));
-    }, [dispatch, userId, filters, meta?.loading, meta?.hydratedContexts?.[contextKey], meta?.loadedForUser, contextKey]);
+    }, [
+        dispatch,
+        userId,
+        isContextHydrated,
+        isContextDirty,
+        meta?.loading,
+        meta?.saving,
+        meta?.loadedForUser,
+        contextKey,
+    ]);
 
     const activeFiltersCount = useMemo(() => {
         if (!filters) return 0;
@@ -256,5 +244,3 @@ const Actions = styled.div`
     align-items: center;
     justify-content: end;
 `;
-
-

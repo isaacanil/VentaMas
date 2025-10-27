@@ -10,6 +10,7 @@ import {
   onSnapshot,
   where,
   query,
+  writeBatch,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -170,29 +171,124 @@ export const getDefaultWarehouse = async (user) => {
   }
 };
 
+export const setDefaultWarehouse = async (user, warehouseId) => {
+  if (!user?.businessID) throw new Error('No se pudo identificar el negocio actual.');
+  if (!warehouseId) throw new Error('Identificador de almacén inválido.');
+
+  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
+  const targetWarehouseRef = doc(warehouseCollectionRef, warehouseId);
+
+  const targetSnapshot = await getDoc(targetWarehouseRef);
+  if (!targetSnapshot.exists()) {
+    throw new Error('El almacén seleccionado no existe.');
+  }
+
+  if (targetSnapshot.data()?.defaultWarehouse) {
+    return targetSnapshot.data();
+  }
+
+  const batch = writeBatch(db);
+  const currentDefaultsSnapshot = await getDocs(query(warehouseCollectionRef, where('defaultWarehouse', '==', true)));
+
+  currentDefaultsSnapshot.forEach((docSnapshot) => {
+    if (docSnapshot.id !== warehouseId && docSnapshot.data()?.defaultWarehouse) {
+      batch.update(docSnapshot.ref, {
+        defaultWarehouse: false,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid,
+      });
+    }
+  });
+
+  batch.update(targetWarehouseRef, {
+    defaultWarehouse: true,
+    updatedAt: serverTimestamp(),
+    updatedBy: user.uid,
+  });
+
+  await batch.commit();
+
+  const updatedSnapshot = await getDoc(targetWarehouseRef);
+  return updatedSnapshot.data();
+};
+
 // Hook para crear y obtener el almacén por defecto
 export const useDefaultWarehouse = () => {
   const user = useSelector(selectUser);
-  const [defaultWarehouse, setDefaultWarehouse] = useState(null);
+  const [defaultWarehouse, setDefaultWarehouseState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+    let unsubscribe;
+
     const fetchDefaultWarehouse = async () => {
+      if (!user?.businessID) {
+        if (isMounted) {
+          setDefaultWarehouseState(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
       try {
-        setLoading(true);
-        const warehouse = await getDefaultWarehouse(user);
-        setDefaultWarehouse(warehouse);
-      } catch (error) {
-        setError(error);
-      } finally {
+        const ensuredDefault = await getDefaultWarehouse(user);
+        if (isMounted && ensuredDefault) {
+          setDefaultWarehouseState(ensuredDefault);
+        }
+
+        const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
+        const defaultWarehouseQuery = query(warehouseCollectionRef, where('defaultWarehouse', '==', true));
+
+        unsubscribe = onSnapshot(
+          defaultWarehouseQuery,
+          (snapshot) => {
+            if (!isMounted) return;
+            if (!snapshot.empty) {
+              setDefaultWarehouseState(snapshot.docs[0].data());
+              setLoading(false);
+              return;
+            }
+
+            getDefaultWarehouse(user)
+              .then((warehouse) => {
+                if (!isMounted) return;
+                setDefaultWarehouseState(warehouse || null);
+              })
+              .catch((ensureError) => {
+                if (!isMounted) return;
+                setError(ensureError);
+              })
+              .finally(() => {
+                if (!isMounted) return;
+                setLoading(false);
+              });
+          },
+          (snapshotError) => {
+            if (!isMounted) return;
+            setError(snapshotError);
+            setLoading(false);
+          }
+        );
+      } catch (fetchError) {
+        if (!isMounted) return;
+        setError(fetchError);
         setLoading(false);
       }
     };
 
-    if (user) {
-      fetchDefaultWarehouse();
-    }
+    fetchDefaultWarehouse();
+
+    return () => {
+      isMounted = false;
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, [user]);
 
   return { defaultWarehouse, loading, error };
@@ -203,7 +299,7 @@ export const useListenWarehouse = (id) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
 
   useEffect(() => {
     if (!id || !user) {
@@ -227,7 +323,7 @@ export const useListenWarehouses = () => {
   const user = useSelector(selectUser);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
 
   useEffect(() => {
     if (!user?.businessID) {
@@ -249,14 +345,14 @@ export const useListenWarehouses = () => {
 
 export const useGetWarehouseData = (items) => {
   const user = useSelector(selectUser);
-  const [data, setData] = useState({
+  const [data, _setData] = useState({
     warehouses: [],
     shelves: [],
     rows: [],
     segments: [],
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, _setLoading] = useState(false);
+  const [error] = useState(null);
 
   useEffect(() => {
     if (!Array.isArray(items) && items.length === 0) return;

@@ -1,5 +1,6 @@
 import AuthorizationFlowConfig from "../../views/component/GeneralConfig/configs/AuthorizationFlowConfig";
 import BillingConfig from "../../views/component/GeneralConfig/configs/BillingConfig";
+import InventoryConfig from "../../views/component/GeneralConfig/configs/InventoryConfig";
 import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
 import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
 import { Setting } from "../../views/pages/setting/setting";
@@ -26,6 +27,7 @@ const {
     GENERAL_CONFIG_APP_INFO,
     GENERAL_CONFIG_BILLING,
     GENERAL_CONFIG_BUSINESS,
+    GENERAL_CONFIG_INVENTORY,
     GENERAL_CONFIG_TAX_RECEIPT,
     GENERAL_CONFIG_AUTHORIZATION,
 } = ROUTES_NAME.SETTING_TERM;
@@ -61,6 +63,10 @@ const Routes = [
             {
                 path: getRelativePath(GENERAL_CONFIG_BUSINESS, SETTING),
                 element: <BusinessInfo />,
+            },
+            {
+                path: getRelativePath(GENERAL_CONFIG_INVENTORY, SETTING),
+                element: <InventoryConfig />,
             },
             {
                 path: getRelativePath(GENERAL_CONFIG_TAX_RECEIPT, SETTING),

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { message, Button, Form } from 'antd'
+import { message, Button, Form, Modal, Select } from 'antd'
 import styled from 'styled-components'
 import GeneralForm from './components/GeneralForm/GeneralForm'
 import { MenuApp } from '../../../templates/MenuApp/MenuApp'
@@ -17,6 +17,7 @@ import Loader from '../../../component/Loader/Loader'
 import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
 import { fbCompletePurchase } from '../../../../firebase/purchase/fbCompletePurchase'
 import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary'
+import { useListenWarehouses } from '../../../../firebase/warehouse/warehouseService'
 
 const Container = styled.div`
   display: grid;
@@ -99,9 +100,43 @@ const PurchaseManagement = () => {
 
   const { purchase: fetchedPurchase, isLoading: purchaseLoading } = useListenPurchase(id); // Use the hook
   const { order: fetchedOrder, isLoading: orderLoading } = useListenOrder(id); // Use the hook
+  const { data: warehouses = [], loading: warehousesLoading } = useListenWarehouses();
+  const defaultWarehouseId = useMemo(() => {
+    if (!warehouses?.length) return null;
+    const defaultWarehouse = warehouses.find((warehouse) => warehouse?.defaultWarehouse);
+    return defaultWarehouse?.id || warehouses[0]?.id || null;
+  }, [warehouses]);
+
+  const warehouseOptions = useMemo(
+    () =>
+      warehouses.map((warehouse) => {
+        const baseLabel =
+          warehouse?.name ||
+          warehouse?.shortName ||
+          warehouse?.id ||
+          'Almacén sin nombre';
+        return {
+          value: warehouse.id,
+          label: warehouse.defaultWarehouse ? `${baseLabel} (Predeterminado)` : baseLabel,
+        };
+      }),
+    [warehouses],
+  );
 
   const [showSummary, setShowSummary] = useState(false);
   const [completedPurchase, setCompletedPurchase] = useState(null);
+  const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
+
+  useEffect(() => {
+    if (!defaultWarehouseId) return;
+    const selectionIsValid = selectedWarehouseId
+      ? warehouses.some((warehouse) => warehouse.id === selectedWarehouseId)
+      : false;
+    if (!selectionIsValid) {
+      setSelectedWarehouseId(defaultWarehouseId);
+    }
+  }, [defaultWarehouseId, warehouses, selectedWarehouseId]);
 
   const updatePurchaseState = useCallback((updates) => {
     dispatch(setPurchase(updates));
@@ -147,49 +182,82 @@ const PurchaseManagement = () => {
     }
   }, [mode, fetchedPurchase, fetchedOrder, dispatch]);
 
-  const handleSubmit = useCallback(async () => {
+  const performSubmit = useCallback(
+    async (warehouseIdOverride = null) => {
+      setLoading(true);
+      try {
+        const submitData = sanitizeData(purchaseData, defaultsMap);
 
+        switch (mode) {
+          case 'create':
+            await addPurchase({ user, purchase: submitData, localFiles });
+            break;
+          case 'update':
+            await fbUpdatePurchase({ user, purchase: submitData, localFiles });
+            break;
+          case 'complete': {
+            const completionResult = await fbCompletePurchase({
+              user,
+              purchase: submitData,
+              localFiles,
+              warehouseId: warehouseIdOverride,
+            });
+
+            const destinationWarehouseId = completionResult?.destinationWarehouseId || warehouseIdOverride || null;
+            const summaryPurchase = completionResult || {
+              ...submitData,
+              destinationWarehouseId,
+            };
+
+            navigate(PURCHASES, {
+              state: {
+                completedPurchase: summaryPurchase,
+                showSummary: true,
+              },
+            });
+            break;
+          }
+          case 'convert':
+            await addPurchase({ user, purchase: submitData, localFiles });
+            break;
+          default:
+            break;
+        }
+
+        message.success('Compra guardada exitosamente');
+        dispatch(cleanPurchase());
+        if (mode !== 'complete') {
+          navigate(PURCHASES);
+        }
+        return true;
+      } catch (error) {
+        console.error("Error al guardar la compra:", error);
+        message.error('Error al guardar la compra');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [dispatch, navigate, user, purchaseData, localFiles, PURCHASES, mode],
+  );
+
+  const handleSubmit = useCallback(async () => {
     if (!validateFields()) {
       message.error('Por favor complete todos los campos requeridos');
       return;
     }
-    if (purchaseData?.replenishments?.length === 0) {
+    if (!purchaseData?.replenishments?.length) {
       message.error('Agrega un producto a la compra');
       return;
     }
 
-    setLoading(true);
-    try {
-      const submitData = sanitizeData(purchaseData, defaultsMap);
-
-      switch (mode) {
-        case 'create':
-          await addPurchase({ user, purchase: submitData, localFiles });
-          break;
-        case 'update':
-          await fbUpdatePurchase({ user, purchase: submitData, localFiles });
-          break;
-        case 'complete':
-          await fbCompletePurchase({ user, purchase: submitData, localFiles });
-          navigate(PURCHASES, { state: { completedPurchase: submitData, showSummary: true } });
-          break;
-        case 'convert':
-          await addPurchase({ user, purchase: submitData, localFiles });
-          break;
-      }
-
-      message.success('Compra guardada exitosamente');
-      dispatch(cleanPurchase());
-      if (mode !== 'complete') {
-        navigate(PURCHASES);
-      }
-    } catch (error) {
-      console.error("Error al guardar la compra:", error);
-      message.error('Error al guardar la compra');
-    } finally {
-      setLoading(false);
+    if (mode === 'complete') {
+      setIsWarehouseModalOpen(true);
+      return;
     }
-  }, [dispatch, navigate, user, purchaseData, localFiles, validateFields, PURCHASES, mode]);
+
+    await performSubmit();
+  }, [validateFields, purchaseData?.replenishments?.length, mode, performSubmit]);
 
   const handleCloseSummary = useCallback(() => {
     setShowSummary(false);
@@ -201,6 +269,24 @@ const PurchaseManagement = () => {
     dispatch(cleanPurchase());
     navigate(PURCHASES);
   }, [dispatch, navigate, PURCHASES]);
+
+  const handleWarehouseModalCancel = useCallback(() => {
+    setIsWarehouseModalOpen(false);
+    if (defaultWarehouseId) {
+      setSelectedWarehouseId(defaultWarehouseId);
+    }
+  }, [defaultWarehouseId]);
+
+  const handleConfirmWarehouse = useCallback(async () => {
+    if (!selectedWarehouseId) {
+      message.error('Selecciona un almacén para completar la compra');
+      return;
+    }
+    const success = await performSubmit(selectedWarehouseId);
+    if (success) {
+      setIsWarehouseModalOpen(false);
+    }
+  }, [performSubmit, selectedWarehouseId]);
 
   // Limpiar datos al montar el componente si estamos en modo crear
   useEffect(() => {
@@ -241,6 +327,33 @@ const PurchaseManagement = () => {
           Guardar
         </Button>
       </ButtonsContainer>
+      <Modal
+        title="Seleccionar almacén de destino"
+        open={isWarehouseModalOpen}
+        onOk={handleConfirmWarehouse}
+        onCancel={handleWarehouseModalCancel}
+        okText="Completar compra"
+        cancelText="Cancelar"
+        confirmLoading={loading}
+        okButtonProps={{
+          disabled: !selectedWarehouseId || warehousesLoading || warehouseOptions.length === 0,
+        }}
+        destroyOnClose={false}
+      >
+        <p style={{ marginBottom: '0.8em' }}>
+          Elige el almacén donde se registrará la recepción de esta compra. Este cambio solo aplica a esta compra.
+        </p>
+        <Select
+          showSearch
+          style={{ width: '100%' }}
+          value={selectedWarehouseId}
+          onChange={setSelectedWarehouseId}
+          loading={warehousesLoading}
+          placeholder={warehousesLoading ? 'Cargando almacenes...' : 'Selecciona un almacén'}
+          optionFilterProp="label"
+          options={warehouseOptions}
+        />
+      </Modal>
       <PurchaseCompletionSummary
         visible={showSummary}
         onClose={handleCloseSummary}

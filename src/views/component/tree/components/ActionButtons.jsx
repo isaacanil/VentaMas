@@ -28,14 +28,15 @@ const ActionButton = styled.button`
 `;
 
 const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' como prop
-  const visibleActions = useMemo(() => actions.filter(action => {
+  const safeActions = Array.isArray(actions) ? actions : [];
+  const visibleActions = useMemo(() => safeActions.filter(action => {
     if (!action) return false;
     if (action.show && !action.show(node, level)) return false;
     if (action.type === 'dropdown') {
       return !!action.items;
     }
     return typeof action.handler === 'function';
-  }), [actions, level, node]);
+  }), [safeActions, level, node]);
 
   return (
     <ActionButtonsContainer>
@@ -81,7 +82,10 @@ const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' co
               }}
               trigger={['click']}
             >
-              <ActionButton onClick={(e) => e.stopPropagation()} title={action.name}>
+              <ActionButton
+                onClick={(e) => e.stopPropagation()}
+                title={action.name}
+              >
                 <FontAwesomeIcon icon={action.icon} />
               </ActionButton>
             </Dropdown>
@@ -112,10 +116,15 @@ ActionButtons.propTypes = {
         PropTypes.func,
       ]),
     })
-  ).isRequired,
+  ),
   node: PropTypes.object.isRequired,
   level: PropTypes.number.isRequired,
   path: PropTypes.array, // Nueva propType para 'path'
+};
+
+ActionButtons.defaultProps = {
+  actions: [],
+  path: undefined,
 };
 
 export default ActionButtons;

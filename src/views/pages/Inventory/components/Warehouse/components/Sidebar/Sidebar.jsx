@@ -17,11 +17,11 @@ import {
   selectWarehouse,
 } from "../../../../../../../features/warehouse/warehouseSlice";
 import { useGetProducts } from '../../../../../../../firebase/products/fbGetProducts';
+import { getStockAggregatesByLocationPaths } from '../../../../../../../firebase/warehouse/productStockService';
 import { deleteRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
 import { deleteSegment } from "../../../../../../../firebase/warehouse/segmentService";
 import { deleteShelf } from "../../../../../../../firebase/warehouse/shelfService";
 import { deleteWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
-import { getStockAggregatesByLocationPaths } from '../../../../../../../firebase/warehouse/productStockService';
 import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
 import { filterData } from '../../../../../../../hooks/search/useSearch';
 import { replacePathParams } from '../../../../../../../routes/replacePathParams';
@@ -115,18 +115,18 @@ const collectLocationPaths = (nodes = [], parentPath = []) => {
   return paths;
 };
 
-const Sidebar = ({ onSelectNode, items = [], productItems = [] }) => {
+const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _productItems = [] }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { currentView, selectedWarehouse, selectedShelf, selectedRowShelf, selectedSegment } = useSelector(selectWarehouse);
   const navigate = useNavigate();
   const location = useLocation();
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
-  const [search, setSearch] = useState('');
+  const [search, _setSearch] = useState('');
   const [stockSummaries, setStockSummaries] = useState({});
   const [loadingStockSummaries, setLoadingStockSummaries] = useState(false);
 
-  const { products, loading } = useGetProducts(true);
+  const { products } = useGetProducts(true);
   const filteredProducts = search ? filterData(products, search) : products;
 
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
@@ -335,6 +335,18 @@ const Sidebar = ({ onSelectNode, items = [], productItems = [] }) => {
         return node?.record?.defaultWarehouse === true;
     };
 
+    const defaultWarehouseTheme = {
+        background: 'rgba(22, 119, 255, 0.12)',
+        hoverBackground: 'rgba(22, 119, 255, 0.18)',
+        selectedBackground: 'rgba(22, 119, 255, 0.24)',
+        color: '#102a44',
+        accentColor: '#1677ff',
+        boxShadow: 'inset 0 0 0 1px rgba(22, 119, 255, 0.14)',
+        label: 'Predeterminado',
+        labelBackground: 'rgba(22, 119, 255, 0.22)',
+        labelColor: '#0f172a',
+    };
+
     const config = {
         showLocationStockSummary: true,
         actions: [
@@ -342,10 +354,10 @@ const Sidebar = ({ onSelectNode, items = [], productItems = [] }) => {
                 name: "More",
                 icon: faEllipsisH,
                 type: 'dropdown',
-                show: (node, level) => !(level === 0 && isDefaultWarehouse(node)),
                 items: (node, level) => {
                     const actions = getLevelActions(level);
                     const menuItems = [];
+                    const isDefault = level === 0 && isDefaultWarehouse(node);
 
                     if (actions.create) {
                         menuItems.push({
@@ -383,19 +395,30 @@ const Sidebar = ({ onSelectNode, items = [], productItems = [] }) => {
                                 }
                             },
                         },
-                        {
-                            name: actions.delete,
-                            icon: faTrash,
-                            handler: (node, level) => handleDelete(node, level),
-                            danger: true
-                        }
+                        actions.delete && !isDefault
+                            ? {
+                                name: actions.delete,
+                                icon: faTrash,
+                                handler: (node, level) => handleDelete(node, level),
+                                danger: true
+                              }
+                            : null
                     );
-                    return menuItems;
+                    return menuItems.filter(Boolean);
                 }
             },
         ],
         onNodeClick: handleWarehouseNodeClick,
         showMatchedStockCount: true,
+        resolveNodeTheme: (node, { level }) => {
+            if (level === 0) {
+                const isDefault = node?.record?.defaultWarehouse === true || defaultWarehouse?.id === node.id;
+                if (isDefault) {
+                    return defaultWarehouseTheme;
+                }
+            }
+            return null;
+        },
     };
 
   const productConfig = {

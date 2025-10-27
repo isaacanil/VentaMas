@@ -4,7 +4,8 @@ import {
   faFileInvoice,
   faInfoCircle,
   faQuestionCircle, // Add icon for Help/Other group
-  faKey
+  faKey,
+  faWarehouse
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, useEffect } from 'react'; // Removed useRef
@@ -60,6 +61,8 @@ export default function GeneralConfig() {
       setActiveTab('billing');
     } else if (currentPath.includes('business')) {
       setActiveTab('business');
+    } else if (currentPath.includes('inventory')) {
+      setActiveTab('inventory');
     } else if (currentPath.includes('tax-receipt')) {
       setActiveTab('taxReceipt');
     } else if (currentPath.includes('authorization')) {
@@ -86,6 +89,9 @@ export default function GeneralConfig() {
       case 'business':
         navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BUSINESS);
         break;
+      case 'inventory':
+        navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_INVENTORY);
+        break;
       case 'taxReceipt':
         navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_TAX_RECEIPT);
         break;
@@ -107,6 +113,14 @@ export default function GeneralConfig() {
       key: 'business',
       icon: <FontAwesomeIcon icon={faBuilding} />,
       label: 'Datos de la Empresa',
+    },
+    {
+      key: 'inventory',
+      icon: <FontAwesomeIcon icon={faWarehouse} />,
+      label: 'Inventario',
+      group: 'basic',
+      groupLabel: 'Configuración Básica',
+      groupType: 'labelled'
     },
     {
       key: 'billing',
