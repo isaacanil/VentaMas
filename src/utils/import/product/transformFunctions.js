@@ -74,14 +74,28 @@ export const transformConfig = [
         }
     },
     {
-        field: 'pricing.tax', // Nuevo
+        field: 'pricing.tax',
         transform: (value) => {
-            if (value === null || value === undefined || value === '') return '0';
-            const numValue = typeof value === 'string' ? parseFloat(value) : value;
-            if(isNaN(numValue)) return 0;
-            const tax = numValue < 1 ? numValue * 100 : numValue;
-            return `${tax}`;
-        } // Usa el valor por defecto de initTaxes
+            if (value === null || value === undefined || value === '') return 0;
+            const normalizeRaw = (input) => {
+                if (typeof input === 'number') return input;
+                if (typeof input === 'string') {
+                    const cleaned = input
+                        .replace(/[%\s]/g, '')
+                        .replace(',', '.');
+                    return parseFloat(cleaned);
+                }
+                return Number(input);
+            };
+            const rawNumber = normalizeRaw(value);
+            if (!Number.isFinite(rawNumber)) return 0;
+            const adjusted =
+                rawNumber > 0 && rawNumber < 1 ? rawNumber * 100 : rawNumber;
+            const normalized = Number.isFinite(adjusted) ? adjusted : 0;
+            return Number.isFinite(normalized)
+                ? Number(normalized.toFixed(2))
+                : 0;
+        },
     },
     {
         field: 'promotions.start',
@@ -202,4 +216,3 @@ export const transformConfig = [
 
     // ... other fields that can be null or have specific default values
 ];
-

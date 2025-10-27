@@ -1,21 +1,35 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 
+const createInitialWarehouseFormData = () => ({
+    id: "",
+    name: "",
+    shortName: "",
+    description: "",
+    owner: "",
+    location: "",
+    address: "",
+    dimension: { length: 0, width: 0, height: 0 },
+    capacity: 0,
+});
+
+const normalizeWarehouseFormData = (data = {}) => {
+    const base = createInitialWarehouseFormData();
+    return {
+        ...base,
+        ...data,
+        dimension: {
+            ...base.dimension,
+            ...(data.dimension || {}),
+        },
+    };
+};
+
 const initialState = {
-    isOpen: false,    // Controls the visibility of the modal
-    formData: {       // Data for the form
-        id: "",        // Auto-generated, not needed in the form
-        name: "",      // Name of the warehouse
-        shortName: "", // Short name
-        description: "", // Optional description
-        owner: "",     // Owner of the warehouse
-        location: "",  // Location
-        address: "",   // Address
-        dimension: { length: 0, width: 0, height: 0 }, // Dimensions
-        capacity: 0,    // Capacity in cubic meters
-    },
-    loading: false,    // Loading state
-    error: null,       // Error state
+    isOpen: false,
+    formData: createInitialWarehouseFormData(),
+    loading: false,
+    error: null,
 };
 
 const warehouseModalSlice = createSlice({
@@ -26,14 +40,18 @@ const warehouseModalSlice = createSlice({
             state.isOpen = true;
             const data = action.payload;
             if (data) {
-                state.formData = action.payload;
+                state.formData = normalizeWarehouseFormData(action.payload);
             } else {
-                state.formData = initialState.formData;
+                state.formData = createInitialWarehouseFormData();
             }
+            state.loading = false;
+            state.error = null;
         },
         closeWarehouseForm: (state) => {
             state.isOpen = false;
-            state.formData = initialState.formData;
+            state.formData = createInitialWarehouseFormData();
+            state.loading = false;
+            state.error = null;
         },
         setWarehouseLoading: (state, action) => {
             state.loading = action.payload;
@@ -42,7 +60,7 @@ const warehouseModalSlice = createSlice({
             state.error = action.payload;
         },
         clearWarehouseForm: (state) => {
-            state.formData = initialState.formData;
+            state.formData = createInitialWarehouseFormData();
             state.error = null;
             state.loading = false;
         },

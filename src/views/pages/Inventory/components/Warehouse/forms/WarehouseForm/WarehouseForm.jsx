@@ -55,6 +55,7 @@ export function WarehouseForm() {
 
   const handleSubmit = async () => {
     try {
+      dispatch(setWarehouseError(null));
       await form.validateFields(); // Validate form fields
       let data = form.getFieldsValue(); // Get form values
       
@@ -80,7 +81,7 @@ export function WarehouseForm() {
       } else {
         await createWarehouse(user, data); // Create new warehouse
       }
-      dispatch(closeWarehouseForm()); // Close the modal after submission
+      handleClose(); // Close the modal after submission
       antd.message.success(`Almacén ${formData ? "actualizado" : "creado"} correctamente`);
     } catch (error) {
       antd.message.error("Ocurrió un error al procesar la solicitud.");
@@ -91,11 +92,17 @@ export function WarehouseForm() {
     }
   };
 
+  const handleClose = () => {
+    dispatch(closeWarehouseForm());
+    form.resetFields();
+  };
+
   return (
     <Modal
       title={formData && formData.id ? "Actualizar Información del Almacén" : "Información del Almacén"}
       open={isOpen}
-      onCancel={() => dispatch(closeWarehouseForm())}
+      onCancel={handleClose}
+      destroyOnClose
       footer={null} // Remove default footer
     >
       <Spin

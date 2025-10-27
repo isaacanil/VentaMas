@@ -75,9 +75,8 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
     const map = new Map();
     const dfs = (nodes, acc = []) => {
       nodes?.forEach(n => {
-        const current = [...acc, n.id];
-        map.set(n.id, current);
-        if (n.children?.length) dfs(n.children, current);
+        map.set(n.id, acc);
+        if (n.children?.length) dfs(n.children, [...acc, n.id]);
       });
     };
     dfs(data, []);
@@ -94,7 +93,10 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
       />
       <TreeContent filteredData={filteredData} selectedId={selectedId}>
         {visibleData.map((node) => {
-          const path = idToPath.get(node.id) || findPathToNode(data, node.id) || [node.id];
+          const path = idToPath.get(node.id) ?? (() => {
+            const fullPath = findPathToNode(data, node.id) || [];
+            return fullPath.slice(0, Math.max(fullPath.length - 1, 0));
+          })();
           return (
             <TreeNode
               key={node.id}

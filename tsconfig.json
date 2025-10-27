@@ -5,7 +5,13 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["src/*"],
+      "@templates/*": ["src/views/templates/*"],
+      "@views/*": ["src/views/*"],
+      "@components/*": ["src/components/*"],  
+    },
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,

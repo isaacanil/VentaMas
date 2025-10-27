@@ -1,7 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
 
-import { traverse } from "../utils/traverseUtils";
-
 const useExpandedNodes = (data) => {
   const [manualExpandedNodes, setManualExpandedNodes] = useState({});
   const [searchExpandedNodes, setSearchExpandedNodes] = useState({});
@@ -18,22 +16,41 @@ const useExpandedNodes = (data) => {
     }, {}),
   }), [manualExpandedNodes, searchExpandedNodes, manuallyClosedNodes]);
 
-  const findAllChildrenIds = useCallback((nodeId) => {
-    const childrenIds = [];
-    const findChildren = (searchId) => {
-      const node = traverse(data, (n) => n.id === searchId);
-      if (node?.children) {
-        node.children.forEach(child => {
-          childrenIds.push(child.id);
-          if (child.children) {
-            findChildren(child.id);
-          }
-        });
+  const findNodeById = useCallback((nodes, id) => {
+    for (const node of nodes || []) {
+      if (node.id === id) {
+        return node;
       }
-    };
-    findChildren(nodeId);
+      if (node.children?.length) {
+        const found = findNodeById(node.children, id);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
+  }, []);
+
+  const findAllChildrenIds = useCallback((nodeId) => {
+    const target = findNodeById(data, nodeId);
+    if (!target?.children?.length) {
+      return [];
+    }
+
+    const stack = [...target.children];
+    const childrenIds = [];
+
+    while (stack.length) {
+      const current = stack.pop();
+      if (!current) continue;
+      childrenIds.push(current.id);
+      if (current.children?.length) {
+        stack.push(...current.children);
+      }
+    }
+
     return childrenIds;
-  }, [data]);
+  }, [data, findNodeById]);
 
   const handleToggleNode = useCallback((nodeId) => {
     setManualExpandedNodes(prev => {

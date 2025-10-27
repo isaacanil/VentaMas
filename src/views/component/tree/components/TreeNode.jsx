@@ -1,5 +1,5 @@
 import { faSpinner, faCircle } from "@fortawesome/free-solid-svg-icons";
-import React, { memo, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import styled from "styled-components";
 
 import { selectNode } from "../helpers/nodeHelper";
@@ -30,28 +30,9 @@ const NodeContainer = styled.div`
     background-color: ${(props) =>
       !props.disabled && (props.isSelected ? "#f0f0f0" : "#f0f0f0")};
   }
-
-  &::after {
-    content: "";
-    position: absolute;
-    right: 35px;
-    top: 0;
-    height: 100%;
-    width: 20px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      ${(props) => (props.isSelected ? "#e9e9e9" : "white")}
-    );
-    pointer-events: none;
-  }
-
-  &:hover::after {
-    background: linear-gradient(to right, transparent, #f0f0f0);
-  }
 `;
 
-const TreeNode = memo(({
+const TreeNode = ({
   node,
   level,
   expandedNodes,
@@ -122,8 +103,6 @@ const TreeNode = memo(({
             hasChildren={hasChildren}
             isLoading={node.isLoading}
             node={node}
-            setExpandedNodes={setExpandedNodes}
-            onToggleNode={onToggleNode} // Ensure onToggleNode is passed
             onClick={handleToggle}
           />
           <NodeName
@@ -133,6 +112,8 @@ const TreeNode = memo(({
             searchTerm={searchTerm}
             config={config}
             matchedStockCount={node.matchedStockCount}
+            stockSummary={node.stockSummary}
+            stockSummaryLoading={node.stockSummaryLoading}
             renderHighlightedText={renderHighlightedText}
           />
           <LoadingIndicator isLoading={node.isLoading} />
@@ -162,14 +143,6 @@ const TreeNode = memo(({
       )}
     </div>
   );
-}, (prevProps, nextProps) => {
-  // Custom comparison function for memo
-  return (
-    prevProps.node === nextProps.node &&
-    prevProps.expandedNodes[prevProps.node.id] === nextProps.expandedNodes[prevProps.node.id] &&
-    prevProps.selectedNode === nextProps.selectedNode &&
-    prevProps.searchTerm === nextProps.searchTerm
-  );
-});
+};
 
 export default TreeNode;

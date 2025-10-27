@@ -21,6 +21,7 @@ import { deleteRowShelf } from "../../../../../../../firebase/warehouse/RowShelf
 import { deleteSegment } from "../../../../../../../firebase/warehouse/segmentService";
 import { deleteShelf } from "../../../../../../../firebase/warehouse/shelfService";
 import { deleteWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
+import { getStockAggregatesByLocationPaths } from '../../../../../../../firebase/warehouse/productStockService';
 import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
 import { filterData } from '../../../../../../../hooks/search/useSearch';
 import { replacePathParams } from '../../../../../../../routes/replacePathParams';
@@ -100,21 +101,61 @@ const nodeGenderMap = {
   'Segmento': 'masculino',
 };
 
-const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
+const collectLocationPaths = (nodes = [], parentPath = []) => {
+  const paths = [];
+  nodes.forEach((node) => {
+    const currentPath = [...parentPath, node.id];
+    if (currentPath.length > 0) {
+      paths.push(currentPath.join('/'));
+    }
+    if (node.children?.length) {
+      paths.push(...collectLocationPaths(node.children, currentPath));
+    }
+  });
+  return paths;
+};
+
+const Sidebar = ({ onSelectNode, items = [], productItems = [] }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { currentView, selectedWarehouse, selectedShelf, selectedRowShelf, selectedSegment } = useSelector(selectWarehouse);
   const navigate = useNavigate();
   const location = useLocation();
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
-    const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('');
+  const [stockSummaries, setStockSummaries] = useState({});
+  const [loadingStockSummaries, setLoadingStockSummaries] = useState(false);
 
   const { products, loading } = useGetProducts(true);
-    const filteredProducts = search ? filterData(products, search) : products;
+  const filteredProducts = search ? filterData(products, search) : products;
 
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
-  const { WAREHOUSE, SHELF, ROW, SEGMENT, PRODUCT_STOCK } = ROUTES_PATH.INVENTORY_TERM
-    const [displayProducts, setDisplayProducts] = useState(false);
+  const locationPaths = useMemo(() => {
+    if (!items?.length) return [];
+    return Array.from(new Set(collectLocationPaths(items)));
+  }, [items]);
+  const itemsWithStockSummaries = useMemo(() => {
+    const mergeSummaries = (nodes = [], parentPath = []) => {
+      return nodes.map((node) => {
+        const currentPath = [...parentPath, node.id];
+        const locationKey = currentPath.join('/');
+        const summary = stockSummaries[locationKey];
+        const enrichedNode = {
+          ...node,
+          stockSummary: summary,
+          stockSummaryLoading: loadingStockSummaries && summary === undefined,
+        };
+        if (node.children) {
+          enrichedNode.children = mergeSummaries(node.children, currentPath);
+        }
+        return enrichedNode;
+      });
+    };
+    return mergeSummaries(itemsWithParentIds);
+  }, [itemsWithParentIds, stockSummaries, loadingStockSummaries]);
+
+  const { WAREHOUSE, SHELF, ROW, SEGMENT, PRODUCT_STOCK } = ROUTES_PATH.INVENTORY_TERM;
+  const [displayProducts, setDisplayProducts] = useState(false);
 
   const handleWarehouseNodeClick = (node, level) => {
       const path = findPathToNode(items, node.id);
@@ -153,7 +194,7 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
       return defaultWarehouse.id;
     }
     if (!items || items.length === 0) return 'default';
-    const defaultFromItems = items.find(warehouse => warehouse.data?.defaultWarehouse === true);
+    const defaultFromItems = items.find(warehouse => warehouse.record?.defaultWarehouse === true);
     return defaultFromItems?.id || items[0]?.id || 'default';
   }, [defaultWarehouse, items]);
 
@@ -163,15 +204,16 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
         dispatch(openWarehouseForm());
     };
 
-    const handleUpdateWarehouse = (data) => {
-        dispatch(openWarehouseForm(data));
+    const handleUpdateWarehouse = (node) => {
+        const warehouseData = node?.record || null;
+        dispatch(openWarehouseForm(warehouseData));
     };
 
     const handleAddShelf = (clickedNode) => {
         const path = findPathToNode(items, clickedNode.id);
         dispatch(openShelfForm({
             data: null,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
@@ -179,7 +221,7 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
         const path = findPathToNode(items, parentNode.id);
         dispatch(openRowShelfForm({
             data: null,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
@@ -187,30 +229,30 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
         const path = findPathToNode(items, parentNode.id);
         dispatch(openSegmentForm({
             data: null,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
-    const handleUpdateShelf = (shelf) => {
-        const path = findPathToNode(items, shelf.id);
+    const handleUpdateShelf = (node) => {
+        const path = findPathToNode(items, node.id);
         dispatch(openShelfForm({
-            data: shelf,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            data: node?.record || null,
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
-      const handleUpdateRowShelf = (data) => {
-        const path = findPathToNode(items, data.id);
+      const handleUpdateRowShelf = (node) => {
+        const path = findPathToNode(items, node.id);
         dispatch(openRowShelfForm({
-            data: data,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            data: node?.record || null,
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
-    const handleUpdateSegment = (segment) => {
-        const path = findPathToNode(items, segment.id);
+    const handleUpdateSegment = (node) => {
+        const path = findPathToNode(items, node.id);
         dispatch(openSegmentForm({
-            data: segment,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            data: node?.record || null,
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
@@ -290,10 +332,11 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
     };
 
     const isDefaultWarehouse = (node) => {
-        return node?.data?.defaultWarehouse === true;
+        return node?.record?.defaultWarehouse === true;
     };
 
     const config = {
+        showLocationStockSummary: true,
         actions: [
             {
                 name: "More",
@@ -396,6 +439,42 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
     }
   }, [location.pathname, navigate, getDefaultWarehouseId, loadingDefault]);
 
+  useEffect(() => {
+    if (!user?.businessID) {
+      setStockSummaries({});
+      setLoadingStockSummaries(false);
+      return;
+    }
+
+    if (!locationPaths.length) {
+      setStockSummaries({});
+      setLoadingStockSummaries(false);
+      return;
+    }
+
+    let isActive = true;
+    setLoadingStockSummaries(true);
+
+    getStockAggregatesByLocationPaths(user, locationPaths)
+      .then((summaries) => {
+        if (!isActive) return;
+        setStockSummaries(summaries);
+      })
+      .catch((error) => {
+        console.error('Error al obtener los agregados de stock para el sidebar:', error);
+        if (!isActive) return;
+        setStockSummaries({});
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setLoadingStockSummaries(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [user, locationPaths]);
+
   return (
     <SidebarContainer>
       {/* Conditionally render the Tree component based on displayProducts */}
@@ -407,7 +486,7 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
         />
       ) : (
         <Tree
-          data={itemsWithParentIds}  // Use itemsWithParentIds here
+          data={itemsWithStockSummaries}  // Use items enriched with stock summaries
           config={config}
           selectedId={getSelectedId()}
         />

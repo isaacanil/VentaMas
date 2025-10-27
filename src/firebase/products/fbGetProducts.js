@@ -6,23 +6,91 @@ import { useSelector } from "react-redux"
 import { selectUser } from "../../features/auth/userSlice"
 import { SelectSettingCart } from "../../features/cart/cartSlice"
 import { SelectActiveIngredients, SelectCategories, SelectCategoryStatus } from "../../features/category/categorySlicer"
-import { DEFAULT_FILTER_CONTEXT, selectCriterio, selectInventariable, selectItbis, selectOrden, selectStockAvailability, selectStockAlertLevel, selectStockRequirement, selectStockLocations } from "../../features/filterProduct/filterProductsSlice"
+import { DEFAULT_FILTER_CONTEXT, selectCriterio, selectInventariable, selectItbis, selectPriceStatus, selectCostStatus, selectPromotionStatus, selectOrden, selectStockAvailability, selectStockAlertLevel, selectStockRequirement, selectStockLocations } from "../../features/filterProduct/filterProductsSlice"
 import { getTax } from "../../utils/pricing"
 import { db } from "../firebaseconfig"
 
 
-function filterProducts(productsArray, inventariable, itbis, stockAvailability, stockAlertLevel, stockRequirement, thresholds) {
+const normalizeTaxValue = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  const scaled = Math.abs(numeric) < 1 ? numeric * 100 : numeric;
+  return Math.round(scaled * 100) / 100;
+};
+
+function filterProducts(
+  productsArray,
+  inventariable,
+  itbis,
+  priceStatus,
+  costStatus,
+  promotionStatus,
+  stockAvailability,
+  stockAlertLevel,
+  stockRequirement,
+  thresholds,
+  serverApplied = {}
+) {
   // Filtro por Inventariable
-  if (inventariable === 'si') {
-    productsArray = filter(productsArray, product => product.trackInventory === true);
-  } else if (inventariable === 'no') {
-    productsArray = filter(productsArray, product => product.trackInventory === false);
+  if (!serverApplied.inventariable) {
+    if (inventariable === 'si') {
+      productsArray = filter(productsArray, product => product.trackInventory === true);
+    } else if (inventariable === 'no') {
+      productsArray = filter(productsArray, product => product.trackInventory === false);
+    }
   }
 
   // Filtro por ITBIS
-  if (itbis !== 'todos') {
-    const itbisValue = parseFloat(itbis);
-    productsArray = filter(productsArray, product => product.pricing.tax === itbisValue);
+  if (!serverApplied.itbis && itbis !== 'todos') {
+    const itbisValue = normalizeTaxValue(itbis);
+    if (itbisValue !== null) {
+      productsArray = filter(productsArray, (product = {}) => {
+        const { pricing = {} } = product;
+        const normalizedTax = normalizeTaxValue(pricing.tax);
+        if (normalizedTax === null) return false;
+        return normalizedTax === itbisValue;
+      });
+    }
+  }
+
+  // Filtro por estado de precio
+  if (!serverApplied.priceStatus) {
+    if (priceStatus === 'sinPrecio') {
+      productsArray = filter(productsArray, product => {
+        const price = Number(product?.pricing?.price ?? 0);
+        return !Number.isFinite(price) || price <= 0;
+      });
+    } else if (priceStatus === 'conPrecio') {
+      productsArray = filter(productsArray, product => {
+        const price = Number(product?.pricing?.price ?? 0);
+        return Number.isFinite(price) && price > 0;
+      });
+    }
+  }
+
+  // Filtro por estado de costo
+  if (!serverApplied.costStatus) {
+    if (costStatus === 'sinCosto') {
+      productsArray = filter(productsArray, product => {
+        const cost = Number(product?.pricing?.cost ?? 0);
+        return !Number.isFinite(cost) || cost <= 0;
+      });
+    } else if (costStatus === 'conCosto') {
+      productsArray = filter(productsArray, product => {
+        const cost = Number(product?.pricing?.cost ?? 0);
+        return Number.isFinite(cost) && cost > 0;
+      });
+    }
+  }
+
+  // Filtro por promociones
+  if (!serverApplied.promotionStatus) {
+    if (promotionStatus === 'promocionActiva') {
+      productsArray = filter(productsArray, product => product?.promotions?.isActive === true);
+    } else if (promotionStatus === 'sinPromocion') {
+      productsArray = filter(productsArray, product => product?.promotions?.isActive !== true);
+    }
   }
 
   // Filtro disponibilidad de stock
@@ -36,10 +104,12 @@ function filterProducts(productsArray, inventariable, itbis, stockAvailability, 
   // Campo fuente: product.restrictSaleWithoutStock (boolean)
   //  - true  => El producto NO se puede vender si no hay stock ("requiere")
   //  - false | undefined => El producto permite vender sin stock ("noRequiere")
-  if (stockRequirement === 'requiere') {
-    productsArray = filter(productsArray, product => product.restrictSaleWithoutStock === true);
-  } else if (stockRequirement === 'noRequiere') {
-    productsArray = filter(productsArray, product => product.restrictSaleWithoutStock !== true); // false o undefined
+  if (!serverApplied.stockRequirement) {
+    if (stockRequirement === 'requiere') {
+      productsArray = filter(productsArray, product => product.restrictSaleWithoutStock === true);
+    } else if (stockRequirement === 'noRequiere') {
+      productsArray = filter(productsArray, product => product.restrictSaleWithoutStock !== true); // false o undefined
+    }
   }
 
   // Filtro por nivel de alerta de stock (usa thresholds dinámicos)
@@ -150,6 +220,9 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
 
   const inventariable = useSelector((state) => selectInventariable(state, contextKey));
   const itbis = useSelector((state) => selectItbis(state, contextKey));
+  const priceStatus = useSelector((state) => selectPriceStatus(state, contextKey));
+  const costStatus = useSelector((state) => selectCostStatus(state, contextKey));
+  const promotionStatus = useSelector((state) => selectPromotionStatus(state, contextKey));
   const stockAvailability = useSelector((state) => selectStockAvailability(state, contextKey));
   const stockAlertLevel = useSelector((state) => selectStockAlertLevel(state, contextKey));
   const stockRequirement = useSelector((state) => selectStockRequirement(state, contextKey));
@@ -357,6 +430,27 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
       const productsRef = collection(db, "businesses", String(user?.businessID), "products");
 
       const constraints = [];
+      const serverAppliedFilters = {
+        inventariable: false,
+        itbis: false,
+        priceStatus: false,
+        costStatus: false,
+        promotionStatus: false,
+        stockRequirement: false,
+      };
+      let inequalityField = null;
+      const inequalityOperators = new Set(['<', '<=', '>', '>=', '!=', 'not-in']);
+      const tryAddConstraint = (field, operator, value) => {
+        if (inequalityOperators.has(operator)) {
+          if (inequalityField && inequalityField !== field) {
+            return false;
+          }
+          inequalityField = field;
+        }
+        constraints.push(where(field, operator, value));
+        return true;
+      };
+
       const categoriesNameArray = categories.map((item) => item.name);
       if (categories.length > 0 && categoriesStatus) {
         constraints.push(where("category", "in", categoriesNameArray));
@@ -364,6 +458,47 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
       const activeIngredientsNameArray = activeIngredients.map((item) => item.name);
       if (activeIngredients.length > 0) {
         constraints.push(where("activeIngredients", "in", activeIngredientsNameArray));
+      }
+
+      if (inventariable === 'si') {
+        if (tryAddConstraint('trackInventory', '==', true)) {
+          serverAppliedFilters.inventariable = true;
+        }
+      } else if (inventariable === 'no') {
+        if (tryAddConstraint('trackInventory', '==', false)) {
+          serverAppliedFilters.inventariable = true;
+        }
+      }
+
+      if (itbis !== 'todos') {
+        const normalizedItbis = normalizeTaxValue(itbis);
+        if (normalizedItbis !== null && tryAddConstraint('pricing.tax', '==', normalizedItbis)) {
+          serverAppliedFilters.itbis = true;
+        }
+      }
+
+      if (priceStatus === 'conPrecio') {
+        if (tryAddConstraint('pricing.price', '>', 0)) {
+          serverAppliedFilters.priceStatus = true;
+        }
+      }
+
+      if (costStatus === 'conCosto') {
+        if (tryAddConstraint('pricing.cost', '>', 0)) {
+          serverAppliedFilters.costStatus = true;
+        }
+      }
+
+      if (promotionStatus === 'promocionActiva') {
+        if (tryAddConstraint('promotions.isActive', '==', true)) {
+          serverAppliedFilters.promotionStatus = true;
+        }
+      }
+
+      if (stockRequirement === 'requiere') {
+        if (tryAddConstraint('restrictSaleWithoutStock', '==', true)) {
+          serverAppliedFilters.stockRequirement = true;
+        }
       }
 
       const q = query(productsRef, ...constraints);
@@ -384,8 +519,19 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
         }
         );
 
-
-  productsArray = filterProducts(productsArray, inventariable, itbis, stockAvailability, stockAlertLevel, stockRequirement, thresholds);
+        productsArray = filterProducts(
+          productsArray,
+          inventariable,
+          itbis,
+          priceStatus,
+          costStatus,
+          promotionStatus,
+          stockAvailability,
+          stockAlertLevel,
+          stockRequirement,
+          thresholds,
+          serverAppliedFilters
+        );
         productsArray = orderingProducts(productsArray, criterio, orden);
 
         productsArray = productsArray.sort((a, b) => a?.custom === true ? -1 : 1);
@@ -403,7 +549,7 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
       console.error("Ocurrió un error al obtener los productos:", error);
     }
 
-  }, [user?.businessID, trackInventory, categories, activeIngredients, categoriesStatus, criterio, orden, inventariable, itbis, stockAvailability, stockAlertLevel, stockRequirement, billing?.stockLowThreshold, billing?.stockCriticalThreshold, contextKey]);
+  }, [user?.businessID, trackInventory, categories, activeIngredients, categoriesStatus, criterio, orden, inventariable, itbis, priceStatus, costStatus, promotionStatus, stockAvailability, stockAlertLevel, stockRequirement, billing?.stockLowThreshold, billing?.stockCriticalThreshold, contextKey]);
 
   useEffect(() => {
     if (!Array.isArray(processedProductsRef.current)) return;

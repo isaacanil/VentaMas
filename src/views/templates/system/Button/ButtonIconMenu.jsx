@@ -1,4 +1,4 @@
-import { Tooltip } from 'antd'
+import { Badge, Tooltip } from 'antd'
 import React from 'react'
 import styled, { css } from 'styled-components'
 
@@ -9,6 +9,7 @@ export const ButtonIconMenu = ({
     tooltipDescription,
     tooltipPlacement = 'top',
     indicator = false,
+    indicatorCount,
     ...rest
 }) => {
     const label = tooltip || tooltipDescription;
@@ -19,23 +20,39 @@ export const ButtonIconMenu = ({
         'top-start': 'topLeft'
     };
     const antdPlacement = placementMap[tooltipPlacement] || tooltipPlacement;
+    const hasBadge = typeof indicatorCount === 'number' && indicatorCount > 0;
+    const showDotIndicator = Boolean(indicator) && !hasBadge;
 
     const Btn = (
         <Container
             onClick={onClick}
             aria-label={label}
-            $indicator={indicator}
+            $indicator={showDotIndicator}
             {...rest}
         >
             {icon}
         </Container>
     );
+    const ButtonWithBadge = hasBadge ? (
+        <Badge
+            count={indicatorCount}
+            overflowCount={9}
+            size="small"
+            style={{
+                top: 8,
+                right: 2
+            }}
+            offset={[6, -4]}
+        >
+            {Btn}
+        </Badge>
+    ) : Btn;
 
     return label ? (
         <Tooltip title={label} placement={antdPlacement}>
-            {Btn}
+            {ButtonWithBadge}
         </Tooltip>
-    ) : Btn;
+    ) : ButtonWithBadge;
 }
 const Container = styled.button`
     border: none;
@@ -62,8 +79,8 @@ const Container = styled.button`
         &::after {
             content: '';
             position: absolute;
-            top: 0px;
-            right: 0px;
+            top: 20px;
+            right: 20px;
             width: 8px;
             height: 8px;
             border-radius: 50%;

@@ -7,6 +7,9 @@ export const DEFAULT_FILTERS = {
   orden: 'asc',
   inventariable: 'todos',
   itbis: 'todos',
+  priceStatus: 'todos',
+  costStatus: 'todos',
+  promotionStatus: 'todos',
   stockAvailability: 'todos',
   stockAlertLevel: 'todos',
   stockRequirement: 'todos',
@@ -21,6 +24,9 @@ const STORAGE_KEYS = {
   orden: 'filterOrden',
   inventariable: 'filterInventariable',
   itbis: 'filterItbis',
+  priceStatus: 'filterPriceStatus',
+  costStatus: 'filterCostStatus',
+  promotionStatus: 'filterPromotionStatus',
   stockAvailability: 'filterStockAvailability',
   stockAlertLevel: 'filterStockAlertLevel',
   stockRequirement: 'filterStockRequirement',
@@ -237,6 +243,30 @@ export const filterProductsSlice = createSlice({
       persistContextField(context, 'itbis', value);
       markContextDirty(state, context);
     },
+    setPriceStatus: (state, action) => {
+      const { context, value } = extractPayload(action.payload);
+      if (value === undefined) return;
+      const contextState = ensureContextState(state, context);
+      contextState.priceStatus = value;
+      persistContextField(context, 'priceStatus', value);
+      markContextDirty(state, context);
+    },
+    setCostStatus: (state, action) => {
+      const { context, value } = extractPayload(action.payload);
+      if (value === undefined) return;
+      const contextState = ensureContextState(state, context);
+      contextState.costStatus = value;
+      persistContextField(context, 'costStatus', value);
+      markContextDirty(state, context);
+    },
+    setPromotionStatus: (state, action) => {
+      const { context, value } = extractPayload(action.payload);
+      if (value === undefined) return;
+      const contextState = ensureContextState(state, context);
+      contextState.promotionStatus = value;
+      persistContextField(context, 'promotionStatus', value);
+      markContextDirty(state, context);
+    },
     setStockAvailability: (state, action) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
@@ -370,6 +400,9 @@ export const {
   setOrden,
   setInventariable,
   setItbis,
+  setPriceStatus,
+  setCostStatus,
+  setPromotionStatus,
   setStockAvailability,
   setStockAlertLevel,
   setStockRequirement,
@@ -394,6 +427,12 @@ export const selectInventariable = (state, context) =>
   selectContextFilters(state, context).inventariable;
 export const selectItbis = (state, context) =>
   selectContextFilters(state, context).itbis;
+export const selectPriceStatus = (state, context) =>
+  selectContextFilters(state, context).priceStatus;
+export const selectCostStatus = (state, context) =>
+  selectContextFilters(state, context).costStatus;
+export const selectPromotionStatus = (state, context) =>
+  selectContextFilters(state, context).promotionStatus;
 export const selectStockAvailability = (state, context) =>
   selectContextFilters(state, context).stockAvailability;
 export const selectStockAlertLevel = (state, context) =>

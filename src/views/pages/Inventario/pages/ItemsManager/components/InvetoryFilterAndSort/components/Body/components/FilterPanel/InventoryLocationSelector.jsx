@@ -293,10 +293,10 @@ const SelectorButton = styled.button`
     align-items: center;
     justify-content: space-between;
     gap: 0.65rem;
-    min-height: 3rem;
+    min-height: 2.4rem;
     padding: 0.55rem 0.75rem;
-    border-radius: 12px;
-    border: 1px solid ${({ $active }) => ($active ? '#1e40af' : '#d7dce3')};
+    border-radius: 8px;
+    border: 1px solid ${({ $active }) => ($active ? '#228df1ff' : '#d7dce3')};
     background: ${({ disabled }) => (disabled ? '#f3f4f6' : '#ffffff')};
     cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
     transition: border 0.18s ease, box-shadow 0.18s ease;

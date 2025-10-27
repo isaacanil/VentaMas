@@ -103,7 +103,6 @@ export const ProductInfo = ({ product, productBrands = [] }) => {
             >
                 <Input
                     placeholder="Ingresa el nombre del producto"
-                    value={product?.productName}
                 />
             </Form.Item>
             <Row gutter={16}>

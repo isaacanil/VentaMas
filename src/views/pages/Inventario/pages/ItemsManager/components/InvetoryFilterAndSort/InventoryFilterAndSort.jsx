@@ -133,12 +133,14 @@ export const InventoryFilterAndSort = ({
         dispatch(persistFilterPreferences({ userId, context: contextKey }));
     }, [dispatch, userId, filters, meta?.loading, meta?.hydratedContexts?.[contextKey], meta?.loadedForUser, contextKey]);
 
-    const hasActiveFilters = useMemo(() => {
-        if (!filters) return false;
-        return Object.keys(DEFAULT_FILTERS).some(
-            (field) => !isSameFilterValue(field, filters[field], DEFAULT_FILTERS[field])
-        );
+    const activeFiltersCount = useMemo(() => {
+        if (!filters) return 0;
+        return Object.keys(DEFAULT_FILTERS).reduce((count, field) => (
+            count + (!isSameFilterValue(field, filters[field], DEFAULT_FILTERS[field]) ? 1 : 0)
+        ), 0);
     }, [filters]);
+
+    const hasActiveFilters = activeFiltersCount > 0;
 
     // Variants dependientes de reduced motion (evita animaciones complejas si el usuario lo solicita)
     const menuVariant = reduceMotion ? {
@@ -170,6 +172,7 @@ export const InventoryFilterAndSort = ({
                 icon={icons.operationModes.filter}
                 onClick={handleOpen}
                 indicator={hasActiveFilters}
+                indicatorCount={activeFiltersCount}
                 tooltip={tooltip}
                 tooltipDescription={tooltipDescription}
                 tooltipPlacement={tooltipPlacement}
@@ -220,7 +223,13 @@ outline: none;
 
 
 @media (max-width: 640px){
-top: 0; right: 0; width: 100%; height: 100vh; max-height: 100vh; border-radius: 0; box-shadow: none; border: none;
+top: 2px; 
+right: 2px; 
+left: 2px; 
+width: 100%; 
+height: 100vh; 
+max-height: 100vh;  
+box-shadow: none; 
 }
 
  @media (prefers-reduced-motion: reduce){
@@ -247,6 +256,5 @@ const Actions = styled.div`
     align-items: center;
     justify-content: end;
 `;
-
 
 

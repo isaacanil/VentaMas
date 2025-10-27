@@ -2,7 +2,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown } from 'antd';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const ActionButtonsContainer = styled.div`
@@ -28,14 +28,18 @@ const ActionButton = styled.button`
 `;
 
 const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' como prop
+  const visibleActions = useMemo(() => actions.filter(action => {
+    if (!action) return false;
+    if (action.show && !action.show(node, level)) return false;
+    if (action.type === 'dropdown') {
+      return !!action.items;
+    }
+    return typeof action.handler === 'function';
+  }), [actions, level, node]);
+
   return (
     <ActionButtonsContainer>
-      {actions.filter(action => action && action.handler).map((action) => {
-        // Verificar la propiedad "show" si está definida
-        if (action.show && !action.show(node, level)) {
-          return null;
-        }
-
+      {visibleActions.map((action) => {
         if (action.type === 'button') {
           return (
             <ActionButton
@@ -53,6 +57,8 @@ const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' co
           const items = typeof action.items === 'function'
             ? action.items(node, level, path) // Pasar 'path' a las items
             : action.items;
+
+          if (!items || items.length === 0) return null;
 
           return (
             <Dropdown

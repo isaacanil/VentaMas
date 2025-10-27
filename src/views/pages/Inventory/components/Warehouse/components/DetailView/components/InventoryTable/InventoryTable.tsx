@@ -1,0 +1,452 @@
+import { DeleteOutlined, SwapOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import dayjs, { type Dayjs } from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+
+
+import { selectUser } from '../../../../../../../../../features/auth/userSlice.js';
+import { openDeleteModal } from '../../../../../../../../../features/productStock/deleteProductStockSlice.js';
+import { getBatchById } from '../../../../../../../../../firebase/warehouse/batchService.js';
+import BatchViewModal from '../BatchViewModal.jsx';
+import { ProductMovementModal } from '../ProductMovementModal.jsx';
+
+import { AdvancedFilterModal } from './components/AdvancedFilterModal';
+import { SearchControls } from './components/SearchControls';
+import { useInventoryFilters } from './hooks/useInventoryFilters';
+import { useInventoryColumns } from './hooks/useInventoryColumns';
+import { useProductFilterOptions } from './hooks/useProductFilterOptions';
+import { useProductsStock } from './hooks/useProductsStock';
+import { Container, MenuItemContent, Title, TitleSection } from './styles';
+import { normalizeToDayjs, toMillis } from './utils/dateUtils';
+import { NO_BATCH_VALUE, getProductFilterKey } from './utils/productFilterUtils';
+
+import type {
+  DateRangeValue,
+  GetActionMenu,
+  InventoryRow,
+  InventoryTableProps,
+  ProductStockLike,
+  SortConfig,
+  SortMenuItems,
+} from './types';
+import { AdvancedTable } from 'views/templates/system/AdvancedTable/AdvancedTable.js';
+
+
+dayjs.extend(customParseFormat);
+
+type AppUser = {
+  uid?: string;
+  businessID?: string | null;
+  [key: string]: unknown;
+};
+
+const isAppUser = (value: unknown): value is AppUser => (
+  typeof value === 'object' && value !== null
+);
+
+export const InventoryTable: React.FC<InventoryTableProps> = ({
+  currentNode,
+  searchTerm,
+  setSearchTerm,
+  setDateRange,
+  location,
+}) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const rawUser: unknown = useSelector(selectUser);
+  const user = isAppUser(rawUser) ? rawUser : null;
+  const { productsStock, loading } = useProductsStock(location);
+  const { productOptions, productBatchMap } = useProductFilterOptions(productsStock);
+  const {
+    showOnlyWithExpiration,
+    selectedProductFilter,
+    selectedBatches,
+    hasAdvancedFilters,
+    filterDraft,
+    draftBatchOptions,
+    isFilterModalOpen,
+    openFilterModal,
+    cancelFilterModal,
+    applyFilterModal,
+    resetFilterModal,
+    updateFilterDraft,
+    clearAdvancedFilters,
+  } = useInventoryFilters({
+    productOptions,
+    productBatchMap,
+  });
+
+  const [moveModalVisible, setMoveModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductStockLike | null>(null);
+  const [dateFilter, setDateFilter] = useState<DateRangeValue>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    field: null,
+    order: null,
+  });
+  const [batchModalVisible, setBatchModalVisible] = useState(false);
+  const [selectedBatch, setSelectedBatch] = useState<unknown>(null);
+
+  const dateRangePresets = useMemo(
+    () => [
+      { label: 'Sin filtro', value: null },
+      {
+        label: 'Hoy',
+        value: [dayjs().startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
+      },
+      {
+        label: 'Últimos 7 días',
+        value: [dayjs().subtract(6, 'day').startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
+      },
+      {
+        label: 'Este mes',
+        value: [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs],
+      },
+      {
+        label: 'Próximo mes',
+        value: [dayjs().add(1, 'month').startOf('month'), dayjs().add(1, 'month').endOf('month')] as [Dayjs, Dayjs],
+      },
+    ],
+    [],
+  );
+
+  const activeDateRange = useMemo(() => {
+    if (!Array.isArray(dateFilter) || !dateFilter[0] || !dateFilter[1]) {
+      return null;
+    }
+
+    return {
+      start: dateFilter[0].startOf('day').valueOf(),
+      end: dateFilter[1].endOf('day').valueOf(),
+    };
+  }, [dateFilter]);
+
+  const handleMove = useCallback((record: ProductStockLike) => {
+    setSelectedProduct(record);
+    setMoveModalVisible(true);
+  }, []);
+
+  const handleMoveSubmit = useCallback(() => {
+    setMoveModalVisible(false);
+  }, []);
+
+  const handleDateRangeChange = useCallback((dates: DateRangeValue) => {
+    if (!dates || (!dates[0] && !dates[1])) {
+      setDateFilter(null);
+      setDateRange(null);
+      return;
+    }
+
+    const normalizedDates = Array.isArray(dates)
+      ? dates.map((date) => (date ? normalizeToDayjs(date) : null)) as DateRangeValue
+      : null;
+
+    if (!normalizedDates || (!normalizedDates[0] && !normalizedDates[1])) {
+      setDateFilter(null);
+      setDateRange(null);
+      return;
+    }
+
+    setDateFilter(normalizedDates);
+    setDateRange(normalizedDates);
+  }, [setDateRange]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchTerm('');
+    setDateFilter(null);
+    setDateRange(null);
+    clearAdvancedFilters();
+    setSortConfig({ field: null, order: null });
+  }, [clearAdvancedFilters, setDateRange, setSearchTerm]);
+
+  const handleViewProductStock = useCallback((productId?: string) => {
+    if (!productId) return;
+    navigate(`/inventory/warehouses/products-stock/${productId}`);
+  }, [navigate]);
+
+  const handleDeleteBatch = useCallback((record: ProductStockLike) => {
+    dispatch(openDeleteModal({
+      productStockId: record.id,
+      batchId: record.batchId,
+      actionType: 'productStock',
+    }));
+  }, [dispatch]);
+
+  const handleViewBatch = useCallback(async (batchId?: string | null) => {
+    if (!batchId || !user) return;
+    const batchData = await getBatchById(user, batchId);
+    if (batchData) {
+      setSelectedBatch(batchData);
+      setBatchModalVisible(true);
+    }
+  }, [user]);
+
+  const getActionMenu = useCallback<GetActionMenu>((record) => ({
+    items: [
+      {
+        key: 'view-stock',
+        label: (
+          <MenuItemContent>
+            <UnorderedListOutlined />
+            Ver todas las ubicaciones
+          </MenuItemContent>
+        ),
+        onClick: () => handleViewProductStock(record.productId),
+      },
+      {
+        key: 'move',
+        label: (
+          <MenuItemContent>
+            <SwapOutlined />
+            Mover producto
+          </MenuItemContent>
+        ),
+        onClick: () => handleMove(record),
+      },
+      {
+        key: 'delete',
+        danger: true,
+        label: (
+          <MenuItemContent>
+            <DeleteOutlined />
+            Eliminar batch
+          </MenuItemContent>
+        ),
+        onClick: () => handleDeleteBatch(record),
+      },
+    ],
+  }), [handleDeleteBatch, handleMove, handleViewProductStock]);
+
+  const handleSort = useCallback((field: SortConfig['field'], order: SortConfig['order']) => {
+    setSortConfig({ field, order });
+  }, []);
+
+  const sortMenuItems: SortMenuItems = useMemo(() => ([
+    {
+      key: 'productName-asc',
+      label: 'Nombre de Producto (A-Z)',
+      onClick: () => handleSort('productName', 'asc'),
+    },
+    {
+      key: 'productName-desc',
+      label: 'Nombre de Producto (Z-A)',
+      onClick: () => handleSort('productName', 'desc'),
+    },
+    {
+      key: 'batchNumberId-asc',
+      label: 'Número de Lote (Ascendente)',
+      onClick: () => handleSort('batchNumberId', 'asc'),
+    },
+    {
+      key: 'expirationDate-asc',
+      label: 'Fecha de Vencimiento (Próximos)',
+      onClick: () => handleSort('expirationDate', 'asc'),
+    },
+    {
+      key: 'expirationDate-desc',
+      label: 'Fecha de Vencimiento (Lejanos)',
+      onClick: () => handleSort('expirationDate', 'desc'),
+    },
+    {
+      key: 'createdAt-desc',
+      label: 'Más recientes primero',
+      onClick: () => handleSort('createdAt', 'desc'),
+    },
+    {
+      key: 'createdAt-asc',
+      label: 'Más antiguos primero',
+      onClick: () => handleSort('createdAt', 'asc'),
+    },
+  ]), [handleSort]);
+
+  const getSortedData = useCallback((data: InventoryRow[]) => {
+    if (!sortConfig.field) return data;
+
+    const { field, order } = sortConfig;
+    const direction = order === 'desc' ? -1 : 1;
+
+    return [...data].sort((a, b) => {
+      if (field === 'expirationDate') {
+        const aMillis = a.expirationDateMillis ?? Number.POSITIVE_INFINITY;
+        const bMillis = b.expirationDateMillis ?? Number.POSITIVE_INFINITY;
+        return direction * (aMillis - bMillis);
+      }
+
+      if (field === 'createdAt') {
+        const aMillis = toMillis(a.createdAt);
+        const bMillis = toMillis(b.createdAt);
+
+        const aValid = aMillis !== null;
+        const bValid = bMillis !== null;
+
+        if (!aValid && !bValid) return 0;
+        if (!aValid) return 1;
+        if (!bValid) return -1;
+
+        return direction * ((aMillis ?? 0) - (bMillis ?? 0));
+      }
+
+      if (field === 'productName') {
+        return direction * a.productName.localeCompare(b.productName);
+      }
+
+      if (field === 'batchNumberId') {
+        const batchA = a.batch?.batchNumberId ?? '';
+        const batchB = b.batch?.batchNumberId ?? '';
+        return direction * batchA.localeCompare(batchB);
+      }
+
+      return 0;
+    });
+  }, [sortConfig]);
+
+  const inventoryData: InventoryRow[] = useMemo(() => {
+    const filtered = productsStock
+      .filter((stock) => {
+        const expirationMillis = toMillis(stock.expirationDate);
+        if (showOnlyWithExpiration && expirationMillis === null) return false;
+        if (selectedProductFilter) {
+          const productKey = getProductFilterKey(stock);
+          if (!productKey || productKey !== selectedProductFilter) return false;
+        }
+        if (selectedBatches.length) {
+          const batchValue = stock?.batchNumberId || NO_BATCH_VALUE;
+          if (!selectedBatches.includes(batchValue)) return false;
+        }
+
+        if (searchTerm) {
+          const normalizedSearch = searchTerm.toLowerCase();
+          const productName = stock.productName?.toLowerCase() ?? '';
+          const batchValue = (() => {
+            if (!stock.batch) return '';
+            if (typeof stock.batch === 'string') return stock.batch.toLowerCase();
+            if (typeof stock.batch === 'number') return String(stock.batch).toLowerCase();
+            if ('batchNumberId' in stock.batch && typeof stock.batch.batchNumberId === 'string') {
+              return stock.batch.batchNumberId.toLowerCase();
+            }
+            return '';
+          })();
+
+          const productNameMatch = productName.includes(normalizedSearch);
+          const batchMatch = batchValue.includes(normalizedSearch);
+          if (!productNameMatch && !batchMatch) return false;
+        }
+
+        if (activeDateRange) {
+          if (expirationMillis === null) return false;
+          return (
+            expirationMillis >= activeDateRange.start &&
+            expirationMillis <= activeDateRange.end
+          );
+        }
+
+        return true;
+      })
+      .map((stock): InventoryRow => {
+        const expirationDateMillis = toMillis(stock.expirationDate);
+        const isExpired = expirationDateMillis ? dayjs(expirationDateMillis).isBefore(dayjs(), 'day') : false;
+        const expiryDate = expirationDateMillis
+          ? { label: dayjs(expirationDateMillis).format('DD/MM/YYYY'), isExpired }
+          : { label: 'N/A', isExpired: false };
+
+        return {
+          ...stock,
+          id: stock.id ?? '',
+          key: stock.id ?? '',
+          productName: stock.productName || 'Producto sin nombre',
+          productId: stock.productId || '',
+          quantity: stock.quantity ?? 0,
+          batch: { batchNumberId: stock.batchNumberId || 'Sin lote', batchId: stock.batchId ?? null },
+          batchId: stock.batchId ?? null,
+          actions: stock,
+          expirationDateMillis,
+          expiryDate,
+        };
+      });
+
+    return getSortedData(filtered);
+  }, [
+    productsStock,
+    showOnlyWithExpiration,
+    selectedProductFilter,
+    selectedBatches,
+    searchTerm,
+    activeDateRange,
+    getSortedData,
+  ]);
+
+  const columns = useInventoryColumns({
+    onViewBatch: (batchId) => handleViewBatch(batchId),
+    getActionMenu,
+  });
+
+  return (
+    <>
+      <Container>
+        <TitleSection>
+          <Title>Gestión de Inventario</Title>
+        </TitleSection>
+
+        <SearchControls
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          dateFilter={dateFilter}
+          onDateRangeChange={handleDateRangeChange}
+          dateRangePresets={dateRangePresets}
+          sortMenuItems={sortMenuItems}
+          onOpenAdvancedFilters={openFilterModal}
+          hasAdvancedFilters={hasAdvancedFilters}
+          onClearFilters={handleClearFilters}
+        />
+
+        <AdvancedTable
+          columns={columns}
+          data={inventoryData}
+          loading={loading}
+          numberOfElementsPerPage={8}
+          emptyText="No hay registros para mostrar"
+        />
+
+        <AdvancedFilterModal
+          open={isFilterModalOpen}
+          filterDraft={filterDraft}
+          onCancel={cancelFilterModal}
+          onReset={resetFilterModal}
+          onApply={applyFilterModal}
+          onToggleExpiration={(checked) => updateFilterDraft((prev) => ({
+            ...prev,
+            showOnlyWithExpiration: checked,
+          }))}
+          productOptions={productOptions}
+          onProductChange={(value) => updateFilterDraft((prev) => ({
+            ...prev,
+            product: value,
+            batches: [],
+          }))}
+          draftBatchOptions={draftBatchOptions}
+          onToggleBatch={(batchValue, checked) => updateFilterDraft((prev) => ({
+            ...prev,
+            batches: checked
+              ? [...prev.batches, batchValue]
+              : prev.batches.filter((value) => value !== batchValue),
+          }))}
+        />
+      </Container>
+
+      <ProductMovementModal
+        visible={moveModalVisible}
+        onCancel={() => setMoveModalVisible(false)}
+        onOk={handleMoveSubmit}
+        product={selectedProduct}
+        currentNode={currentNode}
+      />
+
+      <BatchViewModal
+        visible={batchModalVisible}
+        onClose={() => setBatchModalVisible(false)}
+        batchData={selectedBatch}
+      />
+    </>
+  );
+};

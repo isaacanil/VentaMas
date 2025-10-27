@@ -1,4 +1,4 @@
-import { faFileExport, faFileImport, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
+import { faFileExport, faFileImport, faEllipsisVertical, faWrench } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { message } from 'antd'
 import React, { Fragment, useState } from 'react'
@@ -10,6 +10,7 @@ import { selectUser } from '../../../../../../features/auth/userSlice'
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
 import { fbAddProducts } from '../../../../../../firebase/products/fbAddProducts'
 import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
+import { normalizeProductTaxes } from '../../../../../../firebase/products/fbNormalizeProductTaxes'
 import { ExportProducts } from '../../../../../../hooks/exportToExcel/useExportProducts'
 import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
 import ROUTES_NAME from '../../../../../../routes/routesName'
@@ -91,6 +92,45 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
 
         ExportProducts(productsTaxTransformed);
     };
+    const handleNormalizeItbis = async () => {
+        if (!user?.businessID) {
+            message.error('No se identificó un negocio para normalizar los impuestos.');
+            return;
+        }
+        const key = 'normalize-itbis';
+        message.open({
+            key,
+            type: 'loading',
+            content: 'Normalizando impuestos de productos...',
+            duration: 0,
+        });
+        try {
+            const summary = await normalizeProductTaxes(user);
+            const { productsUpdated, mainUpdated, saleUnitsUpdated, selectedUnitUpdated } = summary;
+            const details = [
+                productsUpdated ? `${productsUpdated} productos` : null,
+                mainUpdated ? `${mainUpdated} precios base` : null,
+                saleUnitsUpdated ? `${saleUnitsUpdated} unidades de venta` : null,
+                selectedUnitUpdated ? `${selectedUnitUpdated} unidades seleccionadas` : null,
+            ].filter(Boolean).join(', ');
+            message.open({
+                key,
+                type: 'success',
+                content: details
+                    ? `Impuestos normalizados: ${details}.`
+                    : 'No se encontraron impuestos para actualizar.',
+                duration: 4,
+            });
+        } catch (error) {
+            console.error('Error al normalizar ITBIS:', error);
+            message.open({
+                key,
+                type: 'error',
+                content: 'No se pudo normalizar los impuestos. Intenta de nuevo.',
+                duration: 6,
+            });
+        }
+    };
     const options = [
         {
             text: 'Importar Productos',
@@ -107,6 +147,15 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
             closeWhenAction: true
         },
     ];
+    if (import.meta.env.DEV) {
+        options.push({
+            text: 'Normalizar ITBIS',
+            description: 'Corrige impuestos guardados como texto (solo QA).',
+            icon: <FontAwesomeIcon icon={faWrench} />,
+            action: handleNormalizeItbis,
+            closeWhenAction: true
+        });
+    }
     return (
         matchWithInventory && (
             <Container>

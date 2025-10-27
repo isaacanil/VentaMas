@@ -4,6 +4,8 @@ import react from "eslint-plugin-react";
 import storybook from "eslint-plugin-storybook";
 import unusedImports from "eslint-plugin-unused-imports";
 import importPlugin from "eslint-plugin-import";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 import globals from "globals";
 
 export default [
@@ -87,6 +89,62 @@ export default [
 
       // Pega aquí el resto de tus reglas del JSON…
       // "no-dupe-args": 2, etc.
+    },
+  },
+
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parser: tsParser,
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+      globals: { ...globals.browser, ...globals.node },
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: "warn",
+    },
+    settings: {
+      react: { version: "detect" },
+      "import/resolver": {
+        node: {
+          extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".json"]
+        },
+      }
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      "unused-imports": unusedImports,
+      import: importPlugin,
+      react,
+    },
+    rules: {
+      ...tseslint.configs["recommended-type-checked"].rules,
+
+      // === Limpieza automática ===
+      "no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }
+      ],
+
+      // Import helpers
+      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$"] }],
+      "import/order": ["warn", {
+        groups: ["builtin","external","internal","parent","sibling","index","object","type"],
+        "newlines-between": "always",
+        alphabetize: { order: "asc", caseInsensitive: true }
+      }],
+      "import/newline-after-import": ["warn", { count: 1 }],
+
+      // React adjustments
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
     },
   },
 

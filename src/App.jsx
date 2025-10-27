@@ -26,7 +26,6 @@ import { useAbilities, useLoadUserAbilities } from './hooks/abilities/useAbiliti
 import { useNavigationTracker } from './hooks/routes/useNavigationTracker';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';
-import { useFullScreen } from './hooks/useFullScreen';
 import { useTaxReceiptsFix } from './hooks/useTaxReceiptsFix';
 import { routes } from './routes/routes';
 import SEO from './Seo/Seo';
@@ -88,13 +87,16 @@ function App() {
 
   useBusinessDataConfig()// obtiene la configuración de la empresa
 
-  useFullScreen()// establece el modo pantalla completa
-
   useCheckForInternetConnection()// verifica la conexión a internet
 
   return (
     <Fragment>
-      <Router>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <ViewportContainer>
           <DeveloperSessionHelper />
           <NavigationTracker />

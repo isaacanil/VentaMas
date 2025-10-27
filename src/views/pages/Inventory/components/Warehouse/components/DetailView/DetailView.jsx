@@ -6,7 +6,7 @@ import styled from "styled-components";
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
 
 import { BreadcrumbNav } from './components/BreadcrumbNav';
-import { InventoryTable } from './components/InventoryTable';
+import { InventoryTable } from './components/InventoryTable/InventoryTable';
 import { MovementsTable } from './components/MovementsTable';
 
 

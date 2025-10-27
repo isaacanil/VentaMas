@@ -33,17 +33,7 @@ export const ResizableSidebar = ({ Sidebar, children }) => {
   return (
     <Container>
       <ResizeContainer>
-        {/*<ResizableBox
-          width={300}
-          height={Infinity}
-          minConstraints={[200, Infinity]}
-          maxConstraints={[400, Infinity]}
-          resizeHandles={["e"]} // Lado derecho para redimensionar
-          style={{ height: '100%' }}
-        > */}
         {Sidebar}
-        {/* </ResizableBox>*/}
-
       </ResizeContainer>
       <Content>{children}</Content>
     </Container>
