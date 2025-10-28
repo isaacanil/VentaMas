@@ -423,6 +423,12 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
     [applyLocationFilter]
   );
 
+  const updateFilteredProductsRef = useRef(updateFilteredProducts);
+
+  useEffect(() => {
+    updateFilteredProductsRef.current = updateFilteredProducts;
+  }, [updateFilteredProducts]);
+
   useEffect(() => {
     if (!user || !user?.businessID) return;
     try {
@@ -537,7 +543,9 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
         productsArray = productsArray.sort((a, b) => a?.custom === true ? -1 : 1);
 
         processedProductsRef.current = productsArray;
-        updateFilteredProducts(productsArray);
+        if (typeof updateFilteredProductsRef.current === 'function') {
+          updateFilteredProductsRef.current(productsArray);
+        }
       });
 
       return () => {

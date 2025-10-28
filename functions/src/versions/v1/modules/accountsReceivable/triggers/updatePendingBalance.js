@@ -1,7 +1,7 @@
 import { AggregateField } from 'firebase-admin/firestore';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 
-import { db } from '../../../../../core/config/firebase.js';
+import { db, FieldValue } from '../../../../../core/config/firebase.js';
 
 /**
  * Mantiene clients/{clientId}.pendingBalance
@@ -39,7 +39,13 @@ export const updatePendingBalance = onDocumentWritten(
         `businesses/${event.params.bid}/clients/${clientId}`
       );// ← 1 sola lectura de agregación
   
-      await clientRef.set({ pendingBalance: total }, { merge: true });
+      await clientRef.set(
+        {
+          client: { pendingBalance: total },
+          pendingBalance: FieldValue.delete(),
+        },
+        { merge: true }
+      );
 
   }
 );

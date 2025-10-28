@@ -35,7 +35,8 @@ export function useClientPendingBalance({ user, clientId }) {
     // Suscripción en tiempo real
     const unsubscribe = onSnapshot(ref, (snap) => {
       const data = snap.data();
-      setBalance(data?.pendingBalance ?? 0);
+      const pending = data?.client?.pendingBalance ?? data?.pendingBalance ?? 0;
+      setBalance(pending);
     });
 
     // Limpieza al desmontar

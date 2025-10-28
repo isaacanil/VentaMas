@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '../firebaseconfig';
+import { extractNormalizedClient } from './clientNormalizer';
 
 
 /**
@@ -25,7 +26,7 @@ export async function fbGetClient(user, clientId) {
         const clientSnapshot = await getDoc(clientRef);
         const clientExist = clientSnapshot.exists();
         if (clientExist) {
-            return clientSnapshot.data().client;
+            return extractNormalizedClient(clientSnapshot.data());
         } else {
             return null;
         };

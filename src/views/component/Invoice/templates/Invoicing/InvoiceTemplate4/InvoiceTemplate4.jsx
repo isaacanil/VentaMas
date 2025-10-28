@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
 import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
+import { PRODUCT_BRAND_DEFAULT } from '../../../../../../features/updateProduct/updateProductSlice';
 import { separator } from '../../../../../../hooks/separator';
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
 import DateUtils from '../../../../../../utils/date/dateUtils';
@@ -225,6 +226,11 @@ export const renderProducts = (
       const col3 = formatColumn(separator(getTotalPrice(product, NCF)).toString(), 17, 'right');
       prodText += col1 + col2 + col3 + '\n';      // Nombre completo del producto (y lo partimos en líneas de máx 40)
       prodText += wrapText(getFullProductName(product), CENTER_WIDTH) + '\n';
+
+      const rawBrand = typeof product?.brand === 'string' ? product.brand.trim() : '';
+      if (rawBrand && rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase()) {
+        prodText += wrapText(`Marca: ${rawBrand}`, CENTER_WIDTH) + '\n';
+      }
 
       // Descuento individual (si aplica)
       if (product?.discount && product?.discount?.value > 0) {

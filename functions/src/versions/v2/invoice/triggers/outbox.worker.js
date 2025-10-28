@@ -2,6 +2,11 @@ import { logger } from 'firebase-functions';
 import { firestore } from 'firebase-functions/v1';
 
 import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
+import {
+  buildClientWritePayload,
+  CLIENT_ROOT_FIELDS,
+  extractNormalizedClient,
+} from '../../../../modules/client/utils/clientNormalizer.js';
 
 let depsPromise;
 async function loadDeps() {
@@ -172,16 +177,27 @@ export const processInvoiceOutbox = firestore
           ensureTaskStart();
 
           if (clientRef) {
-            const existingClient = clientSnap?.exists ? clientSnap.data() || {} : {};
-            const clientPayload = {
+            const snapshotData = clientSnap?.exists ? clientSnap.data() || {} : {};
+            const existingClient = clientSnap?.exists ? extractNormalizedClient(snapshotData) : {};
+            const mergedClient = {
               ...existingClient,
               ...client,
               updatedAt: FieldValue.serverTimestamp(),
             };
             if (!clientSnap?.exists) {
-              clientPayload.createdAt = FieldValue.serverTimestamp();
+              mergedClient.createdAt = FieldValue.serverTimestamp();
             }
-            tx.set(clientRef, clientPayload, { merge: true });
+
+            const { payload } = buildClientWritePayload(mergedClient);
+            const extras = {};
+            for (const [key, value] of Object.entries(snapshotData)) {
+              if (key === 'client') continue;
+              if (!CLIENT_ROOT_FIELDS.has(key)) {
+                extras[key] = value;
+              }
+            }
+
+            tx.set(clientRef, { ...payload, ...extras }, { merge: true });
           }
 
           const historyFromCart = Array.isArray(cart?.history) ? cart.history : [];

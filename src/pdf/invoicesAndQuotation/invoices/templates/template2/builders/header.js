@@ -3,6 +3,8 @@ import { formatDate } from '../utils/formatters.js';
 import { buildClientBlock } from './clientBlock.js';
 import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 
+const CLIENT_BLOCK_MIN_HEIGHT = 70;
+
 /* ──────────────────────────────────────────────── */
 export function buildHeader(biz, d, images) {
   return () => {
@@ -19,6 +21,7 @@ export function buildHeader(biz, d, images) {
     const referenceValue = comprobanteType === 'preorder'
       ? (comprobanteValue || d.preorderDetails?.numberID || d.numberID || '-')
       : (d.numberID || '-');
+     
 
     /* columna izquierda (datos del negocio) */
     const leftStack = [
@@ -135,12 +138,14 @@ export function buildHeader(biz, d, images) {
             }
           ],
           columnGap: 10,
+          minHeight: CLIENT_BLOCK_MIN_HEIGHT,
           colSpan: 2,
           margin: [0, 3, 0, 6]
         },
         {}
       ]);
-    }return {
+    }
+    return {
       margin: [32, 12, 32, 0],
       table: { widths: ['*', '*'], body: rows },
       layout: 'noBorders'

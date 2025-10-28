@@ -3,6 +3,7 @@
 import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../firebaseconfig";
+import { extractNormalizedClient } from "./clientNormalizer";
 
 export async function getClients(user) {
     if (!user.businessID) return [];
@@ -13,7 +14,7 @@ export async function getClients(user) {
 
         if (clients.empty) return [];
 
-        const clientsList = clients.docs.map(doc => doc.data().client);
+        const clientsList = clients.docs.map(doc => extractNormalizedClient(doc.data()));
         return clientsList;
     } catch (error) {
         console.error('Error loading insurance data:', error);

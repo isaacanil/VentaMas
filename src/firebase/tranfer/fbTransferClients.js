@@ -2,6 +2,7 @@ import { collection, getDocs, writeBatch, doc, query, limit as firestoreLimit } 
 import { nanoid } from "nanoid";
 
 import { db } from "../firebaseconfig";
+import { buildClientWritePayload, CLIENT_ROOT_FIELDS, extractNormalizedClient } from "../client/clientNormalizer";
 
 /**
  * Transfiere clientes de un negocio a otro.
@@ -37,10 +38,23 @@ export const transferClients = async (businessA, businessB, limit = 0) => {
         for (let i = 0; i < totalClients; i += batchSize) {
             const batch = writeBatch(db);
             querySnapshot.docs.slice(i, i + batchSize).forEach(item => {
-                const client = item.data();
+                const docData = item.data() || {};
+                const normalizedClient = extractNormalizedClient(docData);
                 const id = nanoid(12);
+                normalizedClient.id = id;
+
+                const { payload } = buildClientWritePayload(normalizedClient);
+                const extras = {};
+
+                for (const [key, value] of Object.entries(docData)) {
+                    if (key === 'client') continue;
+                    if (!CLIENT_ROOT_FIELDS.has(key)) {
+                        extras[key] = value;
+                    }
+                }
+
                 const newClientRef = doc(clientBusinessBRef, id);
-                batch.set(newClientRef, { ...client, id: id });
+                batch.set(newClientRef, { ...payload, ...extras }, { merge: true });
             });
 
             await batch.commit();

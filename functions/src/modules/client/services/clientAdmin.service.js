@@ -2,6 +2,11 @@
 import { https, logger } from "firebase-functions";
 
 import { serverTimestamp, db } from "../../../core/config/firebase.js";
+import {
+    buildClientWritePayload,
+    CLIENT_ROOT_FIELDS,
+    extractNormalizedClient,
+} from "../utils/clientNormalizer.js";
 
 /**
  * Cliente genérico a usar cuando no se especifica un cliente
@@ -29,19 +34,33 @@ export async function retrieveAndUpdateClient(tx, { user, client, clientSnap = n
     const clientId = client.id;
     const clientRef = db.doc(`businesses/${businessId}/clients/${clientId}`);
 
-    const exists = clientSnap.exists;
-    const existingData = clientSnap.data().client || {};
+    const exists = clientSnap?.exists ?? false;
+    const snapshotData = exists ? clientSnap.data() || {} : {};
+    const existingData = exists ? extractNormalizedClient(snapshotData) : {};
 
-    const merged = {
+    const mergedClient = {
         ...existingData,
         ...client,
         updatedAt: serverTimestamp(),
-        ...(!exists && { createdAt: serverTimestamp() }),
+    };
+
+    if (!exists) {
+        mergedClient.createdAt = serverTimestamp();
     }
 
-    await tx.set(clientRef, merged, { merge: true });
+    const { payload, client: normalizedClient } = buildClientWritePayload(mergedClient);
+
+    const extras = {};
+    for (const [key, value] of Object.entries(snapshotData)) {
+        if (key === 'client') continue;
+        if (!CLIENT_ROOT_FIELDS.has(key)) {
+            extras[key] = value;
+        }
+    }
+
+    tx.set(clientRef, { ...payload, ...extras }, { merge: true });
     logger.info(`Client ${exists ? 'updated' : 'created'} (tx): ${clientId}`);
 
-    return merged;
+    return normalizedClient;
 
 }

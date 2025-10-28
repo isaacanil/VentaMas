@@ -16,7 +16,7 @@ import { BarCode } from '../sections/BarCode';
 import { InventoryInfo } from '../sections/InventoryInfo';
 import { PriceCalculator } from '../sections/PriceCalculator';
 import { PriceInfo } from '../sections/PriceInfo';
-import { ProductInfo } from '../sections/ProductInfo';
+import { ProductInfo, BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../sections/ProductInfo';
 import { QRCode } from '../sections/QRCode';
 import { WarrantyInfo } from '../sections/WarrantyInfo';
 
@@ -207,6 +207,33 @@ export const General = ({ showImageManager }) => {
             dispatch(ChangeProductData({ product: { brand: sanitizedBrand } }));
             if (value !== sanitizedBrand) {
                 form.setFieldsValue({ brand: sanitizedBrand });
+            }
+            return;
+        }
+        if (key === 'brandId') {
+            const normalizedId = typeof value === 'string' ? value.trim() : null;
+            let resolvedBrand = PRODUCT_BRAND_DEFAULT;
+
+            if (normalizedId && normalizedId !== BRAND_DEFAULT_OPTION_VALUE) {
+                if (normalizedId === BRAND_LEGACY_OPTION_VALUE && product?.brand) {
+                    resolvedBrand = product.brand;
+                } else {
+                    const brandMatch = productBrands?.find((brand) => brand?.id === normalizedId);
+                    if (brandMatch?.name) {
+                        resolvedBrand = brandMatch.name.trim();
+                    }
+                }
+            }
+
+            dispatch(ChangeProductData({
+                product: {
+                    brandId: normalizedId,
+                    brand: resolvedBrand || PRODUCT_BRAND_DEFAULT,
+                }
+            }));
+
+            if (!normalizedId || normalizedId === BRAND_DEFAULT_OPTION_VALUE) {
+                form.setFieldsValue({ brandId: BRAND_DEFAULT_OPTION_VALUE });
             }
             return;
         }
