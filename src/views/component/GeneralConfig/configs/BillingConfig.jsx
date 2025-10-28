@@ -8,7 +8,6 @@ import BillingModeConfig from './components/BillingModeConfig';
 import BillingSection from './components/BillingSection';
 import InvoiceSettingsSection from './components/InvoiceSettingsSection';
 import QuoteSettingsSection from './components/QuoteSettingsSection';
-import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 
 const StyledCard = styled.div`
   margin-top: 16px;
@@ -22,6 +21,7 @@ const BillingConfig = () => {
       <BillingSection
         title="Modo de Facturación"
         description="Seleccione el modo de facturación que desea utilizar."
+        sectionId="billing-mode"
       >
         <BillingModeConfig billingMode={billingMode} />
       </BillingSection>
@@ -29,6 +29,7 @@ const BillingConfig = () => {
       <BillingSection
         title="Configuración de Factura"
         description="Configure los detalles de su factura."
+        sectionId="billing-invoice-settings"
       >
         <InvoiceSettingsSection />
       </BillingSection>
@@ -36,18 +37,11 @@ const BillingConfig = () => {
       <BillingSection
         title="Configuración de Cotizaciones"
         description="Configure los parámetros predeterminados para sus cotizaciones."
+        sectionId="billing-quote-settings"
       >
         <QuoteSettingsSection />
       </BillingSection>
       
-      {/* Sección temporalmente oculta hasta finalizar configuración */}
-      <BillingSection
-        title="Reportes de Inventario"
-        description="Configura reportes por correo: stock (umbrales bajo/crítico) y vencimientos (días de antelación), frecuencia y hora de envío."
-      >
-        <StockAlertSettingsSection />
-      </BillingSection>
-    
     </StyledCard>
   );
 };

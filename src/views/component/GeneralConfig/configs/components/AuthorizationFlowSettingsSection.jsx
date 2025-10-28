@@ -14,7 +14,7 @@ const AVAILABLE_MODULES = [
   { key: 'accountsReceivable', label: 'Cuadre de Caja', description: 'Requiere autorización para apertura y cierre de caja' },
 ];
 
-const AuthorizationFlowSettingsSection = () => {
+const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-overview' }) => {
   const user = useSelector(selectUser);
   const settings = useSelector(SelectSettingCart) || {};
   const authorizationFlowEnabled = !!settings?.billing?.authorizationFlowEnabled;
@@ -97,7 +97,7 @@ const AuthorizationFlowSettingsSection = () => {
   };
 
   return (
-    <Container>
+    <Container id={sectionId} data-config-section={sectionId}>
       {contextHolder}
       <SectionContainer>
         <InfoBlock>

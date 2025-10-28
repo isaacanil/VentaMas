@@ -1,6 +1,6 @@
 import { faChevronRight, faAngleLeft, faAngleRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState, Fragment } from 'react'; // Add Fragment
+import { useState, Fragment, useEffect, useMemo } from 'react'; // Add Fragment
 import styled from 'styled-components';
 
 const Sidebar = styled.div`
@@ -325,7 +325,7 @@ const MainLayout = styled.div`
   gap: 0.4em;
   display: flex;
   width: 100%;
-  padding: 0.4em;
+  padding: 0 0.4em;
   height: calc(100vh - 64px);
   overflow: hidden;
   
@@ -394,6 +394,22 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
+  const groupedItemsByGroupKey = useMemo(() => menuItems.reduce((acc, item) => {
+    if (!item.group) {
+      return acc;
+    }
+
+    const groupKey = item.group;
+    if (!acc[groupKey]) {
+      acc[groupKey] = {
+        type: item.groupType || 'collapsible',
+        items: [],
+      };
+    }
+
+    acc[groupKey].items.push(item.key);
+    return acc;
+  }, {}), [menuItems]);
 
 
   const toggleGroup = (groupKey, event) => {
@@ -446,10 +462,10 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
     return acc;
   }, []);
 
-  const renderSidebarItem = (item, collapsed, isGroupItem = false) => (
+  const renderSidebarItem = (item, collapsed, _isGroupItem = false) => (
     <SidebarRow
       key={item.key}
-      active={!isGroupItem && activeTab === item.key} // Only non-group items can be active
+      active={activeTab === item.key}
       onClick={() => handleMenuItemClick(item.key)}
       collapsed={collapsed}
       isGroup={false} // Mark as not a group header
@@ -525,6 +541,33 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
       </MobileMenuGroup>
     );
   };
+
+  useEffect(() => {
+    const groupEntry = Object.entries(groupedItemsByGroupKey).find(([, group]) =>
+      group.items.includes(activeTab)
+    );
+
+    if (!groupEntry) {
+      return;
+    }
+
+    const [groupKey, groupInfo] = groupEntry;
+
+    if (groupInfo.type === 'labelled') {
+      return;
+    }
+
+    setOpenGroups(prev => {
+      if (prev[groupKey]) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [groupKey]: true,
+      };
+    });
+  }, [activeTab, groupedItemsByGroupKey]);
 
   return (
     <AppLayout>

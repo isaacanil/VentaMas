@@ -114,8 +114,9 @@ const BusinessProfileEditor = () => {
   const handleSubmit = async (values) => {
     try {
       const invoiceData = {
-        invoiceMessage: values.invoice?.invoiceMessage || '',
-        invoiceType: values.invoice?.invoiceType || 'invoiceTemplate1',
+        invoiceMessage: business?.invoice?.invoiceMessage || '',
+        invoiceType: business?.invoice?.invoiceType || 'invoiceTemplate1',
+        ...(values?.invoice || {}),
       };
       const businessData = {
         ...business,
@@ -130,7 +131,8 @@ const BusinessProfileEditor = () => {
         address: values.address || '',
         name: values.name || '',
         businessType: values.businessType || 'general',
-        invoice: invoiceData      };
+        invoice: invoiceData,
+      };
 
       await fbUpdateBusinessInfo(user, businessData);
       message.success('Información actualizada');
@@ -258,21 +260,6 @@ const BusinessProfileEditor = () => {
             label="Dirección"
             rules={[{ required: true, message: 'Por favor, ingresa la dirección' }]}>
             <Input placeholder="Calle 123, Colonia, Ciudad, Estado" />
-          </Form.Item>
-        </Card>
-      </FormSection>
-
-      <FormSection>
-        <Title level={4}>Configuración de Factura</Title>
-        <Card>
-          <Form.Item
-            name={['invoice', 'invoiceMessage']}
-            label="Mensaje en la factura"
-          >
-            <Input.TextArea 
-              rows={4} 
-              placeholder="Escribe un mensaje personalizado para la factura, como 'Gracias por su compra'" 
-            />
           </Form.Item>
         </Card>
       </FormSection>

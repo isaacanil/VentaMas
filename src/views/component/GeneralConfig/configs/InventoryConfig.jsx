@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
 import { setDefaultWarehouse, useListenWarehouses } from '../../../../firebase/warehouse/warehouseService';
+import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -178,7 +179,11 @@ const InventoryConfig = () => {
         </Description>
       </Head>
 
-      <SectionCard aria-label="Configuraciones de inventario">
+      <SectionCard
+        aria-label="Configuraciones de inventario"
+        id="inventory-default-warehouse"
+        data-config-section="inventory-default-warehouse"
+      >
         <SectionHeader>
           <SectionTitle>Almacén predeterminado</SectionTitle>
           <SectionDescription>
@@ -237,6 +242,21 @@ const InventoryConfig = () => {
             </StyledSelect>
           </SelectorContainer>
         )}
+      </SectionCard>
+
+      <SectionCard
+        aria-label="Reportes de inventario"
+        id="inventory-stock-alerts"
+        data-config-section="inventory-stock-alerts"
+      >
+        <SectionHeader>
+          <SectionTitle>Reportes de inventario</SectionTitle>
+          <SectionDescription>
+            Configura reportes por correo: stock (umbrales bajo/crítico) y vencimientos (días de antelación), frecuencia y hora de envío.
+          </SectionDescription>
+        </SectionHeader>
+
+        <StockAlertSettingsSection />
       </SectionCard>
     </Page>
   );

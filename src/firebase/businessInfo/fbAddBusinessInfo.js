@@ -87,3 +87,18 @@ export const fbUpdateInvoiceType = async (user, invoiceType) => {
         throw error;
     }
 };
+
+export const fbUpdateInvoiceMessage = async (user, invoiceMessage) => {
+    if (!user || !user.businessID) return;
+
+    const businessInfoRef = doc(db, "businesses", user.businessID);
+    try {
+        await updateDoc(businessInfoRef, {
+            'business.invoice.invoiceMessage': invoiceMessage || ''
+        });
+        return true;
+    } catch (error) {
+        console.error("Error updating invoice message:", error);
+        throw error;
+    }
+};

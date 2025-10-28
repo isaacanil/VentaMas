@@ -40,16 +40,27 @@ const MotionContent = styled(motion.div)`
   padding: 16px 0;
 `;
 
-const BillingSection = ({ title, description, children, hidden = false }) => {
+const BillingSection = ({ title, description, children, hidden = false, sectionId }) => {
   if (hidden) return null;
   const [isExpanded, setIsExpanded] = useState(false);
   const sectionRef = useRef(null);
   
   // useClickOutSide(sectionRef, isExpanded, () => setIsExpanded(false));
 
+  const sectionAttributes = sectionId
+    ? { id: sectionId, 'data-config-section': sectionId }
+    : {};
+
   return (
-    <Section ref={sectionRef}>
+    <Section
+      ref={sectionRef}
+      {...sectionAttributes}
+      data-config-expandable="true"
+    >
       <SectionHeader 
+        data-role="config-section-header"
+        data-expanded={isExpanded}
+        aria-expanded={isExpanded}
         isExpanded={isExpanded}
         onClick={() => setIsExpanded(!isExpanded)}
       >

@@ -13,7 +13,12 @@ const plugins: PluginOption[] = [
       {
         libraryName: 'antd',
         esModule: true,
-        resolveStyle: (name: string) => `antd/es/${name}/style/index`
+        resolveStyle: (name: string) => {
+          if (name === 'auto-complete') {
+            return 'antd/es/select/style/index'
+          }
+          return `antd/es/${name}/style/index`
+        }
       }
     ]
   })
