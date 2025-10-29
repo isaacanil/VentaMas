@@ -17,7 +17,22 @@ const StyledItemRow = styled.div`
   height: ${({ height }) => `${height}px`};
 `;
 
-const ItemRow = memo(({ columns, top, height, products, virtualRow }) => {
+const EmptyRow = styled.div`
+  display: grid;
+  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  gap: 0.4em;
+  position: absolute;
+  top: ${({ top }) => `${top}px`};
+  left: 0;
+  width: 100%;
+  height: ${({ height }) => `${height}px`};
+  pointer-events: none;
+`;
+
+const ItemRow = memo(({ columns, top, height, products, virtualRow, totalRows }) => {
+  if (virtualRow.index >= totalRows) {
+    return <EmptyRow columns={columns} top={virtualRow.start} height={height} />;
+  }
   const columnArray = useMemo(() => Array.from({ length: columns }), [columns]);
   return (
     <StyledItemRow columns={columns} top={top} height={height}>
@@ -42,6 +57,7 @@ ItemRow.propTypes = {
   height: PropTypes.number.isRequired,
   products: PropTypes.array.isRequired,
   virtualRow: PropTypes.object.isRequired,
+  totalRows: PropTypes.number.isRequired,
 };
 
 export default ItemRow;

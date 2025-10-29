@@ -9,7 +9,7 @@ import { BusinessIndicator } from './components/BusinessIndicator/BusinessIndica
 import { ProductCounter } from './components/Card/Card'
 
 
-export const StatusBar = ({ products, statusMeta }) => {
+export const StatusBar = ({ products, statusMeta, className }) => {
     const cart = useSelector(selectCart)
     const isPreorder = cart?.data?.type === 'preorder'
     const preorderNumber = cart?.data?.preorderDetails?.numberID
@@ -21,11 +21,10 @@ export const StatusBar = ({ products, statusMeta }) => {
 
     return (
         <Pill
-            as={motion.div}
+            className={className}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-            style={{ position: 'absolute', bottom: '0.5rem', right: '0.9rem', zIndex: 100 }}
         >
             <BusinessIndicator />
             {isPreorder && preorderNumber && (
@@ -58,10 +57,12 @@ const PreorderIndicator = styled.div`
     letter-spacing: 0.3px;
 `;
 
-const Pill = styled.div`
+const Pill = styled(motion.div)`
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  align-self: flex-end;
+  margin: 0.6rem 0.9rem 0.9rem;
   backdrop-filter: blur(8px);
   background: rgba(255, 255, 255, 0.95);
   border-radius: 22px;
