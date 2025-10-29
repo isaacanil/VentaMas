@@ -200,13 +200,20 @@ const EditButton = ({ value }) => {
     };
 
     const handleInvoicePanelOpen = () => {
+        if (!data) return;
+
         const { isValid, message } = validateInvoiceCart(data);
         if (isValid) {
-            dispatch(loadCart(data));
+            const serializedPreorder = convertTimestampsToMillis(data);
+
+            dispatch(loadCart(serializedPreorder));
             dispatch(setCartId());
-            const storedTaxReceiptType = resolvePreorderTaxReceiptType(data);
+            const storedTaxReceiptType = resolvePreorderTaxReceiptType(serializedPreorder);
             if (storedTaxReceiptType) {
                 dispatch(selectTaxReceiptType(storedTaxReceiptType));
+            }
+            if (serializedPreorder?.client) {
+                dispatch(selectClientWithAuth(serializedPreorder.client));
             }
             dispatch(toggleInvoicePanelOpen());
         } else {
