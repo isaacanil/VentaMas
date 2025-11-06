@@ -6,7 +6,7 @@ export const userRoles = [
     // { id: 'specialCashier1', label: 'Cajero - Especial 1', primaryColor: '#F5A524', secondaryColor: '#fff8ec' },
     // { id: 'specialCashier2', label: 'Cajero - Especial 2', primaryColor: '#F5A524', secondaryColor: '#fff8ec' },
     { id: 'buyer', label: 'Comprador', primaryColor: '#17C964', secondaryColor: '#e3ffef' },
-    { id: 'dev', label: 'Desarrollador', primaryColor: '#f312bb', secondaryColor: '#ffebfd' },
+    { id: 'dev', label: 'Dev', primaryColor: '#f312bb', secondaryColor: '#ffebfd' },
 ];
 
 

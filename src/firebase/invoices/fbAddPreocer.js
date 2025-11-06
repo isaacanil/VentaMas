@@ -11,6 +11,7 @@ import { nanoid } from "nanoid";
 
 import { db } from "../firebaseconfig";
 import { getNextID } from "../Tools/getNextID";
+import { sanitizeFirestoreDocument } from "../../utils/firebase/sanitizeFirestoreDocument";
 
 export const fbAddPreOrder = async (user, cartData) => {
     try {
@@ -42,10 +43,10 @@ export const fbAddPreOrder = async (user, cartData) => {
             }]
         }
         const invoiceRef = doc(db, `businesses/${user.businessID}/invoices/${data.id}`);
-       
-      
-        const docRef = await setDoc(invoiceRef, {data});
-        return data;
+
+        const sanitizedData = sanitizeFirestoreDocument(data);
+        await setDoc(invoiceRef, { data: sanitizedData });
+        return sanitizedData;
     } catch (error) {
         throw new Error(error.message);
     }

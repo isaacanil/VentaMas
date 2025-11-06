@@ -332,7 +332,33 @@ export const cartSlice = createSlice({
                     }
                 });
             }
-        },        recalcTotals: (state, action) => {
+        },
+        applyPricingPreset: (state, action) => {
+            const { priceKey } = action.payload || {};
+            if (!priceKey) return;
+
+            const applyPrice = (pricing) => {
+                if (!pricing) return false;
+                const candidate = Number(pricing?.[priceKey]);
+                if (Number.isFinite(candidate) && candidate > 0) {
+                    pricing.price = candidate;
+                    return true;
+                }
+                return false;
+            };
+
+            state.data.products.forEach(product => {
+                if (!product) return;
+                const { pricing = {}, selectedSaleUnit } = product;
+                applyPrice(pricing);
+                if (selectedSaleUnit?.pricing) {
+                    applyPrice(selectedSaleUnit.pricing);
+                }
+            });
+
+            updateAllTotals(state);
+        },
+        recalcTotals: (state, action) => {
             const paymentValue = action.payload !== undefined && action.payload !== null ? Number(action.payload) : undefined;
             updateAllTotals(state, paymentValue);
             
@@ -477,6 +503,7 @@ export const {
     setDefaultClient,
     setBillingSettings,
     updateProductInsurance,
+    applyPricingPreset,
     recalcTotals,
     updateInsuranceStatus,
     addInvoiceComment,

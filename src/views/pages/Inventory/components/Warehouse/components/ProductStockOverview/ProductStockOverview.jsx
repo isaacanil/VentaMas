@@ -1,6 +1,6 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { faTimesCircle, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
-import { Input, Empty, Spin } from 'antd';
+import { Input, Empty, Spin, Segmented } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -9,9 +9,11 @@ import styled from 'styled-components';
 import { openDeleteModal } from '../../../../../../../features/productStock/deleteProductStockSlice';
 import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
 import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
+import useStockAlertThresholds from '../../../../../../../hooks/useStockAlertThresholds';
 
 import BatchGroup from './components/BatchGroup';
 import StockSummary from './components/StockSummary';
+import ProductStockTable from './components/ProductStockTable';
 
 
 const Container = styled.div`
@@ -48,29 +50,8 @@ const SideContent = styled.div`
   }
 `;
 
-const getStockStatus = (quantity) => {
-  if (quantity <= 0) return {
-    icon: faTimesCircle,
-    color: '#dc2626',
-    background: '#fee2e2',
-    label: 'Sin Stock'
-  };
-  if (quantity < 10) return {
-    icon: faExclamationTriangle,
-    color: '#ea580c',
-    background: '#ffedd5',
-    label: 'Stock Bajo'
-  };
-  return {
-    icon: faCheckCircle,
-    color: '#059669',
-    background: '#dcfce7',
-    label: 'Stock OK'
-  };
-};
-
 const SearchBar = styled(Input)`
-  margin-bottom: 24px;
+  width: 100%;
   border-radius: 8px;
   padding: 8px 12px;
   border: 1px solid #e2e8f0;
@@ -93,21 +74,124 @@ const SearchBar = styled(Input)`
   }
 `;
 
-const ProductStockOverview = ({ }) => {
+const ControlsBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+`;
+
+const SearchWrapper = styled.div`
+  width: 400px;
+  max-width: 100%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
+const ViewModeToggle = styled(Segmented)`
+  background: #f8fafc;
+  border-radius: 999px;
+  padding: 4px;
+  flex-shrink: 0;
+
+  .ant-segmented-item {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #475569;
+    padding: 6px 16px;
+    transition: all 0.2s ease;
+  }
+
+  .ant-segmented-item-selected {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 6px 18px -10px rgba(37, 99, 235, 0.8);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
+const CenteredState = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 40px 16px;
+`;
+
+const LoadingState = styled(CenteredState)`
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const ThresholdLegend = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 8px;
+`;
+
+const LegendItem = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const LegendDot = styled.span`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  display: inline-flex;
+`;
+
+function ProductStockOverview() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchText, setSearchText] = useState('');
+  const [viewMode, setViewMode] = useState(() => {
+    // Detectar si es un dispositivo móvil o tablet (ancho < 1024px)
+    return window.innerWidth < 1024 ? 'batches' : 'table';
+  });
   const { productId } = useParams();
   const { data: stockData, loading } = useListenProductsStock(productId);
   const { locationNames, fetchLocationName } = useLocationNames();
+  const { lowThreshold, criticalThreshold } = useStockAlertThresholds();
+
+  // Ajustar vista según el tamaño de la pantalla
+  React.useEffect(() => {
+    const handleResize = () => {
+      const isSmallScreen = window.innerWidth < 1024;
+      setViewMode(prev => {
+        // Si estamos en pantalla pequeña y la vista es tabla, cambiar a lotes
+        if (isSmallScreen && prev === 'table') return 'batches';
+        // Si estamos en pantalla grande y la vista es lotes, cambiar a tabla
+        if (!isSmallScreen && prev === 'batches') return 'table';
+        return prev;
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const filteredStock = React.useMemo(() => {
     if (!stockData) return [];
+    const normalizedQuery = searchText.trim().toLowerCase();
+    if (!normalizedQuery) return stockData;
     return stockData.filter(stock => {
-      const locationStr = String(stock.location || '');
-      const batchStr = String(stock.batchNumberId || '');
-      return locationStr.toLowerCase().includes(searchText.toLowerCase()) ||
-        batchStr.toLowerCase().includes(searchText.toLowerCase());
+      const locationStr = String(stock.location || '').toLowerCase();
+      const batchStr = String(stock.batchNumberId || '').toLowerCase();
+      return locationStr.includes(normalizedQuery) || batchStr.includes(normalizedQuery);
     });
   }, [stockData, searchText]);
 
@@ -127,13 +211,18 @@ const ProductStockOverview = ({ }) => {
   }, [navigate]);
 
   React.useEffect(() => {
-    if (!stockData) return;
+    if (!stockData?.length) return;
+    const locations = new Set();
     stockData.forEach(stock => {
-      if (stock.location && !locationNames[stock.location]) {
-        fetchLocationName(stock.location);
+      if (stock.location) {
+        locations.add(stock.location);
       }
     });
-  }, [stockData, locationNames, fetchLocationName]);
+    if (!locations.size) return;
+    locations.forEach((location) => {
+      fetchLocationName(location);
+    });
+  }, [stockData, fetchLocationName]);
 
   const groupStockByBatch = React.useCallback((stocks) => {
     if (!stocks.length) return {};
@@ -155,6 +244,45 @@ const ProductStockOverview = ({ }) => {
     }, {});
   }, []);
 
+  const groupedStock = React.useMemo(
+    () => groupStockByBatch(filteredStock),
+    [filteredStock, groupStockByBatch]
+  );
+
+  const getStockStatus = React.useCallback((quantity) => {
+    const parsed = Number(quantity) || 0;
+    if (parsed <= 0) {
+      return {
+        icon: faTimesCircle,
+        color: '#dc2626',
+        background: '#fee2e2',
+        label: 'Sin stock',
+      };
+    }
+    if (parsed <= criticalThreshold) {
+      return {
+        icon: faExclamationTriangle,
+        color: '#dc2626',
+        background: '#fee2e2',
+        label: 'Stock crítico',
+      };
+    }
+    if (parsed <= lowThreshold) {
+      return {
+        icon: faExclamationTriangle,
+        color: '#ea580c',
+        background: '#ffedd5',
+        label: 'Stock bajo',
+      };
+    }
+    return {
+      icon: faCheckCircle,
+      color: '#059669',
+      background: '#dcfce7',
+      label: 'Stock OK',
+    };
+  }, [criticalThreshold, lowThreshold]);
+
   const handleDeleteBatch = (group) => {
     dispatch(openDeleteModal({
       productStockId: null,
@@ -174,7 +302,9 @@ const ProductStockOverview = ({ }) => {
   if (!productId) {
     return (
       <Container>
-        <Empty description="No se ha seleccionado ningún producto" />
+        <CenteredState>
+          <Empty description="No se ha seleccionado ningún producto" />
+        </CenteredState>
       </Container>
     );
   }
@@ -182,9 +312,9 @@ const ProductStockOverview = ({ }) => {
   if (loading) {
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '40px' }}>
+        <LoadingState>
           <Spin size="large" />
-        </div>
+        </LoadingState>
       </Container>
     );
   }
@@ -193,17 +323,47 @@ const ProductStockOverview = ({ }) => {
     <Container>
       <MainContent>
         <StockSummary filteredStock={filteredStock} productId={productId} />
-        <SearchBar
-          placeholder="Buscar por ubicación o número de lote..."
-          prefix={<SearchOutlined />}
-          value={searchText}
-          onChange={e => setSearchText(e.target.value)}
-        />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {filteredStock.length === 0 ? (
-            <Empty description="No hay stock disponible para este producto" />
-          ) : (
-            Object.values(groupStockByBatch(filteredStock)).map((group) => (
+        <ControlsBar>
+          <SearchWrapper>
+            <SearchBar
+              placeholder="Buscar por ubicación o número de lote..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+            />
+          </SearchWrapper>
+          <ViewModeToggle
+            options={[
+              { label: 'Lotes', value: 'batches' },
+              { label: 'Tabla', value: 'table' },
+            ]}
+            value={viewMode}
+            onChange={setViewMode}
+          />
+        </ControlsBar>
+        <ThresholdLegend>
+          <LegendItem>
+            <LegendDot $color="#dc2626" />
+            Stock crítico ≤ {criticalThreshold.toLocaleString()} uds
+          </LegendItem>
+          <LegendItem>
+            <LegendDot $color="#ea580c" />
+            Stock bajo ≤ {lowThreshold.toLocaleString()} uds
+          </LegendItem>
+        </ThresholdLegend>
+        {filteredStock.length === 0 ? (
+          <Empty description="No hay stock disponible para este producto" />
+        ) : viewMode === 'table' ? (
+          <ProductStockTable
+            stocks={filteredStock}
+            getStockStatus={getStockStatus}
+            handleLocationClick={handleLocationClick}
+            handleDeleteProductStock={handleDeleteProductStock}
+            locationNames={locationNames}
+          />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {Object.values(groupedStock).map((group) => (
               <BatchGroup
                 key={group.batchId || 'sin-lote'}
                 group={group}
@@ -213,9 +373,9 @@ const ProductStockOverview = ({ }) => {
                 handleLocationClick={handleLocationClick}
                 locationNames={locationNames}
               />
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </MainContent>
       
       <SideContent>
@@ -223,6 +383,6 @@ const ProductStockOverview = ({ }) => {
       </SideContent>
     </Container>
   );
-};
+}
 
 export default ProductStockOverview;

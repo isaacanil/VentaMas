@@ -7,7 +7,8 @@ import { ChangerPasswordModal } from './ChangerPasswordModal';
 export const TableUser = ({ users = [] }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [userSelected, setUserSelected] = useState(null)
-    const businessIDFilters = users.reduce((acc, current) => {
+    const userList = Array.isArray(users) ? users : []
+    const businessIDFilters = userList.reduce((acc, current) => {
         // Check if current and current.user exist before accessing businessID
         if (current && current.user && current.user.businessID) {
             const businessID = current.user.businessID;
@@ -79,7 +80,7 @@ export const TableUser = ({ users = [] }) => {
 
     return (
         <Container>
-            <Table pagination={pagination} columns={columnas} dataSource={users} rowKey="id" />
+            <Table pagination={pagination} columns={columnas} dataSource={userList} rowKey="id" />
             <ChangerPasswordModal 
             isOpen={isOpen} 
             data={userSelected}

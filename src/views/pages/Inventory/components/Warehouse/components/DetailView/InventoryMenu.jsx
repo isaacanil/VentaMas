@@ -95,17 +95,28 @@ const InventoryMenu = () => {
     React.useEffect(() => {
         const path = location.pathname;
 
+        // Stock: /inventory/warehouses/products-stock
         if (path === `${WAREHOUSES}/products-stock`) {
             setValue(1);
-        } else if (path.startsWith(`${WAREHOUSES}/warehouse/`)) {
+        } 
+        // Almacenes: /inventory/warehouses/warehouse/[id] y niveles posteriores (shelf, row, segment)
+        else if (path.startsWith(`${WAREHOUSES}/warehouse/`)) {
             setValue(0);
-        } else if (path.includes('backorders')) {
+        } 
+        // Backorders: cualquier ruta con /backorders
+        else if (path.includes('/backorders')) {
             setValue(2);
-        } else if (path.includes('purchases')) {
+        } 
+        // Compras: cualquier ruta con /purchases
+        else if (path.includes('/purchases')) {
             setValue(3);
-        } else if (path.includes('orders')) {
+        } 
+        // Pedidos: cualquier ruta con /orders
+        else if (path.includes('/orders')) {
             setValue(4);
-        } else if (path === WAREHOUSES) {
+        } 
+        // Default: redirigir al almacén por defecto
+        else if (path === WAREHOUSES) {
             setValue(0);
             if (!loadingDefault && defaultWarehouse) {
                 navigate(`${WAREHOUSES}/warehouse/${defaultWarehouse.id}`);

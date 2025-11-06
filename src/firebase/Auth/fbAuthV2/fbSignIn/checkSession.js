@@ -1,7 +1,7 @@
 import { Modal } from 'antd';
-import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
-import { useCallback, useEffect, useRef } from 'react';
+import { httpsCallable } from 'firebase/functions';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +16,8 @@ import {
   buildSessionInfo,
   clearStoredSession,
   getStoredSession,
+  getLastLogoutAt,
+  isLogoutInProgress,
   storeSessionLocally,
 } from '../sessionClient';
 
@@ -34,6 +36,8 @@ export function useAutomaticLogin() {
   const userIdRef = useRef(null);
   const isMountedRef = useRef(true);
   const refreshLockRef = useRef(false);
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState(null);
 
   const openModalOnce = useCallback((key, renderModal) => {
     if (modalKeyRef.current) return;
@@ -45,6 +49,11 @@ export function useAutomaticLogin() {
 
   const handleLogout = useCallback(
     async ({ redirect = true } = {}) => {
+      if (isMountedRef.current) {
+        setStatus('ready');
+        setError(null);
+      }
+
       const { sessionToken } = getStoredSession();
       if (sessionToken) {
         try {
@@ -53,6 +62,7 @@ export function useAutomaticLogin() {
           console.error('logout callable error:', error?.message || error);
         }
       }
+      userIdRef.current = null;
       clearStoredSession();
       dispatch(logout());
       if (redirect) {
@@ -135,13 +145,24 @@ export function useAutomaticLogin() {
 
   const refreshSession = useCallback(
     async (source = 'auto', options = {}) => {
-      if (refreshLockRef.current) return null;
+      if (refreshLockRef.current) {
+        return { ok: false, reason: 'locked' };
+      }
       refreshLockRef.current = true;
       try {
         const { sessionToken } = getStoredSession();
         if (!sessionToken) {
-          await handleLogout({ redirect: true });
-          return null;
+          if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
+            if (isMountedRef.current) {
+              setStatus('ready');
+              setError(null);
+            }
+            userIdRef.current = null;
+            return { ok: false, reason: 'logout-in-progress' };
+          }
+
+          await handleLogout({ redirect: false });
+          return { ok: false, reason: 'missing-token' };
         }
 
         const response = await refreshSessionCallable({
@@ -175,12 +196,19 @@ export function useAutomaticLogin() {
         }
 
         lastActivityRef.current = Date.now();
-        return session;
+        return { ok: true, session };
       } catch (error) {
         console.error('session refresh error:', error?.message || error);
+        if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
+          if (isMountedRef.current) {
+            setStatus('ready');
+            setError(null);
+          }
+          return { ok: false, reason: 'logout-in-progress', error };
+        }
         showSessionExpiredModal();
         await handleLogout({ redirect: true });
-        return null;
+        return { ok: false, reason: 'error', error };
       } finally {
         refreshLockRef.current = false;
       }
@@ -195,8 +223,41 @@ export function useAutomaticLogin() {
   useEffect(() => {
     isMountedRef.current = true;
 
+    const setStatusSafe = (value) => {
+      if (isMountedRef.current) {
+        setStatus(value);
+      }
+    };
+
+    const setErrorSafe = (value) => {
+      if (isMountedRef.current) {
+        setError(value);
+      }
+    };
+
     const init = async () => {
-      await refreshSession('initial');
+      setStatusSafe('checking');
+      setErrorSafe(null);
+
+      try {
+        const result = await refreshSession('initial');
+        if (!isMountedRef.current) return;
+
+        if (!result?.ok) {
+          if (result?.reason === 'error' && result.error) {
+            setErrorSafe(result.error);
+          }
+          setStatusSafe('ready');
+          return;
+        }
+
+        setErrorSafe(null);
+        setStatusSafe('ready');
+      } catch (err) {
+        console.error('initial session check error:', err);
+        setErrorSafe(err instanceof Error ? err : new Error('Error de sesión desconocido'));
+        setStatusSafe('ready');
+      }
     };
 
     init();
@@ -227,5 +288,5 @@ export function useAutomaticLogin() {
     };
   }, [handleActivity, refreshSession, showInactivityWarning]);
 
-  return null;
+  return { status, error };
 }

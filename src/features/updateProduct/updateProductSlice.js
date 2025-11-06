@@ -7,6 +7,13 @@ import { initTaxes } from '../../views/component/modals/UpdateProduct/Initialize
 const DEFAULT_BRAND = 'Sin marca';
 export const PRODUCT_BRAND_DEFAULT = DEFAULT_BRAND;
 
+export const PRODUCT_ITEM_TYPE_OPTIONS = [
+    { value: 'product', label: 'Producto' },
+    { value: 'service', label: 'Servicio' },
+    { value: 'combo', label: 'Combo' },
+];
+const DEFAULT_ITEM_TYPE = PRODUCT_ITEM_TYPE_OPTIONS[0].value;
+
 const normalizeBrand = (value) => {
     if (typeof value !== 'string') {
         return DEFAULT_BRAND;
@@ -20,12 +27,15 @@ const createEmptyProduct = () => ({
     brand: DEFAULT_BRAND,
     image: '',
     category: '',
+    itemType: DEFAULT_ITEM_TYPE,
     pricing: {
         cost: 0,
         price: 0,
         listPrice: 0,
         avgPrice: 0,
         minPrice: 0,
+        cardPrice: 0,
+        offerPrice: 0,
         tax: initTaxes[0],
     },
     promotions: {
@@ -139,6 +149,8 @@ export const updateProductSlice = createSlice({
                             avgPriceEnable: false,
                             minPrice: 0,
                             minPriceEnable: false,
+                            cardPrice: 0,
+                            offerPrice: 0,
                             tax: initTaxes[0],
                         },
                     },
@@ -155,6 +167,8 @@ export const updateProductSlice = createSlice({
                             avgPriceEnable: false,
                             minPrice: 0,
                             minPriceEnable: false,
+                            cardPrice: 0,
+                            offerPrice: 0,
                             tax: initTaxes[0],
                         },
                     },

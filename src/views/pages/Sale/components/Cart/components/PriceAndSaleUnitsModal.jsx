@@ -124,12 +124,16 @@ const PriceAndSaleUnitsModal = ({
       const listPriceVal = prices.find(p => p.type === 'listPrice')?.valueWithTax;
       const avgPriceVal = prices.find(p => p.type === 'avgPrice')?.valueWithTax;
       const minPriceVal = prices.find(p => p.type === 'minPrice')?.valueWithTax;
+      const cardPriceVal = prices.find(p => p.type === 'cardPrice')?.valueWithTax;
+      const offerPriceVal = prices.find(p => p.type === 'offerPrice')?.valueWithTax;
       // Calcula el precio actualizado con impuestos
       const currentPrice = getTotalPrice({ pricing: item.pricing });
 
       if (currentPrice === listPriceVal) return 'listPrice';
       if (currentPrice === avgPriceVal) return 'avgPrice';
       if (currentPrice === minPriceVal) return 'minPrice';
+      if (currentPrice === cardPriceVal) return 'cardPrice';
+      if (currentPrice === offerPriceVal) return 'offerPrice';
       
       return 'listPrice';
     } else {
@@ -141,12 +145,16 @@ const PriceAndSaleUnitsModal = ({
       const listPriceVal = prices.find(p => p.type === 'listPrice')?.valueWithTax;
       const avgPriceVal = prices.find(p => p.type === 'avgPrice')?.valueWithTax;
       const minPriceVal = prices.find(p => p.type === 'minPrice')?.valueWithTax;
+      const cardPriceVal = prices.find(p => p.type === 'cardPrice')?.valueWithTax;
+      const offerPriceVal = prices.find(p => p.type === 'offerPrice')?.valueWithTax;
       // Calcula el precio actualizado con impuestos para la unidad
       const currentPrice = getTotalPrice({ pricing: selectedUnit.pricing });
 
       if (currentPrice === listPriceVal) return 'listPrice';
       if (currentPrice === avgPriceVal) return 'avgPrice';
       if (currentPrice === minPriceVal) return 'minPrice';
+      if (currentPrice === cardPriceVal) return 'cardPrice';
+      if (currentPrice === offerPriceVal) return 'offerPrice';
       
       return 'listPrice';
     }

@@ -41,6 +41,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
+      '@constants': fileURLToPath(new URL('./src/constants', import.meta.url)),
+      '@features': fileURLToPath(new URL('./src/features', import.meta.url)),
+      '@views': fileURLToPath(new URL('./src/views', import.meta.url)),
       '@templates': fileURLToPath(new URL('./src/views/templates', import.meta.url)),
       views: fileURLToPath(new URL('./src/views', import.meta.url))
     }

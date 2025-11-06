@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Alert, Button, Space, Tabs, Typography, message } from 'antd';
+import { Alert, Button, Input, Space, Tabs, Typography, message } from 'antd';
+import { useSelector } from 'react-redux';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import SessionTokensCleanup from './test/pages/sessionTokensCleanup/SessionTokensCleanup';
 import { normalizeAllBusinessesProductTaxes } from '../../../firebase/products/fbNormalizeAllBusinessesProductTaxes';
 import { fbNormalizeAllBusinessesClients } from '../../../firebase/client/fbNormalizeAllBusinessesClients';
+import { fbFixMissingProductIds } from '../../../firebase/products/fbFixMissingProductIds';
+import { selectUser } from '../../../features/auth/userSlice';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -21,6 +24,22 @@ export default function TestPlayground() {
     progress: null,
     result: null,
   });
+  const [productIdFixState, setProductIdFixState] = useState({
+    businessId: '',
+    running: false,
+    result: null,
+  });
+
+  const user = useSelector(selectUser);
+
+  useEffect(() => {
+    if (user?.businessID && !productIdFixState.businessId) {
+      setProductIdFixState((prev) => ({
+        ...prev,
+        businessId: user.businessID,
+      }));
+    }
+  }, [user?.businessID, productIdFixState.businessId]);
 
   const handleNormalizeTaxes = async () => {
     if (normalizing) return;
@@ -184,6 +203,76 @@ export default function TestPlayground() {
     );
   };
 
+  const handleFixProductIds = async () => {
+    const businessId = productIdFixState.businessId?.trim();
+    if (!businessId) {
+      message.warning('Ingresa un businessID válido.');
+      return;
+    }
+    if (productIdFixState.running) return;
+
+    setProductIdFixState((prev) => ({
+      ...prev,
+      running: true,
+      result: null,
+    }));
+
+    try {
+      const response = await fbFixMissingProductIds({ businessID: businessId });
+      setProductIdFixState({
+        businessId,
+        running: false,
+        result: { success: true, data: response },
+      });
+      message.success(`Productos actualizados: ${response.updated}/${response.total}.`);
+    } catch (error) {
+      console.error('Error al corregir IDs de productos:', error);
+      setProductIdFixState({
+        businessId,
+        running: false,
+        result: {
+          success: false,
+          error: error?.message || 'Ocurrió un error inesperado.',
+        },
+      });
+      message.error('No se pudo corregir los IDs de productos.');
+    }
+  };
+
+  const renderProductFixResult = () => {
+    const { result } = productIdFixState;
+    if (!result) return null;
+
+    if (!result.success) {
+      return (
+        <Alert
+          type="error"
+          showIcon
+          message="No se pudo corregir los IDs de productos"
+          description={result.error}
+        />
+      );
+    }
+
+    const { total, updated } = result.data;
+    return (
+      <Alert
+        type="success"
+        showIcon
+        message="Corrección completada"
+        description={`Documentos revisados: ${total}. Documentos actualizados: ${updated}.`}
+      />
+    );
+  };
+
+  const handleBusinessIdChange = (event) => {
+    const { value } = event.target;
+    setProductIdFixState((prev) => ({
+      ...prev,
+      businessId: value,
+    }));
+  };
+
   const tabItems = [
     {
       key: 'session-token-cleanup',
@@ -253,6 +342,24 @@ export default function TestPlayground() {
             )}
           </Space>
           {renderClientNormalizationResult()}
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <Text strong>Corregir campo `id` en productos</Text>
+            <Space size="middle" wrap>
+              <Input
+                placeholder="businessID"
+                value={productIdFixState.businessId}
+                onChange={handleBusinessIdChange}
+                style={{ minWidth: 260 }}
+              />
+              <Button
+                onClick={handleFixProductIds}
+                loading={productIdFixState.running}
+              >
+                Asignar IDs faltantes
+              </Button>
+            </Space>
+            {renderProductFixResult()}
+          </Space>
         </Space>
         <Tabs defaultActiveKey="session-token-cleanup" items={tabItems} destroyInactiveTabPane={false} />
       </div>

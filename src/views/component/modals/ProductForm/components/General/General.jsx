@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { closeModalUpdateProd } from '../../../../../../features/modals/modalSlice';
-import { ChangeProductData, PRODUCT_BRAND_DEFAULT, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
+import { ChangeProductData, PRODUCT_BRAND_DEFAULT, PRODUCT_ITEM_TYPE_OPTIONS, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
 import { fbAddProduct } from '../../../../../../firebase/products/fbAddProduct';
 import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
 import { useListenProductBrands } from '../../../../../../firebase/products/brands/productBrands';
@@ -64,6 +64,50 @@ export const General = ({ showImageManager }) => {
         return Math.round(scaled * 100) / 100;
     };
 
+    const parseBooleanValue = (value) => {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            if (['sí', 'si', 'yes', 'true', '1'].includes(normalized)) return true;
+            if (['no', 'false', '0'].includes(normalized)) return false;
+        }
+        if (typeof value === 'number') {
+            if (value === 1) return true;
+            if (value === 0) return false;
+        }
+        return null;
+    };
+
+    const itemTypeValues = useMemo(
+        () => PRODUCT_ITEM_TYPE_OPTIONS.map(option => option.value),
+        []
+    );
+
+    const normalizeItemType = (value, rawType) => {
+        const fallback = PRODUCT_ITEM_TYPE_OPTIONS[0].value;
+        if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            if (itemTypeValues.includes(normalized)) {
+                return normalized;
+            }
+            if (['producto', 'product'].includes(normalized)) return 'product';
+            if (['servicio', 'service'].includes(normalized)) return 'service';
+            if (['combo', 'combinado', 'kit', 'bundle'].includes(normalized)) return 'combo';
+        }
+        if (typeof rawType === 'string') {
+            const lowered = rawType.trim().toLowerCase();
+            if (lowered.includes('serv')) return 'service';
+            if (lowered.includes('combo') || lowered.includes('kit')) return 'combo';
+        }
+        return fallback;
+    };
+
+    const normalizeTrackInventoryValue = (value, itemType) => {
+        const parsed = parseBooleanValue(value);
+        if (parsed !== null) return parsed;
+        return itemType === 'service' ? false : true;
+    };
+
     const normalizePricingForPersistence = (pricing = {}) => {
         if (!pricing || typeof pricing !== 'object') return {};
         const normalized = {
@@ -83,6 +127,14 @@ export const General = ({ showImageManager }) => {
         normalized.minPrice = toFiniteNumber(
             normalized.minPrice,
             fallbackPrice
+        );
+        normalized.cardPrice = toFiniteNumber(
+            normalized.cardPrice,
+            0
+        );
+        normalized.offerPrice = toFiniteNumber(
+            normalized.offerPrice,
+            0
         );
         normalized.tax = normalizeTaxPercentage(normalized.tax);
         return normalized;
@@ -137,6 +189,14 @@ export const General = ({ showImageManager }) => {
         normalizedProduct.packSize = toFiniteNumber(
             normalizedProduct.packSize,
             1
+        );
+        normalizedProduct.itemType = normalizeItemType(
+            normalizedProduct.itemType,
+            normalizedProduct.type
+        );
+        normalizedProduct.trackInventory = normalizeTrackInventoryValue(
+            normalizedProduct.trackInventory,
+            normalizedProduct.itemType
         );
         normalizedProduct.amountToBuy = toFiniteNumber(
             normalizedProduct.amountToBuy,
@@ -198,6 +258,24 @@ export const General = ({ showImageManager }) => {
         if (key === 'warranty') {
             dispatch(ChangeProductData({ product: { warranty: { ...product?.warranty, ...changeValue?.warranty } } }))
             return
+        }
+        if (key === 'itemType') {
+            const normalizedItemType = normalizeItemType(value);
+            const trackInventoryValue = normalizedItemType === 'service'
+                ? false
+                : normalizeTrackInventoryValue(product?.trackInventory, normalizedItemType);
+
+            dispatch(ChangeProductData({
+                product: {
+                    itemType: normalizedItemType,
+                    trackInventory: trackInventoryValue
+                }
+            }));
+            form.setFieldsValue({
+                itemType: normalizedItemType,
+                trackInventory: trackInventoryValue
+            });
+            return;
         }
         if (key === 'brand') {
             const normalizedBrand = typeof value === 'string'

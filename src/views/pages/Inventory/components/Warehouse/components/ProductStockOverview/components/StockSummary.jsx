@@ -12,7 +12,7 @@ import BackOrderList from './BackOrderList';
 
 const Container = styled.div`
   display: grid;
-  gap: 24px;
+  gap: 1em;
   align-items: start;
 
   @media (max-width: 768px) {
@@ -24,10 +24,8 @@ const Widget = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 16px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 `;
 
 const Header = styled.div`
@@ -48,7 +46,6 @@ const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-top: 4px;
 `;
 
 const StatItem = styled.div`
@@ -116,20 +113,6 @@ const StockSummary = ({ filteredStock, productId }) => {
             (!filteredStock || filteredStock.length === 0) ? null : (
 
             <Widget>
-                {/* <Header>
-                    <FontAwesomeIcon icon={faBoxes} className="icon" />
-                    <span>Resumen de Inventario</span>
-                    <div style={{ 
-                        marginLeft: 'auto', 
-                        fontSize: '0.9rem',
-                        color: '#64748b',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px' 
-                    }}>
-                        <span>{totalUnits.toLocaleString()}/{(totalUnits + totalPending).toLocaleString()}</span>
-                    </div>
-                </Header> */}
                 <StatsGrid>
                     <StatItem>
                         <IconContainer background="rgba(59, 130, 246, 0.1)" color="#3b82f6">

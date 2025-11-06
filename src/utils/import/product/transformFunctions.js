@@ -1,5 +1,29 @@
 import { warrantyOptions } from "../../../views/component/modals/ProductForm/components/sections/WarrantyInfo";
 
+const ITEM_TYPE_MAP = {
+    product: 'product',
+    producto: 'product',
+    products: 'product',
+    service: 'service',
+    servicio: 'service',
+    servicios: 'service',
+    combo: 'combo',
+    combinado: 'combo',
+    combinados: 'combo',
+    kit: 'combo',
+    bundle: 'combo'
+};
+
+const normalizeItemType = (value) => {
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (ITEM_TYPE_MAP[normalized]) {
+            return ITEM_TYPE_MAP[normalized];
+        }
+    }
+    return 'product';
+};
+
 export const transformConfig = [
     {
         field: 'name',
@@ -12,6 +36,10 @@ export const transformConfig = [
     {
         field: 'category',
         transform: (value) => value || ''
+    },
+    {
+        field: 'itemType',
+        transform: normalizeItemType
     },
     {
         field: 'pricing.cost',
@@ -67,6 +95,28 @@ export const transformConfig = [
             if (value === null || value === undefined || value === '') return 0;
             // Eliminar símbolos de moneda y espacios
             const cleanValue = typeof value === 'string' 
+                ? value.replace(/[$€£¥₩₹₽]/g, '').replace(/\s/g, '')
+                : value;
+            const numValue = parseFloat(cleanValue);
+            return isNaN(numValue) ? 0 : numValue;
+        }
+    },
+    {
+        field: 'pricing.cardPrice',
+        transform: (value) => {
+            if (value === null || value === undefined || value === '') return 0;
+            const cleanValue = typeof value === 'string'
+                ? value.replace(/[$€£¥₩₹₽]/g, '').replace(/\s/g, '')
+                : value;
+            const numValue = parseFloat(cleanValue);
+            return isNaN(numValue) ? 0 : numValue;
+        }
+    },
+    {
+        field: 'pricing.offerPrice',
+        transform: (value) => {
+            if (value === null || value === undefined || value === '') return 0;
+            const cleanValue = typeof value === 'string'
                 ? value.replace(/[$€£¥₩₹₽]/g, '').replace(/\s/g, '')
                 : value;
             const numValue = parseFloat(cleanValue);
@@ -199,7 +249,21 @@ export const transformConfig = [
     },
     {
         field: 'trackInventory',
-        transform: (value) => ['sí', 'yes'].includes(value?.toString()?.toLowerCase()) || true // Valor por defecto: true
+        transform: (value) => {
+            if (value === null || value === undefined || value === '') return null;
+            const normalized = value.toString().trim().toLowerCase();
+            if (['sí', 'si', 'yes', 'true', '1'].includes(normalized)) return true;
+            if (['no', 'false', '0'].includes(normalized)) return false;
+            return null;
+        }
+    },
+    {
+        field: 'restrictSaleWithoutStock',
+        transform: (value) => {
+            if (value === null || value === undefined || value === '') return false;
+            const normalized = value.toString().trim().toLowerCase();
+            return ['sí', 'si', 'yes', 'true', '1'].includes(normalized);
+        }
     },
     {
         field: 'qrcode',

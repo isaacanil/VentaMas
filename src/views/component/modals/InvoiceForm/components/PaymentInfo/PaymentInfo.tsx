@@ -1,5 +1,5 @@
 import { Button } from 'antd'
-import { FC } from 'react'
+import { type FC } from 'react'
 import styled from 'styled-components'
 
 import { DiscountSection } from './components/DiscountSection'

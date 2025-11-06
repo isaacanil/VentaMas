@@ -57,7 +57,7 @@ export const DetailView = () => {
   ].filter(Boolean).join('/');
 
   return (
-    <div style={{ maxWidth: "1200px", width: '100%', margin: "0 auto", padding: " 0px 24px" }}>
+    <div style={{ maxWidth: "1200px", width: '100%', margin: "0 auto", padding: "1em" }}>
       <BreadcrumbNav breadcrumbs={breadcrumbs} />
   
 

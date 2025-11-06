@@ -1,11 +1,13 @@
 import {
   getListPriceTotal,
   getAvgPriceTotal,
-  getMinPriceTotal
+  getMinPriceTotal,
+  getCardPriceTotal,
+  getOfferPriceTotal
 } from '../../../../../../../../utils/pricing';
 
 export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
-  const { listPrice, avgPrice, minPrice } = pricing || {};
+  const { listPrice, avgPrice, minPrice, cardPrice, offerPrice } = pricing || {};
 
   const preciosConImpuesto = [
     {
@@ -31,6 +33,22 @@ export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
       type: 'minPrice',
       pricing,
       enabled: pricing?.minPriceEnabled ?? true
+    },
+    {
+      label: 'Precio Tarjeta',
+      value: cardPrice || 'N/A',
+      valueWithTax: getCardPriceTotal({ pricing }, taxReceiptEnabled),
+      type: 'cardPrice',
+      pricing,
+      enabled: true
+    },
+    {
+      label: 'Precio Oferta',
+      value: offerPrice || 'N/A',
+      valueWithTax: getOfferPriceTotal({ pricing }, taxReceiptEnabled),
+      type: 'offerPrice',
+      pricing,
+      enabled: true
     }
   ];
   return preciosConImpuesto;

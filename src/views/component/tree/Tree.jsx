@@ -14,12 +14,21 @@ import { traverse } from "./utils/traverseUtils";
 
 const Container = styled.div`
   height: 100%;
-  display: grid;
-  grid-template-rows: min-content 1fr;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   min-width: 250px;
   max-width: 400px;
   padding: 8px;
+  position: relative;
+`;
+
+const ContentWrapper = styled.div`
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 `;
 
 const InfoMessage = styled.div`
@@ -29,11 +38,38 @@ const InfoMessage = styled.div`
   text-align: center;
 `;
 
-const Tree = memo(({ data = [], config = {}, selectedId }) => {
+const FooterContainer = styled.div`
+  padding-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+`;
+
+const FooterOverlay = styled.div`
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  pointer-events: none;
+  display: inline-flex;
+  max-width: calc(100% - 24px);
+`;
+
+const Tree = memo(({ data = [], config = {}, selectedId, loading = false, loadingText = "Cargando..." }) => {
   // Establecer valores por defecto para la configuración
   const resolvedConfig = useMemo(() => ({
     showAllOnSearch: true,
     initialVisibleCount: undefined,
+    showToggleAllButton: true,
+    headerActions: [],
+    footer: null,
+    renderFooter: undefined,
+    searchPlaceholder: "Buscar por nombre o producto...",
+    showInitialVisibleInfoMessage: true,
+    footerPlacement: "static",
     ...config,
   }), [config]);
 
@@ -42,11 +78,9 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
     handleToggleNode,
     handleToggleAll,
     manualExpandedNodes,
-    searchExpandedNodes,
     manuallyClosedNodes,
     setManualExpandedNodes,
     setSearchExpandedNodes,
-    setManuallyClosedNodes,
   } = useExpandedNodes(data);
 
   const { searchTerm, setSearchTerm } = useSearchTerm(data, manuallyClosedNodes, setSearchExpandedNodes);
@@ -83,6 +117,28 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
     return map;
   }, [data]);
 
+  const footerContext = useMemo(() => ({
+    data,
+    filteredData,
+    visibleData,
+    searchTerm,
+    selectedNode,
+    loading,
+    config: resolvedConfig,
+  }), [data, filteredData, visibleData, searchTerm, selectedNode, loading, resolvedConfig]);
+
+  const footerContent = useMemo(() => {
+    if (typeof resolvedConfig.renderFooter === "function") {
+      return resolvedConfig.renderFooter(footerContext);
+    }
+    return resolvedConfig.footer ?? null;
+  }, [resolvedConfig, footerContext]);
+
+  const footerPlacement = resolvedConfig.footerPlacement;
+  const staticFooter = footerPlacement === "static" ? footerContent : null;
+  const stickyFooter = footerPlacement === "sticky" ? footerContent : null;
+  const overlayFooter = footerPlacement === "overlay" ? footerContent : null;
+
   return (
     <Container>
       <TreeHeader
@@ -90,40 +146,64 @@ const Tree = memo(({ data = [], config = {}, selectedId }) => {
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         allExpanded={Object.keys(manualExpandedNodes || {}).length > 0}
+        headerActions={resolvedConfig.headerActions}
+        showToggleAllButton={resolvedConfig.showToggleAllButton}
+        searchPlaceholder={resolvedConfig.searchPlaceholder}
       />
-      <TreeContent filteredData={filteredData} selectedId={selectedId}>
-        {visibleData.map((node) => {
-          const path = idToPath.get(node.id) ?? (() => {
-            const fullPath = findPathToNode(data, node.id) || [];
-            return fullPath.slice(0, Math.max(fullPath.length - 1, 0));
-          })();
-          return (
-            <TreeNode
-              key={node.id}
-              node={node}
-              level={0}
-              expandedNodes={expandedNodes}
-              setExpandedNodes={setManualExpandedNodes}
-              searchTerm={searchTerm}
-              selectedNode={selectedNode}
-              setSelectedNode={setSelectedNode}
-              config={resolvedConfig}
-              traverse={traverse}
-              renderHighlightedText={renderHighlightedText}
-              path={path}
-              onNodeClick={handleNodeClick}
-              onToggleNode={handleToggleNode}
-            />
-          );
-        })}
-        {!searchTerm && resolvedConfig.initialVisibleCount && filteredData.length > resolvedConfig.initialVisibleCount && (
-          <InfoMessage>
-            Mostrando {resolvedConfig.initialVisibleCount} de {filteredData.length} elementos. Use la búsqueda para ver más.
-          </InfoMessage>
-        )}
-      </TreeContent>
+      <ContentWrapper>
+        <TreeContent
+          filteredData={filteredData}
+          selectedId={selectedId}
+          loading={loading}
+          loadingText={loadingText}
+          footerPlacement={footerPlacement}
+          footerContent={stickyFooter}
+        >
+          {visibleData.map((node) => {
+            const path = idToPath.get(node.id) ?? (() => {
+              const fullPath = findPathToNode(data, node.id) || [];
+              return fullPath.slice(0, Math.max(fullPath.length - 1, 0));
+            })();
+            return (
+              <TreeNode
+                key={node.id}
+                node={node}
+                level={0}
+                expandedNodes={expandedNodes}
+                setExpandedNodes={setManualExpandedNodes}
+                searchTerm={searchTerm}
+                selectedNode={selectedNode}
+                setSelectedNode={setSelectedNode}
+                config={resolvedConfig}
+                traverse={traverse}
+                renderHighlightedText={renderHighlightedText}
+                path={path}
+                onNodeClick={handleNodeClick}
+                onToggleNode={handleToggleNode}
+              />
+            );
+          })}
+          {!searchTerm && resolvedConfig.initialVisibleCount && resolvedConfig.showInitialVisibleInfoMessage && filteredData.length > resolvedConfig.initialVisibleCount && (
+            <InfoMessage>
+              Mostrando {resolvedConfig.initialVisibleCount} de {filteredData.length} elementos. Use la búsqueda para ver más.
+            </InfoMessage>
+          )}
+        </TreeContent>
+      </ContentWrapper>
+      {staticFooter ? (
+        <FooterContainer>
+          {staticFooter}
+        </FooterContainer>
+      ) : null}
+      {overlayFooter ? (
+        <FooterOverlay>
+          {overlayFooter}
+        </FooterOverlay>
+      ) : null}
     </Container>
   );
 });
+
+Tree.displayName = "Tree";
 
 export default Tree;

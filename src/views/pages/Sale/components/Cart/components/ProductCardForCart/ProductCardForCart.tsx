@@ -22,12 +22,14 @@ import { PriceEditor } from './components/PriceEditor/PriceEditor';
 import { WeightInput } from './components/WeightInput/WeightInput';
 import { extraerPreciosConImpuesto } from './utils/priceUtils';
 
-type PriceType = 'listPrice' | 'avgPrice' | 'minPrice';
+type PriceType = 'listPrice' | 'avgPrice' | 'minPrice' | 'cardPrice' | 'offerPrice';
 
 interface PricingInfo {
   listPrice?: number | string;
   avgPrice?: number | string;
   minPrice?: number | string;
+  cardPrice?: number | string;
+  offerPrice?: number | string;
   price?: number | string;
   tax?: number | string;
   listPriceEnabled?: boolean;
@@ -198,6 +200,12 @@ export const ProductCardForCart = ({
         break;
       case 'minPrice':
         rawPrice = price.pricing.minPrice;
+        break;
+      case 'cardPrice':
+        rawPrice = price.pricing.cardPrice;
+        break;
+      case 'offerPrice':
+        rawPrice = price.pricing.offerPrice;
         break;
       default:
         rawPrice = price.pricing.listPrice;

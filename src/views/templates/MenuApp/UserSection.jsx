@@ -17,14 +17,14 @@ const { Tag } = antd
 export const UserSection = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { dialog, onClose, setDialogConfirm } = useDialog();
+  const { onClose, setDialogConfirm } = useDialog();
   const business = useSelector(selectBusinessData);
   const user = useSelector(selectUser)
 
   const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
-    navigate('/', { replace: true });
+    navigate('/login', { replace: true });
   }
 
   const logoutOfApp = () => {

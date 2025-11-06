@@ -6,7 +6,7 @@ import { icons } from '../../../../../../constants/icons/icons'
 import { useCategoryState } from '../../../../../../Context/CategoryContext/CategoryContext'
 import { openModal } from '../../../../../../features/activeIngredients/activeIngredientsSlice'
 import { openBrandModal } from '../../../../../../features/productBrands/productBrandSlice'
-import { PRODUCT_BRAND_DEFAULT } from '../../../../../../features/updateProduct/updateProductSlice'
+import { PRODUCT_BRAND_DEFAULT, PRODUCT_ITEM_TYPE_OPTIONS } from '../../../../../../features/updateProduct/updateProductSlice'
 import { useFbGetCategories } from '../../../../../../firebase/categories/useFbGetCategories'
 import { useListenActiveIngredients } from '../../../../../../firebase/products/activeIngredient/activeIngredients'
 
@@ -87,6 +87,8 @@ export const ProductInfo = ({ product, productBrands = [] }) => {
         return options;
     }, [productBrands, product?.brand, product?.brandId]);
 
+    const itemTypeOptions = PRODUCT_ITEM_TYPE_OPTIONS;
+
     return (
         <Card
             size='small'
@@ -108,6 +110,18 @@ export const ProductInfo = ({ product, productBrands = [] }) => {
             <Row gutter={16}>
                 <Col span={12}>
                     <Form.Item
+                        name="itemType"
+                        label="Tipo de ítem"
+                        tooltip="Define si se trata de un producto, servicio o combo."
+                        rules={[{ required: true, message: 'Selecciona el tipo de ítem.' }]}
+                    >
+                        <Select
+                            options={itemTypeOptions}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item
                         name="type"
                         label="Tipo de Producto"
                         rules={[{ required: true, message: 'Introducir un tipo de producto.' }]}
@@ -115,6 +129,9 @@ export const ProductInfo = ({ product, productBrands = [] }) => {
                         <Input placeholder="Ingresa el tipo del producto " />
                     </Form.Item>
                 </Col>
+            </Row>
+
+            <Row gutter={16}>
                 <Col span={12}>
                     <Form.Item name="netContent" label="Contenido Neto" >
                         <Input placeholder=" " />

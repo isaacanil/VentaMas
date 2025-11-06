@@ -70,7 +70,14 @@ export function validateProductPricing(product) {
     if (product.pricing) {
       product.pricing.price = product.pricing.listPrice || 0;
     } else {
-      product.pricing = { price: 0, listPrice: 0 };
+      product.pricing = {
+        price: 0,
+        listPrice: 0,
+        avgPrice: 0,
+        minPrice: 0,
+        cardPrice: 0,
+        offerPrice: 0,
+      };
     }
   }
   return product;

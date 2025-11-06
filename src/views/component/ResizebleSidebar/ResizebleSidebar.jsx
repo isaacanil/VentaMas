@@ -15,7 +15,7 @@ const Content = styled.div`
    overflow-y: auto;
   /* background-color: #ffffff; */
 
-  padding: 1em 0.4em;
+  // padding: 0.4em 0;
   height: 100%;
 `;
 

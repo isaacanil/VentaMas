@@ -15,14 +15,14 @@ export const MenuWebsite = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const user = useSelector(selectUser)
-    const { dialog, onClose, setDialogConfirm } = useDialog();
+    const { onClose, setDialogConfirm } = useDialog();
     const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM
     const handleSetting = () => navigate(GENERAL_CONFIG_BUSINESS)
 
     const handleLogout = () => {
         dispatch(logout());
         fbSignOut();
-        navigate('/', { replace: true });
+        navigate('/login', { replace: true });
     }
 
     const logoutOfApp = () => {

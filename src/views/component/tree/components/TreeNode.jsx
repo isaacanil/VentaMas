@@ -159,6 +159,8 @@ const TreeNode = ({
             stockSummaryLoading={node.stockSummaryLoading}
             renderHighlightedText={renderHighlightedText}
             themeStyles={themeStyles}
+            extraDetails={node.extraDetails}
+            tooltipDetails={node.tooltipDetails}
           />
           <LoadingIndicator isLoading={node.isLoading} />
         </div>

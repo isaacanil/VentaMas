@@ -131,6 +131,14 @@ export function getMinPriceTotal(product, taxReceiptEnabled = true) {
   return getPriceTotalByType(product, 'minPrice', taxReceiptEnabled);
 }
 
+export function getCardPriceTotal(product, taxReceiptEnabled = true) {
+  return getPriceTotalByType(product, 'cardPrice', taxReceiptEnabled);
+}
+
+export function getOfferPriceTotal(product, taxReceiptEnabled = true) {
+  return getPriceTotalByType(product, 'offerPrice', taxReceiptEnabled);
+}
+
 export function getProductsPrice(products = []) {
   return products.reduce((acc, product) => {
     const { isSoldByWeight, weight, amountToBuy, price } = getPricingDetails(product);

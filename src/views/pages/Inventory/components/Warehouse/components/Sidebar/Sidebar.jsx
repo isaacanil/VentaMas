@@ -1,3 +1,4 @@
+import { LoadingOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
 import { faPlus, faEdit, faTrash, faEllipsisH } from "@fortawesome/free-solid-svg-icons";
 import { Modal, message } from "antd";
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -16,24 +17,90 @@ import {
 import {
   selectWarehouse,
 } from "../../../../../../../features/warehouse/warehouseSlice";
-import { useGetProducts } from '../../../../../../../firebase/products/fbGetProducts';
 import { getStockAggregatesByLocationPaths } from '../../../../../../../firebase/warehouse/productStockService';
 import { deleteRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
 import { deleteSegment } from "../../../../../../../firebase/warehouse/segmentService";
 import { deleteShelf } from "../../../../../../../firebase/warehouse/shelfService";
 import { deleteWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
 import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
-import { filterData } from '../../../../../../../hooks/search/useSearch';
 import { replacePathParams } from '../../../../../../../routes/replacePathParams';
 import ROUTES_PATH from '../../../../../../../routes/routesName';
 import Tree from "../../../../../../component/tree/Tree";
 import { WarehouseForm } from "../../forms/WarehouseForm/WarehouseForm";
 
 const SidebarContainer = styled.div`
-  padding: 10px 0em;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   border-right: 1px solid #eee;
+  min-width: 0;
+`;
+
+const TreeWrapper = styled.div`
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  padding: 10px 0;
+  display: flex;
+`;
+
+const SidebarSummaryFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 0.8rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+`;
+
+const SummaryPrimary = styled.span`
+  font-weight: 600;
+  color: #f8fafc;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const SummarySecondary = styled.span`
+  color: #e2e8f0;
+  font-size: 0.75rem;
+`;
+
+const SummaryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const SummaryStatus = styled.span`
+  color: ${({ $loading }) => ($loading ? '#bfdbfe' : '#bef264')};
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const SummaryToggleButton = styled.button`
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
 `;
 
 // Function to get level actions (no change needed here)
@@ -115,19 +182,16 @@ const collectLocationPaths = (nodes = [], parentPath = []) => {
   return paths;
 };
 
-const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _productItems = [] }) => {
+const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { currentView, selectedWarehouse, selectedShelf, selectedRowShelf, selectedSegment } = useSelector(selectWarehouse);
   const navigate = useNavigate();
   const location = useLocation();
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
-  const [search, _setSearch] = useState('');
   const [stockSummaries, setStockSummaries] = useState({});
   const [loadingStockSummaries, setLoadingStockSummaries] = useState(false);
-
-  const { products } = useGetProducts(true);
-  const filteredProducts = search ? filterData(products, search) : products;
+  const [isSummaryExpanded, setSummaryExpanded] = useState(false);
 
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
   const locationPaths = useMemo(() => {
@@ -154,8 +218,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _produ
     return mergeSummaries(itemsWithParentIds);
   }, [itemsWithParentIds, stockSummaries, loadingStockSummaries]);
 
-  const { WAREHOUSE, SHELF, ROW, SEGMENT, PRODUCT_STOCK } = ROUTES_PATH.INVENTORY_TERM;
-  const [displayProducts, setDisplayProducts] = useState(false);
+  const { WAREHOUSE, SHELF, ROW, SEGMENT } = ROUTES_PATH.INVENTORY_TERM;
 
   const handleWarehouseNodeClick = (node, level) => {
       const path = findPathToNode(items, node.id);
@@ -183,10 +246,6 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _produ
                   message.error("Nivel de nodo desconocido");
           }
       }
-  };
-
-  const handleProductNodeClick = (node) => {
-    navigate(replacePathParams(PRODUCT_STOCK, [node.id]));
   };
 
   const getDefaultWarehouseId = useCallback(() => {
@@ -347,6 +406,99 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _produ
         labelColor: '#0f172a',
     };
 
+    const levelCounts = useMemo(() => {
+        const counters = [];
+        const traverse = (nodes = [], depth = 0) => {
+            nodes.forEach((node) => {
+                counters[depth] = (counters[depth] || 0) + 1;
+                if (node.children?.length) {
+                    traverse(node.children, depth + 1);
+                }
+            });
+        };
+        traverse(items, 0);
+        return counters;
+    }, [items]);
+
+    const summaryData = useMemo(() => {
+        const levelMetadata = [
+            { singular: 'almacén', plural: 'almacenes' },
+            { singular: 'estante', plural: 'estantes' },
+            { singular: 'fila', plural: 'filas' },
+            { singular: 'segmento', plural: 'segmentos' },
+        ];
+
+        const pluralize = (count, { singular, plural }) => {
+            if (count === 1) return `${count} ${singular}`;
+            return `${count} ${plural}`;
+        };
+
+        const warehouseCount = levelCounts[0] || 0;
+        const totalNodes = levelCounts.reduce((sum, count = 0) => sum + count, 0);
+        const subLevelCounts = levelCounts.slice(1);
+
+        const primaryText = warehouseCount
+            ? pluralize(warehouseCount, levelMetadata[0])
+            : 'Sin almacenes configurados';
+
+        const subLevelParts = subLevelCounts
+            .map((count = 0, index) => ({
+                count,
+                labelMeta: levelMetadata[index + 1] || {
+                    singular: `nivel ${index + 2}`,
+                    plural: `niveles ${index + 2}`,
+                },
+            }))
+            .filter(({ count }) => count > 0)
+            .map(({ count, labelMeta }) => pluralize(count, labelMeta));
+
+        const extraLocations = Math.max(totalNodes - warehouseCount, 0);
+
+        const secondaryText = subLevelParts.length
+            ? subLevelParts.join(' · ')
+            : extraLocations > 0
+                ? pluralize(extraLocations, {
+                    singular: 'ubicación adicional',
+                    plural: 'ubicaciones adicionales',
+                })
+                : '';
+
+        return {
+            primaryText,
+            secondaryText,
+            hasWarehouses: warehouseCount > 0,
+            hasDetails: Boolean(secondaryText),
+        };
+    }, [levelCounts]);
+
+    useEffect(() => {
+        if (!summaryData.hasDetails) {
+            setSummaryExpanded(false);
+        }
+    }, [summaryData.hasDetails]);
+
+    const sidebarSummaryFooter = useMemo(() => {
+        if (!summaryData.primaryText && !loadingStockSummaries) {
+            return null;
+        }
+
+        return (
+            <SidebarSummaryFooter>
+                <SummaryHeader>
+                    {summaryData.primaryText && (
+                        <SummaryPrimary>{summaryData.primaryText}</SummaryPrimary>
+                    )}
+                </SummaryHeader>
+                {loadingStockSummaries && (
+                    <SummaryStatus $loading={loadingStockSummaries}>
+                        <LoadingOutlined spin />
+                        Sincronizando stock…
+                    </SummaryStatus>
+                )}
+            </SidebarSummaryFooter>
+        );
+    }, [summaryData, loadingStockSummaries]);
+
     const config = {
         showLocationStockSummary: true,
         actions: [
@@ -419,14 +571,10 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _produ
             }
             return null;
         },
+        searchPlaceholder: "Buscar almacén o ubicación...",
+        footer: sidebarSummaryFooter,
+        footerPlacement: "sticky",
     };
-
-  const productConfig = {
-    actions: [],
-    onNodeClick: handleProductNodeClick,
-    showMatchedStockCount: true,
-    initialVisibleCount: 10,
-  };
 
   const getSelectedId = () => {
     switch (currentView) {
@@ -445,19 +593,10 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _produ
 
   useEffect(() => {
     const path = location.pathname;
-
-    // Set displayProducts based on the route
-    if (path.includes('/products-stock') || path.includes('/product-stock-overview/')) {
-      setDisplayProducts(true); // Show products
-    } else {
-      setDisplayProducts(false); // Show warehouses
-
-      // Navigate to default warehouse if on base or placeholder route
-      if (path === '/inventory/warehouses' || path === '/inventory/warehouses/warehouse/:warehouseId') {
-        const defaultId = getDefaultWarehouseId();
-        if (!loadingDefault) {
-          navigate(`/inventory/warehouses/warehouse/${defaultId}`);
-        }
+    if (path === '/inventory/warehouses' || path === '/inventory/warehouses/warehouse/:warehouseId') {
+      const defaultId = getDefaultWarehouseId();
+      if (!loadingDefault) {
+        navigate(`/inventory/warehouses/warehouse/${defaultId}`);
       }
     }
   }, [location.pathname, navigate, getDefaultWarehouseId, loadingDefault]);
@@ -500,20 +639,13 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [], productItems: _produ
 
   return (
     <SidebarContainer>
-      {/* Conditionally render the Tree component based on displayProducts */}
-      {displayProducts ? (
+      <TreeWrapper>
         <Tree
-          data={filteredProducts}
-          config={productConfig}
-          selectedId={getSelectedId()}
-        />
-      ) : (
-        <Tree
-          data={itemsWithStockSummaries}  // Use items enriched with stock summaries
+          data={itemsWithStockSummaries}
           config={config}
           selectedId={getSelectedId()}
         />
-      )}
+      </TreeWrapper>
       <WarehouseForm />
     </SidebarContainer>
   );

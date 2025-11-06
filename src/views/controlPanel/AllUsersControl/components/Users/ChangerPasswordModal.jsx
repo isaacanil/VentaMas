@@ -1,89 +1,69 @@
-import { Modal, Form, Input, Typography, message } from 'antd'
-import { useState } from 'react'
+import { Form, Input, Modal, Typography, message } from 'antd'
+import { useCallback, useState } from 'react'
 
 import { fbUpdateUserPassword } from '../../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword'
 
 export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
-    const [newPassword, setNewPassword] = useState('')
-    const handleOk = async () => {
+    const [form] = Form.useForm()
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const closeModal = useCallback(() => {
+        form.resetFields()
+        onClose?.()
+    }, [form, onClose])
+
+    const handleFinish = useCallback(async ({ password }) => {
+        if (!data?.user?.id) {
+            message.error('No se pudo identificar al usuario seleccionado.')
+            return
+        }
+
+        setIsSubmitting(true)
+
         try {
-            await fbUpdateUserPassword(data.user.id, newPassword)
-            onClose()
+            await fbUpdateUserPassword(data.user.id, password)
+            message.success('Contraseña actualizada correctamente')
+            closeModal()
         } catch (error) {
             message.error(error?.message || 'Error actualizando la contraseña')
+        } finally {
+            setIsSubmitting(false)
         }
-    };
+    }, [closeModal, data?.user?.id])
 
-    const handleCancel = () => {
-        onClose()
-        setIsModalVisible(false);
-        setEditingUser(null); // Resetea el usuario en edición
-    };
+    const handleCancel = useCallback(() => {
+        closeModal()
+    }, [closeModal])
+
     return (
-        <Modal 
-        title="Editar Contraseña"
-            open={isOpen} onOk={handleOk} onCancel={handleCancel}>
-            
+        <Modal
+            title="Editar Contraseña"
+            open={isOpen}
+            onOk={() => form.submit()}
+            onCancel={handleCancel}
+            confirmLoading={isSubmitting}
+            okText="Guardar"
+            cancelText="Cancelar"
+        >
             <Form
+                form={form}
+                layout="vertical"
                 name="editPasswordForm"
-                initialValues={{ remember: true }}
-                onFinish={handleOk}
+                onFinish={handleFinish}
             >
-                < Typography.Title level={5}>Editar Contraseña</Typography.Title>
-                <Form.Item>
-                    <Input value={data?.user?.name} disabled />
+                <Typography.Title level={5}>Editar Contraseña</Typography.Title>
+                <Form.Item label="Usuario">
+                    <Input value={data?.user?.name ?? ''} disabled />
                 </Form.Item>
                 <Form.Item
                     label="Nueva Contraseña"
                     name="password"
-                    rules={[{ required: true, message: 'Por favor ingresa la nueva contraseña!' }]}
+                    rules={[{ required: true, message: 'Por favor ingresa la nueva contraseña.' }]}
                 >
-                    <Input.Password 
-                       onChange={(e)=>setNewPassword(e.target.value)}
-                    />
+                    <Input.Password autoComplete="new-password" />
                 </Form.Item>
             </Form>
         </Modal>
     )
 }
 
-// export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
-//     const [newPassword, setNewPassword] = useState('')
-//     const handleOk = () => {
-//         fbUpdateUserPassword("BdNGtDt3y0", newPassword)
-//         antd.message.success('Contraseña actualizada correctamente');
-      
-//     };
-
-//     const handleCancel = () => {
-     
-//         setIsModalVisible(false);
-//         setEditingUser(null); // Resetea el usuario en edición
-//     };
-//     return (
-//         <Modal 
-//         title="Editar Contraseña"
-//             open={true} onOk={handleOk} onCancel={handleCancel}>
-            
-//             <Form
-//                 name="editPasswordForm"
-//                 initialValues={{ remember: true }}
-//                 onFinish={handleOk}
-//             >
-//                 < Typography.Title level={5}>Editar Contraseña</Typography.Title>
-//                 <Form.Item>
-//                     <Input value={data?.user?.name} disabled />
-//                 </Form.Item>
-//                 <Form.Item
-//                     label="Nueva Contraseña"
-//                     name="password"
-//                     rules={[{ required: true, message: 'Por favor ingresa la nueva contraseña!' }]}
-//                 >
-//                     <Input.Password 
-//                        onChange={(e)=>setNewPassword(e.target.value)}
-//                     />
-//                 </Form.Item>
-//             </Form>
-//         </Modal>
-//     )
-// }

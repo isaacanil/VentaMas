@@ -3,6 +3,19 @@ const EXPIRES_KEY = 'sessionExpires';
 const SESSION_ID_KEY = 'sessionId';
 const DEVICE_ID_KEY = 'sessionDeviceId';
 
+let logoutInProgress = false;
+let lastLogoutAt = 0;
+
+export const setLogoutInProgress = (value) => {
+  logoutInProgress = value;
+  if (value) {
+    lastLogoutAt = Date.now();
+  }
+};
+
+export const isLogoutInProgress = () => logoutInProgress;
+export const getLastLogoutAt = () => lastLogoutAt;
+
 const safeLocalStorage = () => {
   if (typeof window === 'undefined' || !window.localStorage) return null;
   return window.localStorage;

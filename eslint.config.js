@@ -61,7 +61,7 @@ export default [
       ],
 
       // === import/order útil en Vite ===
-      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$"] }],
+      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/"] }],
       "import/order": ["warn", {
         groups: ["builtin","external","internal","parent","sibling","index","object","type"],
         "newlines-between": "always",
@@ -134,7 +134,7 @@ export default [
       ],
 
       // Import helpers
-      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$"] }],
+      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/"] }],
       "import/order": ["warn", {
         groups: ["builtin","external","internal","parent","sibling","index","object","type"],
         "newlines-between": "always",

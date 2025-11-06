@@ -1,14 +1,11 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Tree, Button, Tooltip } from 'antd';
 import { AnimatePresence } from 'framer-motion';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useListenRowShelves } from '../../../../../../../../firebase/warehouse/RowShelfService';
-import { useListenAllSegments } from '../../../../../../../../firebase/warehouse/segmentService';
-import { useListenShelves } from '../../../../../../../../firebase/warehouse/shelfService';
-import { useListenWarehouses } from '../../../../../../../../firebase/warehouse/warehouseService';
+import { useTransformedWarehouseData } from '../../../../../../../../firebase/warehouse/warehouseNestedServise';
 import RowForm from '../../../forms/RowShelfForm/RowShelfForm';
 import SegmentForm from '../../../forms/SegmentForm/SegmentForm';
 import { ShelfForm } from '../../../forms/ShelfForm/ShelfForm';
@@ -47,7 +44,7 @@ const ActionButton = styled(Button)`
   width: 100%;
 `;
 
-const WarehouseTab = () => {
+const WarehouseTab = memo(() => {
     const navigate = useNavigate();
     const { warehouseId, shelfId, rowId, segmentId } = useParams();
     const [selectedKeys, setSelectedKeys] = useState([]);
@@ -56,37 +53,33 @@ const WarehouseTab = () => {
     const [isRowFormVisible, setIsRowFormVisible] = useState(false);
     const [isSegmentFormVisible, setIsSegmentFormVisible] = useState(false);
 
-    const { warehouses } = useListenWarehouses();
-    const { shelves } = useListenShelves(warehouseId);
-    const { rows } = useListenRowShelves(shelfId);
-    const { segments } = useListenAllSegments(rowId);
+    // Usar el hook optimizado que carga toda la jerarquía
+    const { data: warehouseData, loading } = useTransformedWarehouseData();
 
-    const buildTreeData = () => {
-        return warehouses.map(warehouse => ({
-            title: warehouse.name,
-            key: `warehouse-${warehouse.id}`,
-            children: shelves
-                .filter(shelf => shelf.warehouseId === warehouse.id)
-                .map(shelf => ({
-                    title: shelf.name,
-                    key: `shelf-${shelf.id}`,
-                    children: rows
-                        .filter(row => row.shelfId === shelf.id)
-                        .map(row => ({
-                            title: row.name,
-                            key: `row-${row.id}`,
-                            children: segments
-                                .filter(segment => segment.rowId === row.id)
-                                .map(segment => ({
-                                    title: segment.name,
-                                    key: `segment-${segment.id}`,
-                                }))
-                        }))
-                }))
-        }));
-    };
+    // Convertir la estructura transformada a formato Tree de Ant Design
+    const treeData = useMemo(() => {
+        const buildTree = (nodes) => {
+            if (!Array.isArray(nodes)) return [];
+            
+            return nodes.map(node => {
+                const treeNode = {
+                    title: node.name,
+                    key: `${node.type}-${node.id}`,
+                };
 
-    const handleSelect = (selectedKeys, info) => {
+                if (node.children && node.children.length > 0) {
+                    treeNode.children = buildTree(node.children);
+                }
+
+                return treeNode;
+            });
+        };
+
+        return buildTree(warehouseData);
+    }, [warehouseData]);
+
+    // Memoizar el callback de selección
+    const handleSelect = useCallback((selectedKeys, info) => {
         const [type, id] = selectedKeys[0]?.split('-') || [];
         let path = '/inventory/warehouses';
 
@@ -120,7 +113,7 @@ const WarehouseTab = () => {
 
         navigate(path);
         setSelectedKeys(selectedKeys);
-    };
+    }, [navigate, warehouseId, shelfId, rowId, segmentId]);
 
     return (
         <TabContent>
@@ -134,7 +127,7 @@ const WarehouseTab = () => {
 
             <TreeContainer>
                 <Tree
-                    treeData={buildTreeData()}
+                    treeData={treeData}
                     selectedKeys={selectedKeys}
                     onSelect={handleSelect}
                     showLine={{ showLeafIcon: false }}
@@ -208,6 +201,8 @@ const WarehouseTab = () => {
             )}
         </TabContent>
     );
-};
+});
+
+WarehouseTab.displayName = 'WarehouseTab';
 
 export default WarehouseTab;

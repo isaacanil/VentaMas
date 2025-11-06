@@ -5,8 +5,8 @@ import { MultimediaManager } from "../../views/pages/Inventario/pages/Multimedia
 import { ProductOutflow } from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
 import AllMovements from "../../views/pages/Inventory/components/AllMovements/AllMovements";
 import DetailView from "../../views/pages/Inventory/components/Warehouse/components/DetailView/DetailView";
-import ProductStockOverview from "../../views/pages/Inventory/components/Warehouse/components/ProductStockOverview/ProductStockOverview";
 import { Warehouse } from "../../views/pages/Inventory/components/Warehouse/Warehouse";
+import WarehouseProductStock from "../../views/pages/Inventory/components/Warehouse/WarehouseProductStock";
 import { InventoryControl } from "../../views/pages/InventoryControl/InventoryControl";
 import InventorySessionsList from "../../views/pages/InventorySessionsList/InventorySessionsList";
 import { InventorySummary } from "../../views/pages/InventorySummary/InventorySummary";
@@ -73,14 +73,18 @@ const Routes = [
         element: <Warehouse />,
         children: [
             { path: WAREHOUSE, element: <DetailView /> },
-            
-            // { path: ':warehouseId', element: <DetailView /> },
             { path: SHELF, element: <DetailView /> },
             { path: ROW, element: <DetailView /> },
             { path: SEGMENT, element: <DetailView /> },
-            { path: PRODUCTS_STOCK, element: <ProductStockOverview /> },
-            { path: PRODUCT_STOCK, element: <ProductStockOverview /> },
         ]
+    },
+    {
+        path: PRODUCTS_STOCK,
+        element: <WarehouseProductStock />,
+    },
+    {
+        path: PRODUCT_STOCK,
+        element: <WarehouseProductStock />,
     },
     {
         path: INVENTORY_SERVICES,
@@ -97,4 +101,3 @@ const Routes = [
 ]
 
 export default Routes;
-

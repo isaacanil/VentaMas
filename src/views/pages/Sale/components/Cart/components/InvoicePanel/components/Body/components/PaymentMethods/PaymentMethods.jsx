@@ -4,7 +4,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 import { icons } from '../../../../../../../../../../../constants/icons/icons'
-import { selectCart, setPaymentMethod, recalcTotals, SelectCxcAutoRemovalNotification, clearCxcAutoRemovalNotification } from '../../../../../../../../../../../features/cart/cartSlice'
+import { Modal } from 'antd'
+
+import { selectCart, setPaymentMethod, recalcTotals, SelectCxcAutoRemovalNotification, clearCxcAutoRemovalNotification, applyPricingPreset } from '../../../../../../../../../../../features/cart/cartSlice'
 
 const { Radio, Input, Form, Checkbox, InputNumber, message, notification } = antd
 
@@ -66,7 +68,24 @@ export const PaymentMethods = () => {
                 }
             }
         }
-    }, [cartData.isAddedToReceivables, paymentMethods, dispatch]);    
+    }, [cartData.isAddedToReceivables, paymentMethods, dispatch]);
+
+    useEffect(() => {
+        const activeCard = paymentMethods.find(method => method.method === 'card' && method.status);
+        if (!activeCard) return;
+
+        const total = Number(cartData.totalPurchase?.value || 0);
+        const current = Number(activeCard.value || 0);
+        const hasOtherMethodWithAmount = paymentMethods.some(method =>
+            method.method !== 'card' && method.status && Number(method.value || 0) > 0
+        );
+
+        if (!hasOtherMethodWithAmount && Math.abs(current - total) > 0.01) {
+            dispatch(setPaymentMethod({ ...activeCard, value: total }));
+            dispatch(recalcTotals());
+        }
+    }, [paymentMethods, cartData.totalPurchase?.value, dispatch]);
+
     const handleStatusChange = (method, status) => {
         let newValue = method.value;
         
@@ -90,9 +109,55 @@ export const PaymentMethods = () => {
                 return;
             }
         }
-       
-        dispatch(setPaymentMethod({ ...method, status, value: status ? newValue : 0 }));
-        dispatch(recalcTotals());
+        const otherCardEnabled = paymentMethods.some(m => m.method === 'card' && m !== method && m.status);
+        const shouldRevertToListPrice = method.method === 'card' && !status && !otherCardEnabled;
+
+        const applyCardPricingIfNeeded = () => {
+            dispatch(applyPricingPreset({ priceKey: 'cardPrice' }));
+            message.success('Precios actualizados al precio tarjeta.');
+        };
+
+        const revertToListPrice = () => {
+            dispatch(applyPricingPreset({ priceKey: 'listPrice' }));
+            message.info('Precios restaurados al precio de lista.');
+        };
+
+        const proceed = ({ applyCardPrice = false, revertListPrice = false } = {}) => {
+            dispatch(setPaymentMethod({ ...method, status, value: status ? newValue : 0 }));
+            dispatch(recalcTotals());
+            if (applyCardPrice) {
+                applyCardPricingIfNeeded();
+            } else if (revertListPrice) {
+                revertToListPrice();
+            }
+        };
+
+        if (method.method === 'card' && status) {
+            const hasCardPrices = Array.isArray(cartData.products) && cartData.products.some(product => {
+                if (!product) return false;
+                const baseCard = Number(product?.pricing?.cardPrice);
+                const saleUnitCard = Number(product?.selectedSaleUnit?.pricing?.cardPrice);
+                return (Number.isFinite(baseCard) && baseCard > 0) || (Number.isFinite(saleUnitCard) && saleUnitCard > 0);
+            });
+
+            if (hasCardPrices) {
+                Modal.confirm({
+                    title: '¿Aplicar precio de tarjeta?',
+                    content: 'Se detectaron precios de tarjeta para algunos productos. ¿Deseas actualizar la venta con esos precios?',
+                    okText: 'Sí, aplicar',
+                    cancelText: 'No',
+                    onOk: () => {
+                        proceed({ applyCardPrice: true });
+                    },
+                    onCancel: () => {
+                        proceed();
+                    },
+                });
+                return;
+            }
+        }
+
+        proceed({ revertListPrice: shouldRevertToListPrice });
     };    const handleValueChange = (method, newValue) => {
         // Validar que el valor no sea negativo
         const validValue = Math.max(0, Number(newValue) || 0);
@@ -224,4 +289,3 @@ const FormItem = styled(Form.Item)`
                 color: #414141;
             }
 `
-

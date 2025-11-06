@@ -23,6 +23,25 @@ import { selectUser } from '../../features/auth/userSlice';
 import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
 import { db } from '../firebaseconfig';
 
+const normalizeToDate = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  if (typeof value?.toDate === 'function') {
+    const parsed = value.toDate();
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  if (typeof value?.seconds === 'number') {
+    const parsed = new Date(value.seconds * 1000);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return null;
+};
 
 
 
@@ -47,7 +66,7 @@ export const createProductStock = async (user, productStockData) => {
 
     // Asegurarse de que location esté en el formato 'warehouse/shelf/row/segment'
     const { warehouse, shelf, row, segment } = productStockData.location; // Asumiendo que location es un objeto
-    const locationPath = [warehouse, shelf, row, segment].filter(Boolean).join('/');
+    const _locationPath = [warehouse, shelf, row, segment].filter(Boolean).join('/');
 
     await setDoc(productStockDocRef, {
       ...productStockData,
@@ -583,4 +602,188 @@ export const getStockAggregatesByLocationPaths = async (user, locationPaths = []
     acc[path] = summary;
     return acc;
   }, {});
+};
+
+// Hook para escuchar TODOS los productos en stock activos y agruparlos por producto
+export const useListenAllActiveProductsStock = () => {
+  const user = useSelector(selectUser);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.businessID) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+      if (!productStockCollectionRef) {
+        setData([]);
+        setLoading(false);
+        return;
+      }
+
+      const q = query(
+        productStockCollectionRef,
+        where('status', '==', 'active'),
+        where('isDeleted', '==', false)
+      );
+
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          const stockItems = querySnapshot.docs.map((doc) => doc.data());
+          
+          // Agrupar por productId y agregar información
+          const groupedByProduct = stockItems.reduce((acc, stock) => {
+            const productId = stock.productId;
+            if (!productId) return acc;
+
+            if (!acc[productId]) {
+              acc[productId] = {
+                id: productId,
+                name: stock.productName || 'Producto sin nombre',
+                productName: stock.productName || 'Producto sin nombre',
+                totalStock: 0,
+                locations: [],
+                batches: new Set(),
+                stockItems: [],
+                hasExpiration: false,
+              };
+            }
+
+            acc[productId].totalStock += Number(stock.quantity) || 0;
+            acc[productId].locations.push(stock.location);
+            acc[productId].stockItems.push(stock);
+
+            const expirationDate =
+              normalizeToDate(stock.expirationDate) ||
+              normalizeToDate(stock.expDate) ||
+              normalizeToDate(stock.expiration);
+            if (expirationDate) {
+              acc[productId].hasExpiration = true;
+            }
+            
+            // Agregar batchId al Set si existe
+            if (stock.batchId) {
+              acc[productId].batches.add(stock.batchId);
+            }
+
+            return acc;
+          }, {});
+
+          // Convertir a array, calcular agregados y ordenar por nombre
+          const productsArray = Object.values(groupedByProduct).map(product => {
+            const uniqueLocations = [...new Set(product.locations)];
+            const uniqueBatches = product.batches.size;
+            const stockRecords = product.stockItems.length;
+            
+            return {
+              ...product,
+              batches: undefined, // Remover el Set
+              stockRecords,        // Cantidad de registros de stock
+              uniqueBatches,       // Cantidad de lotes únicos
+              uniqueLocations: uniqueLocations.length, // Cantidad de ubicaciones únicas
+              // Agregar stockSummary compatible con el Tree NodeName
+              hasExpiration: product.hasExpiration,
+              hasExpired: product.hasExpired,
+              stockSummary: {
+                totalLots: uniqueBatches,
+                totalUnits: product.totalStock,
+                directLots: uniqueBatches,
+                directUnits: product.totalStock
+              }
+            };
+          }).sort((a, b) => 
+            (a.name || '').localeCompare(b.name || '')
+          );
+
+          setData(productsArray);
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error al escuchar todos los productos en stock:', error);
+          setData([]);
+          setLoading(false);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (error) {
+      console.error('Error al configurar listener de productos stock:', error);
+      setData([]);
+      setLoading(false);
+    }
+  }, [user?.businessID]);
+
+  return { data, loading };
+};
+
+export const useInventoryProductIds = () => {
+  const user = useSelector(selectUser);
+  const [data, setData] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.businessID) {
+      setData(new Set());
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const productsRef = collection(db, 'businesses', user.businessID, 'products');
+      const unsubscribe = onSnapshot(
+        productsRef,
+        (snapshot) => {
+          const ids = new Set(
+            snapshot.docs.reduce((acc, doc) => {
+              const productData = doc.data();
+              if (!productData || productData?.isDeleted === true) {
+                return acc;
+              }
+
+              const rawTrack = productData.trackInventory;
+              
+              // Excluir explícitamente si trackInventory es false
+              if (rawTrack === false || rawTrack === 0 || rawTrack === 'false') {
+                return acc;
+              }
+              
+              // Incluir solo si trackInventory es explícitamente true
+              const isInventoried = rawTrack === true
+                || rawTrack === 1
+                || (typeof rawTrack === 'string' && ['true', 'True', 'TRUE', 'si', 'Si', 'SI', 'sí', 'Sí'].includes(rawTrack.trim()));
+
+              if (isInventoried) {
+                acc.push(doc.id);
+              }
+              return acc;
+            }, [])
+          );
+          setData(ids);
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error al escuchar productos inventariables:', error);
+          setData(new Set());
+          setLoading(false);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (error) {
+      console.error('Error al configurar listener de productos inventariables:', error);
+      setData(new Set());
+      setLoading(false);
+    }
+  }, [user?.businessID]);
+
+  return { data, loading };
 };

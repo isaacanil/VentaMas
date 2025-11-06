@@ -7,10 +7,12 @@
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@/*": ["src/*"],
-      "@templates/*": ["src/views/templates/*"],
-      "@views/*": ["src/views/*"],
-      "@components/*": ["src/components/*"],  
+      "@/*": ["./*"],
+      "@templates/*": ["views/templates/*"],
+      "@views/*": ["views/*"],
+      "@components/*": ["components/*"],
+      "@constants/*": ["constants/*"],
+      "@features/*": ["features/*"]
     },
     "allowJs": true,
     "checkJs": false,

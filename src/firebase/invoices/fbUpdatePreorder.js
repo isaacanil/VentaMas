@@ -1,6 +1,7 @@
 import { doc, serverTimestamp, Timestamp, updateDoc } from "firebase/firestore";
 
 import { db } from "../firebaseconfig";
+import { sanitizeFirestoreDocument } from "../../utils/firebase/sanitizeFirestoreDocument";
 
 const toFirestoreTimestamp = (value) => {
   if (value === undefined || value === null) return value;
@@ -60,7 +61,9 @@ export const fbUpdatePreOrder = async (user, cartData) => {
     updatedAt: serverTimestamp(),
   };
 
-  await updateDoc(invoiceRef, { data: payload });
+  const sanitizedPayload = sanitizeFirestoreDocument(payload);
 
-  return payload;
+  await updateDoc(invoiceRef, { data: sanitizedPayload });
+
+  return sanitizedPayload;
 };

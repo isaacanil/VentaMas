@@ -1,43 +1,89 @@
-import { Button, Spin, Skeleton } from "antd";
+import { Button, Skeleton, Spin } from "antd";
 import { ref, getDownloadURL, listAll } from "firebase/storage";
-import { motion } from "framer-motion";
-import React, { useState, useEffect, useRef } from "react";
+import { motion, type Variants } from "framer-motion";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type JSX,
+} from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import { icons } from "../../../../constants/icons/icons";
-import { selectUser } from "../../../../features/auth/userSlice";
-import { storage } from "../../../../firebase/firebaseconfig";
-import { getStoredSession } from "../../../../firebase/Auth/fbAuthV2/sessionClient";
+import { icons } from "../../../constants/icons/icons";
+import { selectUser } from "../../../features/auth/userSlice";
+import { getStoredSession } from "../../../firebase/Auth/fbAuthV2/sessionClient";
+import { storage } from "../../../firebase/firebaseconfig";
+import { LoginForm } from "./components/LoginForm";
 
-import { Login } from "./Login";
+const HOME_PATH = "/home";
+const LOGIN_IMAGE_PATH = "app-config/login-image";
 
+type StoredSession = {
+  sessionToken: string;
+  sessionExpiresAt: number;
+};
 
+type MaybeUser = Record<string, unknown> | null;
 
+const imageVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } },
+};
 
-export const LoginV2 = () => {
+const parseStoredSession = (session: unknown): StoredSession | null => {
+  if (!session || typeof session !== "object") {
+    return null;
+  }
+
+  const record = session as Record<string, unknown>;
+  const rawToken = record.sessionToken;
+  const rawExpiresAt = record.sessionExpiresAt;
+
+  if (typeof rawToken !== "string" || !rawToken) {
+    return null;
+  }
+
+  const expiresAt =
+    typeof rawExpiresAt === "number"
+      ? rawExpiresAt
+      : typeof rawExpiresAt === "string"
+      ? Number(rawExpiresAt)
+      : NaN;
+
+  if (!Number.isFinite(expiresAt)) {
+    return null;
+  }
+
+  return {
+    sessionToken: rawToken,
+    sessionExpiresAt: expiresAt,
+  };
+};
+
+export const Login = (): JSX.Element => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   /* ---------- imagen de fondo ---------- */
-  const [loginImage, setLoginImage] = useState(null);   //   ⬅️ sin <string | null>
+  const [loginImage, setLoginImage] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const imgRef = useRef(null);                          //   ⬅️ sin <HTMLImageElement | null>
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   /* ---------- usuario ---------- */
-  const user = useSelector(selectUser);
-  const homePath = "/home";
+  const user = useSelector(selectUser) as MaybeUser;
 
   /* ---------- descarga de la imagen ---------- */
-  const fetchLoginImage = async () => {
+  const fetchLoginImage = useCallback(async () => {
     setImageLoading(true);
     setImageLoaded(false);
     setLoginImage(null);
 
     try {
-      const loginImageRef = ref(storage, "app-config/login-image");
+      const loginImageRef = ref(storage, LOGIN_IMAGE_PATH);
       const files = await listAll(loginImageRef);
 
       if (files.items.length > 0) {
@@ -50,9 +96,11 @@ export const LoginV2 = () => {
       console.error("Error al cargar la imagen de login:", err);
       setImageLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchLoginImage(); }, []);
+  useEffect(() => {
+    void fetchLoginImage();
+  }, [fetchLoginImage]);
 
   /* reinicio de flags si cambia la URL */
   useEffect(() => {
@@ -76,25 +124,30 @@ export const LoginV2 = () => {
 
   /* redirección si hay sesión */
   useEffect(() => {
-    if (!user) return;
-    const { sessionToken, sessionExpiresAt } = getStoredSession();
-    if (user || (sessionToken && sessionExpiresAt && Date.now() < Number(sessionExpiresAt))) {
-      navigate(homePath, { replace: true });
+    if (user) {
+      navigate(HOME_PATH, { replace: true });
+      return;
+    }
+
+    const storedSession = parseStoredSession(getStoredSession() as unknown);
+    if (
+      storedSession &&
+      Date.now() < storedSession.sessionExpiresAt
+    ) {
+      navigate(HOME_PATH, { replace: true });
     }
   }, [user, navigate]);
 
-  const goToHome = () => navigate("/");
-
-  const variants = {
-    hidden : { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } },
-  };
+  const goToHome = useCallback(() => {
+    navigate("/");
+  }, [navigate]);
 
   return (
     <div style={{ position: "relative", height: "100%", width: "100vw" }}>
-      <Spin spinning={loading} tip="Cargando..." size="large">
-        <Background>
-          <Container>
+      <Spin spinning={loading} fullscreen tip="Iniciando sesión..." />
+
+      <Background>
+        <Container>
             <ImagenContainer>
               <ButtonBack icon={icons.arrows.arrowLeft} onClick={goToHome}>
                 Volver
@@ -105,7 +158,7 @@ export const LoginV2 = () => {
                   key={loginImage}
                   initial="hidden"
                   animate={imageLoaded ? "visible" : "hidden"}
-                  variants={variants}
+                  variants={imageVariants}
                   style={{ height: "100%", position: "relative" }}
                 >
                   {imageLoading && (
@@ -160,10 +213,9 @@ export const LoginV2 = () => {
               )}
             </ImagenContainer>
 
-            <Login setLoading={setLoading} />
+            <LoginForm setLoading={setLoading} />
           </Container>
         </Background>
-      </Spin>
     </div>
   );
 };
@@ -173,7 +225,10 @@ export const LoginV2 = () => {
 const Background = styled.div`
   background-color: #4d4d4d;
   height: 100vh;
-  overflow-y: auto;
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
 `;
 
 const ButtonBack = styled(Button)`
@@ -189,12 +244,14 @@ const ButtonBack = styled(Button)`
 
 const Imagen = styled.div`
   height: 100%;
+  max-height: 100vh;
   overflow: hidden;
   border-radius: 1em;
 
   img {
     width: 100%;
     height: 100%;
+    max-height: 100vh;
     object-fit: cover;
   }
 `;
@@ -202,7 +259,7 @@ const Imagen = styled.div`
 const ImagenContainer = styled.div`
   padding: 1em;
   height: 100%;
-  max-height: 800px;
+  max-height: min(800px, 100vh);
   position: relative;
   padding-right: 0;
 
@@ -227,7 +284,7 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   max-width: 1366px;
-  max-height: 800px;
+  max-height: min(800px, 100vh);
   height: 100%;
   margin: 0 auto;
 

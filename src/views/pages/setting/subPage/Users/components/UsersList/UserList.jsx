@@ -1,16 +1,29 @@
-import { Input } from 'antd';
-import { DateTime } from 'luxon'
-import React, { useEffect, useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
+import {
+  CheckCircleOutlined,
+  EditOutlined,
+  KeyOutlined,
+  MoreOutlined,
+  SettingOutlined,
+  StopOutlined,
+} from '@ant-design/icons';
+import { Button, Dropdown, Input } from 'antd';
+import { DateTime } from 'luxon';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { getRoleLabelById, userRoles } from '../../../../../../../abilities/roles'
-import { selectUser } from '../../../../../../../features/auth/userSlice'
-import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice'
-import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
-import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers'
-import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { getRoleLabelById, userRoles } from '../../../../../../../abilities/roles';
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice';
+import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice';
+import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers';
+import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
+import { getAvailablePermissionsForRole } from '../../../../../../../services/dynamicPermissions';
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
+
+import { ChangeUserPasswordModal } from './ChangeUserPasswordModal';
+import { ToggleUserStatusModal } from './ToggleUserStatusModal';
+import DynamicPermissionsManager from '../DynamicPermissionsManager';
 
 const Role = styled.div`
   height: 2em;
@@ -42,20 +55,6 @@ const NameCell = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75em;
-`
-
-const AvatarBubble = styled.div`
-  width: 2.75em;
-  height: 2.75em;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  background: ${({ theme }) => (theme?.bg?.secondary ?? 'rgba(59, 130, 246, 0.12)')};
-  color: ${({ theme }) => (theme?.text?.primary ?? '#1F2937')};
-  border: 1px solid ${({ theme }) => (theme?.border?.primary ?? 'rgba(59, 130, 246, 0.35)')};
 `
 
 const NameContent = styled.div`
@@ -99,160 +98,334 @@ const StatusPill = styled.span`
   text-transform: capitalize;
 `
 
-const getInitials = (value = '') => {
-  const initials = value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(part => part[0]?.toUpperCase() ?? '')
-    .join('')
-    .slice(0, 2)
-
-  return initials || 'US'
-}
-
-const columns = [
-  {
-    Header: '#',
-    accessor: 'number',
-    align: 'left',
-    maxWidth: '0.2fr',
-    minWidth: '60px',
-    cell: ({ value }) => (
-      <IndexBadge>
-        {value ?? '--'}
-      </IndexBadge>
-    ),
-  },
-  {
-    Header: 'Nombre',
-    accessor: 'name',
-    align: 'left',
-    maxWidth: '1fr',
-    minWidth: '150px',
-    cell: ({ value, row }) => {
-      const user = row?.original?.user ?? {}
-      const email = user.email || user.username
-
-      return (
-        <NameCell>
-          <NameContent>
-            <span className="name">{value || 'Usuario sin nombre'}</span>
-            {email && <span className="meta">{email}</span>}
-          </NameContent>
-        </NameCell>
-      )
-    },
-  },
-  {
-    Header: 'Fecha de Creación',
-    accessor: 'createAt',
-    align: 'left',
-    maxWidth: '0.8fr',
-    cell: ({ value }) => {
-      if (!value?.seconds) {
-        return <span>Sin registro</span>
-      }
-
-      const dateObject = DateTime.fromSeconds(value.seconds);
-
-      return (
-        <DateCell>
-          <span className="date">{dateObject.toLocaleString(DateTime.DATE_SHORT)}</span>
-        </DateCell>
-      );
-    },
-  },
-  {
-    Header: 'Rol',
-    accessor: 'role',
-    align: 'left',
-    cell: ({ value }) => {
-      const role = userRoles.find(r => r.id === value) || {};
-
-      return (
-        <Role
-          primaryColor={role.primaryColor}
-          secondaryColor={role.secondaryColor}
-        >
-          {getRoleLabelById(value)}
-        </Role>
-      )
-    },
-  },
-  {
-    Header: 'Estado',
-    accessor: 'active',
-    align: 'left',
-    description: '¿Esta Activo?',
-    maxWidth: '0.4fr',
-    minWidth: '100px',
-    cell: ({ value }) => (
-      <StatusPill $active={value === 'Activo'}>
-        {value}
-      </StatusPill>
-    ),
-  },
-]
-
 export const UserList = () => {
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const currentUser = useSelector(selectUser)
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
+  const currentUser = useSelector(selectUser);
   const dispatch = useDispatch();
-  const { abilities } = userAccess()
-  
+  const { abilities } = userAccess();
+  const canManageDynamicPermissions = abilities.can('manage', 'users');
+
   useEffect(() => {
-    fbGetUsers(currentUser, setUsers)
-  }, [currentUser])
-  
-  const data = useMemo(() => users.map(({ user }) => ({
-      number: user.number,
-      name: user.name,
-      createAt: user.createAt,
-      role: user.role,
-      active: user.active ? "Activo" : "Inactivo",
-      user: user
-    })), [users]);
-  
-  const handleEditUser = (user) => {
+    fbGetUsers(currentUser, setUsers);
+  }, [currentUser]);
+
+  const data = useMemo(() => users.map(({ user }) => {
+    const name = user?.name || 'Usuario sin nombre';
+    const email = user?.email || user?.username || '';
+    const isActive = Boolean(user?.active);
+    const statusLabel = isActive ? 'Activo' : 'Inactivo';
+
+    return {
+      number: user?.number,
+      name: {
+        displayName: name,
+        email,
+      },
+      createAt: user?.createAt,
+      role: user?.role,
+      status: {
+        active: isActive,
+        label: statusLabel,
+      },
+      user,
+      searchText: `${name} ${email} ${statusLabel} ${getRoleLabelById(user?.role) ?? ''}`.toLowerCase(),
+    };
+  }), [users]);
+
+  const handleEditUser = useCallback((user) => {
     // Solo permitir editar si tiene permisos
     if (abilities.can('manage', 'User')) {
-      dispatch(updateUser(user))
-      dispatch(toggleSignUpUser({ isOpen: true, data: user }))
+      dispatch(updateUser(user));
+      dispatch(toggleSignUpUser({
+        isOpen: true,
+        data: user,
+        businessID: user?.businessID,
+      }));
     }
-  }
+  }, [abilities, dispatch]);
+
+  const openPasswordModal = useCallback((user) => {
+    setSelectedUser(user);
+    setIsPasswordModalOpen(true);
+  }, []);
+
+  const openStatusModal = useCallback((user) => {
+    setSelectedUser(user);
+    setIsStatusModalOpen(true);
+  }, []);
+
+  const openPermissionsModal = useCallback((user) => {
+    if (!canManageDynamicPermissions) return;
+    setSelectedUser(user);
+    setIsPermissionsModalOpen(true);
+  }, [canManageDynamicPermissions]);
+
+  const closePasswordModal = useCallback(() => {
+    setIsPasswordModalOpen(false);
+    setSelectedUser(null);
+  }, []);
+
+  const closeStatusModal = useCallback(() => {
+    setIsStatusModalOpen(false);
+    setSelectedUser(null);
+  }, []);
+
+  const closePermissionsModal = useCallback(() => {
+    setIsPermissionsModalOpen(false);
+    setSelectedUser(null);
+  }, []);
+
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        Header: '#',
+        accessor: 'number',
+        align: 'left',
+        maxWidth: '0.2fr',
+        minWidth: '60px',
+        cell: ({ value }) => (
+          <IndexBadge>
+            {value ?? '--'}
+          </IndexBadge>
+        ),
+      },
+      {
+        Header: 'Nombre',
+        accessor: 'name',
+        align: 'left',
+        maxWidth: '1fr',
+        minWidth: '150px',
+        cell: ({ value }) => (
+          <NameCell>
+            <NameContent>
+              <span className="name">{value?.displayName ?? 'Usuario sin nombre'}</span>
+              {value?.email && <span className="meta">{value.email}</span>}
+            </NameContent>
+          </NameCell>
+        ),
+      },
+      {
+        Header: 'Fecha de Creación',
+        accessor: 'createAt',
+        align: 'left',
+        maxWidth: '0.8fr',
+        cell: ({ value }) => {
+          if (!value?.seconds) {
+            return <span>Sin registro</span>;
+          }
+
+          const dateObject = DateTime.fromSeconds(value.seconds);
+
+          return (
+            <DateCell>
+              <span className="date">{dateObject.toLocaleString(DateTime.DATE_SHORT)}</span>
+            </DateCell>
+          );
+        },
+      },
+      {
+        Header: 'Rol',
+        accessor: 'role',
+        align: 'left',
+        cell: ({ value }) => {
+          const role = userRoles.find(r => r.id === value) || {};
+
+          return (
+            <Role
+              primaryColor={role.primaryColor}
+              secondaryColor={role.secondaryColor}
+            >
+              {getRoleLabelById(value)}
+            </Role>
+          );
+        },
+      },
+      {
+        Header: 'Estado',
+        accessor: 'status',
+        align: 'left',
+        description: '¿Esta Activo?',
+        maxWidth: '0.4fr',
+        minWidth: '100px',
+        cell: ({ value }) => {
+          const isActive = value?.active;
+          return (
+            <StatusPill $active={isActive}>
+              {value?.label ?? (isActive ? 'Activo' : 'Inactivo')}
+            </StatusPill>
+          );
+        },
+      },
+    ];
+
+    if (abilities.can('manage', 'User')) {
+      baseColumns.push({
+        Header: '',
+        accessor: 'user',
+        align: 'center',
+        maxWidth: '0.2fr',
+        minWidth: '50px',
+        fixed: 'right',
+        cell: ({ value }) => (
+          <ActionMenu
+            user={value}
+            onEdit={handleEditUser}
+            onChangePassword={openPasswordModal}
+            onToggleStatus={openStatusModal}
+            onManagePermissions={openPermissionsModal}
+            canManageDynamicPermissions={canManageDynamicPermissions}
+          />
+        ),
+      });
+    }
+
+    return baseColumns;
+  }, [abilities, canManageDynamicPermissions, handleEditUser, openPasswordModal, openPermissionsModal, openStatusModal]);
 
   // Solo mostrar la tabla si tiene permisos para ver usuarios
   if (!abilities.can('read', 'User') && !abilities.can('manage', 'User')) {
-    return <div>No tienes permisos para ver la lista de usuarios.</div>
+    return <div>No tienes permisos para ver la lista de usuarios.</div>;
   }
 
   return (
-    <AdvancedTable
-      tableName={'Usuarios'}
-      data={data}
-      columns={columns}
-      pagination={true}
-      searchTerm={searchTerm}
-      headerComponent={
-        <SearchBar>
-          <Input
-            allowClear
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Buscar usuarios..."
-          />
-        </SearchBar>
-      }
-      onRowClick={abilities.can('manage', 'User') ? (row) => handleEditUser(row.user) : undefined}
-    />
-  )
-}
+    <>
+      <AdvancedTable
+        tableName={'Usuarios'}
+        data={data}
+        columns={columns}
+        pagination={true}
+        searchTerm={searchTerm}
+        headerComponent={
+          <SearchBar>
+            <Input
+              allowClear
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar usuarios..."
+            />
+          </SearchBar>
+        }
+        onRowClick={abilities.can('manage', 'User') ? (row) => handleEditUser(row.user) : undefined}
+      />
 
+      <ChangeUserPasswordModal
+        isOpen={isPasswordModalOpen}
+        user={selectedUser}
+        onClose={closePasswordModal}
+      />
 
+      <ToggleUserStatusModal
+        isOpen={isStatusModalOpen}
+        user={selectedUser}
+        onClose={closeStatusModal}
+      />
 
+      {canManageDynamicPermissions && (
+        <DynamicPermissionsManager
+          userId={selectedUser?.id}
+          userName={selectedUser?.name || selectedUser?.realName || selectedUser?.username}
+          userRole={selectedUser?.role}
+          isOpen={isPermissionsModalOpen}
+          onClose={closePermissionsModal}
+        />
+      )}
+    </>
+  );
+};
+
+const ActionMenu = ({
+  user,
+  onEdit,
+  onChangePassword,
+  onToggleStatus,
+  onManagePermissions,
+  canManageDynamicPermissions,
+}) => {
+  const isActive = Boolean(user?.active);
+
+  const hasDynamicPermissions = useMemo(() => (
+    getAvailablePermissionsForRole(user?.role)?.length > 0
+  ), [user?.role]);
+
+  const items = useMemo(() => {
+    const menuItems = [
+      {
+        key: 'edit',
+        icon: <EditOutlined />,
+        label: 'Editar usuario',
+        onClick: ({ domEvent }) => {
+          domEvent?.stopPropagation();
+          onEdit?.(user);
+        },
+      },
+      {
+        key: 'password',
+        icon: <KeyOutlined />,
+        label: 'Cambiar contraseña',
+        onClick: ({ domEvent }) => {
+          domEvent?.stopPropagation();
+          onChangePassword?.(user);
+        },
+      },
+      {
+        key: 'toggle',
+        icon: isActive ? <StopOutlined /> : <CheckCircleOutlined />,
+        label: isActive ? 'Desactivar usuario' : 'Activar usuario',
+        onClick: ({ domEvent }) => {
+          domEvent?.stopPropagation();
+          onToggleStatus?.(user);
+        },
+      },
+    ];
+
+    if (canManageDynamicPermissions && hasDynamicPermissions) {
+      menuItems.splice(1, 0, {
+        key: 'permissions',
+        icon: <SettingOutlined />,
+        label: 'Permisos dinámicos',
+        onClick: ({ domEvent }) => {
+          domEvent?.stopPropagation();
+          onManagePermissions?.(user);
+        },
+      });
+    }
+
+    return menuItems;
+  }, [
+    canManageDynamicPermissions,
+    hasDynamicPermissions,
+    isActive,
+    onChangePassword,
+    onEdit,
+    onManagePermissions,
+    onToggleStatus,
+    user,
+  ]);
+
+  return (
+    <Dropdown
+      menu={{ items }}
+      trigger={['click']}
+      placement="bottomRight"
+    >
+      <ActionButton
+        type="text"
+        shape="circle"
+        icon={<MoreOutlined />}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        aria-label="Acciones"
+      />
+    </Dropdown>
+  );
+};
 
 const SearchBar = styled.div`
   padding: 0.5em 1em;
@@ -264,6 +437,10 @@ const SearchBar = styled.div`
     width: 100%;
     max-width: 320px;
   }
+`;
+
+const ActionButton = styled(Button)`
+  color: ${({ theme }) => theme?.text?.primary ?? '#111827'};
 `;
 
 export default UserList;

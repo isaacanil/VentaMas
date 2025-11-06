@@ -703,10 +703,31 @@ export const clientSignUp = onCall(async ({ data }) => {
   const id = nanoid(10);
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  const counterRef = db.doc(`businesses/${businessID}/counters/users`);
+  const nextSequentialNumber = await db.runTransaction(async (transaction) => {
+    const counterSnap = await transaction.get(counterRef);
+    const currentValue = counterSnap.exists && typeof counterSnap.get('value') === 'number'
+      ? counterSnap.get('value')
+      : 0;
+    const updatedValue = currentValue + 1;
+
+    transaction.set(
+      counterRef,
+      {
+        value: updatedValue,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return updatedValue;
+  });
+
   const payload = {
     ...userData,
     id,
     name: normalizedName,
+    number: nextSequentialNumber,
     password: hashedPassword,
     active: true,
     createAt: Timestamp.now(),
