@@ -1,8 +1,15 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import type { JSX } from 'react';
 import styled from 'styled-components';
 
-export const GreetingMessage = ({ greetingText, nameToDisplay }) => {
+type GreetingMessageProps = {
+  greetingText: string;
+  nameToDisplay: string;
+};
+
+export const GreetingMessage = ({
+  greetingText,
+  nameToDisplay,
+}: GreetingMessageProps): JSX.Element => {
   return (
     <TextContainer>
       <StyledGreeting>
@@ -10,11 +17,6 @@ export const GreetingMessage = ({ greetingText, nameToDisplay }) => {
       </StyledGreeting>
     </TextContainer>
   );
-};
-
-GreetingMessage.propTypes = {
-  greetingText: PropTypes.string.isRequired,
-  nameToDisplay: PropTypes.string.isRequired,
 };
 
 const TextContainer = styled.div`

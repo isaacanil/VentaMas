@@ -70,6 +70,7 @@ const INVENTORY_TERM = {
     EDIT_WAREHOUSE: `${INVENTORY_BASE_PATH}/warehouses/edit/:id`,
     INVENTORY_SERVICES: '/inventory/services',
     PRODUCT_IMAGES_MANAGER: '/inventory/product-images-manager',
+    PRODUCT_STUDIO: '/inventory/product-studio',
     PRODUCT_OUTFLOW: '/inventory/product_outflow',
     SERVICE_OUTFLOW: '/inventory/service_outflow',
     INVENTORY_MOVEMENTS: '/inventory/movements',

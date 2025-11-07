@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
-
 import { Alert, Button, Input, Space, Tabs, Typography, message } from 'antd';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import SessionTokensCleanup from './test/pages/sessionTokensCleanup/SessionTokensCleanup';
-import { normalizeAllBusinessesProductTaxes } from '../../../firebase/products/fbNormalizeAllBusinessesProductTaxes';
+
+import { selectUser } from '../../../features/auth/userSlice';
 import { fbNormalizeAllBusinessesClients } from '../../../firebase/client/fbNormalizeAllBusinessesClients';
 import { fbFixMissingProductIds } from '../../../firebase/products/fbFixMissingProductIds';
-import { selectUser } from '../../../features/auth/userSlice';
+import { normalizeAllBusinessesProductTaxes } from '../../../firebase/products/fbNormalizeAllBusinessesProductTaxes';
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
+
+import SessionTokensCleanup from './test/pages/sessionTokensCleanup/SessionTokensCleanup';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -273,7 +274,72 @@ export default function TestPlayground() {
     }));
   };
 
+  const maintenanceToolsPanel = (
+    <Space
+      direction="vertical"
+      size="middle"
+      style={{ width: '100%' }}
+    >
+      <Space size="middle" wrap>
+        <Button type="primary" onClick={handleNormalizeTaxes} loading={normalizing}>
+          Normalizar ITBIS para todos los negocios
+        </Button>
+        {progress && (
+          <Text type="secondary">
+            Procesando negocio {progress.processed}/{progress.total}
+            {progress.businessID ? ` · Último: ${progress.businessID}` : ''}
+          </Text>
+        )}
+      </Space>
+      {renderResult()}
+      <Space size="middle" wrap>
+        <Button
+          onClick={handleNormalizeClients}
+          loading={clientNormalizationState.running}
+        >
+          Normalizar clientes (estructura/pendingBalance)
+        </Button>
+        {clientNormalizationState.progress && (
+          <Text type="secondary">
+            Procesando negocio {clientNormalizationState.progress.processed}/
+            {clientNormalizationState.progress.total}
+            {clientNormalizationState.progress.businessID
+              ? ` · Último: ${clientNormalizationState.progress.businessID}`
+              : ''}
+            {clientNormalizationState.progress.normalized !== null
+              ? ` · Ajustados: ${clientNormalizationState.progress.normalized}`
+              : ''}
+          </Text>
+        )}
+      </Space>
+      {renderClientNormalizationResult()}
+      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Text strong>Corregir campo `id` en productos</Text>
+        <Space size="middle" wrap>
+          <Input
+            placeholder="businessID"
+            value={productIdFixState.businessId}
+            onChange={handleBusinessIdChange}
+            style={{ minWidth: 260 }}
+          />
+          <Button
+            onClick={handleFixProductIds}
+            loading={productIdFixState.running}
+          >
+            Asignar IDs faltantes
+          </Button>
+        </Space>
+        {renderProductFixResult()}
+      </Space>
+    </Space>
+  );
+
   const tabItems = [
+    {
+      key: 'maintenance-tools',
+      label: 'Herramientas de normalización',
+      children: maintenanceToolsPanel,
+    },
     {
       key: 'session-token-cleanup',
       label: 'SessionTokens',
@@ -304,64 +370,11 @@ export default function TestPlayground() {
           }
           style={{ marginBottom: 24 }}
         />
-        <Space
-          direction="vertical"
-          size="middle"
-          style={{ marginBottom: 24, width: '100%' }}
-        >
-          <Space size="middle" wrap>
-            <Button type="primary" onClick={handleNormalizeTaxes} loading={normalizing}>
-              Normalizar ITBIS para todos los negocios
-            </Button>
-            {progress && (
-              <Text type="secondary">
-                Procesando negocio {progress.processed}/{progress.total}
-                {progress.businessID ? ` · Último: ${progress.businessID}` : ''}
-              </Text>
-            )}
-          </Space>
-          {renderResult()}
-          <Space size="middle" wrap>
-            <Button
-              onClick={handleNormalizeClients}
-              loading={clientNormalizationState.running}
-            >
-              Normalizar clientes (estructura/pendingBalance)
-            </Button>
-            {clientNormalizationState.progress && (
-              <Text type="secondary">
-                Procesando negocio {clientNormalizationState.progress.processed}/
-                {clientNormalizationState.progress.total}
-                {clientNormalizationState.progress.businessID
-                  ? ` · Último: ${clientNormalizationState.progress.businessID}`
-                  : ''}
-                {clientNormalizationState.progress.normalized !== null
-                  ? ` · Ajustados: ${clientNormalizationState.progress.normalized}`
-                  : ''}
-              </Text>
-            )}
-          </Space>
-          {renderClientNormalizationResult()}
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            <Text strong>Corregir campo `id` en productos</Text>
-            <Space size="middle" wrap>
-              <Input
-                placeholder="businessID"
-                value={productIdFixState.businessId}
-                onChange={handleBusinessIdChange}
-                style={{ minWidth: 260 }}
-              />
-              <Button
-                onClick={handleFixProductIds}
-                loading={productIdFixState.running}
-              >
-                Asignar IDs faltantes
-              </Button>
-            </Space>
-            {renderProductFixResult()}
-          </Space>
-        </Space>
-        <Tabs defaultActiveKey="session-token-cleanup" items={tabItems} destroyInactiveTabPane={false} />
+        <Tabs
+          defaultActiveKey="maintenance-tools"
+          items={tabItems}
+          destroyInactiveTabPane={false}
+        />
       </div>
     </>
   );

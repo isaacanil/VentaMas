@@ -9,9 +9,9 @@ import { openBrandModal } from '../../../../../../features/productBrands/product
 import { PRODUCT_BRAND_DEFAULT, PRODUCT_ITEM_TYPE_OPTIONS } from '../../../../../../features/updateProduct/updateProductSlice'
 import { useFbGetCategories } from '../../../../../../firebase/categories/useFbGetCategories'
 import { useListenActiveIngredients } from '../../../../../../firebase/products/activeIngredient/activeIngredients'
+import { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../../constants/brandOptions';
 
-export const BRAND_DEFAULT_OPTION_VALUE = '__brand_option_default__';
-export const BRAND_LEGACY_OPTION_VALUE = '__brand_option_legacy__';
+export { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE };
 
 export const ProductInfo = ({ product, productBrands = [] }) => {
     const dispatch = useDispatch();

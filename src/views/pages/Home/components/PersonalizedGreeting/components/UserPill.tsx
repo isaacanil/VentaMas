@@ -1,9 +1,12 @@
 // UserPill component - displays user name in a pill style
-import PropTypes from 'prop-types';
-import React from 'react';
+import type { JSX } from 'react';
 import styled from 'styled-components';
 
-export const UserPill = ({ userName }) => {
+type UserPillProps = {
+  userName: string;
+};
+
+export const UserPill = ({ userName }: UserPillProps): JSX.Element => {
   return (
     <UserPillContainer>
       <UserIcon>
@@ -14,10 +17,6 @@ export const UserPill = ({ userName }) => {
       <UserText>{userName}</UserText>
     </UserPillContainer>
   );
-};
-
-UserPill.propTypes = {
-  userName: PropTypes.string.isRequired,
 };
 
 const UserPillContainer = styled.div`

@@ -1,13 +1,12 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import type { JSX } from 'react';
 import styled from 'styled-components';
 
-export const BusinessName = ({ businessName }) => {
-  return <StyledBusinessName>{businessName || 'Tu Negocio'}</StyledBusinessName>;
+type BusinessNameProps = {
+  businessName?: string | null;
 };
 
-BusinessName.propTypes = {
-  businessName: PropTypes.string,
+export const BusinessName = ({ businessName }: BusinessNameProps): JSX.Element => {
+  return <StyledBusinessName>{businessName || 'Tu Negocio'}</StyledBusinessName>;
 };
 
 const StyledBusinessName = styled.h2`

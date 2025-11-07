@@ -1,9 +1,13 @@
 // BusinessPill component - combines logo and business name
-import PropTypes from 'prop-types';
-import React from 'react';
+import type { JSX } from 'react';
 import styled from 'styled-components';
 
-export const BusinessPill = ({ logoUrl, businessName }) => {
+type BusinessPillProps = {
+  logoUrl?: string | null;
+  businessName?: string | null;
+};
+
+export const BusinessPill = ({ logoUrl, businessName }: BusinessPillProps): JSX.Element => {
   return (
     <BusinessPillContainer>
       {logoUrl && (
@@ -14,11 +18,6 @@ export const BusinessPill = ({ logoUrl, businessName }) => {
       <BusinessNameText>{businessName || 'Tu Negocio'}</BusinessNameText>
     </BusinessPillContainer>
   );
-};
-
-BusinessPill.propTypes = {
-  logoUrl: PropTypes.string,
-  businessName: PropTypes.string,
 };
 
 const BusinessPillContainer = styled.div`

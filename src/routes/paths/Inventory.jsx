@@ -1,5 +1,6 @@
 import ProductView from "../../views/component/modals/Product/ProductView";
 import { CategoryAdmin } from "../../views/pages/Category/CategoryAdmin";
+import ProductStudio from "../../views/pages/DevTools/ProductStudio/ProductStudio";
 import { Inventory } from "../../views/pages/Inventario/pages/ItemsManager/Inventario";
 import { MultimediaManager } from "../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager";
 import { ProductOutflow } from "../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow";
@@ -28,6 +29,7 @@ const {
     INVENTORY_CONTROL_SESSION,
     PRODUCT_IMAGES_MANAGER,
     PRODUCT_OUTFLOW,
+    PRODUCT_STUDIO,
     CREATE_PRODUCT,
     PRODUCT,
     WAREHOUSES,
@@ -93,6 +95,10 @@ const Routes = [
     {
         path: PRODUCT_OUTFLOW,
         element: <ProductOutflow />,
+    },
+    {
+        path: PRODUCT_STUDIO,
+        element: <ProductStudio />,
     },
     {
         path: CREATE_PRODUCT,
