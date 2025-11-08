@@ -1,12 +1,10 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-
 
 import { selectUser } from '../../../features/auth/userSlice';
 import { addItem, deleteAllItems, SelectCategoryList, SelectCategoryState } from '../../../features/category/categorySlicer';
 import { useGetFavoriteProductCategories } from '../../../firebase/categories/fbGetFavoriteProductCategories';
-import { fbRemoveFavoriteProductCategory } from '../../../firebase/categories/fbRemoveFavoriteProductCategory';
 import { fbToggleFavoriteProductCategory } from '../../../firebase/categories/fbToggleFavoriteProductCategory';
 import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
 import { useListenActiveIngredients } from '../../../firebase/products/activeIngredient/activeIngredients';
@@ -16,28 +14,21 @@ import { filterFavoriteProductCategories } from '../../../utils/data/products/ca
 import { CategoryBar } from './components/CategoryBar/CategoryBar';
 import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
 
-export const CategorySelector = ({ }) => {
+export const CategorySelector = () => {
   const dispatch = useDispatch()
   const user = useSelector(selectUser)
   const { categories } = useFbGetCategories()
   const favoriteProductCategoryArray = useGetFavoriteProductCategories(user)
   const categoriesSelected = useSelector(SelectCategoryList)
   const favoriteCategories = filterFavoriteProductCategories(categories, favoriteProductCategoryArray.favoriteCategories)
-  const { data: activeIngredients, loading } = useListenActiveIngredients()
+  const { data: activeIngredients = [] } = useListenActiveIngredients()
   const { items } = useSelector(SelectCategoryState)
   const handleToggleCategoryFavorite = async (category) => {
     await fbToggleFavoriteProductCategory(user, category)
   }
-  const handleDeleteFavorite = async (category) => {
-    try {
-      await fbRemoveFavoriteProductCategory(user, category.id)
-    } catch (error) {
-      console.error('Error al eliminar categoría de favoritos: ', error)
-    }
-  }
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
-  useClickOutSide(containerRef, open == true, () => setOpen(false));
+  useClickOutSide(containerRef, open === true, () => setOpen(false));
 
   function transformCategoriesToItems(categories) {
     return categories.map(item => {

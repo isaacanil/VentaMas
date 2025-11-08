@@ -188,7 +188,7 @@ const modalSlice = createSlice({
             }
 
         },
-        toggleAddProductOutflow: (state, actions) => {
+        toggleAddProductOutflow: (state, _actions) => {
             const isOpen = state.modalToggleAddProductOutflow.isOpen;
             state.modalToggleAddProductOutflow.isOpen = !isOpen;
         },
@@ -217,7 +217,7 @@ const modalSlice = createSlice({
                 return
             }
         },
-        toggleConfirmOpenCashReconciliation: (state, action) => {
+        toggleConfirmOpenCashReconciliation: (state, _action) => {
             const isOpen = state.modalConfirmOpenCashReconciliation.isOpen;
             state.modalConfirmOpenCashReconciliation.isOpen = !isOpen;
         },

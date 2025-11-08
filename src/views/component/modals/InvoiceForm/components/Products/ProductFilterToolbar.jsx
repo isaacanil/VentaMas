@@ -1,8 +1,8 @@
+import { faMagnifyingGlass, faArrowUpLong, faArrowDownLong } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Select } from 'antd';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { Select } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass, faArrowUpLong, faArrowDownLong } from '@fortawesome/free-solid-svg-icons';
 
 export const ProductFilterToolbar = ({
   searchTerm,

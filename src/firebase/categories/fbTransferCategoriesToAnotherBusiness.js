@@ -12,7 +12,7 @@ export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, busines
 
     // Dividir las categorías en lotes de 500
     const batchSize = 500;
-    let batchCount = 0;
+    let _batchCount = 0;
     for (let i = 0; i < totalCategories; i += batchSize) {
         const batch = writeBatch(db);
         querySnapshot.docs.slice(i, i + batchSize).forEach(docSnapshot => {
@@ -28,6 +28,6 @@ export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, busines
         });
 
         await batch.commit();
-        batchCount++;
+        _batchCount++;
     }
 };

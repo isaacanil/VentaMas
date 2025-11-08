@@ -79,7 +79,6 @@ export function buildHeader(biz, d, images) {
     if (images.logo) {
       rows.push([{
         image: 'logo',
-        width: 120,
         margin: [0, 0, 0, 8],
         colSpan: 2,
         width: 200,

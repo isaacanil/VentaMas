@@ -1,18 +1,14 @@
-import React from 'react';
 import {
+    CalendarOutlined,
     CheckCircleOutlined,
     ClockCircleOutlined,
     CloseCircleOutlined,
     SyncOutlined,
-    PlusCircleOutlined,
-    EditOutlined,
-    DeleteOutlined,
-    CalendarOutlined,
     WarningOutlined
 } from '@ant-design/icons';
 import { Tooltip } from 'antd';
-import { Badge } from '../views/component/Badge/Badge';
 import dayjs from 'dayjs';
+import React from 'react';
 
 export interface ConfigItem {
     color: string;
@@ -26,7 +22,7 @@ type ConfigSection = {
     default: ConfigItem;
 };
 
-const CONFIG: Record<string, ConfigSection> = {
+const CONFIG: Record<'statuses' | 'dates', ConfigSection> = {
     statuses: {
         completed: {
             color: '#52c41a',
@@ -55,28 +51,6 @@ const CONFIG: Record<string, ConfigSection> = {
         default: {
             color: '#8c8c8c',
             bgColor: '#fafafa',
-            icon: null,
-            text: 'Desconocido',
-        },
-    },
-    actions: {
-        create: {
-            color: '#389e0d',
-            icon: <PlusCircleOutlined />,
-            text: 'Crear',
-        },
-        update: {
-            color: '#096dd9',
-            icon: <EditOutlined />,
-            text: 'Actualizar',
-        },
-        delete: {
-            color: '#cf1322',
-            icon: <DeleteOutlined />,
-            text: 'Eliminar',
-        },
-        default: {
-            color: '#8c8c8c',
             icon: null,
             text: 'Desconocido',
         },
@@ -130,14 +104,16 @@ const CONFIG: Record<string, ConfigSection> = {
 // Función genérica para obtener configuraciones
 function getConfigItem(type: keyof typeof CONFIG, key: string): ConfigItem {
     const config = CONFIG[type];
-    return (config[key as keyof typeof config] || config.default) as ConfigItem;
+    return config[key as keyof ConfigSection] ?? config.default;
 }
 
 export const getStatusConfig = (status: string) => getConfigItem('statuses', status);
-export const getActionConfig = (action: string) => getConfigItem('actions', action);
 export const getDateStatusConfig = (status: string) => getConfigItem('dates', status);
 
-export const getDateStatus = (date, statuses = ['overdue', 'today', 'warning', 'upcoming', 'onTime']) => {
+export const getDateStatus = (
+    date: dayjs.ConfigType,
+    statuses: Array<'overdue' | 'today' | 'warning' | 'upcoming' | 'onTime'> = ['overdue', 'today', 'warning', 'upcoming', 'onTime']
+) => {
     if (!date) return { status: 'invalid', text: 'Sin fecha' };
 
     const today = dayjs();

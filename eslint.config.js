@@ -13,6 +13,7 @@ export default [
     "node_modules/**",
     "dist/**",
     "build/**",
+    "functions/**",
     "functions/lib/**",
     "**/.vite/**",
     "coverage/**",
@@ -61,7 +62,7 @@ export default [
       ],
 
       // === import/order útil en Vite ===
-      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/"] }],
+      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/", "^storybook/test$"] }],
       "import/order": ["warn", {
         groups: ["builtin","external","internal","parent","sibling","index","object","type"],
         "newlines-between": "always",
@@ -134,7 +135,7 @@ export default [
       ],
 
       // Import helpers
-      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/"] }],
+      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/", "^storybook/test$"] }],
       "import/order": ["warn", {
         groups: ["builtin","external","internal","parent","sibling","index","object","type"],
         "newlines-between": "always",
@@ -160,10 +161,9 @@ export default [
     rules: { "import/no-unresolved": "off" }
   },
 
-  // Código de Cloud Functions / scripts Node
+  // Scripts Node locales
   {
     files: [
-      "functions/**/*.{js,mjs,cjs}",
       "controller.js",
       "setCors.js"
     ],

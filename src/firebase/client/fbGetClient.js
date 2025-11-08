@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '../firebaseconfig';
+
 import { extractNormalizedClient } from './clientNormalizer';
 
 

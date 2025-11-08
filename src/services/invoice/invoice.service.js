@@ -293,13 +293,16 @@ export const waitForInvoiceResult = async ({
 
     const startedAt = Date.now();
     let lastSnapshot = null;
+    const MAX_RETRIES = 10;
+    let retryCount = 0;
 
-    while (true) {
+    while (retryCount < MAX_RETRIES) {
         if (signal?.aborted) {
             throw new DOMException("La consulta de factura fue cancelada", "AbortError");
         }
 
         const invoiceSnap = await getDoc(invoiceRef);
+        retryCount++;
         const invoiceData = invoiceSnap.exists() ? invoiceSnap.data() : null;
         if (invoiceData) {
             lastSnapshot = invoiceData;

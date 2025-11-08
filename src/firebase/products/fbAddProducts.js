@@ -36,7 +36,7 @@ class ImportProgress {
   logProgress() {
     const { processedProducts, totalProducts } = this.stats;
     if (totalProducts > 0) {
-      const percentage = Math.round((processedProducts / totalProducts) * 100);
+      const _percentage = Math.round((processedProducts / totalProducts) * 100);
               // Processing products
     }
   }

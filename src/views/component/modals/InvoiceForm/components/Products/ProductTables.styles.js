@@ -1,5 +1,5 @@
-import styled from 'styled-components';
 import { Table as AntTable } from 'antd';
+import styled from 'styled-components';
 
 export const StyledProductTable = styled(AntTable)`
   background: #ffffff;

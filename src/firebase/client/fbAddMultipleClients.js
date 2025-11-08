@@ -2,8 +2,8 @@ import { doc, writeBatch } from "firebase/firestore";
 
 import { db } from "../firebaseconfig";
 
-import { clients } from "./clients"
 import { buildClientWritePayload } from "./clientNormalizer";
+import { clients } from "./clients"
 
 export const fbAAddMultipleClients = (user) => {
     if(!user || !user.businessID) return;

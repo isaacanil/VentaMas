@@ -1,11 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-
 import abilitiesReducer from "../features/abilities/abilitiesSlice";
 import accountsReceivablePaymentReducer from "../features/accountsReceivable/accountsReceivablePaymentSlice";
 import accountsReceivableReducer from "../features/accountsReceivable/accountsReceivableSlice";
 import activeIngredientsReducer from "../features/activeIngredients/activeIngredientsSlice";
-import productBrandReducer from "../features/productBrands/productBrandSlice";
 import addOrderReducer from "../features/addOrder/addOrderSlice";
 import alertReducer from "../features/Alert/AlertSlice";
 import appReducer from "../features/appModes/appModeSlice";
@@ -40,8 +38,13 @@ import navigationReducer from '../features/navigation/navigationSlice'
 import noteModalReducer from "../features/noteModal/noteModalSlice";
 import notificationCenterReducer from "../features/notification/notificationCenterSlice";
 import notificationReducer from "../features/notification/notificationSlice";
+import productBrandReducer from "../features/productBrands/productBrandSlice";
 import productOutflowReducer from "../features/productOutflow/productOutflow";
+import deleteProductStockReducer from '../features/productStock/deleteProductStockSlice';
+import productStockSimpleReducer from '../features/productStock/productStockSimpleSlice';
+import productStockReducer from "../features/productStock/productStockSlice";
 import productWeightEntryModalSlice from "../features/productWeightEntryModalSlice/productWeightEntryModalSlice";
+import * as purchaseSlices from '../features/purchase';
 import searchReducer from '../features/search/searchSlice';
 import settingReducer from '../features/setting/settingSlice';
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
@@ -50,16 +53,12 @@ import updateProductReducer from "../features/updateProduct/updateProductSlice";
 import uploadImgReducer from "../features/uploadImg/uploadImageSlice";
 import UserNotificationReducer from "../features/UserNotification/UserNotificationSlice";
 import usersManagementSlice from "../features/usersManagement/usersManagementSlice";
-import * as purchaseSlices from '../features/purchase';
 import productExpirySelectorReducer from "../features/warehouse/productExpirySelectionSlice";
 import rowShelfModalReducer from "../features/warehouse/rowShelfModalSlice";
 import segmentModalReducer from "../features/warehouse/segmentModalSlice";
 import shelfModalReducer from "../features/warehouse/shelfModalSlice";
 import warehouseModalReducer from "../features/warehouse/warehouseModalSlice";
 import warehouseReducer from "../features/warehouse/warehouseSlice";
-import productStockReducer from "../features/productStock/productStockSlice";
-import productStockSimpleReducer from '../features/productStock/productStockSimpleSlice';
-import deleteProductStockReducer from '../features/productStock/deleteProductStockSlice';
 
 import { totalsListener } from "./middleware/cartTotalsListener";
 

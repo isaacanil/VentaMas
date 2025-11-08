@@ -1,7 +1,7 @@
 import { collection, doc, setDoc } from "firebase/firestore";
 
-import { db } from "../../../firebase/firebaseconfig";
 import { buildClientWritePayload, extractNormalizedClient } from "../../../firebase/client/clientNormalizer";
+import { db } from "../../../firebase/firebaseconfig";
 
 export async function fbAddMultiClients(user, clientsData) {
     if (!user || !user?.businessID) {

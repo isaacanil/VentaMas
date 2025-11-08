@@ -2,7 +2,7 @@ export function isValidURL(str) {
     try {
       new URL(str);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }

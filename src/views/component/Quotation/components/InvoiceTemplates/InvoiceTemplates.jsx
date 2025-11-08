@@ -5,7 +5,7 @@ import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
-import { Invoice } from '../Invoice/Invoice';
+import { Quotation } from '../Quotation/Quotation';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 
 
@@ -77,7 +77,7 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
   const renderInvoice = (ref) => (
     <PreviewContainer template={selectedTemplate}>
       <InvoiceContainer template={selectedTemplate}>
-        <Invoice
+        <Quotation
           ref={ref}
           template={selectedTemplate}
           data={{}}

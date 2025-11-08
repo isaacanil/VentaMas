@@ -57,7 +57,7 @@ export const useInitializeBillingSettings = () => {
                 isLoading: false,
                 isError: false
             }));
-        }, (error) => {
+        }, (_error) => {
             dispatch(setBillingSettings({
                 billingMode: null,
                 isLoading: false,

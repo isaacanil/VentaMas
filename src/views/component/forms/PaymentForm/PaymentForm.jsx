@@ -10,9 +10,9 @@ import { selectClient } from "../../../../features/clientCart/clientCartSlice";
 import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
 import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
 import { AccountsReceivablePaymentReceipt } from "../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt";
-import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
 import CreditSelector from "../../../pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
 import { Modal, modalStyles } from "../../../pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel";
+import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
 
 import { PaymentFields } from "./components/PaymentFields";
 

@@ -49,11 +49,11 @@ import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
 import { CreditNoteModal } from "./CreditNoteModal/CreditNoteModal"
 import { SetCustomProduct } from "./CustomProduct/setCustomProduct/SetCustomProduct"
 import { FileListModal } from "./FileListModal/FileListModal"
+import ProductBrandModal from "./ProductBrands/ProductBrandModal"
 import ProductExpirySelection from "./ProductExpirySelection/ProductExpirySelection"
 import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
 import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
 import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
-import ProductBrandModal from "./ProductBrands/ProductBrandModal"
 
 
 

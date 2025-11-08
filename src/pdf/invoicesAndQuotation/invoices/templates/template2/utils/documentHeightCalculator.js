@@ -1,4 +1,5 @@
 import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
+
 import { measurePreciseTextBlock } from './textMeasurement.js';
 
 // src/utils/documentHeightCalculator.js
@@ -254,7 +255,7 @@ export function calcFooterHeight(biz, d) {
 
 // Funciones auxiliares para mejorar la precisión
 
-function shouldShowClientBlock(d) {
+function _shouldShowClientBlock(d) {
   return Boolean(buildClientLines(d));
 }
 

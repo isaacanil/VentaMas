@@ -7,7 +7,7 @@ export function buildFooter(d) {
   const hasIndividualDisc = hasIndividualDiscounts(d.products || []);
   const generalDiscount = hasIndividualDisc ? 0 : getDiscount(d);
 
-  return (current, total) => ({
+  return (_current, _total) => ({
     margin: [40, 0, 40, 0],
     columns: [
       { width: '*', text: '' },

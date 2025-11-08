@@ -1,10 +1,9 @@
-import { Alert, Badge, Tag, Typography } from 'antd'
 import { ClockCircleOutlined } from '@ant-design/icons'
+import { Alert, Tag } from 'antd'
 import { DateTime, Duration, } from 'luxon';
 import { useEffect, useState } from 'react'
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 
 export const InvoiceInfoExtras = ({ invoice }) => {
   const [remainingCancelationTime, setRemainingCancelationTime] = useState(0);

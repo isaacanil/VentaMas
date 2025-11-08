@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { doc, getDoc } from "firebase/firestore";
 import { useSelector } from "react-redux";
 

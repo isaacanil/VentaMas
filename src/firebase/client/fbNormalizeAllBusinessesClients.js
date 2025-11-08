@@ -1,6 +1,7 @@
 import { collection, getDocs } from 'firebase/firestore';
 
 import { db } from '../firebaseconfig';
+
 import { fbNormalizeClients } from './fbNormalizeClients';
 
 /**

@@ -6,8 +6,9 @@ import styled from 'styled-components';
 
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../../features/auth/userSlice';
-import InvoiceTemplates from '../../../Invoice/components/InvoiceTemplates/InvoiceTemplates';
 import { fbUpdateInvoiceMessage } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
+import InvoiceTemplates from '../../../Invoice/components/InvoiceTemplates/InvoiceTemplates';
+
 import DueDateConfig from './DueDateConfig';
 
 const ConfigItem = styled.div`

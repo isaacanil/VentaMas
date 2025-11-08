@@ -25,15 +25,12 @@ export const fbAddProduct = (data, user) => {
         id: nanoid(10)
     }
 
-    return new Promise(async (resolve, reject) => {
-        try {
-            await runTransaction(db, async (transaction) => {
+    return runTransaction(db, async (transaction) => {
+        const defaultWarehouse = await getDefaultWarehouse(user, transaction);
+        if (!defaultWarehouse?.id) throw new Error("No se pudo obtener almacén predeterminado");
 
-                const defaultWarehouse = await getDefaultWarehouse(user, transaction);
-                if (!defaultWarehouse?.id) throw new Error("No se pudo obtener almacén predeterminado");
-
-                const batchNumber = await getNextID(user, "batches", 1, transaction);
-                if (!batchNumber) throw new Error("Error al generar número de lote");
+        const batchNumber = await getNextID(user, "batches", 1, transaction);
+        if (!batchNumber) throw new Error("Error al generar número de lote");
 
                 const productRef = doc(db, "businesses", user.businessID, "products", product.id);
                 transaction.set(productRef, product);
@@ -86,11 +83,9 @@ export const fbAddProduct = (data, user) => {
 
                 const movementRef = doc(db, "businesses", user.businessID, "movements", movement.id);
                 transaction.set(movementRef, movement);
+            })
+            .catch(error => {
+                console.error('Error en fbAddProduct:', error);
+                throw error;
             });
-            resolve();
-        } catch (error) {
-            console.error('Error en fbAddProduct:', error); // Más descriptivo
-            reject(error);
-        }
-    });
 }

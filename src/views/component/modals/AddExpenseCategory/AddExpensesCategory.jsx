@@ -8,7 +8,7 @@ import { toggleAddCategory } from '../../../../features/modals/modalSlice';
 import { addNotification } from '../../../../features/notification/notificationSlice';
 import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
 import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
-import { InputV4 } from '../../../templates/system/Inputs/InputV4';
+import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
 
 
 const OverlayVariants = {

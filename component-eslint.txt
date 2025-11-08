@@ -1,0 +1,739 @@
+
+/home/jonat/Documentos/VentaMas/src/views/component/Badge/BadgeDate.tsx
+   4:1   warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `luxon`   import/order
+   5:1   warning  There should be at least one empty line between import groups                      import/order
+   5:1   warning  `@fortawesome/react-fontawesome` import should occur before import of `luxon`      import/order
+  91:34  error    This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
+  94:29  error    This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
+  94:48  error    This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
+  96:31  error    This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
+
+/home/jonat/Documentos/VentaMas/src/views/component/Badge/BadgeDateStatus.tsx
+  1:1   warning  There should be at least one empty line between import groups                                                   import/order
+  2:1   warning  There should be at least one empty line between import groups                                                   import/order
+  3:1   warning  There should be at least one empty line between import groups                                                   import/order
+  4:1   warning  There should be at least one empty line between import groups                                                   import/order
+  4:1   warning  `../../../utils/date/dateUtils` import should occur before type import of `../../../config/statusActionConfig`  import/order
+  5:1   warning  There should be at least one empty line between import groups                                                   import/order
+  5:1   warning  `./BadgeDate` import should occur before type import of `../../../config/statusActionConfig`                    import/order
+  6:1   warning  `luxon` import should occur before import of `react`                                                            import/order
+  6:10  error    'DateTime' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+  6:10  error    'DateTime' is defined but never used                                                                            unused-imports/no-unused-imports
+
+/home/jonat/Documentos/VentaMas/src/views/component/Badge/StatusBadge.tsx
+  1:1  warning  There should be at least one empty line between import groups  import/order
+  2:1  warning  There should be at least one empty line between import groups  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/Carrusel/Category.jsx
+  27:11  warning  'effectCategory' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  39:23  warning  'e' is defined but never used. Allowed unused args must match /^_/u                        unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/CategorySelector/components/DropdownMenu/Category.jsx
+  16:12  warning  'isHover' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/CategorySelector/components/DropdownMenu/DropdownMenu.jsx
+  12:29  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/ControlSearchProduct/ControlSearchProduct.jsx
+   6:40  warning  'searchData' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+   6:52  warning  'setSearchData' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  15:29  error    'Carrucel' is not defined                                                        react/jsx-no-undef
+
+/home/jonat/Documentos/VentaMas/src/views/component/ControlSearchProduct/SearchList.jsx
+  9:20  warning  'setProduct' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/EvidenceUpload/FileList.jsx
+  27:7  warning  'FileType' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/EvidenceUpload/ImageLightbox.jsx
+   4:22  error    Unable to resolve path to module 'yet-another-react-lightbox/plugins/captions'      import/no-unresolved
+   5:24  error    Unable to resolve path to module 'yet-another-react-lightbox/plugins/thumbnails'    import/no-unresolved
+   6:18  error    Unable to resolve path to module 'yet-another-react-lightbox/plugins/zoom'          import/no-unresolved
+  11:72  warning  'setLightboxIndex' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/EvidenceUpload/PreviewContent.jsx
+  105:13  error  Invalid property 'onLoad' found on tag 'embed', but it is only allowed on: script, img, link, picture, iframe, object, source         react/no-unknown-property
+  106:13  error  Invalid property 'onError' found on tag 'embed', but it is only allowed on: audio, video, img, link, source, script, picture, iframe  react/no-unknown-property
+
+/home/jonat/Documentos/VentaMas/src/views/component/FileUploader/FileList.jsx
+  27:7  warning  'FileType' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/FileUploader/ImageLightbox.jsx
+   4:22  error    Unable to resolve path to module 'yet-another-react-lightbox/plugins/captions'      import/no-unresolved
+   5:24  error    Unable to resolve path to module 'yet-another-react-lightbox/plugins/thumbnails'    import/no-unresolved
+   6:18  error    Unable to resolve path to module 'yet-another-react-lightbox/plugins/zoom'          import/no-unresolved
+  11:72  warning  'setLightboxIndex' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/FileUploader/PreviewContent.jsx
+  105:13  error  Invalid property 'onLoad' found on tag 'embed', but it is only allowed on: script, img, link, picture, iframe, object, source         react/no-unknown-property
+  106:13  error  Invalid property 'onError' found on tag 'embed', but it is only allowed on: audio, video, img, link, source, script, picture, iframe  react/no-unknown-property
+
+/home/jonat/Documentos/VentaMas/src/views/component/FilterBar/FilterBar.jsx
+  124:33  warning  'dateStrings' is defined but never used. Allowed unused args must match /^_/u             unused-imports/no-unused-vars
+  312:7   warning  'OptionWrapper' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  323:7   warning  'DayIndicator' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+  332:7   warning  'StatusDot' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+  339:7   warning  'ClearOption' is assigned a value but never used. Allowed unused vars must match /^_/u    unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/FilterBar/components/StatusSelector.jsx
+  54:5  warning  'showAllLabel' is assigned a value but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/components/Header/Header.jsx
+  3:1  warning  There should be no empty line within import group                                import/order
+  7:1  warning  `@fortawesome/react-fontawesome` import should occur before import of `antd`     import/order
+  8:1  warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `antd`  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/configs/InventoryConfig.jsx
+  7:1  warning  There should be at least one empty line between import groups  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/configs/components/AuthorizationFlowSettingsSection.jsx
+  54:14  warning  'error' is defined but never used  unused-imports/no-unused-vars
+  88:14  warning  'error' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/configs/components/BillingModeConfig.jsx
+  33:14  warning  'error' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/configs/components/DueDateConfig.jsx
+   48:10  warning  'loadingUpdateSettings' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   62:14  warning  'error' is defined but never used                                                                 unused-imports/no-unused-vars
+   93:14  warning  'error' is defined but never used                                                                 unused-imports/no-unused-vars
+  116:14  warning  'error' is defined but never used                                                                 unused-imports/no-unused-vars
+  135:14  warning  'error' is defined but never used                                                                 unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/configs/components/InvoiceSettingsSection.jsx
+  10:1   warning  There should be at least one empty line between import groups                                                                                                  import/order
+  10:1   warning  `../../../../../firebase/businessInfo/fbAddBusinessInfo` import should occur before import of `../../../Invoice/components/InvoiceTemplates/InvoiceTemplates`  import/order
+  48:14  warning  'error' is defined but never used                                                                                                                              unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/configs/components/QuoteSettingsSection.jsx
+  33:18  warning  'error' is defined but never used  unused-imports/no-unused-vars
+  52:18  warning  'error' is defined but never used  unused-imports/no-unused-vars
+  60:18  warning  'error' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/GeneralConfig/configs/components/StockAlertSettingsSection.jsx
+  63:14  warning  'e' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/components/Invoice/Invoice.jsx
+  33:24  error    Component definition is missing display name                                            react/display-name
+  34:22  warning  'billingMode' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/components/InvoiceTemplateSelector/InvoiceTemplateSelector.jsx
+  37:14  warning  'error' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate1/InvoiceTemplate1.jsx
+  21:33  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate1/components/Header/Header.jsx
+  12:32  warning  'Space' is defined but never used. Allowed unused args must match /^_/u           unused-imports/no-unused-vars
+  93:7   warning  'Group' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate1/components/Product.jsx
+   5:25   error  'index' is not defined                       no-undef
+   6:14   error  'Row' is not defined                         react/jsx-no-undef
+   7:18   error  'Col' is not defined                         react/jsx-no-undef
+  11:104  error  'useFormatPrice' is not defined              no-undef
+  11:144  error  'NCF' is not defined                         no-undef
+  15:64   error  'separator' is not defined                   no-undef
+  15:74   error  'getTotalPrice' is not defined               no-undef
+  15:88   error  'resetAmountToBuyForProduct' is not defined  no-undef
+  15:125  error  'NCF' is not defined                         no-undef
+  20:18   error  'Col' is not defined                         react/jsx-no-undef
+  21:22   error  'separator' is not defined                   no-undef
+  21:32   error  'getTax' is not defined                      no-undef
+  21:48   error  'NCF' is not defined                         no-undef
+  23:18   error  'Col' is not defined                         react/jsx-no-undef
+  24:22   error  'separator' is not defined                   no-undef
+  24:32   error  'getTotalPrice' is not defined               no-undef
+  24:55   error  'NCF' is not defined                         no-undef
+  27:14   error  'Row' is not defined                         react/jsx-no-undef
+  32:22   error  'Row' is not defined                         react/jsx-no-undef
+  33:26   error  'convertTimeToSpanish' is not defined        no-undef
+  42:19   error  'styled' is not defined                      no-undef
+  53:21   error  'styled' is not defined                      no-undef
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate1/components/WarrantyArea.jsx
+   5:35  error    Unable to resolve path to module '../../../../features/cart/cartSlice'                    import/no-unresolved
+   6:26  error    Unable to resolve path to module '../Receipt'                                             import/no-unresolved
+  10:13  warning  'printWarranty' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate2/InvoiceTemplate2.jsx
+  72:33  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate2/components/Footer/index.jsx
+  12:34  warning  'business' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate3/InvoiceTemplate3.jsx
+  75:33  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate3/components/Footer/index.jsx
+  12:34  warning  'business' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Invoice/templates/Invoicing/InvoiceTemplate4/InvoiceTemplate4.jsx
+   53:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+   63:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+   70:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+   74:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+   95:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+  107:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+  123:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+  139:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+  192:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+  262:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+  382:1   error  Definition for rule 'react-refresh/only-export-components' was not found  react-refresh/only-export-components
+  393:33  error  Component definition is missing display name                              react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/MultiDisplayControl/MultiDisplayControl.jsx
+  8:18  warning  'SetIsOpen' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/NoteViewButton/NoteViewButton.tsx
+   2:1   warning  `antd` import should occur before import of `react`            import/order
+   3:1   warning  There should be at least one empty line between import groups  import/order
+  11:25  error    Unsafe assignment of an `any` value                            @typescript-eslint/no-unsafe-assignment
+  13:51  error    Unsafe assignment of an `any` value                            @typescript-eslint/no-unsafe-assignment
+
+/home/jonat/Documentos/VentaMas/src/views/component/ProductFilter/ProductCard.jsx
+  11:28  warning  'error' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/ProductListSelected/ProductCard.jsx
+  39:25  error  'IoMdTrash' is not defined  react/jsx-no-undef
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/components/InvoiceTemplateSelector/InvoiceTemplateSelector.jsx
+  33:14  warning  'error' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/components/InvoiceTemplates/InvoiceTemplates.jsx
+  8:25  error  Unable to resolve path to module '../Invoice/Invoice'  import/no-unresolved
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/components/Quotation/Quotation.jsx
+  30:26  error    Component definition is missing display name                                            react/display-name
+  31:22  warning  'billingMode' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  31:35  warning  'invoiceType' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  36:13  error    Expected a 'break' statement before 'case'                                              no-fallthrough
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/templates/Invoicing/InvoiceTemplate1/InvoiceTemplate1.jsx
+  18:33  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/templates/Invoicing/InvoiceTemplate1/components/Header/Header.jsx
+  12:32  warning  'Space' is defined but never used. Allowed unused args must match /^_/u           unused-imports/no-unused-vars
+  62:7   warning  'Group' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/templates/Invoicing/InvoiceTemplate1/components/Product.jsx
+   5:25   error  'index' is not defined                       no-undef
+   6:14   error  'Row' is not defined                         react/jsx-no-undef
+   7:18   error  'Col' is not defined                         react/jsx-no-undef
+  11:104  error  'useFormatPrice' is not defined              no-undef
+  11:144  error  'NCF' is not defined                         no-undef
+  15:64   error  'separator' is not defined                   no-undef
+  15:74   error  'getTotalPrice' is not defined               no-undef
+  15:88   error  'resetAmountToBuyForProduct' is not defined  no-undef
+  15:125  error  'NCF' is not defined                         no-undef
+  20:18   error  'Col' is not defined                         react/jsx-no-undef
+  21:22   error  'separator' is not defined                   no-undef
+  21:32   error  'getTax' is not defined                      no-undef
+  21:48   error  'NCF' is not defined                         no-undef
+  23:18   error  'Col' is not defined                         react/jsx-no-undef
+  24:22   error  'separator' is not defined                   no-undef
+  24:32   error  'getTotalPrice' is not defined               no-undef
+  24:55   error  'NCF' is not defined                         no-undef
+  27:14   error  'Row' is not defined                         react/jsx-no-undef
+  32:22   error  'Row' is not defined                         react/jsx-no-undef
+  33:26   error  'convertTimeToSpanish' is not defined        no-undef
+  42:19   error  'styled' is not defined                      no-undef
+  53:21   error  'styled' is not defined                      no-undef
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/templates/Invoicing/InvoiceTemplate1/components/WarrantyArea.jsx
+   5:35  error    Unable to resolve path to module '../../../../features/cart/cartSlice'                    import/no-unresolved
+   6:26  error    Unable to resolve path to module '../Receipt'                                             import/no-unresolved
+  10:13  warning  'printWarranty' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/templates/Invoicing/QuotationTemplate2/QuotationTemplate2.jsx
+  70:35  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/templates/Invoicing/QuotationTemplate2/components/Footer/index.jsx
+    6:7   warning  'PAYMENT_METHODS' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+   12:34  warning  'business' is defined but never used. Allowed unused args must match /^_/u                        unused-imports/no-unused-vars
+   94:7   warning  'TextWithUpLine' is assigned a value but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+  112:7   warning  'Group' is assigned a value but never used. Allowed unused vars must match /^_/u                  unused-imports/no-unused-vars
+  141:7   warning  'PaymentMethodsSection' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  164:7   warning  'BoldText' is assigned a value but never used. Allowed unused vars must match /^_/u               unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Quotation/templates/Invoicing/QuotationTemplate2/components/Header/index.jsx
+    5:29  warning  'comprobante' is defined but never used. Allowed unused args must match /^_/u                  unused-imports/no-unused-vars
+  123:7   warning  'ComprobanteSection' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Receipts/Sale/Template2/Template2.jsx
+  85:7  warning  'BoldText' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  90:7  warning  'Title' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/Rnc/RncPanel/RncPanel.jsx
+  74:7  warning  'StatusField' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/RunMenu/RunMenu.jsx
+  20:10  error    'filteredItems' is not defined                                                   no-undef
+  91:7   warning  'Icon' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/SearchBar/Container.jsx
+  3:7  warning  'SearchBar' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/ShowFileButton/ShowFileButton.tsx
+   2:1   warning  There should be at least one empty line between import groups  import/order
+   4:1   warning  There should be at least one empty line between import groups  import/order
+   5:1   warning  `antd` import should occur before import of `react`            import/order
+  13:35  error    Unsafe member access .length on an `any` value                 @typescript-eslint/no-unsafe-member-access
+  16:40  error    Unsafe member access .length on an `any` value                 @typescript-eslint/no-unsafe-member-access
+  19:18  error    Unsafe call of a(n) `any` typed value                          @typescript-eslint/no-unsafe-call
+  19:24  error    Unsafe member access .map on an `any` value                    @typescript-eslint/no-unsafe-member-access
+  20:30  error    Unsafe assignment of an `any` value                            @typescript-eslint/no-unsafe-assignment
+  20:35  error    Unsafe member access .id on an `any` value                     @typescript-eslint/no-unsafe-member-access
+  21:46  error    Unsafe member access .name on an `any` value                   @typescript-eslint/no-unsafe-member-access
+  30:65  error    Unsafe member access .length on an `any` value                 @typescript-eslint/no-unsafe-member-access
+
+/home/jonat/Documentos/VentaMas/src/views/component/StockedProductPicker/StockedProductPicker.jsx
+   20:11  warning  'dispatch' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+   25:11  warning  'totalStock' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+  139:29  error    'TbPlus' is not defined                                                                 react/jsx-no-undef
+  175:7   warning  'ProductName' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/UploadImg/UploadImg.jsx
+  13:48  warning  'fnAddImg' is defined but never used. Allowed unused args must match /^_/u         unused-imports/no-unused-vars
+  14:13  warning  'status' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  15:12  warning  'img' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  15:17  warning  'setImg' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/UploadImg/components/Body/Body.jsx
+  11:13  warning  'status' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/contact/ClientControl/ClientDetails/ClientDetails.jsx
+   22:11  warning  'businessID' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+  321:7   warning  'InsuranceSection' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  329:7   warning  'SectionTitle' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/contact/ClientControl/ClientSelector/ClientSelector.jsx
+  42:9  warning  'mode' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/contact/ClientControl/ClientSelector/components/Client/Client.jsx
+   8:28  error  Unable to resolve path to module '../../../../features/auth/userSlice'                import/no-unresolved
+   9:27  error  Unable to resolve path to module '../../../../features/clientCart/clientCartSlice'    import/no-unresolved
+  10:31  error  Unable to resolve path to module '../../../../features/insurance/insuranceAuthSlice'  import/no-unresolved
+  11:33  error  Unable to resolve path to module '../highlight/Highlight'                             import/no-unresolved
+
+/home/jonat/Documentos/VentaMas/src/views/component/contact/ClientControl/ClientSelector/components/ClientListContainer.jsx
+  45:36  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/contact/ClientControl/ClientSelector/components/ClientPaginationBar.jsx
+  13:36  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/contact/ClientControl/ClientSelector/components/ClientSelectionToolbar.jsx
+  29:39  error  Component definition is missing display name  react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/contact/ClientControl/ClientSelector/components/ClientSelectorHeader.jsx
+  6:38  error  Unable to resolve path to module './ClientFilterDropdown'  import/no-unresolved
+
+/home/jonat/Documentos/VentaMas/src/views/component/forms/PaymentForm/PaymentForm.jsx
+  13:1   warning  `../../../templates/system/ShowCase/ShowcaseList` import should occur after import of `../../../pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel`  import/order
+  19:25  warning  'Input' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                  unused-imports/no-unused-vars
+  19:48  warning  'Radio' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/forms/PaymentForm/components/PaymentFields.jsx
+   11:22  warning  'Checkbox' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  194:73  error    Unnecessary escape character: \,                                                     no-useless-escape
+  208:73  error    Unnecessary escape character: \,                                                     no-useless-escape
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ARInfoModal/ARSumamaryModal.jsx
+   22:1   warning  There should be no empty line within import group                                       import/order
+   43:7   warning  'StyledTitle' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  142:40  error    Unexpected empty object pattern                                                         no-empty-pattern
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ARInfoModal/ARSummaryModal.jsx
+   22:1   warning  There should be no empty line within import group                                       import/order
+   43:7   warning  'StyledTitle' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  136:40  error    Unexpected empty object pattern                                                         no-empty-pattern
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/AddCategory/AddCategory.jsx
+  9:21  warning  'setCategory' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/AddCustomProductModal/AddCustomProductModal.jsx
+   34:38  warning  'reject' is defined but never used. Allowed unused args must match /^_/u             unused-imports/no-unused-vars
+  123:7   warning  'Backdrop' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  186:7   warning  'Item' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+  205:7   warning  'Row' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/AddExpenseCategory/AddExpensesCategory.jsx
+  11:25  error  Unable to resolve path to module '../../../templates/system/Inputs/InputV4'  import/no-unresolved
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/AddProvider/AddProvider.jsx
+  6:11  warning  'dispatch' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  8:12  warning  'provider' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  8:22  warning  'setProvider' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/BarcodePrintModal/Barcode.jsx
+   3:1   warning  There should be no empty line within import group  import/order
+  10:24  error    Component definition is missing display name       react/display-name
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/BarcodePrintModal/BarcodePrintModal.jsx
+   4:1   warning  There should be no empty line within import group                                    import/order
+   6:37  warning  'Checkbox' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  13:1   warning  `html2canvas` import should occur before import of `react`                           import/order
+  14:1   warning  `jspdf` import should occur before import of `react`                                 import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ConfirmModal/ConfirmModal.jsx
+  11:24  error  Unexpected constant truthiness on the left-hand side of a `&&` expression  no-constant-binary-expression
+  13:24  error  Unexpected constant truthiness on the left-hand side of a `&&` expression  no-constant-binary-expression
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/CreditNoteModal/CreditNoteModal.jsx
+    31:9   warning  'Title' is assigned a value but never used. Allowed unused vars must match /^_/u                    unused-imports/no-unused-vars
+    31:16  warning  'Text' is assigned a value but never used. Allowed unused vars must match /^_/u                     unused-imports/no-unused-vars
+    38:9   warning  'business' is assigned a value but never used. Allowed unused vars must match /^_/u                 unused-imports/no-unused-vars
+   474:13  warning  'existingQty' is assigned a value but never used. Allowed unused vars must match /^_/u              unused-imports/no-unused-vars
+   823:7   warning  'FieldLabel' is assigned a value but never used. Allowed unused vars must match /^_/u               unused-imports/no-unused-vars
+   995:7   warning  'InvoiceDetailsContainer' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  1002:7   warning  'InvoiceInfoSection' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+  1012:7   warning  'InfoItem' is assigned a value but never used. Allowed unused vars must match /^_/u                 unused-imports/no-unused-vars
+  1017:7   warning  'InfoItemLabel' is assigned a value but never used. Allowed unused vars must match /^_/u            unused-imports/no-unused-vars
+  1023:7   warning  'InfoItemValue' is assigned a value but never used. Allowed unused vars must match /^_/u            unused-imports/no-unused-vars
+  1028:7   warning  'QtyDisplayContainer' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/CreditNoteModal/components/ProductCard.jsx
+  21:3  warning  'existingQuantity' is assigned a value but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/CustomProduct/getPizzaType.js
+  3:11  warning  'isTerm1Complete' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/CustomProduct/setCustomProduct/Components/Header.jsx
+  77:22  warning  'error' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/FileListModal/FileListModal.jsx
+  6:17  warning  'Tag' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+  7:15  warning  'Title' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+  7:22  warning  'Paragraph' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ImportModal/FieldSelector.jsx
+  7:75  warning  'language' is assigned a value but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ImportModal/ImportModal.jsx
+  2:1  warning  There should be no empty line within import group                import/order
+  5:1  warning  `@ant-design/icons` import should occur before import of `antd`  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/InvoiceForm.jsx
+  4:1  warning  `@ant-design/icons` import should occur before import of `antd`  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/Client/Client.jsx
+  5:1  warning  `@fortawesome/react-fontawesome` import should occur before import of `antd`     import/order
+  6:1  warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `antd`  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/InvoiceHeader/InvoiceHeader.jsx
+  3:1  warning  `@fortawesome/react-fontawesome` import should occur before import of `react`     import/order
+  4:1  warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `react`  import/order
+  5:1  warning  `luxon` import should occur before import of `react`                              import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/InvoiceInfo/InfoiceInfo.jsx
+   2:1   warning  `antd` import should occur before import of `react`                               import/order
+   4:1   warning  `@fortawesome/react-fontawesome` import should occur before import of `react`     import/order
+   5:1   warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `react`  import/order
+   6:1   warning  `react-redux` import should occur before import of `styled-components`            import/order
+  85:7   error    'antd' is not defined                                                             no-undef
+  86:14  warning  'error' is defined but never used                                                 unused-imports/no-unused-vars
+  87:7   error    'antd' is not defined                                                             no-undef
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/InvoiceInfo/components/InvoiceResume.jsx
+    4:1   warning  `@fortawesome/react-fontawesome` import should occur before import of `antd`                import/order
+    5:1   warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `antd`             import/order
+    6:5   error    'faMoneyBillWave' is defined but never used                                                 unused-imports/no-unused-imports
+   54:11  warning  'formattedChange' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  299:7   warning  'HeaderLabel' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/InvoiceInfoExtras/InvoiceInfoExtras.jsx
+   1:17  error    'Badge' is defined but never used                                                        unused-imports/no-unused-imports
+   1:29  error    'Typography' is defined but never used                                                   unused-imports/no-unused-imports
+   2:1   warning  `@ant-design/icons` import should occur before import of `antd`                          import/order
+   7:10  error    'useFormatPrice' is defined but never used                                               unused-imports/no-unused-imports
+  78:7   warning  'Item' is assigned a value but never used. Allowed unused vars must match /^_/u          unused-imports/no-unused-vars
+  82:7   warning  'Descriptions' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/PaymentInfo/PaymentInfo.jsx
+  1:1   warning  `styled-components` import should occur after import of `react-redux`  import/order
+  2:28  error    'Form' is defined but never used                                       unused-imports/no-unused-imports
+  4:1   warning  There should be at least one empty line between import groups          import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/PaymentInfo/PaymentInfo.tsx
+  8:1  warning  There should be at least one empty line between import groups  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/PaymentInfo/PaymentInfoModal.tsx
+  4:1  warning  There should be at least one empty line between import groups  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/PaymentInfo/components/DiscountSection.tsx
+  2:1  warning  There should be at least one empty line between import groups    import/order
+  3:1  warning  There should be at least one empty line between import groups    import/order
+  3:1  warning  `antd` type import should occur after type import of `../types`  import/order
+  7:1  warning  There should be at least one empty line between import groups    import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/PaymentInfo/components/PaymentMethodRow.tsx
+  132:7  error    'IconWrapper' is assigned a value but never used                                        @typescript-eslint/no-unused-vars
+  132:7  warning  'IconWrapper' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/PaymentInfo/components/PaymentMethodsSection.tsx
+  4:1  warning  There should be at least one empty line between import groups             import/order
+  4:1  warning  `../types` type import should occur after import of `./PaymentMethodRow`  import/order
+  5:1  warning  There should be at least one empty line between import groups             import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/PaymentInfo/hooks/usePaymentInfo.ts
+  6:1  warning  There should be at least one empty line between import groups  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/ProductCard.jsx
+  2:1   warning  There should be no empty line within import group                                 import/order
+  4:15  warning  'Input' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  5:1   warning  `@ant-design/icons` import should occur before import of `antd`                   import/order
+  7:24  warning  'productName' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  7:37  warning  'price' is defined but never used. Allowed unused args must match /^_/u           unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/Products/ProductFilterToolbar.jsx
+  3:1  warning  `antd` import should occur before import of `react`                               import/order
+  4:1  warning  `@fortawesome/react-fontawesome` import should occur before import of `react`     import/order
+  5:1  warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `react`  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/Products/ProductListModal.jsx
+    4:1  warning  `@fortawesome/react-fontawesome` import should occur before import of `antd`            import/order
+    5:1  warning  There should be at least one empty line between import groups                           import/order
+    5:1  warning  `@fortawesome/free-solid-svg-icons` import should occur before import of `antd`         import/order
+   13:1  warning  There should be at least one empty line between import groups                           import/order
+   15:1  warning  `./ProductFilterToolbar` import should occur before import of `./ProductTables.styles`  import/order
+   16:1  warning  `./productDataUtils` import should occur before import of `./ProductTables.styles`      import/order
+  300:7  warning  'Toolbar' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/Products/ProductTables.styles.js
+  2:1  warning  `antd` import should occur before import of `styled-components`  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/Products/Products.jsx
+    8:1   warning  There should be no empty line within import group                                                                                  import/order
+   11:1   warning  `../../../../../../firebase/products/fbGetProducts` import should occur before import of `../../../../../../hooks/useFormatPrice`  import/order
+   16:1   warning  `./ProductFilterToolbar` import should occur before import of `./ProductListModal`                                                 import/order
+   17:1   warning  `./productDataUtils` import should occur before import of `./ProductListModal`                                                     import/order
+  118:36  warning  'index' is defined but never used. Allowed unused args must match /^_/u                                                            unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/Products/components/Product/Product.jsx
+  1:1   warning  `styled-components` import should occur after import of `react-redux`      import/order
+  2:25  error    'Form' is defined but never used                                           unused-imports/no-unused-imports
+  8:36  warning  'index' is defined but never used. Allowed unused args must match /^_/u    unused-imports/no-unused-vars
+  8:43  warning  'invoice' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/TimeRemainingBadge/TimeRemainingBadge.jsx
+    1:1  warning  `react` import should occur after import of `luxon`                                         import/order
+    2:1  warning  `antd` import should occur after import of `@ant-design/icons`                              import/order
+  206:7  warning  'InfoTriggerIcon' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/InvoiceForm/components/TimeRemainingBadge/TimeRemainingBadge.tsx
+  1:1  warning  There should be at least one empty line between import groups         import/order
+  1:1  warning  `react` type import should occur after import of `styled-components`  import/order
+  2:1  warning  `react` import should occur after import of `luxon`                   import/order
+  3:1  warning  `antd` import should occur after import of `@ant-design/icons`        import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/Modal.jsx
+  15:38  warning  'error' is defined but never used  unused-imports/no-unused-vars
+  17:19  error    Empty block statement              no-empty
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ModalManager.jsx
+  56:1  warning  `./ProductBrands/ProductBrandModal` import should occur before import of `./ProductExpirySelection/ProductExpirySelection`  import/order
+  74:9  warning  'DeveloperModalSelected' is assigned a value but never used. Allowed unused vars must match /^_/u                           unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/OrderDetailModal/Card.jsx
+  51:9  warning  'CardContainer' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  56:9  warning  'CardGroup' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/OrderDetailModal/Header.jsx
+  32:7  warning  'CloseButton' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/OrderDetailModal/OrderDetailModal.jsx
+  31:7   warning  'CloseButton' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  42:39  warning  'onClose' is defined but never used. Allowed unused args must match /^_/u               unused-imports/no-unused-vars
+  43:11  warning  'note' is assigned a value but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/PeerReviewAuthorization/PeerReviewAuthorization.jsx
+  67:18  warning  'validationError' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/PinAuthorizationModal/PinAuthorizationModal.jsx
+  273:14  warning  'validationError' is defined but never used  unused-imports/no-unused-vars
+  287:14  warning  'validationError' is defined but never used  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/PreorderModal/PreorderModal.jsx
+  21:7  warning  'IconButton' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/Product/ProductView.jsx
+  12:7  warning  'defaultProduct' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/Product/product.js
+  1:7  warning  'product' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductBrands/ProductBrandModal.jsx
+  6:1  warning  `../../../../features/auth/userSlice` import should occur before import of `../../../../features/productBrands/productBrandSlice`  import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductExpirySelection/ProductExpirySelection.jsx
+  51:11  warning  'user' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+  58:35  warning  'error' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductExpirySelection/components/InventoryCard.jsx
+   87:13  warning  'productStockId' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   87:29  warning  'batchId' is assigned a value but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+   87:38  warning  'batchData' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+  109:20  warning  'err' is defined but never used                                                            unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/ImageManager/ImageManager.jsx
+    3:1   warning  There should be no empty line within import group                                 import/order
+    6:1   warning  `@ant-design/icons` import should occur before import of `antd`                   import/order
+   13:1   warning  `react-redux` import should occur before import of `styled-components`            import/order
+   42:7   warning  'Title' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  260:16  warning  'error' is defined but never used                                                 unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/ImageManager/components/Gallery.jsx
+   5:9   warning  'Upload' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+   5:17  warning  'Modal' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+   5:24  warning  'Button' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+   5:51  warning  'Typography' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   5:63  warning  'Divider' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  11:1   warning  `react-redux` import should occur before import of `styled-components`                 import/order
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/ProductForm.jsx
+  11:13  warning  'status' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/Batch/BatchForm.jsx
+    1:1   warning  `react` import should occur after import of `luxon`                                      import/order
+    2:1   warning  `styled-components` import should occur after import of `react-redux`                    import/order
+    3:1   warning  There should be no empty line within import group                                        import/order
+    3:1   warning  `antd` import should occur after import of `@ant-design/icons`                           import/order
+    5:47  warning  'Select' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+   20:7   warning  'StyledLabel' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+   26:7   warning  'Description' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+   41:20  warning  'status' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+   60:15  warning  'info' is defined but never used. Allowed unused args must match /^_/u                   unused-imports/no-unused-vars
+   83:15  warning  'newBatch' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+   90:15  warning  'updatedBatch' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  109:27  warning  'errorInfo' is defined but never used. Allowed unused args must match /^_/u              unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/Batch/BatchList/BatchList.jsx
+  34:20  warning  'status' is assigned a value but never used. Allowed unused vars must match /^_/u             unused-imports/no-unused-vars
+  60:9   warning  'handleDelete' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+  83:9   warning  'handleBatchSwitch' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/SaleUnits/components/SaleUnitForm.jsx
+  157:14  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/SaleUnits/components/SaleUnitsManager.jsx
+  21:7   warning  'ToggleContainer' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  30:11  warning  'dispatch' is assigned a value but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+  54:27  warning  'values' is defined but never used. Allowed unused args must match /^_/u                    unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/AdjustInventoryModal.jsx
+  15:11  warning  'handleStockChange' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarCode.jsx
+   79:7   warning  'DescriptionText' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  342:46  warning  'e' is defined but never used. Allowed unused args must match /^_/u                         unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarcodeCorrector/BarcodeCorrector.jsx
+  8:23  warning  'Input' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+  8:38  warning  'Typography' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  8:50  warning  'Tag' is assigned a value but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+  8:62  warning  'Card' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+  8:68  warning  'Divider' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarcodeGenerator/BarcodeGenerator.jsx
+   36:7   warning  'ModeSelector' is assigned a value but never used. Allowed unused vars must match /^_/u           unused-imports/no-unused-vars
+   46:7   warning  'ModeOption' is assigned a value but never used. Allowed unused vars must match /^_/u             unused-imports/no-unused-vars
+   73:7   warning  'ModeTitle' is assigned a value but never used. Allowed unused vars must match /^_/u              unused-imports/no-unused-vars
+   79:7   warning  'ModeDescription' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+   94:10  warning  'isValid' is assigned a value but never used. Allowed unused vars must match /^_/u                unused-imports/no-unused-vars
+  128:17  warning  'realtimeHasBarcode' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  146:5   warning  'generateBarcode' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+  147:5   warning  'updateCompanyPrefix' is assigned a value but never used. Allowed unused vars must match /^_/u    unused-imports/no-unused-vars
+  381:9   warning  'validateCompanyPrefix' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarcodeGenerator/components/BarcodeFixTooltip.jsx
+   36:26  warning  'Typography' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  116:3   warning  'showIcon' is assigned a value but never used. Allowed unused args must match /^_/u    unused-imports/no-unused-vars
+  129:9   warning  'handleCopy' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  134:14  warning  'e' is defined but never used                                                          unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarcodeGenerator/components/BarcodePreview.jsx
+   94:3   warning  'nextItemReference' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  102:11  warning  'isConnected' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarcodeGenerator/components/GenerateTab.jsx
+  29:7  warning  'Section' is assigned a value but never used. Allowed unused vars must match /^_/u           unused-imports/no-unused-vars
+  35:7  warning  'SectionHeader' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  40:7  warning  'FieldRow' is assigned a value but never used. Allowed unused vars must match /^_/u          unused-imports/no-unused-vars
+  57:3  warning  'isConfigured' is defined but never used. Allowed unused args must match /^_/u               unused-imports/no-unused-vars
+  68:3  warning  'livePreview' is defined but never used. Allowed unused args must match /^_/u                unused-imports/no-unused-vars
+  71:3  warning  'generatedCode' is defined but never used. Allowed unused args must match /^_/u              unused-imports/no-unused-vars
+  75:3  warning  'currentBarcode' is defined but never used. Allowed unused args must match /^_/u             unused-imports/no-unused-vars
+  76:3  warning  'realtimeStatus' is assigned a value but never used. Allowed unused args must match /^_/u    unused-imports/no-unused-vars
+  77:3  warning  'barcodeAnalysis' is assigned a value but never used. Allowed unused args must match /^_/u   unused-imports/no-unused-vars
+  83:9  warning  'standardPrefixes' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarcodeGenerator/components/InternalModeTab.jsx
+  54:3  warning  'realtimeStatus' is assigned a value but never used. Allowed unused args must match /^_/u   unused-imports/no-unused-vars
+  55:3  warning  'barcodeAnalysis' is assigned a value but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/BarcodePrintModal/BarcodePrintModal.jsx
+   37:7    warning  'inToMm' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  187:120  error    Irregular whitespace not allowed                                                   no-irregular-whitespace
+  187:172  error    Irregular whitespace not allowed                                                   no-irregular-whitespace
+  188:64   error    Irregular whitespace not allowed                                                   no-irregular-whitespace
+  188:66   error    Irregular whitespace not allowed                                                   no-irregular-whitespace
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/InventoryInfo.jsx
+   13:15  warning  'Space' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+   13:40  warning  'Button' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+   19:11  warning  'showModal' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   29:30  warning  'newStock' is defined but never used. Allowed unused args must match /^_/u            unused-imports/no-unused-vars
+   29:40  warning  'newTotalUnit' is defined but never used. Allowed unused args must match /^_/u        unused-imports/no-unused-vars
+  176:45  error    Missing "key" prop for element in iterator                                            react/jsx-key
+  204:7   warning  'Grid' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/PriceCalculator.jsx
+  67:11  warning  'dispatch' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/PriceInfo.jsx
+  4:1   warning  `../../../../../component/modals/UpdateProduct/InitializeData` import should occur after import of `../../../../../../features/taxReceipt/taxReceiptSlice`  import/order
+  6:15  warning  'Space' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                            unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductForm/components/sections/WarrantyInfo.jsx
+  5:15  warning  'Space' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  5:59  warning  'Col' is assigned a value but never used. Allowed unused vars must match /^_/u    unused-imports/no-unused-vars
+  5:64  warning  'Row' is assigned a value but never used. Allowed unused vars must match /^_/u    unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductOutflowModal/OutputProductEntry/StockedProductPicker.jsx
+   8:33  error  Unable to resolve path to module '../../../features/notification/notificationSlice'  import/no-unresolved
+   9:32  error  Unable to resolve path to module '../../../hooks/useFormatPrice'                     import/no-unresolved
+  10:24  error  Unable to resolve path to module '../../templates/system/Button/Button'              import/no-unresolved
+  11:25  error  Unable to resolve path to module '../../templates/system/Button/Tooltip'             import/no-unresolved
+  12:40  error  Unable to resolve path to module '../../templates/system/Inputs/Input'               import/no-unresolved
+  13:34  error  Unable to resolve path to module '../modals/AddOrder/Button'                         import/no-unresolved
+  14:31  error  Unable to resolve path to module '../ProductFilter/ProductFilter'                    import/no-unresolved
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductOutflowModal/ProductOutflowModal.jsx
+  31:45  warning  'idDoc' is defined but never used. Allowed unused args must match /^_/u                     unused-imports/no-unused-vars
+  38:14  warning  'err' is defined but never used                                                             unused-imports/no-unused-vars
+  45:14  warning  'err' is defined but never used                                                             unused-imports/no-unused-vars
+  71:7   error    Do not pass children as props. Instead, nest children between the opening and closing tags  react/no-children-prop
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/ProductWeightEmtryModal/ProductWeightEntryModal.jsx
+   4:1   warning  `../../../../utils/pricing` import should occur after import of `../../../../hooks/useFormatPrice`  import/order
+   5:1   warning  `../../../../features/cart/cartSlice` import should occur after import of `react-redux`             import/order
+  12:64  warning  'onAdd' is defined but never used. Allowed unused args must match /^_/u                             unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/SettingsModal/components/Body/Body.jsx
+  20:7  warning  'Container' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/SettingsModal/components/Body/components/ConfigMenu.jsx
+  5:30  warning  'items' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/jonat/Documentos/VentaMas/src/views/component/modals/UserNotification/components/ConfirmationDialog/functions/CashReconciliation/handleExistingCROpen.js
+  5:13  error  'setUserNotification' is not defined  no-undef
+
+/home/jonat/Documentos/VentaMas/src/views/component/tree/helpers/treeHelpers.js
+  6:17  error  'setExpandedNodes' is not defined  no-undef
+
+/home/jonat/Documentos/VentaMas/src/views/component/tree/hooks/useSearchTerm.js
+  24:33  warning  'prev' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+✖ 447 problems (142 errors, 305 warnings)
+  11 errors and 68 warnings potentially fixable with the `--fix` option.
+

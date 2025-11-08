@@ -17,11 +17,6 @@ import { fbGetAndUpdateTaxReceipt } from "../../firebase/taxReceipt/fbGetAndUpda
 import { getCashCountStrategy } from "../../notification/cashCountNotification/cashCountNotificacion";
 import { validateInvoiceCart } from "../../utils/invoiceValidation";
 
-const NCF_TYPES = {
-    'CREDITO FISCAL': 'CREDITO FISCAL',
-    'CONSUMIDOR FINAL': 'CONSUMIDOR FINAL'
-}
-
 export async function processInvoice({
     user,
     cart,
@@ -36,11 +31,10 @@ export async function processInvoice({
     insuranceEnabled = false,
     isTestMode = false,
 }) {
-    try {
-        verifyCartItems(cart);
+    verifyCartItems(cart);
 
-        // En modo de prueba, mostrar notificación y procesar sin guardar en base de datos
-        if (isTestMode) {
+    // En modo de prueba, mostrar notificación y procesar sin guardar en base de datos
+    if (isTestMode) {
             return await processTestModeInvoice({
                 user,
                 cart,
@@ -91,11 +85,7 @@ export async function processInvoice({
             await manageInsuranceReceivableAccounts({ user, arData, invoice, insuranceAuth, authDataId });
         }
 
-    return { invoice }
-
-    } catch (error) {
-        throw error
-    }
+        return { invoice }
 }
 
 function checkIfHasDueDate({ cart, dueDate }) {
@@ -132,9 +122,7 @@ async function validateCashReconciliation({ user, dispatch, transaction }) {
     } catch (error) {
         throw new Error(`Error al validar cuadre de caja: ${error.message}`);
     }
-}
-
-async function handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType }) {
+}async function handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType }) {
     if (!user || !taxReceiptEnabled) return null;
 
     try {
@@ -335,16 +323,16 @@ async function logInvoiceAuthorizations({ user, invoice, authorizationContext, c
  * Retorna un mock de factura para visualización
  */
 async function processTestModeInvoice({
-    user,
+    user: _user,
     cart,
     client,
-    accountsReceivable,
-    insuranceAR,
-    insuranceAuth,
+    accountsReceivable: _accountsReceivable,
+    insuranceAR: _insuranceAR,
+    insuranceAuth: _insuranceAuth,
     ncfType,
     taxReceiptEnabled,
     dueDate,
-    insuranceEnabled,
+    insuranceEnabled: _insuranceEnabled,
 }) {
     try {
 

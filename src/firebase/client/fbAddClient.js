@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 
 import { db } from "../firebaseconfig";
 import { getNextID } from "../Tools/getNextID";
+
 import { buildClientWritePayload } from "./clientNormalizer";
 
 export const fbAddClient = async (user, client) => {

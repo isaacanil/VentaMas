@@ -1,4 +1,4 @@
-import { format as formatDateFns } from 'date-fns'
+import dayjs from 'dayjs'
 
 export function money(n) {
   return Number(n).toFixed(2)
@@ -7,7 +7,7 @@ export function money(n) {
 export function formatDate(ts) {
   if (!ts) return '';
   const date = ts?.seconds ? new Date(ts.seconds * 1000) : new Date(ts)
-  return formatDateFns(date, 'dd/MM/yyyy')
+  return dayjs(date).format('DD/MM/YYYY')
 }
 
 export function getDiscount(d) {

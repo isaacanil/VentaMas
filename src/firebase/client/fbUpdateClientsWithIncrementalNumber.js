@@ -17,17 +17,17 @@ export async function fbUpdateClientsWithIncrementalNumber({ setMessage }) {
         const clientsSnapshot = await getDocs(clientsRef);
 
         // Obtener el último número usado
-        let lastNumber = 0;
+        let _lastNumber = 0;
         const clientCounterLastNumberRef = doc(db, "businesses", businessId, "counters", "lastClientId");
         const clientCounterLastNumberSnap = await getDoc(clientCounterLastNumberRef);
 
         if (clientCounterLastNumberSnap.exists()) {
-            lastNumber = clientCounterLastNumberSnap.data().value || 0;
+            _lastNumber = clientCounterLastNumberSnap.data().value || 0;
         }
 
         // Recorrer y actualizar cada cliente
         for (const clientDoc of clientsSnapshot.docs) {
-            lastNumber++;
+            // _lastNumber++; // TODO: Descomentar cuando se reactive la funcionalidad de actualizar el contador
             const clientRef = clientDoc.ref;
             await updateDoc(clientRef, {
                 "numberId": deleteField()

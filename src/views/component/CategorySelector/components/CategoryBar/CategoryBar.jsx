@@ -1,16 +1,16 @@
 import { Button } from 'antd';
-import React, { useRef, forwardRef } from 'react'
-import { useDispatch } from 'react-redux'
-import styled from 'styled-components'
+import { useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons'
 import { deleteItem } from '../../../../../features/category/categorySlicer'
 import { useMoveScroll } from '../../../../../utils/scroll/moveScroll'
-import { categoryColors } from '../../categoryColors'
+import { categoryColors } from '../../categoryColors';
 
-export const CategoryBar = forwardRef(({ open, setOpen, items = [] }, ref) => {
-  const categoriesRef = useRef(null)
-  const { toEnd, toLeft, toRight, toStart } = useMoveScroll(categoriesRef)
+export const CategoryBar = ({ open, setOpen, items = [] }) => {
+  const categoriesRef = useRef(null);
+  const { toEnd, toLeft, toRight, toStart } = useMoveScroll(categoriesRef);
 
   if (items?.length === 0) {
     return (
@@ -31,14 +31,12 @@ export const CategoryBar = forwardRef(({ open, setOpen, items = [] }, ref) => {
       <Button
         icon={icons.editingActions.create}
         onClick={() => setOpen(!open)}
-      >
-      </Button>
+      />
       <Button
         icon={icons.arrows.chevronLeft}
         onClick={toLeft}
         onDoubleClick={toStart}
-      >
-      </Button>
+      />
       <CategoryList
         ref={categoriesRef}
       >
@@ -54,11 +52,10 @@ export const CategoryBar = forwardRef(({ open, setOpen, items = [] }, ref) => {
         onClick={toRight}
         onDoubleClick={toEnd}
         icon={icons.arrows.chevronRight}
-      >
-      </Button>
+      />
     </Container >
-  )
-})
+  );
+};
 const Container = styled.div`
   height: 2.6em;
   align-items: center;
@@ -73,7 +70,7 @@ const Container = styled.div`
 const Category = ({ item }) => {
   const dispatch = useDispatch();
   const handleDeleteCategory = () => {
-    dispatch(deleteItem(item))
+    dispatch(deleteItem(item));
   };
   return (
     <CategoryItem type={item.type}>

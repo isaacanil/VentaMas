@@ -3,7 +3,7 @@ import { useMatch } from 'react-router-dom'
 
 import Style from './ProductControl.module.scss'
 
-export const ControlSearchProduct = ({ searchData, setSearchData }) => {
+export const ControlSearchProduct = () => {
 
   const matchWithInventory = useMatch('/app/inventario/items')
   const matchWithVenta = useMatch('/app/venta/:id')
@@ -12,7 +12,7 @@ export const ControlSearchProduct = ({ searchData, setSearchData }) => {
     <Fragment>
       <div className={Style.Container}>
         {
-          matchWithVenta ? <Carrucel/> : null
+          matchWithVenta ? <Carrusel/> : null
         }
         {
           matchWithInventory ? (
