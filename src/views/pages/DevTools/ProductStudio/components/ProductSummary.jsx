@@ -17,6 +17,7 @@ const SummaryCard = styled.div`
   background: #fff;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -38,17 +39,25 @@ const SectionDivider = styled(Divider)`
 `;
 
 const PreviewImage = styled.div`
-  width: 100%;
-  height: 180px;
+  position: relative;
+  width: 140px;
+  margin: 0 auto;
+  flex-shrink: 0;
   border-radius: 14px;
   overflow: hidden;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+  &::before {
+    content: '';
+    display: block;
+    padding-top: 100%;
+  }
 
   img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -56,6 +65,8 @@ const PreviewImage = styled.div`
 `;
 
 const PreviewPlaceholder = styled.div`
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,6 +75,7 @@ const PreviewPlaceholder = styled.div`
   color: #94a3b8;
   font-size: 13px;
   text-align: center;
+  background: #f8fafc;
 `;
 
 const PreviewDetails = styled.div`
@@ -84,52 +96,29 @@ const ModesTag = styled.span`
   background: ${({ $color }) => ($color === 'danger' ? '#fee2e2' : '#dbeafe')};
 `;
 
-const MetricsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+const MetricsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 `;
 
-const Metric = styled.div`
-  padding: 10px 12px;
-  border-radius: 12px;
+const MetricRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
 
   span.label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #94a3b8;
-    letter-spacing: 0.08em;
-    margin-bottom: 4px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
   }
 
   span.value {
-    font-size: 18px;
-    font-weight: 600;
-    color: #0f172a;
-  }
-`;
-
-const InventoryBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 10px 16px;
-  gap: 4px;
-
-  span.label {
-    font-size: 12px;
-    text-transform: uppercase;
-    color: #94a3b8;
-    letter-spacing: 0.08em;
-  }
-
-  span.value {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 600;
     color: #0f172a;
   }
@@ -166,19 +155,19 @@ export const ProductSummary = ({ product, previewMetrics }) => (
     </PreviewDetails>
 
     <SectionDivider />
-    <InventoryBlock>
-      <span className="label">Stock</span>
-      <span className="value">{previewMetrics.stock} unidades</span>
-    </InventoryBlock>
-    <MetricsGrid>
-      <Metric>
+    <MetricsContainer>
+      <MetricRow>
+        <span className="label">Stock</span>
+        <span className="value">{previewMetrics.stock} unidades</span>
+      </MetricRow>
+      <MetricRow>
         <span className="label">Precio</span>
         <span className="value">RD$ {previewMetrics.price?.toFixed(2)}</span>
-      </Metric>
-      <Metric>
-        <span className="label">Margen</span>
+      </MetricRow>
+      <MetricRow>
+        <span className="label">Ganancia</span>
         <span className="value">{previewMetrics.margin}%</span>
-      </Metric>
-    </MetricsGrid>
+      </MetricRow>
+    </MetricsContainer>
   </SummaryCard>
 );

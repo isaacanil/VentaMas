@@ -79,7 +79,7 @@ const PillContainer = styled.div<{ $interactive: boolean }>`
   background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 2px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 2px 2px rgba(15, 23, 42, 0.06);
   width: fit-content;
   min-width: 200px;
   max-width: 100%;
@@ -89,7 +89,7 @@ const PillContainer = styled.div<{ $interactive: boolean }>`
 
   &:hover {
     transform: scale(1.01);
-    box-shadow: 0 24px 40px rgba(15, 23, 42, 0.18);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
     border-color: rgba(255, 255, 255, 0.7);
   }
 
@@ -129,7 +129,6 @@ const AvatarFallback = styled.div`
 const Content = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
   min-width: 0;
   flex: 1;
 `;

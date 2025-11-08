@@ -1,10 +1,17 @@
 import { Form, Space } from 'antd';
+import styled from 'styled-components';
 
 import { CodesSection } from '../sections/CodesSection';
 import { IdentitySection } from '../sections/IdentitySection';
 import { InventorySection } from '../sections/InventorySection';
 import { PricingSection } from '../sections/PricingSection';
 import { WarrantySection } from '../sections/WarrantySection';
+
+const FormWrapper = styled.div`
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+`;
 
 export const ProductForm = ({
   form,
@@ -25,14 +32,15 @@ export const ProductForm = ({
   const pricingValues = Form.useWatch('pricing', form);
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onValuesChange={onValuesChange}
-      style={{ width: '100%' }}
-    >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <IdentitySection
+    <FormWrapper>
+      <Form
+        form={form}
+        layout="vertical"
+        onValuesChange={onValuesChange}
+        style={{ width: '100%' }}
+      >
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <IdentitySection
           domId={sectionDomIds.identity}
           brandMeta={brandMeta}
           brandOptions={brandOptions}
@@ -59,5 +67,6 @@ export const ProductForm = ({
         <CodesSection domId={sectionDomIds.codes} />
       </Space>
     </Form>
+    </FormWrapper>
   );
 };

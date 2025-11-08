@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Typography } from 'antd';
 import type { JSX } from 'react';
 import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import styled from 'styled-components';
 
 import { FeatureCard, type FeatureCardData } from './FeatureCard';
@@ -50,9 +51,17 @@ export const FeatureCardList = ({ title, cardData }: FeatureCardListProps): JSX.
           {Object.entries(categories).map(([category, cards]) => (
             <Category key={category}>
               <CategoryHeader>{category}</CategoryHeader>
-              <FeatureContainer cardsCount={cards.length}>
+              <FeatureContainer
+                cardsCount={cards.length}
+                variants={featureContainerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.25 }}
+              >
                 {cards.map((card, index) => (
-                  <FeatureCard key={card.id ?? `${category}-${index}`} card={card} />
+                  <CardMotionWrapper key={card.id ?? `${category}-${index}`} variants={featureCardVariants}>
+                    <FeatureCard card={card} />
+                  </CardMotionWrapper>
                 ))}
               </FeatureContainer>
             </Category>
@@ -89,10 +98,37 @@ const Category = styled.div`
     background-color: #fafafa;
 `
 
-const FeatureContainer = styled.div<{ cardsCount: number }>`
+const featureContainerVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      when: 'beforeChildren',
+      staggerChildren: 0.06,
+      duration: 0.1,
+      ease: 'easeOut',
+    },
+  },
+};
+
+const featureCardVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: 'easeOut' },
+  },
+};
+
+const FeatureContainer = styled(motion.div)<{ cardsCount: number }>`
     display: grid;
     grid-template-columns: ${props => props.cardsCount === 1 ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))'};
     gap: 0.4em;
+`
+
+const CardMotionWrapper = styled(motion.div)`
+    width: 100%;
 `
 
 const Title = styled(Typography.Title)`

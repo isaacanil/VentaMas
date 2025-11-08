@@ -4,6 +4,8 @@ import { switchToBusiness, returnToOriginalBusiness, switchToRole, returnToOrigi
 import { fbGetUsers, fbSearchUsers } from '../../../../firebase/Auth/fbAuthV2/fbGetUsers';
 import { fbUpdateUserPassword } from '../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../../../firebase/firebaseconfig';
 import { ROUTES } from '../../../../routes/routesName';
 
 /**
@@ -53,6 +55,72 @@ class CommandProcessor {
       console.error('Error al cargar usuarios:', error);
       return [];
     }
+  }
+
+  /**
+   * Carga todos los productos del negocio actual con sus IDs para búsquedas rápidas.
+   */
+  async loadProductsForLookup() {
+    if (!this.user?.businessID) {
+      return [];
+    }
+
+    try {
+      const productsRef = collection(db, 'businesses', this.user.businessID, 'products');
+      const snapshot = await getDocs(productsRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error('Error al cargar productos para la consola de desarrollador:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca productos cuyo nombre o campos relacionados contienen el término indicado.
+   */
+  async findProductsByName(searchTerm) {
+    if (!searchTerm) return [];
+
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    if (!normalizedSearch) return [];
+
+    const products = await this.loadProductsForLookup();
+
+    const fieldMatchesTerm = (value) => {
+      if (!value) return false;
+      if (typeof value === 'string') {
+        return value.toLowerCase().includes(normalizedSearch);
+      }
+      if (typeof value === 'object' && value !== null) {
+        if (typeof value.name === 'string' && value.name.toLowerCase().includes(normalizedSearch)) {
+          return true;
+        }
+        if (typeof value.label === 'string' && value.label.toLowerCase().includes(normalizedSearch)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    return products.filter(product => {
+      const candidateValues = [
+        product?.name,
+        product?.displayName,
+        product?.label,
+        product?.productName,
+        product?.description,
+        product?.presentation,
+        product?.brand,
+        product?.brandName,
+        product?.barcode,
+        product?.sku,
+        product?.code,
+        product?.internalCode,
+        product?.alternativeName,
+      ];
+
+      return candidateValues.some(fieldMatchesTerm);
+    });
   }
 
   /**
@@ -126,6 +194,10 @@ class CommandProcessor {
       { command: 'TESTMODE STATUS', description: 'Estado modo prueba' },
       // Comandos REACTSCAN
       { command: 'REACTSCAN', description: 'Carga React Scan' },
+
+      // Comandos PRODUCT
+      { command: 'PRODUCT', description: 'Comandos para buscar productos y ver sus IDs' },
+      { command: 'PRODUCT ID ', description: 'Busca productos por nombre y muestra su ID' },
 
       // Comandos USER MANAGEMENT
       { command: 'USERS', description: 'Administra usuarios' },
@@ -320,6 +392,8 @@ NAVIGATE       Navega entre diferentes rutas de la aplicación.
                Incluye búsqueda y modo de selección interactivo.
 PRUEBA         Navega rápidamente a la página de pruebas (/prueba).
 REACTSCAN      Carga la herramienta React Scan.
+PRODUCT         Busca productos por nombre y devuelve su ID.
+PRODUCT ID      Devuelve el ID de un producto dado su nombre.
 ROLE           Administra el cambio temporal de roles del usuario.
                Incluye modo de selección interactivo con clic.
 SELECT         Comandos de selección interactiva con clic.
@@ -375,6 +449,61 @@ Consola de desarrollador: ABIERTA`;
           } else {
             result = 'React Scan solo está disponible en el entorno de desarrollo.';
           }
+          break;
+
+        case cmd.startsWith('product id '): {
+          const rawCommand = command.trim();
+          const searchTerm = rawCommand.slice('product id '.length).trim();
+
+          if (!searchTerm) {
+            result = 'Especifica el nombre de un producto. Uso: PRODUCT ID [NOMBRE]';
+            break;
+          }
+
+          result = `Buscando productos que coincidan con "${searchTerm}"...`;
+          this.findProductsByName(searchTerm)
+            .then((matches) => {
+              if (matches.length === 0) {
+                this.addOutput(`No se encontró ningún producto que contenga "${searchTerm}".`, 'warning');
+                return;
+              }
+
+              const maxMatchesToShow = 10;
+              const limitedMatches = matches.slice(0, maxMatchesToShow);
+              const header = matches.length > limitedMatches.length
+                ? `Mostrando ${limitedMatches.length} de ${matches.length} coincidencias para "${searchTerm}":\n\n`
+                : `Productos encontrados para "${searchTerm}":\n\n`;
+
+              const formattedMatches = limitedMatches.map((product, index) => {
+                const brandName = typeof product?.brand === 'string'
+                  ? product.brand
+                  : product?.brand?.name;
+                const code = product?.code || product?.sku || product?.barcode || product?.internalCode;
+                const lines = [
+                  `${index + 1}. ${product?.name || 'Sin nombre'}`,
+                  `   ID: ${product?.id}`
+                ];
+
+                if (brandName) lines.push(`   Marca: ${brandName}`);
+                if (code) lines.push(`   Código: ${code}`);
+
+                return lines.join('\n');
+              }).join('\n\n');
+
+              this.addOutput(`${header}${formattedMatches}`);
+            })
+            .catch((error) => {
+              this.addOutput('Error al buscar productos: ' + error.message, 'error');
+            });
+          break;
+        }
+
+        case cmd === 'product':
+          result = `Utilización: PRODUCT ID [NOMBRE]
+
+Busca un producto por su nombre y devuelve el ID del documento en Firestore.
+Ejemplo:
+  PRODUCT ID Coca-Cola`;
           break;
 
         case cmd === 'debug on':

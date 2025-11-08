@@ -25,8 +25,8 @@ const ImagePanel = styled.div`
 `;
 
 const PreviewFrame = styled.div`
-  flex: 0 0 220px;
-  height: 220px;
+  flex: 0 0 140px;
+  height: 140px;
   border-radius: 14px;
   overflow: hidden;
   background: #f8fafc;
@@ -44,7 +44,7 @@ const PreviewFrame = styled.div`
 
 const PreviewActions = styled.div`
   flex: 1;
-  min-width: 220px;
+  min-width: 140px;
   display: flex;
   flex-direction: column;
   gap: 8px;

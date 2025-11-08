@@ -18,14 +18,16 @@ import { GlobalMenu } from './GlobalMenu/GlobalMenu'
 
 
 
-export const MenuApp = ({ 
-  data, 
-  sectionName, 
-  sectionNameIcon, 
-  borderRadius, 
-  setSearchData, 
-  searchData, 
+export const MenuApp = ({
+  data,
+  sectionName,
+  sectionNameIcon,
+  borderRadius,
+  setSearchData,
+  searchData,
   displayName = "",
+  sectionStatus,
+  toolbarProps = {},
   showBackButton = true, // Nueva prop para controlar si se muestra el botón
   showNotificationButton = false, // Nueva prop para controlar si se muestra el botón de notificaciones
   onBackClick,          // Nueva prop para manejar el click personalizado
@@ -72,6 +74,9 @@ export const MenuApp = ({
           {sectionName && (
             <SectionName>{sectionNameIcon}{sectionName}</SectionName>
           )}
+          {sectionStatus && (
+            <StatusBadge>{sectionStatus}</StatusBadge>
+          )}
           
           {/* Botón de búsqueda para móviles */}
           {setSearchData && (
@@ -94,7 +99,13 @@ export const MenuApp = ({
             </SearchInputWrapper>
           )}
         </Group>
-        <GlobalMenu data={data} setSearchData={setSearchData} searchData={searchData} onReportSaleOpen={onReportSaleOpen} />
+        <GlobalMenu
+          data={data}
+          setSearchData={setSearchData}
+          searchData={searchData}
+          onReportSaleOpen={onReportSaleOpen}
+          {...toolbarProps}
+        />
         <SideBar isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
       </Container>
     </Fragment>
@@ -241,6 +252,26 @@ const SectionName = styled.div`
   }
 `
 
+const StatusBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15em 0.75em;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  @media (max-width: 768px) {
+    font-size: 0.7em;
+    padding: 0.1em 0.65em;
+  }
+`
+
 const SearchInputWrapper = styled.div`
   display: flex;
   flex: 1 1 auto;
@@ -266,4 +297,3 @@ const MobileSearchButton = styled.div`
     justify-content: center;
   }
 `
-

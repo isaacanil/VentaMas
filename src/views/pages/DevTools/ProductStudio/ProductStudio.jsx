@@ -57,6 +57,7 @@ export default function ProductStudio() {
   const [summaryVisible, setSummaryVisible] = useState(true);
   const lastLoadedProductIdRef = useRef(null);
   const isUpdateMode = Boolean(productIdFromParams);
+  const sectionStatusLabel = (isUpdateMode || status === 'update') ? 'Actualizando' : 'Creando';
 
   const brandMeta = useMemo(
     () => brandFieldMetaByType(product?.type),
@@ -323,7 +324,16 @@ export default function ProductStudio() {
 
   return (
     <PageContainer>
-      <MenuApp sectionName="Product Studio" />
+      <MenuApp
+        sectionName="Product Studio"
+        toolbarProps={{
+          isUpdateMode,
+          navigationVisible,
+          summaryVisible,
+          onToggleNavigation: handleToggleNavigation,
+          onToggleSummary: handleToggleSummary,
+        }}
+      />
       <Workspace $showNavigator={navigationVisible}>
         {navigationVisible && (
           <SectionNavigator
@@ -335,14 +345,9 @@ export default function ProductStudio() {
           <StudioWrapper>
             <ActionBar
               isUpdateMode={isUpdateMode}
-              productId={productIdFromParams}
               submitting={submitting}
               onReset={handleReset}
               onSubmit={handleSubmit}
-              navigationVisible={navigationVisible}
-              summaryVisible={summaryVisible}
-              onToggleNavigation={handleToggleNavigation}
-              onToggleSummary={handleToggleSummary}
             />
 
             <ModeBanner isUpdateMode={isUpdateMode} />

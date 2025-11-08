@@ -49,6 +49,12 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
     exportName: 'WarehouseToolbar',
   }),
   registerToolbar({
+    id: 'product-studio-toolbar',
+    routes: INVENTORY_TERM.PRODUCT_STUDIO,
+    importFn: () => import('../Page/ProductStudioToolbar'),
+    exportName: 'ProductStudioToolbar',
+  }),
+  registerToolbar({
     id: 'users-admin-toolbar',
     routes: '/users/list',
     importFn: () => import('../Page/UsersAdminToolbar'),

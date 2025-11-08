@@ -29,8 +29,12 @@ export const SectionDescription = styled(Text)`
 
 export const FieldGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const SectionBadge = styled(Badge)`

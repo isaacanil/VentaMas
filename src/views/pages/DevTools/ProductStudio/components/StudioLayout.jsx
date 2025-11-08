@@ -55,6 +55,7 @@ export const StickySummary = styled.div`
   gap: 16px;
 
   @media (max-width: 1200px) {
+    display: none;
     padding: 0;
   }
 `;
