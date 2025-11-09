@@ -8,7 +8,7 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/plugins/captions.css";
 
-const ImageLightbox = ({ lightboxOpen, setLightboxOpen, lightboxIndex, setLightboxIndex, getImageFiles }) => (
+const ImageLightbox = ({ lightboxOpen, setLightboxOpen, lightboxIndex, setLightboxIndex: _setLightboxIndex, getImageFiles }) => (
   <Lightbox
     open={lightboxOpen}
     close={() => setLightboxOpen(false)}

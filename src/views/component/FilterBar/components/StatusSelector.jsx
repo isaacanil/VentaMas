@@ -51,7 +51,6 @@ export const StatusSelector = ({
     placeholder = "Estado",
     showAllOption = false,
     width,
-    showAllLabel = 'Mostrar todos'
 }) => {
     // Filtrar las opciones según los estados visibles
     const filteredOptions = visibleStatus.length > 0 

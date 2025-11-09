@@ -45,7 +45,6 @@ const DueDateConfig = () => {
   const [selectedOption, setSelectedOption] = useState('1_week');
 
   const [loadingSaveCustomDuePeriod, setLoadingSaveCustomDuePeriod] = useState(false);
-  const [loadingUpdateSettings, setLoadingUpdateSettings] = useState(false);
 
   useEffect(() => {
     if (duePeriod) {
@@ -59,7 +58,7 @@ const DueDateConfig = () => {
     try {
       await setBillingSettings(user, { hasDueDate: checked });
       message.success('Configuración actualizada');
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la configuración');
     }
   };
@@ -90,13 +89,12 @@ const DueDateConfig = () => {
         });
         message.success('Configuración de vencimiento actualizada');
       }
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la configuración');
     }
   };
 
   const handleUseCustomConfigChange = async (checked) => {
-    setLoadingUpdateSettings(true);
     try {
       await setBillingSettings(user, { useCustomConfig: checked });
       if (checked) {
@@ -113,10 +111,8 @@ const DueDateConfig = () => {
         });
       }
       message.success('Configuración actualizada');
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la configuración');
-    } finally {
-      setLoadingUpdateSettings(false);
     }
   };
 
@@ -132,7 +128,7 @@ const DueDateConfig = () => {
         useCustomConfig: true
       });
       message.success('Configuración de vencimiento personalizada guardada');
-    } catch (error) {
+    } catch {
       message.error('Error al guardar la configuración');
     } finally {
       setLoadingSaveCustomDuePeriod(false);

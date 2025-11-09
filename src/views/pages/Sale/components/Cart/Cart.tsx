@@ -23,8 +23,8 @@ export const Cart = (): JSX.Element => {
 const Container = styled.div<{ $isOpen: boolean }>`
   position: relative;
    background-color: ${({ theme }) => theme.bg.shade};
-   max-width: 30em;
-   width: 24em;
+  //  max-width: 30em;
+   width: 26em;
    overflow: hidden;
    display: grid;
    grid-template-rows: min-content 1fr min-content ;

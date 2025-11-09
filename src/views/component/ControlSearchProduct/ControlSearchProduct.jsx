@@ -1,6 +1,8 @@
 import React, { Fragment } from 'react'
 import { useMatch } from 'react-router-dom'
 
+import { Carrusel } from '../Carrusel/Carrusel'
+
 import Style from './ProductControl.module.scss'
 
 export const ControlSearchProduct = () => {
@@ -31,4 +33,3 @@ export const ControlSearchProduct = () => {
 
   )
 }
-

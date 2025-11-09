@@ -30,7 +30,7 @@ const QuoteSettingsSection = () => {
         try {
             await setBillingSettings(user, { quoteEnabled: checked });
             message.success('Configuración guardada exitosamente');
-        } catch (error) {
+        } catch {
             message.error('Error al guardar la configuración');
         }
     };
@@ -49,7 +49,7 @@ const QuoteSettingsSection = () => {
                 message.info('El valor máximo permitido es 90 días');
                 form.setFieldValue('quoteValidity', 90);
             }
-        } catch (error) {
+        } catch {
             message.error('Error al guardar la configuración');
         }
     };
@@ -57,7 +57,7 @@ const QuoteSettingsSection = () => {
     const handleNoteBlur = async (e) => {
         try {
             await setBillingSettings(user, { quoteDefaultNote: e.target.value });
-        } catch (error) {
+        } catch {
             message.error('Error al guardar la configuración');
         }
     };

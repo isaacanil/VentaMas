@@ -51,7 +51,7 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
       messageApi.success(
         `Flujo de autorizaciones ${nextValue ? 'habilitado' : 'deshabilitado'}`
       );
-    } catch (error) {
+    } catch {
       messageApi.error('Error al guardar la configuración.');
     } finally {
       setIsUpdating(false);
@@ -85,7 +85,7 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
         },
       });
       messageApi.success('Módulo actualizado correctamente');
-    } catch (error) {
+    } catch {
       messageApi.error('Error al actualizar el módulo.');
     } finally {
       setIsUpdating(false);

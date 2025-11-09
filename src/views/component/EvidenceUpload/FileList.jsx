@@ -24,12 +24,6 @@ const FileInfo = styled.div`
   margin-left: 10px;
 `;
 
-const FileType = styled.span`
-  color: #888;
-  font-size: 12px;
-  margin-left: 10px;
-`;
-
 const DeleteButton = styled.button`
   background: none;
   border: none;

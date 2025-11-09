@@ -62,7 +62,7 @@ export default [
       ],
 
       // === import/order útil en Vite ===
-      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/", "^storybook/test$"] }],
+      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/", "^storybook/test$", "^yet-another-react-lightbox/plugins"] }],
       "import/order": ["warn", {
         groups: ["builtin","external","internal","parent","sibling","index","object","type"],
         "newlines-between": "always",
@@ -135,7 +135,7 @@ export default [
       ],
 
       // Import helpers
-      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/", "^storybook/test$"] }],
+      "import/no-unresolved": ["error", { ignore: ["\\.(css|svg|png|jpe?g|webp)$", "^@/", "^storybook/test$", "^yet-another-react-lightbox/plugins"] }],
       "import/order": ["warn", {
         groups: ["builtin","external","internal","parent","sibling","index","object","type"],
         "newlines-between": "always",

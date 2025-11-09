@@ -60,7 +60,7 @@ const StockAlertSettingsSection = () => {
     try {
       await setBillingSettings(user, data);
       message.success('Configuración guardada');
-    } catch (e) {
+    } catch {
       message.error('No se pudo guardar la configuración');
     }
   };

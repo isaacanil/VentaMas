@@ -13,11 +13,7 @@ export const Category = ({
     onClick = () => {},
     toggleFavorite
 }) => {
-    const [isHover, setIsHover] = useState(false)
     const [isHoverFavorite, setIsHoverFavorite] = useState(false)
-
-    const handleMouseEnter = () => setIsHover(true);
-    const handleMouseLeave = () => setIsHover(false);
 
     const highlightMatch = (text) => {
         if (!searchTerm) return text;
@@ -31,9 +27,7 @@ export const Category = ({
     return (
         <Container
             selected={selected}
-            onMouseEnter={handleMouseEnter}
             color={color}
-            onMouseLeave={handleMouseLeave}
             onClick={() => onClick(item)}
         >
             <CategoryItem>{highlightMatch(item?.name)}</CategoryItem>
