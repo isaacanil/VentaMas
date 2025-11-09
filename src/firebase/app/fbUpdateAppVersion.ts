@@ -2,9 +2,10 @@
 //la version de la app se guardara en el documento app en una propiedad donde voy a poner todo lo relacionado con las versiones de la app
 //en esta version pondria la fecha de hoy 
 
-import { db } from '../firebaseconfig';
 import { serverTimestamp } from '@firebase/firestore';
-import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
+
+import { db } from '../firebaseconfig';
 
 export const fbUpdateAppVersion = async (ChangelogId: string) => {
     const appRef = doc(db, 'app', '3Iz5UZWWfF4vCJPlDSy1');

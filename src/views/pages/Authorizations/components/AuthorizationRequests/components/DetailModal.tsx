@@ -1,4 +1,3 @@
-import { Modal, Button, Space, Tooltip, Popconfirm } from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import {
   faClipboardList,
@@ -10,9 +9,12 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Button, Space, Tooltip, Popconfirm } from 'antd';
 import styled from 'styled-components';
+
 import { formatDateTime, getStatusLabel, statusTheme } from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
+
 import type { AuthorizationRequest } from '../types';
 
 interface DetailModalProps {
@@ -46,15 +48,15 @@ export const DetailModal = ({
   const moduleMeta = resolveModuleMeta(detailRequest);
   const metadataSource =
     typeof detailRequest.metadata === 'object' && detailRequest.metadata !== null
-      ? (detailRequest.metadata as Record<string, unknown>)
+      ? (detailRequest.metadata)
       : {};
   const metadataReference =
     typeof metadataSource?.['reference'] === 'string'
-      ? (metadataSource['reference'] as string)
+      ? (metadataSource['reference'])
       : '';
   const metadataNote =
     typeof metadataSource?.['note'] === 'string'
-      ? (metadataSource['note'] as string)
+      ? (metadataSource['note'])
       : '';
   const reference =
     detailRequest.reference ||

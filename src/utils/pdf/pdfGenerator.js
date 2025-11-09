@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+
 import 'jspdf-autotable';
 import { resolveDocumentIdentity } from '../invoice/documentIdentity.js';
 

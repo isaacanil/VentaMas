@@ -1,9 +1,10 @@
-import type { JSX, MouseEvent, ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
 import { toggleDeveloperModal } from '../../../../../features/modals/modalSlice';
+
+import type { JSX, MouseEvent, ReactNode } from 'react';
 
 export type FeatureCardData = {
   id?: number | string;

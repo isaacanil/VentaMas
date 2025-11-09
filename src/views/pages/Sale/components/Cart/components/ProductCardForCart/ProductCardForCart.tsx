@@ -1,8 +1,7 @@
 import { MessageOutlined, PercentageOutlined, MoreOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip, Badge, Button, Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
 import { motion } from 'framer-motion';
 import { useState, type KeyboardEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,6 +20,8 @@ import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCover
 import { PriceEditor } from './components/PriceEditor/PriceEditor';
 import { WeightInput } from './components/WeightInput/WeightInput';
 import { extraerPreciosConImpuesto } from './utils/priceUtils';
+
+import type { MenuProps } from 'antd';
 
 type PriceType = 'listPrice' | 'avgPrice' | 'minPrice' | 'cardPrice' | 'offerPrice';
 
@@ -268,7 +269,7 @@ export const ProductCardForCart = ({
   ];
 
   const hasActions = Boolean(item.comment || item.discount || hasBatchInfo);
-  const finalPrice = getTotalPrice(item, taxReceiptEnabled) as number;
+  const finalPrice = getTotalPrice(item, taxReceiptEnabled);
   const originalPriceValue = item.pricing?.price ?? item.price ?? 0;
   const originalPrice = ensureNumber(originalPriceValue);
   const taxPercentage = ensureNumber(item.pricing?.tax);

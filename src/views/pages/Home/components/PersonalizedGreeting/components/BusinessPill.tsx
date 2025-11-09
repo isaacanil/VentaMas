@@ -1,6 +1,7 @@
 // BusinessPill component - combines logo and business name
-import type { JSX } from 'react';
 import styled from 'styled-components';
+
+import type { JSX } from 'react';
 
 type BusinessPillProps = {
   logoUrl?: string | null;

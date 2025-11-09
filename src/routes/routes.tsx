@@ -1,4 +1,3 @@
-import type { ReactElement } from 'react';
 
 import { NotFound } from "../views/pages/NotFound/NotFound";
 
@@ -21,8 +20,10 @@ import settings from "./paths/Setting";
 import utility from "./paths/Utility";
 import { processRoute } from "./requiereAuthProvider";
 import { ROUTE_STATUS } from './routeMeta';
-import type { RouteStatus } from './routeMeta';
 import { registerRoutes as registerRoutesIndex } from './routeVisibility';
+
+import type { RouteStatus } from './routeMeta';
+import type { ReactElement } from 'react';
 
 export interface AppRoute {
     path: string;
@@ -129,7 +130,7 @@ const baseRawRoutes = [
     ...(dev as AppRoute[]), // devOnly marcadas dentro del archivo
     ...(changelogs as AppRoute[]),
     ...(utility as AppRoute[]),
-    ...(accountReceivable as AppRoute[]),
+    ...(accountReceivable),
     ...(insurance as AppRoute[]),
     ...(creditNote as AppRoute[]),
     ...(authorizations as AppRoute[]),

@@ -1,4 +1,3 @@
-import type { JSX } from 'react';
 import styled from 'styled-components';
 
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
@@ -6,6 +5,8 @@ import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
 import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts';
 import PersonalizedGreeting from './components/PersonalizedGreeting/PersonalizedGreeting';
 import Footer from './Footer/Footer';
+
+import type { JSX } from 'react';
 
 export const Home = (): JSX.Element => {
   return (

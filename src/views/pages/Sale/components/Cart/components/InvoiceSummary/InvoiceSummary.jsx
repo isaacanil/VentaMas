@@ -9,6 +9,7 @@ import { icons } from '../../../../../../../constants/icons/icons';
 import { selectBusinessData } from '../../../../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoicePanelOpen, setCashPaymentToTotal, selectProductsWithIndividualDiscounts, selectTotalIndividualDiscounts, setDiscountAuthorizationContext, clearDiscountAuthorizationContext } from '../../../../../../../features/cart/cartSlice';
+import { selectNcfType, selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
 import { fbAddPreOrder } from '../../../../../../../firebase/invoices/fbAddPreocer';
 import { fbUpdatePreOrder } from '../../../../../../../firebase/invoices/fbUpdatePreorder';
 import { downloadQuotationPdf } from '../../../../../../../firebase/quotation/downloadQuotationPDF';
@@ -20,13 +21,12 @@ import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'
 import useInsuranceFormComplete from '../../../../../../../hooks/useInsuranceFormComplete';
 import { validateInvoiceCart } from '../../../../../../../utils/invoiceValidation';
 import { getTotalDiscount } from '../../../../../../../utils/pricing';
-import { usePreorderModal } from '../../../PreorderQuickActions';
-import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber';
-import CustomInput from '../../../../../../templates/system/Inputs/CustomInput';
 import { PinAuthorizationModal } from '../../../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal';
 import { Quotation } from '../../../../../../component/Quotation/components/Quotation/Quotation';
+import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber';
+import CustomInput from '../../../../../../templates/system/Inputs/CustomInput';
+import { usePreorderModal } from '../../../PreorderQuickActions';
 import { handleCancelShipping } from '../InvoicePanel/handleCancelShipping';
-import { selectNcfType, selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
 
 import { ActionMenu } from './components/ActionMenu/Actionmenu';
 import { Delivery } from './components/Delivery/Delivery';

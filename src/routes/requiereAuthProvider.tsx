@@ -1,7 +1,8 @@
-import type { ReactElement } from 'react';
 
 import { RequireAuth } from '../views/component/RequireAuth';
 import { ErrorBoundary } from '../views/pages/ErrorElement/ErrorBoundary'
+
+import type { ReactElement } from 'react';
 
 type GuardedRoute = {
   element: ReactElement;

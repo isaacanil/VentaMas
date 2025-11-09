@@ -1,17 +1,17 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import styled, { keyframes } from 'styled-components';
-import { Tooltip } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faArrowTrendUp,
     faTriangleExclamation,
     faCircleExclamation,
     faCircleInfo,
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Tooltip } from 'antd';
+import { motion } from 'framer-motion';
+import React, { useMemo } from 'react';
+import styled, { keyframes } from 'styled-components';
 
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { designSystemV2 } from '../../../../theme/designSystemV2';
+import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { buildBusinessInsights } from '../utils/buildBusinessInsights';
 import { getVariantStyles } from '../utils/insightVariants';
 

@@ -3,8 +3,8 @@ import { motion } from 'framer-motion'
 import React, { Suspense } from 'react'
 import styled from 'styled-components'
 
-import { uiImage } from '../../../../templates/system/FormattedValue/ui/uiImage'
 import { lazyWithRetry } from '../../../../../utils/lazyWithRetry'
+import { uiImage } from '../../../../templates/system/FormattedValue/ui/uiImage'
 import welcomeData from '../../WelcomeData.json'
 import Features from '../Features/Features'
 

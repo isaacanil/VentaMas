@@ -1,5 +1,5 @@
-import type { PathPattern } from 'react-router-dom'
 import type { MatchConfig } from '../types/types'
+import type { PathPattern } from 'react-router-dom'
 
 /**
  * Normalizes a match configuration into a PathPattern

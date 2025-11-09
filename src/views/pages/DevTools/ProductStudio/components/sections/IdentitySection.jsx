@@ -1,18 +1,17 @@
 import { CloudUploadOutlined, PlusOutlined, ReloadOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, Row, Select, Space, Switch, Typography } from 'antd';
+import { Button, Col, Divider, Form, Input, Row, Select, Switch, Typography } from 'antd';
 import styled from 'styled-components';
 
+import { imgFailed } from '../../../../../component/modals/ProductForm/ImageManager/ImageManager';
 import {
   DividerLabel,
   FieldGrid,
-  SectionBadge,
   SectionCard,
   SectionDescription,
   SectionHeader,
   SectionTitle,
   SwitchField,
 } from '../SectionLayout';
-import { imgFailed } from '../../../../../component/modals/ProductForm/ImageManager/ImageManager';
 
 const { Text } = Typography;
 

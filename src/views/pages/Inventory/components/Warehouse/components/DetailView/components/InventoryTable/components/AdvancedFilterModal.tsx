@@ -1,5 +1,5 @@
+import { Modal, Checkbox, Select, Button } from 'antd';
 import React from 'react';
-import { Modal, Checkbox, Divider, Select, Button } from 'antd';
 
 import {
   FilterModalContent,
@@ -8,6 +8,7 @@ import {
   FilterSelectContainer,
   MutedText,
 } from '../styles';
+
 import type { DraftBatchOption, FilterDraft, ProductOption } from '../types';
 
 interface AdvancedFilterModalProps {

@@ -2,9 +2,9 @@ import { collection, doc, getDoc, getDocs, serverTimestamp, setDoc } from "fireb
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
+import { sanitizeFirestoreDocument } from "../../utils/firebase/sanitizeFirestoreDocument";
 import { db } from "../firebaseconfig";
 import { getNextID } from "../Tools/getNextID";
-import { sanitizeFirestoreDocument } from "../../utils/firebase/sanitizeFirestoreDocument";
 
 function calculateExpirationDate(days) {
     return DateTime.now().plus({ days }).toJSDate();

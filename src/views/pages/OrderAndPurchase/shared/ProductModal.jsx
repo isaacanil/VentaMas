@@ -1,15 +1,15 @@
 import { faImage } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Drawer, Input, message, Pagination, Tooltip } from 'antd';
+import { collection, count, getAggregateFromServer, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { collection, count, getAggregateFromServer, query, where } from 'firebase/firestore';
 
-import { useGetProducts } from '../../../../firebase/products/fbGetProducts';
-import { filterData } from '../../../../hooks/search/useSearch';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { db } from '../../../../firebase/firebaseconfig';
+import { useGetProducts } from '../../../../firebase/products/fbGetProducts';
+import { filterData } from '../../../../hooks/search/useSearch';
 
 const Header = styled.div`
   padding: 0 1em;

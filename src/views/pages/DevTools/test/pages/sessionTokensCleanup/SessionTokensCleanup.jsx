@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Alert, Button, Card, List, Space, Typography, message } from 'antd';
 import {
   collection,
@@ -8,6 +7,7 @@ import {
   limit,
   query,
 } from 'firebase/firestore';
+import { useState } from 'react';
 
 import { db } from '../../../../../../firebase/firebaseconfig';
 
@@ -87,7 +87,7 @@ export default function SessionTokensCleanup() {
         setError(
           `No se pudieron eliminar ${failed.length} tokens. Revisa la consola para más detalles.`
         );
-        // eslint-disable-next-line no-console
+         
         console.error('SessionTokensCleanup delete errors:', failed);
       }
       setTokens([]);

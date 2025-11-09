@@ -5,8 +5,8 @@ import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
-import { Quotation } from '../Quotation/Quotation';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
+import { Quotation } from '../Quotation/Quotation';
 
 
 const TEMPLATES_CONFIG = {

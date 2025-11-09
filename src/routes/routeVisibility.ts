@@ -1,4 +1,5 @@
 import { ROUTE_STATUS } from './routeMeta';
+
 import type { AppRoute } from './routes';
 
 type MenuItemMeta = {

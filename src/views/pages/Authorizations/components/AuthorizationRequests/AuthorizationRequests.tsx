@@ -1,17 +1,20 @@
+import { ReloadOutlined } from '@ant-design/icons';
+import { Button, Card, Pagination, Select, Spin, message, Modal } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Card, Pagination, Select, Spin, message, Modal } from 'antd';
-import type { SelectProps } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+
 import { DatePicker } from '../../../../../components/common/DatePicker/DatePicker';
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { useAuthorizationRequests, type StatusFilterValue } from './hooks/useAuthorizationRequests';
-import { RequestCard } from './components/RequestCard';
+
 import { DetailModal } from './components/DetailModal';
+import { RequestCard } from './components/RequestCard';
 import { ITEMS_PER_PAGE } from './constants/constants';
+import { useAuthorizationRequests, type StatusFilterValue } from './hooks/useAuthorizationRequests';
+
 import type { AuthorizationRequestListItem } from './types';
+import type { SelectProps } from 'antd';
 
 interface AuthorizationRequestsProps {
   searchTerm?: string;

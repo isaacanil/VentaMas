@@ -2,8 +2,9 @@ import { Drawer } from 'antd'
 import { Suspense, memo } from 'react'
 import styled from 'styled-components'
 
-import { ExportInvoice } from './components/Header/ExportInvoice'
 import { lazyWithRetry } from '../../../../../utils/lazyWithRetry'
+
+import { ExportInvoice } from './components/Header/ExportInvoice'
 
 const SaleReportTable = lazyWithRetry(
     () => import('../../../InvoicesPage/SaleReportTable/SaleReportTable'),

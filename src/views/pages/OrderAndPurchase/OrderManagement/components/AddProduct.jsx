@@ -11,7 +11,6 @@ import { selectUser } from '../../../../../features/auth/userSlice';
 import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
 import { formatMoney } from '../../../../../utils/formatters';
 import BackOrdersModal from '../../PurchaseManagement/components/BackOrdersModal';
-
 import ProductModal from '../../shared/ProductModal';
 
 

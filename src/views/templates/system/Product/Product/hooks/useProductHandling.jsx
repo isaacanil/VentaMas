@@ -8,8 +8,8 @@ import { openProductStockSimple } from '../../../../../../features/productStock/
 import { getLocationName } from '../../../../../../firebase/warehouse/locationService';
 import { useProductStockCheck } from '../../../../../../hooks/useProductStockCheck';
 import { getTotalPrice } from '../../../../../../utils/pricing';
-
 import { resolveStock } from "../utils/stock.utils";
+
 import { useProductInCart, useProductStockStatus } from "./useProductCartAndStock";
 
 export const useProductHandling = (product, taxReceiptEnabled) => {

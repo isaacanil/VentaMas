@@ -1,6 +1,6 @@
+import { createPopper } from '@popperjs/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { createPopper } from '@popperjs/core';
 import styled from 'styled-components';
 
 const ChevronDown = (props) => (

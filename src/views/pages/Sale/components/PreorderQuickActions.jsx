@@ -7,8 +7,8 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
 import { SelectSettingCart, loadCart, selectCart, setCartId } from '../../../../features/cart/cartSlice';
-import { selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { selectClientWithAuth } from '../../../../features/clientCart/clientCartSlice';
+import { selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { fbGetPreorders } from '../../../../firebase/invoices/fbGetPreorders';
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { validateInvoiceCart } from '../../../../utils/invoiceValidation';

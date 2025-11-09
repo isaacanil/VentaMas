@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
 import { goOffline, goOnline, onDisconnect, onValue, ref, serverTimestamp, set, update } from 'firebase/database';
+import { useEffect, useRef } from 'react';
 
-import { realtimeDB } from '../firebaseconfig.jsx';
 import { ensureDeviceId, getStoredSession } from '../Auth/fbAuthV2/sessionClient.js';
+import { realtimeDB } from '../firebaseconfig.jsx';
 
 const PRESENCE_BASE_PATH = 'presence';
 const HEARTBEAT_INTERVAL_MS = 20 * 1000; // Mantener actualizado el timestamp antes de que el backend lo marque como inactivo
