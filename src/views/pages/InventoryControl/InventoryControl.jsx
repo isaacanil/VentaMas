@@ -21,6 +21,14 @@ import { useUserNamesCache } from './hooks/useUserNamesCache'
 import { buildInventoryGroups } from './utils/buildInventoryGroups'
 import { exportInventoryToExcel } from './utils/exportInventoryToExcel'
 
+const consoleApi = typeof globalThis !== 'undefined' ? globalThis.console : undefined
+
+const logError = (...args) => {
+  if (consoleApi?.error) {
+    consoleApi.error(...args)
+  }
+}
+
 export const InventoryControl = () => {
   const user = useSelector(selectUser)
   const { sessionId } = useParams()
@@ -95,7 +103,7 @@ export const InventoryControl = () => {
         { id: session?.id || sessionId, name: session?.name }
       )
     } catch (e) {
-      try { console.error('[InventoryControl] Error exportando inventario:', e) } catch {}
+      logError('[InventoryControl] Error exportando inventario:', e)
       message.error('No se pudo exportar el inventario')
     }
   }
@@ -130,11 +138,12 @@ export const InventoryControl = () => {
         try {
           // Si hay cambios, guardarlos antes de finalizar
           if (hasChanges) {
-            try { await handleSaveCounts() } catch {}
+            await handleSaveCounts()
           }
           const summary = await finalize({ groups, counts, stocks, countsMeta })
           if (summary) message.success('Inventario finalizado')
-        } catch {
+        } catch (error) {
+          logError('[InventoryControl] Error finalizando inventario:', error)
           message.error('No se pudo finalizar el inventario')
         }
       }

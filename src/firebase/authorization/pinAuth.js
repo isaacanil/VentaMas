@@ -25,7 +25,7 @@ const parseIsoDate = (value) => {
   try {
     const date = value instanceof Date ? value : new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
-  } catch (error) {
+  } catch {
     return null;
   }
 };

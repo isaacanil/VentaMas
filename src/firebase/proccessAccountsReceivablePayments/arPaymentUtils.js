@@ -453,7 +453,7 @@ export const createFullPaymentReceipt = ({
     };
 
     // Debug logging para verificar que no hay undefined
-    const undefinedFields = Object.entries(receiptData).filter(([key, value]) => value === undefined);
+    const undefinedFields = Object.entries(receiptData).filter(([_key, value]) => value === undefined);
     if (undefinedFields.length > 0) {
         console.error("❌ Undefined fields found in payment receipt:", undefinedFields);
         console.error("❌ Full receipt data:", receiptData);

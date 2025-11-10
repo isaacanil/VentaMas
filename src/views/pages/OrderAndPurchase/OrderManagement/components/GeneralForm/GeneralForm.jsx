@@ -1,13 +1,12 @@
 import { Form, Select, DatePicker, message } from 'antd'
 import dayjs from 'dayjs'
 import { onSnapshot, doc } from 'firebase/firestore'
-import debounce from 'lodash/debounce'
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
 
 import { OPERATION_MODES } from '../../../../../../constants/modes'
-import { getTransactionConditionById, transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
+import { transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
 import { 
     selectOrder, 
     AddProductToOrder, 
@@ -22,7 +21,6 @@ import { toggleProviderModal } from '../../../../../../features/modals/modalSlic
 import { db } from '../../../../../../firebase/firebaseconfig'
 import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
 import { useBackOrdersByProduct } from "../../../../../../firebase/warehouse/backOrderService";
-import { normalizeText } from '../../../../../../utils/text'
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector'
 import BackOrdersModal from "../../../PurchaseManagement/components/BackOrdersModal";
 import AddProductForm from '../AddProduct'
@@ -38,9 +36,8 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const [selectedProvider, setSelectedProvider] = useState(null);
-    const [providerSearch, setProviderSearch] = useState('');
     const unsubscribeRef = useRef(null);
-    const { providers = [], loading: providersLoading } = useFbGetProviders();
+    const { providers = [] } = useFbGetProviders();
     const [isBackOrderModalVisible, setIsBackOrderModalVisible] = useState(false);
     const [selectedProductForBackorders, setSelectedProductForBackorders] = useState(null);
     const { backOrders = [] } = useBackOrdersByProduct(selectedProductForBackorders?.id);
@@ -51,11 +48,8 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
         condition,
         provider: providerId,
         deliveryAt,
-        paymentAt,
         note
     } = useSelector(selectOrder);
-
-    const conditionData = getTransactionConditionById(condition);
     const conditionItems = transactionConditions.map((item) => ({
         label: item.label,
         value: item.id // Cambiar de item.value a item.id
@@ -85,16 +79,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
     const handleConditionChange = (value) => {
         dispatch(setOrder({ condition: value }));
     };
-
-    // Debounced note change handler
-    const debouncedNoteChange = useMemo(
-        () =>
-            debounce((value) => {
-                dispatch(setOrder({ note: value }));
-            }, 300),
-        [dispatch]
-    );
-
     // Optimized note change handler
     const handleNoteChange = useCallback((value) => {
         dispatch(setOrder({ note: value }));
@@ -142,17 +126,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
             }
         };
     }, [selectedProvider?.id]);
-
-    const filteredProviders = useMemo(() => 
-        providerSearch
-            ? providers.filter(({ provider }) =>
-                normalizeText(provider.name).includes(normalizeText(providerSearch)) ||
-                normalizeText(provider.rnc || '').includes(normalizeText(providerSearch))
-            )
-            : providers,
-        [providers, providerSearch]
-    );
-
     const handleProviderSelect = (providerData) => {
         setSelectedProvider(providerData);
         dispatch(setOrder({ provider: providerData?.id || null }));
@@ -216,7 +189,7 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
                 <ProviderSelector
                     validateStatus={errors?.provider ? "error" : ""}
                     help={errors?.provider ? "El proveedor es requerido" : ""}
-                    providers={filteredProviders}
+                    providers={providers}
                     selectedProvider={selectedProvider}
                     onSelectProvider={handleProviderSelect}
                     onAddProvider={handleAddProvider}
@@ -324,14 +297,4 @@ const InvoiceDetails = styled.div`
     gap: 0.4em;
   
 `
-const ButtonsContainer = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    gap: 1em;
-   background-color: white;
-   padding-top: 1em;
-   border-top: 1px solid #e8e8e8;
-`
+

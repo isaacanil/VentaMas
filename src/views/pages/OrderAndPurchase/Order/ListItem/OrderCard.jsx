@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useDispatch } from 'react-redux'
-import styled from 'styled-components'
 
 import { getOrderStateByID } from '../../../../../constants/orderAndPurchaseState'
 import { toggleViewOrdersNotes } from '../../../../../features/modals/modalSlice'
@@ -12,14 +11,13 @@ import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndic
 
 import { ActionsButtonsGroup } from './ActionsButtonsGroup'
 
-export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId }) => {
+export const OrderCard = ({ orderData, Row, Col, activeId, setActiveId }) => {
     const dispatch = useDispatch()
-  
-    const [showNote, setShowNote] = useState(false)
-    //const orderItemSelectedRef = useSelector(selectOrderItemSelected)
-    const {data} = orderData
-    const handleViewNotes = () => {  
-        dispatch(toggleViewOrdersNotes({data, isOpen: 'open'}))   
+
+    const { data } = orderData
+
+    const handleViewNotes = () => {
+        dispatch(toggleViewOrdersNotes({ data, isOpen: 'open' }))
     }
    
     return (
@@ -42,7 +40,7 @@ export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId })
                         borderRadius='normal'
                         color='gray-dark'
                         border='light'
-                        onClick={(data) => handleViewNotes(data)}
+                        onClick={handleViewNotes}
                     />
                 }
 
@@ -63,6 +61,4 @@ export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId })
         </Row>
     )
 }
-const Container = styled.div`
-`
 

@@ -49,7 +49,7 @@ export const Notification = () => {
                 case 'info':
                     return setIcon(<FontAwesomeIcon icon={faInfoCircle} />)
                 case 'warning':
-                    return setIcon(<FaInfoCircle />)
+                    return setIcon(<FontAwesomeIcon icon={faExclamationCircle} />)
                 default:
                     return setIcon(null)
             }

@@ -67,4 +67,4 @@ export default defineConfig({
   plugins,
   server: { host: '0.0.0.0' },
   define: { global: 'globalThis' }
-} satisfies UserConfig)
+}) satisfies UserConfig

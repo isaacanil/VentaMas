@@ -21,7 +21,7 @@ export const Orders = () => {
     }
   })
 
-  const { providers = [], loading } = useFbGetProviders()
+  const { providers = [] } = useFbGetProviders()
   const filterConfig = useMemo(() => createFilterConfig(), [])
   const dataConfig = useMemo(
     () => ({

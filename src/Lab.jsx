@@ -6,9 +6,7 @@ import { Outlet } from 'react-router-dom'
 
 
 export const Lab = () => {
-  const dispatch = useDispatch()
-
-
+    const _dispatch = useDispatch()
   return (
     <div>
 

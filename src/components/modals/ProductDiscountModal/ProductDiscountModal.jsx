@@ -9,9 +9,9 @@ import { selectTaxReceiptEnabled } from '../../../features/taxReceipt/taxReceipt
 import { useFormatPrice } from '../../../hooks/useFormatPrice';
 import { getTotalPrice } from '../../../utils/pricing';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
-export const ProductDiscountModal = ({ visible, onClose, product }) => {
+const ProductDiscountModal = ({ visible, onClose, product }) => {
     const dispatch = useDispatch();
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
     const [discountType, setDiscountType] = useState('percentage');
@@ -29,148 +29,158 @@ export const ProductDiscountModal = ({ visible, onClose, product }) => {
 
     // Reiniciar valores cuando se abre el modal
     useEffect(() => {
-        if (visible && product) {
-            if (product.discount) {
-                setDiscountType(product.discount.type);
-                setDiscountValue(product.discount.value);
-                setPresetDiscount(null);
-            } else {
-                setDiscountType('percentage');
-                setDiscountValue(0);
-                setPresetDiscount(null);
-            }
+        if (!visible || !product) {
+            return;
         }
-    }, [visible, product]);    const calculateDiscountedPrice = () => {
-        if (!product) return 0;
-        
-        const value = presetDiscount?.value || discountValue;
-        const type = presetDiscount?.type || discountType;
-        
-        // Crear una copia temporal del producto sin descuento para obtener el precio base
-        const productWithoutDiscount = { ...product, discount: null };
-        const unitPriceWithTax = getTotalPrice(productWithoutDiscount, taxReceiptEnabled, false); // false para obtener precio unitario
-        const quantity = product.amountToBuy || 1;
-        const totalPriceWithTax = unitPriceWithTax * quantity;
-        
-        if (value <= 0) return totalPriceWithTax;
-        
-        if (type === 'percentage') {
-            return totalPriceWithTax * (1 - value / 100);
-        } else {
-            // Para monto fijo, restamos el descuento del total
-            return Math.max(0, totalPriceWithTax - value);
-        }
-    };
 
-    const calculateDiscountAmount = () => {
-        if (!product) return 0;
-        
-        // Obtener el precio total sin descuento
-        const productWithoutDiscount = { ...product, discount: null };
-        const unitPriceWithTax = getTotalPrice(productWithoutDiscount, taxReceiptEnabled, false);
-        const quantity = product.amountToBuy || 1;
-        const totalPriceWithTax = unitPriceWithTax * quantity;
-        const discountedPrice = calculateDiscountedPrice();
-        
-        return totalPriceWithTax - discountedPrice;
-    };    // Calcular precios para mostrar en la UI
+        if (product.discount) {
+            setDiscountType(product.discount.type);
+            setDiscountValue(product.discount.value);
+            setPresetDiscount(null);
+            return;
+        }
+
+        setDiscountType('percentage');
+        setDiscountValue(0);
+        setPresetDiscount(null);
+    }, [visible, product]);
+
     const displayPrices = React.useMemo(() => {
-        if (!product) return { unitPrice: 0, totalPrice: 0 };
-        
+        if (!product) {
+            return { unitPrice: 0, totalPrice: 0 };
+        }
+
         const productWithoutDiscount = { ...product, discount: null };
         const unitPriceWithTax = getTotalPrice(productWithoutDiscount, taxReceiptEnabled, false);
         const quantity = product.amountToBuy || 1;
-        const totalPriceWithTax = unitPriceWithTax * quantity;
-        
+
         return {
             unitPrice: unitPriceWithTax,
-            totalPrice: totalPriceWithTax
+            totalPrice: unitPriceWithTax * quantity,
         };
     }, [product, taxReceiptEnabled]);
 
+    const discountedPrice = React.useMemo(() => {
+        if (!product) {
+            return 0;
+        }
+
+        const value = presetDiscount?.value ?? discountValue;
+        const type = presetDiscount?.type ?? discountType;
+
+        if (value <= 0) {
+            return displayPrices.totalPrice;
+        }
+
+        if (type === 'percentage') {
+            return displayPrices.totalPrice * (1 - value / 100);
+        }
+
+        return Math.max(0, displayPrices.totalPrice - value);
+    }, [product, presetDiscount, discountValue, discountType, displayPrices]);
+
+    const discountAmount = React.useMemo(
+        () => Math.max(0, displayPrices.totalPrice - discountedPrice),
+        [displayPrices, discountedPrice]
+    );
+
     const formattedUnitPrice = useFormatPrice(displayPrices.unitPrice);
     const formattedTotalPrice = useFormatPrice(displayPrices.totalPrice);
-    const formattedDiscountAmount = useFormatPrice(calculateDiscountAmount());
-    const formattedDiscountedPrice = useFormatPrice(calculateDiscountedPrice());const handleApply = () => {
-        const discount = presetDiscount || { type: discountType, value: discountValue };
-        const finalDiscountValue = presetDiscount?.value || discountValue;
-        
-        console.log('Aplicando descuento:', {
-            product: product?.name,
-            discount,
-            finalDiscountValue,
-            productId: product?.id || product?.cid
-        });
-        
-        dispatch(updateProductDiscount({
-            id: product.id || product.cid,
-            discount: finalDiscountValue > 0 ? discount : null
-        }));
-        
+    const formattedDiscountAmount = useFormatPrice(discountAmount);
+    const formattedDiscountedPrice = useFormatPrice(discountedPrice);
+
+    const handleApply = () => {
+        if (!product) {
+            return;
+        }
+
+        const value = presetDiscount?.value ?? discountValue;
+        const discount = presetDiscount ?? { type: discountType, value };
+
+        dispatch(
+            updateProductDiscount({
+                id: product.id || product.cid,
+                discount: value > 0 ? discount : null,
+            })
+        );
+
         onClose();
     };
 
     const handleRemove = () => {
-        dispatch(updateProductDiscount({
-            id: product.id || product.cid,
-            discount: null
-        }));
+        if (!product) {
+            return;
+        }
+
+        dispatch(
+            updateProductDiscount({
+                id: product.id || product.cid,
+                discount: null,
+            })
+        );
+
         onClose();
     };
 
     const handlePresetSelect = (preset) => {
         setPresetDiscount(preset);
         setDiscountValue(0);
-    };    const handleCustomValueChange = (value) => {
+    };
+
+    const handleCustomValueChange = (value) => {
         setDiscountValue(value || 0);
         setPresetDiscount(null);
     };
 
-    const handleDiscountTypeChange = (e) => {
-        const newType = e.target.value;
-        setDiscountType(newType);
-        // Limpiar preset si se cambia a monto fijo (ya que los presets son porcentajes)
-        if (newType === 'fixed') {
+    const handleDiscountTypeChange = (event) => {
+        const nextType = event.target.value;
+        setDiscountType(nextType);
+
+        if (nextType === 'fixed') {
             setPresetDiscount(null);
         }
-        // Limpiar valor personalizado
+
         setDiscountValue(0);
-    };const maxFixedDiscount = displayPrices.totalPrice;
-    const currentDiscountValue = presetDiscount?.value || discountValue;
+    };
+
+    const maxFixedDiscount = displayPrices.totalPrice;
+    const currentDiscountValue = presetDiscount?.value ?? discountValue;
     const hasDiscount = currentDiscountValue > 0;
-    const actualDiscountValue = presetDiscount?.value || discountValue;
 
     return (
         <Modal
             title="Aplicar Descuento al Producto"
             open={visible}
             onCancel={onClose}
-            style={{top: 10}}            footer={[
+            style={{ top: 10 }}
+            footer={[
                 <Button key="cancel" onClick={onClose}>
                     Cancelar
                 </Button>,
-                product?.discount && (
+                product?.discount ? (
                     <Button key="remove" onClick={handleRemove} danger>
                         Quitar Descuento
                     </Button>
-                ),
-                <Button 
-                    key="apply" 
-                    type="primary" 
+                ) : null,
+                <Button
+                    key="apply"
+                    type="primary"
                     onClick={handleApply}
                     disabled={!hasDiscount}
                 >
                     Aplicar Descuento
-                </Button>
+                </Button>,
             ]}
             width={500}
-        >            <ModalContent>
+        >
+            <ModalContent>
                 <ProductInfo>
                     <ProductHeader>
                         <ProductName>{product?.name || product?.productName}</ProductName>
                         <QuantityBadge>Cant: {product?.amountToBuy || 1}</QuantityBadge>
                     </ProductHeader>
-                      <PriceDetails>
+
+                    <PriceDetails>
                         <PriceRow>
                             <PriceLabel>Precio unitario:</PriceLabel>
                             <PriceValue>{formattedUnitPrice}</PriceValue>
@@ -180,15 +190,22 @@ export const ProductDiscountModal = ({ visible, onClose, product }) => {
                             <PriceValue $isTotal>{formattedTotalPrice}</PriceValue>
                         </PriceRow>
                     </PriceDetails>
-                </ProductInfo><DiscountSection>
+                </ProductInfo>
+
+                <DiscountSection>
                     {discountType === 'percentage' && (
                         <div>
-                            <Text strong style={{ marginBottom: '8px', display: 'block' }}>Descuentos rápidos:</Text>
+                            <Text strong style={{ marginBottom: 8, display: 'block' }}>
+                                Descuentos rápidos:
+                            </Text>
                             <PresetGrid>
-                                {presetDiscounts.map((preset, index) => (
+                                {presetDiscounts.map((preset) => (
                                     <PresetPill
-                                        key={index}
-                                        $isSelected={presetDiscount?.value === preset.value && presetDiscount?.type === preset.type}
+                                        key={`${preset.type}-${preset.value}`}
+                                        $isSelected={
+                                            presetDiscount?.value === preset.value &&
+                                            presetDiscount?.type === preset.type
+                                        }
                                         onClick={() => handlePresetSelect(preset)}
                                     >
                                         {preset.label}
@@ -198,10 +215,8 @@ export const ProductDiscountModal = ({ visible, onClose, product }) => {
                         </div>
                     )}
 
-                    <CustomDiscountSection>                        <Radio.Group
-                            value={discountType}
-                            onChange={handleDiscountTypeChange}
-                        >
+                    <CustomDiscountSection>
+                        <Radio.Group value={discountType} onChange={handleDiscountTypeChange}>
                             <CustomRadio value="percentage">
                                 <RadioContent>
                                     <PercentageOutlined />
@@ -214,9 +229,15 @@ export const ProductDiscountModal = ({ visible, onClose, product }) => {
                                     Monto fijo
                                 </RadioContent>
                             </CustomRadio>
-                        </Radio.Group>                        <InputNumber
+                        </Radio.Group>
+
+                        <InputNumber
                             style={{ width: '100%' }}
-                            placeholder={discountType === 'percentage' ? 'Ej: 15' : `Máx: ${maxFixedDiscount}`}
+                            placeholder={
+                                discountType === 'percentage'
+                                    ? 'Ej: 15'
+                                    : `Máx: ${maxFixedDiscount}`
+                            }
                             value={discountValue}
                             onChange={handleCustomValueChange}
                             min={0}
@@ -243,6 +264,8 @@ export const ProductDiscountModal = ({ visible, onClose, product }) => {
         </Modal>
     );
 };
+
+export default ProductDiscountModal;
 
 const ModalContent = styled.div`
     display: flex;
@@ -332,13 +355,13 @@ const PriceValue = styled.span`
     };
 `;
 
-const DiscountDivider = styled.div`
+const _DiscountDivider = styled.div`
     height: 1px;
     background: linear-gradient(90deg, transparent 0%, #e0e6ed 50%, transparent 100%);
     margin: 4px 0;
 `;
 
-const ProductDetails = styled.div`
+const _ProductDetails = styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -405,7 +428,7 @@ const PresetPill = styled.div`
     }
 `;
 
-const PresetButton = styled(Button)`
+const _PresetButton = styled(Button)`
     height: 32px;
     padding: 0 8px;
     font-size: 12px;

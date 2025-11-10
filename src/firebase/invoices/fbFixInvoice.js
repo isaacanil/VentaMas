@@ -7,7 +7,7 @@ import { db } from "../firebaseconfig";
 
 export const fbFixInvoices = async (businessID) => {
     try {
-        const transformedProducts = [];
+        const _transformedProducts = [];
         const startOfThisMonth =  DateTime.now().minus({ years: 1 }).startOf("year");;
         const endOfThisMonth = DateTime.now(); // O utiliza endOfThisMonth = DateTime.now().endOf('month') para incluir todo el mes
 

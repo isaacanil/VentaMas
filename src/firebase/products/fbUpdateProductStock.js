@@ -1,4 +1,4 @@
-import { doc, increment, setDoc, writeBatch } from "firebase/firestore";
+import { doc, increment, writeBatch, serverTimestamp } from "firebase/firestore";
 import { nanoid } from "nanoid";
 
 import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
@@ -73,6 +73,15 @@ export async function fbUpdateProductsStock(products, user) {
                     batch.update(productBatchRef, { "quantity": stockUpdateValue });
                     batch.update(productStockRef, { "quantity": stockUpdateValue });
                     
+                    const baseFields = {
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        quantity: amountToBuy
+                    };
+                    
+                    const productBatch = product.batch || { numberId: 'N/A' };
+                    const productStock = product.stock || { location: 'N/A' };
+                    
                     const movement = {
                         ...baseFields,
                         id: movementId,
@@ -85,7 +94,7 @@ export async function fbUpdateProductsStock(products, user) {
                         movementType: MovementType.Exit,
                         movementReason: MovementReason.Sale
                     }
-                    setDoc(movementRef, movement)
+                    batch.set(movementRef, movement)
                 }
             }
             batches.push(batch);

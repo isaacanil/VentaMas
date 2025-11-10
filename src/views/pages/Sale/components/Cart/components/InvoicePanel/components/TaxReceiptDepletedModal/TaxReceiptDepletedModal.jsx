@@ -52,13 +52,13 @@ const Highlight = styled.span`
 
 export const TaxReceiptDepletedModal = ({
     open,
-    receipts,
-    currentReceipt,
-    loading,
-    onSelectReceipt,
-    onRetry,
-    onContinueWithout,
-    onCancel,
+    receipts = [],
+    currentReceipt = undefined,
+    loading = false,
+    onSelectReceipt = () => {},
+    onRetry = () => {},
+    onContinueWithout = () => {},
+    onCancel = () => {},
 }) => {
     const options = buildOptions(receipts);
     const selectedOption = options.find((option) => option.value === currentReceipt);
@@ -149,14 +149,4 @@ TaxReceiptDepletedModal.propTypes = {
     onRetry: PropTypes.func,
     onContinueWithout: PropTypes.func,
     onCancel: PropTypes.func,
-};
-
-TaxReceiptDepletedModal.defaultProps = {
-    receipts: [],
-    currentReceipt: undefined,
-    loading: false,
-    onSelectReceipt: () => {},
-    onRetry: () => {},
-    onContinueWithout: () => {},
-    onCancel: () => {},
 };

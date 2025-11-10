@@ -27,8 +27,9 @@ export const Item = ({ label, filterOptions, onChange, onClear, format, selected
                 isOpen &&
                 <Menu>
                     <Body >
-                        {filterOptions.map((option, index) => (
+                        {filterOptions.map((option, optionIndex) => (
                             <OptionItem
+                                key={optionIndex}
                                 isSelected={selectedValue == option.value}
                                 onClick={() => handleSelect(option.value)}
                             >

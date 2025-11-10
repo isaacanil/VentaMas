@@ -176,7 +176,6 @@ const Container = styled.div`
          padding-right: 1em;
         }   
         `
-        break;
       default:
         break;
     }

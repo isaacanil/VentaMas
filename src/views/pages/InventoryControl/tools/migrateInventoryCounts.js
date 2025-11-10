@@ -31,7 +31,8 @@ export async function migrateAllBusinessesInventoryCounts(db, options = {}) {
   }
 
   const log = (msg) => {
-    try { summary.logs.push(msg); onProgress && onProgress({ type: 'log', msg }) } catch {}
+    summary.logs.push(msg)
+    if (onProgress) onProgress({ type: 'log', msg })
   }
 
   let bizIds = businessIds

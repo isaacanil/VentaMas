@@ -33,7 +33,7 @@ export const ExportInvoice = ({ invoices = [] }) => {
             // Delay mínimo para mostrar el loading
             const exportPromise = (async () => {
                 switch (type) {
-                    case 'Resumen':
+                    case 'Resumen': {
                         const resumenCallback = createProfessionalReportCallback(
                             'Resumen', 
                             'REPORTE DE CONCILIACIÓN - RESUMEN'
@@ -45,7 +45,8 @@ export const ExportInvoice = ({ invoices = [] }) => {
                             resumenCallback
                         );
                         return 'El reporte resumen se ha generado correctamente';
-                    case 'Detailed':
+                    }
+                    case 'Detailed': {
                         const detailedCallback = createProfessionalReportCallback(
                             'Detailed', 
                             'REPORTE DE CONCILIACIÓN - DETALLE'
@@ -57,6 +58,7 @@ export const ExportInvoice = ({ invoices = [] }) => {
                             detailedCallback
                         );
                         return 'El reporte detallado se ha generado correctamente';
+                    }
                     default:
                         return 'Exportación completada';
                 }

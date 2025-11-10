@@ -14,7 +14,7 @@ const validateUser = (user) => {
 export { UserValidationError, validateUser };
 
 // Definimos una función personalizada para mostrar mensajes en la consola
-function print(message, type = 'info') {
+function _print(message, type = 'info') {
     // Verificamos si estamos en modo desarrollo
     if (process.env.NODE_ENV === 'development') {
       const timestamp = new Date().toISOString(); // Obtenemos la fecha y hora actuales

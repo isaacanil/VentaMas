@@ -80,9 +80,3 @@ export {
   validateGenerationConfig,
   generateNextItemReference 
 } from './lib/generator';
-
-// Funciones de conveniencia (wrappers) para mantener compatibilidad
-export const validateBarcode = (barcode) => isValidBarcode(barcode);
-export const getInfo = (barcode) => getBarcodeInfo(barcode);
-export const analyze = (barcode) => analyzeBarcodeStructure(barcode);
-export const getSuggestions = (barcode) => generateCorrectionSuggestions(barcode);

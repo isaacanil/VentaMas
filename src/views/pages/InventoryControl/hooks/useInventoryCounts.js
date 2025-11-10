@@ -3,6 +3,20 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { sum, findChildByKey } from '../utils/inventoryHelpers'
 
+const consoleApi = typeof globalThis !== 'undefined' ? globalThis.console : undefined
+
+const logDebug = (...args) => {
+  if (process.env.NODE_ENV !== 'production' && consoleApi?.debug) {
+    consoleApi.debug(...args)
+  }
+}
+
+const logError = (...args) => {
+  if (consoleApi?.error) {
+    consoleApi.error(...args)
+  }
+}
+
 /**
  * Maneja snapshot de counts de la sesión, metadatos y lógica de guardado.
  * Expone counts/serverCounts/countsMeta/expirationEdits y utilidades.
@@ -34,12 +48,14 @@ export function useInventoryCounts({ db, user, sessionId }) {
         }
       })
       if (process.env.NODE_ENV !== 'production') {
-        try { console.debug('[useInventoryCounts] Counts docs:', snap.size, 'keys:', Object.keys(savedCounts).length) } catch {}
+        logDebug('[useInventoryCounts] Counts docs:', snap.size, 'keys:', Object.keys(savedCounts).length)
       }
       setCounts(savedCounts)
       setServerCounts(savedCounts)
       setCountsMeta(meta)
-    }, (error) => { try { console.error('[useInventoryCounts] Error listener counts:', error) } catch {} })
+    }, (error) => {
+      logError('[useInventoryCounts] Error listener counts:', error)
+    })
     return () => unsub()
   }, [db, sessionId, user?.businessID])
 
@@ -302,14 +318,12 @@ export function useInventoryCounts({ db, user, sessionId }) {
 
       // Limpiar counts de noexp deduplicados para evitar persistencias dobles posteriores
       if (noexpToBatchMap.size) {
-        try {
-          const delKeys = Array.from(noexpToBatchMap.keys())
-          setCounts(prev => {
-            const c = { ...prev }
-            for (const dk of delKeys) delete c[dk]
-            return c
-          })
-        } catch {}
+        const delKeys = Array.from(noexpToBatchMap.keys())
+        setCounts(prev => {
+          const c = { ...prev }
+          for (const dk of delKeys) delete c[dk]
+          return c
+        })
       }
 
       // Touch presence del usuario en la sesión
@@ -321,11 +335,13 @@ export function useInventoryCounts({ db, user, sessionId }) {
           photoURL: user.photoURL || null,
           lastActiveAt: serverTimestamp(),
         }, { merge: true })
-      } catch {}
+      } catch (presenceError) {
+        logDebug('[useInventoryCounts] No se pudo actualizar presence:', presenceError)
+      }
 
       return { saved: keysToSave.length }
     } catch (error) {
-      try { console.error('[useInventoryCounts] Error guardando conteos:', error) } catch {}
+      logError('[useInventoryCounts] Error guardando conteos:', error)
       throw error
     } finally {
       setSaving(false)

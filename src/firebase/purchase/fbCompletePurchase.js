@@ -175,7 +175,7 @@ const handleFileAttachments = async (user, purchase, localFiles) => {
     return updatedAttachments;
 };
 
-const generateShortName = (purchase) => {
+const _generateShortName = (purchase) => {
     const expirationDate = new Date(purchase.replenishments[0].expirationDate);
     const formattedDate = expirationDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
     return `${purchase.name}_${formattedDate}`;

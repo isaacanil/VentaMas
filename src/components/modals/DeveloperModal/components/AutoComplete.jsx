@@ -5,7 +5,7 @@ import styled from 'styled-components';
  * Componente de autocompletado para la consola de desarrollador
  */
 const AutoComplete = ({ 
-  inputValue, 
+  inputValue: _inputValue, 
   suggestions, 
   onSuggestionSelect, 
   isVisible = false,
@@ -24,7 +24,7 @@ const AutoComplete = ({
     const detectBestPosition = () => {
       try {
         const inputRect = inputElement.getBoundingClientRect();
-        const autoCompleteElement = autoCompleteRef.current;
+        const _autoCompleteElement = autoCompleteRef.current;
         
         // Obtener la altura estimada del autocompletado
         const suggestionsCount = Math.min(suggestions?.length || 0, 8); // Máximo 8 items visibles
@@ -44,7 +44,7 @@ const AutoComplete = ({
           // Si no hay suficiente espacio en ningún lado, usar el que tenga más espacio
           setPosition(spaceAbove > spaceBelow ? 'above' : 'below');
         }
-      } catch (error) {
+      } catch (_error) {
         // En caso de error, usar posición por defecto
         setPosition('above');
       }
@@ -170,7 +170,7 @@ const DescriptionText = styled.div`
   color: ${props => props.theme?.isSelected ? 'white' : '#ccc'};
 `;
 
-const SuggestionsFooter = styled.div`
+const _SuggestionsFooter = styled.div`
   padding: 6px 12px;
   background: #2d2d2d;
   border-top: 1px solid #333;

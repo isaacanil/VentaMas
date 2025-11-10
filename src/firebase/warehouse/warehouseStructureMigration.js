@@ -1,5 +1,8 @@
-import { doc, writeBatch, getDoc } from 'firebase/firestore';
+import { doc, writeBatch, getDoc, setDoc } from 'firebase/firestore';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 
+import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../firebaseconfig';
 
 import { getAllRowShelves } from './RowShelfService';
@@ -27,7 +30,7 @@ export const migrateToStructure = async (user) => {
 
     // Obtener todos los datos existentes
     const warehouses = await getWarehouses(user);
-    const batch = writeBatch(db);
+    let batch = writeBatch(db);
 
     for (const warehouse of warehouses) {
       // Migrar almacén

@@ -15,8 +15,7 @@ export const useFbGetOrders = () => {
         // const q = query(orderRef, where("data.state.name", "==", "Solicitado"))
         const unsubscribe = onSnapshot(orderRef, (snapshot) => {
             if (snapshot.empty) {
-                setData([]);
-                setLoading(false);
+                setOrders([]);
                 return;
             }
             let orderArray = snapshot.docs.map(async (item) => {
@@ -34,12 +33,12 @@ export const useFbGetOrders = () => {
             setOrders(orderArray)
         })
         return unsubscribe;
-    }, [user?.businessID, providerId])
+    }, [user?.businessID])
 
     return { orders }
 }
 
-const transformOrderData = (item) => {
+const _transformOrderData = (item) => {
     const data = item.data();
     return {
         // data: {

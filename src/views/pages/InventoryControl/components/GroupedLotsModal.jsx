@@ -89,8 +89,16 @@ export function GroupedLotsModal({
       return;
     }
     if (onSave) {
-      try { await onSave(); onClose(); } catch (e) { /* onSave ya maneja error */ }
-    } else onClose();
+      try {
+        await onSave();
+        onClose();
+      } catch (saveError) {
+        const description = saveError instanceof Error ? saveError.message : 'No se pudo guardar los cambios.';
+        message.error(description);
+      }
+    } else {
+      onClose();
+    }
   };
 
   return (

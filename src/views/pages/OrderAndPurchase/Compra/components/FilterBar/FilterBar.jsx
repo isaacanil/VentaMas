@@ -13,6 +13,8 @@ import { Selector } from '../../../../../../components/common/Selector/Selector'
 import { StatusSelector } from './components/StatusSelector'
 import { useFilterBar } from './hooks/useFilterBar'
 
+import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
+
 export const FilterBar = memo(({
   config = {},
   onChange,
@@ -264,62 +266,7 @@ const FilterGroup = styled.div`
       width: 100% !important;
     }
   }
-`
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 0.3rem;
-  align-items: center;
-
-  @media (max-width: 768px) {
-    margin-left: auto;
-  }
-`
-
-const OptionWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  
-  svg {
-    color: #666;
-    font-size: 0.9em;
-  }
-`
-
-const DayIndicator = styled.span`
-  background-color: var(--primary);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 500;
-`
-
-const StatusDot = styled.span`
-  color: ${props => props.color};
-  font-size: 0.8em;
-  display: flex;
-  align-items: center;
-`
-
-const ClearOption = styled.div`
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #666;
-  border-bottom: 1px solid #f0f0f0;
-  
-  &:hover {
-    background-color: #f5f5f5;
-  }
-  
-  svg {
-    font-size: 0.9em;
-  }
-`
+`;
 
 const DesktopWrapper = styled.div`
   @media (max-width: 768px) {

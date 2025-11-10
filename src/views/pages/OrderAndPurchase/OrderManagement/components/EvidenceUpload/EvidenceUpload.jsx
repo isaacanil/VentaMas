@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import {
   getLocalURL,
@@ -192,7 +192,6 @@ const EvidenceUpload = ({
         lightboxOpen={lightboxOpen}
         setLightboxOpen={setLightboxOpen}
         lightboxIndex={lightboxIndex}
-        setLightboxIndex={setLightboxIndex}
         getImageFiles={getImageFiles}
       />
 

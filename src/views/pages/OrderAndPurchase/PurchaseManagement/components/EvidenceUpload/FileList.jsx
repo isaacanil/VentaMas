@@ -1,6 +1,6 @@
 import { FileOutlined, DeleteOutlined, EyeOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { Tag, Empty, Tooltip } from 'antd';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
 const FileListContainer = styled.div`
@@ -21,12 +21,6 @@ const FileItem = styled.div`
 
 const FileInfo = styled.div`
   flex: 1;
-  margin-left: 10px;
-`;
-
-const FileType = styled.span`
-  color: #888;
-  font-size: 12px;
   margin-left: 10px;
 `;
 

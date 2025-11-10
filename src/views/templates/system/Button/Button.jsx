@@ -56,6 +56,9 @@ export const Button = forwardRef(({
     </Container>
   )
 });
+
+Button.displayName = 'Button';
+
 const styleByDefault = css`
   display: flex;
   align-items: center;

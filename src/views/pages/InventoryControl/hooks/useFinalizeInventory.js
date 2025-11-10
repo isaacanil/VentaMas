@@ -17,13 +17,11 @@ export function useFinalizeInventory({ db, user, sessionId, navigate }) {
     try {
       // 1) Marcar la sesión como "processing" mientras el backend trabaja
       const sessionRef = doc(db, 'businesses', user.businessID, 'inventorySessions', sessionId)
-      try {
-        await updateDoc(sessionRef, {
-          status: 'processing',
-          processingAt: serverTimestamp(),
-          processingBy: user.uid || user.id,
-        })
-      } catch {}
+      await updateDoc(sessionRef, {
+        status: 'processing',
+        processingAt: serverTimestamp(),
+        processingBy: user.uid || user.id,
+      })
 
       // 2) Invocar función en backend para finalizar (aplica ajustes y cierra)
       try {
@@ -43,7 +41,10 @@ export function useFinalizeInventory({ db, user, sessionId, navigate }) {
         try {
           const sessionRef = doc(db, 'businesses', user.businessID, 'inventorySessions', sessionId)
           await updateDoc(sessionRef, { status: 'open' })
-        } catch {}
+        } catch (revertError) {
+          const revertMessage = revertError instanceof Error ? revertError.message : String(revertError)
+          throw new Error(`${e instanceof Error ? e.message : String(e)}. No se pudo revertir la sesión: ${revertMessage}`)
+        }
         throw e
       }
     } finally {

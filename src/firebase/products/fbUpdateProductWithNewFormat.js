@@ -28,7 +28,7 @@ export async function fbUpdateProductToNewFormat(businessID, productID) {
     }
 }
 
-function transformProductToNewSchema(product) {
+function _transformProductToNewSchema(product) {
     // Suponiendo que la estructura de "product" ya contiene los campos necesarios
     // y solo necesitamos ajustarlos o calcular nuevos valores como el precio sin impuestos.
     const taxPercentage = convertDecimalToPercentage(product.tax?.unit ?? 0);

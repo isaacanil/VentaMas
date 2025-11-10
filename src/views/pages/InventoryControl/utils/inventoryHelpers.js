@@ -92,7 +92,7 @@ export async function resolveLocationLabel(businessID, locKey) {
     }
 
     return parts.filter(Boolean).join(' / ')
-  } catch (e) {
+  } catch {
     return locKey
   }
 }

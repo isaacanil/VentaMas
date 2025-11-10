@@ -9,7 +9,7 @@ import { useClickOutSide } from '../../../../../../hooks/useClickOutSide';
 
 const { TabPane } = Tabs;
 
-export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, setColumnOrder, resetColumnOrder }) => {
+export const ColumnMenu = ({ isOpen = false, toggleOpen, columns: _columns, columnOrder, setColumnOrder, resetColumnOrder }) => {
     const [highlightedItems, setHighlightedItems] = useState([]);
     const MenuRef = useRef(null);
     useEffect(() => {
@@ -70,10 +70,7 @@ export const ColumnMenu = ({ isOpen = false, toggleOpen, columns, columnOrder, s
         setTimeout(() => {
             newColumnOrder.splice(toIndex, 0, movedColumn);
             setColumnOrder(newColumnOrder);
-            setVisibleColumns(newColumnOrder);
         }, 1000);
-
-        setVisibleColumns(columnOrder.filter((col, index) => index !== fromIndex));
     };
     const getDeletedColumns = () => {
         return columnOrder.filter(column => column.status === 'deleted');

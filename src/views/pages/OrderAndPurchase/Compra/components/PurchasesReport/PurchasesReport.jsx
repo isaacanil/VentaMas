@@ -86,14 +86,6 @@ export const PurchasesReport = () => {
         </AnimatePresence>
     )
 }
-
-
-const Group = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1em;
-`;
-
 const Component = styled(motion.div)`
   width: 98vw;
   display: grid;

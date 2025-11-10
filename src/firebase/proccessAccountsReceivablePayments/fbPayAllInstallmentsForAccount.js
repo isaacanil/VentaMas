@@ -20,7 +20,7 @@ import {
 import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 
 export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) => {
-    const { totalPaid, arId, clientId, paymentMethods, comments } = paymentDetails;
+    const { totalPaid, arId, clientId, paymentMethods, comments: _comments } = paymentDetails;
 
     try {
         // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente

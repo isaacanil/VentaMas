@@ -41,7 +41,7 @@ export async function fbUpdateProductsToNewFormatForMultipleBusinesses() {
             const updatedProducts = newProductSchema(products);
             // Products mapped to new structure
 
-            updatedProducts.forEach((product, index) => {
+            updatedProducts.forEach((product, _index) => {
                 if (!product.id) return; // Asegurarse de que el producto tenga un id
                 const productRef = doc(productsRef, product.id);
                 batch.set(productRef, product);

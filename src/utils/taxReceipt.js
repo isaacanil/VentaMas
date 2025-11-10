@@ -8,7 +8,7 @@ export const increaseSequence = (sequence, increase, maxCharacters) => {
 
 export const generateNCFCode = (receiptData) => {
     if (receiptData) {
-        const { type, serie, sequence, increase, quantity, name, id } = receiptData.data;
+        const { type, serie, sequence, increase, quantity, name: _name, id: _id } = receiptData.data;
 
         // Increment the sequence
         const updatedSequence = increaseSequence(sequence, increase, 10);

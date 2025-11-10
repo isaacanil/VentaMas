@@ -17,11 +17,6 @@ const StyledForm = styled(Form)`
   gap: 16px;
 `
 
-const CodeConfirmationBox = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
 const ConfirmationLabel = styled(Text)`
   margin-bottom: 8px;
   display: block;
@@ -30,14 +25,6 @@ const ConfirmationLabel = styled(Text)`
 const ConfirmationCode = styled.strong`
   color: #ff4d4f;
   margin-left: 4px;
-`
-
-const StyledInput = styled(Input)`
- 
-`
-
-const FormLabel = styled(Text)`
-  font-size: 15px;
 `
 
 export const CancelModal = ({
@@ -139,7 +126,7 @@ export const CancelModal = ({
                             </ConfirmationLabel>}
                             rules={[
                                 { required: true, message: 'El código de confirmación es obligatorio' },
-                                ({ getFieldValue }) => ({
+                                () => ({
                                     validator(_, value) {
                                         if (!value) return Promise.resolve();
                                         return value === confirmCode

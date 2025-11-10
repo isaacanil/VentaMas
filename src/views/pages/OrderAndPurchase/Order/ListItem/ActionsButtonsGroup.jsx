@@ -21,15 +21,15 @@ export const ActionsButtonsGroup = ({ orderData }) => {
 
     const { dialog, setDialogConfirm, onClose } = useDialog();
 
-    const handleEditMode = (id) => {
+    const handleEditMode = () => {
         navigate(`/orders/update/`)
         dispatch(getOrderDataToOrder({ data: orderData, mode: OPERATION_MODES.UPDATE.id }))
     }
-    const handlePurchasingMode = async (id) => {
-        // PassDataToPurchaseList(orderData)
+    const handlePurchasingMode = async () => {
         dispatch(getOrderData(orderData));
-        navigate('/purchases/create');    }
-    const handleDeleteMode = (id) => {
+        navigate('/purchases/create');
+    }
+    const handleDeleteMode = () => {
         setDialogConfirm({
             ...dialog,
             isOpen: true,
@@ -38,7 +38,7 @@ export const ActionsButtonsGroup = ({ orderData }) => {
             message: '¿Está seguro que desea eliminar esta orden?',
             onCancel: () => onClose(),
             onConfirm: () => {
-                fbDeleteOrder(user, id)
+                fbDeleteOrder(user, orderData.id)
                 onClose()
                 dispatch(addNotification({
                     type: 'success',
@@ -55,20 +55,20 @@ export const ActionsButtonsGroup = ({ orderData }) => {
                     orderData.state === 'state_2' &&
                     <antd.Button
                         icon={icons.operationModes.buy}
-                        onClick={() => handlePurchasingMode(orderData.id)}
+                        onClick={handlePurchasingMode}
                     />
                 }
 
                 <antd.Button
                     icon={icons.operationModes.edit}
-                    onClick={() => handleEditMode(orderData.id)}
+                    onClick={handleEditMode}
                 />
                 {
                     orderData.state === 'state_2' &&
                     <antd.Button
                         danger
                         icon={icons.operationModes.delete}
-                        onClick={() => handleDeleteMode(orderData.id)}
+                        onClick={handleDeleteMode}
                     />
                 }
             </Fragment>

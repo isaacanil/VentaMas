@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 
 import { icons } from "../../../../../constants/icons/icons";
 import { useDialog } from "../../../../../Context/Dialog/DialogContext";
+import { addNotification } from "../../../../../features/notification/notificationSlice";
 import { ButtonGroup } from "../Button"
 
 export const EditDelBtns = ({ onUpdate, onDelete = async () => { } }) => {

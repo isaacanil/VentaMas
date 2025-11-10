@@ -18,12 +18,12 @@ export function Doc() {
   return (
     <Container>
       {
-        colors.map((color, index) => {
+        colors.map((color, colorIndex) => {
           return (
-            <div>
-              {getTypes(color).map((type, index) => {
+            <div key={colorIndex}>
+              {getTypes(color).map((type, typeIndex) => {
                 return (
-                  <ArrayList key={index} color={type} />
+                  <ArrayList key={typeIndex} color={type} />
                 )
               })}
             </div>
@@ -34,10 +34,10 @@ export function Doc() {
   );
 }
 const ArrayList = ({ color = "primary" }) => {
-  if (!color) { return }
-  if (!palette.colors[color]) { return }
+  if (!color) { return null }
+  if (!palette.colors[color]) { return null }
   const scale = palette.colors[color] || [];
-  const type = [
+  const _type = [
     `${color}`,
     `on ${color}`,
     `container ${color}`,

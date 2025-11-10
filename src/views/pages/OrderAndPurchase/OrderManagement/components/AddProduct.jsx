@@ -28,7 +28,6 @@ function AddProductForm({ onSave, onClear, mode }) {
     const [tempSelectedProduct, setTempSelectedProduct] = useState(null);
     const [productBackOrders, setProductBackOrders] = useState([]);
     const [isLoadingBackOrders, setIsLoadingBackOrders] = useState(false);
-    const [isBackOrderChecked, setIsBackOrderChecked] = useState(false);
     const [checkedProducts, setCheckedProducts] = useState(new Set());
 
     const selectedProduct = useSelector(selectProductSelected);
@@ -37,7 +36,6 @@ function AddProductForm({ onSave, onClear, mode }) {
 
     const onSelectProduct = (product) => {
         dispatch(SelectProduct(product));
-        setIsBackOrderChecked(false);
         // Reset checked state when selecting a new product
         if (!product?.id) {
             setCheckedProducts(new Set());
@@ -78,7 +76,6 @@ function AddProductForm({ onSave, onClear, mode }) {
             });
             form.resetFields();
             dispatch(clearSelectedBackOrders());
-            setIsBackOrderChecked(false);
             // Clear checked products after saving
             setCheckedProducts(new Set());
             message.success('Producto agregado correctamente');
@@ -117,7 +114,6 @@ function AddProductForm({ onSave, onClear, mode }) {
                 setIsBackOrderModalVisible(true);
             } else {
                 dispatch(clearSelectedBackOrders());
-                setIsBackOrderChecked(true);
                 // Add this product to the checked set since it has no back orders
                 setCheckedProducts(new Set([...checkedProducts, selectedProduct.id]));
             }

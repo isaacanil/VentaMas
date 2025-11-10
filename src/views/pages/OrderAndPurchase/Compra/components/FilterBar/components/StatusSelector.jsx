@@ -4,7 +4,6 @@ import {
     faBan,
     faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
-import React from 'react';
 
 import { Selector } from '../../../../../../../components/common/Selector/Selector';
 
@@ -51,8 +50,7 @@ export const StatusSelector = ({
     visibleStatus = [],
     placeholder = "Estado",
     showAllOption = false,
-    width,
-    showAllLabel = 'Mostrar todos'
+    width
 }) => {
     // Filtrar las opciones según los estados visibles
     const filteredOptions = visibleStatus.length > 0 

@@ -69,7 +69,7 @@ export const CreditNoteToolbar = ({ side = 'left', searchData, setSearchData, da
             // Delay mínimo para mostrar el loading
             const exportPromise = (async () => {
                 switch (type) {
-                    case 'Resumen':
+                    case 'Resumen': {
                         const resumenCallback = createProfessionalCreditNoteReportCallback(
                             'Resumen',
                             'REPORTE DE NOTAS DE CRÉDITO - RESUMEN'
@@ -81,7 +81,8 @@ export const CreditNoteToolbar = ({ side = 'left', searchData, setSearchData, da
                             resumenCallback
                         )
                         return 'El reporte resumen de notas de crédito se ha generado correctamente'
-                    case 'Detailed':
+                    }
+                    case 'Detailed': {
                         const detailedCallback = createProfessionalCreditNoteReportCallback(
                             'Detailed',
                             'REPORTE DE NOTAS DE CRÉDITO - DETALLE POR PRODUCTO'
@@ -93,6 +94,7 @@ export const CreditNoteToolbar = ({ side = 'left', searchData, setSearchData, da
                             detailedCallback
                         )
                         return 'El reporte detallado de notas de crédito se ha generado correctamente'
+                    }
                     default:
                         return 'Exportación completada'
                 }

@@ -18,8 +18,6 @@ const BackOrdersModal = ({
     const totalBackordersQuantity = localSelectedBackOrders.reduce((sum, order) => sum + order.quantity, 0);
     const remainingQuantity = Math.max(0, purchaseQuantity - totalBackordersQuantity);
 
-    const sourceId = backOrderAssociationId;
-
     useEffect(() => {
         if (isVisible) {
             setLocalSelectedBackOrders(initialSelectedBackOrders);

@@ -5,6 +5,20 @@ import { useEffect, useMemo, useState } from 'react'
  * Escucha stocks y productos activos; construye augmentedStocks que incluye
  * productos sin registros en productsStock (stock 0 sintético).
  */
+const consoleApi = typeof globalThis !== 'undefined' ? globalThis.console : undefined
+
+const logDebug = (...args) => {
+  if (process.env.NODE_ENV !== 'production' && consoleApi?.debug) {
+    consoleApi.debug(...args)
+  }
+}
+
+const logError = (...args) => {
+  if (consoleApi?.error) {
+    consoleApi.error(...args)
+  }
+}
+
 export function useInventoryStocksProducts({ db, businessID }) {
   const [stocks, setStocks] = useState([])
   const [products, setProducts] = useState([])
@@ -22,12 +36,12 @@ export function useInventoryStocksProducts({ db, businessID }) {
       const data = raw.filter(r => r.isDeleted !== true && r.status !== 'inactive')
       if (process.env.NODE_ENV !== 'production') {
         const inactive = raw.filter(r => r.status === 'inactive').length
-        try { console.debug('[useInventoryStocksProducts] Stocks:', raw.length, 'Activos:', data.length, 'Inactivos omitidos:', inactive) } catch {}
+        logDebug('[useInventoryStocksProducts] Stocks:', raw.length, 'Activos:', data.length, 'Inactivos omitidos:', inactive)
       }
       setStocks(data)
       setLoadingStocks(false)
     }, (error) => {
-      try { console.error('[useInventoryStocksProducts] Error listener productsStock:', error) } catch {}
+      logError('[useInventoryStocksProducts] Error listener productsStock:', error)
       setLoadingStocks(false)
     })
     return () => unsub()
@@ -42,12 +56,12 @@ export function useInventoryStocksProducts({ db, businessID }) {
       const raw = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       const data = raw.filter(r => r.isDeleted !== true && r.status !== 'inactive')
       if (process.env.NODE_ENV !== 'production') {
-        try { console.debug('[useInventoryStocksProducts] Products:', raw.length, 'Activos:', data.length) } catch {}
+        logDebug('[useInventoryStocksProducts] Products:', raw.length, 'Activos:', data.length)
       }
       setProducts(data)
       setLoadingProducts(false)
     }, (error) => {
-      try { console.error('[useInventoryStocksProducts] Error listener products:', error) } catch {}
+      logError('[useInventoryStocksProducts] Error listener products:', error)
       setLoadingProducts(false)
     })
     return () => unsub()

@@ -48,7 +48,7 @@ const getPrimaryPaymentValue = (paymentMethod = [], fallbackPayment) => {
 const formatBillResumen = (data) => {
   const {
     date,
-    id,
+    id: _id,
     NCF,
     client = {},
     totalShoppingItems = {},
@@ -85,7 +85,7 @@ const formatBillDetailed = (facturas) => {
       client = {},
       NCF,
       date,
-      id,
+      id: _id,
       totalPurchase = {},
     } = factura;
 

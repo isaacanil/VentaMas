@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -27,7 +27,7 @@ export const Purchases = () => {
     };
   });
 
-  const { providers = [], loading } = useFbGetProviders();
+  const { providers = [] } = useFbGetProviders();
 
   const dataConfig = useMemo(() => ({
     providerId: {

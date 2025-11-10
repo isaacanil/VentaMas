@@ -12,7 +12,7 @@ export const ActionsButtonsGroup = ({ purchaseData }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { PURCHASES_CREATE } = ROUTES_PATH.PURCHASE_TERM
-    const { dialog, setDialogConfirm } = useDialog()
+    const { setDialogConfirm } = useDialog()
 
     const handleEditMode = () => {
         navigate(PURCHASES_CREATE);
@@ -23,7 +23,7 @@ export const ActionsButtonsGroup = ({ purchaseData }) => {
         }
         dispatch(setPurchase(purchase))
     }
-    const handleDeleteMode = (id) => {
+    const handleDeleteMode = () => {
         setDialogConfirm({
             isOpen: true,
             title: 'Eliminar Orden',
@@ -42,13 +42,13 @@ export const ActionsButtonsGroup = ({ purchaseData }) => {
                 icon={icons.operationModes.edit}
                 color='error'
                 //  disabled={!isEditable}
-                onClick={() => handleEditMode(purchaseData.id)}
+                onClick={handleEditMode}
             />
 
             <Button
                 danger
                 icon={icons.operationModes.delete}
-                onClick={() => handleDeleteMode(purchaseData.id)}
+                onClick={handleDeleteMode}
             />
         </ButtonGroup>
     )

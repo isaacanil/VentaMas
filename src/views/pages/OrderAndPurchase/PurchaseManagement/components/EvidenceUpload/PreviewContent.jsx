@@ -1,5 +1,5 @@
 import { Drawer, Image, Spin, Alert } from 'antd';
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 
 const PreviewContainer = styled.div`
@@ -43,6 +43,7 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pdfLoadAttempts, setPdfLoadAttempts] = useState(0);
+  const pdfRef = useRef(null);
 
   const handlePdfLoad = useCallback(() => {
     setIsLoading(false);
@@ -99,11 +100,10 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
             </LoadingContainer>
           )}
           <embed
+            ref={pdfRef}
             src={`${fileUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=100`}
             type="application/pdf"
             style={{ display: isLoading ? 'none' : 'block' }}
-            onLoad={handlePdfLoad}
-            onError={handlePdfError}
           />
           {error && (
             <Alert
@@ -146,6 +146,27 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
       setIsLoading(false);
     };
   }, [previewFile]);
+
+  useEffect(() => {
+    if (!previewFile) return;
+
+    const extension = previewFile.name.split('.').pop()?.toLowerCase();
+    if (extension !== 'pdf') return;
+
+    const node = pdfRef.current;
+    if (!node) return;
+
+    const handleLoadEvent = () => handlePdfLoad();
+    const handleErrorEvent = () => handlePdfError();
+
+    node.addEventListener('load', handleLoadEvent);
+    node.addEventListener('error', handleErrorEvent);
+
+    return () => {
+      node.removeEventListener('load', handleLoadEvent);
+      node.removeEventListener('error', handleErrorEvent);
+    };
+  }, [previewFile, handlePdfError, handlePdfLoad]);
 
   return (
     <Drawer

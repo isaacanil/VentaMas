@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
 
-import { ProductDiscountModal } from '../../../../../../../components/modals/ProductDiscountModal/ProductDiscountModal';
+import ProductDiscountModal from '../../../../../../../components/modals/ProductDiscountModal/ProductDiscountModal';
 import { deleteProduct, SelectProduct, updateProductFields } from '../../../../../../../features/cart/cartSlice'
 import { selectInsuranceData, updateInsuranceData } from '../../../../../../../features/insurance/insuranceSlice'
 import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'

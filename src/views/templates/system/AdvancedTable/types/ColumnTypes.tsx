@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type CellType = 'text' | 'number' | 'image' | 'status' | 'badge' | 'custom' | 'date' | 'dateStatus' | 'note' | 'price' | 'file';
 
 export interface ColumnConfig {

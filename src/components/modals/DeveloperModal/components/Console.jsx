@@ -323,7 +323,7 @@ const ConsoleInput = styled.input`
   }
 `;
 
-const InputContainer = styled.div`
+const _InputContainer = styled.div`
   position: relative;
   width: 100%;
 `;

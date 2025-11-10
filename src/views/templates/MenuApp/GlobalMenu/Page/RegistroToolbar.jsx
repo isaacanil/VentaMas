@@ -41,7 +41,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
       // Delay mínimo para mostrar el loading
       const exportPromise = (async () => {
         switch (type) {
-          case 'Resumen':
+          case 'Resumen': {
             const resumenCallback = createProfessionalReportCallback(
               'Resumen', 
               'REPORTE DE FACTURACIÓN - RESUMEN'
@@ -53,7 +53,8 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
               resumenCallback
             );
             return 'El reporte resumen se ha generado correctamente';
-          case 'Detailed':
+          }
+          case 'Detailed': {
             const detailedCallback = createProfessionalReportCallback(
               'Detailed', 
               'REPORTE DE FACTURACIÓN - DETALLE POR PRODUCTO'
@@ -65,6 +66,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
               detailedCallback
             );
             return 'El reporte detallado se ha generado correctamente';
+          }
           default:
             return 'Exportación completada';
         }

@@ -1,58 +1,59 @@
-import { useState } from 'react'
+// Candidate for deletion: no current modules import this multi display control view.
+import { useState } from 'react';
 
-import {PlusIcon} from '../../../assets/index'
+import { PlusIcon } from '../../../assets/index';
 
-import Style from './MultiDisplayControl.module.scss'
+import Style from './MultiDisplayControl.module.scss';
 
 export const MultiDisplayControl = () => {
-  const [isOpen, SetIsOpen] = useState(false)
-  // numero de pantallas
+    const [isOpen] = useState(false);
+    // numero de pantallas
 
-  const [list, setList] = useState([1])
+    const [list, setList] = useState([1]);
 
-  const upgradeList = (e) => {
-    e.preventDefault()
-    //Ultimo elemento 
-    const lastItem = list.at(-1);
-    //condicion para dejar de añadir siempre y cuando este por debajo de 5
-    if (lastItem < 8) {
-      const newItem = lastItem + 1;
+    const upgradeList = (e) => {
+        e.preventDefault();
+        //Ultimo elemento
+        const lastItem = list.at(-1);
+        //condicion para dejar de añadir siempre y cuando este por debajo de 5
+        if (lastItem < 8) {
+            const newItem = lastItem + 1;
 
-      setList([...list, newItem])
-    }
-    if(lastItem === 8){
-      alert('ya excediste el numero de pantallas')
-    }
-  }
-
-
-  return (
-
-    <div className={ isOpen ? `${Style.Container} ${Style.Open}` : `${Style.Container}`}>
-
-      <ul className={Style.Items}>
-      <button onClick={upgradeList} className={`${Style.Item} ${Style.AddBtn}`}>
-          <PlusIcon></PlusIcon>
-        </button>
-        {
-
-          list.map((item, index) =>
-
-            <li key={index} className={Style.Item}>
-             
-                {item}
-             
-            </li>
-
-
-          )
+            setList([...list, newItem]);
         }
-        
-      </ul>
+        if (lastItem === 8) {
+            alert('ya excediste el numero de pantallas');
+        }
+    };
 
 
-    </div>
-  )
-}
+    return (
+
+        <div className={isOpen ? `${Style.Container} ${Style.Open}` : `${Style.Container}`}>
+
+            <ul className={Style.Items}>
+                <button onClick={upgradeList} className={`${Style.Item} ${Style.AddBtn}`}>
+                    <PlusIcon></PlusIcon>
+                </button>
+                {
+
+                    list.map((item, index) =>
+
+                        <li key={index} className={Style.Item}>
+
+                            {item}
+
+                        </li>
+
+
+                    )
+                }
+
+            </ul>
+
+
+        </div>
+    );
+};
 
 

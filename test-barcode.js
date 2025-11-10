@@ -1,3 +1,4 @@
+ 
 // Prueba de funciones de generación de códigos de barras
 import { 
   generateGTIN13, 

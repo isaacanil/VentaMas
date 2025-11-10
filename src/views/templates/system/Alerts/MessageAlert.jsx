@@ -75,8 +75,6 @@ const Container = styled.div`
         return`
           transform: scale(0);
         `
-        break;
-    
       default:
         break;
     }

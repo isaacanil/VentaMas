@@ -15,7 +15,6 @@ export async function exportInventoryToExcel(
     filename = 'inventario',
     onlyDifferences = false, // exportar solo filas con diferencia != 0 (excluye totales sin diff)
     addSummarySheet = true,  // genera hoja 'Resumen'
-    locale = 'es',
     includeBatchKey = false // por defecto no exportamos la Batch Key porque no es relevante para usuario final
   } = {},
   meta = {},

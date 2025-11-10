@@ -33,7 +33,7 @@ export const transferClients = async (businessA, businessB, limit = 0) => {
         // Processing client transfer
 
         const batchSize = 500;
-        let batchCount = 0;
+        let _batchCount = 0;
 
         for (let i = 0; i < totalClients; i += batchSize) {
             const batch = writeBatch(db);
@@ -58,7 +58,7 @@ export const transferClients = async (businessA, businessB, limit = 0) => {
             });
 
             await batch.commit();
-            batchCount++;
+            _batchCount++;
             // Batch processed
         }
 

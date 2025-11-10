@@ -1,6 +1,6 @@
 
 // Creamos el componente Products
-export const ProductsByCategory = ({ products }) => {
+export const ProductsByCategory = ({ products: _products }) => {
   // Obtenemos las categorías únicas del array de productos
   
 //   if(products.length === 0){

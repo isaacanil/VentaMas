@@ -271,7 +271,7 @@ const checkExistingPendingInvoiceRequest = async (businessID, invoiceId) => {
   if (!genericSnap.empty) {
     const docSnap = genericSnap.docs[0];
     if (shouldExpirePending(docSnap.data())) {
-      try { await updateDoc(docSnap.ref, { status: 'expired' }); } catch {}
+      try { await updateDoc(docSnap.ref, { status: 'expired' }); } catch { /* Ignore expiration errors */ }
     } else {
       return { alreadyPending: true, id: docSnap.id, collectionKey: GENERIC_COLLECTION_NAME };
     }
@@ -288,7 +288,7 @@ const checkExistingPendingInvoiceRequest = async (businessID, invoiceId) => {
   if (!legacySnap.empty) {
     const docSnap = legacySnap.docs[0];
     if (shouldExpirePending(docSnap.data())) {
-      try { await updateDoc(docSnap.ref, { status: 'expired' }); } catch {}
+      try { await updateDoc(docSnap.ref, { status: 'expired' }); } catch { /* Ignore expiration errors */ }
     } else {
       return { alreadyPending: true, id: docSnap.id, collectionKey: LEGACY_COLLECTION_NAME };
     }

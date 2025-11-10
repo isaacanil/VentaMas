@@ -154,6 +154,13 @@ const GroupHeader = styled.div`
   font-weight: bold;
   // Otros estilos que desees agregar
 `;
+
+const ExpandedRow = styled.div`
+  padding: 1em;
+  background-color: var(--background-100, #f9f9f9);
+  border-top: 1px solid var(--Gray1);
+`;
+
 const BodyCell = styled.div`
   display: flex;
   align-items: center;

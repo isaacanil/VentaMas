@@ -42,13 +42,15 @@ export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose
             footer={
                 [
                     <Button
+                        key="cancel"
                         onClick={handleCancel}
                     >
                         Cancelar
                     </Button>,
                     <Button
-
-                        key="submit" type="primary" onClick={() => form.submit()}
+                        key="submit" 
+                        type="primary" 
+                        onClick={() => form.submit()}
                     >
                         Guardar
                     </Button>

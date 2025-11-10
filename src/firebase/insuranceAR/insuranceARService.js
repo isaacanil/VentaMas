@@ -1,8 +1,25 @@
 import { collection, getDocs, addDoc, query, where, Timestamp } from "firebase/firestore";
 
 import { calculateAmountPerInstallment } from "../../utils/accountsReceivable/accountsReceivable";
-import { generatePaymentDates } from "../../utils/accountsReceivable/generatePaymentDates";
 import { db } from "../firebaseconfig";
+
+// Función temporal para generar fechas de pago
+const generatePaymentDates = (frequency, totalInstallments) => {
+    const dates = [];
+    const now = Date.now();
+    const intervalMap = {
+        'monthly': 30 * 24 * 60 * 60 * 1000,
+        'weekly': 7 * 24 * 60 * 60 * 1000,
+        'biweekly': 14 * 24 * 60 * 60 * 1000,
+        'quarterly': 90 * 24 * 60 * 60 * 1000,
+    };
+    const interval = intervalMap[frequency] || intervalMap['monthly'];
+    
+    for (let i = 0; i < totalInstallments; i++) {
+        dates.push(now + (interval * (i + 1)));
+    }
+    return dates;
+};
 
 export async function fbAddInsuranceAR({ user, insuranceData }) {
     try {

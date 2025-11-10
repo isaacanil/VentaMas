@@ -540,7 +540,7 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
         );
         productsArray = orderingProducts(productsArray, criterio, orden);
 
-        productsArray = productsArray.sort((a, b) => a?.custom === true ? -1 : 1);
+        productsArray = productsArray.sort((a, _b) => a?.custom === true ? -1 : 1);
 
         processedProductsRef.current = productsArray;
         if (typeof updateFilteredProductsRef.current === 'function') {

@@ -26,7 +26,7 @@ export const transferProducts = async (businessIdA, businessIdB, limit = 0) => {
     // Processing product transfer
 
     const batchSize = 500;
-    let batchCount = 0;
+    let _batchCount = 0;
     for (let i = 0; i < totalProducts; i += batchSize) {
         const batch = writeBatch(db);
         querySnapshot.docs.slice(i, i + batchSize).forEach(item => {
@@ -44,7 +44,7 @@ export const transferProducts = async (businessIdA, businessIdB, limit = 0) => {
         });
 
         await batch.commit();
-        batchCount++;
+        _batchCount++;
         // Batch processed
     }
 

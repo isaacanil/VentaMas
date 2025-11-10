@@ -4,7 +4,6 @@ import {
   DownloadOutlined,
 } from '@ant-design/icons';
 import { Input, DatePicker, Select, Button } from 'antd';
-import React from 'react';
 import styled from 'styled-components';
 
 const { RangePicker } = DatePicker;
@@ -75,7 +74,6 @@ const Header = ({
   stats,
   searchText,
   setSearchText,
-  dateRange,
   setDateRange,
   sortBy,
   setSortBy,

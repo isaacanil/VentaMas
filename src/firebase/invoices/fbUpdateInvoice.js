@@ -74,6 +74,6 @@ export const fbUpdateInvoice = async (user, invoice) => {
             await updateDoc(invoiceRef, { data: invoiceData });
         }
     } catch (err) {
-
+        console.error('Error updating invoice:', err);
     }
 }

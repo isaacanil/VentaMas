@@ -5,21 +5,8 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import localeData from 'dayjs/plugin/localeData';
 import weekday from 'dayjs/plugin/weekday';
 import React, { useRef } from 'react';
-import styled from 'styled-components';
 import 'dayjs/locale/es';
-
-// Plugins de dayjs
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
-dayjs.extend(localeData);
-dayjs.extend(weekday);
-dayjs.locale('es');
-
-// Configurar para que la semana empiece en domingo
-const locale = dayjs.Ls.es;
-if (locale) {
-    locale.weekStart = 0; // 0 = domingo
-}
+import styled from 'styled-components';
 
 // Componentes
 import {
@@ -34,6 +21,19 @@ import { createDefaultPresets } from './constants/presets';
 import { useDatePicker } from './hooks/useDatePicker';
 import { useMobile } from './hooks/useMobile';
 import { formatDisplayValue } from './utils/dateUtils';
+
+// Plugins de dayjs
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+dayjs.extend(localeData);
+dayjs.extend(weekday);
+dayjs.locale('es');
+
+// Configurar para que la semana empiece en domingo
+const locale = dayjs.Ls.es;
+if (locale) {
+    locale.weekStart = 0; // 0 = domingo
+}
 
 // Styled Components
 const Container = styled.div`

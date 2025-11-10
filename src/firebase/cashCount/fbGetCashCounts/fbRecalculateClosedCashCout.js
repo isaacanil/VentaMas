@@ -1,3 +1,16 @@
+import { collection, getDocs, query, where, getDoc, updateDoc } from 'firebase/firestore';
+
+import { db } from '../../firebaseconfig';
+
+// Funciones auxiliares para cálculos
+const calculateTotalSales = (invoices) => invoices.reduce((sum, inv) => sum + (inv.totalPurchasePrice || 0), 0);
+const calculateTotalCash = (invoices) => invoices.reduce((sum, inv) => sum + (inv.paymentMethod === 'cash' ? inv.totalPurchasePrice || 0 : 0), 0);
+const calculateTotalCard = (invoices) => invoices.reduce((sum, inv) => sum + (inv.paymentMethod === 'card' ? inv.totalPurchasePrice || 0 : 0), 0);
+const calculateTotalTransfer = (invoices) => invoices.reduce((sum, inv) => sum + (inv.paymentMethod === 'transfer' ? inv.totalPurchasePrice || 0 : 0), 0);
+const calculateTotalFacturado = (invoices) => invoices.reduce((sum, inv) => sum + (inv.totalPurchasePrice || 0), 0);
+const calculateTotalSistema = (invoices) => invoices.reduce((sum, inv) => sum + (inv.totalPurchasePrice || 0), 0);
+const calculateSobrante = (cash, card, transfer, facturado, _sistema) => (cash + card + transfer) - facturado;
+
 const getInvoices = async (sales) => {
     const invoices = await Promise.all(sales.map(async (ref) => {
         const invoiceDoc = await getDoc(ref);
@@ -11,7 +24,7 @@ const getInvoices = async (sales) => {
     return invoices;
 }
 
-const fbRecalculateClosedCashCouts = async (user) => {
+export const fbRecalculateClosedCashCouts = async (user) => {
     const cashCountsRef = collection(db, 'businesses', user?.businessID, 'cashCounts');
     const q = query(cashCountsRef, where('cashCount.state', '==', 'closed'));
     const querySnapshot = await getDocs(q);

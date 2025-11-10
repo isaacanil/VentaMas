@@ -19,7 +19,7 @@ import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 // Function to process the payment for the oldest active installment
 export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails }) => {
     try {
-        const { clientId, totalAmount: paymentAmount, arId, paymentMethods, comments, totalPaid } = paymentDetails;
+        const { clientId, totalAmount: paymentAmount, arId, paymentMethods, comments: _comments, totalPaid } = paymentDetails;
 
         // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente
         console.log("🔍 Debug - Validating account balance for arId:", arId);

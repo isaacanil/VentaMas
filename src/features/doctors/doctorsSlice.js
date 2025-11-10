@@ -111,7 +111,7 @@ const doctorsSlice = createSlice({
                 state.modal.loading = true;
                 state.error = null;
             })
-            .addCase(addDoctor.fulfilled, (state, action) => {
+            .addCase(addDoctor.fulfilled, (state, _action) => {
                 state.modal.loading = false;
                 state.modal.open = false;
                 state.selectedDoctor = null;
@@ -126,7 +126,7 @@ const doctorsSlice = createSlice({
                 state.modal.loading = true;
                 state.error = null;
             })
-            .addCase(updateDoctor.fulfilled, (state, action) => {
+            .addCase(updateDoctor.fulfilled, (state, _action) => {
                 state.modal.loading = false;
                 state.modal.open = false;
                 state.selectedDoctor = null;
@@ -141,7 +141,7 @@ const doctorsSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(deleteDoctor.fulfilled, (state, action) => {
+            .addCase(deleteDoctor.fulfilled, (state, _action) => {
                 state.loading = false;
                 // Note: The doctor will be removed from the list via the real-time listener
             })

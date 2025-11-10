@@ -1,3 +1,4 @@
+// Candidate for deletion: no current imports reference these ability helpers.
 const ACTIONS = {
   CREATE: 'create',
   READ: 'read',
@@ -30,4 +31,4 @@ const SUBJECTS = {
 
 export const getActionsAndSubjects = () => {
   return { ACTIONS, SUBJECTS };
-}
+};

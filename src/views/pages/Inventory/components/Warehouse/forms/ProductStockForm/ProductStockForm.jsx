@@ -60,17 +60,26 @@ export function ProductStockForm() {
   const { batches, error: batchesError, loading: batchesLoading } = useListenBatches(user, formData?.productId);
   const { data: productsStock } = useListenProductsStock(productId);
 
+  const productsList = Array.isArray(products) ? products : [];
+  const batchesList = Array.isArray(batches) ? batches : [];
+  const productsErrorMessage = productsError ? (productsError.message ?? String(productsError)) : null;
+  const batchesErrorMessage = batchesError ? (batchesError.message ?? String(batchesError)) : null;
+
   const isLoading = productsLoading || batchesLoading;
 
   // Calcular el stock total del batch específico seleccionado
-  const selectedBatch = batches.find((batch) => batch.id === batchId);
-  const totalStockFromBatches = selectedBatch ? selectedBatch.quantity : 0;
-  const totalStockFromProducts = productsStock?.filter(product => product.id !== formData.id).reduce((acc, product) => acc + (product.stock || 0), 0) || 0;
+  const selectedBatch = batchesList.find((batch) => batch.id === batchId);
+  const totalStockFromBatches = selectedBatch?.quantity ?? 0;
+  const totalStockFromProducts = (productsStock ?? [])
+    .filter((product) => product.id !== formData.id)
+    .reduce((acc, product) => acc + (product.stock || 0), 0);
 
   const stockDifference = (formStock || 0) + totalStockFromProducts;
-  const stockExceeded = totalStockFromBatches - stockDifference;
-
-  const isStockAvailable = batchId && totalStockFromBatches - totalStockFromProducts > 0;
+  const remainingStock = totalStockFromBatches - stockDifference;
+  const isStockAvailable = Boolean(batchId && totalStockFromBatches - totalStockFromProducts > 0);
+  const stockUsagePercent = totalStockFromBatches > 0 ? Number(((stockDifference / totalStockFromBatches) * 100).toFixed(2)) : 0;
+  const formattedStockDifference = useFormatNumber(stockDifference);
+  const formattedTotalStock = useFormatNumber(totalStockFromBatches);
 
   useEffect(() => {
     if (isOpen && warehouseId) {
@@ -82,7 +91,7 @@ export function ProductStockForm() {
   }, [isOpen, warehouseId, shelfId, rowId, segmentId]);
 
   const handleProductChange = (productId) => {
-    const product = products.find((product) => product.id === productId);
+    const product = productsList.find((product) => product.id === productId);
     dispatch(updateProductStockFormData({
       productId,
       productName: product?.name || "",
@@ -90,9 +99,9 @@ export function ProductStockForm() {
     }));
   };
   const handleBatchChange = (batchId) => {
-    const existingProductStock = productsStock?.find(product => product.batchId === batchId && product.location.id === locationId);
+    const existingProductStock = productsStock?.find((product) => product.batchId === batchId && product.location.id === locationId);
     if (existingProductStock) {
-      antd.Modal.confirm({
+      Modal.confirm({
         title: "Este batch ya existe en la ubicación actual",
         content: "¿Deseas actualizar el stock existente en lugar de agregar uno nuevo?",
         okText: "Sí, actualizar",
@@ -127,7 +136,7 @@ export function ProductStockForm() {
         message.error("Por favor, selecciona un producto.");
         return;
       }
-      if (batches.length > 0 && !formData.batchId) {
+      if (batchesList.length > 0 && !formData.batchId) {
         message.error("Por favor, selecciona un batch.");
         return;
       }
@@ -167,13 +176,20 @@ export function ProductStockForm() {
   };
 
   return (
-    <Modal      title={formData.id ? "Actualizar Producto en Stock" : "Agregar Producto en Stock"}
+    <Modal
+      title={formData.id ? "Actualizar Producto en Stock" : "Agregar Producto en Stock"}
       open={isOpen}
       onCancel={handleClose}
       footer={null}
       destroyOnHidden
     >
       <Spin spinning={isLoading}>
+        {productsErrorMessage && (
+          <Alert message="Error al cargar productos" description={productsErrorMessage} type="error" showIcon style={{ marginBottom: 16 }} />
+        )}
+        {batchesErrorMessage && (
+          <Alert message="Error al cargar lotes" description={batchesErrorMessage} type="error" showIcon style={{ marginBottom: 16 }} />
+        )}
         <FormContainer form={form} layout="vertical" onFinish={handleSubmit}>
           {/* Selección de Producto */}
           <Form.Item
@@ -188,12 +204,12 @@ export function ProductStockForm() {
               optionFilterProp="children"
               onChange={handleProductChange}
               filterOption={(input, option) =>
-                option.children.toLowerCase().includes(input.toLowerCase())
+                String(option?.children ?? "").toLowerCase().includes(input.toLowerCase())
               }
               value={formData.productId || undefined}
               allowClear
             >
-              {products.map((product) => (
+              {productsList.map((product) => (
                 <Option key={product.id} value={product.id}>
                   {product.name}
                 </Option>
@@ -202,7 +218,7 @@ export function ProductStockForm() {
           </Form.Item>
 
           {/* Selección de Batch */}
-          {batches.length > 0 && (
+          {batchesList.length > 0 && (
             <Form.Item
               label="Batch"
               required
@@ -215,12 +231,12 @@ export function ProductStockForm() {
                 optionFilterProp="children"
                 onChange={handleBatchChange}
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
+                  String(option?.children ?? "").toLowerCase().includes(input.toLowerCase())
                 }
                 value={formData.batchId || undefined}
                 allowClear
               >
-                {batches.map((batch) => (
+                {batchesList.map((batch) => (
                   <Option key={batch.id} value={batch.id}>
                     {batch.shortName}
                   </Option>
@@ -239,12 +255,14 @@ export function ProductStockForm() {
               <div style={{ display: "flex", alignItems: "center", gap: '1em' }}>
                 <InputNumber
                   min={0}
-                  max={totalStockFromBatches - totalStockFromProducts}
+                  max={Math.max(totalStockFromBatches - totalStockFromProducts, 0)}
                   style={{ width: "100%" }}
                   value={formData.stock}
                   onChange={handleStockChange}
                 />
-                <span style={{ whiteSpace: 'nowrap', color: stockExceeded < 0 ? 'red' : 'black' }}> (Máximo: {totalStockFromBatches - totalStockFromProducts})</span>
+                <span style={{ whiteSpace: 'nowrap', color: remainingStock < 0 ? 'red' : 'black' }}>
+                  {` (Máximo: ${totalStockFromBatches - totalStockFromProducts})`}
+                </span>
               </div>
             </Form.Item>
           ) : batchId && (
@@ -257,10 +275,10 @@ export function ProductStockForm() {
               tooltip="Este es el stock total disponible del batch seleccionado y otros productos"
             >
               <div>
-                <Progress percent={useFormatNumber((stockDifference / totalStockFromBatches) * 100)} status={stockExceeded < 0 ? 'exception' : 'normal'} />
-                <span>{useFormatNumber(stockDifference)}</span>/<span>{totalStockFromBatches}</span>
+                <Progress percent={Math.max(0, Math.min(100, stockUsagePercent))} status={remainingStock < 0 ? 'exception' : 'normal'} />
+                <span>{formattedStockDifference}</span>/<span>{formattedTotalStock}</span>
               </div>
-              {stockExceeded < 0 && (
+              {remainingStock < 0 && (
                 <Alert message="El stock ingresado excede el total disponible. Por favor ajusta la cantidad." type="error" showIcon style={{ marginTop: 8 }} />
               )}
             </Form.Item>
@@ -270,7 +288,7 @@ export function ProductStockForm() {
           <StyledButton
             type="primary"
             htmlType="submit"
-            disabled={isLoading || stockExceeded < 0 || !isStockAvailable}
+            disabled={isLoading || remainingStock < 0 || !isStockAvailable}
           >
             {formData.id ? "Actualizar" : "Agregar"}
           </StyledButton>

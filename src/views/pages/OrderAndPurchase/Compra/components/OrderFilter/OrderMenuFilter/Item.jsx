@@ -1,48 +1,61 @@
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useState } from 'react'
+import { Fragment, useState } from 'react'
 import styled from 'styled-components'
-
-import { useSearchFilterOrderMenuOption } from '../../../../../../hooks/useSearchFilter'
 
 import { Input } from './Input'
 import { modifyOrderMenuData } from './modifyOrderMenuData'
 
+import { useSearchFilterOrderMenuOption } from '@/hooks/useSearchFilter'
+
 export const Item = ({ data, array, setArray, index }) => {
     const [searchTerm, setSearchTerm] = useState('')
+    const [isItemOpen, setIsItemOpen] = useState(false)
+
     const optionsFiltered = useSearchFilterOrderMenuOption(data, searchTerm)
 
-    const [isItemOpen, setIsItemOpen] = useState(false)
-    const handleOpenItem = () => setIsItemOpen(!isItemOpen)
-    return (
-        <Container>            <Head onClick={handleOpenItem}>
-                <FontAwesomeIcon icon={faChevronRight} /> <span>{data.name}</span>
-            </Head>
-            <Body isOpen={isItemOpen ? true : false} index={index}>
-                {
-                    <Fragment>
-                        <Input data={data} onChange={(e) => setSearchTerm(e.target.value)} fn={() => setSearchTerm('')} />
-                        <Items>
-                            {
-                                optionsFiltered.map((item, subIndex) => (
-                                    subIndex <= 2 ? (
-                                        <FilterOption key={subIndex}  isSelected={item.selected ? true : false}>
-                                            <input type="checkbox" name="selected" id={subIndex} onChange={(e) => {
-                                                modifyOrderMenuData(array, setArray, index, 'Items', 'selected', subIndex, e.target.checked)
-                                            }} />
-                                            <label htmlFor={subIndex}>
-                                                {item.name}
-                                            </label>
-                                        </FilterOption>
-                                    ) : null
-                                    
-                                ))
-                            }
-                             {data.Items.length > 4 && <button>See More</button>}
+    const toggleItem = () => setIsItemOpen((prev) => !prev)
 
-                        </Items>
-                    </Fragment>
-                }
+    return (
+        <Container>
+            <Head onClick={toggleItem}>
+                <FontAwesomeIcon icon={faChevronRight} />
+                <span>{data.name}</span>
+            </Head>
+            <Body isOpen={isItemOpen} index={index}>
+                <Fragment>
+                    <Input
+                        data={data}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        fn={() => setSearchTerm('')}
+                    />
+                    <Items>
+                        {optionsFiltered.slice(0, 3).map((item, subIndex) => (
+                            <FilterOption key={subIndex} isSelected={Boolean(item.selected)}>
+                                <input
+                                    type="checkbox"
+                                    name="selected"
+                                    id={`${data.name}-${subIndex}`}
+                                    onChange={(e) => {
+                                        modifyOrderMenuData(
+                                            array,
+                                            setArray,
+                                            index,
+                                            'Items',
+                                            'selected',
+                                            subIndex,
+                                            e.target.checked
+                                        )
+                                    }}
+                                />
+                                <label htmlFor={`${data.name}-${subIndex}`}>
+                                    {item.name}
+                                </label>
+                            </FilterOption>
+                        ))}
+                        {data.Items.length > 4 && <button>See More</button>}
+                    </Items>
+                </Fragment>
             </Body>
         </Container>
     )

@@ -9,13 +9,10 @@ import { formatMoney, formatPercentage } from '../../../../../utils/formatters';
 const EditableCell = ({
   editing,
   dataIndex,
-  title,
   inputType,
   record,
-  index,
   children,
   onSave,
-  onCloseEdit,
   setDateModalVisible,
   setSelectedRecord,
   onCellClick, // nuevo parámetro
@@ -270,7 +267,6 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
           ? { onCellClick: () => handleQuantityClick(record) }
           : { onClick: () => edit(record, col.dataIndex) }
         ),
-        onCloseEdit: () => setEditingCell({ row: '', col: '' }),
         setDateModalVisible,
         setSelectedRecord,
       }),
@@ -280,7 +276,7 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
   // Asegurarnos de que cada producto tenga un ID y key
   const dataSource = products.map((product, index) => ({
     ...product,
-    key: product.id || index // Usar el ID del producto como key si existe
+    key: product.id || index, // Usar el ID del producto como key si existe
   }));
 
   return (
@@ -296,10 +292,7 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
           size='small'
           scroll={{ x: 1300 }}
           columns={mergedColumns}
-          dataSource={products.map((product, index) => ({
-            ...product,
-            key: product.id || index // Usar el ID del producto como key si existe
-          }))}
+          dataSource={dataSource}
           rowKey={(record) => record.id}
           onRow={() => ({})} // Asegurar que no haya conflictos con eventos en las filas
         />

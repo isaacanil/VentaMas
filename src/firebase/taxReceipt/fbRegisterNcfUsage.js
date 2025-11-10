@@ -1,4 +1,5 @@
-import { collection, Timestamp, query, where, getDocs, updateDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { collection, Timestamp, query, where, getDocs, updateDoc, serverTimestamp, setDoc, doc } from "firebase/firestore";
+import { nanoid } from "nanoid";
 
 import { db } from "../firebaseconfig";
 

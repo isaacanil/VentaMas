@@ -17,7 +17,7 @@ import { useMenuOptions } from './useMenuOptions';
 export const DateRangeFilter = ({ setDates, dates }) => {
     const [referenceElement, setReferenceElement] = useState(null);
     const [popperElement, setPopperElement] = useState(null);
-    const [arrowElement, setArrowElement] = useState(null);
+    const [_arrowElement, setArrowElement] = useState(null);
     const { styles, attributes } = usePopper(referenceElement, popperElement, {
         modifiers: [{ name: 'arrow' }],
     });
@@ -96,14 +96,14 @@ export const DateRangeFilter = ({ setDates, dates }) => {
 
                         <Options>
                             {sections
-                                .map((section) => (
-                                    <OptionsGroup>
+                                .map((section, sectionIndex) => (
+                                    <OptionsGroup key={sectionIndex}>
                                         <h3>{section}</h3>
                                         <Items>
 
-                                            {groupedOptions[section].map((option, index) => (
+                                            {groupedOptions[section].map((option, optionIndex) => (
                                                 <StyledMenuItem
-                                                    key={index}
+                                                    key={optionIndex}
                                                     isActive={activeOptionLabel === option.label}
                                                     onClick={() =>
                                                         handleMenuItemClick(option.startDate, option.endDate, option.label)

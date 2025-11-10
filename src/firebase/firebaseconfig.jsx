@@ -101,6 +101,7 @@ export const addIngredientTypePizza = async (ingredient) => {
       ingredientList: arrayUnion(ingredient)
     });
   } catch (error) {
+    console.error('Error adding ingredient:', error);
   }
 
 }
@@ -111,5 +112,6 @@ export const deleteIngredientTypePizza = async (ingredient) => {
       ingredientList: arrayRemove(ingredient)
     });
   } catch (error) {
+    console.error('Error deleting ingredient:', error);
   }
 }

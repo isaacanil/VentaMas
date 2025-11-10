@@ -118,7 +118,7 @@ export const useRealtimePresence = (user) => {
     return () => {
       try {
         unsubscribe && unsubscribe();
-      } catch {}
+      } catch { /* Ignore unsubscribe errors */ }
 
       stopHeartbeat();
       const disconnectHandler = disconnectHandlerRef.current;

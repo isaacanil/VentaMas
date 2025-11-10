@@ -4,7 +4,7 @@ import { deleteObject, ref } from "firebase/storage";
 import { db, storage } from "../firebaseconfig";
 import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
 
-const saveCurrentPurchaseVersion = async (user, currentPurchase) => {
+const _saveCurrentPurchaseVersion = async (user, currentPurchase) => {
     const purchaseId = currentPurchase.id;
     const previousPurchaseRef = doc(db, 'businesses', user.businessID, "previousPurchases", purchaseId);
 
@@ -12,7 +12,7 @@ const saveCurrentPurchaseVersion = async (user, currentPurchase) => {
     await setDoc(previousPurchaseRef, { data: { ...currentPurchase, savedAt: Timestamp.now() } });
 };
 
-const updateProductsStockFromReplenishments = async (user, newPurchase, previousPurchase) => {
+const _updateProductsStockFromReplenishments = async (user, newPurchase, previousPurchase) => {
     // Maps para los reabastecimientos de la nueva y la versión anterior de la compra
     const newReplenishmentsMap = new Map(newPurchase.replenishments.map(item => [item.id, item]));
     const previousReplenishmentsMap = previousPurchase ? new Map(previousPurchase.replenishments.map(item => [item.id, item])) : new Map();
@@ -22,7 +22,7 @@ const updateProductsStockFromReplenishments = async (user, newPurchase, previous
         if (previousReplenishmentsMap.has(productId)) {
             const previousReplenishment = previousReplenishmentsMap.get(productId);
             // Processing existing product replenishment
-            let stockChange = newReplenishment.newStock - previousReplenishment.newStock;
+            let _stockChange = newReplenishment.newStock - previousReplenishment.newStock;
             // Stock change calculated for existing product
             // await updateProductStock(user, productId, stockChange);
         } else {
@@ -35,13 +35,13 @@ const updateProductsStockFromReplenishments = async (user, newPurchase, previous
     for (const [productId, previousReplenishment] of previousReplenishmentsMap) {
         if (!newReplenishmentsMap.has(productId)) {
             // Si un producto anterior ya no está en la nueva compra, reduce el stock
-            let stockChange = -previousReplenishment.newStock;
+            let _stockChange = -previousReplenishment.newStock;
             // await updateProductStock(user, productId, stockChange);
         }
     }
 };
 
-const updateProductStock = async (user, productId, stockChange) => {
+const _updateProductStock = async (user, productId, stockChange) => {
     // Realizar la actualización del stock del producto en la base de datos
                 // Updating product stock
 

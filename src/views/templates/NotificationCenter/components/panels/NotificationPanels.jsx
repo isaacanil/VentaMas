@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import AccountsReceivablePanel from './AccountsReceivablePanel';
 import AuthorizationsPanel from './AuthorizationsPanel';
-import FiscalReceiptsNotificationPanel from './FiscalReceiptsNotificationPanel';
+import FiscalReceiptsNotificationPanel from './FiscalReceiptsPanel/FiscalReceiptsPanel';
 
 /**
  * Componente que muestra todos los paneles de notificaciones

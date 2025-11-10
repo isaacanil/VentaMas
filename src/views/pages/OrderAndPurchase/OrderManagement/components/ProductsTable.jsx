@@ -9,13 +9,10 @@ import { formatMoney } from '../../../../../utils/formatters';
 const EditableCell = ({
   editing,
   dataIndex,
-  title,
   inputType,
   record,
-  index,
   children,
   onSave,
-  onCloseEdit,
   setDateModalVisible,
   setSelectedRecord,
   onCellClick,
@@ -216,7 +213,6 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
               }
             }
           : { onClick: () => edit(record, col.dataIndex) }),
-        onCloseEdit: () => setEditingCell({ row: '', col: '' }),
         setDateModalVisible,
         setSelectedRecord,
       }),

@@ -1,7 +1,7 @@
 import { collection, doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
-import { db } from '../firebase';
+import { db } from '../firebase/firebaseconfig';
 
 /**
  * Hook para gestionar taxReceipts desde Firebase Firestore, validar su estructura

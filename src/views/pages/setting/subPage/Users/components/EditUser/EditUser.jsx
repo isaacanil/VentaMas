@@ -90,9 +90,6 @@ const EditUser = () => {
         }
         if (passwordErrors.length > 0) {
             errors.password = passwordErrors;
-
-        } else {
-
         }
         return errors;
     };
@@ -153,41 +150,39 @@ const EditUser = () => {
                         onChange={(e) => handleInputChange({ ["role"]: e.target.value?.id })}
                     />
                     <ElemLabel
-                        children={
-                            <Button
-                                tooltipDescription={user.active ? 'desactivar' : 'activar'}
-                                tooltipPlacement={'top'}
-                                title={!user.active ? 'activar' : 'desactivar'}
-                                bgcolor={!user.active ? 'gray' : 'error'}
-                                borderRadius={'light'}
-                                onClick={() => handleInputChange({ ["active"]: !user.active })}
-                            />
-                        }
                         label={'Estado del usuario ' + (user.active ? 'activo' : 'inactivo')}
-                    />                    <ElemLabel
-                        children={
-                            <Button
-                                title={'Cambiar Contraseña'}
-                                bgcolor={'gray'}
-                                borderRadius={'light'}
-                                onClick={handleIsOpenChangePassWord}
-                            />
-                        }
+                    >
+                        <Button
+                            tooltipDescription={user.active ? 'desactivar' : 'activar'}
+                            tooltipPlacement={'top'}
+                            title={!user.active ? 'activar' : 'desactivar'}
+                            bgcolor={!user.active ? 'gray' : 'error'}
+                            borderRadius={'light'}
+                            onClick={() => handleInputChange({ ["active"]: !user.active })}
+                        />
+                    </ElemLabel>
+                    <ElemLabel
                         label={'Cambiar Contraseña'}
-                    />
+                    >
+                        <Button
+                            title={'Cambiar Contraseña'}
+                            bgcolor={'gray'}
+                            borderRadius={'light'}
+                            onClick={handleIsOpenChangePassWord}
+                        />
+                    </ElemLabel>
 
                     {canManagePermissions && (
                         <ElemLabel
-                            children={
-                                <Button
-                                    title={'Gestionar Permisos'}
-                                    bgcolor={'primary'}
-                                    borderRadius={'light'}
-                                    onClick={handleIsOpenPermissions}
-                                />
-                            }
                             label={'Permisos Dinámicos'}
-                        />
+                        >
+                            <Button
+                                title={'Gestionar Permisos'}
+                                bgcolor={'primary'}
+                                borderRadius={'light'}
+                                onClick={handleIsOpenPermissions}
+                            />
+                        </ElemLabel>
                     )}
 
                     <ErrorComponent errors={errors.firebase}></ErrorComponent>

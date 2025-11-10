@@ -7,7 +7,7 @@ import { getNextID } from '../Tools/getNextID';
 
 import { fbUpdateProdStockForReplenish } from './fbUpdateProdStockForReplenish';
 
-const cleanLocalAttachments = (attachments = []) => {
+const _cleanLocalAttachments = (attachments = []) => {
     return attachments.filter(attachment => attachment.location !== 'local');
 };
 

@@ -25,7 +25,7 @@ export const serializeFirestoreData = (obj) => {
   if (typeof obj === 'object') {
     const serialized = {};
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.hasOwn(obj, key)) {
         serialized[key] = serializeFirestoreData(obj[key]);
       }
     }

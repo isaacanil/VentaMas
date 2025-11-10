@@ -1,6 +1,6 @@
 import { ref, getBlob } from "firebase/storage";
 
-import { storage } from "../firebaseConfig";
+import { storage } from "../firebaseconfig";
 
 export async function downloadImage(url) {  
     const gsPath = url

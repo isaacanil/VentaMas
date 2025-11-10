@@ -207,7 +207,7 @@ export default function InventoryGroupedTable({
       // --------------------------------------------------
       // Detección de modificaciones (conteo o vencimiento)
       // --------------------------------------------------
-      const normExp = (val, child) => {
+      const normExp = (val) => {
         if (!val || val === CLEAR_SENTINEL) return '';
         // val puede venir como fecha completa o ya normalizada
         if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
@@ -228,7 +228,7 @@ export default function InventoryGroupedTable({
         // Expiración persistida actual
         const metaVal = countsMeta[childKey]?.manualExpirationDate;
         let persistedExp = metaVal && metaVal !== CLEAR_SENTINEL ? metaVal : (child.type==='batch' ? formatInputDate(child.expirationDate) : '');
-        persistedExp = normExp(persistedExp, child);
+        persistedExp = normExp(persistedExp);
         const baseExp = baselineRef.current.expirations[childKey];
         if (baseExp !== undefined && persistedExp !== baseExp) { isModified = true; break; }
         // Edits no guardados (señal inmediata)
@@ -245,7 +245,7 @@ export default function InventoryGroupedTable({
             if (Object.prototype.hasOwnProperty.call(counts, skey) && Number(counts[skey]) !== Number(srcPersisted)) { isModified = true; break; }
             const sMetaVal = countsMeta[skey]?.manualExpirationDate;
             let sExp = sMetaVal && sMetaVal !== CLEAR_SENTINEL ? sMetaVal : (src.expirationDate ? formatInputDate(src.expirationDate) : (child.type==='batch' ? formatInputDate(child.expirationDate) : ''));
-            sExp = normExp(sExp, child);
+            sExp = normExp(sExp);
             const baseSExp = baselineRef.current.expirations[skey];
             if (baseSExp !== undefined && sExp !== baseSExp) { isModified = true; break; }
             if (expirationEdits[skey] !== undefined) { isModified = true; break; }
@@ -262,9 +262,9 @@ export default function InventoryGroupedTable({
         const currentTop = (() => {
           if (editTop !== undefined) {
             if (editTop === CLEAR_SENTINEL) return '';
-            return normExp(editTop, firstChild);
+            return normExp(editTop);
           }
-          if (metaTop && metaTop !== CLEAR_SENTINEL) return normExp(metaTop, firstChild);
+          if (metaTop && metaTop !== CLEAR_SENTINEL) return normExp(metaTop);
           return originalTop || '';
         })();
         const baseTop = baselineRef.current.expirations[g.topKey];
@@ -429,7 +429,6 @@ export default function InventoryGroupedTable({
           }
           const valueDay = currentStr ? dayjs(currentStr) : null;
           expirationSortValue = currentStr || '';
-          const isManual = !!manualVal;
           const hasOriginal = !!originalVal;
           // Mostrar DatePicker
           expirationNode = (
@@ -528,8 +527,8 @@ export default function InventoryGroupedTable({
             </span>
           )
         } else if (child.type === 'noexp') {
-          const isManual = (countsMeta[g.topKey]?.manualExpirationDate || countsMeta[child.key]?.manualExpirationDate) ? true : false
-          expirationNode = <span style={{ opacity:.7 }}>{isManual ? <Tag color="gold">Manual</Tag> : '-'}</span>
+          const manualExists = (countsMeta[g.topKey]?.manualExpirationDate || countsMeta[child.key]?.manualExpirationDate) ? true : false
+          expirationNode = <span style={{ opacity:.7 }}>{manualExists ? <Tag color="gold">Manual</Tag> : '-'}</span>
           expirationSortValue = ''
         }
 

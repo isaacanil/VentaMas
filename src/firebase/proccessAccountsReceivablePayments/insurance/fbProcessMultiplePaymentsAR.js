@@ -66,7 +66,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
         
         // Inicializar el clientId con el valor por defecto
         let extractedClientId = clientId;
-        let clientData = null;
+        let _clientData = null;
         
         // Solo buscar en la ubicación específica: account.accountData.client.id
         if (accounts && accounts.length > 0) {
@@ -79,7 +79,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
                     
                     // Usar el cliente de cada cuenta individual
                     extractedClientId = accountClientId;
-                    clientData = account.accountData.client;
+                    const _clientData = account.accountData.client;
                     // No hacemos break porque queremos usar el clientId de la última cuenta procesada
                 }
             }
@@ -176,8 +176,8 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
             // Procesar cada cuota
             let accountTotalPaid = 0;
             const paidInstallments = [];
-            const installmentUpdates = [];
-            const installmentPayments = [];
+            const _installmentUpdates = [];
+            const _installmentPayments = [];
             
             for (const installment of installments) {
                 if (remainingAmount <= THRESHOLD) break;

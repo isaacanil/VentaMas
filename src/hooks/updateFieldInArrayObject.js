@@ -7,7 +7,7 @@ export const updateFieldInArrayObject = (array, setArray, propertyId, propertyTo
             console.error(`No se ha encontrado ningún objeto con la propiedad 'name' igual a '${propertyId}' en el array.`);
             return;
         }
-        if (!array[index].hasOwnProperty(propertyToChangeValue)) {
+        if (!Object.hasOwn(array[index], propertyToChangeValue)) {
             console.error(`El objeto en el índice ${index} no tiene una propiedad llamada '${propertyToChangeValue}'.`);
             return;
         }

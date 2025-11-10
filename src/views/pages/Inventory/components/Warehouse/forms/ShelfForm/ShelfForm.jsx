@@ -6,7 +6,7 @@ import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { clearShelfForm, closeShelfForm, selectShelfState, setShelfError, setShelfLoading, updateShelfFormData } from "../../../../../../../features/warehouse/shelfModalSlice";
 import { createShelf, updateShelf } from "../../../../../../../firebase/warehouse/shelfService";
 
-export function ShelfForm({ }) {
+export function ShelfForm() {
   const dispatch = useDispatch();
   const [form] = Form.useForm();
   const { formData, isOpen, path, loading } = useSelector(selectShelfState); // Obtener la ruta

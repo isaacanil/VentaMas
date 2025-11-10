@@ -23,9 +23,9 @@ export function useBusinessUsers() {
             return;
         }
 
-        let unsubscribe;
+        let _unsubscribe;
         try {
-            unsubscribe = fbGetUsers(
+            _unsubscribe = fbGetUsers(
                 currentUser,
                 (usersArray) => {
                     setUsers(usersArray);

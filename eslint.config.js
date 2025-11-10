@@ -21,7 +21,14 @@ export default [
   ] },
 
   js.configs.recommended,
-  react.configs.flat.recommended,
+  {
+    ...react.configs.flat.recommended,
+    settings: {
+      react: {
+        version: "detect"
+      }
+    }
+  },
   ...storybook.configs["flat/recommended"],
 
   {

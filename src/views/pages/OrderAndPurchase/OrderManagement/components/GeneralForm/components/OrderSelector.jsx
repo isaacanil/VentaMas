@@ -1,11 +1,11 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Form, Input, Drawer, message, Button, Space, Empty } from 'antd';
 import { useState, useRef, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../../../constants/icons/icons';
-import { getOrderData, selectPurchase } from '../../../../../../../features/purchase/addPurchaseSlice';
+import { getOrderData } from '../../../../../../../features/purchase/addPurchaseSlice';
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import DateUtils from '../../../../../../../utils/date/dateUtils';
 import { normalizeText } from '../../../../../../../utils/text';
@@ -91,7 +91,6 @@ const OrderSelector = ({ orders, orderLoading }) => {
     const [search, setSearch] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const searchInputRef = useRef(null);
-    const { provider: providerId } = useSelector(selectPurchase);
 
 
     useEffect(() => {

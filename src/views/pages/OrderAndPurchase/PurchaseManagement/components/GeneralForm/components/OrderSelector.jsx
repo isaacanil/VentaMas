@@ -93,7 +93,7 @@ const OrderSelector = ({ orders, orderLoading }) => {
     const [search, setSearch] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const searchInputRef = useRef(null);
-    const { provider: providerId, orderId } = useSelector(selectPurchase);
+    const { orderId } = useSelector(selectPurchase);
     const navigate = useNavigate();
 
     useEffect(() => {

@@ -59,7 +59,8 @@ export default function SegmentForm() {
         await updateSegment(user, sanitizedSegment);
         message.success("Segmento actualizado con éxito.");
       } else {
-        const { id, ...payload } = sanitizedSegment;
+        const payload = { ...sanitizedSegment };
+        delete payload.id;
         await createSegment({
           user,
           segmentData: payload
