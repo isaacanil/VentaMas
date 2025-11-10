@@ -1,8 +1,6 @@
 import { notification } from 'antd'
 import { motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ComponentType, ReactNode } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -18,14 +16,17 @@ import { useCashCountClosingPrompt } from '../../../hooks/cashCount/useCashCount
 import useFilter from '../../../hooks/search/useSearch' // Cambiar importación
 import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx'
 import { extractProductInfo, extractWeightInfo, formatWeight } from '../../../utils/barcode.js'
-import { Cart } from './components/Cart/Cart'
-import { InvoicePanel } from './components/Cart/components/InvoicePanel/InvoicePanel.jsx'
 import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx'
 import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx'
 import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx'
 import { ProductBatchModal } from '../Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx'
 
+import { Cart } from './components/Cart/Cart'
+import { InvoicePanel } from './components/Cart/components/InvoicePanel/InvoicePanel.jsx'
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx'
+
+import type { Dispatch, SetStateAction } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 type Product = {
   barcode?: string

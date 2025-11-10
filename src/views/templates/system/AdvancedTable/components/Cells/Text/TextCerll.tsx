@@ -1,7 +1,8 @@
 import { Tooltip } from "antd";
 import React, { useRef } from "react";
-import useTruncate from "../../../../../../../hooks/useTruncate";
 import styled from 'styled-components';
+
+import useTruncate from "../../../../../../../hooks/useTruncate";
 
 interface TextCellProps {
     value: string | null | undefined;

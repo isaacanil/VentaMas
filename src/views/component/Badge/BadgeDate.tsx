@@ -1,8 +1,9 @@
-import { DateTime } from 'luxon';
-import React, { cloneElement, FC, ReactElement, ReactNode, isValidElement } from 'react';
-import styled from 'styled-components';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DateTime } from 'luxon';
+import React, { cloneElement, ReactNode, isValidElement } from 'react';
+import styled from 'styled-components';
+
 import type { ConfigItem } from '../../../config/statusActionConfig';
 
 type BadgeDateConfig = ConfigItem;
@@ -88,12 +89,12 @@ export const BadgeDate = ({
     return (
         <BadgeContainer bgColor={finalConfig.bgColor}>
             <DateIconContainer>
-                <DateText color={finalConfig.color!}>
+                <DateText color={finalConfig.color}>
                     {formattedDate}
                 </DateText>
-                {renderIcon(finalConfig.icon!, finalConfig.color!)}
+                {renderIcon(finalConfig.icon, finalConfig.color)}
             </DateIconContainer>
-            <BadgeText color={finalConfig.color!}>
+            <BadgeText color={finalConfig.color}>
                 {finalConfig.text}
             </BadgeText>
         </BadgeContainer>

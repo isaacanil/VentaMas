@@ -1,8 +1,9 @@
 import React from 'react';
-import styled from 'styled-components';
 import { Line } from 'react-chartjs-2';
+import styled from 'styled-components';
 
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
+
 import { EmptyState } from './EmptyState';
 
 export const DailyPerformanceChart = ({ loading, chartData, chartOptions, subtitle }) => {

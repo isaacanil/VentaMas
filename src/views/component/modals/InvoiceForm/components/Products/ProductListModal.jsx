@@ -1,7 +1,3 @@
-import { Modal, Button, Tooltip } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBoxOpen,
   faBoxesStacked,
@@ -9,15 +5,21 @@ import {
   faTimes,
   faPlus,
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Button, Tooltip } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import styled from 'styled-components';
+
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { getTotalPrice } from '../../../../../../utils/pricing';
-import { StyledProductTable } from './ProductTables.styles';
-import { ProductFilterToolbar } from './ProductFilterToolbar';
+
 import {
   getCategoryName,
   getPrimaryActiveIngredient,
   getCategoryStats,
 } from './productDataUtils';
+import { ProductFilterToolbar } from './ProductFilterToolbar';
+import { StyledProductTable } from './ProductTables.styles';
 
 export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, isReadOnly = false }) => {
   const [searchTerm, setSearchTerm] = useState('');

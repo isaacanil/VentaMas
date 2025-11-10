@@ -30,7 +30,7 @@ const BillingModeConfig = ({ billingMode }) => {
   const handleCardClick = async (value) => {
     try {
       await setBillingSettings(user, { billingMode: value }); 
-    } catch (error) {
+    } catch {
       message.error('Error al guardar la configuración');
     }
   };

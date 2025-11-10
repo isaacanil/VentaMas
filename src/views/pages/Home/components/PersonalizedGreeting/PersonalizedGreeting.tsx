@@ -1,4 +1,3 @@
-import type { JSX } from 'react';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -8,12 +7,14 @@ import { selectUser } from '../../../../../features/auth/userSlice';
 import { CombinedPill } from './components/CombinedPill';
 import { SessionInfoModal } from './components/SessionInfoModal';
 
+import type { JSX } from 'react';
+
 type MaybeUser = ReturnType<typeof selectUser>;
 type MaybeBusiness = ReturnType<typeof selectBusinessData>;
 
 const PersonalizedGreeting = (): JSX.Element => {
-  const user = useSelector(selectUser) as MaybeUser;
-  const business = useSelector(selectBusinessData) as MaybeBusiness;
+  const user = useSelector(selectUser);
+  const business = useSelector(selectBusinessData);
   const [isSessionModalOpen, setSessionModalOpen] = useState(false);
 
   const realName = user?.realName && typeof user.realName === 'string' ? user.realName.trim() : '';

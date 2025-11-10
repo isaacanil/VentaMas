@@ -1,9 +1,9 @@
+import { faUser, faPhone, faIdCard, faMapMarkerAlt, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {Select, Modal, message} from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser, faPhone, faIdCard, faMapMarkerAlt, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 
 import { changeClientInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice'
 import { useFbGetClients } from '../../../../../../firebase/client/useFbGetClients'

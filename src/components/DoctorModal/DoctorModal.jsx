@@ -80,7 +80,7 @@ const DoctorModal = () => {
             }
             
             form.resetFields();
-        } catch (rejectedValueOrSerializedError) {
+        } catch {
             // Error already handled by Redux and shown via useEffect
         }
     };

@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { designSystemV2 } from '../../../../theme/designSystemV2';
-import { TransactionDetailsTable } from './TransactionDetailsTable';
-import { TopProductsPanel } from './TopProductsPanel';
+import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
+
 import { BusinessInsightsPanel } from './BusinessInsightsPanel';
+import { TopProductsPanel } from './TopProductsPanel';
+import { TransactionDetailsTable } from './TransactionDetailsTable';
 
 const { colors, spacing, radii, shadows } = designSystemV2;
 

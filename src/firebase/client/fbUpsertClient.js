@@ -3,6 +3,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { compareObjects } from "../../utils/object/compareObject";
 import { db } from "../firebaseconfig";
 import { fbGetDoc } from "../firebaseOperations";
+
 import { buildClientWritePayload, extractNormalizedClient } from "./clientNormalizer";
 
 export async function fbUpsertClient(user, client, transaction = null) {

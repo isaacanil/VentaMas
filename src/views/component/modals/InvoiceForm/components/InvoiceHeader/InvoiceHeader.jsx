@@ -1,8 +1,8 @@
+import { faFileInvoice, faCalendarAlt } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { DateTime } from 'luxon'
 import React from 'react'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileInvoice, faCalendarAlt } from '@fortawesome/free-solid-svg-icons'
-import { DateTime } from 'luxon'
 
 export const InvoiceHeader = ({ invoice }) => {
     const ncf = invoice?.NCF || 'N/A'

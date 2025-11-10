@@ -9,8 +9,8 @@ import { icons } from "../../../../../constants/icons/icons";
 import { selectBusinessData } from "../../../../../features/auth/businessSlice";
 import { selectUser } from "../../../../../features/auth/userSlice";
 import { loadCart, setCartId, toggleInvoicePanelOpen, SelectSettingCart } from "../../../../../features/cart/cartSlice";
-import { selectTaxReceiptType } from "../../../../../features/taxReceipt/taxReceiptSlice";
 import { selectClientWithAuth } from "../../../../../features/clientCart/clientCartSlice";
+import { selectTaxReceiptType } from "../../../../../features/taxReceipt/taxReceiptSlice";
 import { fbCancelPreorder } from "../../../../../firebase/invoices/fbCancelPreorder";
 import { downloadInvoiceLetterPdf } from "../../../../../firebase/quotation/downloadQuotationPDF";
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'

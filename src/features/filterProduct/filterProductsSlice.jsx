@@ -50,7 +50,7 @@ const serializeForStorage = (field, value) => {
     const arrayValue = Array.isArray(value) ? value : defaultValue;
     try {
       return JSON.stringify(arrayValue);
-    } catch (error) {
+    } catch {
       return JSON.stringify(defaultValue);
     }
   }
@@ -64,7 +64,7 @@ const serializeForStorage = (field, value) => {
   if (typeof value === 'object') {
     try {
       return JSON.stringify(value);
-    } catch (error) {
+    } catch {
       return '';
     }
   }
@@ -80,7 +80,7 @@ const deserializeStoredValue = (field, rawValue) => {
     try {
       const parsed = JSON.parse(rawValue);
       return Array.isArray(parsed) ? parsed : defaultValue;
-    } catch (error) {
+    } catch {
       return defaultValue;
     }
   }
@@ -103,7 +103,7 @@ const readStoredValue = (key) => {
   if (!key || typeof localStorage === 'undefined') return null;
   try {
     return localStorage.getItem(key);
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -112,7 +112,7 @@ const writeStoredValue = (key, value) => {
   if (!key || typeof localStorage === 'undefined') return;
   try {
     localStorage.setItem(key, value);
-  } catch (error) {
+  } catch {
     // graceful fallback when storage is unavailable
   }
 };

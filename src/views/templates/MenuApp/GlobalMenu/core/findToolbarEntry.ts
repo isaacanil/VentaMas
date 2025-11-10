@@ -1,4 +1,5 @@
 import { matchPath } from 'react-router-dom'
+
 import type { ToolbarEntryWithMatchers } from '../types/types'
 
 /**

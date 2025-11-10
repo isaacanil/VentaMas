@@ -3,6 +3,7 @@
 import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../firebaseconfig";
+
 import { extractNormalizedClient } from "./clientNormalizer";
 
 export async function getClients(user) {

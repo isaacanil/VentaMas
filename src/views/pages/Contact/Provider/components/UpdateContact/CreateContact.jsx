@@ -35,7 +35,7 @@ export const CreateContact = ({isOpen}) => {
                 ...newClient,
                 id: nanoid(8)
             })
-        } catch (error) {
+        } catch {
 
         }
     }
@@ -44,7 +44,7 @@ export const CreateContact = ({isOpen}) => {
         if (validateNewClient(newClient)) {
             try {
                 createClient(newClient)
-            } catch (error) {
+            } catch {
                 // Handle error silently or with proper error handling
             }
         }
@@ -52,7 +52,7 @@ export const CreateContact = ({isOpen}) => {
     const showClient = async () => {
         try {
             // Client data ready for display
-        } catch (err) {
+        } catch {
             // Handle error
         }
     }

@@ -1,14 +1,16 @@
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { Tooltip } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { designSystemV2 } from '../../../../theme/designSystemV2';
-import { EmptyState } from './EmptyState';
+import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { buildBusinessInsights } from '../utils/buildBusinessInsights';
 import { getVariantStyles } from '../utils/insightVariants';
+
+import { EmptyState } from './EmptyState';
+
 
 const { colors, shadows, radii, spacing } = designSystemV2;
 

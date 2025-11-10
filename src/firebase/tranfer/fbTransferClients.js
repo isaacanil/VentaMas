@@ -1,8 +1,8 @@
 import { collection, getDocs, writeBatch, doc, query, limit as firestoreLimit } from "firebase/firestore";
 import { nanoid } from "nanoid";
 
-import { db } from "../firebaseconfig";
 import { buildClientWritePayload, CLIENT_ROOT_FIELDS, extractNormalizedClient } from "../client/clientNormalizer";
+import { db } from "../firebaseconfig";
 
 /**
  * Transfiere clientes de un negocio a otro.

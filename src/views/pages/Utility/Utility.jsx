@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import { designSystemV2 } from '../../../theme/designSystemV2';
-import { DailyPerformanceChart } from './components/DailyPerformanceChart';
-import { RevenueDistributionChart } from './components/RevenueDistributionChart';
-import { UtilityHeader } from './components/UtilityHeader';
-import { RangeComparisonCard } from './components/RangeComparisonCard';
-import { TotalSalesCard } from './components/TotalSalesCard';
-import { UtilityInsightsTabs } from './components/UtilityInsightsTabs';
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
+
 import { BestDayHighlightCard } from './components/BestDayHighlightCard';
+import { DailyPerformanceChart } from './components/DailyPerformanceChart';
+import { RangeComparisonCard } from './components/RangeComparisonCard';
+import { RevenueDistributionChart } from './components/RevenueDistributionChart';
+import { TotalSalesCard } from './components/TotalSalesCard';
+import { UtilityHeader } from './components/UtilityHeader';
+import { UtilityInsightsTabs } from './components/UtilityInsightsTabs';
+import { useUtilityDashboard } from './hooks/useUtilityDashboard';
 import { exportTransactionsExcel } from './utils/exportTransactionsExcel';
 import { buildTransactionRows } from './utils/transactionRows';
-import { useUtilityDashboard } from './hooks/useUtilityDashboard';
 import './utils/registerCharts';
 
 const EXPORT_EVENT = 'utility-export-request';
@@ -54,7 +55,7 @@ export const Utility = () => {
             try {
                 await exportTransactionsExcel(dailyMetrics);
             } catch (error) {
-                // eslint-disable-next-line no-console
+                 
                 console.error('Error al exportar transacciones:', error);
             }
         }

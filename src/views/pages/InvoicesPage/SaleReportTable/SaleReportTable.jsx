@@ -3,8 +3,8 @@ import { useMemo } from 'react'
 import styled from 'styled-components'
 
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { getProductsTax, getTotalItems } from '../../../../utils/pricing'
 import { convertInvoiceDateToMillis } from '../../../../utils/invoice'
+import { getProductsTax, getTotalItems } from '../../../../utils/pricing'
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable'
 import { columns } from '../tableData'
 

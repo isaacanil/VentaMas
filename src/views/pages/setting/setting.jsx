@@ -1,15 +1,15 @@
+import { AutoComplete, Input } from 'antd'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { AutoComplete, Input } from 'antd'
 
+import { icons } from '../../../constants/icons/icons'
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
 import { Transition } from '../../templates/system/Transition'
 import Typography from '../../templates/system/Typografy/Typografy'
 
 import { Card } from './Components/Card'
 import { getSettingData } from './SettingData'
-import { icons } from '../../../constants/icons/icons'
 
 const normalizeText = (value = '') =>
   value

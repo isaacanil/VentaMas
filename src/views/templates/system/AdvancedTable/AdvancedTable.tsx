@@ -27,6 +27,7 @@ import { useColumnOrder } from './hooks/useColumnOrder';
 import { useTablePagination } from './hooks/usePagination';
 import useTableFiltering, { useDynamicFilterConfig } from './hooks/useTableFilter';
 import useTableSorting from './hooks/useTableSorting';
+
 import type { ColumnConfig } from './types/ColumnTypes';
 
 type TableRow = Record<string, unknown>;

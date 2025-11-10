@@ -11,10 +11,10 @@ const { Button, Input } = antd
 import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
 import { getTotalPrice } from '../../../../../../utils/pricing'
 
+import { getCategoryName, getCategoryStats } from './productDataUtils'
+import { ProductFilterToolbar } from './ProductFilterToolbar'
 import { ProductListModal } from './ProductListModal'
 import { StyledProductTable } from './ProductTables.styles'
-import { ProductFilterToolbar } from './ProductFilterToolbar'
-import { getCategoryName, getCategoryStats } from './productDataUtils'
 
 const getProductQuantity = (product) => {
     if (!product) return 1

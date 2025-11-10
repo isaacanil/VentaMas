@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';
+import { openModal as openActiveIngredientModal } from '../../../../features/activeIngredients/activeIngredientsSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { openBrandModal } from '../../../../features/productBrands/productBrandSlice';
-import { openModal as openActiveIngredientModal } from '../../../../features/activeIngredients/activeIngredientsSlice';
 import { ChangeProductData, PRODUCT_BRAND_DEFAULT, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice';
 import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCategories';
 import { useListenActiveIngredients } from '../../../../firebase/products/activeIngredient/activeIngredients';
@@ -18,11 +18,12 @@ import { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../../../
 import ImageManager from '../../../component/modals/ProductForm/ImageManager/ImageManager';
 import { buildNormalizedProductSnapshot, buildSanitizedProductForSubmit, normalizeItemType, normalizeTrackInventoryValue } from '../../../component/modals/ProductForm/utils/productNormalization';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+
 import { ActionBar } from './components/ActionBar';
+import { ProductForm } from './components/form/ProductForm';
 import { ModeBanner } from './components/ModeBanner';
 import { ProductSummary } from './components/ProductSummary';
 import { SectionNavigator } from './components/SectionNavigator';
-import { ProductForm } from './components/form/ProductForm';
 import { PageContainer, ScrollArea, StudioGrid, StudioWrapper, StickySummary, Workspace } from './components/StudioLayout';
 import { useProductPreviewMetrics } from './hooks/useProductPreviewMetrics';
 import { useSectionNavigation } from './hooks/useSectionNavigation';

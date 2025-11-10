@@ -6,8 +6,9 @@ import styled from 'styled-components';
 
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../../features/auth/userSlice';
-import InvoiceTemplates from '../../../Invoice/components/InvoiceTemplates/InvoiceTemplates';
 import { fbUpdateInvoiceMessage } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
+import InvoiceTemplates from '../../../Invoice/components/InvoiceTemplates/InvoiceTemplates';
+
 import DueDateConfig from './DueDateConfig';
 
 const ConfigItem = styled.div`
@@ -45,7 +46,7 @@ const InvoiceSettingsSection = () => {
     try {
       await fbUpdateInvoiceMessage(user, value);
       messageApi.success('Mensaje actualizado');
-    } catch (error) {
+    } catch {
       messageApi.error('No se pudo guardar el mensaje');
       form.setFieldsValue({ invoiceMessage: previousValue });
     } finally {

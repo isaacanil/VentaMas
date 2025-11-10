@@ -1,5 +1,7 @@
 import { jsx as _jsx } from "react/jsx-runtime";
+
 import { NotFound } from "../views/pages/NotFound/NotFound";
+
 import accountReceivable from './paths/AccountReceivable';
 import auth from "./paths/Auth";
 import authorizations from './paths/Authorizations';
@@ -20,6 +22,7 @@ import utility from "./paths/Utility";
 import { processRoute } from "./requiereAuthProvider";
 import { ROUTE_STATUS } from './routeMeta';
 import { registerRoutes as registerRoutesIndex } from './routeVisibility';
+
 const registerRoutes = registerRoutesIndex;
 // Procesa recursivamente las rutas y sus hijos para aplicar la protección
 const processRoutes = (routes) => {

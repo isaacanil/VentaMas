@@ -1,23 +1,26 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { message, Button, Form, Modal, Select } from 'antd'
-import styled from 'styled-components'
-import GeneralForm from './components/GeneralForm/GeneralForm'
-import { MenuApp } from '../../../templates/MenuApp/MenuApp'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectPurchase, cleanPurchase, setPurchase, selectPurchaseState } from '../../../../features/purchase/addPurchaseSlice'
-import ROUTES_PATH from '../../../../routes/routesName'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { defaultsMap, sanitizeData } from './purchaseLogic'
-import { getLocalURL } from '../../../../utils/files';
-import { addPurchase } from '../../../../firebase/purchase/fbAddPurchase'
-import { selectUser } from '../../../../features/auth/userSlice'
-import { useListenPurchase } from '../../../../hooks/usePurchases' // Import the hook
-import { useListenOrder } from '../../../../hooks/useOrders'; // Import the hook
-import Loader from '../../../component/Loader/Loader'
-import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
-import { fbCompletePurchase } from '../../../../firebase/purchase/fbCompletePurchase'
+import styled from 'styled-components'
+
+
 import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary'
+import { selectUser } from '../../../../features/auth/userSlice'
+import { cleanPurchase, setPurchase, selectPurchaseState } from '../../../../features/purchase/addPurchaseSlice'
+import { addPurchase } from '../../../../firebase/purchase/fbAddPurchase'
+import { fbCompletePurchase } from '../../../../firebase/purchase/fbCompletePurchase'
+import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
 import { useListenWarehouses } from '../../../../firebase/warehouse/warehouseService'
+import { useListenOrder } from '../../../../hooks/useOrders'; // Import the hook
+import { useListenPurchase } from '../../../../hooks/usePurchases' // Import the hook
+import ROUTES_PATH from '../../../../routes/routesName'
+import { getLocalURL } from '../../../../utils/files';
+import Loader from '../../../component/Loader/Loader'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp'
+
+import GeneralForm from './components/GeneralForm/GeneralForm'
+import { defaultsMap, sanitizeData } from './purchaseLogic'
 
 const Container = styled.div`
   display: grid;

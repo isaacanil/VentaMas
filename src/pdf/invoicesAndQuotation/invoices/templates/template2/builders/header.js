@@ -1,7 +1,7 @@
+import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 import { formatDate } from '../utils/formatters.js';
 
 import { buildClientBlock } from './clientBlock.js';
-import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 
 const CLIENT_BLOCK_MIN_HEIGHT = 70;
 

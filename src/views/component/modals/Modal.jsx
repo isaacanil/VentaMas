@@ -12,7 +12,7 @@ export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, i
     const done = async () => {
         try {
             await handleSubmit()
-            close();        } catch (error) {
+            close();        } catch {
             // Handle error appropriately
         } finally {
         }

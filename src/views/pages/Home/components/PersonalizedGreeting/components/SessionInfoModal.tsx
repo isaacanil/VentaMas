@@ -1,5 +1,6 @@
-import type { JSX, MouseEvent } from 'react';
 import styled from 'styled-components';
+
+import type { JSX, MouseEvent } from 'react';
 
 type SessionUser = {
   realName?: string | null;

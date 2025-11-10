@@ -1,6 +1,7 @@
-import type { ToolbarEntryWithMatchers, ToolbarRegistryEntry } from './types/types'
 import { toolbarConfigs } from './configs/toolbarConfigs'
 import { createMatchers, findToolbarEntry as findEntry } from './core/findToolbarEntry'
+
+import type { ToolbarEntryWithMatchers, ToolbarRegistryEntry } from './types/types'
 
 /**
  * Main toolbar registry with all configured toolbars

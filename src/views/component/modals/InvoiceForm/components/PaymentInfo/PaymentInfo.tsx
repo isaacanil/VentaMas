@@ -6,6 +6,7 @@ import { DiscountSection } from './components/DiscountSection'
 import { PaymentMethodsSection } from './components/PaymentMethodsSection'
 import { PaymentSummary } from './components/PaymentSummary'
 import { usePaymentInfo } from './hooks/usePaymentInfo'
+
 import type { PaymentInfoProps } from './types'
 
 export const PaymentInfo: FC<PaymentInfoProps> = ({

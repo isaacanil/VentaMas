@@ -1,12 +1,13 @@
-import React, { useMemo } from 'react';
-import { Button, Dropdown } from 'antd';
 import { InfoCircleOutlined, EllipsisOutlined } from '@ant-design/icons';
+import { Button, Dropdown } from 'antd';
+import React, { useMemo } from 'react';
 
 import {
   ActionContainer,
   ActionButton,
   ExpirationDateText,
 } from '../styles';
+
 import type { GetActionMenu, InventoryRow } from '../types';
 
 interface UseInventoryColumnsParams {
@@ -47,7 +48,7 @@ export const useInventoryColumns = ({
               icon={<InfoCircleOutlined />}
               onClick={(event) => {
                 event.stopPropagation();
-                onViewBatch(value.batchId as string);
+                onViewBatch(value.batchId);
               }}
             />
           )}

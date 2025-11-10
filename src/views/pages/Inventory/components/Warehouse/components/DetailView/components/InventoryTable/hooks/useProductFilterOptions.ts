@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { toMillis } from '../utils/dateUtils';
 import { NO_BATCH_VALUE, getProductFilterKey, getProductFilterLabel } from '../utils/productFilterUtils';
+
 import type { ProductBatchMap, ProductOption, ProductStockLike } from '../types';
 
 interface UseProductFilterOptionsResult {

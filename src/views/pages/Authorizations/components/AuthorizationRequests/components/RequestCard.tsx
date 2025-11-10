@@ -1,4 +1,3 @@
-import { Button, Popconfirm, Tooltip } from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import {
   faClock,
@@ -8,9 +7,12 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, Popconfirm, Tooltip } from 'antd';
 import { type KeyboardEventHandler } from 'react';
 import styled from 'styled-components';
+
 import { getStatusLabel, statusTheme } from '../constants/constants';
+
 import type {
   AuthorizationRequest,
   AuthorizationRequestListItem,

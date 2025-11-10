@@ -1,9 +1,11 @@
 import { FC, useMemo } from 'react'
 import styled from 'styled-components'
 
-import type { PaymentMethod } from '../types'
 import { getPaymentMethodMeta } from '../utils/paymentMethodMeta'
+
 import { PaymentMethodRow } from './PaymentMethodRow'
+
+import type { PaymentMethod } from '../types'
 
 interface PaymentMethodsSectionProps {
     paymentMethods: PaymentMethod[]

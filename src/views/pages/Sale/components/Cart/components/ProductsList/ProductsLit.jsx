@@ -13,8 +13,8 @@ import { InsuranceAuthFields } from '../InsuranceAuthFields/InsuranceAuthFields'
 import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart'
 
 
-import { CommentModal } from './components/CommentModal/CommentModal';
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
+import { CommentModal } from './components/CommentModal/CommentModal';
 
 
 export const ProductsList = () => {

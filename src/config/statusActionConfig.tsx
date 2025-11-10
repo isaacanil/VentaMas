@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     CheckCircleOutlined,
     ClockCircleOutlined,
@@ -11,8 +10,8 @@ import {
     WarningOutlined
 } from '@ant-design/icons';
 import { Tooltip } from 'antd';
-import { Badge } from '../views/component/Badge/Badge';
 import dayjs from 'dayjs';
+import React from 'react';
 
 export interface ConfigItem {
     color: string;
@@ -130,7 +129,7 @@ const CONFIG: Record<string, ConfigSection> = {
 // Función genérica para obtener configuraciones
 function getConfigItem(type: keyof typeof CONFIG, key: string): ConfigItem {
     const config = CONFIG[type];
-    return (config[key as keyof typeof config] || config.default) as ConfigItem;
+    return (config[key as keyof typeof config] || config.default);
 }
 
 export const getStatusConfig = (status: string) => getConfigItem('statuses', status);

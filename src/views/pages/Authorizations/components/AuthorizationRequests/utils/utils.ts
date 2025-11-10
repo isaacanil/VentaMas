@@ -54,7 +54,7 @@ const metadataMap: MetadataMap = {
 export const resolveModuleMeta = (request: AuthorizationRequest | null | undefined): ModuleMeta => {
   const metadataModule =
     typeof request?.metadata === 'object' && request?.metadata !== null
-      ? (request.metadata as Record<string, unknown>)?.['module']
+      ? (request.metadata)?.['module']
       : undefined;
 
   const rawModule =

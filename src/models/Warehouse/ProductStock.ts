@@ -1,4 +1,5 @@
 import { Timestamp } from "firebase/firestore";
+
 import type { AuditInfo } from "./AuditInfo";
 /**
  * Interface ProductStock

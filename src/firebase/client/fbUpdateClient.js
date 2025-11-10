@@ -1,6 +1,7 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import { db } from "../firebaseconfig";
+
 import { buildClientWritePayload } from "./clientNormalizer";
 
 export const fbUpdateClient = async (user, client) => {

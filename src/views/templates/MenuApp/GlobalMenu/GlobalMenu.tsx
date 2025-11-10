@@ -1,9 +1,12 @@
 import { Suspense, useMemo } from 'react'
-import type { Dispatch, FC, SetStateAction } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { lazyWithRetry } from '../../../../utils/lazyWithRetry'
+
 import { findToolbarEntry, type ToolbarComponentProps } from './GlobalMenuRegistry'
+
+import type { Dispatch, FC, SetStateAction } from 'react'
 
 export interface GlobalMenuProps extends Omit<ToolbarComponentProps, 'side'> {
   data?: unknown
