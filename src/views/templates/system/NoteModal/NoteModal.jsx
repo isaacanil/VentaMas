@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { clearNote, selectNote } from '../../../../features/noteModal/noteModalSlice';
 
-const { Title, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 const NoteModal = () => {
     const dispatch = useDispatch();

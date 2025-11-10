@@ -36,8 +36,8 @@ const Toolbar = ({ editorState, setEditorState, onClear }) => {
             const jsonString = JSON.stringify(rawContent);
             await fbAddChangelog(jsonString);
 
-        } catch {
-
+        } catch (error) {
+            console.error('Error saving changelog:', error);
         }
     }
     const handleClose = () => {

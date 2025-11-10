@@ -588,7 +588,7 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
 
 
           {/* Updated Main rendering loop */}
-          {groupedMenuItems.map((item, index) => {
+          {groupedMenuItems.map((item) => {
             if (item.isGroup) {
               // Check the groupType
               if (item.groupType === 'labelled') {

@@ -44,7 +44,7 @@ const Content = styled.div`
   grid-template-rows: 1fr min-content;
 `;
 
-export const Product = memo(({ product }) => {
+const ProductComponent = memo(({ product }) => {
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const settingsCart = useSelector(SelectSettingCart) || {};
   const alertsEnabled = !!(settingsCart.billing?.stockAlertsEnabled);
@@ -132,3 +132,6 @@ export const Product = memo(({ product }) => {
     </Fragment>
   );
 });
+
+ProductComponent.displayName = 'Product';
+export const Product = ProductComponent;

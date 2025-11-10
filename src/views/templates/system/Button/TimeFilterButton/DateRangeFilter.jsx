@@ -26,7 +26,7 @@ export const DateRangeFilter = ({ setDates, dates }) => {
     const menuRef = useRef(null);
     const handleButtonClick = () => setIsMenuOpen(!isMenuOpen);
 
-    const handleMenuItemClick = (startDate, endDate, label) => {
+    const handleMenuItemClick = (startDate, endDate) => {
         setDates({ startDate, endDate });
 
     };

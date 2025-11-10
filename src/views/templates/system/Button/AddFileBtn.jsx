@@ -15,7 +15,6 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
     const [progress, setProgress] = useState(0)
     const [titleBtn, setTitleBtn] = useState(title)
     const [startIconBtn, setStartIconBtn] = useState(startIcon)
-    const [endIconBtn, setEndIconBtn] = useState(endIcon)
     const dispatch = useDispatch()
     const handleOnchange = async (e) => {
         fn(e.target.files[0])
@@ -57,7 +56,7 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
             <label htmlFor={id}>
                 {startIconBtn}
                 {titleBtn}
-                {endIconBtn}
+                {endIcon}
                 <input type="file" name="" id={id} onChange={(e) => handleOnchange(e)} accept="/imagen/*a" />
             </label>
         </Container>
