@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import { selectUser } from '../../../features/auth/userSlice';
-import { getLastLogoutAt, isLogoutInProgress, getStoredSession } from '../../../firebase/Auth/fbAuthV2/sessionClient';
+import { getStoredSession } from '../../../firebase/Auth/fbAuthV2/sessionClient';
 
 import VentamaxLoader from './loader/GenericLoader';
 

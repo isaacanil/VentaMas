@@ -1,7 +1,6 @@
-import { Form, notification } from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Form, notification } from "antd";
 import {
   forwardRef,
   useCallback,
@@ -19,7 +18,8 @@ import styled, { keyframes } from "styled-components";
 
 import { LogoContainer } from "./Header/LogoContainer";
 
-import type { FormInstance, FormProps } from "antd";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import type { FormProps } from "antd";
 
 import { fbSignIn, updateAppState, type FbSignInResult, type FbSignInUser } from "@/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
 import ROUTES_PATH from "@/routes/routesName";

@@ -12,8 +12,8 @@ import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
 import useStockAlertThresholds from '../../../../../../../hooks/useStockAlertThresholds';
 
 import BatchGroup from './components/BatchGroup';
-import StockSummary from './components/StockSummary';
 import ProductStockTable from './components/ProductStockTable';
+import StockSummary from './components/StockSummary';
 
 
 const Container = styled.div`

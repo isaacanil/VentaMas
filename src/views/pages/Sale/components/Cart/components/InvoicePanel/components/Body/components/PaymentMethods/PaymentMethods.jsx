@@ -1,11 +1,10 @@
 import * as antd from 'antd'
+import { Modal } from 'antd'
 import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 import { icons } from '../../../../../../../../../../../constants/icons/icons'
-import { Modal } from 'antd'
-
 import { selectCart, setPaymentMethod, recalcTotals, SelectCxcAutoRemovalNotification, clearCxcAutoRemovalNotification, applyPricingPreset } from '../../../../../../../../../../../features/cart/cartSlice'
 
 const { Radio, Input, Form, Checkbox, InputNumber, message, notification } = antd

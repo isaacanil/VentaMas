@@ -1,8 +1,9 @@
+import { Button, Tooltip } from "antd";
 import React from "react";
 import { useDispatch } from "react-redux";
+
 import { openFileCenter } from "../../../features/files/fileSlice";
 import { truncateString } from "../../../utils/text/truncateString";
-import { Button, Tooltip } from "antd";
 
 export function ShowFiles({ value }) {
     const dispatch = useDispatch();

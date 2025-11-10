@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Popover, Typography } from 'antd';
 import { ClockCircleOutlined, InfoCircleOutlined, EditOutlined } from '@ant-design/icons';
+import { Popover, Typography } from 'antd';
 import { DateTime, Duration } from 'luxon';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const { Text } = Typography;

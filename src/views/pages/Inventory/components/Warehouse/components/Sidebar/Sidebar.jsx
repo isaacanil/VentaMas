@@ -1,4 +1,4 @@
-import { LoadingOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import { faPlus, faEdit, faTrash, faEllipsisH } from "@fortawesome/free-solid-svg-icons";
 import { Modal, message } from "antd";
 import { useState, useMemo, useEffect, useCallback } from "react";

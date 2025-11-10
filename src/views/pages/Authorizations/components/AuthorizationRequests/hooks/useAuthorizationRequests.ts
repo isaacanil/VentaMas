@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
 import { message } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+
+import { fbRecordAuthorizationApproval } from '../../../../../../firebase/authorization/approvalLogs';
 import {
   listAuthorizationRequests,
   approveAuthorizationRequest,
   rejectAuthorizationRequest,
 } from '../../../../../../firebase/authorizations/invoiceEditAuthorizations';
-import { fbRecordAuthorizationApproval } from '../../../../../../firebase/authorization/approvalLogs';
 import { formatDateTime } from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
+
 import type {
   AppUser,
   AuthorizationRequest,
@@ -38,8 +40,8 @@ const resolveRequestModule = (request?: AuthorizationRequest | null) => {
 
   const metadataModule =
     typeof request.metadata === 'object' && request.metadata !== null &&
-    typeof (request.metadata as Record<string, unknown>)?.['module'] === 'string'
-      ? String((request.metadata as Record<string, unknown>)['module'])
+    typeof (request.metadata)?.['module'] === 'string'
+      ? String((request.metadata)['module'])
       : null;
 
   return (
@@ -167,7 +169,7 @@ export const useAuthorizationRequests = (
       const requestedBySnapshot = requestSnapshot?.requestedBy || null;
       const requestMetadata =
         (typeof requestSnapshot?.metadata === 'object' && requestSnapshot.metadata !== null
-          ? (requestSnapshot.metadata as Record<string, unknown>)
+          ? (requestSnapshot.metadata)
           : null) || null;
 
       const isInvoiceEdit =
@@ -191,7 +193,7 @@ export const useAuthorizationRequests = (
             type: 'invoice',
             id:
               (typeof requestSnapshot?.invoiceId === 'string' && requestSnapshot.invoiceId) ||
-              (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId'] as string) : ''),
+              (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId']) : ''),
             name: requestSnapshot?.invoiceNumber
               ? `Factura ${requestSnapshot.invoiceNumber}`
               : requestSnapshot?.reference || requestSnapshot?.invoiceId || '',
@@ -222,10 +224,10 @@ export const useAuthorizationRequests = (
         metadataForLog.reference = null;
         metadataForLog.invoiceId =
           (typeof requestSnapshot?.invoiceId === 'string' && requestSnapshot.invoiceId) ||
-          (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId'] as string) : null);
+          (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId']) : null);
         metadataForLog.invoiceNumber =
           requestSnapshot?.invoiceNumber ||
-          (typeof requestMetadata?.['invoiceNumber'] === 'string' ? (requestMetadata['invoiceNumber'] as string) : null);
+          (typeof requestMetadata?.['invoiceNumber'] === 'string' ? (requestMetadata['invoiceNumber']) : null);
         metadataForLog.authorizationType = 'invoice-edit';
       }
 
@@ -281,12 +283,12 @@ export const useAuthorizationRequests = (
         const moduleMeta = resolveModuleMeta(record);
         const metadataSource =
           typeof record.metadata === 'object' && record.metadata !== null
-            ? (record.metadata as Record<string, unknown>)
+            ? (record.metadata)
             : {};
         const metadataReference =
-          typeof metadataSource?.['reference'] === 'string' ? (metadataSource['reference'] as string) : '';
+          typeof metadataSource?.['reference'] === 'string' ? (metadataSource['reference']) : '';
         const metadataNote =
-          typeof metadataSource?.['note'] === 'string' ? (metadataSource['note'] as string) : '';
+          typeof metadataSource?.['note'] === 'string' ? (metadataSource['note']) : '';
         const requestNote =
           record.requestNote ||
           record.note ||

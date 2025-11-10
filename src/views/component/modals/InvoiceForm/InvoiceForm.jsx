@@ -1,7 +1,7 @@
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import * as antd from 'antd';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 const { Form, Button, Modal, Alert, message } = antd;
 import { selectUser } from '../../../../features/auth/userSlice';

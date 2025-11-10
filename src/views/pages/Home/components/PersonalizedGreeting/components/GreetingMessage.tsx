@@ -1,5 +1,6 @@
-import type { JSX } from 'react';
 import styled from 'styled-components';
+
+import type { JSX } from 'react';
 
 type GreetingMessageProps = {
   greetingText: string;

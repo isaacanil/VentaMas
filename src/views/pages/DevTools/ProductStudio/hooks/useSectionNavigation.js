@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { FORM_SECTIONS, getSectionDomId } from '../utils/sections';
 
 const SCROLL_OFFSET = 12;

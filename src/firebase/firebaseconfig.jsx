@@ -3,12 +3,12 @@ import { initializeApp } from "firebase/app";
 //TODO ***AUTH**************************************
 import { getAuth } from "firebase/auth";
 //TODO ***FIRESTORE***********************************
+import { getDatabase } from "firebase/database";
 import { collection, doc, getDocs, query, updateDoc, where, arrayUnion, arrayRemove, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
 import { getFunctions } from 'firebase/functions'
 //TODO ***STORAGE***********************************
 import { getStorage, } from "firebase/storage"
 import { getVertexAI, getGenerativeModel } from "firebase/vertexai";
-import { getDatabase } from "firebase/database";
 
 
 const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL

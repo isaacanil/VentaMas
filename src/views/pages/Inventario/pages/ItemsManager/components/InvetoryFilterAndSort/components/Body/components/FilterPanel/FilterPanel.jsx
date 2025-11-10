@@ -3,13 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, selectInventariable, selectItbis, selectPriceStatus, selectCostStatus, selectPromotionStatus, setInventariable, setItbis, setPriceStatus, setCostStatus, setPromotionStatus, setStockAvailability, setStockAlertLevel, setStockRequirement, selectStockAvailability, selectStockAlertLevel, selectStockRequirement, setStockLocations, selectStockLocations } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
 import { selectUser } from '../../../../../../../../../../../features/auth/userSlice';
-import { useListenWarehouses } from '../../../../../../../../../../../firebase/warehouse/warehouseService';
+import { DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, selectInventariable, selectItbis, selectPriceStatus, selectCostStatus, selectPromotionStatus, setInventariable, setItbis, setPriceStatus, setCostStatus, setPromotionStatus, setStockAvailability, setStockAlertLevel, setStockRequirement, selectStockAvailability, selectStockAlertLevel, selectStockRequirement, setStockLocations, selectStockLocations } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
 import { getWarehousesStockAggregates } from '../../../../../../../../../../../firebase/warehouse/productStockService';
+import { useListenWarehouses } from '../../../../../../../../../../../firebase/warehouse/warehouseService';
 import { opcionesInventariable, opcionesItbis } from '../../../../InventoryFilterAndSortMetadata';
-import { InventoryLocationSelector } from './InventoryLocationSelector';
 import { LabelWithStatus } from '../SortPanel/SortPanel';
+
+import { InventoryLocationSelector } from './InventoryLocationSelector';
 
 const normalizeArray = (value = []) =>
     Array.isArray(value) ? [...value].sort() : [];

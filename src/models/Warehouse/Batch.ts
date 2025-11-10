@@ -1,4 +1,5 @@
 import type { AuditInfo } from "./AuditInfo";
+
 export enum BatchStatus {
   Active = 'active',
   Inactive = 'inactive',

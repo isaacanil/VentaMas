@@ -1,5 +1,6 @@
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { registerToolbar } from '../core/registerToolbar'
+
 import type { ToolbarRegistryEntry } from '../types/types'
 
 const {

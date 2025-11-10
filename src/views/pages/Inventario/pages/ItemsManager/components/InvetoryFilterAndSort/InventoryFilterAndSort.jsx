@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 import { icons } from '../../../../../../../constants/icons/icons'
-import { resetFilters, DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, loadFilterPreferences, persistFilterPreferences, selectFiltersByContext, selectFilterMeta } from '../../../../../../../features/filterProduct/filterProductsSlice'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
+import { resetFilters, DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, loadFilterPreferences, persistFilterPreferences, selectFiltersByContext, selectFilterMeta } from '../../../../../../../features/filterProduct/filterProductsSlice'
 import { ButtonIconMenu } from '../../../../../../templates/system/Button/ButtonIconMenu'
 
 import { Body } from './components/Body/Body'

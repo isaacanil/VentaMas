@@ -2,7 +2,6 @@ import { Button, Select, Tooltip } from 'antd';
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { icons } from '../../../../../../../../../../../constants/icons/icons';
 import { DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';

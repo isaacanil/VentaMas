@@ -1,11 +1,12 @@
 import { DownOutlined } from '@ant-design/icons'
 import { Button, Dropdown, InputNumber } from 'antd'
-import type { MenuProps } from 'antd'
 import { FC, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
+
 import type { DiscountType } from '../types'
+import type { MenuProps } from 'antd'
 
 interface DiscountSectionProps {
     discountType: DiscountType

@@ -20,10 +20,10 @@ import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers';
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import { getAvailablePermissionsForRole } from '../../../../../../../services/dynamicPermissions';
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
+import DynamicPermissionsManager from '../DynamicPermissionsManager';
 
 import { ChangeUserPasswordModal } from './ChangeUserPasswordModal';
 import { ToggleUserStatusModal } from './ToggleUserStatusModal';
-import DynamicPermissionsManager from '../DynamicPermissionsManager';
 
 const Role = styled.div`
   height: 2em;

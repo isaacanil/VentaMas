@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
 import { setDefaultWarehouse, useListenWarehouses } from '../../../../firebase/warehouse/warehouseService';
+
 import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 
 const { Title, Paragraph, Text } = Typography;

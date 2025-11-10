@@ -1,9 +1,10 @@
 import { DeleteOutlined, EllipsisOutlined } from '@ant-design/icons';
-import { faBoxes, faLocationArrow } from '@fortawesome/free-solid-svg-icons';
+import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown, Tooltip } from 'antd';
 import React, { useMemo, useCallback } from 'react';
 import styled from 'styled-components';
+
 import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
 
 const ProductStockTable = ({

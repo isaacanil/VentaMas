@@ -1,7 +1,7 @@
+import { faArrowTrendDown, faArrowTrendUp, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowTrendDown, faArrowTrendUp, faChartLine } from '@fortawesome/free-solid-svg-icons';
 
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { buildTransactionRows } from '../utils/transactionRows';

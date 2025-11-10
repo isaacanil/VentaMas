@@ -1,6 +1,7 @@
 // UserPill component - displays user name in a pill style
-import type { JSX } from 'react';
 import styled from 'styled-components';
+
+import type { JSX } from 'react';
 
 type UserPillProps = {
   userName: string;

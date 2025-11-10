@@ -1,12 +1,13 @@
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Typography } from 'antd';
-import type { JSX } from 'react';
-import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { FeatureCard, type FeatureCardData } from './FeatureCard';
+
+import type { JSX } from 'react';
 
 type FeatureCardListProps = {
   title?: string;

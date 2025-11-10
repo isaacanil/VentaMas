@@ -1,9 +1,9 @@
+import { PlusOutlined } from '@ant-design/icons'
+import { Button, Tooltip } from 'antd'
 import React, { Fragment, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { Button, Tooltip } from 'antd'
-import { PlusOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { icons } from '../../../../../constants/icons/icons'
 import { selectUser } from '../../../../../features/auth/userSlice'

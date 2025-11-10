@@ -4,7 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-
+import { AdvancedTable } from 'views/templates/system/AdvancedTable/AdvancedTable.js';
 
 import { selectUser } from '../../../../../../../../../features/auth/userSlice.js';
 import { openDeleteModal } from '../../../../../../../../../features/productStock/deleteProductStockSlice.js';
@@ -14,8 +14,8 @@ import { ProductMovementModal } from '../ProductMovementModal.jsx';
 
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
 import { SearchControls } from './components/SearchControls';
-import { useInventoryFilters } from './hooks/useInventoryFilters';
 import { useInventoryColumns } from './hooks/useInventoryColumns';
+import { useInventoryFilters } from './hooks/useInventoryFilters';
 import { useProductFilterOptions } from './hooks/useProductFilterOptions';
 import { useProductsStock } from './hooks/useProductsStock';
 import { Container, MenuItemContent, Title, TitleSection } from './styles';
@@ -31,7 +31,6 @@ import type {
   SortConfig,
   SortMenuItems,
 } from './types';
-import { AdvancedTable } from 'views/templates/system/AdvancedTable/AdvancedTable.js';
 
 
 dayjs.extend(customParseFormat);

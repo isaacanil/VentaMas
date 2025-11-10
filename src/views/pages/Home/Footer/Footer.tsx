@@ -1,9 +1,10 @@
-import type { JSX } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { fbGetAppVersion } from '../../../../firebase/app/fbGetAppVersion';
+
+import type { JSX } from 'react';
 
 const appMetadata = {
   name: 'Ventamax',

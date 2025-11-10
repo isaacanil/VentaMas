@@ -3,8 +3,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { Receipt } from '../../../../../checkout/Receipt'
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button'
+import { Receipt } from '../../../../../checkout/Receipt'
 
 const { Typography, Modal } = antd
 export const CheckoutAction = ({

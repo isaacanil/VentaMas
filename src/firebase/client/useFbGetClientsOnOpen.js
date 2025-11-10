@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 
 import { selectUser } from "../../features/auth/userSlice";
 import { db } from "../firebaseconfig";
+
 import { CLIENT_ROOT_FIELDS, extractNormalizedClient } from "./clientNormalizer";
 
 export const useFbGetClientsOnOpen = ({ isOpen }) => {

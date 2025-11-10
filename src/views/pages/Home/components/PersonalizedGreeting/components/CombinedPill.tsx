@@ -4,8 +4,9 @@ import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight
 import { faStore } from '@fortawesome/free-solid-svg-icons/faStore';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { KeyboardEvent, JSX } from 'react';
 import styled from 'styled-components';
+
+import type { KeyboardEvent, JSX } from 'react';
 
 type CombinedPillProps = {
   logoUrl?: string | null;

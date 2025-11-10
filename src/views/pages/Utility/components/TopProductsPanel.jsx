@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
+
 import { EmptyState } from './EmptyState';
 
 const MAX_PRODUCTS = 6;

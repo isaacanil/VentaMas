@@ -2,10 +2,10 @@ import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
-import { designSystemV2 } from '../../../../theme/designSystemV2';
 import { DatePicker } from '../../../../components/common/DatePicker/DatePicker';
+import { designSystemV2 } from '../../../../theme/designSystemV2';
 import { getDateRange } from '../../../../utils/date/getDateRange';
+import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 
 const { colors, spacing, radii, shadows, typography } = designSystemV2;
 

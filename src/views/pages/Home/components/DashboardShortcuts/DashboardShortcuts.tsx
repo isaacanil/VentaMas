@@ -1,4 +1,3 @@
-import type { JSX } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -6,12 +5,14 @@ import { selectUser } from '../../../../../features/auth/userSlice';
 import { userAccess } from '../../../../../hooks/abilities/useAbilities';
 import { getDeveloperFeaturesData, getMenuCardData } from '../../CardData';
 import { FeatureCardList } from '../FeatureCardList/FeatureCardList';
+
 import type { FeatureCardData } from '../FeatureCardList/FeatureCard';
+import type { JSX } from 'react';
 
 type MaybeUser = ReturnType<typeof selectUser>;
 
 export const DashboardShortcuts = (): JSX.Element => {
-  const user = useSelector(selectUser) as MaybeUser;
+  const user = useSelector(selectUser);
   const cardData = (getMenuCardData(user) ?? []) as FeatureCardData[];
   const developer = (getDeveloperFeaturesData(user) ?? []) as FeatureCardData[];
   const { abilities } = userAccess();

@@ -1,4 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
+
 import { RequireAuth } from '../views/component/RequireAuth';
 import { ErrorBoundary } from '../views/pages/ErrorElement/ErrorBoundary';
 /**

@@ -1,17 +1,16 @@
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import styled, { keyframes } from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faArrowTrendDown,
     faArrowTrendUp,
     faChartLine,
     faStar,
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip } from 'antd';
+import { motion } from 'framer-motion';
+import styled, { keyframes } from 'styled-components';
 
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { designSystemV2 } from '../../../../theme/designSystemV2';
+import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 
 const { colors, spacing, radii, shadows } = designSystemV2;
 

@@ -2,8 +2,8 @@ import { Form, Input, Modal, message } from 'antd';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { closeBrandModal, selectProductBrandModal } from '../../../../features/productBrands/productBrandSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
+import { closeBrandModal, selectProductBrandModal } from '../../../../features/productBrands/productBrandSlice';
 import { fbAddProductBrand, fbUpdateProductBrand } from '../../../../firebase/products/brands/productBrands';
 
 const ProductBrandModal = () => {

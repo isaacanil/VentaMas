@@ -1,16 +1,19 @@
+import { ReloadOutlined } from '@ant-design/icons';
+import { Select, Button, Tooltip } from 'antd';
+import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
-import { DateTime } from 'luxon';
-import { Select, Button, Tooltip } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
+
+
 // @ts-ignore - legacy JS component without type declarations
 import { DatePicker as CommonDatePicker } from '../../../../../components/common/DatePicker';
-import { getDateRange } from '../../../../../utils/date/getDateRange';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { fbListApprovalLogs } from '../../../../../firebase/authorization/approvalLogs';
+import { getDateRange } from '../../../../../utils/date/getDateRange';
+
+import type { Dayjs } from 'dayjs';
 
 interface UserSnapshot {
   uid?: string;
@@ -340,7 +343,7 @@ const resolveActionColor = (action: string) => ACTION_COLORS[action] || '#0ea5e9
 
 const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   const target = entry.target;
-  const metadata = (entry.metadata || {}) as Record<string, unknown>;
+  const metadata = (entry.metadata || {});
 
   const pieces: string[] = [];
 
@@ -354,12 +357,12 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
 
   const targetDetails =
     target?.details && typeof target.details === 'object'
-      ? (target.details as Record<string, unknown>)
+      ? (target.details)
       : null;
 
   const authorizationType =
-    typeof (metadata as Record<string, unknown>).authorizationType === 'string'
-      ? String((metadata as Record<string, unknown>).authorizationType)
+    typeof (metadata).authorizationType === 'string'
+      ? String((metadata).authorizationType)
       : targetDetails && typeof targetDetails.authorizationType === 'string'
       ? String(targetDetails.authorizationType)
       : null;
@@ -378,7 +381,7 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   }
 
   if (target?.details && typeof target.details === 'object') {
-    const details = target.details as Record<string, unknown>;
+    const details = target.details;
     if (typeof details.stage === 'string') {
       pieces.push(details.stage === 'opening' ? 'Apertura' : details.stage === 'closing' ? 'Cierre' : details.stage);
     }
@@ -411,10 +414,10 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
   });
 
   const startDateFilter = datePickerValue?.[0]
-    ? datePickerValue[0]!.startOf('day').valueOf()
+    ? datePickerValue[0].startOf('day').valueOf()
     : undefined;
   const endDateFilter = datePickerValue?.[1]
-    ? datePickerValue[1]!.endOf('day').valueOf()
+    ? datePickerValue[1].endOf('day').valueOf()
     : undefined;
 
   const handleDatePickerChange = useCallback(
@@ -566,7 +569,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
             placeholder="Todos los módulos"
             allowClear
             value={moduleFilter}
-            onChange={(value) => handleModuleFilterChange(value as string | undefined)}
+            onChange={(value) => handleModuleFilterChange(value)}
             options={moduleOptions}
             style={{ minWidth: 220 }}
             size="middle"
