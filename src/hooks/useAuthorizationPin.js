@@ -1,7 +1,4 @@
 import { useState, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-
-import { selectUser } from '../features/auth/userSlice';
 
 /**
  * Hook para gestionar el flujo de autorización con PIN
@@ -23,7 +20,6 @@ export const useAuthorizationPin = ({
   reasonList = [],
   allowPasswordFallback = true,
 } = {}) => {
-  const user = useSelector(selectUser);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = useCallback(() => {

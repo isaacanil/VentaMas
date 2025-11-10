@@ -77,11 +77,9 @@ const useTruncate = (
     };
 
     scheduleMeasurement();
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(() => scheduleMeasurement()).catch(() => {
-        /* swallow */
-      });
-    }
+    void document.fonts?.ready?.then(() => scheduleMeasurement()).catch(() => {
+      /* swallow */
+    });
 
     const resizeObserver = new ResizeObserver(scheduleMeasurement);
     resizeObserver.observe(containerElement);
