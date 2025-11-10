@@ -4,3 +4,5 @@ const Breakpoint = {
     large: 1280,
     xlarge: 1920,
 }
+
+export default Breakpoint;
