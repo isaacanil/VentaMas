@@ -36,7 +36,7 @@ const Toolbar = ({ editorState, setEditorState, onClear }) => {
             const jsonString = JSON.stringify(rawContent);
             await fbAddChangelog(jsonString);
 
-        } catch (error) {
+        } catch {
 
         }
     }

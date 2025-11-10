@@ -5,18 +5,18 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 
-import Loader from '../../../component/Loader/Loader'
-import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
-import { fbCompletePurchase } from '../../../../firebase/purchase/fbCompletePurchase'
 import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary'
 import { selectUser } from '../../../../features/auth/userSlice'
 import { cleanPurchase, setPurchase, selectPurchaseState } from '../../../../features/purchase/addPurchaseSlice'
 import { addPurchase } from '../../../../firebase/purchase/fbAddPurchase'
+import { fbCompletePurchase } from '../../../../firebase/purchase/fbCompletePurchase'
+import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
 import { useListenWarehouses } from '../../../../firebase/warehouse/warehouseService'
 import { useListenOrder } from '../../../../hooks/useOrders'; // Import the hook
 import { useListenPurchase } from '../../../../hooks/usePurchases' // Import the hook
 import ROUTES_PATH from '../../../../routes/routesName'
 import { getLocalURL } from '../../../../utils/files';
+import Loader from '../../../component/Loader/Loader'
 import { MenuApp } from '../../../templates/MenuApp/MenuApp'
 
 import GeneralForm from './components/GeneralForm/GeneralForm'

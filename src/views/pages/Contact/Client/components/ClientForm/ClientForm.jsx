@@ -58,14 +58,14 @@ export const ClientForm = ({ isOpen, mode, data }) => {
     const handleCreateClient = async () => {
         if (validateClient(client)) {            try {
                 fbAddClient(user, client)
-            } catch (error) {
+            } catch {
                 // Handle error appropriately
             }
         }
     }
     const handleUpdateClient = async () => {        try {
             fbUpdateClient(user, client)
-        } catch (error) {
+        } catch {
             // Handle error appropriately
         }
     }
@@ -82,7 +82,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                     status: false,
                     value: ''
                 }            })
-        } catch (error) {
+        } catch {
             // Handle error appropriately
         }
     }
@@ -90,7 +90,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
         if (mode === create) {            try {
                 await handleCreateClient();
                 await handleOpenModal();
-            } catch (err) {
+            } catch {
                 // Handle error appropriately
             }
         } else if (mode === update) {

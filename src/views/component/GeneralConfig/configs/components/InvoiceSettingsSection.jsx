@@ -46,7 +46,7 @@ const InvoiceSettingsSection = () => {
     try {
       await fbUpdateInvoiceMessage(user, value);
       messageApi.success('Mensaje actualizado');
-    } catch (error) {
+    } catch {
       messageApi.error('No se pudo guardar el mensaje');
       form.setFieldsValue({ invoiceMessage: previousValue });
     } finally {

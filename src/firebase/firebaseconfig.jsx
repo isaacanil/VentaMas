@@ -100,7 +100,7 @@ export const addIngredientTypePizza = async (ingredient) => {
     await updateDoc(IngredientRef, {
       ingredientList: arrayUnion(ingredient)
     });
-  } catch (error) {
+  } catch {
   }
 
 }
@@ -110,6 +110,6 @@ export const deleteIngredientTypePizza = async (ingredient) => {
     await updateDoc(IngredientRef, {
       ingredientList: arrayRemove(ingredient)
     });
-  } catch (error) {
+  } catch {
   }
 }

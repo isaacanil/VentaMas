@@ -30,7 +30,7 @@ const InvoiceTemplateSelector = ({ onSave, onPreview, template, hidePreviewButto
       await setBillingSettings(user, {invoiceType: value});
       onSave && onSave(value);
       message.success('Plantilla de factura actualizada');
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la plantilla');
     }
   };
