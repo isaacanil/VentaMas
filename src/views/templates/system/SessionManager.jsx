@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import { selectUser } from '../../../features/auth/userSlice';
 import { getStoredSession } from '../../../firebase/Auth/fbAuthV2/sessionClient';
 
 import VentamaxLoader from './loader/GenericLoader';
@@ -12,11 +10,8 @@ const STATUS_MESSAGES = {
   idle: 'Cargando aplicación...',
 };
 
-const SUPPRESS_PUBLIC_LOADER_MS = 3000;
-
 export const SessionManager = ({ status, error }) => {
   const location = useLocation();
-  const user = useSelector(selectUser);
   const isPublicRoute = location.pathname === '/login' || location.pathname === '/';
   const [shouldRender, setShouldRender] = useState(false);
   const hasShownLoaderRef = useRef(false);

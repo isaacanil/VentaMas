@@ -1,4 +1,4 @@
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
 export const useGetProducts = (db) => {

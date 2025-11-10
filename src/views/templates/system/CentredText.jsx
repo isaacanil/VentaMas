@@ -53,12 +53,6 @@ const Container = styled.div`
   left: 0;
 `;
 
-const Text = styled.p`
-  text-align: center;
-  width: 100%;
-  padding: 0 1em;
-  max-width: 500px;
-`;
 const Wrapper = styled.div`
 position: relative;
   display: grid;

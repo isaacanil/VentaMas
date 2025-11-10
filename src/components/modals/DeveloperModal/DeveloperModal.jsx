@@ -51,6 +51,7 @@ export const DeveloperModal = () => {
   
   // Estado para filtrado en modo selección
   const [originalItems, setOriginalItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
 
   // Verificar si el usuario es desarrollador
   const isDeveloper = user?.role === 'dev';

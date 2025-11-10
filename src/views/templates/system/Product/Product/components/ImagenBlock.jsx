@@ -93,4 +93,6 @@ export const ProductImage = React.memo(({ product, productState, setProductState
   );
 });
 
+ProductImage.displayName = 'ProductImage';
+
 export default ProductImage;

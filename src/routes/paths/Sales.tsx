@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { CashReconciliation } from '../../views/pages/CashReconciliation/CashReconciliation'
 import { InvoicesPage } from '../../views/pages/InvoicesPage/InvoicesPage'
 import { Preorder } from '../../views/pages/PreorderSale/PreorderSale'
@@ -9,7 +11,7 @@ const { CASH_RECONCILIATION_LIST: CASH_RECONCILIATION } = ROUTES_NAME.CASH_RECON
 
 type RouteConfig = {
   path: string
-  element: JSX.Element
+  element: React.JSX.Element
   title: string
   metaDescription: string
 }

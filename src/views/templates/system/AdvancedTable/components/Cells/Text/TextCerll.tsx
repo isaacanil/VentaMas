@@ -19,7 +19,7 @@ const Container = styled.div`
 
 function TextCell ({ value, useTooltip = true }: TextCellProps) {
     const containerRef = useRef < HTMLDivElement > (null);
-    const { isTruncated, truncatedText, textRef, showTooltip } = useTruncate(value, containerRef, useTooltip);
+    const { truncatedText, textRef, showTooltip } = useTruncate(value, containerRef, useTooltip);
 
     if (!value) return null;
 
