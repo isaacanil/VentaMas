@@ -101,7 +101,6 @@ export const addIngredientTypePizza = async (ingredient) => {
       ingredientList: arrayUnion(ingredient)
     });
   } catch (error) {
-    console.error('Error adding ingredient:', error);
   }
 
 }

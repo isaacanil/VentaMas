@@ -50,7 +50,6 @@ export const DeveloperModal = () => {
   });
   
   // Estado para filtrado en modo selección
-  const [_filteredItems, setFilteredItems] = useState([]);
   const [originalItems, setOriginalItems] = useState([]);
 
   // Verificar si el usuario es desarrollador

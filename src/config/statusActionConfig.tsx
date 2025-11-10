@@ -104,7 +104,7 @@ const CONFIG: Record<'statuses' | 'dates', ConfigSection> = {
 // Función genérica para obtener configuraciones
 function getConfigItem(type: keyof typeof CONFIG, key: string): ConfigItem {
     const config = CONFIG[type];
-    return config[key as keyof ConfigSection] ?? config.default;
+    return (config[key as keyof typeof config] || config.default);
 }
 
 export const getStatusConfig = (status: string) => getConfigItem('statuses', status);
