@@ -39,7 +39,7 @@ const useOutsideClickIgnoreAntD = (ref, active, onOutside) => {
         const isInAntDOverlay = (el) =>
             !!(
                 el?.closest?.(
-                    '.ant-select-dropdown, .ant-picker-dropdown, .ant-cascader-dropdown, .ant-dropdown, .ant-tooltip, .ant-popover, [data-inventory-selector-overlay=\"true\"]'
+                    '.ant-select-dropdown, .ant-picker-dropdown, .ant-cascader-dropdown, .ant-dropdown, .ant-tooltip, .ant-popover, [data-inventory-selector-overlay="true"]'
                 )
             );
 

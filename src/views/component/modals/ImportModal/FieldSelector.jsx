@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 const { Title, Text } = Typography;
 
-const FieldSelector = ({ essentialFields, optionalGroups, onFieldsChange, language = 'es' }) => {
+const FieldSelector = ({ essentialFields, optionalGroups, onFieldsChange }) => {
   // Aplanar todos los campos opcionales en una sola lista
   const flattenedOptionalFields = Object.values(optionalGroups).flat();
   

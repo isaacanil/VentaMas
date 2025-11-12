@@ -8,7 +8,7 @@ import { toggleDeveloperModal } from '../../../../features/modals/modalSlice'
 
 import { SubMenu } from './SubMenu/SubMenu'
 
-export const MenuLink = ({ item, Items, onActionDone }) => {
+export const MenuLink = ({ item, onActionDone }) => {
   const dispatch = useDispatch();
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(false)
   const location = useLocation();

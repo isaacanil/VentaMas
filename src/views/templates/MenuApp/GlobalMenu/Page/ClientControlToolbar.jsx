@@ -9,7 +9,7 @@ import { toggleClientModal } from '../../../../../features/modals/modalSlice'
 import routesName from '../../../../../routes/routesName'
 import { Button, ButtonGroup } from '../../../system/Button/Button'
 
-export const ClientControlToolbar = ({ side = 'left', searchData, setSearchData }) => {
+export const ClientControlToolbar = ({ side = 'left' }) => {
     const { CLIENTS } = routesName.CONTACT_TERM;
     const matchWithCashReconciliation = useMatch(CLIENTS);
 

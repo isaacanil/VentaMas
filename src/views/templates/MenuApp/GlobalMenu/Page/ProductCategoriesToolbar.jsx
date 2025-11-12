@@ -4,7 +4,7 @@ import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { icons } from '../../../../../constants/icons/icons'
-import { useCategoryState } from '../../../../../Context/CategoryContext/CategoryContext'
+import { useCategoryState } from '../../../../../Context/CategoryContext'
 import ROUTES_NAME from '../../../../../routes/routesName'
 import { Button } from '../../../system/Button/Button'
 

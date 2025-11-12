@@ -1,6 +1,7 @@
 // ESLint 9 + Vite + React + Storybook + unused-imports + import/order
 import js from "@eslint/js";
 import react from "eslint-plugin-react";
+import reactRefresh from "eslint-plugin-react-refresh";
 import storybook from "eslint-plugin-storybook";
 import unusedImports from "eslint-plugin-unused-imports";
 import importPlugin from "eslint-plugin-import";
@@ -50,14 +51,16 @@ export default [
           // Permite resolver imports sin extensión explícita para los formatos que usamos.
           extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".json"]
         },
-        // Descomenta si usas alias "@/":
-        // alias: { map: [["@", "./src"]], extensions: [".js",".jsx",".mjs",".cjs",".ts",".tsx"] }
+        typescript: {
+          project: "./tsconfig.json"
+        }
       }
     },
     plugins: {
       "unused-imports": unusedImports,
       import: importPlugin,
       react,
+      "react-refresh": reactRefresh,
     },
     rules: {
       // === Limpieza automática ===
@@ -95,6 +98,9 @@ export default [
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
 
+      // React Refresh
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+
       // Pega aquí el resto de tus reglas del JSON…
       // "no-dupe-args": 2, etc.
     },
@@ -122,6 +128,9 @@ export default [
         node: {
           extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".json"]
         },
+        typescript: {
+          project: "./tsconfig.json"
+        }
       }
     },
     plugins: {
@@ -129,6 +138,7 @@ export default [
       "unused-imports": unusedImports,
       import: importPlugin,
       react,
+      "react-refresh": reactRefresh,
     },
     rules: {
       ...tseslint.configs["recommended-type-checked"].rules,
@@ -153,18 +163,29 @@ export default [
       // React adjustments
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
+
+      // React Refresh
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
     },
   },
 
   // Archivos de config (Node)
   {
     files: [
-      "vite.config.{js,mjs,cjs}",
-      "vitest.config.{js,mjs,cjs}",
-      "*.config.{js,mjs,cjs}",
-      ".storybook/**/*.{js,mjs,cjs}"
+      "vite.config.{js,ts,mjs,mts,cjs,cts}",
+      "vitest.config.{js,ts,mjs,mts,cjs,cts}",
+      "*.config.{js,ts,mjs,mts,cjs,cts}",
+      ".storybook/**/*.{js,ts,mjs,mts,cjs,cts}"
     ],
-    languageOptions: { globals: { ...globals.node }, sourceType: "module" },
+    languageOptions: {
+      globals: { ...globals.node },
+      sourceType: "module",
+      parser: tsParser,
+      parserOptions: {
+        projectService: false,
+        tsconfigRootDir: import.meta.dirname
+      }
+    },
     rules: { "import/no-unresolved": "off" }
   },
 
@@ -172,7 +193,7 @@ export default [
   {
     files: [
       "controller.js",
-      "setCors.js"
+      "tools/setCors.js"
     ],
     languageOptions: {
       sourceType: "module",

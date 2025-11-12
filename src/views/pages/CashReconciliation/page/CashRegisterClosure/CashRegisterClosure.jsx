@@ -25,7 +25,7 @@ export const CashRegisterClosure = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const [closingDate, setClosingDate] = useState(DateTime.now())
+  const [closingDate] = useState(DateTime.now())
   const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   const actualUser = useSelector(selectUser)

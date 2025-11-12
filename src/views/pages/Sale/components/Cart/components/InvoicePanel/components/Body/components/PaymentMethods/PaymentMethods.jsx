@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { icons } from '../../../../../../../../../../../constants/icons/icons'
 import { selectCart, setPaymentMethod, recalcTotals, SelectCxcAutoRemovalNotification, clearCxcAutoRemovalNotification, applyPricingPreset } from '../../../../../../../../../../../features/cart/cartSlice'
 
-const { Radio, Input, Form, Checkbox, InputNumber, message, notification } = antd
+const { Input, Form, Checkbox, InputNumber, message, notification } = antd
 
 export const PaymentMethods = () => {
     const dispatch = useDispatch()

@@ -14,9 +14,10 @@ import {
   Alert,
   Space,
 } from "antd";
-import jsPDF from 'jspdf';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 
 import {
@@ -28,9 +29,6 @@ import {
   selectARDetailsModal,
   setARDetailsModal
 } from '../../../../features/accountsReceivable/accountsReceivableSlice'; // Ajusta la ruta según tu estructura
-
-
-import 'jspdf-autotable';
 import { selectUser } from "../../../../features/auth/userSlice";
 
 const { Title, Text } = Typography;
@@ -39,9 +37,6 @@ const { TabPane } = Tabs;
 const StyledCard = styled(Card)`
   border-radius: 8px;
   margin-bottom: 16px;
-`;
-const StyledTitle = styled(Title)`
-  margin-top: 10px !important;
 `;
 const StyledDescriptions = styled.div`
   margin-bottom: 24px;
@@ -133,7 +128,7 @@ const InfoValue = styled.span`
   }
 `;
 
-export default function ARSummaryModal({ }) {
+export default function ARSummaryModal() {
   const dispatch = useDispatch();
   const data = useSelector(selectARInfo);
   const { isOpen, arId } = useSelector(selectARDetailsModal);

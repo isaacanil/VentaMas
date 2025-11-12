@@ -275,16 +275,6 @@ const Placeholder = styled.div`
   color: #8c8c8c;
 `;
 
-const SelectedTag = styled.span`
-  margin-left: auto;
-  background: #495057;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-`;
-
 const ListItem = styled.div`
   padding: 8px 12px;
   border: 1px solid ${props => (props.$selected ? '#495057' : '#f0f0f0')};
@@ -326,15 +316,6 @@ const ItemContent = styled.div`
     align-items: flex-start;
     text-align: left;
   }
-`;
-
-const QuantityBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  min-width: 120px;
-  flex-shrink: 0;
 `;
 
 const RowTop = styled.div`
@@ -385,13 +366,6 @@ const SearchInput = styled.input`
   &:focus {
     border-color: #495057;
   }
-`;
-
-const SearchIcon = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
 `;
 
 const NotesList = styled.div`

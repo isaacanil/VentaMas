@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState } from 'react'
 import styled from 'styled-components'
 
-import { OrderMenuFilter } from './OrderMenuFilter/OrderMenuFilter'
-
 import { Button } from '@/views/templates/system/Button/Button'
+
+import { OrderMenuFilter } from './OrderMenuFilter/OrderMenuFilter'
 
 export const OrderFilter = () => {
   const [menuIsOpen, setMenuIsOpen] = useState(false)

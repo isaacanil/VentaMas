@@ -31,7 +31,7 @@ import { ExpenseChart } from '../ExpenseReport/ExpenseReport'
  * @desc A component that renders a table of expenses.
  * @returns {JSX.Element} The ExpensesTable component
  */
-export const ExpensesTable = ({ }) => {
+export const ExpensesTable = () => {
     const user = useSelector(selectUser);
     const dispatch = useDispatch();
 
@@ -200,7 +200,7 @@ export const ExpensesTable = ({ }) => {
             accessor: 'receiptImg',
             minWidth: '70px',
             maxWidth: '70px',
-            cell: ({ value, row }) => {
+            cell: ({ value }) => {
                 const handleClick = () => {
                     if (value) {
                         dispatch(toggleImageViewer({ show: true, url: value }));

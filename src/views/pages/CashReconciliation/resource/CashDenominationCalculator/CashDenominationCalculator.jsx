@@ -130,10 +130,6 @@ const Bills = styled(motion.div)`
     }}
 `
 
-const BillRef = styled.div`
-    width: 3.4em;
-    text-align: right;
-`
 const Header = styled.div`
     display: flex;
     align-items: center;

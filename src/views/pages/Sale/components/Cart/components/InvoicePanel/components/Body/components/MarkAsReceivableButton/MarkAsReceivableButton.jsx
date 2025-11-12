@@ -1,69 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
 import { Button, notification } from 'antd';
 import { Fragment, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { resetAR, selectAR, setAR } from '../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
-import { selectUser } from '../../../../../../../../../../../features/auth/userSlice';
+import { useARValidation } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/useARValidation';
+
+import { resetAR, setAR } from '../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
 import { SelectCartData, toggleReceivableStatus } from '../../../../../../../../../../../features/cart/cartSlice';
-import { fbGetActiveARCount } from '../../../../../../../../../../../firebase/accountsReceivable/fbGetActiveARCount';
-import { calculateInvoiceChange } from '../../../../../../../../../../../utils/invoice';
 
 
-// Hook personalizado para manejar la lógica de AR
-export const useARValidation = (cartData, creditLimit) => {
-    const user = useSelector(selectUser);
-    const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
-    const client = cartData?.client;
-    const clientId = cartData?.client?.id;
-    const { currentBalance } = useSelector(selectAR);
-    
-    const isGenericClient = clientId === 'GC-0000' || clientId === null;
-    const isChangeNegative = change < 0;
-    
-    // React Query para obtener el recuento de AR activos
-    const { data: activeAccountsReceivableCount = 0 } = useQuery
-    (
-        {
-        queryKey: ['activeARCount', user.businessID, clientId],
-        queryFn: () => fbGetActiveARCount(user.businessID, clientId),
-        enabled: Boolean(creditLimit?.invoice?.status && clientId && user.businessID),
-        staleTime: 60000,
-        }
-    );
-      // Calcular si está dentro del límite de factura
-    const isWithinInvoiceCount = !creditLimit?.invoice?.status || 
-      activeAccountsReceivableCount < (creditLimit?.invoice?.value || 0);
-    
-    // Calcular si está dentro del límite de crédito
-    const creditLimitValue = creditLimit?.creditLimit?.status && currentBalance !== null ? 
-      (currentBalance) + (-change) : 0;
-    
-    const isWithinCreditLimit = !creditLimit?.creditLimit?.status || 
-      creditLimitValue <= creditLimit?.creditLimit?.value;
-    
-    return {
-      isGenericClient,
-      isChangeNegative,
-      isWithinCreditLimit,
-      isWithinInvoiceCount,
-      activeAccountsReceivableCount,
-      creditLimitValue,
-      clientId,
-    };
-  };
-
-export const MarkAsReceivableButton = ({creditLimit = null, setIsOpen, isOpen}) => {
+export const MarkAsReceivableButton = ({ creditLimit = null, setIsOpen }) => {
     const dispatch = useDispatch();
     // const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] = useState(0);
     // const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
     // const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
     // const [creditLimitValue, setCreditLimitValue] = useState(0);
     const cartData = useSelector(SelectCartData);
-    const user = useSelector(selectUser);
-    const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
-    const client = cartData?.client;
 
 
     const {
@@ -71,8 +23,6 @@ export const MarkAsReceivableButton = ({creditLimit = null, setIsOpen, isOpen}) 
         isChangeNegative,
         isWithinCreditLimit,
         isWithinInvoiceCount,
-        activeAccountsReceivableCount,
-        creditLimitValue,
         clientId,
       } = useARValidation(cartData, creditLimit);
     
@@ -82,8 +32,6 @@ export const MarkAsReceivableButton = ({creditLimit = null, setIsOpen, isOpen}) 
 
     const isAddedToReceivables = cartData?.isAddedToReceivables;
     const receivableStatus = isAddedToReceivables && isWithinCreditLimit;
-    const { currentBalance } = useSelector(selectAR);
-
 
 
     useEffect(() => {

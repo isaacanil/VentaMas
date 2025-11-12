@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { icons } from '../../../../../constants/icons/icons'
 import { OPERATION_MODES } from '../../../../../constants/modes'
-import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+import { useDialog } from '../../../../../Context/Dialog'
 import { getOrderData as getOrderDataToOrder } from '../../../../../features/addOrder/addOrderSlice'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { addNotification } from '../../../../../features/notification/notificationSlice'

@@ -16,12 +16,14 @@ export const ProductsSection = ({ location }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const navigate = useNavigate();
-    const { data: products, loading, error } = useListenProductsStockByLocation(location);    const handleDelete = async (product) => {
+    const { data: products } = useListenProductsStockByLocation(location);
+
+    const handleDelete = async (product) => {
         if (!product) return;
         try {
             await deleteProductStock(user, product.id)
         } catch (error) {
-
+            console.error('Failed to delete product stock', error);
         }
     }
 
@@ -37,8 +39,10 @@ export const ProductsSection = ({ location }) => {
                 onAdd={() => dispatch(openProductStock({ location }))}
                 renderItem={(product) => (
                     <List.Item
+                        key={product.id}
                         actions={[
                             <Button
+                                key="edit"
                                 icon={<FontAwesomeIcon icon={faEdit} />}
                                 onClick={(e) => {
                                     e.stopPropagation()
@@ -47,6 +51,7 @@ export const ProductsSection = ({ location }) => {
                             >
                             </Button>,
                             <Button
+                                key="delete"
                                 icon={icons.editingActions.delete}
                                 danger
                                 onClick={(e) => {

@@ -1,6 +1,6 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment } from 'react'
 import { useDispatch } from 'react-redux'
-import { useLocation, useMatch } from 'react-router-dom'
+import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { icons } from '../../../../../constants/icons/icons'
@@ -9,10 +9,8 @@ import ROUTES_NAME from '../../../../../routes/routesName'
 import { Button } from '../../../system/Button/Button'
 
 export const InsuranceConfigToolbar = ({ side = 'left' }) => {
-    const [isOpen, setIsOpen] = useState(false)
     const dispatch = useDispatch()
-    const { pathname } = useLocation();
-    const { INSURANCE_CREATE, INSURANCE_CONFIG } = ROUTES_NAME.INSURANCE_TERM
+    const { INSURANCE_CONFIG } = ROUTES_NAME.INSURANCE_TERM
     const matchInsuranceConfig = useMatch(INSURANCE_CONFIG)
 
     const handleCreateNew = () => {
@@ -39,13 +37,6 @@ export const InsuranceConfigToolbar = ({ side = 'left' }) => {
                         )
                     }
                 </Container>
-                {/* {isOpen && (
-                    <WarehouseForm
-                        isOpen={isOpen}
-                        onClose={() => setIsOpen(false)}
-                        
-                    />
-                )} */}
             </Fragment>
         )
     )

@@ -10,7 +10,7 @@ const Footer = styled.div`
   border-top: 1px solid #ddd;
 `
 
-export const ClientPaginationBar = memo(({
+const ClientPaginationBarComponent = ({
   filteredClients,
   clients,
   currentPage,
@@ -37,4 +37,7 @@ export const ClientPaginationBar = memo(({
       <div />
     </Footer>
   )
-})
+}
+
+export const ClientPaginationBar = memo(ClientPaginationBarComponent)
+ClientPaginationBar.displayName = 'ClientPaginationBar'

@@ -1,16 +1,12 @@
-import * as  ant from 'antd';
-import React from 'react'
-import styled from 'styled-components';
+import { Dropdown, message } from "antd";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "styled-components";
 
-const { Upload, Modal, Button, message, Dropdown, Typography, Divider } = ant;
-
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { ChangeProductImage } from '../../../../../../features/updateProduct/updateProductSlice';
-import { fbDeleteProductImg } from '../../../../../../firebase/products/productsImg/fbDeleteProductImg';
-
-import { useDispatch, useSelector } from 'react-redux';
-
-import { imgFailed } from '../ImageManager';
+import { selectUser } from "../../../../../../features/auth/userSlice";
+import { ChangeProductImage } from "../../../../../../features/updateProduct/updateProductSlice";
+import { fbDeleteProductImg } from "../../../../../../firebase/products/productsImg/fbDeleteProductImg";
+import { imgFailed } from "../ImageManager";
 
 
 export const Gallery = ({ images }) => {

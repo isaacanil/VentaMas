@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -14,7 +13,7 @@ import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 
 const InsuranceConfig = () => {
     const dispatch = useDispatch();
-    const [searchTerm, setSearchTerm] = useState('');
+    const searchTerm = '';
     const { data: insuranceConfig } = useListenInsuranceConfig();
 
     // Definición de columnas para la tabla
@@ -104,12 +103,6 @@ const Content = styled.div`
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1em;
-`;
-
-const HeaderActions = styled.div`
-    display: flex;
-    justify-content: flex-end;
     gap: 1em;
 `;
 

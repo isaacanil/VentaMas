@@ -203,11 +203,6 @@ const BadgeTime = styled.span`
   font-family: 'Courier New', monospace;
 `;
 
-const InfoTriggerIcon = styled(InfoCircleOutlined)`
-  font-size: 16px;
-  color: rgba(145, 66, 0, 0.7);
-`;
-
 const PopoverContent = styled.div`
   min-width: 280px;
   max-width: 320px;

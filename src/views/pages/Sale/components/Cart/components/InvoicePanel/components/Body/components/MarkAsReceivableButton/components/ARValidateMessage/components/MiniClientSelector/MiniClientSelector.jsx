@@ -1,9 +1,8 @@
 import { UserOutlined, SearchOutlined } from '@ant-design/icons';
 import { Modal, Input, List, Avatar, Typography, Empty, Spin } from 'antd';
 import { useState, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import { selectUser } from '../../../../../../../../../../../../../../../features/auth/userSlice';
 import { addClient } from '../../../../../../../../../../../../../../../features/clientCart/clientCartSlice';
 import { useFbGetClientsOnOpen } from '../../../../../../../../../../../../../../../firebase/client/useFbGetClientsOnOpen';
 import { filtrarDatos } from '../../../../../../../../../../../../../../../hooks/useSearchFilter';
@@ -13,7 +12,6 @@ const { Text } = Typography;
 
 export const MiniClientSelector = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
   const { clients, loading } = useFbGetClientsOnOpen({ isOpen });
   
   const [searchTerm, setSearchTerm] = useState('');

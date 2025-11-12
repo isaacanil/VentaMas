@@ -28,9 +28,6 @@ const ButtonText = styled.div`
 `;
 
 export const ClientSelectorHeader = ({ 
-  filter, 
-  filteredClientsToShow, 
-  handleMenuClick, 
   openAddClientModal, 
   onClose 
 }) => {

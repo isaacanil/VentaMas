@@ -8,7 +8,7 @@ export const formatNumber = (value: string | number | null | undefined): string 
   if (typeof value === 'number') {
     num = value;
   } else {
-    const parsed = parseFloat(value.toString().replace(/\,/g, ''));
+    const parsed = parseFloat(value.toString().replace(/,/g, ''));
     if (isNaN(parsed)) {
       return '';
     }

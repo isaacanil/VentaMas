@@ -55,7 +55,7 @@ const PROMOTION_STATUS_OPTIONS = [
     { value: 'sinPromocion', label: 'Sin promoción' },
 ];
 
-export const FilterPanel = ({ Group, contextKey = DEFAULT_FILTER_CONTEXT }) => {
+export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }) => {
     const inventariable = useSelector((state) => selectInventariable(state, contextKey));
     const itbis = useSelector((state) => selectItbis(state, contextKey));
     const priceStatus = useSelector((state) => selectPriceStatus(state, contextKey));

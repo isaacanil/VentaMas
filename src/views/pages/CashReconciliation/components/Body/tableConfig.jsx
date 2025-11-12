@@ -2,7 +2,6 @@ import { Tag } from 'antd'
 
 import { useFormatPrice } from "../../../../../hooks/useFormatPrice"
 import DateUtils from "../../../../../utils/date/dateUtils";
-import { CashCountMetaData } from "../../page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData"
 import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator/CashCountStateIndicator"
 
 export const tableConfig = () => {
@@ -94,14 +93,4 @@ export const tableConfig = () => {
     // }
   ]
   return columns
-}
-
-const GetTotalValue = ({ cashCount }) => {
-  const { totalSystem, totalDiscrepancy } = CashCountMetaData(cashCount, cashCount?.invoices);
-  return useFormatPrice(totalSystem)
-}
-
-const GetDiscrepancyValue = ({ cashCount }) => {
-  const { totalSystem, totalDiscrepancy } = CashCountMetaData(cashCount);
-  return useFormatPrice(totalDiscrepancy)
 }

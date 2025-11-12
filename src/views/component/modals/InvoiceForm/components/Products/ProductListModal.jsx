@@ -299,17 +299,6 @@ const SummaryRow = styled.div`
   justify-content: flex-end;
 `;
 
-const Toolbar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 8px 12px;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.05);
-`;
-
 const ProductName = styled.div`
   display: flex;
   flex-direction: column;

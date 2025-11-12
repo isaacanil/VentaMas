@@ -9,13 +9,10 @@ import { MotionWrapper } from '../base/animation/MotionWrapper'
 
 export const Modal = ({ children, nameRef, handleSubmit, close, btnSubmitName, isOpen, subModal, width }) => {
     const [modalContent, setModalContent] = useState(false)
+
     const done = async () => {
-        try {
-            await handleSubmit()
-            close();        } catch {
-            // Handle error appropriately
-        } finally {
-        }
+        await handleSubmit?.()
+        close()
     }
     useEffect(() => {
         if (isOpen) {

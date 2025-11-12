@@ -74,7 +74,7 @@ export const Header = ({ Row, Group, newProduct, setNewProduct, initialState, se
                     setProducts([])
                     setInitialState(false)
                 }, 1000)
-            } catch (error) {
+            } catch {
                 dispatch(addNotification({ message: 'Error al reiniciar el producto', type: 'error' }))
             }
         }

@@ -7,7 +7,8 @@ import { ResizableSidebar } from '../../../../component/ResizebleSidebar/Resizeb
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 
 import InventoryMenu from './components/DetailView/InventoryMenu';
-import ProductStockBrowser, { PRODUCT_STOCK_FILTER_OPTIONS } from './components/ProductStockBrowser/ProductStockBrowser';
+import { PRODUCT_STOCK_FILTER_OPTIONS } from './components/ProductStockBrowser/constants.js';
+import ProductStockBrowser from './components/ProductStockBrowser/ProductStockBrowser';
 import ProductStockOverview from './components/ProductStockOverview/ProductStockOverview';
 
 const Container = styled.div`

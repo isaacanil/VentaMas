@@ -81,8 +81,6 @@ const FiscalReceiptsPanel = ({ data = {} }) => {
   }, [receipts]);
 
   const criticalCount = summary?.criticalReceipts ?? sortedReceipts.filter((item) => item?.alertLevel === 'critical').length;
-  const warningCount = summary?.warningReceipts ?? sortedReceipts.filter((item) => item?.alertLevel === 'warning').length;
-  const activeCount = summary?.activeReceipts ?? sortedReceipts.length;
 
   if (sortedReceipts.length === 0) {
     return (

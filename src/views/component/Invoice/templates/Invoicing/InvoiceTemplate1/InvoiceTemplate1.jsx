@@ -14,7 +14,7 @@ import { ProductList } from './components/ProductList'
 import { Row } from './components/Table/Row'
 import { ThankYouMessage } from './components/ThankYouMessage'
 import { WarrantySignature } from './components/WarrantySignature'
-import { ReceiptComponent } from './Style'
+import { Container, HiddenPrintWrapper } from './Style'
 
 
 
@@ -29,8 +29,8 @@ export const InvoiceTemplate1 = React.forwardRef(({ data, ignoreHidden }, ref) =
 
     return (
         data ? (
-           <ReceiptComponent.HiddenPrintWrapper ignoreHidden={ignoreHidden} >
-                <ReceiptComponent.Container ref={ref}>
+           <HiddenPrintWrapper ignoreHidden={ignoreHidden} >
+                <Container ref={ref}>
                     <Header
                         data={data}
                         Space={Space}
@@ -82,11 +82,13 @@ export const InvoiceTemplate1 = React.forwardRef(({ data, ignoreHidden }, ref) =
                     )}
                     <WarrantySignature data={data} />
                     <ThankYouMessage message={business?.invoice?.invoiceMessage} />
-                </ReceiptComponent.Container>
-            </ReceiptComponent.HiddenPrintWrapper>
+                </Container>
+            </HiddenPrintWrapper>
         ) : null
     )
 });
+
+InvoiceTemplate1.displayName = 'InvoiceTemplate1';
 
 export const SubTitle = styled.p`
     font-weight: 600;

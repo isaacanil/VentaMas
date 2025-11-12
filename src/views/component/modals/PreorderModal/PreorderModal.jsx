@@ -17,26 +17,6 @@ const IconLabel = styled.span`
     gap: 0.4rem;
 `;
 
-// Styled Components
-const IconButton = styled.button`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: 1px solid #d9d9d9;
-    background: #fff;
-    color: #1f1f1f;
-    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-    opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
-    transition: all 0.2s ease;
-
-    &:hover {
-        border-color: ${({ disabled }) => (disabled ? '#d9d9d9' : '#1f1f1f')};
-    }
-`;
-
 const ModalOverlay = styled.div`
     position: fixed;
     inset: 0;

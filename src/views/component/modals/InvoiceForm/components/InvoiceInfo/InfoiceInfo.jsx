@@ -82,9 +82,9 @@ const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
       await fbCancelInvoice(user, invoice, cancellationReason);
       dispatch(closeInvoiceForm());
       handleClose();
-      antd.message.success('Factura anulada correctamente');
-    } catch (error) {
-      antd.message.error('Error al anular factura');
+      message.success('Factura anulada correctamente');
+    } catch {
+      message.error('Error al anular factura');
     } finally {
       form.resetFields();
       setIsLoading(false);

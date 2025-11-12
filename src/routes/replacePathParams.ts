@@ -22,13 +22,15 @@
  * // Error por valores faltantes:
  * replacePathParams(path, "123"); // Error: Missing value for parameter "itemId".
  */
-export function replacePathParams(path: string, ...args: string[] | [string[]]): string {
-    const values = Array.isArray(args[0]) ? args[0] : args;
+// Single signature using union to avoid redeclare lint issues
+export function replacePathParams(path: string, valuesOrArg1: string[] | string, ...rest: string[]): string {
+    const values = Array.isArray(valuesOrArg1) ? valuesOrArg1 : [valuesOrArg1, ...rest];
     const params = path.match(/\/:([a-zA-Z0-9_]+)/g) || [];
 
     if (params.length > values.length) {
         const missingParam = params[values.length];
-        throw new Error(`Missing value for parameter "${missingParam.slice(2)}".`);
+        const missingName = missingParam ? missingParam.slice(2) : 'param';
+        throw new Error(`Missing value for parameter "${missingName}".`);
     }
 
     let index = 0;

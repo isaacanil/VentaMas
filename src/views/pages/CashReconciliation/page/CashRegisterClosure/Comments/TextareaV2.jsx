@@ -15,8 +15,6 @@ import styled from 'styled-components';
  * @returns {JSX.Element}
  */
 export const TextareaV2 = ({ icon, label, search, onClear, validate, errorMessage, bgColor, clearButton = false, ...props }) => {
-  const showClearButton = clearButton && props.value;
-  const inputValue = props.value
   const inputRef = useRef(null);
 
   return (
@@ -28,10 +26,12 @@ export const TextareaV2 = ({ icon, label, search, onClear, validate, errorMessag
       <InputWrapper {...props} bgColor={bgColor} search={search} validate={validate}>
         {icon}
         <StyledInput {...props} ref={inputRef} />
-       {onClear && <FontAwesomeIcon icon={faTimes}
+       {onClear && clearButton && (
+          <FontAwesomeIcon icon={faTimes}
             onClick={() => onClear()}
             style={{ cursor: 'pointer', marginLeft: '8px', color: `${props.value ? "#999" : "transparent"}` }}
-          />}
+          />
+        )}
         
       </InputWrapper>
       {(validate && errorMessage) && <ErrorMessage show>{errorMessage}</ErrorMessage>}

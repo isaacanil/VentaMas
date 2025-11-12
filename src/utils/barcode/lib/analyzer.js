@@ -87,7 +87,7 @@ export function analyzeBarcodeStructure(barcode) {
       }
       break;
       
-    case 12:
+    case 12: {
       analysis.type = 'UPC-A';
       analysis.structure = { 
         systemDigit: cleanCode[0], 
@@ -103,6 +103,7 @@ export function analyzeBarcodeStructure(barcode) {
       };
       analysis.isValid = analysis.checkDigit.isValid;
       break;
+    }
       
     case 13: {
       // Verificar si es código de peso variable

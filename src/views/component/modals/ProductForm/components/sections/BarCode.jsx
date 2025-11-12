@@ -20,7 +20,7 @@ import BarcodePreviewModal from './BarcodeInfoModal/BarcodePreviewModal'
 // Hook para geometría GS1 precisa usando util
 const useGS1Geometry = (dpi = PRINT_DPI, barcodeType) => getGS1Geometry(dpi, barcodeType)
 
-const { Card, Input, Form, Button, Tooltip, Typography } = ant
+const { Card, Input, Form, Button, Tooltip } = ant
 
 const HeaderContainer = styled.div`
     display: flex;
@@ -76,10 +76,6 @@ const ValidationMessage = styled.div`
     gap: 4px;
 `
 
-const DescriptionText = styled(Typography.Text)`
-    margin-bottom: 16px;
-    text-align: center;
-`
 
 const FooterContainer = styled.div`
     display: flex;
@@ -339,7 +335,7 @@ export const BarCode = ({ product }) => {
                                     placeholder="Ingresa el código de barras"
                                     suffix={getValidationIcon()}
                                     onFocus={() => setInputHasFocus(true)}
-                                    onBlur={(e) => setInputHasFocus(false)}
+                                    onBlur={() => setInputHasFocus(false)}
                                     maxLength={18}
                                 />
 

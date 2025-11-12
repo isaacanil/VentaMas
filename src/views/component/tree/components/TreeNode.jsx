@@ -8,7 +8,8 @@ import ActionButtons from "./ActionButtons";
 import LevelGroup from "./LevelGroup";
 import { LoadingIndicator } from "./LoadingIndicator";
 import { NavigationButton } from "./NavigationButton";
-import NodeName, { formatLots } from "./NodeName";
+import NodeName from "./NodeName";
+import { formatLots } from "./nodeName.helpers";
 
 // Estilos con styled-components
 const NodeContainer = styled.div`

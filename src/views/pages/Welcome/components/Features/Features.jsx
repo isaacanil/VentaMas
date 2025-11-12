@@ -61,7 +61,7 @@ const Features = () => {
         </HeaderSection>
 
         <Row gutter={[24, 24]}>
-          {welcomeData.features.map((feature, index) => (
+          {welcomeData.features.map((feature) => (
             <Col xs={24} sm={12} lg={8} key={feature.id}>
               <FeatureCard
                 variants={item}

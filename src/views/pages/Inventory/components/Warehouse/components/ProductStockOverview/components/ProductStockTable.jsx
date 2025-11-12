@@ -60,7 +60,6 @@ const ProductStockTable = ({
       maxWidth: '1fr',
       sortable: true,
       cell: ({ value }) => {
-        const record = tableData.find(item => item.location === value);
         return (
           <Tooltip
             title={locationNames?.[value] || value || 'Ubicación no disponible'}

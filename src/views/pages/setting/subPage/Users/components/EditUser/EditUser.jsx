@@ -248,7 +248,3 @@ const Footer = styled.div`
     justify-content: end;
     padding: 0 1em;
 `
-const Group = styled.div`
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-`

@@ -6,7 +6,7 @@ import {  SelectSettingCart } from '../../../../../../../features/cart/cartSlice
 import { separator } from '../../../../../../../hooks/separator'
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
 import { getTax, getTotalPrice, resetAmountToBuyForProduct, getProductIndividualDiscount } from '../../../../../../../utils/pricing'
-import { convertTimeToSpanish } from '../../../../../modals/ProductForm/components/sections/WarrantyInfo'
+import { convertTimeToSpanish } from '../../../../../modals/ProductForm/components/sections/warranty.helpers'
 
 import { Col } from './Table/Col'
 import { Row } from './Table/Row'

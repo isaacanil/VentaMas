@@ -39,7 +39,7 @@ export const FilterBar = ({
   onFiltersChange,
 }) => {
   const { drawerVisible, openDrawer, closeDrawer } = useDrawerState();
-  const { isMobile, isTablet, isDesktop } = useResponsiveLayout();
+  const { isMobile } = useResponsiveLayout();
   
   // Hook de colapso para desktop
   const { containerRef, register, visibleCount, hasOverflow } = useFilterCollapse();

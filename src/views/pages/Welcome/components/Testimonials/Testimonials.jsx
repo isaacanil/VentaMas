@@ -56,7 +56,7 @@ const Testimonials = () => {
         </HeaderSection>
 
         <Row gutter={[32, 32]} justify="center">
-          {welcomeData.testimonials.map((testimonial, index) => (
+          {welcomeData.testimonials.map((testimonial) => (
             <Col xs={24} lg={12} key={testimonial.id}>
               <TestimonialCard
                 variants={item}
@@ -100,7 +100,7 @@ const Testimonials = () => {
                     />
                     
                     <TestimonialText>
-                      "{testimonial.comment}"
+                      &ldquo;{testimonial.comment}&rdquo;
                     </TestimonialText>
                   </div>
 

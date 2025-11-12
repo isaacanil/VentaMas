@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fbRecordAuthorizationApproval } from '../../../../../../firebase/authorization/approvalLogs';
 import {
@@ -104,39 +104,42 @@ export const useAuthorizationRequests = (
   const [detailRequest, setDetailRequest] = useState<AuthorizationRequest | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const load = async (statusArg?: StatusFilterValue) => {
-    setLoading(true);
-    try {
-      const data = await listAuthorizationRequestsTyped(user, {
-        status: statusArg || statusFilter,
-        limitCount: 200,
-      });
+  const load = useCallback(
+    async (statusArg?: StatusFilterValue) => {
+      setLoading(true);
+      try {
+        const data = await listAuthorizationRequestsTyped(user, {
+          status: statusArg || statusFilter,
+          limitCount: 200,
+        });
 
-      const normalized = data.map((item) => ({
-        key:
-          typeof item.key === 'string' && item.key
-            ? item.key
-            : typeof item.id === 'string' && item.id
-            ? item.id
-            : String(item.id ?? Math.random().toString(36).slice(2)),
-        ...item,
-      }));
-      setRows(normalized);
-    } catch (error) {
-      const messageText =
-        error instanceof Error ? error.message : 'Error cargando solicitudes';
-      message.error(messageText);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const normalized = data.map((item) => ({
+          key:
+            typeof item.key === 'string' && item.key
+              ? item.key
+              : typeof item.id === 'string' && item.id
+              ? item.id
+              : String(item.id ?? Math.random().toString(36).slice(2)),
+          ...item,
+        }));
+        setRows(normalized);
+      } catch (error) {
+        const messageText =
+          error instanceof Error ? error.message : 'Error cargando solicitudes';
+        message.error(messageText);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [statusFilter, user],
+  );
 
   useEffect(() => {
-    if (user?.businessID) {
-      load();
+    if (!user?.businessID) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.businessID, statusFilter, dateRange]);
+    void load();
+  }, [user?.businessID, statusFilter, dateRange, load]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -242,7 +245,7 @@ export const useAuthorizationRequests = (
         target: targetForLog,
         metadata: metadataForLog,
       });
-      load();
+      void load();
     } catch (error) {
       const messageText =
         error instanceof Error ? error.message : 'Error aprobando';
@@ -252,7 +255,7 @@ export const useAuthorizationRequests = (
     }
   };
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = (id: string) => {
     setPendingApproval(id);
     return id;
   };
@@ -261,7 +264,7 @@ export const useAuthorizationRequests = (
     try {
       await rejectAuthorizationRequestTyped(user, id, user);
       message.info('Solicitud rechazada');
-      load();
+      void load();
     } catch (error) {
       const messageText =
         error instanceof Error ? error.message : 'Error rechazando';

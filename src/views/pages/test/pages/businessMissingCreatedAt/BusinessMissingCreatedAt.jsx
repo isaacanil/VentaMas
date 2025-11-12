@@ -12,7 +12,6 @@ import { db } from '../../../../../firebase/firebaseconfig';
  */
 export default function BusinessMissingCreatedAt() {
   const [loading, setLoading] = useState(false);
-  const [businesses, setBusinesses] = useState([]); // todos (para métricas rápidas si hiciera falta)
   const [missing, setMissing] = useState([]);       // solo los que no tienen createdAt
   const [progress, setProgress] = useState({ scanned: 0, total: 0 });
   const [fixing, setFixing] = useState(false);
@@ -26,7 +25,6 @@ export default function BusinessMissingCreatedAt() {
   const scan = useCallback(async () => {
     setLoading(true);
     abortRef.current.aborted = false;
-    setBusinesses([]);
     setMissing([]);
     setProgress({ scanned: 0, total: 0 });
     try {
@@ -64,7 +62,6 @@ export default function BusinessMissingCreatedAt() {
           setProgress({ scanned, total });
         }
       });
-      setBusinesses(all);
       setMissing(miss);
       setProgress({ scanned: total, total });
     } catch (err) {

@@ -21,12 +21,6 @@ export default function usePaymentDates(
       ? DateTime.now().startOf("day")
       : DateTime.fromMillis(userStartDate).startOf("day");
 
-    const interval = {
-      weekly: { days: 7 },
-      annual: { years: 1 },
-      monthly: { months: 1 }
-    }[frequency] || { months: 1 };
-
     const dates = [];
     for (let i = 0; i < installments; i++) {
       let installmentDate;

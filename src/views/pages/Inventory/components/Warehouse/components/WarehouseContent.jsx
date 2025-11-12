@@ -1,7 +1,7 @@
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as antd from "antd";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
@@ -77,9 +77,9 @@ export default function WarehouseContent() {
   const user = useSelector(selectUser);
 
   const { warehouseId } = useParams();
-  const [location, setLocation] = useState({ id: warehouseId, type: "Warehouse" })
-  const { data: warehouse, loading: warehouseLoading, error: warehouseError } = useListenWarehouse(warehouseId);
-  const { data: shelves, loading, error } = useListenShelves(warehouse?.id);
+  const location = useMemo(() => ({ id: warehouseId, type: "Warehouse" }), [warehouseId])
+  const { data: warehouse, loading: warehouseLoading } = useListenWarehouse(warehouseId);
+  const { data: shelves } = useListenShelves(warehouse?.id);
 
   const [isFormOpen, setIsFormOpen] = useState(false); // Estado para el modal de almacén
 
@@ -140,8 +140,10 @@ export default function WarehouseContent() {
           onAdd={handleAddShelf}
           renderItem={(shelf) => (
             <List.Item
+              key={shelf.id}
               actions={[
                 <Button
+                  key="edit-shelf"
                   icon={<FontAwesomeIcon icon={faEdit} />}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -150,6 +152,7 @@ export default function WarehouseContent() {
                 >
                 </Button>,
                 <Button
+                  key="delete-shelf"
                   icon={icons.editingActions.delete}
                   danger
                   onClick={(e) => {

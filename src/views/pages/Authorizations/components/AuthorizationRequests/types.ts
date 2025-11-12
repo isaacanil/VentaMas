@@ -6,8 +6,7 @@ export type AuthorizationStatus =
   | 'rejected'
   | 'expired'
   | 'used'
-  | 'completed'
-  | string;
+  | 'completed';
 
 export interface RequestedBy {
   uid?: string;

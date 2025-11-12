@@ -1,4 +1,4 @@
-import { createExcelTemplate } from '../excelUtils/createExcelTemplate';
+import { createExcelTemplate } from '../createExcelTemplate';
 
 import { productHeaderMappings } from './headerMappings';
 

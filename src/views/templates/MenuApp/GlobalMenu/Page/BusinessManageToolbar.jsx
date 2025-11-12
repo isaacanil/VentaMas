@@ -1,6 +1,5 @@
 import { Button } from 'antd'
 import React from 'react'
-import { useDispatch } from 'react-redux'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -8,7 +7,6 @@ import { icons } from '../../../../../constants/icons/icons'
 import ROUTES_PATH from '../../../../../routes/routesName'
 
 const BusinessManagerToolbar = ({ side = 'left' }) => {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const { CREATE_BUSINESS, BUSINESSES } = ROUTES_PATH.DEV_VIEW_TERM;

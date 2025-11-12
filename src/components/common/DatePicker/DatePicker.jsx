@@ -5,18 +5,15 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import localeData from 'dayjs/plugin/localeData';
 import weekday from 'dayjs/plugin/weekday';
 import React, { useRef } from 'react';
-import 'dayjs/locale/es';
 import styled from 'styled-components';
+import 'dayjs/locale/es';
 
-// Componentes
 import {
     DatePickerInput,
     PresetsSection,
     CalendarSection,
     MobileModal
 } from './components';
-
-// Hooks y utilidades
 import { createDefaultPresets } from './constants/presets';
 import { useDatePicker } from './hooks/useDatePicker';
 import { useMobile } from './hooks/useMobile';

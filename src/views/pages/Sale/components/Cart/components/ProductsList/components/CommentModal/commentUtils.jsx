@@ -31,7 +31,9 @@ export function applyCorrections(original, correctionsText) {
                     pairs.push({ wrong: right, right });
                 });
             }
-        } catch { }
+        } catch (error) {
+            console.warn('Failed to parse corrections JSON payload', error);
+        }
     }
 
     // 3) Viñetas sin flecha: * palabra_correcta
@@ -81,7 +83,9 @@ export function parseCorrections(rawText) {
     if (Array.isArray(arr) && arr.every(it => it.wrong && it.right)) {
       return arr;
     }
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to parse corrections list', error);
+  }
   // fallback: extrae pares con la lógica de applyCorrections
   // pero sólo devolviendo los pares, no aplicándolos
   let pairs = [];
@@ -102,7 +106,7 @@ export async function fetchCorrections(text) {
   return response.candidates[0].content.parts[0].text;
 }
 
-export function renderCorrectionsList(pairs, rawText) {
+export function renderCorrectionsList(pairs, _rawText) {
   if (pairs.length === 0) {
     return <p>No se encontraron errores ortográficos.</p>;
   }

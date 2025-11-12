@@ -3,7 +3,8 @@ import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { formatNumber, formatInputDate, shortenLocationPath, EditorsList, Diff, SummaryBar } from './inventoryTableUtils.jsx';
+import { EditorsList, SummaryBar } from './inventoryTableComponents.jsx';
+import { formatNumber, formatInputDate, shortenLocationPath, Diff } from './inventoryTableUtils.js';
 
 export function GroupedLotsModal({
   open,

@@ -5,10 +5,10 @@ import { Button, Modal, Tag, Tooltip } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from "styled-components";
 
-import { selectUser } from "../../../../../../features/auth/userSlice";
-import { addClient } from "../../../../../../features/clientCart/clientCartSlice";
-import { clearAuthData } from "../../../../../../features/insurance/insuranceAuthSlice";
-import { highlightSearch } from "../../../../../../templates/system/highlight/Highlight";
+import { selectUser } from "@features/auth/userSlice";
+import { addClient } from "@features/clientCart/clientCartSlice";
+import { clearAuthData } from "@features/insurance/insuranceAuthSlice";
+import { highlightSearch } from "@templates/system/highlight/Highlight";
 
 
 

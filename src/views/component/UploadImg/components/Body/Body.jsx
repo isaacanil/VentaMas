@@ -8,7 +8,7 @@ import { GalleryAdmin } from './GalleryAdmin'
 import { UploadImgAdmin } from './UploadImgAdmin'
 
 export const Body = ({ images, ImgToUpload, setImgToUpload }) => {
-    const { status, product } = useSelector(selectUpdateProductData)
+    const { product } = useSelector(selectUpdateProductData)
     const [img, setImg] = useState(product?.image);
     return (
         <Container>

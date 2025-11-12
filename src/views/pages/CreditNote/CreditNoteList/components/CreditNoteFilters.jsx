@@ -169,7 +169,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                             size="middle"
                         >
                             <Option value="">Todos</Option>
-                            {Object.entries(CREDIT_NOTE_STATUS).map(([key, value]) => (
+                            {Object.entries(CREDIT_NOTE_STATUS).map(([, value]) => (
                                 <Option key={value} value={value}>
                                     {CREDIT_NOTE_STATUS_LABEL[value]}
                                 </Option>
@@ -269,7 +269,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                             size="middle"
                         >
                             <Option value="">Todos</Option>
-                            {Object.entries(CREDIT_NOTE_STATUS).map(([key, value]) => (
+                            {Object.entries(CREDIT_NOTE_STATUS).map(([, value]) => (
                                 <Option key={value} value={value}>
                                     {CREDIT_NOTE_STATUS_LABEL[value]}
                                 </Option>
@@ -354,10 +354,6 @@ const MobileFilterLabel = styled.label`
     font-weight: 600;
     color: #262626;
     margin-bottom: 0.25rem;
-`;
-
-const ClearButtonContainer = styled.div`
-    margin-top: 1rem;
 `;
 
 const FiltersRow = styled.div`

@@ -97,13 +97,6 @@ const Container = styled.div`
  padding-right: 0.6em;
  padding-right: 0px;
 `
-const Head = styled.div`
-   display: flex;
-   align-items: center;
-
-   justify-content: space-between;
-   height: min-content;
-`
 const ImgContainer = styled.div`
     width: 100%;
     max-height: 2.75em;
@@ -129,19 +122,6 @@ const Img = styled.img`
         }
     }}
 `;
-const Body = styled.div`
-    display: grid;
-    grid-template-columns: 
-    minmax(200px, 1fr) //name
-    minmax(100px, 0.4fr)  //cost
-    minmax(100px, 0.4fr) //stock
-    minmax(100px, 200px); //price
-    align-items: center;
-    gap: 1em;
-    color: var(--Gray7);
-    font-size: 14px;
-
-`
 const ProductName = styled.span`
     color: var(--Gray7);
         margin: 0;
@@ -149,10 +129,6 @@ const ProductName = styled.span`
         font-weight: 500;
         
     
-`
-const Group = styled.div`
-    display: flex;
-    justify-content: space-between;
 `
 const Item = styled.div`
     ${props => {

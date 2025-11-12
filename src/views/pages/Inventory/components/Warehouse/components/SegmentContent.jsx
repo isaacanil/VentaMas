@@ -1,7 +1,7 @@
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as antd from "antd";
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
@@ -13,19 +13,12 @@ import { selectWarehouse } from "../../../../../../features/warehouse/warehouseS
 import { ProductsSection } from "./ProductsSection";
 import { DetailContainer, DetailItem } from "./WarehouseContent";
 
-const { Modal, Button, List, Tag } = antd;
+const { Button, Tag } = antd;
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`
   display: grid;
   gap: 1em;
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
 `;
 
 const SegmentInfo = styled.div`
@@ -46,17 +39,6 @@ const SectionTitle = styled.h3`
   color: #333;
 `;
 
-const SectionContent = styled.div`
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-`;
-
-const AddButton = styled(Button)`
-  display: flex;
-  align-items: center;
-`;
-
 const Body = styled.div`
   display: grid;
   gap: 1em;
@@ -67,7 +49,7 @@ export default function SegmentContent() {
   // Estado para almacenar los productos asociados con el segmento
   const dispatch = useDispatch();
   const {segmentId} = useParams();
-  const [location, setLocation] = useState({id: segmentId, type: 'segment'});
+  const location = { id: segmentId, type: 'segment' };
   const {selectedSegment : segment} = useSelector(selectWarehouse);
   
 

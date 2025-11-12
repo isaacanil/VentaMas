@@ -115,4 +115,5 @@ export const InvoiceTemplate3 = React.forwardRef(({ data, ignoreHidden }, ref) =
   ) : null;
 });
 
+InvoiceTemplate3.displayName = 'InvoiceTemplate3';
 

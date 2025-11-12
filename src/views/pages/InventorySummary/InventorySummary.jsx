@@ -118,11 +118,6 @@ const Table = styled.table`
   td.num { text-align: right; white-space: nowrap; }
   th.num { text-align: right; }
 `
-const FooterNote = styled.div`
-  margin-top: 16px;
-  font-size: 12px;
-  color: #6b7280;
-`
 const Center = styled.div`
   display: flex; align-items: center; justify-content: center; padding: 48px; color: #6b7280;
 `
@@ -246,20 +241,6 @@ export const InventorySummary = () => {
       .slice(0, 10)
   }, [filtered])
 
-  // Métricas principales
-  const metrics = useMemo(() => {
-    let totalUnits = 0
-    let totalValueCost = 0
-    let totalValuePrice = 0
-    for (const it of filtered) {
-      const qty = getNumber(it.quantity)
-      totalUnits += qty
-      totalValueCost += qty * getNumber(it.unitCost)
-      totalValuePrice += qty * getNumber(it.unitPrice)
-    }
-    return { totalUnits, totalValueCost, totalValuePrice, categoriesSummary, topProducts }
-  }, [filtered, categoriesSummary, topProducts])
-
   const exportExcel = useCallback(async () => {
     const rows = filtered.map(it => ({
       name: it.name,
@@ -271,7 +252,7 @@ export const InventorySummary = () => {
     }))
     try {
       await exportInventorySummaryToExcel(rows, { filenamePrefix: 'inventario_resumen' })
-    } catch (e) {
+    } catch {
       // opcional: mostrar notificación si existe sistema de notificaciones
       // console.error(e)
     }

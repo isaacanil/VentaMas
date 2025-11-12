@@ -73,11 +73,3 @@ const TimeBadge = styled.div`
   justify-content: flex-start;
   align-items: center;
 `
-
-const Item = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-`
-const Descriptions = styled.div`
-  max-width: 300px;
-`

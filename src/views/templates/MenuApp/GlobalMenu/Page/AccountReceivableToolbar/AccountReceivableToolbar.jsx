@@ -20,14 +20,14 @@ import { MultiPaymentModal } from './components/MultiPaymentModal/MultiPaymentMo
 
 
 
-export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchData, data }) => {
+export const AccountReceivableToolbar = ({ side = 'left', data }) => {
     const matchWithAccountsReceivable = useMatch("/account-receivable/list");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [processedAccounts, setProcessedAccounts] = useState([]);
     const user = useSelector(selectUser);
     
     // Usar un periodo de tiempo por defecto (últimos 30 días)
-    const [datesSelected, setDatesSelected] = useState(getDateRange('last30Days'));
+    const [datesSelected] = useState(getDateRange('last30Days'));
     
     // Obtener las cuentas por cobrar para mostrar en el modal
     const accounts = useListenAccountsReceivable(user, datesSelected);

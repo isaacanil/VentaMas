@@ -8,7 +8,7 @@ import { MenuLink } from '../MenuLink';
 // import { Group, MenuLinkList } from '../SideBar';
 
 
-export const SubMenu = ({ isOpen, item, MenuItemsLink, showSubMenu }) => {
+export const SubMenu = ({ isOpen, item, showSubMenu }) => {
 
     const submenuItems = item.submenu || [];
 
@@ -47,9 +47,6 @@ export const SubMenu = ({ isOpen, item, MenuItemsLink, showSubMenu }) => {
         </Container>
     )
 }
-const GroupTitle = styled.h3`
-    /* Estilos para el título del grupo */
-`;
 const Group = styled.div`
     overflow: hidden;
 `

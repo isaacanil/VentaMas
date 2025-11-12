@@ -50,7 +50,6 @@ export const InvoiceResume = ({ invoice, onOpenPaymentInfo, isEditLocked = false
 
     const formattedSubtotal = useFormatPrice(subtotal)
     const formattedTaxes = useFormatPrice(taxes)
-    const formattedChange = useFormatPrice(changeAmount)
     const formattedTotal = useFormatPrice(totalPurchase)
     const formattedItems = Number(items).toLocaleString()
 
@@ -293,14 +292,6 @@ const HeaderText = styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
-`
-
-const HeaderLabel = styled.span`
-    font-size: 11px;
-    font-weight: 600;
-    color: #7d8597;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
 `
 
 const HeaderTitle = styled.div`

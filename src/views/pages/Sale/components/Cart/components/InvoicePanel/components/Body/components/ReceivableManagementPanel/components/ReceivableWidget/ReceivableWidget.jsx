@@ -18,8 +18,7 @@ const getPositive = (value) => (value < 0 ? -value : value);
 export const ReceivableWidget = ({ 
   receivableStatus, 
   isChangeNegative, 
-  onOpenConfig,
-  creditLimit 
+  onOpenConfig
 }) => {
   const dispatch = useDispatch();
   
@@ -29,12 +28,10 @@ export const ReceivableWidget = ({
     installmentAmount,
     currentBalance,
     paymentDate,
-    totalReceivable
   } = useSelector(selectAR);
 
   const cartData = useSelector(SelectCartData);
   const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
-  const generalBalance = useMemo(() => getPositive(change) + currentBalance, [change, currentBalance]);
 
   // No mostrar el widget si no está agregado a receivables o no hay cambio negativo
   if (!receivableStatus || !isChangeNegative) {
@@ -165,17 +162,6 @@ const WidgetTitle = styled.h4`
   letter-spacing: 0.3px;
 `;
 
-const StatusBadge = styled.span`
-  background: #d4edda;
-  color: #155724;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
 const BalanceBadge = styled.div`
   display: flex;
   flex-direction: column;
@@ -212,16 +198,6 @@ const InfoRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-`;
-
-const BalanceRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  background: #fff3cd;
-  border-radius: 8px;
-  border-left: 3px solid #ffc107;
 `;
 
 const ActionButtonsRow = styled.div`

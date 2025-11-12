@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { icons } from '../../../../../../../../constants/icons/icons'
 import { changeAmountToBuyProduct } from '../../../../../../../../features/invoice/invoiceFormSlice'
 
-export const Product = ({ product, index, invoice }) => {
+export const Product = ({ product }) => {
   const dispatch = useDispatch();
   const increase = () => {
     dispatch(changeAmountToBuyProduct({ product, type: "add" }))

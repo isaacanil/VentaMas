@@ -1,13 +1,13 @@
 import { DateTime } from 'luxon'
 import { useSelector } from 'react-redux'
 
-import { useDialog } from '../../../../../../Context/Dialog/DialogContext'  // Nuevo import
+import { useDialog } from '../../../../../../Context/Dialog'  // Nuevo import
 import { selectUser } from '../../../../../../features/auth/userSlice'
 import { fbCancelPurchase } from '../../../../../../firebase/purchase/fbCancelPurchase'
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
-import { calculateTotalNewStockFromReplenishments } from '../../../Order/components/OrderListTable/OrdersTable'
+import { calculateTotalNewStockFromReplenishments } from '../../../Order/components/OrderListTable/orderTableUtils'
 
-import { columns } from './tableConfig'
+import { columns } from './tableConfig.jsx'
 
 
 
@@ -67,5 +67,3 @@ export function PurchaseTable({ purchases, loadingPurchases }) {
     </>
   )
 }
-
-

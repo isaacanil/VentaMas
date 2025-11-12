@@ -48,7 +48,7 @@ export const useInventoryColumns = ({
               icon={<InfoCircleOutlined />}
               onClick={(event) => {
                 event.stopPropagation();
-                onViewBatch(value.batchId);
+                void onViewBatch(value.batchId);
               }}
             />
           )}

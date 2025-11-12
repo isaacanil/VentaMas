@@ -13,9 +13,6 @@ const { Button } = antd
 
 export function Payment({
   installments,
-  installmentAmount,
-  lastPayment,
-  lastPaymentDate,
   balance,
   isActive,
   account
@@ -102,12 +99,6 @@ const ProgressFill = styled.div`
   border-radius: 3px;
   width: ${({ $percentage }) => $percentage}%;
   transition: width 0.3s ease;
-`;
-
-const ProgressText = styled.span`
-  font-size: 11px;
-  color: #666;
-  font-weight: 500;
 `;
 
 const PaymentActions = styled.div`

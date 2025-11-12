@@ -6,8 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
-
-// @ts-ignore - legacy JS component without type declarations
+// @ts-expect-error - legacy JS component without type declarations
 import { DatePicker as CommonDatePicker } from '../../../../../components/common/DatePicker';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { fbListApprovalLogs } from '../../../../../firebase/authorization/approvalLogs';
@@ -20,6 +19,7 @@ interface UserSnapshot {
   name?: string;
   role?: string;
   email?: string;
+  businessID?: string | null;
 }
 
 interface TargetSnapshot {
@@ -48,6 +48,58 @@ interface ApprovalLogsProps {
 }
 
 type RangeValue = [Dayjs | null, Dayjs | null];
+
+interface ApprovalLogQueryOptions {
+  limitCount?: number;
+  startDate?: number;
+  endDate?: number;
+}
+
+type ApprovalLogsUser = UserSnapshot & {
+  businessID?: string | null;
+};
+
+interface DateRangeResult {
+  startDate: number;
+  endDate: number;
+}
+
+const isApprovalLogsUser = (value: unknown): value is ApprovalLogsUser => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const candidate = value as Partial<ApprovalLogsUser>;
+  const businessID = candidate.businessID;
+  const uid = candidate.uid;
+  const role = candidate.role;
+
+  const isValidBusinessId =
+    businessID === undefined || businessID === null || typeof businessID === 'string';
+  const isValidUid = uid === undefined || typeof uid === 'string';
+  const isValidRole = role === undefined || typeof role === 'string';
+
+  return isValidBusinessId && isValidUid && isValidRole;
+};
+
+const isDateRangeResult = (value: unknown): value is DateRangeResult => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const candidate = value as { startDate?: unknown; endDate?: unknown };
+  return typeof candidate.startDate === 'number' && typeof candidate.endDate === 'number';
+};
+
+const getDefaultDatePickerValue = (): RangeValue | null => {
+  const rawRange: unknown = getDateRange('today');
+
+  if (isDateRangeResult(rawRange)) {
+    return [dayjs(rawRange.startDate), dayjs(rawRange.endDate)];
+  }
+
+  return null;
+};
 
 const Wrapper = styled.div`
   display: grid;
@@ -291,7 +343,7 @@ const formatDateTime = (value: Date | null) => {
     const relative = dt.toRelative({ locale: 'es' });
     const absolute = dt.toFormat('dd LLL yyyy • hh:mm a');
     return relative ? `${absolute} (${relative})` : absolute;
-  } catch (error) {
+  } catch {
     return value.toLocaleString();
   }
 };
@@ -341,6 +393,13 @@ const resolveActionLabel = (action: string) => ACTION_LABELS[action] || action |
 
 const resolveActionColor = (action: string) => ACTION_COLORS[action] || '#0ea5e9';
 
+const safeString = (value: unknown): string | null => {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return null;
+};
+
 const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   const target = entry.target;
   const metadata = (entry.metadata || {});
@@ -371,13 +430,19 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
     pieces.push('Edición de factura');
   }
 
-  if (metadata.reference) {
-    pieces.push(`Ref. ${metadata.reference}`);
-  } else if (metadata.invoiceNumber || metadata.invoiceId) {
-    const invoiceRef = metadata.invoiceNumber || metadata.invoiceId;
-    pieces.push(`Factura ${invoiceRef}`);
-  } else if (target?.name) {
-    pieces.push(String(target.name));
+  const reference = safeString(metadata.reference);
+  if (reference) {
+    pieces.push(`Ref. ${reference}`);
+  } else {
+    const invoiceRef = safeString(metadata.invoiceNumber) ?? safeString(metadata.invoiceId);
+    if (invoiceRef) {
+      pieces.push(`Factura ${invoiceRef}`);
+    } else {
+      const targetName = safeString(target?.name);
+      if (targetName) {
+        pieces.push(targetName);
+      }
+    }
   }
 
   if (target?.details && typeof target.details === 'object') {
@@ -399,19 +464,16 @@ const matchesModuleFilter = (entry: ApprovalLogEntry, moduleFilter?: string) => 
 };
 
 const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
-  const user = useSelector(selectUser);
+  const rawUser: unknown = useSelector(selectUser);
+  const user = isApprovalLogsUser(rawUser) ? rawUser : null;
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<ApprovalLogEntry[]>([]);
   const [moduleFilter, setModuleFilter] = useState<string | undefined>();
   const [loadError, setLoadError] = useState<string>('');
   const [page, setPage] = useState<number>(1);
-  const [datePickerValue, setDatePickerValue] = useState<RangeValue | null>(() => {
-    const { startDate, endDate } = getDateRange('today');
-    if (typeof startDate === 'number' && typeof endDate === 'number') {
-      return [dayjs(startDate), dayjs(endDate)];
-    }
-    return null;
-  });
+  const [datePickerValue, setDatePickerValue] = useState<RangeValue | null>(() =>
+    getDefaultDatePickerValue()
+  );
 
   const startDateFilter = datePickerValue?.[0]
     ? datePickerValue[0].startOf('day').valueOf()
@@ -446,7 +508,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
 
     setLoading(true);
     try {
-      const queryOptions: any = { limitCount: 200 };
+      const queryOptions: ApprovalLogQueryOptions = { limitCount: 200 };
       if (typeof startDateFilter === 'number') {
         queryOptions.startDate = startDateFilter;
       }
@@ -454,20 +516,23 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
         queryOptions.endDate = endDateFilter;
       }
 
-      const data = (await fbListApprovalLogs(user, queryOptions)) as ApprovalLogEntry[];
-      setLogs(data);
+      const data = await fbListApprovalLogs(user, queryOptions);
+      if (Array.isArray(data)) {
+        setLogs(data as ApprovalLogEntry[]);
+      } else {
+        setLogs([]);
+      }
       setLoadError('');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error cargando el historial de autorizaciones.';
       setLoadError(errorMessage);
-      console.error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, [user, startDateFilter, endDateFilter]);
 
   useEffect(() => {
-    loadLogs();
+    void loadLogs();
   }, [loadLogs]);
 
   const modulesAvailable = useMemo(() => {
@@ -576,12 +641,14 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
           />
         </FilterGroup>
 
-        <Button
-          type="primary"
-          icon={<ReloadOutlined />}
-          onClick={loadLogs}
-          loading={loading}
-        >
+          <Button
+            type="primary"
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              void loadLogs();
+            }}
+            loading={loading}
+          >
           Actualizar
         </Button>
       </Controls>

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '../../../constants/icons/icons';
-import { useCategoryState } from '../../../Context/CategoryContext/CategoryContext';
+import { useCategoryState } from '../../../Context/CategoryContext';
 import { SelectCategoryList } from '../../../features/category/categorySlicer';
 import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
 import { useScreenSize } from '../../../hooks/useScreenSize';

@@ -14,7 +14,7 @@ import { PinInfoModal } from './PinInfoModal.jsx';
 import { RequestPinModal } from './RequestPinModal';
 import { ViewPinModal } from './ViewPinModal.jsx';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const AVAILABLE_MODULES = [
   { value: 'invoices', label: 'Facturación' },
@@ -25,14 +25,6 @@ const MODULE_LABELS = AVAILABLE_MODULES.reduce((acc, module) => {
   acc[module.value] = module.label;
   return acc;
 }, {});
-
-const ROLE_LABELS = {
-  admin: 'Administrador',
-  owner: 'Propietario',
-  dev: 'Desarrollador',
-  manager: 'Gerente',
-  cashier: 'Cajero',
-};
 
 const PageContainer = styled.div`
   max-width: 960px;
@@ -177,13 +169,6 @@ const DetailsColumn = styled.div`
   align-content: start;
 `;
 
-const MetaLabel = styled.span`
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #8c8c8c;
-`;
-
 const ActionsSection = styled.div`
   display: grid;
   gap: 16px;
@@ -271,7 +256,7 @@ export const PersonalPinManagement = () => {
     try {
       const status = await fbGetUserPinStatus(user, user.uid);
       setPinStatus(status);
-    } catch (error) {
+    } catch {
       setPinStatus({
         hasPin: false,
         isActive: false,
@@ -364,41 +349,16 @@ export const PersonalPinManagement = () => {
     };
   };
 
-  const getTimeRemaining = () => {
-    if (!pinStatus?.expiresAt) return null;
-    const now = new Date();
-    const expiresAt = new Date(pinStatus.expiresAt);
-    const diffMs = expiresAt - now;
-
-    if (diffMs <= 0) {
-      return { text: 'Expirado', tone: 'danger' };
-    }
-
-    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
-    if (diffHours < 24) {
-      return { text: `${diffHours}h restantes`, tone: diffHours <= 6 ? 'warning' : 'success' };
-    }
-
-    const diffDays = Math.round(diffHours / 24);
-    return { text: `${diffDays} días restantes`, tone: 'success' };
-  };
-
   const formatDateTime = (value) => {
     if (!value) return '-';
     try {
       return new Date(value).toLocaleString();
-    } catch (error) {
+    } catch {
       return '-';
     }
   };
 
   const statusDisplay = getStatusDisplay();
-  const timeRemaining = getTimeRemaining();
-  const timeRemainingText = timeRemaining?.text || 'Sin expiración';
-  const createdDisplay = formatDateTime(pinStatus?.createdAt);
-  const expiresDisplay = formatDateTime(pinStatus?.expiresAt);
-  const roleDisplay = ROLE_LABELS[user?.role] || (user?.role ? user.role : 'Sin rol asignado');
-  const statusTitle = statusDisplay.title;
   
   // Preparar badges para el header
   const heroBadges = [];

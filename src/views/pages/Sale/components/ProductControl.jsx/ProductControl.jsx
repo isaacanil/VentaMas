@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import React, { Fragment, useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from "react-redux";
+import React, { Fragment, useEffect, useMemo, useRef } from 'react'
+import { useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -17,7 +17,6 @@ import { CategoriesGrouped } from '../CategoriesProductsGrouped/CategoriesGroupe
 import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
 
 export const ProductControl = ({ products, isProductGrouped, productsLoading, setProductsLoading }) => {
-  const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const viewRowModeRef = useSelector(selectIsRow)
@@ -25,6 +24,19 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
   const productsContainerRef = useRef(null);
   const isScrolled = useScroll(productsContainerRef);
   const productLength = products.length;
+  const groupedProducts = useMemo(() => {
+    if (!products.length) return {};
+
+    return products.reduce((result, { product }) => {
+      const category = product?.category ?? 'Sin categoría';
+      if (!result[category]) {
+        result[category] = [];
+      }
+      result[category].push(product);
+      return result;
+    }, {});
+  }, [products]);
+  const isGroupedEmpty = Object.keys(groupedProducts).length === 0;
   
   useEffect(() => {
     setProductsLoading(true)
@@ -92,7 +104,7 @@ export const ProductControl = ({ products, isProductGrouped, productsLoading, se
             )
           }
           {
-            (products.length === 0 || Object.keys(productsByCategory).length === 0) && !productsLoading ? (
+            (products.length === 0 || (isProductGrouped && isGroupedEmpty)) && !productsLoading ? (
               <CenteredText
                 text='No hay Productos'
                 buttonText={'Gestionar Productos'}

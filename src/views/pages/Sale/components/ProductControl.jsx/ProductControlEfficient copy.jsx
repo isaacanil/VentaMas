@@ -5,6 +5,8 @@ import styled from 'styled-components';
 import { ProductCategoryBar } from '../../../../component/ProductCategoryBar/ProductCategoryBar';
 import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
 
+import ItemRow from './components/ItemRow';
+
 const columnByWidth =  {
   600: 1,
   900: 2,

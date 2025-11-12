@@ -10,7 +10,7 @@ import WelcomeData from '../WelcomeData.json'
 
 
 const Header = () => {
-    const { LOGIN, SIGNUP } = ROUTES_NAME.AUTH_TERM
+    const { LOGIN } = ROUTES_NAME.AUTH_TERM
     const navigate = useNavigate()
     
     const handleNavigate = (path) => {

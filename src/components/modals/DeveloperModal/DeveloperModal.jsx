@@ -51,7 +51,6 @@ export const DeveloperModal = () => {
   
   // Estado para filtrado en modo selección
   const [originalItems, setOriginalItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
 
   // Verificar si el usuario es desarrollador
   const isDeveloper = user?.role === 'dev';
@@ -81,7 +80,6 @@ export const DeveloperModal = () => {
     // Funciones para el modo de selección
   const enterSelectionMode = (items, title, onSelect, command = '') => {
     setOriginalItems(items); // Guardar items originales
-    setFilteredItems(items); // Inicializar items filtrados
     setSelectionMode({
       active: true,
       items,
@@ -100,7 +98,6 @@ export const DeveloperModal = () => {
     
     if (!filterText.trim()) {
       // Si no hay texto de filtro, mostrar todos los items originales
-      setFilteredItems(originalItems);
       setSelectionMode(prev => ({ ...prev, items: originalItems, selectedIndex: 0 }));
       console.log('Showing all items:', originalItems);
     } else {
@@ -110,7 +107,6 @@ export const DeveloperModal = () => {
         return itemText.toLowerCase().includes(filterText.toLowerCase());
       });
       
-      setFilteredItems(filtered);
       setSelectionMode(prev => ({ ...prev, items: filtered, selectedIndex: 0 }));
       console.log('Filtered items:', filtered);
     }
@@ -133,7 +129,6 @@ export const DeveloperModal = () => {
     
     // Limpiar estados de filtro
     setOriginalItems([]);
-    setFilteredItems([]);
     setCommandInput(''); // Limpiar el input al salir del modo selección
     
     // Limpiar las funciones globales para evitar memory leaks

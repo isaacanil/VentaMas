@@ -3,15 +3,13 @@ import React, { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { icons } from '../../../../../../constants/icons/icons'
-import { useCategoryState } from '../../../../../../Context/CategoryContext/CategoryContext'
+import { useCategoryState } from '../../../../../../Context/CategoryContext'
 import { openModal } from '../../../../../../features/activeIngredients/activeIngredientsSlice'
 import { openBrandModal } from '../../../../../../features/productBrands/productBrandSlice'
 import { PRODUCT_BRAND_DEFAULT, PRODUCT_ITEM_TYPE_OPTIONS } from '../../../../../../features/updateProduct/updateProductSlice'
 import { useFbGetCategories } from '../../../../../../firebase/categories/useFbGetCategories'
 import { useListenActiveIngredients } from '../../../../../../firebase/products/activeIngredient/activeIngredients'
 import { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../../constants/brandOptions';
-
-export { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE };
 
 export const ProductInfo = ({ product, productBrands = [] }) => {
     const dispatch = useDispatch();

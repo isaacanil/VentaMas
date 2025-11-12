@@ -7,7 +7,7 @@ import { Header } from '../../components/Header/Header'
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
 import { Row } from '../../components/Table/Row';
 import { Line } from '../../Receipt';
-import { InfoItem, ReceiptComponent, Subtitle } from '../../Style'
+import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '../../Style'
 
 import { GeneralBalance } from './components/GeneralBalance';
 import { PaymentArea } from './components/PaymentArea'
@@ -20,8 +20,8 @@ export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
     `Cuota #${receipt.number}, ${useFormatPrice(receipt.amount)}, ${statusSpanish[receipt.status]}`
 );
   return (
-    <ReceiptComponent.HiddenPrintWrapper>
-      <ReceiptComponent.Container ref={ref}>
+    <HiddenPrintWrapper>
+      <Container ref={ref}>
         <Header data={data} />
         <Section>
           <GeneralBalance data={data} />
@@ -46,38 +46,15 @@ export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
           ))}
         </Section>
         <PaymentArea data={data} />
-      </ReceiptComponent.Container>
-    </ReceiptComponent.HiddenPrintWrapper>
+      </Container>
+    </HiddenPrintWrapper>
   );
 });
 
+AccountsReceivablePaymentReceipt.displayName = 'AccountsReceivablePaymentReceipt';
+
 export default AccountsReceivablePaymentReceipt;
-
-const ReceiptContainer = styled.div`
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  border: 1px solid #000;
-`;
-
-
-const Info = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.5em;
-`;
 
 const Section = styled.div`
   margin-bottom: 20px;
-`;
-
-const Label = styled.span`
-  font-weight: bold;
 `;

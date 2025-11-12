@@ -86,9 +86,6 @@ export const CustomerSalesReportTable = ({ sales }) => {
   const groupedData = aggregateClientData(sales);
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
-  // Calcular totales
-  const totalItems = groupedData.reduce((sum, record) => sum + record.items, 0);
-  const totalSales = groupedData.reduce((sum, record) => sum + record.total, 0);
   const totalClients = groupedData.length;
 
   const columns = [
@@ -151,5 +148,4 @@ export const CustomerSalesReportTable = ({ sales }) => {
     </div>
   );
 };
-
 

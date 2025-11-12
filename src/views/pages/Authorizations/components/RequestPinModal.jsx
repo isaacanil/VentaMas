@@ -14,7 +14,7 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
 
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields();
+      await form.validateFields();
       setSubmitting(true);
 
       // TODO: Implementar sistema de notificaciones/tickets
@@ -28,7 +28,7 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
 
       form.resetFields();
       onClose();
-    } catch (error) {
+    } catch {
       // Validation error
     } finally {
       setSubmitting(false);

@@ -18,7 +18,7 @@ export const CashReconciliationTable = () => {
     startDate: null,
     endDate: null
   });
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm] = useState('')
   const [cashCounts, setCashCounts] = useState([])
   const [loading, setLoading] = useState(true)
   const user = useSelector(selectUser)

@@ -13,7 +13,7 @@ import ROUTES_PATH from '../../../../routes/routesName'
 import { getLocalURL } from '../../../../utils/files';
 import Loader from '../../../component/Loader/Loader'
 import { MenuApp } from '../../../templates/MenuApp/MenuApp'
-import { getBackOrderAssociationId } from '../PurchaseManagement/PurchaseManagement'
+import { getBackOrderAssociationId } from '../PurchaseManagement/purchaseManagementUtils'
 
 import GeneralForm from './components/GeneralForm/GeneralForm'
 import { defaultsMap, sanitizeData } from './orderLogic'

@@ -4,7 +4,8 @@ import { useDispatch } from "react-redux";
 
 import { setNote } from "../../../features/noteModal/noteModalSlice";
 
-export function NoteButton({ value }: { value: any }) {
+type NoteValue = string | null | undefined;
+export function NoteButton({ value }: { value: NoteValue }) {
     const dispatch = useDispatch();
     const hasNote = Boolean(value);
 

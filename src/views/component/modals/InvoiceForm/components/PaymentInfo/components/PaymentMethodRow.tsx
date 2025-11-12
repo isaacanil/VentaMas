@@ -129,13 +129,6 @@ const MethodLabel = styled.div`
     color: #262626;
 `
 
-const IconWrapper = styled.span`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #434343;
-`
-
 const AddonIcon = styled.span`
     display: inline-flex;
     align-items: center;

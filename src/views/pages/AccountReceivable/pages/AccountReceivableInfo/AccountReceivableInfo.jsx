@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import * as antd from 'antd';
 import { DateTime } from 'luxon';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -11,8 +10,6 @@ import fetchAccountsReceivableDetails from '../../../../../firebase/accountsRece
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { DetailSummary } from '../../../../component/DetailSummary/DetailSummary';
 import Typography from '../../../../templates/system/Typografy/Typografy';
-
-const { Layout, Descriptions, Tag } = antd;
 
 // const { Header, Content } = Layout;
 
@@ -84,7 +81,7 @@ const AccountReceivableInfo = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data.installments
+                            {installments
                             .sort((a, b) => a.installmentDate.seconds - b.installmentDate.seconds)
                             .map((installment, index) => (
                                 <tr key={installment.id}>
@@ -108,7 +105,7 @@ const AccountReceivableInfo = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data.installmentPayments
+                            {installmentPayments
                             .sort((a, b) => a.createdAt.seconds - b.createdAt.seconds)
                             .map(payment => (
                                 <tr key={payment.id}>
@@ -254,10 +251,6 @@ const ContentGrid = styled.div`
     grid-template-columns: 2fr 1fr;
     gap: 20px;
 `;
-const Group = styled.div`
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-`
 const SectionTitle = styled.h2`
     margin-top: 20px;
     font-size: 1em;

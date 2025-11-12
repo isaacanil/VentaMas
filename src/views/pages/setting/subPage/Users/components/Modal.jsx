@@ -1,17 +1,5 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import React from 'react'
 
-const Modal = ({}) => {
-   const [_isOpen, _setIsOpen] = useState(false);
-   
-  return (
-    <div>
-      
-    </div>
-  )
-}
+const Modal = () => <div />;
 
 export default Modal
-const Container = styled.div`
-
-`

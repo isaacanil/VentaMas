@@ -4,22 +4,18 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice'
-import { fbDeleteUser } from '../../../../../../../../../firebase/users/fbDeleteUser'
-import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities'
 import { Row } from '../../../../../../../../templates/system/Table/Row'
 
 export const Item = ({ data, num, colWidth }) => {
   const navigate = useNavigate()
-  const { abilities } = userAccess();
 
   const dispatch = useDispatch()
-  const handleDeleteUser = () => { fbDeleteUser(data.user.id) }
   const handleEditUser = () => {
     navigate('/users/update-user/' + data.user.id)
     dispatch(updateUser(data.user))
   }
-  const renamedAbilities = (abilities) => {
-    switch (abilities) {
+  const renamedAbilities = (role) => {
+    switch (role) {
       case 'owner':
         return 'Dueño'
       case 'admin':

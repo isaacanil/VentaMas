@@ -9,15 +9,6 @@ import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsRecei
 import { DateRangeFilter } from '../../../../../../templates/system/Button/TimeFilterButton/DateRangeFilter';
 import { DatePicker } from '../../../../../../templates/system/Dates/DatePicker/DatePicker';
 
-const FilterContainer = styled.div`
-  height: 3em;
-  display: grid;
-  padding: 0 1em;
-  align-items: center;
-  background: white;
-  border-radius: 8px;
-`;
-
 export const FilterAccountReceivable = ({
   datesSelected = [],
   setDatesSelected = () => {},
@@ -27,7 +18,6 @@ export const FilterAccountReceivable = ({
 }) => {
   const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [clientType, setClientType] = useState('normal'); // 'normal' o 'insurance'
   const { isPharmacy } = useBusiness();
 
   const handleSort = (newCriteria) => {
@@ -52,7 +42,6 @@ export const FilterAccountReceivable = ({
   };
 
   const handleClientTypeChange = (value) => {
-    setClientType(value);
     onClientTypeChange(value);
   };
 

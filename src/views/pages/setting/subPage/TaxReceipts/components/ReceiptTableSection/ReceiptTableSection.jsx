@@ -14,7 +14,7 @@ import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxRec
 export const ReceiptTableSection = ({
   enabled,
   itemsLocal,
-  setItemsLocal, 
+  setItemsLocal,
   onAddBlank,
   onAddPredefined,
   onRebuildLedger,
@@ -50,9 +50,16 @@ export const ReceiptTableSection = ({
               Reconstruir ledger
             </Button>
           )}
-          <Button icon={<PlusOutlined />} type="primary" onClick={onAddPredefined}>
-            Comprobante
-          </Button>
+          {onAddBlank && (
+            <Button icon={<PlusOutlined />} type="primary" onClick={onAddBlank}>
+              Comprobante
+            </Button>
+          )}
+          {onAddPredefined && (
+            <Button icon={<FileAddOutlined />} onClick={onAddPredefined}>
+              Plantillas
+            </Button>
+          )}
           <Button 
             icon={<FileAddOutlined />} 
             type="primary" 

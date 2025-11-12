@@ -8,20 +8,18 @@ import styled from 'styled-components';
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { fbUpdateBusinessInfo, fbUpdateBusinessLogo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
-import { useWindowWidth } from '../../../../../hooks/useWindowWidth';
 
 import { countries } from './countries.json';
 
 
 
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const BusinessProfileEditor = () => {
   const business = useSelector(selectBusinessData);
   const [form] = Form.useForm();
   const user = useSelector(selectUser);
-  const isMobile = useWindowWidth(768);
   const [imageUrl, setImageUrl] = useState(business?.logoUrl || null);
   const [loading, setLoading] = useState(false);
 
@@ -58,6 +56,7 @@ const BusinessProfileEditor = () => {
       }
       return compressedFile;
     } catch (error) {
+      console.error('Error al comprimir la imagen', error);
       message.error('Error al comprimir la imagen');
       return null;
     }
@@ -80,6 +79,7 @@ const BusinessProfileEditor = () => {
       }
       return false;
     } catch (error) {
+      console.error('Error al procesar la imagen', error);
       message.error('Error al procesar la imagen');
       return false;
     }
@@ -100,15 +100,10 @@ const BusinessProfileEditor = () => {
         message.success('Logo actualizado correctamente');
       } catch (error) {
         setLoading(false);
+        console.error('Error al actualizar el logo', error);
         message.error('Error al actualizar el logo');
       }
     }
-  };
-
-  const getBase64 = (img, callback) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(img);
   };
 
   const handleSubmit = async (values) => {
@@ -137,14 +132,9 @@ const BusinessProfileEditor = () => {
       await fbUpdateBusinessInfo(user, businessData);
       message.success('Información actualizada');
     } catch (error) {
-      message.error('Error al actualizar la información');
+      console.error('Error al actualizar la información del negocio', error);
+      message.error(error?.message || 'Error al actualizar la información');
     }
-  };
-
-  const metadata = {
-    title: 'Información del negocio',
-    description:
-      'Agrega la información de tu negocio, como nombre, dirección, teléfono, país y provincia. Esta información se utilizará en tus facturas.',
   };
 
   const uploadButton = (

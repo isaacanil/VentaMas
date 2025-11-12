@@ -1,11 +1,10 @@
 import { SearchOutlined, PrinterOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Typography, Alert, message, Input, InputNumber, Grid, Skeleton, Tooltip, Tabs } from 'antd';
+import { Button, Checkbox, Alert, message, Input, InputNumber, Grid, Skeleton, Tooltip, Tabs } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectBusinessData } from '../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { closeCreditNoteModal, selectCreditNoteModal, openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
@@ -26,16 +25,12 @@ import InvoiceSelector from './components/InvoiceSelector';
 import { ProductList } from './components/ProductList';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
 
-
-
-const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 export const CreditNoteModal = () => {
   const dispatch = useDispatch();
   const { isOpen, selectedInvoice, selectedClient, mode, creditNoteData } = useSelector(selectCreditNoteModal);
   const user = useSelector(selectUser);
-  const business = useSelector(selectBusinessData);
   const { clients: fetchedClients, loading: clientsLoading } = useFbGetClientsOnOpen({ isOpen });
   const { pdfLoading, handlePrintPdf } = useCreditNotePDF();
   const { taxReceipt } = fbGetTaxReceipt();
@@ -471,7 +466,6 @@ export const CreditNoteModal = () => {
     if (item && value > item.maxAvailableQty) {
       const originalQty = item.amountToBuy || 1;
       const creditedByOthers = creditedQuantities[itemId] || 0;
-      const existingQty = existingItemQuantities[itemId] || 0;
       
       message.warning({
         content: (
@@ -820,11 +814,6 @@ const FormField = styled.div`
   gap: 0.5rem;
 `;
 
-const FieldLabel = styled.label`
-  font-weight: 500;
-  color: ${props => props.theme?.text?.primary || '#333'};
-`;
-
 const ProductsSection = styled.div`
   display: flex;
   flex-direction: column;
@@ -990,44 +979,6 @@ const NCFValue = styled.span`
   font-weight: 600;
   color: ${props => props.theme?.text?.primary || '#333'};
   word-break: break-all;
-`;
-
-const InvoiceDetailsContainer = styled.div`
-  margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-`;
-
-const InvoiceInfoSection = styled.div`
-  padding: 1rem;
-  border: 1px solid ${props => props.theme?.border?.color || '#d9d9d9'};
-  border-radius: 8px;
-  background-color: ${props => props.theme?.background?.secondary || '#fafafa'};
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const InfoItemLabel = styled.span`
-  font-size: 0.75rem;
-  color: ${props => props.theme?.text?.secondary || '#666'};
-  margin-bottom: 2px;
-`;
-
-const InfoItemValue = styled.span`
-  font-weight: 500;
-  color: ${props => props.theme?.text?.primary || '#333'};
-`;
-
-const QtyDisplayContainer = styled.div`
-  display: flex;
-  align-items: center;
 `;
 
 // Estilos para el historial de aplicaciones

@@ -16,7 +16,6 @@ import {
   SelectAddProductOutflowModal,
   SelectFileListModal,
   toggleFileListModal,
-  SelectDeveloperModal,
 } from "../../../features/modals/modalSlice"
 import { selectCurrentNotification } from "../../../features/notification/notificationSlice"
 import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
@@ -71,7 +70,6 @@ export const ModalManager = () => {
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
   const currentNotification = useSelector(selectCurrentNotification)
   const FileListSelected = useSelector(SelectFileListModal)
-  const DeveloperModalSelected = useSelector(SelectDeveloperModal)
   {/* <BusinessEditModal /> */ }
 
   {/* <ARInfoModal

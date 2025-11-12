@@ -13,7 +13,7 @@ import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 import routesName from '../../../../../routes/routesName'
 import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 
-export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData, onReportSaleOpen }) => {
+export const RegistroToolbar = ({ side = 'left', data, onReportSaleOpen }) => {
   const [isExporting, setIsExporting] = useState(false)
   const { BILLS } = routesName.SALES_TERM;
   const matchWithCashReconciliation = useMatch(BILLS);
@@ -146,6 +146,5 @@ const SpinningIcon = styled(FontAwesomeIcon)`
         to { transform: rotate(360deg); }
     }
 `;
-
 
 

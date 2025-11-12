@@ -9,7 +9,7 @@ import DateUtils from '../../../../../../../../utils/date/dateUtils';
 import { resolveDocumentIdentity } from '../../../../../../../../utils/invoice/documentIdentity.js';
 import { InfoItem, Spacing } from '../../Style';
 
-export const Header = ({ data, Space }) => {
+export const Header = ({ data }) => {
     let business = useSelector(selectBusinessData) || "";
     const logoUrl = business?.logoUrl || business?.logo || null;
     const documentIdentity = resolveDocumentIdentity(data);
@@ -90,7 +90,4 @@ const Title = styled.p`
     margin: 0;
     
 `
-const Group = styled.div`
-    display: flex;
-    gap: 12px;
-`
+// Removed unused Group styled-component per lint

@@ -24,13 +24,6 @@ export const HiddenPrintWrapper = styled.div`
     display: ${({ ignoreHidden }) => !ignoreHidden && 'none'};
 `;
 
-const Title = styled.p`
-    font-size: 18px;
-    font-weight: 600;
-    padding: 0.2em 0;
-    text-align: center;
-    margin: 0;
-`
 export function InfoItem({ label, value, align = 'left', textTransform = '', justifyContent = '' }) {
     return (
         <Group
@@ -96,15 +89,3 @@ export const Spacing = styled.div`
         }
     }}
 `;
-
-export const ReceiptComponent = {
-    Container,
-    HiddenPrintWrapper,
-    Subtitle,
-    Paragraph,
-    Divider,
-    Spacing,
-    Title,
-    Group,
-    InfoItem
-};

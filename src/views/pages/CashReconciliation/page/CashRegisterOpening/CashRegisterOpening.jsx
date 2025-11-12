@@ -1,6 +1,6 @@
 import { message } from 'antd'
 import { DateTime } from 'luxon'
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -25,7 +25,7 @@ import { Header } from './components/Headers/Header'
 export const CashRegisterOpening = () => {
   const cashCount = useSelector(selectCashCount)
   const { banknotes } = cashCount.opening;
-  const [openingDate, setOpeningDate] = useState(DateTime.now())
+  const [openingDate] = useState(DateTime.now())
   const [calculatorIsOpen, setCalculatorIsOpen] = useState(true)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
 

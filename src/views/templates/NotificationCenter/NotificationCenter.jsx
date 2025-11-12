@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -32,12 +32,11 @@ const notificationVariants = {
 };
 
 const NotificationCenter = () => {
-  const [activeTab] = useState('notifications');
   const { isOpen } = useSelector(selectNotificationCenter);
   const dispatch = useDispatch();
   
   // Usar el hook personalizado para obtener datos reales de comprobantes fiscales
-  const { widgetData: fiscalReceiptsData, isLoading: loadingFiscalData } = useFiscalReceiptsAlerts();
+  const { widgetData: fiscalReceiptsData } = useFiscalReceiptsAlerts();
 
 
   const handleClose = () => dispatch(closeNotificationCenter());
@@ -118,8 +117,6 @@ const Left = styled.div`
   gap: 12px;
 `;
 
-const Icon = styled.div``;
-
 const HeaderText = styled.div``;
 
 const Title = styled.h1`
@@ -128,13 +125,6 @@ const Title = styled.h1`
   color: #1f2937;
   font-size: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-`;
-
-const Subtitle = styled.p`
-  font-size: 14px;
-  color: #6b7280;
-  margin: 2px 0 0 0;
-  font-weight: 400;
 `;
 
 const CloseButton = styled.button`

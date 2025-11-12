@@ -2,11 +2,7 @@ import { CalendarOutlined } from '@ant-design/icons';
 import { faBoxes, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { useListenBackOrders } from '../../../../../../../../firebase/warehouse/backOrderService';
 
 import BackOrderList from './BackOrderList';
 
@@ -26,20 +22,6 @@ const Widget = styled.div`
   gap: 8px;
   background: white;
   border-radius: 12px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #64748b;
-  font-size: 0.9rem;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f1f5f9;
-  
-  .icon {
-    color: #94a3b8;
-  }
 `;
 
 const StatsGrid = styled.div`
@@ -91,10 +73,6 @@ const StatLabel = styled.div`
 `;
 
 const StockSummary = ({ filteredStock, productId }) => {
-    const user = useSelector(selectUser);
-    const { data: backOrders } = useListenBackOrders(user, productId);
-    const totalPending = backOrders?.reduce((sum, order) => sum + order.pendingQuantity, 0) || 0;
-
     const calculateTotals = useCallback((stocks) => {
         if (!stocks.length) return { totalUnits: 0, totalLocations: 0, totalBatches: 0 };
         const uniqueLocations = new Set(stocks.map(stock => stock.location));

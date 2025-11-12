@@ -3,7 +3,8 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import { MenuApp } from "../../../../..";
+import { MenuApp } from "@templates/MenuApp/MenuApp";
+
 import { navigateWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
 import { useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
 import { filterData } from "../../../../../../hooks/search/useSearch";
@@ -29,7 +30,7 @@ export default function WarehouseList() {
   const dispatch = useDispatch();
   const navigation = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const {data: warehouses, loading, error} = useListenWarehouses(); // Escucha los cambios en los almacenes
+  const { data: warehouses, loading: _loading, error: _error } = useListenWarehouses(); // Escucha los cambios en los almacenes
 
   const filteredWarehouses = useMemo(() => {
     return filterData(warehouses, searchTerm);
@@ -45,8 +46,9 @@ export default function WarehouseList() {
       <MenuApp displayName="Almacén" setSearchData={setSearchTerm} />
       <Container>
         <WarehouseGrid>
-          {filteredWarehouses.map((warehouse) => (
+          {filteredWarehouses.map((warehouse, index) => (
             <WarehouseCard
+              key={warehouse?.id ?? index}
               warehouse={warehouse}
               onSelect={() => handleSelectWarehouse(warehouse)}
             />

@@ -18,7 +18,6 @@ import styled from 'styled-components';
  *  - placement?: 'left' | 'right' | 'center' -> alineación horizontal respecto al input
  *  - zIndex?: number
  *  - maxWidth?: number
- *  - showIcon?: boolean -> muestra icono de advertencia al lado del título
  *
  * Uso típico:
  *  <InputWrapper>
@@ -33,7 +32,7 @@ import styled from 'styled-components';
  *  </InputWrapper>
  */
 
-const { Button, message, Typography } = ant;
+const { Button, message } = ant;
 
 // ----- styled components -----
 const Container = styled.div`
@@ -113,7 +112,6 @@ export default function BarcodeFixTooltip({
   placement = 'left',
   zIndex,
   maxWidth,
-  showIcon = true,
 }) {
   if (!visible || !suggestion) return null;
 
@@ -131,8 +129,8 @@ export default function BarcodeFixTooltip({
       await navigator.clipboard.writeText(suggestion.fixed);
       message.success('Copiado');
       onCopy?.(suggestion.fixed);
-    } catch (e) {
-      message.error('No se pudo copiar');
+    } catch (error) {
+      message.error(`No se pudo copiar${error?.message ? `: ${error.message}` : ''}`);
     }
   };
 
@@ -157,6 +155,9 @@ export default function BarcodeFixTooltip({
       </Row>
 
       <Actions>
+        <Button size="small" onClick={handleCopy}>
+          Copiar
+        </Button>
         <Button size="small" type="text" onClick={onClose}>
           Cerrar
         </Button>

@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 
-export const ConfigMenu = ({ items }) => {
+export const ConfigMenu = ({ items: _items }) => {
   return (
 
       <Container>

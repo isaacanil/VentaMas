@@ -38,29 +38,13 @@ const DropdownButton = styled.button`
   }
 `;
 
-const ModeBadge = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0.35em 0.9em;
-  border-radius: 999px;
-  font-size: 0.75em;
-  font-weight: 600;
-  text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-`;
-
 export const ProductStudioToolbar = ({
   side = 'left',
-  isUpdateMode,
   navigationVisible,
   summaryVisible,
   onToggleNavigation,
   onToggleSummary,
 }) => {
-  const label = isUpdateMode ? 'Actualizando' : 'Creando';
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -75,11 +59,7 @@ export const ProductStudioToolbar = ({
   }, []);
 
   if (side === 'left') {
-    return (
-      <LeftContainer>
-        <ModeBadge>{label}</ModeBadge>
-      </LeftContainer>
-    );
+    return <LeftContainer />;
   }
 
   if (side === 'right') {

@@ -8,7 +8,7 @@ import { paymentDescriptions } from '../../../../../constants/paymentDescription
 import { clearMethodErrors, selectAccountsReceivablePayment, setMethodError, updatePaymentMethod } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
 import { formatNumber } from '../../../../../utils/formatNumber'
 
-const { Form, Input, Checkbox, InputNumber, Switch, message } = antd
+const { Form, Input, InputNumber, Switch, message } = antd
 export const PaymentFields = () => {
     const cashInputRef = useRef(null);
     const {
@@ -191,7 +191,7 @@ export const PaymentFields = () => {
                                         precision={2}
                                         step={0.01}
                                         formatter={formatNumber}
-                                        parser={value => value.replace(/\,/g, '')}
+                                        parser={value => value.replace(/,/g, '')}
                                         style={{ width: '100%' }}
                                     />
                                 ) : (
@@ -205,7 +205,7 @@ export const PaymentFields = () => {
                                         precision={2}
                                         step={0.01}
                                         formatter={formatNumber}
-                                        parser={value => value.replace(/\,/g, '')}
+                                        parser={value => value.replace(/,/g, '')}
                                         style={{ width: '100%' }}
                                     />
                                 )}

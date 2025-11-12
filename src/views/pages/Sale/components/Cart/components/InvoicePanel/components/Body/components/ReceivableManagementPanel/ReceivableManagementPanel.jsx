@@ -30,9 +30,6 @@ export const ReceivableManagementPanel = ({
   closePanel,
   form,
   creditLimit,
-  activeAccountsReceivableCount,
-  isWithinCreditLimit,
-  isWithinInvoiceCount,
   isChangeNegative,
   receivableStatus
 }) => {
@@ -62,7 +59,6 @@ export const ReceivableManagementPanel = ({
     installmentAmount,
     currentBalance,
     paymentDate,
-    totalReceivable,
     comments
   } = useSelector(selectAR);
 

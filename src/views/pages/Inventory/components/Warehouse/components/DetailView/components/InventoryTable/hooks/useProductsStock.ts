@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 
-import type { InventoryTableProps, ProductStockLike } from '../types';
-
 import { useListenProductsStockByLocation } from '@/firebase/warehouse/productStockService';
+
+import type { InventoryTableProps, ProductStockLike } from '../types';
 
 interface ProductsStockResponse {
   data?: ProductStockLike[] | null;

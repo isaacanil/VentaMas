@@ -1,8 +1,5 @@
-
 import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined, CloseOutlined } from '@ant-design/icons';
 import * as antd from 'antd'
-//quiero el iconos d elos tres punto verticales
-
 import React, { useState, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
@@ -10,7 +7,7 @@ import styled from 'styled-components'
 import { store } from '../../../../../../../app/store'
 import { icons } from '../../../../../../../constants/icons/icons'
 import { OPERATION_MODES } from '../../../../../../../constants/modes'
-import { useDialog } from '../../../../../../../Context/Dialog/DialogContext'
+import { useDialog } from '../../../../../../../Context/Dialog'
 import { selectUser } from '../../../../../../../features/auth/userSlice'
 import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
 import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
@@ -27,7 +24,7 @@ import { ImgCell } from '../../../../../../templates/system/AdvancedTable/compon
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button'
 import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
 
-const { Button, Dropdown, Menu } = antd;
+const { Button, Dropdown } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();

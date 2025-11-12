@@ -1,55 +1,7 @@
-import { EyeOutlined, DollarOutlined } from '@ant-design/icons';
-import { Button } from "antd";
-import { useDispatch } from "react-redux";
-
-import { setAccountPayment } from "../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
-import { setARDetailsModal } from "../../../../../../../features/accountsReceivable/accountsReceivableSlice";
 import { useFormatPrice } from "../../../../../../../hooks/useFormatPrice";
 import { getTimeElapsed } from "../../../../../../../hooks/useFormatTime";
 
-
-
-const DetailButton = ({ value }) => {
-  const dispatch = useDispatch();
-  const handleOpenDetail = () => {
-    dispatch(setARDetailsModal({ isOpen: true, arId: value.account.id }));
-  }
-  return (
-    <Button
-      icon={<EyeOutlined />}
-      onClick={handleOpenDetail}
-    />
-  );
-};
-
-const PayButton = ({ value }) => {
-  const dispatch = useDispatch();
-  const handleOpenPayment = () => {
-    const account = value.account;
-    const client = value.account.client;
-    const result = {
-      isOpen: true,
-      paymentDetails: {
-        clientId: client.id,
-        arId: account.id,
-        paymentScope: 'account',
-        totalAmount: account.balance,
-      },
-      extra: {
-        ...account?.account
-
-      }
-    }
-
-    dispatch(setAccountPayment(result))
-  }
-  return (
-    <Button
-      icon={<DollarOutlined />}
-      onClick={handleOpenPayment}
-    />
-  );
-};
+import AccountActionsCell from "./AccountActionsCell";
 
 export const getColumns = (isPharmacy) => {
   const baseColumns = [
@@ -131,12 +83,7 @@ export const getColumns = (isPharmacy) => {
       maxWidth: '1fr',
       minWidth: '120px',
       fixed: 'right', // Fijar la última columna a la derecha
-      cell: ({ value }) => (
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-          <DetailButton value={value} />
-          <PayButton value={value} />
-        </div>
-      )
+      cell: ({ value }) => <AccountActionsCell value={value} />
     }
   ];
 

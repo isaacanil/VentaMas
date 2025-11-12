@@ -153,7 +153,7 @@ export const FilterBar = ({
   const [modalVisible, setModalVisible] = useState(false);
   
   // Hook de colapso para desktop
-  const { containerRef, register, visibleCount, hasOverflow } = useFilterCollapse();
+  const { containerRef, register } = useFilterCollapse();
   
   // Hooks personalizados
   const { clientOptions, clientsLoading } = useClientOptions();

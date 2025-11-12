@@ -7,7 +7,7 @@ import { getProductsTax, getProductsTotalPrice, getTotalItems } from '../../../.
 import PreorderModal from '../../../../component/modals/PreorderModal/PreorderModal'
 import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
 
-import { tableConfig } from './tableConfig'
+import { tableConfig } from './tableConfig.jsx'
 
 export const PreSaleTable = ({ preSales = [], searchTerm }) => {
   const [selectedPreorder, setSelectedPreorder] = useState(null)
@@ -70,5 +70,3 @@ const TotalContainer = styled.div`
   font-size: 1em;
   font-weight: 600;
 `
-
-

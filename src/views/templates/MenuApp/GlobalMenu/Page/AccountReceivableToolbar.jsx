@@ -1,15 +1,14 @@
 import { BankOutlined } from '@ant-design/icons'
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { useMatch, useNavigate } from 'react-router-dom'
+import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { openMultiPaymentModal } from '../../../../../features/modals/modalSlice'
 import { Button } from '../../../system/Button/Button'
 
-export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchData }) => {
+export const AccountReceivableToolbar = ({ side = 'left' }) => {
     const matchWithAccountsReceivable = useMatch("/account-receivable/list")
-    const navigate = useNavigate()
     const dispatch = useDispatch()
 
     const handleOpenMultiPayment = () => {

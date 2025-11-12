@@ -3,8 +3,8 @@
 
 import ThemeColorProvider from "../theme/ThemeProvider";
 
-import { CategoryProvider } from "./CategoryContext/CategoryContext";
-import { DialogProvider } from "./Dialog/DialogContext";
+import { CategoryProvider } from "./CategoryContext";
+import { DialogProvider } from "./Dialog";
 
 const providers = [
     ThemeColorProvider,

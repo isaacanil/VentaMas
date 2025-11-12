@@ -50,7 +50,3 @@ display: grid;
 align-items: center;
 grid-template-columns: 1fr auto;
 `
-const Title = styled.h2`
-  margin: 0;
-    font-size: 1.1rem;
-`;

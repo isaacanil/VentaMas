@@ -1,4 +1,3 @@
-import * as andt from 'antd'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
@@ -6,7 +5,6 @@ import styled from 'styled-components'
 import { selectCart } from '../../../../../../../../../../../features/cart/cartSlice'
 import { Showcase } from '../../../../../../../../../../templates/system/ShowCase/ShowCase'
 
-const { Statistic } = andt
 export const PaymentSummary = () => {
     const cart = useSelector(selectCart);
     const cartData = cart.data;
@@ -35,4 +33,3 @@ const Container = styled.div`
     gap: 1em;
     grid-template-columns: 1fr 1fr;
 `
-

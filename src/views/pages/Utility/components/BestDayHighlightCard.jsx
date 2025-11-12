@@ -1,9 +1,4 @@
-import {
-    faArrowTrendUp,
-    faTriangleExclamation,
-    faCircleExclamation,
-    faCircleInfo,
-} from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip } from 'antd';
 import { motion } from 'framer-motion';
@@ -13,17 +8,8 @@ import styled, { keyframes } from 'styled-components';
 import { designSystemV2 } from '../../../../theme/designSystemV2';
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
 import { buildBusinessInsights } from '../utils/buildBusinessInsights';
-import { getVariantStyles } from '../utils/insightVariants';
 
 const { colors, spacing, radii, shadows } = designSystemV2;
-
-const TYPE_ICONS = {
-    success: faArrowTrendUp,
-    warning: faTriangleExclamation,
-    critical: faCircleExclamation,
-    info: faCircleInfo,
-    default: faCircleInfo,
-};
 
 export const BestDayHighlightCard = ({
     summary,
@@ -46,8 +32,6 @@ export const BestDayHighlightCard = ({
         [insights]
     );
 
-    const variant = getVariantStyles(bestDayInsight?.type ?? 'default');
-    const icon = TYPE_ICONS[bestDayInsight?.type] ?? TYPE_ICONS.default;
     const meta = bestDayInsight?.meta ?? {};
 
     const formattedSales =
@@ -161,24 +145,6 @@ const DatePill = styled.span`
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.02em;
-`;
-
-const Highlight = styled.div`
-    display: flex;
-    align-items: center;
-    gap: ${spacing.sm};
-`;
-
-const Indicator = styled.span`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: ${radii.pill};
-    background: ${({ $variant }) => $variant.surface};
-    color: ${({ $variant }) => $variant.accent};
-    border: 1px solid ${({ $variant }) => $variant.accent}33;
 `;
 
 const EmptyHint = styled.div`

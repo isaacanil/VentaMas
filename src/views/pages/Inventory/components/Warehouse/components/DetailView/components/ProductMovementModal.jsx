@@ -32,11 +32,6 @@ const QuantityContainer = styled.div`
   align-items: center;
 `;
 
-const MaxQuantity = styled.span`
-  margin-left: 8px;
-  color: ${props => (props.isExceeded ? 'red' : 'green')};
-`;
-
 const QuantityInputWithMax = ({ maxQuantity }) => {
   const [quantity, setQuantity] = useState(0);
 
@@ -96,7 +91,7 @@ export const ProductMovementModal = ({
   const [form] = Form.useForm();
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false); // NEW loading state
-  const { data: warehouseData, loading, error } = useTransformedWarehouseData();
+  const { data: warehouseData } = useTransformedWarehouseData();
   const user = useSelector(selectUser);
   
   // Limpiar formulario cuando se abre o cierra el modal
@@ -170,7 +165,7 @@ export const ProductMovementModal = ({
   };
 
   const treeConfig = {
-    onNodeClick: (node, level) => {
+    onNodeClick: (node) => {
       if (node.id === currentNode.id) {
         message.info("Esta ubicación no se puede seleccionar, pero puedes explorarla y escoger una interna.");
         // Still allow expansion by not returning early

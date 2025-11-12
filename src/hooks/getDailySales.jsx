@@ -12,6 +12,15 @@ const calculateSalesForDateRange = (transactions, startDate, endDate) => {
   }, 0);
 };
 
+const resolveTransactionValue = (transaction) => {
+  return Number(
+    transaction?.data?.totalPurchase?.value ??
+      transaction?.totalPurchase?.value ??
+      transaction?.totalPurchase ??
+      0
+  );
+};
+
 export const getSalesForDateRange = (transactions, startDate, endDate) => {
   const [sales, setSales] = useState(0);
   useEffect(() => {
@@ -30,4 +39,15 @@ export const getGrowthPercentage = (transactions, daysAgo, today) => {
   const salesYesterday = calculateSalesForDateRange(transactions, startYesterday, endYesterday);
   const growthPercentage = (salesToday - salesYesterday) / salesYesterday * 100;
   return growthPercentage;
+};
+
+export const getSalesForCurrentDay = (transactions = []) => {
+  const salesForCurrentDay = transactions.reduce(
+    (total, transaction) => total + resolveTransactionValue(transaction),
+    0
+  );
+  return {
+    salesForCurrentDay,
+    growthPercentage: 0,
+  };
 };

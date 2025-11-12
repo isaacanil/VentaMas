@@ -67,13 +67,10 @@ export const ProviderForm = () => {
     const dispatch = useDispatch()
 
     const { isOpen, mode, data } = useSelector(SelectProviderModalData)
-
-    const update = OPERATION_MODES.UPDATE.id;
     const user = useSelector(selectUser)
     const [form] = Form.useForm()
     const [selectedCountry, setSelectedCountry] = useState('DO')
     const { loading, error, rncInfo, differences, consultarRNC, syncWithDgii, compareDgiiData } = useRncSearch(form);
-    const [showWarning, setShowWarning] = useState(false);
 
     // Reemplazar el useEffect problemático con Form.useWatch
     const formValues = Form.useWatch([], form);
@@ -110,7 +107,7 @@ export const ProviderForm = () => {
             const values = await form.validateFields();
 
             if (rncInfo?.status === 'DADO DE BAJA') {
-                setShowWarning(true);
+                message.warning({ content: 'El RNC está dado de baja en la DGII', key: 'providerSubmit' });
                 return;
             }
 
@@ -406,10 +403,3 @@ export const ProviderForm = () => {
         </>
     )
 }
-
-const RncGroup = styled.div`
-    display: grid;
-    gap: 1em;
-    grid-template-columns: 1fr min-content;
-    align-items: center;
-`

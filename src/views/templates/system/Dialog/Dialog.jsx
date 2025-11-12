@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 
 import { icons } from '../../../../constants/icons/icons';
-import { useDialog } from '../../../../Context/Dialog/DialogContext';
+import { useDialog } from '../../../../Context/Dialog';
 import { ButtonGroup } from '../Button/Button';
 import Typography from '../Typografy/Typografy';
 

@@ -91,7 +91,6 @@ export { PreviewContainer, PreviewText };
 export const BarcodePreview = ({ 
   autoMode, 
   selectedConfig, 
-  nextItemReference, 
   livePreview,
   currentBarcode,
   realtimeStatus = {},
@@ -99,7 +98,7 @@ export const BarcodePreview = ({
   isInternalMode = false
 }) => {
   const showPreview = livePreview || (autoMode && (selectedConfig?.companyPrefix || isInternalMode));
-  const { isConnected, isUpdating, hasRealtimeData, hasManualChanges } = realtimeStatus;
+  const { isUpdating, hasRealtimeData, hasManualChanges } = realtimeStatus;
   
   return (
     <div>

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
@@ -10,18 +9,6 @@ import { InventoryTable } from './components/InventoryTable/InventoryTable';
 import { MovementsTable } from './components/MovementsTable';
 
 
-
-const DetailContainer = styled.div`
-  flex: 1;
-  padding: 20px;
-  width: 100%;
-`;
-
-const DetailTitle = styled.h3`
-  margin-top: 0;
-  font-size: 1.5em;
-  color: #2c3e50;
-`;
 
 const DetailContent = styled.div`
   margin-top: 10px;
@@ -38,11 +25,8 @@ export const DetailView = () => {
     selectedProduct,
     breadcrumbs 
   } = useSelector(selectWarehouse);
-  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateRange, setDateRange] = useState(null);
-
-  const {shelfId} = useParams();
+  const [, setDateRange] = useState(null);
 
   // Determinar el nodo actual basado en las selecciones
   const currentNode = selectedProduct || selectedSegment || selectedRowShelf || selectedShelf || selectedWarehouse || null;

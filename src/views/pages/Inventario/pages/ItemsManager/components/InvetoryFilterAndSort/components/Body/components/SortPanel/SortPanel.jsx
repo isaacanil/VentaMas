@@ -7,7 +7,7 @@ import { icons } from '../../../../../../../../../../../constants/icons/icons';
 import { DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
 import { opcionesCriterio } from '../../../../InventoryFilterAndSortMetadata';
 
-export const SortPanel = ({ Group, contextKey = DEFAULT_FILTER_CONTEXT }) => {
+export const SortPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }) => {
     const [isCriterioChanged, setIsCriterioChanged] = useState(false);
 
     const dispatch = useDispatch();

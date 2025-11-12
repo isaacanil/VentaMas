@@ -6,7 +6,6 @@ import { toggleMode } from '../../../../features/appModes/appModeSlice';
 // import { SearchClient } from '../../system/Inputs/SearchClient' // TODO: Component not found
 
 export const SearchProductBar = ({ searchData, setSearchData }) => {
-    const handleClearInput = () => {setSearchData('')};
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useEffect(()=>{

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';
+import { useCategoryState } from '../../../../Context/CategoryContext';
 import { openModal as openActiveIngredientModal } from '../../../../features/activeIngredients/activeIngredientsSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { openBrandModal } from '../../../../features/productBrands/productBrandSlice';
@@ -58,7 +58,6 @@ export default function ProductStudio() {
   const [summaryVisible, setSummaryVisible] = useState(true);
   const lastLoadedProductIdRef = useRef(null);
   const isUpdateMode = Boolean(productIdFromParams);
-  const sectionStatusLabel = (isUpdateMode || status === 'update') ? 'Actualizando' : 'Creando';
 
   const brandMeta = useMemo(
     () => brandFieldMetaByType(product?.type),
@@ -326,7 +325,7 @@ export default function ProductStudio() {
   return (
     <PageContainer>
       <MenuApp
-        sectionName="Product Studio"
+        sectionName={isUpdateMode ? 'Editando producto' : 'Creando producto'}
         toolbarProps={{
           isUpdateMode,
           navigationVisible,
@@ -362,7 +361,6 @@ export default function ProductStudio() {
               categories={categories}
               activeIngredients={activeIngredients}
               sectionDomIds={sectionDomIds}
-              previewMetrics={previewMetrics}
               product={product}
               onOpenBrandModal={handleOpenBrandModal}
               onAddCategory={configureAddProductCategoryModal}

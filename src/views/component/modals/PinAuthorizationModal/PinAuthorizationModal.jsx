@@ -270,7 +270,7 @@ export const PinAuthorizationModal = ({
         setError(e.message || 'Error obteniendo datos del usuario.');
         setLoading(false);
       }
-    } catch (validationError) {
+    } catch {
       // keep modal open for user to correct inputs
       setLoading(false);
     }
@@ -284,7 +284,7 @@ export const PinAuthorizationModal = ({
       } else {
         await handleSubmitPin(pinValue);
       }
-    } catch (validationError) {
+    } catch {
       // Form validation errors, keep modal open
     }
   };

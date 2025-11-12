@@ -42,7 +42,7 @@ const ClientsList = styled.div`
   align-content: start;
 `
 
-export const ClientListContainer = memo(({
+const ClientListContainerComponent = ({
   paginatedClients,
   loading,
   selectedClient,
@@ -50,7 +50,8 @@ export const ClientListContainer = memo(({
   handleDeleteClient,
   onClose,
   searchTerm
-}) => {  return (
+}) => {
+  return (
     <Body>
       {loading ? (
         <LoadingContainer>
@@ -79,4 +80,7 @@ export const ClientListContainer = memo(({
       )}
     </Body>
   )
-})
+}
+
+export const ClientListContainer = memo(ClientListContainerComponent)
+ClientListContainer.displayName = 'ClientListContainer'

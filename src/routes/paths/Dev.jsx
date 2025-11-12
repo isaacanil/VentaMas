@@ -14,7 +14,7 @@ import Menu from "../../views/templates/system/Menu/Menu";
 import { ROUTE_STATUS } from "../routeMeta";
 import RoutesName from "../routesName"
 
-const { CREATE_BUSINESS, BUSINESSES, CHANGELOG_CREATE, CHANGELOG_MANAGE, ALL_USERS, APP_CONFIG, INVENTORY_MIGRATION, SYNC_DIAGNOSTICS } = RoutesName.DEV_VIEW_TERM;
+const { CREATE_BUSINESS, BUSINESSES, CHANGELOG_CREATE, ALL_USERS, APP_CONFIG, INVENTORY_MIGRATION, SYNC_DIAGNOSTICS } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
 // Puedes granular alguna con enabledEnvs: ['development','staging'] si quieres que salga en staging únicamente.

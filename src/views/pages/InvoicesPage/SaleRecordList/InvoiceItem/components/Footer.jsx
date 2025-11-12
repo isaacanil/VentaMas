@@ -77,17 +77,6 @@ export const Footer = ({ data }) => {
     )
 }
 
-const GreenButton = styled(antd.Button)`
-
-  border-color: #52c41a;
-  color: #52c41a;
-  &:hover,
-  &:focus {
-     // Un verde ligeramente más claro para el hover y focus
-    border-color: #73d13d !important;
-    color: #73d13d !important;
-  }
-`;
 const Container = styled.div`
 display: grid;
 gap: 1em;

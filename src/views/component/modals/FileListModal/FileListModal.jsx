@@ -3,8 +3,8 @@ import { useDispatch } from 'react-redux';
 
 import FileList from './FileList';
 
-const { Button, Tag, Modal, Typography, Empty } = antd;
-const { Text, Title, Paragraph } = Typography;
+const { Button, Modal, Typography, Empty } = antd;
+const { Text } = Typography;
 
 export const FileListModal = ({ data, onClose }) => {
     const { fileList, isOpen } = data;

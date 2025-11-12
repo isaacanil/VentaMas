@@ -16,13 +16,13 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 
+import { fbSignIn, updateAppState, type FbSignInResult, type FbSignInUser } from "@/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
+import ROUTES_PATH from "@/routes/routesName";
+
 import { LogoContainer } from "./Header/LogoContainer";
 
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import type { FormProps } from "antd";
-
-import { fbSignIn, updateAppState, type FbSignInResult, type FbSignInUser } from "@/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
-import ROUTES_PATH from "@/routes/routesName";
 
 
 type LoginFormValues = {

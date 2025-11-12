@@ -20,7 +20,7 @@ export const CreditNoteCreate = () => {
     { id: 3, name: 'Empresa ABC', rncCedula: '111222333' }
   ];
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async () => {
     setLoading(true);
     try {
       // Aquí iría la lógica para guardar la nota de crédito
@@ -32,6 +32,7 @@ export const CreditNoteCreate = () => {
       message.success('Nota de crédito creada exitosamente');
       navigate(CREDIT_NOTE_LIST);
     } catch (error) {
+      console.error(error);
       message.error('Error al crear la nota de crédito');
     } finally {
       setLoading(false);

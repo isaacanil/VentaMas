@@ -13,7 +13,7 @@ import { RequestCard } from './components/RequestCard';
 import { ITEMS_PER_PAGE } from './constants/constants';
 import { useAuthorizationRequests, type StatusFilterValue } from './hooks/useAuthorizationRequests';
 
-import type { AuthorizationRequestListItem } from './types';
+import type { AppUser, AuthorizationRequestListItem } from './types';
 import type { SelectProps } from 'antd';
 
 interface AuthorizationRequestsProps {
@@ -48,8 +48,12 @@ const STATUS_OPTIONS: SelectProps<StatusFilterValue>['options'] = STATUS_VALUES.
 const STATUS_VALUE_SET = new Set<StatusFilterValue>(STATUS_VALUES);
 const DEFAULT_STATUS: StatusFilterValue = 'pending';
 
+const isAppUser = (value: unknown): value is AppUser =>
+  typeof value === 'object' && value !== null;
+
 export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequestsProps) => {
-  const user = useSelector(selectUser);
+  const rawUser: unknown = useSelector(selectUser);
+  const user = isAppUser(rawUser) ? rawUser : null;
   const [searchParams, setSearchParams] = useSearchParams();
   const statusParam = searchParams.get('status');
   const normalizedStatusParam = statusParam && STATUS_VALUE_SET.has(statusParam as StatusFilterValue)
@@ -101,6 +105,19 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
     setSearchParams(params);
   };
 
+  const handleDateRangeChange = (value: unknown) => {
+    if (
+      Array.isArray(value) &&
+      typeof value[0] === 'string' &&
+      typeof value[1] === 'string'
+    ) {
+      setDateRange([value[0], value[1]]);
+      return;
+    }
+
+    setDateRange(null);
+  };
+
   const APPROVER_ROLES = ['admin', 'owner', 'dev', 'manager'];
 
   const totalRequests = filteredRequests.length;
@@ -119,7 +136,7 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
 
   const shouldShowPagination = totalRequests > ITEMS_PER_PAGE;
 
-  const onApprove = async (id: string) => {
+  const onApprove = (id: string) => {
     if (!user) {
       message.warning('Debes iniciar sesión para aprobar solicitudes.');
       return;
@@ -136,7 +153,7 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
       okText: 'Autorizar',
       cancelText: 'Cancelar',
       onOk: async () => {
-        const approvalId = await handleApprove(id);
+        const approvalId = handleApprove(id);
         if (approvalId) {
           await performApproval(approvalId, user);
         }
@@ -163,7 +180,7 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
               <DatePicker
                 mode="range"
                 value={dateRange}
-                onChange={(value: any) => setDateRange(value as [string, string] | null)}
+                onChange={handleDateRangeChange}
                 placeholder="Seleccionar rango de fechas"
                 allowClear
                 className=""
@@ -171,7 +188,13 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
               />
             </FilterGroup>
           </FilterSection>
-          <Button icon={<ReloadOutlined />} onClick={() => load()} loading={loading}>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              void load();
+            }}
+            loading={loading}
+          >
             Actualizar
           </Button>
         </FilterBar>

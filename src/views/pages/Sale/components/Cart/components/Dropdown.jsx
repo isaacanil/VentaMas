@@ -39,7 +39,7 @@ const DropdownItem = styled.div`
   }
 `;
 
-export const Dropdown = ({ trigger, menu, children }) => {
+export const Dropdown = ({ menu, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const handleClick = (item) => {
     setIsOpen(false);
@@ -62,5 +62,4 @@ export const Dropdown = ({ trigger, menu, children }) => {
     </DropdownContainer>
   );
 };
-
 

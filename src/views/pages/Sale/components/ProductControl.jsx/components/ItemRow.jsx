@@ -51,6 +51,8 @@ const ItemRow = memo(({ columns, top, height, products, virtualRow, totalRows })
   );
 });
 
+ItemRow.displayName = 'ItemRow';
+
 ItemRow.propTypes = {
   columns: PropTypes.number.isRequired,
   top: PropTypes.number.isRequired,

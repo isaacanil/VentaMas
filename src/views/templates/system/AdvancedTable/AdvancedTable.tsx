@@ -13,7 +13,6 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '../../../../constants/icons/icons';
-import { selectUser } from '../../../../features/auth/userSlice';
 import { filterData } from '../../../../hooks/search/useSearch';
 import { useWindowWidth } from '../../../../hooks/useWindowWidth';
 import { DatePicker } from '../Dates/DatePicker/DatePicker';
@@ -29,8 +28,19 @@ import useTableFiltering, { useDynamicFilterConfig } from './hooks/useTableFilte
 import useTableSorting from './hooks/useTableSorting';
 
 import type { ColumnConfig } from './types/ColumnTypes';
+import type { DefaultTheme } from 'styled-components';
 
 type TableRow = Record<string, unknown>;
+
+interface UserSliceState {
+  uid?: string | null;
+}
+
+interface UserStoreState {
+  user?: {
+    user?: UserSliceState | null;
+  };
+}
 
 type SortDirection = 'asc' | 'desc' | 'none';
 
@@ -65,7 +75,7 @@ interface ScrollMetrics {
 
 type InternalColumn<Row> = Omit<ColumnConfig, 'cell'> & {
   accessor: string;
-  status?: ColumnConfig['status'] | string;
+  status?: ColumnConfig['status'];
   reorderable?: boolean;
   originalPosition?: number;
   sortableValue?: (value: unknown) => unknown;
@@ -81,7 +91,7 @@ export interface AdvancedTableProps<Row = TableRow> {
   rowSize?: 'small' | 'medium' | 'large';
   rowBorder?: boolean | string;
   headerComponent?: ReactNode;
-  filterUI?: ReactNode | boolean;
+  filterUI?: boolean;
   datePicker?: boolean;
   footerLeftSide?: ReactNode;
   footerRightSide?: ReactNode;
@@ -118,9 +128,26 @@ interface SortUtilities<Row> {
   sortConfig: SortConfig;
 }
 
+const toGroupKey = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value);
+  }
+  if (value instanceof Date) return value.toISOString();
+  if (value == null) return '';
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return '';
+    }
+  }
+  return '';
+};
+
 const groupDataByField = <Row extends TableRow>(data: Row[], field: string): Record<string, Row[]> => (
   data.reduce<Record<string, Row[]>>((acc, item) => {
-    const key = String((item as TableRow)[field]);
+    const key = toGroupKey((item as TableRow)[field]);
     if (!acc[key]) acc[key] = [];
     acc[key].push(item);
     return acc;
@@ -144,6 +171,11 @@ const useWideLayout = (): boolean => {
   return isWide;
 };
 
+const selectUserUid = (state: UserStoreState): string | undefined => {
+  const maybeUser = state.user?.user;
+  return (typeof maybeUser?.uid === 'string') ? maybeUser.uid : undefined;
+};
+
 const AdvancedTableInner = <Row extends TableRow = TableRow>({
   // Behaviour
   groupBy,
@@ -155,7 +187,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
 
   // Custom UI hooks
   headerComponent,
-  filterUI,
+  filterUI = false,
   datePicker = false,
   footerLeftSide,
   footerRightSide,
@@ -187,7 +219,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   getRowId,
 }: AdvancedTableProps<Row>) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const user = useSelector(selectUser);
+  const userUid = useSelector<UserStoreState, string | undefined>(selectUserUid);
 
   const columnsWithExpander = useMemo<InternalColumn<Row>[]>(() => {
     if (!expandedRowRender) return columns;
@@ -227,7 +259,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const [columnOrder, setColumnOrder, resetColumnOrder] = useColumnOrder(
     columnsWithExpander,
     tableName,
-    (user as { uid?: string } | null)?.uid,
+    userUid,
   ) as [
     InternalColumn<Row>[],
     Dispatch<SetStateAction<InternalColumn<Row>[]>>,
@@ -467,18 +499,25 @@ const FilterBar = styled.div`
   padding: 0.2em 0.4em;
 `;
 
+type AdvancedTheme = DefaultTheme & {
+  bg?: {
+    shade?: string;
+    primary?: string;
+  };
+};
+
 const Container = styled.div<{ $hasTitle: boolean; $hasToolbar: boolean }>`
   border: var(--border-primary);
   height: 100%;
   display: grid;
-  background-color: ${(props) => props.theme.bg.shade};
+  background-color: ${({ theme }) => (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
   border-radius: 0.4em;
   overflow: hidden;
 
-  grid-template-rows: ${(props) => (
+  grid-template-rows: ${({ $hasTitle, $hasToolbar }) => (
     [
-      props.$hasTitle ? 'min-content' : null,
-      props.$hasToolbar ? 'min-content' : null,
+      $hasTitle ? 'min-content' : null,
+      $hasToolbar ? 'min-content' : null,
       '1fr',
     ].filter(Boolean).join(' ')
   )};
@@ -489,7 +528,7 @@ const TableTitle = styled.div`
   font-size: 1.1em;
   height: min-content;
   font-weight: 600;
-  background-color: ${(props) => props.theme.bg.primary};
+  background-color: ${({ theme }) => (theme as AdvancedTheme).bg?.primary ?? 'transparent'};
   border-bottom: var(--border-primary);
 `;
 

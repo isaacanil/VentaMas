@@ -2,7 +2,7 @@ import { Button } from "antd";
 import { useDispatch } from "react-redux";
 
 import { icons } from "../../../../../constants/icons/icons";
-import { useDialog } from "../../../../../Context/Dialog/DialogContext";
+import { useDialog } from "../../../../../Context/Dialog";
 import { addNotification } from "../../../../../features/notification/notificationSlice";
 import { ButtonGroup } from "../Button"
 

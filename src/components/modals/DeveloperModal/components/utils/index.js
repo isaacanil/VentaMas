@@ -1,4 +1,5 @@
-import { CommandPatternUtils } from './CommandPatternUtils_clean.js';
+// Prefer the stable implementation; avoid depending on experimental _clean variant
+import { CommandPatternUtils } from './CommandPatternUtils.js';
 import { HandlerFactoryUtils } from './HandlerFactoryUtils.js';
 import { OutputUtils } from './OutputUtils.js';
 import { SystemInfoUtils } from './SystemInfoUtils.js';

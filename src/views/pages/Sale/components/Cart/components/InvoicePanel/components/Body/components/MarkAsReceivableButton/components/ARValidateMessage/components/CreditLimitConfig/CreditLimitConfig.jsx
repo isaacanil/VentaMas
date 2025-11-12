@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 const { Text } = Typography;
 
-const CreditLimitModal = ({ isOpen, onClose, clientId }) => {
+const CreditLimitModal = ({ isOpen, onClose, onSave, currentCreditLimit }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
 
@@ -11,7 +11,9 @@ const CreditLimitModal = ({ isOpen, onClose, clientId }) => {
         try {
             setLoading(true);
             const values = await form.validateFields();
-            await onSave(values);
+            if (onSave) {
+                await onSave(values);
+            }
             form.resetFields();
             onClose();
         } catch (error) {

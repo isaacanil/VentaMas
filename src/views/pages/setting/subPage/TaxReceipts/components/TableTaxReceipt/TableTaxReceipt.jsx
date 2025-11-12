@@ -1,5 +1,5 @@
 import { FileOutlined, ExclamationCircleOutlined, EditOutlined, StopOutlined } from '@ant-design/icons'
-import { Tooltip, Modal, message, Form } from 'antd'
+import { Tooltip, Modal, message } from 'antd'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
@@ -11,10 +11,8 @@ import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxRec
 import TaxReceiptForm from '../TaxReceiptForm/TaxReceiptForm'
 
 export const TableTaxReceipt = ({ array, setData }) => {
-  const [form] = Form.useForm();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentEditItem, setCurrentEditItem] = useState(null);
-  const [currentEditIndex, setCurrentEditIndex] = useState(null);
   const [authModalVisible, setAuthModalVisible] = useState(false);
   const user = useSelector(selectUser);
   
@@ -66,7 +64,6 @@ export const TableTaxReceipt = ({ array, setData }) => {
     const itemToEdit = array[index];
     if (itemToEdit && itemToEdit.data) {
       setCurrentEditItem({ ...itemToEdit.data });
-      setCurrentEditIndex(index);
       setEditModalVisible(true);
     } else {
       console.error('Intento de editar un elemento inválido en el índice:', index, itemToEdit);
@@ -77,14 +74,6 @@ export const TableTaxReceipt = ({ array, setData }) => {
   const formatSequence = (seq, length) => {
     if (seq === undefined || length === undefined) return seq;
     return String(seq).padStart(length, '0');
-  };
-  const handleRestoreReceipt = (receiptId) => {
-    const newArray = array.map(item => 
-      item.data.id === receiptId
-        ? { ...item, data: { ...item.data, disabled: false } }
-        : item
-    );
-    setData(newArray);
   };
   
   const handleAuthorizationAdded = (updatedReceipt) => {

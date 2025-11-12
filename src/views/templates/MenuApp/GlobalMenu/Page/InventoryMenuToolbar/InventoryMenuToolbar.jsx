@@ -54,6 +54,7 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
             });
             message.success('Archivo importado correctamente.');
         } catch (error) {
+            console.error('Error al importar productos:', error);
             message.error('Hubo un problema al importar el archivo.');
         } finally {
             // Dejamos el modal visible 2 segundos más para que se vea el 100%

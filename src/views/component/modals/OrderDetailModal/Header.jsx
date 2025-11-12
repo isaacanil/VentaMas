@@ -28,11 +28,3 @@ const Title = styled.p`
     font-weight: 600;
     
 `
-
-const CloseButton = styled.button`
-    background-color: transparent;
-    border: none;
-    color: white;
-    font-size: 1.5em;
-    cursor: pointer;
-`

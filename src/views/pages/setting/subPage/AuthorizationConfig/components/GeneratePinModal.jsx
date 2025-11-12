@@ -58,51 +58,6 @@ const UserName = styled.span`
   color: #1f1f1f;
 `;
 
-const Username = styled.span`
-  font-size: 14px;
-  color: #595959;
-`;
-
-const AlertCard = styled.div`
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 16px 18px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #fff1f0 0%, #fff2e8 100%);
-  border: 1px solid #ffccc7;
-  color: #ad2102;
-`;
-
-const AlertIcon = styled.div`
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 85, 0, 0.12);
-  color: inherit;
-  font-size: 20px;
-  flex-shrink: 0;
-`;
-
-const AlertContent = styled.div`
-  display: grid;
-  gap: 4px;
-`;
-
-const AlertTitle = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-`;
-
-const AlertDescription = styled.span`
-  font-size: 13px;
-  line-height: 1.45;
-  opacity: 0.85;
-`;
-
 const Section = styled.div`
   display: grid;
   gap: 16px;
@@ -139,46 +94,6 @@ const ModuleDescription = styled.span`
   font-size: 12px;
   color: #595959;
   line-height: 1.4;
-`;
-
-const SecurityCard = styled.div`
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 16px 18px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
-  border: 1px solid #91d5ff;
-  color: #0050b3;
-`;
-
-const SecurityIcon = styled.div`
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 80, 179, 0.12);
-  color: inherit;
-  font-size: 20px;
-  flex-shrink: 0;
-`;
-
-const SecurityContent = styled.div`
-  display: grid;
-  gap: 6px;
-`;
-
-const SecurityTitle = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-`;
-
-const SecurityDescription = styled.span`
-  font-size: 13px;
-  line-height: 1.5;
-  opacity: 0.9;
 `;
 
 const ActionBar = styled.div`

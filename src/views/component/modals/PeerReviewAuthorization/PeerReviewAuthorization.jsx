@@ -64,7 +64,7 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit, descripti
 
             resetForm()
             setIsOpen(false)
-        } catch (validationError) {
+        } catch {
             // Form validation failed
             return;
         }
@@ -158,4 +158,3 @@ export const PeerReviewAuthorization = ({ isOpen, setIsOpen, onSubmit, descripti
         </Modal>
     )
 }
-

@@ -107,4 +107,5 @@ export const InvoiceTemplate2 = React.forwardRef(({ data, ignoreHidden }, ref) =
   ) : null;
 });
 
+InvoiceTemplate2.displayName = 'InvoiceTemplate2';
 

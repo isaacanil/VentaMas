@@ -1,15 +1,13 @@
-import * as antd from 'antd'
-import React, { useEffect, useMemo, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import styled from 'styled-components'
+import { Button, Input, message } from "antd";
+import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
+import styled from "styled-components";
 
-import { icons } from '../../../../../../constants/icons/icons'
-import { addProductInvoiceForm, changeAmountToBuyProduct, deleteProductInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice'
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice'
-
-const { Button, Input } = antd
-import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
-import { getTotalPrice } from '../../../../../../utils/pricing'
+import { icons } from "../../../../../../constants/icons/icons";
+import { addProductInvoiceForm, changeAmountToBuyProduct, deleteProductInvoiceForm } from "../../../../../../features/invoice/invoiceFormSlice";
+import { useGetProducts } from "../../../../../../firebase/products/fbGetProducts";
+import { useFormatPrice } from "../../../../../../hooks/useFormatPrice";
+import { getTotalPrice } from "../../../../../../utils/pricing";
 
 import { getCategoryName, getCategoryStats } from './productDataUtils'
 import { ProductFilterToolbar } from './ProductFilterToolbar'
@@ -115,12 +113,12 @@ export const Products = ({ invoice, isEditLocked = false }) => {
             title: 'Cantidad',
             dataIndex: 'amountToBuy',
             key: 'amountToBuy',
-            render: (text, record, index) => (
+            render: (_, record) => (
                 <Counter>
                     <Button
                         onClick={() => {
                             if (readOnly) {
-                                antd.message.warning('No puedes modificar productos después de 48 horas.');
+                                message.warning('No puedes modificar productos después de 48 horas.');
                                 return;
                             }
                             dispatch(changeAmountToBuyProduct({ product: record, type: "subtract" }))
@@ -132,7 +130,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
                         value={record.amountToBuy}
                         onChange={(e) => {
                             if (readOnly) {
-                                antd.message.warning('No puedes modificar productos después de 48 horas.');
+                                message.warning('No puedes modificar productos después de 48 horas.');
                                 return;
                             }
                             const value = e.target.value;
@@ -146,7 +144,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
                     <Button
                         onClick={() => {
                             if (readOnly) {
-                                antd.message.warning('No puedes modificar productos después de 48 horas.');
+                                message.warning('No puedes modificar productos después de 48 horas.');
                                 return;
                             }
                             dispatch(changeAmountToBuyProduct({ product: record, type: "add" }))
@@ -179,7 +177,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
                 <Button
                     onClick={() => {
                         if (readOnly) {
-                            antd.message.warning('No puedes modificar productos después de 48 horas.');
+                            message.warning('No puedes modificar productos después de 48 horas.');
                             return;
                         }
                         dispatch(deleteProductInvoiceForm({ product: record, }))
@@ -214,7 +212,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
 
     const showProductListModal = () => {
         if (readOnly) {
-            antd.message.warning('No puedes modificar productos después de 48 horas.');
+            message.warning('No puedes modificar productos después de 48 horas.');
             return;
         }
         setProductListModalVisible(true)

@@ -3,15 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import { FISCAL_RECEIPTS_ALERT_CONFIG } from '../../../../../config/fiscalReceiptsAlertConfig'
-import { useDialog } from '../../../../../Context/Dialog/DialogContext'
+import { useDialog } from '../../../../../Context/Dialog'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { getTaxReceiptData, selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
-import { fbGetFiscalAlertsConfig } from '../../../../../firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig'
-import { fbUpdateFiscalAlertsConfig } from '../../../../../firebase/Settings/fiscalAlertsConfig/fbUpdateFiscalAlertsConfig'
 import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt'
 import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt'
-import { fbUpdateTaxReceipt } from '../../../../../firebase/taxReceipt/fbUpdateTaxReceipt'
 import { rebuildNcfLedger } from '../../../../../firebase/taxReceipt/rebuildNcfLedger'
 import { useCompareArrays } from '../../../../../hooks/useCompareArrays'
 import { useLoadingStatus } from '../../../../../hooks/useLoadingStatus'
@@ -35,9 +31,6 @@ export const TaxReceiptSetting = () => {
 
   const [taxReceiptLocal, setTaxReceiptLocal] = useState([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [alertConfig, setAlertConfig] = useState(null);
-  const [loadingAlertConfig, setLoadingAlertConfig] = useState(true);
   const [rebuildingLedger, setRebuildingLedger] = useState(false);
 
   const userId = user?.uid || user?.id || null;
@@ -77,63 +70,6 @@ export const TaxReceiptSetting = () => {
     dispatch(getTaxReceiptData(serializedTaxReceipt))
     setTaxReceiptLocal(serializedTaxReceipt)
   }, [taxReceipt, dispatch])
-
-  // Cargar configuración de alertas al montar el componente
-  useEffect(() => {
-    const loadAlertConfig = async () => {
-      if (user?.id) {
-        try {
-          setLoadingAlertConfig(true);
-          const config = await fbGetFiscalAlertsConfig(user);
-          console.log('Configuración de alertas cargada:', config);
-          setAlertConfig(config);
-        } catch (error) {
-          console.error('Error al cargar configuración de alertas:', error);
-          // Usar configuración por defecto en caso de error
-          const defaultConfig = {
-            alertsEnabled: true,
-            globalThresholds: {
-              warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
-              critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD
-            },
-            customThresholds: {}
-          };
-          setAlertConfig(defaultConfig);
-          message.error('Error al cargar la configuración de alertas, usando valores por defecto');
-        } finally {
-          setLoadingAlertConfig(false);
-        }
-      } else {
-        // Si no hay usuario, usar configuración por defecto inmediatamente
-        const defaultConfig = {
-          alertsEnabled: true,
-          globalThresholds: {
-            warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
-            critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD
-          },
-          customThresholds: {}
-        };
-        setAlertConfig(defaultConfig);
-        setLoadingAlertConfig(false);
-      }
-    };
-
-    loadAlertConfig();
-  }, [user]);
-
-  const handleSave = useCallback(async () => {
-    setIsSaving(true);
-    try {
-      await fbUpdateTaxReceipt(user, taxReceiptLocal);
-      message.success('Comprobantes fiscales actualizados correctamente');
-    } catch (error) {
-      message.error('Error al actualizar los comprobantes fiscales. Por favor, inténtalo de nuevo más tarde.');
-    } finally {
-      setIsSaving(false);
-    }
-  }, [user, taxReceiptLocal]);
-
-  const handleCancel = () => setTaxReceiptLocal(taxReceipt);
 
   const handleTaxReceiptEnabled = () => {
     if (taxReceiptEnabled) {
@@ -245,24 +181,9 @@ export const TaxReceiptSetting = () => {
     });
   }, [configuredPrefixes, user?.businessID, userId]);
 
-  const handleAlertConfigChange = async (config) => {
-    setAlertConfig(config);
-    
-    // Guardar en Firebase
-    try {
-      await fbUpdateFiscalAlertsConfig(user, config);
-      message.success('Configuración de alertas guardada correctamente');
-    } catch (error) {
-      console.error('Error al guardar configuración de alertas:', error);
-      message.error('Error al guardar la configuración de alertas');
-    }
-  };
-
   // Definimos entradas para el control de carga con valores explícitos
   const loadEntries = [
     { loading: loadingReceipts === true, tip: 'Cargando comprobantes fiscales...' },
-    { loading: isSaving === true, tip: 'Guardando comprobantes fiscales...' },
-    { loading: loadingAlertConfig === true, tip: 'Cargando configuración de alertas...' },
     { loading: rebuildingLedger === true, tip: 'Reconstruyendo ledger de NCF...' },
   ];
 

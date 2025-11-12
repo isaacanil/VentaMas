@@ -1,6 +1,6 @@
 import { InputNumber, Table, Form } from 'antd';
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
 import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
@@ -64,7 +64,6 @@ const columns = [
 export const PriceCalculator = () => {
     const { product } = useSelector(selectUpdateProductData);
     const [tableData, setTableData] = useState([]);
-    const dispatch = useDispatch();
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);    
 
     const calculateTableData = (productData) => {

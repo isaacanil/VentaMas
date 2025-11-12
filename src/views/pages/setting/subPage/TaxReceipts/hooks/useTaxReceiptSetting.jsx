@@ -3,7 +3,7 @@ import { message } from 'antd';
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { useDialog } from '../../../../../../Context/Dialog/DialogContext';
+import { useDialog } from '../../../../../../Context/Dialog';
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { getTaxReceiptData, selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
 import { fbEnabledTaxReceipt } from '../../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt';

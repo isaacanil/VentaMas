@@ -1,17 +1,14 @@
-
-
 import * as antd from 'antd';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import React, { useRef, useState } from 'react';
-
-const { Modal, Input, Button, Form, Checkbox, Spin } = antd;
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux';
 
 import { SelectBarcodePrintModal, toggleBarcodeModal } from '../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
 
 import { BarCode } from './Barcode';
 
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+const { Modal, Input, Button, Form, Spin } = antd;
 
 export const BarcodePrintModal = () => {
     const { isOpen, product } = useSelector(SelectBarcodePrintModal)
@@ -148,5 +145,3 @@ export const BarcodePrintModal = () => {
         </>
     );
 };
-
-

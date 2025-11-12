@@ -36,7 +36,7 @@ const StyledButton = styled(Button)`
 export function WarehouseForm() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { isOpen, formData, loading, error } = useSelector(selectWarehouseModalState);
+  const { isOpen, formData, loading } = useSelector(selectWarehouseModalState);
   const [form] = Form.useForm();
 
   useEffect(() => {

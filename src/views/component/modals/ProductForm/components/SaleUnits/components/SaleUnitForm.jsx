@@ -150,16 +150,6 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
               <Input placeholder="Ejemplo: Caja" />
             </Form.Item>
             <Grid>
-
-            <Form.Item
-              tooltip="Cantidad de productos en stock"
-              label="Stock"
-            >
-          
-
-              //here we calculate the stock
-        
-            </Form.Item>
             <Form.Item
               name="packSize"
              tooltip="Cantidad de productos en un paquete"

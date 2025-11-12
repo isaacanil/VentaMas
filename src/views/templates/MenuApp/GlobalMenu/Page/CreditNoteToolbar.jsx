@@ -18,7 +18,7 @@ import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
 
 
 
-export const CreditNoteToolbar = ({ side = 'left', searchData, setSearchData, data }) => {
+export const CreditNoteToolbar = ({ side = 'left', data }) => {
     const matchWithCreditNote = useMatch("/credit-note")
     const dispatch = useDispatch()
     const [isExporting, setIsExporting] = useState(false)

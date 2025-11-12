@@ -17,7 +17,7 @@ export const HandleConfirmationAction = (type, navigate, dispatch, resource) => 
         case CASH_RECONCILIATION.REDIRECT_CR_OPENING:
             return redirectToCashReconciliationOpening(navigate, dispatch);
         case CASH_RECONCILIATION.CHECK_IS_OPEN:
-            return handlerExistingCROpen(dispatch, resource);
+            return handlerExistingCROpen(navigate, dispatch, resource);
         
         default:
             return dispatch(closeUserNotification())

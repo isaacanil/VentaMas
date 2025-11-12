@@ -5,7 +5,7 @@ import styled from 'styled-components'
 
 import { getBarcodeInfo, generateCorrectionSuggestions } from '../../../../../../../utils/barcode/barcode'
 
-const { Modal, Space, Input, Button, Typography, Tag, Alert, Card, Divider } = ant
+const { Modal, Space, Button, Alert } = ant
 
 // Styled Components
 const WorkingCodeSection = styled.div`

@@ -3,7 +3,6 @@ import {
   faReceipt
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react'
 import styled from 'styled-components'
 
 import { formatDate } from '../../../../../../../../../utils/formatDate';
@@ -12,7 +11,7 @@ import { formatPrice } from '../../../../../../../../../utils/formatPrice'
 import { Payment } from './components/Payment';
 
 
-export const AccountCard = ({ account, accountNumber, date, frequency, balance, installments, installmentAmount, lastPayment, lastPaymentDate, isActive }) => {
+export const AccountCard = ({ account, frequency, balance, installments, installmentAmount, lastPayment, lastPaymentDate, isActive }) => {
   // const formatDate = (dateValue) => {
   //   console.log(dateValue)
   //   if (!dateValue) return 'N/A';
@@ -177,16 +176,6 @@ const FrequencyTag = styled.div`
   color: #666;
 `;
 
-const StatusTag = styled.div`
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: ${({ $isActive }) => $isActive ? `#e6f7ff` : '#fffbe6'};
-  color: ${({ $isActive }) => $isActive ? '#0050b3' : '#ad4e00'};
-`;
-
 const FinancialDetails = styled.div`
 
 `;
@@ -209,15 +198,6 @@ const DetailGroup = styled.div`
   border: 1px solid #f0f0f0;
   
   justify-content: flex-start;
-`;
-
-const GroupTitle = styled.span`
-  font-size: 10px;
-  color: #666;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-
 `;
 
 const GroupContent = styled.div`
@@ -264,5 +244,4 @@ const ActionBar = styled.div`
 export const Payments = styled.div`
  
 `;
-
 

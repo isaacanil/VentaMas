@@ -94,7 +94,9 @@ export const DetailModal = ({
                 type="primary"
                 icon={<CheckOutlined />}
                 disabled={actionsDisabled || disableApprove}
-                onClick={() => onApprove(detailId)}
+                onClick={() => {
+                  void onApprove(detailId);
+                }}
               >
                 Aprobar
               </Button>
@@ -102,7 +104,9 @@ export const DetailModal = ({
           </Tooltip>
           <Popconfirm
             title="¿Rechazar solicitud?"
-            onConfirm={() => onReject(detailId)}
+            onConfirm={() => {
+              void onReject(detailId);
+            }}
             okText="Sí"
             cancelText="No"
             disabled={actionsDisabled || disableReject}

@@ -59,7 +59,6 @@ const clampInt = (n, min, max) => {
 const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
   // Número de páginas a imprimir; cada página contiene 4 códigos
   const [pagesCount, setPagesCount] = useState(1);
-  const [codesPerPage, setCodesPerPage] = useState(4);
   const [barcodeType, setBarcodeType] = useState('code128');
   const [isLoading, setIsLoading] = useState(false);
   const [printBarcodes, setPrintBarcodes] = useState([]);
@@ -89,7 +88,6 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
   const handleAfterPrint = () => {
     setPrintBarcodes([]);
     setPagesCount(1);
-    setCodesPerPage(4);
     setBarcodeType('code128');
     onClose();
   };

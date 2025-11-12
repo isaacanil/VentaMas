@@ -1,7 +1,6 @@
 import * as ant from 'antd'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import styled from 'styled-components'
 
 import { unitsOfMeasure } from '../../../../../../constants/unitsOfMeasure'
 import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
@@ -10,13 +9,13 @@ import { selectUpdateProductData } from '../../../../../../features/updateProduc
 import AdjustInventoryModal from './AdjustInventoryModal'
 
 
-const { Card, Space, InputNumber, Row, Button, Col, Select, Checkbox, Form } = ant
+const { Card, InputNumber, Row, Col, Select, Checkbox, Form } = ant
 
 export const InventoryInfo = () => {
     const { product, status } = useSelector(selectUpdateProductData)
     const [isModalVisible, setIsModalVisible] = useState(false);
-    // Abre el modal de ajuste de inventario
-    const showModal = () => {
+    // Placeholder hasta implementar acciones para mostrar el modal
+    const _showModal = () => {
         setIsModalVisible(true);
     };
 
@@ -26,7 +25,7 @@ export const InventoryInfo = () => {
     };
 
     // Guarda los cambios de ajuste de inventario
-    const saveAdjustments = (newStock, newTotalUnit) => {
+    const saveAdjustments = (_newStock, _newTotalUnit) => {
 
     };
     return (
@@ -173,7 +172,7 @@ export const InventoryInfo = () => {
                                 <Select>
                                     {
                                         unitsOfMeasure.map((unit) => (
-                                            <Select.Option value={unit.unit}>
+                                            <Select.Option key={unit.unit} value={unit.unit}>
                                                 {unit.unit}
                                             </Select.Option>
                                         ))
@@ -200,11 +199,3 @@ export const InventoryInfo = () => {
         </Card>
     )
 }
-
-const Grid = styled.div`
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    align-items: end;
-    /* align-content: center; */
-`;

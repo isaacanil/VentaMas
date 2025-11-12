@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import { useWarehouseHierarchy } from '../../../../../firebase/warehouse/warehouseNestedServise';
 import { DatePicker } from '../../../../templates/system/Dates/DatePicker/DatePicker';
-import { shortenLocationPath } from '../../../InventoryControl/components/inventoryTableUtils.jsx';
+import { shortenLocationPath } from '../../../InventoryControl/components/inventoryTableUtils.js';
 
 const Bar = styled.div`
   display: flex;

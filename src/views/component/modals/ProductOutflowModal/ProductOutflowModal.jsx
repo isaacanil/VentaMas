@@ -28,22 +28,22 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
     dispatch(deleteData())
   }
 
-  const handleDeleteProductOutflow = (item, idDoc) => {
+  const handleDeleteProductOutflow = (item) => {
     fbRemoveOutputRestoreQuantity(user, item)
     dispatch(deleteProductFromProductOutflow({ id: item.id }))
   }
   const handleUpdateProductOutflow = async () => {
     try {
       await fbUpdateProductOutflow(user, outFlowProduct.data)
-    } catch (err) {
-      // Handle error
+    } catch (error) {
+      console.error('Error updating product outflow', error)
     }
   }
   const handleAddOutflow = async () => {
     try {
       await fbAddProductOutFlow(user, outFlowProduct.data);
-    } catch (err) {
-      // Handle error
+    } catch (error) {
+      console.error('Error creating product outflow', error)
     }
   }
   const handleSubmit = async () => {
@@ -68,7 +68,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
       nameRef={mode === 'create' ? 'Agregar Salida de Producto' : 'Editar Salida de Producto'}
       handleSubmit={handleSubmit}
       close={onClose}
-      children={
+    >
         <Container>
           <Header>
             <OutputProductEntry />
@@ -118,7 +118,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
                           <Button
                             danger
                             icon={icons.operationModes.delete}
-                            onClick={() => handleDeleteProductOutflow(item, outFlowProduct.data.id)}
+                            onClick={() => handleDeleteProductOutflow(item)}
                           />
                         </div>
                       </Row>
@@ -136,9 +136,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
             </Table>
           </Body>
         </Container>
-
-      }
-    />
+    </Modal>
   )
 }
 const Container = styled.div`

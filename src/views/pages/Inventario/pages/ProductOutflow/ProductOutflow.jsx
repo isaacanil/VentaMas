@@ -41,7 +41,7 @@ export const ProductOutflow = () => {
       notification.success({
         message: 'Salida de producto eliminada'
       });
-    } catch (err) {
+    } catch {
       notification.error({
         message: 'Error al eliminar la salida de producto'
       });
@@ -204,7 +204,6 @@ const TableHeader = styled.div`
     `}
   
 `;
-const Label = styled.div``;
 const Row = styled.div`
   display: grid;
   grid-template-columns: 6em  1fr 1fr 5em;
@@ -217,6 +216,4 @@ const Row = styled.div`
     background-color: #f5f5f5;
   }
 `;
-
-
 

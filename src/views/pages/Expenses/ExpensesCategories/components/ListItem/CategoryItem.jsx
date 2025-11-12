@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 
@@ -12,8 +12,6 @@ import { useClickOutSide } from '../../../../../../hooks/useClickOutSide'
 import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
 
 export const CategoryItem = ({ cat, Row, Col }) => {
-  const dispatch = useDispatch();
-
   const user = useSelector(selectUser);
 
   const [mode, setMode] = useState(null);
@@ -40,7 +38,7 @@ export const CategoryItem = ({ cat, Row, Col }) => {
     EditRef.current.select();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = () => {
     setMode('DELETE');
     setShowConfirmBtn(true);
   };
@@ -121,9 +119,6 @@ export const CategoryItem = ({ cat, Row, Col }) => {
     </Row>
   );
 };
-
-const Container = styled.div`
-`
 
 const CategoryName = styled.input`
 margin-left: 1em;

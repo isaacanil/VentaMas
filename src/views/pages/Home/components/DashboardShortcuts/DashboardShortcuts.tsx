@@ -9,12 +9,23 @@ import { FeatureCardList } from '../FeatureCardList/FeatureCardList';
 import type { FeatureCardData } from '../FeatureCardList/FeatureCard';
 import type { JSX } from 'react';
 
-type MaybeUser = ReturnType<typeof selectUser>;
+const isFeatureCardData = (card: unknown): card is FeatureCardData => {
+  if (!card || typeof card !== 'object') return false;
+  const candidate = card as Partial<FeatureCardData>;
+  return typeof candidate.title === 'string' && typeof candidate.category === 'string';
+};
+
+const normalizeCardData = (data: unknown): FeatureCardData[] => {
+  if (!Array.isArray(data)) {
+    return [];
+  }
+  return data.filter(isFeatureCardData);
+};
 
 export const DashboardShortcuts = (): JSX.Element => {
-  const user = useSelector(selectUser);
-  const cardData = (getMenuCardData(user) ?? []) as FeatureCardData[];
-  const developer = (getDeveloperFeaturesData(user) ?? []) as FeatureCardData[];
+  const user: unknown = useSelector(selectUser);
+  const cardData = normalizeCardData(getMenuCardData(user));
+  const developer = normalizeCardData(getDeveloperFeaturesData());
   const { abilities } = userAccess();
 
   return (

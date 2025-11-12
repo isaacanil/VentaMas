@@ -16,7 +16,7 @@ const Spinner = () => (
 )
 
 export const CashupInvoicesOverview = memo(({ invoices = [], isOpen, onClose }) => {
-    return (
+  return (
         <Drawer
             open={isOpen}
             onClose={onClose}
@@ -44,6 +44,8 @@ export const CashupInvoicesOverview = memo(({ invoices = [], isOpen, onClose }) 
         </Drawer>
     )
 })
+
+CashupInvoicesOverview.displayName = 'CashupInvoicesOverview'
 const Container = styled.div`
     height: 100%;
     width: 100%;

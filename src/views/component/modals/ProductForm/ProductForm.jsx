@@ -1,14 +1,10 @@
 import { Tabs } from 'antd';
 import React from 'react'
-import { useSelector } from 'react-redux';
-
-import { selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice';
 
 import { General } from './components/General/General';
 
 
 export const ProductForm = ({ showImageManager }) => {
-    const { status } = useSelector(selectUpdateProductData)
     const items = [
         {
             key: '1',

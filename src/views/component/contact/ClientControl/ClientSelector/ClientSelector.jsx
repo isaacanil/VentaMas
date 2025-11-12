@@ -5,7 +5,6 @@ import { OPERATION_MODES } from '../../../../../constants/modes'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import {
   selectClient,
-  selectClientMode,
   selectClientSearchTerm,
   selectIsOpen,
   setClientMode,
@@ -39,7 +38,6 @@ export const ClientSelector = () => {
   const dispatch = useDispatch();
   const isOpen = useSelector(selectIsOpen);
   const user = useSelector(selectUser);
-  const mode = useSelector(selectClientMode);
   const selectedClient = useSelector(selectClient);
   const searchTerm = useSelector(selectClientSearchTerm);
   const { clients, loading } = useFbGetClientsOnOpen({ isOpen});

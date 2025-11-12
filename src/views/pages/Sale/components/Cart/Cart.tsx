@@ -1,16 +1,27 @@
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import {
-  SelectCartIsOpen,
-} from '../../../../../features/cart/cartSlice'
 import { ClientControl } from '../../../../component/contact/ClientControl/ClienteControl'
 
 import InvoiceSummary from './components/InvoiceSummary/InvoiceSummary'
 import { ProductsList } from './components/ProductsList/ProductsLit'
 
-export const Cart = (): JSX.Element => {
-  const isOpen = useSelector(SelectCartIsOpen)
+type CartStateShape = {
+  cart?: {
+    isOpen?: boolean
+  }
+}
+
+type CartTheme = {
+  bg?: {
+    shade?: string
+  }
+}
+
+export const Cart = () => {
+  const isOpen = useSelector<CartStateShape, boolean>(
+    (state) => Boolean(state.cart?.isOpen)
+  )
   return (
     <Container $isOpen={isOpen}>
       <ClientControl />
@@ -22,7 +33,7 @@ export const Cart = (): JSX.Element => {
 
 const Container = styled.div<{ $isOpen: boolean }>`
   position: relative;
-   background-color: ${({ theme }) => theme.bg.shade};
+   background-color: ${({ theme }) => (theme as CartTheme).bg?.shade ?? 'var(--White)'};
   //  max-width: 30em;
    width: 26em;
    overflow: hidden;

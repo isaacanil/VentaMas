@@ -73,9 +73,6 @@ const Icon = styled.div`
         color: gray;
     }
 `
-const Label = styled.label`
-    white-space: nowrap;
-`
 const Resumen = styled.div`
      display: grid;
      width: min-content;

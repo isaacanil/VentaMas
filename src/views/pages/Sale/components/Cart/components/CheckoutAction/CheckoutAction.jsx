@@ -6,7 +6,7 @@ import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button'
 import { Receipt } from '../../../../../checkout/Receipt'
 
-const { Typography, Modal } = antd
+const { Modal } = antd
 export const CheckoutAction = ({
     TotalPurchaseRef,
     ProductSelected,

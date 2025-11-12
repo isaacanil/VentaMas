@@ -25,15 +25,11 @@ export const InvoicePreview = () => {
     client = {},
     products = [],
     paymentMethod = [],
-    totalPurchase = {},
-    date = {},
     sourceOfPurchase = "",
-    user = {},
     totalShoppingItems = {},
     totalTaxes = {},
     payment = {},
     totalPurchaseWithoutTaxes = {},
-    creditNotePayment = []
   } = invoicePreviewSelected?.data || {};
 
   // Obtener aplicaciones de notas de crédito para esta factura
@@ -97,10 +93,4 @@ const Group = styled.div`
   
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
-`;
-
-const Title = styled.h2`
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
 `;

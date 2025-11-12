@@ -15,7 +15,9 @@ export const CreateBusiness = () => {
       </Head>
       <Body>
 
-        {businesses.map(({ business }) => <div>{business.name}</div>)}
+        {businesses.map(({ business }, index) => (
+          <div key={business?.id ?? business?.name ?? index}>{business.name}</div>
+        ))}
       </Body>
     </Container>
   )

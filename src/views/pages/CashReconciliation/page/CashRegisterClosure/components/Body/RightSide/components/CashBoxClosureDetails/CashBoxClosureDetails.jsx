@@ -7,7 +7,7 @@ import { useFormatNumber } from '../../../../../../../../../../hooks/useFormatNu
 import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel'
 import { CashCountMetaData } from '../../CashCountMetaData'
 
-export const CashBoxClosureDetails = ({ invoices, loading, expenses = [], expensesLoading = false }) => {
+export const CashBoxClosureDetails = ({ invoices, loading, expenses = [] }) => {
   const cashCount = useSelector(selectCashCount)
   const { totalSystem, totalCharged, totalDiscrepancy, totalExpenses } = CashCountMetaData(cashCount, invoices, expenses)
   

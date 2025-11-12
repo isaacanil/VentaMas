@@ -66,8 +66,8 @@ export const AccountReceivableList = () => {
     const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
     const [processedAccount, setProcessedAccount] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
-    const [sortDirection, setSortDirection] = useState('asc');
+    const sortCriteria = 'defaultCriteria';
+    const sortDirection = 'asc';
     const [clientType, setClientType] = useState('normal'); // 'normal' o 'insurance'
 
     const accounts = useListenAccountsReceivable(user, datesSelected);

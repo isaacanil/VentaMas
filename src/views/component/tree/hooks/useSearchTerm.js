@@ -21,11 +21,7 @@ const useSearchTerm = (data, manuallyClosedNodes, setSearchExpandedNodes) => {
           return acc;
         }, {});
         
-        setSearchExpandedNodes((prev) => {
-          // Mantener solo los nodos que coinciden con la búsqueda actual
-          const newExpanded = { ...filtered };
-          return newExpanded;
-        });
+        setSearchExpandedNodes({ ...filtered });
       });
     }, 300); // Debounce para evitar múltiples actualizaciones
 

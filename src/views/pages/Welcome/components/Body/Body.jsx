@@ -137,12 +137,6 @@ const FeaturesSection = styled.div`
   width: 100%;
 `
 
-const TestimonialsSection = styled.div`
-  margin: 0;
-  padding: 0;
-  width: 100%;
-`
-
 const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;

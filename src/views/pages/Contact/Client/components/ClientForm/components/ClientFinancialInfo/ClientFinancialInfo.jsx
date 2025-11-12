@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { usePendingBalance } from '../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
 import { useClientAccountsReceivable } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivable';
 import { useClientAccountsReceivableCounts } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivableCounts';
 import { useClientPendingBalance } from '../../../../../../../../firebase/accountsReceivable/useClientPendingBalance';
@@ -29,7 +28,6 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
   const [currentPageClosed, setCurrentPageClosed] = useState(1);
   const [filterStatus, setFilterStatus] = useState('open');
   const isActiveValue = filterStatus === 'open';
-  const [pendingBalance2, setPendingBalance2] = useState(0)
 
   // listener dinámico según filtro
   const { accounts: displayedAccountsRaw } = useClientAccountsReceivable({
@@ -50,10 +48,6 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
   
 
   const { balance: pendingBalance } = useClientPendingBalance({ user, clientId: client?.id });
-  const changePendingBalance = (balance) => {
-    setPendingBalance2(balance)
-  }
-  usePendingBalance(user.businessID, client.id, changePendingBalance);
   
 
   const pageSize = 4; 

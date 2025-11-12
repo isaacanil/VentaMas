@@ -1,7 +1,7 @@
 
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { useMatch, useNavigate } from 'react-router-dom'
+import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { icons } from '../../../../../constants/icons/icons'
@@ -11,8 +11,8 @@ import ROUTES_NAME from '../../../../../routes/routesName'
 import { Button } from '../../../system/Button/Button'
 
 
-export const ExpensesListToolbar = ({ side = 'left', searchData, setSearchData }) => {    const navigate = useNavigate();
-    const { EXPENSES_LIST, EXPENSES_CREATE } = ROUTES_NAME.EXPENSES_TERM;
+export const ExpensesListToolbar = ({ side = 'left' }) => {
+    const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM;
     const matchWithExpenseList = useMatch(EXPENSES_LIST);
     const dispatch = useDispatch();
     

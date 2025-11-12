@@ -3,10 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Spin, Modal, Button, Progress, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { useBackOrdersByProduct } from '../../../../../../../../firebase/warehouse/backOrderService';
 
 
@@ -117,7 +115,7 @@ const BackOrderList = ({ productId }) => {
     reserved: "Reservado"
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);  const user = useSelector(selectUser);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { backOrders, loading, error } = useBackOrdersByProduct( productId);
 
   if (loading) return <Spin size="small" />;

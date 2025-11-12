@@ -68,7 +68,7 @@ export default function CheckProductPriceField() {
         };
         setProduct(next);
       }
-    } catch (_) {
+    } catch {
       // ignore parse errors; this is just a helper text area
     }
   };

@@ -1,6 +1,6 @@
 import { WarningOutlined } from '@ant-design/icons';
 import { notification } from 'antd';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createElement } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,6 +48,7 @@ export const useErrorHandling = (errorInfo, errorStackTrace) => {
         try {
             navigate(-1);
         } catch (error) {
+            console.warn('Unable to go back:', error);
             notification.warning({
                 message: MESSAGES.CANT_GO_BACK,
                 description: MESSAGES.CANT_GO_BACK_DESC,

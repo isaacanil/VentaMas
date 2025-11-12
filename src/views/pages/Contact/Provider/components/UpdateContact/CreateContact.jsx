@@ -21,45 +21,19 @@ export const CreateContact = ({isOpen}) => {
             value: ''
         }
     })
-    
-    function validateNewClient(client) {
-        if (!client.name || !client.personalID) {
-            alert("El nombre y el ID personal son obligatorios");
-            return false;
-        }
-        return true;
-    }
     const addIdToNewClient = async () => {
         try {
             setNewClient({
                 ...newClient,
                 id: nanoid(8)
             })
-        } catch {
-
+        } catch (error) {
+            console.error('Failed to add ID to new client', error)
         }
     }
-    const handleCreateClient = async () => {
 
-        if (validateNewClient(newClient)) {
-            try {
-                createClient(newClient)
-            } catch {
-                // Handle error silently or with proper error handling
-            }
-        }
-    }    
-    const showClient = async () => {
-        try {
-            // Client data ready for display
-        } catch {
-            // Handle error
-        }
-    }
     const handleSubmit = async () => {
-        //await handleCreateClient()
         await addIdToNewClient()
-        await showClient()
     }
     const handleOpenModal = () => {
         dispatch(handleModalCreateClient())
@@ -73,7 +47,7 @@ export const CreateContact = ({isOpen}) => {
                         width='icon32'
                         borderRadius='normal'
                         variant='contained'
-                        title={<MdClose />}
+                        title='×'
                         onClick={handleOpenModal}
                     ></Button>
                     <h3>Nuevo Cliente</h3>
@@ -199,13 +173,6 @@ const SideBar = styled.div`
     }}
 `
 
-const Head = styled.div`
-    padding: 0 1em;
-    h3{
-        margin: 0 0 1em;
-        color: var(--Black4);
-    }
-`
 const ToolBar = styled.div`
 padding: 0 0.6em;
 display: flex;

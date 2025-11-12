@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../../../../constants/icons/icons";
 import ROUTES_NAME from "../../../../../routes/routesName";
 
-const { PURCHASES, PURCHASES_CREATE } = ROUTES_NAME.PURCHASE_TERM
-const { ORDERS, ORDERS_CREATE } = ROUTES_NAME.ORDER_TERM
+const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM
+const { ORDERS } = ROUTES_NAME.ORDER_TERM
 
 const { EXPENSES_LIST, EXPENSES_CATEGORY } = ROUTES_NAME.EXPENSES_TERM
 const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM

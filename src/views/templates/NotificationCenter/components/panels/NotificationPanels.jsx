@@ -11,7 +11,7 @@ import FiscalReceiptsNotificationPanel from './FiscalReceiptsPanel/FiscalReceipt
  * Recibe los datos de las notificaciones y renderiza cada panel
  */
 const NotificationPanels = ({ data }) => {
-  const { fiscalReceipts, inventory, sales, system } = data;
+  const { fiscalReceipts } = data;
 
   return (
     <PanelsContainer

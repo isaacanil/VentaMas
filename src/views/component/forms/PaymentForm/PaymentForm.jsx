@@ -11,12 +11,13 @@ import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsR
 import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
 import { AccountsReceivablePaymentReceipt } from "../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt";
 import CreditSelector from "../../../pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
-import { Modal, modalStyles } from "../../../pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel";
+import { modalStyles } from "../../../pages/Sale/components/Cart/components/InvoicePanel/constants/modalStyles";
+import { Modal } from "../../../pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel";
 import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
 
 import { PaymentFields } from "./components/PaymentFields";
 
-const { Form, Checkbox, Input, Select, Button, Radio, notification } = antd;
+const { Form, Checkbox, Select, Button, notification } = antd;
 const { Option } = Select;
 
 export const PaymentForm = () => {

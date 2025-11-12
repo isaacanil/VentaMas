@@ -84,7 +84,7 @@ const InventoryCard = ({ item }) => {
         const dateObject = new Date(milliseconds);
         return dateObject.toISOString().split('T')[0];
     };
-    const { productStockId, batchId, batchData, productStock, batch } = item;
+    const { productStock, batch } = item;
     const handleSelect = () => {
         try{
             Modal.confirm({
@@ -107,7 +107,7 @@ const InventoryCard = ({ item }) => {
                 },
               });
             }catch(err){
-            // Handle error appropriately
+            console.error('Error selecting inventory product', err);
         }
     }
 

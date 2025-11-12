@@ -20,7 +20,7 @@ import {
   getProductIndividualDiscount,
   getProductsIndividualDiscounts
 } from '../../../../../../utils/pricing';
-import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/WarrantyInfo';
+import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/warranty.helpers';
 
 
 
@@ -32,7 +32,7 @@ const CENTER_WIDTH = 40;
    ========================================================= */
 
 // Ajustamos wrapText para que corte en maxWidth (40) sin guión
-export const wrapText = (text, maxWidth = CENTER_WIDTH) => {
+const wrapText = (text, maxWidth = CENTER_WIDTH) => {
   // Si el texto no sobrepasa el ancho, lo retornamos tal cual
   if (text.length <= maxWidth) return text;
 
@@ -50,8 +50,7 @@ export const wrapText = (text, maxWidth = CENTER_WIDTH) => {
 };
 
 // Centrar texto tras envolver
-// eslint-disable-next-line react-refresh/only-export-components
-export const wrapAndCenter = (text, maxWidth = CENTER_WIDTH) => {
+const wrapAndCenter = (text, maxWidth = CENTER_WIDTH) => {
   const wrapped = wrapText(text, maxWidth);
   return wrapped
     .split('\n')
@@ -60,19 +59,16 @@ export const wrapAndCenter = (text, maxWidth = CENTER_WIDTH) => {
 };
 
 // Centrar una sola línea a un ancho dado
-// eslint-disable-next-line react-refresh/only-export-components
-export const centerText = (text, maxWidth = CENTER_WIDTH) => {
+const centerText = (text, maxWidth = CENTER_WIDTH) => {
   const spaces = Math.floor((maxWidth - text.length) / 2);
   return ' '.repeat(spaces) + text;
 };
 
 // Línea separadora
-// eslint-disable-next-line react-refresh/only-export-components
-export const separatorLine = (maxWidth = CENTER_WIDTH) => '-'.repeat(maxWidth);
+const separatorLine = (maxWidth = CENTER_WIDTH) => '-'.repeat(maxWidth);
 
 // Formatear columnas (left, right, center)
-// eslint-disable-next-line react-refresh/only-export-components
-export const formatColumn = (text, width, align = 'left') => {
+const formatColumn = (text, width, align = 'left') => {
   let str = text.toString();
 
   // Si excede el ancho, lo envolvemos
@@ -92,8 +88,7 @@ export const formatColumn = (text, width, align = 'left') => {
 };
 
 // Concatenar nombre del producto con medida y pie
-// eslint-disable-next-line react-refresh/only-export-components
-export const getFullProductName = (product) => {
+const getFullProductName = (product) => {
   return product.name +
     (product.measurement ? ` Medida: [${product.measurement}]` : '') +
     (product.footer ? ` Pie: [${product.footer}]` : '');
@@ -104,8 +99,7 @@ export const getFullProductName = (product) => {
    ========================================================= */
 
 // ----------------- Business Header -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderBusinessHeader = (business, formatPhoneNumber) => {
+const renderBusinessHeader = (business, formatPhoneNumber) => {
   // SIN salto de línea al principio: empieza de inmediato
   let header = '';
   header += wrapAndCenter(business.name || 'Nombre del Negocio') + '\n';
@@ -120,8 +114,7 @@ export const renderBusinessHeader = (business, formatPhoneNumber) => {
 };
 
 // ----------------- Invoice Header -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderInvoiceHeader = (data, fechaActual) => {
+const renderInvoiceHeader = (data, fechaActual) => {
   let header = '';
   const identity = resolveDocumentIdentity(data);
   header += 'Fecha: ' + fechaActual + '\n';
@@ -136,8 +129,7 @@ export const renderInvoiceHeader = (data, fechaActual) => {
 };
 
 // ----------------- Client Info -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderClientInfo = (client, formatPhoneNumber) => {
+const renderClientInfo = (client, formatPhoneNumber) => {
   if (!client) return ''; // nada si no hay cliente
 
   let clientText = '';
@@ -189,8 +181,7 @@ export const renderClientInfo = (client, formatPhoneNumber) => {
 };
 
 // ----------------- Products -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderProducts = (
+const renderProducts = (
   products,
   taxReceipt,
   getTax,
@@ -259,8 +250,7 @@ export const renderProducts = (
 };
 
 // ----------------- Payment Area -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderPaymentArea = (
+const renderPaymentArea = (
   data,
   formatter,
   getProductsPrice,
@@ -379,8 +369,7 @@ export const renderPaymentArea = (
 };
 
 // ----------------- Footer -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderFooter = () => {
+const renderFooter = () => {
   let footer = '';
   footer += wrapText('Gracias por su compra, regrese pronto.', CENTER_WIDTH) + '\n';
   footer += wrapText('   Lo Esperamos.', CENTER_WIDTH);
@@ -427,11 +416,13 @@ export const InvoiceTemplate4 = React.forwardRef(({ data, ignoreHidden }, ref) =
   );
 });
 
+InvoiceTemplate4.displayName = 'InvoiceTemplate4';
+
 export default InvoiceTemplate4;
 
 /* =========================================================
    Estilo Wrapper
    ========================================================= */
-export const HiddenPrintWrapper = styled.div`
+const HiddenPrintWrapper = styled.div`
   display: ${({ ignoreHidden }) => !ignoreHidden && 'none'};
 `;

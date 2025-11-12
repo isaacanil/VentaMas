@@ -138,6 +138,19 @@ const normalizeExpirationDate = (value: unknown): number | null => {
   return null;
 };
 
+const getBatchIdentifier = (value: unknown): string | null => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  if (typeof value === 'number') {
+    return value.toString();
+  }
+
+  return null;
+};
+
 export const ProductCardForCart = ({
   item,
   onOpenCommentModal,
@@ -146,7 +159,7 @@ export const ProductCardForCart = ({
   onOpenBatchInfoModal,
 }: ProductCardForCartProps) => {
   const dispatch = useDispatch();
-  const insuranceEnabled = useInsuranceEnabled();
+  const insuranceEnabled = Boolean(useInsuranceEnabled());
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled) as boolean;
   const [selectedUnit, setSelectedUnit] = useState<SaleUnit | null>(null);
   const [precios, setPrecios] = useState<PriceOption[]>([]);
@@ -281,12 +294,11 @@ export const ProductCardForCart = ({
     : hasBatchInfo
     ? '#4096ff'
     : '#8c8c8c';
-  const rawBatchNumber = batchInfo?.batchNumber
-    ?? batchInfo?.batchNumberId
-    ?? batchInfo?.batchId
-    ?? item?.batchNumber
-    ?? item?.batchId
-    ?? null;
+  const rawBatchNumber = getBatchIdentifier(batchInfo?.batchNumber)
+    ?? getBatchIdentifier(batchInfo?.batchNumberId)
+    ?? getBatchIdentifier(batchInfo?.batchId)
+    ?? getBatchIdentifier(item?.batchNumber)
+    ?? getBatchIdentifier(item?.batchId);
   const batchNumberLabel = rawBatchNumber != null && rawBatchNumber !== ''
     ? `Lote ${rawBatchNumber}`
     : null;
@@ -643,23 +655,6 @@ const TitleLabel = styled.span`
     color: rgb(71, 71, 71);
     text-transform: capitalize;
     word-break: break-word;
-`;
-
-const TitleInteractive = styled.span`
-    font-weight: 500;
-    line-height: 16px;
-    font-size: 14px;
-    color: rgb(71, 71, 71);
-    text-transform: capitalize;
-    cursor: pointer;
-    display: inline;
-    word-break: break-word;
-
-    &:hover,
-    &:focus {
-        text-decoration: underline;
-        outline: none;
-    }
 `;
 
 const Price = styled.span<{ hasDiscount: boolean }>`

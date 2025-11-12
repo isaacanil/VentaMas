@@ -3,19 +3,7 @@ import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-const numberFormatter = new Intl.NumberFormat('es-ES');
-
-export const formatLots = (value) => {
-  if (!Number.isFinite(value)) return '0 lotes';
-  const count = numberFormatter.format(value);
-  return `${count} ${value === 1 ? 'lote' : 'lotes'}`;
-};
-
-const formatUnits = (value) => {
-  if (!Number.isFinite(value)) return null;
-  const count = numberFormatter.format(value);
-  return `${count} ${value === 1 ? 'und.' : 'unds.'}`;
-};
+import { formatLots, formatUnits } from './nodeName.helpers';
 
 const NameContainer = styled.div`
   display: flex;

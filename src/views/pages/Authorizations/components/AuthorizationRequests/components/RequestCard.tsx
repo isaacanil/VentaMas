@@ -134,7 +134,7 @@ export const RequestCard = ({ item, onApprove, onReject, onOpenDetails }: Reques
             disabled={disableApprove}
             onClick={(event) => {
               event.stopPropagation();
-              onApprove(key);
+              void onApprove(key);
             }}
           >
             Aprobar
@@ -142,7 +142,9 @@ export const RequestCard = ({ item, onApprove, onReject, onOpenDetails }: Reques
         </Tooltip>
         <Popconfirm
           title="¿Rechazar solicitud?"
-          onConfirm={() => onReject(key)}
+          onConfirm={() => {
+            void onReject(key);
+          }}
           okText="Sí"
           cancelText="No"
           disabled={disableReject}

@@ -82,17 +82,6 @@ const TotalRow = styled.div`
 `;
 
 
-const BoldText = styled.p`
-  font-weight: bold;
-  font-size: 14px;
-`;
-
-const Title = styled.h1`
-  text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-`;
-
 const columns = [
   {
     title: 'CANT.',

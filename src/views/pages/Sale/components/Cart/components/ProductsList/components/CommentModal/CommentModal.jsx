@@ -3,8 +3,6 @@ import { Modal, Button, Input, Tooltip } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import {  fetchCorrections, parseCorrections, showCorrectionsModal } from './commentUtils';
-
 const { TextArea } = Input;
 
 export const CommentModal = ({
@@ -16,32 +14,6 @@ export const CommentModal = ({
     onSave,
     onDelete
 }) => {
-    const [isCheckingSpelling, setIsCheckingSpelling] = React.useState(false);
-    const [lastCheckedText, setLastCheckedText] = React.useState("");
-    const [hasBeenChecked, setHasBeenChecked] = React.useState(false);    async function handleCheckSpelling() {
-        try {
-            setIsCheckingSpelling(true);
-            const raw = await fetchCorrections(comment);
-            const pairs = parseCorrections(raw);
-            showCorrectionsModal(raw, pairs, comment, updated => {
-                onCommentChange(updated);
-                setLastCheckedText(updated);
-            });
-            setHasBeenChecked(true);
-            setLastCheckedText(comment);
-        } catch (err) {
-            console.error("Error al revisar ortografía:", err);
-            Modal.error({
-                title: 'Error',
-                content: 'Hubo un error al revisar la ortografía'
-            });
-        } finally {
-            setIsCheckingSpelling(false);
-        }
-    }
-
-    // Verifica si el botón debe estar deshabilitado
-    const isSpellCheckDisabled = hasBeenChecked && lastCheckedText === comment;
 
     return (
         <StyledModal

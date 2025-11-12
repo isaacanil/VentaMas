@@ -29,23 +29,42 @@ export const statusLabels: Record<string, string> = STATUS_LABELS_BASE;
 
 export const ITEMS_PER_PAGE = 8;
 
+interface TimestampLike {
+  toDate: () => Date | string | number;
+}
+
+const isTimestampLike = (value: unknown): value is TimestampLike =>
+  typeof value === 'object' &&
+  value !== null &&
+  'toDate' in value &&
+  typeof (value as { toDate?: unknown }).toDate === 'function';
+
 export const formatDateTime = (value: unknown): string => {
   if (!value) return '-';
 
   try {
-    if (typeof value === 'object' && value !== null && 'toDate' in value && typeof value.toDate === 'function') {
-      return new Date(value.toDate()).toLocaleString();
+    if (isTimestampLike(value)) {
+      const timestampValue = value.toDate();
+      if (timestampValue instanceof Date) {
+        return timestampValue.toLocaleString();
+      }
+      const coercedDate = new Date(timestampValue);
+      return Number.isNaN(coercedDate.getTime()) ? '-' : coercedDate.toLocaleString();
     }
 
     if (value instanceof Date) {
       return value.toLocaleString();
     }
 
-    const date = new Date(value as string | number);
-    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleString();
-  } catch (error) {
+    if (typeof value === 'string' || typeof value === 'number') {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? '-' : date.toLocaleString();
+    }
+  } catch {
     return '-';
   }
+
+  return '-';
 };
 
 export const getStatusLabel = (status: AuthorizationStatus | undefined): string => {

@@ -26,23 +26,6 @@ const MainContent = styled.div`
 
 // Eliminado: vista previa embebida (ahora se muestra en un modal externo)
 
-const Section = styled.div`
-  border: 1px solid #eaeaea;
-  padding: 16px;
-  border-radius: 4px;
-`;
-
-const SectionHeader = styled.h3`
-  margin: 0 0 12px;
-  font-size: 1.1rem;
-`;
-
-const FieldRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-`;
-
 // Contenedor para alinear el label y la acción de "Editar Configuración"
 const LabelWithAction = styled.div`
   display: flex;
@@ -54,7 +37,6 @@ const LabelWithAction = styled.div`
 
 export const GenerateTab = ({
   form,
-  isConfigured,
   autoMode,
   setAutoMode,
   manualValues,
@@ -65,30 +47,15 @@ export const GenerateTab = ({
   handleManualItemReferenceChange,
   handleInternalItemReferenceChange,
   nextItemReference,
-  livePreview,
   handleGenerateCode,
   loadingGenerate,
-  generatedCode,
   onOpenConfig,
   selectedStandard,
   onStandardChange,
-  currentBarcode,
-  realtimeStatus = {},
-  barcodeAnalysis = null,
   useCompanyPrefix,
   setUseCompanyPrefix,
   hideGenerateButton = false
 }) => {
-  // Map of GS1 prefixes per standard
-  const standardPrefixes = {
-    gs1rd: '746',
-    gs1us: '0',
-    gs1mx: '750',
-    gs1co: '770',
-    gs1ar: '778',
-    gs1cl: '780',
-    gs1pe: '775',
-  };
   const hasCompanyPrefix = !!selectedConfig?.companyPrefix;
   return (
     <Container>

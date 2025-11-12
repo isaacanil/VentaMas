@@ -9,7 +9,6 @@ import DoctorModal from '../../../../../../../../components/DoctorModal/DoctorMo
 import DoctorSelector from '../../../../../../../../components/DoctorSelector/DoctorSelector';
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { selectClient } from '../../../../../../../../features/clientCart/clientCartSlice';
-import { setInsuranceAR } from '../../../../../../../../features/insurance/insuranceAccountsReceivableSlice';
 import {
   setAuthData,
   selectInsuranceAuthData,
@@ -114,7 +113,6 @@ export const InsuranceAuthModal = () => {
 
   const [form] = Form.useForm();
   const [hasDependent, setHasDependent] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formComplete, setFormComplete] = useState(false);
 
@@ -129,19 +127,13 @@ export const InsuranceAuthModal = () => {
   // Escuchamos la configuración de seguros (aseguradoras + tipos)
   const { data: insuranceConfigData, loading: configLoading } = useListenInsuranceConfig();
   // Escuchamos los médicos disponibles
-  const { doctors, loading: doctorsLoading } = useFbGetDoctors();
+  const { doctors } = useFbGetDoctors();
 
   // Función para encontrar una aseguradora por ID
   const findInsuranceById = useCallback((id) => {
     if (!insuranceConfigData || !id) return null;
     return insuranceConfigData.find(ins => ins.id === id) || null;
   }, [insuranceConfigData]);
-
-  // Función para encontrar un tipo de seguro por ID
-  const findInsuranceTypeById = useCallback((typeId) => {
-    if (!selectedInsuranceData?.insuranceTypes || !typeId) return null;
-    return selectedInsuranceData.insuranceTypes.find(type => type.id === typeId) || null;
-  }, [selectedInsuranceData]);
 
   // Actualizar el objeto de aseguradora seleccionada cuando cambie el ID
   useEffect(() => {
@@ -154,59 +146,6 @@ export const InsuranceAuthModal = () => {
     if (!selectedInsuranceData?.insuranceTypes) return [];
     return selectedInsuranceData.insuranceTypes;
   }, [selectedInsuranceData]);
-
-  // Nueva función para guardar datos específicos inmediatamente
-  const saveSpecificFieldsToClientInsurance = useCallback(async (field, value) => {
-    if (!client?.id || !user) return;
-
-    try {
-      // Convertir fechas a formato ISO si es necesario
-      let processedValue = value;
-      if (field === 'birthDate' && value instanceof dayjs) {
-        processedValue = value.toISOString();
-      }
-
-      // Preparar los datos a guardar
-      const dataToSave = {
-        clientId: client.id,
-        [field]: processedValue
-      };
-
-      // Si ya tenemos un ID de aseguradora e insuranceType, incluirlos en los datos
-      if (field !== 'insuranceId' && authData.insuranceId) {
-        dataToSave.insuranceId = authData.insuranceId;
-      }
-      if (field !== 'insuranceType' && authData.insuranceType) {
-        dataToSave.insuranceType = authData.insuranceType;
-      }
-      if (field !== 'birthDate' && authData.birthDate) {
-        dataToSave.birthDate = authData.birthDate instanceof dayjs 
-          ? authData.birthDate.toISOString() 
-          : authData.birthDate;
-      }
-
-      // Actualizar o crear el registro del seguro del cliente
-      if (authData.clientInsuranceId) {
-        await updateClientInsurance(user, { 
-          id: authData.clientInsuranceId,
-          ...dataToSave
-        });
-      } else {
-        // Crear un nuevo registro
-        const success = await createClientInsurance(user, dataToSave);
-        if (success) {
-          // Si se crea exitosamente, podríamos actualizar el estado con el ID
-          // Pero necesitaríamos recuperar el ID creado, lo que depende de la implementación
-        }
-      }
-      dispatch(setInsuranceAR({insuranceId: authData.insuranceId}))
-      // Actualizar Redux después de guardar en Firebase
-      dispatch(updateAuthField({ field, value: processedValue }));
-    } catch (error) {
-      console.error("Error saving specific insurance field:", error);
-      message.error("No se pudo guardar el campo de seguro");
-    }
-  }, [client?.id, user, authData.insuranceId, authData.insuranceType, authData.birthDate, authData.clientInsuranceId, dispatch]);
 
   // Handler para cambio de aseguradora
   const handleInsuranceChange = (value) => {
@@ -306,7 +245,7 @@ export const InsuranceAuthModal = () => {
   }, [form, insuranceEnabled, selectedDoctor]);
   
   // Esta función será llamada automáticamente cuando cambie cualquier valor del formulario
-  const handleFormValuesChange = useCallback((changedValues) => {
+  const handleFormValuesChange = useCallback(() => {
     validateFormCompletion();
   }, [validateFormCompletion]);
   

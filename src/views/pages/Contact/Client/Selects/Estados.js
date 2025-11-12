@@ -1,4 +1,6 @@
-const state = [
-    'False',
-    'True'
-]
+export const estados = [
+  'False',
+  'True'
+];
+
+export default estados;

@@ -141,7 +141,7 @@ const hasGainValue = (margin, percent) => {
   return hasMargin || hasPercent;
 };
 
-export const PricingSection = ({ domId, previewMetrics, pricingValues = {} }) => {
+export const PricingSection = ({ domId, pricingValues = {} }) => {
   const cost = Number(pricingValues?.cost) || 0;
   const taxRate = Number(pricingValues?.tax) || 0;
 

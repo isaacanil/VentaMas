@@ -85,17 +85,6 @@ const DirectionLabel = styled.span`
   gap: 4px;
 `;
 
-const DirectionIndicator = styled.span`
-  color: #8E8E93;
-  font-size: 0.85em;
-  font-weight: 500;
-  letter-spacing: -0.2px;
-  background: #F2F2F7;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-left: 4px;
-`;
-
 const MovementTypeBadge = styled.span`
   background: ${({ isEntry }) =>
     isEntry

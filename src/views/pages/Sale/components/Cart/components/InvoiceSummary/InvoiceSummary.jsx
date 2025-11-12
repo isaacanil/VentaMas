@@ -25,7 +25,7 @@ import { PinAuthorizationModal } from '../../../../../../component/modals/PinAut
 import { Quotation } from '../../../../../../component/Quotation/components/Quotation/Quotation';
 import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber';
 import CustomInput from '../../../../../../templates/system/Inputs/CustomInput';
-import { usePreorderModal } from '../../../PreorderQuickActions';
+import { usePreorderModal } from '../../../usePreorderModal.jsx';
 import { handleCancelShipping } from '../InvoicePanel/handleCancelShipping';
 
 import { ActionMenu } from './components/ActionMenu/Actionmenu';
@@ -60,12 +60,12 @@ const InvoiceSummary = () => {
   const itbis = cartData.totalTaxes.value;
   const discountPercent = cartData.discount.value;
   const quotationPrintRef = useRef();
-  const [quotationData, setQuotationData] = useState();
+  const [quotationData, _setQuotationData] = useState();
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(false);
   const [isSavingPreorder, setIsSavingPreorder] = useState(false);
   const discount = getTotalDiscount(subTotal, discountPercent);
   const { billing } = useSelector(SelectSettingCart);
-  const { shouldUsePinForModule, isInvoicesModuleEnabled } = useAuthorizationModules();
+  const { shouldUsePinForModule } = useAuthorizationModules();
   const { openModal: openPreorderModal, Modal: PreorderModal } = usePreorderModal();
 
   // Nuevos selectores para descuentos individuales
@@ -282,7 +282,7 @@ const InvoiceSummary = () => {
     return false;
   }, [shouldRequirePinForDiscount, isDiscountAuthorized, isDiscountPinModalOpen, showDiscountPinModal]);
 
-  const handlePrint = useReactToPrint({
+  const _handlePrint = useReactToPrint({
     content: () => quotationPrintRef.current,
     onAfterPrint: () => {
       Modal.confirm({
@@ -308,13 +308,6 @@ const InvoiceSummary = () => {
       });
     }
   })
-
-  async function handlePrintQuotation() {
-    const data = await addQuotation(user, cartData, billingSettings);
-
-    setQuotationData(data);
-    setTimeout(() => handlePrint(), 1000);
-  };
 
   function showCleanQuotationModal() {
     Modal.confirm({

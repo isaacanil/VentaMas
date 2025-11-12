@@ -50,9 +50,7 @@ export const InternalModeTab = ({
   livePreview,
   handleGenerateCode,
   loadingGenerate,
-  currentBarcode,
-  realtimeStatus = {},
-  barcodeAnalysis = null
+  currentBarcode
 }) => {
   
   return (

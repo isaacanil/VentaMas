@@ -31,7 +31,7 @@ const InvoiceWrapper = styled.div`
 `;
 
 export const Invoice = React.forwardRef(({ data, template = "template1", ignoreHidden }, ref) => {
-  const { billing: { billingMode, invoiceType } } = useSelector(SelectSettingCart);
+  const { billing: { invoiceType } } = useSelector(SelectSettingCart);
   const renderTemplate = () => {
     switch (invoiceType?.toLowerCase()) {
       case 'template1':
@@ -53,3 +53,5 @@ export const Invoice = React.forwardRef(({ data, template = "template1", ignoreH
     </InvoiceWrapper>
   );
 });
+
+Invoice.displayName = 'Invoice';

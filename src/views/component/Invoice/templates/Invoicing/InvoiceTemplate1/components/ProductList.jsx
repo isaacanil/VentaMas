@@ -7,7 +7,7 @@ import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../features/updateProdu
 import { separator } from '../../../../../../../hooks/separator'
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
 import { getTax, getTotalPrice, resetAmountToBuyForProduct, getProductIndividualDiscount } from '../../../../../../../utils/pricing'
-import { convertTimeToSpanish } from '../../../../../../component/modals/ProductForm/components/sections/WarrantyInfo'
+import { convertTimeToSpanish } from '../../../../../../component/modals/ProductForm/components/sections/warranty.helpers'
 
 import { Col } from './Table/Col'
 import { Row } from './Table/Row'

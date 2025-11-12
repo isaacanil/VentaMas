@@ -1,4 +1,6 @@
-const state = [
-    'False',
-    'True'
-]
+export const providerStates = [
+  'False',
+  'True'
+];
+
+export default providerStates;

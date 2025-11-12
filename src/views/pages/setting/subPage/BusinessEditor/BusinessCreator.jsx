@@ -1,6 +1,5 @@
 import { ShopOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
 import { Form, Input, Button, Select, message, Card, Typography } from 'antd';
-import imageCompression from 'browser-image-compression';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -12,41 +11,15 @@ import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import { countries } from './countries.json';
 
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const BusinessCreator = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const [imageUrl, setImageUrl] = useState(null);
+  const [imageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const {BUSINESSES} = ROUTES_PATH.DEV_VIEW_TERM
-
-  const compressImage = async (file) => {
-    const fileSize = file.size / (1024 * 1024);
-    const options = {
-      maxSizeMB: fileSize > 2 ? 1 : fileSize * 0.8,
-      maxWidthOrHeight: 1200,
-      useWebWorker: true,
-      fileType: 'image/jpeg',
-      initialQuality: fileSize > 2 ? 0.6 : 0.8,
-    };
-
-    try {
-      const compressedFile = await imageCompression(file, options);
-      if (compressedFile.size > 2 * 1024 * 1024) {
-        return await imageCompression(compressedFile, {
-          ...options,
-          maxSizeMB: 1,
-          initialQuality: 0.5,
-        });
-      }
-      return compressedFile;
-    } catch (error) {
-      message.error('Error al comprimir la imagen');
-      return null;
-    }
-  };
+  const { BUSINESSES } = ROUTES_PATH.DEV_VIEW_TERM;
 
   const handleSubmit = async (values) => {
     try {
@@ -218,42 +191,6 @@ const TwoColumns = styled.div`
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-  }
-`;
-
-const LogoSection = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-
-  .avatar-uploader {
-    .ant-upload {
-      width: 300px !important;
-      height: 150px !important;
-      border-radius: 8px;
-      background: #fafafa;
-      border: 2px dashed #d9d9d9;
-      transition: all 0.3s ease;
-
-      &:hover {
-        border-color: #1890ff;
-      }
-    }
-  }
-`;
-
-const PreviewContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 4px;
   }
 `;
 

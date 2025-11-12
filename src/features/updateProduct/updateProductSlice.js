@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { nanoid } from 'nanoid';
 
-import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/WarrantyInfo'
+import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/warranty.helpers'
 import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
 
 const DEFAULT_BRAND = 'Sin marca';

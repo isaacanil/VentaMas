@@ -13,7 +13,7 @@ import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
 import { ClientGeneralInfo } from './components/ClientGeneralInfo';
 
-const { Modal, Form, Input, Button, Tabs, notification, message } = ant;
+const { Modal, Form, Button, Tabs, notification, message } = ant;
 /**
  *
  *
@@ -43,7 +43,6 @@ const ClientFormAnt = ({
     const [submitted, setSubmitted] = useState(false);
     const clientData = form.getFieldsValue();
     const dispatch = useDispatch();
-    const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(true);
     const user = useSelector(selectUser);
     
     const customerData = {
@@ -132,7 +131,7 @@ const ClientFormAnt = ({
 
 
             dispatch(toggleClientModal({ mode: create }))
-        } catch (info) {
+        } catch {
             notification.error({
                 message: 'Error al Procesar',
                 description: 'Hubo un error al procesar el formulario. Por favor, inténtelo de nuevo.'
@@ -159,7 +158,6 @@ const ClientFormAnt = ({
                     creditLimitForm={creditLimitForm}
                     customerData={customerData}
                     isUpdating={isUpdating}
-                    setIsSubmitButtonDisabled={setIsSubmitButtonDisabled}
                     handleSubmit={handleSubmit}
                     loading={loading}
                     submitted={submitted}

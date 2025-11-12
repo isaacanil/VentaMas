@@ -56,17 +56,6 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
     return 'normal';
   };
 
-  const getStockColor = () => {
-    const status = getStockStatus();
-    switch (status) {
-      case 'out': return '#ff4d4f';
-      case 'low': return '#faad14';
-      case 'normal': return '#52c41a';
-      case 'no-track': return '#8c8c8c';
-      default: return '#8c8c8c';
-    }
-  };
-
   const getStockIcon = () => {
     const status = getStockStatus();
     switch (status) {
@@ -408,4 +397,3 @@ const ActionButton = styled.button`
     font-size: 12px;
   }
 `;
-

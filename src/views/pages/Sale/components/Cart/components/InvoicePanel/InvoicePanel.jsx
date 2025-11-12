@@ -32,8 +32,6 @@ import { getInvoiceErrorNotification } from './utils/getInvoiceErrorNotification
 import { getTaxReceiptAvailability } from './utils/getTaxReceiptAvailability'
 import { isTaxReceiptDepletedError } from './utils/isTaxReceiptDepletedError'
 
-export { modalStyles } from './constants/modalStyles'
-
 export const InvoicePanel = () => {
     const dispatch = useDispatch()
     const [form] = Form.useForm()

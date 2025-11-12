@@ -55,7 +55,7 @@ const InventoryMenu = () => {
     const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
 
     const { INVENTORY_TERM, PURCHASE_TERM, ORDER_TERM } = ROUTES_PATH;
-    const { WAREHOUSES, PRODUCTS_STOCK, WAREHOUSE } = INVENTORY_TERM;
+    const { WAREHOUSES, PRODUCTS_STOCK } = INVENTORY_TERM;
     const { BACKORDERS, PURCHASES } = PURCHASE_TERM;
     const { ORDERS } = ORDER_TERM;
 

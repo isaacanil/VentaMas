@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
 
 import { GroupedLotsModal } from './GroupedLotsModal';
-import { formatNumber, formatInputDate, formatDate, shortenLocationPath, EditorsList, getTsMs, Diff, TagsWrap } from './inventoryTableUtils.jsx';
+import { EditorsList } from './inventoryTableComponents.jsx';
+import { formatNumber, formatInputDate, formatDate, shortenLocationPath, getTsMs, Diff, TagsWrap } from './inventoryTableUtils.js';
 
 /**
  * InventoryGroupedTable

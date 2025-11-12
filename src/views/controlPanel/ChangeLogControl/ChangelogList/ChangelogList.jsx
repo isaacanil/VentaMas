@@ -9,7 +9,20 @@ import { rawToEditorState } from '../../../templates/system/BlockEditor/rawToEdi
 
 
 export const ChangelogList = () => {
-    const { changelogs, error } = useGetChangelogs();    return (
+    const { changelogs, error } = useGetChangelogs();
+
+    if (error) {
+        return (
+            <Container>
+                <Wrapper>
+                    <h1>Ventamax — Notas del lanzamiento</h1>
+                    <p>No se pudieron cargar las notas de la versión. Intenta nuevamente.</p>
+                </Wrapper>
+            </Container>
+        )
+    }
+
+    return (
         <Fragment>
             <MenuApp />
             <Container>
@@ -17,12 +30,11 @@ export const ChangelogList = () => {
 
                     <h1>Ventamax — Notas del lanzamiento</h1>
                     <br />
-                    {changelogs
-                        .sort((a, b) => new Date(b?.changelog?.createdAt) - new Date(a?.changelog?.createdAt))
-                        .map(({ changelog }, index) => (
-                            <EditorWrapper>
-                                <Editor key={index} editorState={rawToEditorState(changelog.content)} />
-
+                        {changelogs
+                            .sort((a, b) => new Date(b?.changelog?.createdAt) - new Date(a?.changelog?.createdAt))
+                            .map(({ changelog }, index) => (
+                                <EditorWrapper key={changelog?.id ?? index}>
+                                    <Editor editorState={rawToEditorState(changelog.content)} />
                             </EditorWrapper>
                         ))
                       

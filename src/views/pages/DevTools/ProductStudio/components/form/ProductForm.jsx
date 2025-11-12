@@ -21,7 +21,6 @@ export const ProductForm = ({
   categories,
   activeIngredients,
   sectionDomIds,
-  previewMetrics,
   product,
   onOpenBrandModal,
   onAddCategory,
@@ -56,7 +55,6 @@ export const ProductForm = ({
 
         <PricingSection
           domId={sectionDomIds.pricing}
-          previewMetrics={previewMetrics}
           pricingValues={pricingValues}
         />
 

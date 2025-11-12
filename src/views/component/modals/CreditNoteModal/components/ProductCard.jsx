@@ -17,8 +17,7 @@ export const ProductCard = ({
   isView,
   onSelectionChange,
   onQuantityChange,
-  creditedByOthers = 0,
-  existingQuantity = 0
+  creditedByOthers = 0
 }) => {
   const unitPrice = getTotalPrice(product, true, false);
   const tempItem = { ...product, amountToBuy: quantity };

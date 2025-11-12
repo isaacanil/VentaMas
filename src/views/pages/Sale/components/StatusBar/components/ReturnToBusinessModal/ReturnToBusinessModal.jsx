@@ -5,13 +5,12 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
 
-import { selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../../../../../features/auth/userSlice'
+import { selectIsTemporaryMode, returnToOriginalBusiness } from '../../../../../../../features/auth/userSlice'
 
 const { Title, Text } = Typography
 
 export const ReturnToBusinessModal = ({ visible, onClose }) => {
   const dispatch = useDispatch()
-  const user = useSelector(selectUser)
   const isTemporaryMode = useSelector(selectIsTemporaryMode)
 
   const handleReturnToBusiness = () => {

@@ -470,10 +470,3 @@ const ConfigButton = styled.button`
         color: white !important;
     }
 `;
-
-const CenteredContainer = styled.div`
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-`;

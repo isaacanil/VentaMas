@@ -1,11 +1,9 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import * as antd from "antd";
-
-const { Form, Input, InputNumber, DatePicker, Select, Button, notification, Modal } = antd;
-import { CalendarOutlined, PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { CalendarOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { Button, DatePicker, Form, Input, InputNumber, Modal, notification } from "antd";
 import { DateTime } from "luxon";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import styled from "styled-components";
 
 import { selectUser } from "../../../../../../features/auth/userSlice";
 import { selectUpdateProductData } from "../../../../../../features/updateProduct/updateProductSlice";
@@ -17,18 +15,6 @@ const StyledContainer = styled.div`
   padding: 16px;
 `;
 
-const StyledLabel = styled.span`
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-`;
-
-const Description = styled.div`
-  font-size: 0.875rem;
-  color: #8c8c8c;
-  margin-top: 4px;
-`;
-
 export const BatchForm = ({
   initialData,
   mode = "create",
@@ -38,7 +24,7 @@ export const BatchForm = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const user = useSelector(selectUser);
-  const { product, status } = useSelector(selectUpdateProductData);
+  const { product } = useSelector(selectUpdateProductData);
   const convertedData = {
     ...initialData,
     expirationDate: DateUtils.convertTimestampToDayjs(initialData?.expirationDate),
@@ -57,7 +43,7 @@ export const BatchForm = ({
         setLoading(true);
         form.submit();
       })
-      .catch((info) => {
+      .catch(() => {
         // Validation failed
       });
   };
@@ -80,14 +66,14 @@ export const BatchForm = ({
     try {
       if (mode === "create") {
         // Crear un nuevo batch
-        const newBatch = await createBatch(user, batchData);
+        await createBatch(user, batchData);
         notification.success({
           message: "Lote Creado",
           description: "El lote ha sido creado exitosamente.",
         });
       } else if (mode === "update") {
         // Actualizar un batch existente
-        const updatedBatch = await updateBatch(user, batchData);
+        await updateBatch(user, batchData);
         notification.success({
           message: "Lote Actualizado",
           description: "El lote ha sido actualizado exitosamente.",
@@ -106,7 +92,7 @@ export const BatchForm = ({
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
+  const onFinishFailed = () => {
     notification.error({
       message: "Error al Crear/Editar Lote",
       description: "Por favor, revisa los errores en el formulario.",

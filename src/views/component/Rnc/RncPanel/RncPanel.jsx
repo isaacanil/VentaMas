@@ -71,17 +71,6 @@ const Field = styled.div`
   }
 `;
 
-const StatusField = styled(Field)`
-  align-items: center;
-  
-  .status-btn {
-    margin-left: 8px;
-    padding: 0 8px;
-    height: 24px;
-    font-size: 12px;
-  }
-`;
-
 const StatusBox = styled.div`
   padding: 16px;
   border-radius: 8px;

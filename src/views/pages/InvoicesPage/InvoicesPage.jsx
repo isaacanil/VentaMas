@@ -1,9 +1,7 @@
 import { motion } from 'framer-motion'
 import { Fragment, useEffect, useState, Suspense } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import { selectUser } from '../../../features/auth/userSlice'
 import { useFbGetInvoicesWithFilters } from '../../../firebase/invoices/useFbGetInvoicesWithFilters'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
 import { getDateRange } from '../../../utils/date/getDateRange'
@@ -17,8 +15,6 @@ import SalesAnalyticsPanel from './SalesAnalyticsPanel/SalesAnalyticsPanel'
 const SaleReportTable = lazyWithRetry(() => import('./SaleReportTable/SaleReportTable'), 'SaleReportTable');
 
 export const InvoicesPage = () => {
-  const dispatch = useDispatch();
-  const user = useSelector(selectUser);
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,7 +26,7 @@ export const InvoicesPage = () => {
     clientId: null
   });
 
-  const { invoices, loading: invoicesLoading } = useFbGetInvoicesWithFilters(filters);
+  const { invoices } = useFbGetInvoicesWithFilters(filters);
 
   const [processedInvoices, setProcessedInvoices] = useState(invoices);
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
@@ -100,7 +96,6 @@ const Container = styled(motion.div)`
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
 `
-
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 
 import { LeftSide } from './LeftSide/LeftSide'
@@ -23,10 +23,6 @@ export const Body = ({closingDate}) => {
     };
   }, []);
 
-  const toggleSide = () => {
-    setActiveSide(activeSide === 'leftSide' ? 'rightSide' : 'leftSide');
-  };
- 
   return (
     <Container>
       {isNarrowScreen && (

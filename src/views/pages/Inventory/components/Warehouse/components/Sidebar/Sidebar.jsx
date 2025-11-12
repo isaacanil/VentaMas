@@ -65,11 +65,6 @@ const SummaryPrimary = styled.span`
   gap: 8px;
 `;
 
-const SummarySecondary = styled.span`
-  color: #e2e8f0;
-  font-size: 0.75rem;
-`;
-
 const SummaryHeader = styled.div`
   display: flex;
   align-items: center;
@@ -83,24 +78,6 @@ const SummaryStatus = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-`;
-
-const SummaryToggleButton = styled.button`
-  border: none;
-  background: rgba(255, 255, 255, 0.12);
-  color: #f1f5f9;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
 `;
 
 // Function to get level actions (no change needed here)
@@ -191,7 +168,6 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }) => {
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
   const [stockSummaries, setStockSummaries] = useState({});
   const [loadingStockSummaries, setLoadingStockSummaries] = useState(false);
-  const [isSummaryExpanded, setSummaryExpanded] = useState(false);
 
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
   const locationPaths = useMemo(() => {
@@ -470,12 +446,6 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }) => {
             hasDetails: Boolean(secondaryText),
         };
     }, [levelCounts]);
-
-    useEffect(() => {
-        if (!summaryData.hasDetails) {
-            setSummaryExpanded(false);
-        }
-    }, [summaryData.hasDetails]);
 
     const sidebarSummaryFooter = useMemo(() => {
         if (!summaryData.primaryText && !loadingStockSummaries) {

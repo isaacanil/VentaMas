@@ -1,7 +1,7 @@
 import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as antd from "antd";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
@@ -87,10 +87,10 @@ export default function ShelfContent() {
   const user = useSelector(selectUser);
   const { shelfId } = useParams();
   const { selectedWarehouse: warehouse, selectedShelf: shelf } = useSelector(selectWarehouse);
-  const [location, setLocation] = useState({ id: shelfId, type: "shelf" })
+  const location = useMemo(() => ({ id: shelfId, type: "shelf" }), [shelfId]);
 
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const { data: rowShelves, loading, error } = useListenRowShelves(warehouse?.id, shelf?.id);
+  const { data: rowShelves } = useListenRowShelves(warehouse?.id, shelf?.id);
 
   const onNavigate = (row) => {
     navigate(`row/${row.id}`);
@@ -153,11 +153,13 @@ export default function ShelfContent() {
             </AddButton>
           </SectionHeader>
           <List
-            dataSource={rowShelves}
+            dataSource={rowShelves ?? []}
             renderItem={(row) => (
               <List.Item
+                key={row.id}
                 actions={[
                   <Button
+                    key="edit-row"
                     icon={<FontAwesomeIcon icon={faEdit} />}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -166,6 +168,7 @@ export default function ShelfContent() {
                   >
                   </Button>,
                   <Button
+                    key="delete-row"
                     icon={icons.editingActions.delete}
                     danger
                     onClick={(e) => {

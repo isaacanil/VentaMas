@@ -12,65 +12,6 @@ const MODULE_LABELS = {
   accountsReceivable: 'Cuadre de Caja',
 };
 
-const InfoPill = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-  align-items: center;
-  padding: 16px 20px;
-  border-radius: 16px;
-  background: #f0f5ff;
-  border: 1px solid #d6e4ff;
-`;
-
-const InfoPillItem = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  min-width: 160px;
-`;
-
-const InfoPillLabel = styled(Text)`
-  && {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #8c8c8c;
-  }
-
-  &&::after {
-    content: ':';
-    margin-left: 4px;
-  }
-`;
-
-const InfoPillValue = styled(Text)`
-  && {
-    font-size: 14px;
-    font-weight: 600;
-  }
-`;
-
-const ModulesGrid = styled.div`
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-`;
-
-const ModuleCard = styled.div`
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
-  padding: 16px;
-  background: #fff;
-  box-shadow: ${({ $active }) => ($active ? '0 0 0 2px rgba(82, 196, 26, 0.25)' : '0 8px 16px -12px rgba(0, 0, 0, 0.25)')};
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.28);
-    transform: translateY(-2px);
-  }
-`;
-
 const PinDisplay = styled.div`
   margin: 12px 0;
   padding: 12px;
@@ -81,19 +22,6 @@ const PinDisplay = styled.div`
   font-size: 20px;
   letter-spacing: 3px;
   text-align: center;
-`;
-
-const ModuleMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 12px 0;
-`;
-
-const ModuleActions = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 `;
 
 export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel }) => {

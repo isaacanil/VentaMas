@@ -103,15 +103,6 @@ const ReasonBadge = styled.span`
   }}
 `;
 
-const PathHint = styled.div`
-  color: #757575;
-  font-size: 0.78em;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
 const formatMovementReason = (reason) => {
   const map = {
     purchase: 'Compra',

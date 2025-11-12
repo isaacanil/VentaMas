@@ -1,11 +1,8 @@
-import { Modal, Form, Input, notification, Button }from 'antd'
+import { Modal, Form, Input, notification, Button } from 'antd'
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
 
-import { icons } from '../../../../../../../../constants/icons/icons'
 import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
-
-const formIcon = icons.forms
 
 export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose }) => {
     const [form] = Form.useForm()
@@ -109,9 +106,4 @@ const Container = styled.div`
     display: grid;
     align-content: start;
     gap: 1.4em;
-`
-const Footer = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    padding: 0 1em;
 `

@@ -20,7 +20,6 @@ const Products = ({ products }) => {
 
 export default Products
 
-const ProductsContainer = styled.div``;
 const StyledTitle = styled.h2`
   font-weight: 600;
   margin: 0 0 1em;
@@ -67,4 +66,3 @@ const ProductTable = ({ products }) => {
         columns={columns}
         dataSource={dataSource} />;
 };
-

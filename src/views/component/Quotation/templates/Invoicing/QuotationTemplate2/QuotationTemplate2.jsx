@@ -113,3 +113,5 @@ export const QuotationTemplate2 = React.forwardRef(({ data, ignoreHidden }, ref)
     </Container>
   );
 });
+
+QuotationTemplate2.displayName = 'QuotationTemplate2';

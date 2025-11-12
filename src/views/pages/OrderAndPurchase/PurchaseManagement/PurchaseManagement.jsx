@@ -21,6 +21,7 @@ import { MenuApp } from '../../../templates/MenuApp/MenuApp'
 
 import GeneralForm from './components/GeneralForm/GeneralForm'
 import { defaultsMap, sanitizeData } from './purchaseLogic'
+import { getBackOrderAssociationId } from './purchaseManagementUtils'
 
 const Container = styled.div`
   display: grid;
@@ -47,23 +48,6 @@ const ButtonsContainer = styled.div`
   border-top: 1px solid #e8e8e8;
   margin-top: auto;
 `
-
-export function getBackOrderAssociationId({ mode, purchaseId, orderId, operationType }) {
-  if (!mode) throw new Error('Mode is required');
-  if (mode === 'create') return null; // Mover al inicio
-  if (!purchaseId && operationType === 'purchase') return null;
-  if (!orderId && operationType === 'order') return null;
-
-  switch (operationType) {
-    case 'purchase':
-      return mode === 'convert' ? orderId : purchaseId;
-    case 'order':
-      return mode === 'update' ? orderId : null;
-    default:
-      throw new Error(`Invalid operationType: ${operationType}`);
-  }
-}
-
 
 const PurchaseManagement = () => {
   const dispatch = useDispatch();

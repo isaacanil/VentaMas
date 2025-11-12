@@ -54,7 +54,7 @@ const WarehouseTab = memo(() => {
     const [isSegmentFormVisible, setIsSegmentFormVisible] = useState(false);
 
     // Usar el hook optimizado que carga toda la jerarquía
-    const { data: warehouseData, loading } = useTransformedWarehouseData();
+    const { data: warehouseData } = useTransformedWarehouseData();
 
     // Convertir la estructura transformada a formato Tree de Ant Design
     const treeData = useMemo(() => {
@@ -79,7 +79,7 @@ const WarehouseTab = memo(() => {
     }, [warehouseData]);
 
     // Memoizar el callback de selección
-    const handleSelect = useCallback((selectedKeys, info) => {
+    const handleSelect = useCallback((selectedKeys) => {
         const [type, id] = selectedKeys[0]?.split('-') || [];
         let path = '/inventory/warehouses';
 

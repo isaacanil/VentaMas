@@ -1,2 +1,0 @@
-import{a as y}from"./@sentry-C9RpjZZ5.js";import{r as x}from"./inline-style-parser-D4u_cg7q.js";var o={exports:{}},f;function j(){if(f)return o.exports;f=1;var i=x();function s(a,u){var r=null;if(!a||typeof a!="string")return r;for(var e,l=i(a),v=typeof u=="function",n,t,p=0,c=l.length;p<c;p++)e=l[p],n=e.property,t=e.value,v?u(n,t,e):t&&(r||(r={}),r[n]=t);return r}return o.exports=s,o.exports.default=s,o.exports}var b=j();const T=y(b);export{T as S};
-//# sourceMappingURL=style-to-object-DB6SD-wt.js.map

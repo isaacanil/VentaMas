@@ -4,8 +4,8 @@ import dayjs from 'dayjs';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { useFbGetAvailableCreditNotes } from '../../../../../../../../hooks/creditNote/useFbGetAvailableCreditNotes';
-import { formatPrice } from '../../../../../../../../utils/formatPrice';
+import { useFbGetAvailableCreditNotes } from '@/hooks/creditNote/useFbGetAvailableCreditNotes';
+import { formatPrice } from '@/utils/formatPrice';
 
 
 const { Title, Text } = Typography;

@@ -28,7 +28,6 @@ const UnifiedARAlert = ({
   hasAccountReceivablePermission,
   isChangeNegative,
   abilitiesLoading,
-  currentBalance,
   creditLimitValue,
 }) => {
   const dispatch = useDispatch();
@@ -100,7 +99,6 @@ const UnifiedARAlert = ({
     });
   }  // 4. Límite de crédito superado
   if (isCreditLimitExceeded) {
-    const currentBalanceDisplay = currentBalance != null ? currentBalance.toFixed(2) : '0.00';
     const newBalanceDisplay = creditLimitValue != null ? creditLimitValue.toFixed(2) : '0.00';
     const limitDisplay = creditLimit?.creditLimit?.value || 0;
     

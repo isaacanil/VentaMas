@@ -75,7 +75,6 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
   const {
     data: expenses,
     loading: expensesLoading,
-    count: expensesCount,
   } = useExpensesForCashCount(id);
 
   const mergeExpenseComments = useCallback(

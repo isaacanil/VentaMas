@@ -1,6 +1,6 @@
 import { notification } from 'antd';
 
-import { resetCart, toggleCart } from '../../../../../features/cart/cartSlice';
+import { addTaxReceiptInState, resetCart, toggleCart } from '../../../../../features/cart/cartSlice';
 import { deleteClient, handleClient } from '../../../../../features/clientCart/clientCartSlice';
 import { IncreaseEndConsumer, IncreaseTaxCredit, clearTaxReceiptData } from '../../../../../features/taxReceipt/taxReceiptSlice';
 import { fbAddInvoice } from '../../../../../firebase/invoices/fbAddInvoice';
@@ -33,12 +33,31 @@ export const verifyAndAdvanceTaxReceiptProcess = async (dispatch, taxReceiptEnab
     if (taxReceiptEnabled) dispatch(addTaxReceiptInState(ncfCode));
 }
 
-export const savingDataToFirebase = async (dispatch, user, bill, taxReceipt) => {
+export const savingDataToFirebase = async (
+    dispatch,
+    user,
+    bill,
+    taxReceipt,
+    options = {},
+) => {
+    const {
+        taxReceiptEnabled = false,
+        isSelectMode = false,
+        selectedProducts = [],
+    } = options ?? {};
+
     try {
-        if (selectMode === true) {
-            fbAddInvoice(bill, user)
-            { taxReceiptEnabled && fbUpdateTaxReceipt(user, taxReceipt) }
-            fbUpdateProductsStock(ProductSelected, user);
+        if (isSelectMode) {
+            await fbAddInvoice(bill, user);
+
+            if (taxReceiptEnabled) {
+                await fbUpdateTaxReceipt(user, taxReceipt);
+            }
+
+            if (selectedProducts.length > 0) {
+                await fbUpdateProductsStock(selectedProducts, user);
+            }
+
             notification.success({
                 message: 'Completada',
                 description: 'Venta Realizada'
@@ -48,7 +67,12 @@ export const savingDataToFirebase = async (dispatch, user, bill, taxReceipt) => 
                 message: "No se puede Facturar en Modo Demo"
             });
         }
-    } catch (err) { console.error('Error clearing invoice state:', err) }
+    } catch (err) {
+        console.error('Error clearing invoice state:', err);
+        notification.error({
+            message: 'No se pudo completar la facturación',
+        });
+    }
 }
 
 export const handleClearDataFromState = async (dispatch, viewportWidth) => {
@@ -58,7 +82,7 @@ export const handleClearDataFromState = async (dispatch, viewportWidth) => {
         dispatch(deleteClient())
         if (viewportWidth < 800) dispatch(toggleCart());
     } catch (error) {
-        console.error('Error al borrar los datos del state de factura')
+        console.error('Error al borrar los datos del state de factura', error)
     }
 }
 

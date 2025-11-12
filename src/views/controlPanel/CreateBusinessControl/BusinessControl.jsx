@@ -277,10 +277,6 @@ const Container = styled.div`
 `
 const Head = styled.div``
 
-const SearchContainer = styled.div`
-  padding: 10px;
-  width: 300px;
-`
 
 const SearchAndFilterContainer = styled.div`
   display: flex;
@@ -293,19 +289,6 @@ const SearchInputWrapper = styled.div`
   width: 300px;
 `
 
-const FiltersPanel = styled.div`
-  padding: 0 10px 10px 10px;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #e8e8e8;
-`
-
-const FilterLabel = styled.div`
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #595959;
-  display: flex;
-  align-items: center;
-`
 
 const Body = styled.div`
   display: grid;

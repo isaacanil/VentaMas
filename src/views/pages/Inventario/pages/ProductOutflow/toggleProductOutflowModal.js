@@ -1,4 +1,6 @@
 import { OPERATION_MODES } from '../../../../../constants/modes';
+import { toggleAddProductOutflow } from '../../../../../features/modals/modalSlice';
+import { setProductOutflowData } from '../../../../../features/productOutflow/productOutflow';
 
 const EmptyProductsOutflow = []
 
@@ -10,12 +12,6 @@ const EmptyProduct = {
     observations: "", // Cualquier comentario adicional o notas relacionadas con el producto
     status: false // El estado de la salida del producto (si se ha completado o no)
 }
-const EmptyProductOutflow = {
-    id: null, // Identificador único de la salida del producto
-    productList: EmptyProductsOutflow, // Lista de productos que se venden
-    date: null, // Fecha de la salida del producto
-}
-
 export class OutflowData {
     constructor({ mode, productSelected, data }) {
         this.mode = mode || OPERATION_MODES.CREATE.id;
@@ -38,9 +34,6 @@ export class ProductOutflowDataFormatter {
 }
 
 
-import { toggleAddProductOutflow } from '../../../../../features/modals/modalSlice';
-import { setProductOutflowData } from '../../../../../features/productOutflow/productOutflow';
-
 export const toggleProductOutflowModal = ({ data, mode, dispatch }) => {
     //abrir el modal de productOutflow
     dispatch(toggleAddProductOutflow())
@@ -49,4 +42,3 @@ export const toggleProductOutflowModal = ({ data, mode, dispatch }) => {
     const newData = new OutflowData({ mode, EmptyProduct, data})
     dispatch(setProductOutflowData({ data: newData }))
 }
-

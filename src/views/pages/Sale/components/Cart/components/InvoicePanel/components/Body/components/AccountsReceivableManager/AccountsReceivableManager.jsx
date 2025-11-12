@@ -4,22 +4,16 @@ import { useSelector } from 'react-redux';
 
 import { SelectCartData } from '../../../../../../../../../../../features/cart/cartSlice';
 import { ARValidateMessage } from '../MarkAsReceivableButton/components/ARValidateMessage/ARValidateMessage';
-import { MarkAsReceivableButton, useARValidation } from '../MarkAsReceivableButton/MarkAsReceivableButton';
+import { MarkAsReceivableButton } from '../MarkAsReceivableButton/MarkAsReceivableButton';
+import { useARValidation } from '../MarkAsReceivableButton/useARValidation';
 import { ReceivableWidget } from '../ReceivableManagementPanel/components/ReceivableWidget/ReceivableWidget';
 import { ReceivableManagementPanel } from '../ReceivableManagementPanel/ReceivableManagementPanel';
 
 
 const AccountsReceivableManager = ({
   hasAccountReceivablePermission,
-  // activeAccountsReceivableCount,
   creditLimit,
-  // isWithinCreditLimit,
-  // isWithinInvoiceCount,
-  // creditLimitValue,
-  change,
-  // clientId,
   form,
-  // isChangeNegative,
   receivableStatus,
   abilitiesLoading,
 }) => {
@@ -58,28 +52,18 @@ const AccountsReceivableManager = ({
         />        {hasAccountReceivablePermission && (
           <Fragment>
             <MarkAsReceivableButton
-              isOpen={isOpenReceivableManagementPanel}
               setIsOpen={setIsOpenReceivableManagementPanel}
               creditLimit={creditLimit}
-              activeAccountsReceivableCount={activeAccountsReceivableCount}
-              isWithinCreditLimit={isWithinCreditLimit}
-              isWithinInvoiceCount={isWithinInvoiceCount}
-              creditLimitValue={creditLimitValue}
-              change={change}              clientId={clientId}
             />
             
             <ReceivableWidget 
               receivableStatus={receivableStatus}
               isChangeNegative={isChangeNegative}
               onOpenConfig={() => setIsOpenReceivableManagementPanel(true)}
-              creditLimit={creditLimit}
             />
             
             <ReceivableManagementPanel
               form={form}
-              activeAccountsReceivableCount={activeAccountsReceivableCount}
-              isWithinCreditLimit={isWithinCreditLimit}
-              isWithinInvoiceCount={isWithinInvoiceCount}
               creditLimit={creditLimit}
               isChangeNegative={isChangeNegative}
               receivableStatus={receivableStatus}
@@ -95,30 +79,20 @@ const AccountsReceivableManager = ({
     return (
       <Fragment>
         <MarkAsReceivableButton
-          isOpen={isOpenReceivableManagementPanel}
           setIsOpen={setIsOpenReceivableManagementPanel}
           creditLimit={creditLimit}
-          activeAccountsReceivableCount={activeAccountsReceivableCount}
-          isWithinCreditLimit={isWithinCreditLimit}
-          isWithinInvoiceCount={isWithinInvoiceCount}
-          creditLimitValue={creditLimitValue}
-          change={change}          clientId={clientId}
         />
 
         <ReceivableWidget 
           receivableStatus={receivableStatus}
           isChangeNegative={isChangeNegative}
           onOpenConfig={() => setIsOpenReceivableManagementPanel(true)}
-          creditLimit={creditLimit}
         />
 
         <ReceivableManagementPanel
           isOpen={isOpenReceivableManagementPanel}
           closePanel={closeReceivableManagementPanel}
           form={form}
-          activeAccountsReceivableCount={activeAccountsReceivableCount}
-          isWithinCreditLimit={isWithinCreditLimit}
-          isWithinInvoiceCount={isWithinInvoiceCount}
           creditLimit={creditLimit}
           isChangeNegative={isChangeNegative}
           receivableStatus={receivableStatus}
@@ -132,15 +106,8 @@ const AccountsReceivableManager = ({
 
 AccountsReceivableManager.propTypes = {
   hasAccountReceivablePermission: PropTypes.bool.isRequired,
-  activeAccountsReceivableCount: PropTypes.number.isRequired,
   creditLimit: PropTypes.any,
-  isWithinCreditLimit: PropTypes.bool.isRequired,
-  isWithinInvoiceCount: PropTypes.bool.isRequired,
-  creditLimitValue: PropTypes.number.isRequired,
-  change: PropTypes.number.isRequired,
-  clientId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   form: PropTypes.any,
-  isChangeNegative: PropTypes.bool.isRequired,
   receivableStatus: PropTypes.bool,
   abilitiesLoading: PropTypes.bool.isRequired,
 };

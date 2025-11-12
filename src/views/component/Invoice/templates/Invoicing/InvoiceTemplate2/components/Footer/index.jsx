@@ -9,7 +9,7 @@ const PAYMENT_METHODS = {
     card: 'Tarjeta',
 };
 
-export default function Footer({ business, data }) {
+export default function Footer({ data }) {
 
     const subtotal = getProductsPrice(data?.products || []);
     const discount = getTotalDiscount(subtotal, data?.discount?.value || 0);

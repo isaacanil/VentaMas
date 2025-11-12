@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
@@ -10,7 +9,6 @@ import { ProductRecordList } from './components/ProductTable/ProductRecordList';
 import { ProductsTable } from './components/ProductTable/ProductsTable';
 
 export const Inventory = () => {
-  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState('');
   const { products } = useGetProducts();
   const vw = useViewportWidth();

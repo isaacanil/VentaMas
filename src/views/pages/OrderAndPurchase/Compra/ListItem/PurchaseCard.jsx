@@ -1,9 +1,9 @@
-import { ActionsButtonsGroup } from './ActionsButtonsGroup';
-
-import { correctDate } from '@/hooks/time/correctDate';
 import { useFormatPrice } from '@/hooks/useFormatPrice';
+import { ActionsButtonsGroup } from '@/views/pages/OrderAndPurchase/Compra/ListItem/ActionsButtonsGroup';
 import { Button } from '@/views/templates/system/Button/Button';
 import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
+
+import { correctDate } from '@/hooks/time/correctDate';
 
 export const PurchaseCard = ({ purchaseData, Row, Col, activeId, setActiveId }) => {
     const { data } = purchaseData;

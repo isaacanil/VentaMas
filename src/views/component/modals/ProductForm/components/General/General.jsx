@@ -11,13 +11,14 @@ import { useListenProductBrands } from '../../../../../../firebase/products/bran
 import { fbAddProduct } from '../../../../../../firebase/products/fbAddProduct';
 import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
 import { initTaxes } from '../../../UpdateProduct/InitializeData';
+import { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../../constants/brandOptions';
 import { imgFailed } from '../../ImageManager/ImageManager';
 import { buildNormalizedProductSnapshot, buildSanitizedProductForSubmit, normalizeItemType, normalizeTrackInventoryValue } from '../../utils/productNormalization';
 import { BarCode } from '../sections/BarCode';
 import { InventoryInfo } from '../sections/InventoryInfo';
 import { PriceCalculator } from '../sections/PriceCalculator';
 import { PriceInfo } from '../sections/PriceInfo';
-import { ProductInfo, BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../sections/ProductInfo';
+import { ProductInfo } from '../sections/ProductInfo';
 import { QRCode } from '../sections/QRCode';
 import { WarrantyInfo } from '../sections/WarrantyInfo';
 

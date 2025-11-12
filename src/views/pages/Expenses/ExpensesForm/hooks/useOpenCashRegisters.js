@@ -31,7 +31,9 @@ export const useOpenCashRegisters = (businessID, isOpen) => {
                             const d = empSnap.data();
                             name = d.name || d.user?.name || name;
                         }
-                    } catch { }
+                    } catch (fetchError) {
+                        console.warn('Failed to resolve employee name', fetchError);
+                    }
                 }
 
                 return {

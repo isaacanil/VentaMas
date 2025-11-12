@@ -1,6 +1,6 @@
 import { GlobalOutlined } from '@ant-design/icons';
 import * as antd from 'antd';
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -12,7 +12,7 @@ import { useRncSearch } from '../../../../../../../hooks/useRncSearch';
 import { DgiiSyncAlert } from '../../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '../../../../../../component/Rnc/RncPanel/RncPanel';
 
-const { Form, Input, Button, notification, Space } = antd;
+const { Form, Input, Button, notification } = antd;
 
 const Wrapper = styled.div`
     display: grid;
@@ -31,7 +31,6 @@ export const ClientGeneralInfo = ({
 }) => {
     const user = useSelector(selectUser);
     const dispatch = useDispatch();
-    const update = OPERATION_MODES.UPDATE.id;
     const create = OPERATION_MODES.CREATE.id;
     const { loading, error, rncInfo, differences, consultarRNC, syncWithDgii, compareDgiiData } = useRncSearch(form, 'personalID');
 
@@ -75,6 +74,7 @@ export const ClientGeneralInfo = ({
                     });
                     dispatch(toggleClientModal({ mode: create }));
                 } catch (error) {
+                    console.error(error);
                     notification.error({
                         message: 'Error al eliminar',
                         description: 'No se pudo eliminar el cliente. Inténtelo de nuevo.'

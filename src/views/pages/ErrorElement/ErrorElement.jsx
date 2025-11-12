@@ -20,7 +20,6 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
     const {
         user,
         loading,
-        reportError,
         canGoBack,
         handleBack,
         handleGoBack,
