@@ -5,9 +5,9 @@
  * @since 0.1.0
  */
 
-import { message } from 'antd'
+import { Alert, message } from 'antd'
 import { DateTime } from 'luxon'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
@@ -26,6 +26,57 @@ import { Button } from '../../../../../templates/system/Button/Button'
 import { EditDelBtns } from '../../../../../templates/system/Button/EditDelBtns/EditDelBtns'
 import { ExpenseChart } from '../ExpenseReport/ExpenseReport'
 
+const FIREBASE_INDEX_LINK_REGEX = /(https:\/\/console\.firebase\.google\.com\/[^\s"'`]+)/i;
+
+const extractFirebaseIndexLink = (error) => {
+    if (!error) return null;
+
+    const candidates = [
+        error?.link,
+        error?.customData?.link,
+        error?.customData?.path,
+        error?.message,
+    ];
+
+    for (const candidate of candidates) {
+        if (typeof candidate !== 'string') continue;
+        const match = candidate.match(FIREBASE_INDEX_LINK_REGEX);
+        if (match?.[1]) {
+            return match[1].replace(/[)>.,]+$/, '');
+        }
+    }
+
+    return null;
+};
+
+const buildExpensesErrorDetails = (error) => {
+    if (!error) return null;
+
+    const code = typeof error?.code === 'string' ? error.code.toLowerCase() : '';
+    const message = typeof error?.message === 'string' ? error.message : '';
+    const requiresIndex =
+        code.includes('failed-precondition') && /requires an index/i.test(message);
+
+    if (requiresIndex) {
+        return {
+            type: 'index',
+            title: 'Firebase necesita un índice para esta consulta',
+            description:
+                'Abre el asistente en la consola de Firebase para crear el índice que permite filtrar por fecha.',
+            indexUrl: extractFirebaseIndexLink(error),
+        };
+    }
+
+    return {
+        type: 'generic',
+        title: 'No se pudieron cargar los gastos',
+        description: 'Recarga la pantalla o contacta a soporte si el problema persiste.',
+    };
+};
+
+const normalizeExpenseStatus = (status) =>
+    typeof status === 'string' && status.trim() ? status : 'active';
+
 /**
  * @function ExpensesTable
  * @desc A component that renders a table of expenses.
@@ -40,7 +91,8 @@ export const ExpensesTable = () => {
         startDate: null,
         endDate: null
     });
-    const { expenses } = useFbGetExpenses(dateRange);
+    const { expenses, loading, error } = useFbGetExpenses(dateRange);
+    const errorDetails = useMemo(() => buildExpensesErrorDetails(error), [error]);
 
     const [reportIsOpen, setReportIsOpen] = useState(false);
     const handleReportOpen = () => setReportIsOpen(!reportIsOpen);
@@ -76,7 +128,8 @@ export const ExpensesTable = () => {
         }
     }, [setDateRange, dateRange]);
 
-    const categories = [...new Set(expenses.map(({ expense }) => expense.category))].filter(Boolean);
+    const normalizedExpenses = Array.isArray(expenses) ? expenses : [];
+    const categories = [...new Set(normalizedExpenses.map(({ expense }) => expense?.category))].filter(Boolean);
     const categoryOptions = categories.map(category => ({ label: category, value: category }));    // Filter config for FilterBar
     const filterConfig = {
         filters: [
@@ -90,7 +143,9 @@ export const ExpensesTable = () => {
                 key: 'status',
                 type: 'status',
                 placeholder: 'Estado',
-                visibleStatus: ['active', 'canceled', 'completed', 'pending']
+                visibleStatus: ['active', 'canceled', 'completed', 'pending', 'deleted'],
+                allowClear: true,
+                clearText: 'Ver todos los estados',
             },
         ],
         showSortButton: true,
@@ -100,43 +155,61 @@ export const ExpensesTable = () => {
                 startDate: dateRange.startDate,
                 endDate: dateRange.endDate
             } : null,
-            status: 'active'
+            status: null
         },
         defaultSort: {
             isAscending: false
         }
     };
 
-    const data = expenses
-        .map(({ expense }) => {
-            // Extraer la URL real si es un objeto complejo
-            
+    const data = normalizedExpenses
+        .map(({ expense: rawExpense }) => {
+            const expense = rawExpense ?? {};
+            const normalizedStatus = normalizeExpenseStatus(expense.status);
+            const normalizedExpense = {
+                ...expense,
+                status: normalizedStatus,
+            };
+
             let receiptImageUrl = null;
-            if (expense.attachments?.length > 0) {
-                const firstAttachment = expense.attachments[0];
-                if (firstAttachment.url && typeof firstAttachment.url === 'object' && firstAttachment.url.url) {
+            const attachments = Array.isArray(expense.attachments) ? expense.attachments : [];
+            if (attachments.length > 0) {
+                const firstAttachment = attachments[0];
+                if (firstAttachment?.url && typeof firstAttachment.url === 'object' && firstAttachment.url.url) {
                     receiptImageUrl = firstAttachment.url.url;
-                } else if (typeof firstAttachment.url === 'string') {
+                } else if (typeof firstAttachment?.url === 'string') {
                     receiptImageUrl = firstAttachment.url;
                 }
-            } else if (expense.receiptImageUrl) {
+            } else if (typeof expense.receiptImageUrl === 'string') {
                 receiptImageUrl = expense.receiptImageUrl;
             }
 
             const createdAt = Number.isFinite(expense?.dates?.createdAt)
                 ? expense.dates.createdAt
                 : null;
+            const expenseDate = Number.isFinite(expense?.dates?.expenseDate)
+                ? expense.dates.expenseDate
+                : createdAt;
+
+            const amount = Number.isFinite(expense?.amount)
+                ? expense.amount
+                : Number(expense?.amount) || 0;
+
+            const number = Number.isFinite(expense?.numberId)
+                ? expense.numberId
+                : Number(expense?.number) || 0;
 
             return {
-                number: expense.numberId,
+                id: expense.id ?? normalizedExpense.id,
+                number,
                 category: expense.category,
                 description: expense.description,
-                dateExpense: expense?.dates?.expenseDate,
-                amount: expense.amount,
+                dateExpense: expenseDate,
+                amount,
                 receiptImg: receiptImageUrl,
-                attachments: expense.attachments || [],
-                action: expense,
-                status: expense.status,
+                attachments,
+                action: normalizedExpense,
+                status: normalizedStatus,
                 createdAt,
                 dateGroup: createdAt
                     ? DateTime.fromMillis(createdAt).toLocaleString(DateTime.DATE_FULL)
@@ -163,7 +236,11 @@ export const ExpensesTable = () => {
 
             return true;
         })
-        .sort((a, b) => b.number - a.number)
+        .sort((a, b) => {
+            const valueA = Number.isFinite(a.number) ? a.number : Number.MIN_SAFE_INTEGER;
+            const valueB = Number.isFinite(b.number) ? b.number : Number.MIN_SAFE_INTEGER;
+            return valueB - valueA;
+        })
 
     const columns = [
         {
@@ -246,6 +323,32 @@ export const ExpensesTable = () => {
     ]
     return (
         <Container>
+            {errorDetails && (
+                <ErrorBanner>
+                    <Alert
+                        type="error"
+                        showIcon
+                        message={errorDetails.title}
+                        description={
+                            <ErrorDescription>
+                                <span>{errorDetails.description}</span>
+                                {errorDetails.indexUrl && (
+                                    <>
+                                        <ErrorActionLink
+                                            href={errorDetails.indexUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Abrir asistente de índices
+                                        </ErrorActionLink>
+                                        <ErrorCodeSnippet>{errorDetails.indexUrl}</ErrorCodeSnippet>
+                                    </>
+                                )}
+                            </ErrorDescription>
+                        }
+                    />
+                </ErrorBanner>
+            )}
             <FilterBar
                 config={filterConfig}
                 onChange={handleFilterChange}
@@ -261,6 +364,7 @@ export const ExpensesTable = () => {
             <AdvancedTable
                 columns={columns}
                 data={data}
+                loading={loading}
                 elementName={'Gasto'}
                 groupBy={'dateGroup'}
                 defaultDate={'today'}
@@ -270,6 +374,35 @@ export const ExpensesTable = () => {
         </Container>
     )
 }
+
+const ErrorBanner = styled.div`
+    margin-bottom: 1em;
+`;
+
+const ErrorDescription = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+`;
+
+const ErrorActionLink = styled.a`
+    color: var(--Primary6, #1677ff);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+`;
+
+const ErrorCodeSnippet = styled.code`
+    display: block;
+    padding: 0.4em 0.6em;
+    border-radius: 0.3em;
+    background-color: #f5f5f5;
+    font-size: 0.85em;
+    word-break: break-all;
+`;
 
 const Container = styled.div`
     height: 100%;

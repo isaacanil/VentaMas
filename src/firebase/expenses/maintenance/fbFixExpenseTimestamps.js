@@ -4,8 +4,8 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
 import { toTimestamp } from '../../../utils/firebase/toTimestamp';
+import { db } from '../../firebaseconfig';
 
 const TIMESTAMP_PATHS = [
   ['dates', 'createdAt'],

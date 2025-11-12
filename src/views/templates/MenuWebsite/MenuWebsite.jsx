@@ -7,7 +7,6 @@ import { useDialog } from "../../../Context/Dialog"
 import { logout, selectUser } from "../../../features/auth/userSlice"
 import { fbSignOut } from "../../../firebase/Auth/fbAuthV2/fbSignOut"
 import ROUTES_PATH from "../../../routes/routesName"
-import { AppVersionBadge } from "../../pages/Home/components/AppVersionBadge/AppVersionBadge"
 import PersonalizedGreeting from "../../pages/Home/components/PersonalizedGreeting/PersonalizedGreeting"
 import { NotificationButton } from "../MenuApp/Components/NotificationButton/NotificationButton"
 
@@ -156,17 +155,6 @@ const ActionButtons = styled.div`
     gap: 0.45rem;
     flex-wrap: wrap;
     justify-content: flex-end;
-
-    @media (max-width: 768px) {
-        justify-content: flex-start;
-    }
-`
-
-const VersionBadgeWrapper = styled.div`
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 0.1rem;
 
     @media (max-width: 768px) {
         justify-content: flex-start;

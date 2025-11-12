@@ -3,11 +3,20 @@ import {
     faClock,
     faBan,
     faSpinner,
+    faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Selector } from '../../../../components/common/Selector/Selector';
 
 const defaultStatusOptions = [
+    {
+        value: 'active',
+        label: 'Activo',
+        icon: faCheckCircle,
+        color: '#177ddc',
+        bgColor: '#e6f4ff',
+        borderColor: '#91caff',
+    },
     {
         value: 'completed',
         label: 'Completado',
@@ -26,12 +35,19 @@ const defaultStatusOptions = [
     },
     {
         value: 'canceled',
-        
         label: 'Cancelado',
         icon: faBan,
         color: '#ff4d4f',
         bgColor: '#fff1f0',
         borderColor: '#ffccc7',
+    },
+    {
+        value: 'deleted',
+        label: 'Eliminado',
+        icon: faTrash,
+        color: '#8c8c8c',
+        bgColor: '#fafafa',
+        borderColor: '#d9d9d9',
     },
     {
         value: 'processing',
@@ -50,6 +66,8 @@ export const StatusSelector = ({
     visibleStatus = [],
     placeholder = "Estado",
     showAllOption = false,
+    allowClear = false,
+    clearText,
     width,
 }) => {
     // Filtrar las opciones según los estados visibles
@@ -71,6 +89,8 @@ export const StatusSelector = ({
             options={filteredOptions}
             placeholder={placeholder}
             showAllOption={showAllOption}
+            allowClear={allowClear}
+            clearText={clearText}
             defaultStyles={defaultStyles}
             width={width}
         />

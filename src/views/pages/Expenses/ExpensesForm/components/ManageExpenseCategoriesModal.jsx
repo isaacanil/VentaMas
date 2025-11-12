@@ -2,13 +2,13 @@ import { Modal, List, Typography, Input, Button, Space, Popconfirm, notification
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { useCategoryState } from '../../../../../Context/CategoryContext';
 import { icons } from '../../../../../constants/icons/icons';
+import { useCategoryState } from '../../../../../Context/CategoryContext';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { fbDeleteExpenseCategory } from '../../../../../firebase/expenses/categories/fbDeleteExpenseCategory';
+import { useFbGetExpensesCategories } from '../../../../../firebase/expenses/categories/fbGetExpensesCategories';
 import { fbRestoreExpenseCategory } from '../../../../../firebase/expenses/categories/fbRestoreExpenseCategory';
 import { fbUpdateExpenseCategory } from '../../../../../firebase/expenses/categories/fbUpdateExpenseCategory';
-import { useFbGetExpensesCategories } from '../../../../../firebase/expenses/categories/fbGetExpensesCategories';
 
 const { Title, Text } = Typography;
 

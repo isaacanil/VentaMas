@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../features/auth/userSlice';
 import { fbNormalizeAllBusinessesClients } from '../../../firebase/client/fbNormalizeAllBusinessesClients';
-import { fbFixMissingProductIds } from '../../../firebase/products/fbFixMissingProductIds';
 import {
   fbFixExpenseTimestamps,
   fbFixExpenseTimestampsForAll,
 } from '../../../firebase/expenses/maintenance/fbFixExpenseTimestamps';
+import { fbFixMissingProductIds } from '../../../firebase/products/fbFixMissingProductIds';
 import { normalizeAllBusinessesProductTaxes } from '../../../firebase/products/fbNormalizeAllBusinessesProductTaxes';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 

@@ -1,18 +1,19 @@
 import { Button, Input, Select, Form, DatePicker, Modal } from 'antd';
 import dayjs from 'dayjs';
-import 'dayjs/locale/es';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import 'dayjs/locale/es';
+
 import { icons } from '../../../../constants/icons/icons';
 import { useCategoryState } from '../../../../Context/CategoryContext';
 import { useFbGetExpensesCategories } from '../../../../firebase/expenses/categories/fbGetExpensesCategories';
 import EvidenceUpload from '../../../component/EvidenceUpload/EvidenceUpload';
-import ManageExpenseCategoriesModal from './components/ManageExpenseCategoriesModal';
 import Loader from '../../../templates/system/loader/Loader';
 
+import ManageExpenseCategoriesModal from './components/ManageExpenseCategoriesModal';
 import useExpensesForm from './hooks/useExpenseForm';
 
 

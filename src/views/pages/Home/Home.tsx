@@ -3,11 +3,11 @@ import styled from 'styled-components';
 
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
 
-import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts';
+import { AppVersionBadge } from './components/AppVersionBadge/AppVersionBadge';
 import { BusinessInfoPill } from './components/BusinessInfoPill/BusinessInfoPill';
+import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts';
 
 import type { JSX } from 'react';
-import { AppVersionBadge } from './components/AppVersionBadge/AppVersionBadge';
 
 type RootState = {
   user?: {
