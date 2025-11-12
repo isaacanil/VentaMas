@@ -1,9 +1,9 @@
-import { deleteDoc, doc } from "firebase/firestore";
+import { Timestamp, doc, updateDoc } from "firebase/firestore";
 
 import { db } from "../../firebaseconfig";
 
 /**
- * Elimina una categoría de gastos en Firebase.
+ * Marca una categoría de gastos como eliminada (soft delete) en Firebase.
  *
  * @param {string} categoryId - El ID de la categoría que se desea eliminar.
  * @returns {Promise} - Retorna una promesa que indica si la operación fue exitosa o no.
@@ -17,7 +17,11 @@ export const fbDeleteExpenseCategory = async (user, categoryId) => {
     const counterRef = doc(db, "businesses", user.businessID, "expensesCategories", categoryId);
 
     try {
-        await deleteDoc(counterRef);
+        await updateDoc(counterRef, {
+            "category.isDeleted": true,
+            "category.deletedAt": Timestamp.now(),
+            "category.deletedBy": user?.uid ?? null,
+        });
 
     } catch (err) {
         console.log(err);

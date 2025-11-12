@@ -38,16 +38,11 @@ const PersonalizedGreeting = (): JSX.Element => {
 
   const realName = user?.realName && typeof user.realName === 'string' ? user.realName.trim() : '';
   const username = user?.username && typeof user.username === 'string' ? user.username.trim() : '';
-  const nameToDisplay = realName || username || 'Usuario';
-  const logoUrl = typeof business?.logoUrl === 'string' ? business.logoUrl : null;
-  const businessName =
-    (typeof business?.name === 'string' && business.name) || 'Tu Negocio';
+  const nameToDisplay = (realName || username || 'Usuario');
 
   return (
     <>
       <CombinedPill
-        logoUrl={logoUrl}
-        businessName={businessName}
         userName={nameToDisplay}
         onClick={() => setSessionModalOpen(true)}
       />

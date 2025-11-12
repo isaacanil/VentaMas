@@ -129,7 +129,6 @@ const EXPENSES_TERM = {
   EXPENSES_CREATE: '/expenses/new',
   EXPENSES_UPDATE: '/expenses/update/:id',
   EXPENSES_LIST: '/expenses/list',
-  EXPENSES_CATEGORY: '/expenses/categories',
 } as const;
 
 const ACCOUNT_RECEIVABLE_TERM = {

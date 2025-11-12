@@ -22,6 +22,7 @@ const menuItems = createMenuItems([
   { title: 'Ordenes', icon: icons.menu.unSelected.order, route: ROUTES_NAME.ORDER_TERM.ORDERS, category: 'Operaciones' },
   { title: 'BackOrders', icon: icons.menu.unSelected.order, route: ROUTES_NAME.PURCHASE_TERM.BACKORDERS, category: 'Inventario' },
   { title: 'Cuentas por Cobrar', icon: icons.menu.unSelected.accountsReceivable, route: ROUTES_NAME.ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST, category: 'Finanzas' },
+   { title: 'Gastos', icon: icons.menu.unSelected.expenses.list, route: ROUTES_NAME.EXPENSES_TERM.EXPENSES_LIST, category: 'Finanzas' },
   { title: 'Notas de Crédito', icon: icons.finances.fileInvoiceDollar, route: ROUTES_NAME.CREDIT_NOTE_TERM.CREDIT_NOTE_LIST, category: 'Finanzas' },
   { title: 'Control Inventario', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_CONTROL, category: 'Inventario' },
   { title: 'Resumen Inventario', icon: icons.menu.unSelected.inventory, route: ROUTES_NAME.INVENTORY_TERM.INVENTORY_SUMMARY, category: 'Inventario' },

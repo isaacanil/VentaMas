@@ -15,6 +15,9 @@ export const fbAddExpenseCategory = async (user, category) => {
             ...category,
             createdAt: Timestamp.now(),
             id: nanoid(12),
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
         }
         const categoriesRef = doc(db, "businesses", user.businessID, "expensesCategories", category.id);
 

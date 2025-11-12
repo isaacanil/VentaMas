@@ -103,12 +103,6 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
     exportName: 'RegistroToolbar',
   }),
   registerToolbar({
-    id: 'expenses-categories-toolbar',
-    routes: EXPENSES_TERM.EXPENSES_CATEGORY,
-    importFn: () => import('../Page/ExpensesCategoriesToolbar'),
-    exportName: 'ExpensesCategoriesToolbar',
-  }),
-  registerToolbar({
     id: 'expenses-list-toolbar',
     routes: EXPENSES_TERM.EXPENSES_LIST,
     importFn: () => import('../Page/ExpensesListToolbar'),

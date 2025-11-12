@@ -19,7 +19,6 @@ const AddCategoryModal = () => {
   const handleOk = async () => {
     try {
       const { name } = await form.validateFields();
-      alert(name);
       if (!name) {
         notification.error({ message: 'El nombre de la categoría no puede estar vacío' });
         return;
@@ -57,6 +56,7 @@ const AddCategoryModal = () => {
       cancelText="Cancelar"
       width={400}
       destroyOnHidden
+      zIndex={2000}
     >
       <Form
         form={form}

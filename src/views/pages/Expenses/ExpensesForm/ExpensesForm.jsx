@@ -2,7 +2,7 @@ import { Button, Input, Select, Form, DatePicker, Modal } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -10,6 +10,7 @@ import { icons } from '../../../../constants/icons/icons';
 import { useCategoryState } from '../../../../Context/CategoryContext';
 import { useFbGetExpensesCategories } from '../../../../firebase/expenses/categories/fbGetExpensesCategories';
 import EvidenceUpload from '../../../component/EvidenceUpload/EvidenceUpload';
+import ManageExpenseCategoriesModal from './components/ManageExpenseCategoriesModal';
 import Loader from '../../../templates/system/loader/Loader';
 
 import useExpensesForm from './hooks/useExpenseForm';
@@ -20,7 +21,8 @@ dayjs.extend(customParseFormat);
 dayjs.locale('es');
 
 const CategorySelectContainer = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
@@ -36,6 +38,7 @@ const PAYMENT_METHODS = [
 
 const ExpensesForm = () => {
     const dispatch = useDispatch();
+    const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
     const { categories } = useFbGetExpensesCategories();
     const { configureAddExpenseCategoryModal } = useCategoryState();
 
@@ -59,8 +62,8 @@ const ExpensesForm = () => {
 
     const categoryOptions = useMemo(
         () => categories
-        .filter(({ category }) => category?.name)
-        .map(({ category }) => ({ label: category?.name, value: category?.id })),
+            .filter(({ category }) => category?.name && !category?.isDeleted)
+            .map(({ category }) => ({ label: category?.name, value: category?.id })),
         [categories],
     );
 
@@ -127,6 +130,11 @@ const ExpensesForm = () => {
                             icon={icons.operationModes.add}
                             title="Añadir nueva categoría"
                             onClick={configureAddExpenseCategoryModal}
+                        />
+                        <Button
+                            icon={icons.operationModes.setting}
+                            title="Administrar categorías"
+                            onClick={() => setIsManageCategoriesOpen(true)}
                         />
                     </CategorySelectContainer>
                 </Form.Item>
@@ -240,6 +248,11 @@ const ExpensesForm = () => {
                     />
                 </Form.Item>
             </Form>
+            <ManageExpenseCategoriesModal
+                open={isManageCategoriesOpen}
+                onClose={() => setIsManageCategoriesOpen(false)}
+                onAddCategory={configureAddExpenseCategoryModal}
+            />
         </Modal>
     );
 };

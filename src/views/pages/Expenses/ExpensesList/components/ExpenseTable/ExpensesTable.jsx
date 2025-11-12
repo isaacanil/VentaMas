@@ -123,6 +123,10 @@ export const ExpensesTable = () => {
                 receiptImageUrl = expense.receiptImageUrl;
             }
 
+            const createdAt = Number.isFinite(expense?.dates?.createdAt)
+                ? expense.dates.createdAt
+                : null;
+
             return {
                 number: expense.numberId,
                 category: expense.category,
@@ -133,8 +137,10 @@ export const ExpensesTable = () => {
                 attachments: expense.attachments || [],
                 action: expense,
                 status: expense.status,
-                createdAt: expense.dates.createdAt,
-                dateGroup: DateTime.fromMillis(expense.dates.createdAt).toLocaleString(DateTime.DATE_FULL)
+                createdAt,
+                dateGroup: createdAt
+                    ? DateTime.fromMillis(createdAt).toLocaleString(DateTime.DATE_FULL)
+                    : 'Fecha sin registrar'
             }
         })
 

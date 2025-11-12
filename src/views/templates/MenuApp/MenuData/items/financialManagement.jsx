@@ -7,7 +7,7 @@ import ROUTES_NAME from "../../../../../routes/routesName";
 const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM
 const { ORDERS } = ROUTES_NAME.ORDER_TERM
 
-const { EXPENSES_LIST, EXPENSES_CATEGORY } = ROUTES_NAME.EXPENSES_TERM
+const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM
 const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM
 
 const ChevronRight = icons.arrows.chevronRight
@@ -41,18 +41,7 @@ const financialManagement = [
         submenuIconOpen: ChevronLeft,
         submenuIconClose: ChevronRight,
         group: 'financialManagement',
-        submenu: [
-            {
-                title: 'Lista de Gastos',
-                route: EXPENSES_LIST,
-                icon: icons.menu.unSelected.expenses.list
-            },
-            {
-                title: 'Categoría de Gastos',
-                route: EXPENSES_CATEGORY,
-                icon: icons.menu.unSelected.expenses.category
-            }
-        ]
+        route: EXPENSES_LIST,
     },
     {
         title: 'Cuadre de caja',

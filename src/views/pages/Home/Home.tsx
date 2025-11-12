@@ -1,50 +1,80 @@
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
 
 import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts';
-import PersonalizedGreeting from './components/PersonalizedGreeting/PersonalizedGreeting';
-import Footer from './Footer/Footer';
+import { BusinessInfoPill } from './components/BusinessInfoPill/BusinessInfoPill';
 
 import type { JSX } from 'react';
+import { AppVersionBadge } from './components/AppVersionBadge/AppVersionBadge';
+
+type RootState = {
+  user?: {
+    user?: {
+      role?: string | null;
+    } | null;
+  };
+};
 
 export const Home = (): JSX.Element => {
+  const userRole = useSelector<RootState, string | null>((state) =>
+    typeof state.user?.user?.role === 'string' ? state.user.user.role : null,
+  );
+  const shouldShowVersionBadge = userRole === 'dev';
+
   return (
     <HomeLayout>
       <MenuWebsite />
+      <TopInfoRow>
+        <BusinessInfoPill />
+        {shouldShowVersionBadge && <AppVersionBadge showLabel={false} />}
+      </TopInfoRow>
       <MainContent>
         <MainContentInner>
-          <PersonalizedGreeting />
           <DashboardShortcuts />
         </MainContentInner>
       </MainContent>
-      <Footer />
     </HomeLayout>
   );
 };
 
 const HomeLayout = styled.div`
-  height: 100%;
+  min-height: 100vh;
   width: 100%;
-  display: grid;
-  grid-template-rows: min-content 1fr min-content;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   background-color: var(--color2);
+  padding-bottom: 2rem;
 `;
 
 const MainContent = styled.main`
-  display: grid;
+  flex: 1;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem;
   overflow-y: auto;
-
 `;
+
 const MainContentInner = styled.div`
-  display: grid;
-  align-items: start;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.25rem;
+  width: min(1200px, 100%);
   margin: 0 auto;
-  gap: 1em;
-  max-width: 1200px;
+`;
+
+const TopInfoRow = styled.div`
   width: 100%;
-  padding: 1em 1em;
-  border-radius: var(--border-radius1);
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  padding: 0.2em 0;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 `;
