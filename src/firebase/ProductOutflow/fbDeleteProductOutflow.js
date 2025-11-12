@@ -12,8 +12,10 @@
 //     }
 // }
 
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
-import { doc, deleteDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+
 import { fbUpdateStock } from './fbUpdateStock'; // Asegúrate de que esta función pueda manejar el ajuste de stock adecuadamente
 
 export const fbDeleteProductOutflow = async (user, item) => {

@@ -1,18 +1,18 @@
 /* users.functions.js
    CRUD helpers → update user + cambio de clave */
 
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
+
 import { db, admin } from '../../../../../core/config/firebase.js';
-import { verifyAndUpgrade } from '../utils/hash.util.js';
 import {
   validatePermissions,
   validateUserModificationPermissions,
   getUserById,
   ensureUniqueUsername,
-  prepareUserUpdateData,
-  hashPassword
+  prepareUserUpdateData
 } from '../utils/auth.util.js';
+import { verifyAndUpgrade } from '../utils/hash.util.js';
 
 /* ─────────────────── util: aplica patch ─────────────────── */
 async function patchUser(tx, uid, patch) {

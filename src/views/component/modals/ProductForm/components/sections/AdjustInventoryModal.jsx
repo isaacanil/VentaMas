@@ -1,5 +1,5 @@
+import { Modal } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { Modal, InputNumber, Button } from 'antd';
 
 const AdjustInventoryModal = ({ visible, onClose, stock, packSize, onSave }) => {
     const [adjustedStock, setAdjustedStock] = useState(stock);
@@ -12,7 +12,7 @@ const AdjustInventoryModal = ({ visible, onClose, stock, packSize, onSave }) => 
     }, [stock, packSize]);
 
     // Maneja el cambio en el stock y recalcula el total de unidades
-    const handleStockChange = (value) => {
+    const _handleStockChange = (value) => {
         setAdjustedStock(value);
         setAdjustedTotalUnit(value * packSize);
     };

@@ -1,4 +1,5 @@
 import { doc, updateDoc, arrayRemove } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export const fbDeleteItemFromProductOutflow = async (item, idDoc) => {

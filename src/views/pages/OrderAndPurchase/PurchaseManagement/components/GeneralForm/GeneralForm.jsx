@@ -1,27 +1,28 @@
 import { Form, Input, Select, DatePicker, message, Modal } from 'antd'
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import dayjs from 'dayjs'
+import { onSnapshot, doc } from 'firebase/firestore'
+import { useCallback, useState, useEffect, useRef } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
+import { OPERATION_MODES } from '../../../../../../constants/modes'
+import { transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
+import { selectUser } from '../../../../../../features/auth/userSlice'
+import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
+import { selectPurchase, AddProductToPurchase, setProductSelected, deleteProductFromPurchase, clearProductSelected, updateProduct, setPurchase, cleanPurchase } from '../../../../../../features/purchase/addPurchaseSlice'
+import { db } from '../../../../../../firebase/firebaseconfig'
+import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders'
+import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
+import { useBackOrdersByProduct } from '../../../../../../firebase/warehouse/backOrderService';
+import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector'
+import AddProductForm from '../AddProduct'
+import BackOrdersModal from '../BackOrdersModal';
 import EvidenceUpload from '../EvidenceUpload/EvidenceUpload'
 import ProductsTable from '../ProductsTable'
 import TotalsSummary from '../TotalsSummary'
-import AddProductForm from '../AddProduct'
-import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector'
-import OrderSelector from './components/OrderSelector'
-import { useSelector, useDispatch } from 'react-redux'
-import { selectPurchase, AddProductToPurchase, setProductSelected, deleteProductFromPurchase, clearProductSelected, updateProduct, setPurchase, cleanPurchase } from '../../../../../../features/purchase/addPurchaseSlice'
-import { getTransactionConditionById, transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
-import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders'
+
 import NotesInput from './components/NotesInput'
-import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
-import { onSnapshot, doc } from 'firebase/firestore'
-import { db } from '../../../../../../firebase/firebaseconfig'
-import { OPERATION_MODES } from '../../../../../../constants/modes'
-import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
-import { normalizeText } from '../../../../../../utils/text'
-import { selectUser } from '../../../../../../features/auth/userSlice'
-import BackOrdersModal from '../BackOrdersModal';
-import { useBackOrdersByProduct } from '../../../../../../firebase/warehouse/backOrderService';
+import OrderSelector from './components/OrderSelector'
 
 const { confirm } = Modal;
 
@@ -29,12 +30,11 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const [selectedProvider, setSelectedProvider] = useState(null);
-    const [providerSearch, setProviderSearch] = useState('');
     const unsubscribeRef = useRef(null);
-    const { providers = [], loading: providersLoading } = useFbGetProviders();
+    const { providers = [] } = useFbGetProviders();
     const [isBackOrderModalVisible, setIsBackOrderModalVisible] = useState(false);
     const [selectedProductForBackorders, setSelectedProductForBackorders] = useState(null);
-    const { backOrders = [], loading: backOrdersLoading } = useBackOrdersByProduct( selectedProductForBackorders?.id);
+    const { backOrders = [] } = useBackOrdersByProduct( selectedProductForBackorders?.id);
 
     const {
         invoiceNumber,
@@ -42,7 +42,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
         replenishments,
         condition,
         provider: providerId,
-        dates,
         deliveryAt,
         paymentAt,
         note
@@ -50,7 +49,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
 
     const { data: orders = [], loading: orderLoading } = useFbGetPendingOrdersByProvider(providerId);
 
-    const conditionData = getTransactionConditionById(condition);
     const conditionItems = transactionConditions.map((item) => ({
         label: item.label,
         value: item.id
@@ -97,15 +95,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
         };
     }, [selectedProvider?.id]);
 
-    const filteredProviders = useMemo(() =>
-        providerSearch
-            ? providers.filter(({ provider }) =>
-                normalizeText(provider.name).includes(normalizeText(providerSearch)) ||
-                normalizeText(provider.rnc || '').includes(normalizeText(providerSearch))
-            )
-            : providers,
-        [providers, providerSearch]
-    );
 
     const handleProviderSelect = (providerData) => {
         if (selectedProvider && providerData && selectedProvider.id !== providerData.id) {
@@ -126,8 +115,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
             setSelectedProvider(null);
             dispatch(setPurchase({ provider: null }));
         }
-     
-        setProviderSearch('');
     };
 
     const handleAddProvider = () => {
@@ -241,7 +228,7 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
                 <ProviderSelector
                     validateStatus={errors?.provider ? "error" : ""}
                     help={errors?.provider ? "El proveedor es requerido" : ""}
-                    providers={filteredProviders}
+                    providers={providers}
                     selectedProvider={selectedProvider}
                     onSelectProvider={handleProviderSelect}
                     onAddProvider={handleAddProvider}
@@ -322,7 +309,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
                     <NotesInput
                         initialValue={note}
                         onNoteChange={handleNoteChange}
-                        errors={{}}
                     />
                 </div>
                 <EvidenceUpload

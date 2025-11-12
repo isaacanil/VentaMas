@@ -1,7 +1,7 @@
+import { identifyCountryByPrefix } from './country';
 import { calculateGTIN13CheckDigit, calculateEAN8CheckDigit, calculateUPCACheckDigit, calculateGTIN14CheckDigit } from './digits';
 import { expandUPCEToUPCA } from './expansion';
 import { isVariableWeightCode, analyzeVariableWeightCode } from './weight';
-import { identifyCountryByPrefix } from './country';
 
 /**
  * Analiza la estructura de un código de barras
@@ -87,7 +87,7 @@ export function analyzeBarcodeStructure(barcode) {
       }
       break;
       
-    case 12:
+    case 12: {
       analysis.type = 'UPC-A';
       analysis.structure = { 
         systemDigit: cleanCode[0], 
@@ -103,8 +103,9 @@ export function analyzeBarcodeStructure(barcode) {
       };
       analysis.isValid = analysis.checkDigit.isValid;
       break;
+    }
       
-    case 13:
+    case 13: {
       // Verificar si es código de peso variable
       if (isVariableWeightCode(cleanCode)) {
         const variableAnalysis = analyzeVariableWeightCode(cleanCode);
@@ -159,8 +160,9 @@ export function analyzeBarcodeStructure(barcode) {
         analysis.isValid = analysis.checkDigit.isValid;
       }
       break;
+    }
       
-    case 14:
+    case 14: {
       analysis.type = 'GTIN-14';
       analysis.structure = { 
         indicator: cleanCode[0], 
@@ -177,6 +179,7 @@ export function analyzeBarcodeStructure(barcode) {
       };
       analysis.isValid = analysis.checkDigit.isValid;
       break;
+    }
       
     default:
       analysis.type = `Código de ${length} dígitos`;

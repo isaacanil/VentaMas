@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Card, InputNumber, Typography, Space, Divider, Switch, Alert } from 'antd';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+
 import { FISCAL_RECEIPTS_ALERT_CONFIG, getThresholdsForReceiptType } from '../../../../../../../config/fiscalReceiptsAlertConfig';
 
 const { Title, Text } = Typography;

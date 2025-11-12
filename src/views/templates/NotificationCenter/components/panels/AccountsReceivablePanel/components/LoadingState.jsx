@@ -1,0 +1,29 @@
+import { Spin } from 'antd';
+import styled from 'styled-components';
+
+import { PanelCard } from '../../shared/PanelPrimitives';
+
+import PanelHeader from './PanelHeader';
+
+const LoadingState = ({ title, icon }) => (
+  <PanelCard>
+    <PanelHeader icon={icon} title={title} showMeta={false} />
+    <StateContainer>
+      <Spin />
+    </StateContainer>
+  </PanelCard>
+);
+
+LoadingState.defaultProps = {
+  title: 'Cuentas por Cobrar',
+};
+
+const StateContainer = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+`;
+
+export default LoadingState;

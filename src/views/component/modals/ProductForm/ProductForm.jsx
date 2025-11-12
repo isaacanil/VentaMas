@@ -1,13 +1,10 @@
-import React from 'react'
 import { Tabs } from 'antd';
+import React from 'react'
+
 import { General } from './components/General/General';
-import BatchList from './components/Batch/BatchList/BatchList';
-import { useSelector } from 'react-redux';
-import { selectUpdateProductData } from '../../../../features/updateProduct/updateProductSlice';
-import { SaleUnitsConfig } from './components/SaleUnits/SaleUnitsConfig';
+
 
 export const ProductForm = ({ showImageManager }) => {
-    const { status } = useSelector(selectUpdateProductData)
     const items = [
         {
             key: '1',

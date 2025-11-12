@@ -1,8 +1,8 @@
-import React from 'react';
-import styled from 'styled-components';
+import { ReloadOutlined, HomeOutlined } from '@ant-design/icons';
 import { Result, Button } from 'antd';
 import { motion } from 'framer-motion';
-import { ReloadOutlined, HomeOutlined } from '@ant-design/icons';
+import React from 'react';
+import styled from 'styled-components';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -10,7 +10,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(_error) {
     // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }

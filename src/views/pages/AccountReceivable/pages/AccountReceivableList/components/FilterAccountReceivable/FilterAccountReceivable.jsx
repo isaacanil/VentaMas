@@ -1,21 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { Button, Select, Form } from 'antd';
-import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
-import { DatePicker } from '../../../../../../templates/system/Dates/DatePicker/DatePicker';
-import { DateRangeFilter } from '../../../../../../templates/system/Button/TimeFilterButton/DateRangeFilter';
-import { icons } from '../../../../../../../constants/icons/icons';
-import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsReceivable';
-import useBusiness from '../../../../../../../hooks/useBusiness';
+import React, { useState } from 'react';
+import styled from 'styled-components';
 
-const FilterContainer = styled.div`
-  height: 3em;
-  display: grid;
-  padding: 0 1em;
-  align-items: center;
-  background: white;
-  border-radius: 8px;
-`;
+import { icons } from '../../../../../../../constants/icons/icons';
+import useBusiness from '../../../../../../../hooks/useBusiness';
+import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
+import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsReceivable';
+import { DateRangeFilter } from '../../../../../../templates/system/Button/TimeFilterButton/DateRangeFilter';
+import { DatePicker } from '../../../../../../templates/system/Dates/DatePicker/DatePicker';
 
 export const FilterAccountReceivable = ({
   datesSelected = [],
@@ -26,7 +18,6 @@ export const FilterAccountReceivable = ({
 }) => {
   const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [clientType, setClientType] = useState('normal'); // 'normal' o 'insurance'
   const { isPharmacy } = useBusiness();
 
   const handleSort = (newCriteria) => {
@@ -51,7 +42,6 @@ export const FilterAccountReceivable = ({
   };
 
   const handleClientTypeChange = (value) => {
-    setClientType(value);
     onClientTypeChange(value);
   };
 

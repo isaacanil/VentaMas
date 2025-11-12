@@ -1,7 +1,7 @@
-import { getFirestore, collection, getDocs, doc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore';
-import { db } from "../firebaseconfig"; // Asegúrate de importar tu configuración de Firebase
 
-export async function migrateProductsForSpecificBusiness(businessId) {
+// Asegúrate de importar tu configuración de Firebase
+
+export async function migrateProductsForSpecificBusiness(_businessId) {
     // const productsCol = collection(db, "businesses", businessId, "products");
 
 

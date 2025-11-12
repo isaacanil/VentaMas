@@ -1,15 +1,18 @@
-import React from "react";
-import styled from "styled-components";
-import Products from "./components/Products";
-import { closeInvoicePreviewModal, selectInvoicePreview } from "../../../../features/invoice/invoicePreviewSlice";
-import { useDispatch, useSelector } from "react-redux";
 import { Modal }  from "antd";
-import { ClientInfoCard } from "./components/ClientInfo";
-import SummaryInfoCard from "./components/SummaryInfoCard";
-import { PaymentMethodInfoCard } from "./components/PaymentMethodInfoCard";
-import { CreditNotesInfoCard } from "./components/CreditNotesInfoCard";
-import { useFbGetCreditNoteApplicationsByInvoice } from "../../../../hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "styled-components";
+
+import { closeInvoicePreviewModal, selectInvoicePreview } from "../../../../features/invoice/invoicePreviewSlice";
 import { useFbGetCreditNotesByInvoice } from "../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice";
+import { useFbGetCreditNoteApplicationsByInvoice } from "../../../../hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice";
+
+import { ClientInfoCard } from "./components/ClientInfo";
+import { CreditNotesInfoCard } from "./components/CreditNotesInfoCard";
+import { PaymentMethodInfoCard } from "./components/PaymentMethodInfoCard";
+import Products from "./components/Products";
+import SummaryInfoCard from "./components/SummaryInfoCard";
+
 
 export const InvoicePreview = () => {
   const dispatch = useDispatch();
@@ -22,15 +25,11 @@ export const InvoicePreview = () => {
     client = {},
     products = [],
     paymentMethod = [],
-    totalPurchase = {},
-    date = {},
     sourceOfPurchase = "",
-    user = {},
     totalShoppingItems = {},
     totalTaxes = {},
     payment = {},
     totalPurchaseWithoutTaxes = {},
-    creditNotePayment = []
   } = invoicePreviewSelected?.data || {};
 
   // Obtener aplicaciones de notas de crédito para esta factura
@@ -94,10 +93,4 @@ const Group = styled.div`
   
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
-`;
-
-const Title = styled.h2`
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
 `;

@@ -1,4 +1,5 @@
 import { fn } from 'storybook/test';
+
 import { DatePicker } from './DatePicker';
 
 export default {

@@ -1,8 +1,9 @@
 import { collection, getDoc, onSnapshot, query, where } from "firebase/firestore"
-import { db } from "../firebaseconfig"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
+
 import { selectUser } from "../../features/auth/userSlice"
+import { db } from "../firebaseconfig"
 import { convertFirestoreTimestamps } from "../purchase/fbGetPurchases"
 
 export const useFbGetOrders = () => {
@@ -14,8 +15,7 @@ export const useFbGetOrders = () => {
         // const q = query(orderRef, where("data.state.name", "==", "Solicitado"))
         const unsubscribe = onSnapshot(orderRef, (snapshot) => {
             if (snapshot.empty) {
-                setData([]);
-                setLoading(false);
+                setOrders([]);
                 return;
             }
             let orderArray = snapshot.docs.map(async (item) => {
@@ -33,12 +33,12 @@ export const useFbGetOrders = () => {
             setOrders(orderArray)
         })
         return unsubscribe;
-    }, [user?.businessID, providerId])
+    }, [user?.businessID])
 
     return { orders }
 }
 
-const transformOrderData = (item) => {
+const _transformOrderData = (item) => {
     const data = item.data();
     return {
         // data: {

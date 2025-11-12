@@ -1,9 +1,10 @@
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
+
 import { selectUser } from "../../features/auth/userSlice";
-import { db } from "../firebaseconfig";
 import { validateUser } from "../../utils/userValidation";
+import { db } from "../firebaseconfig";
 
 // Función para aplicar filtros del lado del cliente
 const applyClientSideFilters = (invoices, filters) => {

@@ -1,7 +1,8 @@
-import { collection, getDocs, query, where, writeBatch } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { DateTime } from "luxon";
+import { collection, getDocs, query, writeBatch } from "firebase/firestore";
+
 import { convertDecimalToPercentage, getPriceWithoutTax } from "../../utils/pricing";
+import { db } from "../firebaseconfig";
+
 import { isString } from "./fbFixInvoice";
 
 // Función asincrónica para actualizar facturas para múltiples negocios

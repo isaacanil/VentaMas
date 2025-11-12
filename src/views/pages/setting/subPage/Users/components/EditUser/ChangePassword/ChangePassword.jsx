@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { icons } from '../../../../../../../../constants/icons/icons'
+import { Modal, Form, Input, notification, Button } from 'antd'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
-import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
-import { Modal, Form, Input, notification, Button }from 'antd'
 
-const formIcon = icons.forms
+import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
 
 export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose }) => {
     const [form] = Form.useForm()
@@ -41,13 +39,15 @@ export const ChangePassword = ({ user = null, isOpen = false, setIsOpen, onClose
             footer={
                 [
                     <Button
+                        key="cancel"
                         onClick={handleCancel}
                     >
                         Cancelar
                     </Button>,
                     <Button
-
-                        key="submit" type="primary" onClick={() => form.submit()}
+                        key="submit" 
+                        type="primary" 
+                        onClick={() => form.submit()}
                     >
                         Guardar
                     </Button>
@@ -106,9 +106,4 @@ const Container = styled.div`
     display: grid;
     align-content: start;
     gap: 1.4em;
-`
-const Footer = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    padding: 0 1em;
 `

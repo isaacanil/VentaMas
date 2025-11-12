@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import { CheckCircleOutlined, ExclamationCircleOutlined, BulbOutlined, CopyOutlined } from '@ant-design/icons'
 import * as ant from 'antd'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { CalculatorOutlined, CheckCircleOutlined, ExclamationCircleOutlined, BulbOutlined, CopyOutlined } from '@ant-design/icons'
-import { analyzeBarcodeStructure, getBarcodeInfo, generateCorrectionSuggestions } from '../../../../../../../utils/barcode/barcode'
 
-const { Modal, Space, Input, Button, Typography, Tag, Alert, Card, Divider } = ant
+import { getBarcodeInfo, generateCorrectionSuggestions } from '../../../../../../../utils/barcode/barcode'
+
+const { Modal, Space, Button, Alert } = ant
 
 // Styled Components
 const WorkingCodeSection = styled.div`

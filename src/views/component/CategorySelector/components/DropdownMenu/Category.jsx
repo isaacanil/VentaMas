@@ -1,22 +1,19 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
 import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState } from 'react';
+import styled from 'styled-components';
+
 export const Category = ({
     item = {},
     isFavorite = false,
     searchTerm = '',
-    color= '#f2f2f2',
+    color = '#f2f2f2',
     selected = false,
     onClick = () => {},
     toggleFavorite
 }) => {
-    const [isHover, setIsHover] = useState(false)
     const [isHoverFavorite, setIsHoverFavorite] = useState(false)
-
-    const handleMouseEnter = () => setIsHover(true);
-    const handleMouseLeave = () => setIsHover(false);
 
     const highlightMatch = (text) => {
         if (!searchTerm) return text;
@@ -30,9 +27,7 @@ export const Category = ({
     return (
         <Container
             selected={selected}
-            onMouseEnter={handleMouseEnter}
             color={color}
-            onMouseLeave={handleMouseLeave}
             onClick={() => onClick(item)}
         >
             <CategoryItem>{highlightMatch(item?.name)}</CategoryItem>
@@ -72,12 +67,6 @@ const Container = styled.div`
     `}
     
 `;
-const DeleteButton = styled.span`
-    height: 1.2em;
-    width: 1.2em;
-    display: flex;
-    align-items: center;
-`
 const CategoryItem = styled.span`
     padding: 0.4em 0.4em;
     height: 100%;

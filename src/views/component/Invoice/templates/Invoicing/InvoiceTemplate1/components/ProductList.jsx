@@ -1,14 +1,16 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
+
+import { SelectSettingCart } from '../../../../../../../features/cart/cartSlice'
+import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../features/updateProduct/updateProductSlice'
 import { separator } from '../../../../../../../hooks/separator'
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
+import { getTax, getTotalPrice, resetAmountToBuyForProduct, getProductIndividualDiscount } from '../../../../../../../utils/pricing'
+import { convertTimeToSpanish } from '../../../../../../component/modals/ProductForm/components/sections/warranty.helpers'
+
 import { Col } from './Table/Col'
 import { Row } from './Table/Row'
-import { getPriceTotal, getTax, getTotal, getTotalPrice, resetAmountToBuyForProduct, getProductIndividualDiscount } from '../../../../../../../utils/pricing'
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { useDispatch, useSelector } from 'react-redux'
-import { SelectSettingCart, selectInsuranceEnabled } from '../../../../../../../features/cart/cartSlice'
-import { convertTimeToSpanish } from '../../../../../../component/modals/ProductForm/components/sections/WarrantyInfo'
-import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled'
 
 export const ProductList = ({ data }) => {
     const { products, NCF } = data
@@ -47,6 +49,18 @@ export const ProductList = ({ data }) => {
                                 <Row>
                                     <ProductName>{getFullProductName(product)} </ProductName>
                                 </Row>
+                                {
+                                    (() => {
+                                        const rawBrand = typeof product?.brand === 'string' ? product.brand.trim() : '';
+                                        const hasBrand = rawBrand && rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase();
+                                        if (!hasBrand) return null;
+                                        return (
+                                            <Row>
+                                                <ProductBrand>Marca: {rawBrand}</ProductBrand>
+                                            </Row>
+                                        );
+                                    })()
+                                }
                                 {
                                     product?.warranty?.status && (
                                         <Row>
@@ -148,4 +162,10 @@ const ProductDiscount = styled.div`
     padding-left: 8px;
     border-left: 2px solid #52c41a;
     margin: 2px 0;
+`
+
+const ProductBrand = styled.div`
+    font-size: 0.95em;
+    color: #333;
+    font-weight: 500;
 `

@@ -1,8 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { selectUser } from "../../features/auth/userSlice";
 import { useSelector } from "react-redux";
-import { useEffect } from "react";
+
+import { selectUser } from "../../features/auth/userSlice";
+import { db } from "../firebaseconfig";
 
 export const fbGetBillingSettings = async (user) => {
    

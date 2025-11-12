@@ -1,4 +1,5 @@
 import { doc, updateDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export const fbUpdateCategory = async (category, user) => {

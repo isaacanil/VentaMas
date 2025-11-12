@@ -1,9 +1,9 @@
-import admin from 'firebase-admin';
 import { nanoid } from 'nanoid';
+
 // import { MovementReason, MovementType } from '../../../models/Warehouse/Movement.js';
-import { MovementReason, MovementType } from '../../inventoryMovements/types/inventoryMovements.js';
-import { checkAndDeleteEmptyBatch } from '../../batch/services/batch.service.js';
 import { db, FieldValue } from '../../../../../core/config/firebase.js';
+import { checkAndDeleteEmptyBatch } from '../../batch/services/batch.service.js';
+import { MovementReason, MovementType } from '../../inventoryMovements/types/inventoryMovements.js';
 
 // Referencia a la colección productsStock de un negocio
 function getProductStockCollection(businessID) {
@@ -148,4 +148,50 @@ export async function getProductStockById(businessID, stockId) {
   const docRef = getProductStockCollection(businessID).doc(stockId);
   const snap = await docRef.get();
   return snap.exists ? snap.data() : null;
+}
+
+export async function deleteProductStock(user, stockId, movementInfo = {}) {
+  const stockRef = getProductStockCollection(user.businessID).doc(stockId);
+  const snap = await stockRef.get();
+  if (!snap.exists) {
+    return null;
+  }
+
+  const stock = snap.data();
+
+  await stockRef.update({
+    isDeleted: true,
+    deletedAt: FieldValue.serverTimestamp(),
+    deletedBy: user.uid,
+    updatedAt: FieldValue.serverTimestamp(),
+    updatedBy: user.uid
+  });
+
+  if (stock.batchId) {
+    await checkAndDeleteEmptyBatch(user, stock.batchId);
+  }
+
+  const movementRef = db
+    .collection('businesses')
+    .doc(user.businessID)
+    .collection('movements')
+    .doc(nanoid());
+
+  await movementRef.set({
+    id: movementRef.id,
+    productId: stock.productId,
+    productName: stock.productName ?? '',
+    productStockId: stockId,
+    batchId: stock.batchId ?? null,
+    movementType: MovementType.Exit,
+    movementReason: movementInfo.reason ?? MovementReason.Adjustment,
+    quantity: movementInfo.quantity ?? stock.quantity ?? 0,
+    notes: movementInfo.notes ?? '',
+    createdAt: FieldValue.serverTimestamp(),
+    createdBy: user.uid,
+    updatedAt: FieldValue.serverTimestamp(),
+    updatedBy: user.uid,
+  });
+
+  return stockId;
 }

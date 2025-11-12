@@ -1,5 +1,5 @@
 // InvoicesContext.js
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useReducer } from 'react';
 
 // Define the context
 const InvoicesContext = createContext();
@@ -44,13 +44,4 @@ export function InvoicesProvider({ children }) {
       {children}
     </InvoicesContext.Provider>
   );
-}
-
-// Custom hook to use the invoices context
-export function useInvoices() {
-  const context = useContext(InvoicesContext);
-  if (context === undefined) {
-    throw new Error('useInvoices must be used within an InvoicesProvider');
-  }
-  return context;
 }

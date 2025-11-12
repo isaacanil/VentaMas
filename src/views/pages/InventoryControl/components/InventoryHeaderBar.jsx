@@ -1,4 +1,5 @@
 import { Button, Dropdown, Select } from 'antd'
+
 import { HeaderBar, Controls, SearchInput, SortButton } from './InventoryControl.styles'
 
 export function InventoryHeaderBar({

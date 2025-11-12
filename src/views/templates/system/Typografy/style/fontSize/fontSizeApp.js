@@ -60,8 +60,8 @@ const body2Sizes = {
 
 const captionSizes = {
     small: '0.7rem',
-    medium: '0.75rem',
-    large: '0.8rem',
+    medium: '0.82rem',
+    large: '0.85rem',
 };
 
 const overlineSizes = {

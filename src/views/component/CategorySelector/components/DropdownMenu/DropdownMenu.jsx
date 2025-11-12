@@ -1,12 +1,15 @@
-import React, { forwardRef, useState } from 'react'
-import styled from 'styled-components'
-import { Category } from './Category';
 import * as antd from 'antd';
-import { filterData } from '../../../../../hooks/search/useSearch';
+import { forwardRef, useState } from 'react';
+import styled from 'styled-components';
+
 import { icons } from '../../../../../constants/icons/icons';
+import { filterData } from '../../../../../hooks/search/useSearch';
+
+import { Category } from './Category';
+
 const { Input, Typography, Button } = antd;
 
-export const DropdownMenu = forwardRef(({
+const DropdownMenuComponent = forwardRef(({
     setOpen,
     sectionsConfig = {},
     deleteAllItems = () => { },
@@ -79,6 +82,7 @@ export const DropdownMenu = forwardRef(({
                                                     item={item}
                                                     selected={item.selected}
                                                     isFavorite={item.isFavorite}
+                                                    searchTerm={searchTerm}
                                                     color={color}
                                                     toggleFavorite={onToggleFavorite ? () => onToggleFavorite(item) : undefined}
                                                     onClick={() => onSelect(item)}
@@ -103,7 +107,10 @@ export const DropdownMenu = forwardRef(({
             </Wrapper>
         </Container>
     )
-})
+});
+
+DropdownMenuComponent.displayName = 'DropdownMenu';
+export const DropdownMenu = DropdownMenuComponent;
 
 const Container = styled.div`
  

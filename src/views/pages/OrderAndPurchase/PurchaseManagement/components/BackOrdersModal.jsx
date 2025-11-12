@@ -1,6 +1,6 @@
 import { Modal, Table, Checkbox, InputNumber, Alert, message } from 'antd';
-import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const BackOrdersModal = ({ 
@@ -17,8 +17,6 @@ const BackOrdersModal = ({
     const [purchaseQuantity, setPurchaseQuantity] = useState(0);
     const totalBackordersQuantity = localSelectedBackOrders.reduce((sum, order) => sum + order.quantity, 0);
     const remainingQuantity = Math.max(0, purchaseQuantity - totalBackordersQuantity);
-
-    const sourceId = backOrderAssociationId;
 
     useEffect(() => {
         if (isVisible) {

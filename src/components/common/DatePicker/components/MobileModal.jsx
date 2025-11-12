@@ -1,6 +1,6 @@
+import { CloseOutlined } from '@ant-design/icons';
 import React from 'react';
 import styled from 'styled-components';
-import { CloseOutlined } from '@ant-design/icons';
 
 const ModalOverlay = styled.div`
     position: fixed;

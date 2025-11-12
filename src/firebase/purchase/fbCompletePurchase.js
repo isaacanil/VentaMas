@@ -1,16 +1,19 @@
-import { doc, getDoc, updateDoc, serverTimestamp, collection, addDoc, writeBatch, setDoc } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
-import { deleteRemovedFiles, findRemovedAttachments } from "./fbUpdatePurchase";
-import { createBatch } from "../warehouse/batchService";
-import { createProductStock } from "../warehouse/productStockService";
-import { getDefaultWarehouse } from "../warehouse/warehouseService";
-import { safeTimestamp, updateLocalAttachmentsWithRemoteURLs } from "./fbAddPurchase";
-import { getNextID } from "../Tools/getNextID";
-import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
+import { doc, getDoc, updateDoc, serverTimestamp, writeBatch, setDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
 
-const updatePurchaseWarehouseStock = async (user, purchase, defaultWarehouse) => {
+import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
+import { db } from "../firebaseconfig";
+import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
+import { getNextID } from "../Tools/getNextID";
+import { createBatch } from "../warehouse/batchService";
+import { createProductStock } from "../warehouse/productStockService";
+import { getDefaultWarehouse, getWarehouse } from "../warehouse/warehouseService";
+
+import { safeTimestamp, updateLocalAttachmentsWithRemoteURLs } from "./fbAddPurchase";
+import { deleteRemovedFiles, findRemovedAttachments } from "./fbUpdatePurchase";
+
+
+const updatePurchaseWarehouseStock = async (user, purchase, destinationWarehouse) => {
     const productBatches = {};
 
     const baseFields = {
@@ -78,7 +81,7 @@ const updatePurchaseWarehouseStock = async (user, purchase, defaultWarehouse) =>
             ...baseFields,
             batchId: batchData.id,
             batchNumberId: batchData.numberId,
-            location: `${defaultWarehouse.id}`,
+            location: `${destinationWarehouse.id}`,
             productId: batch.productId,
             productName: batch.productName,
             quantity: totalStock,
@@ -97,7 +100,7 @@ const updatePurchaseWarehouseStock = async (user, purchase, defaultWarehouse) =>
             batchId: batchData.id,
             productName: batch.productName,
             batchNumberId: batchData.numberId,
-            destinationLocation: defaultWarehouse.id,
+            destinationLocation: destinationWarehouse.id,
             sourceLocation: null,
             productId: batch.productId,
             quantity: totalStock,
@@ -172,20 +175,41 @@ const handleFileAttachments = async (user, purchase, localFiles) => {
     return updatedAttachments;
 };
 
-const generateShortName = (purchase) => {
+const _generateShortName = (purchase) => {
     const expirationDate = new Date(purchase.replenishments[0].expirationDate);
     const formattedDate = expirationDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
     return `${purchase.name}_${formattedDate}`;
 };
 
-export const fbCompletePurchase = async ({ user, purchase, localFiles = [], setLoading = () => { } }) => {
+export const fbCompletePurchase = async ({
+    user,
+    purchase,
+    localFiles = [],
+    setLoading = () => { },
+    warehouseId = null,
+}) => {
     try {
         setLoading(true);
         // Completing purchase process
         const purchaseRef = doc(db, "businesses", user.businessID, "purchases", purchase.id);
 
-        // Ensure default warehouse exists
-        const defaultWarehouse = await getDefaultWarehouse(user);
+        // Determine destination warehouse (either selected or default)
+        let destinationWarehouse = null;
+        if (warehouseId) {
+            try {
+                destinationWarehouse = await getWarehouse(user, warehouseId);
+            } catch (error) {
+                console.warn('No se pudo obtener el almacén seleccionado, se usará el predeterminado.', error);
+            }
+        }
+
+        if (!destinationWarehouse) {
+            destinationWarehouse = await getDefaultWarehouse(user);
+        }
+
+        if (!destinationWarehouse?.id) {
+            throw new Error('No se encontró un almacén válido para completar la compra.');
+        }
 
         // Handle file attachments
         const updatedAttachments = await handleFileAttachments(user, purchase, localFiles);
@@ -197,11 +221,12 @@ export const fbCompletePurchase = async ({ user, purchase, localFiles = [], setL
             deliveryAt: safeTimestamp(purchase.deliveryAt),
             paymentAt: safeTimestamp(purchase.paymentAt),
             completedAt: purchase.completedAt ? safeTimestamp(purchase.completedAt) : null,
-            attachmentUrls: updatedAttachments
+            attachmentUrls: updatedAttachments,
+            destinationWarehouseId: destinationWarehouse.id,
         };
 
         await updateDoc(purchaseRef, updatedData);
-        await updatePurchaseWarehouseStock(user, purchase, defaultWarehouse);
+        await updatePurchaseWarehouseStock(user, purchase, destinationWarehouse);
 
         setLoading(false);
         return updatedData;

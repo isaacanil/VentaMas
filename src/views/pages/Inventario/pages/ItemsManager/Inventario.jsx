@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
+
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
-import { ProductsTable } from './components/ProductTable/ProductsTable';
-import { ProductRecordList } from './components/ProductTable/ProductRecordList';
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+
+import { ProductRecordList } from './components/ProductTable/ProductRecordList';
+import { ProductsTable } from './components/ProductTable/ProductsTable';
 
 export const Inventory = () => {
-  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState('');
   const { products } = useGetProducts();
   const vw = useViewportWidth();

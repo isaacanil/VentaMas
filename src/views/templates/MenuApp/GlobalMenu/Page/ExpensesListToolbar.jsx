@@ -1,20 +1,18 @@
 
 import React from 'react'
-import { Button } from '../../../system/Button/Button'
-import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
+import { useDispatch } from 'react-redux'
+import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
 
-import ROUTES_NAME from '../../../../../routes/routesName'
 import { icons } from '../../../../../constants/icons/icons'
-import { useMatch, useNavigate } from 'react-router-dom'
-import { ExpenseChart } from '../../../../pages/Expenses/ExpensesList/components/ExpenseReport/ExpenseReport'
-import { openExpenseFormModal, toggleExpenseChartModal } from '../../../../../features/expense/expenseUISlice'
-import { useDispatch } from 'react-redux'
 import { resetExpense, setExpense } from '../../../../../features/expense/expenseManagementSlice'
+import { openExpenseFormModal, toggleExpenseChartModal } from '../../../../../features/expense/expenseUISlice'
+import ROUTES_NAME from '../../../../../routes/routesName'
+import { Button } from '../../../system/Button/Button'
 
 
-export const ExpensesListToolbar = ({ side = 'left', searchData, setSearchData }) => {    const navigate = useNavigate();
-    const { EXPENSES_LIST, EXPENSES_CREATE } = ROUTES_NAME.EXPENSES_TERM;
+export const ExpensesListToolbar = ({ side = 'left' }) => {
+    const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM;
     const matchWithExpenseList = useMatch(EXPENSES_LIST);
     const dispatch = useDispatch();
     

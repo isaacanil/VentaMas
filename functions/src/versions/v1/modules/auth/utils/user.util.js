@@ -1,5 +1,6 @@
-import { HttpsError } from 'firebase-functions/v2/https';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { HttpsError } from 'firebase-functions/v2/https';
+
 import { db } from '../../../../../core/config/firebase.js';
 
 /* ────────── config runtime ────────── */
@@ -7,11 +8,17 @@ const MAX_ATTEMPTS = Number(process.env.AUTH_MAX_ATTEMPTS) || 5;
 const LOCK_HOURS   = Number(process.env.AUTH_LOCK_HOURS)   || 2;
 const LOCK_MS      = LOCK_HOURS * 60 * 60 * 1_000;
 
+export const AUTH_LIMITS = {
+  maxAttempts: MAX_ATTEMPTS,
+  lockHours: LOCK_HOURS,
+  lockMs: LOCK_MS
+};
+
 /* ────────── mensajes de error ────────── */
 export const ERROR_MESSAGES = {
   MISSING_CREDENTIALS: 'Credenciales requeridas',
   INVALID_CREDENTIALS: 'Credenciales inválidas',
-  ACCOUNT_LOCKED: `Cuenta bloqueada por ${LOCK_HOURS} horas debido a múltiples intentos fallidos`
+  ACCOUNT_LOCKED: `Cuenta bloqueada por ${LOCK_HOURS} horas tras ${MAX_ATTEMPTS} intentos fallidos`
 };
 
 /**

@@ -60,4 +60,6 @@ const PaymentReceipt = React.forwardRef(({ receipt, formatDate, formatCurrency }
   );
 });
 
+PaymentReceipt.displayName = 'PaymentReceipt';
+
 export default PaymentReceipt;

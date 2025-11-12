@@ -2,7 +2,7 @@ import { faEnvelope, faPhone } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 
-const getComprobanteInfo = (comprobante) => {
+const getComprobanteInfo = () => {
     return {
         title: 'COTIZACIÓN',
         label: 'quote',
@@ -119,13 +119,6 @@ const RightAlign = styled.div`
   text-align: right;
   font-size: 14px;
 `;
-
-const ComprobanteSection = styled.div`
-
-  font-size: 14px;
-  text-align: right;
-`;
-
 
 const LogoContainer = styled.div`
   max-width: 200px;

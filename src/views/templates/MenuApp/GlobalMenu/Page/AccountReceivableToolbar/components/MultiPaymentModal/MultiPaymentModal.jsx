@@ -1,14 +1,18 @@
+import { Modal, Button, Form, message, notification, Steps } from 'antd';
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Form, Typography, Divider, message, notification, Steps } from 'antd';
-import { useReactToPrint } from 'react-to-print';
-import { ShowcaseList } from '../../../../../../../templates/system/ShowCase/ShowcaseList';
 import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
-import { formatMoney } from '../../../../../../../../utils/formatters';
-import DateUtils from '../../../../../../../../utils/date/dateUtils';
-import { FilterBar, AccountsTable, PaymentMethodsForm, PaymentReceipt } from './components';
+
+import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { fbProcessMultiplePaymentsAR } from '../../../../../../../../firebase/proccessAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR';
+import DateUtils from '../../../../../../../../utils/date/dateUtils';
+import { formatMoney } from '../../../../../../../../utils/formatters';
+import { ShowcaseList } from '../../../../../../../templates/system/ShowCase/ShowcaseList';
+
+
+import { FilterBar, AccountsTable, PaymentMethodsForm, PaymentReceipt } from './components';
+
 
 /**
  * Componente principal para el Modal de Pagos Múltiples
@@ -28,7 +32,6 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   const [receipt, setReceipt] = useState(null);
   const [insuranceFilter, setInsuranceFilter] = useState('none');
   const [insuranceOptions, setInsuranceOptions] = useState([]);
-  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [paymentMethods, setPaymentMethods] = useState([
     { method: 'cash', value: 0, status: true },
     { method: 'card', value: 0, reference: '', status: false },
@@ -149,16 +152,16 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
       }
     });
 
-    const paymentMethod = paymentMethods.find(pm => pm.method === method);
+    const selectedMethod = paymentMethods.find(pm => pm.method === method);
 
-    if ((key === 'status' && value === true) || paymentMethod.status) {
+    if ((key === 'status' && value === true) || selectedMethod.status) {
       if ((key === 'value' && (!value || parseFloat(value) <= 0)) || 
-          (key !== 'value' && paymentMethod.value <= 0)) {
+          (key !== 'value' && selectedMethod.value <= 0)) {
         updatedErrors[`${method}_value`] = 'El valor debe ser mayor a cero';
       }
 
       if (method !== 'cash') {
-        const reference = key === 'reference' ? value : paymentMethod.reference;
+        const reference = key === 'reference' ? value : selectedMethod.reference;
         if (!reference || reference.trim() === '') {
           updatedErrors[`${method}_reference`] = 'La referencia es obligatoria';
         }
@@ -276,7 +279,9 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     }
   };
   const handleDateRangeChange = (dates) => {
-    // Handle date range change
+    if (!dates) {
+      return;
+    }
   };
 
   const handlePrint = useReactToPrint({
@@ -337,7 +342,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
 
       try {
         // Procesar el pago utilizando el método adecuado
-        const result = await fbProcessMultiplePaymentsAR(user, paymentData, setReceipt);
+        await fbProcessMultiplePaymentsAR(user, paymentData, setReceipt);
 
         setSubmitted(true);
 

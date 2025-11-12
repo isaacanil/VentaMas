@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+
 import { toggleImageViewer } from '../../../../features/imageViewer/imageViewerSlice'
 import { toggleLoader } from '../../../../features/loader/loaderSlice'
 import { selectUploadImageLoading, selectUploadImageStatus, selectUploadImageUrl } from '../../../../features/uploadImg/uploadImageSlice'
@@ -14,7 +15,6 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
     const [progress, setProgress] = useState(0)
     const [titleBtn, setTitleBtn] = useState(title)
     const [startIconBtn, setStartIconBtn] = useState(startIcon)
-    const [endIconBtn, setEndIconBtn] = useState(endIcon)
     const dispatch = useDispatch()
     const handleOnchange = async (e) => {
         fn(e.target.files[0])
@@ -56,7 +56,7 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
             <label htmlFor={id}>
                 {startIconBtn}
                 {titleBtn}
-                {endIconBtn}
+                {endIcon}
                 <input type="file" name="" id={id} onChange={(e) => handleOnchange(e)} accept="/imagen/*a" />
             </label>
         </Container>

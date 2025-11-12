@@ -10,10 +10,10 @@ const SelectionMode = ({
   selectedIndex,
   title,
   command,
-  onExitSelectionMode,
+  onExitSelectionMode: _onExitSelectionMode,
   onSelectionConfirm,
   onSelectIndex,
-  consoleOutput,
+  consoleOutput: _consoleOutput,
   setConsoleOutput
 }) => {
   // No renderizar nada si el modo de selección no está activo

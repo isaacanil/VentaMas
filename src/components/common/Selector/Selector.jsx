@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
-import styled from 'styled-components';
-import { usePopper } from 'react-popper';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState, useRef } from 'react';
+import { usePopper } from 'react-popper';
+import styled from 'styled-components';
+
 import { useClickOutSide } from '../../../hooks/useClickOutSide';
 
 export const Selector = ({ 

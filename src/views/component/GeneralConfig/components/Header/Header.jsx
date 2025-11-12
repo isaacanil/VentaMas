@@ -1,10 +1,11 @@
-import React from 'react';
-import * as antd from 'antd';
-import { useNavigate } from 'react-router-dom';
-const { Button } = antd;
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faSave } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from 'antd';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+const { Button } = antd;
 
 // Styled Components para el Header
 const HeaderContainer = styled.div`
@@ -67,5 +68,4 @@ export const Header = ({ title, onSave = null }) => {
         </HeaderContainer>
     );
 };
-
 

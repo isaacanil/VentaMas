@@ -1,6 +1,6 @@
 
-import bcrypt from 'bcryptjs';
 import argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 
 export const isBcrypt = (hash) =>
   /^\$2[aby]?\$/.test(hash);

@@ -11,6 +11,14 @@ if (locale) {
     locale.weekStart = 0; // 0 = domingo
 }
 
+const getWeekRangeMondayAligned = (reference = dayjs()) => {
+    const referenceStart = reference.startOf('day');
+    const daysToSubtract = (referenceStart.day() + 6) % 7;
+    const start = referenceStart.subtract(daysToSubtract, 'day');
+    const end = start.add(6, 'day').endOf('day');
+    return { start, end };
+};
+
 export const createDefaultPresets = (mode = 'single') => [
     {
         label: 'Hoy',
@@ -26,9 +34,10 @@ export const createDefaultPresets = (mode = 'single') => [
     },
     {
         label: 'Esta semana',
-        value: mode === 'range'
-            ? [dayjs().startOf('week'), dayjs().endOf('week')]
-            : dayjs().startOf('week')
+        value: (() => {
+            const { start, end } = getWeekRangeMondayAligned(dayjs());
+            return mode === 'range' ? [start, end] : start;
+        })()
     },
     {
         label: 'Este mes',
@@ -67,9 +76,11 @@ export const createDefaultPresets = (mode = 'single') => [
     // Períodos pasados
     {
         label: 'Semana pasada',
-        value: mode === 'range'
-            ? [dayjs().subtract(1, 'week').startOf('week'), dayjs().subtract(1, 'week').endOf('week')]
-            : dayjs().subtract(1, 'week').startOf('week'),
+        value: (() => {
+            const reference = dayjs().subtract(1, 'week');
+            const { start, end } = getWeekRangeMondayAligned(reference);
+            return mode === 'range' ? [start, end] : start;
+        })(),
         group: 'Períodos pasados'
     },
     {
@@ -117,4 +128,4 @@ export const createDefaultPresets = (mode = 'single') => [
     }
 ];
 
-export const WEEK_DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; 
+export const WEEK_DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];

@@ -1,8 +1,9 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
-import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Button, Tooltip, Typography } from 'antd'
-import { ClientFilterDropdown } from './ClientFilterDropdown'
+import styled from 'styled-components'
+
+// import { ClientFilterDropdown } from './ClientFilterDropdown' // TODO: Componente no existe
 
 const { Title } = Typography;
 
@@ -27,9 +28,6 @@ const ButtonText = styled.div`
 `;
 
 export const ClientSelectorHeader = ({ 
-  filter, 
-  filteredClientsToShow, 
-  handleMenuClick, 
   openAddClientModal, 
   onClose 
 }) => {
@@ -37,11 +35,11 @@ export const ClientSelectorHeader = ({
     <Header>
       <Title level={5} style={{ margin: 0 }}>Seleccionar Cliente</Title>
       <ButtonGroup>
-        <ClientFilterDropdown
+        {/* <ClientFilterDropdown
           filter={filter}
           filteredClientsToShow={filteredClientsToShow}
           handleMenuClick={handleMenuClick}
-        />
+        /> */}
         <Tooltip title="Crear cliente">
           <Button onClick={openAddClientModal} icon={<FontAwesomeIcon icon={faPlus} />}>
             <ButtonText> Cliente</ButtonText>

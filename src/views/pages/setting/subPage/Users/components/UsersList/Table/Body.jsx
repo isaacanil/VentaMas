@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-export const Body = ({ data, Item, colWidth, sort, reverse }) => {
+export const Body = ({ data, Item, colWidth, reverse }) => {
 
   if (!Array.isArray(data)) {
     console.error("Data is not an array.");

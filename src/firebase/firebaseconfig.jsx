@@ -1,20 +1,26 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { connectFunctionsEmulator, getFunctions } from 'firebase/functions'
 //TODO ***AUTH**************************************
 import { getAuth } from "firebase/auth";
 //TODO ***FIRESTORE***********************************
-import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, enableIndexedDbPersistence, arrayUnion, arrayRemove, increment, Timestamp, Firestore, runTransaction, initializeFirestore, persistentLocalCache, persistentSingleTabManager, connectFirestoreEmulator } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
+import { collection, doc, getDocs, query, updateDoc, where, arrayUnion, arrayRemove, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
+import { getFunctions } from 'firebase/functions'
 //TODO ***STORAGE***********************************
 import { getStorage, } from "firebase/storage"
 import { getVertexAI, getGenerativeModel } from "firebase/vertexai";
-import { onEnv } from "../utils/env";
-import { connectEmulatorsIfAvailable } from "./emulator/emulator";
+
+
+const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL
+  || (import.meta.env.VITE_FIREBASE_PROJECT_ID
+    ? `https://${import.meta.env.VITE_FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`
+    : undefined);
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  databaseURL,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
@@ -31,6 +37,7 @@ export const db = initializeFirestore(app, {
 export const storage = getStorage(app);
 export const auth = getAuth(app)
 export const functions = getFunctions(app);
+export const realtimeDB = getDatabase(app);
 export const vertexAI = getVertexAI(app);
 
 export const listFirst5UserNames = async () => {
@@ -94,6 +101,7 @@ export const addIngredientTypePizza = async (ingredient) => {
       ingredientList: arrayUnion(ingredient)
     });
   } catch (error) {
+    console.error('Error adding ingredient:', error);
   }
 
 }
@@ -104,5 +112,6 @@ export const deleteIngredientTypePizza = async (ingredient) => {
       ingredientList: arrayRemove(ingredient)
     });
   } catch (error) {
+    console.error('Error deleting ingredient:', error);
   }
 }

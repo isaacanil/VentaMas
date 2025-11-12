@@ -1,6 +1,3 @@
-import React, { useRef } from 'react';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPrint, 
   faEdit, 
@@ -9,14 +6,19 @@ import {
   faReceipt,
   faCreditCard
 } from '@fortawesome/free-solid-svg-icons';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import { abbreviatePaymentMethods, getActivePaymentMethods, isInvoicePaidInFull } from '../../../../../utils/invoice';
-import { useReactToPrint } from 'react-to-print';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import DateUtils from '../../../../../utils/date/dateUtils';
+import { useReactToPrint } from 'react-to-print';
+import styled from 'styled-components';
+
 import { addInvoice } from '../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../features/invoice/invoicePreviewSlice';
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import { abbreviatePaymentMethods, getActivePaymentMethods, isInvoicePaidInFull } from '../../../../../utils/invoice';
+import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
 import { Receipt } from '../../../checkout/Receipt';
+import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization.jsx';
 
 export const InvoiceItemWide = ({ data }) => {
   const componentToPrintRef = useRef(null);
@@ -54,19 +56,23 @@ export const InvoiceItemWide = ({ data }) => {
     content: () => componentToPrintRef.current,
   });
 
-  const handleEdit = () => {
-    const invoiceData = {
-      ...data,
-      date: DateUtils.convertTimestampToMillis(data.date),
-      payWith: data?.paymentMethod.find((method) => method.status === true)?.value,
-      updateAt: DateUtils.convertTimestampToMillis(data?.updateAt),
-      cancel: data?.cancel ? {
-        ...data.cancel,
-        cancelledAt: DateUtils.convertTimestampToMillis(data?.cancel?.cancelledAt),
-      } : null
-    };
-    dispatch(addInvoice({ invoice: invoiceData }));
-  };
+  const proceedToEdit = useCallback((authorization) => {
+    const preparedInvoice = prepareInvoiceForEdit(data);
+    if (preparedInvoice) {
+      dispatch(
+        addInvoice({
+          invoice: preparedInvoice,
+          mode: 'edit',
+          authorizationRequest: authorization || null,
+        })
+      );
+    }
+  }, [data, dispatch]);
+
+  const { handleEdit, authorizationModal, isProcessing } = useInvoiceEditAuthorization({
+    invoice: data,
+    onAuthorized: proceedToEdit,
+  });
 
   const handleViewMore = () => {
     dispatch(openInvoicePreviewModal(data));
@@ -138,7 +144,7 @@ export const InvoiceItemWide = ({ data }) => {
           </LeftSection>
           <RightSection>
             <ActionButtons>
-              <ActionButton onClick={handleEdit} variant="edit">
+              <ActionButton onClick={handleEdit} disabled={isProcessing} variant="edit">
                 <FontAwesomeIcon icon={faEdit} />
               </ActionButton>
               <ActionButton onClick={handleRePrint} variant="print">
@@ -151,6 +157,7 @@ export const InvoiceItemWide = ({ data }) => {
           </RightSection>
         </ActionBar>
       </Card>
+      {authorizationModal}
     </>
   );
 };
@@ -358,6 +365,10 @@ const ActionButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
   
   ${({ variant }) => {
     switch(variant) {

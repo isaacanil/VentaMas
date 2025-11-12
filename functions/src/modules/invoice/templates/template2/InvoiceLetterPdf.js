@@ -1,14 +1,15 @@
-import { https } from 'firebase-functions'
-import PdfPrinter from 'pdfmake'
-import axios from 'axios'
 import { readFileSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { calcFooterHeight, calcHeaderHeight } from './utils/documentHeightCalculator.js'
-import { buildHeader } from './builders/header.js'
+
+import axios from 'axios'
+import { https } from 'firebase-functions'
+import PdfPrinter from 'pdfmake'
+
 import { buildContent } from './builders/content.js'
 import { buildFooter } from './builders/footer.js'
-import { assertNoNaN, sanitizeNumbers } from './utils/sanitizeNumbers.js'
+import { buildHeader } from './builders/header.js'
+import { calcFooterHeight, calcHeaderHeight } from './utils/documentHeightCalculator.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -32,7 +33,7 @@ export const invoiceLetterPdf = https.onCall(async (req) => {
     const images = {}
     if (biz.logoUrl) {
         const resp = await axios.get(biz.logoUrl, { responseType: 'arraybuffer' })
-        const ext = biz.logoUrl.split('.').pop().split(/[\?#]/)[0].toLowerCase()
+    const ext = biz.logoUrl.split('.').pop().split(/[?#]/)[0].toLowerCase()
         const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png'
         images.logo = `data:${mime};base64,${Buffer.from(resp.data).toString('base64')}`
     }

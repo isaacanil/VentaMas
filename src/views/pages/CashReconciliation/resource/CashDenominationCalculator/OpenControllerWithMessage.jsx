@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import React from 'react'
 import styled from 'styled-components'
+
 import { icons } from '../../../../../constants/icons/icons'
 
 export const OpenControllerWithMessage = ({ isExpanded, handleExpanded }) => {

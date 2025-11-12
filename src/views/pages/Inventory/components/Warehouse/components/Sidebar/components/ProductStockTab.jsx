@@ -1,11 +1,11 @@
+import { SearchOutlined } from '@ant-design/icons';
+import { faBoxes, faEye } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Input, Empty, Spin } from 'antd';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Input, Empty, Spin } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxes, faEye } from '@fortawesome/free-solid-svg-icons';
-import ProductStockOverview from '../../ProductStockOverview';
+
 import Tree from '../../../../../../../component/tree/Tree';
 
 const TabContent = styled.div`
@@ -18,7 +18,10 @@ const TabContent = styled.div`
 
 const ProductList = styled.div`
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 `;
 
 const ProductStockTab = ({ products, loading, onSearch }) => {
@@ -40,6 +43,7 @@ const ProductStockTab = ({ products, loading, onSearch }) => {
         },
         showMatchedStockCount: false,
         showActions: true,
+        searchPlaceholder: "Buscar productos en stock...",
     };
 
     const buildTreeData = () => {
@@ -69,11 +73,13 @@ const ProductStockTab = ({ products, loading, onSearch }) => {
             />
             <ProductList>
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <div style={{ textAlign: 'center', padding: '40px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Spin size="large" />
                     </div>
                 ) : products.length === 0 ? (
-                    <Empty description="No se encontraron productos" />
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Empty description="No se encontraron productos" />
+                    </div>
                 ) : (
                     <Tree 
                         data={buildTreeData()} 

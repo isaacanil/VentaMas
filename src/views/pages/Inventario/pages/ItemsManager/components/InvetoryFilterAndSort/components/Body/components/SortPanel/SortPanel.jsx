@@ -1,27 +1,29 @@
-import { useEffect, useState, useMemo } from 'react';
-import { opcionesCriterio, opcionesOrden } from '../../../../InventoryFilterAndSortMetadata';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
-import styled from 'styled-components';
-import { SubTitle } from '../../../../../../../../../checkout/Receipt';
 import { Button, Select, Tooltip } from 'antd';
-import { icons } from '../../../../../../../../../../../constants/icons/icons';
+import { useEffect, useState, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-export const SortPanel = ({ Group }) => {
+import { icons } from '../../../../../../../../../../../constants/icons/icons';
+import { DEFAULT_FILTER_CONTEXT, DEFAULT_FILTERS, selectCriterio, selectOrden, setCriterio, setOrden } from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
+import { opcionesCriterio } from '../../../../InventoryFilterAndSortMetadata';
+
+export const SortPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }) => {
     const [isCriterioChanged, setIsCriterioChanged] = useState(false);
 
     const dispatch = useDispatch();
-    const criterio = useSelector(selectCriterio);
+    const criterio = useSelector((state) => selectCriterio(state, contextKey));
 
     // Función para manejar el cambio de criterio
-    const orden = useSelector(selectOrden);
+    const orden = useSelector((state) => selectOrden(state, contextKey));
 
     const handleCriterioChange = (newCriterio) => {
-        dispatch(setCriterio(newCriterio)); // Suponiendo que setCriterio es tu acción para cambiar el criterio
+        dispatch(setCriterio({ context: contextKey, value: newCriterio }));
         setIsCriterioChanged(true);
     };
 
-    const handleOrdenChange = (nuevoOrden) => { dispatch(setOrden(nuevoOrden)) };
+    const handleOrdenChange = (nuevoOrden) => {
+        dispatch(setOrden({ context: contextKey, value: nuevoOrden }));
+    };
 
     useEffect(() => {
         const ordenPorCriterio = {
@@ -81,36 +83,37 @@ export const SortPanel = ({ Group }) => {
         return icons.operationModes.sortAsc;
     }, [orden, tipoCriterio]);
 
+    const isCriterioModified = criterio !== DEFAULT_FILTERS.criterio;
+    const isOrdenModified = orden !== DEFAULT_FILTERS.orden;
+
     return (
         <Container>
             <Row>
                 <FlexGrow>
-                    <Label>Ordenar por:</Label>
+                    <LabelWithStatus modified={isCriterioModified}>Ordenar por:</LabelWithStatus>
                     <Select
-                        style={{ width: '100%' }}
+                        style={{ maxWidth: '300px' }}
                         value={criterio}
                         onChange={handleCriterioChange}
                         options={criterioOptions}
-                        size='large'
                     />
-              
+
                 </FlexGrow>
                 <FlexGrow>
-                    <Label>Orden</Label>
+                    <LabelWithStatus modified={isOrdenModified}>Orden</LabelWithStatus>
                     <Tooltip title={`Cambiar orden: ${currentOrdenLabel}`} placement="top">
                         <Button
                             aria-label={`Orden actual ${currentOrdenLabel}. Click para alternar.`}
                             onClick={handleToggleOrden}
-                            size={"large"}
-                        >
-                            {ordenIcon}
-                        </Button>
+                            icon={ordenIcon}
+                        />
                     </Tooltip>
                 </FlexGrow>
             </Row>
         </Container>
     );
 }
+
 const Container = styled.div`
     display: flex;
     flex-direction: column;
@@ -134,5 +137,25 @@ const FlexGrow = styled.div`
 export const Label = styled.label`
     font-size: .72rem;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
 `;
 
+const ModifiedMarker = styled.div`
+    background-color: #ffaa0bff;
+    border-radius: 50%;
+
+    width: 0.7rem;
+    height: 0.7rem;
+    font-size: 0.7rem;
+    border: 1px solid #ffffffff;
+    box-shadow: 0 0 4px rgba(0,0,0,.2);
+`;
+
+export const LabelWithStatus = ({ children, modified }) => (
+    <Label>
+        <span>{children}</span>
+        {modified ? <ModifiedMarker aria-hidden="true"></ModifiedMarker> : null}
+    </Label>
+);

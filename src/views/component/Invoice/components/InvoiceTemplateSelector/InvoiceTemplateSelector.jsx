@@ -1,8 +1,8 @@
-import React from 'react';
 import { Select, Form, Button, message } from 'antd';
+import React from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { fbUpdateInvoiceType } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
 
@@ -34,7 +34,7 @@ const InvoiceTemplateSelector = ({ onSave, onPreview, template, hidePreviewButto
       await setBillingSettings(user, { invoiceType: value });
       onSave && onSave(value);
       message.success('Plantilla de factura actualizada');
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la plantilla');
     }
   };

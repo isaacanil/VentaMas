@@ -1,9 +1,10 @@
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { calcFooterHeight, calcHeaderHeight } from './utils/documentHeightCalculator.js';
-import { buildHeader } from './builders/header.js';
+
 import { buildContent } from './builders/content.js';
 import { buildFooter } from './builders/footer.js';
+import { buildHeader } from './builders/header.js';
+import { calcFooterHeight, calcHeaderHeight } from './utils/documentHeightCalculator.js';
 
 pdfMake.vfs = pdfFonts.vfs;
 

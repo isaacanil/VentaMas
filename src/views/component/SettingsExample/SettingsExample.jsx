@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, 
   faShieldAlt, 
@@ -12,6 +10,9 @@ import {
   faDatabase,
   faServer
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState } from 'react';
+
 import { Nav } from '../../templates/system/Nav/Nav';
 
 export default function SettingsExample() {

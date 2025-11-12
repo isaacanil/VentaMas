@@ -1,12 +1,15 @@
-import styled from 'styled-components'
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { OrdersTable } from './components/OrderListTable/OrdersTable'
-import { FilterBar } from '../Compra/components/FilterBar/FilterBar'
-import { useListenOrders } from '../../../../hooks/useOrders'
 import { useCallback, useMemo, useState } from 'react'
-import createFilterConfig from './config/filterConfig'
+import styled from 'styled-components'
+
 import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
 import useFilter from '../../../../hooks/search/useSearch'
+import { useListenOrders } from '../../../../hooks/useOrders'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { FilterBar } from '../Compra/components/FilterBar/FilterBar'
+
+import { OrdersTable } from './components/OrderListTable/OrdersTable'
+import createFilterConfig from './config/filterConfig'
+
 
 export const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -18,7 +21,7 @@ export const Orders = () => {
     }
   })
 
-  const { providers = [], loading } = useFbGetProviders()
+  const { providers = [] } = useFbGetProviders()
   const filterConfig = useMemo(() => createFilterConfig(), [])
   const dataConfig = useMemo(
     () => ({

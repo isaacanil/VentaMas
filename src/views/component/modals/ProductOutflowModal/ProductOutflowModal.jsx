@@ -1,19 +1,21 @@
+import { Button, Input } from 'antd'
 import { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
+
+import { icons } from '../../../../constants/icons/icons'
+import { selectUser } from '../../../../features/auth/userSlice'
 import { toggleAddProductOutflow } from '../../../../features/modals/modalSlice'
 import { deleteData, deleteProductFromProductOutflow, SelectProductList, SelectProductOutflow, updateProductFromProductOutflow } from '../../../../features/productOutflow/productOutflow'
 import { fbAddProductOutFlow } from '../../../../firebase/ProductOutflow/fbAddProductOutflow'
+import { fbRemoveOutputRestoreQuantity } from '../../../../firebase/ProductOutflow/fbRemoveOutputRestoreQuantity'
 import { fbUpdateProductOutflow } from '../../../../firebase/ProductOutflow/fbUpdateProductOutflow'
 import useScroll from '../../../../hooks/useScroll'
 import { CenteredText } from '../../../templates/system/CentredText'
 import { FormattedValue } from '../../../templates/system/FormattedValue/FormattedValue'
 import { Modal } from '../Modal'
+
 import { OutputProductEntry } from './OutputProductEntry/OutputProductEntry'
-import { fbRemoveOutputRestoreQuantity } from '../../../../firebase/ProductOutflow/fbRemoveOutputRestoreQuantity'
-import { selectUser } from '../../../../features/auth/userSlice'
-import { Button, Input } from 'antd'
-import { icons } from '../../../../constants/icons/icons'
 
 export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
   const outFlowList = useSelector(SelectProductList)
@@ -26,22 +28,22 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
     dispatch(deleteData())
   }
 
-  const handleDeleteProductOutflow = (item, idDoc) => {
+  const handleDeleteProductOutflow = (item) => {
     fbRemoveOutputRestoreQuantity(user, item)
     dispatch(deleteProductFromProductOutflow({ id: item.id }))
   }
   const handleUpdateProductOutflow = async () => {
     try {
       await fbUpdateProductOutflow(user, outFlowProduct.data)
-    } catch (err) {
-      // Handle error
+    } catch (error) {
+      console.error('Error updating product outflow', error)
     }
   }
   const handleAddOutflow = async () => {
     try {
       await fbAddProductOutFlow(user, outFlowProduct.data);
-    } catch (err) {
-      // Handle error
+    } catch (error) {
+      console.error('Error creating product outflow', error)
     }
   }
   const handleSubmit = async () => {
@@ -66,7 +68,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
       nameRef={mode === 'create' ? 'Agregar Salida de Producto' : 'Editar Salida de Producto'}
       handleSubmit={handleSubmit}
       close={onClose}
-      children={
+    >
         <Container>
           <Header>
             <OutputProductEntry />
@@ -116,7 +118,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
                           <Button
                             danger
                             icon={icons.operationModes.delete}
-                            onClick={() => handleDeleteProductOutflow(item, outFlowProduct.data.id)}
+                            onClick={() => handleDeleteProductOutflow(item)}
                           />
                         </div>
                       </Row>
@@ -134,9 +136,7 @@ export const ProductOutflowModal = ({ isOpen, mode = 'create' }) => {
             </Table>
           </Body>
         </Container>
-
-      }
-    />
+    </Modal>
   )
 }
 const Container = styled.div`

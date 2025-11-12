@@ -1,11 +1,12 @@
 import React from 'react'
-import styled from 'styled-components'
-import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator'
-import { Comments } from '../../../Comments/Comments'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { selectCashCount, setCashCountOpeningBanknotes, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
-import { DateSection } from '../../Header/DateSection'
+import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator'
 import { UserView } from '../../../../../resource/UserView/UserView'
+import { Comments } from '../../../Comments/Comments'
+import { DateSection } from '../../Header/DateSection'
 
 export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
   const CashReconciliation = useSelector(selectCashCount);

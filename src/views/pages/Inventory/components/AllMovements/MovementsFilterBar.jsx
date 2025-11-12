@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
 import { Form, Cascader, Button, Select } from 'antd';
+import PropTypes from 'prop-types';
+import React, { useMemo } from 'react';
+import styled from 'styled-components';
+
 import { useWarehouseHierarchy } from '../../../../../firebase/warehouse/warehouseNestedServise';
 import { DatePicker } from '../../../../templates/system/Dates/DatePicker/DatePicker';
-import { shortenLocationPath } from '../../../InventoryControl/components/inventoryTableUtils.jsx';
+import { shortenLocationPath } from '../../../InventoryControl/components/inventoryTableUtils.js';
 
 const Bar = styled.div`
   display: flex;

@@ -1,20 +1,23 @@
 import * as antd from "antd";
 import { useEffect, useRef, useState } from "react";
-import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption, setCreditNotePayment } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { useReactToPrint } from "react-to-print";
 import styled from "styled-components";
-import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
-import { Modal, modalStyles } from "../../Cart/components/InvoicePanel/InvoicePanel";
-import { PaymentFields } from "./components/PaymentFields";
-import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
-import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
+
+import { closePaymentModal, fetchLastInstallmentAmount, selectAccountsReceivablePayment, setPaymentDetails, setPaymentOption, setCreditNotePayment } from "../../../../features/accountsReceivable/accountsReceivablePaymentSlice";
 import { selectUser } from "../../../../features/auth/userSlice";
 import { selectClient } from "../../../../features/clientCart/clientCartSlice";
+import { fbProcessClientPaymentAR } from "../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR";
+import { PAYMENT_OPTIONS, PAYMENT_SCOPE } from "../../../../utils/accountsReceivable/accountsReceivable";
 import { AccountsReceivablePaymentReceipt } from "../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt";
-import { useReactToPrint } from "react-to-print";
-import CreditSelector from "../../Cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
+import CreditSelector from "../../../pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector";
+import { modalStyles } from "../../../pages/Sale/components/Cart/components/InvoicePanel/constants/modalStyles";
+import { Modal } from "../../../pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel";
+import { ShowcaseList } from "../../../templates/system/ShowCase/ShowcaseList";
 
-const { Form, Checkbox, Input, Select, Button, Radio, notification } = antd;
+import { PaymentFields } from "./components/PaymentFields";
+
+const { Form, Checkbox, Select, Button, notification } = antd;
 const { Option } = Select;
 
 export const PaymentForm = () => {

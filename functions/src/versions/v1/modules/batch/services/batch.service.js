@@ -1,8 +1,8 @@
-import admin from 'firebase-admin';
 import { nanoid } from 'nanoid';
+
 // import { deleteAllProductStocksByBatch } from './productStockService.js';
-import { deleteAllProductStocksByBatch } from '../../productStock/services/productStock.service.js';
 import { db, FieldValue } from '../../../../../core/config/firebase.js';
+import { deleteAllProductStocksByBatch } from '../../productStock/services/productStock.service.js';
 
 // Inicializa Firebase Admin si no está hecho
 

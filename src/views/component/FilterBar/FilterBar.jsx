@@ -1,17 +1,20 @@
-import { useCallback, useMemo, useState, useEffect, memo } from 'react'
-import styled from 'styled-components'
-import { Button, Tooltip, Input, Drawer, DatePicker } from 'antd' // Added DatePicker
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faFilterCircleXmark,
   faArrowUpAZ,
   faArrowDownAZ,
 } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Button, Tooltip, Input, Drawer, DatePicker } from 'antd' // Added DatePicker
+import dayjs from 'dayjs'
+import { useCallback, useMemo, useState, useEffect, memo } from 'react'
+import styled from 'styled-components'
+
+import { Selector } from '../../../components/common/Selector/Selector';
+
 import { StatusSelector } from './components/StatusSelector'
 import { useFilterBar } from './hooks/useFilterBar'
-import { Selector } from '../../../components/common/Selector/Selector';
-import { DateTime } from 'luxon'; // Import DateTime
-import dayjs from 'dayjs'
+
+// Import DateTime
 
 const { RangePicker } = DatePicker; // Destructure RangePicker
 
@@ -118,7 +121,7 @@ export const FilterBar = memo(({
                 dayjs(state.filters[filterConfig.key].startDate),
                 dayjs(state.filters[filterConfig.key].endDate)
               ] : null}
-              onChange={(dates, dateStrings) => {
+              onChange={(dates) => {
                 if (dates && dates.length === 2) {
                   updateFilter(filterConfig.key, {
                     startDate: dates[0].startOf('day').valueOf(),
@@ -303,51 +306,6 @@ const ButtonGroup = styled.div`
 
   @media (max-width: 768px) {
     margin-left: auto;
-  }
-`
-
-const OptionWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  
-  svg {
-    color: #666;
-    font-size: 0.9em;
-  }
-`
-
-const DayIndicator = styled.span`
-  background-color: var(--primary);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 500;
-`
-
-const StatusDot = styled.span`
-  color: ${props => props.color};
-  font-size: 0.8em;
-  display: flex;
-  align-items: center;
-`
-
-const ClearOption = styled.div`
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #666;
-  border-bottom: 1px solid #f0f0f0;
-  
-  &:hover {
-    background-color: #f5f5f5;
-  }
-  
-  svg {
-    font-size: 0.9em;
   }
 `
 

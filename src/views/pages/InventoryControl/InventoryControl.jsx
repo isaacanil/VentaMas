@@ -1,23 +1,33 @@
-import { useMemo, useState, useCallback, useDeferredValue } from 'react'
 import { message, Modal } from 'antd'
+import { useMemo, useState, useCallback, useDeferredValue } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate, useParams } from 'react-router-dom'
+
 import { selectUser } from '../../../features/auth/userSlice'
 import { db } from '../../../firebase/firebaseconfig'
-import { useNavigate, useParams } from 'react-router-dom'
 import { MenuApp } from '../../templates/MenuApp/MenuApp'
+
+import { Container, Component, TableContainer } from './components/InventoryControl.styles'
+import InventoryFooterBar from './components/InventoryFooterBar'
 import InventoryGroupedTable from './components/InventoryGroupedTable'
-import { exportInventoryToExcel } from './utils/exportInventoryToExcel'
+import InventoryHeaderBar from './components/InventoryHeaderBar'
+import { useFinalizeInventory } from './hooks/useFinalizeInventory'
+import { useInventoryCounts } from './hooks/useInventoryCounts'
+import { useInventoryPresence } from './hooks/useInventoryPresence'
+import { useInventorySession } from './hooks/useInventorySession'
+import { useInventoryStocksProducts } from './hooks/useInventoryStocksProducts'
+import { useLocationNames } from './hooks/useLocationNames'
 import { useUserNamesCache } from './hooks/useUserNamesCache'
 import { buildInventoryGroups } from './utils/buildInventoryGroups'
-import { useInventoryPresence } from './hooks/useInventoryPresence'
-import { useInventoryStocksProducts } from './hooks/useInventoryStocksProducts'
-import { useInventoryCounts } from './hooks/useInventoryCounts'
-import { useInventorySession } from './hooks/useInventorySession'
-import { useFinalizeInventory } from './hooks/useFinalizeInventory'
-import { useLocationNames } from './hooks/useLocationNames'
-import { Container, Component, TableContainer } from './components/InventoryControl.styles'
-import InventoryHeaderBar from './components/InventoryHeaderBar'
-import InventoryFooterBar from './components/InventoryFooterBar'
+import { exportInventoryToExcel } from './utils/exportInventoryToExcel'
+
+const consoleApi = typeof globalThis !== 'undefined' ? globalThis.console : undefined
+
+const logError = (...args) => {
+  if (consoleApi?.error) {
+    consoleApi.error(...args)
+  }
+}
 
 export const InventoryControl = () => {
   const user = useSelector(selectUser)
@@ -93,7 +103,7 @@ export const InventoryControl = () => {
         { id: session?.id || sessionId, name: session?.name }
       )
     } catch (e) {
-      try { console.error('[InventoryControl] Error exportando inventario:', e) } catch {}
+      logError('[InventoryControl] Error exportando inventario:', e)
       message.error('No se pudo exportar el inventario')
     }
   }
@@ -128,11 +138,12 @@ export const InventoryControl = () => {
         try {
           // Si hay cambios, guardarlos antes de finalizar
           if (hasChanges) {
-            try { await handleSaveCounts() } catch {}
+            await handleSaveCounts()
           }
           const summary = await finalize({ groups, counts, stocks, countsMeta })
           if (summary) message.success('Inventario finalizado')
-        } catch {
+        } catch (error) {
+          logError('[InventoryControl] Error finalizando inventario:', error)
           message.error('No se pudo finalizar el inventario')
         }
       }

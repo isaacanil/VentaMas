@@ -7,7 +7,7 @@
  */
 
 // Filtro temporal: solo tipos B serie 01, 02 y 15 en República Dominicana
-const B_SERIES_CODES_DO = ['01', '02', '15'];
+const _B_SERIES_CODES_DO = ['01', '02', '15'];
 
 export const countryComprobantes = {
   "DO": {

@@ -1,13 +1,13 @@
 
-import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { toggleAddPurchaseModal } from '../../../features/modals/modalSlice'
-import { Button } from '../../templates/system/Button/Button'
-import { Tooltip } from '../../templates/system/Button/Tooltip'
-import { OrderFilter } from './components/OrderFilter/OrderFilter'
+
+import { toggleAddPurchaseModal } from '@/features/modals/modalSlice'
+import { Button } from '@/views/templates/system/Button/Button'
+import { Tooltip } from '@/views/templates/system/Button/Tooltip'
+
 
 export const ToolBar = () => {
     const dispatch = useDispatch()

@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+
 import { EmptyNewProduct, EmptyProduct, EmptyProductSelected } from "./emptyData";
 
 const customPizzaSlice = createSlice({

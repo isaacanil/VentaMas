@@ -1,6 +1,6 @@
+import { Badge, Tooltip } from 'antd'
 import React from 'react'
-import styled from 'styled-components'
-import { Tooltip } from 'antd'
+import styled, { css } from 'styled-components'
 
 export const ButtonIconMenu = ({
     icon,
@@ -8,6 +8,8 @@ export const ButtonIconMenu = ({
     tooltip,
     tooltipDescription,
     tooltipPlacement = 'top',
+    indicator = false,
+    indicatorCount,
     ...rest
 }) => {
     const label = tooltip || tooltipDescription;
@@ -18,22 +20,39 @@ export const ButtonIconMenu = ({
         'top-start': 'topLeft'
     };
     const antdPlacement = placementMap[tooltipPlacement] || tooltipPlacement;
+    const hasBadge = typeof indicatorCount === 'number' && indicatorCount > 0;
+    const showDotIndicator = Boolean(indicator) && !hasBadge;
 
     const Btn = (
         <Container
             onClick={onClick}
             aria-label={label}
+            $indicator={showDotIndicator}
             {...rest}
         >
             {icon}
         </Container>
     );
+    const ButtonWithBadge = hasBadge ? (
+        <Badge
+            count={indicatorCount}
+            overflowCount={9}
+            size="small"
+            style={{
+                top: 8,
+                right: 2
+            }}
+            offset={[6, -4]}
+        >
+            {Btn}
+        </Badge>
+    ) : Btn;
 
     return label ? (
         <Tooltip title={label} placement={antdPlacement}>
-            {Btn}
+            {ButtonWithBadge}
         </Tooltip>
-    ) : Btn;
+    ) : ButtonWithBadge;
 }
 const Container = styled.button`
     border: none;
@@ -55,6 +74,20 @@ const Container = styled.button`
         width: 2.3em;
         height: 2.3em;
     }
+    
+    ${({ $indicator }) => $indicator && css`
+        &::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f6573bff;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+        }
+    `}
     
     svg {
         font-size: 1.2em;

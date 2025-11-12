@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { fbEqualizeProductPrice, fbEqualizeProductsPrice, fbEqualizeAllProductsPrice } from '../../../../../firebase/products/fbEqualizeProductPrice';
+import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 
 function toNumber(n, fallback = 0) {
   const v = Number(n);

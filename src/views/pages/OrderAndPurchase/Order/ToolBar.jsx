@@ -1,20 +1,21 @@
-import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { openModalAddOrder } from '../../../features/modals/modalSlice'
-import { Button } from '../../templates/system/Button/Button'
+
+import { openModalAddOrder } from '@/features/modals/modalSlice'
+import { Button } from '@/views/templates/system/Button/Button'
 
 export const ToolBar = () => {
     const dispatch = useDispatch()
     const openModal = () => dispatch(openModalAddOrder());
     return (
         <Container>
-            <Wrapper>                <Button
+            <Wrapper>
+                <Button
                     borderRadius='normal'
                     bgcolor='primary'
-                    startIcon={<FontAwesomeIcon icon={faPlus}/>}
+                    startIcon={<FontAwesomeIcon icon={faPlus} />}
                     title='Pedido'
                     onClick={openModal}
                 />

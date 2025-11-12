@@ -14,7 +14,7 @@ export const signupSlice = createSlice({
     }
 })
 
-export const { handleImageHidden, toggleCategoryGrouped, ReloadImageHiddenSetting, handleRowMode, toggleFullScreen} = settingSlice.actions;
+export const { handleImageHidden, toggleCategoryGrouped, ReloadImageHiddenSetting, handleRowMode, toggleFullScreen} = signupSlice.actions;
 
 //selectors
 export const selectCategoryGrouped = (state) => state.setting.userPreference.view.categoryGrouped;

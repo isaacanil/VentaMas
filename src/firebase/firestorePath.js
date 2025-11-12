@@ -1,4 +1,5 @@
 import { collection, doc } from 'firebase/firestore';
+
 import { db } from './firebaseconfig';
 
 const getFirestoreRef = (...pathSegments) => {
@@ -50,7 +51,7 @@ const settingsData = (businessID) => getFirestoreRef('businesses', businessID, '
 const cashCountsData = (businessID) => getFirestoreRef('businesses', businessID, 'cashCounts');
 
 // Funciones relacionadas con cuentas por cobrar
-const accountsReceivableData = (businessID, id = null) =>  getFirestoreRef('businesses', businessID, 'accountsReceivable');
+const accountsReceivableData = (businessID, _id = null) =>  getFirestoreRef('businesses', businessID, 'accountsReceivable');
 const accountsReceivablePaymentsData = (businessID) => getFirestoreRef('businesses', businessID, 'accountsReceivablePayments');
 const accountsReceivableInstallmentsData = (businessID, accountReceivableID) => getFirestoreRef('businesses', businessID, 'accountsReceivable', accountReceivableID, 'installments');
 

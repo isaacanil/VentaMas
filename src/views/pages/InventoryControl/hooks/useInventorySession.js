@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
+import { useEffect, useState } from 'react'
 
 export function useInventorySession({ db, businessID, sessionId }) {
   const [session, setSession] = useState(null)

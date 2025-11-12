@@ -2,6 +2,7 @@ export const productHeaderMappings = {
   en: {
     "QR Code": "qrcode",
     "Category": "category",
+    "Item Type": "itemType",
     "Weight": "weightDetail.weight",
     "Is Sold By Weight": "weightDetail.isSoldByWeight",
     "Weight Unit": "weightDetail.weightUnit",
@@ -24,12 +25,15 @@ export const productHeaderMappings = {
     "Price": "pricing.price",
     "Cost": "pricing.cost",
     "Minimum Price": "pricing.minPrice",
+    "Card Price": "pricing.cardPrice",
+    "Offer Price": "pricing.offerPrice",
     "Status": "status",
     "Stock": "stock",
     "Warranty Status": "warranty.status",
     "Warranty Quantity": "warranty.quantity",
     "Warranty Unit": "warranty.unit",
     "Amount to Buy": "amountToBuy",
+    "Restrict Sale Without Stock": "restrictSaleWithoutStock",
     "Track Inventory": "trackInventory",
     "Barcode": "barcode",
     "Active Ingredients": "activeIngredients"
@@ -37,6 +41,8 @@ export const productHeaderMappings = {
   es: {
     "Código QR": "qrcode",
     "Categoría": "category",
+    "Tipo de Ítem": "itemType",
+    "Tipo de Item": "itemType",
     "Peso": "weightDetail.weight",
     "Se Vende por Peso": "weightDetail.isSoldByWeight",
     "Unidad de Peso": "weightDetail.weightUnit",
@@ -59,15 +65,16 @@ export const productHeaderMappings = {
     "Precio": "pricing.price",
     "Costo": "pricing.cost",
     "Precio Mínimo": "pricing.minPrice",
+    "Precio Tarjeta": "pricing.cardPrice",
+    "Precio Oferta": "pricing.offerPrice",
     "Stock": "stock",
     "Garantía Activa": "warranty.status",
     "Cantidad de Garantía": "warranty.quantity",
     "Unidad de Garantía": "warranty.unit",
     "Cantidad a Comprar": "amountToBuy",
+    "Restringir venta sin stock": "restrictSaleWithoutStock",
     "Rastreo de Inventario": "trackInventory",//Inventariable
     "Código de Barras": "barcode",
     "Principio Activo": "activeIngredients" 
   }
 };
-
-

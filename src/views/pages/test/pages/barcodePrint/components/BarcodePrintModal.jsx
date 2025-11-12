@@ -1,10 +1,12 @@
+import { Modal, Select, Form, Spin, Alert } from 'antd';
 import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import styled from 'styled-components';
-import { Modal, Select, Form, Spin, Alert } from 'antd';
-import QuantitySelector from './QuantitySelector';
-import BarcodeItem from './BarcodeItem';
 import ReactToPrint from 'react-to-print';
+import styled from 'styled-components';
+
+import BarcodeItem from './BarcodeItem';
+import QuantitySelector from './QuantitySelector';
+
 
 const BarcodeGrid = styled.div`
   /* Pantalla: 1 columna (sin columnas visuales) */
@@ -57,7 +59,6 @@ const clampInt = (n, min, max) => {
 const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
   // Número de páginas a imprimir; cada página contiene 4 códigos
   const [pagesCount, setPagesCount] = useState(1);
-  const [codesPerPage, setCodesPerPage] = useState(4);
   const [barcodeType, setBarcodeType] = useState('code128');
   const [isLoading, setIsLoading] = useState(false);
   const [printBarcodes, setPrintBarcodes] = useState([]);
@@ -87,7 +88,6 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
   const handleAfterPrint = () => {
     setPrintBarcodes([]);
     setPagesCount(1);
-    setCodesPerPage(4);
     setBarcodeType('code128');
     onClose();
   };

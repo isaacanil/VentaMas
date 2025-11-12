@@ -1,7 +1,3 @@
-import { Modal, Card, Typography, Space, Badge, Row, Col, Progress } from 'antd';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import dayjs from 'dayjs';
 import { 
     faBox,
     faBoxes,
@@ -9,6 +5,10 @@ import {
     faClipboardCheck,
     faHistory
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Card, Typography, Space, Badge, Row, Col, Progress } from 'antd';
+import dayjs from 'dayjs';
+import styled from 'styled-components';
 
 const { Title, Text } = Typography;
 
@@ -41,25 +41,6 @@ const IconWrapper = styled.span`
     margin-right: 8px;
     color: #1890ff;
     font-size: 1.1em;
-`;
-
-const StatisticCard = styled(Card)`
-    border-radius: 8px;
-    text-align: center;
-    height: 100%;
-    background: ${props => props.background || '#fff'};
-    
-    .ant-statistic-title {
-        color: rgba(0, 0, 0, 0.65);
-        font-size: 14px;
-        margin-bottom: 8px;
-    }
-    
-    .ant-statistic-content {
-        color: ${props => props.valueColor || '#000'};
-        font-size: 24px;
-        font-weight: 600;
-    }
 `;
 
 const StatusBadge = styled(Badge)`

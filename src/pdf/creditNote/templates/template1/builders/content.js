@@ -1,4 +1,4 @@
-import { money, getProductIndividualDiscount, getProductTotalPrice, getProductTax, getProductSubtotal } from '../utils/formatters.js';
+import { money, getProductIndividualDiscount, getProductTotalPrice, getProductTax } from '../utils/formatters.js';
 
 /* ──────────────────────────────────────────────── */
 export function buildContent(d) {

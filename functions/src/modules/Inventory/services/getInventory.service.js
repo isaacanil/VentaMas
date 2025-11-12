@@ -1,6 +1,7 @@
 
 // src/inventory/utils/inventoryQueries.js
 import { https } from 'firebase-functions';
+
 import { db } from '../../../core/config/firebase.js';
 
 /**

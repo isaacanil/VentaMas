@@ -1,7 +1,14 @@
+import { CalculatorOutlined, DisconnectOutlined } from '@ant-design/icons';
+import { Modal, Form, Button, Space, Typography, notification } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Button, Space, Typography, notification, Tag, Card } from 'antd';
-import { CalculatorOutlined, SettingOutlined, QrcodeOutlined, WifiOutlined, DisconnectOutlined, ShopOutlined, GlobalOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+import { generateNextItemReference } from '../../../../../../../firebase/barcode/barcodeGeneration';
+import { fbUpdateProduct } from '../../../../../../../firebase/products/fbUpdateProduct';
+import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
+import useProductRealtimeListener from '../../../../../../../hooks/product/useProductRealtimeListener';
 import { 
   generateGTIN13RD,
   generateInternalGTIN13RD,
@@ -10,77 +17,19 @@ import {
   generateGTIN13CO,
   generateGTIN13AR,
   generateGTIN13CL,
-  generateGTIN13PE,
-  INTERNAL_MODE_STRUCTURES
+  generateGTIN13PE
 } from '../../../../../../../utils/barcode/barcode';
 import {
   analyzeBarcodeStructure,
-  getBarcodeInfo,
   isGS1RDCode,
   extractCompanyPrefix,
   extractItemReference
 } from '../../../../../../../utils/barcode/barcode';
-import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
-import useProductRealtimeListener from '../../../../../../../hooks/product/useProductRealtimeListener';
+
 import { GenerateTab, ConfigurationTab } from './components';
-import { fbUpdateProduct } from '../../../../../../../firebase/products/fbUpdateProduct';
-import { generateNextItemReference } from '../../../../../../../firebase/barcode/barcodeGeneration';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+
 
 const { Text } = Typography;
-
-// Styled components para el selector de modo
-const ModeSelector = styled.div`
-  display: flex;
-  background: #f5f5f5;
-  border-radius: 12px;
-  padding: 6px;
-  margin-bottom: 24px;
-  gap: 6px;
-  border: 1px solid #e8e8e8;
-`;
-
-const ModeOption = styled.div`
-  flex: 1;
-  padding: 16px 20px;
-  text-align: center;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 500;
-  position: relative;
-  
-  ${props => props.selected ? `
-    background: white;
-    color: #1890ff;
-    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
-    transform: translateY(-1px);
-  ` : `
-    background: transparent;
-    color: #666;
-    
-    &:hover {
-      background: rgba(255, 255, 255, 0.7);
-      color: #333;
-      transform: translateY(-0.5px);
-    }
-  `}
-`;
-
-const ModeTitle = styled.div`
-  font-size: 14px;
-  margin-bottom: 6px;
-  font-weight: 600;
-`;
-
-const ModeDescription = styled.div`
-  font-size: 12px;
-  opacity: 0.75;
-  font-weight: 400;
-  line-height: 1.4;
-`;
 
 /**
  * Genera un código de barras GTIN-13 siguiendo el estándar GS1 de República Dominicana
@@ -90,7 +39,6 @@ export const BarcodeGenerator = ({ visible, onClose, onGenerate, currentBarcode 
   const { product, status } = useSelector(selectUpdateProductData);
   const [form] = Form.useForm();
   const [generatedCode, setGeneratedCode] = useState('');
-  const [isValid, setIsValid] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [autoMode, setAutoMode] = useState(true);
   const [loadingGenerate, setLoadingGenerate] = useState(false);
@@ -124,7 +72,6 @@ export const BarcodeGenerator = ({ visible, onClose, onGenerate, currentBarcode 
     loading: realtimeLoading,
     error: realtimeError,
     isConnected,
-    hasBarcode: realtimeHasBarcode,
     currentBarcode: realtimeCurrentBarcode,
     isUpdating
   } = useProductRealtimeListener(
@@ -142,8 +89,6 @@ export const BarcodeGenerator = ({ visible, onClose, onGenerate, currentBarcode 
     loading: settingsLoading,
     nextItemReference,
     saveSettings,
-    generateBarcode,
-    updateCompanyPrefix,
     isConfigured,
     refresh
   } = useBarcodeSettings();
@@ -376,14 +321,6 @@ export const BarcodeGenerator = ({ visible, onClose, onGenerate, currentBarcode 
     }
   };
 
-  // Validación en tiempo real
-  const validateCompanyPrefix = (value, config) => {
-    if (!value) return null;
-    if (!/^\d+$/.test(value)) return false;
-    if (config && value.length !== config.companyPrefixLength) return false;
-    return true;
-  };
-
   const validateItemReference = (value, config) => {
     if (!value) return null;
     if (!/^\d+$/.test(value)) return false;
@@ -571,7 +508,6 @@ export const BarcodeGenerator = ({ visible, onClose, onGenerate, currentBarcode 
     
     // Limpiar código generado
     setGeneratedCode('');
-    setIsValid(false);
     form.resetFields();
   };
 
@@ -664,7 +600,6 @@ export const BarcodeGenerator = ({ visible, onClose, onGenerate, currentBarcode 
   const handleReset = () => {
     form.resetFields();
     setGeneratedCode('');
-    setIsValid(false);
     // Mantener la configuración actual para no perderla al reabrir
     setSelectedConfig(settings || null);
     // reset to generate view
@@ -883,5 +818,3 @@ export const BarcodeGenerator = ({ visible, onClose, onGenerate, currentBarcode 
 };
 
 export default BarcodeGenerator;
-
-

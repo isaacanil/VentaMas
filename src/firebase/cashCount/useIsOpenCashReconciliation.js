@@ -1,15 +1,16 @@
-import { collection, doc, getDocs, onSnapshot, query, where } from "firebase/firestore"
-import { db } from "../firebaseconfig"
+import { collection, doc, onSnapshot, query, where } from "firebase/firestore"
 import { useEffect, useState } from "react";
-import { selectUser } from "../../features/auth/userSlice";
 import { useDispatch, useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
+import { db } from "../firebaseconfig"
 import { fbGetDocs } from "../firebaseOperations";
 
 export function useIsOpenCashReconciliation() {
     const [value, setValue] = useState(false);
-    const [cashReconciliation, setCashReconciliation] = useState(null);
+    const [_cashReconciliation, _setCashReconciliation] = useState(null);
     const user = useSelector(selectUser);
-    const dispatch = useDispatch();
+    const _dispatch = useDispatch();
 
     useEffect(() => {
         if (!user || !user?.businessID) { return }
@@ -45,7 +46,7 @@ export function useIsOpenCashReconciliation() {
         return () => unsubscribe();
     }, [user]);
 
-    return { status: value, cashCount: cashReconciliation };
+    return { status: value, cashCount: _cashReconciliation };
 }
 
 export async function checkOpenCashReconciliation(user) {

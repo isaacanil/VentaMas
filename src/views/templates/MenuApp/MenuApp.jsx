@@ -1,26 +1,33 @@
-import { useState, Fragment, useRef, useEffect } from 'react'
-import { useClickOutSide } from '../../../hooks/useClickOutSide'
-import styled from 'styled-components'
-import { SideBar } from './Components/SideBar'
-import { useDispatch } from 'react-redux'
-import { toggleOpenMenu } from '../../../features/nav/navSlice'
-import { OpenMenuButton } from '../system/Button/OpenMenuButton'
-import { GlobalMenu } from './GlobalMenu/GlobalMenu'
-import { icons } from '../../../constants/icons/icons'
-import { GoBackButton } from '../system/Button/GoBackButton'
 import { Input } from 'antd';
-import { NotificationButton } from './Components/NotificationButton/NotificationButton'
-import { ButtonIconMenu } from '../system/Button/ButtonIconMenu'
-import { SearchPanel } from '../../../components/common/SearchPanel/SearchPanel'
+import { useState, Fragment, useRef, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
 
-export const MenuApp = ({ 
-  data, 
-  sectionName, 
-  sectionNameIcon, 
-  borderRadius, 
-  setSearchData, 
-  searchData, 
+import { SearchPanel } from '../../../components/common/SearchPanel/SearchPanel'
+import { icons } from '../../../constants/icons/icons'
+import { toggleOpenMenu } from '../../../features/nav/navSlice'
+import { useClickOutSide } from '../../../hooks/useClickOutSide'
+import { ButtonIconMenu } from '../system/Button/ButtonIconMenu'
+import { GoBackButton } from '../system/Button/GoBackButton'
+import { OpenMenuButton } from '../system/Button/OpenMenuButton'
+
+import { NotificationButton } from './Components/NotificationButton/NotificationButton'
+import { SideBar } from './Components/SideBar'
+import { GlobalMenu } from './GlobalMenu/GlobalMenu'
+
+
+
+
+export const MenuApp = ({
+  data,
+  sectionName,
+  sectionNameIcon,
+  borderRadius,
+  setSearchData,
+  searchData,
   displayName = "",
+  sectionStatus,
+  toolbarProps = {},
   showBackButton = true, // Nueva prop para controlar si se muestra el botón
   showNotificationButton = false, // Nueva prop para controlar si se muestra el botón de notificaciones
   onBackClick,          // Nueva prop para manejar el click personalizado
@@ -67,6 +74,9 @@ export const MenuApp = ({
           {sectionName && (
             <SectionName>{sectionNameIcon}{sectionName}</SectionName>
           )}
+          {sectionStatus && (
+            <StatusBadge>{sectionStatus}</StatusBadge>
+          )}
           
           {/* Botón de búsqueda para móviles */}
           {setSearchData && (
@@ -89,7 +99,13 @@ export const MenuApp = ({
             </SearchInputWrapper>
           )}
         </Group>
-        <GlobalMenu data={data} setSearchData={setSearchData} searchData={searchData} onReportSaleOpen={onReportSaleOpen} />
+        <GlobalMenu
+          data={data}
+          setSearchData={setSearchData}
+          searchData={searchData}
+          onReportSaleOpen={onReportSaleOpen}
+          {...toolbarProps}
+        />
         <SideBar isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
       </Container>
     </Fragment>
@@ -160,7 +176,6 @@ const Container = styled.div`
          padding-right: 1em;
         }   
         `
-        break;
       default:
         break;
     }
@@ -236,6 +251,26 @@ const SectionName = styled.div`
   }
 `
 
+const StatusBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15em 0.75em;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  @media (max-width: 768px) {
+    font-size: 0.7em;
+    padding: 0.1em 0.65em;
+  }
+`
+
 const SearchInputWrapper = styled.div`
   display: flex;
   flex: 1 1 auto;
@@ -261,4 +296,3 @@ const MobileSearchButton = styled.div`
     justify-content: center;
   }
 `
-

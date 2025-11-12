@@ -1,36 +1,30 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import styled from 'styled-components'
+import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined, CloseOutlined } from '@ant-design/icons';
+import * as antd from 'antd'
+import React, { useState, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { ProductItem } from './ProductCard/ProductItem'
-import { ProductCardRow } from './ProductCard/ProductCardRow'
-import { Carrusel } from '../../../../../../component/Carrusel/Carrusel'
-import { FormattedValue } from '../../../../../../templates/system/FormattedValue/FormattedValue'
-import { CenteredText } from '../../../../../../templates/system/CentredText'
+import styled from 'styled-components'
+
+import { store } from '../../../../../../../app/store'
 import { icons } from '../../../../../../../constants/icons/icons'
-import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
-import { ChangeProductData, selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
 import { OPERATION_MODES } from '../../../../../../../constants/modes'
-import { handleDeleteProductAlert } from '../../../../../../../features/Alert/AlertSlice'
+import { useDialog } from '../../../../../../../Context/Dialog'
+import { selectUser } from '../../../../../../../features/auth/userSlice'
+import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
+import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
+import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
+import { ChangeProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
+import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct'
+import { filterData } from '../../../../../../../hooks/search/useSearch'
+import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
+import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
+import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar'
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell'
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button'
 import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell'
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
-import { useDialog } from '../../../../../../../Context/Dialog/DialogContext'
-import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct'
-import { selectUser } from '../../../../../../../features/auth/userSlice'
-import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
-import * as antd from 'antd'
-//quiero el iconos d elos tres punto verticales
 
-import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined, CloseOutlined } from '@ant-design/icons';
-import { store } from '../../../../../../../app/store'
-import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
-import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
-import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar'
-import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
-import { filterData } from '../../../../../../../hooks/search/useSearch'
-const { Button, Dropdown, Menu } = antd;
+const { Button, Dropdown } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();

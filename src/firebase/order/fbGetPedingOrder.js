@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where, orderBy } from "firebase/firestore"
-import { db } from "../firebaseconfig"
-import { selectUser } from "../../features/auth/userSlice";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
 import { createReference, getDocFromRef } from "../../utils/refereceUtils";
+import { db } from "../firebaseconfig"
 
 const convertTimestamps = (dates, fields) => {
     fields.forEach((field) => {

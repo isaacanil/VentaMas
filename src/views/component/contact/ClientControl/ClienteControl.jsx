@@ -1,21 +1,23 @@
+import { Input, Button as AntButton, Checkbox, Select, Button, Tooltip } from 'antd';
 import { useState, useEffect, useRef } from 'react'
-import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
-import { setClient as setClientInClientCart, setChange, toggleCart, totalPurchase, updateInsuranceStatus, selectInsuranceEnabled, setDefaultClient } from '../../../../features/cart/cartSlice'
-import { ClientDetails } from './ClientDetails/ClientDetails.jsx'
-import { updateObject } from '../../../../utils/object/updateObject'
-import { deleteClient, selectClient, selectClientMode, selectClientSearchTerm, selectIsOpen, selectLabelClientMode, setClient, setClientMode, setClientSearchTerm, setIsOpen } from '../../../../features/clientCart/clientCartSlice'
-import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode'
-import { useWindowWidth } from '../../../../hooks/useWindowWidth'
-import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
-import { OPERATION_MODES } from '../../../../constants/modes.js'
-import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
-import { selectNcfType, selectTaxReceipt, selectTaxReceiptType, selectNcfTypeLocked } from '../../../../features/taxReceipt/taxReceiptSlice.js'
-import { Input, Button as AntButton, Checkbox, Select, Button } from 'antd';
-import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
-import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
-import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
+import styled from 'styled-components'
+
 import { icons } from '../../../../constants/icons/icons.jsx'
+import { OPERATION_MODES } from '../../../../constants/modes.js'
+import { selectBusinessData } from '../../../../features/auth/businessSlice.js'
+import { setClient as setClientInClientCart, toggleCart, updateInsuranceStatus, setDefaultClient } from '../../../../features/cart/cartSlice'
+import { deleteClient, selectClient, selectClientMode, selectClientSearchTerm, setClient, setClientSearchTerm, setIsOpen } from '../../../../features/clientCart/clientCartSlice'
+import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode'
+import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js'
+import { toggleClientModal } from '../../../../features/modals/modalSlice.js'
+import { selectNcfType, selectTaxReceipt, selectTaxReceiptType, selectNcfTypeLocked } from '../../../../features/taxReceipt/taxReceiptSlice.js'
+import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js'
+import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
+import { useWindowWidth } from '../../../../hooks/useWindowWidth'
+import { updateObject } from '../../../../utils/object/updateObject'
+
+import { ClientDetails } from './ClientDetails/ClientDetails.jsx'
 
 export const ClientControl = () => {
   const dispatch = useDispatch()
@@ -108,6 +110,7 @@ export const ClientControl = () => {
   const handleCloseCart = () => dispatch(toggleCart())
 
   const limitByWindowWidth = useWindowWidth();
+  const comprobanteTooltipTitle = nfcType ? `Comprobante seleccionado: ${nfcType}` : "Seleccionar el tipo de comprobante fiscal para la factura";
 
   return (
     <Container ref={searchClientRef}>
@@ -134,26 +137,30 @@ export const ClientControl = () => {
             data-client-control-input="true"
           />
           {mode === CLIENT_MODE_BAR.SEARCH.id && (
-            <ClientButton
-              color='blue'
-              variant="solid"
-              icon={icons.operationModes.add}
-              onClick={openAddClientModal}
-              data-client-control-input="true"
-            >
-              Cliente
-            </ClientButton>
+            <Tooltip title="Agregar nuevo cliente">
+              <ClientButton
+                color='blue'
+                variant="solid"
+                icon={icons.operationModes.add}
+                onClick={openAddClientModal}
+                data-client-control-input="true"
+              >
+                Cliente
+              </ClientButton>
+            </Tooltip>
           )}
 
           {mode === CLIENT_MODE_BAR.UPDATE.id && (
-            <ClientButton
-              type="primary"
-              icon={icons.operationModes.edit}
-              onClick={openUpdateClientModal}
-              data-client-control-input="true"
-            >
-              Cliente
-            </ClientButton>
+            <Tooltip title="Editar cliente seleccionado">
+              <ClientButton
+                type="primary"
+                icon={icons.operationModes.edit}
+                onClick={openUpdateClientModal}
+                data-client-control-input="true"
+              >
+                Cliente
+              </ClientButton>
+            </Tooltip>
           )}
 
           
@@ -176,6 +183,7 @@ export const ClientControl = () => {
                 showSearch
                 optionFilterProp="children"
                 filterOption={(input, option) => (option?.children ?? '').toLowerCase().includes(input.toLowerCase())}
+                title={comprobanteTooltipTitle}
               >
                 <Select.OptGroup label="Comprobantes Fiscal" >
                   {
@@ -230,13 +238,12 @@ const Header = styled.div`
    display: flex;
    align-items: center; 
    justify-content: space-between;
-   height: 2.75em;
+   height: 2.64em;
    position: relative;
    z-index: 10;
    gap: 0.5em;
    background-color: var(--Gray8);
-   border-bottom-left-radius: var(--border-radius-light);
-   padding: 0.5em;
+   padding: 0 0.5em;
    
    .ant-input-affix-wrapper {
       border-right: none;

@@ -1,11 +1,11 @@
-import { doc, increment, writeBatch, collection, addDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { validateUser } from "../../utils/userValidation";
-import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
+import { doc, increment, writeBatch, serverTimestamp, setDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
-import { getProductStockById } from '../warehouse/productStockService';
+
+import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
+import { validateUser } from "../../utils/userValidation";
+import { db } from "../firebaseconfig";
 import { getBatchById, updateBatchStatusForProductStock } from "../warehouse/batchService";
-import sales from "../../views/templates/MenuApp/MenuData/items/sales";
+import { getProductStockById } from '../warehouse/productStockService';
 
 // Función para dividir el array en subarrays de tamaño máximo size
 function chunkArray(array, size) {

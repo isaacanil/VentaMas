@@ -1,8 +1,11 @@
-import { useSelector } from "react-redux";
-import { selectUser } from "../../features/auth/userSlice";
-import { useEffect, useState } from "react";
-import { fbGetUsers } from "./fbGetUsers";
 import { setUser } from "@sentry/react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
+
+import { fbGetUsers } from "./fbGetUsers";
+
 
 export function useBusinessUsers() {
     const currentUser = useSelector(selectUser);
@@ -20,9 +23,9 @@ export function useBusinessUsers() {
             return;
         }
 
-        let unsubscribe;
+        let _unsubscribe;
         try {
-            unsubscribe = fbGetUsers(
+            _unsubscribe = fbGetUsers(
                 currentUser,
                 (usersArray) => {
                     setUsers(usersArray);

@@ -1,7 +1,10 @@
-import React from 'react';
 import { InputNumber, Space } from 'antd';
-import { FilterField } from './FilterField';
+import React from 'react';
+
 import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
+
+import { FilterField } from './FilterField';
+
 
 export const AmountRangeFilter = ({ minAmount, maxAmount, onMinChange, onMaxChange }) => {
   const numberInputProps = {

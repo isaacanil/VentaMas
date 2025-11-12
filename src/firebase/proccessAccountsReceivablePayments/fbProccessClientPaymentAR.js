@@ -1,8 +1,9 @@
-import { fbApplyPartialPaymentToAccount } from "./fbApplyPartialPaymentToAccount";
-import { fbPayBalanceForAccounts } from "./fbPayBalanceForAccounts";
-import { fbPayAllInstallmentsForAccount } from "./fbPayAllInstallmentsForAccount";
-import { fbPayActiveInstallmentForAccount } from "./fbPayActiveInstallmentForAccount";
 import { fbConsumeCreditNotes } from "../creditNotes/fbConsumeCreditNotes";
+
+import { fbApplyPartialPaymentToAccount } from "./fbApplyPartialPaymentToAccount";
+import { fbPayActiveInstallmentForAccount } from "./fbPayActiveInstallmentForAccount";
+import { fbPayAllInstallmentsForAccount } from "./fbPayAllInstallmentsForAccount";
+import { fbPayBalanceForAccounts } from "./fbPayBalanceForAccounts";
 
 export const fbProcessClientPaymentAR = async (user, paymentDetails, callback) => {
     const { paymentScope, paymentOption, clientId, totalAmount, paymentMethods } = paymentDetails;

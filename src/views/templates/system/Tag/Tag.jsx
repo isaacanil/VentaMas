@@ -1,5 +1,6 @@
-import React from 'react'
 import * as antd from 'antd'
+import React from 'react'
+
 export const Tag = ({ color, children }) => {
     return (
         <antd.Tag

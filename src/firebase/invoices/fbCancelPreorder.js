@@ -1,7 +1,7 @@
 import { arrayUnion, doc, serverTimestamp, Timestamp, updateDoc } from "firebase/firestore";
-import { getNextID } from "../Tools/getNextID";
+
 import { db } from "../firebaseconfig";
-import { nanoid } from "nanoid";
+
 
 export async function fbCancelPreorder(user, preorder) {
     try {

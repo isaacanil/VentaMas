@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
-import { useListenAllMovementsByDateRange } from '../../../../../firebase/warehouse/productMovementService';
-import { getDateRange } from '../../../../../utils/date/getDateRange';
-import { MovementReason } from '../../../../../models/Warehouse/Movement';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { useListenAllMovementsByDateRange } from '../../../../../firebase/warehouse/productMovementService';
+import { MovementReason } from '../../../../../models/Warehouse/Movement';
+import { getDateRange } from '../../../../../utils/date/getDateRange';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
+
 import MovementsFilterBar from './MovementsFilterBar';
 
 // Reuse styles from MovementsTable for consistent look
@@ -99,15 +101,6 @@ const ReasonBadge = styled.span`
         return `background: rgba(158, 158, 158, 0.1); color: #757575; border: 1px solid rgba(158, 158, 158, 0.2);`;
     }
   }}
-`;
-
-const PathHint = styled.div`
-  color: #757575;
-  font-size: 0.78em;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const formatMovementReason = (reason) => {

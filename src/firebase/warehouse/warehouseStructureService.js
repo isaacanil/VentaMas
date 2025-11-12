@@ -1,5 +1,9 @@
-import { db } from '../firebaseconfig';
 import { doc, setDoc, getDoc, onSnapshot, writeBatch } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 
 // Función para obtener la referencia al documento de estructura
 const getStructureDoc = (businessId, type) => {

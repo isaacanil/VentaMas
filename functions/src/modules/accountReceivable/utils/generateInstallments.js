@@ -1,6 +1,8 @@
 import { nanoid } from 'nanoid';
-import { calculatePaymentDates } from './calculatePaymentDates.js';
+
 import { FieldValue, Timestamp } from '../../../core/config/firebase.js';
+
+import { calculatePaymentDates } from './calculatePaymentDates.js';
 
 const round2 = n => Math.round(n * 100) / 100;
 

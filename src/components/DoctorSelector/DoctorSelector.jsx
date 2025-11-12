@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { Form, Input, Button, Drawer, Tooltip, Dropdown } from 'antd';
 import { PlusOutlined, EditOutlined, MoreOutlined, CloseOutlined, MedicineBoxOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
-import { normalizeText } from '../../utils/text';
+import { Form, Input, Button, Drawer, Tooltip, Dropdown } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
 import { openModal } from '../../features/doctors/doctorsSlice';
+import { normalizeText } from '../../utils/text';
 
 const Wrapper = styled.div`
   height: 100%;

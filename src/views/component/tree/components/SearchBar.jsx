@@ -1,6 +1,6 @@
-import React from 'react';
-import { Input, Button } from 'antd';
 import { SearchOutlined, UpOutlined, DownOutlined } from '@ant-design/icons';
+import { Input, Button } from 'antd';
+import React from 'react';
 
 const SearchBar = ({ searchTerm, setSearchTerm, allExpanded, handleToggleAll }) => {
   return (

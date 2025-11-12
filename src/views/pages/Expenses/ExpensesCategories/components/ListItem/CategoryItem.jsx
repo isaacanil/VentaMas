@@ -1,22 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
-
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
 
-import { useDispatch, useSelector } from 'react-redux'
 
-import { selectUser } from '../../../../../../features/auth/userSlice'
-import { fbDeleteCategory } from '../../../../../../firebase/categories/fbDeleteCategory'
-import { fbUpdateCategory } from '../../../../../../firebase/categories/fbUpdateCategory'
-import { useClickOutSide } from '../../../../../../hooks/useClickOutSide'
 
 import { icons } from '../../../../../../constants/icons/icons'
+import { selectUser } from '../../../../../../features/auth/userSlice'
 import { fbDeleteExpenseCategory } from '../../../../../../firebase/expenses/categories/fbDeleteExpenseCategory'
 import { fbUpdateExpenseCategory } from '../../../../../../firebase/expenses/categories/fbUpdateExpenseCategory'
+import { useClickOutSide } from '../../../../../../hooks/useClickOutSide'
+import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
 
 export const CategoryItem = ({ cat, Row, Col }) => {
-  const dispatch = useDispatch();
-
   const user = useSelector(selectUser);
 
   const [mode, setMode] = useState(null);
@@ -43,7 +38,7 @@ export const CategoryItem = ({ cat, Row, Col }) => {
     EditRef.current.select();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = () => {
     setMode('DELETE');
     setShowConfirmBtn(true);
   };
@@ -124,9 +119,6 @@ export const CategoryItem = ({ cat, Row, Col }) => {
     </Row>
   );
 };
-
-const Container = styled.div`
-`
 
 const CategoryName = styled.input`
 margin-left: 1em;

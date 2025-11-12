@@ -1,25 +1,21 @@
-import { validateInvoiceCart } from "../../utils/invoiceValidation";
-import { getCashCountStrategy } from "../../notification/cashCountNotification/cashCountNotificacion";
-import { checkOpenCashReconciliation } from "../../firebase/cashCount/useIsOpenCashReconciliation";
-import { fbGetAndUpdateTaxReceipt } from "../../firebase/taxReceipt/fbGetAndUpdateTaxReceipt";
-import { fbRegisterNcfUsage, fbUpdateNcfUsageStatus } from "../../firebase/taxReceipt/fbRegisterNcfUsage";
-import { fbUpsertClient } from "../../firebase/client/fbUpsertClient";
-import { GenericClient } from "../../features/clientCart/clientCartSlice";
-import { fbUpdateProductsStock } from "../../firebase/products/fbUpdateProductsStock";
-import { fbAddInvoice } from "../../firebase/invoices/fbAddInvoice";
-import { fbAddAR } from "../../firebase/accountsReceivable/fbAddAR";
-import { fbAddInstallmentAR } from "../../firebase/accountsReceivable/fbAddInstallmentAR";
-import { fbGenerateInvoiceFromPreorder } from "../../firebase/invoices/fbGenerateInvoiceFromPreorder";
 import { Timestamp } from "firebase/firestore";
 import { DateTime } from "luxon";
-import { getInsurance } from "../../firebase/insurance/insuranceService";
-import { addInsuranceAuth } from "../../firebase/insurance/insuranceAuthService";
-import { fbConsumeCreditNotes } from "../../firebase/creditNotes/fbConsumeCreditNotes";
 
-const NCF_TYPES = {
-    'CREDITO FISCAL': 'CREDITO FISCAL',
-    'CONSUMIDOR FINAL': 'CONSUMIDOR FINAL'
-}
+import { GenericClient } from "../../features/clientCart/clientCartSlice";
+import { fbAddAR } from "../../firebase/accountsReceivable/fbAddAR";
+import { fbAddInstallmentAR } from "../../firebase/accountsReceivable/fbAddInstallmentAR";
+import { fbRecordAuthorizationApproval } from "../../firebase/authorization/approvalLogs";
+import { checkOpenCashReconciliation } from "../../firebase/cashCount/useIsOpenCashReconciliation";
+import { fbUpsertClient } from "../../firebase/client/fbUpsertClient";
+import { fbConsumeCreditNotes } from "../../firebase/creditNotes/fbConsumeCreditNotes";
+import { addInsuranceAuth } from "../../firebase/insurance/insuranceAuthService";
+import { getInsurance } from "../../firebase/insurance/insuranceService";
+import { fbAddInvoice } from "../../firebase/invoices/fbAddInvoice";
+import { fbGenerateInvoiceFromPreorder } from "../../firebase/invoices/fbGenerateInvoiceFromPreorder";
+import { fbUpdateProductsStock } from "../../firebase/products/fbUpdateProductsStock";
+import { fbGetAndUpdateTaxReceipt } from "../../firebase/taxReceipt/fbGetAndUpdateTaxReceipt";
+import { getCashCountStrategy } from "../../notification/cashCountNotification/cashCountNotificacion";
+import { validateInvoiceCart } from "../../utils/invoiceValidation";
 
 export async function processInvoice({
     user,
@@ -35,11 +31,10 @@ export async function processInvoice({
     insuranceEnabled = false,
     isTestMode = false,
 }) {
-    try {
-        verifyCartItems(cart);
+    verifyCartItems(cart);
 
-        // En modo de prueba, mostrar notificación y procesar sin guardar en base de datos
-        if (isTestMode) {
+    // En modo de prueba, mostrar notificación y procesar sin guardar en base de datos
+    if (isTestMode) {
             return await processTestModeInvoice({
                 user,
                 cart,
@@ -90,11 +85,7 @@ export async function processInvoice({
             await manageInsuranceReceivableAccounts({ user, arData, invoice, insuranceAuth, authDataId });
         }
 
-    return { invoice }
-
-    } catch (error) {
-        throw error
-    }
+        return { invoice }
 }
 
 function checkIfHasDueDate({ cart, dueDate }) {
@@ -131,9 +122,7 @@ async function validateCashReconciliation({ user, dispatch, transaction }) {
     } catch (error) {
         throw new Error(`Error al validar cuadre de caja: ${error.message}`);
     }
-}
-
-async function handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType }) {
+}async function handleTaxReceiptGeneration({ user, taxReceiptEnabled, ncfType }) {
     if (!user || !taxReceiptEnabled) return null;
 
     try {
@@ -164,13 +153,25 @@ async function adjustProductInventory({ user, products, invoice }) {
 async function generateFinalInvoice({ user, cart, cashCount, ncfCode, clientData, dueDate }) {
     try {
         const cartWithDueDate = dueDate ? checkIfHasDueDate({ cart, dueDate }) : cart;
+        const { authorizationContext = null, ...cartPayload } = cartWithDueDate || {};
+
         const bill = {
-            ...cartWithDueDate,
+            ...cartPayload,
             NCF: ncfCode,
             client: clientData.client,
             cashCountId: cashCount.id
-        }
-        return await fbAddInvoice(bill, user) || bill;
+        };
+
+        const invoice = await fbAddInvoice(bill, user) || bill;
+
+        await logInvoiceAuthorizations({
+            user,
+            invoice,
+            authorizationContext,
+            cart: cartWithDueDate,
+        });
+
+        return invoice;
     } catch (error) {
         throw new Error(`Error al generar la factura final: ${error.message}`);
     }
@@ -250,21 +251,88 @@ async function generalInvoiceFromPreorder({ user, cart, cashCount, ncfCode }) {
     }
 }
 
+const extractAmount = (value) => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'object') {
+        if (typeof value.value === 'number') return value.value;
+        if (typeof value.amount === 'number') return value.amount;
+    }
+    return null;
+};
+
+const sanitizeUserSnapshot = (userLike) => {
+    if (!userLike || typeof userLike !== 'object') {
+        return null;
+    }
+
+    return {
+        uid: userLike.uid || userLike.id || '',
+        name: userLike.displayName || userLike.name || '',
+        role: userLike.role || '',
+        email: userLike.email || '',
+    };
+};
+
+async function logInvoiceAuthorizations({ user, invoice, authorizationContext, cart }) {
+    const discountAuth = authorizationContext?.discount;
+    if (!discountAuth?.authorizer) {
+        return;
+    }
+
+    try {
+        const requestedBy = discountAuth.requestedBy || sanitizeUserSnapshot(cart?.seller || user);
+        const targetUser = discountAuth.targetUser || requestedBy;
+
+        const description = discountAuth.description || `Autorización aplicada en factura ${invoice?.numberID || ''}`.trim();
+
+        await fbRecordAuthorizationApproval({
+            businessId: user?.businessID,
+            module: discountAuth.module || 'invoices',
+            action: discountAuth.action || 'invoice-discount-override',
+            description,
+            requestedBy,
+            authorizer: discountAuth.authorizer,
+            targetUser,
+            target: {
+                type: 'invoice',
+                id: invoice?.id || '',
+                name: invoice?.numberID ? `Factura ${invoice.numberID}` : invoice?.id || '',
+                details: {
+                    invoiceNumber: invoice?.numberID || null,
+                    cartId: discountAuth.metadata?.cartId || cart?.id || null,
+                    clientId: discountAuth.metadata?.clientId || cart?.client?.id || null,
+                    clientName: discountAuth.metadata?.clientName || cart?.client?.name || '',
+                },
+            },
+            metadata: {
+                ...discountAuth.metadata,
+                invoiceId: invoice?.id || null,
+                invoiceNumber: invoice?.numberID || null,
+                total: extractAmount(invoice?.totalPurchase) ?? extractAmount(discountAuth.metadata?.total) ?? null,
+                discountPercent: extractAmount(invoice?.discount) ?? extractAmount(discountAuth.metadata?.discountPercent) ?? null,
+            },
+        });
+    } catch (error) {
+        console.error('Error registrando autorización de factura:', error);
+    }
+}
+
 /**
  * Procesa una factura en modo de prueba sin guardar en la base de datos
  * Retorna un mock de factura para visualización
  */
 async function processTestModeInvoice({
-    user,
+    user: _user,
     cart,
     client,
-    accountsReceivable,
-    insuranceAR,
-    insuranceAuth,
+    accountsReceivable: _accountsReceivable,
+    insuranceAR: _insuranceAR,
+    insuranceAuth: _insuranceAuth,
     ncfType,
     taxReceiptEnabled,
     dueDate,
-    insuranceEnabled,
+    insuranceEnabled: _insuranceEnabled,
 }) {
     try {
 

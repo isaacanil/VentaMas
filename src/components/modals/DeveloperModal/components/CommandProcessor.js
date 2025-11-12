@@ -1,10 +1,13 @@
-import { switchToBusiness, returnToOriginalBusiness, switchToRole, returnToOriginalRole } from '../../../../features/auth/userSlice';
+import { collection, getDocs } from 'firebase/firestore';
+
+import { userRoles, getAvailableRoles } from '../../../../abilities/roles';
 import { toggleMode } from '../../../../features/appModes/appModeSlice';
-import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
-import { userRoles, getRoleLabelById, getAvailableRoles } from '../../../../abilities/roles';
-import { ROUTES } from '../../../../routes/routesName';
+import { switchToBusiness, returnToOriginalBusiness, switchToRole, returnToOriginalRole } from '../../../../features/auth/userSlice';
 import { fbGetUsers, fbSearchUsers } from '../../../../firebase/Auth/fbAuthV2/fbGetUsers';
 import { fbUpdateUserPassword } from '../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
+import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
+import { db } from '../../../../firebase/firebaseconfig';
+import { ROUTES } from '../../../../routes/routesName';
 
 /**
  * Procesa todos los comandos ingresados en la consola de desarrollador
@@ -53,6 +56,72 @@ class CommandProcessor {
       console.error('Error al cargar usuarios:', error);
       return [];
     }
+  }
+
+  /**
+   * Carga todos los productos del negocio actual con sus IDs para búsquedas rápidas.
+   */
+  async loadProductsForLookup() {
+    if (!this.user?.businessID) {
+      return [];
+    }
+
+    try {
+      const productsRef = collection(db, 'businesses', this.user.businessID, 'products');
+      const snapshot = await getDocs(productsRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error('Error al cargar productos para la consola de desarrollador:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca productos cuyo nombre o campos relacionados contienen el término indicado.
+   */
+  async findProductsByName(searchTerm) {
+    if (!searchTerm) return [];
+
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    if (!normalizedSearch) return [];
+
+    const products = await this.loadProductsForLookup();
+
+    const fieldMatchesTerm = (value) => {
+      if (!value) return false;
+      if (typeof value === 'string') {
+        return value.toLowerCase().includes(normalizedSearch);
+      }
+      if (typeof value === 'object' && value !== null) {
+        if (typeof value.name === 'string' && value.name.toLowerCase().includes(normalizedSearch)) {
+          return true;
+        }
+        if (typeof value.label === 'string' && value.label.toLowerCase().includes(normalizedSearch)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    return products.filter(product => {
+      const candidateValues = [
+        product?.name,
+        product?.displayName,
+        product?.label,
+        product?.productName,
+        product?.description,
+        product?.presentation,
+        product?.brand,
+        product?.brandName,
+        product?.barcode,
+        product?.sku,
+        product?.code,
+        product?.internalCode,
+        product?.alternativeName,
+      ];
+
+      return candidateValues.some(fieldMatchesTerm);
+    });
   }
 
   /**
@@ -126,6 +195,10 @@ class CommandProcessor {
       { command: 'TESTMODE STATUS', description: 'Estado modo prueba' },
       // Comandos REACTSCAN
       { command: 'REACTSCAN', description: 'Carga React Scan' },
+
+      // Comandos PRODUCT
+      { command: 'PRODUCT', description: 'Comandos para buscar productos y ver sus IDs' },
+      { command: 'PRODUCT ID ', description: 'Busca productos por nombre y muestra su ID' },
 
       // Comandos USER MANAGEMENT
       { command: 'USERS', description: 'Administra usuarios' },
@@ -237,7 +310,7 @@ Para seleccionar, haga clic en una opción y doble clic para confirmar.
 Pulse ESC para cancelar.`;
           break;
 
-        case cmd === 'select test':
+        case cmd === 'select test': {
           const testItems = [
             { id: '1', display: 'Opción 1 - Esta es la primera opción' },
             { id: '2', display: 'Opción 2 - Esta es la segunda opción' },
@@ -254,8 +327,9 @@ Pulse ESC para cancelar.`;
             'select test'
           );
           break;
+        }
 
-        case cmd === 'select colors':
+        case cmd === 'select colors': {
           const colorItems = [
             { id: 'red', display: '🔴 Rojo', value: '#FF0000' },
             { id: 'green', display: '🟢 Verde', value: '#00FF00' },
@@ -276,8 +350,9 @@ Pulse ESC para cancelar.`;
             'select colors'
           );
           break;
+        }
 
-        case cmd === 'select numbers':
+        case cmd === 'select numbers': {
           const numberItems = Array.from({ length: 10 }, (_, i) => ({
             id: String(i + 1),
             display: `Número ${i + 1}`,
@@ -293,6 +368,7 @@ Pulse ESC para cancelar.`;
             'select numbers'
           );
           break;
+        }
 
         case cmd === 'select':
           result = `Comando de selección interactiva.
@@ -317,6 +393,8 @@ NAVIGATE       Navega entre diferentes rutas de la aplicación.
                Incluye búsqueda y modo de selección interactivo.
 PRUEBA         Navega rápidamente a la página de pruebas (/prueba).
 REACTSCAN      Carga la herramienta React Scan.
+PRODUCT         Busca productos por nombre y devuelve su ID.
+PRODUCT ID      Devuelve el ID de un producto dado su nombre.
 ROLE           Administra el cambio temporal de roles del usuario.
                Incluye modo de selección interactivo con clic.
 SELECT         Comandos de selección interactiva con clic.
@@ -359,6 +437,7 @@ Consola de desarrollador: ABIERTA`;
           if (import.meta.env.DEV) {
             if (!this.reactScanLoaded) {
               result = 'Cargando React Scan...';
+              // eslint-disable-next-line import/no-unresolved
               import('https://unpkg.com/react-scan/dist/auto.global.js')
                 .then(() => {
                   this.setReactScanLoaded(true);
@@ -371,6 +450,61 @@ Consola de desarrollador: ABIERTA`;
           } else {
             result = 'React Scan solo está disponible en el entorno de desarrollo.';
           }
+          break;
+
+        case cmd.startsWith('product id '): {
+          const rawCommand = command.trim();
+          const searchTerm = rawCommand.slice('product id '.length).trim();
+
+          if (!searchTerm) {
+            result = 'Especifica el nombre de un producto. Uso: PRODUCT ID [NOMBRE]';
+            break;
+          }
+
+          result = `Buscando productos que coincidan con "${searchTerm}"...`;
+          this.findProductsByName(searchTerm)
+            .then((matches) => {
+              if (matches.length === 0) {
+                this.addOutput(`No se encontró ningún producto que contenga "${searchTerm}".`, 'warning');
+                return;
+              }
+
+              const maxMatchesToShow = 10;
+              const limitedMatches = matches.slice(0, maxMatchesToShow);
+              const header = matches.length > limitedMatches.length
+                ? `Mostrando ${limitedMatches.length} de ${matches.length} coincidencias para "${searchTerm}":\n\n`
+                : `Productos encontrados para "${searchTerm}":\n\n`;
+
+              const formattedMatches = limitedMatches.map((product, index) => {
+                const brandName = typeof product?.brand === 'string'
+                  ? product.brand
+                  : product?.brand?.name;
+                const code = product?.code || product?.sku || product?.barcode || product?.internalCode;
+                const lines = [
+                  `${index + 1}. ${product?.name || 'Sin nombre'}`,
+                  `   ID: ${product?.id}`
+                ];
+
+                if (brandName) lines.push(`   Marca: ${brandName}`);
+                if (code) lines.push(`   Código: ${code}`);
+
+                return lines.join('\n');
+              }).join('\n\n');
+
+              this.addOutput(`${header}${formattedMatches}`);
+            })
+            .catch((error) => {
+              this.addOutput('Error al buscar productos: ' + error.message, 'error');
+            });
+          break;
+        }
+
+        case cmd === 'product':
+          result = `Utilización: PRODUCT ID [NOMBRE]
+
+Busca un producto por su nombre y devuelve el ID del documento en Firestore.
+Ejemplo:
+  PRODUCT ID Coca-Cola`;
           break;
 
         case cmd === 'debug on':
@@ -493,7 +627,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
           });
           break;
 
-        case cmd.startsWith('business switch '):
+        case cmd.startsWith('business switch '): {
           const targetBusinessId = cmd.replace('business switch ', '').trim();
           if (!targetBusinessId) {
             result = 'Error: Debe especificar un ID de negocio.\nUso: BUSINESS SWITCH [ID]';
@@ -522,6 +656,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
             result = null;
           }
           break;
+        }
 
         case cmd === 'business return':
           if (!this.isTemporaryMode) {
@@ -559,50 +694,96 @@ Ejemplos:
   BUSINESS SWITCH abc123xyz   - Cambio directo por ID
   BUSINESS RETURN             - Volver al original
   BUSINESS STATUS             - Estado actual`;
-          break; case cmd === 'role list':
-          const availableRoles = getAvailableRoles(this.user).map(role =>
-            `${role.label} - ID: ${role.id}`
-          ).join('\n');
+          break;
+        case cmd === 'role list': {
+          const availableRolesForUser = getAvailableRoles(this.user);
+          const rolesForDisplay = [...availableRolesForUser];
 
-          if (availableRoles.length === 0) {
+          if (this.isTemporaryRoleMode && this.originalRole) {
+            const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+            if (originalRoleData && !rolesForDisplay.some(role => role.id === originalRoleData.id)) {
+              rolesForDisplay.unshift(originalRoleData);
+            }
+          }
+
+          const availableRolesOutput = rolesForDisplay.map(role => {
+            const parts = [role.label];
+            if (this.user?.role === role.id) {
+              parts.push('(Actual)');
+            }
+            if (this.isTemporaryRoleMode && this.originalRole === role.id) {
+              parts.push('(Rol original)');
+            }
+            return `${parts.join(' ')} - ID: ${role.id}`;
+          }).join('\n');
+
+          if (availableRolesOutput.length === 0) {
             result = 'No tiene roles disponibles para cambio temporal.';
           } else {
-            result = `Lista de roles disponibles para su usuario:\n\n${availableRoles}\n\nPara cambiar de role use: ROLE SWITCH [ID]\nPara modo interactivo use: ROLE SELECT`;
+            result = `Lista de roles disponibles para su usuario:\n\n${availableRolesOutput}\n\nPara cambiar de role use: ROLE SWITCH [ID]\nPara modo interactivo use: ROLE SELECT`;
           }
-          break; case cmd === 'role select':
+          break;
+        }
+        case cmd === 'role select': {
           // Preparar items para el modo de selección usando roles disponibles para el usuario
-          const userAvailableRoles = getAvailableRoles(this.user);
+          const userRolesForSelection = getAvailableRoles(this.user);
+          const hasOriginalRoleOption = this.isTemporaryRoleMode && this.originalRole;
 
-          if (userAvailableRoles.length === 0) {
+          if (userRolesForSelection.length === 0 && !hasOriginalRoleOption) {
             result = 'No tiene roles disponibles para cambio temporal.';
             break;
           }
-          const roleSelectionItems = userAvailableRoles.map(role => {
+          const roleSelectionItems = userRolesForSelection.map(role => {
             const isCurrent = role.id === this.user?.role;
+            const isOriginal = hasOriginalRoleOption && this.originalRole === role.id;
+            const labelParts = [role.label];
+
+            if (isCurrent) {
+              labelParts.push('(Actual)');
+            }
+
+            if (isOriginal) {
+              labelParts.push('(Rol original)');
+            }
 
             return {
               id: role.id,
-              display: `${role.label}${isCurrent ? ' (Actual)' : ''} - ID: ${role.id}`,
+              display: `${labelParts.join(' ')} - ID: ${role.id}`,
               label: role.label,
               roleData: role,
-              isCurrent: isCurrent
+              isCurrent,
+              isOriginal,
             };
           });
+
+          if (hasOriginalRoleOption && !roleSelectionItems.some(item => item.id === this.originalRole)) {
+            const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+            if (originalRoleData) {
+              const isCurrent = this.user?.role === originalRoleData.id;
+              const displayLabel = `${originalRoleData.label} (Rol original)${isCurrent ? ' (Actual)' : ''} - ID: ${originalRoleData.id}`;
+
+              roleSelectionItems.unshift({
+                id: originalRoleData.id,
+                display: displayLabel,
+                label: originalRoleData.label,
+                roleData: originalRoleData,
+                isCurrent,
+                isOriginal: true,
+              });
+            }
+          }
 
           // Entrar en modo de selección
           this.enterSelectionMode(
             roleSelectionItems,
             '👤 Seleccionar Role:', (selectedItem) => {
               // Callback cuando se selecciona un item
-              if (selectedItem.isCurrent) {
-                // Si está en modo temporal de role y selecciona el role actual (que es el original)
-                if (this.isTemporaryRoleMode && selectedItem.id === this.originalRole) {
-                  this.dispatch(returnToOriginalRole());
-                  this.addOutput(`🔄 Regresando al role original: ${selectedItem.label}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`);
-                } else {
-                  // No está en modo temporal, solo mostrar mensaje
-                  this.addOutput(`🔄 Ya tiene asignado el role: ${selectedItem.label}\nID: ${selectedItem.id}`);
-                }
+              if (selectedItem.isOriginal) {
+                this.dispatch(returnToOriginalRole());
+                this.addOutput(`🔄 Regresando al role original: ${selectedItem.label}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`);
+              } else if (selectedItem.isCurrent) {
+                // No está en modo temporal, solo mostrar mensaje
+                this.addOutput(`🔄 Ya tiene asignado el role: ${selectedItem.label}\nID: ${selectedItem.id}`);
               } else {
                 this.dispatch(switchToRole(selectedItem.id));
                 this.addOutput(`✅ Cambiado al role: ${selectedItem.label}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`);
@@ -611,7 +792,8 @@ Ejemplos:
             'role select'
           );
           break;
-        case cmd.startsWith('role switch '):
+        }
+        case cmd.startsWith('role switch '): {
           const targetRoleId = cmd.replace('role switch ', '').trim();
           if (!targetRoleId) {
             result = 'Error: Debe especificar un ID de role.\nUso: ROLE SWITCH [ID]';
@@ -621,15 +803,21 @@ Ejemplos:
             // Verificar si el role está disponible para este usuario
             const userAvailableRolesForSwitch = getAvailableRoles(this.user);
             const targetRole = userAvailableRolesForSwitch.find(r => r.id === targetRoleId);
+            const isOriginalTarget = this.isTemporaryRoleMode && this.originalRole === targetRoleId;
 
             if (targetRole) {
               this.dispatch(switchToRole(targetRoleId));
               result = `✅ Cambiado al role: ${targetRole.label}\nID: ${targetRoleId}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`;
+            } else if (isOriginalTarget) {
+              const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+              this.dispatch(returnToOriginalRole());
+              result = `🔄 Regresando al role original: ${originalRoleData?.label || 'Sin nombre'}\nID: ${this.originalRole}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`;
             } else {
               result = `Error: No tiene permisos para cambiar al role "${targetRoleId}" o el role no existe.\nUse ROLE LIST para ver los roles disponibles para su usuario.`;
             }
           }
           break;
+        }
 
         case cmd === 'role return':
           if (!this.isTemporaryRoleMode) {
@@ -686,38 +874,7 @@ Ejemplos:
           });
           break;
 
-        case cmd === 'users select':
-          result = 'Cargando lista de usuarios para selección...';
-          this.loadUsersList().then((usersList) => {
-            if (usersList.length === 0) {
-              this.addOutput('No se encontraron usuarios disponibles.', 'error');
-            } else {
-              // Preparar items para el modo de selección
-              const selectionItems = usersList.map(({user}) => ({
-                id: user?.id,
-                display: `👤 ${user.name} (${user.email}) - Role: ${user.role}`,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                userData: user
-              }));
-
-              // Entrar en modo de selección
-              this.enterSelectionMode(
-                selectionItems,
-                '👥 Seleccionar Usuario:',
-                (selectedItem) => {
-                  this.addOutput(`Usuario seleccionado:\n\nNombre: ${selectedItem.name}\nEmail: ${selectedItem.email}\nRole: ${selectedItem.role}\nID: ${selectedItem.id}\n\nPara cambiar su contraseña use: USERS PASSWORD`);
-                },
-                'users select'
-              );
-            }
-          }).catch((error) => {
-            this.addOutput('Error al cargar la lista de usuarios: ' + error.message, 'error');
-          });
-          break;
-
-        case cmd.startsWith('users search '):
+        case cmd.startsWith('users search '): {
           const searchTerm = cmd.replace('users search ', '').trim();
           if (!searchTerm) {
             result = 'Error: Debe especificar un término de búsqueda.\nUso: USERS SEARCH [TEXTO]';
@@ -735,6 +892,7 @@ Ejemplos:
             });
           }
           break;
+        }
 
         case cmd === 'users password':
           result = 'Iniciando proceso de cambio de contraseña...';

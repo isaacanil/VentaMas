@@ -1,5 +1,5 @@
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy } from 'firebase/firestore';
 
 export const useGetProducts = (db) => {
   const [products, setProducts] = useState([]);

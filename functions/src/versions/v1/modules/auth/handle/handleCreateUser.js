@@ -1,11 +1,10 @@
 import { logger } from 'firebase-functions';
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
 
 import { db } from '../../../../../core/config/firebase.js';
 import { nextSeq } from '../../../../../core/utils/getNextID.js';
 import {
-  validateRequiredFields,
   ensureUniqueUsername,
   prepareUserCreationData
 } from '../utils/auth.util.js';

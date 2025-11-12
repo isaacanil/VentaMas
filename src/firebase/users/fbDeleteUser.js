@@ -1,6 +1,7 @@
-import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "../firebaseconfig";
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+
+import { auth, db } from "../firebaseconfig";
 
 export const fbDeleteUser = async (uid, password) => {
     const userDocRef = doc(db, 'users', uid);

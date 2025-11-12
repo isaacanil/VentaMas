@@ -1,31 +1,43 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+
+import { OPERATION_MODES } from '../../../../../constants/modes'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import {
   selectClient,
-  selectClientMode,
   selectClientSearchTerm,
   selectIsOpen,
   setClientMode,
   setIsOpen
 } from '../../../../../features/clientCart/clientCartSlice'
 import { CLIENT_MODE_BAR } from '../../../../../features/clientCart/clientMode'
-import { filtrarDatos } from '../../../../../hooks/useSearchFilter'
 import { toggleClientModal } from '../../../../../features/modals/modalSlice'
-import { OPERATION_MODES } from '../../../../../constants/modes'
 import { fbDeleteClient } from '../../../../../firebase/client/fbDeleteClient'
-import { selectUser } from '../../../../../features/auth/userSlice'
 import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen'
+import { filtrarDatos } from '../../../../../hooks/useSearchFilter'
+import { lazyWithRetry } from '../../../../../utils/lazyWithRetry'
 
-const ClientSelectionModal = lazy(() => import('./components/ClientSelectionModal').then(module => ({ default: module.ClientSelectionModal })))
-const ClientSelectionToolbar = lazy(() => import('./components/ClientSelectionToolbar').then(module => ({ default: module.ClientSelectionToolbar })))
-const ClientListContainer = lazy(() => import('./components/ClientListContainer').then(module => ({ default: module.ClientListContainer })))
-const ClientPaginationBar = lazy(() => import('./components/ClientPaginationBar').then(module => ({ default: module.ClientPaginationBar })))
+const ClientSelectionModal = lazyWithRetry(
+  () => import('./components/ClientSelectionModal').then(module => ({ default: module.ClientSelectionModal })),
+  'ClientSelectionModal'
+)
+const ClientSelectionToolbar = lazyWithRetry(
+  () => import('./components/ClientSelectionToolbar').then(module => ({ default: module.ClientSelectionToolbar })),
+  'ClientSelectionToolbar'
+)
+const ClientListContainer = lazyWithRetry(
+  () => import('./components/ClientListContainer').then(module => ({ default: module.ClientListContainer })),
+  'ClientListContainer'
+)
+const ClientPaginationBar = lazyWithRetry(
+  () => import('./components/ClientPaginationBar').then(module => ({ default: module.ClientPaginationBar })),
+  'ClientPaginationBar'
+)
 
 export const ClientSelector = () => {
   const dispatch = useDispatch();
   const isOpen = useSelector(selectIsOpen);
   const user = useSelector(selectUser);
-  const mode = useSelector(selectClientMode);
   const selectedClient = useSelector(selectClient);
   const searchTerm = useSelector(selectClientSearchTerm);
   const { clients, loading } = useFbGetClientsOnOpen({ isOpen});

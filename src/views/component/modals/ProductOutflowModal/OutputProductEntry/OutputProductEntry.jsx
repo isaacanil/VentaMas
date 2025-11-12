@@ -1,13 +1,16 @@
-import { useState } from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { ProductFilter } from '../../../ProductFilter/ProductFilter'
-import { Button } from '../../../../templates/system/Button/Button'
+import styled from 'styled-components'
+
 import { addProductToProductOutflow, selectProduct, SelectProductSelected } from '../../../../../features/productOutflow/productOutflow'
-import { tableHeaderColumns } from './tableConfig/tableHeaderConfig'
+import { Button } from '../../../../templates/system/Button/Button'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
+import { ProductFilter } from '../../../ProductFilter/ProductFilter'
+
+import { tableHeaderColumns } from './tableConfig/tableHeaderConfig'
+
 
 export const OutputProductEntry = () => {
 

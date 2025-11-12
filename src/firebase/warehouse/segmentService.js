@@ -1,8 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../features/auth/userSlice';
 import { nanoid } from '@reduxjs/toolkit';
-import { db } from '../firebaseconfig';
 import {
     collection,
     getDocs,
@@ -14,6 +10,12 @@ import {
     query,
     where,
 } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
+
 
 // Obtener referencia de la colección de segmentos de una fila de estante
 const getSegmentCollectionRef = (businessId) => {
@@ -51,7 +53,7 @@ const createSegment = async ({ user, segmentData }) => {
 };
 
 // Obtener todos los segmentos de una fila de estante específica
-const getAllSegments = async (user, warehouseId, shelfId, rowShelfId) => {
+const getAllSegments = async (user, _warehouseId, _shelfId, _rowShelfId) => {
     try {
         const segmentCollectionRef = getSegmentCollectionRef(user.businessID);
         const querySnapshot = await getDocs(segmentCollectionRef);
@@ -67,16 +69,16 @@ const getAllSegments = async (user, warehouseId, shelfId, rowShelfId) => {
 };
 
 // Escuchar en tiempo real todos los segmentos de una fila de estante específica
-const listenAllSegments = (user, warehouseId, shelfId, rowShelfId, callback) => {
-    if(user.businessID === undefined || warehouseId === undefined || shelfId === undefined || rowShelfId === undefined) {
-        console.error('Invalid parameter passed to listenAll', user.businessID, warehouseId, shelfId, rowShelfId);
+const listenAllSegments = (user, _warehouseId, _shelfId, _rowShelfId, callback) => {
+    if(user.businessID === undefined || _warehouseId === undefined || _shelfId === undefined || _rowShelfId === undefined) {
+        console.error('Invalid parameter passed to listenAll', user.businessID, _warehouseId, _shelfId, _rowShelfId);
         return () => {};
     }
     const segmentCollectionRef = getSegmentCollectionRef(user.businessID);
     const q = query(segmentCollectionRef,
-        where('warehouseId', '==', warehouseId),
-        where('shelfId', '==', shelfId),
-        where('rowShelfId', '==', rowShelfId),
+        where('warehouseId', '==', _warehouseId),
+        where('shelfId', '==', _shelfId),
+        where('rowShelfId', '==', _rowShelfId),
         where('isDeleted', '==', false));
     return onSnapshot(
         q,
@@ -125,7 +127,7 @@ const deleteSegment = async (user, warehouseId, shelfId, rowShelfId, segmentId) 
 const useListenAllSegments = (warehouseId, shelfId, rowShelfId) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState();
+    const [error, _setError] = useState();
     const user = useSelector(selectUser);
     useEffect(() => {
         if (!user || !warehouseId || !shelfId || !rowShelfId) {

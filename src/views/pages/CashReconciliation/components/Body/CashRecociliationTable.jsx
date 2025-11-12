@@ -1,22 +1,24 @@
+// Import DateTime
 import { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { tableConfig } from './tableConfig'
-import { fbListenCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
 import { useNavigate } from 'react-router-dom'
-import { clearCashCount, setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
-import { FilterBar } from '../../../../component/FilterBar/FilterBar'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
+import { fbListenCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts'
 import { useBusinessUsers } from '../../../../../firebase/users/useBusinessUsers'
-import { DateTime } from 'luxon' // Import DateTime
+import { FilterBar } from '../../../../component/FilterBar/FilterBar'
+import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
+
+import { tableConfig } from './tableConfig'
 
 export const CashReconciliationTable = () => {
   const [dateRange, setDateRange] = useState({
     startDate: null,
     endDate: null
   });
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm] = useState('')
   const [cashCounts, setCashCounts] = useState([])
   const [loading, setLoading] = useState(true)
   const user = useSelector(selectUser)

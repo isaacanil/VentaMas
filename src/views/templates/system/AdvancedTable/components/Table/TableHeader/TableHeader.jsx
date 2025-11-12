@@ -1,8 +1,9 @@
+import { motion } from 'framer-motion'
 import React from 'react'
 import styled from 'styled-components'
-import { Row } from '../../../AdvancedTable'
-import { motion } from 'framer-motion'
+
 import { icons } from '../../../../../../../constants/icons/icons'
+import { Row } from '../../../AdvancedTable'
 
 export const TableHeader = ({ handleSort, columnOrder, sortConfig, isWideScreen, isWideLayout, rowSize = 'medium' }) => {
 

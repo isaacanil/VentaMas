@@ -1,4 +1,5 @@
 import { OPERATION_MODES } from './modes';
+
 const APP_CONFIG = {
     APP_MODE: {
         TEST_MODE: false

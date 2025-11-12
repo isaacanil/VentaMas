@@ -1,7 +1,6 @@
-import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+
 import { db } from "../../firebaseconfig";
-import { useDispatch } from "react-redux";
-import { toggleTaxReceiptSettings } from "../../../features/taxReceipt/taxReceiptSlice";
 
 export const fbEnabledTaxReceipt = async (user) => {
     if (!user || !user?.businessID) return;

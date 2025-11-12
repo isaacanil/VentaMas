@@ -1,6 +1,7 @@
+import { motion } from 'framer-motion';
 import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+
 import AutoComplete from './AutoComplete';
 
 // Variantes de animación para los elementos de la consola
@@ -322,7 +323,7 @@ const ConsoleInput = styled.input`
   }
 `;
 
-const InputContainer = styled.div`
+const _InputContainer = styled.div`
   position: relative;
   width: 100%;
 `;

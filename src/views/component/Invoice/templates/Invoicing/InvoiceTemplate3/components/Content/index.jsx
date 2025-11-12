@@ -1,52 +1,83 @@
 import { Table } from "antd";
 import styled from "styled-components";
+
+import { PRODUCT_BRAND_DEFAULT } from "../../../../../../../../features/updateProduct/updateProductSlice";
 import { useFormatPrice } from "../../../../../../../../hooks/useFormatPrice";
-
-
-const columns = [
-    {
-      title: 'CANT.',
-      dataIndex: 'amountToBuy',
-      key: 'quantity',
-    },
-    {
-      title: 'CODIGO',
-      dataIndex: 'barcode',
-      key: 'code',
-    },
-    {
-      title: 'DESCRIPCION',
-      dataIndex: 'name',
-      key: 'description',
-    },
-    {
-      title: 'PRECIO',
-      dataIndex: 'pricing',
-      key: 'price',
-      align: 'right',
-      render: (pricing) => pricing.price.toFixed(2),
-    },
-    {
-      title: 'ITBIS',
-      dataIndex: 'pricing',
-      key: 'itbis',
-      align: 'right',
-      render: (pricing) => ((pricing.price * Number(pricing.tax)) / 100).toFixed(2),
-    },
-    {
-      title: 'TOTAL',
-      key: 'total',
-      align: 'right',
-      render: (_, record) => {
-        const price = record.pricing.price;
-        const tax = (price * Number(record.pricing.tax)) / 100;
-        return ((price + tax) * record.amountToBuy).toFixed(2);
-      },
-    },
-  ];
 
 export default function Content ({data}){
     const creditNotes = data?.creditNotePayment || [];
+    const columns = [
+      {
+        title: 'CANT.',
+        dataIndex: 'amountToBuy',
+        key: 'quantity',
+        render: (value, record) => {
+          const quantity = Number(value || 0);
+          if (quantity > 0) return quantity;
+          const weight = Number(record?.weightDetail?.weight || 0);
+          return weight > 0 ? weight : 0;
+        },
+      },
+      {
+        title: 'CODIGO',
+        dataIndex: 'barcode',
+        key: 'code',
+      },
+      {
+        title: 'DESCRIPCION',
+        dataIndex: 'name',
+        key: 'description',
+        render: (value, record) => {
+          const name = value || 'Producto sin nombre';
+          const rawBrand = typeof record?.brand === 'string' ? record.brand.trim() : '';
+          const hasBrand = rawBrand && rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase();
+
+          return (
+            <div>
+              <div>{name}</div>
+              {hasBrand && (
+                <div style={{ fontSize: 11, color: '#555555' }}>
+                  Marca: {rawBrand}
+                </div>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        title: 'PRECIO',
+        dataIndex: 'pricing',
+        key: 'price',
+        align: 'right',
+        render: (pricing) => {
+          const price = Number(pricing?.price || 0);
+          return price.toFixed(2);
+        },
+      },
+      {
+        title: 'ITBIS',
+        dataIndex: 'pricing',
+        key: 'itbis',
+        align: 'right',
+        render: (pricing) => {
+          const price = Number(pricing?.price || 0);
+          const taxRate = Number(pricing?.tax || 0);
+          return ((price * taxRate) / 100).toFixed(2);
+        },
+      },
+      {
+        title: 'TOTAL',
+        key: 'total',
+        align: 'right',
+        render: (_, record) => {
+          const price = Number(record?.pricing?.price || 0);
+          const taxRate = Number(record?.pricing?.tax || 0);
+          const quantity = Number(record?.amountToBuy || 0);
+          const tax = (price * taxRate) / 100;
+          return ((price + tax) * quantity).toFixed(2);
+        },
+      },
+    ];
     
     return(
         <Container>

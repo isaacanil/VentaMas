@@ -1,11 +1,12 @@
-import { useEffect } from 'react';
-import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';
 import { Modal, Typography, Input, Form, notification } from 'antd';
+import { useEffect } from 'react';
+
+import { useCategoryState } from '../../../../Context/CategoryContext';
 
 const { Title } = Typography;
 
 const AddCategoryModal = () => {
-  const { category, setCategory, categoryState, onSubmit, onClose } = useCategoryState();
+  const { category, categoryState, onSubmit, onClose } = useCategoryState();
   const { type, isOpen } = categoryState;
   const [form] = Form.useForm();
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import { getLocationKey, resolveLocationLabel } from '../utils/inventoryHelpers'
 
 /**

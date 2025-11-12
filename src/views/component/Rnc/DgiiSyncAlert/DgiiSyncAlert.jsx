@@ -1,6 +1,6 @@
 
-import { Alert, Button, Popover, List, Tag, Space } from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
+import { Alert, Button, Popover, List, Tag, Space } from 'antd'
 import styled from 'styled-components'
 
 const DiffItem = styled.div`

@@ -1,11 +1,12 @@
-import React from 'react';
-import styled from 'styled-components';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
+import React from 'react';
+import styled from 'styled-components';
+
 import 'dayjs/locale/es';
-import { renderCalendarGrid } from '../utils/dateUtils';
 import { WEEK_DAYS } from '../constants/presets';
+import { renderCalendarGrid } from '../utils/dateUtils';
 
 dayjs.extend(weekday);
 dayjs.locale('es');

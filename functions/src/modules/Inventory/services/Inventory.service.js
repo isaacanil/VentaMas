@@ -1,9 +1,9 @@
-import { nanoid } from 'nanoid'
-import { MovementType, MovementReason } from './movementEnums.js'
-import { getProductStockById } from './productStock.service.js'
-import { getBatchById } from './batch.service.js'
-import { db, increment, serverTimestamp } from '../../../core/config/firebase.js'
 import { https, logger } from 'firebase-functions'
+import { nanoid } from 'nanoid'
+
+import { db, increment, serverTimestamp } from '../../../core/config/firebase.js'
+
+import { MovementType, MovementReason } from './movementEnums.js'
 
 /**
  * Ajusta inventario de productos usando BulkWriter de Admin SDK.
@@ -32,73 +32,72 @@ export async function adjustProductInventory(tx, { user, products, sale, invento
       id: productId,
       name: productName,
       amountToBuy,
-      trackInventory,
       productStockId,
       batchId
-    } = prod;
+    } = prod
 
     const quantityRequested = Number(amountToBuy) || 0
-    let backorderQty = quantityRequested;
+    const prereq = inventoryPrevreqs.find((item) => item?.prod?.id === productId)
 
-    let stockLevel = 0;
-    let batchNumberId = null;
-
-    for (const { prod, stockSnap, batchSnap } of inventoryPrevreqs) {
-      const { id: productId, name: productName, amountToBuy, productStockId, batchId } = prod;
-      const qtyReq = Number(amountToBuy) || 0;
-      const currentStock = stockSnap.get('stock') || 0;
-      const batchNumberId = batchSnap.get('numberId') || null;
-  
-      // calcular decremento y backorder
-      let decrement = -qtyReq;
-      let backorderQty = 0;
-      if (currentStock < qtyReq) {
-        decrement = -currentStock;
-        backorderQty = qtyReq - currentStock;
-      }
-  
-      const incDelta = increment(decrement);
-  
-      // refs
-      const stockRef    = stockSnap.ref;
-      const batchRef    = batchSnap.ref;
-      const stockRecRef = db.doc(`businesses/${businessID}/productsStock/${productStockId}`);
-  
-      // actualizaciones
-      tx.update(stockRef, { stock: incDelta });
-      tx.update(batchRef, { quantity: incDelta });
-  
-      if (currentStock + decrement <= 0) {
-        tx.update(stockRecRef, {
-          quantity: 0,
-          status: 'inactive',
-          updatedAt: serverTimestamp(),
-          updatedBy: uid
-        });
-      } else {
-        tx.update(stockRecRef, { quantity: incDelta });
-      }
-  
-      if (backorderQty > 0) {
-        const backorderId = nanoid();
-        tx.set(db.doc(`businesses/${businessID}/backorders/${backorderId}`), {
-          id: backorderId,
-          productId,
-          quantity: backorderQty,
-          productStockId,
-          saleId,
-          initialQuantity: backorderQty,
-          pendingQuantity: backorderQty,
-          status: 'pending',
-          createdAt: serverTimestamp(),
-          createdBy: uid,
-          updatedAt: serverTimestamp(),
-          updatedBy: uid
-        });
-      }
+    if (!prereq) {
+      logger.warn('Inventario sin prerequisitos calculados', { productId, saleId, businessID })
+      continue
     }
 
-    // Registrar movimiento
+    const { stockSnap, batchSnap } = prereq
+    const currentStock = Number(stockSnap?.get('stock')) || 0
+    let decrement = -quantityRequested
+    let backorderQty = 0
+
+    if (currentStock < quantityRequested) {
+      decrement = -currentStock
+      backorderQty = quantityRequested - currentStock
+    }
+
+    const incDelta = increment(decrement)
+    const stockRef = stockSnap?.ref
+    const batchRef = batchSnap?.ref
+    const batchNumberId = batchSnap?.get('numberId') || null
+
+    if (stockRef) {
+      tx.update(stockRef, { stock: incDelta })
+    }
+
+    if (batchRef) {
+      tx.update(batchRef, { quantity: incDelta })
+    }
+
+    const stockRecRef = db.doc(`businesses/${businessID}/productsStock/${productStockId}`)
+
+    if (currentStock + decrement <= 0) {
+      tx.update(stockRecRef, {
+        quantity: 0,
+        status: 'inactive',
+        updatedAt: serverTimestamp(),
+        updatedBy: uid
+      })
+    } else {
+      tx.update(stockRecRef, { quantity: incDelta })
+    }
+
+    if (backorderQty > 0) {
+      const backorderId = nanoid()
+      tx.set(db.doc(`businesses/${businessID}/backorders/${backorderId}`), {
+        id: backorderId,
+        productId,
+        quantity: backorderQty,
+        productStockId,
+        saleId,
+        initialQuantity: backorderQty,
+        pendingQuantity: backorderQty,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        createdBy: uid,
+        updatedAt: serverTimestamp(),
+        updatedBy: uid
+      })
+    }
+
     const movementId = nanoid()
     const movementRef = db.doc(`businesses/${businessID}/movements/${movementId}`)
     tx.set(movementRef, {
@@ -112,7 +111,7 @@ export async function adjustProductInventory(tx, { user, products, sale, invento
       batchNumberId,
       productId,
       productName,
-      sourceLocation: stockLevel > 0 ? stockLevel : null,
+      sourceLocation: stockSnap?.get('location') || null,
       destinationLocation: null,
       quantity: quantityRequested,
       movementType: MovementType.Exit,

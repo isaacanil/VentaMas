@@ -1,6 +1,6 @@
+import { Drawer, Image, Spin, Alert } from 'antd';
 import React, { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
-import { Drawer, Image, Spin, Alert } from 'antd';
 
 const PreviewContainer = styled.div`
   max-width: 100%;
@@ -13,7 +13,7 @@ const PDFContainer = styled.div`
   padding: 0;
   width: 100%;
   
-  embed {
+  iframe {
     width: 100%;
     height: 100%;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -98,9 +98,9 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
               <Spin size="large" tip={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`} />
             </LoadingContainer>
           )}
-          <embed
+          <iframe
+            title={`${previewFile.name} preview`}
             src={`${fileUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=100`}
-            type="application/pdf"
             style={{ display: isLoading ? 'none' : 'block' }}
             onLoad={handlePdfLoad}
             onError={handlePdfError}

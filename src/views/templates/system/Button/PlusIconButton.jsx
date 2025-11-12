@@ -1,11 +1,7 @@
 import { Fragment } from "react"
 import styled from "styled-components"
-import { useDispatch } from "react-redux"
-import { openModalAddClient } from "../../../../features/modals/modalSlice"
-//import { useModal } from '../../../../hooks/useModal'
+
 export const PlusIconButton = ({fn}) => {
-    //const { isOpen, closeModal, openModal } = useModal(false)
-    const dispatch = useDispatch()
     const run = () => {
         fn()
     }

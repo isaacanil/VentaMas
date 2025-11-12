@@ -1,5 +1,3 @@
-import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faHome, 
   faCashRegister, 
@@ -10,11 +8,13 @@ import {
   faBoxesStacked,
   faWarehouse
 } from '@fortawesome/free-solid-svg-icons'
-import { Line } from 'react-chartjs-2'
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react'
 import styled from 'styled-components'
-import { Sidebar } from './components/Menu/Nav'
+
 import { HomeScreenContent } from './components/HomeScreenContent/HomeScreenContent'
+import { Sidebar } from './components/Menu/Nav'
+
 export const HomeScreen = () => {  const items = [
     {
       icon: <FontAwesomeIcon icon={faHome}/>,

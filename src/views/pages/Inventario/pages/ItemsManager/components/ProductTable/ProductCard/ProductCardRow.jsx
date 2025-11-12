@@ -1,17 +1,18 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
+
+import noImg from '../../../../../../../../assets/producto/noimg.png';
+import { icons } from '../../../../../../../../constants/icons/icons';
+import { OPERATION_MODES } from '../../../../../../../../constants/modes';
 import { handleDeleteProductAlert } from '../../../../../../../../features/Alert/AlertSlice';
 import { openModalUpdateProd } from '../../../../../../../../features/modals/modalSlice';
 import { ChangeProductData } from '../../../../../../../../features/updateProduct/updateProductSlice';
-import { useCheckForInternetConnection } from '../../../../../../../../hooks/useCheckForInternetConnection';
 import useImageFallback from '../../../../../../../../hooks/image/useImageFallback';
-import { Button, ButtonGroup } from '../../../../../../../templates/system/Button/Button';
-import noImg from '../../../../../../../../assets/producto/noimg.png';
-import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
+import { useCheckForInternetConnection } from '../../../../../../../../hooks/useCheckForInternetConnection';
 import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
-import { icons } from '../../../../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../../../../constants/modes';
+import { Button, ButtonGroup } from '../../../../../../../templates/system/Button/Button';
+import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
 
 
 export const ProductCardRow = ({ product, Col, Row }) => {
@@ -96,13 +97,6 @@ const Container = styled.div`
  padding-right: 0.6em;
  padding-right: 0px;
 `
-const Head = styled.div`
-   display: flex;
-   align-items: center;
-
-   justify-content: space-between;
-   height: min-content;
-`
 const ImgContainer = styled.div`
     width: 100%;
     max-height: 2.75em;
@@ -128,19 +122,6 @@ const Img = styled.img`
         }
     }}
 `;
-const Body = styled.div`
-    display: grid;
-    grid-template-columns: 
-    minmax(200px, 1fr) //name
-    minmax(100px, 0.4fr)  //cost
-    minmax(100px, 0.4fr) //stock
-    minmax(100px, 200px); //price
-    align-items: center;
-    gap: 1em;
-    color: var(--Gray7);
-    font-size: 14px;
-
-`
 const ProductName = styled.span`
     color: var(--Gray7);
         margin: 0;
@@ -148,10 +129,6 @@ const ProductName = styled.span`
         font-weight: 500;
         
     
-`
-const Group = styled.div`
-    display: flex;
-    justify-content: space-between;
 `
 const Item = styled.div`
     ${props => {

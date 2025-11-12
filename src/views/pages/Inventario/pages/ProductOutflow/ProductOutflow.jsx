@@ -1,22 +1,25 @@
+import { Button, notification } from 'antd'
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { icons } from '../../../../../constants/icons/icons';
 import { OPERATION_MODES } from '../../../../../constants/modes';
+import { selectUser } from '../../../../../features/auth/userSlice';
 import { toggleAddProductOutflow } from '../../../../../features/modals/modalSlice';
 import { SelectProductOutflow, setProductOutflowData } from '../../../../../features/productOutflow/productOutflow';
 import { fbDeleteProductOutflow } from '../../../../../firebase/ProductOutflow/fbDeleteProductOutflow';
 import { fbGetProductOutflow } from '../../../../../firebase/ProductOutflow/fbGetProductOutflow';
 import useScroll from '../../../../../hooks/useScroll';
+import DateUtils from '../../../../../utils/date/dateUtils';
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup';
+import { CenteredText } from '../../../../templates/system/CentredText';
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
 import Loader from '../../../../templates/system/loader/Loader';
-import { CenteredText } from '../../../../templates/system/CentredText';
-import { ProductOutflowDataFormatter, toggleProductOutflowModal } from './toggleProductOutflowModal';
-import { selectUser } from '../../../../../features/auth/userSlice';
+
 import { Header } from './components/Header/Header';
-import { Button, notification } from 'antd'
-import { icons } from '../../../../../constants/icons/icons';
-import DateUtils from '../../../../../utils/date/dateUtils';
+import { ProductOutflowDataFormatter, toggleProductOutflowModal } from './toggleProductOutflowModal';
+
 
 export const ProductOutflow = () => {
   const dispatch = useDispatch()
@@ -38,7 +41,7 @@ export const ProductOutflow = () => {
       notification.success({
         message: 'Salida de producto eliminada'
       });
-    } catch (err) {
+    } catch {
       notification.error({
         message: 'Error al eliminar la salida de producto'
       });
@@ -201,7 +204,6 @@ const TableHeader = styled.div`
     `}
   
 `;
-const Label = styled.div``;
 const Row = styled.div`
   display: grid;
   grid-template-columns: 6em  1fr 1fr 5em;
@@ -214,6 +216,4 @@ const Row = styled.div`
     background-color: #f5f5f5;
   }
 `;
-
-
 

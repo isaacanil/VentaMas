@@ -1,6 +1,6 @@
+import { Statistic } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Statistic } from 'antd';
 // import { calculateOrderTotals } from '../utils/orderCalculationsUtil'; // removed
 
 const Contained = styled.div`

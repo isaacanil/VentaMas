@@ -1,20 +1,23 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { DateTime } from 'luxon';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
-import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
+import { DateTime } from 'luxon';
+import React, { useMemo, useRef, useState } from 'react';
 import { usePopper } from 'react-popper';
-import Typography from '../../Typografy/Typografy';
-import { truncateString } from '../../../../../utils/text/truncateString';
-import { useMenuOptions } from './useMenuOptions';
+import styled from 'styled-components';
+
+import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
+import { truncateString } from '../../../../../utils/text/truncateString';
+import Typography from '../../Typografy/Typografy';
+
+import { useMenuOptions } from './useMenuOptions';
+
 
 export const DateRangeFilter = ({ setDates, dates }) => {
     const [referenceElement, setReferenceElement] = useState(null);
     const [popperElement, setPopperElement] = useState(null);
-    const [arrowElement, setArrowElement] = useState(null);
+    const [_arrowElement, setArrowElement] = useState(null);
     const { styles, attributes } = usePopper(referenceElement, popperElement, {
         modifiers: [{ name: 'arrow' }],
     });
@@ -23,7 +26,7 @@ export const DateRangeFilter = ({ setDates, dates }) => {
     const menuRef = useRef(null);
     const handleButtonClick = () => setIsMenuOpen(!isMenuOpen);
 
-    const handleMenuItemClick = (startDate, endDate, label) => {
+    const handleMenuItemClick = (startDate, endDate) => {
         setDates({ startDate, endDate });
 
     };
@@ -93,14 +96,14 @@ export const DateRangeFilter = ({ setDates, dates }) => {
 
                         <Options>
                             {sections
-                                .map((section) => (
-                                    <OptionsGroup>
+                                .map((section, sectionIndex) => (
+                                    <OptionsGroup key={sectionIndex}>
                                         <h3>{section}</h3>
                                         <Items>
 
-                                            {groupedOptions[section].map((option, index) => (
+                                            {groupedOptions[section].map((option, optionIndex) => (
                                                 <StyledMenuItem
-                                                    key={index}
+                                                    key={optionIndex}
                                                     isActive={activeOptionLabel === option.label}
                                                     onClick={() =>
                                                         handleMenuItemClick(option.startDate, option.endDate, option.label)

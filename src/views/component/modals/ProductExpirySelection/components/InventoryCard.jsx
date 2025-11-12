@@ -1,12 +1,15 @@
 // InventoryCard.js
-import React from 'react';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWarehouse, faBox, faCalendarAlt, faChartBar } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { clearProductExpirySelector, selectProduct } from '../../../../../features/warehouse/productExpirySelectionSlice';
-import { addProduct } from '../../../../../features/cart/cartSlice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal } from 'antd';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { addProduct } from '../../../../../features/cart/cartSlice';
+import { clearProductExpirySelector, selectProduct } from '../../../../../features/warehouse/productExpirySelectionSlice';
+
+
 const StyledCard = styled.div`
   background: #fff;
   border-radius: 8px;
@@ -81,7 +84,7 @@ const InventoryCard = ({ item }) => {
         const dateObject = new Date(milliseconds);
         return dateObject.toISOString().split('T')[0];
     };
-    const { productStockId, batchId, batchData, productStock, batch } = item;
+    const { productStock, batch } = item;
     const handleSelect = () => {
         try{
             Modal.confirm({
@@ -104,7 +107,7 @@ const InventoryCard = ({ item }) => {
                 },
               });
             }catch(err){
-            // Handle error appropriately
+            console.error('Error selecting inventory product', err);
         }
     }
 

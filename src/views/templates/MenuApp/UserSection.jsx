@@ -1,28 +1,30 @@
-import React from 'react'
-import styled from 'styled-components'
-import { auth } from '../../../firebase/firebaseconfig'
-import { useDispatch, useSelector } from 'react-redux'
-import { logout, selectUser } from '../../../features/auth/userSlice'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons'
-import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
-import { useNavigate } from 'react-router-dom'
-import { useDialog } from '../../../Context/Dialog/DialogContext'
-import { selectBusinessData } from '../../../features/auth/businessSlice'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as antd from 'antd'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { useDialog } from '../../../Context/Dialog'
+import { selectBusinessData } from '../../../features/auth/businessSlice'
+import { logout, selectUser } from '../../../features/auth/userSlice'
+import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
+
+
 const { Tag } = antd
 
 export const UserSection = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { dialog, onClose, setDialogConfirm } = useDialog();
+  const { onClose, setDialogConfirm } = useDialog();
   const business = useSelector(selectBusinessData);
   const user = useSelector(selectUser)
 
   const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
-    navigate('/', { replace: true });
+    navigate('/login', { replace: true });
   }
 
   const logoutOfApp = () => {

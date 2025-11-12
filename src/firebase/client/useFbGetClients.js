@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
-import { selectUser } from "../../features/auth/userSlice";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
 import { db } from "../firebaseconfig";
+
+import { CLIENT_ROOT_FIELDS, extractNormalizedClient } from "./clientNormalizer";
 
 export const useFbGetClients = () => {
     const [clients, setClients] = useState([]);
@@ -24,7 +27,24 @@ export const useFbGetClients = () => {
                 setLoading(false);
                 return;
             }
-            let clientArray = snapshot.docs.map((item) => item.data());
+            const clientArray = snapshot.docs.map((docSnap) => {
+                const data = docSnap.data() || {};
+                const client = extractNormalizedClient(data);
+                const extras = {};
+
+                for (const [key, value] of Object.entries(data)) {
+                    if (key === 'client') continue;
+                    if (!CLIENT_ROOT_FIELDS.has(key)) {
+                        extras[key] = value;
+                    }
+                }
+
+                return {
+                    id: docSnap.id,
+                    ...extras,
+                    client,
+                };
+            });
             
             setClients(clientArray);
             setLoading(false);

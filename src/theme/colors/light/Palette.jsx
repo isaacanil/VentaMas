@@ -1,4 +1,5 @@
 import { getContrastColorPairs } from '../../getContrastColorPairs';
+
 import { baseColors } from './baseColors';
 
 // Paleta de colores para la aplicación

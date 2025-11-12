@@ -1,7 +1,8 @@
 
 import { setDoc, doc } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
 import { nanoid } from 'nanoid';
+
+import { db } from '../firebaseconfig';
 
 export const fbRecordError = async (user, errorStackTrace, errorInfo) => {
     try {

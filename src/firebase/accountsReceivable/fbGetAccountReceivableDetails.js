@@ -7,6 +7,7 @@ import {
     where, 
     getDocs 
   } from 'firebase/firestore';
+
   import { db } from '../firebaseconfig'; // Asegúrate de que la ruta sea correcta
   
   /**

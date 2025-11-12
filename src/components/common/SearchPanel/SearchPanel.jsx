@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { Input } from 'antd'
-import styled from 'styled-components'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useClickOutSide } from '../../../hooks/useClickOutSide'
-import { ButtonIconMenu } from '../../../views/templates/system/Button/ButtonIconMenu'
-import { icons } from '../../../constants/icons/icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Input } from 'antd'
+import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useRef, useEffect } from 'react'
+import styled from 'styled-components'
+
+import { icons } from '../../../constants/icons/icons'
+import { useClickOutSide } from '../../../hooks/useClickOutSide'
 
 export const SearchPanel = ({ 
   isOpen, 

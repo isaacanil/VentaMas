@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Header } from './components/Header'
+
 import { Body } from './components/Body/Body'
+import { Header } from './components/Header'
 
 export const ConfigModal = ({config}) => {
   return (

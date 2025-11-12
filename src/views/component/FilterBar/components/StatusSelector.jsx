@@ -1,10 +1,11 @@
-import { Selector } from '../../../../components/common/Selector/Selector';
 import {
     faCheckCircle,
     faClock,
     faBan,
     faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
+
+import { Selector } from '../../../../components/common/Selector/Selector';
 
 const defaultStatusOptions = [
     {
@@ -50,7 +51,6 @@ export const StatusSelector = ({
     placeholder = "Estado",
     showAllOption = false,
     width,
-    showAllLabel = 'Mostrar todos'
 }) => {
     // Filtrar las opciones según los estados visibles
     const filteredOptions = visibleStatus.length > 0 

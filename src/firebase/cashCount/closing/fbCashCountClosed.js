@@ -1,4 +1,5 @@
-import { Timestamp, doc, setDoc, updateDoc } from 'firebase/firestore'
+import { Timestamp, doc, updateDoc } from 'firebase/firestore'
+
 import { db } from '../../firebaseconfig'
 
 export const fbCashCountClosed = async (user, cashCount, employeeID, approvalEmployeeID, closingDate) => {

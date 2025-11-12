@@ -4,16 +4,15 @@ import {
   doc,
   getDoc,
   getDocs,
-  serverTimestamp,
-  query,
-  where
+  serverTimestamp
 } from "firebase/firestore";
-import { db } from "../firebaseconfig";
 import { nanoid } from "nanoid";
-import { getDefaultWarehouse } from "../warehouse/warehouseService";
-import { getNextID } from "../Tools/getNextID";
+
 import { BatchStatus } from "../../models/Warehouse/Batch";
 import { MovementReason, MovementType } from "../../models/Warehouse/Movement";
+import { db } from "../firebaseconfig";
+import { getNextID } from "../Tools/getNextID";
+import { getDefaultWarehouse } from "../warehouse/warehouseService";
 
 class ImportProgress {
   constructor() {
@@ -37,7 +36,7 @@ class ImportProgress {
   logProgress() {
     const { processedProducts, totalProducts } = this.stats;
     if (totalProducts > 0) {
-      const percentage = Math.round((processedProducts / totalProducts) * 100);
+      const _percentage = Math.round((processedProducts / totalProducts) * 100);
               // Processing products
     }
   }
@@ -71,7 +70,14 @@ export function validateProductPricing(product) {
     if (product.pricing) {
       product.pricing.price = product.pricing.listPrice || 0;
     } else {
-      product.pricing = { price: 0, listPrice: 0 };
+      product.pricing = {
+        price: 0,
+        listPrice: 0,
+        avgPrice: 0,
+        minPrice: 0,
+        cardPrice: 0,
+        offerPrice: 0,
+      };
     }
   }
   return product;

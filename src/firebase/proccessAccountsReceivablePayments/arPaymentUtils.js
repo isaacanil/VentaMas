@@ -1,9 +1,10 @@
-import { db } from "../firebaseconfig";
 import { collection, query, where, orderBy, getDocs, doc, getDoc, Timestamp, setDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
+
 import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
 import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
-import { fbGetInvoice } from "../invoices/fbGetInvoice";
+import { db } from "../firebaseconfig";
+
 import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 
 /**
@@ -452,7 +453,7 @@ export const createFullPaymentReceipt = ({
     };
 
     // Debug logging para verificar que no hay undefined
-    const undefinedFields = Object.entries(receiptData).filter(([key, value]) => value === undefined);
+    const undefinedFields = Object.entries(receiptData).filter(([_key, value]) => value === undefined);
     if (undefinedFields.length > 0) {
         console.error("❌ Undefined fields found in payment receipt:", undefinedFields);
         console.error("❌ Full receipt data:", receiptData);

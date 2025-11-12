@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Select, Space, Button, Drawer } from 'antd';
 import { ClearOutlined, FilterOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
-import { DatePicker } from '../../../../../components/common/DatePicker';
-import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
-import { CREDIT_NOTE_STATUS, CREDIT_NOTE_STATUS_LABEL } from '../../../../../constants/creditNoteStatus';
+import { Select, Button, Drawer } from 'antd';
 import dayjs from 'dayjs';
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+
+import { DatePicker } from '../../../../../components/common/DatePicker';
+import { CREDIT_NOTE_STATUS, CREDIT_NOTE_STATUS_LABEL } from '../../../../../constants/creditNoteStatus';
+import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
+
 
 const { Option } = Select;
 
@@ -167,7 +169,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                             size="middle"
                         >
                             <Option value="">Todos</Option>
-                            {Object.entries(CREDIT_NOTE_STATUS).map(([key, value]) => (
+                            {Object.entries(CREDIT_NOTE_STATUS).map(([, value]) => (
                                 <Option key={value} value={value}>
                                     {CREDIT_NOTE_STATUS_LABEL[value]}
                                 </Option>
@@ -267,7 +269,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                             size="middle"
                         >
                             <Option value="">Todos</Option>
-                            {Object.entries(CREDIT_NOTE_STATUS).map(([key, value]) => (
+                            {Object.entries(CREDIT_NOTE_STATUS).map(([, value]) => (
                                 <Option key={value} value={value}>
                                     {CREDIT_NOTE_STATUS_LABEL[value]}
                                 </Option>
@@ -352,10 +354,6 @@ const MobileFilterLabel = styled.label`
     font-weight: 600;
     color: #262626;
     margin-bottom: 0.25rem;
-`;
-
-const ClearButtonContainer = styled.div`
-    margin-top: 1rem;
 `;
 
 const FiltersRow = styled.div`

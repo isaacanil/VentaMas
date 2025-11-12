@@ -1,7 +1,9 @@
+import * as antd from "antd";
 import React from 'react'
 import styled from 'styled-components';
+
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import * as antd from "antd";
+
 const { Table } = antd;
 
 const Products = ({ products }) => {
@@ -18,7 +20,6 @@ const Products = ({ products }) => {
 
 export default Products
 
-const ProductsContainer = styled.div``;
 const StyledTitle = styled.h2`
   font-weight: 600;
   margin: 0 0 1em;
@@ -65,4 +66,3 @@ const ProductTable = ({ products }) => {
         columns={columns}
         dataSource={dataSource} />;
 };
-

@@ -1,9 +1,9 @@
 import React from 'react';
-import { InvoiceTemplate1 } from '../../templates/Invoicing/InvoiceTemplate1/InvoiceTemplate1';
-import { QuotationTemplate2 } from '../../templates/Invoicing/QuotationTemplate2/QuotationTemplate2';
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { QuotationTemplate2 } from '../../templates/Invoicing/QuotationTemplate2/QuotationTemplate2';
 
 const InvoiceWrapper = styled.div`
   ${props => props.template === 'template2' && `
@@ -28,11 +28,14 @@ const InvoiceWrapper = styled.div`
 `;
 
 export const Quotation = React.forwardRef(({ data, template = "template2", ignoreHidden }, ref) => {
-  const { billing: { billingMode, invoiceType } } = useSelector(SelectSettingCart);
+  // Remove unused selections to satisfy lint
+  // const { billing: { billingMode, invoiceType } } = useSelector(SelectSettingCart);
+  useSelector(SelectSettingCart);
     const renderTemplate = () => {
         switch ('template2') {
             case 'template1':
                 // return <InvoiceTemplate1 ref={ref} data={data} ignoreHidden={ignoreHidden} />;
+                return <QuotationTemplate2 ref={ref} data={data} ignoreHidden={ignoreHidden} />;
             case 'template2':
                 return <QuotationTemplate2 ref={ref} data={data} ignoreHidden={ignoreHidden} />;
             default:
@@ -46,3 +49,5 @@ export const Quotation = React.forwardRef(({ data, template = "template2", ignor
         </InvoiceWrapper>
     );
 });
+
+Quotation.displayName = 'Quotation';

@@ -1,5 +1,5 @@
-import { Typography, Space, Button } from 'antd';
-import { InfoCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { WarningOutlined } from '@ant-design/icons';
+import { Typography, Space } from 'antd';
 import styled from 'styled-components';
 
 const { Text, Paragraph } = Typography;

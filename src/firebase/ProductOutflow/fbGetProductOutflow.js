@@ -1,8 +1,8 @@
 import { collection, onSnapshot, query, where } from "firebase/firestore"
-import { toggleLoader } from "../../features/loader/loaderSlice"
+
 import { db } from "../firebaseconfig"
 /* */
-export const fbGetProductOutflow = ({user, setOutflowList, setOutflowListLoader, dispatch}) => {
+export const fbGetProductOutflow = ({user, setOutflowList, setOutflowListLoader}) => {
     if(!user?.businessID) return
    
     const productOutflowRef = collection(db,"businesses", user.businessID, 'productOutflow')

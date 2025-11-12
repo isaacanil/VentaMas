@@ -1,6 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebaseconfig';
+
 import { FISCAL_RECEIPTS_ALERT_CONFIG } from '../../../config/fiscalReceiptsAlertConfig';
+import { db } from '../../firebaseconfig';
 
 /**
  * Obtiene la configuración de alertas de comprobantes fiscales desde Firebase

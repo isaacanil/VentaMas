@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import * as antd from 'antd';
-import { DateTime } from 'luxon';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectAR, setAccountReceivableInfo } from '../../../../../features/accountsReceivable/accountsReceivableSlice';
-import { useParams } from 'react-router-dom';
-import fetchAccountsReceivableDetails from '../../../../../firebase/accountsReceivable/fetchAccountsReceivableDetails';
 import { useQuery } from '@tanstack/react-query';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import Typography from '../../../../templates/system/Typografy/Typografy';
-import { DetailSummary } from '../../../../component/DetailSummary/DetailSummary';
+import { DateTime } from 'luxon';
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 
-const { Layout, Descriptions, Tag } = antd;
+import { selectUser } from '../../../../../features/auth/userSlice';
+import fetchAccountsReceivableDetails from '../../../../../firebase/accountsReceivable/fetchAccountsReceivableDetails';
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import { DetailSummary } from '../../../../component/DetailSummary/DetailSummary';
+import Typography from '../../../../templates/system/Typografy/Typografy';
 
 // const { Header, Content } = Layout;
 
@@ -84,7 +81,7 @@ const AccountReceivableInfo = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data.installments
+                            {installments
                             .sort((a, b) => a.installmentDate.seconds - b.installmentDate.seconds)
                             .map((installment, index) => (
                                 <tr key={installment.id}>
@@ -108,7 +105,7 @@ const AccountReceivableInfo = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data.installmentPayments
+                            {installmentPayments
                             .sort((a, b) => a.createdAt.seconds - b.createdAt.seconds)
                             .map(payment => (
                                 <tr key={payment.id}>
@@ -254,10 +251,6 @@ const ContentGrid = styled.div`
     grid-template-columns: 2fr 1fr;
     gap: 20px;
 `;
-const Group = styled.div`
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-`
 const SectionTitle = styled.h2`
     margin-top: 20px;
     font-size: 1em;

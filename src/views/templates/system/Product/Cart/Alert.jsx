@@ -1,7 +1,8 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
 import { totalTaxes, deleteProduct, totalPurchase, setChange, totalShoppingItems } from '../../../../../features/cart/cartSlice'
 import { Button, ButtonGroup } from '../../Button/Button'
 

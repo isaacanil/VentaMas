@@ -1,65 +1,23 @@
-// import { doc, setDoc, getDocs, query, collection, where, Timestamp } from "firebase/firestore";
-// import { hash } from "bcryptjs";
-// import { db } from "../../firebaseconfig";
-// import { nanoid } from "nanoid";
+import { httpsCallable } from 'firebase/functions';
 
-import { db } from "../../firebaseconfig";
-import { nanoid } from "nanoid";
-import { collection, doc, getDocs, query, setDoc, where, Timestamp } from "firebase/firestore";
-import { hash } from "bcryptjs";
+import { functions } from '../../firebaseconfig';
 
-// Función para verificar si el nombre de usuario ya existe
-export async function checkIfUserExists(name) {
-    const userCollection = collection(db, "users");
-    const nameQuery = query(userCollection, where("user.name", "==", name));
-    const matchingUsersSnapshot = await getDocs(nameQuery);
+const clientSignUpCallable = httpsCallable(functions, 'clientSignUp');
 
-    return !matchingUsersSnapshot.empty;
-}
-
-// Función para validar la entrada del usuario
-function validateUserInput({ id, name, password, businessID, role }) {
-    if(!name) { throw new Error('Error: Es obligatorio proporcionar un nombre de usuario.'); };
-    if(!password) { throw new Error('Error: Es obligatorio proporcionar una contraseña.') }
-    if(!businessID) { throw new Error('Error: Es obligatorio proporcionar un ID de negocio.') }
-    if(!role) { throw new Error('Error: Es obligatorio seleccionar un rol.') }
-}
-
-export const fbSignUp = async (userData) => {
-        validateUserInput(userData);
-
-        userData.id = nanoid(10);
-
-        const userExists = await checkIfUserExists(userData.name);
-
-        if (userExists) {
-            throw new Error('Error: Ya existe un usuario con este nombre.');
-        }
-
-        const hashedPassword = await hash(userData.password, 10);
-
-        const userRef = doc(db, "users", userData.id);
-
-        await setDoc(userRef, {
-            user: {
-                ...userData,
-                name: userData.name.toLowerCase(),
-                password: hashedPassword,
-                active: true,
-                createAt: Timestamp.now(),
-                loginAttempts: 0,
-                lockUntil: null,
-            }
-        });
+const validateUserInput = ({ name, password, businessID, role }) => {
+    if (!name) { throw new Error('Error: Es obligatorio proporcionar un nombre de usuario.'); }
+    if (!password) { throw new Error('Error: Es obligatorio proporcionar una contraseña.'); }
+    if (!businessID) { throw new Error('Error: Es obligatorio proporcionar un ID de negocio.'); }
+    if (!role) { throw new Error('Error: Es obligatorio seleccionar un rol.'); }
 };
 
-// const createUserCallable = httpsCallable(functions, "handleCreateUser");
+export const fbSignUp = async (userData) => {
+    validateUserInput(userData);
 
-// export async function fbSignUp(user, data) {
-//   try {
-//     const res = await createUserCallable({userData: data, user});
-//     return res.data; // { ok: true, id: 'xyz123' }
-//   } catch (err) {
-//     throw new Error(err.message); // decide cómo mapear código ↔️ mensaje de UI
-//   }
-// }
+    try {
+        const response = await clientSignUpCallable({ userData });
+        return response?.data;
+    } catch (error) {
+        throw new Error(error?.message || 'Error creando usuario');
+    }
+};

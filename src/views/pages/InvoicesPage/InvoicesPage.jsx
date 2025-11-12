@@ -1,22 +1,20 @@
 import { motion } from 'framer-motion'
-import { Fragment, useEffect, useState, Suspense, lazy } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { Fragment, useEffect, useState, Suspense } from 'react'
 import styled from 'styled-components'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import { selectUser } from '../../../features/auth/userSlice'
+
 import { useFbGetInvoicesWithFilters } from '../../../firebase/invoices/useFbGetInvoicesWithFilters'
 import useViewportWidth from '../../../hooks/windows/useViewportWidth'
 import { getDateRange } from '../../../utils/date/getDateRange'
-import SalesAnalyticsPanel from './SalesAnalyticsPanel/SalesAnalyticsPanel'
-import { SaleRecordList } from './SaleRecordList/RecordList'
-import { FilterBar } from './components/FilterBar/FilterBar'
-import dayjs from 'dayjs'
+import { lazyWithRetry } from '../../../utils/lazyWithRetry'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
 
-const SaleReportTable = lazy(() => import('./SaleReportTable/SaleReportTable'));
+import { FilterBar } from './components/FilterBar/FilterBar'
+import { SaleRecordList } from './SaleRecordList/RecordList'
+import SalesAnalyticsPanel from './SalesAnalyticsPanel/SalesAnalyticsPanel'
+
+const SaleReportTable = lazyWithRetry(() => import('./SaleReportTable/SaleReportTable'), 'SaleReportTable');
 
 export const InvoicesPage = () => {
-  const dispatch = useDispatch();
-  const user = useSelector(selectUser);
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,7 +26,7 @@ export const InvoicesPage = () => {
     clientId: null
   });
 
-  const { invoices, loading: invoicesLoading } = useFbGetInvoicesWithFilters(filters);
+  const { invoices } = useFbGetInvoicesWithFilters(filters);
 
   const [processedInvoices, setProcessedInvoices] = useState(invoices);
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
@@ -50,13 +48,12 @@ export const InvoicesPage = () => {
 
   return (
     <Fragment>
-      <Container
-      
-      >
+      <Container>
         <MenuApp
           displayName='Facturas'
           data={invoices}
           searchData={searchTerm}
+          showNotificationButton={true}
           setSearchData={setSearchTerm}
           onReportSaleOpen={onReportSaleOpen}
         />
@@ -99,8 +96,6 @@ const Container = styled(motion.div)`
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
 `
-
-
 
 
 

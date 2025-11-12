@@ -9,4 +9,3 @@ export const storePreviousPathBeforeConfig = (currentPath) => {
     sessionStorage.setItem('previousPathBeforeConfig', currentPath);
   }
 };
-```

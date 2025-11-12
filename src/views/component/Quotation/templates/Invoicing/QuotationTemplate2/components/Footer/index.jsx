@@ -1,15 +1,9 @@
 import styled from "styled-components";
-import { truncateString } from "../../../../../../../../utils/text/truncateString";
+
 import { useFormatPrice } from "../../../../../../../../hooks/useFormatPrice";
-import { getProductsPrice, getProductsTax, getTotalDiscount } from "../../../../../../../../utils/pricing";
+import { getProductsPrice, getTotalDiscount } from "../../../../../../../../utils/pricing";
 
-const PAYMENT_METHODS = {
-    cash: 'Efectivo',
-    transfer: 'Transferencia',
-    card: 'Tarjeta',
-};
-
-export default function Footer({ business, data }) {
+export default function Footer({ data }) {
 
     const subtotal = getProductsPrice(data?.products || []);
     const discount = getTotalDiscount(subtotal, data?.discount?.value || 0);
@@ -91,31 +85,6 @@ export default function Footer({ business, data }) {
 
 }
 
-const TextWithUpLine = ({ label }) => {
-    return (
-        <p
-            style={{
-                padding: '0.2em',
-                width: '100%',
-                marginTop: '1em',
-                marginBottom: '0.2em',
-                fontWeight: '500',
-                color: '#1d1d1d',
-                borderTop: '1px solid #1f1f1f',
-            }}
-        >
-            {label}
-        </p>
-    );
-};
-
-const Group = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  column-gap: 2em;
-
-`;
-
 const PaymentMethodsContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 0.4fr;
@@ -138,11 +107,6 @@ const TotalsContainer = styled.div`
 
 `;
 
-const PaymentMethodsSection = styled.div`
-  /* margin-top: 1em; */
-  font-size: 14px;
-`;
-
 const TotalRow = styled.div`
 display: grid;
 grid-template-columns: 1fr 1fr;
@@ -161,11 +125,6 @@ span {
   text-align: right;
 }
 `;
-const BoldText = styled.p`
-  font-weight: bold;
-  font-size: 14px;
-`;
-
 const Wrapper = styled.div`
     display: grid;
     grid-template-columns: 1fr 0.6fr;

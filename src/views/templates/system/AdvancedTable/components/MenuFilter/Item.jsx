@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
-import { useClickOutSide } from '../../../../../../hooks/useClickOutSide'
+
 import { icons } from '../../../../../../constants/icons/icons';
+import { useClickOutSide } from '../../../../../../hooks/useClickOutSide'
 
 export const Item = ({ label, filterOptions, onChange, onClear, format, selectedValue }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -26,8 +27,9 @@ export const Item = ({ label, filterOptions, onChange, onClear, format, selected
                 isOpen &&
                 <Menu>
                     <Body >
-                        {filterOptions.map((option, index) => (
+                        {filterOptions.map((option, optionIndex) => (
                             <OptionItem
+                                key={optionIndex}
                                 isSelected={selectedValue == option.value}
                                 onClick={() => handleSelect(option.value)}
                             >

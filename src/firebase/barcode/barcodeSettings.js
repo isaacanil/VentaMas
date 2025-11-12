@@ -1,4 +1,5 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
 
 /**
@@ -15,8 +16,6 @@ export const setBarcodeSettings = async (user, settings) => {
     try {
         const settingsRef = doc(db, 'businesses', user.businessID, 'settings', 'barcode');
         
-        console.log('Guardando en Firebase:', settings);
-        
         const docSnapshot = await getDoc(settingsRef);
         
         const dataToSave = {
@@ -32,10 +31,8 @@ export const setBarcodeSettings = async (user, settings) => {
                 createdAt: new Date().toISOString()
             });
         }
-        
-        console.log('Configuración guardada exitosamente en Firebase');
     } catch (error) {
-        console.error('Error al guardar configuración de códigos de barras:', error);
+        console.error('[barcodeSettings] Error al guardar configuración:', error);
         throw error;
     }
 };
@@ -60,7 +57,7 @@ export const getBarcodeSettings = async (user) => {
         
         return null;
     } catch (error) {
-        console.error('Error al obtener configuración de códigos de barras:', error);
+        console.error('[barcodeSettings] Error al obtener configuración:', error);
         throw error;
     }
 };
@@ -83,7 +80,7 @@ export const updateCompanyPrefix = async (user, companyPrefix) => {
             updatedAt: new Date().toISOString()
         });
     } catch (error) {
-        console.error('Error al actualizar company prefix:', error);
+        console.error('[barcodeSettings] Error al actualizar company prefix:', error);
         throw error;
     }
 };
@@ -111,7 +108,7 @@ export const initializeBarcodeSettings = async (user, config) => {
             });
         }
     } catch (error) {
-        console.error('Error al inicializar configuración de códigos de barras:', error);
+        console.error('[barcodeSettings] Error al inicializar configuración:', error);
         throw error;
     }
 };

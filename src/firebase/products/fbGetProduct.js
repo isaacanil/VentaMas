@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { selectUser } from '../../features/auth/userSlice';
-import { useSelector } from 'react-redux';
-import { db } from '../firebaseconfig';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 
 // Función para obtener un producto una sola vez
 export const fbGetProduct = async (user, productId) => {

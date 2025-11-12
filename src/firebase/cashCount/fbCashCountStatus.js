@@ -1,15 +1,33 @@
 import { doc, getDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
-export const fbCashCountStatus = async (user, cashCountID, state) => {
-    const cashCountRef = doc(db, 'businesses', user?.businessID, 'cashCounts', cashCountID);
+export const fbGetCashCountState = async (user, cashCountID) => {
+    if (!user?.businessID || !cashCountID) {
+        return { exists: false, state: null };
+    }
+
+    const cashCountRef = doc(db, 'businesses', user.businessID, 'cashCounts', cashCountID);
     const cashCountDoc = await getDoc(cashCountRef);
 
-    if (cashCountDoc.exists() && cashCountID && state) {
-        const cashCountData = cashCountDoc.data();
-        const isStateMatch = cashCountData.cashCount.state === state;
-        
-        return isStateMatch;
+    if (!cashCountDoc.exists()) {
+        return { exists: false, state: null };
     }
-    return false; 
-}
+
+    const cashCountData = cashCountDoc.data() || {};
+    const state = cashCountData?.cashCount?.state ?? null;
+
+    return {
+        exists: true,
+        state,
+    };
+};
+
+export const fbCashCountStatus = async (user, cashCountID, state) => {
+    if (!state) {
+        return false;
+    }
+
+    const { exists, state: currentState } = await fbGetCashCountState(user, cashCountID);
+    return Boolean(exists && currentState === state);
+};

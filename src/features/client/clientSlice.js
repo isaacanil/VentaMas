@@ -1,6 +1,7 @@
 // src/features/account/accountSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fbGetClientAccountsReceivable } from '../../firebase/client/fbGetClientAccountsReceivable';
+
+import { fbGetClientAccountsReceivable } from '../../firebase/accountsReceivable/fbGetClientAccountsReceivable.js';
 
 // Async thunk to fetch accounts receivable
 export const fetchAccountsReceivable = createAsyncThunk(

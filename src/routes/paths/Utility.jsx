@@ -1,10 +1,7 @@
 import { Utility } from "../../views/pages/Utility/Utility";
 import ROUTES_NAME from "../routesName";
 
-const {
-    UTILITY,
-    UTILITY_REPORT
-} = ROUTES_NAME.UTILITY_TERM;
+const { UTILITY_REPORT } = ROUTES_NAME.UTILITY_TERM;
 
 
 const Routes = [

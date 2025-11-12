@@ -1,22 +1,24 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const createInitialSegmentFormData = () => ({
+    id: "",
+    name: "",
+    shortName: "",
+    description: "",
+    rowShelfId: "",
+    capacity: 0,
+    createdAt: null,
+    createdBy: "",
+    updatedAt: null,
+    updatedBy: "",
+    deletedAt: null,
+    deletedBy: "",
+});
+
 const initialState = {
     isOpen: false,
-    formData: {
-        id: "",
-        name: "",
-        shortName: "",
-        description: "",
-        rowShelfId: "",
-        capacity: 0,
-        createdAt: null,
-        createdBy: "",
-        updatedAt: null,
-        updatedBy: "",
-        deletedAt: null,
-        deletedBy: "",
-    },
-    path: [], // Nueva propiedad para almacenar la ruta
+    formData: createInitialSegmentFormData(),
+    path: [],
     loading: false,
     error: null,
 };
@@ -28,17 +30,21 @@ const segmentModalSlice = createSlice({
         openSegmentForm: (state, action) => {
             state.isOpen = true;
             const data = action.payload.data;
-            state.path = action.payload.path || []; // Almacenar la ruta
+            state.path = (action.payload.path || []).map((node) => ({ ...node }));
             if (data) {
-                state.formData = data;
+                state.formData = { ...createInitialSegmentFormData(), ...data };
             } else {
-                state.formData = initialState.formData;
+                state.formData = createInitialSegmentFormData();
             }
+            state.loading = false;
+            state.error = null;
         },
         closeSegmentForm: (state) => {
             state.isOpen = false;
-            state.formData = initialState.formData;
-            state.path = []; // Limpiar la ruta
+            state.formData = createInitialSegmentFormData();
+            state.path = [];
+            state.loading = false;
+            state.error = null;
         },
         setSegmentLoading: (state, action) => {
             state.loading = action.payload;
@@ -47,9 +53,10 @@ const segmentModalSlice = createSlice({
             state.error = action.payload;
         },
         clearSegmentForm: (state) => {
-            state.formData = initialState.formData;
+            state.formData = createInitialSegmentFormData();
             state.error = null;
             state.loading = false;
+            state.path = [];
         },
         updateSegmentFormData: (state, action) => {
             state.formData = {

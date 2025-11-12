@@ -1,16 +1,14 @@
-import React, { useCallback } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxes, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { CalendarOutlined } from '@ant-design/icons';
+import { faBoxes, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
+
 import BackOrderList from './BackOrderList';
-import { useListenBackOrders } from '../../../../../../../../firebase/warehouse/backOrderService';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
 
 const Container = styled.div`
   display: grid;
-  gap: 24px;
+  gap: 1em;
   align-items: start;
 
   @media (max-width: 768px) {
@@ -22,31 +20,14 @@ const Widget = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 16px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #64748b;
-  font-size: 0.9rem;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f1f5f9;
-  
-  .icon {
-    color: #94a3b8;
-  }
 `;
 
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-top: 4px;
 `;
 
 const StatItem = styled.div`
@@ -92,10 +73,6 @@ const StatLabel = styled.div`
 `;
 
 const StockSummary = ({ filteredStock, productId }) => {
-    const user = useSelector(selectUser);
-    const { data: backOrders } = useListenBackOrders(user, productId);
-    const totalPending = backOrders?.reduce((sum, order) => sum + order.pendingQuantity, 0) || 0;
-
     const calculateTotals = useCallback((stocks) => {
         if (!stocks.length) return { totalUnits: 0, totalLocations: 0, totalBatches: 0 };
         const uniqueLocations = new Set(stocks.map(stock => stock.location));
@@ -114,20 +91,6 @@ const StockSummary = ({ filteredStock, productId }) => {
             (!filteredStock || filteredStock.length === 0) ? null : (
 
             <Widget>
-                {/* <Header>
-                    <FontAwesomeIcon icon={faBoxes} className="icon" />
-                    <span>Resumen de Inventario</span>
-                    <div style={{ 
-                        marginLeft: 'auto', 
-                        fontSize: '0.9rem',
-                        color: '#64748b',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px' 
-                    }}>
-                        <span>{totalUnits.toLocaleString()}/{(totalUnits + totalPending).toLocaleString()}</span>
-                    </div>
-                </Header> */}
                 <StatsGrid>
                     <StatItem>
                         <IconContainer background="rgba(59, 130, 246, 0.1)" color="#3b82f6">

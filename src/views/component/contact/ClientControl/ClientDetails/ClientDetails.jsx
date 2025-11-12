@@ -1,18 +1,17 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useRef, useState } from 'react'
-import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { setAccountPayment } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import { selectClient, setClient } from '../../../../../features/clientCart/clientCartSlice'
+import { useClientPendingBalance } from '../../../../../firebase/accountsReceivable/useClientPendingBalance'
+import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
+import  useInsuranceEnabled  from '../../../../../hooks/useInsuranceEnabled'
 import { updateObject } from '../../../../../utils/object/updateObject'
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
-import { AnimatePresence, motion } from 'framer-motion'
-import { usePendingBalance } from '../../../../../firebase/accountsReceivable/fbGetPendingBalance'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { setAccountPayment } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
-import  useInsuranceEnabled  from '../../../../../hooks/useInsuranceEnabled'
-import { setAR } from '../../../../../features/accountsReceivable/accountsReceivableSlice'
-import { useClientPendingBalance } from '../../../../../firebase/accountsReceivable/useClientPendingBalance'
 
 export const ClientDetails = ({ mode }) => {
     const dispatch = useDispatch()
@@ -20,7 +19,6 @@ export const ClientDetails = ({ mode }) => {
     const isMenuVisible = ((client?.name && (client?.name !== 'Generic Client')) || mode)
     // const [pendingBalance, setPendingBalance] = useState(0)
     const user = useSelector(selectUser)
-    const businessID = user.businessID
     const [isExpanded, setIsExpanded] = useState(false)
     const expandablePanelRef = useRef(null)
     const insuranceEnabled = useInsuranceEnabled()
@@ -316,20 +314,4 @@ const Group = styled.div`
    gap: 0.4em;
    align-items: center;
    width: 100%;
-`
-
-// Nuevos estilos para la sección de seguros
-const InsuranceSection = styled.div`
-   border-top: 1px solid #eee;
-   padding-top: 0.6em;
-   margin-top: 0.3em;
-   display: grid;
-   gap: 0.6em;
-`
-
-const SectionTitle = styled.h4`
-   font-size: 0.85rem;
-   font-weight: 500;
-   color: var(--Gray6);
-   margin: 0 0 0.3em 0;
 `

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import BackButton from '../../GoBackToSetting';
 
 const InfoWrapper = styled.div`

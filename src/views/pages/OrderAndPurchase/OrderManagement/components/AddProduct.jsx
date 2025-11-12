@@ -1,17 +1,18 @@
-import { Form, Input, InputNumber, DatePicker, Statistic, Button, message, Tooltip } from 'antd';
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { icons } from '../../../../../constants/icons/icons';
-import { SelectProduct, selectProductSelected, setSelectedBackOrders, setPurchaseQuantity, clearSelectedBackOrders, selectOrder } from '../../../../../features/addOrder/addOrderSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import ProductModal from './ProductModal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Form, InputNumber, Statistic, Button, message, Tooltip } from 'antd';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
+import { icons } from '../../../../../constants/icons/icons';
+import { SelectProduct, selectProductSelected, setSelectedBackOrders, clearSelectedBackOrders, selectOrder, setPurchaseQuantity } from '../../../../../features/addOrder/addOrderSlice';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
 import { formatMoney } from '../../../../../utils/formatters';
 import BackOrdersModal from '../../PurchaseManagement/components/BackOrdersModal';
-import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import ProductModal from '../../shared/ProductModal';
+
 
 function AddProductForm({ onSave, onClear, mode }) {
     const dispatch = useDispatch();
@@ -27,7 +28,6 @@ function AddProductForm({ onSave, onClear, mode }) {
     const [tempSelectedProduct, setTempSelectedProduct] = useState(null);
     const [productBackOrders, setProductBackOrders] = useState([]);
     const [isLoadingBackOrders, setIsLoadingBackOrders] = useState(false);
-    const [isBackOrderChecked, setIsBackOrderChecked] = useState(false);
     const [checkedProducts, setCheckedProducts] = useState(new Set());
 
     const selectedProduct = useSelector(selectProductSelected);
@@ -36,14 +36,13 @@ function AddProductForm({ onSave, onClear, mode }) {
 
     const onSelectProduct = (product) => {
         dispatch(SelectProduct(product));
-        setIsBackOrderChecked(false);
         // Reset checked state when selecting a new product
         if (!product?.id) {
             setCheckedProducts(new Set());
         }
     };
 
-    const calculateCosts = () => {
+    const calculateCosts = (overrideQuantity) => {
         const values = form.getFieldsValue();
         const baseCost = Number(values.baseCost) || 0;
         const taxPercent = Number(values.taxPercentage) || 0;
@@ -56,8 +55,11 @@ function AddProductForm({ onSave, onClear, mode }) {
         const newUnitCost = baseCost + calculatedTax + freight + otherCosts;
         setUnitCost(newUnitCost);
 
-        const quantity = selectedProduct?.purchaseQuantity || 0;
-        setSubtotal(newUnitCost * quantity);
+        const quantitySource = typeof overrideQuantity === 'number' && Number.isFinite(overrideQuantity)
+            ? overrideQuantity
+            : selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity ?? 0;
+        const effectiveQuantity = Math.max(0, Number(quantitySource) || 0);
+        setSubtotal(newUnitCost * effectiveQuantity);
     };
 
     const handleSubmit = async () => {
@@ -74,7 +76,6 @@ function AddProductForm({ onSave, onClear, mode }) {
             });
             form.resetFields();
             dispatch(clearSelectedBackOrders());
-            setIsBackOrderChecked(false);
             // Clear checked products after saving
             setCheckedProducts(new Set());
             message.success('Producto agregado correctamente');
@@ -113,7 +114,6 @@ function AddProductForm({ onSave, onClear, mode }) {
                 setIsBackOrderModalVisible(true);
             } else {
                 dispatch(clearSelectedBackOrders());
-                setIsBackOrderChecked(true);
                 // Add this product to the checked set since it has no back orders
                 setCheckedProducts(new Set([...checkedProducts, selectedProduct.id]));
             }
@@ -137,16 +137,20 @@ function AddProductForm({ onSave, onClear, mode }) {
     };
 
     const handleQuantityChange = (value) => {
-        form.validateFields().then(calculateCosts).catch(() => { });
+        const normalizedValue = Number(value);
+        const safeValue = Number.isFinite(normalizedValue) ? normalizedValue : 0;
+        dispatch(setPurchaseQuantity(safeValue));
+        form.setFieldsValue({ quantity: safeValue });
+        calculateCosts(safeValue);
     };
 
     useEffect(() => {
         if (selectedProduct) {
             form.setFieldsValue({
                 name: selectedProduct.name,
-                quantity: selectedProduct.quantity,
+                quantity: selectedProduct.purchaseQuantity ?? selectedProduct.quantity,
             });
-            calculateCosts();
+            calculateCosts(selectedProduct.purchaseQuantity ?? selectedProduct.quantity ?? 0);
         }
     }, [selectedProduct]);
 
@@ -154,7 +158,7 @@ function AddProductForm({ onSave, onClear, mode }) {
         <RowContainer>
             <Form
                 form={form}
-                layout="horizontal"
+                layout="vertical"
             >
                 <FieldsRow>
                     <Tooltip title='Nombre del Producto'>
@@ -179,7 +183,7 @@ function AddProductForm({ onSave, onClear, mode }) {
                                 controls={false}
                                 disabled={!isProductSelected || isLoadingBackOrders}
                                 placeholder="Cantidad"
-                                value={selectedProduct?.quantity}
+                                value={selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity}
                                 onChange={handleQuantityChange}
                                 onClick={handleQuantityClick}
                                 style={{ cursor: isProductSelected && !isLoadingBackOrders ? 'pointer' : 'not-allowed', width: '100%' }}
@@ -306,11 +310,10 @@ const StyledFormItem = styled(Form.Item)`
     }
     
     .ant-form-item-label {
-
-    display: flex;
-    align-items: end;
-}
-
+        display: flex;
+        align-items: flex-start;
+        padding-bottom: 4px;
+    }
 
     .ant-form-item-control {
         min-height: unset; // Elimina la altura mínima predeterminada

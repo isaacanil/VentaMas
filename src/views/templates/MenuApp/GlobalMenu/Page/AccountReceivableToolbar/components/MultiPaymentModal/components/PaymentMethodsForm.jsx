@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
 import { Form, Input, InputNumber, Checkbox, Typography } from 'antd';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const { Title } = Typography;

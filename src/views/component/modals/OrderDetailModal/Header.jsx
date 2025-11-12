@@ -1,7 +1,8 @@
-import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react'
 import styled from 'styled-components'
+
 import { Button } from '../../../templates/system/Button/Button'
 
 export const Header = () => {
@@ -26,12 +27,4 @@ const Container = styled.div`
 const Title = styled.p`
     font-weight: 600;
     
-`
-
-const CloseButton = styled.button`
-    background-color: transparent;
-    border: none;
-    color: white;
-    font-size: 1.5em;
-    cursor: pointer;
 `

@@ -1,8 +1,6 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { SelectProduct } from '../../../features/addOrder/addOrderSlice'
+
 
 export const ProductCard = ({ data, fn, close }) => {
 
@@ -10,7 +8,7 @@ export const ProductCard = ({ data, fn, close }) => {
     try {
 
       fn(data);
-      close();    } catch (error) {
+      close();    } catch {
       // Handle error appropriately
     }
   }

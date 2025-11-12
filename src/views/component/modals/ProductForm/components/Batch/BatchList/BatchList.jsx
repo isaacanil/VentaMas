@@ -1,17 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { List, Tag } from "antd";
 import { DateTime } from 'luxon';
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
-import { List, Button, Modal, notification, Tag, Switch } from "antd";
-import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import { BatchForm } from "../BatchForm";
-import { Form } from "antd";
-import { deleteBatch, listenAllBatches } from "../../../../../../../firebase/warehouse/batchService";
+
 import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { ChangeProductData, selectUpdateProductData } from "../../../../../../../features/updateProduct/updateProductSlice";
-import { fbUpdateProduct } from "../../../../../../../firebase/products/fbUpdateProduct";
+import { selectUpdateProductData } from "../../../../../../../features/updateProduct/updateProductSlice";
+import { listenAllBatches } from "../../../../../../../firebase/warehouse/batchService";
 
 // Styled Components
 const StyledContainer = styled.div`
@@ -32,10 +29,9 @@ const StyledTitle = styled.h2`
 `;
 
 const BatchList = () => {
-  const { product, status } = useSelector(selectUpdateProductData);
+  const { product } = useSelector(selectUpdateProductData);
   const [batches, setBatches] = useState([]);
   const user = useSelector(selectUser);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     let unsubscribe;
@@ -56,39 +52,6 @@ const BatchList = () => {
       if (unsubscribe) unsubscribe();
     };
   }, [user, product]);
-
-
-  const handleDelete = async (batchId) => {
-    try {
-      await deleteBatch(user, batchId);
-      Modal.confirm({
-        title: "¿Estás seguro de eliminar este lote?",
-        icon: <ExclamationCircleOutlined />,
-        content: "Esta acción no se puede deshacer.",
-        okText: "Sí, eliminar",
-        okType: "danger",
-        cancelText: "Cancelar",
-        onOk() {
-          notification.success({
-            message: "Lote Eliminado",
-            description: "El lote ha sido eliminado exitosamente.",
-          });
-        },
-      });
-    } catch (error) {
-      console.error("Error al eliminar lote:", error);
-    }
-
-  };
-
-  const handleBatchSwitch = async (checked) => {
-    dispatch(ChangeProductData({ product: { hasBatch: checked } }));
-    try {
-      await fbUpdateProduct({ ...product, hasBatch: checked }, user);
-    } catch (error) {
-      console.error("Error al cambiar el estado de la fecha de expiración:", error);
-    }
-  };
 
   return (
     <StyledContainer>

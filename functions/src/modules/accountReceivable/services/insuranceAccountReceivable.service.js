@@ -1,9 +1,9 @@
 import { getTime } from 'date-fns';
+import { https, logger } from 'firebase-functions';
+
 import { addAccountReceivable } from './addAccountReceivable.js';
 import { addInstallmentReceivable } from './addInstallmentsAccountReceivable.js';
 import { addInsuranceAuth } from './insuranceAuth.js';
-import { getInsurance } from '../../insurance/services/insurance.service.js';
-import { logger } from 'firebase-functions';
 
 export async function manageInsuranceReceivableAccounts(tx, {
     user,
@@ -79,10 +79,10 @@ export async function manageInsuranceReceivableAccounts(tx, {
     };
 
     const ar = await addAccountReceivable(tx, { user, ar: normalizedAR });
-    logger.info(`Insurance AR created (tx): ${arRef.id}`, { uid: user.uid });
+    logger.info(`Insurance AR created (tx): ${ar.id}`, { uid: user.uid });
 
     await addInstallmentReceivable(tx, { user, ar });
-    logger.info(`Insurance AR installments created (tx) for AR: ${arRef.id}`, { uid: user.uid });
+    logger.info(`Insurance AR installments created (tx) for AR: ${ar.id}`, { uid: user.uid });
 
     return ar;
 }

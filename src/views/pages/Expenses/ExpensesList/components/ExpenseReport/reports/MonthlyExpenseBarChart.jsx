@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useMemo } from 'react';
 import { createChart } from 'lightweight-charts';
+import React, { useRef, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 
 const Container = styled.div`
   height: 300px;

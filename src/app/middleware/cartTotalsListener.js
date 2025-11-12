@@ -1,6 +1,6 @@
 import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
+
 import { cartSlice, recalcTotals } from "../../features/cart/cartSlice";
-import { updateAllTotals } from "../../features/cart/utils/updateAllTotals";
 
 export const totalsListener = createListenerMiddleware();
 

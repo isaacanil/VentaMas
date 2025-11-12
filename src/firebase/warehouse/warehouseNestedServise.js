@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../features/auth/userSlice';
 
 // Servicios de escucha
-import { listenAllWarehouses } from './warehouseService';
-import { listenAllShelves } from './shelfService';
+import { listenAllProductStockByLocation } from './productStockService';
 import { listenAllRowShelves } from './RowShelfService';
 import { listenAllSegments } from './segmentService';
-import { listenAllProductStockByLocation } from './productStockService';
+import { listenAllShelves } from './shelfService';
+import { listenAllWarehouses } from './warehouseService';
 
 export const useWarehouseHierarchy = () => {
   const user = useSelector(selectUser);
@@ -268,6 +269,20 @@ export const useWarehouseHierarchy = () => {
   return { data, loading: overallLoading, error };
 };
 
+const omitKeys = (entity = {}, keys = []) => {
+  return Object.keys(entity || {}).reduce((acc, key) => {
+    if (!keys.includes(key)) {
+      acc[key] = entity[key];
+    }
+    return acc;
+  }, {});
+};
+
+const sanitizeWarehouse = (warehouse) => omitKeys(warehouse, ['shelves', 'rows', 'segments', 'productStock']);
+const sanitizeShelf = (shelf) => omitKeys(shelf, ['rows', 'segments', 'productStock']);
+const sanitizeRow = (row) => omitKeys(row, ['segments', 'productStock']);
+const sanitizeSegment = (segment) => omitKeys(segment, ['productStock']);
+
 export const useTransformedWarehouseData = () => {
   const { data, loading, error } = useWarehouseHierarchy();
 
@@ -275,15 +290,23 @@ export const useTransformedWarehouseData = () => {
     return data.map((warehouse) => ({
       id: warehouse.id,
       name: warehouse.name,
+      type: 'warehouse',
+      record: sanitizeWarehouse(warehouse),
       children: warehouse.shelves?.map((shelf) => ({
         id: shelf.id,
         name: shelf.name,
+        type: 'shelf',
+        record: sanitizeShelf(shelf),
         children: shelf.rows?.map((row) => ({
           id: row.id,
           name: row.name,
+          type: 'row',
+          record: sanitizeRow(row),
           children: row.segments?.map((segment) => ({
             id: segment.id,
             name: segment.name,
+            type: 'segment',
+            record: sanitizeSegment(segment),
           })),
         })),
       })),

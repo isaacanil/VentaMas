@@ -1,5 +1,6 @@
 
 import { https, logger } from "firebase-functions";
+
 import { db, FieldValue } from "../config/firebase.js";
 
 /**
@@ -45,8 +46,13 @@ export async function getNextID(user, name, quantity = 1) {
  */
 
 
-export async function getNextIDTransactional(tx, nextIdSnap, quantity = 1) {
-  // Validaciones iniciales
+export async function getNextIDTransactional(tx, user, name, quantity = 1) {
+  if (!tx) {
+    throw new https.HttpsError('invalid-argument', 'Se requiere una transacción activa');
+  }
+  if (!user?.businessID) {
+    throw new https.HttpsError('invalid-argument', 'No se proporcionó el usuario o businessID');
+  }
   if (!name) {
     throw new https.HttpsError('invalid-argument', 'No se proporcionó el nombre del contador');
   }
@@ -54,22 +60,8 @@ export async function getNextIDTransactional(tx, nextIdSnap, quantity = 1) {
     throw new https.HttpsError('invalid-argument', 'La cantidad debe ser un número mayor o igual a 1');
   }
 
-  const counterRef = db.doc(`businesses/${user.businessID}/counters/${name}`);
-
-  tx.set(counterRef, {
-    value: FieldValue.increment(quantity)
-  }, { merge: true });
-
-  const data = nextIdSnap.data();
-
-  const newValue = data?.value;
-
-  if (typeof newValue !== 'number') {
-    logger.warn(`Contador ${name} sin valor previo, se retorna ${quantity}`);
-    return quantity;
-  }
-
-  return newValue;
+  const nextIdSnap = await getNextIDTransactionalSnap(tx, user, name);
+  return applyNextIDTransactional(tx, nextIdSnap, quantity);
 }
 
 /**

@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components';
+
 import { icons } from '../../../../../../../../../constants/icons/icons';
 import { FormattedValue } from '../../../../../../../../templates/system/FormattedValue/FormattedValue';
 import { SubTitle } from '../../../../../../../checkout/Receipt';
@@ -71,9 +72,6 @@ const Icon = styled.div`
         height: 1.5em;
         color: gray;
     }
-`
-const Label = styled.label`
-    white-space: nowrap;
 `
 const Resumen = styled.div`
      display: grid;

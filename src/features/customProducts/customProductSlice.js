@@ -1,6 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
     product: {
@@ -34,9 +32,9 @@ const customProductSlice = createSlice({
             }
 
         },
-        gettingIngredientList: (state, action) => {
+        gettingIngredientList: (state) => {
             let list = [];
-            const result = state.ingredient.map((ingredient) => (
+            state.ingredient.map((ingredient) => (
                 list = [
                     ...list,
                     ingredient.name

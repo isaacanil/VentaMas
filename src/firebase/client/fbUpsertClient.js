@@ -1,8 +1,10 @@
+import { doc, setDoc } from "firebase/firestore";
 
-import { doc } from "firebase/firestore";
 import { compareObjects } from "../../utils/object/compareObject";
-import { fbGetDoc, fbSetDoc, fbUpdateDoc, } from "../firebaseOperations";
 import { db } from "../firebaseconfig";
+import { fbGetDoc } from "../firebaseOperations";
+
+import { buildClientWritePayload, extractNormalizedClient } from "./clientNormalizer";
 
 export async function fbUpsertClient(user, client, transaction = null) {
     try {
@@ -11,27 +13,34 @@ export async function fbUpsertClient(user, client, transaction = null) {
         if (!client.id) return;
         if (client.id === 'GC-0000') return client;
         
-        const clientId = client.id
+        const clientId = client.id;
         const clientRef = doc(db, 'businesses', user.businessID, 'clients', clientId);
 
-        const clientSnapshot = await fbGetDoc(clientRef);
+        const clientSnapshot = await fbGetDoc(clientRef, transaction);
         const clientExist = clientSnapshot.exists();
-        const clientData = clientSnapshot.data();
+        const clientData = clientExist ? extractNormalizedClient(clientSnapshot.data()) : {};
+
+        const { payload, client: normalizedClient } = buildClientWritePayload(client);
+
         const compareVersion = compareObjects({
             object1: clientData,
-            object2: client,
+            object2: normalizedClient,
         });
 
-        if (!clientExist) {
-            await fbSetDoc(clientRef, { client }, transaction);
-        } else {
-            if (!compareVersion) {
-                await fbUpdateDoc(clientRef, { client }, transaction);
+        const setClient = async () => {
+            if (transaction) {
+                transaction.set(clientRef, payload, { merge: true });
+            } else {
+                await setDoc(clientRef, payload, { merge: true });
             }
+        };
+
+        if (!clientExist || !compareVersion) {
+            await setClient();
         }
 
-        return client;
+        return normalizedClient;
     } catch (error) {
-        console.error("Error adding document: ", error)
+        console.error("Error adding document: ", error);
     }
 }

@@ -1,7 +1,10 @@
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { Button } from '../../templates/system/Button/Button'
+
 import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import { Button } from '../../templates/system/Button/Button'
 
 export const ProductCard = ({ item, handleDeleteProduct, handleUpdateProduct }) => {
 
@@ -35,7 +38,7 @@ export const ProductCard = ({ item, handleDeleteProduct, handleUpdateProduct }) 
                 </span>
             </Col>
             <Button
-                title={<IoMdTrash />}
+                title={<FontAwesomeIcon icon={faTrash} />}
                 width='icon24'
                 border='light'
                 borderRadius='normal'

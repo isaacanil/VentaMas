@@ -1,9 +1,9 @@
-import { writeBatch } from 'firebase/firestore'
+import { Firestore, writeBatch } from 'firebase/firestore'
 
 export type BatchApplyFn = (b: ReturnType<typeof writeBatch>) => void
 
 export async function commitChunked(
-  db: any,
+  db: Firestore,
   applyFns: BatchApplyFn[],
   chunkSize = 450
 ) {
@@ -15,4 +15,3 @@ export async function commitChunked(
     await batch.commit()
   }
 }
-

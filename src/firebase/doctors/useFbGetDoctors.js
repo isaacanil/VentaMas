@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react"
-import { db } from "../firebaseconfig"
 import { collection, onSnapshot, query, where } from "firebase/firestore"
-import { selectUser } from "../../features/auth/userSlice";
+import { useEffect, useState } from "react"
 import { useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
+import { db } from "../firebaseconfig"
+
 
 export const useFbGetDoctors = () => {
     const [doctors, setDoctors] = useState([]);

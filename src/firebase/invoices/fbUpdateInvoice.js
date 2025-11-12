@@ -1,6 +1,6 @@
 import { Timestamp, doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
-import { DateTime } from "luxon";
 
 const saveLastInvoiceChange = async (user, lastInvoiceChange) => {
     const { id } = lastInvoiceChange.data;
@@ -74,6 +74,6 @@ export const fbUpdateInvoice = async (user, invoice) => {
             await updateDoc(invoiceRef, { data: invoiceData });
         }
     } catch (err) {
-
+        console.error('Error updating invoice:', err);
     }
 }

@@ -1,9 +1,11 @@
-import React from 'react';
-import { Modal, Button, Typography, Divider, Card, Space } from 'antd';
-import { useDispatch } from 'react-redux';
-import { toggleSignUpUser } from '../../../features/modals/modalSlice';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faStore, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Button, Typography, Divider, Card, Space } from 'antd';
+import React from 'react';
+import { useDispatch } from 'react-redux';
+
+import { toggleSignUpUser } from '../../../features/modals/modalSlice';
+
 
 export const BusinessEditModal = ({ isOpen, onClose, business }) => {
   const dispatch = useDispatch();

@@ -1,15 +1,18 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import styled from 'styled-components'
+import { useState, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { PurchaseTable } from './components/PurchasesTable/PurchasesTable'
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { PurchasesReport } from './components/PurchasesReport/PurchasesReport'
-import { FilterBar } from './components/FilterBar/FilterBar'
-import createFilterConfig from './config/filterConfig'
+import styled from 'styled-components'
+
+import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary'
 import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
 import useFilter from '../../../../hooks/search/useSearch'
 import { useListenPurchases } from '../../../../hooks/usePurchases'
-import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+
+import { FilterBar } from './components/FilterBar/FilterBar'
+import { PurchasesReport } from './components/PurchasesReport/PurchasesReport'
+import { PurchaseTable } from './components/PurchasesTable/PurchasesTable'
+import createFilterConfig from './config/filterConfig'
+
 
 export const Purchases = () => {
   const location = useLocation();
@@ -24,7 +27,7 @@ export const Purchases = () => {
     };
   });
 
-  const { providers = [], loading } = useFbGetProviders();
+  const { providers = [] } = useFbGetProviders();
 
   const dataConfig = useMemo(() => ({
     providerId: {

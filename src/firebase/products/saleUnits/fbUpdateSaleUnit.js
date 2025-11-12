@@ -1,10 +1,11 @@
 // Importamos Firestore
 import { doc, getDoc, setDoc, updateDoc, increment, collection, onSnapshot, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebaseconfig';
 import { nanoid } from 'nanoid';
-import { selectUser } from '../../../features/auth/userSlice';
-import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../../features/auth/userSlice';
+import { db } from '../../firebaseconfig';
 
 // Función para actualizar o crear una unidad de venta en la subcolección saleUnits
 export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {
@@ -13,9 +14,6 @@ export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {
             console.error('Parámetros insuficientes para actualizar o crear la unidad de venta.');
             return;
         }
-        console.log("user ", user.businessID);
-        console.log("productId ", productId);
-        console.log("newSaleUnit ", newSaleUnit);
 
         // Referencia al producto
         const productRef = doc(db, "businesses", user.businessID, "products", productId);
@@ -68,9 +66,6 @@ export const fbDeleteSaleUnit = async (user, productId, saleUnitId) => {
             console.error('Parámetros insuficientes para eliminar la unidad de venta.');
             return;
         }
-        console.log("user ", user.businessID);
-        console.log("productId ", productId);
-        console.log("saleUnitId ", saleUnitId);
 
         // Referencia a la subcolección saleUnits dentro del producto específico
         const saleUnitRef = doc(db, "businesses", user.businessID, "products", productId, "saleUnits", saleUnitId);
@@ -92,8 +87,6 @@ export const fbListenSaleUnits = (user, productId, callback) => {
             console.error('Parámetros insuficientes para escuchar las unidades de venta.');
             return;
         }
-        console.log("user ", user.businessID);
-        console.log("productId ", productId);
 
         // Referencia a la subcolección saleUnits dentro del producto específico
         const saleUnitsRef = collection(db, "businesses", user.businessID, "products", productId, "saleUnits");
@@ -119,9 +112,6 @@ export const useListenSaleUnits = (productId) => {
             setLoading(false);
             return;
         }
-
-        console.log("user ", user.businessID);
-        console.log("productId ", productId);
 
         // Referencia a la subcolección saleUnits dentro del producto específico
         const saleUnitsRef = collection(db, "businesses", user.businessID, "products", productId, "saleUnits");

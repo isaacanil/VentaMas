@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import { Modal, Input, Form, InputNumber, message } from 'antd';
-import styled from 'styled-components';
-import Tree from '../../../../../../../component/tree/Tree';
-import { useTransformedWarehouseData } from '../../../../../../../../firebase/warehouse/warehouseNestedServise';
-import { moveProduct } from '../../../../../../../../firebase/warehouse/productMovementService';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { moveProduct } from '../../../../../../../../firebase/warehouse/productMovementService';
+import { useTransformedWarehouseData } from '../../../../../../../../firebase/warehouse/warehouseNestedServise';
+import Tree from '../../../../../../../component/tree/Tree';
+
+
 
 const { TextArea } = Input;
 
@@ -27,11 +30,6 @@ const FormContainer = styled.div`
 const QuantityContainer = styled.div`
   display: flex;
   align-items: center;
-`;
-
-const MaxQuantity = styled.span`
-  margin-left: 8px;
-  color: ${props => (props.isExceeded ? 'red' : 'green')};
 `;
 
 const QuantityInputWithMax = ({ maxQuantity }) => {
@@ -93,7 +91,7 @@ export const ProductMovementModal = ({
   const [form] = Form.useForm();
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false); // NEW loading state
-  const { data: warehouseData, loading, error } = useTransformedWarehouseData();
+  const { data: warehouseData } = useTransformedWarehouseData();
   const user = useSelector(selectUser);
   
   // Limpiar formulario cuando se abre o cierra el modal
@@ -167,7 +165,7 @@ export const ProductMovementModal = ({
   };
 
   const treeConfig = {
-    onNodeClick: (node, level) => {
+    onNodeClick: (node) => {
       if (node.id === currentNode.id) {
         message.info("Esta ubicación no se puede seleccionar, pero puedes explorarla y escoger una interna.");
         // Still allow expansion by not returning early

@@ -1,6 +1,6 @@
 
-import { useEffect, useState } from 'react';
 import { onSnapshot, query, where } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 export const useFirestoreRealtime = (collectionRef, filters = []) => {
   const [data, setData] = useState([]);

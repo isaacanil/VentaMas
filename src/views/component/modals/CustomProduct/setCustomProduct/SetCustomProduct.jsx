@@ -1,17 +1,20 @@
 
-import  { useState } from 'react'
-import styled from 'styled-components'
-import { separator } from '../../../../../hooks/separator'
-import { Modal } from '../../Modal'
-import { useDispatch, useSelector } from 'react-redux'
-import { handleModalSetCustomPizza } from '../../../../../features/modals/modalSlice'
-import { formatData } from '../../../../../features/customProducts/customProductSlice'
 import { nanoid } from 'nanoid'
+import  { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
 import { addProduct } from '../../../../../features/cart/cartSlice'
-import { AddCustomProductModal } from '../../AddCustomProductModal/AddCustomProductModal.jsx'
-import { IngredientList } from './Components/IngredientList.jsx'
-import { Header } from './Components/Header.jsx'
+import { formatData } from '../../../../../features/customProducts/customProductSlice'
+import { handleModalSetCustomPizza } from '../../../../../features/modals/modalSlice'
 import { addNotification } from '../../../../../features/notification/notificationSlice.js'
+import { separator } from '../../../../../hooks/separator'
+import { AddCustomProductModal } from '../../AddCustomProductModal/AddCustomProductModal.jsx'
+import { Modal } from '../../Modal'
+
+import { Header } from './Components/Header.jsx'
+import { IngredientList } from './Components/IngredientList.jsx'
+
 
 const EmptyNewProduct = {
     name: '',

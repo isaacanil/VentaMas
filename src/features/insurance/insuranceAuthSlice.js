@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
 import { getClientInsuranceByClientId } from '../../firebase/insurance/clientInsuranceService';
 
 const initialState = {

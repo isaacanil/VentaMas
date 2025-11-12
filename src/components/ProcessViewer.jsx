@@ -1,3 +1,4 @@
+// Candidate for deletion: no modules currently render this process viewer overlay.
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 

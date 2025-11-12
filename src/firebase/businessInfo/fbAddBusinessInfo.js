@@ -1,7 +1,8 @@
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore"
-import { db } from "../firebaseconfig"
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { nanoid } from "nanoid";
+
+import { db } from "../firebaseconfig"
 
 export const createBusiness = async (businessData) => {
     try {
@@ -30,6 +31,8 @@ export const fbUpdateBusinessInfo = async (user, businessInfo) => {
             await updateDoc(businessInfoRef, { business: { ...businessInfo } });
         }
     } catch (error) {
+        console.error("Error updating business info:", error);
+        throw error;
     }
 };
 
@@ -49,6 +52,8 @@ export const fbUpdateBusinessLogo = async (user, newLogoFile) => {
             try {
                 await deleteObject(oldLogoRef);
             } catch (error) {
+                // Deleting old logo failed - log and continue (not fatal)
+                console.warn("Failed to delete old business logo:", error);
             }
         }
 
@@ -79,6 +84,21 @@ export const fbUpdateInvoiceType = async (user, invoiceType) => {
         return true;
     } catch (error) {
         console.error("Error updating invoice type:", error);
+        throw error;
+    }
+};
+
+export const fbUpdateInvoiceMessage = async (user, invoiceMessage) => {
+    if (!user || !user.businessID) return;
+
+    const businessInfoRef = doc(db, "businesses", user.businessID);
+    try {
+        await updateDoc(businessInfoRef, {
+            'business.invoice.invoiceMessage': invoiceMessage || ''
+        });
+        return true;
+    } catch (error) {
+        console.error("Error updating invoice message:", error);
         throw error;
     }
 };

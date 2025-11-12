@@ -1,29 +1,24 @@
-import React, { useRef } from 'react';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faEdit, 
-  faEye, 
-  faBox, 
-  faTags,
-  faBarcode,
+  faEye,
   faTrash,
   faPrint,
   faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
-import { Tag } from 'antd';
-import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
-import { useFormatNumber } from '../../../../../../../../hooks/useFormatNumber';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import { OPERATION_MODES } from '../../../../../../../../constants/modes';
+import { handleDeleteProductAlert } from '../../../../../../../../features/Alert/AlertSlice';
+import { toggleBarcodeModal } from '../../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
 import { openModalUpdateProd } from '../../../../../../../../features/modals/modalSlice';
 import { ChangeProductData } from '../../../../../../../../features/updateProduct/updateProductSlice';
-import { OPERATION_MODES } from '../../../../../../../../constants/modes';
-import { toggleBarcodeModal } from '../../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
-import { handleDeleteProductAlert } from '../../../../../../../../features/Alert/AlertSlice';
+import { useFormatNumber } from '../../../../../../../../hooks/useFormatNumber';
+import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
 import { getTax, getTotalPrice } from '../../../../../../../../utils/pricing';
-
 import { ImgCell } from '../../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell';
-import { icons } from '../../../../../../../../constants/icons/icons';
 
 export const ProductItem = ({ data, taxReceiptEnabled }) => {
   const dispatch = useDispatch();
@@ -59,17 +54,6 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
     if (stock <= 0) return 'out';
     if (stock <= 10) return 'low';
     return 'normal';
-  };
-
-  const getStockColor = () => {
-    const status = getStockStatus();
-    switch (status) {
-      case 'out': return '#ff4d4f';
-      case 'low': return '#faad14';
-      case 'normal': return '#52c41a';
-      case 'no-track': return '#8c8c8c';
-      default: return '#8c8c8c';
-    }
   };
 
   const getStockIcon = () => {
@@ -413,4 +397,3 @@ const ActionButton = styled.button`
     font-size: 12px;
   }
 `;
-

@@ -1,4 +1,5 @@
 import { collection, query, where, orderBy, getDocs, limit } from "firebase/firestore";
+
 import { db } from "../../firebaseconfig";
 
 // Function to get the last installment amount for a specific AR ID

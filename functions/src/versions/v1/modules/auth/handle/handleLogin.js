@@ -1,6 +1,7 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { Timestamp } from 'firebase-admin/firestore';
+
 import { db, admin } from '../../../../../core/config/firebase.js';
 import { verifyAndUpgrade } from '../utils/hash.util.js';
 import {
@@ -105,8 +106,9 @@ export const authLogout = onCall(async req => {
 export const expireSessions = onSchedule('every 60 minutes', async () => {
   const now = Timestamp.now();
   let last  = null;
+  let hasMore = true;
 
-  while (true) {
+  while (hasMore) {
     let q = db.collection('users')
       .where('user.expirationDate', '<=', now)
       .where('user.active', '==', true)
@@ -116,7 +118,10 @@ export const expireSessions = onSchedule('every 60 minutes', async () => {
     if (last) q = q.startAfter(last);
 
     const snap = await q.get();
-    if (snap.empty) break;
+    if (snap.empty) {
+      hasMore = false;
+      break;
+    }
 
     /* desactivar cuentas en lote */
     const batch = db.batch();
@@ -133,6 +138,6 @@ export const expireSessions = onSchedule('every 60 minutes', async () => {
     );
 
     last = snap.docs[snap.docs.length - 1];
-    if (snap.size < 500) break;
+    hasMore = snap.size === 500;
   }
 });

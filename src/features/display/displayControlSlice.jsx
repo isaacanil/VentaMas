@@ -1,24 +1,22 @@
-import {createSlice} from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = [
-    
-]
+const initialState = {
+  display: null,
+};
 
 export const displayControlSlice = createSlice({
-    name: 'display',
-    initialState,
-    reducers: {
-        addDisplay: (state, action) => {
-            state.display = action.payload
-        }
-    }
-})
+  name: 'display',
+  initialState,
+  reducers: {
+    setDisplay(state, action) {
+      state.display = action.payload;
+    },
+  },
+});
 
-export const {
-    setSearchData 
-} = displayControlSlice.actions;
+export const { setDisplay } = displayControlSlice.actions;
 
-//selectors
-export const SelectDisplay = (state) => state.search.search;
+// selectors
+export const selectDisplay = (state) => state.display?.display ?? null;
 
-export default searchSlice.reducer
+export default displayControlSlice.reducer;

@@ -1,14 +1,14 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
-import { Form, Input, Select, Drawer, message, Button, Space, Empty } from 'antd';
-import styled from 'styled-components';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
-import { getOrderData, selectPurchase } from '../../../../../../../features/purchase/addPurchaseSlice';
-import { useFbGetPendingOrdersByProvider } from '../../../../../../../firebase/order/usefbGetOrders';
-import { useSelector, useDispatch } from 'react-redux';
-import { normalizeText } from '../../../../../../../utils/text';
-import { icons } from '../../../../../../../constants/icons/icons';
 import { LoadingOutlined } from '@ant-design/icons';
+import { Form, Input, Drawer, message, Button, Space, Empty } from 'antd';
+import { useState, useRef, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import { icons } from '../../../../../../../constants/icons/icons';
+import { getOrderData } from '../../../../../../../features/purchase/addPurchaseSlice';
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import DateUtils from '../../../../../../../utils/date/dateUtils';
+import { normalizeText } from '../../../../../../../utils/text';
 
 const Wrapper = styled.div`
   height: 100%;
@@ -91,7 +91,6 @@ const OrderSelector = ({ orders, orderLoading }) => {
     const [search, setSearch] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const searchInputRef = useRef(null);
-    const { provider: providerId } = useSelector(selectPurchase);
 
 
     useEffect(() => {

@@ -1,4 +1,5 @@
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, Timestamp } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 /**
@@ -20,6 +21,23 @@ export const subscribeToBusinessInfo = (businessID, onNext, onError = console.er
 
     const businessRef = doc(db, "businesses", businessID);
 
+    const sanitizeTimestamps = (value) => {
+        if (value === null || value === undefined) return value;
+        if (value instanceof Timestamp) {
+            return value.toMillis();
+        }
+        if (Array.isArray(value)) {
+            return value.map(sanitizeTimestamps);
+        }
+        if (typeof value === "object") {
+            return Object.entries(value).reduce((acc, [key, entryValue]) => {
+                acc[key] = sanitizeTimestamps(entryValue);
+                return acc;
+            }, {});
+        }
+        return value;
+    };
+
     const unsubscribe = onSnapshot(
         businessRef,
         (snapshot) => {
@@ -29,8 +47,8 @@ export const subscribeToBusinessInfo = (businessID, onNext, onError = console.er
                 return;
             }
             const business = snapshot.get("business") ?? null;
-            
-            onNext(business);
+
+            onNext(sanitizeTimestamps(business));
         },
         (err) => {
             onError(err);

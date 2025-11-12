@@ -1,28 +1,37 @@
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
-import { notification } from 'antd'
-import { selectUser } from './../../../../../features/auth/userSlice'
-import { Header } from './components/Header/Header'
-import { Body } from './components/Body/Body'
-import { Footer } from './components/Footer/Footer'
-import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
-import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
-import { useNavigate } from 'react-router-dom'
-import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
+import { notification, message } from 'antd'
 import { DateTime } from 'luxon'
+import { useCallback, useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+
+import { clearCashCount, selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
+import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs'
+import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed'
 import { fbCashCountChangeState } from '../../../../../firebase/cashCount/closing/fbCashCountClosing'
 import { useFbGetCashCount } from '../../../../../firebase/cashCount/fbGetCashCount'
+import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules'
+import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin'
+import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization'
+import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal'
+
+import { selectUser } from './../../../../../features/auth/userSlice'
+import { Body } from './components/Body/Body'
+import { Footer } from './components/Footer/Footer'
+import { Header } from './components/Header/Header'
 
 export const CashRegisterClosure = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const [peerReviewAuthorizationIsOpen, setPeerReviewAuthorizationIsOpen] = useState(false)
-  const [closingDate, setClosingDate] = useState(DateTime.now())
+  const [closingDate] = useState(DateTime.now())
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   const actualUser = useSelector(selectUser)
   const cashCount = useSelector(selectCashCount)
+  const { shouldUsePinForModule } = useAuthorizationModules()
+  const usePinAuth = shouldUsePinForModule('accountsReceivable')
 
   const cashCountIsOpen = cashCount?.state === 'open';
   const cashCountIsClosed = cashCount?.state === 'closed';
@@ -38,17 +47,6 @@ export const CashRegisterClosure = () => {
     };
   }, [cashCount])
 
-  const handleOpenPeerReviewAuthorization = () => {
-    if ((cashCount.opening.employee.id !== actualUser.uid) && actualUser.role !== "admin") {
-      notification.error({
-        message: 'Error',
-        description: 'No tienes permisos para realizar esta acción',
-      });
-      return
-    }
-    setPeerReviewAuthorizationIsOpen(true)
-  };
-
   const handleCancel = async () => {
     if (cashCount.state === 'closing' || cashCount.state === 'open') {
       fbCashCountChangeState(cashCount, actualUser, 'open')
@@ -57,12 +55,79 @@ export const CashRegisterClosure = () => {
     navigate('/cash-reconciliation')
   }
 
-  const handleSubmit = async (approvalEmployee) => {
+  const handleAuthorizationSuccess = useCallback(async (approvalEmployee) => {
     try {
-      await fbCashCountClosed(actualUser, cashCount, actualUser.uid, approvalEmployee.uid, closingDate.toMillis())    } catch (error) {
-      // Handle error appropriately
+      if (!approvalEmployee?.uid) {
+        throw new Error('No se pudo identificar al autorizador.');
+      }
+
+      const response = await fbCashCountClosed(
+        actualUser,
+        cashCount,
+        actualUser.uid,
+        approvalEmployee.uid,
+        closingDate.toMillis()
+      )
+
+      if (response !== 'success') {
+        throw response instanceof Error ? response : new Error('No se pudo autorizar el cierre.');
+      }
+
+      await fbRecordAuthorizationApproval({
+        businessId: actualUser.businessID,
+        module: 'cashRegister',
+        action: 'cash-register-closing',
+        description: 'Cierre del cuadre de caja',
+        requestedBy: actualUser,
+        authorizer: approvalEmployee,
+        targetUser: actualUser,
+        target: {
+          type: 'cashCount',
+          id: cashCount?.id || '',
+          details: { stage: 'closing' },
+        },
+        metadata: {
+          closingDate: closingDate?.toISO?.() || closingDate?.toString?.() || null,
+        },
+      });
+
+      message.success('Cierre autorizado correctamente.');
+      dispatch(clearCashCount())
+      navigate(-1)
+    } catch (error) {
+      const errorMessage = error?.message || 'No se pudo autorizar el cierre.';
+      message.error(errorMessage)
     }
+  }, [actualUser, cashCount, closingDate, dispatch, navigate])
+
+  const { showModal: showPinModal, modalProps: pinModalProps } = useAuthorizationPin({
+    onAuthorized: handleAuthorizationSuccess,
+    module: 'accountsReceivable',
+    allowedRoles: ['admin', 'owner', 'dev', 'manager', 'cashier'],
+    description: 'Autoriza el cierre del cuadre de caja con tu PIN o contraseña.',
+  })
+
+  // Handler para autorización con contraseña clásica
+  const handlePasswordAuth = async (user) => {
+    setShowPasswordModal(false)
+    await handleAuthorizationSuccess(user)
   }
+
+  const handleOpenAuthorizationModal = () => {
+    if ((cashCount.opening.employee.id !== actualUser.uid) && actualUser.role !== "admin") {
+      notification.error({
+        message: 'Error',
+        description: 'No tienes permisos para realizar esta acción',
+      });
+      return
+    }
+    
+    if (usePinAuth) {
+      showPinModal()
+    } else {
+      setShowPasswordModal(true)
+    }
+  };
 
   const cashCountActual = useFbGetCashCount(cashCount?.id)
 
@@ -72,16 +137,20 @@ export const CashRegisterClosure = () => {
         <Header state={cashCountActual?.cashCount?.state} />
         <Body closingDate={closingDate} />
         <Footer
-          onSubmit={!cashCountIsClosed ? handleOpenPeerReviewAuthorization : null}
+          onSubmit={!cashCountIsClosed ? handleOpenAuthorizationModal : null}
           onCancel={handleCancel}
         />
       </Container>
-      <PeerReviewAuthorization
-        isOpen={peerReviewAuthorizationIsOpen}
-        setIsOpen={setPeerReviewAuthorizationIsOpen}
-        description={'Permite a un segundo usuario autorizar el cierre de la caja después de una revisión.'}
-        onSubmit={handleSubmit}
-      />
+      {usePinAuth ? (
+        <PinAuthorizationModal {...pinModalProps} />
+      ) : (
+        <PeerReviewAuthorization
+          isOpen={showPasswordModal}
+          setIsOpen={setShowPasswordModal}
+          onSubmit={handlePasswordAuth}
+          description="Autoriza el cierre del cuadre de caja con tu contraseña."
+        />
+      )}
     </Backdrop>
   )
 }

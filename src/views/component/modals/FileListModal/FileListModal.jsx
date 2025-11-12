@@ -1,9 +1,10 @@
 import * as antd from 'antd';
-import FileList from '../../../pages/OrderAndPurchase/CreatePurchase/components/FileList';
 import { useDispatch } from 'react-redux';
 
-const { Button, Tag, Modal, Typography, Empty } = antd;
-const { Text, Title, Paragraph } = Typography;
+import FileList from './FileList';
+
+const { Button, Modal, Typography, Empty } = antd;
+const { Text } = Typography;
 
 export const FileListModal = ({ data, onClose }) => {
     const { fileList, isOpen } = data;

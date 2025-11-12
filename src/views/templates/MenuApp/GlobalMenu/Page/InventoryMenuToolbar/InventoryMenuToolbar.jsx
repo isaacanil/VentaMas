@@ -1,26 +1,30 @@
+import { faFileExport, faFileImport, faEllipsisVertical, faWrench } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { message } from 'antd'
 import React, { Fragment, useState } from 'react'
-import styled from 'styled-components'
+import { useSelector } from 'react-redux'
 import { useMatch } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../../../../features/auth/userSlice'
+import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
+import { fbAddProducts } from '../../../../../../firebase/products/fbAddProducts'
+import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
+import { normalizeProductTaxes } from '../../../../../../firebase/products/fbNormalizeProductTaxes'
+import { ExportProducts } from '../../../../../../hooks/exportToExcel/useExportProducts'
+import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
+import ROUTES_NAME from '../../../../../../routes/routesName'
+import { createProductTemplate, importProductData } from '../../../../../../utils/import/product'
+import { getProducts } from '../../../../../../utils/pricing'
+import ImportModal from '../../../../../component/modals/ImportModal/ImportModal'
+import ImportProgressModal from '../../../../../component/modals/ImportProgressModal/ImportProgressModal';
+import { InventoryFilterAndSort } from '../../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
 import { AddProductButton } from '../../../../system/Button/AddProductButton'
 import { ButtonGroup } from '../../../../system/Button/Button'
-import ROUTES_NAME from '../../../../../../routes/routesName'
-import { useSelector } from 'react-redux'
-import { InventoryFilterAndSort } from '../../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
 import { DropdownMenu } from '../../../../system/DropdownMenu/DropdowMenu'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileExport, faFileImport, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
-import ImportModal from '../../../../../component/modals/ImportModal/ImportModal'
-import { createProductTemplate, importProductData } from '../../../../../../utils/import/product'
-import { message } from 'antd'
-import { fbAddProducts } from '../../../../../../firebase/products/fbAddProducts'
-import { selectUser } from '../../../../../../features/auth/userSlice'
-import { getProducts } from '../../../../../../utils/pricing'
-import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts'
-import { ExportProducts } from '../../../../../../hooks/exportToExcel/useExportProducts'
-import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice'
+
 import { fbAddActiveIngredients } from './fbAddActiveIngredients'
-import ImportProgressModal from '../../../../../component/modals/ImportProgressModal/ImportProgressModal';
-import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
+
 
 export const InventoryMenuToolbar = ({ side = 'left' }) => {
     const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM
@@ -50,6 +54,7 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
             });
             message.success('Archivo importado correctamente.');
         } catch (error) {
+            console.error('Error al importar productos:', error);
             message.error('Hubo un problema al importar el archivo.');
         } finally {
             // Dejamos el modal visible 2 segundos más para que se vea el 100%
@@ -88,6 +93,45 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
 
         ExportProducts(productsTaxTransformed);
     };
+    const handleNormalizeItbis = async () => {
+        if (!user?.businessID) {
+            message.error('No se identificó un negocio para normalizar los impuestos.');
+            return;
+        }
+        const key = 'normalize-itbis';
+        message.open({
+            key,
+            type: 'loading',
+            content: 'Normalizando impuestos de productos...',
+            duration: 0,
+        });
+        try {
+            const summary = await normalizeProductTaxes(user);
+            const { productsUpdated, mainUpdated, saleUnitsUpdated, selectedUnitUpdated } = summary;
+            const details = [
+                productsUpdated ? `${productsUpdated} productos` : null,
+                mainUpdated ? `${mainUpdated} precios base` : null,
+                saleUnitsUpdated ? `${saleUnitsUpdated} unidades de venta` : null,
+                selectedUnitUpdated ? `${selectedUnitUpdated} unidades seleccionadas` : null,
+            ].filter(Boolean).join(', ');
+            message.open({
+                key,
+                type: 'success',
+                content: details
+                    ? `Impuestos normalizados: ${details}.`
+                    : 'No se encontraron impuestos para actualizar.',
+                duration: 4,
+            });
+        } catch (error) {
+            console.error('Error al normalizar ITBIS:', error);
+            message.open({
+                key,
+                type: 'error',
+                content: 'No se pudo normalizar los impuestos. Intenta de nuevo.',
+                duration: 6,
+            });
+        }
+    };
     const options = [
         {
             text: 'Importar Productos',
@@ -104,6 +148,15 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
             closeWhenAction: true
         },
     ];
+    if (import.meta.env.DEV) {
+        options.push({
+            text: 'Normalizar ITBIS',
+            description: 'Corrige impuestos guardados como texto (solo QA).',
+            icon: <FontAwesomeIcon icon={faWrench} />,
+            action: handleNormalizeItbis,
+            closeWhenAction: true
+        });
+    }
     return (
         matchWithInventory && (
             <Container>
@@ -134,7 +187,7 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
                     <Fragment>
                         <ButtonGroup>
                    
-                            <InventoryFilterAndSort />
+                            <InventoryFilterAndSort contextKey='inventory' />
                         </ButtonGroup>
                   
                     </Fragment>

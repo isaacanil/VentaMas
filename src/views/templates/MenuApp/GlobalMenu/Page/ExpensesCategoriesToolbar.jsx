@@ -1,23 +1,15 @@
 
-import React from 'react'
-import { Button } from '../../../system/Button/Button'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCompress, faExpand, faGrip, faGripLines, faHeading, faImage, faListAlt } from '@fortawesome/free-solid-svg-icons'
-import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
-import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux'
-import { SearchInput } from '../../../system/Inputs/SearchInput'
-import { useMatchRouteByName } from '../useMatchRouterByName'
-import ROUTES_NAME from '../../../../../routes/routesName'
-import { icons } from '../../../../../constants/icons/icons'
-import { useMatch } from 'react-router-dom'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { toggleAddCategory } from '../../../../../features/modals/modalSlice'
-import { useCategoryState } from '../../../../../Context/CategoryContext/CategoryContext'
 
-export const ExpensesCategoriesToolbar = ({ side = 'left', searchData, setSearchData }) => {
-    const user = useSelector(selectUser)
-    const dispatch = useDispatch()
+import React from 'react'
+import { useMatch } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../constants/icons/icons'
+import { useCategoryState } from '../../../../../Context/CategoryContext'
+import ROUTES_NAME from '../../../../../routes/routesName'
+import { Button } from '../../../system/Button/Button'
+
+export const ExpensesCategoriesToolbar = ({ side = 'left' }) => {
     const { EXPENSES_CATEGORY } = ROUTES_NAME.EXPENSES_TERM
     const matchWithProductCategories = useMatch(EXPENSES_CATEGORY)
     const { configureAddExpenseCategoryModal } = useCategoryState();

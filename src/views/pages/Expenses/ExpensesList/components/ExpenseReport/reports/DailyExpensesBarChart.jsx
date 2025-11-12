@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useMemo } from 'react';
 import { createChart, HistogramSeries } from 'lightweight-charts';
+import React, { useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
 // Helper to format UNIX seconds to date string YYYY-MM-DD

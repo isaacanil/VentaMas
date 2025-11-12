@@ -1,5 +1,7 @@
 import { money, getProductIndividualDiscount } from '../utils/formatters.js';
 
+const DEFAULT_BRAND = 'Sin marca';
+
 /* ──────────────────────────────────────────────── */
 export function buildContent(d) {  /* cabecera de la tabla */
   const headerRow = ['CANT', 'CODIGO', 'DESCRIPCIÓN', 'PRECIO', 'ITBIS', 'TOTAL']
@@ -12,13 +14,31 @@ export function buildContent(d) {  /* cabecera de la tabla */
       const price = +p.pricing?.price || 0;
       const taxP  = +p.pricing?.tax   || 0;         // porcentaje
       const tax   = price * (taxP / 100);
-      const tot   = (price + tax) * (+p.amountToBuy || 0);      const productRow = [
-        { text: p.amountToBuy, alignment: 'center' },
-        p.barcode || '-',
-        p.name,
-        { text: money(price), alignment: 'right' },
-        { text: money(tax),   alignment: 'right' },
-        { text: money(tot),   alignment: 'right' }
+      const tot   = (price + tax) * (+p.amountToBuy || 0);
+      const brand = typeof p?.brand === 'string' ? p.brand.trim() : '';
+      const hasBrand = brand && brand.toLowerCase() !== DEFAULT_BRAND.toLowerCase();
+      const descriptionCell = hasBrand
+        ? {
+            stack: [
+              { text: p.name || 'Producto sin nombre', margin: [0, 0, 0, 2] },
+              { text: `Marca: ${brand}`, fontSize: 9, color: '#555555' },
+            ],
+          }
+        : (p.name || 'Producto sin nombre');
+
+      const formatCurrencyCell = (value) => ({
+        text: money(value).replace('RD$', 'RD$\u00A0'),
+        alignment: 'right',
+        noWrap: true
+      });
+
+      const productRow = [
+        { text: p.amountToBuy, alignment: 'center', noWrap: true },
+        { text: p.barcode || '-', alignment: 'left', noWrap: true },
+        descriptionCell,
+        formatCurrencyCell(price),
+        formatCurrencyCell(tax),
+        formatCurrencyCell(tot)
       ];
 
       const extraRows = [];
@@ -49,7 +69,7 @@ export function buildContent(d) {  /* cabecera de la tabla */
   ];  
   return [{
     margin: [0, 12, 0, 0],
-    table: { headerRows: 1, widths: [40, 55, '*', 55, 55, 55], body },
+    table: { headerRows: 1, widths: [38, 90, '*', 72, 72, 72], body },
     layout: {
       hLineColor: () => '#e0e0e0',
       vLineColor: () => '#e0e0e0',

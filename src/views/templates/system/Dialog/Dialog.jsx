@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import styled, { css } from 'styled-components';
-import { useDialog } from '../../../../Context/Dialog/DialogContext';
-import { BackdropVariants, ContainerVariants } from './variants';
-import { Button, ButtonGroup } from '../Button/Button';
-import Typography from '../Typografy/Typografy';
-import { icons } from '../../../../constants/icons/icons';
 import { message } from 'antd'; // Nuevo import
+import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import styled, { css } from 'styled-components';
+
+import { icons } from '../../../../constants/icons/icons';
+import { useDialog } from '../../../../Context/Dialog';
+import { ButtonGroup } from '../Button/Button';
+import Typography from '../Typografy/Typografy';
+
+import { BackdropVariants, ContainerVariants } from './variants';
 
 const dialogTheme = {
     error: {

@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
 import { Form, Input, InputNumber, Checkbox, message } from 'antd';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
 const ConfigItem = styled.div`
   padding-left: ${(props) => (props.level || 0) * 16}px;
@@ -29,7 +30,7 @@ const QuoteSettingsSection = () => {
         try {
             await setBillingSettings(user, { quoteEnabled: checked });
             message.success('Configuración guardada exitosamente');
-        } catch (error) {
+        } catch {
             message.error('Error al guardar la configuración');
         }
     };
@@ -48,7 +49,7 @@ const QuoteSettingsSection = () => {
                 message.info('El valor máximo permitido es 90 días');
                 form.setFieldValue('quoteValidity', 90);
             }
-        } catch (error) {
+        } catch {
             message.error('Error al guardar la configuración');
         }
     };
@@ -56,7 +57,7 @@ const QuoteSettingsSection = () => {
     const handleNoteBlur = async (e) => {
         try {
             await setBillingSettings(user, { quoteDefaultNote: e.target.value });
-        } catch (error) {
+        } catch {
             message.error('Error al guardar la configuración');
         }
     };

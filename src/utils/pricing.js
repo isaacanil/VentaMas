@@ -58,7 +58,6 @@ export function getDiscount(product) {
 
 export function getTotalPrice(product, taxReceiptEnabled = true, useAmountToBuy = true) {
   if (!product) return 0;
-  console.log('taxReceiptEnabled', taxReceiptEnabled);
   const { price, isSoldByWeight,  } = getPricingDetails(product, useAmountToBuy);
   if (!isValidNumber(price)) return 0;
 
@@ -130,6 +129,14 @@ export function getAvgPriceTotal(product, taxReceiptEnabled = true) {
 
 export function getMinPriceTotal(product, taxReceiptEnabled = true) {
   return getPriceTotalByType(product, 'minPrice', taxReceiptEnabled);
+}
+
+export function getCardPriceTotal(product, taxReceiptEnabled = true) {
+  return getPriceTotalByType(product, 'cardPrice', taxReceiptEnabled);
+}
+
+export function getOfferPriceTotal(product, taxReceiptEnabled = true) {
+  return getPriceTotalByType(product, 'offerPrice', taxReceiptEnabled);
 }
 
 export function getProductsPrice(products = []) {

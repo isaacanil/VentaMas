@@ -1,21 +1,19 @@
-import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
-import { icons } from '../../../../constants/icons/icons';
-import { Tag } from 'antd';
 import styled from 'styled-components';
-import { INSURANCE_TYPES, DEFAULT_PRESCRIPTION_VALIDITY } from '../../../../constants/insuranceConfig';
-import { InsuranceStateIndicator } from '../components/InsuranceStateIndicator/InsuranceStateIndicator';
-import InsuranceConfigForm from '../InsuranceConfigForm/InsuranceConfigForm';
+
+import { icons } from '../../../../constants/icons/icons';
 import { openInsuranceConfigModal } from '../../../../features/insurance/insuranceConfigModalSlice';
 import { useListenInsuranceConfig } from '../../../../firebase/insurance/insuranceService';
 import DateUtils from '../../../../utils/date/dateUtils';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
+import InsuranceConfigForm from '../InsuranceConfigForm/InsuranceConfigForm';
+
 import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 
 const InsuranceConfig = () => {
     const dispatch = useDispatch();
-    const [searchTerm, setSearchTerm] = useState('');
+    const searchTerm = '';
     const { data: insuranceConfig } = useListenInsuranceConfig();
 
     // Definición de columnas para la tabla
@@ -105,12 +103,6 @@ const Content = styled.div`
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1em;
-`;
-
-const HeaderActions = styled.div`
-    display: flex;
-    justify-content: flex-end;
     gap: 1em;
 `;
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export function useRoundedNumber(initialValue, precision) {
+export function useRoundedNumber(initialValue) {
   const [roundedValue, setRoundedValue] = useState();
 
   useEffect(() => {

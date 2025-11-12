@@ -1,8 +1,10 @@
-import React, { forwardRef } from 'react'
 import * as ant from 'antd'
+import React, { forwardRef } from 'react'
 import Barcode from 'react-barcode'
-const { Typography } = ant
 import styled from 'styled-components'
+
+const { Typography } = ant
+
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
 
 export const BarCode = forwardRef(({ product }, ref) => {
@@ -27,6 +29,8 @@ export const BarCode = forwardRef(({ product }, ref) => {
         </Container>
     );
 });
+
+BarCode.displayName = 'BarCode';
 
 const Container = styled.div`
     display: flex;

@@ -1,5 +1,7 @@
 import { collection, doc, writeBatch } from "firebase/firestore"
+
 import { db } from "../firebaseconfig"
+
 const BATCH_SIZE = 500; 
 export const fbAddRncData = async (rncData) => {
     if(!rncData) return

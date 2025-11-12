@@ -13,7 +13,6 @@ export class productDataTypeCorrection {
         order, 
         barCode,
         qrCode,
-        amountToBuy, 
         id, 
         isVisible,
 

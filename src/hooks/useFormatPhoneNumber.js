@@ -1,7 +1,4 @@
-export const useFormatPhoneNumber = (input = '', warning = null) => {
-  // Eliminando caracteres no numéricos excepto el símbolo "+"
-  const cleanNumbers = input.replace(/[^\d+]/g, '');
-
+export const useFormatPhoneNumber = (input = '') => {
   // Intentar dividir los posibles números con delimitadores comunes (comas, espacios, puntos, etc.)
   const phoneNumbers = input.split(/[,;.\s]+/).filter(num => num.replace(/\D/g, '').length > 0);
 

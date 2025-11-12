@@ -1,4 +1,6 @@
 // src/lib/price-audit-export.js
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import {
   collection,
   collectionGroup,
@@ -14,9 +16,8 @@ import {
   getCountFromServer,
   doc,
 } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 
 /* ───────────────────────────── Números seguros ───────────────────────────── */
 /** Parser estricto de dinero: null si el texto es ambiguo o malformado. */
@@ -29,10 +30,10 @@ const parseMoneyStrict = (v) => {
   if (!s) return null;
 
   // deja solo dígitos, coma, punto, signo
-  s = s.replace(/[^\d.,\-]/g, '');
+  s = s.replace(/[^\d.,-]/g, '');
 
   // patrones corruptos típicos
-  if (/(?:,,|\.\.|,\.|\. ,|^,|^\.|^-?[,\.]$|--)/.test(s)) return null;
+  if (/(?:,,|\.\.|,\.|\.,|^,|^\.|^-?[,.]$|--)/.test(s)) return null;
 
   const lastComma = s.lastIndexOf(',');
   const lastDot   = s.lastIndexOf('.');
@@ -112,6 +113,7 @@ export async function fbAuditAllBusinessesPriceVsList(pageSize = 1000) {
   const resultsMap = new Map(); // businessID -> { businessID, total, equal, mismatch, unknown }
   let cursor = null;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const constraints = [orderBy(documentId()), qLimit(pageSize)];
     if (cursor) constraints.push(startAfter(cursor));
@@ -163,10 +165,11 @@ export async function fbFixAllPricesToListPrice(
   try {
     const countSnap = await getCountFromServer(query(collectionGroup(db, 'products')));
     totalCount = countSnap.data().count;
-  } catch {}
+  } catch { /* Ignore count errors */ }
 
   const progressStep = 200;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const constraints = [orderBy(documentId()), qLimit(pageSize)];
     if (cursor) constraints.push(startAfter(cursor));
@@ -314,7 +317,7 @@ async function getBusinessNameCached(id, cache) {
     const name = bSnap.exists() ? (bSnap.data()?.business?.name ?? bSnap.data()?.name ?? '') : '';
     cache.set(id, name);
     return name;
-  } catch { cache.set(id, ''); return ''; }
+  } catch { cache.set(id, ''); return ''; /* Ignore business name errors */ }
 }
 
 async function collectProblemProductsAll({ pageSize = 1000, includeBusinessName = true, onProgress } = {}) {
@@ -322,6 +325,7 @@ async function collectProblemProductsAll({ pageSize = 1000, includeBusinessName 
   const rows = [];
   let cursor = null, scanned = 0;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const constraints = [orderBy(documentId()), qLimit(pageSize)];
     if (cursor) constraints.push(startAfter(cursor));
@@ -489,7 +493,7 @@ export async function fbCSVProblemProductsForBusinesses(
       try {
         const bSnap = await getDoc(doc(db, 'businesses', businessID));
         businessName = bSnap.exists() ? (bSnap.data()?.business?.name ?? bSnap.data()?.name ?? '') : '';
-      } catch {}
+      } catch { /* Ignore business name fetch errors */ }
     }
 
     try {

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Card, Space, Typography } from 'antd';
+import React from 'react';
 import Barcode from 'react-barcode';
 
 const { Title, Text } = Typography;

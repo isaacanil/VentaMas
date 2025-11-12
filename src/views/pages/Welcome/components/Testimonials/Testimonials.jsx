@@ -1,9 +1,10 @@
+import { faUser, faQuoteLeft } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Card, Row, Col, Typography, Rate, Avatar } from 'antd'
+import { motion } from 'framer-motion'
 import React from 'react'
 import styled from 'styled-components'
-import { motion } from 'framer-motion'
-import { Card, Row, Col, Typography, Rate, Avatar } from 'antd'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser, faQuoteLeft } from '@fortawesome/free-solid-svg-icons'
+
 import welcomeData from '../../WelcomeData.json'
 
 const { Title, Paragraph, Text } = Typography;
@@ -55,7 +56,7 @@ const Testimonials = () => {
         </HeaderSection>
 
         <Row gutter={[32, 32]} justify="center">
-          {welcomeData.testimonials.map((testimonial, index) => (
+          {welcomeData.testimonials.map((testimonial) => (
             <Col xs={24} lg={12} key={testimonial.id}>
               <TestimonialCard
                 variants={item}
@@ -99,7 +100,7 @@ const Testimonials = () => {
                     />
                     
                     <TestimonialText>
-                      "{testimonial.comment}"
+                      &ldquo;{testimonial.comment}&rdquo;
                     </TestimonialText>
                   </div>
 

@@ -1,6 +1,7 @@
 import { Timestamp, collection, doc, getDocs, writeBatch } from "firebase/firestore";
-import { db } from "../firebaseconfig";
 import { nanoid } from "nanoid";
+
+import { db } from "../firebaseconfig";
 
 /**
  * Transfiere productos de un negocio a otro.
@@ -12,9 +13,9 @@ import { nanoid } from "nanoid";
 export const fbTransferProductsToAnotherBusiness = async (businessIdA, businessIdB, limit = 0) => {
     try {
         const productsBusinessA = collection(db, `businesses/${businessIdA}/products`);
-        const productCategoriesBusinessA = collection(db, `businesses/${businessIdA}/categories`);
+        const _productCategoriesBusinessA = collection(db, `businesses/${businessIdA}/categories`);
         const productsBusinessB = collection(db, `businesses/${businessIdB}/products`);
-        const productCategoriesBusinessB = collection(db, `businesses/${businessIdB}/categories`);
+        const _productCategoriesBusinessB = collection(db, `businesses/${businessIdB}/categories`);
         
         const querySnapshot = await getDocs(productsBusinessA);
         let totalProducts = querySnapshot.docs.length;

@@ -1,4 +1,5 @@
-import { createExcelTemplate } from '../excelUtils/createExcelTemplate';
+import { createExcelTemplate } from '../createExcelTemplate';
+
 import { productHeaderMappings } from './headerMappings';
 
 // Función específica para generar una plantilla de productos en Excel

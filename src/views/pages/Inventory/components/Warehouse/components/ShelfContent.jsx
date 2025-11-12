@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import * as antd from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { DetailContainer } from "./WarehouseContent";
-import { selectUser } from "../../../../../../features/auth/userSlice";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as antd from "antd";
+import React, { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-import { deleteRowShelf, getAllRowShelves, listenAllRowShelves, useListenRowShelves } from "../../../../../../firebase/warehouse/RowShelfService";
 import { useNavigate, useParams } from "react-router-dom";
-import { ProductStockForm } from "../forms/ProductStockForm/ProductStockForm";
-import { ProductsSection } from "./ProductsSection";
+import styled from "styled-components";
+
+
 import { icons } from "../../../../../../constants/icons/icons";
+import { selectUser } from "../../../../../../features/auth/userSlice";
 import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfModalSlice";
 import { openShelfForm } from "../../../../../../features/warehouse/shelfModalSlice";
+import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
+import { deleteRowShelf, useListenRowShelves } from "../../../../../../firebase/warehouse/RowShelfService";
+import { ProductStockForm } from "../forms/ProductStockForm/ProductStockForm";
+
+import { ProductsSection } from "./ProductsSection";
+import { DetailContainer } from "./WarehouseContent";
 
 
 const { Modal, Button, List, Tag, message } = antd;
@@ -84,10 +87,10 @@ export default function ShelfContent() {
   const user = useSelector(selectUser);
   const { shelfId } = useParams();
   const { selectedWarehouse: warehouse, selectedShelf: shelf } = useSelector(selectWarehouse);
-  const [location, setLocation] = useState({ id: shelfId, type: "shelf" })
+  const location = useMemo(() => ({ id: shelfId, type: "shelf" }), [shelfId]);
 
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const { data: rowShelves, loading, error } = useListenRowShelves(warehouse?.id, shelf?.id);
+  const { data: rowShelves } = useListenRowShelves(warehouse?.id, shelf?.id);
 
   const onNavigate = (row) => {
     navigate(`row/${row.id}`);
@@ -150,11 +153,13 @@ export default function ShelfContent() {
             </AddButton>
           </SectionHeader>
           <List
-            dataSource={rowShelves}
+            dataSource={rowShelves ?? []}
             renderItem={(row) => (
               <List.Item
+                key={row.id}
                 actions={[
                   <Button
+                    key="edit-row"
                     icon={<FontAwesomeIcon icon={faEdit} />}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -163,6 +168,7 @@ export default function ShelfContent() {
                   >
                   </Button>,
                   <Button
+                    key="delete-row"
                     icon={icons.editingActions.delete}
                     danger
                     onClick={(e) => {

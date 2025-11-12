@@ -1,9 +1,10 @@
+import { Modal, Form, Checkbox, InputNumber, notification, Alert } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Checkbox, InputNumber, Button, Space, notification, Alert } from 'antd';
-import styled from 'styled-components';
-import { fbUpsertCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbUpsertCreditLimit';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../../../features/auth/userSlice';
+import { fbUpsertCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbUpsertCreditLimit';
 
 const CreditLimitModal = ({ 
     visible, 
@@ -98,6 +99,7 @@ const CreditLimitModal = ({
             open={visible}
             onCancel={handleCancel}
             onOk={handleSave}
+            confirmLoading={loading}
             width={500}
             destroyOnClose
         >
@@ -195,19 +197,6 @@ const CreditLimitModal = ({
                         />
                     </Form.Item>
                 </FormSection>
-
-                {/* <FooterButtons>
-                    <Button onClick={handleCancel}>
-                        Cancelar
-                    </Button>
-                    <Button 
-                        type="primary" 
-                        onClick={handleSave}
-                        loading={loading}
-                    >
-                        Guardar
-                    </Button>
-                </FooterButtons> */}
             </Form>
         </StyledModal>
     );
@@ -229,12 +218,4 @@ const StyledInputNumber = styled(InputNumber)`
     &.ant-input-number {
         width: 100%;
     }
-`;
-
-const FooterButtons = styled(Space)`
-    width: 100%;
-    justify-content: flex-end;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid #f0f0f0;
 `;

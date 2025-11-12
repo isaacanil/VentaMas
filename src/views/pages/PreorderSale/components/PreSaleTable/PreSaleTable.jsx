@@ -1,11 +1,24 @@
 import { DateTime } from 'luxon'
+import { useState } from 'react'
 import styled from 'styled-components'
+
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
 import { getProductsTax, getProductsTotalPrice, getTotalItems } from '../../../../../utils/pricing'
-import { tableConfig } from './tableConfig'
+import PreorderModal from '../../../../component/modals/PreorderModal/PreorderModal'
+import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
+
+import { tableConfig } from './tableConfig.jsx'
 
 export const PreSaleTable = ({ preSales = [], searchTerm }) => {
+  const [selectedPreorder, setSelectedPreorder] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleRowClick = (row) => {
+    if (row?.accion?.data) {
+      setSelectedPreorder(row.accion.data)
+      setIsModalOpen(true)
+    }
+  }
 
   const data = preSales?.map(({ data }) => {
     const nfc = data?.NCF
@@ -26,17 +39,25 @@ export const PreSaleTable = ({ preSales = [], searchTerm }) => {
   const total = useFormatPrice((preSales?.reduce((total, { data }) => total + data?.totalPurchase?.value, 0)))
 
   return (
-    <AdvancedTable
-      columns={tableConfig}
-      data={data}
-      groupBy={'dateGroup'}
-      emptyText='No se encontraron preventas.'
-      footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
-      searchTerm={searchTerm}
-      elementName={'preventas'}
-      tableName={'Preventas'}
-      numberOfElementsPerPage={40}
-    />
+    <>
+      <AdvancedTable
+        columns={tableConfig}
+        data={data}
+        groupBy={'dateGroup'}
+        emptyText='No se encontraron preventas.'
+        footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
+        searchTerm={searchTerm}
+        elementName={'preventas'}
+        tableName={'Preventas'}
+        numberOfElementsPerPage={40}
+        onRowClick={handleRowClick}
+      />
+      <PreorderModal 
+        preorder={selectedPreorder}
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+      />
+    </>
   )
 }
 
@@ -49,5 +70,3 @@ const TotalContainer = styled.div`
   font-size: 1em;
   font-weight: 600;
 `
-
-

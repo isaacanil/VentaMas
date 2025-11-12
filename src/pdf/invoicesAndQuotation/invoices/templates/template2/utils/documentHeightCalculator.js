@@ -1,3 +1,7 @@
+import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
+
+import { measurePreciseTextBlock } from './textMeasurement.js';
+
 // src/utils/documentHeightCalculator.js
 
 // Constantes basadas en los estilos del PDF
@@ -15,6 +19,7 @@ const LAYOUT = {
   logoMargin: 4,
   separatorMargin: 10, // top + bottom
   clientBlockMargin: 9, // top + bottom
+  clientBlockMinHeight: 70,
   headerMargin: 12, // top margin
   footerSignatureHeight: 25, // línea + texto
   paymentMethodSpacing: 4,
@@ -36,6 +41,29 @@ export function calculateTextHeight(text, fontSize = 10, lineHeight = 1.15, maxW
   
   return lines * fontSize * lineHeight;
 }
+
+const normalizeClientValue = (value) => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  }
+  return value;
+};
+
+const pickClientField = (d, ...keys) => {
+  for (const key of keys) {
+    const nested = normalizeClientValue(d?.client?.[key]);
+    if (nested !== null && nested !== undefined) {
+      return nested;
+    }
+    const flat = normalizeClientValue(d?.[key]);
+    if (flat !== null && flat !== undefined) {
+      return flat;
+    }
+  }
+  return null;
+};
 
 /**
  * Estima la altura (en pt) que ocupará un bloque de texto.
@@ -95,15 +123,28 @@ export function calcHeaderHeight(biz, d) {
   let invoiceInfoHeight = 0;
   
   // Título del comprobante
-  const comprobanteTitle = getComprobanteTitle(d.NCF || d.comprobante);
+  const {
+    title: comprobanteTitle,
+    label: comprobanteLabel,
+    value: comprobanteValue,
+    type: comprobanteType
+  } = resolveDocumentIdentity(d);
+  const referenceLabel = comprobanteType === 'preorder'
+    ? 'Preventa'
+    : comprobanteTitle || 'Factura';
+  const referenceValue = comprobanteType === 'preorder'
+    ? (comprobanteValue || d.preorderDetails?.numberID || d.numberID || '-')
+    : (d.numberID || '-');
   // Assuming title might span full width or a specific width, adjust maxWidth if needed
   invoiceInfoHeight += calculateTextHeight(comprobanteTitle, STYLES.title.fontSize, STYLES.title.lineHeight, LAYOUT.headerColumnWidth) + STYLES.title.marginBottom;
-  
+
   // Campos de la factura
   const invoiceFields = [
     `Fecha: ${formatDateForCalculation(d.date)}`,
-    `${getComprobanteLabel(d.NCF || d.comprobante)}: ${d.NCF || d.comprobante || '-'}`,
-    `No: ${d.numberID || '-'}`,
+    comprobanteLabel && comprobanteType !== 'preorder'
+      ? `${comprobanteLabel}: ${comprobanteValue || '-'}`
+      : null,
+    `${referenceLabel} # ${referenceValue}`,
     d.type === 'preorder' && d.preorderDetails?.date ? `Fecha de Pedido: ${formatDateForCalculation(d.preorderDetails.date)}` : null,
     d.dueDate ? `Vence: ${formatDateForCalculation(d.dueDate)}` : null
   ].filter(Boolean);
@@ -119,21 +160,35 @@ export function calcHeaderHeight(biz, d) {
   // 4. Separador horizontal
   height += LAYOUT.separatorMargin;
   
-  // 5. Bloque de información del cliente (si existe y no es genérico)
-  if (shouldShowClientBlock(d)) {
-    let clientHeight = 0;
-    const clientFields = [
-      `Cliente: ${d.client.name}`,
-      d.client?.address?.trim() ? `Dirección: ${d.client.address.trim()}` : null,
-      d.client?.tel?.trim() ? `Tel: ${d.client.tel.trim()}` : null,
-      d.client?.personalID?.trim() ? `RNC cliente: ${d.client.personalID.trim()}` : null
-    ].filter(Boolean);
-    
-    clientFields.forEach(field => {
-      clientHeight += calculateTextHeight(field, STYLES.headerInfo.fontSize) + (STYLES.headerInfo.marginVertical * 2);
-    });
-    
-    height += clientHeight + LAYOUT.clientBlockMargin;
+  // 5. Bloque de información del cliente (si existe)
+  const clientLines = buildClientLines(d);
+  if (clientLines) {
+    const { left, right } = clientLines;
+
+    const leftHeight = left.reduce((acc, line) => {
+      const measurement = measurePreciseTextBlock({
+        text: line,
+        fontSize: STYLES.headerInfo.fontSize,
+        lineHeight: STYLES.headerInfo.lineHeight,
+        maxWidth: LAYOUT.headerColumnWidth
+      });
+      return acc + measurement.height + (STYLES.headerInfo.marginVertical * 2);
+    }, 0);
+
+    const rightHeight = right.reduce((acc, line) => {
+      const measurement = measurePreciseTextBlock({
+        text: line,
+        fontSize: STYLES.headerInfo.fontSize,
+        lineHeight: STYLES.headerInfo.lineHeight,
+        maxWidth: LAYOUT.headerColumnWidth
+      });
+      return acc + measurement.height + (STYLES.headerInfo.marginVertical * 2);
+    }, 0);
+
+    const dynamicHeight = Math.max(leftHeight, rightHeight);
+    const clientBlockHeight = Math.max(dynamicHeight, LAYOUT.clientBlockMinHeight);
+
+    height += clientBlockHeight + LAYOUT.clientBlockMargin;
   }
   
   return Math.ceil(height);
@@ -200,20 +255,43 @@ export function calcFooterHeight(biz, d) {
 
 // Funciones auxiliares para mejorar la precisión
 
-function shouldShowClientBlock(d) {
-  const rawName = d.client?.name?.trim() || '';
-  return rawName && rawName.toLowerCase() !== 'generic client';
+function _shouldShowClientBlock(d) {
+  return Boolean(buildClientLines(d));
 }
 
-function getComprobanteTitle(ncf) {
-  if (!ncf) return 'RECIBO DE PAGO';
-  if (ncf.startsWith('B01')) return 'FACTURA DE CRÉDITO FISCAL';
-  if (ncf.startsWith('B02')) return 'FACTURA DE CONSUMO';
-  return 'COMPROBANTE FISCAL';
-}
+function buildClientLines(d) {
+  const rawName = pickClientField(d, 'name', 'clientName');
+  const normalizedName = typeof rawName === 'string' ? rawName.toLowerCase() : '';
+  const hasRealName = normalizedName && normalizedName !== 'generic client';
+  const address = pickClientField(d, 'address', 'direccion', 'addressLine');
+  const tel = pickClientField(d, 'tel', 'phone', 'phoneNumber', 'telefono');
+  const tel2 = pickClientField(d, 'tel2', 'secondaryPhone', 'phone2');
+  const personalId = pickClientField(d, 'personalID', 'personalId', 'rnc', 'taxId', 'identification');
 
-function getComprobanteLabel(ncf) {
-  return ncf ? 'NCF' : 'Número de Recibo';
+  const meaningfulName = normalizeClientValue(rawName);
+  if (!meaningfulName && !address && !tel && !tel2 && !personalId) {
+    return null;
+  }
+
+  const displayName = hasRealName ? rawName : (meaningfulName || 'Cliente Genérico');
+
+  const left = [`Cliente: ${displayName}`];
+  if (address) {
+    left.push(`Dirección: ${address}`);
+  }
+
+  const right = [];
+  if (tel) {
+    right.push(`Tel: ${tel}`);
+  }
+  if (tel2) {
+    right.push(`Tel 2: ${tel2}`);
+  }
+  if (personalId) {
+    right.push(`RNC/Cédula: ${personalId}`);
+  }
+
+  return { left, right };
 }
 
 function formatDateForCalculation(date) {

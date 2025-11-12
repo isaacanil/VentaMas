@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
+
 import { icons } from '../../../../../constants/icons/icons';
 
 /**
@@ -77,7 +78,6 @@ export const InputV4 = ({
   validate,
   errorMessage,
   bgColor,
-  clearButton = false,
   value,
   type = 'text',
   buttons = [],

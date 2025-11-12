@@ -1,5 +1,7 @@
-import { db } from '../firebaseconfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+
+import { db } from '../firebaseconfig';
+
 import { fbUpdateStock } from './fbUpdateStock'
 
 // Función principal que orquesta la actualización de la salida de productos y el inventario

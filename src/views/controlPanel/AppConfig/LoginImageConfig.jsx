@@ -2,15 +2,16 @@
 // npm i browser-image-compression
 // npm i firebase antd styled-components
 
-import React, { useState, useEffect } from 'react';
-import { Card, Upload, Button, message, Image, Spin, Progress, Empty } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Upload, Button, message, Image, Spin, Progress, Empty } from 'antd';
 import imageCompression from 'browser-image-compression';
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { storage } from '../../../firebase/firebaseconfig';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import { useNavigate } from 'react-router-dom';
 
 // Parámetros de compresión
 const TARGET_SIZE_MB = 0.4;    // Tamaño máximo deseado en MB (ajustado para mejor calidad)

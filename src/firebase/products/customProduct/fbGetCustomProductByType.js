@@ -1,4 +1,5 @@
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+
 import { db } from "../../firebaseconfig";
 
 export const fbGetProductsQueryByType = async (setProducts, type, size, user) => {

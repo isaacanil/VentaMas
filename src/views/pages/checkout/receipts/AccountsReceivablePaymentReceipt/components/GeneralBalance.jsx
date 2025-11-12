@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { usePendingBalance } from '../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import styled from 'styled-components';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
+import { usePendingBalance } from '../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { Subtitle } from '../../../Style';
 
 export const GeneralBalance = ({data}) => {

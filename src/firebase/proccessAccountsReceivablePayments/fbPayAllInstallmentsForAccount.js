@@ -1,7 +1,8 @@
-import { doc, getDoc, Timestamp, runTransaction } from "firebase/firestore";
+import { doc, runTransaction } from "firebase/firestore";
+
 import { db } from '../firebaseconfig';
 import { fbGetInvoice } from "../invoices/fbGetInvoice";
-import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
+
 import { 
     getInstallmentsByArId,
     createPaymentRecord,
@@ -16,9 +17,10 @@ import {
     validateAccountHasPendingBalance,
     validatePaymentAmount
 } from "./arPaymentUtils";
+import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 
 export const fbPayAllInstallmentsForAccount = async ({ user, paymentDetails }) => {
-    const { totalPaid, arId, clientId, paymentMethods, comments } = paymentDetails;
+    const { totalPaid, arId, clientId, paymentMethods, comments: _comments } = paymentDetails;
 
     try {
         // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente

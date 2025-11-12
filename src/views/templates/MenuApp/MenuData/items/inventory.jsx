@@ -4,11 +4,9 @@ import ROUTES_NAME from "../../../../../routes/routesName";
 const {
     CATEGORIES,
     INVENTORY_ITEMS,
-    INVENTORY_SERVICES,
     PRODUCT_IMAGES_MANAGER,
-    PRODUCT_OUTFLOW,
+    PRODUCT_STUDIO,
     WAREHOUSES,
-    SERVICE_OUTFLOW,
     INVENTORY_CONTROL,
     INVENTORY_MOVEMENTS,
     INVENTORY_SUMMARY,
@@ -75,6 +73,13 @@ const inventory = [
                 route: PRODUCT_IMAGES_MANAGER,
                 icon: icons.inventory.multimediaManager,
                 group: 'products'
+            },
+            {
+                title: 'Product Studio',
+                route: PRODUCT_STUDIO,
+                icon: icons.inventory.items,
+                group: 'products',
+                requiresDevAccess: true,
             },
         ]
     },

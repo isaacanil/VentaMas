@@ -1,6 +1,7 @@
 import { Timestamp, collection, getDocs, writeBatch, doc } from "firebase/firestore";
-import { db } from "../firebaseconfig";
 import { nanoid } from "nanoid";
+
+import { db } from "../firebaseconfig";
 
 export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, businessIdB) => {
     const categoriesBusinessA = collection(db, `businesses/${businessIdA}/categories`);
@@ -11,7 +12,7 @@ export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, busines
 
     // Dividir las categorías en lotes de 500
     const batchSize = 500;
-    let batchCount = 0;
+    let _batchCount = 0;
     for (let i = 0; i < totalCategories; i += batchSize) {
         const batch = writeBatch(db);
         querySnapshot.docs.slice(i, i + batchSize).forEach(docSnapshot => {
@@ -27,6 +28,6 @@ export const fbTransferCategoriesToAnotherBusiness = async (businessIdA, busines
         });
 
         await batch.commit();
-        batchCount++;
+        _batchCount++;
     }
 };

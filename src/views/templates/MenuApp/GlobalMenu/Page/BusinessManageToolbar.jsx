@@ -1,14 +1,12 @@
-import React from 'react'
-import styled from 'styled-components'
-import { useMatch, useNavigate } from 'react-router-dom'
 import { Button } from 'antd'
+import React from 'react'
+import { useMatch, useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
 import { icons } from '../../../../../constants/icons/icons'
-import { useDispatch } from 'react-redux'
-import { toggleSignUpUser } from '../../../../../features/modals/modalSlice'
 import ROUTES_PATH from '../../../../../routes/routesName'
 
 const BusinessManagerToolbar = ({ side = 'left' }) => {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const { CREATE_BUSINESS, BUSINESSES } = ROUTES_PATH.DEV_VIEW_TERM;

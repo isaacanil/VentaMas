@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
 import { Form, Select, Checkbox, InputNumber, Button, message } from 'antd';
-import styled from 'styled-components';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
 const OptionContainer = styled.div`
   display: flex;
@@ -44,7 +45,6 @@ const DueDateConfig = () => {
   const [selectedOption, setSelectedOption] = useState('1_week');
 
   const [loadingSaveCustomDuePeriod, setLoadingSaveCustomDuePeriod] = useState(false);
-  const [loadingUpdateSettings, setLoadingUpdateSettings] = useState(false);
 
   useEffect(() => {
     if (duePeriod) {
@@ -58,7 +58,7 @@ const DueDateConfig = () => {
     try {
       await setBillingSettings(user, { hasDueDate: checked });
       message.success('Configuración actualizada');
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la configuración');
     }
   };
@@ -89,13 +89,12 @@ const DueDateConfig = () => {
         });
         message.success('Configuración de vencimiento actualizada');
       }
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la configuración');
     }
   };
 
   const handleUseCustomConfigChange = async (checked) => {
-    setLoadingUpdateSettings(true);
     try {
       await setBillingSettings(user, { useCustomConfig: checked });
       if (checked) {
@@ -112,10 +111,8 @@ const DueDateConfig = () => {
         });
       }
       message.success('Configuración actualizada');
-    } catch (error) {
+    } catch {
       message.error('Error al actualizar la configuración');
-    } finally {
-      setLoadingUpdateSettings(false);
     }
   };
 
@@ -131,7 +128,7 @@ const DueDateConfig = () => {
         useCustomConfig: true
       });
       message.success('Configuración de vencimiento personalizada guardada');
-    } catch (error) {
+    } catch {
       message.error('Error al guardar la configuración');
     } finally {
       setLoadingSaveCustomDuePeriod(false);

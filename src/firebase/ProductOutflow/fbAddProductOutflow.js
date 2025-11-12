@@ -1,7 +1,9 @@
-import { Timestamp, doc, serverTimestamp, setDoc } from "firebase/firestore"
-import { db } from "../firebaseconfig"
-import { fbUpdateStock } from "./fbUpdateStock"
+import { doc, serverTimestamp, setDoc } from "firebase/firestore"
 import { nanoid } from "nanoid"
+
+import { db } from "../firebaseconfig"
+
+import { fbUpdateStock } from "./fbUpdateStock"
 
 export const fbAddProductOutFlow =  async (user, productOutflow) => {
     

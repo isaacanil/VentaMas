@@ -45,7 +45,7 @@ const productExpirySelectorSlice = createSlice({
     setModalOpen: (state, action) => {
       state.isOpen = action.payload;
     },
-    clearProductExpirySelector: (state) => {
+    clearProductExpirySelector: (_state) => {
       return initialState;
     }
   },

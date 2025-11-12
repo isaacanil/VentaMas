@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
+import { useState, useEffect, useRef } from 'react';
 
 export const useDatePicker = ({ mode, value, onChange, presets }) => {
     const [open, setOpen] = useState(false);
@@ -35,17 +35,18 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
         };
     }, []);
 
-    const handlePresetClick = (preset, isMobile) => {
+    const handlePresetClick = (preset) => {
         onChange(preset.value);
         setRangeStart(null);
         setOpen(false);
     };
 
-    const handleClear = (e, finalPresets) => {
+    const handleClear = (e, finalPresets = []) => {
         if (e) {
             e.stopPropagation();
         }
-        const fallback = finalPresets.length > 0 ? finalPresets[0].value : null;
+        const fallbackSource = finalPresets.length > 0 ? finalPresets : presets || [];
+        const fallback = fallbackSource.length > 0 ? fallbackSource[0].value : null;
         const newValue = initialValueRef.current ?? fallback;
         onChange(newValue);
         setRangeStart(null);

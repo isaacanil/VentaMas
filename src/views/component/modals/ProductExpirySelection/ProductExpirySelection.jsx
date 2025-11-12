@@ -1,11 +1,11 @@
 import { Modal, Button, Spin } from 'antd';
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { clearProductExpirySelector, selectModalOpen, selectProductId, setModalOpen, updateInventory, } from '../../../../features/warehouse/productExpirySelectionSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { clearProductExpirySelector, selectModalOpen, selectProductId, setModalOpen, } from '../../../../features/warehouse/productExpirySelectionSlice';
+
 import InventoryCard from './components/InventoryCard';
-import { selectUser } from '../../../../features/auth/userSlice';
-import { fetchAllInventoryData, useGetAllInventoryData } from './fbFetchAllInventoryData';
+import { useGetAllInventoryData } from './fbFetchAllInventoryData';
 
 const StyledPageContainer = styled.div`
   padding: 20px;
@@ -30,6 +30,15 @@ const StyledCardGrid = styled.div`
   gap: 1rem;
 `;
 
+const ErrorBanner = styled.div`
+  margin-top: 1rem;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff1f0;
+  color: #a8071a;
+  border: 1px solid #ffa39e;
+`;
+
 const groupInventoryByWarehouse = (inventoryItems) => {
     return inventoryItems.reduce((acc, item) => {
         const warehouse = item.warehouse;
@@ -47,13 +56,6 @@ const ProductExpirySelection = () => {
     const isOpen = useSelector(selectModalOpen);
     // const inventory = useSelector(selectFilteredInventory);
     // const [items, setItems] = useState([]);
-    const user = useSelector(selectUser)
-
-    // useEffect(() => {
-    //     if (user && productId) {
-    //         fetchAllInventoryData(user, productId, setItems)
-    //     }
-    // }, [user, productId]);
     const { loading, data: items, error } = useGetAllInventoryData(productId);
 
     const handleClose = () => {
@@ -61,7 +63,7 @@ const ProductExpirySelection = () => {
         dispatch(clearProductExpirySelector());
     };
 
-    const groupedItems = groupInventoryByWarehouse(items);
+    const groupedItems = groupInventoryByWarehouse(items ?? []);
 
     return (
         <Modal
@@ -87,6 +89,9 @@ const ProductExpirySelection = () => {
                     </div>
                 }
             </Spin>
+            {!loading && error && (
+                <ErrorBanner>Error al cargar inventario: {error}</ErrorBanner>
+            )}
             {!loading && (<StyledPageContainer>
                 {Object.entries(groupedItems).map(([warehouse, warehouseItems]) => (
                     <StyledCardsGroup key={warehouse}>

@@ -1,6 +1,3 @@
-import { useEffect, useMemo, useState } from "react"
-import { useDispatch } from "react-redux"
-import { getPendingOrdersFromDB } from "../features/order/ordersSlice"
 
 
 // export const OrdersData = () => {

@@ -43,9 +43,16 @@ const initialState = {
         isInvoicePanelOpen: false,
         billing: {
             billingMode: 'direct',
+            authorizationFlowEnabled: false,
+            enabledAuthorizationModules: {
+                invoices: true,
+                accountsReceivable: true,
+                cashRegister: true
+            },
             isLoading: false,
             isError: null
-        }    },
+        }
+    },
     isOpen: false,
     showCxcAutoRemovalNotification: false,
     data: {
@@ -92,7 +99,10 @@ const initialState = {
             value: 0
         },
         invoiceComment: '',
-        creditNotePayment: []
+        creditNotePayment: [],
+        authorizationContext: {
+            discount: null,
+        },
     },
 }
 /*los estados pueden ser:

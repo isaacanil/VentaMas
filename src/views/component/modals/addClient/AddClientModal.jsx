@@ -1,14 +1,14 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import { Modal } from '../Modal'
-import { db } from '../../../../firebase/firebaseconfig.jsx'
 import { setDoc, doc } from 'firebase/firestore'
 import { nanoid } from 'nanoid'
-import { async } from '@firebase/util'
-import { closeModalAddClient, SelectAddClientModal } from '../../../../features/modals/modalSlice'
-import { useSelector } from 'react-redux'
+import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
+import { closeModalAddClient } from '../../../../features/modals/modalSlice'
+import { db } from '../../../../firebase/firebaseconfig.jsx'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4.jsx'
+import { Modal } from '../Modal'
+
 export const AddClientModal = ({ isOpen }) => {
     const dispatch = useDispatch()
 

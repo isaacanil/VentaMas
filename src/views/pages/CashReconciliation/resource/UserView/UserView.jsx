@@ -1,6 +1,7 @@
+import { Input, Form } from 'antd'
 import React from 'react'
 import styled from 'styled-components'
-import { Input, Form } from 'antd'
+
 import { icons } from '../../../../../constants/icons/icons'
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue'
 

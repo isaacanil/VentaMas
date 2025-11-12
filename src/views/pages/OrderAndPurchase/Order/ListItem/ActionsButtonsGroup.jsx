@@ -1,18 +1,18 @@
 
-import React, { Fragment, useEffect, useState } from 'react'
+import * as antd from 'antd'
+import React, { Fragment } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { getOrderData } from '../../../../../features/purchase/addPurchaseSlice'
-import { Button } from '../../../../templates/system/Button/Button'
-import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
-import { getOrderData as getOrderDataToOrder } from '../../../../../features/addOrder/addOrderSlice'
+
 import { icons } from '../../../../../constants/icons/icons'
-import { useDialog } from '../../../../../Context/Dialog/DialogContext'
-import { selectUser } from '../../../../../features/auth/userSlice'
 import { OPERATION_MODES } from '../../../../../constants/modes'
-import { fbDeleteOrder } from '../../../../../firebase/order/fbDeleteOrder'
+import { useDialog } from '../../../../../Context/Dialog'
+import { getOrderData as getOrderDataToOrder } from '../../../../../features/addOrder/addOrderSlice'
+import { selectUser } from '../../../../../features/auth/userSlice'
 import { addNotification } from '../../../../../features/notification/notificationSlice'
-import * as antd from 'antd'
+import { getOrderData } from '../../../../../features/purchase/addPurchaseSlice'
+import { fbDeleteOrder } from '../../../../../firebase/order/fbDeleteOrder'
+import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup'
 
 export const ActionsButtonsGroup = ({ orderData }) => {
     const dispatch = useDispatch();
@@ -21,15 +21,15 @@ export const ActionsButtonsGroup = ({ orderData }) => {
 
     const { dialog, setDialogConfirm, onClose } = useDialog();
 
-    const handleEditMode = (id) => {
+    const handleEditMode = () => {
         navigate(`/orders/update/`)
         dispatch(getOrderDataToOrder({ data: orderData, mode: OPERATION_MODES.UPDATE.id }))
     }
-    const handlePurchasingMode = async (id) => {
-        // PassDataToPurchaseList(orderData)
+    const handlePurchasingMode = async () => {
         dispatch(getOrderData(orderData));
-        navigate('/purchases/create');    }
-    const handleDeleteMode = (id) => {
+        navigate('/purchases/create');
+    }
+    const handleDeleteMode = () => {
         setDialogConfirm({
             ...dialog,
             isOpen: true,
@@ -38,7 +38,7 @@ export const ActionsButtonsGroup = ({ orderData }) => {
             message: '¿Está seguro que desea eliminar esta orden?',
             onCancel: () => onClose(),
             onConfirm: () => {
-                fbDeleteOrder(user, id)
+                fbDeleteOrder(user, orderData.id)
                 onClose()
                 dispatch(addNotification({
                     type: 'success',
@@ -55,20 +55,20 @@ export const ActionsButtonsGroup = ({ orderData }) => {
                     orderData.state === 'state_2' &&
                     <antd.Button
                         icon={icons.operationModes.buy}
-                        onClick={() => handlePurchasingMode(orderData.id)}
+                        onClick={handlePurchasingMode}
                     />
                 }
 
                 <antd.Button
                     icon={icons.operationModes.edit}
-                    onClick={() => handleEditMode(orderData.id)}
+                    onClick={handleEditMode}
                 />
                 {
                     orderData.state === 'state_2' &&
                     <antd.Button
                         danger
                         icon={icons.operationModes.delete}
-                        onClick={() => handleDeleteMode(orderData.id)}
+                        onClick={handleDeleteMode}
                     />
                 }
             </Fragment>

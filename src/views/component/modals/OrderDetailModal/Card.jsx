@@ -48,18 +48,4 @@ const Info = styled.p`
   font-size: 1rem;
   margin-bottom: 5px;
 `;
-  const CardContainer = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-  `;
-  
-  const CardGroup = styled.div`
-    width: 100%;
-    padding: 20px 0;
-  `;
-  
-
-  
-  
-  
   

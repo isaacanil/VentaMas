@@ -1,13 +1,14 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { icons } from '../../../../constants/icons/icons';
+import styled from 'styled-components';
+
 import {
     addAmountToProduct,
     diminishAmountToProduct,
     onChangeValueAmountToProduct
 } from '../../../../features/cart/cartSlice';
 import { Alert } from '../Product/Cart/Alert';
-import styled from 'styled-components';
+
 
 export const Counter = ({ amountToBuy, stock, id, item }) => {
     const dispatch = useDispatch();

@@ -1,7 +1,8 @@
 
 import { Timestamp, doc, setDoc } from "firebase/firestore";
-import { db } from "../../firebaseconfig";
 import { nanoid } from "nanoid";
+
+import { db } from "../../firebaseconfig";
 
 
 export const fbAddExpenseCategory = async (user, category) => {

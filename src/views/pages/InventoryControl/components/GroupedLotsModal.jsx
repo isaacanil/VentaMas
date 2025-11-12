@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
 import { Modal, Button, DatePicker, Tag, InputNumber, Dropdown, message, Tooltip } from 'antd';
 import dayjs from 'dayjs';
+import { useMemo } from 'react';
 import styled from 'styled-components';
-import { formatNumber, formatInputDate, shortenLocationPath, EditorsList, Diff, SummaryBar } from './inventoryTableUtils.jsx';
+
+import { EditorsList, SummaryBar } from './inventoryTableComponents.jsx';
+import { formatNumber, formatInputDate, shortenLocationPath, Diff } from './inventoryTableUtils.js';
 
 export function GroupedLotsModal({
   open,
@@ -88,8 +90,16 @@ export function GroupedLotsModal({
       return;
     }
     if (onSave) {
-      try { await onSave(); onClose(); } catch (e) { /* onSave ya maneja error */ }
-    } else onClose();
+      try {
+        await onSave();
+        onClose();
+      } catch (saveError) {
+        const description = saveError instanceof Error ? saveError.message : 'No se pudo guardar los cambios.';
+        message.error(description);
+      }
+    } else {
+      onClose();
+    }
   };
 
   return (

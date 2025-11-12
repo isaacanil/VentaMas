@@ -1,8 +1,11 @@
-import React from 'react';
 import { Select, Button, Space } from 'antd';
-import { FilterField } from './FilterField';
-import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
+import React from 'react';
+
 import { icons } from '../../../../../../constants/icons/icons';
+import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
+
+import { FilterField } from './FilterField';
+
 
 export const SortControls = ({ sortCriteria, sortDirection, onSortChange, onToggleDirection }) => (
   <FilterField label={FILTER_CONFIG.sort.label}>

@@ -1,10 +1,12 @@
 // Suponiendo que tus slices estén en archivos separados y este código vaya en cartSlice.js
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { setTaxReceiptEnabled } from './cartSlice';
-import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { selectTaxReceiptEnabled } from '../taxReceipt/taxReceiptSlice';
+
+import { setTaxReceiptEnabled } from './cartSlice';
 
 export const taxReceiptEnabledToCart = createAsyncThunk(
     'cart/fetchAndStoreTaxReceiptEnabled',

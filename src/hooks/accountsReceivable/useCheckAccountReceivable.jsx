@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { fbGetActiveARCount } from '../../firebase/accountsReceivable/fbGetActiveARCount';
+
 import { selectAR } from '../../features/accountsReceivable/accountsReceivableSlice';
+import { fbGetActiveARCount } from '../../firebase/accountsReceivable/fbGetActiveARCount';
 
 export const useCreditLimitCheck = (creditLimit, change, clientId, userBusinessId) => {
   const { currentBalance } = useSelector(selectAR);

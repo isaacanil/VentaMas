@@ -1,19 +1,12 @@
 // Importa React, styled-components y los componentes de antd que necesitarás
-import React from 'react';
-import styled from 'styled-components';
-import { Row, Col, Divider, Button } from 'antd';
-import { motion } from 'framer-motion';
-import { 
-  PhoneOutlined, 
-  MailOutlined, 
-  GlobalOutlined,
-  FacebookOutlined,
-  TwitterOutlined,
-  InstagramOutlined,
-  LinkedinOutlined,
+import {
   HeartFilled
 } from '@ant-design/icons';
-import WelcomeData from '../../WelcomeData.json';
+import { Row, Col, Divider } from 'antd';
+import { motion } from 'framer-motion';
+import React from 'react';
+import styled from 'styled-components';
+
 
 // Componente Footer
 export const Footer = () => {
@@ -23,23 +16,6 @@ export const Footer = () => {
       opacity: 1, 
       y: 0,
       transition: { duration: 0.5, delay: 0.3 }
-    }
-  };
-
-  const socialVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { duration: 0.3, delay: 0.5 }
-    }
-  };
-
-  const linkVariants = {
-    hover: { 
-      scale: 1.05,
-      color: '#1890ff',
-      transition: { duration: 0.2 }
     }
   };
 
@@ -305,98 +281,6 @@ const FooterText = styled.p`
   
   &:last-child {
     margin-bottom: 0;
-  }
-`;
-
-const FooterLinksList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const FooterLink = styled.a`
-  color: #666;
-  font-size: 14px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: inline-block;
-  
-  &:hover {
-    color: #1890ff;
-    text-decoration: none;
-    transform: translateX(4px);
-  }
-`;
-
-const SocialLinksContainer = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-`;
-
-const SocialLink = styled.a`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #fff, #f8f9fa);
-  border-radius: 50%;
-  color: #666;
-  font-size: 18px;
-  text-decoration: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    color: #1890ff;
-    background: linear-gradient(135deg, #e6f7ff, #bae7ff);
-    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.2);
-    transform: translateY(-2px);
-  }
-`;
-
-const ContactItem = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-  gap: 12px;
-`;
-
-const ContactIcon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #e6f7ff, #bae7ff);
-  border-radius: 50%;
-  color: #1890ff;
-  font-size: 14px;
-`;
-
-const ContactText = styled.span`
-  color: #666;
-  font-size: 14px;
-  line-height: 1.5;
-`;
-
-const NewsletterContainer = styled.div`
-  margin-top: 20px;
-  padding: 16px;
-  background: linear-gradient(135deg, #fff, #f8f9fa);
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
-`;
-
-const NewsletterButton = styled(Button)`
-  width: 100%;
-  border-radius: 6px;
-  font-weight: 500;
-  
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
   }
 `;
 

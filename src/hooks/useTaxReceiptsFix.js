@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
 import { collection, doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../features/auth/userSlice';
 import { db } from '../firebase/firebaseconfig';
 

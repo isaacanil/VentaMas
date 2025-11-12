@@ -1,14 +1,20 @@
-import { useState } from 'react'
-import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
-import { calculateTotalNewStockFromReplenishments } from '../../../Order/components/OrderListTable/OrdersTable'
-import { CancelModal } from '../CancelModal/CancelModal'
-import { columns } from './tableConfig'
-import { fbCancelPurchase } from '../../../../../../firebase/purchase/fbCancelPurchase'
-import { useSelector } from 'react-redux'
-import { selectUser } from '../../../../../../features/auth/userSlice'
 import { DateTime } from 'luxon'
-import { useDialog } from '../../../../../../Context/Dialog/DialogContext'  // Nuevo import
-import { message } from 'antd' // Nuevo import
+import { useSelector } from 'react-redux'
+
+import { useDialog } from '../../../../../../Context/Dialog'  // Nuevo import
+import { selectUser } from '../../../../../../features/auth/userSlice'
+import { fbCancelPurchase } from '../../../../../../firebase/purchase/fbCancelPurchase'
+import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { calculateTotalNewStockFromReplenishments } from '../../../Order/components/OrderListTable/orderTableUtils'
+
+import { columns } from './tableConfig.jsx'
+
+
+
+
+
+
+// Nuevo import
 
 export function PurchaseTable({ purchases, loadingPurchases }) {
   const { setDialogConfirm } = useDialog(); // Nuevo hook
@@ -61,5 +67,3 @@ export function PurchaseTable({ purchases, loadingPurchases }) {
     </>
   )
 }
-
-

@@ -1,20 +1,27 @@
+import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 import { formatDate } from '../utils/formatters.js';
+
 import { buildClientBlock } from './clientBlock.js';
 
-/* ───── utilitario título/etiqueta según NCF ───── */
-function getComprobanteInfo(ncf) {
-  if (!ncf) return { title: 'RECIBO DE PAGO', label: 'Número de Recibo' };
-  if (ncf.startsWith('B01')) return { title: 'FACTURA DE CRÉDITO FISCAL', label: 'NCF' };
-  if (ncf.startsWith('B02')) return { title: 'FACTURA DE CONSUMO', label: 'NCF' };
-  return { title: 'COMPROBANTE FISCAL', label: 'NCF' };
-}
+const CLIENT_BLOCK_MIN_HEIGHT = 70;
 
 /* ──────────────────────────────────────────────── */
 export function buildHeader(biz, d, images) {
   return () => {
     const clientBlock = buildClientBlock(d);
-    const { title: comprobanteTitle, label: comprobanteLabel } =
-      getComprobanteInfo(d.NCF || d.comprobante);
+    const {
+      title: comprobanteTitle,
+      label: comprobanteLabel,
+      value: comprobanteValue,
+      type: comprobanteType
+    } = resolveDocumentIdentity(d);
+    const referenceLabel = comprobanteType === 'preorder'
+      ? 'Preventa'
+      : comprobanteTitle || 'Factura';
+    const referenceValue = comprobanteType === 'preorder'
+      ? (comprobanteValue || d.preorderDetails?.numberID || d.numberID || '-')
+      : (d.numberID || '-');
+     
 
     /* columna izquierda (datos del negocio) */
     const leftStack = [
@@ -41,8 +48,6 @@ export function buildHeader(biz, d, images) {
       }
     ].filter(Boolean);
 
-    const ts = d.date.seconds * 1000 + Math.floor(d.date.nanoseconds / 1e6);
-
     /* columna derecha (datos de la factura / recibo) */
     const rightStack = [
       {
@@ -50,19 +55,19 @@ export function buildHeader(biz, d, images) {
         style: 'title',
         alignment: 'right'
       },
-      {
+      d.date && {
         text: `Fecha: ${formatDate(d.date)}`,
         style: 'headerInfo',
         alignment: 'right'
       },
-      {
-        text: `${comprobanteLabel}: ${d.NCF || d.comprobante || '-'}`,
+      comprobanteLabel && comprobanteType !== 'preorder' && {
+        text: `${comprobanteLabel}: ${comprobanteValue || '-'}`,
         style: 'headerInfo',
         alignment: 'right',
         bold: true
       },
       {
-        text: `No: ${d.numberID || '-'}`,
+        text: `${referenceLabel} # ${referenceValue}`,
         style: 'headerInfo',
         alignment: 'right',
         bold: true
@@ -84,7 +89,6 @@ export function buildHeader(biz, d, images) {
     if (images.logo) {
       rows.push([{
         image: 'logo',
-        width: 120,
         margin: [0, 0, 0, 8],
         colSpan: 2,
         width: 200,
@@ -133,12 +137,14 @@ export function buildHeader(biz, d, images) {
             }
           ],
           columnGap: 10,
+          minHeight: CLIENT_BLOCK_MIN_HEIGHT,
           colSpan: 2,
           margin: [0, 3, 0, 6]
         },
         {}
       ]);
-    }return {
+    }
+    return {
       margin: [32, 12, 32, 0],
       table: { widths: ['*', '*'], body: rows },
       layout: 'noBorders'

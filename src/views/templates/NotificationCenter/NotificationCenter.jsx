@@ -1,11 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import styled from 'styled-components';
-import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import NotificationWidgets from './components/NotificationWidgets';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+
 import { selectNotificationCenter, closeNotificationCenter } from '../../../features/notification/notificationCenterSlice';
 import { useFiscalReceiptsAlerts } from '../../../hooks/useFiscalReceiptsAlerts';
-import useScrollHeader from '../../../hooks/useScrollHeader';
+
+import ModulesNavigator from './components/ModulesNavigator';
 
 // Animaciones optimizadas para apertura/cierre
 const notificationVariants = {
@@ -30,55 +32,12 @@ const notificationVariants = {
 };
 
 const NotificationCenter = () => {
-  const [activeTab] = useState('notifications');
   const { isOpen } = useSelector(selectNotificationCenter);
   const dispatch = useDispatch();
   
-  // Hook para header dinámico
-  const { isScrolled, scrollContainerRef, progress } = useScrollHeader({
-    threshold: 60, // Pixel threshold para activar el estado compacto
-    debounceDelay: 8 // Delay optimizado para suavidad
-  });
-  
-  // Efecto para hacer scroll al top cuando se abra el notification center
-  useEffect(() => {
-    if (isOpen && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-  }, [isOpen, scrollContainerRef]);
-  
   // Usar el hook personalizado para obtener datos reales de comprobantes fiscales
-  const { widgetData: fiscalReceiptsData, isLoading: loadingFiscalData } = useFiscalReceiptsAlerts();
+  const { widgetData: fiscalReceiptsData } = useFiscalReceiptsAlerts();
 
-  // Datos de ejemplo para otras notificaciones (se pueden reemplazar con datos reales)
-  const notificationData = useMemo(() => ({
-    fiscalReceipts: fiscalReceiptsData,
-    inventory: {
-      title: 'Inventario Bajo',
-      items: [
-        { name: 'Papel Térmico 80mm', status: 'crítico' },
-        { name: 'Tinta Epson T664', status: 'crítico' },
-        { name: 'Café Premium 1kg', status: 'bajo' },
-      ],
-    },
-    sales: {
-      title: 'Meta de Ventas',
-      current: 78000,
-      goal: 100000,
-      percentage: 78,
-      daysLeft: 3,
-    },
-    system: {
-      title: 'Actualizaciones del Sistema',
-      currentVersion: '2.4.1',
-      newVersion: '2.5.0',
-      hasUpdate: true,
-      improvements: 'Incluye mejoras de seguridad y nuevas funcionalidades.',
-    },
-  }), [fiscalReceiptsData]);
 
   const handleClose = () => dispatch(closeNotificationCenter());
 
@@ -86,43 +45,10 @@ const NotificationCenter = () => {
     <>
       <Backdrop isOpen={isOpen} onClick={handleClose} />
       <Container animate={isOpen ? 'open' : 'closed'} initial='closed' variants={notificationVariants}>
-        <Header 
-          animate={{
-            padding: isScrolled ? '8px 24px 8px 24px' : '24px 24px 20px 24px',
-            boxShadow: isScrolled 
-              ? '0 4px 12px rgba(0, 0, 0, 0.08)' 
-              : '0 1px 3px rgba(0, 0, 0, 0.04)',
-            backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.95)' : '#ffffff',
-            backdropFilter: isScrolled ? 'blur(8px)' : 'blur(0px)'
-          }}
-          transition={{
-            type: 'tween',
-            ease: [0.25, 0.46, 0.45, 0.94],
-            duration: 0.2
-          }}
-        >
-          <Left 
-            animate={{
-              gap: isScrolled ? '8px' : '12px'
-            }}
-            transition={{
-              type: 'tween',
-              ease: [0.25, 0.46, 0.45, 0.94],
-              duration: 0.2
-            }}
-          >
- 
+        <Header>
+          <Left>
             <HeaderText>
-              <Title 
-                animate={{
-                  fontSize: isScrolled ? '18px' : '20px'
-                }}
-                transition={{
-                  type: 'tween',
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                  duration: 0.2
-                }}
-              >
+              <Title>
                 Centro de Notificaciones
               </Title>
             </HeaderText>
@@ -130,8 +56,8 @@ const NotificationCenter = () => {
           <CloseButton onClick={handleClose}>✕</CloseButton>
         </Header>
 
-        <TabsContainer ref={scrollContainerRef}>
-          <NotificationWidgets data={notificationData} />
+        <TabsContainer>
+          <ModulesNavigator fiscalReceiptsData={fiscalReceiptsData} />
         </TabsContainer>
       </Container>
     </>
@@ -171,45 +97,34 @@ const Container = styled(motion.div)`
   will-change: transform, opacity;
 `;
 
-const Header = styled(motion.div)`
+const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  backdrop-filter: blur(65px);
+  padding: 10px 24px;
   border-bottom: 1px solid #e5e7eb;
-  background-color: transparent !important;
+  background-color: rgba(255, 255, 255, 0);
   position: sticky;
   top: 0;
   z-index: 10;
-  will-change: transform, background-color, box-shadow, padding;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 `;
 
-const Left = styled(motion.div)`
+const Left = styled.div`
   display: flex;
   align-items: center;
-  will-change: transform;
+  gap: 12px;
 `;
 
-const Icon = styled(motion.div)`
-  will-change: transform;
-`;
+const HeaderText = styled.div``;
 
-const HeaderText = styled(motion.div)`
-  will-change: transform;
-`;
-
-const Title = styled(motion.h1)`
+const Title = styled.h1`
   font-weight: 700;
   margin: 0;
   color: #1f2937;
+  font-size: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  will-change: transform;
-`;
-
-const Subtitle = styled.p`
-  font-size: 14px;
-  color: #6b7280;
-  margin: 2px 0 0 0;
-  font-weight: 400;
 `;
 
 const CloseButton = styled.button`
@@ -237,41 +152,10 @@ const TabsContainer = styled.div`
   background: transparent;
   border-radius: 0;
   flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  
-  /* Estilos personalizados para el scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
-    
-    &:hover {
-      background: #94a3b8;
-    }
-  }
-  
-  /* Para Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
-  
-  /* Agregar espacio entre widgets */
-  & > div > * {
-    margin-bottom: 20px;
-  }
-  
-  & > div > *:last-child {
-    margin-bottom: 0;
-  }
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 `;
 
 export default NotificationCenter;

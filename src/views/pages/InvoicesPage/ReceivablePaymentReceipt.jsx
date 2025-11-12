@@ -1,12 +1,19 @@
 import { motion } from 'framer-motion'
-import { Fragment, useEffect, useState, Suspense, lazy } from 'react'
+import { Fragment, useEffect, useState, Suspense } from 'react'
 import styled from 'styled-components'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import { getDateRange } from '../../../utils/date/getDateRange'
-import { FilterBar } from './components/FilterBar/FilterBar'
-import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts'
 
-const SaleReportTable = lazy(() => import('./SaleReportTable/SaleReportTable'));
+import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts'
+import { getDateRange } from '../../../utils/date/getDateRange'
+import { lazyWithRetry } from '../../../utils/lazyWithRetry'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
+
+import { FilterBar } from './components/FilterBar/FilterBar'
+
+
+const SaleReportTable = lazyWithRetry(
+    () => import('./SaleReportTable/SaleReportTable'),
+    'SaleReportTable'
+);
 
 export const ReceivablePaymentReceipt = () => {
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
@@ -61,7 +68,6 @@ const Container = styled(motion.div)`
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
 `
-
 
 
 

@@ -1,4 +1,4 @@
-import { AuditInfo } from "./AuditInfo";
+import type { AuditInfo } from "./AuditInfo";
 
 export enum MovementType {
     Entry = 'in',

@@ -1,19 +1,18 @@
-import { useFormatPrice } from '../../../../../../../../../../hooks/useFormatPrice';
-import { formatPrice } from '../../../../../../../../../../utils/formatPrice';
+import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as antd from 'antd'
-import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { setAccountPayment } from '../../../../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectClient } from '../../../../../../../../../../features/clientCart/clientCartSlice';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
+import { formatPrice } from '../../../../../../../../../../utils/formatPrice';
+
+
 const { Button } = antd
 
 export function Payment({
   installments,
-  installmentAmount,
-  lastPayment,
-  lastPaymentDate,
   balance,
   isActive,
   account
@@ -100,12 +99,6 @@ const ProgressFill = styled.div`
   border-radius: 3px;
   width: ${({ $percentage }) => $percentage}%;
   transition: width 0.3s ease;
-`;
-
-const ProgressText = styled.span`
-  font-size: 11px;
-  color: #666;
-  font-weight: 500;
 `;
 
 const PaymentActions = styled.div`

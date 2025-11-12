@@ -1,5 +1,12 @@
 import ExcelJS from 'exceljs';
+
 import { useFormatPrice } from '../useFormatPrice';
+
+const ITEM_TYPE_LABELS = {
+    product: 'Producto',
+    service: 'Servicio',
+    combo: 'Combo',
+};
 
 export const ExportProducts = (products) => {
     // Crear una instancia de Workbook
@@ -16,11 +23,14 @@ export const ExportProducts = (products) => {
         { header: 'Contenido neto', key: 'netContent' },
         { header: 'Stock', key: 'stock' },
         { header: 'Impuesto', key: 'tax' },
+        { header: 'Tipo de ítem', key: 'itemType' },
         { header: 'Facturable', key: 'isVisible' },
         { header: 'Inventariable', key: 'trackInventory' },
         { header: 'Codigo de barras', key: 'barcode'},
         { header: 'Costo', key: 'cost' },
         { header: 'Precio de lista', key: 'listPrice' },
+        { header: 'Precio tarjeta', key: 'cardPrice' },
+        { header: 'Precio oferta', key: 'offerPrice' },
         { header: 'Precio mínimo', key: 'minimumPrice' },
         { header: 'Precio medio', key: 'averagePrice' },
     ];
@@ -44,11 +54,14 @@ export const ExportProducts = (products) => {
         product.netContent,
         product.stock,
         product.pricing.tax,
+        ITEM_TYPE_LABELS[product.itemType] || '',
         product.isVisible ? 'Sí' : 'No',
         product.trackInventory ? 'Sí' : 'No',
         product.barcode,
         useFormatPrice(product.pricing.cost),
         useFormatPrice(product.pricing?.listPrice),
+        useFormatPrice(product.pricing?.cardPrice),
+        useFormatPrice(product.pricing?.offerPrice),
         useFormatPrice(product.pricing?.minPrice),
         useFormatPrice(product.pricing?.avgPrice),
     ]);

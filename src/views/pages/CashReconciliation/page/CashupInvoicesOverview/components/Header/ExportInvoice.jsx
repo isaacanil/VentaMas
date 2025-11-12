@@ -1,12 +1,16 @@
-import styled from 'styled-components'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { message, Button, Dropdown } from 'antd'
 import { useState } from 'react'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../../../constants/icons/icons'
+import { createProfessionalReportCallback } from '../../../../../../../hooks/exportToExcel/exportConfig'
 import { formatBill } from '../../../../../../../hooks/exportToExcel/formatBill'
 import exportToExcel from '../../../../../../../hooks/exportToExcel/useExportToExcel'
-import { getBillExportCallback, createProfessionalReportCallback } from '../../../../../../../hooks/exportToExcel/exportConfig'
-import { message, Button, Dropdown } from 'antd'
-import { icons } from '../../../../../../../constants/icons/icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+
+
+
 
 export const ExportInvoice = ({ invoices = [] }) => {
     const [isExporting, setIsExporting] = useState(false)
@@ -29,7 +33,7 @@ export const ExportInvoice = ({ invoices = [] }) => {
             // Delay mínimo para mostrar el loading
             const exportPromise = (async () => {
                 switch (type) {
-                    case 'Resumen':
+                    case 'Resumen': {
                         const resumenCallback = createProfessionalReportCallback(
                             'Resumen', 
                             'REPORTE DE CONCILIACIÓN - RESUMEN'
@@ -41,7 +45,8 @@ export const ExportInvoice = ({ invoices = [] }) => {
                             resumenCallback
                         );
                         return 'El reporte resumen se ha generado correctamente';
-                    case 'Detailed':
+                    }
+                    case 'Detailed': {
                         const detailedCallback = createProfessionalReportCallback(
                             'Detailed', 
                             'REPORTE DE CONCILIACIÓN - DETALLE'
@@ -53,6 +58,7 @@ export const ExportInvoice = ({ invoices = [] }) => {
                             detailedCallback
                         );
                         return 'El reporte detallado se ha generado correctamente';
+                    }
                     default:
                         return 'Exportación completada';
                 }

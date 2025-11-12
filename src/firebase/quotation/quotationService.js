@@ -1,7 +1,9 @@
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { nanoid } from "nanoid";
+import { collection, doc, getDoc, getDocs, serverTimestamp, setDoc } from "firebase/firestore";
 import { DateTime } from "luxon";
+import { nanoid } from "nanoid";
+
+import { sanitizeFirestoreDocument } from "../../utils/firebase/sanitizeFirestoreDocument";
+import { db } from "../firebaseconfig";
 import { getNextID } from "../Tools/getNextID";
 
 function calculateExpirationDate(days) {
@@ -10,7 +12,7 @@ function calculateExpirationDate(days) {
 
 export async function getQuotations(user) {
     try {
-        const quotationsRef = doc(db, 'businesses', user.businessID, 'quotations');
+        const quotationsRef = collection(db, 'businesses', user.businessID, 'quotations');
         const quotationsSnapshot = await getDocs(quotationsRef);
         const quotations = quotationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         return quotations;
@@ -57,7 +59,9 @@ export async function addQuotation(user, quotationData, quotationSettings) {
             expirationDate: calculateExpirationDate(validityDays)
         };
 
-        await setDoc(quotationRef, data);
+        const sanitizedData = sanitizeFirestoreDocument(data);
+
+        await setDoc(quotationRef, sanitizedData);
 
         const quotation = await getQuotation(user, id);
 

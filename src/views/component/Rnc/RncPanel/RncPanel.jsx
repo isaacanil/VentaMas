@@ -1,8 +1,8 @@
-import styled from 'styled-components';
-import { DateTime } from 'luxon';
-import { Spin, Tag, Button, Modal } from 'antd';
 import { CheckCircleOutlined, WarningOutlined, StopOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Spin, Button, Modal } from 'antd';
+import { DateTime } from 'luxon';
 import { createElement, useState } from 'react';
+import styled from 'styled-components';
 
 const Panel = styled.div`
   padding: 24px;
@@ -68,17 +68,6 @@ const Field = styled.div`
   span {
     color: #262626;
     font-size: 14px;
-  }
-`;
-
-const StatusField = styled(Field)`
-  align-items: center;
-  
-  .status-btn {
-    margin-left: 8px;
-    padding: 0 8px;
-    height: 24px;
-    font-size: 12px;
   }
 `;
 

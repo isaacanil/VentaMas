@@ -1,15 +1,15 @@
+import { doc, getDocs, query, serverTimestamp, setDoc, where, or, collection, onSnapshot, getDoc, and, orderBy, Timestamp, limit } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
+import { useState, useEffect } from 'react';
+
+import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
+import { db } from '../firebaseconfig';
+
 import {
-  getAllProductStocks,
   createProductStock,
   updateProductStock,
-  deleteProductStock,
   getProductStockByBatch
 } from './productStockService';
-import { doc, getDocs, query, serverTimestamp, setDoc, where, or, collection, onSnapshot, getDoc, and, orderBy, Timestamp, limit } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
-import { useState, useEffect } from 'react';
-import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
 
 // Agregar funciones para crear y leer movimientos
 export const createMovementLog = async (

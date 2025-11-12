@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+
 import Typography from '../../../../../templates/system/Typografy/Typografy';
 
 // Hook para detectar tamaño de pantalla
-export const useIsMobile = () => {
+const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -19,52 +20,6 @@ export const useIsMobile = () => {
 
   return isMobile;
 };
-
-// Función para crear opciones base del gráfico
-export const createBaseChartOptions = (isMobile, customOptions = {}) => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      title: {
-        display: !isMobile,
-        text: customOptions.yAxisTitle || 'Valores',
-      },
-      ticks: {
-        font: {
-          size: isMobile ? 10 : 12,
-        }
-      }
-    },
-    x: {
-      title: {
-        display: !isMobile,
-        text: customOptions.xAxisTitle || 'Categorías',
-      },
-      ticks: {
-        font: {
-          size: isMobile ? 10 : 12,
-        },
-        maxRotation: isMobile ? 45 : 0,
-      }
-    },
-  },
-  plugins: {
-    legend: {
-      display: customOptions.showLegend !== false ? !isMobile : false,
-    },
-    tooltip: {
-      titleFont: {
-        size: isMobile ? 12 : 14,
-      },
-      bodyFont: {
-        size: isMobile ? 11 : 13,
-      }
-    }
-  },
-  ...customOptions.additionalOptions
-});
 
 // Componente base para gráficos
 export const BaseChartContainer = ({ title, children, height = '200px' }) => {

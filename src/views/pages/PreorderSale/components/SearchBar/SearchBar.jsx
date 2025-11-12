@@ -1,44 +1,61 @@
-// src/components/SearchBar.jsx
-import React from 'react';
+import { SearchOutlined } from '@ant-design/icons';
+import { Input, Select } from 'antd';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import Input from '../Input/Input';
 
-
-const SearchBarWrapper = styled.div`
-  position: relative;
-`;
-
-const StyledIcon = styled(FontAwesomeIcon)`
-  position: absolute;
-  left: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6B7280; /* text-muted-foreground */
-  height: 1rem;
-  width: 1rem;
+const FiltersWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 `;
 
 const StyledInput = styled(Input)`
-  padding-left: 2rem; /* pl-8 */
+  width: 320px;
+  min-width: 240px;
 `;
 
-const SearchBar = ({ searchTerm, onSearch }) => {
-  const handleChange = (e) => {
-    onSearch(e.target.value);
-  };
+const StyledSelect = styled(Select)`
+  width: 260px;
+  min-width: 200px;
+`;
+
+export const SearchBar = ({
+  searchTerm,
+  onSearch,
+  clients = [],
+  selectedClient,
+  onClientChange,
+}) => {
+  const enhancedOptions = useMemo(() => {
+    const baseOptions = clients.map(client => ({
+      value: client.value,
+      label: client.label,
+    }));
+    return [
+      { value: 'all', label: 'Todos los clientes' },
+      ...baseOptions,
+    ];
+  }, [clients]);
 
   return (
-    <SearchBarWrapper>
-      <StyledIcon icon={faSearch} />
+    <FiltersWrapper>
       <StyledInput
-        type="text"
-        placeholder="Buscar por cliente, ID o artículo..."
+        allowClear
         value={searchTerm}
-        onChange={handleChange}
+        onChange={(event) => onSearch(event.target.value)}
+        placeholder="Buscar preventa..."
+        prefix={<SearchOutlined />}
       />
-    </SearchBarWrapper>
+      <StyledSelect
+        showSearch
+        value={selectedClient}
+        onChange={onClientChange}
+        options={enhancedOptions}
+        placeholder="Filtrar por cliente"
+        optionFilterProp="label"
+        allowClear={false}
+      />
+    </FiltersWrapper>
   );
 };
 

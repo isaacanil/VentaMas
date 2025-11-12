@@ -1,8 +1,9 @@
-import { db } from "../firebaseconfig";
-import { selectUser } from "../../features/auth/userSlice";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { doc, onSnapshot } from "firebase/firestore";
+
+import { selectUser } from "../../features/auth/userSlice";
+import { db } from "../firebaseconfig";
 
 /**
  * Establece un listener para las categorías favoritas de un usuario.

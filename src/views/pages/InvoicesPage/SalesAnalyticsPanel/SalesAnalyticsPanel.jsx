@@ -1,17 +1,19 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
+
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import { Button } from '../../../templates/system/Button/Button';
+import Typography from '../../../templates/system/Typografy/Typografy';
+
 import { DailySalesBarChart } from './components/Bars/DailySalesBarChart/DailySalesBarChart';
-import { ProductCategorySalesBarChart } from './components/Bars/ProductCategorySalesBarChart/ProductCategorySalesBarChart';
+import { DiscountsGivenBarChart } from './components/Bars/DiscountsGivenBarChart/DiscountsGivenBarChart';
 import { ItemsSoldBarChart } from './components/Bars/ItemsSoldBarChart/ItemsSoldBarChart';
 import { PaymentMethodBarChart } from './components/Bars/PaymentMethodBarChart/PaymentMethodBarChart';
-import { TaxedSalesStackedBarChart } from './components/Bars/TaxedSalesStackedBarChart/TaxedSalesStackedBarChart';
+import { ProductCategorySalesBarChart } from './components/Bars/ProductCategorySalesBarChart/ProductCategorySalesBarChart';
 import { PurchaseTypeBarChart } from './components/Bars/PurchaseTypeBarChart/PurchaseTypeBarChart';
-import { DiscountsGivenBarChart } from './components/Bars/DiscountsGivenBarChart/DiscountsGivenBarChart';
+import { TaxedSalesStackedBarChart } from './components/Bars/TaxedSalesStackedBarChart/TaxedSalesStackedBarChart';
 import { TotalSalesPerCustomerChart } from './components/Bars/TotalSalesPerCustomerChart/TotalSalesPerCustomerChart';
-import { AnimatePresence, motion } from 'framer-motion';
-import Typography from '../../../templates/system/Typografy/Typografy';
-import { Button } from '../../../templates/system/Button/Button';
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { CustomerSalesReportTable } from './components/Table/CustomerSalesReportTable';
 
 // Hook para detectar tamaño de pantalla

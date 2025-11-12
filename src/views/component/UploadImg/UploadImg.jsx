@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { ChangeProductImage, selectUpdateProductData } from '../../../features/updateProduct/updateProductSlice'
-import { Header } from './components/Header/Header'
-import { Body } from './components/Body/Body'
-import { fbGetProductsImg } from '../../../firebase/products/productsImg/fbGetProductsImg'
+import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
 import { selectUser } from '../../../features/auth/userSlice'
-export const UploadImg = ({ isOpen, setIsOpen, fnAddImg }) => {
-    const { status, product } = useSelector(selectUpdateProductData)
-    const [img, setImg] = useState(product?.productImageURL)
+import { fbGetProductsImg } from '../../../firebase/products/productsImg/fbGetProductsImg'
+
+import { Body } from './components/Body/Body'
+import { Header } from './components/Header/Header'
+
+export const UploadImg = ({ isOpen, setIsOpen }) => {
     const [ImgToUpload, setImgToUpload] = useState(null)
     const [images, setImages] = useState([])
     const user = useSelector(selectUser)
@@ -53,4 +53,3 @@ const Container = styled.div`
     z-index: 1;
     grid-template-rows: min-content 1fr;
 `
-

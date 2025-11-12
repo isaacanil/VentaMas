@@ -1,10 +1,11 @@
+import { faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { DatePicker as AntdDatePicker } from "antd"; // Importamos como AntdDatePicker
+import dayjs from "dayjs";
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import dayjs from "dayjs";
-import { DatePicker as AntdDatePicker } from "antd"; // Importamos como AntdDatePicker
+
 import { Button } from "../../Button/Button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
 import { DateRangeFilter } from "../../Button/TimeFilterButton/DateRangeFilter";
 
 const { RangePicker } = AntdDatePicker;

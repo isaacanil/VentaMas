@@ -1,5 +1,3 @@
-import { nanoid } from 'nanoid'; // Importación correcta de nanoid
-import { db } from '../firebaseconfig';
 import {
   collection,
   getDocs,
@@ -12,9 +10,13 @@ import {
   where,
   getDoc,
 } from 'firebase/firestore';
+import { nanoid } from 'nanoid'; // Importación correcta de nanoid
 import { useEffect, useMemo, useState } from 'react';
-import { selectUser } from '../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
+
 import { deleteAllProductStocksByBatch } from './productStockService';
 
 // Obtener referencia de la colección de batches para un negocio específico

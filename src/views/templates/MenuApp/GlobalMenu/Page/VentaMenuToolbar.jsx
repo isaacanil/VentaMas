@@ -1,70 +1,30 @@
+import { faCompress, faExpand } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCompress, faExpand, faHeading, faImage, faListAlt } from '@fortawesome/free-solid-svg-icons'
-import { handleImageHidden, handleRowMode, selectCategoryGrouped, selectFullScreen, selectImageHidden, selectIsRow, toggleCategoryGrouped, toggleFullScreen } from '../../../../../features/setting/settingSlice'
-import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
-import ROUTES_NAME from '../../../../../routes/routesName'
+import { useMatch } from 'react-router-dom'
+import styled from 'styled-components'
+
 import { icons } from '../../../../../constants/icons/icons'
-import { useLocation, useMatch, useNavigate } from 'react-router-dom'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { selectFullScreen, toggleFullScreen } from '../../../../../features/setting/settingSlice'
 import { useAppNavigation } from '../../../../../hooks/useAppNavigation'
+import ROUTES_NAME from '../../../../../routes/routesName'
 import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort'
-import { toggleTheme } from '../../../../../features/theme/themeSlice'
 import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu'
 
 export const VentaMenuToolbar = ({ side = 'left' }) => {
     const navigation = useAppNavigation();
     const dispatch = useDispatch()
-    const location = useLocation()
-    const ImageHidden = useSelector(selectImageHidden)
-    const viewRowModeRef = useSelector(selectIsRow)
-    const categoryGrouped = useSelector(selectCategoryGrouped)
+    const user = useSelector(selectUser)
     const FullScreen = useSelector(selectFullScreen)
     const { SALES } = ROUTES_NAME.SALES_TERM
     const matchWithVenta = useMatch(SALES)
 
-    const handleImageHiddenFN = () => dispatch(handleImageHidden())
-
     const handleFullScreenFN = () => dispatch(toggleFullScreen())
-
-    const handleRowModeFN = () => dispatch(handleRowMode())
-
-    const handleCategoryGroupedFN = () => dispatch(toggleCategoryGrouped())
 
     const handleSettings = () => {
         navigation.setting()
     };
-
-    const savedTheme = localStorage.getItem('theme');
-    const handleThemeModeFN = () => dispatch(toggleTheme());
-
-    const options = [
-        {
-            text: categoryGrouped ? 'Desagrupar Productos' : 'Agrupar por Categoría',
-            description: categoryGrouped ? 'Productos en lista individual.' : 'Productos agrupados por categoría.',
-            icon: <FontAwesomeIcon icon={faHeading} />,
-            action: () => handleCategoryGroupedFN()
-        },
-        {
-            text: viewRowModeRef ? 'Vista Compacta' : 'Vista Detallada',
-            description: viewRowModeRef ? 'Productos en tarjetas.' : 'Productos en lista.',
-            icon: <FontAwesomeIcon icon={faListAlt} />,
-            action: () => handleRowModeFN()
-        },
-        {
-            text: ImageHidden ? 'Mostrar Imágenes' : 'Ocultar Imágenes',
-            description: ImageHidden ? 'Ver imágenes de productos.' : 'Ocultar imágenes de productos.',
-            icon: <FontAwesomeIcon icon={faImage} />,
-            action: () => handleImageHiddenFN()
-        },
-
-        // user?.role === 'dev' ?
-        //     {
-        //         text: savedTheme ? 'Cambiar a modo Claro' : 'Cambiar a modo Oscuro',
-        //         description: savedTheme ? 'Cambiar a modo Claro' : 'Cambiar a modo Oscuro',
-        //         icon: <FontAwesomeIcon icon={faImage} />,
-        //         action: () => handleThemeModeFN()
-        //     } : null
-    ];
 
 
     return (
@@ -78,11 +38,13 @@ export const VentaMenuToolbar = ({ side = 'left' }) => {
                                 icon={FullScreen ? <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpand} />}
                                 onClick={() => handleFullScreenFN()}
                             />
-                            <ButtonIconMenu
-                                icon={icons.operationModes.setting}
-                                onClick={handleSettings}
-                                tooltipDescription={'Configuración'}
-                            />
+                            {user?.role !== 'cashier' && (
+                                <ButtonIconMenu
+                                    icon={icons.operationModes.setting}
+                                    onClick={handleSettings}
+                                    tooltipDescription={'Configuración'}
+                                />
+                            )}
                             {/* <DropdownMenu
                                 title={icons.operationModes.setting}
                                 options={options}
@@ -99,6 +61,7 @@ export const VentaMenuToolbar = ({ side = 'left' }) => {
                             tooltip={'Filtrar y Ordenar'}
                             tooltipDescription={'Filtrar y Ordenar'}
                             tooltipPlacement={'bottom-start'}
+                            contextKey='sales'
                         />
                     )
 

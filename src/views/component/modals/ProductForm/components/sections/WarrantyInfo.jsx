@@ -1,25 +1,10 @@
-import React from 'react'
 import * as ant from 'antd'
+import React from 'react'
 import styled from 'styled-components'
-const { Card, Space, InputNumber, Form, Checkbox, Select, Col, Row } = ant
-export const warrantyOptions = [
-    {
-        value: 'days',
-        label: 'Días'
-    },
-    {
-        value: 'weeks',
-        label: 'Semanas'
-    },
-    {
-        value: 'months',
-        label: 'Meses'
-    },
-    {
-        value: 'years',
-        label: 'Años'
-    }
-]
+
+import { warrantyOptions } from './warranty.helpers'
+
+const { Card, InputNumber, Form, Checkbox, Select } = ant
 export const WarrantyInfo = () => {
     
     return (
@@ -87,30 +72,3 @@ const Group = styled.div`
     grid-template-columns: 1fr 1fr;
     gap: 0.4em;
 `
-
-// Objeto para mapear las unidades en inglés a español
-const unidades = {
-    day: 'día',
-    days: 'días',
-    week: 'semana',
-    weeks: 'semanas',
-    month: 'mes',
-    months: 'meses',
-    year: 'año',
-    years: 'años'
-};
-
-export function convertTimeToSpanish(cantidad, unidad) {
-    let resultado = '';
-
-    // Verificamos si la unidad está en el objeto y obtenemos su equivalente en español
-    const unidadEnEspañol = unidades[unidad.toLowerCase()];
-
-    if (unidadEnEspañol) {
-        resultado = cantidad === 1 ? `1 ${unidadEnEspañol}` : `${cantidad} ${unidadEnEspañol}`;
-    } else {
-        resultado = 'Unidad no reconocida';
-    }
-
-    return resultado;
-}

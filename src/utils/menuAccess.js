@@ -10,6 +10,7 @@ import { isHiddenInMenu, getRouteMeta } from '../routes/routeVisibility';
  */
 export const filterMenuItemsByAccess = (menuItems, hasSubmenu = false) => {
   const { abilities } = userAccess();
+  const developerAccess = abilities?.can('developerAccess', 'all');
   
   if (!hasSubmenu) {
     // Elementos de menú planos (como en CardData.jsx)
@@ -25,6 +26,7 @@ export const filterMenuItemsByAccess = (menuItems, hasSubmenu = false) => {
   // Elementos de menú complejos con submenús (como en MenuData.jsx)
   const filterSubmenu = (submenu) => 
     submenu
+      .filter(subItem => !(subItem?.requiresDevAccess && !developerAccess))
       .filter(subItem => abilities.can('access', subItem.route))
       .filter(subItem => !isHiddenInMenu(subItem.route, subItem))
       .map(subItem => {
@@ -33,6 +35,9 @@ export const filterMenuItemsByAccess = (menuItems, hasSubmenu = false) => {
       });
 
   return menuItems.map(item => {
+    if (item?.requiresDevAccess && !developerAccess) {
+      return null;
+    }
     if (item.submenu && item.submenu.length > 0) {
       const filteredSubmenu = filterSubmenu(item.submenu);
       if (filteredSubmenu.length > 0) {

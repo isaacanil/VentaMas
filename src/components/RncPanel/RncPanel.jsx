@@ -1,7 +1,7 @@
 
-import styled from 'styled-components';
-import { DateTime } from 'luxon';
 import { Spin } from 'antd';
+import { DateTime } from 'luxon';
+import styled from 'styled-components';
 
 export const RncPanel = ({ rncInfo, loading }) => {
   if (!rncInfo && !loading) return null;

@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
-import styled from 'styled-components';
-import { Card, Table, Button } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Table, Button } from 'antd';
+import React, { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import styled from 'styled-components';
 
 const Container = styled.div`
   max-width: 50rem;
@@ -81,17 +81,6 @@ const TotalRow = styled.div`
   }
 `;
 
-
-const BoldText = styled.p`
-  font-weight: bold;
-  font-size: 14px;
-`;
-
-const Title = styled.h1`
-  text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-`;
 
 const columns = [
   {

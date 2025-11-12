@@ -1,8 +1,8 @@
-import { Bar } from 'react-chartjs-2';
-import React, { useEffect, useMemo } from 'react';
-import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js";
+import React from 'react';
 import styled from 'styled-components';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
+
 import { GenericCustomerSalesChart } from './Bars/GenericCustomerSalesChart';
 import { TopSpendingCustomersChart } from './Bars/TopSpendingCustomersChart';
 

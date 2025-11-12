@@ -1,14 +1,15 @@
-import { nanoid } from 'nanoid';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { toggleAddCategory } from '../../../../features/modals/modalSlice';
+
 import { selectUser } from '../../../../features/auth/userSlice';
-import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
-import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
+import { toggleAddCategory } from '../../../../features/modals/modalSlice';
 import { addNotification } from '../../../../features/notification/notificationSlice';
-import { InputV4 } from '../../../templates/system/Inputs/InputV4';
-import { motion } from 'framer-motion';
+import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
+import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
+import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
+
 
 const OverlayVariants = {
   open: {

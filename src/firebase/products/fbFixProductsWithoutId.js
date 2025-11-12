@@ -1,4 +1,5 @@
-import { collection, doc, getDocs, query, where, writeBatch } from "firebase/firestore";
+import { collection, doc, getDocs, query, writeBatch } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export async function fbFixProductsWithoutId(user) {

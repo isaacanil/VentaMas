@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Card, Form, Input, Select, InputNumber, Button, Row, Col, DatePicker, message } from 'antd';
 import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Select, InputNumber, Button, Row, Col, DatePicker, message } from 'antd';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import ROUTES_NAME from '../../../../routes/routesName';
 
 const { Option } = Select;
@@ -19,7 +20,7 @@ export const CreditNoteCreate = () => {
     { id: 3, name: 'Empresa ABC', rncCedula: '111222333' }
   ];
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async () => {
     setLoading(true);
     try {
       // Aquí iría la lógica para guardar la nota de crédito
@@ -31,6 +32,7 @@ export const CreditNoteCreate = () => {
       message.success('Nota de crédito creada exitosamente');
       navigate(CREDIT_NOTE_LIST);
     } catch (error) {
+      console.error(error);
       message.error('Error al crear la nota de crédito');
     } finally {
       setLoading(false);

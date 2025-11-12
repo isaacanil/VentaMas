@@ -1,4 +1,5 @@
 import { css } from "styled-components";
+
 import palette from "../../../../../theme/colors/light/Palette";
 
 palette.colors

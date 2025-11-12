@@ -1,47 +1,48 @@
 import React from 'react';
 import styled from 'styled-components';
-import AccountsReceivableWidget from '../components/AccountsReceivableWidget';
+
+import AccountsReceivablePanel from '../components/panels/AccountsReceivablePanel';
 
 /**
- * Página de prueba para el widget de Cuentas por Cobrar
- * Úsala para verificar que el widget funciona correctamente
+ * Página de prueba para el panel de Cuentas por Cobrar
+ * Úsala para verificar que el panel funciona correctamente
  */
 const AccountsReceivableTestPage = () => {
   return (
     <TestContainer>
       <TestHeader>
-        <h1>Widget de Cuentas por Cobrar - Prueba</h1>
-        <p>Esta página te permite probar el nuevo widget de cuentas por cobrar próximas a vencer.</p>
+        <h1>Panel de Cuentas por Cobrar - Prueba</h1>
+        <p>Esta página te permite probar el nuevo panel de cuentas por cobrar próximas a vencer.</p>
       </TestHeader>
       
       <TestSection>
-        <h2>Widget sin estadísticas rápidas (7 días)</h2>
-        <WidgetWrapper>
-          <AccountsReceivableWidget 
+        <h2>Panel sin estadísticas rápidas (7 días)</h2>
+        <PanelWrapper>
+          <AccountsReceivablePanel 
             showQuickStats={false} 
             daysThreshold={7} 
           />
-        </WidgetWrapper>
+        </PanelWrapper>
       </TestSection>
       
       <TestSection>
-        <h2>Widget con estadísticas rápidas (14 días)</h2>
-        <WidgetWrapper>
-          <AccountsReceivableWidget 
+        <h2>Panel con estadísticas rápidas (14 días)</h2>
+        <PanelWrapper>
+          <AccountsReceivablePanel 
             showQuickStats={true} 
             daysThreshold={14} 
           />
-        </WidgetWrapper>
+        </PanelWrapper>
       </TestSection>
       
       <TestSection>
-        <h2>Widget con alertas de 30 días</h2>
-        <WidgetWrapper>
-          <AccountsReceivableWidget 
+        <h2>Panel con alertas de 30 días</h2>
+        <PanelWrapper>
+          <AccountsReceivablePanel 
             showQuickStats={true} 
             daysThreshold={30} 
           />
-        </WidgetWrapper>
+        </PanelWrapper>
       </TestSection>
     </TestContainer>
   );
@@ -81,7 +82,7 @@ const TestSection = styled.div`
   }
 `;
 
-const WidgetWrapper = styled.div`
+const PanelWrapper = styled.div`
   max-width: 400px;
   margin: 0 auto;
 `;

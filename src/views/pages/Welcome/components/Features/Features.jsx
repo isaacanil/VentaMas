@@ -1,8 +1,9 @@
+import * as Icons from '@ant-design/icons'
+import { Card, Row, Col, Typography } from 'antd'
+import { motion } from 'framer-motion'
 import React from 'react'
 import styled from 'styled-components'
-import { motion } from 'framer-motion'
-import { Card, Row, Col, Typography } from 'antd'
-import * as Icons from '@ant-design/icons'
+
 import welcomeData from '../../WelcomeData.json'
 
 const { Title, Paragraph } = Typography;
@@ -60,7 +61,7 @@ const Features = () => {
         </HeaderSection>
 
         <Row gutter={[24, 24]}>
-          {welcomeData.features.map((feature, index) => (
+          {welcomeData.features.map((feature) => (
             <Col xs={24} sm={12} lg={8} key={feature.id}>
               <FeatureCard
                 variants={item}

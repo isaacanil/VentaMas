@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react'
-import styled from 'styled-components'
-import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import { BusinessCard } from './components/BusinessCard/BusinessCard'
-import { BusinessEditModal } from '../BusinessEditModal/BusinessEditModal'
-import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer'
-import { Input, Button, Typography, Divider, Select } from 'antd'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faChevronLeft, 
   faChevronRight, 
   faFilter, 
   faSearch,
-  faMapMarkerAlt,
-  faGlobe,
-  faStoreAlt,
-  faBuilding,
-  faCalendarAlt,
-  faSortAmountDown,
-  faSortAmountUp
+  faStoreAlt
 } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Input, Button } from 'antd'
+import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
+
+import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses'
+import { MenuApp } from '../../templates/MenuApp/MenuApp'
+import { BusinessEditModal } from '../BusinessEditModal/BusinessEditModal'
+
+import { BusinessCard } from './components/BusinessCard/BusinessCard'
+import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer'
 
 export const BusinessControl = () => {
   const [businesses, setBusinesses] = useState([])
@@ -281,10 +277,6 @@ const Container = styled.div`
 `
 const Head = styled.div``
 
-const SearchContainer = styled.div`
-  padding: 10px;
-  width: 300px;
-`
 
 const SearchAndFilterContainer = styled.div`
   display: flex;
@@ -297,19 +289,6 @@ const SearchInputWrapper = styled.div`
   width: 300px;
 `
 
-const FiltersPanel = styled.div`
-  padding: 0 10px 10px 10px;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #e8e8e8;
-`
-
-const FilterLabel = styled.div`
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #595959;
-  display: flex;
-  align-items: center;
-`
 
 const Body = styled.div`
   display: grid;

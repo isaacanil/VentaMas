@@ -1,9 +1,12 @@
-import { Form, Input, InputNumber, DatePicker, Statistic, Button, message, Tooltip } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Form, Input, InputNumber, DatePicker, Statistic, Button, message, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
 import { icons } from '../../../../../constants/icons/icons';
+import { selectUser } from '../../../../../features/auth/userSlice';
 import { 
   SelectProduct, 
   SelectProductSelected, 
@@ -11,12 +14,12 @@ import {
   setPurchaseQuantity, 
   clearSelectedBackOrders 
 } from '../../../../../features/purchase/addPurchaseSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import ProductModal from './ProductModal';
-import BackOrdersModal from './BackOrdersModal';
-import { formatMoney } from '../../../../../utils/formatters';
 import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { formatMoney } from '../../../../../utils/formatters';
+import ProductModal from '../../shared/ProductModal';
+
+import BackOrdersModal from './BackOrdersModal';
+
 
 function AddProductForm({ onSave, onClear }) {
   const dispatch = useDispatch();
@@ -44,7 +47,7 @@ function AddProductForm({ onSave, onClear }) {
     }
   };
 
-  const calculateCosts = () => {
+  const calculateCosts = (overrideQuantity) => {
     const values = form.getFieldsValue();
     const baseCost = Number(values.baseCost) || 0;
     const taxPercent = Number(values.taxPercentage) || 0;
@@ -57,8 +60,11 @@ function AddProductForm({ onSave, onClear }) {
     const newUnitCost = baseCost + calculatedTax + freight + otherCosts;
     setUnitCost(newUnitCost);
     
-    const quantity = selectedProduct?.purchaseQuantity || 0;
-    setSubtotal(newUnitCost * quantity);
+    const quantitySource = typeof overrideQuantity === 'number' && Number.isFinite(overrideQuantity)
+      ? overrideQuantity
+      : selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity ?? 0;
+    const effectiveQuantity = Math.max(0, Number(quantitySource) || 0);
+    setSubtotal(newUnitCost * effectiveQuantity);
   };
 
   const handleSubmit = async () => {
@@ -139,8 +145,11 @@ function AddProductForm({ onSave, onClear }) {
   };
 
   const handleQuantityChange = (value) => {
-    dispatch(setPurchaseQuantity(value || 0));
-    calculateCosts();
+    const normalizedValue = Number(value);
+    const safeValue = Number.isFinite(normalizedValue) ? normalizedValue : 0;
+    dispatch(setPurchaseQuantity(safeValue));
+    form.setFieldsValue({ quantity: safeValue });
+    calculateCosts(safeValue);
   };
 
   useEffect(() => {
@@ -151,9 +160,9 @@ function AddProductForm({ onSave, onClear }) {
     if (selectedProduct) {
       form.setFieldsValue({
         name: selectedProduct.name,
-        quantity: selectedProduct.quantity, 
+        quantity: selectedProduct.purchaseQuantity ?? selectedProduct.quantity, 
       });
-      calculateCosts();
+      calculateCosts(selectedProduct.purchaseQuantity ?? selectedProduct.quantity ?? 0);
     }
 
   }, [selectedProduct]);
@@ -163,7 +172,7 @@ function AddProductForm({ onSave, onClear }) {
     <RowContainer>
       <Form
         form={form}
-        layout="horizontal"
+        layout="vertical"
       >
         <FieldsRow>
           <Tooltip title='Nombre del Producto'>
@@ -202,7 +211,7 @@ function AddProductForm({ onSave, onClear }) {
                 controls={false}
                 disabled={!isProductSelected || isLoadingBackOrders}
                 placeholder="Cantidad"
-                value={selectedProduct?.quantity}
+                value={selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity}
                 onChange={handleQuantityChange}
                 onClick={handleQuantityClick}
                 style={{ cursor: isProductSelected && !isLoadingBackOrders ? 'pointer' : 'not-allowed' }}
@@ -217,6 +226,18 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
+          <Tooltip title='Unidad de Medida'>
+            <StyledFormItem
+              name="unitMeasurement"
+              label="Unid. Medida"
+              rules={[{ required: isProductSelected }]}
+            >
+              <Input
+                placeholder="Unidad"
+                disabled={!isProductSelected}
+              />
+            </StyledFormItem>
+          </Tooltip>
 
           <Tooltip title='Costo Base'>
             <StyledFormItem
@@ -337,6 +358,7 @@ const FieldsRow = styled.div`
     1.2fr 
     100px 
     min-content 
+    120px 
     105px 
     min-content  
     min-content 
@@ -383,7 +405,8 @@ const StyledFormItem = styled(Form.Item)`
   
   .ant-form-item-label {
     display: flex;
-    align-items: end;
+    align-items: flex-start;
+    padding-bottom: 4px;
   }
 
   .ant-form-item-control {

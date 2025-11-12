@@ -1,11 +1,11 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { initialState, defaultDelivery } from "./default/default";
-import { GenericClient } from "../clientCart/clientCartSlice";
-import { roundDecimals } from "../../utils/pricing";
+import { createSlice, createSelector } from "@reduxjs/toolkit";
 import { nanoid } from "nanoid";
-import { updateAllTotals } from "./utils/updateAllTotals";
 
-const calculateChange = (payment, totalPurchase) => (payment - totalPurchase);
+import { roundDecimals } from "../../utils/pricing";
+import { GenericClient } from "../clientCart/clientCartSlice";
+
+import { initialState, defaultDelivery } from "./default/default";
+import { updateAllTotals } from "./utils/updateAllTotals";
 
 export const cartSlice = createSlice({
     name: 'factura',
@@ -18,7 +18,39 @@ export const cartSlice = createSlice({
         loadCart: (state, actions) => {
             const cart = actions.payload;
             if (cart?.id) {
-                state.data = cart;
+                // Convert Firestore Timestamps to milliseconds for serialization
+                const processedCart = { ...cart };
+                
+                // Convert preorderDetails.date if it exists
+                if (processedCart.preorderDetails?.date) {
+                    const date = processedCart.preorderDetails.date;
+                    // Check if it's a Firestore Timestamp (has seconds and nanoseconds)
+                    if (date.seconds !== undefined && date.nanoseconds !== undefined) {
+                        processedCart.preorderDetails = {
+                            ...processedCart.preorderDetails,
+                            date: date.seconds * 1000 // Convert to milliseconds
+                        };
+                    }
+                }
+                
+                // Convert history array dates if they exist
+                if (processedCart.history && Array.isArray(processedCart.history)) {
+                    processedCart.history = processedCart.history.map(historyItem => {
+                        if (historyItem?.date) {
+                            const date = historyItem.date;
+                            // Check if it's a Firestore Timestamp
+                            if (date.seconds !== undefined && date.nanoseconds !== undefined) {
+                                return {
+                                    ...historyItem,
+                                    date: date.seconds * 1000 // Convert to milliseconds
+                                };
+                            }
+                        }
+                        return historyItem;
+                    });
+                }
+                
+                state.data = processedCart;
             }
 
         },
@@ -165,6 +197,9 @@ export const cartSlice = createSlice({
                     checkingID.productStockId = product.productStockId;
                     checkingID.batchId = product.batchId;
                     checkingID.stock = product.stock;
+                    if (product.batchInfo) {
+                        checkingID.batchInfo = product.batchInfo;
+                    }
                     checkingID.amountToBuy += 1;
                 }
 
@@ -249,6 +284,17 @@ export const cartSlice = createSlice({
             const value = action.payload;
             state.data.discount.value = Number(value);
         },
+        setDiscountAuthorizationContext: (state, action) => {
+            if (!state.data.authorizationContext) {
+                state.data.authorizationContext = {};
+            }
+            state.data.authorizationContext.discount = action.payload || null;
+        },
+        clearDiscountAuthorizationContext: (state) => {
+            if (state.data.authorizationContext) {
+                state.data.authorizationContext.discount = null;
+            }
+        },
         addSourceOfPurchase: (state, actions) => {
             const source = actions.payload
             state.data.sourceOfPurchase = source
@@ -286,7 +332,33 @@ export const cartSlice = createSlice({
                     }
                 });
             }
-        },        recalcTotals: (state, action) => {
+        },
+        applyPricingPreset: (state, action) => {
+            const { priceKey } = action.payload || {};
+            if (!priceKey) return;
+
+            const applyPrice = (pricing) => {
+                if (!pricing) return false;
+                const candidate = Number(pricing?.[priceKey]);
+                if (Number.isFinite(candidate) && candidate > 0) {
+                    pricing.price = candidate;
+                    return true;
+                }
+                return false;
+            };
+
+            state.data.products.forEach(product => {
+                if (!product) return;
+                const { pricing = {}, selectedSaleUnit } = product;
+                applyPrice(pricing);
+                if (selectedSaleUnit?.pricing) {
+                    applyPrice(selectedSaleUnit.pricing);
+                }
+            });
+
+            updateAllTotals(state);
+        },
+        recalcTotals: (state, action) => {
             const paymentValue = action.payload !== undefined && action.payload !== null ? Number(action.payload) : undefined;
             updateAllTotals(state, paymentValue);
             
@@ -397,6 +469,8 @@ export const {
     setPaymentAmount,
     addPaymentMethod,
     addDiscount,
+    setDiscountAuthorizationContext,
+    clearDiscountAuthorizationContext,
     addPaymentMethodAutoValue,
     togglePrintWarranty,
     addProduct,
@@ -429,6 +503,7 @@ export const {
     setDefaultClient,
     setBillingSettings,
     updateProductInsurance,
+    applyPricingPreset,
     recalcTotals,
     updateInsuranceStatus,
     addInvoiceComment,
@@ -452,7 +527,7 @@ export const SelectSourceOfPurchase = (state) => state.cart.data.sourceOfPurchas
 export const SelectPaymentValue = (state) => state.cart.data.payment.value;
 export const SelectDiscount = (state) => state.cart.data.discount.value;
 export const SelectNCF = (state) => state.cart.data.NCF;
-export const SelectCartPermission = () => state.cart.permission
+export const SelectCartPermission = (state) => state.cart.permission;
 export const SelectCartIsOpen = (state) => state.cart.isOpen
 export const SelectCartData = (state) => state.cart.data
 export const SelectInvoiceComment = (state) => state.cart.data.invoiceComment
@@ -460,38 +535,31 @@ export const SelectSettingCart = (state) => state.cart.settings
 export const SelectCxcAutoRemovalNotification = (state) => state.cart.showCxcAutoRemovalNotification
 export const selectCart = (state) => state.cart
 export const selectInsuranceEnabled = (state) => state.cart.data.insuranceEnabled;
-export const selectProductsWithIndividualDiscounts = (state) => 
-    state.cart.data.products.filter(product => product.discount && product.discount.value > 0);
-export const selectTotalIndividualDiscounts = (state) => {
-    const products = state.cart.data.products;
-    const taxReceiptEnabled = state.taxReceipt?.enabled ?? true;
-    
-    return products.reduce((total, product) => {
-        if (product.discount && product.discount.value > 0) {
+export const selectProductsWithIndividualDiscounts = createSelector(
+    [(state) => state.cart.data.products],
+    (products = []) => products.filter(product => product.discount && product.discount.value > 0)
+);
+
+export const selectTotalIndividualDiscounts = createSelector(
+    [selectProductsWithIndividualDiscounts, (state) => state.taxReceipt?.enabled ?? true],
+    (discountedProducts, taxReceiptEnabled) =>
+        discountedProducts.reduce((total, product) => {
             const productPrice = product.pricing?.price || product.price || 0;
             const taxPercentage = Number(product.pricing?.tax) || 0;
             const quantity = product.amountToBuy || 1;
-            
-            // Precio unitario con impuestos
-            const unitPriceWithTax = taxReceiptEnabled ? 
-                productPrice * (1 + taxPercentage / 100) : 
-                productPrice;
+
+            const unitPriceWithTax = taxReceiptEnabled
+                ? productPrice * (1 + taxPercentage / 100)
+                : productPrice;
             const totalPriceWithTax = unitPriceWithTax * quantity;
-            
-            let discountAmount = 0;
-            
+
             if (product.discount.type === 'percentage') {
-                discountAmount = totalPriceWithTax * (product.discount.value / 100);
-            } else {
-                // Para monto fijo, el descuento ya considera impuestos
-                discountAmount = product.discount.value;
+                return total + totalPriceWithTax * (product.discount.value / 100);
             }
-            
-            return total + discountAmount;
-        }
-        return total;
-    }, 0);
-};
+
+            return total + product.discount.value;
+        }, 0)
+);
 
 export const selectCreditNotePayment = (state) => state.cart.data.creditNotePayment;
 export const selectTotalCreditNotePayment = (state) => 

@@ -1,5 +1,5 @@
+import { faAsterisk, faBeer, faBottleWater, faCoffee, faGlassWater, faIceCream, faPizzaSlice } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAssistiveListeningSystems, faAsterisk, faBeer, faBottleWater, faCoffee, faGlassMartini, faGlassWater, faIceCream, faPizzaSlice } from '@fortawesome/free-solid-svg-icons';
 
 const keywords = [
   { words: ['cafe', 'café', 'coffee', 'cafes'], icon: faCoffee },

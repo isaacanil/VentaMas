@@ -1,4 +1,3 @@
-import React from 'react'
 import styled from 'styled-components'
 
 export const Collection = () => {
@@ -7,7 +6,7 @@ export const Collection = () => {
     }
   return (
     <Container>
-        <button onClick={handleClick}>Click</button>
+        <Button onClick={handleClick}>Click</Button>
     </Container>
   )
 }
@@ -19,6 +18,6 @@ const Container = styled.div`
     align-items: center;
 `
 const Button = styled.button`
-    padding: 1em;
-    height: 2em;
+  padding: 1em;
+  height: 2em;
 `

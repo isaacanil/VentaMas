@@ -1,16 +1,8 @@
 
 import { getDiscount, money, getProductsIndividualDiscounts, hasIndividualDiscounts } from "../utils/formatters.js";
 
-/* Mapeo a texto de los métodos de pago */
-const PAYMENT_METHODS = {
-  cash:     'Efectivo',
-  transfer: 'Transferencia',
-  card:     'Tarjeta',
-  creditNote: 'Nota de Crédito'
-};
-
 export function buildFooter(biz, d) {
-  return (current, total) => {
+  return (currentPage, pageCount) => {
     /* Calcular descuentos */
     const individualDiscounts = getProductsIndividualDiscounts(d.products || []);
     const hasIndividualDisc = hasIndividualDiscounts(d.products || []);
@@ -18,8 +10,8 @@ export function buildFooter(biz, d) {
 
     /* Tabla de totales */
     const totalsBody = [
-      ['Sub-Total:', { text: money(d.totalPurchaseWithoutTaxes.value), style: 'totalsValue', margin: [0, 0] }],
-      ['ITBIS:',     { text: money(d.totalTaxes.value),                style: 'totalsValue', margin: [0, 0] }],
+      ['Sub-Total:', { text: money(d.totalPurchaseWithoutTaxes?.value ?? 0), style: 'totalsValue', margin: [0, 0] }],
+      ['ITBIS:',     { text: money(d.totalTaxes?.value ?? 0),                style: 'totalsValue', margin: [0, 0] }],
       !hasIndividualDisc && d.discount?.value && [
         'Descuento General:', { text: `-${money(generalDiscount)}`, style: 'totalsValue', margin: [0, 0] }
       ],
@@ -27,11 +19,11 @@ export function buildFooter(biz, d) {
         'Descuentos Productos:', { text: `-${money(individualDiscounts)}`, style: 'totalsValue', margin: [0, 0] }
       ],
       d.delivery?.status && [
-        'Delivery:', { text: money(d.delivery.value), style: 'totalsValue', margin: [0, 0] }
+        'Delivery:', { text: money(d.delivery?.value ?? 0), style: 'totalsValue', margin: [0, 0] }
       ],
       [
         { text: 'Total:', bold: true, margin: [0, 4, 0, 2] },
-        { text: money(d.totalPurchase.value), style: 'totalsValue', bold: true, margin: [0, 4, 0, 2] }
+        { text: money(d.totalPurchase?.value ?? 0), style: 'totalsValue', bold: true, margin: [0, 4, 0, 2] }
       ]
     ].filter(Boolean);
 
@@ -51,7 +43,13 @@ export function buildFooter(biz, d) {
             }
           ]
         },
-        ...(d.invoiceComment ? [{ text: d.invoiceComment, margin: [0, 8, 0, 0] }] : [])
+        ...(d.invoiceComment ? [{ text: d.invoiceComment, margin: [0, 8, 0, 0] }] : []),
+        ...(biz?.quotation?.footerMessage
+          ? [{ text: biz.quotation.footerMessage, margin: [0, 4, 0, 0] }]
+          : []),
+        ...(pageCount > 1
+          ? [{ text: `Página ${currentPage} de ${pageCount}`, alignment: "right", margin: [0, 4, 0, 0] }]
+          : [])
       ]
     };
   };

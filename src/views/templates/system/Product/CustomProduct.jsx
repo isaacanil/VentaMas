@@ -1,9 +1,10 @@
-import React from 'react'
-import styled from 'styled-components'
-import { useDispatch } from 'react-redux';
-import { handleModalSetCustomPizza } from '../../../../features/modals/modalSlice'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPizzaSlice } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react'
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components'
+
+import { handleModalSetCustomPizza } from '../../../../features/modals/modalSlice'
 
 export const CustomProduct = ({ product }) => {
     const dispatch = useDispatch();

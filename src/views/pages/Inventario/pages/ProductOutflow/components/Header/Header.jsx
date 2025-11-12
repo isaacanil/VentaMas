@@ -1,9 +1,10 @@
-import React, { Fragment } from 'react'
-import styled from 'styled-components'
-import { Button } from '../../../../../../templates/system/Button/Button'
+import React from 'react'
 import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
 import { toggleAddProductOutflow } from '../../../../../../../features/modals/modalSlice'
 import { MenuApp } from '../../../../../../templates/MenuApp/MenuApp';
+import { Button } from '../../../../../../templates/system/Button/Button'
 import { FormattedValue } from '../../../../../../templates/system/FormattedValue/FormattedValue'
 
 export const Header = () => {
@@ -49,7 +50,3 @@ display: grid;
 align-items: center;
 grid-template-columns: 1fr auto;
 `
-const Title = styled.h2`
-  margin: 0;
-    font-size: 1.1rem;
-`;

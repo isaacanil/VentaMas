@@ -1,4 +1,5 @@
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore"
+
 import { db } from "../firebaseconfig"
 
 export const fbGetUsers = (currentUser, setUsers, onError) => {

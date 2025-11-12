@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import styled from 'styled-components'
-import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator'
-import { TransactionSummary } from './components/TransactionSummary/TransactionSummary'
-import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails'
-import { ViewInvoice } from './components/ViewInvoive/ViewInvoice'
-import { ViewExpenses } from './components/ViewExpenses/ViewExpenses'
-import { Comments } from '../../../Comments/Comments'
-import { addPropertiesToCashCount, selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, updateCashCountTotals, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
-import { DateSection } from '../../Header/DateSection'
-import { CashCountMetaData } from './CashCountMetaData'
+import styled from 'styled-components'
+
+import { addPropertiesToCashCount, selectCashCount, setCashCountClosingBanknotes, setCashCountClosingComments, updateCashCountTotals, } from '../../../../../../../../features/cashCount/cashCountManagementSlice'
 import { useInvoicesForCashCount } from '../../../../../../../../hooks/cashCount/useInvoicesForCashCount'
 import { useExpensesForCashCount } from '../../../../../../../../hooks/expense/useExpensesForCashCount'
 import { isArrayEmpty } from '../../../../../../../../utils/array/ensureArray'
+import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator'
+import { Comments } from '../../../Comments/Comments'
+import { DateSection } from '../../Header/DateSection'
+
+import { CashCountMetaData } from './CashCountMetaData'
+import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails'
+import { TransactionSummary } from './components/TransactionSummary/TransactionSummary'
+import { ViewExpenses } from './components/ViewExpenses/ViewExpenses'
+import { ViewInvoice } from './components/ViewInvoive/ViewInvoice'
 
 function useExpenseComments(expenses) {
   const formatter = useMemo(
@@ -73,7 +75,6 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
   const {
     data: expenses,
     loading: expensesLoading,
-    count: expensesCount,
   } = useExpensesForCashCount(id);
 
   const mergeExpenseComments = useCallback(

@@ -1,8 +1,10 @@
 import { InputNumber } from "antd"
-import { FormattedValue } from "../../../../../templates/system/FormattedValue/FormattedValue"
-import styled from "styled-components"
-import { useFormatPrice } from "../../../../../../hooks/useFormatPrice"
 import PropTypes from 'prop-types'
+import styled from "styled-components"
+
+import { useFormatPrice } from "../../../../../../hooks/useFormatPrice"
+import { FormattedValue } from "../../../../../templates/system/FormattedValue/FormattedValue"
+
 
 export const BillRow = ({ bill, index, inputDisabled, readOnly = false, updateBillQuantity }) => {
   const formattedTotal = useFormatPrice(bill.value * bill.quantity)

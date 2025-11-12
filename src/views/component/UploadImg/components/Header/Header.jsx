@@ -1,7 +1,8 @@
-import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react'
 import styled from 'styled-components'
+
 import { Button } from '../../../../templates/system/Button/Button'
 
 export const Header = ({setIsOpen}) => {

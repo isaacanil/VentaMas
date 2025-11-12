@@ -19,8 +19,9 @@
 // Si no se establecen host/service + credenciales, el envío se omite con un warning.
 // IMPORTANTE (Gmail): usar App Password y volumen bajo para no violar TOS.
 
-import nodemailer from 'nodemailer';
 import { logger } from 'firebase-functions';
+import nodemailer from 'nodemailer';
+
 // Importamos parámetros (defineString / defineSecret) para preferir .value()
 // Mantendremos fallback a process.env para compatibilidad con ejecuciones locales sin params.
 import {
@@ -47,7 +48,7 @@ function paramOrEnv(paramDef, envName) {
       const v = paramDef.value();
       if (v !== undefined && v !== null && String(v).length) return v;
     }
-  } catch (_) { /* ignore */ }
+  } catch { /* ignore */ }
   return process.env[envName];
 }
 

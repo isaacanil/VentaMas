@@ -1,9 +1,10 @@
-import React from 'react'
-import styled from 'styled-components'
-import { useMatch } from 'react-router-dom'
 import { Button } from 'antd'
-import { icons } from '../../../../../constants/icons/icons'
+import React from 'react'
 import { useDispatch } from 'react-redux'
+import { useMatch } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../constants/icons/icons'
 import { toggleSignUpUser } from '../../../../../features/modals/modalSlice'
 import { userAccess } from '../../../../../hooks/abilities/useAbilities'
 

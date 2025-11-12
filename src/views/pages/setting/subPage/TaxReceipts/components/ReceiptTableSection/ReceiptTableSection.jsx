@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Button, Dropdown, Badge } from 'antd';
 import {
   PlusOutlined,
-  SaveOutlined,
   ReloadOutlined,
   FileAddOutlined
 } from '@ant-design/icons';
-import { TableTaxReceipt } from '../TableTaxReceipt/TableTaxReceipt';
+import { Button, Badge } from 'antd';
+import React, { useState } from 'react';
+import styled from 'styled-components';
+
 import DisabledReceiptsModal from '../DisabledReceiptsModal/DisabledReceiptsModal';
+import { TableTaxReceipt } from '../TableTaxReceipt/TableTaxReceipt';
 import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal';
 
 export const ReceiptTableSection = ({
   enabled,
   itemsLocal,
-  setItemsLocal, 
+  setItemsLocal,
   onAddBlank,
   onAddPredefined,
+  onRebuildLedger,
+  rebuildInProgress = false,
 }) => {
   const [disabledModalVisible, setDisabledModalVisible] = useState(false);
   const [authModalVisible, setAuthModalVisible] = useState(false);
@@ -38,9 +40,26 @@ export const ReceiptTableSection = ({
         <Left>
           {/* El botón de comprobantes inactivos se movió a la parte inferior */}
         </Left>        <Right>
-          <Button icon={<PlusOutlined />} type="primary" onClick={onAddPredefined}>
-            Comprobante
-          </Button>
+          {onRebuildLedger && (
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={onRebuildLedger}
+              loading={rebuildInProgress}
+              disabled={rebuildInProgress}
+            >
+              Reconstruir ledger
+            </Button>
+          )}
+          {onAddBlank && (
+            <Button icon={<PlusOutlined />} type="primary" onClick={onAddBlank}>
+              Comprobante
+            </Button>
+          )}
+          {onAddPredefined && (
+            <Button icon={<FileAddOutlined />} onClick={onAddPredefined}>
+              Plantillas
+            </Button>
+          )}
           <Button 
             icon={<FileAddOutlined />} 
             type="primary" 

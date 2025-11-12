@@ -1,14 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from "react-redux";
-import styled from "styled-components";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'; // <-- Importa aquí
+import styled from "styled-components";
+
 import { selectImageViewerShow, selectImageViewerURL, toggleImageViewer } from "../../../../features/imageViewer/imageViewerSlice";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'; // <-- Importa aquí
-import { CenteredText } from "../CentredText";
 import { Button } from "../Button/Button";
+import { CenteredText } from "../CentredText";
 import Typography from "../Typografy/Typografy";
 
 const ImageViewer = () => {

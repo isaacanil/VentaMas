@@ -1,8 +1,8 @@
+import { EyeOutlined, FullscreenOutlined } from '@ant-design/icons'
+import { Spin, Modal } from 'antd'
+import { motion, AnimatePresence } from 'framer-motion'
 import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Spin, Modal } from 'antd'
-import { EyeOutlined, FullscreenOutlined } from '@ant-design/icons'
 
 export const ImageGallery = ({ images = [], loading = false }) => {
   const [previewVisible, setPreviewVisible] = useState(false);

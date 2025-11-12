@@ -1,39 +1,83 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWarehouse, faBoxes } from '@fortawesome/free-solid-svg-icons';
-import styled from "styled-components";
+import { LoadingOutlined } from "@ant-design/icons";
 import { faPlus, faEdit, faTrash, faEllipsisH } from "@fortawesome/free-solid-svg-icons";
-import Tree from "../../../../../../component/tree/Tree";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  selectWarehouse,
-} from "../../../../../../../features/warehouse/warehouseSlice";
-import { openShelfForm } from "../../../../../../../features/warehouse/shelfModalSlice";
-import { openRowShelfForm } from "../../../../../../../features/warehouse/rowShelfModalSlice";
-import { WarehouseForm } from "../../forms/WarehouseForm/WarehouseForm";
-import { deleteSegment } from "../../../../../../../firebase/warehouse/segmentService";
-import { openSegmentForm } from "../../../../../../../features/warehouse/segmentModalSlice";
-import { selectUser } from "../../../../../../../features/auth/userSlice";
 import { Modal, message } from "antd";
-import { deleteShelf } from "../../../../../../../firebase/warehouse/shelfService";
-import { deleteRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
-import { deleteWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom';
+import styled from "styled-components";
+
+import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { openRowShelfForm } from "../../../../../../../features/warehouse/rowShelfModalSlice";
+import { openSegmentForm } from "../../../../../../../features/warehouse/segmentModalSlice";
+import { openShelfForm } from "../../../../../../../features/warehouse/shelfModalSlice";
 import {
   openWarehouseForm
 } from "../../../../../../../features/warehouse/warehouseModalSlice";
-import { useNavigate } from 'react-router-dom'
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { useGetProducts } from '../../../../../../../firebase/products/fbGetProducts';
-import { filterData } from '../../../../../../../hooks/search/useSearch';
+import {
+  selectWarehouse,
+} from "../../../../../../../features/warehouse/warehouseSlice";
+import { getStockAggregatesByLocationPaths } from '../../../../../../../firebase/warehouse/productStockService';
+import { deleteRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
+import { deleteSegment } from "../../../../../../../firebase/warehouse/segmentService";
+import { deleteShelf } from "../../../../../../../firebase/warehouse/shelfService";
+import { deleteWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
+import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
 import { replacePathParams } from '../../../../../../../routes/replacePathParams';
 import ROUTES_PATH from '../../../../../../../routes/routesName';
-import { useLocation } from 'react-router-dom';
-import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
+import Tree from "../../../../../../component/tree/Tree";
+import { WarehouseForm } from "../../forms/WarehouseForm/WarehouseForm";
 
 const SidebarContainer = styled.div`
-  padding: 10px 0em;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   border-right: 1px solid #eee;
+  min-width: 0;
+`;
+
+const TreeWrapper = styled.div`
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  padding: 10px 0;
+  display: flex;
+`;
+
+const SidebarSummaryFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 0.8rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+`;
+
+const SummaryPrimary = styled.span`
+  font-weight: 600;
+  color: #f8fafc;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const SummaryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const SummaryStatus = styled.span`
+  color: ${({ $loading }) => ($loading ? '#bfdbfe' : '#bef264')};
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 `;
 
 // Function to get level actions (no change needed here)
@@ -101,21 +145,56 @@ const nodeGenderMap = {
   'Segmento': 'masculino',
 };
 
-const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
+const collectLocationPaths = (nodes = [], parentPath = []) => {
+  const paths = [];
+  nodes.forEach((node) => {
+    const currentPath = [...parentPath, node.id];
+    if (currentPath.length > 0) {
+      paths.push(currentPath.join('/'));
+    }
+    if (node.children?.length) {
+      paths.push(...collectLocationPaths(node.children, currentPath));
+    }
+  });
+  return paths;
+};
+
+const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { currentView, selectedWarehouse, selectedShelf, selectedRowShelf, selectedSegment } = useSelector(selectWarehouse);
   const navigate = useNavigate();
   const location = useLocation();
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
-    const [search, setSearch] = useState('');
-
-  const { products, loading } = useGetProducts(true);
-    const filteredProducts = search ? filterData(products, search) : products;
+  const [stockSummaries, setStockSummaries] = useState({});
+  const [loadingStockSummaries, setLoadingStockSummaries] = useState(false);
 
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
-  const { WAREHOUSE, SHELF, ROW, SEGMENT, PRODUCT_STOCK } = ROUTES_PATH.INVENTORY_TERM
-    const [displayProducts, setDisplayProducts] = useState(false);
+  const locationPaths = useMemo(() => {
+    if (!items?.length) return [];
+    return Array.from(new Set(collectLocationPaths(items)));
+  }, [items]);
+  const itemsWithStockSummaries = useMemo(() => {
+    const mergeSummaries = (nodes = [], parentPath = []) => {
+      return nodes.map((node) => {
+        const currentPath = [...parentPath, node.id];
+        const locationKey = currentPath.join('/');
+        const summary = stockSummaries[locationKey];
+        const enrichedNode = {
+          ...node,
+          stockSummary: summary,
+          stockSummaryLoading: loadingStockSummaries && summary === undefined,
+        };
+        if (node.children) {
+          enrichedNode.children = mergeSummaries(node.children, currentPath);
+        }
+        return enrichedNode;
+      });
+    };
+    return mergeSummaries(itemsWithParentIds);
+  }, [itemsWithParentIds, stockSummaries, loadingStockSummaries]);
+
+  const { WAREHOUSE, SHELF, ROW, SEGMENT } = ROUTES_PATH.INVENTORY_TERM;
 
   const handleWarehouseNodeClick = (node, level) => {
       const path = findPathToNode(items, node.id);
@@ -145,16 +224,12 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
       }
   };
 
-  const handleProductNodeClick = (node) => {
-    navigate(replacePathParams(PRODUCT_STOCK, [node.id]));
-  };
-
   const getDefaultWarehouseId = useCallback(() => {
     if (defaultWarehouse) {
       return defaultWarehouse.id;
     }
     if (!items || items.length === 0) return 'default';
-    const defaultFromItems = items.find(warehouse => warehouse.data?.defaultWarehouse === true);
+    const defaultFromItems = items.find(warehouse => warehouse.record?.defaultWarehouse === true);
     return defaultFromItems?.id || items[0]?.id || 'default';
   }, [defaultWarehouse, items]);
 
@@ -164,15 +239,16 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
         dispatch(openWarehouseForm());
     };
 
-    const handleUpdateWarehouse = (data) => {
-        dispatch(openWarehouseForm(data));
+    const handleUpdateWarehouse = (node) => {
+        const warehouseData = node?.record || null;
+        dispatch(openWarehouseForm(warehouseData));
     };
 
     const handleAddShelf = (clickedNode) => {
         const path = findPathToNode(items, clickedNode.id);
         dispatch(openShelfForm({
             data: null,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
@@ -180,7 +256,7 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
         const path = findPathToNode(items, parentNode.id);
         dispatch(openRowShelfForm({
             data: null,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
@@ -188,30 +264,30 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
         const path = findPathToNode(items, parentNode.id);
         dispatch(openSegmentForm({
             data: null,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
-    const handleUpdateShelf = (shelf) => {
-        const path = findPathToNode(items, shelf.id);
+    const handleUpdateShelf = (node) => {
+        const path = findPathToNode(items, node.id);
         dispatch(openShelfForm({
-            data: shelf,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            data: node?.record || null,
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
-      const handleUpdateRowShelf = (data) => {
-        const path = findPathToNode(items, data.id);
+      const handleUpdateRowShelf = (node) => {
+        const path = findPathToNode(items, node.id);
         dispatch(openRowShelfForm({
-            data: data,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            data: node?.record || null,
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
-    const handleUpdateSegment = (segment) => {
-        const path = findPathToNode(items, segment.id);
+    const handleUpdateSegment = (node) => {
+        const path = findPathToNode(items, node.id);
         dispatch(openSegmentForm({
-            data: segment,
-            path: path.map(node => ({ id: node.id, name: node.name })),
+            data: node?.record || null,
+            path: path.map(pathNode => ({ id: pathNode.id, name: pathNode.name })),
         }));
     };
 
@@ -291,19 +367,119 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
     };
 
     const isDefaultWarehouse = (node) => {
-        return node?.data?.defaultWarehouse === true;
+        return node?.record?.defaultWarehouse === true;
     };
 
+    const defaultWarehouseTheme = {
+        background: 'rgba(22, 119, 255, 0.12)',
+        hoverBackground: 'rgba(22, 119, 255, 0.18)',
+        selectedBackground: 'rgba(22, 119, 255, 0.24)',
+        color: '#102a44',
+        accentColor: '#1677ff',
+        boxShadow: 'inset 0 0 0 1px rgba(22, 119, 255, 0.14)',
+        label: 'Predeterminado',
+        labelBackground: 'rgba(22, 119, 255, 0.22)',
+        labelColor: '#0f172a',
+    };
+
+    const levelCounts = useMemo(() => {
+        const counters = [];
+        const traverse = (nodes = [], depth = 0) => {
+            nodes.forEach((node) => {
+                counters[depth] = (counters[depth] || 0) + 1;
+                if (node.children?.length) {
+                    traverse(node.children, depth + 1);
+                }
+            });
+        };
+        traverse(items, 0);
+        return counters;
+    }, [items]);
+
+    const summaryData = useMemo(() => {
+        const levelMetadata = [
+            { singular: 'almacén', plural: 'almacenes' },
+            { singular: 'estante', plural: 'estantes' },
+            { singular: 'fila', plural: 'filas' },
+            { singular: 'segmento', plural: 'segmentos' },
+        ];
+
+        const pluralize = (count, { singular, plural }) => {
+            if (count === 1) return `${count} ${singular}`;
+            return `${count} ${plural}`;
+        };
+
+        const warehouseCount = levelCounts[0] || 0;
+        const totalNodes = levelCounts.reduce((sum, count = 0) => sum + count, 0);
+        const subLevelCounts = levelCounts.slice(1);
+
+        const primaryText = warehouseCount
+            ? pluralize(warehouseCount, levelMetadata[0])
+            : 'Sin almacenes configurados';
+
+        const subLevelParts = subLevelCounts
+            .map((count = 0, index) => ({
+                count,
+                labelMeta: levelMetadata[index + 1] || {
+                    singular: `nivel ${index + 2}`,
+                    plural: `niveles ${index + 2}`,
+                },
+            }))
+            .filter(({ count }) => count > 0)
+            .map(({ count, labelMeta }) => pluralize(count, labelMeta));
+
+        const extraLocations = Math.max(totalNodes - warehouseCount, 0);
+
+        const secondaryText = subLevelParts.length
+            ? subLevelParts.join(' · ')
+            : extraLocations > 0
+                ? pluralize(extraLocations, {
+                    singular: 'ubicación adicional',
+                    plural: 'ubicaciones adicionales',
+                })
+                : '';
+
+        return {
+            primaryText,
+            secondaryText,
+            hasWarehouses: warehouseCount > 0,
+            hasDetails: Boolean(secondaryText),
+        };
+    }, [levelCounts]);
+
+    const sidebarSummaryFooter = useMemo(() => {
+        if (!summaryData.primaryText && !loadingStockSummaries) {
+            return null;
+        }
+
+        return (
+            <SidebarSummaryFooter>
+                <SummaryHeader>
+                    {summaryData.primaryText && (
+                        <SummaryPrimary>{summaryData.primaryText}</SummaryPrimary>
+                    )}
+                </SummaryHeader>
+                {loadingStockSummaries && (
+                    <SummaryStatus $loading={loadingStockSummaries}>
+                        <LoadingOutlined spin />
+                        Sincronizando stock…
+                    </SummaryStatus>
+                )}
+            </SidebarSummaryFooter>
+        );
+    }, [summaryData, loadingStockSummaries]);
+
     const config = {
+        showLocationStockSummary: true,
         actions: [
             {
                 name: "More",
                 icon: faEllipsisH,
                 type: 'dropdown',
-                show: (node, level) => !(level === 0 && isDefaultWarehouse(node)),
                 items: (node, level) => {
                     const actions = getLevelActions(level);
                     const menuItems = [];
+                    const isDefault = level === 0 && isDefaultWarehouse(node);
 
                     if (actions.create) {
                         menuItems.push({
@@ -341,27 +517,34 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
                                 }
                             },
                         },
-                        {
-                            name: actions.delete,
-                            icon: faTrash,
-                            handler: (node, level) => handleDelete(node, level),
-                            danger: true
-                        }
+                        actions.delete && !isDefault
+                            ? {
+                                name: actions.delete,
+                                icon: faTrash,
+                                handler: (node, level) => handleDelete(node, level),
+                                danger: true
+                              }
+                            : null
                     );
-                    return menuItems;
+                    return menuItems.filter(Boolean);
                 }
             },
         ],
         onNodeClick: handleWarehouseNodeClick,
         showMatchedStockCount: true,
+        resolveNodeTheme: (node, { level }) => {
+            if (level === 0) {
+                const isDefault = node?.record?.defaultWarehouse === true || defaultWarehouse?.id === node.id;
+                if (isDefault) {
+                    return defaultWarehouseTheme;
+                }
+            }
+            return null;
+        },
+        searchPlaceholder: "Buscar almacén o ubicación...",
+        footer: sidebarSummaryFooter,
+        footerPlacement: "sticky",
     };
-
-  const productConfig = {
-    actions: [],
-    onNodeClick: handleProductNodeClick,
-    showMatchedStockCount: true,
-    initialVisibleCount: 10,
-  };
 
   const getSelectedId = () => {
     switch (currentView) {
@@ -380,39 +563,59 @@ const Sidebar = ({ onSelectNode, items, productItems = [] }) => {
 
   useEffect(() => {
     const path = location.pathname;
-
-    // Set displayProducts based on the route
-    if (path.includes('/products-stock') || path.includes('/product-stock-overview/')) {
-      setDisplayProducts(true); // Show products
-    } else {
-      setDisplayProducts(false); // Show warehouses
-
-      // Navigate to default warehouse if on base or placeholder route
-      if (path === '/inventory/warehouses' || path === '/inventory/warehouses/warehouse/:warehouseId') {
-        const defaultId = getDefaultWarehouseId();
-        if (!loadingDefault) {
-          navigate(`/inventory/warehouses/warehouse/${defaultId}`);
-        }
+    if (path === '/inventory/warehouses' || path === '/inventory/warehouses/warehouse/:warehouseId') {
+      const defaultId = getDefaultWarehouseId();
+      if (!loadingDefault) {
+        navigate(`/inventory/warehouses/warehouse/${defaultId}`);
       }
     }
   }, [location.pathname, navigate, getDefaultWarehouseId, loadingDefault]);
 
+  useEffect(() => {
+    if (!user?.businessID) {
+      setStockSummaries({});
+      setLoadingStockSummaries(false);
+      return;
+    }
+
+    if (!locationPaths.length) {
+      setStockSummaries({});
+      setLoadingStockSummaries(false);
+      return;
+    }
+
+    let isActive = true;
+    setLoadingStockSummaries(true);
+
+    getStockAggregatesByLocationPaths(user, locationPaths)
+      .then((summaries) => {
+        if (!isActive) return;
+        setStockSummaries(summaries);
+      })
+      .catch((error) => {
+        console.error('Error al obtener los agregados de stock para el sidebar:', error);
+        if (!isActive) return;
+        setStockSummaries({});
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setLoadingStockSummaries(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [user, locationPaths]);
+
   return (
     <SidebarContainer>
-      {/* Conditionally render the Tree component based on displayProducts */}
-      {displayProducts ? (
+      <TreeWrapper>
         <Tree
-          data={filteredProducts}
-          config={productConfig}
-          selectedId={getSelectedId()}
-        />
-      ) : (
-        <Tree
-          data={itemsWithParentIds}  // Use itemsWithParentIds here
+          data={itemsWithStockSummaries}
           config={config}
           selectedId={getSelectedId()}
         />
-      )}
+      </TreeWrapper>
       <WarehouseForm />
     </SidebarContainer>
   );

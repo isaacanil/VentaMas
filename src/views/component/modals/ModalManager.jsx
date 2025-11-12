@@ -1,7 +1,9 @@
+import { AnimatePresence } from "framer-motion"
 import { Fragment } from "react"
-import { AddClientModal } from "./addClient/AddClientModal"
-import { SetCustomProduct } from "./CustomProduct/setCustomProduct/SetCustomProduct"
 import { useSelector } from "react-redux"
+
+import { DeveloperModal } from "../../../components/modals/DeveloperModal/DeveloperModal"
+import { OPERATION_MODES } from "../../../constants/modes"
 import {
   SelectAddClientModal,
   SelectUpdateProdModal,
@@ -14,45 +16,45 @@ import {
   SelectAddProductOutflowModal,
   SelectFileListModal,
   toggleFileListModal,
-  SelectDeveloperModal,
 } from "../../../features/modals/modalSlice"
-import { AnimatePresence } from "framer-motion"
-
-import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
-import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
-import { Notification } from "../../templates/system/Notification/Notification"
-import { TestModeIndicator } from "../../templates/system/Notification/TestModeIndicator"
-import Loader from "../../templates/system/loader/Loader"
-import ImageViewer from "../../templates/system/ImageViewer/ImageViewer"
-import AddCategoryModal from "./AddCategory/AddCategory"
-import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
-import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
-import { OPERATION_MODES } from "../../../constants/modes"
-import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
-import Dialog from "../../templates/system/Dialog/Dialog"
-import NoteModal from "../../templates/system/NoteModal/NoteModal"
-import ClientFormAnt from "../../pages/Contact/Client/components/ClientForm/ClientFormAnt"
-import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
-import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
-import { FileListModal } from "./FileListModal/FileListModal"
-import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
 import { selectCurrentNotification } from "../../../features/notification/notificationSlice"
-import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserForm"
-import { InvoicePreview } from "../../pages/InvoicesPage/InvoicePreview/InvoicePreview"
-import { PaymentForm } from "../forms/PaymentForm/PaymentForm"
-import ARInfoModal from "./ARInfoModal/ARSummaryModal"
+import { SelectProductOutflow } from "../../../features/productOutflow/productOutflow"
+import { InvoiceForm } from "../../component/modals/InvoiceForm/InvoiceForm"
+import ClientFormAnt from "../../pages/Contact/Client/components/ClientForm/ClientFormAnt"
+import { ProviderForm } from "../../pages/Contact/Provider/components/CreateContact/ProviderForm"
+import { DeleteProductStockModal } from "../../pages/Inventory/components/Warehouse/components/DeleteProductStock/DeleteProductStockModal"
 import { ProductStockForm } from "../../pages/Inventory/components/Warehouse/forms/ProductStockForm/ProductStockForm"
-import { ShelfForm } from "../../pages/Inventory/components/Warehouse/forms/ShelfForm/ShelfForm"
 import RowShelfForm from "../../pages/Inventory/components/Warehouse/forms/RowShelfForm/RowShelfForm"
 import SegmentForm from "../../pages/Inventory/components/Warehouse/forms/SegmentForm/SegmentForm"
-import ProductExpirySelection from "./ProductExpirySelection/ProductExpirySelection"
-import ActiveIngredientModal from "./ActiveIngredients/ActiveIngredientModal"
+import { ShelfForm } from "../../pages/Inventory/components/Warehouse/forms/ShelfForm/ShelfForm"
 import { WarehouseForm } from "../../pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm"
-import ARSummaryModal from "./ARInfoModal/ARSummaryModal"
+import { InvoicePreview } from "../../pages/InvoicesPage/InvoicePreview/InvoicePreview"
 import EvidenceUploadDrawer from "../../pages/OrderAndPurchase/PurchaseManagement/components/EvidenceUploadDrawer/EvidenceUploadDrawer"
-import { DeleteProductStockModal } from "../../pages/Inventory/components/Warehouse/components/DeleteProductStock/DeleteProductStockModal"
-import { DeveloperModal } from "../../../components/modals/DeveloperModal/DeveloperModal"
+import { SignUpModal } from "../../pages/setting/subPage/Users/components/UserForm"
+import { MessageAlert } from "../../templates/system/Alerts/MessageAlert"
+import Dialog from "../../templates/system/Dialog/Dialog"
+import ImageViewer from "../../templates/system/ImageViewer/ImageViewer"
+import Loader from "../../templates/system/loader/Loader"
+import NoteModal from "../../templates/system/NoteModal/NoteModal"
+import { Notification } from "../../templates/system/Notification/Notification"
+import { TestModeIndicator } from "../../templates/system/Notification/TestModeIndicator"
+import { PaymentForm } from "../forms/PaymentForm/PaymentForm"
+
+import ActiveIngredientModal from "./ActiveIngredients/ActiveIngredientModal"
+import AddCategoryModal from "./AddCategory/AddCategory"
+import { AddClientModal } from "./addClient/AddClientModal"
+import ARSummaryModal from "./ARInfoModal/ARSummaryModal"
+import { BarcodePrintModal } from "./BarcodePrintModal/BarcodePrintModal"
 import { CreditNoteModal } from "./CreditNoteModal/CreditNoteModal"
+import { SetCustomProduct } from "./CustomProduct/setCustomProduct/SetCustomProduct"
+import { FileListModal } from "./FileListModal/FileListModal"
+import ProductBrandModal from "./ProductBrands/ProductBrandModal"
+import ProductExpirySelection from "./ProductExpirySelection/ProductExpirySelection"
+import { ProductEditorModal } from "./ProductForm/ProductEditorModal"
+import { ProductOutflowModal } from "./ProductOutflowModal/ProductOutflowModal"
+import { ConfirmationDialog } from "./UserNotification/components/ConfirmationDialog/ConfirmationDialog"
+
+
 
 export const ModalManager = () => {
 
@@ -68,7 +70,6 @@ export const ModalManager = () => {
   const ProductOutflowSelected = useSelector(SelectProductOutflow)
   const currentNotification = useSelector(selectCurrentNotification)
   const FileListSelected = useSelector(SelectFileListModal)
-  const DeveloperModalSelected = useSelector(SelectDeveloperModal)
   {/* <BusinessEditModal /> */ }
 
   {/* <ARInfoModal
@@ -186,6 +187,7 @@ export const ModalManager = () => {
       <ImageViewer />
       <TestModeIndicator />
       <ConfirmationDialog />
+      <ProductBrandModal />
     </Fragment>
   )
 

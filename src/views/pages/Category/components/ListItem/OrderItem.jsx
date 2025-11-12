@@ -1,19 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react'
-
+import * as antd from 'antd'
+import { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import {ButtonGroup } from '../../../../templates/system/Button/Button'
 
-import { useDispatch, useSelector } from 'react-redux'
+
 
 import { icons } from '../../../../../constants/icons/icons'
 import { selectUser } from '../../../../../features/auth/userSlice'
 import { fbDeleteCategory } from '../../../../../firebase/categories/fbDeleteCategory'
 import { fbUpdateCategory } from '../../../../../firebase/categories/fbUpdateCategory'
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
-import * as antd from 'antd'
-export const OrderItem = ({ cat, Row, Col }) => {
-  const dispatch = useDispatch();
+import { ButtonGroup } from '../../../../templates/system/Button/Button'
 
+export const OrderItem = ({ cat, Row, Col }) => {
   const user = useSelector(selectUser);
 
   const [mode, setMode] = useState(null);
@@ -50,7 +49,7 @@ export const OrderItem = ({ cat, Row, Col }) => {
     EditRef.current.select();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = () => {
     setMode('DELETE');
     setShowConfirmBtn(true);
     
@@ -121,8 +120,6 @@ export const OrderItem = ({ cat, Row, Col }) => {
   );
 };
 
-const Container = styled.div`
-`
 const Button = styled(antd.Button)`
 font-size: 1.2em;
 display: flex;

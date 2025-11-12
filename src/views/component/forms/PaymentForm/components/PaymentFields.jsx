@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react'
 import * as antd from 'antd'
-import styled from 'styled-components'
+import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../constants/icons/icons'
+import { paymentDescriptions } from '../../../../../constants/paymentDescriptions'
 import { clearMethodErrors, selectAccountsReceivablePayment, setMethodError, updatePaymentMethod } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
 import { formatNumber } from '../../../../../utils/formatNumber'
-import { paymentDescriptions } from '../../../../../constants/paymentDescriptions'
-import { icons } from '../../../../../constants/icons/icons'
-const { Form, Input, Checkbox, InputNumber, Switch, message } = antd
+
+const { Form, Input, InputNumber, Switch, message } = antd
 export const PaymentFields = () => {
     const cashInputRef = useRef(null);
     const {
@@ -189,7 +191,7 @@ export const PaymentFields = () => {
                                         precision={2}
                                         step={0.01}
                                         formatter={formatNumber}
-                                        parser={value => value.replace(/\,/g, '')}
+                                        parser={value => value.replace(/,/g, '')}
                                         style={{ width: '100%' }}
                                     />
                                 ) : (
@@ -203,7 +205,7 @@ export const PaymentFields = () => {
                                         precision={2}
                                         step={0.01}
                                         formatter={formatNumber}
-                                        parser={value => value.replace(/\,/g, '')}
+                                        parser={value => value.replace(/,/g, '')}
                                         style={{ width: '100%' }}
                                     />
                                 )}

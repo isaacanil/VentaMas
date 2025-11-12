@@ -1,20 +1,18 @@
+import { Button, Tooltip } from 'antd'
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { useMatch, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { selectCashReconciliation } from '../../../../../features/cashCount/cashStateSlice'
-import { Button, Tooltip } from 'antd'
-import { icons } from '../../../../../constants/icons/icons'
-import { useDialog } from '../../../../../Context/Dialog/DialogContext'
 
-export const CashReconciliationToolbar = ({ side = 'left', searchData, setSearchData }) => {
+import { icons } from '../../../../../constants/icons/icons'
+import { useDialog } from '../../../../../Context/Dialog'
+import { selectCashReconciliation } from '../../../../../features/cashCount/cashStateSlice'
+
+export const CashReconciliationToolbar = ({ side = 'left' }) => {
     const matchWithCashReconciliation = useMatch("/cash-reconciliation")
     const navigate = useNavigate()
     const { setDialogConfirm } = useDialog()
-    const { state, cashCount } = useSelector(selectCashReconciliation);
-  
-    const user = useSelector(selectUser)
+    const { state } = useSelector(selectCashReconciliation);
 
     const handleSwitchToCashRegisterOpening = () => {
         if (state === 'open') {

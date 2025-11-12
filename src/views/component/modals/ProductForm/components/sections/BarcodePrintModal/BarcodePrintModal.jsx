@@ -1,8 +1,8 @@
-import { useState, useRef, useLayoutEffect, useMemo } from "react";
 import * as ant from "antd";
-import styled, { createGlobalStyle } from "styled-components";
+import { useState, useRef, useLayoutEffect, useMemo } from "react";
 import Barcode from "react-barcode";
 import { useReactToPrint } from "react-to-print";
+import styled, { createGlobalStyle } from "styled-components";
 
 const { Modal, InputNumber, Select, Checkbox } = ant;
 
@@ -34,7 +34,6 @@ const DPI = 203;
 
 const mmToPx = (mm) => Math.max(1, Math.round((mm / 25.4) * DPI));
 const mmToIn = (mm) => mm / 25.4;
-const inToMm = (inch) => inch * 25.4;
 
 const GlobalPrintStyle = createGlobalStyle`
 `;
@@ -179,13 +178,13 @@ export const BarcodePrintModal = ({
         
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Perfil de Etiqueta:</label>
-          <Select value={labelProfile} onChange={setLabelProfile} style={{ width: "100%", marginBottom: 12 }} options={[{ value: "standard", label: "Estándar (40×30 mm)" }, { value: "variable", label: "Personalizado (Variable)" }]} />
+          <Select value={labelProfile} onChange={setLabelProfile} style={{ width: "100%", marginBottom: 12 }} options={[{ value: "standard", label: "Estándar (40×30 mm)" }, { value: "variable", label: "Personalizado (Variable)" }]} />
           <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Cantidad:</label>
           <InputNumber min={1} max={100} value={qty} onChange={setQty} style={{ width: "100%", marginBottom: 8 }} />
           {labelProfile === "variable" && <Checkbox checked={isNameVisible} onChange={(e) => setIsNameVisible(e.target.checked)} style={{ marginTop: 8, fontSize: 12 }}>Incluir nombre del producto</Checkbox>}
           <div style={{ fontSize: 12, color: "#666", lineHeight: 1.4, marginTop: 12 }}>
-            <div><strong>Dimensiones:</strong> {Math.round(config.LABEL_WIDTH_MM)}×{Math.round(config.LABEL_HEIGHT_MM)} mm &nbsp;|&nbsp; <strong>Resolución:</strong> {DPI} DPI</div>
-            <div><strong>Estimado por rollo (40×30):</strong> ≈ 3 100 etiquetas</div>
+            <div><strong>Dimensiones:</strong> {Math.round(config.LABEL_WIDTH_MM)}×{Math.round(config.LABEL_HEIGHT_MM)} mm &nbsp;|&nbsp; <strong>Resolución:</strong> {DPI} DPI</div>
+            <div><strong>Estimado por rollo (40×30):</strong> ≈ 3 100 etiquetas</div>
           </div>
         </div>
         

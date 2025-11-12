@@ -1,13 +1,18 @@
-import React from 'react'
-import styled from 'styled-components'
-import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue'
-import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
 import { motion } from 'framer-motion'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { closeUserNotification, selectCurrentUserNotification } from '../../../../../../features/UserNotification/UserNotificationSlice'
-import { HandleConfirmationAction } from './HandleConfirmationAction'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+import { closeUserNotification, selectCurrentUserNotification } from '../../../../../../features/UserNotification/UserNotificationSlice'
 import { useIsOpenCashReconciliation } from '../../../../../../firebase/cashCount/useIsOpenCashReconciliation'
+import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
+import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue'
+
+
+import { HandleConfirmationAction } from './HandleConfirmationAction'
+
+
 
 export const ConfirmationDialog = ( ) => {
 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { Button } from '../../../../../../templates/system/Button/Button';
-import { setUserDynamicPermissions } from '../../../../../../../services/dynamicPermissions';
+
 import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
+import { setUserDynamicPermissions } from '../../../../../../../services/dynamicPermissions';
+import { Button } from '../../../../../../templates/system/Button/Button';
 
 /**
  * Componente para migrar usuarios de cajeros especiales al sistema dinámico

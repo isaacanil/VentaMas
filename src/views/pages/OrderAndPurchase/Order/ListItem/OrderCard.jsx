@@ -1,24 +1,23 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux'
+import React from 'react'
+import { useDispatch } from 'react-redux'
 
+import { getOrderStateByID } from '../../../../../constants/orderAndPurchaseState'
+import { toggleViewOrdersNotes } from '../../../../../features/modals/modalSlice'
+import { correctDate } from '../../../../../hooks/date/correctDate'
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
 import { Button } from '../../../../templates/system/Button/Button'
-import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
-import { ActionsButtonsGroup } from './ActionsButtonsGroup'
-import { toggleViewOrdersNotes } from '../../../../../features/modals/modalSlice'
 import { Tooltip } from '../../../../templates/system/Button/Tooltip'
-import { correctDate } from '../../../../../hooks/date/correctDate'
-import { getOrderStateByID } from '../../../../../constants/orderAndPurchaseState'
+import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot'
 
-export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId }) => {
+import { ActionsButtonsGroup } from './ActionsButtonsGroup'
+
+export const OrderCard = ({ orderData, Row, Col, activeId, setActiveId }) => {
     const dispatch = useDispatch()
-  
-    const [showNote, setShowNote] = useState(false)
-    //const orderItemSelectedRef = useSelector(selectOrderItemSelected)
-    const {data} = orderData
-    const handleViewNotes = () => {  
-        dispatch(toggleViewOrdersNotes({data, isOpen: 'open'}))   
+
+    const { data } = orderData
+
+    const handleViewNotes = () => {
+        dispatch(toggleViewOrdersNotes({ data, isOpen: 'open' }))
     }
    
     return (
@@ -41,7 +40,7 @@ export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId })
                         borderRadius='normal'
                         color='gray-dark'
                         border='light'
-                        onClick={(data) => handleViewNotes(data)}
+                        onClick={handleViewNotes}
                     />
                 }
 
@@ -62,6 +61,4 @@ export const OrderCard = ({ orderData, index, Row, Col, activeId, setActiveId })
         </Row>
     )
 }
-const Container = styled.div`
-`
 

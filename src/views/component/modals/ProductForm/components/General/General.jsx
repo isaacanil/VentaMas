@@ -1,22 +1,26 @@
-import { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { ChangeProductData, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
-import { Form, Button, Spin, Card, Space, Row, Col, notification, Image as AntdImage } from 'antd';
-import styled from 'styled-components';
-import { ProductInfo } from '../sections/ProductInfo';
-import { InventoryInfo } from '../sections/InventoryInfo';
-import { PriceInfo } from '../sections/PriceInfo';
-import { QRCode } from '../sections/QRCode';
-import { BarCode } from '../sections/BarCode';
-import { WarrantyInfo } from '../sections/WarrantyInfo';
 import { LoadingOutlined } from '@ant-design/icons';
-import { PriceCalculator } from '../sections/PriceCalculator';
-import { imgFailed } from '../../ImageManager/ImageManager';
-import { closeModalUpdateProd } from '../../../../../../features/modals/modalSlice';
+import { Form, Button, Spin, Card, Space, Row, Col, notification, Image as AntdImage } from 'antd';
+import { useState, useEffect, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
-import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
+import { closeModalUpdateProd } from '../../../../../../features/modals/modalSlice';
+import { ChangeProductData, PRODUCT_BRAND_DEFAULT, changeProductPrice, clearUpdateProductData, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice'
+import { useListenProductBrands } from '../../../../../../firebase/products/brands/productBrands';
 import { fbAddProduct } from '../../../../../../firebase/products/fbAddProduct';
+import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
 import { initTaxes } from '../../../UpdateProduct/InitializeData';
+import { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../../constants/brandOptions';
+import { imgFailed } from '../../ImageManager/ImageManager';
+import { buildNormalizedProductSnapshot, buildSanitizedProductForSubmit, normalizeItemType, normalizeTrackInventoryValue } from '../../utils/productNormalization';
+import { BarCode } from '../sections/BarCode';
+import { InventoryInfo } from '../sections/InventoryInfo';
+import { PriceCalculator } from '../sections/PriceCalculator';
+import { PriceInfo } from '../sections/PriceInfo';
+import { ProductInfo } from '../sections/ProductInfo';
+import { QRCode } from '../sections/QRCode';
+import { WarrantyInfo } from '../sections/WarrantyInfo';
 
 export const General = ({ showImageManager }) => {
     const dispatch = useDispatch();
@@ -24,13 +28,21 @@ export const General = ({ showImageManager }) => {
     const [submit, setSubmit] = useState(false)
     const [form] = Form.useForm(); 
     const { product, status } = useSelector(selectUpdateProductData);
+    const { data: productBrands = [] } = useListenProductBrands();
+
+    const normalizedProduct = useMemo(() => {
+        return buildNormalizedProductSnapshot(product);
+    }, [product]);
+
+    const getSanitizedProduct = () => buildSanitizedProductForSubmit(product);
 
     // Actualizar los valores del formulario cuando cambie el producto
     useEffect(() => {
-        form.setFieldsValue(product);
-    }, [product, form]);
+        if (!normalizedProduct) return;
+        form.setFieldsValue(normalizedProduct);
+    }, [normalizedProduct, form]);
 
-    const handleChangeValues = (changeValue, allValues) => {
+    const handleChangeValues = (changeValue) => {
         const key = Object.keys(changeValue)[0];
         const value = changeValue[key];
 
@@ -59,21 +71,88 @@ export const General = ({ showImageManager }) => {
             dispatch(ChangeProductData({ product: { warranty: { ...product?.warranty, ...changeValue?.warranty } } }))
             return
         }
+        if (key === 'itemType') {
+            const normalizedItemType = normalizeItemType(value);
+            const trackInventoryValue = normalizedItemType === 'service'
+                ? false
+                : normalizeTrackInventoryValue(product?.trackInventory, normalizedItemType);
+
+            dispatch(ChangeProductData({
+                product: {
+                    itemType: normalizedItemType,
+                    trackInventory: trackInventoryValue
+                }
+            }));
+            form.setFieldsValue({
+                itemType: normalizedItemType,
+                trackInventory: trackInventoryValue
+            });
+            return;
+        }
+        if (key === 'brand') {
+            const normalizedBrand = typeof value === 'string'
+                ? value.replace(/\s+/g, ' ').trim()
+                : '';
+            const sanitizedBrand = normalizedBrand || PRODUCT_BRAND_DEFAULT;
+            dispatch(ChangeProductData({ product: { brand: sanitizedBrand } }));
+            if (value !== sanitizedBrand) {
+                form.setFieldsValue({ brand: sanitizedBrand });
+            }
+            return;
+        }
+        if (key === 'brandId') {
+            const normalizedId = typeof value === 'string' ? value.trim() : null;
+            let resolvedBrand = PRODUCT_BRAND_DEFAULT;
+
+            if (normalizedId && normalizedId !== BRAND_DEFAULT_OPTION_VALUE) {
+                if (normalizedId === BRAND_LEGACY_OPTION_VALUE && product?.brand) {
+                    resolvedBrand = product.brand;
+                } else {
+                    const brandMatch = productBrands?.find((brand) => brand?.id === normalizedId);
+                    if (brandMatch?.name) {
+                        resolvedBrand = brandMatch.name.trim();
+                    }
+                }
+            }
+
+            dispatch(ChangeProductData({
+                product: {
+                    brandId: normalizedId,
+                    brand: resolvedBrand || PRODUCT_BRAND_DEFAULT,
+                }
+            }));
+
+            if (!normalizedId || normalizedId === BRAND_DEFAULT_OPTION_VALUE) {
+                form.setFieldsValue({ brandId: BRAND_DEFAULT_OPTION_VALUE });
+            }
+            return;
+        }
         dispatch(ChangeProductData({ product: { ...changeValue } }));
     }
-    const onFinish = async (values) => {
+    const onFinish = async (_values) => {
         setSubmit(true)
         try {
             await form.validateFields();
 
             if (status === "update") {
-                await fbUpdateProduct(product, user)
+                if (!product?.id) {
+                    throw new Error('El producto no tiene un identificador válido para actualizar.');
+                }
+                const sanitizedProduct = getSanitizedProduct();
+                if (!sanitizedProduct) {
+                    throw new Error('No hay datos de producto para guardar.');
+                }
+                await fbUpdateProduct(sanitizedProduct, user)
                 notification.success({
                     message: 'Producto Actualizado',
                     description: 'El producto ha sido actualizado correctamente.',
                 });
             } else {
-                await fbAddProduct(product, user)
+                const sanitizedProduct = getSanitizedProduct();
+                if (!sanitizedProduct) {
+                    throw new Error('No hay datos de producto para guardar.');
+                }
+                await fbAddProduct(sanitizedProduct, user)
                 notification.success({
                     message: 'Producto Creado',
                     description: 'El producto ha sido creado correctamente.',
@@ -82,12 +161,21 @@ export const General = ({ showImageManager }) => {
             dispatch(closeModalUpdateProd())
             dispatch(clearUpdateProductData())
         } catch (err) {
-            err.errorFields && err.errorFields.forEach((error) => {
-                notification.error({
-                    message: 'Error',
-                    description: error.errors[0],
-                    duration: 10
+            if (err?.errorFields?.length) {
+                err.errorFields.forEach((error) => {
+                    notification.error({
+                        message: 'Error',
+                        description: error.errors?.[0] || 'Revisa los valores ingresados.',
+                        duration: 10
+                    })
                 })
+                return;
+            }
+            console.error('Error al guardar el producto:', err);
+            notification.error({
+                message: 'No se pudo completar la operación',
+                description: err?.message || 'Intenta de nuevo más tarde.',
+                duration: 10
             })
         } finally {
             setSubmit(false)
@@ -116,7 +204,7 @@ export const General = ({ showImageManager }) => {
                 layout="vertical"
                 onFinish={onFinish}
                 onValuesChange={handleChangeValues}
-                initialValues={{ ...product }}
+                initialValues={normalizedProduct}
                 style={{
                     gap: '10px',
                     display: 'grid',
@@ -137,6 +225,7 @@ export const General = ({ showImageManager }) => {
                         >
                             <ProductInfo
                                 product={product}
+                                productBrands={productBrands}
                             />
                             <InventoryInfo
                                 product={product}

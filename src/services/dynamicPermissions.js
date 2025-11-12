@@ -5,11 +5,10 @@ import {
   setDoc, 
   updateDoc, 
   deleteDoc,
-  query,
-  where,
   getDocs,
   serverTimestamp
 } from 'firebase/firestore';
+
 import { db } from '../firebase/firebaseconfig';
 
 /**
@@ -21,8 +20,20 @@ import { db } from '../firebase/firebaseconfig';
 // Cada rol tiene sus propios permisos dinámicos disponibles
 export const AVAILABLE_PERMISSIONS_BY_ROLE = {  // Permisos dinámicos para cajeros
   cashier: [
-    { action: 'read', subject: 'PriceList', label: 'Ver Lista de Precios', category: 'pricing' },
-    { action: 'modify', subject: 'Price', label: 'Modificar Precios', category: 'pricing' },
+    {
+      action: 'read',
+      subject: 'PriceList',
+      label: 'Ver lista de precios en carrito',
+      description: 'Permite consultar la lista de precios mientras se toma una venta desde el carrito.',
+      category: 'Ventas · Carrito',
+    },
+    {
+      action: 'modify',
+      subject: 'Price',
+      label: 'Modificar precios en facturación',
+      description: 'Autoriza actualizar manualmente los precios durante la facturación.',
+      category: 'Ventas · Carrito',
+    },
   ],
   
   // Permisos dinámicos para administradores (por si en el futuro se necesita)
@@ -176,7 +187,7 @@ export const setUserDynamicPermissions = async (currentUser, userId, permissions
  * @param {string} currentUserID - ID del usuario que ejecuta la migración
  * @returns {Promise<Object>} Resultado de la migración
  */
-export const migrateCashierPermissions = async (businessID, currentUserID) => {
+export const migrateCashierPermissions = async (_businessID, _currentUserID) => {
   try {
     // Esta función se ejecutará una vez para migrar usuarios existentes
     // Se podría llamar desde un componente admin o script de migración

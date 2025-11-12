@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
 import { InputNumber, Table, Form } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { changeProductPrice, selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux';
+
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
+import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
 
 const columns = [
     {
@@ -63,7 +64,6 @@ const columns = [
 export const PriceCalculator = () => {
     const { product } = useSelector(selectUpdateProductData);
     const [tableData, setTableData] = useState([]);
-    const dispatch = useDispatch();
     const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);    
 
     const calculateTableData = (productData) => {
@@ -88,6 +88,20 @@ export const PriceCalculator = () => {
                 description: 'Precio Mínimo',
                 name: ['pricing', 'minPrice'],
                 amount: productData.pricing.minPrice,
+            },
+            {
+                key: '4',
+                cost: productData.pricing.cost,
+                description: 'Precio Tarjeta',
+                name: ['pricing', 'cardPrice'],
+                amount: productData.pricing.cardPrice,
+            },
+            {
+                key: '5',
+                cost: productData.pricing.cost,
+                description: 'Precio Oferta',
+                name: ['pricing', 'offerPrice'],
+                amount: productData.pricing.offerPrice,
             }
         ];        return prices.map(row => {
             // Asegúrate de que tienes números válidos y no indefinidos
@@ -109,12 +123,14 @@ export const PriceCalculator = () => {
             const itbis = taxReceiptEnabled ? (amount * tax) : 0;
             const finalPrice = amount + itbis;
             // El margen es la ganancia = precio sin itbis - costo
-            const margin = amount - costUnit;
+            const rawMargin = amount - costUnit;
+            const hasPrice = amount > 0;
+            const margin = hasPrice ? rawMargin : 0;
 
             // Verifica si los cálculos son válidos
-            const isCalculationValid = isFinite(margin) && isFinite(finalPrice) && amount > 0;
+            const isCalculationValid = hasPrice && isFinite(margin) && isFinite(finalPrice);
             // Porcentaje de ganancia sobre el precio de venta (sin itbis)
-            const percentBenefits = isCalculationValid && amount > 0 ? (margin / amount) * 100 : 0;
+            const percentBenefits = isCalculationValid ? (margin / amount) * 100 : 0;
 
             // Redondea y formatea los resultados
             return {
@@ -130,7 +146,7 @@ export const PriceCalculator = () => {
     useEffect(() => {
         const newTableData = calculateTableData(product);
         setTableData(newTableData);
-    }, [product.pricing.cost, product.pricing.tax, product.pricing.listPrice, product.pricing.avgPrice, product.pricing.minPrice, taxReceiptEnabled]);
+    }, [product.pricing.cost, product.pricing.tax, product.pricing.listPrice, product.pricing.avgPrice, product.pricing.minPrice, product.pricing.cardPrice, product.pricing.offerPrice, taxReceiptEnabled]);
     // Nota: Ya no sincronizamos pricing.price con el precio final (con ITBIS).
     // El campo pricing.price debe almacenar exclusivamente el listPrice (sin impuestos).
     // La sincronización a listPrice ocurre en el reducer changeProductPrice cuando cambia pricing.listPrice.

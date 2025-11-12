@@ -1,14 +1,16 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { Row } from './Table/Row'
-import { Line, P, SubTitle } from '../Receipt'
-import { Col } from './Table/Col'
-import { usePendingBalance } from '../../../../firebase/accountsReceivable/fbGetPendingBalance'
-import { selectUser } from '../../../../features/auth/userSlice'
+import React, { Fragment, useState } from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../../features/auth/userSlice'
+import { usePendingBalance } from '../../../../firebase/accountsReceivable/fbGetPendingBalance'
 import { useFormatPrice } from '../../../../hooks/useFormatPrice'
-import { Paragraph, Spacing, Subtitle } from '../Style'
 import { getProductsPrice, getProductsTax, getTotalDiscount } from '../../../../utils/pricing'
+import { Line, SubTitle } from '../Receipt'
+import { Paragraph, Spacing, Subtitle } from '../Style'
+
+import { Col } from './Table/Col'
+import { Row } from './Table/Row'
 
 export const PaymentArea = ({ data }) => {
     const [pendingBalance, setPendingBalance] = useState(0)

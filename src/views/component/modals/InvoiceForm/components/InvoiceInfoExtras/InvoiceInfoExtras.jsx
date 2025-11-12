@@ -1,9 +1,10 @@
+import { ClockCircleOutlined } from '@ant-design/icons'
+import { Alert, Tag } from 'antd'
 import { DateTime, Duration, } from 'luxon';
-import React, { useEffect, useState } from 'react'
-import * as antd from 'antd'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
-const { Alert, Typography } = antd
+
+
 export const InvoiceInfoExtras = ({ invoice }) => {
   const [remainingCancelationTime, setRemainingCancelationTime] = useState(0);
 
@@ -31,92 +32,44 @@ export const InvoiceInfoExtras = ({ invoice }) => {
     return duration.toFormat('hh:mm:ss');
   };
   return (
-    <div>
-      {remainingCancelationTime > 0 &&
-        <div>
-
+    <Container>
+      {remainingCancelationTime > 0 && (
+        <>
+          <TimeBadge>
+            <Tag 
+              icon={<ClockCircleOutlined />} 
+              color="warning"
+              style={{ 
+                fontSize: '14px', 
+                padding: '6px 12px',
+                borderRadius: '6px',
+                marginBottom: '12px'
+              }}
+            >
+              Tiempo restante: {formattedRemainingTime()}
+            </Tag>
+          </TimeBadge>
           <Alert
             closable
-
             message={`Tiempo restante para modificar la factura: ${formattedRemainingTime()}`}
             description="Una vez transcurrido este tiempo, no podrás realizar cambios en la factura."
             type="warning"
             showIcon
           />
-          <br />
-
-          <Resumen invoice={invoice} />
-
-
-        </div>
-
-      }
-    </div>
+        </>
+      )}
+    </Container>
   )
 }
-const Resumen = ({ invoice }) => {
-  return (
-    <div >
-      <Descriptions>
-        <Item>
-          <Typography.Text >
-            Articulos:
-          </Typography.Text>
-          <Typography.Text>
-            {invoice.totalShoppingItems.value}
-          </Typography.Text>
-        </Item>
-        <Item>
-          <Typography.Text >
-            Cambio:
-          </Typography.Text>
-          <Typography.Text type={
-            invoice.change.value < 0 ? 'danger' :
-              invoice.change.value == 0 ? 'success' : null}
-          >
-            {useFormatPrice(invoice.change.value)}
-          </Typography.Text>
-        </Item>
-        <Item>
-          <Typography.Text >
-            SubTotal:
-          </Typography.Text>
-          <Typography.Text >
-            {useFormatPrice(invoice.totalPurchaseWithoutTaxes.value)}
-          </Typography.Text>
-        </Item>
-        <Item>
-          <Typography.Text >
-            Impuestos:
-          </Typography.Text>
-          <Typography.Text>
-            {useFormatPrice(invoice.totalTaxes.value)}
-          </Typography.Text>
-        </Item>
-        <Item>
-          <Typography.Text >
-            Descuento:
-          </Typography.Text>
-          <Typography.Text>
-            {invoice.discount.value > 0 ? ` ${useFormatPrice((invoice.discount.value / 100) * invoice.totalPurchaseWithoutTaxes.value)}` : useFormatPrice('0.00')} ({invoice.discount.value}%)
-          </Typography.Text>
-        </Item>
-        <Item>
-          <Typography.Text >
-            Total:
-          </Typography.Text>
-          <Typography.Text>
-            {useFormatPrice(invoice.totalPurchase.value)}
-          </Typography.Text>
-        </Item>
-      </Descriptions>
-    </div>
-  )
-}
-const Item = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 `
-const Descriptions = styled.div`
-  max-width: 300px;
+
+const TimeBadge = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 `

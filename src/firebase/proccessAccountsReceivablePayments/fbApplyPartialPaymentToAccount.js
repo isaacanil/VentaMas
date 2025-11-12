@@ -1,8 +1,9 @@
-import { db } from "../firebaseconfig";
-import { doc, getDoc, Timestamp, runTransaction } from "firebase/firestore";
-import { fbGetInvoice } from "../invoices/fbGetInvoice";
+import { runTransaction } from "firebase/firestore";
+
 import { fbAddAccountReceivablePaymentReceipt } from "../accountsReceivable/fbAddAccountReceivablePaymentReceipt";
-import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
+import { db } from "../firebaseconfig";
+import { fbGetInvoice } from "../invoices/fbGetInvoice";
+
 import { 
     getInstallmentsByArId,
     createPaymentRecord,
@@ -13,9 +14,10 @@ import {
     validateAccountHasPendingBalance,
     validatePaymentAmount
 } from "./arPaymentUtils";
+import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 
 export const fbApplyPartialPaymentToAccount = async ({ user, paymentDetails }) => {
-    const { totalPaid, clientId, arId, paymentMethods, comments } = paymentDetails;
+    const { totalPaid, clientId, arId, paymentMethods, comments: _comments } = paymentDetails;
 
     try {
         // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente

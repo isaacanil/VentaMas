@@ -1,3 +1,4 @@
+// Candidate for deletion: no current imports reference these ability helpers.
 const ACTIONS = {
   CREATE: 'create',
   READ: 'read',
@@ -17,7 +18,6 @@ const SUBJECTS = {
   USER: 'user',
   CLIENT: 'client',
   PROVIDER: 'provider',
-  USER: 'user',
   CATEGORY: 'category',
   Invoice: 'invoice',
   ORDER: 'order',
@@ -31,4 +31,4 @@ const SUBJECTS = {
 
 export const getActionsAndSubjects = () => {
   return { ACTIONS, SUBJECTS };
-}
+};

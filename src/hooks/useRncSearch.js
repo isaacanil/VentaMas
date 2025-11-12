@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+
 import supabase from '../supabase/config';
 
 const FIELD_MAPPINGS = {
@@ -145,7 +146,7 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
       compareDgiiData(formData, data);
       
       return data;
-    } catch (err) {
+    } catch {
       clearAll();
       if (!silent) {
         setError("No se pudo consultar el RNC. Intente de nuevo más tarde.");

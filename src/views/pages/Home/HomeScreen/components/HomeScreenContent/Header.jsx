@@ -1,9 +1,9 @@
+import { DateTime } from 'luxon';
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+
 import { getBills } from '../../../../../../firebase/firebaseconfig'
-import { DateTime } from 'luxon';
-import { getSalesForCurrentDay } from '../../../../../../hooks/GetDailySales';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import { getSalesForCurrentDay } from '../../../../../../hooks/getDailySales';
 // Obtener la fecha y hora actual
 const today = DateTime.local();
 
@@ -14,7 +14,7 @@ const startDate = today.minus({ days: 1 }).startOf('day').toMillis();
 const endDate = today.endOf('day').toMillis();
 export const Header = () => {
     const [bills, setBills] = useState([])
-    const [date, setDate] = useState({startDate: startDate, endDate: endDate})
+    const [date] = useState({ startDate, endDate })
     useEffect(() => {
         getBills(setBills, date)
     }, [])

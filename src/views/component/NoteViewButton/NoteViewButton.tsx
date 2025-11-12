@@ -1,9 +1,11 @@
-import React from 'react';
 import { Button, Tooltip } from "antd";
+import React from 'react';
 import { useDispatch } from "react-redux";
+
 import { setNote } from "../../../features/noteModal/noteModalSlice";
 
-export function NoteButton({ value }) {
+type NoteValue = string | null | undefined;
+export function NoteButton({ value }: { value: NoteValue }) {
     const dispatch = useDispatch();
     const hasNote = Boolean(value);
 

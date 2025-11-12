@@ -1,7 +1,4 @@
 export const getPizzaType = (term1, term2, isComplete) => {
-    const regex = /Completa/;
-    const isTerm1Complete = term1.match(regex) !== null;
-    
     if (isComplete) {
       return `pizza ${term1}`;
     }
@@ -12,4 +9,3 @@ export const getPizzaType = (term1, term2, isComplete) => {
     
     return `pizza de ${term1}`;
   };
-

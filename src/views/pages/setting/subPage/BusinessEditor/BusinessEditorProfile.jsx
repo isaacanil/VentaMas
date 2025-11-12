@@ -1,24 +1,25 @@
+import { PlusOutlined, LoadingOutlined, ShopOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Select, message, Upload, Card, Typography } from 'antd';
+import imageCompression from 'browser-image-compression';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Form, Input, Button, Select, message, Upload, Card, Typography, Divider } from 'antd';
-import { PlusOutlined, LoadingOutlined, ShopOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
-import { fbUpdateBusinessInfo, fbUpdateBusinessLogo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 import styled from 'styled-components';
+
+import { selectBusinessData } from '../../../../../features/auth/businessSlice';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { fbUpdateBusinessInfo, fbUpdateBusinessLogo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
+
 import { countries } from './countries.json';
-import { useWindowWidth } from '../../../../../hooks/useWindowWidth';
-import imageCompression from 'browser-image-compression';
+
+
 
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const BusinessProfileEditor = () => {
   const business = useSelector(selectBusinessData);
   const [form] = Form.useForm();
   const user = useSelector(selectUser);
-  const isMobile = useWindowWidth(768);
   const [imageUrl, setImageUrl] = useState(business?.logoUrl || null);
   const [loading, setLoading] = useState(false);
 
@@ -55,6 +56,7 @@ const BusinessProfileEditor = () => {
       }
       return compressedFile;
     } catch (error) {
+      console.error('Error al comprimir la imagen', error);
       message.error('Error al comprimir la imagen');
       return null;
     }
@@ -77,6 +79,7 @@ const BusinessProfileEditor = () => {
       }
       return false;
     } catch (error) {
+      console.error('Error al procesar la imagen', error);
       message.error('Error al procesar la imagen');
       return false;
     }
@@ -97,22 +100,18 @@ const BusinessProfileEditor = () => {
         message.success('Logo actualizado correctamente');
       } catch (error) {
         setLoading(false);
+        console.error('Error al actualizar el logo', error);
         message.error('Error al actualizar el logo');
       }
     }
   };
 
-  const getBase64 = (img, callback) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(img);
-  };
-
   const handleSubmit = async (values) => {
     try {
       const invoiceData = {
-        invoiceMessage: values.invoice?.invoiceMessage || '',
-        invoiceType: values.invoice?.invoiceType || 'invoiceTemplate1',
+        invoiceMessage: business?.invoice?.invoiceMessage || '',
+        invoiceType: business?.invoice?.invoiceType || 'invoiceTemplate1',
+        ...(values?.invoice || {}),
       };
       const businessData = {
         ...business,
@@ -127,19 +126,15 @@ const BusinessProfileEditor = () => {
         address: values.address || '',
         name: values.name || '',
         businessType: values.businessType || 'general',
-        invoice: invoiceData      };
+        invoice: invoiceData,
+      };
 
       await fbUpdateBusinessInfo(user, businessData);
       message.success('Información actualizada');
     } catch (error) {
-      message.error('Error al actualizar la información');
+      console.error('Error al actualizar la información del negocio', error);
+      message.error(error?.message || 'Error al actualizar la información');
     }
-  };
-
-  const metadata = {
-    title: 'Información del negocio',
-    description:
-      'Agrega la información de tu negocio, como nombre, dirección, teléfono, país y provincia. Esta información se utilizará en tus facturas.',
   };
 
   const uploadButton = (
@@ -255,21 +250,6 @@ const BusinessProfileEditor = () => {
             label="Dirección"
             rules={[{ required: true, message: 'Por favor, ingresa la dirección' }]}>
             <Input placeholder="Calle 123, Colonia, Ciudad, Estado" />
-          </Form.Item>
-        </Card>
-      </FormSection>
-
-      <FormSection>
-        <Title level={4}>Configuración de Factura</Title>
-        <Card>
-          <Form.Item
-            name={['invoice', 'invoiceMessage']}
-            label="Mensaje en la factura"
-          >
-            <Input.TextArea 
-              rows={4} 
-              placeholder="Escribe un mensaje personalizado para la factura, como 'Gracias por su compra'" 
-            />
           </Form.Item>
         </Card>
       </FormSection>

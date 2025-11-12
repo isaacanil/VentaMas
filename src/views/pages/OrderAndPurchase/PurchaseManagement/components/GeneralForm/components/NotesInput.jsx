@@ -1,10 +1,10 @@
 import { Form, Input } from 'antd';
-import { useState, useEffect, useCallback } from 'react';
 import debounce from 'lodash/debounce';
+import { useState, useEffect, useCallback } from 'react';
 
 const { TextArea } = Input;
 
-const NotesInput = ({ initialValue = '', onNoteChange, errors }) => {
+const NotesInput = ({ initialValue = '', onNoteChange }) => {
     const [localNote, setLocalNote] = useState(initialValue);
 
     useEffect(() => {
@@ -27,9 +27,7 @@ const NotesInput = ({ initialValue = '', onNoteChange, errors }) => {
     };
 
     return (
-        <Form.Item
-            label="Notas"
-        >
+        <Form.Item label="Notas">
             <TextArea
                 value={localNote}
                 onChange={handleChange}

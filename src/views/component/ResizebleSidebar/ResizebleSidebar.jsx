@@ -15,7 +15,7 @@ const Content = styled.div`
    overflow-y: auto;
   /* background-color: #ffffff; */
 
-  padding: 1em 0.4em;
+  // padding: 0.4em 0;
   height: 100%;
 `;
 
@@ -33,17 +33,7 @@ export const ResizableSidebar = ({ Sidebar, children }) => {
   return (
     <Container>
       <ResizeContainer>
-        {/*<ResizableBox
-          width={300}
-          height={Infinity}
-          minConstraints={[200, Infinity]}
-          maxConstraints={[400, Infinity]}
-          resizeHandles={["e"]} // Lado derecho para redimensionar
-          style={{ height: '100%' }}
-        > */}
         {Sidebar}
-        {/* </ResizableBox>*/}
-
       </ResizeContainer>
       <Content>{children}</Content>
     </Container>

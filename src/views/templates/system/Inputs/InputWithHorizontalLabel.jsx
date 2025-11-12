@@ -1,6 +1,7 @@
-import styled from 'styled-components'
-import { FormattedValue } from '../FormattedValue/FormattedValue'
 import { InputNumber } from 'antd'
+import styled from 'styled-components'
+
+import { FormattedValue } from '../FormattedValue/FormattedValue'
 
 export const InputWithHorizontalLabel = ({ label = null, ...props }) => {
     return (

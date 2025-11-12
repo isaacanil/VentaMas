@@ -1,6 +1,7 @@
-import { useSelector } from 'react-redux';
-import { selectAbilities, selectAbilitiesLoading } from '../../features/abilities/abilitiesSlice';
 import { PureAbility } from '@casl/ability';
+import { useSelector } from 'react-redux';
+
+import { selectAbilities, selectAbilitiesLoading } from '../../features/abilities/abilitiesSlice';
 
 /**
  * Hook mejorado para usar permisos de usuario
@@ -44,7 +45,7 @@ export const usePermissions = () => {
  * HOC para componentes que requieren permisos específicos
  */
 export const withPermissions = (requiredPermissions) => (Component) => {
-    return (props) => {
+    const PermissionWrapper = (props) => {
         const { hasAllPermissions, loading } = usePermissions();
         
         if (loading) {
@@ -57,6 +58,10 @@ export const withPermissions = (requiredPermissions) => (Component) => {
         
         return <Component {...props} />;
     };
+    
+    PermissionWrapper.displayName = `withPermissions(${Component.displayName || Component.name || 'Component'})`;
+    
+    return PermissionWrapper;
 };
 
 // Ejemplo de uso:

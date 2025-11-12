@@ -1,5 +1,6 @@
-import { db, admin, arrayUnion } from '../../../core/config/firebase.js';
 import { https, logger } from 'firebase-functions';
+
+import { db, arrayUnion } from '../../../core/config/firebase.js';
 
 /**
  * Añade la referencia de una factura al cuadre de caja abierto del cajero.
@@ -59,7 +60,14 @@ export async function addBillToCashCountById(tx, user, invoiceRef, cashCountSnap
 
     const cashCountRef = cashCountSnap.ref;
     const cashCount = cashCountSnap.data().cashCount;
-    const cashCountId = cashCountData.id;
+    const cashCountId = cashCount?.id;
+
+    if (!cashCountId) {
+        throw new https.HttpsError(
+            "failed-precondition",
+            "El cuadre de caja no contiene un identificador válido"
+        );
+    }
     const state = cashCount.state;
     const sales = cashCount.sales || [];
 

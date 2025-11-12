@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
 import * as antd from 'antd';
-import { getTotalPrice } from '../../../../utils/pricing';
-import { addProduct } from '../../../../features/cart/cartSlice';
-const { Modal, Input, Form, Button } = antd;
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+
+import { addProduct } from '../../../../features/cart/cartSlice';
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { getTotalPrice } from '../../../../utils/pricing';
+
+const { Modal, Input, Form, Button } = antd;
+
 export const ProductWeightEntryModal = ({ isVisible, onCancel, onAdd, product }) => {
     const [form] = Form.useForm();
     const [totalPrice, setTotalPrice] = useState(0);
@@ -43,6 +46,7 @@ export const ProductWeightEntryModal = ({ isVisible, onCancel, onAdd, product })
                 }
             };
             dispatch(addProduct(productData));
+            onAdd?.(productData);
             form.resetFields();
             onCancel(); // Cerrar modal después de agregar el producto
         });
@@ -114,5 +118,3 @@ export const ProductWeightEntryModal = ({ isVisible, onCancel, onAdd, product })
         </Modal>
     );
 };
-
-

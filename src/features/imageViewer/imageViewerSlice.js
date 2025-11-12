@@ -14,8 +14,8 @@ const imageViewerSlice = createSlice({
       state.show = show;
       state.url = url || "";
     },
-    clearImageViewer: (state) =>{
-     state = initialState;
+    clearImageViewer: () =>{
+     return initialState;
     }
   },
 });

@@ -6,10 +6,10 @@ const WarningWrapper = styled.div`
   position: absolute;
   ${({ position }) => (position === 'top' ? 'top: 0;' : 'bottom: 0;')}
   left: 0;
-  width: 90px;
+  width: 105px;
   text-align: center;
-  line-height: 1.2em;
-  border-top-right-radius: 7px;
+  line-height: 1em;
+  border-top-right-radius: 10px;
   padding: ${({ position }) =>
     position === 'top' ? '0.2em 0.4em 0.6em' : '0.6em 0.4em 0.2em'};
   background: ${({ variant, isSelected }) => {

@@ -1,6 +1,6 @@
+import { motion, AnimatePresence } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export const Modal = ({ visible, onClose, children }) => {
     if (!visible) return null;

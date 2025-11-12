@@ -1,4 +1,4 @@
-import { money, getProductsIndividualDiscounts, hasIndividualDiscounts, getProductTax, getProductSubtotal } from '../utils/formatters.js';
+import { money, getProductsIndividualDiscounts, hasIndividualDiscounts, getProductTax } from '../utils/formatters.js';
 
 /* ───── bloque firma + etiqueta opcional ───── */
 function signatureBlock(label, extraLine) {

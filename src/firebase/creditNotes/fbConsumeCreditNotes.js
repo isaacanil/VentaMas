@@ -1,7 +1,9 @@
-import { doc, updateDoc, Timestamp, runTransaction } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { fbAddCreditNoteApplication } from "./fbAddCreditNoteApplication";
+import { doc, Timestamp, runTransaction } from "firebase/firestore";
+
 import { CREDIT_NOTE_STATUS } from "../../constants/creditNoteStatus";
+import { db } from "../firebaseconfig";
+
+import { fbAddCreditNoteApplication } from "./fbAddCreditNoteApplication";
 
 /**
  * Consume el saldo disponible de notas de crédito cuando se aplican a una factura

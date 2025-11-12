@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice';
 
-import { separator } from '../../../../../../hooks/separator';
-import { IngredientCard } from '../../../../../templates/system/customProduct/typePizza/IngredientCard';
-import { isEmpty } from '@firebase/util'
-import { Button } from '../../../../../templates/system/Button/Button';
-import { fbGetCustomProduct } from '../../../../../../firebase/products/customProduct/fbGetCustomProductTypePizza';
 import { selectUser } from '../../../../../../features/auth/userSlice';
+import { selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice';
+import { fbGetCustomProduct } from '../../../../../../firebase/products/customProduct/fbGetCustomProductTypePizza';
+import { separator } from '../../../../../../hooks/separator';
+import { Button } from '../../../../../templates/system/Button/Button';
+import { IngredientCard } from '../../../../../templates/system/customProduct/typePizza/IngredientCard';
+
 export const IngredientList = ({ handleIngredientOpen }) => {
     const user = useSelector(selectUser)
     const [customProduct, setCustomProduct] = useState('')

@@ -1,18 +1,19 @@
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { nanoid } from 'nanoid'
 import React, { useEffect, useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { handleModalCreateClient, toggleClientModal } from '../../../../../../features/modals/modalSlice'
-import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber'
-import { useFormatRNC } from '../../../../../../hooks/useFormatRNC'
-import { Button, ButtonGroup } from '../../../../../templates/system/Button/Button'
-import { Message } from '../../../../../templates/system/message/Message'
-import { fbAddClient } from '../../../../../../firebase/client/fbAddClient'
-import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient'
+
 import { OPERATION_MODES } from '../../../../../../constants/modes'
 import { selectUser } from '../../../../../../features/auth/userSlice'
+import { toggleClientModal } from '../../../../../../features/modals/modalSlice'
+import { fbAddClient } from '../../../../../../firebase/client/fbAddClient'
+import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient'
+import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber'
+import { useFormatRNC } from '../../../../../../hooks/useFormatRNC'
+import { Button } from '../../../../../templates/system/Button/Button'
+import { Message } from '../../../../../templates/system/message/Message'
 import Typography from '../../../../../templates/system/Typografy/Typografy'
 
 export const ClientForm = ({ isOpen, mode, data }) => {
@@ -57,14 +58,14 @@ export const ClientForm = ({ isOpen, mode, data }) => {
     const handleCreateClient = async () => {
         if (validateClient(client)) {            try {
                 fbAddClient(user, client)
-            } catch (error) {
+            } catch {
                 // Handle error appropriately
             }
         }
     }
     const handleUpdateClient = async () => {        try {
             fbUpdateClient(user, client)
-        } catch (error) {
+        } catch {
             // Handle error appropriately
         }
     }
@@ -81,7 +82,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                     status: false,
                     value: ''
                 }            })
-        } catch (error) {
+        } catch {
             // Handle error appropriately
         }
     }
@@ -89,7 +90,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
         if (mode === create) {            try {
                 await handleCreateClient();
                 await handleOpenModal();
-            } catch (err) {
+            } catch {
                 // Handle error appropriately
             }
         } else if (mode === update) {

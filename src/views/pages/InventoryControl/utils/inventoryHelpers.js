@@ -2,6 +2,7 @@
 // Pure / side-effect free helpers or helpers that only depend on Firestore SDK directly
 
 import { doc, getDoc } from 'firebase/firestore'
+
 import { db } from '../../../../firebase/firebaseconfig'
 
 export function sum(arr) {
@@ -91,7 +92,7 @@ export async function resolveLocationLabel(businessID, locKey) {
     }
 
     return parts.filter(Boolean).join(' / ')
-  } catch (e) {
+  } catch {
     return locKey
   }
 }

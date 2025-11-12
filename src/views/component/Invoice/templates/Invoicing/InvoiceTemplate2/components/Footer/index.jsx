@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { truncateString } from "../../../../../../../../utils/text/truncateString";
+
 import { useFormatPrice } from "../../../../../../../../hooks/useFormatPrice";
-import { getProductsPrice, getProductsTax, getTotalDiscount } from "../../../../../../../../utils/pricing";
+import { getProductsPrice, getTotalDiscount } from "../../../../../../../../utils/pricing";
 
 const PAYMENT_METHODS = {
     cash: 'Efectivo',
@@ -9,7 +9,7 @@ const PAYMENT_METHODS = {
     card: 'Tarjeta',
 };
 
-export default function Footer({ business, data }) {
+export default function Footer({ data }) {
 
     const subtotal = getProductsPrice(data?.products || []);
     const discount = getTotalDiscount(subtotal, data?.discount?.value || 0);

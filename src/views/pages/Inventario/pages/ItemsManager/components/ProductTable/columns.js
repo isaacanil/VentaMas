@@ -1,4 +1,4 @@
-const columns = [
+export const columns = [
     {
         title: 'Nombre',
         dataIndex: 'name',
@@ -6,7 +6,7 @@ const columns = [
         width: '20%',
         sorter: (a, b) => a.name.localeCompare(b.name),
         sortDirections: ['descend', 'ascend'],
-    
+
     },
     {
         title: 'Descripción',
@@ -16,4 +16,6 @@ const columns = [
         sorter: (a, b) => a.description.localeCompare(b.description),
         sortDirections: ['descend', 'ascend'],
     },
-]
+];
+
+export default columns;

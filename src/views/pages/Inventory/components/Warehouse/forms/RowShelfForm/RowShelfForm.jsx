@@ -1,50 +1,62 @@
 // components/forms/RowShelfForm.jsx
-import React, { useEffect } from "react";
 import * as antd from "antd";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { clearRowShelfForm, closeRowShelfForm, selectRowShelfState, setRowShelfError, setRowShelfLoading, updateRowShelfFormData } from "../../../../../../../features/warehouse/rowShelfModalSlice";
 import { createRowShelf, updateRowShelf } from "../../../../../../../firebase/warehouse/RowShelfService";
-import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
-import { clearRowShelfForm, closeRowShelfForm, selectRowShelfState, updateRowShelfFormData } from "../../../../../../../features/warehouse/rowShelfModalSlice";
-const { Form, Input, Button, Modal, message } = antd;
+
+const { Form, Input, Button, Modal, Spin, message } = antd;
 
 export default function RowShelfForm() {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
 
   const user = useSelector(selectUser);
-  const { selectedWarehouse, selectedShelf, selectedRowShelf } = useSelector(selectWarehouse);
-  const { formData, isOpen, path } = useSelector(selectRowShelfState); // Destructurar 'path' desde el estado
+  const { formData, isOpen, path, loading } = useSelector(selectRowShelfState);
 
   useEffect(() => {
-    if (formData) {
-      form.setFieldsValue(formData); // Rellenar el formulario con los datos de la fila de estante para editar
+    if (isOpen) {
+      if (formData?.id) {
+        form.setFieldsValue(formData);
+      } else {
+        form.resetFields();
+      }
     } else {
-      form.resetFields(); // Limpiar el formulario si es una nueva fila de estante
+      form.resetFields();
     }
-  }, [formData, form]); // Añadir 'form' a las dependencias
+  }, [isOpen, formData, form]);
 
   const handleFinish = async (values) => {
     try {
+      dispatch(setRowShelfError(null));
+      dispatch(setRowShelfLoading(true));
+
+      const warehouseId = path[0]?.id;
+      const shelfId = path[1]?.id;
+      if (!warehouseId || !shelfId) {
+        throw new Error('No se encontró el contexto completo de ubicación');
+      }
+
       const newRowShelf = {
         ...formData,
         ...values,
-        capacity: parseInt(values.capacity, 10), // Convertir la capacidad a entero
+        capacity: Number.isNaN(parseInt(values.capacity, 10)) ? 0 : parseInt(values.capacity, 10),
+        warehouseId,
+        shelfId,
       };
 
       if (formData?.id) {
         await updateRowShelf(
           user,
-          selectedWarehouse?.id,
-          selectedShelf?.id,
-          formData?.id,
+          warehouseId,
+          shelfId,
+          formData.id,
           newRowShelf
         );
         message.success("Fila de estante actualizada con éxito.");
       } else {
-        // Crear una nueva fila de estante
-        const warehouseId = path[0]?.id; // Utilizar 'path' para obtener el ID del almacén
-        const shelfId = path[1]?.id; // Utilizar 'path' para obtener el ID del estante
         await createRowShelf(
           user,
           warehouseId,
@@ -57,7 +69,10 @@ export default function RowShelfForm() {
       handleClose();
     } catch (error) {
       console.error("Error al guardar la fila de estante: ", error);
-      message.error("Error al guardar la fila de estante."); // Mostrar mensaje de error
+      message.error(error.message || "Error al guardar la fila de estante.");
+      dispatch(setRowShelfError(error.message || 'Error al guardar la fila de estante.'));
+    } finally {
+      dispatch(setRowShelfLoading(false));
     }
   };
 
@@ -67,8 +82,8 @@ export default function RowShelfForm() {
     form.resetFields();
   };
 
-  const handleFormChange = (changedFields) => {
-    dispatch(updateRowShelfFormData(changedFields)); // Actualiza el estado del formulario
+  const handleFormChange = (_, allValues) => {
+    dispatch(updateRowShelfFormData(allValues));
   };
 
   return (
@@ -77,40 +92,43 @@ export default function RowShelfForm() {
       open={isOpen}
       onCancel={handleClose}
       footer={null} // No mostrar pie de página de botones por defecto
+      destroyOnClose
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={formData}
-        onFinish={handleFinish}
-        onValuesChange={handleFormChange}
-      >
-        <Form.Item
-          name="name"
-          label="Nombre"
-          rules={[{ required: true, message: "Por favor, ingrese el nombre" }]}
+      <Spin spinning={loading} tip={formData?.id ? "Actualizando fila..." : "Creando fila..."}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={formData}
+          onFinish={handleFinish}
+          onValuesChange={handleFormChange}
         >
-          <Input />
-        </Form.Item>
-        <Form.Item name="shortName" label="Nombre Corto">
-          <Input />
-        </Form.Item>
-        <Form.Item name="description" label="Descripción">
-          <Input.TextArea />
-        </Form.Item>
-        <Form.Item
-          name="capacity"
-          label="Capacidad"
-          rules={[{ required: true, message: "Por favor, ingrese la capacidad" }]}
-        >
-          <Input type="number" min="0" />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Guardar
-          </Button>
-        </Form.Item>
-      </Form>
+          <Form.Item
+            name="name"
+            label="Nombre"
+            rules={[{ required: true, message: "Por favor, ingrese el nombre" }]}
+          >
+            <Input disabled={loading} />
+          </Form.Item>
+          <Form.Item name="shortName" label="Nombre Corto">
+            <Input disabled={loading} />
+          </Form.Item>
+          <Form.Item name="description" label="Descripción">
+            <Input.TextArea disabled={loading} />
+          </Form.Item>
+          <Form.Item
+            name="capacity"
+            label="Capacidad"
+            rules={[{ required: true, message: "Por favor, ingrese la capacidad" }]}
+          >
+            <Input type="number" min="0" disabled={loading} />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading} block>
+              Guardar
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
     </Modal>
   );
 }

@@ -1,5 +1,7 @@
 import React from 'react'
+
 import Style from './plusIcon.module.scss'
+
 export const PlusIcon = () => {
     return (
         <div className={Style.Container}>

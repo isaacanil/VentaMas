@@ -140,7 +140,6 @@ export class HandlerFactoryUtils {
   static createListHandler(config) {
     const { 
       context, 
-      command, 
       loadFunction, 
       formatter, 
       itemType = 'elementos',
@@ -170,7 +169,6 @@ export class HandlerFactoryUtils {
   static createSelectionHandler(config) {
     const { 
       context, 
-      command, 
       loadFunction, 
       onSelect, 
       itemType = 'elementos' 

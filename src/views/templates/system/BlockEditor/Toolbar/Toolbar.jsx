@@ -1,9 +1,10 @@
-import React from 'react';
 import { RichUtils, convertToRaw } from 'draft-js';
-import styled from 'styled-components';
-import { fbAddChangelog } from '../../../../../firebase/AppUpdate/fbAddAppUpdate';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { icons } from '../../../../../constants/icons/icons';
+import { fbAddChangelog } from '../../../../../firebase/AppUpdate/fbAddAppUpdate';
 import { DropdownMenu } from '../../DropdownMenu/DropdowMenu';
 
 const Toolbar = ({ editorState, setEditorState, onClear }) => {
@@ -36,7 +37,7 @@ const Toolbar = ({ editorState, setEditorState, onClear }) => {
             await fbAddChangelog(jsonString);
 
         } catch (error) {
-
+            console.error('Error saving changelog:', error);
         }
     }
     const handleClose = () => {

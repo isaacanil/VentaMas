@@ -1,7 +1,8 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
 import { OPERATION_MODES } from '../../../../constants/modes'
 import { toggleClientModal } from '../../../../features/modals/modalSlice'
 import { Button } from '../../../templates/system/Button/Button'

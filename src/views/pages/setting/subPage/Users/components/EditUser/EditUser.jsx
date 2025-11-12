@@ -1,18 +1,20 @@
 import { Fragment, useState } from 'react'
-import styled from 'styled-components'
-import { InputV4 } from '../../../../../../templates/system/Inputs/GeneralInput/InputV4'
-import ElemLabel from '../../../../../../templates/system/ElemLabel/ElemLabel'
-import { icons } from '../../../../../../../constants/icons/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
-import { ErrorComponent } from '../../../../../../templates/system/ErrorComponent/ErrorComponent'
+import styled from 'styled-components'
+
+import { icons } from '../../../../../../../constants/icons/icons'
 import { clear, selectUserManager, setErrors, updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice'
-import { ChangePassword } from './ChangePassword/ChangePassword'
-import { Select } from '../../../../../../templates/system/Select/Select'
 import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser'
-import DynamicPermissionsManager from '../DynamicPermissionsManager'
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities'
+import { Button, ButtonGroup } from '../../../../../../templates/system/Button/Button'
+import ElemLabel from '../../../../../../templates/system/ElemLabel/ElemLabel'
+import { ErrorComponent } from '../../../../../../templates/system/ErrorComponent/ErrorComponent'
+import { InputV4 } from '../../../../../../templates/system/Inputs/GeneralInput/InputV4'
+import { Select } from '../../../../../../templates/system/Select/Select'
+import DynamicPermissionsManager from '../DynamicPermissionsManager'
+
+import { ChangePassword } from './ChangePassword/ChangePassword'
 
 const formIcon = icons.forms
 
@@ -88,9 +90,6 @@ const EditUser = () => {
         }
         if (passwordErrors.length > 0) {
             errors.password = passwordErrors;
-
-        } else {
-
         }
         return errors;
     };
@@ -151,41 +150,39 @@ const EditUser = () => {
                         onChange={(e) => handleInputChange({ ["role"]: e.target.value?.id })}
                     />
                     <ElemLabel
-                        children={
-                            <Button
-                                tooltipDescription={user.active ? 'desactivar' : 'activar'}
-                                tooltipPlacement={'top'}
-                                title={!user.active ? 'activar' : 'desactivar'}
-                                bgcolor={!user.active ? 'gray' : 'error'}
-                                borderRadius={'light'}
-                                onClick={() => handleInputChange({ ["active"]: !user.active })}
-                            />
-                        }
                         label={'Estado del usuario ' + (user.active ? 'activo' : 'inactivo')}
-                    />                    <ElemLabel
-                        children={
-                            <Button
-                                title={'Cambiar Contraseña'}
-                                bgcolor={'gray'}
-                                borderRadius={'light'}
-                                onClick={handleIsOpenChangePassWord}
-                            />
-                        }
+                    >
+                        <Button
+                            tooltipDescription={user.active ? 'desactivar' : 'activar'}
+                            tooltipPlacement={'top'}
+                            title={!user.active ? 'activar' : 'desactivar'}
+                            bgcolor={!user.active ? 'gray' : 'error'}
+                            borderRadius={'light'}
+                            onClick={() => handleInputChange({ ["active"]: !user.active })}
+                        />
+                    </ElemLabel>
+                    <ElemLabel
                         label={'Cambiar Contraseña'}
-                    />
+                    >
+                        <Button
+                            title={'Cambiar Contraseña'}
+                            bgcolor={'gray'}
+                            borderRadius={'light'}
+                            onClick={handleIsOpenChangePassWord}
+                        />
+                    </ElemLabel>
 
                     {canManagePermissions && (
                         <ElemLabel
-                            children={
-                                <Button
-                                    title={'Gestionar Permisos'}
-                                    bgcolor={'primary'}
-                                    borderRadius={'light'}
-                                    onClick={handleIsOpenPermissions}
-                                />
-                            }
                             label={'Permisos Dinámicos'}
-                        />
+                        >
+                            <Button
+                                title={'Gestionar Permisos'}
+                                bgcolor={'primary'}
+                                borderRadius={'light'}
+                                onClick={handleIsOpenPermissions}
+                            />
+                        </ElemLabel>
                     )}
 
                     <ErrorComponent errors={errors.firebase}></ErrorComponent>
@@ -250,8 +247,4 @@ const Footer = styled.div`
     display: flex;
     justify-content: end;
     padding: 0 1em;
-`
-const Group = styled.div`
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
 `

@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { CategoryItem } from '../ListItem/CategoryItem'
+
 import { useFbGetExpensesCategories } from '../../../../../../firebase/expenses/categories/fbGetExpensesCategories';
 import { filterData } from '../../../../../../hooks/search/useSearch';
+import { CategoryItem } from '../ListItem/CategoryItem'
 // import { useFbGetCategories } from '../../../../../firebase/categories/useFbGetCategories'
 // import { filterData } from '../../../../../hooks/search/useSearch'
 

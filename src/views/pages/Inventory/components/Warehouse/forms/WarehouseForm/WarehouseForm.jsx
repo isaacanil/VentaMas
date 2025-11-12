@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
 import * as antd from "antd";
-import styled from "styled-components";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import styled from "styled-components";
+
 import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
 import { 
     selectWarehouseModalState, 
     closeWarehouseForm, 
     setWarehouseLoading, 
     setWarehouseError 
 } from "../../../../../../../features/warehouse/warehouseModalSlice";
+import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
 
 const { Button, Input, InputNumber, Form, Spin, Modal } = antd;
 
@@ -35,7 +36,7 @@ const StyledButton = styled(Button)`
 export function WarehouseForm() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { isOpen, formData, loading, error } = useSelector(selectWarehouseModalState);
+  const { isOpen, formData, loading } = useSelector(selectWarehouseModalState);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export function WarehouseForm() {
 
   const handleSubmit = async () => {
     try {
+      dispatch(setWarehouseError(null));
       await form.validateFields(); // Validate form fields
       let data = form.getFieldsValue(); // Get form values
       
@@ -79,7 +81,7 @@ export function WarehouseForm() {
       } else {
         await createWarehouse(user, data); // Create new warehouse
       }
-      dispatch(closeWarehouseForm()); // Close the modal after submission
+      handleClose(); // Close the modal after submission
       antd.message.success(`Almacén ${formData ? "actualizado" : "creado"} correctamente`);
     } catch (error) {
       antd.message.error("Ocurrió un error al procesar la solicitud.");
@@ -90,11 +92,17 @@ export function WarehouseForm() {
     }
   };
 
+  const handleClose = () => {
+    dispatch(closeWarehouseForm());
+    form.resetFields();
+  };
+
   return (
     <Modal
       title={formData && formData.id ? "Actualizar Información del Almacén" : "Información del Almacén"}
       open={isOpen}
-      onCancel={() => dispatch(closeWarehouseForm())}
+      onCancel={handleClose}
+      destroyOnClose
       footer={null} // Remove default footer
     >
       <Spin

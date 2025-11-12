@@ -1,5 +1,6 @@
-import React from 'react'
 import * as ant from 'antd'
+import React from 'react'
+
 const { Card, Space, Input, Form } = ant
 export const QRCode = ({ product }) => {
     return (
@@ -24,7 +25,7 @@ export const QRCode = ({ product }) => {
                     value={product?.qrcode || '-'}
                 />
                 <Form.Item
-                    name="qrCode"
+                    name="qrcode"
                     style={
                         {
                             marginBottom: 0
@@ -36,7 +37,6 @@ export const QRCode = ({ product }) => {
 
                         placeholder="Código QR"
                         maxLength={60}
-                        value={product?.qrcode}
                     />
                 </Form.Item>
             </Space>

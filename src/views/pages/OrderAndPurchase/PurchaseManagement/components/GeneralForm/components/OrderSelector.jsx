@@ -1,14 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
-import { Form, Input, Drawer, message, Button, Space, Empty } from 'antd';
-import styled from 'styled-components';
-import DateUtils from '../../../../../../../utils/date/dateUtils';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
-import { getOrderData, selectPurchase } from '../../../../../../../features/purchase/addPurchaseSlice';
-import { useSelector, useDispatch } from 'react-redux';
-import { normalizeText } from '../../../../../../../utils/text';
-import { icons } from '../../../../../../../constants/icons/icons';
 import { LoadingOutlined } from '@ant-design/icons';
+import { Form, Input, Drawer, message, Button, Space, Empty } from 'antd';
+import { useState, useRef, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { icons } from '../../../../../../../constants/icons/icons';
+import { getOrderData, selectPurchase } from '../../../../../../../features/purchase/addPurchaseSlice';
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+import DateUtils from '../../../../../../../utils/date/dateUtils';
+import { normalizeText } from '../../../../../../../utils/text';
 import { calculateOrderTotals } from '../../../../OrderManagement/utils/orderCalculationsUtil';
 
 const Wrapper = styled.div`
@@ -92,7 +93,7 @@ const OrderSelector = ({ orders, orderLoading }) => {
     const [search, setSearch] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const searchInputRef = useRef(null);
-    const { provider: providerId, orderId } = useSelector(selectPurchase);
+    const { orderId } = useSelector(selectPurchase);
     const navigate = useNavigate();
 
     useEffect(() => {

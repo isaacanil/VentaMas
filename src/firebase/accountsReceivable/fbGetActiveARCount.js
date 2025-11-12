@@ -1,4 +1,5 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export async function fbGetActiveARCount(businessID, clientId) {

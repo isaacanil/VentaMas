@@ -1,14 +1,16 @@
 import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../firebaseconfig";
-import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../features/auth/userSlice";
 import { useEffect, useState } from "react";
-import { selectTaxReceiptType } from "../../features/taxReceipt/taxReceiptSlice";
+import { useDispatch, useSelector } from "react-redux";
+
+import { selectUser } from "../../features/auth/userSlice";
+import { selectNcfType, selectTaxReceiptType } from "../../features/taxReceipt/taxReceiptSlice";
 import { serializeFirestoreDocuments } from "../../utils/serialization/serializeFirestoreData";
+import { db } from "../firebaseconfig";
 
 export const fbGetTaxReceipt = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
+  const currentNcfType = useSelector(selectNcfType);
 
   const [taxReceipt, setTaxReceipt] = useState([]);
   const [isLoading, setLoading] = useState(true);
@@ -33,7 +35,16 @@ export const fbGetTaxReceipt = () => {
           const serializedTaxReceipts = serializeFirestoreDocuments(taxReceiptsArray);
           setTaxReceipt(serializedTaxReceipts);
           const defaultOption = serializedTaxReceipts.find(item => item.data.name === 'CONSUMIDOR FINAL');
-          dispatch(selectTaxReceiptType(defaultOption?.data.name));
+          const availableTypes = serializedTaxReceipts.map(item => item.data.name).filter(Boolean);
+          const fallbackType = defaultOption?.data?.name || availableTypes[0] || null;
+
+          const shouldSelectFallback =
+            !currentNcfType ||
+            (currentNcfType && !availableTypes.includes(currentNcfType));
+
+          if (shouldSelectFallback && fallbackType) {
+            dispatch(selectTaxReceiptType(fallbackType));
+          }
           setLoading(false); // Set loading to false after data is fetched
         },
         (error) => {
@@ -50,7 +61,7 @@ export const fbGetTaxReceipt = () => {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [user, dispatch]);
+  }, [user, dispatch, currentNcfType]);
 
   return { taxReceipt, isLoading };
 };

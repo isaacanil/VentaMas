@@ -1,21 +1,24 @@
-import { Setting } from "../../views/pages/setting/setting";
-import { TaxReceiptSetting } from "../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting";
-import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
-import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
-import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
+import AuthorizationFlowConfig from "../../views/component/GeneralConfig/configs/AuthorizationFlowConfig";
 import BillingConfig from "../../views/component/GeneralConfig/configs/BillingConfig";
+import InventoryConfig from "../../views/component/GeneralConfig/configs/InventoryConfig";
+import GeneralConfig from "../../views/component/GeneralConfig/GeneralConfig";
+import SwitchBusiness from "../../views/pages/dev/SwitchBusiness";
+import { Setting } from "../../views/pages/setting/setting";
 import AppInfo from "../../views/pages/setting/subPage/AppInfo/AppInfo";
-import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
 import BusinessCreator from "../../views/pages/setting/subPage/BusinessEditor/BusinessCreator";
-import EditUser from "../../views/pages/setting/subPage/Users/components/EditUser/EditUser";
+import BusinessInfo from "../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile";
+import { TaxReceiptSetting } from "../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting";
 import { UserList } from "../../views/pages/setting/subPage/Users/components/UsersList/UserList";
-import ROUTES_NAME from "../routesName";
+import { UserAdmin } from "../../views/pages/setting/subPage/Users/UserAdmin";
+import { UserSessionLogs } from "../../views/pages/setting/subPage/Users/UserSessionLogs";
 import { getRelativePath } from "../getConfigRoute";
+import ROUTES_NAME from "../routesName";
 
 const {
     SETTINGS,
     USERS,
     USERS_LIST,
+    USERS_SESSION_LOGS,
     TAX_RECEIPT,
     SETTING,
     APP_INFO,
@@ -24,8 +27,9 @@ const {
     GENERAL_CONFIG_APP_INFO,
     GENERAL_CONFIG_BILLING,
     GENERAL_CONFIG_BUSINESS,
+    GENERAL_CONFIG_INVENTORY,
     GENERAL_CONFIG_TAX_RECEIPT,
-    GENERAL_CONFIG_USERS,
+    GENERAL_CONFIG_AUTHORIZATION,
 } = ROUTES_NAME.SETTING_TERM;
 
 const basePath = SETTINGS;
@@ -39,6 +43,10 @@ const Routes = [
             {
                 path: USERS_LIST,
                 element: <UserList />,
+            },
+            {
+                path: USERS_SESSION_LOGS,
+                element: <UserSessionLogs />,
             },
         ]
     },    {        path: `${SETTING}`,
@@ -57,12 +65,16 @@ const Routes = [
                 element: <BusinessInfo />,
             },
             {
+                path: getRelativePath(GENERAL_CONFIG_INVENTORY, SETTING),
+                element: <InventoryConfig />,
+            },
+            {
                 path: getRelativePath(GENERAL_CONFIG_TAX_RECEIPT, SETTING),
                 element: <TaxReceiptSetting />,
             },
             {
-                path: getRelativePath(GENERAL_CONFIG_USERS, SETTING),
-                element: <UserList />,
+                path: getRelativePath(GENERAL_CONFIG_AUTHORIZATION, SETTING),
+                element: <AuthorizationFlowConfig />,
             },
             {
                 path: getRelativePath(GENERAL_CONFIG_APP_INFO, SETTING),

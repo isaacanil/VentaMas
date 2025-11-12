@@ -1,22 +1,24 @@
-import React, { useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
+import React, { useMemo, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { selectUser } from '../../../../features/auth/userSlice'
+import { icons } from '../../../../constants/icons/icons'
 import { selectBusinessData } from '../../../../features/auth/businessSlice'
+import { selectUser } from '../../../../features/auth/userSlice'
 import { SelectSettingCart } from '../../../../features/cart/cartSlice'
 import { openNotificationCenter } from '../../../../features/notification/notificationCenterSlice'
-import { getMenuData } from '../MenuData/MenuData'
-import { hasDeveloperAccess } from '../../../../utils/menuAccess'
+import { userAccess } from '../../../../hooks/abilities/useAbilities'
 import ROUTES_PATH from '../../../../routes/routesName'
-import { icons } from '../../../../constants/icons/icons'
+import { hasDeveloperAccess } from '../../../../utils/menuAccess'
+import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu'
+import { WebName } from '../../system/WebName/WebName'
+import { getMenuData } from '../MenuData/MenuData'
+import { UserSection } from '../UserSection'
 
 import { MenuLink } from './MenuLink'
-import { UserSection } from '../UserSection'
-import { WebName } from '../../system/WebName/WebName'
-import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu'
+
 
 const SIDEBAR_VARIANTS = {
     open: {
@@ -40,16 +42,18 @@ const SIDEBAR_VARIANTS = {
 }
 
 const useMenuFiltering = () => {
-    const { billing: { billingMode } } = useSelector(SelectSettingCart)
+    const settings = useSelector(SelectSettingCart)
+    const { billing: { billingMode, authorizationFlowEnabled } } = settings
     const business = useSelector(selectBusinessData)
     const businessType = business?.businessType || null
     const links = getMenuData()
+    const canSeeDeveloperGroup = hasDeveloperAccess()
 
     return useMemo(() => {
         const filteredLinks = links.reduce((acc, item) => {
             let includeItem = true
             if (item.key && item.condition) {
-                includeItem = item.condition({ billingMode, businessType })
+                includeItem = item.condition({ billingMode, businessType, authorizationFlowEnabled })
             }
 
             if (!includeItem) return acc
@@ -59,7 +63,7 @@ const useMenuFiltering = () => {
             if (item.submenu) {
                 const filteredSubmenu = item.submenu.filter(subItem => {
                     if (subItem.key && subItem.condition) {
-                        return subItem.condition({ billingMode })
+                        return subItem.condition({ billingMode, authorizationFlowEnabled })
                     }
                     return true
                 })
@@ -83,11 +87,11 @@ const useMenuFiltering = () => {
             return acc
         }, {})
         // Remove developer group if user lacks developer access
-        if (!hasDeveloperAccess() && grouped.developer) {
+        if (!canSeeDeveloperGroup && grouped.developer) {
             delete grouped.developer
         }
         return grouped
-    }, [links, billingMode, businessType])
+    }, [links, billingMode, businessType, authorizationFlowEnabled, canSeeDeveloperGroup])
 }
 
 export const SideBar = ({ isOpen, handleOpenMenu }) => {
@@ -95,12 +99,15 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
     const navigate = useNavigate()
     const user = useSelector(selectUser)
     const groupedLinks = useMenuFiltering()
+    const { abilities } = userAccess()
+    const canAccessGeneralConfig = abilities.can('manage', 'Business') || abilities.can('manage', 'business-settings')
     
     const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM
 
     const handleGoToSetting = useCallback(() => {
+        if (!canAccessGeneralConfig) return
         navigate(GENERAL_CONFIG_BUSINESS)
-    }, [navigate, GENERAL_CONFIG_BUSINESS])
+    }, [canAccessGeneralConfig, navigate, GENERAL_CONFIG_BUSINESS])
 
     const handleOpenNotifications = useCallback(() => {
         dispatch(openNotificationCenter('taxReceipt'))
@@ -125,11 +132,13 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
                             onClick={handleOpenNotifications}
                             aria-label="Open notifications"
                         />
-                        <ButtonIconMenu
-                            icon={icons.operationModes.setting}
-                            onClick={handleGoToSetting}
-                            aria-label="Open settings"
-                        />
+                        {canAccessGeneralConfig && (
+                            <ButtonIconMenu
+                                icon={icons.operationModes.setting}
+                                onClick={handleGoToSetting}
+                                aria-label="Open settings"
+                            />
+                        )}
                     </ActionButtons>
                 </Header>
                 <UserSection user={user} />

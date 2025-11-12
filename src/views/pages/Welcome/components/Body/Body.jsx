@@ -1,15 +1,22 @@
+import { Spin } from 'antd'
+import { motion } from 'framer-motion'
 import React, { Suspense } from 'react'
 import styled from 'styled-components'
-import welcomeData from '../../WelcomeData.json'
-import { CardWelcome } from './CardWelcome/CardWelcome'
-import { motion } from 'framer-motion'
-import { Spin } from 'antd'
+
+import { lazyWithRetry } from '../../../../../utils/lazyWithRetry'
 import { uiImage } from '../../../../templates/system/FormattedValue/ui/uiImage'
+import welcomeData from '../../WelcomeData.json'
 import Features from '../Features/Features'
-import Testimonials from '../Testimonials/Testimonials'
+
+import { CardWelcome } from './CardWelcome/CardWelcome'
+
 
 // Lazy loading de componentes pesados
-const ImageGallery = React.lazy(() => import('../../../../component/ImageGallery/ImageGallery').then(module => ({ default: module.ImageGallery })))
+const ImageGallery = lazyWithRetry(
+  () => import('../../../../component/ImageGallery/ImageGallery')
+    .then(module => ({ default: module.ImageGallery })),
+  'ImageGallery'
+)
 
 const Body = () => {
   const containerVariants = {
@@ -125,12 +132,6 @@ const GallerySection = styled.div`
 `
 
 const FeaturesSection = styled.div`
-  margin: 0;
-  padding: 0;
-  width: 100%;
-`
-
-const TestimonialsSection = styled.div`
   margin: 0;
   padding: 0;
   width: 100%;

@@ -1,5 +1,23 @@
-import { doc, updateDoc, getDoc, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { doc, updateDoc, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+
 import { db } from "../firebaseconfig"; // Assuming firebaseconfig.js is in the parent directory
+
+const NUMERIC_FIELDS = ['sequence', 'sequenceLength', 'increase', 'quantity'];
+
+const normalizeTaxReceiptData = (raw = {}) => {
+    if (typeof raw !== 'object' || raw === null) return raw;
+
+    const sanitized = { ...raw };
+    NUMERIC_FIELDS.forEach((field) => {
+        if (sanitized[field] === undefined || sanitized[field] === null || sanitized[field] === '') return;
+        const numericValue = Number(sanitized[field]);
+        if (!Number.isNaN(numericValue) && Number.isFinite(numericValue)) {
+            sanitized[field] = numericValue;
+        }
+    });
+
+    return sanitized;
+};
 
 /**
  * Extrae el número de secuencia de un código NCF
@@ -79,7 +97,9 @@ export const updateTaxReceipt = async (user, data) => {
     try {
         const receiptRef = doc(db, "businesses", user.businessID, "taxReceipts", data.id);
         
-        await updateDoc(receiptRef, {data});
+        const normalizedData = normalizeTaxReceiptData(data);
+
+        await updateDoc(receiptRef, { data: normalizedData });
         console.log(`Tax receipt ${data.id} updated successfully.`);
 
     } catch (error) {

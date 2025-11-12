@@ -1,4 +1,5 @@
-import { Timestamp, doc, getDoc, updateDoc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp, writeBatch } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 import { fbUploadFiles } from "../img/fbUploadFileAndGetURL";
 import { safeTimestamp, updateLocalAttachmentsWithRemoteURLs } from "../purchase/fbAddPurchase";

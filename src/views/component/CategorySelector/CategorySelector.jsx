@@ -1,42 +1,34 @@
-import React, { useRef, useState } from 'react';
-import styled from 'styled-components';
-import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
-import { icons } from '../../../constants/icons/icons';
+import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addItem, deleteAllItems, SelectCategoryList, SelectCategoryState } from '../../../features/category/categorySlicer';
-import { CategoryBar } from './components/CategoryBar/CategoryBar';
-import { useClickOutSide } from '../../../hooks/useClickOutSide';
-import { fbAddFavoriteProductCategory } from '../../../firebase/categories/fbAddFavoriteProductCategory';
-import { fbRemoveFavoriteProductCategory } from '../../../firebase/categories/fbRemoveFavoriteProductCategory';
-import { selectUser } from '../../../features/auth/userSlice';
-import { filterFavoriteProductCategories } from '../../../utils/data/products/category'
-import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
-import { useGetFavoriteProductCategories } from '../../../firebase/categories/fbGetFavoriteProductCategories';
-import { useListenActiveIngredients } from '../../../firebase/products/activeIngredient/activeIngredients';
-import { fbToggleFavoriteProductCategory } from '../../../firebase/categories/fbToggleFavoriteProductCategory';
+import styled from 'styled-components';
 
-export const CategorySelector = ({ }) => {
+import { selectUser } from '../../../features/auth/userSlice';
+import { addItem, deleteAllItems, SelectCategoryList, SelectCategoryState } from '../../../features/category/categorySlicer';
+import { useGetFavoriteProductCategories } from '../../../firebase/categories/fbGetFavoriteProductCategories';
+import { fbToggleFavoriteProductCategory } from '../../../firebase/categories/fbToggleFavoriteProductCategory';
+import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
+import { useListenActiveIngredients } from '../../../firebase/products/activeIngredient/activeIngredients';
+import { useClickOutSide } from '../../../hooks/useClickOutSide';
+import { filterFavoriteProductCategories } from '../../../utils/data/products/category'
+
+import { CategoryBar } from './components/CategoryBar/CategoryBar';
+import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
+
+export const CategorySelector = () => {
   const dispatch = useDispatch()
   const user = useSelector(selectUser)
   const { categories } = useFbGetCategories()
   const favoriteProductCategoryArray = useGetFavoriteProductCategories(user)
   const categoriesSelected = useSelector(SelectCategoryList)
   const favoriteCategories = filterFavoriteProductCategories(categories, favoriteProductCategoryArray.favoriteCategories)
-  const { data: activeIngredients, loading } = useListenActiveIngredients()
+  const { data: activeIngredients = [] } = useListenActiveIngredients()
   const { items } = useSelector(SelectCategoryState)
   const handleToggleCategoryFavorite = async (category) => {
     await fbToggleFavoriteProductCategory(user, category)
   }
-  const handleDeleteFavorite = async (category) => {
-    try {
-      await fbRemoveFavoriteProductCategory(user, category.id)
-    } catch (error) {
-      console.error('Error al eliminar categoría de favoritos: ', error)
-    }
-  }
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
-  useClickOutSide(containerRef, open == true, () => setOpen(false));
+  useClickOutSide(containerRef, open === true, () => setOpen(false));
 
   function transformCategoriesToItems(categories) {
     return categories.map(item => {

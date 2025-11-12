@@ -1,5 +1,26 @@
 import React from 'react';
-import { TypographyStyle, variantToComponentMap } from './style/TypographyStyles';
+
+import { TypographyStyle } from './style/TypographyStyles';
+
+const variantToComponentMap = {
+  h1: 'h1',
+  h2: 'h2',
+  h3: 'h3',
+  h4: 'h4',
+  h5: 'h5',
+  h6: 'h6',
+  label: 'label',
+  l1: 'span',
+  l2: 'span',
+  l3: 'span',
+  span: 'span',
+  subtitle1: 'h6',
+  subtitle2: 'h6',
+  body1: 'p',
+  body2: 'p',
+  caption: 'span',
+  overline: 'span',
+};
 
 /**
  * Componente Typography para renderizar texto con estilos personalizados.

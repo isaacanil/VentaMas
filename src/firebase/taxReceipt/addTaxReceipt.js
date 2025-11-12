@@ -1,4 +1,5 @@
 import { collection, addDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig"; // Asegúrate que la ruta sea correcta
 
 /**

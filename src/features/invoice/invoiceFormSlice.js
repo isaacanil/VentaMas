@@ -1,6 +1,7 @@
-import { createSlice, nanoid } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
-import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTotalInvoice, getTotalItems } from '../../utils/pricing';
+
+import { getProductsPrice, getProductsTax, getProductsTotalPrice, getTotalItems } from '../../utils/pricing';
 
 const roundToTwoDecimals = (num) => {
     return Math.round(num * 100) / 100;
@@ -30,13 +31,11 @@ const calculateTotals = (products) => {
     };
 };
 
-
-const deleteProductAndUpdateTotals = (products, productId) => {
-    const updatedProducts = products.filter(product => product.id !== productId);
-    const { totalPurchase, totalTaxes } = calculateTotals(updatedProducts);
-
-    return { updatedProducts, totalPurchase, totalTaxes };
-};
+// const deleteProductAndUpdateTotals = (products, productId) => {
+//     const updatedProducts = products.filter(product => product.id !== productId);
+//     const { totalPurchase, totalTaxes } = calculateTotals(updatedProducts);
+//     return { updatedProducts, totalPurchase, totalTaxes };
+// };
 
 const calculateTotalItems = (products) => {
     let totalItems = getTotalItems(products);
@@ -46,8 +45,16 @@ const calculateTotalItems = (products) => {
     return totalItems;
 };
 
-const applyDiscount = (totalPurchase, discountPercentage) => {
-    const discountAmount = totalPurchase * (discountPercentage / 100);
+const applyDiscount = (totalPurchase, discountValue, discountType = 'percentage') => {
+    let discountAmount = 0;
+    
+    if (discountType === 'percentage') {
+        discountAmount = totalPurchase * (discountValue / 100);
+    } else if (discountType === 'fixed') {
+        // Para descuento fijo, el descuento no puede exceder el total
+        discountAmount = Math.min(discountValue, totalPurchase);
+    }
+    
     return roundToTwoDecimals(totalPurchase - discountAmount);
 };
 
@@ -114,7 +121,8 @@ const invoice = {
         value: 0
     },
     discount: {
-        value: 0
+        value: 0,
+        type: 'percentage' // 'percentage' o 'fixed'
     },
 };
 
@@ -123,7 +131,8 @@ const initialState = {
     modal: {
         isOpen: false,
         mode: "add",
-    }
+    },
+    authorizationRequest: null,
 };
 
 const invoiceFormSlice = createSlice({
@@ -131,7 +140,7 @@ const invoiceFormSlice = createSlice({
     initialState,
     reducers: {
         addInvoice(state, action) {
-            const { mode, invoice } = action.payload;
+            const { mode, invoice, authorizationRequest = null } = action.payload;
 
             // Asegúrate de que todos los productos tengan los cálculos correctos
             const products = invoice.products.map(product => {
@@ -156,7 +165,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (invoice.discount && invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, invoice.discount.value);
+                const discountType = invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, invoice.discount.value, discountType);
             }
 
             // Calcular el cambio si es necesario
@@ -171,6 +181,7 @@ const invoiceFormSlice = createSlice({
 
             state.modal.mode = mode || "add";
             state.modal.isOpen = true;
+            state.authorizationRequest = authorizationRequest;
 
 
 
@@ -206,7 +217,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             // Calcular el cambio si es necesario
@@ -238,7 +250,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (state.invoice.discount && state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             // Calcular el cambio si es necesario
@@ -271,7 +284,8 @@ const invoiceFormSlice = createSlice({
             state.invoice.totalPurchaseWithoutTaxes.value = calculateTotalPurchaseWithoutTaxes(state.invoice.products);
 
             if (state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             state.invoice.change.value = calculateChange(state.invoice.totalPurchase.value, state.invoice.payment.value);
@@ -315,7 +329,8 @@ const invoiceFormSlice = createSlice({
 
             // Aplicar descuento si existe
             if (state.invoice.discount.value) {
-                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value);
+                const discountType = state.invoice.discount.type || 'percentage';
+                state.invoice.totalPurchase.value = applyDiscount(state.invoice.totalPurchase.value, state.invoice.discount.value, discountType);
             }
 
             // Calcular el cambio
@@ -327,6 +342,7 @@ const invoiceFormSlice = createSlice({
 
             const clear = action?.payload?.clear || true;
             state.modal.isOpen = false;
+            state.authorizationRequest = null;
 
             if (clear) {
                 state.invoice = invoice;
@@ -337,6 +353,7 @@ const invoiceFormSlice = createSlice({
             state.invoice = invoice;
             state.modal.mode = "add";
             state.modal.isOpen = false;
+            state.authorizationRequest = null;
 
         },
     },

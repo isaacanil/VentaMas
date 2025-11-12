@@ -1,4 +1,5 @@
 import { doc, onSnapshot } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export const subscribeSinglePurchase = (businessID, purchaseId, callback) => {

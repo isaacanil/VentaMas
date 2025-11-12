@@ -1,6 +1,6 @@
-import React from 'react';
-import { Input } from 'antd';
 import { CalendarOutlined, CloseOutlined } from '@ant-design/icons';
+import { Input } from 'antd';
+import React from 'react';
 import styled from 'styled-components';
 
 const StyledInput = styled(Input)`

@@ -1,14 +1,16 @@
-import React from 'react'
-import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
-import WelcomeData from '../WelcomeData.json'
-import styled from 'styled-components'
-import ROUTES_NAME from '../../../../routes/routesName'
-import { useNavigate } from 'react-router-dom'
 import { Button } from 'antd'
 import { motion } from 'framer-motion'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+
+import ROUTES_NAME from '../../../../routes/routesName'
+import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
+import WelcomeData from '../WelcomeData.json'
+
 
 const Header = () => {
-    const { LOGIN, SIGNUP } = ROUTES_NAME.AUTH_TERM
+    const { LOGIN } = ROUTES_NAME.AUTH_TERM
     const navigate = useNavigate()
     
     const handleNavigate = (path) => {

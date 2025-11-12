@@ -1,16 +1,22 @@
-import styled from 'styled-components'
-import { ExportInvoice } from './components/Header/ExportInvoice'
 import { Drawer } from 'antd'
-import { Suspense, useMemo, lazy, memo } from 'react'
+import { Suspense, memo } from 'react'
+import styled from 'styled-components'
 
-const SaleReportTable = lazy(() => import('../../../InvoicesPage/SaleReportTable/SaleReportTable'));
+import { lazyWithRetry } from '../../../../../utils/lazyWithRetry'
+
+import { ExportInvoice } from './components/Header/ExportInvoice'
+
+const SaleReportTable = lazyWithRetry(
+    () => import('../../../InvoicesPage/SaleReportTable/SaleReportTable'),
+    'SaleReportTable'
+);
 
 const Spinner = () => (
     <div style={{ padding: '2em', textAlign: 'center' }}>Cargando...</div>
 )
 
 export const CashupInvoicesOverview = memo(({ invoices = [], isOpen, onClose }) => {
-    return (
+  return (
         <Drawer
             open={isOpen}
             onClose={onClose}
@@ -38,6 +44,8 @@ export const CashupInvoicesOverview = memo(({ invoices = [], isOpen, onClose }) 
         </Drawer>
     )
 })
+
+CashupInvoicesOverview.displayName = 'CashupInvoicesOverview'
 const Container = styled.div`
     height: 100%;
     width: 100%;

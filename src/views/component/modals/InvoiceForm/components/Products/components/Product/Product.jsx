@@ -1,15 +1,13 @@
-import * as antd from 'antd'
-const { Button, Input, Form } = antd
-import React from 'react'
+import { Button, Input } from 'antd'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
 import { icons } from '../../../../../../../../constants/icons/icons'
 import { changeAmountToBuyProduct } from '../../../../../../../../features/invoice/invoiceFormSlice'
-import { useDispatch } from 'react-redux'
-export const Product = ({ product, index, invoice }) => {
 
-  const dispatch = useDispatch()
+export const Product = ({ product }) => {
+  const dispatch = useDispatch();
   const increase = () => {
-    
     dispatch(changeAmountToBuyProduct({ product, type: "add" }))
   }
   const decrease = () => {
@@ -19,7 +17,6 @@ export const Product = ({ product, index, invoice }) => {
     return !isNaN(parseFloat(value)) && isFinite(value);
   }
   const onChange = (value) => {
-    
     value = Number(value)
     if (!isValidNumber(value)) return
     dispatch(changeAmountToBuyProduct({ product, amount: value, type: "change" }))

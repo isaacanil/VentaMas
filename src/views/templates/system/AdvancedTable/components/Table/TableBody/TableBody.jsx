@@ -1,8 +1,9 @@
 import React, { Fragment } from 'react';
-import { Row } from '../../../AdvancedTable';
 import styled from 'styled-components';
-import { CenteredText } from '../../../../CentredText';
+
 import Loader from '../../../../../../component/Loader/Loader';
+import { CenteredText } from '../../../../CentredText';
+import { Row } from '../../../AdvancedTable';
 import { CellRenderer } from '../../CellRenderer/CellRenderer';
 
 const Body = styled.div`
@@ -153,6 +154,13 @@ const GroupHeader = styled.div`
   font-weight: bold;
   // Otros estilos que desees agregar
 `;
+
+const ExpandedRow = styled.div`
+  padding: 1em;
+  background-color: var(--background-100, #f9f9f9);
+  border-top: 1px solid var(--Gray1);
+`;
+
 const BodyCell = styled.div`
   display: flex;
   align-items: center;

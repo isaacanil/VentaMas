@@ -1,8 +1,11 @@
 import styled, { css } from "styled-components";
-import { variants } from "./variants";
+
+import { getFontSize } from "../../../../../helper/styleHelper";
+
 import { colors } from "./colors"
 import { fontSize } from "./fontSize"
-import { getFontSize } from "../../../../../helper/styleHelper";
+import { variants } from "./variants";
+
 
 const variantToSizeMap = {
   app: {
@@ -96,22 +99,3 @@ export const TypographyStyle = styled.div`
     }
   `}
 `;
-export const variantToComponentMap = {
-  h1: 'h1',/*Heading */
-  h2: 'h2',
-  h3: 'h3',
-  h4: 'h4',
-  h5: 'h5',
-  h6: 'h6',
-  label: 'label',
-  l1: 'span',/*label */
-  l2: 'span',
-  l3: 'span',
-  span: 'span',
-  subtitle1: 'h6',
-  subtitle2: 'h6',
-  body1: 'p',
-  body2: 'p',
-  caption: 'span',
-  overline: 'span',
-};

@@ -1,18 +1,19 @@
+import { faListAlt, faTable, faSpinner, faChartPie, faDownload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { message, Button } from 'antd'
+import { DateTime } from 'luxon'
 import React, { useState } from 'react'
 import { useMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { message, Button } from 'antd'
-import routesName from '../../../../../routes/routesName'
-import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faListAlt, faTable, faSpinner, faChartPie, faDownload, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
-import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
-import { formatBill } from '../../../../../hooks/exportToExcel/formatBill'
-import { DateTime } from 'luxon'
-import { getBillExportCallback, createProfessionalReportCallback } from '../../../../../hooks/exportToExcel/exportConfig'
-import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
 
-export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData, onReportSaleOpen }) => {
+import { createProfessionalReportCallback } from '../../../../../hooks/exportToExcel/exportConfig'
+import { formatBill } from '../../../../../hooks/exportToExcel/formatBill'
+import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel'
+import useViewportWidth from '../../../../../hooks/windows/useViewportWidth'
+import routesName from '../../../../../routes/routesName'
+import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu'
+
+export const RegistroToolbar = ({ side = 'left', data, onReportSaleOpen }) => {
   const [isExporting, setIsExporting] = useState(false)
   const { BILLS } = routesName.SALES_TERM;
   const matchWithCashReconciliation = useMatch(BILLS);
@@ -40,7 +41,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
       // Delay mínimo para mostrar el loading
       const exportPromise = (async () => {
         switch (type) {
-          case 'Resumen':
+          case 'Resumen': {
             const resumenCallback = createProfessionalReportCallback(
               'Resumen', 
               'REPORTE DE FACTURACIÓN - RESUMEN'
@@ -52,7 +53,8 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
               resumenCallback
             );
             return 'El reporte resumen se ha generado correctamente';
-          case 'Detailed':
+          }
+          case 'Detailed': {
             const detailedCallback = createProfessionalReportCallback(
               'Detailed', 
               'REPORTE DE FACTURACIÓN - DETALLE POR PRODUCTO'
@@ -64,6 +66,7 @@ export const RegistroToolbar = ({ side = 'left', data, searchData, setSearchData
               detailedCallback
             );
             return 'El reporte detallado se ha generado correctamente';
+          }
           default:
             return 'Exportación completada';
         }
@@ -143,6 +146,5 @@ const SpinningIcon = styled(FontAwesomeIcon)`
         to { transform: rotate(360deg); }
     }
 `;
-
 
 

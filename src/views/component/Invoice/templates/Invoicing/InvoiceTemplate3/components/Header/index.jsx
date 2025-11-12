@@ -2,33 +2,8 @@ import { faEnvelope, faPhone } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 
-const getComprobanteInfo = (comprobante) => {
-    if (!comprobante) {
-        return {
-            title: 'RECIBO DE PAGO',
-            label: 'Número de Recibo',
-        };
-    }
-
-    if (comprobante.startsWith('B01')) {
-        return {
-            title: 'FACTURA DE CRÉDITO FISCAL',
-            label: 'NCF',
-        };
-    }
-
-    if (comprobante.startsWith('B02')) {
-        return {
-            title: 'FACTURA DE CONSUMO',
-            label: 'NCF',
-        };
-    }
-
-    return {
-        title: 'COMPROBANTE FISCAL',
-        label: 'NCF',
-    };
-};
+import { useFormatPhoneNumber } from "../../../../../../../../hooks/useFormatPhoneNumber";
+import { resolveDocumentIdentity } from "../../../../../../../../utils/invoice/documentIdentity.js";
 
 const formatDate = (dateObj) => {
     if (!dateObj) return '';
@@ -39,7 +14,28 @@ const formatDate = (dateObj) => {
 };
 
 export default function Header({ business, data }) {
-    const comprobanteInfo = getComprobanteInfo(data?.NCF);
+    const documentIdentity = resolveDocumentIdentity(data);
+    const isPreorder = documentIdentity.type === 'preorder';
+    const referenceNumber = isPreorder
+        ? documentIdentity.value || data?.preorderDetails?.numberID || data?.numberID
+        : data?.numberID;
+    const referenceLabel = isPreorder
+        ? 'Preventa'
+        : documentIdentity.title || 'Factura';
+    const shouldShowIdentityLine = !isPreorder && documentIdentity.label;
+
+    const formattedBusinessPhone = business?.tel ? useFormatPhoneNumber(business.tel) : null;
+    const primaryClientPhone = data?.client?.tel ? useFormatPhoneNumber(data.client.tel) : null;
+    const secondaryClientPhone = data?.client?.tel2 ? useFormatPhoneNumber(data.client.tel2) : null;
+
+    const clientDetails = [
+        { label: 'Cliente', value: data?.client?.name },
+        { label: 'ID', value: data?.client?.personalID },
+        { label: 'Teléfono', value: primaryClientPhone },
+        { label: 'Teléfono 2', value: secondaryClientPhone },
+        { label: 'Dirección', value: data?.client?.address },
+    ];
+
     return (
         <Container>
             {business?.logoUrl && (
@@ -52,8 +48,8 @@ export default function Header({ business, data }) {
                     <CompanyTitle>{business?.name || 'Ventamax Dev'}</CompanyTitle>
                     <p>{business?.address}</p>
                     {
-                        business?.tel && <p>
-                            <FontAwesomeIcon icon={faPhone} /> {business?.tel}
+                        formattedBusinessPhone && <p>
+                            <FontAwesomeIcon icon={faPhone} /> {formattedBusinessPhone}
                         </p>
                     }
                     {
@@ -66,46 +62,39 @@ export default function Header({ business, data }) {
                     }
                 </CompanyInfo>
                 <RightAlign>
-                    <Title>{comprobanteInfo.title}</Title>
+                    <Title>{documentIdentity.title}</Title>
                     <p>Fecha: {formatDate(data?.date)}</p>
                     <p>
-                        Factura {data?.type === 'preorder' ? 'Pedido' : data?.type} #{' '}
-                        {data?.numberID}
+                        {referenceLabel} # {referenceNumber || '-'}
                     </p>
+                    {shouldShowIdentityLine && (
+                        <p>
+                            {documentIdentity.label}: {documentIdentity.value || '-'}
+                        </p>
+                    )}
                     {data?.preorderDetails?.date && (
                         <p>Fecha de pedido: {formatDate(data?.preorderDetails?.date)}</p>
                     )}
                     {data?.dueDate && <p>Fecha que vence: {formatDate(data?.dueDate)}</p>}
-                    {data?.NCF && (
-                        <ComprobanteSection>
-                            <p>NCF: {data?.NCF}</p>
-                        </ComprobanteSection>
-                    )}
                 </RightAlign>
             </HeaderInfo>
             <CustomerInfo>
-                <div style={{ display: 'flex', gap: '1em' }}>
-                    <span>
-                        {data?.client?.name && (
-                            <p>
-                                <strong>Cliente:</strong> {data.client.name}
+                <ClientInfoColumn>
+                    {clientDetails
+                        .filter(detail => detail.value)
+                        .map(detail => (
+                            <p key={detail.label}>
+                                <strong>{detail.label}:</strong> {detail.value}
                             </p>
-                        )}
-                        {data?.client?.address && <p>Dirección: {data.client.address}</p>}
-                    </span>
-                    <span>
-                        {data?.client?.tel && <p>Tel: {data.client.tel}</p>}
-
-                        {data?.client?.personalID && <p>RNC: {data.client.personalID}</p>}
-                    </span>
-                </div>
-                <RightAlign>
-                    {data?.comprobante && (
+                        ))}
+                </ClientInfoColumn>
+                {documentIdentity.label && documentIdentity.type !== 'preorder' && (
+                    <RightAlign>
                         <p>
-                            {comprobanteInfo.label}: {data.comprobante}
+                            {documentIdentity.label}: {documentIdentity.value || '-'}
                         </p>
-                    )}
-                </RightAlign>
+                    </RightAlign>
+                )}
             </CustomerInfo>
         </Container>
     )
@@ -133,8 +122,9 @@ const CompanyInfo = styled.div`
 `;
 
 const CustomerInfo = styled(CompanyInfo)`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
 `;
 
 const CompanyTitle = styled.h2`
@@ -149,13 +139,6 @@ const RightAlign = styled.div`
   font-size: 14px;
 `;
 
-const ComprobanteSection = styled.div`
-
-  font-size: 14px;
-  text-align: right;
-`;
-
-
 const LogoContainer = styled.div`
   max-width: 200px;
   height: 40px;
@@ -166,5 +149,14 @@ const LogoContainer = styled.div`
     height: 100%;
     object-fit: contain;
     object-position: left center;
+  }
+`;
+
+const ClientInfoColumn = styled.div`
+  display: grid;
+  gap: 0.25rem;
+  font-size: 14px;
+  p {
+    margin: 0;
   }
 `;

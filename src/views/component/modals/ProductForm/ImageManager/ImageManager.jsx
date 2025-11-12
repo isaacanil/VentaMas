@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import * as  ant from 'antd';
-const { Upload, Button, message, Typography, Progress } = ant;
-import { ArrowLeftOutlined, InboxOutlined, PictureOutlined, DeleteOutlined } from '@ant-design/icons';
-import noImg from '../../../../../assets/producto/noimg.png';
-import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg';
-import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg';
-import { Gallery } from './components/Gallery';
-import { ChangeProductImage, selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice';
+import { ArrowLeftOutlined, DeleteOutlined, InboxOutlined, PictureOutlined } from "@ant-design/icons";
+import { Button, Image, Upload, Typography, message, Progress } from "antd";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "styled-components";
+
+import { selectUser } from "../../../../../features/auth/userSlice";
+import { ChangeProductImage, selectUpdateProductData } from "../../../../../features/updateProduct/updateProductSlice";
+import { fbAddProductImg } from "../../../../../firebase/products/productsImg/fbAddProductImg";
+import { fbAddProductImgData } from "../../../../../firebase/products/productsImg/fbAddProductImgData";
+import { fbGetProductsImg } from "../../../../../firebase/products/productsImg/fbGetProductsImg";
+
+import { Gallery } from "./components/Gallery";
+
 
 const Container = styled.div`
   display: flex;
@@ -32,21 +33,6 @@ const Header = styled.div`
   margin: -20px -20px 0 -20px;
   padding: 16px 20px 12px 20px;
   border-radius: 8px 8px 0 0;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  
-  .anticon {
-    color: #3b82f6;
-    font-size: 16px;
-  }
 `;
 
 const MainContent = styled.div`
@@ -253,6 +239,7 @@ const ImageManager = ({ hideImageManager }) => {
         message.success('Imagen cargada correctamente');
         setFileList([{ ...newFile, status: 'done', url }]);
       } catch (error) {
+        console.error('Error al cargar la imagen', error);
         message.error('Error al cargar la imagen');
         setFileList([{ ...file, status: 'error' }]);
       } finally {
@@ -346,7 +333,7 @@ const ImageManager = ({ hideImageManager }) => {
           <PreviewCard>
             <ImagePreview>
               {productImg ? (
-                <ant.Image
+                <Image
                   src={productImg}
                   alt="Imagen del producto"
                   width="100%"

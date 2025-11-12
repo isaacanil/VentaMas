@@ -1,4 +1,5 @@
-import { getDoc, query, orderBy, getDocs, where, collection } from "firebase/firestore";
+import { query, getDocs, where, collection } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 export const fbLoadInvoicesForCashCount = async (user, cashCountID) => {

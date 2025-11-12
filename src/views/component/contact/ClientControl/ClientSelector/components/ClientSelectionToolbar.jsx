@@ -1,5 +1,5 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilter, faPlus, faCopy } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Button, Tooltip, Dropdown, Badge, Typography } from 'antd'
 import { memo } from 'react'
 import styled from 'styled-components'
@@ -26,12 +26,12 @@ const ButtonGroup = styled.div`
   gap: 0.5em;
 `
 
-export const ClientSelectionToolbar = memo(({ 
-  filter, 
-  filteredClientsToShow, 
-  handleMenuClick, 
-  openAddClientModal, 
-  onClose 
+const ClientSelectionToolbarComponent = ({
+  filter,
+  filteredClientsToShow,
+  handleMenuClick,
+  openAddClientModal,
+  onClose
 }) => {
   const filterItems = [
     { key: 'all', label: 'Todos los clientes' },
@@ -64,4 +64,7 @@ export const ClientSelectionToolbar = memo(({
       </ButtonGroup>
     </Header>
   )
-})
+}
+
+export const ClientSelectionToolbar = memo(ClientSelectionToolbarComponent)
+ClientSelectionToolbar.displayName = 'ClientSelectionToolbar'

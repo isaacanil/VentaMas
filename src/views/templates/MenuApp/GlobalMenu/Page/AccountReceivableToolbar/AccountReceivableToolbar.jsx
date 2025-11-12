@@ -1,27 +1,33 @@
+import { BankOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { message } from 'antd';
+import { DateTime } from 'luxon';
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
-import { Button } from '../../../../system/Button/Button';
-import { BankOutlined, FileExcelOutlined } from '@ant-design/icons';
-import { MultiPaymentModal } from './components/MultiPaymentModal/MultiPaymentModal';
-import { useListenAccountsReceivable } from '../../../../../../firebase/accountsReceivable/accountReceivableServices';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { getDateRange } from '../../../../../../utils/date/getDateRange';
-import DateUtils from '../../../../../../utils/date/dateUtils';
-import { message } from 'antd';
-import exportToExcel from '../../../../../../hooks/exportToExcel/useExportToExcel';
-import { applyProfessionalStyling, addTotalsRow, addReportHeader, formatCurrencyColumns } from '../../../../../../hooks/exportToExcel/exportConfig';
-import { DateTime } from 'luxon';
 
-export const AccountReceivableToolbar = ({ side = 'left', searchData, setSearchData, data }) => {
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { useListenAccountsReceivable } from '../../../../../../firebase/accountsReceivable/accountReceivableServices';
+import { applyProfessionalStyling, addTotalsRow, addReportHeader, formatCurrencyColumns } from '../../../../../../hooks/exportToExcel/exportConfig';
+import exportToExcel from '../../../../../../hooks/exportToExcel/useExportToExcel';
+import DateUtils from '../../../../../../utils/date/dateUtils';
+import { getDateRange } from '../../../../../../utils/date/getDateRange';
+import { Button } from '../../../../system/Button/Button';
+
+import { MultiPaymentModal } from './components/MultiPaymentModal/MultiPaymentModal';
+
+
+
+
+
+export const AccountReceivableToolbar = ({ side = 'left', data }) => {
     const matchWithAccountsReceivable = useMatch("/account-receivable/list");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [processedAccounts, setProcessedAccounts] = useState([]);
     const user = useSelector(selectUser);
     
     // Usar un periodo de tiempo por defecto (últimos 30 días)
-    const [datesSelected, setDatesSelected] = useState(getDateRange('last30Days'));
+    const [datesSelected] = useState(getDateRange('last30Days'));
     
     // Obtener las cuentas por cobrar para mostrar en el modal
     const accounts = useListenAccountsReceivable(user, datesSelected);

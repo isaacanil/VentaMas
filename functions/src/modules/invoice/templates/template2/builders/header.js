@@ -1,5 +1,7 @@
 import { formatDate } from "../utils/formatters.js"
+
 import { buildClientBlock } from "./clientBlock.js"
+
 function getComprobanteInfo(ncf) {
   if (!ncf) {
     return { title: "RECIBO DE PAGO", label: "Número de Recibo" };

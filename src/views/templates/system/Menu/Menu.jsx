@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import Modal from './Modal';
-import { Button } from '../Button/Button';
+
 import { icons } from '../../../../constants/icons/icons';
+import { Button } from '../Button/Button';
+
+import Modal from './Modal';
 
 const Menu = ({ isOpen, onClose, options }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);

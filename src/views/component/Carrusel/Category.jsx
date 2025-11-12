@@ -1,8 +1,9 @@
+import { motion } from "framer-motion"
 import { useState } from "react"
 import { useDispatch } from "react-redux"
-import { addItem, deleteItem } from "../../../features/category/categorySlicer"
 import styled from "styled-components"
-import { motion } from "framer-motion"
+
+import { addItem, deleteItem } from "../../../features/category/categorySlicer"
 import getIconFromText from "../../../utils/text/getIconFromText"
 
 export const Category = ({ category, ref, onClick, type, icon, themeColor, selected, index }) => {
@@ -23,19 +24,12 @@ export const Category = ({ category, ref, onClick, type, icon, themeColor, selec
             }
         })
     }
-    const effectCategory = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1
-        }
-    }
     return (
         <Container
             themeColor={themeColor}
             type={type}
             selected={selected ? true : false}
-            onClick={(e) => onClick ? onClick() : start(category, ref)}
+            onClick={() => onClick ? onClick() : start(category, ref)}
             // variants={effectCategory}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}

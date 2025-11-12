@@ -1,10 +1,11 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useNavigate, useLocation } from 'react-router-dom';
-import ROUTES_PATH from '../../../../../../../routes/routesName';
-import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
+import ROUTES_PATH from '../../../../../../../routes/routesName';
 
 const MenuContainer = styled.div`
     border-bottom: 1px solid #e0e0e0;
@@ -54,7 +55,7 @@ const InventoryMenu = () => {
     const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
 
     const { INVENTORY_TERM, PURCHASE_TERM, ORDER_TERM } = ROUTES_PATH;
-    const { WAREHOUSES, PRODUCTS_STOCK, WAREHOUSE } = INVENTORY_TERM;
+    const { WAREHOUSES, PRODUCTS_STOCK } = INVENTORY_TERM;
     const { BACKORDERS, PURCHASES } = PURCHASE_TERM;
     const { ORDERS } = ORDER_TERM;
 
@@ -94,17 +95,28 @@ const InventoryMenu = () => {
     React.useEffect(() => {
         const path = location.pathname;
 
+        // Stock: /inventory/warehouses/products-stock
         if (path === `${WAREHOUSES}/products-stock`) {
             setValue(1);
-        } else if (path.startsWith(`${WAREHOUSES}/warehouse/`)) {
+        } 
+        // Almacenes: /inventory/warehouses/warehouse/[id] y niveles posteriores (shelf, row, segment)
+        else if (path.startsWith(`${WAREHOUSES}/warehouse/`)) {
             setValue(0);
-        } else if (path.includes('backorders')) {
+        } 
+        // Backorders: cualquier ruta con /backorders
+        else if (path.includes('/backorders')) {
             setValue(2);
-        } else if (path.includes('purchases')) {
+        } 
+        // Compras: cualquier ruta con /purchases
+        else if (path.includes('/purchases')) {
             setValue(3);
-        } else if (path.includes('orders')) {
+        } 
+        // Pedidos: cualquier ruta con /orders
+        else if (path.includes('/orders')) {
             setValue(4);
-        } else if (path === WAREHOUSES) {
+        } 
+        // Default: redirigir al almacén por defecto
+        else if (path === WAREHOUSES) {
             setValue(0);
             if (!loadingDefault && defaultWarehouse) {
                 navigate(`${WAREHOUSES}/warehouse/${defaultWarehouse.id}`);

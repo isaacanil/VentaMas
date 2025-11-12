@@ -1,5 +1,6 @@
 // Importa las funciones necesarias desde el SDK de Firebase Firestore
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+
 import { db } from "../../../../../../firebase/firebaseconfig";
 
 /**

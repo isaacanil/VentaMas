@@ -1,6 +1,7 @@
-import { BugOutlined, RocketOutlined, ToolOutlined, TeamOutlined, ApartmentOutlined, ProfileOutlined } from '@ant-design/icons';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import { BugOutlined, ToolOutlined, TeamOutlined, ApartmentOutlined, ProfileOutlined } from '@ant-design/icons';
+
 import { icons } from '../../../../../constants/icons/icons';
+import ROUTES_NAME from '../../../../../routes/routesName';
 
 // Developer section grouped with multiple useful entries and a submenu for specific tools.
 const dev = ROUTES_NAME.DEV_VIEW_TERM;
@@ -26,6 +27,7 @@ const developer = [
       { title: 'Changelogs (Crear)', route: dev.CHANGELOG_CREATE, icon: <ProfileOutlined />, group: 'changelogs' },
       { title: 'Config App', route: dev.APP_CONFIG.ROOT, icon: <ToolOutlined />, group: 'config' },
     //   { title: 'Migración Inventario', route: dev.INVENTORY_MIGRATION, icon: <RocketOutlined />, group: 'tools' },
+      { title: 'Análisis de comprobantes', route: dev.FISCAL_RECEIPTS_AUDIT, icon: <BugOutlined />, group: 'tools' },
       { title: 'Pruebas', route: dev.PRUEBA, icon: <BugOutlined />, group: 'tools' },
     ]
   }

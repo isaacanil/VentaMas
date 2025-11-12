@@ -1,6 +1,7 @@
-import styled from 'styled-components'
-import { memo } from 'react'
 import { Spin } from 'antd'
+import { memo } from 'react'
+import styled from 'styled-components'
+
 import { Client } from '../../../../../templates/system/client/Client'
 
 const Body = styled.div`
@@ -41,7 +42,7 @@ const ClientsList = styled.div`
   align-content: start;
 `
 
-export const ClientListContainer = memo(({
+const ClientListContainerComponent = ({
   paginatedClients,
   loading,
   selectedClient,
@@ -49,7 +50,8 @@ export const ClientListContainer = memo(({
   handleDeleteClient,
   onClose,
   searchTerm
-}) => {  return (
+}) => {
+  return (
     <Body>
       {loading ? (
         <LoadingContainer>
@@ -78,4 +80,7 @@ export const ClientListContainer = memo(({
       )}
     </Body>
   )
-})
+}
+
+export const ClientListContainer = memo(ClientListContainerComponent)
+ClientListContainer.displayName = 'ClientListContainer'

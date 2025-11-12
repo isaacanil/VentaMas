@@ -31,6 +31,7 @@
 // }
 
 import { collection, getDocs, writeBatch } from 'firebase/firestore'; // Importa las funciones necesarias de Firestore
+
 import { db } from '../firebaseconfig';
 
 

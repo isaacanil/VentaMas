@@ -1,18 +1,20 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import { Button } from '../../../templates/system/Button/Button'
-import { PlusIconButton } from '../../../templates/system/Button/PlusIconButton'
-import { nanoid } from 'nanoid'
-import { addIngredientTypePizza } from '../../../../firebase/firebaseconfig.jsx'
-import { fbGetCustomProduct } from '../../../../firebase/products/customProduct/fbGetCustomProductTypePizza'
-import { useEffect } from 'react'
 import { isEmpty } from '@firebase/util'
-import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard'
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { selectUser } from '../../../../features/auth/userSlice'
+import { nanoid } from 'nanoid'
+import React, { useState } from 'react'
+import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+
+import { selectUser } from '../../../../features/auth/userSlice'
+import { addIngredientTypePizza } from '../../../../firebase/firebaseconfig.jsx'
+import { fbGetCustomProduct } from '../../../../firebase/products/customProduct/fbGetCustomProductTypePizza'
+import { Button } from '../../../templates/system/Button/Button'
+import { PlusIconButton } from '../../../templates/system/Button/PlusIconButton'
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4.jsx'
+import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard'
+
 
 export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
     const user = useSelector(selectUser)
@@ -29,13 +31,13 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
     })
 
     const settingIngredientId = () => {
-        return new Promise((resolve, reject) => {
-            resolve(                setIngredient({
+        return new Promise((resolve) => {
+            resolve(
+                setIngredient({
                     ...ingredient,
                     id: nanoid()
                 })
             )
-
         })
     }
    
@@ -118,14 +120,6 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
 
     )
 }
-const Backdrop = styled.div`
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    `
 const Modal = styled.div`
     position: absolute;
     top: 0;
@@ -181,18 +175,6 @@ const List = styled.ul`
     gap: 0.2em;
     
 `
-const Item = styled.div`
-    height: 2.5em;
-    background-color: #f0f0f0;
-    width: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.300);
-    border-radius: 8px;
-    display: grid;
-   
-    align-items: center;
-    padding: 0 1em;
-    grid-template-columns: 1fr 1fr min-content min-content;
-`
 const Group = styled.div`
     display: flex;
     align-items: center;
@@ -200,7 +182,6 @@ const Group = styled.div`
 
 
 `
-const Row = styled.div``
 const Col = styled.div`
     justify-self: ${props => props.justifySelf ? 'flex-end' : 'none'};
 `

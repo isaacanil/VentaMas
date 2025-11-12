@@ -1,11 +1,17 @@
-import ROUTES_NAME from '../../../routes/routesName';
-import { icons } from '../../../constants/icons/icons';
+import { faTicket, faWarehouse, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTicket, faWarehouse } from '@fortawesome/free-solid-svg-icons';
+
+import { developerShortcuts } from '../../../constants/devtools/developerShortcuts.jsx';
+import { icons } from '../../../constants/icons/icons';
+import ROUTES_NAME from '../../../routes/routesName';
 import { filterMenuItemsByAccess, hasDeveloperAccess } from '../../../utils/menuAccess';
-import { BugOutlined } from '@ant-design/icons';
 
 const createMenuItems = (items) => items.map((item, index) => ({ ...item, id: index + 1 }));
+
+const { UTILITY_TERM, SETTING_TERM, AUTHORIZATIONS_TERM } = ROUTES_NAME;
+const { UTILITY_REPORT } = UTILITY_TERM;
+const { USERS, USERS_LIST, USERS_SESSION_LOGS, SETTING } = SETTING_TERM;
+const { AUTHORIZATIONS_LIST } = AUTHORIZATIONS_TERM;
 
 const menuItems = createMenuItems([
   { title: 'Venta', icon: icons.menu.unSelected.sale, route: ROUTES_NAME.SALES_TERM.SALES, category: 'Ventas' },
@@ -24,31 +30,23 @@ const menuItems = createMenuItems([
   { title: 'Clientes', icon: icons.users.client, route: ROUTES_NAME.CONTACT_TERM.CLIENTS, category: 'Contactos' },
   { title: 'Proveedores', icon: icons.users.provider, route: ROUTES_NAME.CONTACT_TERM.SUPPLIERS, category: 'Contactos' },
   { title: 'Cuadre de Caja', icon: icons.menu.unSelected.cashReconciliation, route: ROUTES_NAME.CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST, category: 'Finanzas' },
+  { title: 'Autorizaciones', icon: <FontAwesomeIcon icon={faShieldAlt} />, route: AUTHORIZATIONS_LIST, category: 'Administración', roles: ['admin', 'owner', 'dev', 'manager'] },
+  { title: 'Utilidad', icon: icons.menu.unSelected.sale, route: UTILITY_REPORT, category: 'Finanzas' },
+  { title: 'Usuarios', icon: icons.settings.users, route: `${USERS}/${USERS_LIST}`, category: 'Administración', roles: ['admin', 'owner', 'dev', 'manager'] },
+  { title: 'Revisión de sesiones de usuarios', icon: icons.system.sessionManager, route: `${USERS}/${USERS_SESSION_LOGS}`, category: 'Administración', roles: ['admin', 'owner', 'dev', 'manager'] },
+  { title: 'Configuración', icon: icons.menu.unSelected.settings, route: SETTING, category: 'Administración', roles: ['admin', 'owner', 'dev', 'manager'] },
 ]);
 
-const developerItems = createMenuItems([
-  // Herramientas
-  { title: 'Panel Desarrollador', icon: <BugOutlined />, action: 'openDeveloperModal', category: 'Herramientas' },
-  { title: 'Pruebas', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.PRUEBA, category: 'Herramientas' },
-  // Negocio
-  { title: 'Cambiar Negocio', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.SWITCH_BUSINESS, category: 'Negocio' },
-  { title: 'Gestionar Negocios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.BUSINESSES, category: 'Negocio' },
+const developerItems = createMenuItems(developerShortcuts);
 
-  // Usuarios
-  { title: 'Todos los usuarios', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.ALL_USERS, category: 'Usuarios' },
-
-  // Changelogs
-  { title: 'Gestionar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_MANAGE, category: 'Changelogs' },
-  { title: 'Documentar Actualización', icon: icons.operationModes.add, route: ROUTES_NAME.DEV_VIEW_TERM.CHANGELOG_CREATE, category: 'Changelogs' },
-
-  // Configuración
-  { title: 'Configuración de App', icon: icons.menu.selected.settings, route: ROUTES_NAME.DEV_VIEW_TERM.APP_CONFIG.ROOT, category: 'Configuración' },
-
-  // { title: 'Migración Inventario', icon: <BugOutlined />, route: ROUTES_NAME.DEV_VIEW_TERM.INVENTORY_MIGRATION, category: 'Herramientas' },
-]);
-
-export const getMenuCardData = () => {
-  return filterMenuItemsByAccess(menuItems);
+export const getMenuCardData = (user) => {
+  return filterMenuItemsByAccess(menuItems).filter(item => {
+    // Si el item tiene roles definidos, verificar que el usuario tenga uno de esos roles
+    if (item.roles && Array.isArray(item.roles)) {
+      return item.roles.includes(user?.role);
+    }
+    return true;
+  });
 };
 
 export const getDeveloperFeaturesData = () => {

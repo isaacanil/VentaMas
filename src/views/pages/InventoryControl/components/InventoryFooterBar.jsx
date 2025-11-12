@@ -1,4 +1,5 @@
 import { Button } from 'antd'
+
 import { FooterBar } from './InventoryControl.styles'
 
 export function InventoryFooterBar({

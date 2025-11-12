@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { truncateString } from '../utils/text/truncateString';
+
 
 export function getTimeElapsed(timestamp, friendlyLimit = 1440) {
   const now = DateTime.now();
@@ -43,9 +43,8 @@ export function useFormatDate(timestamp) {
 //   }
 // }
 
-export const convertMillisToDate = (milliseconds, format = 'default', locale = 'es') => {
-  //const date = DateTime.fromMillis(milliseconds).setLocale(locale);
-  if (!milliseconds || !typeof milliseconds === 'number') return null;
+export const convertMillisToDate = (milliseconds) => {
+  if (!milliseconds || typeof milliseconds !== 'number') return null;
   const dateFormatted = DateTime.fromMillis(milliseconds).toFormat('dd/MM/yyyy');
   return dateFormatted; 
   // Aquí puedes definir tus propios formatos personalizados

@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Input, Select, InputNumber, Form, Checkbox, Typography, Descriptions, Radio, Spin, message } from 'antd';
+import { faBox, faBoxes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Input, Select, Form, Typography, Descriptions, Spin, message } from 'antd';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { closeDeleteModal, selectDeleteModalState, changeActionType } from '../../../../../../../features/productStock/deleteProductStockSlice';
-import { useProductStockData } from '../../../../../../../hooks/useProductStockData';
 // import { deleteProductStock } from '../../../../../../../services/productStockService';
 import { deleteBatch } from '../../../../../../../firebase/warehouse/batchService';
 import { deleteProductStock } from '../../../../../../../firebase/warehouse/productStockService';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBox, faBoxes } from '@fortawesome/free-solid-svg-icons';
+import { useProductStockData } from '../../../../../../../hooks/useProductStockData';
 
 const { TextArea } = Input;
 const { Text } = Typography;

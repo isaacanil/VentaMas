@@ -1,14 +1,17 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
-import { BugOutlined, HomeOutlined, WarningOutlined, RollbackOutlined } from '@ant-design/icons';
+import { BugOutlined, HomeOutlined, RollbackOutlined } from '@ant-design/icons';
 import * as antd from 'antd';
-import { useErrorHandling } from './hooks/useErrorHandling';
+import { motion, AnimatePresence } from 'framer-motion';
+import PropTypes from 'prop-types';
+import React from 'react';
+import styled from 'styled-components';
+
+import { Logo } from '../../../assets/logo/Logo';
+
 import { ErrorCard } from './components/ErrorCard';
 import { ErrorDetails } from './components/ErrorDetails';
 import { MESSAGES, ANIMATIONS } from './constants';
-import { Logo } from '../../../assets/logo/Logo';
+import { useErrorHandling } from './hooks/useErrorHandling';
+
 
 const { Button, Checkbox, Typography, Space, Alert } = antd;
 const { Title: AntTitle, Text } = Typography;
@@ -17,7 +20,6 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
     const {
         user,
         loading,
-        reportError,
         canGoBack,
         handleBack,
         handleGoBack,

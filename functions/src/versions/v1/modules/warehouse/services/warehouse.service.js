@@ -25,7 +25,9 @@ export async function getDefaultWarehouse(user) {
             updatedAt: FieldValue.serverTimestamp(),
             updatedBy: user.uid || null,
           })
-        } catch {}
+        } catch {
+          /* noop - normalizing flag failure */
+        }
         return { id: doc.id, ...data, isDeleted: false }
       }
       return { id: doc.id, ...data }
@@ -45,7 +47,9 @@ export async function getDefaultWarehouse(user) {
           updatedAt: FieldValue.serverTimestamp(),
           updatedBy: user.uid || null,
         })
-      } catch {}
+      } catch {
+        /* noop - normalizing flag failure */
+      }
       return { id: d.id, ...data, isDeleted: false }
     }
     return { id: d.id, ...data }
@@ -64,7 +68,9 @@ export async function getDefaultWarehouse(user) {
             updatedAt: FieldValue.serverTimestamp(),
             updatedBy: user.uid || null,
           })
-        } catch {}
+        } catch {
+          /* noop - normalizing flag failure */
+        }
         return { id: doc.id, ...data, isDeleted: false }
       }
       return { id: doc.id, ...data }

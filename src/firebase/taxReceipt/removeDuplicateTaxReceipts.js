@@ -1,4 +1,5 @@
-import { collection, query, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, query, getDocs, deleteDoc } from "firebase/firestore";
+
 import { db } from "../firebaseconfig";
 
 // Valor por defecto de sequence (ajústalo según tu lógica)

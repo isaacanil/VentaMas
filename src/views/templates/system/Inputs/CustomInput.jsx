@@ -1,37 +1,63 @@
+import { Typography, InputNumber, message } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
+
 import { addDiscount } from "../../../../features/cart/cartSlice";
 import { quitarCeros } from "../../../../hooks/quitarCeros";
 import { useClickOutSide } from "../../../../hooks/useClickOutSide";
-import { Typography, InputNumber, message } from "antd";
 import { useFormatPrice } from "../../../../hooks/useFormatPrice";
+
 const { Title, Paragraph } = Typography;
 
-const CustomInput = ({ options, value, discount, disabled = false }) => {
+const CustomInput = ({ options, value, discount, disabled = false, onRequestAccess }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const inputRef = useRef(null);
-  const handleChange = (newValue) => {
-    if (!disabled) {
-      dispatch(addDiscount(Number(quitarCeros(newValue))))
+
+  const ensureAccess = () => {
+    if (typeof onRequestAccess === 'function') {
+      return onRequestAccess() !== false;
     }
+    return true;
+  };
+
+  const blurInput = () => {
+    const inputElement = inputRef.current?.querySelector('input');
+    if (inputElement) {
+      inputElement.blur();
+    }
+  };
+
+  const handleChange = (newValue) => {
+    if (disabled) return;
+    if (!ensureAccess()) {
+      blurInput();
+      return;
+    }
+    dispatch(addDiscount(Number(quitarCeros(newValue))));
   };
 
   const handleClick = () => {
-    if (!disabled) {
-      setShowMenu(!showMenu);
+    if (disabled) return;
+    if (!ensureAccess()) {
+      blurInput();
+      return;
     }
+    setShowMenu((prev) => !prev);
   };
 
   const handleSelect = (option) => {
-    if (!disabled) {
-      setShowMenu(false);
-      dispatch(addDiscount(option))
+    if (disabled) return;
+    if (!ensureAccess()) {
+      blurInput();
+      return;
     }
+    setShowMenu(false);
+    dispatch(addDiscount(option));
   };
 
-  useClickOutSide(inputRef, showMenu, handleClick)
+  useClickOutSide(inputRef, showMenu, handleClick);
 
   useEffect(() => {
     if (value < 0) message.error('El descuento no puede ser negativo');
@@ -39,7 +65,7 @@ const CustomInput = ({ options, value, discount, disabled = false }) => {
   }, [value])
 
   return (
-    <Container ref={inputRef} >
+    <Container ref={inputRef}>
       {showMenu && (
         <StyledMenu>
           <Title level={5}>
@@ -56,7 +82,8 @@ const CustomInput = ({ options, value, discount, disabled = false }) => {
             ))}
           </MenuOptions>
         </StyledMenu>
-      )}      <Wrapper >
+      )}
+      <Wrapper>
         <InputNumber
           value={value}
           onChange={handleChange}
@@ -67,6 +94,11 @@ const CustomInput = ({ options, value, discount, disabled = false }) => {
           min={0}
           max={100}
           onClick={handleClick}
+          onFocus={() => {
+            if (!disabled && !ensureAccess()) {
+              blurInput();
+            }
+          }}
           disabled={disabled}
         />
       </Wrapper>

@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { DateTime } from "luxon";
-import { getDefaultTransactionCondition, getDefaultTransactionStatus } from "../../constants/orderAndPurchaseState";
 import { notification } from 'antd'; // Add missing import
+import { DateTime } from "luxon";
+
+import { getDefaultTransactionCondition, getDefaultTransactionStatus } from "../../constants/orderAndPurchaseState";
 
 const EmptyOrder = {
     condition: getDefaultTransactionCondition()?.id,
@@ -83,7 +84,7 @@ const addOrderSlice = createSlice({
             state.productSelected = EmptyProductSelected; // Fix reference
         },
         setOrder: (state, actions) => {
-            const { dates, ...rest } = actions.payload;
+            const { ...rest } = actions.payload;
 
             state.order = {
                 ...state.order,

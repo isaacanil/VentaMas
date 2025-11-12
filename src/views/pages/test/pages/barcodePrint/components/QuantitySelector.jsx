@@ -1,5 +1,5 @@
-import React from 'react';
 import { InputNumber } from 'antd';
+import React from 'react';
 
 const clampInt = (n, min, max) => {
   const x = Number.isFinite(n) ? Math.floor(n) : min;

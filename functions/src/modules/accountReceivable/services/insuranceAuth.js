@@ -1,7 +1,8 @@
 // services/insuranceAdmin.service.js
-import { nanoid } from 'nanoid';
-import { db, Timestamp, serverTimestamp } from '../../../core/config/firebase.js';
 import { https, logger } from 'firebase-functions';
+import { nanoid } from 'nanoid';
+
+import { db, Timestamp, serverTimestamp } from '../../../core/config/firebase.js';
 
 const INSURANCE_AUTHS_COLLECTION = 'insuranceAuths';
 
@@ -86,10 +87,10 @@ export const updateInsuranceAuth = async (user, authId, updates) => {
     const ref = db.doc(`${INSURANCE_AUTHS_COLLECTION}/${authId}`);
     const toMerge = { ...updates };
 
-    if (toMerge.hasOwnProperty('birthDate')) {
+    if (Object.prototype.hasOwnProperty.call(toMerge, 'birthDate')) {
         toMerge.birthDate = toFirestoreTimestamp(toMerge.birthDate);
     }
-    if (toMerge.hasOwnProperty('indicationDate')) {
+    if (Object.prototype.hasOwnProperty.call(toMerge, 'indicationDate')) {
         toMerge.indicationDate = toFirestoreTimestamp(toMerge.indicationDate);
     }
 

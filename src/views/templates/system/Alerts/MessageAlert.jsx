@@ -1,7 +1,8 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMessage } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
+
 import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
 import { Button } from '../Button/Button'
 
@@ -74,8 +75,6 @@ const Container = styled.div`
         return`
           transform: scale(0);
         `
-        break;
-    
       default:
         break;
     }

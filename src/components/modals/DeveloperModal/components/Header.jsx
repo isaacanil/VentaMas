@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export const Header = ({ title, subtitle }) => {
+export const Header = ({ title, subtitle: _subtitle }) => {
     return (
         <HeaderContainer>
             <Title>{title}</Title>

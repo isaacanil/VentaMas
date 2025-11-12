@@ -1,28 +1,22 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../features/auth/userSlice';
-import { DateTime } from 'luxon';
 import { 
   collection, 
   query, 
   where, 
-  onSnapshot, 
-  doc, 
-  getDoc,
+  onSnapshot,
   getDocs,
   documentId,
   orderBy,
-  limit,
-  writeBatch,
-  runTransaction,
-  collectionGroup,
-  QuerySnapshot,
   getCountFromServer,
   getAggregateFromServer,
   sum,
   average,
   count
 } from 'firebase/firestore';
+import { DateTime } from 'luxon';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../../firebase/firebaseconfig';
 
 /**

@@ -1,18 +1,9 @@
-import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import { Form, Button, Drawer } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
+import { Form, Button, Drawer } from 'antd';
+import PropTypes from 'prop-types';
+import React, { useMemo } from 'react';
 
 // Imports locales
-import { ACCESSIBILITY_CONFIG } from './constants';
-import {
-  useInvoiceSorting,
-  useFilterHandlers,
-  useClientOptions,
-  useDrawerState,
-  useResponsiveLayout,
-  useFilterCollapse,
-} from './hooks';
 import {
   CollapsibleItem,
   DateRangeFilter,
@@ -23,6 +14,15 @@ import {
   ClearFiltersButton,
   TotalsDisplay,
 } from './components';
+import { ACCESSIBILITY_CONFIG } from './constants';
+import {
+  useInvoiceSorting,
+  useFilterHandlers,
+  useClientOptions,
+  useDrawerState,
+  useResponsiveLayout,
+  useFilterCollapse,
+} from './hooks';
 import { Bar, MobileWrapper, MobileHeader, DrawerContent } from './styles';
 
 /* ─────────────────────────────────────────────────────────────────── */
@@ -39,7 +39,7 @@ export const FilterBar = ({
   onFiltersChange,
 }) => {
   const { drawerVisible, openDrawer, closeDrawer } = useDrawerState();
-  const { isMobile, isTablet, isDesktop } = useResponsiveLayout();
+  const { isMobile } = useResponsiveLayout();
   
   // Hook de colapso para desktop
   const { containerRef, register, visibleCount, hasOverflow } = useFilterCollapse();

@@ -1,6 +1,7 @@
-import { CalendarSection } from './CalendarSection';
 import dayjs from 'dayjs';
 import { fn } from 'storybook/test';
+
+import { CalendarSection } from './CalendarSection';
 
 export default {
     title: 'Components/DatePicker/CalendarSection',

@@ -1,93 +1,139 @@
 import { Table } from "antd";
 import styled from "styled-components";
+
+import { PRODUCT_BRAND_DEFAULT } from "../../../../../../../../features/updateProduct/updateProductSlice";
 import { useFormatPrice } from "../../../../../../../../hooks/useFormatPrice";
 
-const columns = [
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const resolvePricing = (record) =>
+  record?.pricing || record?.selectedSaleUnit?.pricing || null;
+
+export default function Content({ data }) {
+  const creditNotes = data?.creditNotePayment || [];
+  const columns = [
     {
-      title: 'CANT.',
-      dataIndex: 'amountToBuy',
-      key: 'quantity',
+      title: "CANT.",
+      dataIndex: "amountToBuy",
+      key: "quantity",
+      render: (value, record) => {
+        const quantity = toNumber(value);
+        if (quantity > 0) return quantity;
+        const weight = toNumber(record?.weightDetail?.weight);
+        return weight > 0 ? weight : 0;
+      },
     },
     {
-      title: 'CODIGO',
-      dataIndex: 'barcode',
-      key: 'code',
+      title: "CODIGO",
+      dataIndex: "barcode",
+      key: "code",
+      render: (value, record) => value || record?.sku || "—",
     },
     {
-      title: 'DESCRIPCION',
-      dataIndex: 'name',
-      key: 'description',
+      title: "DESCRIPCION",
+      dataIndex: "name",
+      key: "description",
+      render: (value, record) => {
+        const name = value || "Producto sin nombre";
+        const rawBrand = typeof record?.brand === "string" ? record.brand.trim() : "";
+        const hasBrand = rawBrand && rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase();
+
+        return (
+          <div>
+            <div>{name}</div>
+            {hasBrand && (
+              <div style={{ fontSize: 11, color: "#555555" }}>
+                Marca: {rawBrand}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
-      title: 'PRECIO',
-      dataIndex: 'pricing',
-      key: 'price',
-      align: 'right',
-      render: (pricing) => pricing.price.toFixed(2),
-    },
-    {
-      title: 'ITBIS',
-      dataIndex: 'pricing',
-      key: 'itbis',
-      align: 'right',
-      render: (pricing) => ((pricing.price * Number(pricing.tax)) / 100).toFixed(2),
-    },
-    {
-      title: 'TOTAL',
-      key: 'total',
-      align: 'right',
+      title: "PRECIO",
+      dataIndex: "pricing",
+      key: "price",
+      align: "right",
       render: (_, record) => {
-        const price = record.pricing.price;
-        const tax = (price * Number(record.pricing.tax)) / 100;
-        return ((price + tax) * record.amountToBuy).toFixed(2);
+        const pricing = resolvePricing(record);
+        return toNumber(pricing?.price).toFixed(2);
+      },
+    },
+    {
+      title: "ITBIS",
+      dataIndex: "pricing",
+      key: "itbis",
+      align: "right",
+      render: (_, record) => {
+        const pricing = resolvePricing(record);
+        const price = toNumber(pricing?.price);
+        const taxRate = toNumber(pricing?.tax);
+        const tax = price * (taxRate / 100);
+        return tax.toFixed(2);
+      },
+    },
+    {
+      title: "TOTAL",
+      key: "total",
+      align: "right",
+      render: (_, record) => {
+        const pricing = resolvePricing(record);
+        const price = toNumber(pricing?.price);
+        const taxRate = toNumber(pricing?.tax);
+        const quantity = toNumber(record?.amountToBuy || record?.weightDetail?.weight || 0);
+        const tax = price * (taxRate / 100);
+        return ((price + tax) * quantity).toFixed(2);
       },
     },
   ];
 
-export default function Content ({data}){
-    const creditNotes = data?.creditNotePayment || [];
-    
-    return(
-        <Container>
-        <TableContainer>
-          <Table
-            size="small"
-            columns={columns}
-            dataSource={data?.products || []}
-            rowKey={(record) => record.id}
-            pagination={false}
-          />
-        </TableContainer>
-        {creditNotes.length > 0 && (
-          <CreditNotesSection>
-            <SectionTitle>Notas de Crédito Aplicadas</SectionTitle>
-            <CreditNotesTable>
-              <Table
-                size="small"
-                columns={[
-                  {
-                    title: 'NCF',
-                    dataIndex: 'ncf',
-                    key: 'ncf',
-                  },
-                  {
-                    title: 'Monto Aplicado',
-                    dataIndex: 'amountUsed',
-                    key: 'amountUsed',
-                    align: 'right',
-                    render: (amount) => useFormatPrice(amount),
-                  },
-                ]}
-                dataSource={creditNotes}
-                rowKey={(record) => record.id}
-                pagination={false}
-                showHeader={true}
-              />
-            </CreditNotesTable>
-          </CreditNotesSection>
-        )}
-      </Container>
-    )
+  return (
+    <Container>
+      <TableContainer>
+        <Table
+          size="small"
+          columns={columns}
+          dataSource={data?.products || []}
+          rowKey={(record) =>
+            record?.cid || record?.id || record?.productId || record?.barcode || record?.name
+          }
+          pagination={false}
+        />
+      </TableContainer>
+      {creditNotes.length > 0 && (
+        <CreditNotesSection>
+          <SectionTitle>Notas de Crédito Aplicadas</SectionTitle>
+          <CreditNotesTable>
+            <Table
+              size="small"
+              columns={[
+                {
+                  title: "NCF",
+                  dataIndex: "ncf",
+                  key: "ncf",
+                },
+                {
+                  title: "Monto Aplicado",
+                  dataIndex: "amountUsed",
+                  key: "amountUsed",
+                  align: "right",
+                  render: (amount) => useFormatPrice(amount),
+                },
+              ]}
+              dataSource={creditNotes}
+              rowKey={(record) => record.id}
+              pagination={false}
+              showHeader={true}
+            />
+          </CreditNotesTable>
+        </CreditNotesSection>
+      )}
+    </Container>
+  );
 }
 const TableContainer = styled.div`
   margin-top: 16px;

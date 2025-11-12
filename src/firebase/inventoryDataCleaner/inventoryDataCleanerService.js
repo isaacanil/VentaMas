@@ -1,5 +1,6 @@
 
-import { deleteDoc, getDocs, collection, query, where } from 'firebase/firestore';
+import { deleteDoc, getDocs, collection, query } from 'firebase/firestore';
+
 import { db } from '../firebaseconfig';
 
 export const cleanInventoryData = async (businessID) => {

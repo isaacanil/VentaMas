@@ -1,9 +1,15 @@
-import React from 'react';
 import { DateTime } from 'luxon';
+import React from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
+import { PRODUCT_BRAND_DEFAULT } from '../../../../../../features/updateProduct/updateProductSlice';
+import { separator } from '../../../../../../hooks/separator';
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
 import DateUtils from '../../../../../../utils/date/dateUtils';
-import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 import {
   getTotalPrice,
   getTax,
@@ -14,11 +20,9 @@ import {
   getProductIndividualDiscount,
   getProductsIndividualDiscounts
 } from '../../../../../../utils/pricing';
-import { separator } from '../../../../../../hooks/separator';
-import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
-import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/WarrantyInfo';
-import styled from 'styled-components';
-import { ReceiptComponent } from '../InvoiceTemplate1/Style';
+import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/warranty.helpers';
+
+
 
 // Máximo de caracteres por línea
 const CENTER_WIDTH = 40;
@@ -28,7 +32,7 @@ const CENTER_WIDTH = 40;
    ========================================================= */
 
 // Ajustamos wrapText para que corte en maxWidth (40) sin guión
-export const wrapText = (text, maxWidth = CENTER_WIDTH) => {
+const wrapText = (text, maxWidth = CENTER_WIDTH) => {
   // Si el texto no sobrepasa el ancho, lo retornamos tal cual
   if (text.length <= maxWidth) return text;
 
@@ -46,8 +50,7 @@ export const wrapText = (text, maxWidth = CENTER_WIDTH) => {
 };
 
 // Centrar texto tras envolver
-// eslint-disable-next-line react-refresh/only-export-components
-export const wrapAndCenter = (text, maxWidth = CENTER_WIDTH) => {
+const wrapAndCenter = (text, maxWidth = CENTER_WIDTH) => {
   const wrapped = wrapText(text, maxWidth);
   return wrapped
     .split('\n')
@@ -56,19 +59,16 @@ export const wrapAndCenter = (text, maxWidth = CENTER_WIDTH) => {
 };
 
 // Centrar una sola línea a un ancho dado
-// eslint-disable-next-line react-refresh/only-export-components
-export const centerText = (text, maxWidth = CENTER_WIDTH) => {
+const centerText = (text, maxWidth = CENTER_WIDTH) => {
   const spaces = Math.floor((maxWidth - text.length) / 2);
   return ' '.repeat(spaces) + text;
 };
 
 // Línea separadora
-// eslint-disable-next-line react-refresh/only-export-components
-export const separatorLine = (maxWidth = CENTER_WIDTH) => '-'.repeat(maxWidth);
+const separatorLine = (maxWidth = CENTER_WIDTH) => '-'.repeat(maxWidth);
 
 // Formatear columnas (left, right, center)
-// eslint-disable-next-line react-refresh/only-export-components
-export const formatColumn = (text, width, align = 'left') => {
+const formatColumn = (text, width, align = 'left') => {
   let str = text.toString();
 
   // Si excede el ancho, lo envolvemos
@@ -88,30 +88,10 @@ export const formatColumn = (text, width, align = 'left') => {
 };
 
 // Concatenar nombre del producto con medida y pie
-// eslint-disable-next-line react-refresh/only-export-components
-export const getFullProductName = (product) => {
+const getFullProductName = (product) => {
   return product.name +
     (product.measurement ? ` Medida: [${product.measurement}]` : '') +
     (product.footer ? ` Pie: [${product.footer}]` : '');
-};
-
-// Determinar tipo de comprobante
-// eslint-disable-next-line react-refresh/only-export-components
-export const getReceiptInfo = (code) => {
-  if (!code) {
-    return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
-  }
-  const pattern = /(B0\d)/;
-  const found = code.match(pattern);
-  const receiptTypes = {
-    B01: { type: 'Crédito Fiscal', description: 'FACTURA PARA CREDITO FISCAL' },
-    B02: { type: 'Consumidor Final', description: 'FACTURA PARA CONSUMIDOR FINAL' },
-  };
-  if (found && found[0] && receiptTypes[found[0]]) {
-    return receiptTypes[found[0]];
-  } else {
-    return { type: 'Desconocido', description: 'RECIBO DE PAGO' };
-  }
 };
 
 /* =========================================================
@@ -119,28 +99,29 @@ export const getReceiptInfo = (code) => {
    ========================================================= */
 
 // ----------------- Business Header -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderBusinessHeader = (business, formatPhoneNumber) => {
+const renderBusinessHeader = (business, formatPhoneNumber) => {
   // SIN salto de línea al principio: empieza de inmediato
   let header = '';
   header += wrapAndCenter(business.name || 'Nombre del Negocio') + '\n';
   header += wrapAndCenter(business.address || 'Dirección del Negocio') + '\n';
   header += wrapAndCenter(formatPhoneNumber(business.tel) || 'Teléfono') + '\n';
+  if (business.rnc) {
+    header += wrapAndCenter(`RNC: ${business.rnc}`) + '\n';
+  }
   header += separatorLine() + '\n';
 
   return header;
 };
 
 // ----------------- Invoice Header -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderInvoiceHeader = (data, fechaActual) => {
+const renderInvoiceHeader = (data, fechaActual) => {
   let header = '';
+  const identity = resolveDocumentIdentity(data);
   header += 'Fecha: ' + fechaActual + '\n';
-  if (data?.NCF) {
-    const receiptInfo = getReceiptInfo(data.NCF);
-    header += 'NCF: ' + data.NCF + '\n';
-    header += centerText(receiptInfo.description) + '\n';
+  if (identity.label) {
+    header += identity.label.toUpperCase() + ': ' + (identity.value || '-') + '\n';
   }
+  header += centerText(identity.description || identity.title) + '\n';
   header += separatorLine() + '\n';
 
   // Salto de línea al final de la sección
@@ -148,8 +129,7 @@ export const renderInvoiceHeader = (data, fechaActual) => {
 };
 
 // ----------------- Client Info -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderClientInfo = (client, formatPhoneNumber) => {
+const renderClientInfo = (client, formatPhoneNumber) => {
   if (!client) return ''; // nada si no hay cliente
 
   let clientText = '';
@@ -201,8 +181,7 @@ export const renderClientInfo = (client, formatPhoneNumber) => {
 };
 
 // ----------------- Products -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderProducts = (
+const renderProducts = (
   products,
   taxReceipt,
   getTax,
@@ -239,6 +218,11 @@ export const renderProducts = (
       prodText += col1 + col2 + col3 + '\n';      // Nombre completo del producto (y lo partimos en líneas de máx 40)
       prodText += wrapText(getFullProductName(product), CENTER_WIDTH) + '\n';
 
+      const rawBrand = typeof product?.brand === 'string' ? product.brand.trim() : '';
+      if (rawBrand && rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase()) {
+        prodText += wrapText(`Marca: ${rawBrand}`, CENTER_WIDTH) + '\n';
+      }
+
       // Descuento individual (si aplica)
       if (product?.discount && product?.discount?.value > 0) {
         const discountAmount = getProductIndividualDiscount(product);
@@ -266,8 +250,7 @@ export const renderProducts = (
 };
 
 // ----------------- Payment Area -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderPaymentArea = (
+const renderPaymentArea = (
   data,
   formatter,
   getProductsPrice,
@@ -386,8 +369,7 @@ export const renderPaymentArea = (
 };
 
 // ----------------- Footer -----------------
-// eslint-disable-next-line react-refresh/only-export-components
-export const renderFooter = () => {
+const renderFooter = () => {
   let footer = '';
   footer += wrapText('Gracias por su compra, regrese pronto.', CENTER_WIDTH) + '\n';
   footer += wrapText('   Lo Esperamos.', CENTER_WIDTH);
@@ -434,11 +416,13 @@ export const InvoiceTemplate4 = React.forwardRef(({ data, ignoreHidden }, ref) =
   );
 });
 
+InvoiceTemplate4.displayName = 'InvoiceTemplate4';
+
 export default InvoiceTemplate4;
 
 /* =========================================================
    Estilo Wrapper
    ========================================================= */
-export const HiddenPrintWrapper = styled.div`
+const HiddenPrintWrapper = styled.div`
   display: ${({ ignoreHidden }) => !ignoreHidden && 'none'};
 `;

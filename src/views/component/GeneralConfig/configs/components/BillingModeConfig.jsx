@@ -1,8 +1,9 @@
 
-import React from 'react';
-import styled from 'styled-components';
 import { Radio, message, Card } from 'antd';
+import React from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
@@ -29,7 +30,7 @@ const BillingModeConfig = ({ billingMode }) => {
   const handleCardClick = async (value) => {
     try {
       await setBillingSettings(user, { billingMode: value }); 
-    } catch (error) {
+    } catch {
       message.error('Error al guardar la configuración');
     }
   };

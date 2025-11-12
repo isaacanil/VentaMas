@@ -1,12 +1,12 @@
-import { AbilityBuilder, createMongoAbility, PureAbility } from '@casl/ability';
+import { AbilityBuilder, PureAbility } from '@casl/ability';
+
 import routesName from '../../routes/routesName';
 
 export function defineAbilitiesForManager() {
-  const { can, rules } = new AbilityBuilder(PureAbility);
+  const { can, cannot, rules } = new AbilityBuilder(PureAbility);
 
   const {
     SALES_TERM,
-    SETTING_TERM,
     CONTACT_TERM,
     BASIC_TERM,
     INVENTORY_TERM,
@@ -19,7 +19,6 @@ export function defineAbilitiesForManager() {
 
   const {
     CASH_RECONCILIATION_CLOSURE,
-    CASH_RECONCILIATION_INVOICE_OVERVIEW,
     CASH_RECONCILIATION_LIST,
     CASH_RECONCILIATION_OPENING
   } = CASH_RECONCILIATION_TERM;
@@ -51,7 +50,9 @@ export function defineAbilitiesForManager() {
   can('access', INVENTORY_ITEMS);
   can('access', CREDIT_NOTE_LIST);
   can('access', BACKORDERS);
+  cannot('access', '/users');
+  cannot('access', '/users/list');
+  cannot('access', '/users/session-logs');
 
   return rules;
 }
-

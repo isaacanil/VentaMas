@@ -1,6 +1,6 @@
+import { InboxOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
-import { InboxOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
 
 const fadeIn = keyframes`
   from { opacity: 0; }

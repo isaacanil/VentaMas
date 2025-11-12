@@ -1,15 +1,12 @@
-import { Form, Input, Select, DatePicker, message } from 'antd'
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
-import debounce from 'lodash/debounce'
+import { Form, Select, DatePicker, message } from 'antd'
 import dayjs from 'dayjs'
-import styled from 'styled-components'
-import EvidenceUpload from '../EvidenceUpload/EvidenceUpload'
-import ProductsTable from '../ProductsTable'
-import TotalsSummary from '../TotalsSummary'
-import AddProductForm from '../AddProduct'
-import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector'
-import OrderSelector from './components/OrderSelector'
+import { onSnapshot, doc } from 'firebase/firestore'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
+import { OPERATION_MODES } from '../../../../../../constants/modes'
+import { transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
 import { 
     selectOrder, 
     AddProductToOrder, 
@@ -19,26 +16,28 @@ import {
     updateProduct,
     setOrder 
 } from '../../../../../../features/addOrder/addOrderSlice'
-import { getTransactionConditionById, transactionConditions } from '../../../../../../constants/orderAndPurchaseState'
-import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders'
-import NotesInput from './components/NotesInput'
-import { OPERATION_MODES } from '../../../../../../constants/modes'
-import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
-import { normalizeText } from '../../../../../../utils/text'
-import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
-import { onSnapshot, doc } from 'firebase/firestore'
-import { db } from '../../../../../../firebase/firebaseconfig'
 import { selectUser } from '../../../../../../features/auth/userSlice'
-import BackOrdersModal from "../../../PurchaseManagement/components/BackOrdersModal";
+import { toggleProviderModal } from '../../../../../../features/modals/modalSlice'
+import { db } from '../../../../../../firebase/firebaseconfig'
+import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
 import { useBackOrdersByProduct } from "../../../../../../firebase/warehouse/backOrderService";
+import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector'
+import BackOrdersModal from "../../../PurchaseManagement/components/BackOrdersModal";
+import AddProductForm from '../AddProduct'
+import EvidenceUpload from '../EvidenceUpload/EvidenceUpload'
+import ProductsTable from '../ProductsTable'
+import TotalsSummary from '../TotalsSummary'
+
+
+import NotesInput from './components/NotesInput'
+
 
 const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors, mode, backOrderAssociationId }) => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser);
     const [selectedProvider, setSelectedProvider] = useState(null);
-    const [providerSearch, setProviderSearch] = useState('');
     const unsubscribeRef = useRef(null);
-    const { providers = [], loading: providersLoading } = useFbGetProviders();
+    const { providers = [] } = useFbGetProviders();
     const [isBackOrderModalVisible, setIsBackOrderModalVisible] = useState(false);
     const [selectedProductForBackorders, setSelectedProductForBackorders] = useState(null);
     const { backOrders = [] } = useBackOrdersByProduct(selectedProductForBackorders?.id);
@@ -49,11 +48,8 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
         condition,
         provider: providerId,
         deliveryAt,
-        paymentAt,
         note
     } = useSelector(selectOrder);
-
-    const conditionData = getTransactionConditionById(condition);
     const conditionItems = transactionConditions.map((item) => ({
         label: item.label,
         value: item.id // Cambiar de item.value a item.id
@@ -83,16 +79,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
     const handleConditionChange = (value) => {
         dispatch(setOrder({ condition: value }));
     };
-
-    // Debounced note change handler
-    const debouncedNoteChange = useMemo(
-        () =>
-            debounce((value) => {
-                dispatch(setOrder({ note: value }));
-            }, 300),
-        [dispatch]
-    );
-
     // Optimized note change handler
     const handleNoteChange = useCallback((value) => {
         dispatch(setOrder({ note: value }));
@@ -140,17 +126,6 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
             }
         };
     }, [selectedProvider?.id]);
-
-    const filteredProviders = useMemo(() => 
-        providerSearch
-            ? providers.filter(({ provider }) =>
-                normalizeText(provider.name).includes(normalizeText(providerSearch)) ||
-                normalizeText(provider.rnc || '').includes(normalizeText(providerSearch))
-            )
-            : providers,
-        [providers, providerSearch]
-    );
-
     const handleProviderSelect = (providerData) => {
         setSelectedProvider(providerData);
         dispatch(setOrder({ provider: providerData?.id || null }));
@@ -214,7 +189,7 @@ const GeneralForm = ({ files, attachmentUrls, onAddFiles, onRemoveFiles, errors,
                 <ProviderSelector
                     validateStatus={errors?.provider ? "error" : ""}
                     help={errors?.provider ? "El proveedor es requerido" : ""}
-                    providers={filteredProviders}
+                    providers={providers}
                     selectedProvider={selectedProvider}
                     onSelectProvider={handleProviderSelect}
                     onAddProvider={handleAddProvider}
@@ -322,14 +297,4 @@ const InvoiceDetails = styled.div`
     gap: 0.4em;
   
 `
-const ButtonsContainer = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    gap: 1em;
-   background-color: white;
-   padding-top: 1em;
-   border-top: 1px solid #e8e8e8;
-`
+

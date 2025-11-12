@@ -1,17 +1,18 @@
-import React, { useState } from 'react'
-import { useEffect } from 'react'
+import { faTimes, faTrash, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
+import { icons } from '../../../../../constants/icons/icons'
+import { selectUser } from '../../../../../features/auth/userSlice'
+import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg'
+import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
+import { fbDeleteProductImg } from '../../../../../firebase/products/productsImg/fbDeleteProductImg'
+import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg'
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp'
 import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn'
 import { Button, ButtonGroup } from '../../../../templates/system/Button/Button'
-import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg'
-import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData'
-import { useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { fbDeleteProductImg } from '../../../../../firebase/products/productsImg/fbDeleteProductImg'
-import { icons } from '../../../../../constants/icons/icons'
-import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg'
 
 export const MultimediaManager = () => {
   const [allImg, setAllImg] = useState([])
@@ -38,7 +39,7 @@ export const MultimediaManager = () => {
           {
             ImgToUpload ? (
               <Button
-                title={<IoMdClose />}
+                title={<FontAwesomeIcon icon={faTimes} />}
                 borderRadius='normal'
                 width='icon32'
                 onClick={() => setImgToUpload(null)}
@@ -46,10 +47,8 @@ export const MultimediaManager = () => {
           }
           <AddFileBtn
             title="Imagen"
-            fn={() => handleUploadImg()}
-            setFile={setImgToUpload}
-            file={ImgToUpload}
-            startIcon={<MdOutlineFileUpload />}
+            fn={setImgToUpload}
+            startIcon={<FontAwesomeIcon icon={faUpload} />}
             id="addImg"
           />
           <Button
@@ -69,15 +68,14 @@ export const MultimediaManager = () => {
                 <Img key={index}>
                   <div className='head'>
                     <Button
-                      title={<IoMdTrash />}
+                      title={<FontAwesomeIcon icon={faTrash} />}
                       borderRadius='normal'
                       width='icon24'
                       bgcolor={'error'}
                       onClick={() => fbDeleteProductImg(user, img)}
-
                     />
                   </div>
-                  <img src={img.url} alt="" onClick={() => useDeleteImgFBStorage(img)} />
+                <img src={img.url} alt="" />
                 </Img>
               ))
             ) : null

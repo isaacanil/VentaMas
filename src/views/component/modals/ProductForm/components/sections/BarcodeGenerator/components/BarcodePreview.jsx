@@ -1,7 +1,8 @@
-import React from 'react';
 import { Form, Typography, Space, Tag } from 'antd';
+import React from 'react';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
+
 import { isGS1RDCode } from '../../../../../../../../utils/barcode/barcode';
 
 const { Text } = Typography;
@@ -90,7 +91,6 @@ export { PreviewContainer, PreviewText };
 export const BarcodePreview = ({ 
   autoMode, 
   selectedConfig, 
-  nextItemReference, 
   livePreview,
   currentBarcode,
   realtimeStatus = {},
@@ -98,7 +98,7 @@ export const BarcodePreview = ({
   isInternalMode = false
 }) => {
   const showPreview = livePreview || (autoMode && (selectedConfig?.companyPrefix || isInternalMode));
-  const { isConnected, isUpdating, hasRealtimeData, hasManualChanges } = realtimeStatus;
+  const { isUpdating, hasRealtimeData, hasManualChanges } = realtimeStatus;
   
   return (
     <div>

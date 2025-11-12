@@ -1,6 +1,7 @@
-import React from 'react';
-import { Button } from 'antd';
 import { ClearOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+import React from 'react';
+
 import { FilterField } from './FilterField';
 
 export const ClearFiltersButton = ({ onClear, hasActiveFilters }) => {

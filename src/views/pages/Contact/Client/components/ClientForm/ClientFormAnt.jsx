@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
 import * as ant from 'antd';
-import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient';
-import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { Provider, useDispatch, useSelector } from 'react-redux';
-import { nanoid } from 'nanoid';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { OPERATION_MODES } from '../../../../../../constants/modes';
-import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
+import { selectUser } from '../../../../../../features/auth/userSlice';
 import { addClient, setClientMode } from '../../../../../../features/clientCart/clientCartSlice';
 import { CLIENT_MODE_BAR } from '../../../../../../features/clientCart/clientMode';
-import { ClientGeneralInfo } from './components/ClientGeneralInfo';
+import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
+import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
+import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient';
+
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
-const { Modal, Form, Input, Button, Tabs, notification, message } = ant;
+import { ClientGeneralInfo } from './components/ClientGeneralInfo';
+
+const { Modal, Form, Button, Tabs, notification, message } = ant;
 /**
  *
  *
@@ -41,7 +43,6 @@ const ClientFormAnt = ({
     const [submitted, setSubmitted] = useState(false);
     const clientData = form.getFieldsValue();
     const dispatch = useDispatch();
-    const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(true);
     const user = useSelector(selectUser);
     
     const customerData = {
@@ -130,7 +131,7 @@ const ClientFormAnt = ({
 
 
             dispatch(toggleClientModal({ mode: create }))
-        } catch (info) {
+        } catch {
             notification.error({
                 message: 'Error al Procesar',
                 description: 'Hubo un error al procesar el formulario. Por favor, inténtelo de nuevo.'
@@ -157,7 +158,6 @@ const ClientFormAnt = ({
                     creditLimitForm={creditLimitForm}
                     customerData={customerData}
                     isUpdating={isUpdating}
-                    setIsSubmitButtonDisabled={setIsSubmitButtonDisabled}
                     handleSubmit={handleSubmit}
                     loading={loading}
                     submitted={submitted}

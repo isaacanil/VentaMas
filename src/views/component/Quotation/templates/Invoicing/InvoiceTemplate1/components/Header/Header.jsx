@@ -1,14 +1,17 @@
-import React, { Fragment } from 'react'
 import { DateTime } from 'luxon';
-import styled from 'styled-components';
+import React from 'react'
 import { useSelector } from 'react-redux';
-import { InfoItem, Spacing } from '../../Style';
+import styled from 'styled-components';
+
+import { selectBusinessData } from '../../../../../../../../features/auth/businessSlice';
 import { useFormatPhoneNumber } from '../../../../../../../../hooks/useFormatPhoneNumber';
 import DateUtils from '../../../../../../../../utils/date/dateUtils';
-import { selectBusinessData } from '../../../../../../../../features/auth/businessSlice';
+import { resolveDocumentIdentity } from '../../../../../../../../utils/invoice/documentIdentity.js';
+import { InfoItem, Spacing } from '../../Style';
 
-export const Header = ({ data, Space }) => {
+export const Header = ({ data }) => {
     let business = useSelector(selectBusinessData) || ""
+    const documentIdentity = resolveDocumentIdentity(data);
     const fechaActual = data?.date 
       ? DateUtils.convertMillisToISODate(DateUtils.convertTimestampToMillis(data.date), "dd/MM/yyyy HH:mm") 
       : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
@@ -21,7 +24,9 @@ export const Header = ({ data, Space }) => {
                 <Spacing size={'large'} />
 
                 <InfoItem label={"Fecha"} value={fechaActual} />
-                {data?.NCF && <InfoItem label={"NCF"} value={data?.NCF} />}
+                {documentIdentity.label && (
+                    <InfoItem label={documentIdentity.label} value={documentIdentity.value || '-'} />
+                )}
                 <Spacing />
             {
                 data?.client && (
@@ -53,8 +58,4 @@ const Title = styled.p`
     text-align: center;
     margin: 0;
     
-`
-const Group = styled.div`
-    display: flex;
-    gap: 12px;
 `

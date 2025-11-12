@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
 import { Modal } from 'antd';
-import { ProductForm } from './ProductForm';
-import ImageManager from './ImageManager/ImageManager';
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
+
+import { selectUser } from '../../../../features/auth/userSlice';
 import { closeModalUpdateProd } from '../../../../features/modals/modalSlice';
 import { clearUpdateProductData, selectUpdateProductData, setProduct } from '../../../../features/updateProduct/updateProductSlice';
 import { listenToProduct } from '../../../../firebase/products/fbListenProduct';
-import { selectUser } from '../../../../features/auth/userSlice';
+
+import ImageManager from './ImageManager/ImageManager';
+import { ProductForm } from './ProductForm';
 
 export const ProductEditorModal = ({ isOpen }) => {
     const [view, setView] = useState('product-form')

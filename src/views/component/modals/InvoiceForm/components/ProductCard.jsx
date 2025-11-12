@@ -1,9 +1,8 @@
-import React from 'react';
-import * as antd from 'antd';
-const { Form, Input, Button, InputNumber, Card, Row, Col } = antd;
-import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Form, InputNumber, Row } from "antd";
+import React from "react";
 
-const ProductCard = ({ productName, price, quantity, setQuantity }) => {
+const ProductCard = ({ quantity, setQuantity }) => {
   const increaseQuantity = () => {
     setQuantity(prevQuantity => prevQuantity + 1);
   };

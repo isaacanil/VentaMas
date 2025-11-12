@@ -1,13 +1,16 @@
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Input } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { ProductCard } from './ProductCard'
-import { useGetProducts } from '../../../firebase/products/fbGetProducts'
-import { useClickOutSide } from '../../../hooks/useClickOutSide'
-import { filterData } from '../../../hooks/search/useSearch'
 
-import { Input } from 'antd'
+import { useGetProducts } from '../../../firebase/products/fbGetProducts'
+import { filterData } from '../../../hooks/search/useSearch'
+import { useClickOutSide } from '../../../hooks/useClickOutSide'
+
+import { ProductCard } from './ProductCard'
+
+
 
 export const ProductFilter = ({ productName, isOpen, setIsOpen, handleSelectProduct }) => {
 

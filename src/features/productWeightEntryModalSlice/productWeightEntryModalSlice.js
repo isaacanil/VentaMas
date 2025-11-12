@@ -5,7 +5,6 @@ const initialState = {
   isVisible: false,
   product: null,
   weight: 1.000,
-  product: null,
   onAdd: null,
   
   totalPrice: 0,

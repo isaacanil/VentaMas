@@ -1,7 +1,9 @@
 import React from 'react'
-import { ConfirmationDialog } from './components/ConfirmationDialog/ConfirmationDialog'
 import { useSelector } from 'react-redux';
+
 import { selectCurrentUserNotification } from '../../../../features/UserNotification/UserNotificationSlice';
+
+import { ConfirmationDialog } from './components/ConfirmationDialog/ConfirmationDialog'
 
 export const NotificationHandler = ({ type,    }) => {
 

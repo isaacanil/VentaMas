@@ -1,10 +1,13 @@
 import { createExcelTemplate } from "../createExcelTemplate";
-import { mapData } from "../mapData";
 import { readExcelFile } from "../excelReader";
+import { mapData } from "../mapData";
+import { processMappedData } from "../processMappedData";
+
+import { createSelectedHeaders } from "./filterEssentialHeaders";
 import { productHeaderMappings } from "./headerMappings";
 import { transformConfig } from "./transformFunctions";
-import { processMappedData } from "../processMappedData";
-import { filterEssentialHeaders, createSelectedHeaders } from "./filterEssentialHeaders";
+
+
 
 export const importProductData = async (file, language = 'en') => {
     if (!file) {

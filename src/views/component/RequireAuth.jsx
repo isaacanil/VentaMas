@@ -1,7 +1,8 @@
 
 import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
 import { useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom"
+
 import { selectUser } from '../../features/auth/userSlice'
 
 export const RequireAuth = ({ children}) => {

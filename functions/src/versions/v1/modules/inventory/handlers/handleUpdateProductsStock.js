@@ -1,11 +1,11 @@
-import { HttpsError } from "firebase-functions/https";
 import { logger } from "firebase-functions";
-import { db, FieldValue } from "../../../../../core/config/firebase.js";
-import { validateUser } from "../../auth/utils/validateUser.js";
-import { getBatchById, updateBatchStatusForProductStock } from "../../batch/services/batch.service.js";
-import { MovementReason, MovementType } from "../../inventoryMovements/types/inventoryMovements.js";
-import { getProductStockById } from "../../productStock/services/productStock.service.js";
+import { HttpsError } from "firebase-functions/https";
 import { nanoid } from "nanoid";
+
+import { db, FieldValue } from "../../../../../core/config/firebase.js";
+import { updateBatchStatusForProductStock } from "../../batch/services/batch.service.js";
+import { MovementReason, MovementType } from "../../inventoryMovements/types/inventoryMovements.js";
+
 
 // Divide un array en subarrays de tamaño máximo `size`
 function chunkArray(array, size) {
@@ -19,15 +19,8 @@ function chunkArray(array, size) {
  * @param {WriteBatch[]} batches
  * @param {number} limit - número máximo de commits en paralelo
  */
-export async function executeBatchesWithConcurrency(batches, limit = 5, timeout = 15_000) {
+export async function executeBatchesWithConcurrency(batches, limit = 5) {
   const pool = new Set();
-
-  const withTimeout = (p) =>
-    Promise.race([
-      p,
-      new Promise((_, r) => setTimeout(() => r(new Error('Batch timeout')), timeout))
-    ])
-
 
   for (const batch of batches) {
     const commit = batch.commit().finally(() => pool.delete(commit));

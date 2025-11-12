@@ -1,9 +1,10 @@
-import React from 'react';
-import { Card, Checkbox, InputNumber, Tag, Typography, Tooltip } from 'antd';
-import styled from 'styled-components';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { getTotalPrice } from '../../../../../utils/pricing';
+import { Card, Checkbox, InputNumber, Typography, Tooltip } from 'antd';
+import React from 'react';
+import styled from 'styled-components';
+
 import { formatPrice } from '../../../../../utils/formatPrice';
+import { getTotalPrice } from '../../../../../utils/pricing';
 
 const { Text } = Typography;
 
@@ -16,8 +17,7 @@ export const ProductCard = ({
   isView,
   onSelectionChange,
   onQuantityChange,
-  creditedByOthers = 0,
-  existingQuantity = 0
+  creditedByOthers = 0
 }) => {
   const unitPrice = getTotalPrice(product, true, false);
   const tempItem = { ...product, amountToBuy: quantity };

@@ -1,4 +1,4 @@
-import { AuditInfo } from "./AuditInfo";
+import type { AuditInfo } from "./AuditInfo";
 
 export interface Shelf {
     id: string; // auto-generated

@@ -1,4 +1,5 @@
 import { doc, getDoc, DocumentReference } from "firebase/firestore";
+
 import { db } from "../firebase/firebaseconfig";
 
 // Verifica si un valor es una referencia de documento

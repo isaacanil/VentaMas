@@ -1,4 +1,4 @@
-import { AuditInfo } from './AuditInfo';
+import type { AuditInfo } from './AuditInfo';
 
 export interface Sale {
   id: string; // auto-generated

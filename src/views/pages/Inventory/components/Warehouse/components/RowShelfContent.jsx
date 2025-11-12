@@ -1,18 +1,21 @@
-import React, { useCallback, useEffect, useState } from "react";
-import styled from "styled-components";
-import * as antd from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { DetailContainer, DetailItem } from "./WarehouseContent";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as antd from "antd";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import styled from "styled-components";
+
+
+import { icons } from "../../../../../../constants/icons/icons";
 import { selectUser } from "../../../../../../features/auth/userSlice";
+import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfModalSlice";
+import { openSegmentForm } from "../../../../../../features/warehouse/segmentModalSlice";
 import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
 import { deleteSegment,  useListenAllSegments } from "../../../../../../firebase/warehouse/segmentService";
-import { useNavigate, useParams } from "react-router-dom";
+
 import { ProductsSection } from "./ProductsSection";
-import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfModalSlice";
-import { icons } from "../../../../../../constants/icons/icons";
-import { openSegmentForm } from "../../../../../../features/warehouse/segmentModalSlice";
+import { DetailContainer, DetailItem } from "./WarehouseContent";
 
 const { Modal, Button, List, Tag, message } = antd;
 
@@ -68,9 +71,9 @@ export default function RowShelfContent() {
   const dispatch = useDispatch();
   const { rowId, warehouseId, shelfId } = useParams();
   const user = useSelector(selectUser);
-  const [location, setLocation] = useState({ id: rowId, type: "rowShelf" });
-  const { selectedWarehouse: warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf } = useSelector(selectWarehouse);
-  const { data: segments, loading, error } = useListenAllSegments(warehouseId, shelfId, rowId)
+  const location = useMemo(() => ({ id: rowId, type: "rowShelf" }), [rowId]);
+  const { selectedRowShelf: rowShelf } = useSelector(selectWarehouse);
+  const { data: segments } = useListenAllSegments(warehouseId, shelfId, rowId)
 
   useEffect(() => {
     if (!warehouseId || !shelfId || !rowId) {
@@ -109,14 +112,15 @@ export default function RowShelfContent() {
 
   const renderActions = useCallback((segment) => [
     <Button
+      key="edit-segment"
       icon={<FontAwesomeIcon icon={faEdit} />}
       onClick={(e) => {
         e.stopPropagation();
         handleUpdateSegment(segment);
-        //funcion de actualziar segmento
       }}
-    />, // Se reutiliza la función de editar
+    />,
     <Button
+      key="delete-segment"
       icon={icons.editingActions.delete}
       danger
       onClick={(e) => {
@@ -131,7 +135,7 @@ export default function RowShelfContent() {
         });
       }}
     />,
-  ], [handleDeleteSegment]);
+  ], [handleDeleteSegment, handleUpdateSegment]);
 
   return (
     <Container>
@@ -178,9 +182,10 @@ export default function RowShelfContent() {
             </AddButton>
           </SectionHeader>
           <List
-            dataSource={segments}
+            dataSource={segments ?? []}
             renderItem={(segment) => (
               <List.Item
+                key={segment.id}
                 actions={renderActions(segment)}
                 onClick={() => onNavigate(segment)}
               >

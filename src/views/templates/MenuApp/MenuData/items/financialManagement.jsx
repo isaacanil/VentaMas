@@ -1,10 +1,11 @@
 import { faClipboard, faClipboardCheck } from "@fortawesome/free-solid-svg-icons";
-import { icons } from "../../../../../constants/icons/icons";
-import ROUTES_NAME from "../../../../../routes/routesName";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const { PURCHASES, PURCHASES_CREATE } = ROUTES_NAME.PURCHASE_TERM
-const { ORDERS, ORDERS_CREATE } = ROUTES_NAME.ORDER_TERM
+import { icons } from "../../../../../constants/icons/icons";
+import ROUTES_NAME from "../../../../../routes/routesName";
+
+const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM
+const { ORDERS } = ROUTES_NAME.ORDER_TERM
 
 const { EXPENSES_LIST, EXPENSES_CATEGORY } = ROUTES_NAME.EXPENSES_TERM
 const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM

@@ -1,7 +1,9 @@
-import { PresetsSection } from './PresetsSection';
-import { createDefaultPresets } from '../constants/presets';
 import dayjs from 'dayjs';
 import { fn } from 'storybook/test';
+
+import { createDefaultPresets } from '../constants/presets';
+
+import { PresetsSection } from './PresetsSection';
 
 export default {
     title: 'Components/DatePicker/PresetsSection',

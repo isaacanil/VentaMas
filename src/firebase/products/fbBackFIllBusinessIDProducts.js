@@ -8,6 +8,7 @@ import {
     getDocs,
     writeBatch,
   } from 'firebase/firestore';
+
   import { db } from '../firebaseconfig'; // ajusta la ruta a tu config
   
   /**

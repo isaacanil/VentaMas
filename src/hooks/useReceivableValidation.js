@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+
+import { selectAR } from '../features/accountsReceivable/accountsReceivableSlice';
+import { selectUser } from '../features/auth/userSlice';
 import { SelectCartData } from '../features/cart/cartSlice';
 import { selectClient } from '../features/clientCart/clientCartSlice';
-import { selectUser } from '../features/auth/userSlice';
 import { fbGetActiveARCount } from '../firebase/accountsReceivable/fbGetActiveARCount';
 import { calculateInvoiceChange } from '../utils/invoice';
-import { selectAR } from '../features/accountsReceivable/accountsReceivableSlice';
 
 export const useReceivableValidation = (creditLimit) => {
   const [isValid, setIsValid] = useState(false);

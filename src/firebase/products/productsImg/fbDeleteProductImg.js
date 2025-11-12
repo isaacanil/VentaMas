@@ -1,6 +1,8 @@
 import { deleteObject, getDownloadURL, ref } from "firebase/storage"
-import { fbDeleteProductImgData } from "./fbDeleteProductImgData"
+
 import { storage } from "../../firebaseconfig";
+
+import { fbDeleteProductImgData } from "./fbDeleteProductImgData"
 
 export const fbDeleteProductImg = (user, img) => {
     const imgRef = ref(storage, img.url);

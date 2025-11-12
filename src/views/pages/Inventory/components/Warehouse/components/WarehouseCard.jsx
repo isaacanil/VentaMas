@@ -42,38 +42,6 @@ const Section = styled.div`
   padding: 0em 1em;
 `;
 
-const ProgressContainer = styled.div`
-  height: 8px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 8px;
-`;
-
-const ProgressBar = styled.div`
-  width: ${({ utilization }) => utilization}%;
-  background-color: #333;
-  height: 100%;
-`;
-
-const InfoText = styled.p`
-  font-size: 12px;
-  color: #999;
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 16px;
-`;
-
-const Button = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: ${({ color }) => color || 'inherit'};
-`;
-
 // Definición del componente WarehouseCard
 const WarehouseCard = ({ warehouse, onSelect }) => {
   return (

@@ -1,6 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { createSlice } from '@reduxjs/toolkit'
+
 import { OPERATION_MODES } from "../../constants/modes";
 
 const initialState = {
@@ -189,7 +188,7 @@ const modalSlice = createSlice({
             }
 
         },
-        toggleAddProductOutflow: (state, actions) => {
+        toggleAddProductOutflow: (state, _actions) => {
             const isOpen = state.modalToggleAddProductOutflow.isOpen;
             state.modalToggleAddProductOutflow.isOpen = !isOpen;
         },
@@ -218,12 +217,11 @@ const modalSlice = createSlice({
                 return
             }
         },
-        toggleConfirmOpenCashReconciliation: (state, action) => {
+        toggleConfirmOpenCashReconciliation: (state, _action) => {
             const isOpen = state.modalConfirmOpenCashReconciliation.isOpen;
             state.modalConfirmOpenCashReconciliation.isOpen = !isOpen;
         },
         toggleFileListModal: (state, action) => {
-            const data = action.payload;
             const isOpen = !state.modalFileList.isOpen;
            
             state.modalFileList.isOpen = isOpen;
@@ -231,8 +229,7 @@ const modalSlice = createSlice({
             if (isOpen === false) {
                 state.modalFileList.fileList = [];
             } else {
-                state.modalFileList.fileList = data.fileList;
-
+                state.modalFileList.fileList = action.payload?.fileList || [];
             }
         },
         toggleDeveloperModal: (state, action) => {

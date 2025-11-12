@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import styled from 'styled-components'
 import { Modal, Tag, Table, Typography, Spin } from 'antd';
-import { useSelector } from 'react-redux'
-import { selectUser } from '../../../../../../../../../../features/auth/userSlice'
+import { useState } from 'react'
+import styled from 'styled-components'
+
 import { PillButton } from '../../../../../../../../../component/PillButton/PillButton';
 
 const { Title, Text } = Typography;
 
-export const ViewExpenses = ({ cashCountId, loading = false, expenses = [] }) => {
+export const ViewExpenses = ({ loading = false, expenses = [] }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
-        fetchExpenses();
     };
 
     const handleCloseModal = () => {

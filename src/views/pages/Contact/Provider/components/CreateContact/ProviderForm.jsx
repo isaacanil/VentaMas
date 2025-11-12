@@ -1,26 +1,28 @@
+import { InfoCircleOutlined, GlobalOutlined } from '@ant-design/icons'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Modal, Form, Input, Button, Select, message, Tooltip, Space } from 'antd'
+import flags from 'country-flag-icons/react/3x2'
+import { getCountries, getCountryCallingCode } from 'libphonenumber-js'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { Modal, Form, Input, Button, Select, message, Tooltip, Space, Alert } from 'antd'
-import { InfoCircleOutlined, GlobalOutlined } from '@ant-design/icons'
-import { getCountries, getCountryCallingCode } from 'libphonenumber-js'
-import flags from 'country-flag-icons/react/3x2'
 import styled from 'styled-components'
-import { DgiiSyncAlert } from '../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
-import { RncWarning } from '../../../../../component/Rnc/RncWarning/RncWarning';
+
 
 // Local imports
 import { OPERATION_MODES } from '../../../../../../constants/modes'
-import { SelectProviderModalData, toggleProviderModal } from '../../../../../../features/modals/modalSlice'
 import { selectUser } from '../../../../../../features/auth/userSlice'
+import { SelectProviderModalData, toggleProviderModal } from '../../../../../../features/modals/modalSlice'
 import { fbAddProvider } from '../../../../../../firebase/provider/fbAddProvider'
-import { fbUpdateProvider } from '../../../../../../firebase/provider/fbUpdateProvider'
-import { formatPhoneNumber, unformatPhoneNumber, isValidPhoneNumber } from '../../../../../../utils/format/format'
-import { comprobantesOptions } from './constants'
-import { useRncSearch } from '../../../../../../hooks/useRncSearch'
-import { RncPanel } from '../../../../../component/Rnc/RncPanel/RncPanel'
 import { fbCheckProviderExists } from '../../../../../../firebase/provider/fbCheckProviderExists';
+import { fbUpdateProvider } from '../../../../../../firebase/provider/fbUpdateProvider'
+import { useRncSearch } from '../../../../../../hooks/useRncSearch'
+import { formatPhoneNumber, unformatPhoneNumber, isValidPhoneNumber } from '../../../../../../utils/format/format'
+import { DgiiSyncAlert } from '../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
+import { RncPanel } from '../../../../../component/Rnc/RncPanel/RncPanel'
+
+import { comprobantesOptions } from './constants'
+
 
 const { TextArea } = Input
 
@@ -65,13 +67,10 @@ export const ProviderForm = () => {
     const dispatch = useDispatch()
 
     const { isOpen, mode, data } = useSelector(SelectProviderModalData)
-
-    const update = OPERATION_MODES.UPDATE.id;
     const user = useSelector(selectUser)
     const [form] = Form.useForm()
     const [selectedCountry, setSelectedCountry] = useState('DO')
     const { loading, error, rncInfo, differences, consultarRNC, syncWithDgii, compareDgiiData } = useRncSearch(form);
-    const [showWarning, setShowWarning] = useState(false);
 
     // Reemplazar el useEffect problemático con Form.useWatch
     const formValues = Form.useWatch([], form);
@@ -108,7 +107,7 @@ export const ProviderForm = () => {
             const values = await form.validateFields();
 
             if (rncInfo?.status === 'DADO DE BAJA') {
-                setShowWarning(true);
+                message.warning({ content: 'El RNC está dado de baja en la DGII', key: 'providerSubmit' });
                 return;
             }
 
@@ -404,10 +403,3 @@ export const ProviderForm = () => {
         </>
     )
 }
-
-const RncGroup = styled.div`
-    display: grid;
-    gap: 1em;
-    grid-template-columns: 1fr min-content;
-    align-items: center;
-`

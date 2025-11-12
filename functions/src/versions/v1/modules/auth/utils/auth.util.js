@@ -1,7 +1,9 @@
-import { HttpsError } from 'firebase-functions/v2/https';
-import { Timestamp } from 'firebase-admin/firestore';
 import argon2 from 'argon2';
+import { Timestamp } from 'firebase-admin/firestore';
+import { HttpsError } from 'firebase-functions/v2/https';
+
 import { db } from '../../../../../core/config/firebase.js';
+
 import { argon2Options } from './hash.util.js';
 
 /**
@@ -164,10 +166,10 @@ export async function prepareUserCreationData(userData, actor) {
   
   // Procesar datos
   const hashedPassword = await hashPassword(password);
-  const auditFields = createAuditFields(actor);
   const authFields = createAuthFields();
   
   return {
+    ...createAuditFields(actor),
     user: {
       name: name.trim(),
       displayName: name.trim(),
@@ -175,7 +177,7 @@ export async function prepareUserCreationData(userData, actor) {
       businessID,
       role,
       ...authFields
-    },
+    }
   };
 }
 

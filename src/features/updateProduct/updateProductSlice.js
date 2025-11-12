@@ -1,18 +1,41 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
-import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/WarrantyInfo'
 import { nanoid } from 'nanoid';
+
+import { warrantyOptions } from '../../views/component/modals/ProductForm/components/sections/warranty.helpers'
+import { initTaxes } from '../../views/component/modals/UpdateProduct/InitializeData'
+
+const DEFAULT_BRAND = 'Sin marca';
+export const PRODUCT_BRAND_DEFAULT = DEFAULT_BRAND;
+
+export const PRODUCT_ITEM_TYPE_OPTIONS = [
+    { value: 'product', label: 'Producto' },
+    { value: 'service', label: 'Servicio' },
+    { value: 'combo', label: 'Combo' },
+];
+const DEFAULT_ITEM_TYPE = PRODUCT_ITEM_TYPE_OPTIONS[0].value;
+
+const normalizeBrand = (value) => {
+    if (typeof value !== 'string') {
+        return DEFAULT_BRAND;
+    }
+    const trimmed = value.replace(/\s+/g, ' ').trim();
+    return trimmed || DEFAULT_BRAND;
+};
 
 const createEmptyProduct = () => ({
     name: '',
+    brand: DEFAULT_BRAND,
     image: '',
     category: '',
+    itemType: DEFAULT_ITEM_TYPE,
     pricing: {
         cost: 0,
         price: 0,
         listPrice: 0,
         avgPrice: 0,
         minPrice: 0,
+        cardPrice: 0,
+        offerPrice: 0,
         tax: initTaxes[0],
     },
     promotions: {
@@ -63,20 +86,28 @@ export const updateProductSlice = createSlice({
     reducers: {
         ChangeProductData: (state, action) => {
             const { status, product } = action.payload
-            if (!state.status) {
+            if (status && !state.status) {
                 state.status = status
             }
-            state.product = {
+            const merged = {
                 ...state.product,
                 ...product,
             };
+            if (product && Object.prototype.hasOwnProperty.call(product, 'brand')) {
+                merged.brand = normalizeBrand(product?.brand);
+            } else {
+                merged.brand = normalizeBrand(merged.brand);
+            }
+            state.product = merged;
         },
         setProduct: (state, action) => {
             const product = action.payload
-            state.product = {
+            const merged = {
                 ...state.product,
                 ...product,
-            }
+            };
+            merged.brand = normalizeBrand(merged.brand);
+            state.product = merged;
         },
         ChangeProductImage: (state, action) => {
             state.product.image = action.payload
@@ -118,6 +149,8 @@ export const updateProductSlice = createSlice({
                             avgPriceEnable: false,
                             minPrice: 0,
                             minPriceEnable: false,
+                            cardPrice: 0,
+                            offerPrice: 0,
                             tax: initTaxes[0],
                         },
                     },
@@ -134,6 +167,8 @@ export const updateProductSlice = createSlice({
                             avgPriceEnable: false,
                             minPrice: 0,
                             minPriceEnable: false,
+                            cardPrice: 0,
+                            offerPrice: 0,
                             tax: initTaxes[0],
                         },
                     },

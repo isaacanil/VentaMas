@@ -1,6 +1,7 @@
-import { doc, getDoc, updateDoc, writeBatch } from "firebase/firestore";
-import { db } from "../firebaseconfig";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+
 import { getTax } from "../../utils/pricing";
+import { db } from "../firebaseconfig";
 
 export async function fbUpdateProductToNewFormat(businessID, productID) {
     try {
@@ -27,7 +28,7 @@ export async function fbUpdateProductToNewFormat(businessID, productID) {
     }
 }
 
-function transformProductToNewSchema(product) {
+function _transformProductToNewSchema(product) {
     // Suponiendo que la estructura de "product" ya contiene los campos necesarios
     // y solo necesitamos ajustarlos o calcular nuevos valores como el precio sin impuestos.
     const taxPercentage = convertDecimalToPercentage(product.tax?.unit ?? 0);

@@ -1,16 +1,31 @@
 // stock.utils.js
+export const resolveStock = (p) => {
+    if (!p) return 0;
+    const candidateKeys = ['scopedStock', 'stock', 'displayStock', 'originalStock'];
+    for (const key of candidateKeys) {
+        const value = p?.[key];
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return value;
+        }
+    }
+    const fallback = Number(p?.stock);
+    return Number.isFinite(fallback) ? fallback : 0;
+};
+
 export const isStockRestricted = (p) => p?.restrictSaleWithoutStock;
 export const isStockExceeded = (inCart, p) => {
     if (!inCart || !p) return false;
     const total = p?.amountToBuy ?? 0;
-    return total >= (p?.stock ?? 0);
+    const max = resolveStock(p);
+    if (max <= 0) return false;
+    return total >= max;
 };
 
-export const isStockZero = (p) => p?.stock <= 0;
+export const isStockZero = (p) => resolveStock(p) <= 0;
 
 // Dynamic low-stock check using provided threshold (defaults to 20)
 export const isStockLow = (p, lowThreshold = 20) => {
     if (!p) return false;
-    const remaining = (p.stock ?? 0) - (p.amountToBuy ?? 0);
+    const remaining = resolveStock(p) - (p.amountToBuy ?? 0);
     return remaining > 0 && remaining <= (Number.isFinite(lowThreshold) ? lowThreshold : 20);
 };

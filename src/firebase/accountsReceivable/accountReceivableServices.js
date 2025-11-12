@@ -1,9 +1,10 @@
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, getDoc, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
-import { fbGetClient } from '../client/fbGetClient';
-import { fbGetInvoice } from '../invoices/fbGetInvoice';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { DateTime } from 'luxon';
+
+import { fbGetClient } from '../client/fbGetClient';
+import { db } from '../firebaseconfig';
+import { fbGetInvoice } from '../invoices/fbGetInvoice';
+
 
 export const useListenAccountsReceivable = (user, dateRange = null) => {
   const [accountsReceivable, setAccountsReceivable] = useState([]);

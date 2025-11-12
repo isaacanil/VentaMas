@@ -1,29 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import * as antd from 'antd';
-import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
-import { fbGetCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbGetCreditLimit';
-import { selectUser } from '../../../../../../../../../features/auth/userSlice';
-import { useSelector } from 'react-redux';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import CreditLimitModal from './CreditLimitModal';
-import { EditOutlined } from '@ant-design/icons';
-import {formatPrice} from '../../../../../../../../../utils/formatPrice';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faFileInvoice, 
-    faCreditCard, 
-    faMoneyBillWave,
+    faCreditCard,
     faExclamationTriangle,
     faCheckCircle,
     faTimesCircle,
     faEdit
 } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as antd from 'antd';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-const { Alert, Button } = antd;
+import { selectUser } from '../../../../../../../../../features/auth/userSlice';
+import { fbGetCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbGetCreditLimit';
+import { formatPrice } from '../../../../../../../../../utils/formatPrice';
+
+import CreditLimitModal from './CreditLimitModal';
+
+
+const { Alert } = antd;
 
 export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
-    const [invoiceStatus, setInvoiceStatus] = useState(false);
     const [creditLimitStatus, setCreditLimitStatus] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const user = useSelector(selectUser);
@@ -40,7 +39,6 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
     useEffect(() => {
         if (creditLimitState) {
             creditLimitForm.setFieldsValue(creditLimitState);
-            setInvoiceStatus(creditLimitState?.invoice?.status);
             setCreditLimitStatus(creditLimitState?.creditLimit?.status);
         }
     }, [creditLimitState]);
@@ -53,7 +51,6 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
         try {
             // Actualizar el formulario padre
             creditLimitForm.setFieldsValue(values);
-            setInvoiceStatus(values.invoice?.status);
             setCreditLimitStatus(values.creditLimit?.status);
             
             // Invalidar la query para refrescar los datos
@@ -286,4 +283,3 @@ const EditButton = styled.button`
         transform: scale(0.95);
     }
 `;
-

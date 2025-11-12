@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Input, InputNumber, Button, Modal, Checkbox, message, Tag } from 'antd';
-import styled from 'styled-components';
 import { DollarCircleOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
-import { fbUpsetSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { Form, Input, InputNumber, Button, Modal, Checkbox, message } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+import { fbUpsetSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+
+
 
 const FormContainer = styled.div``;
 
@@ -147,16 +150,6 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
               <Input placeholder="Ejemplo: Caja" />
             </Form.Item>
             <Grid>
-
-            <Form.Item
-              tooltip="Cantidad de productos en stock"
-              label="Stock"
-            >
-          
-
-              //here we calculate the stock
-        
-            </Form.Item>
             <Form.Item
               name="packSize"
              tooltip="Cantidad de productos en un paquete"

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
 import { Modal, InputNumber, Button, Alert, Typography, Space } from 'antd';
+import { useMemo, useState } from 'react';
 
 const { Text } = Typography;
 
@@ -45,7 +45,7 @@ const FulfillModal = ({ open, onCancel, onConfirm, group, loading }) => {
               try {
                 await onConfirm(Number(amount));
                 setAmount(undefined); // limpiar para permitir nuevas entradas
-              } catch (e) {
+              } catch {
                 // no limpiar si falla
               }
             }}>Confirmar</Button>

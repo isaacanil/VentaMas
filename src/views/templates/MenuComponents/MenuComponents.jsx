@@ -1,16 +1,18 @@
-import styled from 'styled-components'
-import { MenuConfig } from './MenuConfig'
-import { useDispatch } from 'react-redux'
 import { Button } from 'antd'
+import { useDispatch } from 'react-redux'
+import styled from 'styled-components'
+
+import { MenuConfig } from './MenuConfig'
 
 export const MenuComponents = () => {
     const dispatch = useDispatch()
+    
     return (
         <Container>
             <Items>
-                {MenuConfig.map((item, index) => {
+                {MenuConfig.filter(item => item.id !== 'preorder').map((item, index) => {
                     return (
-                        <Item key={index}>
+                        <Item key={index} align={item.align}>
                             <Button
                                 type="primary"
                                 size="large"
@@ -52,7 +54,8 @@ const Items = styled.ul`
     gap: 0.8em;
 `
 const Item = styled.li`
-    ${props => props.align === 'right' ? 'justify-self: end;' : ''}
+    ${props => props.align === 'right' ? 'margin-left: auto;' : ''}
+    ${props => props.align === 'left' ? 'margin-right: auto;' : ''}
     
     .ant-btn {
         height: 2.5em;

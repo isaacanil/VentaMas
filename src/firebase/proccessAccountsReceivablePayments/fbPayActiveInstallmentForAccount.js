@@ -1,25 +1,25 @@
-import { collection, doc, setDoc, Timestamp, writeBatch, getDoc, query, where, orderBy, getDocs } from "firebase/firestore";
-import { db } from "../firebaseconfig";
+import { collection, doc, setDoc, Timestamp, writeBatch } from "firebase/firestore";
 import { nanoid } from "nanoid";
-import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
+
 import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
-import { fbAddPayment } from "../accountsReceivable/payment/fbAddPayment";
 import { fbAddAccountReceivablePaymentReceipt } from "../accountsReceivable/fbAddAccountReceivablePaymentReceipt";
+import { fbAddPayment } from "../accountsReceivable/payment/fbAddPayment";
+import { db } from "../firebaseconfig";
 import { fbGetInvoice } from "../invoices/fbGetInvoice";
-import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
+
 import { 
-    getClientAccountById, 
     getOldestActiveInstallmentByArId, 
     validatePaymentAmounts,
     createAccountReceiptData,
     validateAccountHasPendingBalance,
     validatePaymentAmount
 } from "./arPaymentUtils";
+import { THRESHOLD, roundToTwoDecimals } from "./financeUtils";
 
 // Function to process the payment for the oldest active installment
 export const fbPayActiveInstallmentForAccount = async ({ user, paymentDetails }) => {
     try {
-        const { clientId, totalAmount: paymentAmount, arId, paymentMethods, comments, totalPaid } = paymentDetails;
+        const { clientId, totalAmount: paymentAmount, arId, paymentMethods, comments: _comments, totalPaid } = paymentDetails;
 
         // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente
         console.log("🔍 Debug - Validating account balance for arId:", arId);

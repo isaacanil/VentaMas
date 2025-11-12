@@ -1,11 +1,13 @@
+import { Button, Modal } from 'antd'; // Eliminar Select de las importaciones
 import { useState, useRef, useEffect } from 'react';
-import { Button, Modal, Form } from 'antd'; // Eliminar Select de las importaciones
-import { Invoice } from '../Invoice/Invoice';
-import { useReactToPrint } from 'react-to-print';
-import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { useSelector } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
+
+import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
+import { Quotation } from '../Quotation/Quotation';
+
 
 const TEMPLATES_CONFIG = {
   template1: {
@@ -75,7 +77,7 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
   const renderInvoice = (ref) => (
     <PreviewContainer template={selectedTemplate}>
       <InvoiceContainer template={selectedTemplate}>
-        <Invoice
+        <Quotation
           ref={ref}
           template={selectedTemplate}
           data={{}}

@@ -1,7 +1,9 @@
 import React from 'react'
 import styled from 'styled-components';
+
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
-import { abbreviatePaymentMethods, getActivePaymentMethods, translatePaymentMethods } from '../../../../../../utils/invoice';
+import { abbreviatePaymentMethods, getActivePaymentMethods } from '../../../../../../utils/invoice';
+
 import { Items } from './Items';
 
 export const Body = ({ data }) => {

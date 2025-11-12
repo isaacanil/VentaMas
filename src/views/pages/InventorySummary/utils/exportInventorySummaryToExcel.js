@@ -1,6 +1,6 @@
+import dayjs from 'dayjs'
 import * as exceljs from 'exceljs'
 import { saveAs } from 'file-saver'
-import dayjs from 'dayjs'
 
 /**
  * Export Inventory Summary rows to an Excel file using exceljs.

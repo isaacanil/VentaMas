@@ -1,8 +1,11 @@
-import { getNextID } from '../Tools/getNextID';
-import { getBarcodeSettings } from './barcodeSettings';
-import { generateGTIN13RD } from '../../utils/barcode/barcode';
 import { doc, getDoc } from 'firebase/firestore';
+
+import { generateGTIN13RD } from '../../utils/barcode/barcode';
 import { db } from '../firebaseconfig';
+import { getNextID } from '../Tools/getNextID';
+
+import { getBarcodeSettings } from './barcodeSettings';
+
 
 /**
  * Genera automáticamente el siguiente Item Reference para un negocio
@@ -27,7 +30,7 @@ export const generateNextItemReference = async (user) => {
         
         return paddedId;
     } catch (error) {
-        console.error('Error al generar Item Reference:', error);
+        console.error('[barcodeGeneration] Error al generar Item Reference:', error);
         throw error;
     }
 };
@@ -75,7 +78,7 @@ export const generateAutoBarcode = async (user, companyPrefix = null) => {
             }
         };
     } catch (error) {
-        console.error('Error al generar código de barras automático:', error);
+        console.error('[barcodeGeneration] Error al generar código automático:', error);
         throw error;
     }
 };
@@ -106,7 +109,7 @@ export const validateItemReference = async (user, itemReference) => {
         // Validar que solo contenga números
         return /^\d+$/.test(itemReference);
     } catch (error) {
-        console.error('Error al validar Item Reference:', error);
+        console.error('[barcodeGeneration] Error al validar Item Reference:', error);
         return false;
     }
 };
@@ -139,7 +142,7 @@ export const previewNextItemReference = async (user) => {
         const length = barcodeSettings?.itemReferenceLength ?? 9;
         return String(previewId).padStart(length, '0');
     } catch (error) {
-        console.error('Error al obtener preview del Item Reference:', error);
+        console.error('[barcodeGeneration] Error al obtener preview del Item Reference:', error);
         throw error;
     }
 };

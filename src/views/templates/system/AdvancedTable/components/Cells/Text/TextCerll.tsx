@@ -1,7 +1,8 @@
 import { Tooltip } from "antd";
 import React, { useRef } from "react";
-import useTruncate from "../../../../../../../hooks/useTruncate";
 import styled from 'styled-components';
+
+import useTruncate from "../../../../../../../hooks/useTruncate";
 
 interface TextCellProps {
     value: string | null | undefined;
@@ -18,7 +19,7 @@ const Container = styled.div`
 
 function TextCell ({ value, useTooltip = true }: TextCellProps) {
     const containerRef = useRef < HTMLDivElement > (null);
-    const { isTruncated, truncatedText, textRef, showTooltip } = useTruncate(value, containerRef, useTooltip);
+    const { truncatedText, textRef, showTooltip } = useTruncate(value, containerRef, useTooltip);
 
     if (!value) return null;
 

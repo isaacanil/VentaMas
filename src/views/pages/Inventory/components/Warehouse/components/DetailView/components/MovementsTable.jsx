@@ -1,15 +1,15 @@
+import { Button } from 'antd';
 import React from 'react';
-import styled from 'styled-components';
-import { Card } from 'antd';
-import { EyeOutlined } from "@ant-design/icons";
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { useListenMovementsByLocation } from '../../../../../../../../firebase/warehouse/productMovementService';
-import { useNavigate } from 'react-router-dom';
-import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
 import { MovementReason } from '../../../../../../../../models/Warehouse/Movement';
 import ROUTES_NAME from '../../../../../../../../routes/routesName';
-import { Button } from 'antd';
+import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
+
 
 const StyledCard = styled.div`
   margin-top: 16px;
@@ -83,17 +83,6 @@ const DirectionLabel = styled.span`
   display: flex;
   align-items: center;
   gap: 4px;
-`;
-
-const DirectionIndicator = styled.span`
-  color: #8E8E93;
-  font-size: 0.85em;
-  font-weight: 500;
-  letter-spacing: -0.2px;
-  background: #F2F2F7;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-left: 4px;
 `;
 
 const MovementTypeBadge = styled.span`

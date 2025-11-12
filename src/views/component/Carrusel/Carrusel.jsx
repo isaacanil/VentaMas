@@ -1,32 +1,32 @@
-import React, { useRef, useState } from 'react'
-import styled from 'styled-components'
-import { useScreenSize } from '../../../hooks/useScreenSize'
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useDispatch, useSelector } from 'react-redux'
-import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories'
-import { motion } from 'framer-motion'
-import { Category } from './Category'
-import { toggleAddCategory } from '../../../features/modals/modalSlice'
-import { icons } from '../../../constants/icons/icons'
-import { SelectCategoryList } from '../../../features/category/categorySlicer'
-import { useCategoryState } from '../../../Context/CategoryContext/CategoryContext'
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { icons } from '../../../constants/icons/icons';
+import { useCategoryState } from '../../../Context/CategoryContext';
+import { SelectCategoryList } from '../../../features/category/categorySlicer';
+import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
+import { useScreenSize } from '../../../hooks/useScreenSize';
+
+import { Category } from './Category';
 
 export const Carrusel = ({
     themeColor,
     addCategoryBtn = false
 }) => {
-    const categoriesRef = useRef(null)
-    const { width } = useScreenSize(categoriesRef)
-    const { categories } = useFbGetCategories()
-    const dispatch = useDispatch()
-    const categorySelected = useSelector(SelectCategoryList)
-    const categoryCardRef = useRef(null);
+    const categoriesRef = useRef(null);
+    const { width } = useScreenSize(categoriesRef);
+    const { categories } = useFbGetCategories();
+    const categorySelected = useSelector(SelectCategoryList);
+
     const MoveScroll = (direction) => {
         const cacheScrollMeasurements = () => {
             const element = categoriesRef.current;
             if (!element) return null;
-            
+
             return {
                 scrollLeft: element.scrollLeft,
                 scrollWidth: element.scrollWidth,
@@ -43,8 +43,8 @@ export const Carrusel = ({
                     behavior: 'smooth',
                 });
             }
-        }
-        
+        };
+
         const toEnd = () => {
             const measurements = cacheScrollMeasurements();
             if (measurements && measurements.scrollLeft < measurements.scrollWidth - measurements.clientWidth) {
@@ -54,51 +54,47 @@ export const Carrusel = ({
                     behavior: 'smooth',
                 });
             }
-        }
-        
+        };
+
         const toRight = () => {
             const distance = width / 3;
             categoriesRef.current.scrollBy({
                 top: 0,
                 left: distance,
                 behavior: 'smooth'
-            })
-        }
-        
+            });
+        };
+
         const toLeft = () => {
             const distance = width / 3;
             categoriesRef.current.scrollBy({
                 top: 0,
                 left: -distance,
                 behavior: 'smooth'
-            })
+            });
+        };
+        if (direction === 'start') {
+            toStart();
         }
-        if (direction == 'start') {
-            toStart()
+        if (direction === 'end') {
+            toEnd();
         }
-        if (direction == 'end') {
-            toEnd()
+        if (direction === 'right') {
+            toRight();
         }
-        if (direction == 'right') {
-            toRight()
+        if (direction === 'left') {
+            toLeft();
         }
-        if (direction == 'left') {
-            toLeft()
-        }
-    }
+    };
 
 
 
     const { configureAddProductCategoryModal } = useCategoryState();
-    const findElementInArray = (array, element) => {
-        const result = array.find((category) => category === element)
-        if (result) {
-            return true
-        }
-    }
+    const findElementInArray = (array, element) => array.some((category) => category === element);
     return (
         <>
-            <Container themeColor={themeColor}>                <Button
+            <Container themeColor={themeColor}>
+                <Button
                     onClick={() => MoveScroll('left')}
                     onDoubleClick={() => MoveScroll('start')}
                 >
@@ -138,8 +134,8 @@ export const Carrusel = ({
                 <Button onClick={() => MoveScroll('right')} onDoubleClick={() => MoveScroll('end')} ><FontAwesomeIcon icon={faChevronRight} /></Button>
             </Container>
         </>
-    )
-}
+    );
+};
 const Container = styled.div`
      background-color: ${props => props.theme.bg.shade}; 
     width: 100%;
@@ -192,4 +188,3 @@ const Categories = styled(motion.ul)`
   display: none; /* Oculta la barra de scroll */
 }
 `
-

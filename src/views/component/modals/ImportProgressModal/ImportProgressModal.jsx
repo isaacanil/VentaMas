@@ -1,6 +1,6 @@
+import { Modal, Progress, Card, Statistic } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { Modal, Progress, Card, Statistic } from 'antd';
 
 const ImportProgressModal = ({ visible, progress }) => {
   const {

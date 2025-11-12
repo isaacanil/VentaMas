@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
 import { UserOutlined, MedicineBoxOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Button, message } from 'antd';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+
 import { selectUser } from '../../features/auth/userSlice';
 import {
     selectDoctorsModal,
@@ -79,7 +80,7 @@ const DoctorModal = () => {
             }
             
             form.resetFields();
-        } catch (rejectedValueOrSerializedError) {
+        } catch {
             // Error already handled by Redux and shown via useEffect
         }
     };
