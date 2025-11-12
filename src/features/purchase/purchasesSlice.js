@@ -1,22 +1,19 @@
-import { createSlice } from '@reduxjs/toolkit'
-
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    purchases: [
-
-    ],
-}
+  purchases: [],
+};
 
 export const purchasesSlice = createSlice({
-    name: 'purchases',
-    initialState,
-    reducers: {
-        updatePurchases: (state, actions) => {
-            const data = actions.payload
-            state.purchases = data
-        },
-    }
-})
+  name: 'purchases',
+  initialState,
+  reducers: {
+    updatePurchases: (state, actions) => {
+      const data = actions.payload;
+      state.purchases = data;
+    },
+  },
+});
 
 export const { updatePurchases } = purchasesSlice.actions;
 

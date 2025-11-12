@@ -1,5 +1,6 @@
-
-export const formatNumber = (value: string | number | null | undefined): string => {
+export const formatNumber = (
+  value: string | number | null | undefined,
+): string => {
   if (value === null || value === undefined || value === '') {
     return '';
   }

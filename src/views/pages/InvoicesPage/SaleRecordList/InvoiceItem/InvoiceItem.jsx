@@ -1,11 +1,11 @@
-import { 
-  faPrint, 
-  faEdit, 
-  faEye, 
-  faUser, 
+import {
+  faPrint,
+  faEdit,
+  faEye,
+  faUser,
   faReceipt,
   faCreditCard,
-  faShoppingCart
+  faShoppingCart,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useRef } from 'react';
@@ -16,7 +16,11 @@ import styled from 'styled-components';
 import { addInvoice } from '../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../features/invoice/invoicePreviewSlice';
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import { abbreviatePaymentMethods, getActivePaymentMethods, isInvoicePaidInFull } from '../../../../../utils/invoice';
+import {
+  abbreviatePaymentMethods,
+  getActivePaymentMethods,
+  isInvoicePaidInFull,
+} from '../../../../../utils/invoice';
 import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
 import { Receipt } from '../../../checkout/Receipt';
 import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization.jsx';
@@ -25,7 +29,7 @@ export const InvoiceItem = ({ data }) => {
   const componentToPrintRef = useRef(null);
   const dispatch = useDispatch();
   const isCredit = isInvoicePaidInFull(data);
-  
+
   // Data extraction
   const numberID = data?.numberID;
   const ncf = data?.NCF;
@@ -44,12 +48,12 @@ export const InvoiceItem = ({ data }) => {
   const formatDate = (seconds) => {
     if (!seconds) return new Date().toLocaleDateString('es-ES');
     const date = new Date(seconds * 1000);
-    return date.toLocaleDateString('es-ES', { 
-      day: '2-digit', 
-      month: '2-digit', 
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -57,23 +61,27 @@ export const InvoiceItem = ({ data }) => {
     content: () => componentToPrintRef.current,
   });
 
-  const proceedToEdit = useCallback((authorization) => {
-    const preparedInvoice = prepareInvoiceForEdit(data);
-    if (preparedInvoice) {
-      dispatch(
-        addInvoice({
-          invoice: preparedInvoice,
-          mode: 'edit',
-          authorizationRequest: authorization || null,
-        })
-      );
-    }
-  }, [data, dispatch]);
+  const proceedToEdit = useCallback(
+    (authorization) => {
+      const preparedInvoice = prepareInvoiceForEdit(data);
+      if (preparedInvoice) {
+        dispatch(
+          addInvoice({
+            invoice: preparedInvoice,
+            mode: 'edit',
+            authorizationRequest: authorization || null,
+          }),
+        );
+      }
+    },
+    [data, dispatch],
+  );
 
-  const { handleEdit, authorizationModal, isProcessing } = useInvoiceEditAuthorization({
-    invoice: data,
-    onAuthorized: proceedToEdit,
-  });
+  const { handleEdit, authorizationModal, isProcessing } =
+    useInvoiceEditAuthorization({
+      invoice: data,
+      onAuthorized: proceedToEdit,
+    });
 
   const handleViewMore = () => {
     dispatch(openInvoicePreviewModal(data));
@@ -99,7 +107,7 @@ export const InvoiceItem = ({ data }) => {
           <HeaderMeta>
             <DateInfo>{formatDate(date?.seconds)}</DateInfo>
             <StatusTag $isCredit={isCredit}>
-              {isCredit ? "Contado" : "Crédito"}
+              {isCredit ? 'Contado' : 'Crédito'}
             </StatusTag>
           </HeaderMeta>
         </CardHeader>
@@ -109,25 +117,27 @@ export const InvoiceItem = ({ data }) => {
           <DetailsRow>
             <DetailItem>
               <DetailLabel>Subtotal:</DetailLabel>
-              <DetailValue>{useFormatPrice(totalPurchaseWithoutTaxes?.value)}</DetailValue>
+              <DetailValue>
+                {useFormatPrice(totalPurchaseWithoutTaxes?.value)}
+              </DetailValue>
             </DetailItem>
-            
+
             <DetailItem>
               <DetailLabel>Descuento:</DetailLabel>
               <DetailValue>{discount?.value || 0}%</DetailValue>
             </DetailItem>
-            
+
             <DetailItem>
               <DetailLabel>Delivery:</DetailLabel>
               <DetailValue>{useFormatPrice(delivery?.value || 0)}</DetailValue>
             </DetailItem>
-            
+
             <DetailItem>
               <DetailLabel>Itbis:</DetailLabel>
               <DetailValue>{useFormatPrice(totalTaxes?.value)}</DetailValue>
             </DetailItem>
           </DetailsRow>
-          
+
           <SummaryRow>
             <SummaryInfo>
               <ItemCount>
@@ -146,7 +156,11 @@ export const InvoiceItem = ({ data }) => {
         <ActionBar>
           <TotalAmount>{useFormatPrice(totalPurchase?.value)}</TotalAmount>
           <ActionButtons>
-            <ActionButton onClick={handleEdit} disabled={isProcessing} variant="edit">
+            <ActionButton
+              onClick={handleEdit}
+              disabled={isProcessing}
+              variant="edit"
+            >
               <FontAwesomeIcon icon={faEdit} />
             </ActionButton>
             <ActionButton onClick={handleRePrint} variant="print">
@@ -169,9 +183,10 @@ const Card = styled.div`
   padding: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e8e8e8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: all 0.2s ease;
-  
+
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-color: #d9d9d9;
@@ -203,7 +218,7 @@ const InvoiceNumber = styled.div`
   font-size: 15px;
   color: #1a1a1a;
   flex-wrap: wrap;
-  
+
   svg {
     font-size: 12px;
     color: #666;
@@ -226,12 +241,12 @@ const ClientName = styled.div`
   gap: 6px;
   font-size: 13px;
   color: #666;
-  
+
   svg {
     font-size: 11px;
     color: #999;
   }
-  
+
   span {
     white-space: nowrap;
     overflow: hidden;
@@ -260,12 +275,15 @@ const StatusTag = styled.div`
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  
-  ${({ $isCredit }) => $isCredit ? `
+
+  ${({ $isCredit }) =>
+    $isCredit
+      ? `
     background: #f6ffed;
     color: #389e0d;
     border: 1px solid #b7eb8f;
-  ` : `
+  `
+      : `
     background: #fff7e6;
     color: #d48806;
     border: 1px solid #ffd591;
@@ -325,7 +343,7 @@ const ItemCount = styled.div`
   gap: 4px;
   font-size: 12px;
   color: #666;
-  
+
   svg {
     font-size: 10px;
     color: #999;
@@ -338,12 +356,12 @@ const PaymentMethod = styled.div`
   gap: 4px;
   font-size: 12px;
   color: #666;
-  
+
   svg {
     font-size: 10px;
     color: #52c41a;
   }
-  
+
   span {
     max-width: 120px;
     white-space: nowrap;
@@ -385,9 +403,9 @@ const ActionButton = styled.button`
     cursor: not-allowed;
     opacity: 0.6;
   }
-  
+
   ${({ variant }) => {
-    switch(variant) {
+    switch (variant) {
       case 'edit':
         return `
           background: #fff;
@@ -427,16 +445,12 @@ const ActionButton = styled.button`
         return '';
     }
   }}
-  
+
   &:active {
     transform: scale(0.95);
   }
-  
+
   svg {
     font-size: 12px;
   }
 `;
-
-
-
-

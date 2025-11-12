@@ -1,10 +1,10 @@
-import { Timestamp } from "firebase/firestore";
-import { DateTime } from "luxon";
+import { Timestamp } from 'firebase/firestore';
+import { DateTime } from 'luxon';
 
 // utils/format.ts
 export const formatDate = (value?: Timestamp | number | Date) => {
   if (!value) return 'N/A';
-  
+
   let millis: number;
   if (typeof value === 'number') {
     millis = value;
@@ -13,7 +13,6 @@ export const formatDate = (value?: Timestamp | number | Date) => {
   } else {
     millis = value.seconds * 1000;
   }
-  
+
   return DateTime.fromMillis(millis).toFormat('dd/MM/yyyy');
 };
-  

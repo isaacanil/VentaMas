@@ -1,6 +1,6 @@
-import { Pagination } from 'antd'
-import { memo } from 'react'
-import styled from 'styled-components'
+import { Pagination } from 'antd';
+import { memo } from 'react';
+import styled from 'styled-components';
 
 const Footer = styled.div`
   display: grid;
@@ -8,7 +8,7 @@ const Footer = styled.div`
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   border-top: 1px solid #ddd;
-`
+`;
 
 const ClientPaginationBarComponent = ({
   filteredClients,
@@ -17,7 +17,7 @@ const ClientPaginationBarComponent = ({
   pageSize,
   filteredClientsToShow,
   setCurrentPage,
-  setPageSize
+  setPageSize,
 }) => {
   return (
     <Footer>
@@ -29,15 +29,15 @@ const ClientPaginationBarComponent = ({
         pageSize={pageSize}
         total={filteredClientsToShow.length}
         onChange={(page, size) => {
-          setCurrentPage(page)
-          setPageSize(size)
+          setCurrentPage(page);
+          setPageSize(size);
         }}
         style={{ justifySelf: 'center' }}
       />
       <div />
     </Footer>
-  )
-}
+  );
+};
 
-export const ClientPaginationBar = memo(ClientPaginationBarComponent)
-ClientPaginationBar.displayName = 'ClientPaginationBar'
+export const ClientPaginationBar = memo(ClientPaginationBarComponent);
+ClientPaginationBar.displayName = 'ClientPaginationBar';

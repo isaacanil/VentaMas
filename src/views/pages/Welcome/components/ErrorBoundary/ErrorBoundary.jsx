@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component {
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
     this.setState({
       error: error,
-      errorInfo: errorInfo
+      errorInfo: errorInfo,
     });
   }
 
@@ -62,20 +62,24 @@ class ErrorBoundary extends React.Component {
                 size="large"
               >
                 Ir al Inicio
-              </Button>
+              </Button>,
             ]}
           />
           {process.env.NODE_ENV === 'development' && (
             <ErrorDetails>
               <details style={{ whiteSpace: 'pre-wrap', marginTop: '20px' }}>
-                <summary style={{ cursor: 'pointer', color: '#666', fontSize: '14px' }}>
+                <summary
+                  style={{ cursor: 'pointer', color: '#666', fontSize: '14px' }}
+                >
                   Ver detalles del error (Desarrollo)
                 </summary>
                 <ErrorText>
-                  <strong>Error:</strong> {this.state.error && this.state.error.toString()}
+                  <strong>Error:</strong>{' '}
+                  {this.state.error && this.state.error.toString()}
                 </ErrorText>
                 <ErrorText>
-                  <strong>Stack Trace:</strong> {this.state.errorInfo.componentStack}
+                  <strong>Stack Trace:</strong>{' '}
+                  {this.state.errorInfo.componentStack}
                 </ErrorText>
               </details>
             </ErrorDetails>
@@ -105,26 +109,26 @@ const StyledResult = styled(Result)`
   padding: 40px;
   max-width: 600px;
   width: 100%;
-  
+
   .ant-result-title {
     color: #ff4d4f;
     font-weight: 600;
   }
-  
+
   .ant-result-subtitle {
     color: #666;
     font-size: 16px;
     line-height: 1.6;
   }
-  
+
   .ant-result-extra {
     margin-top: 24px;
-    
+
     .ant-btn {
       margin: 0 8px;
       border-radius: 6px;
       font-weight: 500;
-      
+
       &:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -151,7 +155,7 @@ const ErrorText = styled.div`
   font-size: 12px;
   color: #666;
   font-family: 'Courier New', monospace;
-  
+
   strong {
     color: #333;
   }

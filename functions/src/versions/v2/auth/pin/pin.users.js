@@ -13,7 +13,8 @@ export const loadUserDoc = async (uid) => {
 };
 
 export const resolveActorContext = async (req) => {
-  const actorPayload = req.data?.actor || req.data?.currentUser || req.data?.user || null;
+  const actorPayload =
+    req.data?.actor || req.data?.currentUser || req.data?.user || null;
   const candidateIds = [
     req.auth?.uid,
     actorPayload?.uid,
@@ -25,7 +26,10 @@ export const resolveActorContext = async (req) => {
   const actorUid = candidateIds[0];
 
   if (!actorUid) {
-    throw new HttpsError('unauthenticated', 'Debes iniciar sesión para realizar esta operación.');
+    throw new HttpsError(
+      'unauthenticated',
+      'Debes iniciar sesión para realizar esta operación.',
+    );
   }
 
   const actorSnap = await loadUserDoc(actorUid);
@@ -44,12 +48,22 @@ export const resolveActorContext = async (req) => {
     req.data?.businessID ||
     null;
 
-  if (expectedBusinessId && actorUser.businessID && actorUser.businessID !== expectedBusinessId) {
-    throw new HttpsError('permission-denied', 'El negocio indicado no coincide con tu sesión.');
+  if (
+    expectedBusinessId &&
+    actorUser.businessID &&
+    actorUser.businessID !== expectedBusinessId
+  ) {
+    throw new HttpsError(
+      'permission-denied',
+      'El negocio indicado no coincide con tu sesión.',
+    );
   }
 
   if (!actorUser.businessID) {
-    throw new HttpsError('permission-denied', 'Tu usuario no tiene un negocio asignado.');
+    throw new HttpsError(
+      'permission-denied',
+      'Tu usuario no tiene un negocio asignado.',
+    );
   }
 
   if (actorUser.active === false) {
@@ -68,7 +82,10 @@ export const ensureBusinessMatch = (actor, target) => {
   const actorBusiness = actor?.businessID;
   const targetBusiness = target?.businessID;
   if (!actorBusiness || !targetBusiness || actorBusiness !== targetBusiness) {
-    throw new HttpsError('permission-denied', 'No tienes permisos para operar sobre este usuario.');
+    throw new HttpsError(
+      'permission-denied',
+      'No tienes permisos para operar sobre este usuario.',
+    );
   }
   return actorBusiness;
 };

@@ -1,28 +1,24 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import styled from 'styled-components'
+import React from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons'
-import { selectUser } from '../../../../../features/auth/userSlice'
-
+import { icons } from '../../../../../constants/icons/icons';
+import { selectUser } from '../../../../../features/auth/userSlice';
 
 export const UserSection = () => {
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
   return (
     <Container>
-      <Icon>
-        {icons.user.user}
-      </Icon>
+      <Icon>{icons.user.user}</Icon>
       {user?.displayName}
     </Container>
-  )
-}
+  );
+};
 const Container = styled.div`
   display: flex;
   align-items: center;
   gap: 0.4em;
-
-`
+`;
 const Icon = styled.div`
   width: 1.6em;
   height: 1.6em;
@@ -34,4 +30,4 @@ const Icon = styled.div`
   color: white;
   font-size: 1.2em;
   margin-right: 0.4em;
-`
+`;

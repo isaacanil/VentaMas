@@ -7,7 +7,7 @@ export async function fbAddMultiCategories(user, categories) {
     return;
   }
   const { businessID } = user;
-  const categoriesRef = collection(db, "businesses", businessID, "categories");
+  const categoriesRef = collection(db, 'businesses', businessID, 'categories');
 
   const promises = categories.map((category) => {
     const categoryRef = doc(categoriesRef, category.category.id);
@@ -20,6 +20,3 @@ export async function fbAddMultiCategories(user, categories) {
     console.error(`Error al agregar los productos: ${error}`);
   }
 }
-
-
-

@@ -1,7 +1,7 @@
-import ROUTES_NAME from '../../../../../routes/routesName'
-import { registerToolbar } from '../core/registerToolbar'
+import ROUTES_NAME from '../../../../../routes/routesName';
+import { registerToolbar } from '../core/registerToolbar';
 
-import type { ToolbarRegistryEntry } from '../types/types'
+import type { ToolbarRegistryEntry } from '../types/types';
 
 const {
   SALES_TERM,
@@ -18,7 +18,7 @@ const {
   CASH_RECONCILIATION_TERM,
   ACCOUNT_RECEIVABLE,
   UTILITY_TERM,
-} = ROUTES_NAME
+} = ROUTES_NAME;
 
 /**
  * Registry of all toolbar configurations
@@ -69,7 +69,8 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
   registerToolbar({
     id: 'account-receivable-toolbar',
     routes: ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST,
-    importFn: () => import('../Page/AccountReceivableToolbar/AccountReceivableToolbar'),
+    importFn: () =>
+      import('../Page/AccountReceivableToolbar/AccountReceivableToolbar'),
     exportName: 'AccountReceivableToolbar',
   }),
   registerToolbar({
@@ -154,4 +155,4 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
     importFn: () => import('../Page/UtilityToolbar'),
     exportName: 'UtilityToolbar',
   }),
-]
+];

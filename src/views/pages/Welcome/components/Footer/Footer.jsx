@@ -1,22 +1,19 @@
 // Importa React, styled-components y los componentes de antd que necesitarás
-import {
-  HeartFilled
-} from '@ant-design/icons';
+import { HeartFilled } from '@ant-design/icons';
 import { Row, Col, Divider } from 'antd';
 import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-
 // Componente Footer
 export const Footer = () => {
   const footerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.5, delay: 0.3 }
-    }
+      transition: { duration: 0.5, delay: 0.3 },
+    },
   };
 
   return (
@@ -33,8 +30,8 @@ export const Footer = () => {
             <FooterSection>
               <FooterTitle>Ventamax</FooterTitle>
               <FooterText>
-                Sistema completo de punto de venta diseñado para optimizar 
-                la gestión de tu negocio con tecnología de vanguardia.
+                Sistema completo de punto de venta diseñado para optimizar la
+                gestión de tu negocio con tecnología de vanguardia.
               </FooterText>
               {/* <SocialLinksContainer
                 as={motion.div}
@@ -209,12 +206,15 @@ export const Footer = () => {
           <Row justify="space-between" align="middle">
             <Col xs={24} md={12}>
               <CopyrightText>
-                © {new Date().getFullYear()} Ventamax - Todos los derechos reservados
+                © {new Date().getFullYear()} Ventamax - Todos los derechos
+                reservados
               </CopyrightText>
             </Col>
             <Col xs={24} md={12}>
               <DeveloperText>
-                Desarrollado con <HeartFilled style={{ color: '#ff4d4f', margin: '0 4px' }} /> por Gisys
+                Desarrollado con{' '}
+                <HeartFilled style={{ color: '#ff4d4f', margin: '0 4px' }} />{' '}
+                por Gisys
               </DeveloperText>
             </Col>
           </Row>
@@ -224,7 +224,6 @@ export const Footer = () => {
   );
 };
 
-
 // Crea estilos personalizados para tu footer usando styled-components
 const FooterContainer = styled.footer`
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -232,7 +231,7 @@ const FooterContainer = styled.footer`
   padding: 60px 0 20px;
   margin-top: auto;
   position: relative;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -260,7 +259,7 @@ const FooterTitle = styled.h4`
   font-weight: 600;
   font-size: 18px;
   position: relative;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -278,7 +277,7 @@ const FooterText = styled.p`
   margin: 8px 0;
   font-size: 14px;
   line-height: 1.6;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -286,7 +285,7 @@ const FooterText = styled.p`
 
 const CopyrightSection = styled.div`
   text-align: center;
-  
+
   @media (min-width: 768px) {
     text-align: left;
   }
@@ -295,7 +294,7 @@ const CopyrightSection = styled.div`
 const CopyrightText = styled.span`
   color: #999;
   font-size: 13px;
-  
+
   @media (max-width: 767px) {
     display: block;
     margin-bottom: 8px;
@@ -308,7 +307,7 @@ const DeveloperText = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   @media (min-width: 768px) {
     justify-content: flex-end;
   }

@@ -8,7 +8,10 @@ type BusinessPillProps = {
   businessName?: string | null;
 };
 
-export const BusinessPill = ({ logoUrl, businessName }: BusinessPillProps): JSX.Element => {
+export const BusinessPill = ({
+  logoUrl,
+  businessName,
+}: BusinessPillProps): JSX.Element => {
   return (
     <BusinessPillContainer>
       {logoUrl && (
@@ -55,7 +58,13 @@ const BusinessLogo = styled.img`
 const BusinessNameText = styled.h2`
   font-size: 0.95rem;
   font-weight: 600;
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   color: var(--color-gray-700, #4a5568);
   margin: 0;
   letter-spacing: -0.3px;

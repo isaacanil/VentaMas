@@ -11,7 +11,8 @@ import { calculateInvoiceChange } from '../utils/invoice';
 export const useReceivableValidation = (creditLimit) => {
   const [isValid, setIsValid] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] = useState(0);
+  const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] =
+    useState(0);
   const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
   const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
   const [creditLimitValue, setCreditLimitValue] = useState(0);
@@ -26,12 +27,18 @@ export const useReceivableValidation = (creditLimit) => {
   const isGenericClient = clientId === 'GC-0000';
   const isChangeNegative = change < 0;
 
-  useEffect(() => {    const fetchInvoiceAvailableCount = async () => {
+  useEffect(() => {
+    const fetchInvoiceAvailableCount = async () => {
       if (creditLimit?.invoice?.status) {
-        const invoiceAvailableCount = await fbGetActiveARCount(user.businessID, clientId);
+        const invoiceAvailableCount = await fbGetActiveARCount(
+          user.businessID,
+          clientId,
+        );
         setActiveAccountsReceivableCount(invoiceAvailableCount);
         // Corregido: usar < en lugar de <= y agregar paréntesis correctos
-        setIsWithinInvoiceCount(invoiceAvailableCount < (creditLimit?.invoice?.value || 0));
+        setIsWithinInvoiceCount(
+          invoiceAvailableCount < (creditLimit?.invoice?.value || 0),
+        );
       } else {
         setIsWithinInvoiceCount(true);
       }
@@ -41,8 +48,10 @@ export const useReceivableValidation = (creditLimit) => {
 
   useEffect(() => {
     if (creditLimit?.creditLimit?.status && currentBalance !== null) {
-      const adjustedCreditLimit = currentBalance + (-change);
-      setIsWithinCreditLimit(adjustedCreditLimit <= creditLimit?.creditLimit?.value);
+      const adjustedCreditLimit = currentBalance + -change;
+      setIsWithinCreditLimit(
+        adjustedCreditLimit <= creditLimit?.creditLimit?.value,
+      );
       setCreditLimitValue(adjustedCreditLimit);
     } else {
       setIsWithinCreditLimit(true);
@@ -60,7 +69,8 @@ export const useReceivableValidation = (creditLimit) => {
       newErrorMessage = 'No se puede agregar a CXC sin cliente';
       newIsValid = false;
     } else if (!isChangeNegative) {
-      newErrorMessage = 'La cantidad debe ser negativa para ser una cuenta por cobrar';
+      newErrorMessage =
+        'La cantidad debe ser negativa para ser una cuenta por cobrar';
       newIsValid = false;
     } else if (!isWithinCreditLimit) {
       newErrorMessage = `El saldo de la factura excede el límite de crédito: ${creditLimitValue} / ${creditLimit?.creditLimit?.value}`;
@@ -69,20 +79,30 @@ export const useReceivableValidation = (creditLimit) => {
       newErrorMessage = `El límite de cuenta por cobrar ha sido alcanzado. Facturas actuales: ${activeAccountsReceivableCount} / ${creditLimit?.invoice?.value}`;
       newIsValid = false;
     } else if (creditLimit == null) {
-      newErrorMessage = 'Para agregar a CXC, el cliente debe tener un límite de crédito configurado.';
+      newErrorMessage =
+        'Para agregar a CXC, el cliente debe tener un límite de crédito configurado.';
       newIsValid = false;
     }
 
     setIsValid(newIsValid);
     setErrorMessage(newErrorMessage);
-  }, [isGenericClient, clientId, isChangeNegative, isWithinCreditLimit, isWithinInvoiceCount, creditLimit, creditLimitValue, activeAccountsReceivableCount]);
+  }, [
+    isGenericClient,
+    clientId,
+    isChangeNegative,
+    isWithinCreditLimit,
+    isWithinInvoiceCount,
+    creditLimit,
+    creditLimitValue,
+    activeAccountsReceivableCount,
+  ]);
 
-  return { 
-    isValid, 
-    errorMessage, 
-    isWithinCreditLimit, 
-    isWithinInvoiceCount, 
-    activeAccountsReceivableCount, 
-    creditLimitValue 
+  return {
+    isValid,
+    errorMessage,
+    isWithinCreditLimit,
+    isWithinInvoiceCount,
+    activeAccountsReceivableCount,
+    creditLimitValue,
   };
 };

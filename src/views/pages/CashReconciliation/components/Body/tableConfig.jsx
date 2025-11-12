@@ -1,8 +1,8 @@
-import { Tag } from 'antd'
+import { Tag } from 'antd';
 
-import { useFormatPrice } from "../../../../../hooks/useFormatPrice"
-import DateUtils from "../../../../../utils/date/dateUtils";
-import { CashCountStateIndicator } from "../../resource/CashCountStatusIndicator/CashCountStateIndicator"
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import DateUtils from '../../../../../utils/date/dateUtils';
+import { CashCountStateIndicator } from '../../resource/CashCountStatusIndicator/CashCountStateIndicator';
 
 export const tableConfig = () => {
   let columns = [
@@ -19,7 +19,7 @@ export const tableConfig = () => {
       align: 'left',
       maxWidth: '0.3fr',
       minWidth: '120px',
-      cell: ({ value }) => <CashCountStateIndicator state={value} />
+      cell: ({ value }) => <CashCountStateIndicator state={value} />,
     },
     {
       accessor: 'date',
@@ -28,7 +28,7 @@ export const tableConfig = () => {
       maxWidth: '0.4fr',
       minWidth: '160px',
       //cell: ({value}) => convertMillisToDate(value)
-      cell: ({ value }) => DateUtils.convertMillisToFriendlyDate(value)
+      cell: ({ value }) => DateUtils.convertMillisToFriendlyDate(value),
     },
     {
       accessor: 'user',
@@ -46,11 +46,15 @@ export const tableConfig = () => {
       cell: ({ value }) => {
         const isOpen = value?.state === 'open' || value?.state === 'closing';
         if (isOpen) {
-          return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
+          return (
+            <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>
+              Pendiente
+            </Tag>
+          );
         }
-        return value.totalSystem ? useFormatPrice(value.totalSystem) : 'Total'
+        return value.totalSystem ? useFormatPrice(value.totalSystem) : 'Total';
         //  return JSON.stringify(useFormatPrice(value.totalSystem))
-      }
+      },
     },
     {
       accessor: 'discrepancy',
@@ -60,27 +64,31 @@ export const tableConfig = () => {
       minWidth: '100px',
       cell: ({ value }) => {
         const isOpen = value?.state === 'open' || value?.state === 'closing';
-        let color = 'success'
+        let color = 'success';
         if (isOpen) {
-          return <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>Pendiente</Tag>
+          return (
+            <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>
+              Pendiente
+            </Tag>
+          );
         }
         switch (true) {
           case value.totalDiscrepancy < 0:
-            color = 'error'
+            color = 'error';
             break;
           case value.totalDiscrepancy > 0:
-            color = 'warning'
+            color = 'warning';
             break;
           default:
-            color = 'success'
+            color = 'success';
             break;
         }
         return (
           <Tag color={color} style={{ fontSize: '16px', padding: '5px 10px' }}>
             {useFormatPrice(value.totalDiscrepancy) ?? 'Sobrante'}
           </Tag>
-        )
-      }
+        );
+      },
     },
     // {
     //   accessor: 'action',
@@ -91,6 +99,6 @@ export const tableConfig = () => {
     //   clickable: false,
     //   cell: ({ value }) => <ActionButtons data={value} />
     // }
-  ]
-  return columns
-}
+  ];
+  return columns;
+};

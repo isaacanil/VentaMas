@@ -9,13 +9,13 @@ const consoleLineVariants = {
   hidden: {
     opacity: 0,
     x: -8,
-    transition: { duration: 0.1 }
+    transition: { duration: 0.1 },
   },
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.15, ease: [0, 0, 0.2, 1] }
-  }
+    transition: { duration: 0.15, ease: [0, 0, 0.2, 1] },
+  },
 };
 
 /**
@@ -35,7 +35,7 @@ const Console = ({
   onAutoCompleteSuggestionSelect,
   onAutoCompleteSelectedIndexChange,
   // Nueva prop para filtrar selecciones
-  onFilterSelection
+  onFilterSelection,
 }) => {
   const inputRef = useRef(null);
   const terminalRef = useRef(null);
@@ -62,7 +62,7 @@ const Console = ({
         inputRef.current?.focus();
       }, 50);
     }
-  }, [selectionMode.active]);// Función para manejar el clic en la consola
+  }, [selectionMode.active]); // Función para manejar el clic en la consola
   const handleConsoleClick = (e) => {
     // No enfocar si estamos en modo de selección, pero no prevenir otros eventos
     if (selectionMode.active) {
@@ -75,11 +75,13 @@ const Console = ({
     }
 
     // No enfocar si el clic fue en elementos interactivos
-    if (e.target.closest('.selectable-item') ||
+    if (
+      e.target.closest('.selectable-item') ||
       e.target.closest('.autocomplete-container') ||
       e.target.closest('button') ||
       e.target.closest('a') ||
-      e.target.closest('[onclick]')) {
+      e.target.closest('[onclick]')
+    ) {
       return;
     }
 
@@ -96,9 +98,7 @@ const Console = ({
         onClick={handleConsoleClick}
       >
         {/* Texto de bienvenida */}
-        <WelcomeText>
-          {welcomeText}
-        </WelcomeText>
+        <WelcomeText>{welcomeText}</WelcomeText>
 
         {/* Salida de la consola */}
         {consoleOutput.map((line) => (
@@ -112,7 +112,9 @@ const Console = ({
               {line.type === 'command' ? (
                 <div className="content">
                   <span className="prompt">{line.content.prompt}</span>
-                  <span className="user-command">{line.content.userCommand}</span>
+                  <span className="user-command">
+                    {line.content.userCommand}
+                  </span>
                 </div>
               ) : line.html ? (
                 <div
@@ -152,14 +154,14 @@ const Console = ({
             }}
             onKeyDown={handleKeyDown}
             placeholder={
-              selectionMode.active 
-                ? 'Escribe para filtrar las opciones...' 
+              selectionMode.active
+                ? 'Escribe para filtrar las opciones...'
                 : 'Escriba un comando...'
             }
             autoFocus
             style={{
               opacity: 1,
-              cursor: 'text'
+              cursor: 'text',
             }}
           />
         </div>
@@ -187,19 +189,19 @@ const ConsoleTerminal = styled.div`
   overflow-x: hidden;
   position: relative;
   cursor: text; /* Cursor de texto para indicar que es clickeable */
-  
+
   /* Estilo para elementos seleccionables */
   .selectable-item {
     transition: background-color 0.1s ease;
     cursor: pointer !important; /* Mantener cursor pointer para elementos seleccionables */
-    
+
     &:hover {
       background-color: rgba(0, 102, 204, 0.15);
     }
-    
+
     &.selected {
       position: relative;
-      
+
       &:after {
         content: '';
         position: absolute;
@@ -210,22 +212,22 @@ const ConsoleTerminal = styled.div`
       }
     }
   }
-  
+
   /* Authentic Windows CMD scrollbar */
-  &::-webkit-scrollbar { 
-    width: 16px; 
+  &::-webkit-scrollbar {
+    width: 16px;
   }
-  &::-webkit-scrollbar-track { 
-    background: #000; 
+  &::-webkit-scrollbar-track {
+    background: #000;
   }
-  &::-webkit-scrollbar-thumb { 
-    background: #808080; 
+  &::-webkit-scrollbar-thumb {
+    background: #808080;
     border: 1px solid #000;
-    
+
     &:hover {
       background: #a0a0a0;
     }
-    
+
     &:active {
       background: #606060;
     }
@@ -246,11 +248,14 @@ const WelcomeText = styled.div`
 `;
 
 const ConsoleLine = styled.div`
-  margin-bottom: ${props => {
+  margin-bottom: ${(props) => {
     switch (props.type) {
-      case 'command': return '2px';      // Poco espacio después de comandos
-      case 'error': return '8px';       // Más espacio después de errores
-      default: return '12px';           // Espacio generoso después de respuestas del sistema
+      case 'command':
+        return '2px'; // Poco espacio después de comandos
+      case 'error':
+        return '8px'; // Más espacio después de errores
+      default:
+        return '12px'; // Espacio generoso después de respuestas del sistema
     }
   }};
   white-space: pre-wrap;
@@ -259,26 +264,30 @@ const ConsoleLine = styled.div`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.2;
-  
+
   .content {
-    color: ${props => {
-    switch (props.type) {
-      case 'command': return '#f5deb3'; // Color cremita para comandos del usuario
-      case 'error': return '#ff6b6b';   // Rojo suave para errores
-      case 'selection': return '#66d9ef'; // Azul claro para las selecciones interactivas
-      default: return '#c0c0c0';        // Classic CMD silver/light gray para respuestas del sistema
-    }
-  }};
+    color: ${(props) => {
+      switch (props.type) {
+        case 'command':
+          return '#f5deb3'; // Color cremita para comandos del usuario
+        case 'error':
+          return '#ff6b6b'; // Rojo suave para errores
+        case 'selection':
+          return '#66d9ef'; // Azul claro para las selecciones interactivas
+        default:
+          return '#c0c0c0'; // Classic CMD silver/light gray para respuestas del sistema
+      }
+    }};
   }
-  
+
   .prompt {
     color: #c0c0c0; // Color del sistema para el prompt C:\VentaMax>
   }
-  
+
   .user-command {
     color: #f5deb3; // Color cremita solo para lo que escribe el usuario
   }
-  
+
   .selection-active {
     color: #ffffff;
     background-color: #0066cc;
@@ -286,7 +295,7 @@ const ConsoleLine = styled.div`
     margin-left: -5px;
     border-radius: 2px;
   }
-  
+
   .selection-inactive {
     color: #c0c0c0;
   }
@@ -312,11 +321,11 @@ const ConsoleInput = styled.input`
   outline: none;
   caret-color: #f5deb3;
   margin-left: 0;
-  
+
   &::placeholder {
     color: #606060;
   }
-  
+
   &::selection {
     background: #f5deb3;
     color: #000;

@@ -9,7 +9,6 @@ import { useARValidation } from '../MarkAsReceivableButton/useARValidation';
 import { ReceivableWidget } from '../ReceivableManagementPanel/components/ReceivableWidget/ReceivableWidget';
 import { ReceivableManagementPanel } from '../ReceivableManagementPanel/ReceivableManagementPanel';
 
-
 const AccountsReceivableManager = ({
   hasAccountReceivablePermission,
   creditLimit,
@@ -17,9 +16,11 @@ const AccountsReceivableManager = ({
   receivableStatus,
   abilitiesLoading,
 }) => {
-  const [isOpenReceivableManagementPanel, setIsOpenReceivableManagementPanel] = useState(false);
+  const [isOpenReceivableManagementPanel, setIsOpenReceivableManagementPanel] =
+    useState(false);
 
-  const closeReceivableManagementPanel = () => setIsOpenReceivableManagementPanel(false);
+  const closeReceivableManagementPanel = () =>
+    setIsOpenReceivableManagementPanel(false);
 
   const cartData = useSelector(SelectCartData);
 
@@ -32,7 +33,7 @@ const AccountsReceivableManager = ({
     creditLimitValue,
     clientId,
   } = useARValidation(cartData, creditLimit);
- 
+
   if (isChangeNegative && !abilitiesLoading) {
     return (
       <Fragment>
@@ -48,20 +49,20 @@ const AccountsReceivableManager = ({
           hasAccountReceivablePermission={hasAccountReceivablePermission}
           isChangeNegative={isChangeNegative}
           abilitiesLoading={abilitiesLoading}
-
-        />        {hasAccountReceivablePermission && (
+        />{' '}
+        {hasAccountReceivablePermission && (
           <Fragment>
             <MarkAsReceivableButton
               setIsOpen={setIsOpenReceivableManagementPanel}
               creditLimit={creditLimit}
             />
-            
-            <ReceivableWidget 
+
+            <ReceivableWidget
               receivableStatus={receivableStatus}
               isChangeNegative={isChangeNegative}
               onOpenConfig={() => setIsOpenReceivableManagementPanel(true)}
             />
-            
+
             <ReceivableManagementPanel
               form={form}
               creditLimit={creditLimit}
@@ -83,7 +84,7 @@ const AccountsReceivableManager = ({
           creditLimit={creditLimit}
         />
 
-        <ReceivableWidget 
+        <ReceivableWidget
           receivableStatus={receivableStatus}
           isChangeNegative={isChangeNegative}
           onOpenConfig={() => setIsOpenReceivableManagementPanel(true)}

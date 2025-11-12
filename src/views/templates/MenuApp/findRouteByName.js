@@ -1,4 +1,4 @@
-import { routes } from "../../../routes/routes";
+import { routes } from '../../../routes/routes';
 
 function findRouteByName(name) {
   function findRoute(routes) {

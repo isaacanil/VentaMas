@@ -8,11 +8,11 @@ import FiscalReceiptsAlertSettings from '../FiscalReceiptsAlertSettings/FiscalRe
 /**
  * Botón simple para abrir configuración de alertas de comprobantes fiscales
  */
-const FiscalReceiptsAlertWidget = ({ 
-  taxReceipts = [], 
+const FiscalReceiptsAlertWidget = ({
+  taxReceipts = [],
   onConfigChange,
   disabled = false,
-  alertConfig = null
+  alertConfig = null,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -69,13 +69,13 @@ const ConfigButton = styled(Button)`
   border-radius: 8px;
   border: 1px solid #d9d9d9;
   background: #fafafa;
-  
+
   &:hover:not(:disabled) {
     border-color: #1890ff;
     color: #1890ff;
     background: #f0f9ff;
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;

@@ -1,4 +1,9 @@
-import { EyeOutlined, DownOutlined, RightOutlined, CalendarOutlined } from '@ant-design/icons';
+import {
+  EyeOutlined,
+  DownOutlined,
+  RightOutlined,
+  CalendarOutlined,
+} from '@ant-design/icons';
 import { Button } from 'antd';
 import React, { useState, memo } from 'react';
 import styled, { css } from 'styled-components';
@@ -7,117 +12,121 @@ import DateUtils from '../../../../../utils/date/dateUtils';
 import { formatPrice } from '../../../../../utils/formatPrice';
 import { getTotalPrice } from '../../../../../utils/pricing';
 
-const CreditNotePanel = memo(({ 
-  creditNote, 
-  onNavigateNote, 
-  isExpanded = false,
-  isMobile = false 
-}) => {
-  const [expanded, setExpanded] = useState(isExpanded);
+const CreditNotePanel = memo(
+  ({ creditNote, onNavigateNote, isExpanded = false, isMobile = false }) => {
+    const [expanded, setExpanded] = useState(isExpanded);
 
-  const creditNoteTotal = (creditNote.items || []).reduce((total, item) => 
-    total + getTotalPrice(item), 0
-  );
+    const creditNoteTotal = (creditNote.items || []).reduce(
+      (total, item) => total + getTotalPrice(item),
+      0,
+    );
 
-  const creditNoteDate = creditNote.date || creditNote.createdAt;
+    const creditNoteDate = creditNote.date || creditNote.createdAt;
 
-  const handleToggle = () => {
-    setExpanded(!expanded);
-  };
+    const handleToggle = () => {
+      setExpanded(!expanded);
+    };
 
-  const handleViewClick = (e) => {
-    e.stopPropagation();
-    onNavigateNote?.(creditNote, e);
-  };
+    const handleViewClick = (e) => {
+      e.stopPropagation();
+      onNavigateNote?.(creditNote, e);
+    };
 
-  const formattedTotal = `${creditNote.currency && !['DOP', '$'].includes(creditNote.currency) ? `${creditNote.currency} ` : ''}${formatPrice(creditNoteTotal)}`;
+    const formattedTotal = `${creditNote.currency && !['DOP', '$'].includes(creditNote.currency) ? `${creditNote.currency} ` : ''}${formatPrice(creditNoteTotal)}`;
 
-  return (
-    <PanelContainer isMobile={isMobile} isExpanded={expanded}>
-      <PanelHeader onClick={handleToggle} isMobile={isMobile} isExpanded={expanded}>
-        <HeaderLeft>
-          <TitleAndDate>
-            <PanelTitle>NC {creditNote.ncf || creditNote.id}</PanelTitle>
-            {creditNoteDate && (
-              <DateInfo>
-                <CalendarOutlined />
-                <span>{DateUtils.formatLuxonDate(creditNoteDate)}</span>
-              </DateInfo>
+    return (
+      <PanelContainer isMobile={isMobile} isExpanded={expanded}>
+        <PanelHeader
+          onClick={handleToggle}
+          isMobile={isMobile}
+          isExpanded={expanded}
+        >
+          <HeaderLeft>
+            <TitleAndDate>
+              <PanelTitle>NC {creditNote.ncf || creditNote.id}</PanelTitle>
+              {creditNoteDate && (
+                <DateInfo>
+                  <CalendarOutlined />
+                  <span>{DateUtils.formatLuxonDate(creditNoteDate)}</span>
+                </DateInfo>
+              )}
+            </TitleAndDate>
+          </HeaderLeft>
+          <HeaderRight>
+            <TotalText>{formattedTotal}</TotalText>
+            <ViewButton
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={handleViewClick}
+              size={isMobile ? 'small' : 'middle'}
+            />
+            <ExpandIcon>
+              {expanded ? <DownOutlined /> : <RightOutlined />}
+            </ExpandIcon>
+          </HeaderRight>
+        </PanelHeader>
+
+        {expanded && (
+          <PanelContent isMobile={isMobile}>
+            {!isMobile && (
+              <ItemsListHeader>
+                <HeaderColumn flex={3}>Descripción</HeaderColumn>
+                <HeaderColumn align="center">Cantidad</HeaderColumn>
+                <HeaderColumn align="right">Precio Unit.</HeaderColumn>
+                <HeaderColumn align="right">Importe</HeaderColumn>
+              </ItemsListHeader>
             )}
-          </TitleAndDate>
-        </HeaderLeft>
-        <HeaderRight>
-          <TotalText>{formattedTotal}</TotalText>
-          <ViewButton 
-            type="text" 
-            icon={<EyeOutlined />} 
-            onClick={handleViewClick}
-            size={isMobile ? 'small' : 'middle'}
-          />
-          <ExpandIcon>
-            {expanded ? <DownOutlined /> : <RightOutlined />}
-          </ExpandIcon>
-        </HeaderRight>
-      </PanelHeader>
-      
-      {expanded && (
-        <PanelContent isMobile={isMobile}>
-          {!isMobile && (
-            <ItemsListHeader>
-              <HeaderColumn flex={3}>Descripción</HeaderColumn>
-              <HeaderColumn align="center">Cantidad</HeaderColumn>
-              <HeaderColumn align="right">Precio Unit.</HeaderColumn>
-              <HeaderColumn align="right">Importe</HeaderColumn>
-            </ItemsListHeader>
-          )}
-          <ItemsList>
-            {(creditNote.items || []).map(item => (
-              <ItemRow key={item.id} isMobile={isMobile}>
-                <ItemColumn flex={isMobile ? 1 : 3}>
-                  {isMobile && <ColumnLabel>Descripción:</ColumnLabel>}
-                  <span>{item.name}</span>
-                </ItemColumn>
-                <ItemColumn align={isMobile ? 'right' : 'center'}>
-                  {isMobile && <ColumnLabel>Cantidad:</ColumnLabel>}
-                  <span>{item.amountToBuy || 1}</span>
-                </ItemColumn>
-                <ItemColumn align="right">
-                  {isMobile && <ColumnLabel>Precio Unit.:</ColumnLabel>}
-                  <span>{formatPrice(getTotalPrice(item, true, false))}</span>
-                </ItemColumn>
-                <ItemColumn align="right">
-                  {isMobile && <ColumnLabel>Importe:</ColumnLabel>}
-                  <span>{formatPrice(getTotalPrice(item))}</span>
-                </ItemColumn>
-              </ItemRow>
-            ))}
-          </ItemsList>
-          <TotalSection>
-            <TotalLabel>Total General</TotalLabel>
-            <TotalValue>{formattedTotal}</TotalValue>
-          </TotalSection>
-        </PanelContent>
-      )}
-    </PanelContainer>
-  );
-});
+            <ItemsList>
+              {(creditNote.items || []).map((item) => (
+                <ItemRow key={item.id} isMobile={isMobile}>
+                  <ItemColumn flex={isMobile ? 1 : 3}>
+                    {isMobile && <ColumnLabel>Descripción:</ColumnLabel>}
+                    <span>{item.name}</span>
+                  </ItemColumn>
+                  <ItemColumn align={isMobile ? 'right' : 'center'}>
+                    {isMobile && <ColumnLabel>Cantidad:</ColumnLabel>}
+                    <span>{item.amountToBuy || 1}</span>
+                  </ItemColumn>
+                  <ItemColumn align="right">
+                    {isMobile && <ColumnLabel>Precio Unit.:</ColumnLabel>}
+                    <span>{formatPrice(getTotalPrice(item, true, false))}</span>
+                  </ItemColumn>
+                  <ItemColumn align="right">
+                    {isMobile && <ColumnLabel>Importe:</ColumnLabel>}
+                    <span>{formatPrice(getTotalPrice(item))}</span>
+                  </ItemColumn>
+                </ItemRow>
+              ))}
+            </ItemsList>
+            <TotalSection>
+              <TotalLabel>Total General</TotalLabel>
+              <TotalValue>{formattedTotal}</TotalValue>
+            </TotalSection>
+          </PanelContent>
+        )}
+      </PanelContainer>
+    );
+  },
+);
 
 CreditNotePanel.displayName = 'CreditNotePanel';
 
 const PanelContainer = styled.div`
-  border: 1px solid ${props => props.theme?.border?.color || '#e8e8e8'};
+  border: 1px solid ${(props) => props.theme?.border?.color || '#e8e8e8'};
   border-radius: 8px;
-  background-color: ${props => props.theme?.background?.primary || '#fff'};
+  background-color: ${(props) => props.theme?.background?.primary || '#fff'};
   overflow: hidden;
 
   transition: all 0.2s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
-  ${props => props.isExpanded && css`
-    border-color: ${props.theme?.primary?.color || '#1890ff'};
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  `}
-  
+  ${(props) =>
+    props.isExpanded &&
+    css`
+      border-color: ${props.theme?.primary?.color || '#1890ff'};
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    `}
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -127,12 +136,13 @@ const PanelHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ${props => props.isMobile ? '8px 12px' : '12px 16px'};
+  padding: ${(props) => (props.isMobile ? '8px 12px' : '12px 16px')};
   cursor: pointer;
   transition: background-color 0.2s ease;
-  
+
   &:hover {
-    background-color: ${props => props.theme?.background?.secondary || '#fafafa'};
+    background-color: ${(props) =>
+      props.theme?.background?.secondary || '#fafafa'};
   }
 `;
 
@@ -154,7 +164,7 @@ const DateInfo = styled.div`
   align-items: center;
   gap: 8px;
   font-size: 0.8rem;
-  color: ${props => props.theme?.text?.secondary || '#666'};
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;
 
 const HeaderRight = styled.div`
@@ -164,7 +174,7 @@ const HeaderRight = styled.div`
 `;
 
 const ExpandIcon = styled.span`
-  color: ${props => props.theme?.text?.secondary || '#666'};
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
   font-size: 12px;
   transition: transform 0.2s ease;
   min-width: 12px;
@@ -172,44 +182,44 @@ const ExpandIcon = styled.span`
 
 const PanelTitle = styled.span`
   font-weight: 600;
-  color: ${props => props.theme?.text?.primary || '#333'};
+  color: ${(props) => props.theme?.text?.primary || '#333'};
   font-size: 1rem;
 `;
 
 const TotalText = styled.span`
   font-weight: 600;
-  color: ${props => props.theme?.text?.primary || '#333'};
+  color: ${(props) => props.theme?.text?.primary || '#333'};
   font-size: 1rem;
   font-family: monospace;
 `;
 
 const ViewButton = styled(Button)`
-  color: ${props => props.theme?.text?.secondary || '#666'};
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
   padding: 4px;
-  
+
   &:hover {
-    color: ${props => props.theme?.primary?.color || '#1890ff'};
+    color: ${(props) => props.theme?.primary?.color || '#1890ff'};
     background-color: transparent;
   }
 `;
 
 const PanelContent = styled.div`
-  background-color: ${props => props.theme?.background?.primary || '#fff'};
+  background-color: ${(props) => props.theme?.background?.primary || '#fff'};
 `;
 
 const ItemsListHeader = styled.div`
   display: flex;
   padding: 8px 20px;
-  color: ${props => props.theme?.text?.secondary || '#666'};
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
-  border-top: 1px solid ${props => props.theme?.border?.color || '#f0f0f0'};
+  border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
 `;
 
 const HeaderColumn = styled.div`
-  flex: ${props => props.flex || 1};
-  text-align: ${props => props.align || 'left'};
+  flex: ${(props) => props.flex || 1};
+  text-align: ${(props) => props.align || 'left'};
 `;
 
 const ItemsList = styled.div`
@@ -223,40 +233,44 @@ const ItemRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid ${props => props.theme?.border?.light || '#f0f0f0'};
-  
+  border-bottom: 1px solid ${(props) => props.theme?.border?.light || '#f0f0f0'};
+
   &:last-child {
     border-bottom: none;
   }
 
-  ${props => props.isMobile && css`
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 12px 0;
-  `}
+  ${(props) =>
+    props.isMobile &&
+    css`
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 12px 0;
+    `}
 `;
 
 const ItemColumn = styled.div`
-  flex: ${props => props.flex || 1};
-  text-align: ${props => props.align || 'left'};
+  flex: ${(props) => props.flex || 1};
+  text-align: ${(props) => props.align || 'left'};
   font-size: 0.85rem;
   color: #434343;
 
-  ${props => props.isMobile && css`
-    display: flex;
-    justify-content: space-between;
-    text-align: right;
-    
-    & > span:last-child {
-      font-weight: 500;
-    }
-  `}
+  ${(props) =>
+    props.isMobile &&
+    css`
+      display: flex;
+      justify-content: space-between;
+      text-align: right;
+
+      & > span:last-child {
+        font-weight: 500;
+      }
+    `}
 `;
 
 const ColumnLabel = styled.span`
   font-weight: 500;
-  color: ${props => props.theme?.text?.secondary || '#666'};
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;
 
 const TotalSection = styled.div`
@@ -264,20 +278,21 @@ const TotalSection = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-top: 1px solid ${props => props.theme?.border?.color || '#f0f0f0'};
-  background-color: ${props => props.theme?.background?.secondary || '#fafafa'};
+  border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
+  background-color: ${(props) =>
+    props.theme?.background?.secondary || '#fafafa'};
   font-weight: 600;
 `;
 
 const TotalLabel = styled.span`
-  color: ${props => props.theme?.text?.primary || '#333'};
+  color: ${(props) => props.theme?.text?.primary || '#333'};
   font-size: 0.9rem;
 `;
 
 const TotalValue = styled.span`
-  color: ${props => props.theme?.text?.primary || '#333'};
+  color: ${(props) => props.theme?.text?.primary || '#333'};
   font-size: 1.1rem;
   font-family: monospace;
 `;
 
-export { CreditNotePanel }; 
+export { CreditNotePanel };

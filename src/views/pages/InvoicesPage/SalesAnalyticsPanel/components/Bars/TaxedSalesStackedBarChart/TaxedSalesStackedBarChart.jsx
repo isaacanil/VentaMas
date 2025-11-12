@@ -1,4 +1,10 @@
-import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js";
+import {
+  LinearScale,
+  CategoryScale,
+  BarElement,
+  Chart,
+  Tooltip,
+} from 'chart.js';
 import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
@@ -28,11 +34,11 @@ const options = {
 };
 
 const formatDate = (seconds, byMonth = false) => {
-    const date = new Date(seconds * 1000);
-    return byMonth
-      ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
-      : date.toLocaleDateString();
-  };
+  const date = new Date(seconds * 1000);
+  return byMonth
+    ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
+    : date.toLocaleDateString();
+};
 
 const accumulateTaxedSalesData = (sales, byMonth = false) => {
   return sales.reduce((acc, sale) => {
@@ -44,29 +50,33 @@ const accumulateTaxedSalesData = (sales, byMonth = false) => {
   }, {});
 };
 
-export const TaxedSalesStackedBarChart = ({sales}) => {
+export const TaxedSalesStackedBarChart = ({ sales }) => {
   if (!sales || !Array.isArray(sales)) {
-      return null;  // or some fallback UI
-    }
-    const dateSpan = sales.reduce(
-        (span, sale) => {
-          const date = sale.data.date.seconds * 1000;
-          span.min = Math.min(span.min, date);
-          span.max = Math.max(span.max, date);
-          return span;
-        },
-        { min: Infinity, max: -Infinity }
-      );
-    
-      const spanInMonths = (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30);
-      const byMonth = spanInMonths > 2;
-    
-      const salesByTaxStatus = useMemo(() => accumulateTaxedSalesData(sales, byMonth), [sales, byMonth]);
+    return null; // or some fallback UI
+  }
+  const dateSpan = sales.reduce(
+    (span, sale) => {
+      const date = sale.data.date.seconds * 1000;
+      span.min = Math.min(span.min, date);
+      span.max = Math.max(span.max, date);
+      return span;
+    },
+    { min: Infinity, max: -Infinity },
+  );
+
+  const spanInMonths =
+    (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30);
+  const byMonth = spanInMonths > 2;
+
+  const salesByTaxStatus = useMemo(
+    () => accumulateTaxedSalesData(sales, byMonth),
+    [sales, byMonth],
+  );
 
   const data = useMemo(() => {
     const labels = Object.keys(salesByTaxStatus);
-    const dataTaxed = labels.map(label => salesByTaxStatus[label].taxed);
-    const dataUntaxed = labels.map(label => salesByTaxStatus[label].untaxed);
+    const dataTaxed = labels.map((label) => salesByTaxStatus[label].taxed);
+    const dataUntaxed = labels.map((label) => salesByTaxStatus[label].untaxed);
 
     return {
       labels,
@@ -86,21 +96,21 @@ export const TaxedSalesStackedBarChart = ({sales}) => {
           borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 1,
           stack: 'Stack 1',
-        }
-      ]
+        },
+      ],
     };
   }, [salesByTaxStatus]);
 
   return (
     <Container>
-      <Typography variant='h3'>Ventas Gravadas vs No Gravadas</Typography>
+      <Typography variant="h3">Ventas Gravadas vs No Gravadas</Typography>
       <Bar data={data} options={options} />
     </Container>
   );
 };
 
 const Container = styled.div`
-    height: 200px;
-    display: grid;
-    gap: 1em;
+  height: 200px;
+  display: grid;
+  gap: 1em;
 `;

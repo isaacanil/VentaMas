@@ -3,10 +3,10 @@ import { createContext } from 'react';
 export const DialogContext = createContext();
 
 export const initDialog = {
-    isOpen: false,
-    title: 'Ingresa un titulo',
-    type: 'neutro',
-    message: 'Ingresa un mensaje',
-    onConfirm: null,
-    onCancel: null,
+  isOpen: false,
+  title: 'Ingresa un titulo',
+  type: 'neutro',
+  message: 'Ingresa un mensaje',
+  onConfirm: null,
+  onCancel: null,
 };

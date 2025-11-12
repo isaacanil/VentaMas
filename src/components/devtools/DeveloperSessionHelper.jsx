@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -35,22 +41,33 @@ const DeveloperSessionHelper = () => {
   const [position, setPosition] = useState(() => ({ x: 0, y: 0 }));
   const [hasInitialPosition, setHasInitialPosition] = useState(false);
 
-  const dragState = useRef({ isDragging: false, offsetX: 0, offsetY: 0, moved: false });
+  const dragState = useRef({
+    isDragging: false,
+    offsetX: 0,
+    offsetY: 0,
+    moved: false,
+  });
 
-  const roleSectionEnabled = Boolean(isTemporaryRoleMode && originalRole === 'dev');
+  const roleSectionEnabled = Boolean(
+    isTemporaryRoleMode && originalRole === 'dev',
+  );
   const businessSectionEnabled = Boolean(
-    isTemporaryBusinessMode && originalBusinessId && (originalRole === 'dev' || user?.role === 'dev')
+    isTemporaryBusinessMode &&
+      originalBusinessId &&
+      (originalRole === 'dev' || user?.role === 'dev'),
   );
   const developerOptions = useMemo(() => {
     if (!developerAccess) return [];
-    return developerShortcuts.map(item => ({ ...item }));
+    return developerShortcuts.map((item) => ({ ...item }));
   }, [developerAccess]);
 
   const groupedShortcuts = useMemo(() => {
     if (!developerOptions.length) return [];
 
     return developerOptions.reduce((groups, shortcut) => {
-      const existingGroup = groups.find(group => group.category === shortcut.category);
+      const existingGroup = groups.find(
+        (group) => group.category === shortcut.category,
+      );
 
       if (existingGroup) {
         existingGroup.items.push(shortcut);
@@ -63,7 +80,8 @@ const DeveloperSessionHelper = () => {
 
   const hasDeveloperShortcuts = groupedShortcuts.length > 0;
 
-  const shouldRender = roleSectionEnabled || businessSectionEnabled || hasDeveloperShortcuts;
+  const shouldRender =
+    roleSectionEnabled || businessSectionEnabled || hasDeveloperShortcuts;
 
   const clampPosition = useCallback((x, y) => {
     if (typeof window === 'undefined') {
@@ -99,70 +117,86 @@ const DeveloperSessionHelper = () => {
     setHasInitialPosition(true);
   }, [hasInitialPosition]);
 
-  const handlePointerMove = useCallback((event) => {
-    const { isDragging, offsetX, offsetY } = dragState.current;
-    if (!isDragging) return;
+  const handlePointerMove = useCallback(
+    (event) => {
+      const { isDragging, offsetX, offsetY } = dragState.current;
+      if (!isDragging) return;
 
-    const nextX = event.clientX - offsetX;
-    const nextY = event.clientY - offsetY;
+      const nextX = event.clientX - offsetX;
+      const nextY = event.clientY - offsetY;
 
-    dragState.current.moved = true;
-    setPosition(clampPosition(nextX, nextY));
-  }, [clampPosition]);
+      dragState.current.moved = true;
+      setPosition(clampPosition(nextX, nextY));
+    },
+    [clampPosition],
+  );
 
   const handlePointerUp = useCallback(() => {
     window.removeEventListener('pointermove', handlePointerMove);
     window.removeEventListener('pointerup', handlePointerUp);
 
     const { moved } = dragState.current;
-    dragState.current = { isDragging: false, offsetX: 0, offsetY: 0, moved: false };
-
-    if (!moved) {
-      setIsOpen(prev => !prev);
-    }
-  }, [handlePointerMove]);
-
-  const handlePointerDown = useCallback((event) => {
-    if (!shouldRender) return;
-
-    if (event.pointerType === 'mouse' && event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-
     dragState.current = {
-      isDragging: true,
-      offsetX: event.clientX - position.x,
-      offsetY: event.clientY - position.y,
+      isDragging: false,
+      offsetX: 0,
+      offsetY: 0,
       moved: false,
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-  }, [handlePointerMove, handlePointerUp, position.x, position.y, shouldRender]);
+    if (!moved) {
+      setIsOpen((prev) => !prev);
+    }
+  }, [handlePointerMove]);
+
+  const handlePointerDown = useCallback(
+    (event) => {
+      if (!shouldRender) return;
+
+      if (event.pointerType === 'mouse' && event.button !== 0) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      dragState.current = {
+        isDragging: true,
+        offsetX: event.clientX - position.x,
+        offsetY: event.clientY - position.y,
+        moved: false,
+      };
+
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
+    },
+    [handlePointerMove, handlePointerUp, position.x, position.y, shouldRender],
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const handleResize = () => {
-      setPosition(prevPosition => clampPosition(prevPosition.x, prevPosition.y));
+      setPosition((prevPosition) =>
+        clampPosition(prevPosition.x, prevPosition.y),
+      );
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [clampPosition]);
 
-  useEffect(() => () => {
-    window.removeEventListener('pointermove', handlePointerMove);
-    window.removeEventListener('pointerup', handlePointerUp);
-  }, [handlePointerMove, handlePointerUp]);
+  useEffect(
+    () => () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    },
+    [handlePointerMove, handlePointerUp],
+  );
 
-  const handleKeyDown = event => {
+  const handleKeyDown = (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      setIsOpen(prev => !prev);
+      setIsOpen((prev) => !prev);
     }
   };
 
@@ -174,7 +208,7 @@ const DeveloperSessionHelper = () => {
     dispatch(returnToOriginalBusiness());
   };
 
-  const handleShortcutSelect = shortcut => {
+  const handleShortcutSelect = (shortcut) => {
     if (shortcut.action === 'openDeveloperModal') {
       dispatch(toggleDeveloperModal());
       setIsOpen(false);
@@ -190,8 +224,14 @@ const DeveloperSessionHelper = () => {
     console.warn('Acción de acceso rápido no implementada:', shortcut);
   };
 
-  const currentRoleLabel = useMemo(() => getRoleLabelById(user?.role) || user?.role || 'N/A', [user?.role]);
-  const originalRoleLabel = useMemo(() => getRoleLabelById(originalRole) || originalRole || 'N/A', [originalRole]);
+  const currentRoleLabel = useMemo(
+    () => getRoleLabelById(user?.role) || user?.role || 'N/A',
+    [user?.role],
+  );
+  const originalRoleLabel = useMemo(
+    () => getRoleLabelById(originalRole) || originalRole || 'N/A',
+    [originalRole],
+  );
 
   const panelPlacement = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -241,8 +281,8 @@ const DeveloperSessionHelper = () => {
               <Section>
                 <SectionTitle>Rol temporal</SectionTitle>
                 <SectionDescription>
-                  Actualmente eres <strong>{currentRoleLabel}</strong>. El rol original es{' '}
-                  <strong>{originalRoleLabel}</strong>.
+                  Actualmente eres <strong>{currentRoleLabel}</strong>. El rol
+                  original es <strong>{originalRoleLabel}</strong>.
                 </SectionDescription>
                 <ActionButton type="button" onClick={handleRestoreRole}>
                   Volver a rol original
@@ -267,12 +307,16 @@ const DeveloperSessionHelper = () => {
             {hasDeveloperShortcuts && (
               <ScrollableSection>
                 <GroupedShortcuts>
-                  {groupedShortcuts.map(group => (
+                  {groupedShortcuts.map((group) => (
                     <ShortcutGroup key={group.category}>
                       <ShortcutGroupTitle>{group.category}</ShortcutGroupTitle>
                       <ShortcutList>
-                        {group.items.map(shortcut => (
-                          <ShortcutButton key={shortcut.id} type="button" onClick={() => handleShortcutSelect(shortcut)}>
+                        {group.items.map((shortcut) => (
+                          <ShortcutButton
+                            key={shortcut.id}
+                            type="button"
+                            onClick={() => handleShortcutSelect(shortcut)}
+                          >
                             <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
                             <ShortcutInfo>
                               <ShortcutName>{shortcut.title}</ShortcutName>
@@ -313,7 +357,9 @@ const FloatingButton = styled.button`
   cursor: grab;
   font-size: 20px;
   box-shadow: 0 15px 35px rgba(15, 23, 42, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: scale(1.05);
@@ -484,7 +530,9 @@ const ShortcutButton = styled.button`
   background: rgba(15, 23, 42, 0.65);
   color: #e2e8f0;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
 
   &:hover,
   &:focus {

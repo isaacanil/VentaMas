@@ -59,16 +59,16 @@ src/views/pages/Authorizations/
 
 ### Columnas de la Tabla
 
-| Columna | Descripción |
-|---------|-------------|
-| Tipo | Tipo de solicitud (Factura, Cuenta por Cobrar, etc.) |
-| Referencia | Número de factura o identificador |
-| Solicitado por | Usuario que hizo la solicitud |
-| Motivos | Razones de la solicitud |
-| Creada | Fecha de creación |
-| Expira | Fecha de expiración |
-| Estado | Tag con color: pending, approved, rejected, etc. |
-| Acción | Botones de Aprobar/Rechazar (solo en pendientes) |
+| Columna        | Descripción                                          |
+| -------------- | ---------------------------------------------------- |
+| Tipo           | Tipo de solicitud (Factura, Cuenta por Cobrar, etc.) |
+| Referencia     | Número de factura o identificador                    |
+| Solicitado por | Usuario que hizo la solicitud                        |
+| Motivos        | Razones de la solicitud                              |
+| Creada         | Fecha de creación                                    |
+| Expira         | Fecha de expiración                                  |
+| Estado         | Tag con color: pending, approved, rejected, etc.     |
+| Acción         | Botones de Aprobar/Rechazar (solo en pendientes)     |
 
 ### Flujo de Aprobación
 
@@ -118,12 +118,14 @@ src/views/pages/Authorizations/
 ### Rutas Actualizadas
 
 **ANTES:**
+
 ```javascript
 // /authorizations → InvoiceEditAuthorizations (solo facturas)
 // /settings/authorization-config → AuthorizationConfig (solo PINs)
 ```
 
 **AHORA:**
+
 ```javascript
 // /authorizations → AuthorizationsManager (todo unificado)
 //   ├─ Tab 1: Solicitudes (facturas + futuras)
@@ -187,7 +189,12 @@ En el futuro, para agregar solicitudes de Cuentas por Cobrar u otros módulos:
 // firebase/authorizations/accountsReceivableAuth.js
 
 export const requestAccountReceivableEdit = async (user, account, reasons) => {
-  const colRef = collection(db, 'businesses', user.businessID, 'authorizationRequests');
+  const colRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'authorizationRequests',
+  );
 
   await addDoc(colRef, {
     type: 'accountsReceivable',
@@ -239,7 +246,7 @@ const load = async (statusArg) => {
 La tabla ya tiene columna "Tipo", solo necesitas mapear correctamente:
 
 ```javascript
-const tableData = rows.map(r => ({
+const tableData = rows.map((r) => ({
   type: r.type === 'factura' ? 'Factura' : 'Cuenta por Cobrar',
   invoice: r.invoiceNumber || r.accountId,
   // ... resto
@@ -289,11 +296,11 @@ businesses/{businessID}/authorizationRequests/{requestId}/
 
 ```javascript
 const statusColor = {
-  pending: 'gold',      // 🟡 Amarillo
-  approved: 'green',    // 🟢 Verde
-  rejected: 'red',      // 🔴 Rojo
-  expired: 'default',   // ⚪ Gris
-  used: 'blue',         // 🔵 Azul
+  pending: 'gold', // 🟡 Amarillo
+  approved: 'green', // 🟢 Verde
+  rejected: 'red', // 🔴 Rojo
+  expired: 'default', // ⚪ Gris
+  used: 'blue', // 🔵 Azul
 };
 ```
 
@@ -301,10 +308,10 @@ const statusColor = {
 
 ```javascript
 const pinStatusColor = {
-  active: 'green',      // 🟢 Verde con icono SafetyOutlined
-  expired: 'orange',    // 🟠 Naranja con icono ClockCircleOutlined
-  inactive: 'red',      // 🔴 Rojo
-  none: 'default',      // ⚪ Gris "Sin PIN"
+  active: 'green', // 🟢 Verde con icono SafetyOutlined
+  expired: 'orange', // 🟠 Naranja con icono ClockCircleOutlined
+  inactive: 'red', // 🔴 Rojo
+  none: 'default', // ⚪ Gris "Sin PIN"
 };
 ```
 
@@ -315,25 +322,27 @@ const pinStatusColor = {
 ### Acceso a la Pantalla
 
 **Roles permitidos:**
+
 - `admin`
 - `owner`
 - `dev`
 - `manager`
 
 **Otros roles:**
+
 - Se muestra mensaje "Acceso Denegado"
 - No pueden ver solicitudes ni gestionar PINs
 
 ### Funcionalidades por Rol
 
-| Funcionalidad | Admin | Owner | Manager | Cajero |
-|--------------|-------|-------|---------|---------|
-| Ver solicitudes | ✅ | ✅ | ✅ | ❌ |
-| Aprobar solicitudes | ✅ | ✅ | ✅ | ❌ |
-| Rechazar solicitudes | ✅ | ✅ | ✅ | ❌ |
-| Ver PINs (estado) | ✅ | ✅ | ❌ | ❌ |
-| Generar PINs | ✅ | ✅ | ❌ | ❌ |
-| Desactivar PINs | ✅ | ✅ | ❌ | ❌ |
+| Funcionalidad        | Admin | Owner | Manager | Cajero |
+| -------------------- | ----- | ----- | ------- | ------ |
+| Ver solicitudes      | ✅    | ✅    | ✅      | ❌     |
+| Aprobar solicitudes  | ✅    | ✅    | ✅      | ❌     |
+| Rechazar solicitudes | ✅    | ✅    | ✅      | ❌     |
+| Ver PINs (estado)    | ✅    | ✅    | ❌      | ❌     |
+| Generar PINs         | ✅    | ✅    | ❌      | ❌     |
+| Desactivar PINs      | ✅    | ✅    | ❌      | ❌     |
 
 ---
 

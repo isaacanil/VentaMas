@@ -1,5 +1,5 @@
-import { Form } from "antd";
-import styled from "styled-components";
+import { Form } from 'antd';
+import styled from 'styled-components';
 
 export const ModalLayout = styled.div`
   display: grid;

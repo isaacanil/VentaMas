@@ -1,6 +1,6 @@
-import { 
-    faFileInvoiceDollar,
-    faReceipt
+import {
+  faFileInvoiceDollar,
+  faReceipt,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Card, Pagination } from 'antd';
@@ -18,8 +18,6 @@ import { AccountCard } from './AccountCard/AccountCard';
 import { ClientBalanceInfo } from './components/ClientBalanceInfo';
 import { CreditLimits } from './components/CreditLimits';
 import { FilterBar } from './components/FilterBar';
-
-
 
 const ClientFinancialInfo = ({ client, creditLimitForm }) => {
   const user = useSelector(selectUser);
@@ -41,17 +39,19 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
   const displayedAccounts = convertAccountsData(displayedAccountsRaw);
 
   // counts para la barra de filtros
-  const { open: openAccountsCount, closed: closedAccountsCount } = useClientAccountsReceivableCounts({
+  const { open: openAccountsCount, closed: closedAccountsCount } =
+    useClientAccountsReceivableCounts({
+      user,
+      clientId: client?.id,
+    });
+
+  const { balance: pendingBalance } = useClientPendingBalance({
     user,
     clientId: client?.id,
   });
-  
 
-  const { balance: pendingBalance } = useClientPendingBalance({ user, clientId: client?.id });
-  
+  const pageSize = 4;
 
-  const pageSize = 4; 
-  
   const getPaginatedAccounts = (accountsList, currentPage) => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
@@ -68,20 +68,23 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
 
   const paginatedDisplayedAccounts = getPaginatedAccounts(
     displayedAccounts,
-    filterStatus === 'open' ? currentPageOpen : currentPageClosed
+    filterStatus === 'open' ? currentPageOpen : currentPageClosed,
   );
 
   const displayedAccountsCount = displayedAccounts.length;
-  const currentPage = filterStatus === 'open' ? currentPageOpen : currentPageClosed;
-  const handlePageChange = filterStatus === 'open' ? handleOpenPageChange : handleClosedPageChange;
+  const currentPage =
+    filterStatus === 'open' ? currentPageOpen : currentPageClosed;
+  const handlePageChange =
+    filterStatus === 'open' ? handleOpenPageChange : handleClosedPageChange;
 
   return (
     <Container>
-      <ClientBalanceInfo
+      <ClientBalanceInfo client={client} pendingBalance={pendingBalance} />
+      <CreditLimits
+        creditLimitForm={creditLimitForm}
         client={client}
-        pendingBalance={pendingBalance}
+        arBalance={pendingBalance || 0}
       />
-      <CreditLimits creditLimitForm={creditLimitForm} client={client} arBalance={pendingBalance || 0}/>
       <AccountsReceivable>
         <SectionTitle>
           <FontAwesomeIcon icon={faFileInvoiceDollar} />
@@ -112,7 +115,10 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
           ) : (
             <NoAccountsMessage>
               <FontAwesomeIcon icon={faReceipt} />
-              <span>No hay cuentas por cobrar {filterStatus === 'open' ? 'abiertas' : 'cerradas'}</span>
+              <span>
+                No hay cuentas por cobrar{' '}
+                {filterStatus === 'open' ? 'abiertas' : 'cerradas'}
+              </span>
             </NoAccountsMessage>
           )}
         </Accounts>
@@ -127,7 +133,7 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
             />
           </PaginationContainer>
         )}
-      </AccountsReceivable>  
+      </AccountsReceivable>
     </Container>
   );
 };
@@ -168,7 +174,7 @@ export const ClientName = styled.p`
 // Cards de balance
 export const BalanceCard = styled(Card)`
   text-align: center;
-  
+
   .ant-card-body {
     padding: 12px;
   }
@@ -193,7 +199,7 @@ export const BalanceAmount = styled.div`
 // Cards de límite de crédito
 export const CreditLimitCard = styled(Card)`
   text-align: center;
-  
+
   .ant-card-body {
     padding: 12px;
   }
@@ -201,7 +207,7 @@ export const CreditLimitCard = styled(Card)`
 
 export const CreditAvailableCard = styled(Card)`
   text-align: center;
-  
+
   .ant-card-body {
     padding: 12px;
   }
@@ -234,7 +240,7 @@ export const StyledButton = styled(Button)`
 // Sección de cuentas por cobrar
 export const AccountsReceivable = styled.div`
   display: grid;
-  padding: 0 12px;  
+  padding: 0 12px;
   gap: 1rem;
 `;
 
@@ -247,7 +253,7 @@ export const SectionTitle = styled.h2`
   color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   line-height: 1.4;
   margin: 0;
-  
+
   svg {
     font-size: 0.9rem;
     opacity: 0.8;
@@ -272,7 +278,7 @@ export const PaymentRow = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
-  
+
   span {
     font-size: 0.875rem;
     font-weight: 400;
@@ -288,7 +294,8 @@ export const Section = styled.section`
 
 // Línea divisoria
 export const Line = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.divider || 'rgba(0, 0, 0, 0.12)'};
+  border-bottom: 1px solid
+    ${({ theme }) => theme.divider || 'rgba(0, 0, 0, 0.12)'};
   margin: 0.5rem 0;
 `;
 
@@ -304,15 +311,15 @@ const PaginationContainer = styled.div`
   justify-content: center;
   margin-top: 1rem;
   padding: 0.75rem 0;
-  
+
   .ant-pagination {
     font-size: 0.875rem;
-    
+
     .ant-pagination-item {
       font-weight: 400;
       line-height: 1.5;
     }
-    
+
     .ant-pagination-total-text {
       font-size: 0.875rem;
       font-weight: 400;
@@ -342,7 +349,7 @@ export const NoAccountsMessage = styled.div`
     opacity: 0.6;
     color: #bfbfbf;
   }
-  
+
   span {
     text-align: center;
     font-size: 1rem;

@@ -1,6 +1,6 @@
-import { 
-  faExclamationTriangle, 
-  faCheckCircle
+import {
+  faExclamationTriangle,
+  faCheckCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
@@ -13,18 +13,25 @@ const ReceiptItem = styled.div`
   padding: 8px 12px;
   margin-bottom: 6px;
   border-radius: 6px;
-  border: 1px solid ${props => {
+  border: 1px solid
+    ${(props) => {
+      switch (props.alertLevel) {
+        case 'critical':
+          return '#ff4d4f';
+        case 'warning':
+          return '#faad14';
+        default:
+          return '#f0f0f0';
+      }
+    }};
+  background: ${(props) => {
     switch (props.alertLevel) {
-      case 'critical': return '#ff4d4f';
-      case 'warning': return '#faad14';
-      default: return '#f0f0f0';
-    }
-  }};
-  background: ${props => {
-    switch (props.alertLevel) {
-      case 'critical': return '#fff2f0';
-      case 'warning': return '#fffbe6';
-      default: return '#fafafa';
+      case 'critical':
+        return '#fff2f0';
+      case 'warning':
+        return '#fffbe6';
+      default:
+        return '#fafafa';
     }
   }};
   transition: all 0.2s;
@@ -66,11 +73,14 @@ const ReceiptStatus = styled.div`
 const RemainingCount = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: ${props => {
+  color: ${(props) => {
     switch (props.alertLevel) {
-      case 'critical': return '#ff4d4f';
-      case 'warning': return '#faad14';
-      default: return '#52c41a';
+      case 'critical':
+        return '#ff4d4f';
+      case 'warning':
+        return '#faad14';
+      default:
+        return '#52c41a';
     }
   }};
 `;
@@ -78,15 +88,18 @@ const RemainingCount = styled.div`
 const StatusIcon = styled.div`
   display: flex;
   align-items: center;
-  
+
   svg {
     width: 14px;
     height: 14px;
-    color: ${props => {
+    color: ${(props) => {
       switch (props.alertLevel) {
-        case 'critical': return '#ff4d4f';
-        case 'warning': return '#faad14';
-        default: return '#52c41a';
+        case 'critical':
+          return '#ff4d4f';
+        case 'warning':
+          return '#faad14';
+        default:
+          return '#52c41a';
       }
     }};
   }
@@ -106,11 +119,7 @@ const EmptyState = styled.div`
  */
 const FiscalReceiptsList = ({ receipts = [], onReceiptClick }) => {
   if (!receipts || receipts.length === 0) {
-    return (
-      <EmptyState>
-        No hay comprobantes para mostrar
-      </EmptyState>
-    );
+    return <EmptyState>No hay comprobantes para mostrar</EmptyState>;
   }
 
   const getIcon = (alertLevel) => {
@@ -142,7 +151,7 @@ const FiscalReceiptsList = ({ receipts = [], onReceiptClick }) => {
             <ReceiptName>{receipt.name}</ReceiptName>
             <ReceiptSeries>Serie: {receipt.series}</ReceiptSeries>
           </ReceiptInfo>
-          
+
           <ReceiptStatus>
             <RemainingCount alertLevel={receipt.alertLevel}>
               {formatRemaining(receipt.remainingNumbers)}

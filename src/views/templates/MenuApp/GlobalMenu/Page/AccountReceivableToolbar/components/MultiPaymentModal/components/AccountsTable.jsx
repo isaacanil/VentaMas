@@ -7,7 +7,7 @@ const { Text } = Typography;
 /**
  * Tabla de cuentas por cobrar para selección múltiple
  * @param {Object} props - Propiedades del componente
- * @param {Array} props.accounts - Cuentas filtradas para mostrar 
+ * @param {Array} props.accounts - Cuentas filtradas para mostrar
  * @param {boolean} props.allSelected - Indica si todas las cuentas están seleccionadas
  * @param {boolean} props.someSelected - Indica si algunas cuentas están seleccionadas
  * @param {Array} props.selectedAccounts - IDs de cuentas seleccionadas
@@ -26,7 +26,7 @@ const AccountsTable = ({
   onSelectAccount,
   formatDate,
   formatCurrency,
-  insuranceFilter
+  insuranceFilter,
 }) => {
   // Columnas para la tabla de cuentas por cobrar
   const columns = [
@@ -38,12 +38,12 @@ const AccountsTable = ({
           indeterminate={someSelected && !allSelected}
           disabled={insuranceFilter === 'none'}
         />
-      ),        
+      ),
       dataIndex: 'select',
       key: 'select',
       width: '5%',
       render: (_, record) => (
-        <Checkbox 
+        <Checkbox
           checked={selectedAccounts.includes(record.ver.account.id)}
           onChange={(e) => onSelectAccount(e, record.ver.account.id)}
         />
@@ -88,25 +88,37 @@ const AccountsTable = ({
   if (insuranceFilter === 'none') {
     return (
       <EmptyStateContainer>
-        <Empty 
-          description="Seleccione una aseguradora para ver las cuentas por cobrar" 
-          image={Empty.PRESENTED_IMAGE_SIMPLE} 
+        <Empty
+          description="Seleccione una aseguradora para ver las cuentas por cobrar"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       </EmptyStateContainer>
     );
   }
-  
+
   // Preparar los datos para la tabla
-  const tableData = accounts.map(account => ({
+  const tableData = accounts.map((account) => ({
     ...account,
-    // Usar primero las propiedades directas del objeto si existen, 
+    // Usar primero las propiedades directas del objeto si existen,
     // luego las propiedades anidadas como respaldo
-    invoiceNumber: account.invoiceNumber || account.ver?.account?.invoice?.data?.numberID || 'N/A',
-    client: account.client || account.ver?.account?.client?.name || 'Cliente sin nombre',
-    date: account.date || account.ver?.account?.invoice?.data?.date?.seconds * 1000 || account.ver?.account?.createdAt?.seconds * 1000,
+    invoiceNumber:
+      account.invoiceNumber ||
+      account.ver?.account?.invoice?.data?.numberID ||
+      'N/A',
+    client:
+      account.client ||
+      account.ver?.account?.client?.name ||
+      'Cliente sin nombre',
+    date:
+      account.date ||
+      account.ver?.account?.invoice?.data?.date?.seconds * 1000 ||
+      account.ver?.account?.createdAt?.seconds * 1000,
     balance: account.balance || 0,
-    insurance: account.insurance || account.ver?.account?.account?.insurance?.name || 'N/A',
-    ncf: account.ncf || account.ver?.account?.invoice?.data?.NCF || 'N/A'
+    insurance:
+      account.insurance ||
+      account.ver?.account?.account?.insurance?.name ||
+      'N/A',
+    ncf: account.ncf || account.ver?.account?.invoice?.data?.NCF || 'N/A',
   }));
 
   return (
@@ -114,13 +126,15 @@ const AccountsTable = ({
       columns={columns}
       dataSource={tableData}
       rowKey={(record) => record.ver.account.id}
-      pagination={{ 
+      pagination={{
         pageSize: 5,
         showTotal: () => (
           <CountDisplay>
-            <Text strong>seleccionadas {selectedAccounts.length}/{accounts.length}</Text>
+            <Text strong>
+              seleccionadas {selectedAccounts.length}/{accounts.length}
+            </Text>
           </CountDisplay>
-        )
+        ),
       }}
       size="small"
       scroll={{ y: 250 }}

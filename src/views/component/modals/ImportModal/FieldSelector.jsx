@@ -7,7 +7,7 @@ const { Title, Text } = Typography;
 const FieldSelector = ({ essentialFields, optionalGroups, onFieldsChange }) => {
   // Aplanar todos los campos opcionales en una sola lista
   const flattenedOptionalFields = Object.values(optionalGroups).flat();
-  
+
   const [selectedFields, setSelectedFields] = useState([]);
   const [indeterminate, setIndeterminate] = useState(false);
   const [checkAll, setCheckAll] = useState(false);
@@ -19,7 +19,10 @@ const FieldSelector = ({ essentialFields, optionalGroups, onFieldsChange }) => {
 
   const handleChange = (checkedValues) => {
     setSelectedFields(checkedValues);
-    setIndeterminate(!!checkedValues.length && checkedValues.length < flattenedOptionalFields.length);
+    setIndeterminate(
+      !!checkedValues.length &&
+        checkedValues.length < flattenedOptionalFields.length,
+    );
     setCheckAll(checkedValues.length === flattenedOptionalFields.length);
   };
 
@@ -33,33 +36,46 @@ const FieldSelector = ({ essentialFields, optionalGroups, onFieldsChange }) => {
     <Container>
       <div>
         <Title level={5}>Campos esenciales</Title>
-        <Text type="secondary">Los siguientes campos siempre se incluirán en la plantilla:</Text>
+        <Text type="secondary">
+          Los siguientes campos siempre se incluirán en la plantilla:
+        </Text>
         <EssentialList>
-          {essentialFields.map(field => (
+          {essentialFields.map((field) => (
             <EssentialField key={field}>{field}</EssentialField>
           ))}
         </EssentialList>
       </div>
-      
+
       <Divider />
-      
+
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <Title level={5}>Campos opcionales</Title>
-          <Checkbox 
-            indeterminate={indeterminate} 
-            onChange={handleCheckAllChange} 
+          <Checkbox
+            indeterminate={indeterminate}
+            onChange={handleCheckAllChange}
             checked={checkAll}
           >
             Seleccionar todos
           </Checkbox>
         </div>
-        
-        <Text type="secondary">Selecciona los campos adicionales que deseas incluir:</Text>
-        
-        <CheckboxGroup 
-          options={flattenedOptionalFields.map(field => ({ label: field, value: field }))} 
-          value={selectedFields} 
+
+        <Text type="secondary">
+          Selecciona los campos adicionales que deseas incluir:
+        </Text>
+
+        <CheckboxGroup
+          options={flattenedOptionalFields.map((field) => ({
+            label: field,
+            value: field,
+          }))}
+          value={selectedFields}
           onChange={handleChange}
         />
       </div>
@@ -94,7 +110,7 @@ const CheckboxGroup = styled(Checkbox.Group)`
   max-height: 300px;
   overflow-y: auto;
   padding: 10px 0;
-  
+
   .ant-checkbox-wrapper {
     margin: 5px 0;
   }

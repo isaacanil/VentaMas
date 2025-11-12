@@ -1,16 +1,16 @@
 import { faMessage } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useDispatch } from 'react-redux'
-import styled from 'styled-components'
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
-import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice'
-import { Button } from '../Button/Button'
+import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice';
+import { Button } from '../Button/Button';
 
-export const MessageAlert = ({isOpen , data}) => {
-  const dispatch = useDispatch()
+export const MessageAlert = ({ isOpen, data }) => {
+  const dispatch = useDispatch();
 
-  const closeModal = ()=>  dispatch(toggleViewOrdersNotes({isOpen: 'close'}))
-  
+  const closeModal = () => dispatch(toggleViewOrdersNotes({ isOpen: 'close' }));
+
   return (
     <Backdrop isOpen={isOpen === true && data !== null ? true : false}>
       <Container isOpen={isOpen === true ? true : false}>
@@ -20,17 +20,25 @@ export const MessageAlert = ({isOpen , data}) => {
           </IconContainer>
           <MessageContainer>
             <Message>
-              {data !== "" && data !== null ? (data.note ? data.note : 'vacio') : null}
-            </Message>  
+              {data !== '' && data !== null
+                ? data.note
+                  ? data.note
+                  : 'vacio'
+                : null}
+            </Message>
           </MessageContainer>
         </Body>
         <Footer>
-          <Button borderRadius={'normal'} title='ok' onClick={closeModal}></Button>
+          <Button
+            borderRadius={'normal'}
+            title="ok"
+            onClick={closeModal}
+          ></Button>
         </Footer>
       </Container>
     </Backdrop>
-  )
-}
+  );
+};
 
 const Backdrop = styled.div`
   height: 100%;
@@ -43,15 +51,15 @@ const Backdrop = styled.div`
   ${(props) => {
     switch (props.isOpen) {
       case false:
-        return`
+        return `
           transform: scale(0);
           display: none;
-        `
+        `;
       default:
         break;
     }
   }}
-`
+`;
 const Container = styled.div`
   background-color: #ffffff;
   height: min-content;
@@ -72,14 +80,14 @@ const Container = styled.div`
   ${(props) => {
     switch (props.isOpen) {
       case false:
-        return`
+        return `
           transform: scale(0);
-        `
+        `;
       default:
         break;
     }
   }}
-`
+`;
 const Body = styled.div`
   height: 100%;
   max-width: 100%;
@@ -90,7 +98,7 @@ const Body = styled.div`
   grid-template-columns: 0.4fr 1fr;
   grid-template-rows: 1fr;
 
-  @media (max-width: 1000px){
+  @media (max-width: 1000px) {
     border-radius: 0;
     height: min-content;
     grid-template-columns: 1fr;
@@ -99,12 +107,12 @@ const Body = styled.div`
     justify-content: center;
     grid-template-rows: auto;
   }
-`
+`;
 const Footer = styled.div`
   padding: 0 1em;
   display: flex;
   justify-content: flex-end;
-`
+`;
 const IconContainer = styled.div`
   width: 100%;
   height: min-content;
@@ -113,14 +121,14 @@ const IconContainer = styled.div`
   justify-content: center;
   font-size: 70px;
   color: var(--font-color-dark-slightly);
-`
+`;
 const MessageContainer = styled.div`
-height: min-content;
-width: 100%;
-overflow: hidden;
-overflow-wrap: break-word;
-padding: 1em 2em;
-`
+  height: min-content;
+  width: 100%;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  padding: 1em 2em;
+`;
 const Message = styled.p`
   width: 100%;
-`
+`;

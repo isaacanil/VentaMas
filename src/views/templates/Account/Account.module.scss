@@ -1,56 +1,55 @@
 @import url('../../../styles/variables.css');
-.Component_container{
-    justify-self: end;
+.Component_container {
+  justify-self: end;
 
+  margin: 0;
+  padding: 0;
+  color: white;
+  position: relative;
+  cursor: pointer;
+  .UserIcon {
     margin: 0;
-    padding: 0;
-    color: white;
-    position: relative;
-    cursor: pointer;
-    .UserIcon{
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1em;
-    }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+  }
 }
 
-.AccountMenu{
-    display: none;
-    position: absolute;
-    top: 3.2em;
-    right: 0;
-    background-color: rgb(214, 214, 214);
-    border-radius: var(--border-radius-light);
-    min-width: 12em;
-    border: 1px solid rgba(0, 0, 0, 0.100);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
-    z-index: 99;
-    .Items{
-        padding: 1em;
-        margin: 0;
-        list-style: none;
-        display: grid;
-        gap: 1em;
-        .Item{
-            display: flex;
-            justify-content: space-between;
-            .Item_Link{
-                color: rgb(70, 70, 70);
-                text-decoration: none;
-                font-weight: 500;
-            }
-            .Icon_wrapper{
-                width: 1em;
-                font-size: 16px;
-                color: black;
-                
-            }
-        }
+.AccountMenu {
+  display: none;
+  position: absolute;
+  top: 3.2em;
+  right: 0;
+  background-color: rgb(214, 214, 214);
+  border-radius: var(--border-radius-light);
+  min-width: 12em;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
+  z-index: 99;
+  .Items {
+    padding: 1em;
+    margin: 0;
+    list-style: none;
+    display: grid;
+    gap: 1em;
+    .Item {
+      display: flex;
+      justify-content: space-between;
+      .Item_Link {
+        color: rgb(70, 70, 70);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .Icon_wrapper {
+        width: 1em;
+        font-size: 16px;
+        color: black;
+      }
     }
+  }
 }
 
-.AccountMenu.Open{
-    display: block;
+.AccountMenu.Open {
+  display: block;
 }

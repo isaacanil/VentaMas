@@ -1,22 +1,19 @@
 import { Input } from 'antd';
-import { useState, Fragment, useRef, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import styled from 'styled-components'
+import { useState, Fragment, useRef, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
-import { SearchPanel } from '../../../components/common/SearchPanel/SearchPanel'
-import { icons } from '../../../constants/icons/icons'
-import { toggleOpenMenu } from '../../../features/nav/navSlice'
-import { useClickOutSide } from '../../../hooks/useClickOutSide'
-import { ButtonIconMenu } from '../system/Button/ButtonIconMenu'
-import { GoBackButton } from '../system/Button/GoBackButton'
-import { OpenMenuButton } from '../system/Button/OpenMenuButton'
+import { SearchPanel } from '../../../components/common/SearchPanel/SearchPanel';
+import { icons } from '../../../constants/icons/icons';
+import { toggleOpenMenu } from '../../../features/nav/navSlice';
+import { useClickOutSide } from '../../../hooks/useClickOutSide';
+import { ButtonIconMenu } from '../system/Button/ButtonIconMenu';
+import { GoBackButton } from '../system/Button/GoBackButton';
+import { OpenMenuButton } from '../system/Button/OpenMenuButton';
 
-import { NotificationButton } from './Components/NotificationButton/NotificationButton'
-import { SideBar } from './Components/SideBar'
-import { GlobalMenu } from './GlobalMenu/GlobalMenu'
-
-
-
+import { NotificationButton } from './Components/NotificationButton/NotificationButton';
+import { SideBar } from './Components/SideBar';
+import { GlobalMenu } from './GlobalMenu/GlobalMenu';
 
 export const MenuApp = ({
   data,
@@ -25,38 +22,46 @@ export const MenuApp = ({
   borderRadius,
   setSearchData,
   searchData,
-  displayName = "",
+  displayName = '',
   sectionStatus,
   toolbarProps = {},
   showBackButton = true, // Nueva prop para controlar si se muestra el botón
   showNotificationButton = false, // Nueva prop para controlar si se muestra el botón de notificaciones
-  onBackClick,          // Nueva prop para manejar el click personalizado
-  onReportSaleOpen      // Nueva prop para el gráfico de ventas
+  onBackClick, // Nueva prop para manejar el click personalizado
+  onReportSaleOpen, // Nueva prop para el gráfico de ventas
 }) => {
   const dispatch = useDispatch();
-  const ref = useRef(null)
+  const ref = useRef(null);
 
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
 
-  const handledMenu = () => { setIsOpenMenu(!isOpenMenu) };
+  const handledMenu = () => {
+    setIsOpenMenu(!isOpenMenu);
+  };
 
   useEffect(() => {
-    dispatch(toggleOpenMenu(isOpenMenu))
-  }, [isOpenMenu])
+    dispatch(toggleOpenMenu(isOpenMenu));
+  }, [isOpenMenu]);
 
-  const closeMenu = () => { setIsOpenMenu(false) }
-  const openSearchPanel = () => { setIsSearchPanelOpen(true) }
-  const closeSearchPanel = () => { setIsSearchPanelOpen(false) }
+  const closeMenu = () => {
+    setIsOpenMenu(false);
+  };
+  const openSearchPanel = () => {
+    setIsSearchPanelOpen(true);
+  };
+  const closeSearchPanel = () => {
+    setIsSearchPanelOpen(false);
+  };
 
-  useClickOutSide(ref, !isOpenMenu, closeMenu)
+  useClickOutSide(ref, !isOpenMenu, closeMenu);
 
   return (
     <Fragment>
       <Backdrop isOpen={isOpenMenu ? true : false} onClick={closeMenu} />
-      
+
       {/* Search Panel para móviles */}
-      <SearchPanel 
+      <SearchPanel
         isOpen={isSearchPanelOpen}
         onClose={closeSearchPanel}
         searchData={searchData}
@@ -65,32 +70,42 @@ export const MenuApp = ({
         sectionName={sectionName}
       />
 
-      <Container borderRadius={borderRadius} ref={ref} isOpen={isOpenMenu ? true : false}>
+      <Container
+        borderRadius={borderRadius}
+        ref={ref}
+        isOpen={isOpenMenu ? true : false}
+      >
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
           {showBackButton && <GoBackButton onClick={onBackClick} />}
-          {showNotificationButton && <NotificationButton handleCloseMenu={closeMenu} />}
+          {showNotificationButton && (
+            <NotificationButton handleCloseMenu={closeMenu} />
+          )}
 
           {sectionName && (
-            <SectionName>{sectionNameIcon}{sectionName}</SectionName>
+            <SectionName>
+              {sectionNameIcon}
+              {sectionName}
+            </SectionName>
           )}
-          {sectionStatus && (
-            <StatusBadge>{sectionStatus}</StatusBadge>
-          )}
-          
+          {sectionStatus && <StatusBadge>{sectionStatus}</StatusBadge>}
+
           {/* Botón de búsqueda para móviles */}
           {setSearchData && (
             <MobileSearchButton onClick={openSearchPanel}>
-              <ButtonIconMenu icon={icons.operationModes.search} onClick={openSearchPanel} />
+              <ButtonIconMenu
+                icon={icons.operationModes.search}
+                onClick={openSearchPanel}
+              />
             </MobileSearchButton>
           )}
-          
+
           {/* Input de búsqueda para desktop */}
           {setSearchData && (
             <SearchInputWrapper data-role="search-wrapper">
               <Input
                 prefix={icons.operationModes.search}
-                placeholder={`Buscar ${displayName || sectionName || ""}...`}
+                placeholder={`Buscar ${displayName || sectionName || ''}...`}
                 value={searchData}
                 onChange={(e) => setSearchData(e.target.value)}
                 allowClear
@@ -109,9 +124,8 @@ export const MenuApp = ({
         <SideBar isOpen={isOpenMenu} handleOpenMenu={handledMenu} />
       </Container>
     </Fragment>
-
-  )
-}
+  );
+};
 const Backdrop = styled.div`
   height: calc(100vh);
   width: 100%;
@@ -119,10 +133,10 @@ const Backdrop = styled.div`
   left: 0;
   right: 0;
   backdrop-filter: blur(0px);
-    z-index: 10;
-    pointer-events: none;
-    transition: all 1s  ease;
-   ${props => {
+  z-index: 10;
+  pointer-events: none;
+  transition: all 1s ease;
+  ${(props) => {
     switch (props.isOpen) {
       case true:
         return `
@@ -132,41 +146,41 @@ const Backdrop = styled.div`
         backdrop-filter: blur(2px);
         webkit-backdrop-filter: blur(6px);
         background-color: rgba(0, 0, 0, 0.100);
-        `
+        `;
       default:
         break;
     }
   }}
-`
+`;
 const Container = styled.div`
-  background-color: ${props => props.theme.bg.color}; 
+  background-color: ${(props) => props.theme.bg.color};
   width: 100%;
   height: 2.75em;
   display: flex;
   padding: 0 1em;
   gap: 0.4em;
-  
+
   @media (max-width: 768px) {
     height: 3.2em;
     padding: 0 1em;
     gap: 1em;
   }
-  
-  ${props => {
+
+  ${(props) => {
     switch (props.isOpen) {
       case true:
         return `
-        `
+        `;
       case false:
         return `
         transition-property: z-index;
         transition-delay: 400ms;
-      `
+      `;
       default:
         break;
     }
   }}
-   ${props => {
+  ${(props) => {
     switch (props.borderRadius) {
       case 'bottom-right':
         return `
@@ -175,12 +189,12 @@ const Container = styled.div`
           border-bottom-right-radius: 0px;
          padding-right: 1em;
         }   
-        `
+        `;
       default:
         break;
     }
   }}
-`
+`;
 const Group = styled.div`
   display: flex;
   flex-shrink: 0;
@@ -189,7 +203,9 @@ const Group = styled.div`
   flex-wrap: nowrap;
 
   /* Evita que los botones u otros elementos se achiquen excesivamente */
-  & > * { flex-shrink: 0; }
+  & > * {
+    flex-shrink: 0;
+  }
 
   /* Solo el wrapper del input puede crecer y encogerse para absorber espacio */
   & > [data-role='search-wrapper'] {
@@ -202,15 +218,15 @@ const Group = styled.div`
   @media (max-width: 1024px) {
     gap: 0.6em;
   }
-  
+
   @media (max-width: 768px) {
     gap: 0.5em;
   }
-  
+
   @media (max-width: 480px) {
     gap: 0.4em;
   }
-`
+`;
 const SectionName = styled.div`
   display: flex;
   align-items: center;
@@ -224,9 +240,9 @@ const SectionName = styled.div`
   text-overflow: ellipsis;
   gap: 0.4em;
   border-radius: 6px;
-  background-color: rgba(0, 0, 0, 0.200);
+  background-color: rgba(0, 0, 0, 0.2);
   padding: 0 0.4em;
-  
+
   // Mejoras para móviles - elementos más grandes en pantallas más pequeñas
   @media (max-width: 1024px) {
     font-size: 1.1em;
@@ -235,21 +251,21 @@ const SectionName = styled.div`
     gap: 0.5em;
     max-width: 280px;
   }
-  
+
   @media (max-width: 768px) {
     font-size: 1.15em;
     height: 2em;
     padding: 0 0.5em;
     max-width: 200px;
   }
-  
+
   @media (max-width: 480px) {
     font-size: 1.2em;
     height: 2.2em;
     padding: 0 0.6em;
     max-width: 180px;
   }
-`
+`;
 
 const StatusBadge = styled.div`
   display: inline-flex;
@@ -269,7 +285,7 @@ const StatusBadge = styled.div`
     font-size: 0.7em;
     padding: 0.1em 0.65em;
   }
-`
+`;
 
 const SearchInputWrapper = styled.div`
   display: flex;
@@ -277,22 +293,22 @@ const SearchInputWrapper = styled.div`
   min-width: 160px;
   width: auto;
   overflow: hidden;
-  
+
   @media (max-width: 1024px) {
     max-width: 350px;
   }
-  
+
   @media (max-width: 768px) {
     display: none;
   }
-`
+`;
 
 const MobileSearchButton = styled.div`
   display: none;
-  
+
   @media (max-width: 768px) {
     display: flex;
     align-items: center;
     justify-content: center;
   }
-`
+`;

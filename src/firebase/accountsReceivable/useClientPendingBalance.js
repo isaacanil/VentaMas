@@ -1,4 +1,3 @@
-
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -24,13 +23,7 @@ export function useClientPendingBalance({ user, clientId }) {
     }
 
     // Referencia al doc businesses/{bid}/clients/{clientId}
-    const ref = doc(
-      db,
-      'businesses',
-      user.businessID,
-      'clients',
-      clientId
-    );
+    const ref = doc(db, 'businesses', user.businessID, 'clients', clientId);
 
     // Suscripción en tiempo real
     const unsubscribe = onSnapshot(ref, (snap) => {
@@ -43,5 +36,5 @@ export function useClientPendingBalance({ user, clientId }) {
     return unsubscribe;
   }, [user?.businessID, clientId]);
 
-  return {balance}; // null | número
+  return { balance }; // null | número
 }

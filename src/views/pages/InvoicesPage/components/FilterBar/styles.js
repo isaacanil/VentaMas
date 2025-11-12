@@ -8,17 +8,17 @@ export const Bar = styled.div`
   border-bottom: 1px solid var(--Gray);
   background: var(--White);
   justify-content: flex-start;
-  
+
   .ant-form-item {
     margin-bottom: 0 !important;
     display: inline-block;
   }
-  
+
   .ant-form-item-label {
     padding-bottom: 2px !important;
     line-height: 1.2 !important;
   }
-  
+
   .ant-form-item-label > label {
     font-size: 11px !important;
     font-weight: 500 !important;
@@ -65,7 +65,7 @@ export const DrawerContent = styled.div`
 
   .ant-input-number-group-wrapper {
     width: 100% !important;
-    
+
     .ant-input-number {
       width: 50% !important;
     }
@@ -73,7 +73,7 @@ export const DrawerContent = styled.div`
 
   .ant-space-compact {
     width: 100% !important;
-    
+
     .ant-select {
       flex: 1 !important;
     }
@@ -86,7 +86,7 @@ export const DrawerContent = styled.div`
 
   .ant-form-item-label {
     padding-bottom: 8px !important;
-    
+
     > label {
       font-size: 14px !important;
       font-weight: 500 !important;

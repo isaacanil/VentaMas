@@ -1,8 +1,8 @@
-import * as ant from "antd";
-import { useState, useRef, useLayoutEffect, useMemo } from "react";
-import Barcode from "react-barcode";
-import { useReactToPrint } from "react-to-print";
-import styled, { createGlobalStyle } from "styled-components";
+import * as ant from 'antd';
+import { useState, useRef, useLayoutEffect, useMemo } from 'react';
+import Barcode from 'react-barcode';
+import { useReactToPrint } from 'react-to-print';
+import styled, { createGlobalStyle } from 'styled-components';
 
 const { Modal, InputNumber, Select, Checkbox } = ant;
 
@@ -51,11 +51,16 @@ const Label = styled.div`
   text-align: center;
   margin: 0 auto;
   border: 1px dashed #ccc;
-  @media print { border: none; page-break-after: always; }
+  @media print {
+    border: none;
+    page-break-after: always;
+  }
 `;
 
 const ProdName = styled.div`
-  font: 600 ${(p) => p.fontSize}pt/1 Arial, sans-serif;
+  font:
+    600 ${(p) => p.fontSize}pt / 1 Arial,
+    sans-serif;
   max-height: 6mm;
   overflow: hidden;
   text-transform: uppercase;
@@ -81,7 +86,9 @@ const PreviewContainer = styled.div`
   padding: 8px;
   margin-top: 12px;
   background: #fafafa;
-  @media print { display: none; }
+  @media print {
+    display: none;
+  }
 `;
 
 export const BarcodePrintModal = ({
@@ -92,27 +99,31 @@ export const BarcodePrintModal = ({
   product,
 }) => {
   const [qty, setQty] = useState(1);
-  const [labelProfile, setLabelProfile] = useState("standard");
+  const [labelProfile, setLabelProfile] = useState('standard');
   const [isNameVisible, setIsNameVisible] = useState(true);
   const printRef = useRef();
   const [xPx, setXPx] = useState(2);
 
   const config = useMemo(() => {
-    if (labelProfile === "variable") {
+    if (labelProfile === 'variable') {
       const digits = barcodeValue?.length || 12;
       const totalModules = digits * 7 + 11;
       const desiredWidthMm = Math.min(
         VAR_CONFIG.MAX_WIDTH_MM,
-        Math.max(VAR_CONFIG.MIN_WIDTH_MM, totalModules * STD_CONFIG.X_MM)
+        Math.max(VAR_CONFIG.MIN_WIDTH_MM, totalModules * STD_CONFIG.X_MM),
       );
       return {
         isVariable: true,
         HEIGHT_FACTOR: 0.5,
         X_MM: STD_CONFIG.X_MM,
-        H_MM: isNameVisible ? VAR_CONFIG.HEIGHT_WITH_NAME_MM * 0.4 : VAR_CONFIG.HEIGHT_NO_NAME_MM * 0.7,
+        H_MM: isNameVisible
+          ? VAR_CONFIG.HEIGHT_WITH_NAME_MM * 0.4
+          : VAR_CONFIG.HEIGHT_NO_NAME_MM * 0.7,
         QUIET_MULT: 9,
         LABEL_WIDTH_MM: desiredWidthMm,
-        LABEL_HEIGHT_MM: isNameVisible ? VAR_CONFIG.HEIGHT_WITH_NAME_MM : VAR_CONFIG.HEIGHT_NO_NAME_MM,
+        LABEL_HEIGHT_MM: isNameVisible
+          ? VAR_CONFIG.HEIGHT_WITH_NAME_MM
+          : VAR_CONFIG.HEIGHT_NO_NAME_MM,
         MARGIN_MM: VAR_CONFIG.MARGIN_MM,
         FONT_SIZE_PT: VAR_CONFIG.FONT_SIZE_PT,
         BARCODE_FONT_SIZE: VAR_CONFIG.BARCODE_FONT_SIZE,
@@ -125,27 +136,35 @@ export const BarcodePrintModal = ({
   useLayoutEffect(() => {
     if (!visible) return;
     const quietZoneMm = config.X_MM * config.QUIET_MULT * 2;
-    const availableMm = config.LABEL_WIDTH_MM - config.MARGIN_MM * 2 - quietZoneMm;
+    const availableMm =
+      config.LABEL_WIDTH_MM - config.MARGIN_MM * 2 - quietZoneMm;
     const availablePx = mmToPx(availableMm);
     const digits = barcodeValue?.length || 0;
     const totalModules = digits * 7 + 11;
-    const theoretical = totalModules > 0 ? Math.floor(availablePx / totalModules) : 2;
+    const theoretical =
+      totalModules > 0 ? Math.floor(availablePx / totalModules) : 2;
     const nominal = mmToPx(config.X_MM);
     setXPx(Math.max(1, Math.min(nominal, theoretical)));
   }, [visible, config, barcodeValue]);
 
   const validate = () => {
-    if (!barcodeValue) return "Código vacío";
-    const need = { "UPC-A": 12, "EAN-13": 13, "EAN-8": 8, "GTIN-14": 14 }[barcodeInfo?.type];
-    if (need && barcodeValue.length !== need) return `Debe tener ${need} dígitos`;
+    if (!barcodeValue) return 'Código vacío';
+    const need = { 'UPC-A': 12, 'EAN-13': 13, 'EAN-8': 8, 'GTIN-14': 14 }[
+      barcodeInfo?.type
+    ];
+    if (need && barcodeValue.length !== need)
+      return `Debe tener ${need} dígitos`;
     return null;
   };
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: `Etiqueta-${barcodeValue || "Sin-Codigo"}`,
-    onAfterPrint: () => { setQty(1); onClose(); },
-    onPrintError: (e) => ant.message.error("Error al imprimir: " + e.message),
+    documentTitle: `Etiqueta-${barcodeValue || 'Sin-Codigo'}`,
+    onAfterPrint: () => {
+      setQty(1);
+      onClose();
+    },
+    onPrintError: (e) => ant.message.error('Error al imprimir: ' + e.message),
   });
 
   const handleOk = () => {
@@ -155,45 +174,134 @@ export const BarcodePrintModal = ({
   };
 
   const name = useMemo(() => {
-    const raw = product?.name || product?.productName || product?.title || "Producto";
-    return raw.length > config.NAME_MAX_LEN ? raw.slice(0, config.NAME_MAX_LEN - 3) + "..." : raw;
+    const raw =
+      product?.name || product?.productName || product?.title || 'Producto';
+    return raw.length > config.NAME_MAX_LEN
+      ? raw.slice(0, config.NAME_MAX_LEN - 3) + '...'
+      : raw;
   }, [product, config.NAME_MAX_LEN]);
 
   const heightPx = Math.round(mmToPx(config.H_MM) * config.HEIGHT_FACTOR);
   const quietMm = config.X_MM * config.QUIET_MULT;
 
-  const renderLabels = () => Array.from({ length: qty }).map((_, i) => (
-    <Label key={i} width={config.LABEL_WIDTH_MM} height={config.LABEL_HEIGHT_MM} margin={config.MARGIN_MM}>
-      {isNameVisible && <ProdName fontSize={config.FONT_SIZE_PT}>{name}</ProdName>}
-      <Quiet qmm={quietMm}>
-        <Barcode value={barcodeValue} width={xPx} height={heightPx} margin={0} background="#fff" fontSize={config.BARCODE_FONT_SIZE} textAlign="center" textPosition="bottom" />
-      </Quiet>
-    </Label>
-  ));
+  const renderLabels = () =>
+    Array.from({ length: qty }).map((_, i) => (
+      <Label
+        key={i}
+        width={config.LABEL_WIDTH_MM}
+        height={config.LABEL_HEIGHT_MM}
+        margin={config.MARGIN_MM}
+      >
+        {isNameVisible && (
+          <ProdName fontSize={config.FONT_SIZE_PT}>{name}</ProdName>
+        )}
+        <Quiet qmm={quietMm}>
+          <Barcode
+            value={barcodeValue}
+            width={xPx}
+            height={heightPx}
+            margin={0}
+            background="#fff"
+            fontSize={config.BARCODE_FONT_SIZE}
+            textAlign="center"
+            textPosition="bottom"
+          />
+        </Quiet>
+      </Label>
+    ));
 
   return (
     <>
       <GlobalPrintStyle />
-      <Modal title="Imprimir etiquetas – 2Connect 2C‑LP427B" open={visible} onCancel={onClose} onOk={handleOk} okText="Imprimir" cancelText="Cancelar" width={420} destroyOnClose>
-        
+      <Modal
+        title="Imprimir etiquetas – 2Connect 2C‑LP427B"
+        open={visible}
+        onCancel={onClose}
+        onOk={handleOk}
+        okText="Imprimir"
+        cancelText="Cancelar"
+        width={420}
+        destroyOnClose
+      >
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Perfil de Etiqueta:</label>
-          <Select value={labelProfile} onChange={setLabelProfile} style={{ width: "100%", marginBottom: 12 }} options={[{ value: "standard", label: "Estándar (40×30 mm)" }, { value: "variable", label: "Personalizado (Variable)" }]} />
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Cantidad:</label>
-          <InputNumber min={1} max={100} value={qty} onChange={setQty} style={{ width: "100%", marginBottom: 8 }} />
-          {labelProfile === "variable" && <Checkbox checked={isNameVisible} onChange={(e) => setIsNameVisible(e.target.checked)} style={{ marginTop: 8, fontSize: 12 }}>Incluir nombre del producto</Checkbox>}
-          <div style={{ fontSize: 12, color: "#666", lineHeight: 1.4, marginTop: 12 }}>
-            <div><strong>Dimensiones:</strong> {Math.round(config.LABEL_WIDTH_MM)}×{Math.round(config.LABEL_HEIGHT_MM)} mm &nbsp;|&nbsp; <strong>Resolución:</strong> {DPI} DPI</div>
-            <div><strong>Estimado por rollo (40×30):</strong> ≈ 3 100 etiquetas</div>
+          <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>
+            Perfil de Etiqueta:
+          </label>
+          <Select
+            value={labelProfile}
+            onChange={setLabelProfile}
+            style={{ width: '100%', marginBottom: 12 }}
+            options={[
+              { value: 'standard', label: 'Estándar (40×30 mm)' },
+              { value: 'variable', label: 'Personalizado (Variable)' },
+            ]}
+          />
+          <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>
+            Cantidad:
+          </label>
+          <InputNumber
+            min={1}
+            max={100}
+            value={qty}
+            onChange={setQty}
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+          {labelProfile === 'variable' && (
+            <Checkbox
+              checked={isNameVisible}
+              onChange={(e) => setIsNameVisible(e.target.checked)}
+              style={{ marginTop: 8, fontSize: 12 }}
+            >
+              Incluir nombre del producto
+            </Checkbox>
+          )}
+          <div
+            style={{
+              fontSize: 12,
+              color: '#666',
+              lineHeight: 1.4,
+              marginTop: 12,
+            }}
+          >
+            <div>
+              <strong>Dimensiones:</strong> {Math.round(config.LABEL_WIDTH_MM)}×
+              {Math.round(config.LABEL_HEIGHT_MM)} mm &nbsp;|&nbsp;{' '}
+              <strong>Resolución:</strong> {DPI} DPI
+            </div>
+            <div>
+              <strong>Estimado por rollo (40×30):</strong> ≈ 3 100 etiquetas
+            </div>
           </div>
         </div>
-        
+
         <PreviewContainer>
-          <div style={{ fontSize: 11, color: "#888", marginBottom: 8, textAlign: "center" }}>Vista previa (escala real)</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, justifyContent: "center" }}>{renderLabels()}</div>
+          <div
+            style={{
+              fontSize: 11,
+              color: '#888',
+              marginBottom: 8,
+              textAlign: 'center',
+            }}
+          >
+            Vista previa (escala real)
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 4,
+              justifyContent: 'center',
+            }}
+          >
+            {renderLabels()}
+          </div>
         </PreviewContainer>
       </Modal>
-      {visible && <div style={{ position: "absolute", left: -9999 }}><div ref={printRef}>{renderLabels()}</div></div>}
+      {visible && (
+        <div style={{ position: 'absolute', left: -9999 }}>
+          <div ref={printRef}>{renderLabels()}</div>
+        </div>
+      )}
     </>
   );
 };

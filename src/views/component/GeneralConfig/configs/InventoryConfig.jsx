@@ -4,7 +4,10 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
-import { setDefaultWarehouse, useListenWarehouses } from '../../../../firebase/warehouse/warehouseService';
+import {
+  setDefaultWarehouse,
+  useListenWarehouses,
+} from '../../../../firebase/warehouse/warehouseService';
 
 import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 
@@ -140,7 +143,9 @@ const InventoryConfig = () => {
       return;
     }
 
-    const currentDefault = sortedWarehouses.find(warehouse => warehouse?.defaultWarehouse);
+    const currentDefault = sortedWarehouses.find(
+      (warehouse) => warehouse?.defaultWarehouse,
+    );
     if (currentDefault) {
       setSelectedWarehouseId(currentDefault.id);
       return;
@@ -163,7 +168,8 @@ const InventoryConfig = () => {
       setSelectedWarehouseId(value);
       messageApi.success('Almacén predeterminado actualizado.');
     } catch (error) {
-      const errorMessage = error?.message || 'Error al actualizar el almacén predeterminado.';
+      const errorMessage =
+        error?.message || 'Error al actualizar el almacén predeterminado.';
       messageApi.error(errorMessage);
     } finally {
       setIsUpdating(false);
@@ -176,7 +182,8 @@ const InventoryConfig = () => {
       <Head>
         <Heading>Inventario</Heading>
         <Description>
-          Define los parámetros principales que afectan al flujo de inventario en todo el negocio.
+          Define los parámetros principales que afectan al flujo de inventario
+          en todo el negocio.
         </Description>
       </Head>
 
@@ -188,7 +195,8 @@ const InventoryConfig = () => {
         <SectionHeader>
           <SectionTitle>Almacén predeterminado</SectionTitle>
           <SectionDescription>
-            Selecciona el almacén al que se asignarán por defecto los nuevos productos, compras y movimientos.
+            Selecciona el almacén al que se asignarán por defecto los nuevos
+            productos, compras y movimientos.
           </SectionDescription>
         </SectionHeader>
 
@@ -218,10 +226,16 @@ const InventoryConfig = () => {
                 const name = warehouse?.name || 'Sin nombre';
                 const metaParts = [
                   warehouse?.shortName ? `Alias: ${warehouse.shortName}` : null,
-                  warehouse?.location ? `Ubicación: ${warehouse.location}` : null,
+                  warehouse?.location
+                    ? `Ubicación: ${warehouse.location}`
+                    : null,
                 ].filter(Boolean);
                 const metaLabel = metaParts.join(' · ');
-                const searchLabel = [name, warehouse?.shortName, warehouse?.location]
+                const searchLabel = [
+                  name,
+                  warehouse?.shortName,
+                  warehouse?.location,
+                ]
                   .filter(Boolean)
                   .join(' ');
 
@@ -253,7 +267,8 @@ const InventoryConfig = () => {
         <SectionHeader>
           <SectionTitle>Reportes de inventario</SectionTitle>
           <SectionDescription>
-            Configura reportes por correo: stock (umbrales bajo/crítico) y vencimientos (días de antelación), frecuencia y hora de envío.
+            Configura reportes por correo: stock (umbrales bajo/crítico) y
+            vencimientos (días de antelación), frecuencia y hora de envío.
           </SectionDescription>
         </SectionHeader>
 

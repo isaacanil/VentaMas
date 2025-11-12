@@ -1,11 +1,11 @@
-import { faUser, faQuoteLeft } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Card, Row, Col, Typography, Rate, Avatar } from 'antd'
-import { motion } from 'framer-motion'
-import React from 'react'
-import styled from 'styled-components'
+import { faUser, faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Card, Row, Col, Typography, Rate, Avatar } from 'antd';
+import { motion } from 'framer-motion';
+import React from 'react';
+import styled from 'styled-components';
 
-import welcomeData from '../../WelcomeData.json'
+import welcomeData from '../../WelcomeData.json';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -16,21 +16,21 @@ const Testimonials = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.2,
-        delayChildren: 0.3
-      }
-    }
+        delayChildren: 0.3,
+      },
+    },
   };
 
   const item = {
     hidden: { opacity: 0, y: 50 },
-    show: { 
-      opacity: 1, 
+    show: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
-      }
-    }
+        ease: 'easeOut',
+      },
+    },
   };
 
   return (
@@ -47,11 +47,25 @@ const Testimonials = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <Title level={2} style={{ textAlign: 'center', color: 'white', marginBottom: '1rem' }}>
+          <Title
+            level={2}
+            style={{
+              textAlign: 'center',
+              color: 'white',
+              marginBottom: '1rem',
+            }}
+          >
             Lo que dicen nuestros clientes
           </Title>
-          <Paragraph style={{ textAlign: 'center', fontSize: '1.1rem', color: '#e2e8f0' }}>
-            Miles de empresarios confían en Ventamax para hacer crecer sus negocios
+          <Paragraph
+            style={{
+              textAlign: 'center',
+              fontSize: '1.1rem',
+              color: '#e2e8f0',
+            }}
+          >
+            Miles de empresarios confían en Ventamax para hacer crecer sus
+            negocios
           </Paragraph>
         </HeaderSection>
 
@@ -60,10 +74,10 @@ const Testimonials = () => {
             <Col xs={24} lg={12} key={testimonial.id}>
               <TestimonialCard
                 variants={item}
-                whileHover={{ 
+                whileHover={{
                   y: -10,
                   scale: 1.02,
-                  transition: { duration: 0.2 }
+                  transition: { duration: 0.2 },
                 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -72,45 +86,50 @@ const Testimonials = () => {
                     height: '100%',
                     border: 'none',
                     borderRadius: '20px',
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    background:
+                      'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                    boxShadow:
+                      '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                     position: 'relative',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
                   }}
                   bodyStyle={{
                     padding: '32px',
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
                   }}
-                >                  <QuoteIcon>
+                >
+                  {' '}
+                  <QuoteIcon>
                     <FontAwesomeIcon icon={faQuoteLeft} />
                   </QuoteIcon>
-                  
                   <div>
-                    <Rate 
-                      disabled 
-                      defaultValue={testimonial.rating} 
-                      style={{ 
+                    <Rate
+                      disabled
+                      defaultValue={testimonial.rating}
+                      style={{
                         marginBottom: '20px',
                         fontSize: '18px',
-                        color: '#faad14'
-                      }} 
+                        color: '#faad14',
+                      }}
                     />
-                    
+
                     <TestimonialText>
                       &ldquo;{testimonial.comment}&rdquo;
                     </TestimonialText>
                   </div>
-
-                  <CustomerInfo>                    <Avatar 
-                      size={48} 
-                      icon={<FontAwesomeIcon icon={faUser} />} 
-                      style={{ 
-                        background: 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)',
-                        marginRight: '16px'
-                      }} 
+                  <CustomerInfo>
+                    {' '}
+                    <Avatar
+                      size={48}
+                      icon={<FontAwesomeIcon icon={faUser} />}
+                      style={{
+                        background:
+                          'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)',
+                        marginRight: '16px',
+                      }}
                     />
                     <div>
                       <CustomerName>{testimonial.name}</CustomerName>
@@ -130,10 +149,24 @@ const Testimonials = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           <CTACard>
-            <Title level={3} style={{ color: 'white', textAlign: 'center', marginBottom: '1rem' }}>
+            <Title
+              level={3}
+              style={{
+                color: 'white',
+                textAlign: 'center',
+                marginBottom: '1rem',
+              }}
+            >
               ¿Listo para transformar tu negocio?
             </Title>
-            <Paragraph style={{ textAlign: 'center', color: '#e2e8f0', fontSize: '1.1rem', marginBottom: '2rem' }}>
+            <Paragraph
+              style={{
+                textAlign: 'center',
+                color: '#e2e8f0',
+                fontSize: '1.1rem',
+                marginBottom: '2rem',
+              }}
+            >
               Únete a más de 10,000 empresarios que ya confían en Ventamax
             </Paragraph>
             <CTAButtons>
@@ -171,7 +204,8 @@ const TestimonialsSection = styled(motion.section)`
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/></svg>') repeat;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/></svg>')
+      repeat;
     background-size: 100px 100px;
   }
 `;
@@ -237,7 +271,11 @@ const CTASection = styled(motion.div)`
 `;
 
 const CTACard = styled.div`
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;

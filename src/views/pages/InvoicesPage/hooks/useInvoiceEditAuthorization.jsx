@@ -35,17 +35,22 @@ const extractTimestampSeconds = (value) => {
   return null;
 };
 
-const resolveInvoiceTimestamp = (invoice) => (
+const resolveInvoiceTimestamp = (invoice) =>
   extractTimestampSeconds(invoice?.date) ??
   extractTimestampSeconds(invoice?.createdAt) ??
   extractTimestampSeconds(invoice?.created_at) ??
-  extractTimestampSeconds(invoice?.created)
-);
+  extractTimestampSeconds(invoice?.created);
 
-const buildValidationFailures = ({ isOlderThan48h, hasCashCount, cashCountInfo }) => {
+const buildValidationFailures = ({
+  isOlderThan48h,
+  hasCashCount,
+  cashCountInfo,
+}) => {
   const reasons = [];
   if (isOlderThan48h) {
-    reasons.push('La factura supera el límite de 48 horas para solicitar la edición.');
+    reasons.push(
+      'La factura supera el límite de 48 horas para solicitar la edición.',
+    );
   }
 
   if (!hasCashCount) {
@@ -53,7 +58,9 @@ const buildValidationFailures = ({ isOlderThan48h, hasCashCount, cashCountInfo }
   }
 
   if (!cashCountInfo) {
-    reasons.push('No se pudo verificar el estado del cuadre de caja relacionado.');
+    reasons.push(
+      'No se pudo verificar el estado del cuadre de caja relacionado.',
+    );
     return reasons;
   }
 
@@ -81,15 +88,20 @@ const buildRequestReasons = () => [
 export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
   const user = useSelector(selectUser);
   const settings = useSelector(SelectSettingCart) || {};
-  const authorizationFlowEnabled = Boolean(settings?.billing?.authorizationFlowEnabled);
+  const authorizationFlowEnabled = Boolean(
+    settings?.billing?.authorizationFlowEnabled,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reasons, setReasons] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const invoiceSeconds = useMemo(() => resolveInvoiceTimestamp(invoice), [invoice]);
+  const invoiceSeconds = useMemo(
+    () => resolveInvoiceTimestamp(invoice),
+    [invoice],
+  );
   const isOlderThan48h = useMemo(() => {
     if (!invoiceSeconds) return false;
-    return invoiceSeconds < (Date.now() / 1000) - MAX_EDIT_WINDOW_SECONDS;
+    return invoiceSeconds < Date.now() / 1000 - MAX_EDIT_WINDOW_SECONDS;
   }, [invoiceSeconds]);
 
   const proceed = useCallback(
@@ -98,7 +110,7 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
         onAuthorized(authorization);
       }
     },
-    [onAuthorized]
+    [onAuthorized],
   );
 
   const handleEdit = useCallback(async () => {
@@ -124,7 +136,10 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
         try {
           cashCountInfo = await fbGetCashCountState(user, cashCountId);
         } catch (statusError) {
-          console.warn('No se pudo verificar el estado del cuadre de caja', statusError);
+          console.warn(
+            'No se pudo verificar el estado del cuadre de caja',
+            statusError,
+          );
           cashCountInfo = null;
         }
       }
@@ -135,22 +150,33 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
         cashCountInfo,
       });
 
-      const approved = await getActiveApprovedAuthorizationForInvoice(user, invoice);
+      const approved = await getActiveApprovedAuthorizationForInvoice(
+        user,
+        invoice,
+      );
       if (approved) {
         proceed(approved);
         return;
       }
 
       if (validationFailures.length) {
-        message.warning(`No puedes solicitar la edición de esta factura. ${validationFailures.join(' ')}`);
+        message.warning(
+          `No puedes solicitar la edición de esta factura. ${validationFailures.join(' ')}`,
+        );
         return;
       }
 
       setReasons(buildRequestReasons());
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error validando autorización de edición de factura', error);
-      message.error(error?.message || 'No se pudo validar la autorización. Intenta nuevamente.');
+      console.error(
+        'Error validando autorización de edición de factura',
+        error,
+      );
+      message.error(
+        error?.message ||
+          'No se pudo validar la autorización. Intenta nuevamente.',
+      );
     } finally {
       setIsProcessing(false);
     }

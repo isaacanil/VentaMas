@@ -1,4 +1,4 @@
-import{
+import {
   memo,
   useEffect,
   useMemo,
@@ -24,7 +24,9 @@ import TableFooter from './components/Table/TableFooter/TableFooter';
 import { TableHeader } from './components/Table/TableHeader/TableHeader';
 import { useColumnOrder } from './hooks/useColumnOrder';
 import { useTablePagination } from './hooks/usePagination';
-import useTableFiltering, { useDynamicFilterConfig } from './hooks/useTableFilter';
+import useTableFiltering, {
+  useDynamicFilterConfig,
+} from './hooks/useTableFilter';
 import useTableSorting from './hooks/useTableSorting';
 
 import type { ColumnConfig } from './types/ColumnTypes';
@@ -130,7 +132,11 @@ interface SortUtilities<Row> {
 
 const toGroupKey = (value: unknown): string => {
   if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
     return String(value);
   }
   if (value instanceof Date) return value.toISOString();
@@ -145,19 +151,21 @@ const toGroupKey = (value: unknown): string => {
   return '';
 };
 
-const groupDataByField = <Row extends TableRow>(data: Row[], field: string): Record<string, Row[]> => (
+const groupDataByField = <Row extends TableRow>(
+  data: Row[],
+  field: string,
+): Record<string, Row[]> =>
   data.reduce<Record<string, Row[]>>((acc, item) => {
     const key = toGroupKey((item as TableRow)[field]);
     if (!acc[key]) acc[key] = [];
     acc[key].push(item);
     return acc;
-  }, {})
-);
+  }, {});
 
 const useWideLayout = (): boolean => {
-  const [isWide, setIsWide] = useState(() => (
-    typeof window === 'undefined' ? true : window.innerWidth >= 1600
-  ));
+  const [isWide, setIsWide] = useState(() =>
+    typeof window === 'undefined' ? true : window.innerWidth >= 1600,
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -173,7 +181,7 @@ const useWideLayout = (): boolean => {
 
 const selectUserUid = (state: UserStoreState): string | undefined => {
   const maybeUser = state.user?.user;
-  return (typeof maybeUser?.uid === 'string') ? maybeUser.uid : undefined;
+  return typeof maybeUser?.uid === 'string' ? maybeUser.uid : undefined;
 };
 
 const AdvancedTableInner = <Row extends TableRow = TableRow>({
@@ -219,7 +227,9 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   getRowId,
 }: AdvancedTableProps<Row>) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const userUid = useSelector<UserStoreState, string | undefined>(selectUserUid);
+  const userUid = useSelector<UserStoreState, string | undefined>(
+    selectUserUid,
+  );
 
   const columnsWithExpander = useMemo<InternalColumn<Row>[]>(() => {
     if (!expandedRowRender) return columns;
@@ -234,7 +244,9 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
       sortable: false,
       clickable: false,
       cell: ({ value }) => {
-        const expanderValue = value as { expanded?: boolean; toggle?: () => void } | undefined;
+        const expanderValue = value as
+          | { expanded?: boolean; toggle?: () => void }
+          | undefined;
         const isExpanded = !!expanderValue?.expanded;
         const toggle = expanderValue?.toggle;
         return (
@@ -263,39 +275,32 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   ) as [
     InternalColumn<Row>[],
     Dispatch<SetStateAction<InternalColumn<Row>[]>>,
-    () => void
+    () => void,
   ];
 
   const toggleReorderMenu = () => {
     setIsReorderMenuOpen((prev) => !prev);
   };
 
-  const [
-    filter,
-    setFilter,
-    setDefaultFilter,
-    defaultFilter,
-    filteredData,
-  ] = useTableFiltering(filterConfig, data) as [
-    FilterState,
-    Dispatch<SetStateAction<FilterState>>,
-    () => void,
-    FilterState,
-    Row[]
-  ];
+  const [filter, setFilter, setDefaultFilter, defaultFilter, filteredData] =
+    useTableFiltering(filterConfig, data) as [
+      FilterState,
+      Dispatch<SetStateAction<FilterState>>,
+      () => void,
+      FilterState,
+      Row[],
+    ];
 
-  const dynamicFilterConfig = useDynamicFilterConfig(filterConfig, data) as AdvancedTableFilterConfig[];
+  const dynamicFilterConfig = useDynamicFilterConfig(
+    filterConfig,
+    data,
+  ) as AdvancedTableFilterConfig[];
 
-  const searchTermFilteredData = (searchTerm
+  const searchTermFilteredData = searchTerm
     ? (filterData(filteredData, searchTerm) as Row[])
-    : filteredData
-  );
+    : filteredData;
 
-  const {
-    handleSort,
-    sortedData,
-    sortConfig,
-  } = useTableSorting(
+  const { handleSort, sortedData, sortConfig } = useTableSorting(
     searchTermFilteredData,
     columnsWithExpander,
   ) as SortUtilities<Row>;
@@ -319,9 +324,10 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const shouldGroup = Boolean(
     (sortConfig.direction === 'none' || sortConfig.key === null) && groupBy,
   );
-  const groupedData = (shouldGroup && groupBy)
-    ? groupDataByField(currentData, groupBy)
-    : sortedData;
+  const groupedData =
+    shouldGroup && groupBy
+      ? groupDataByField(currentData, groupBy)
+      : sortedData;
 
   const totalElements = data.length;
   const elementsShown = currentData.length;
@@ -329,7 +335,9 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const isWideScreen = useWindowWidth(1366);
   const isWideLayout = useWideLayout();
 
-  const handleWrapperScroll = useMemo<((event: UIEvent<HTMLDivElement>) => void) | undefined>(() => {
+  const handleWrapperScroll = useMemo<
+    ((event: UIEvent<HTMLDivElement>) => void) | undefined
+  >(() => {
     if (!onScroll && !onScrollMetrics) return undefined;
 
     return (event: UIEvent<HTMLDivElement>) => {
@@ -399,7 +407,9 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   return (
     <Container
       $hasTitle={!!title}
-      $hasToolbar={Boolean(filterUI || datePicker || headerComponent || dateRange)}
+      $hasToolbar={Boolean(
+        filterUI || datePicker || headerComponent || dateRange,
+      )}
     >
       {title && <TableTitle>{title}</TableTitle>}
 
@@ -484,7 +494,9 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   );
 };
 
-export const AdvancedTable = memo(AdvancedTableInner) as typeof AdvancedTableInner;
+export const AdvancedTable = memo(
+  AdvancedTableInner,
+) as typeof AdvancedTableInner;
 
 export type {
   InternalColumn as AdvancedTableColumn,
@@ -510,17 +522,19 @@ const Container = styled.div<{ $hasTitle: boolean; $hasToolbar: boolean }>`
   border: var(--border-primary);
   height: 100%;
   display: grid;
-  background-color: ${({ theme }) => (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
+  background-color: ${({ theme }) =>
+    (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
   border-radius: 0.4em;
   overflow: hidden;
 
-  grid-template-rows: ${({ $hasTitle, $hasToolbar }) => (
+  grid-template-rows: ${({ $hasTitle, $hasToolbar }) =>
     [
       $hasTitle ? 'min-content' : null,
       $hasToolbar ? 'min-content' : null,
       '1fr',
-    ].filter(Boolean).join(' ')
-  )};
+    ]
+      .filter(Boolean)
+      .join(' ')};
 `;
 
 const TableTitle = styled.div`
@@ -528,7 +542,8 @@ const TableTitle = styled.div`
   font-size: 1.1em;
   height: min-content;
   font-weight: 600;
-  background-color: ${({ theme }) => (theme as AdvancedTheme).bg?.primary ?? 'transparent'};
+  background-color: ${({ theme }) =>
+    (theme as AdvancedTheme).bg?.primary ?? 'transparent'};
   border-bottom: var(--border-primary);
 `;
 
@@ -603,14 +618,15 @@ export const Row = styled.div<{
     if (!props.columns.length) return '1fr';
 
     const template = props.isWideLayout
-      ? props.columns.map((col) => (
-        col.keepWidth
-          ? `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`
-          : '1fr'
-      ))
-      : props.columns.map((col) => (
-        `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`
-      ));
+      ? props.columns.map((col) =>
+          col.keepWidth
+            ? `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`
+            : '1fr',
+        )
+      : props.columns.map(
+          (col) =>
+            `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`,
+        );
 
     const value = template.join(' ');
     return value || '1fr';

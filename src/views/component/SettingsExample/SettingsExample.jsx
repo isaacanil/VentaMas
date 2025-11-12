@@ -1,14 +1,14 @@
-import { 
-  faUser, 
-  faShieldAlt, 
-  faKey, 
-  faEnvelope, 
+import {
+  faUser,
+  faShieldAlt,
+  faKey,
+  faEnvelope,
   faLanguage,
   faGlobe,
   faThumbsUp,
   faCog,
   faDatabase,
-  faServer
+  faServer,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
@@ -24,14 +24,14 @@ export default function SettingsExample() {
     {
       key: 'profile',
       icon: <FontAwesomeIcon icon={faUser} />,
-      label: 'Perfil'
+      label: 'Perfil',
     },
     {
       key: 'preferences',
       icon: <FontAwesomeIcon icon={faThumbsUp} />,
-      label: 'Preferencias'
+      label: 'Preferencias',
     },
-    
+
     // Elementos agrupados - Seguridad (2 elementos relacionados, se agruparán)
     {
       key: 'security',
@@ -39,7 +39,7 @@ export default function SettingsExample() {
       label: 'Configuración de Seguridad',
       group: 'security',
       groupLabel: 'Seguridad',
-      groupIcon: <FontAwesomeIcon icon={faShieldAlt} />
+      groupIcon: <FontAwesomeIcon icon={faShieldAlt} />,
     },
     {
       key: 'password',
@@ -47,9 +47,9 @@ export default function SettingsExample() {
       label: 'Cambiar Contraseña',
       group: 'security',
       groupLabel: 'Seguridad',
-      groupIcon: <FontAwesomeIcon icon={faShieldAlt} />
+      groupIcon: <FontAwesomeIcon icon={faShieldAlt} />,
     },
-    
+
     // Elementos agrupados - Notificaciones (solo 1 elemento, NO se agrupará)
     {
       key: 'email',
@@ -57,9 +57,9 @@ export default function SettingsExample() {
       label: 'Notificaciones por Email',
       group: 'notification',
       groupLabel: 'Notificaciones',
-      groupIcon: <FontAwesomeIcon icon={faEnvelope} />
+      groupIcon: <FontAwesomeIcon icon={faEnvelope} />,
     },
-    
+
     // Elementos agrupados - Idioma (solo 1 elemento, NO se agrupará)
     {
       key: 'language',
@@ -67,9 +67,9 @@ export default function SettingsExample() {
       label: 'Idioma',
       group: 'localization',
       groupLabel: 'Localización',
-      groupIcon: <FontAwesomeIcon icon={faGlobe} />
+      groupIcon: <FontAwesomeIcon icon={faGlobe} />,
     },
-    
+
     // Elementos agrupados - Sistema (3 elementos relacionados, se agruparán)
     {
       key: 'system',
@@ -77,7 +77,7 @@ export default function SettingsExample() {
       label: 'Configuración del Sistema',
       group: 'system',
       groupLabel: 'Sistema',
-      groupIcon: <FontAwesomeIcon icon={faCog} />
+      groupIcon: <FontAwesomeIcon icon={faCog} />,
     },
     {
       key: 'database',
@@ -85,7 +85,7 @@ export default function SettingsExample() {
       label: 'Base de Datos',
       group: 'system',
       groupLabel: 'Sistema',
-      groupIcon: <FontAwesomeIcon icon={faCog} />
+      groupIcon: <FontAwesomeIcon icon={faCog} />,
     },
     {
       key: 'server',
@@ -93,8 +93,8 @@ export default function SettingsExample() {
       label: 'Servidor',
       group: 'system',
       groupLabel: 'Sistema',
-      groupIcon: <FontAwesomeIcon icon={faCog} />
-    }
+      groupIcon: <FontAwesomeIcon icon={faCog} />,
+    },
   ];
 
   const handleTabChange = (key) => {

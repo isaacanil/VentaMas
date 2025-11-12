@@ -1,7 +1,7 @@
 import {
   PlusOutlined,
   ReloadOutlined,
-  FileAddOutlined
+  FileAddOutlined,
 } from '@ant-design/icons';
 import { Button, Badge } from 'antd';
 import React, { useState } from 'react';
@@ -23,23 +23,26 @@ export const ReceiptTableSection = ({
   const [disabledModalVisible, setDisabledModalVisible] = useState(false);
   const [authModalVisible, setAuthModalVisible] = useState(false);
 
-  const disabledReceipts = itemsLocal?.filter(item => item.data?.disabled);
+  const disabledReceipts = itemsLocal?.filter((item) => item.data?.disabled);
 
   const handleRestoreReceipt = (receiptId) => {
-    const newArray = itemsLocal.map(item =>
-      (item.data.id === receiptId)
+    const newArray = itemsLocal.map((item) =>
+      item.data.id === receiptId
         ? { ...item, data: { ...item.data, disabled: false } }
-        : item
+        : item,
     );
     setItemsLocal(newArray);
   };
 
   if (!enabled) return null;
   return (
-    <Wrapper>      <Actions>
+    <Wrapper>
+      {' '}
+      <Actions>
         <Left>
           {/* El botón de comprobantes inactivos se movió a la parte inferior */}
-        </Left>        <Right>
+        </Left>{' '}
+        <Right>
           {onRebuildLedger && (
             <Button
               icon={<ReloadOutlined />}
@@ -60,9 +63,9 @@ export const ReceiptTableSection = ({
               Plantillas
             </Button>
           )}
-          <Button 
-            icon={<FileAddOutlined />} 
-            type="primary" 
+          <Button
+            icon={<FileAddOutlined />}
+            type="primary"
             onClick={() => setAuthModalVisible(true)}
           >
             Autorización
@@ -70,26 +73,26 @@ export const ReceiptTableSection = ({
         </Right>
       </Actions>
       <TableTaxReceipt array={itemsLocal} setData={setItemsLocal} />
-      
       {/* Sección inferior para mostrar el botón de comprobantes inactivos */}
       <BottomActions>
         <Left>
           {disabledReceipts.length > 0 && (
-            <DisabledReceiptsButton onClick={() => setDisabledModalVisible(true)}>
+            <DisabledReceiptsButton
+              onClick={() => setDisabledModalVisible(true)}
+            >
               Ver Comprobantes Inactivos
               <Badge count={disabledReceipts.length} />
             </DisabledReceiptsButton>
           )}
         </Left>
       </BottomActions>
-
-      {/* Modal de comprobantes deshabilitados */}      <DisabledReceiptsModal
+      {/* Modal de comprobantes deshabilitados */}{' '}
+      <DisabledReceiptsModal
         visible={disabledModalVisible}
         onCancel={() => setDisabledModalVisible(false)}
         disabledReceipts={disabledReceipts}
         onRestore={handleRestoreReceipt}
       />
-      
       {/* Modal de autorización de comprobantes */}
       <TaxReceiptAuthorizationModal
         visible={authModalVisible}
@@ -97,10 +100,10 @@ export const ReceiptTableSection = ({
         taxReceipts={itemsLocal}
         onAuthorizationAdded={(updatedReceipt) => {
           // Actualizar el estado local con los datos de la nueva autorización
-          const newArray = itemsLocal.map(item =>
+          const newArray = itemsLocal.map((item) =>
             item.data.id === updatedReceipt.id
               ? { ...item, data: updatedReceipt }
-              : item
+              : item,
           );
           setItemsLocal(newArray);
         }}

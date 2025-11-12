@@ -1,4 +1,13 @@
-import { Alert, Button, Input, Space, Switch, Tabs, Typography, message } from 'antd';
+import {
+  Alert,
+  Button,
+  Input,
+  Space,
+  Switch,
+  Tabs,
+  Typography,
+  message,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -52,7 +61,7 @@ export default function TestPlayground() {
         : {
             ...prev,
             businessId: user.businessID,
-          }
+          },
     );
 
     setExpenseTimestampFixState((prev) =>
@@ -61,7 +70,7 @@ export default function TestPlayground() {
         : {
             ...prev,
             businessId: user.businessID,
-          }
+          },
     );
   }, [user?.businessID]);
 
@@ -84,7 +93,9 @@ export default function TestPlayground() {
         success: false,
         error: error?.message || 'Ocurrió un error inesperado.',
       });
-      message.error('No se pudo normalizar el impuesto. Revisa la consola para detalles.');
+      message.error(
+        'No se pudo normalizar el impuesto. Revisa la consola para detalles.',
+      );
     } finally {
       setNormalizing(false);
     }
@@ -177,7 +188,9 @@ export default function TestPlayground() {
           error: error?.message || 'Ocurrió un error inesperado.',
         },
       });
-      message.error('No se pudo normalizar los clientes. Revisa la consola para detalles.');
+      message.error(
+        'No se pudo normalizar los clientes. Revisa la consola para detalles.',
+      );
     }
   };
 
@@ -202,11 +215,11 @@ export default function TestPlayground() {
 
     const clientsNormalized = successSummaries.reduce(
       (acc, item) => acc + (item.summary?.normalized || 0),
-      0
+      0,
     );
     const clientsTotal = successSummaries.reduce(
       (acc, item) => acc + (item.summary?.total || 0),
-      0
+      0,
     );
 
     const errorDetail =
@@ -248,7 +261,9 @@ export default function TestPlayground() {
         running: false,
         result: { success: true, data: response },
       });
-      message.success(`Productos actualizados: ${response.updated}/${response.total}.`);
+      message.success(
+        `Productos actualizados: ${response.updated}/${response.total}.`,
+      );
     } catch (error) {
       console.error('Error al corregir IDs de productos:', error);
       setProductIdFixState({
@@ -379,19 +394,24 @@ export default function TestPlayground() {
 
     if (mode === 'all') {
       const totals = data.totals ?? {};
-      const successSummaries = data.summaries?.filter((item) => item.success) ?? [];
-      const errorSummaries = data.summaries?.filter((item) => !item.success) ?? [];
+      const successSummaries =
+        data.summaries?.filter((item) => item.success) ?? [];
+      const errorSummaries =
+        data.summaries?.filter((item) => !item.success) ?? [];
 
       const sampleEntries = successSummaries
         .flatMap((item) =>
           (item.summary?.sample ?? []).map(
-            (sample) => `${item.businessID}/${sample.id} (${sample.fields.join(', ')})`
-          )
+            (sample) =>
+              `${item.businessID}/${sample.id} (${sample.fields.join(', ')})`,
+          ),
         )
         .slice(0, 3);
 
       const summaryText = `Negocios procesados: ${data.processed}/${data.totalBusinesses}. Documentos evaluados: ${totals.scanned}. Con incidencias: ${totals.affected}. ${
-        dryRun ? 'No se aplicaron cambios.' : `Documentos actualizados: ${totals.updated}.`
+        dryRun
+          ? 'No se aplicaron cambios.'
+          : `Documentos actualizados: ${totals.updated}.`
       } Campos convertidos: ${totals.fieldsConverted}.`;
 
       const errorsText = errorSummaries.length
@@ -409,14 +429,20 @@ export default function TestPlayground() {
         <Alert
           type={dryRun ? 'info' : 'success'}
           showIcon
-          message={dryRun ? 'Análisis global completado' : 'Conversión global completada'}
+          message={
+            dryRun
+              ? 'Análisis global completado'
+              : 'Conversión global completada'
+          }
           description={`${summaryText}${errorsText}${sampleText}`}
         />
       );
     }
 
     const summaryText = `Documentos evaluados: ${data.scanned}. Con incidencias: ${data.affected}. ${
-      dryRun ? 'No se aplicaron cambios.' : `Documentos actualizados: ${data.updated}.`
+      dryRun
+        ? 'No se aplicaron cambios.'
+        : `Documentos actualizados: ${data.updated}.`
     } Campos convertidos: ${data.fieldsConverted}.`;
 
     const sampleText =
@@ -437,13 +463,13 @@ export default function TestPlayground() {
   };
 
   const maintenanceToolsPanel = (
-    <Space
-      direction="vertical"
-      size="middle"
-      style={{ width: '100%' }}
-    >
+    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
       <Space size="middle" wrap>
-        <Button type="primary" onClick={handleNormalizeTaxes} loading={normalizing}>
+        <Button
+          type="primary"
+          onClick={handleNormalizeTaxes}
+          loading={normalizing}
+        >
           Normalizar ITBIS para todos los negocios
         </Button>
         {progress && (
@@ -549,8 +575,9 @@ export default function TestPlayground() {
           Zona de pruebas
         </Title>
         <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          Usa este espacio para validar integraciones, componentes o flujos en desarrollo.
-          Los accesos visibles aquí son temporales y pueden cambiar sin previo aviso.
+          Usa este espacio para validar integraciones, componentes o flujos en
+          desarrollo. Los accesos visibles aquí son temporales y pueden cambiar
+          sin previo aviso.
         </Paragraph>
         <Alert
           type="info"
@@ -558,8 +585,9 @@ export default function TestPlayground() {
           message="Recomendación"
           description={
             <Text>
-              Registra brevemente los objetivos de la prueba y elimina cualquier estado temporal una vez
-              concluido para evitar confusiones en el equipo.
+              Registra brevemente los objetivos de la prueba y elimina cualquier
+              estado temporal una vez concluido para evitar confusiones en el
+              equipo.
             </Text>
           }
           style={{ marginBottom: 24 }}

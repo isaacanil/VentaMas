@@ -1,11 +1,15 @@
-import { PlusOutlined, EditOutlined, MoreOutlined, CloseOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined,
+  EditOutlined,
+  MoreOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
 import { Form, Input, Button, Drawer, Tooltip, Dropdown } from 'antd';
 import { DateTime } from 'luxon';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { normalizeText } from '../../../../../../../../../../utils/text';
-
 
 const Wrapper = styled.div`
   height: 100%;
@@ -20,8 +24,10 @@ const Header = styled.div`
   gap: 8px;
   align-items: center;
   padding: 0 1em;
-  
-  .search-container { flex: 1; }
+
+  .search-container {
+    flex: 1;
+  }
 `;
 
 const DependentsContainer = styled.div`
@@ -34,14 +40,16 @@ const DependentsContainer = styled.div`
 `;
 
 const DependentCard = styled.div`
-  background-color: ${props => props.$isSelected ? '#e6f7ff' : 'white'};
-  border: 1px solid ${props => props.$isSelected ? '#1890ff' : '#e8e8e8'};
+  background-color: ${(props) => (props.$isSelected ? '#e6f7ff' : 'white')};
+  border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#e8e8e8')};
   padding: 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 
   .card-header {
     display: flex;
@@ -54,7 +62,7 @@ const DependentCard = styled.div`
     color: #8c8c8c;
     padding: 4px;
     border-radius: 4px;
-    
+
     &:hover {
       background-color: rgba(0, 0, 0, 0.04);
     }
@@ -126,225 +134,237 @@ const DependentInfo = styled.div`
 const translateRelationship = (relationship) => {
   const translations = {
     // English to Spanish translations
-    'child': 'Hijo/a',
-    'spouse': 'Cónyuge',
-    'father': 'Padre',
-    'mother': 'Madre',
-    'other': 'Otro',
+    child: 'Hijo/a',
+    spouse: 'Cónyuge',
+    father: 'Padre',
+    mother: 'Madre',
+    other: 'Otro',
     // Keep old translations for backward compatibility
-    'hijo': 'Hijo/a',
-    'conyuge': 'Cónyuge',
-    'padre': 'Padre',
-    'madre': 'Madre',
-    'otro': 'Otro'
+    hijo: 'Hijo/a',
+    conyuge: 'Cónyuge',
+    padre: 'Padre',
+    madre: 'Madre',
+    otro: 'Otro',
   };
-  
+
   return translations[relationship] || relationship;
 };
 
-const getGenderText = (gender) => gender === 'M' ? 'Masculino' : 'Femenino';
+const getGenderText = (gender) => (gender === 'M' ? 'Masculino' : 'Femenino');
 
 // Calculate age function with Luxon
 const calculateAge = (birthDateIso) => {
-    if (!birthDateIso) return 'N/A';
-    
-    try {
-        const birthDate = DateTime.fromISO(birthDateIso);
-        const now = DateTime.now();
-        const diff = now.diff(birthDate, 'years');
-        return Math.floor(diff.years);
-    } catch (error) {
-        console.error('Error calculating age:', error);
-        return 'N/A';
-    }
+  if (!birthDateIso) return 'N/A';
+
+  try {
+    const birthDate = DateTime.fromISO(birthDateIso);
+    const now = DateTime.now();
+    const diff = now.diff(birthDate, 'years');
+    return Math.floor(diff.years);
+  } catch (error) {
+    console.error('Error calculating age:', error);
+    return 'N/A';
+  }
 };
 
 const DependentSelector = ({
-    dependents = [],
-    selectedDependent,
-    onSelectDependent,
-    onAddDependent,
-    onEditDependent,
-    validateStatus,
-    help,
+  dependents = [],
+  selectedDependent,
+  onSelectDependent,
+  onAddDependent,
+  onEditDependent,
+  validateStatus,
+  help,
 }) => {
-    const [visible, setVisible] = useState(false);
-    const [search, setSearch] = useState('');
-    const searchInputRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+  const [search, setSearch] = useState('');
+  const searchInputRef = useRef(null);
 
-    useEffect(() => {
-        if (visible && searchInputRef.current) {
-            setTimeout(() => {
-                searchInputRef.current.focus();
-            }, 100);
-        }
-    }, [visible]);
+  useEffect(() => {
+    if (visible && searchInputRef.current) {
+      setTimeout(() => {
+        searchInputRef.current.focus();
+      }, 100);
+    }
+  }, [visible]);
 
-    const filteredDependents = search
-        ? dependents.filter((dependent) =>
-            normalizeText(dependent.name).includes(normalizeText(search))
-        )
-        : dependents;
+  const filteredDependents = search
+    ? dependents.filter((dependent) =>
+        normalizeText(dependent.name).includes(normalizeText(search)),
+      )
+    : dependents;
 
-    const handleDependentSelect = (dependent) => {
-        onSelectDependent?.(dependent);
-        setVisible(false);
-        setSearch('');
-    };
+  const handleDependentSelect = (dependent) => {
+    onSelectDependent?.(dependent);
+    setVisible(false);
+    setSearch('');
+  };
 
-    const handleCardClick = (e, dependent) => {
-        if (!e.target.closest('.dropdown-container')) {
-            if (selectedDependent?.id === dependent.id) return;
-            handleDependentSelect(dependent);
-        }
-    };
+  const handleCardClick = (e, dependent) => {
+    if (!e.target.closest('.dropdown-container')) {
+      if (selectedDependent?.id === dependent.id) return;
+      handleDependentSelect(dependent);
+    }
+  };
 
-    const openModalUpdateMode = (e, dependent) => {
-        e.stopPropagation();
-        onEditDependent?.(dependent);
-        setVisible(false);
-    };
+  const openModalUpdateMode = (e, dependent) => {
+    e.stopPropagation();
+    onEditDependent?.(dependent);
+    setVisible(false);
+  };
 
-    const getMenuItems = (dependent) => [
-        {
-            key: 'edit',
-            label: 'Editar',
-            icon: <EditOutlined />,
-            onClick: (e) => openModalUpdateMode(e, dependent),
-        },
-    ];
+  const getMenuItems = (dependent) => [
+    {
+      key: 'edit',
+      label: 'Editar',
+      icon: <EditOutlined />,
+      onClick: (e) => openModalUpdateMode(e, dependent),
+    },
+  ];
 
-    const handleClearDependent = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onSelectDependent?.(null);
-    };
+  const handleClearDependent = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSelectDependent?.(null);
+  };
 
-    const formatDate = (isoDate) => {
-        if (!isoDate) return 'N/A';
-        const date = new Date(isoDate);
-        return date.toLocaleDateString('es-ES');
-    };
+  const formatDate = (isoDate) => {
+    if (!isoDate) return 'N/A';
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('es-ES');
+  };
 
-    return (
-        <Form.Item
-            label="Dependiente"
-            required={false}
-            validateStatus={validateStatus}
-            help={help}
-        >
-            <DependentInfo
-                className={!selectedDependent ? 'empty' : ''}
-                onClick={() => setVisible(true)}
-            >
-                {!selectedDependent ? (
-                    <div>
-                        <PlusOutlined style={{ marginRight: 8 }} />
-                        Seleccionar Dependiente (Opcional)
+  return (
+    <Form.Item
+      label="Dependiente"
+      required={false}
+      validateStatus={validateStatus}
+      help={help}
+    >
+      <DependentInfo
+        className={!selectedDependent ? 'empty' : ''}
+        onClick={() => setVisible(true)}
+      >
+        {!selectedDependent ? (
+          <div>
+            <PlusOutlined style={{ marginRight: 8 }} />
+            Seleccionar Dependiente (Opcional)
+          </div>
+        ) : (
+          <>
+            <div className="dependent-header">
+              <span className="dependent-name">{selectedDependent.name}</span>
+              <CloseOutlined
+                onClick={handleClearDependent}
+                style={{ cursor: 'pointer', color: '#8c8c8c' }}
+              />
+            </div>
+            <div className="dependent-details">
+              <div className="detail-item">
+                <div className="detail-label">Parentesco:</div>
+                {translateRelationship(selectedDependent.relationship)}
+              </div>
+              <div className="detail-item">
+                <div className="detail-label">Género:</div>
+                {getGenderText(selectedDependent.gender)}
+              </div>
+              <div className="detail-item">
+                <div className="detail-label">Edad:</div>
+                {calculateAge(selectedDependent.birthDate)} años
+              </div>
+              <div className="detail-item">
+                <div className="detail-label">Fecha de nacimiento:</div>
+                {formatDate(selectedDependent.birthDate)}
+              </div>
+            </div>
+          </>
+        )}
+      </DependentInfo>
+
+      <Drawer
+        title="Lista de Dependientes"
+        placement="bottom"
+        onClose={() => {
+          setVisible(false);
+          setSearch('');
+        }}
+        open={visible}
+        height={'80%'}
+        styles={{
+          body: { padding: '1em' },
+        }}
+      >
+        <Wrapper>
+          <Header>
+            <div className="search-container">
+              <Input
+                ref={searchInputRef}
+                placeholder="Buscar dependientes..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Tooltip title="Agregar dependiente">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={onAddDependent}
+              >
+                Dependiente
+              </Button>
+            </Tooltip>
+          </Header>
+          <DependentsContainer>
+            {filteredDependents.length > 0 ? (
+              filteredDependents.map((dependent) => (
+                <DependentCard
+                  key={dependent.id}
+                  onClick={(e) => handleCardClick(e, dependent)}
+                  $isSelected={selectedDependent?.id === dependent.id}
+                >
+                  <div className="card-header">
+                    <div className="name">{dependent.name}</div>
+                    <div
+                      className="dropdown-container"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Dropdown
+                        menu={{ items: getMenuItems(dependent) }}
+                        trigger={['click']}
+                      >
+                        <Button
+                          type="text"
+                          className="actions"
+                          icon={<MoreOutlined />}
+                        />
+                      </Dropdown>
                     </div>
-                ) : (
-                    <>
-                        <div className="dependent-header">
-                            <span className="dependent-name">{selectedDependent.name}</span>
-                            <CloseOutlined
-                                onClick={handleClearDependent}
-                                style={{ cursor: 'pointer', color: '#8c8c8c' }}
-                            />
-                        </div>
-                        <div className="dependent-details">
-                            <div className="detail-item">
-                                <div className="detail-label">Parentesco:</div>
-                                {translateRelationship(selectedDependent.relationship)}
-                            </div>
-                            <div className="detail-item">
-                                <div className="detail-label">Género:</div>
-                                {getGenderText(selectedDependent.gender)}
-                            </div>
-                            <div className="detail-item">
-                                <div className="detail-label">Edad:</div>
-                                {calculateAge(selectedDependent.birthDate)} años
-                            </div>
-                            <div className="detail-item">
-                                <div className="detail-label">Fecha de nacimiento:</div>
-                                {formatDate(selectedDependent.birthDate)}
-                            </div>
-                        </div>
-                    </>
-                )}
-            </DependentInfo>
-
-            <Drawer
-                title="Lista de Dependientes"
-                placement="bottom"
-                onClose={() => {
-                    setVisible(false);
-                    setSearch('');
+                  </div>
+                  <div className="relationship">
+                    {translateRelationship(dependent.relationship)} •{' '}
+                    {getGenderText(dependent.gender)} •{' '}
+                    {calculateAge(dependent.birthDate)} años
+                  </div>
+                </DependentCard>
+              ))
+            ) : (
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  padding: '20px',
+                  color: '#8c8c8c',
                 }}
-                open={visible}
-                height={'80%'}
-                styles={{
-                    body: { padding: '1em' },
-                }}
-            >
-                <Wrapper>
-                    <Header>
-                        <div className="search-container">
-                            <Input
-                                ref={searchInputRef}
-                                placeholder="Buscar dependientes..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
-                        <Tooltip title="Agregar dependiente">
-                            <Button
-                                type="primary"
-                                icon={<PlusOutlined />}
-                                onClick={onAddDependent}
-                            >
-                                Dependiente
-                            </Button>
-                        </Tooltip>
-                    </Header>
-                    <DependentsContainer>
-                        {filteredDependents.length > 0 ? (
-                            filteredDependents.map((dependent) => (
-                                <DependentCard
-                                    key={dependent.id}
-                                    onClick={(e) => handleCardClick(e, dependent)}
-                                    $isSelected={selectedDependent?.id === dependent.id}
-                                >
-                                    <div className="card-header">
-                                        <div className="name">{dependent.name}</div>
-                                        <div className="dropdown-container" onClick={e => e.stopPropagation()}>
-                                            <Dropdown
-                                                menu={{ items: getMenuItems(dependent) }}
-                                                trigger={['click']}
-                                            >
-                                                <Button
-                                                    type="text"
-                                                    className="actions"
-                                                    icon={<MoreOutlined />}
-                                                />
-                                            </Dropdown>
-                                        </div>
-                                    </div>
-                                    <div className="relationship">
-                                        {translateRelationship(dependent.relationship)} • {getGenderText(dependent.gender)} • {calculateAge(dependent.birthDate)} años
-                                    </div>
-                                </DependentCard>
-                            ))
-                        ) : (
-                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px', color: '#8c8c8c' }}>
-                                No se encontraron dependientes
-                                {search && ` que coincidan con "${search}"`}
-                            </div>
-                        )}
-                    </DependentsContainer>
-                </Wrapper>
-            </Drawer>
-        </Form.Item>
-    );
+              >
+                No se encontraron dependientes
+                {search && ` que coincidan con "${search}"`}
+              </div>
+            )}
+          </DependentsContainer>
+        </Wrapper>
+      </Drawer>
+    </Form.Item>
+  );
 };
 
 export default DependentSelector;

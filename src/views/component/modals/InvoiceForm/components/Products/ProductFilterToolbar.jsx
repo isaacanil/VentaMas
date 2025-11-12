@@ -1,4 +1,8 @@
-import { faMagnifyingGlass, faArrowUpLong, faArrowDownLong } from '@fortawesome/free-solid-svg-icons';
+import {
+  faMagnifyingGlass,
+  faArrowUpLong,
+  faArrowDownLong,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Select } from 'antd';
 import React, { useMemo } from 'react';
@@ -73,7 +77,9 @@ export const ProductFilterToolbar = ({
             onClick={onToggleSortDirection}
             aria-label={`Cambiar a orden ${sortDirection === 'asc' ? 'descendente' : 'ascendente'}`}
           >
-            <DirectionIcon icon={sortDirection === 'asc' ? faArrowUpLong : faArrowDownLong} />
+            <DirectionIcon
+              icon={sortDirection === 'asc' ? faArrowUpLong : faArrowDownLong}
+            />
           </DirectionToggle>
         </SortSelectors>
       </SortGroup>
@@ -140,7 +146,9 @@ const SearchInput = styled.input`
   background: #f9fafb;
   font-size: 14px;
   color: #111827;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus {
     outline: none;
@@ -176,7 +184,9 @@ const SortSelect = styled(Select)`
     border: 1px solid #e5e7eb;
     background: #f9fafb;
     padding: 6px 12px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   &&:hover .ant-select-selector {
@@ -211,7 +221,10 @@ const DirectionToggle = styled.button`
   border: 1px solid #e5e7eb;
   background: #f9fafb;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
   padding: 0;
 
   &:hover {

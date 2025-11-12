@@ -14,7 +14,7 @@ const BatchContainer = styled.div`
   padding: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   margin-bottom: 0px;
-  
+
   .batch-header {
     display: flex;
     justify-content: space-between;
@@ -139,41 +139,55 @@ const BatchGroup = ({
   handleDeleteBatch,
   handleDeleteProductStock,
   handleLocationClick,
-  locationNames
+  locationNames,
 }) => {
-  const batchStatus = useMemo(() => getStockStatus(group.total), [getStockStatus, group.total]);
+  const batchStatus = useMemo(
+    () => getStockStatus(group.total),
+    [getStockStatus, group.total],
+  );
   const formattedTotal = useMemo(
     () => Number(group.total ?? 0).toLocaleString(),
-    [group.total]
+    [group.total],
   );
 
-  const menuItems = useMemo(() => ([
-    {
-      key: 'delete',
-      label: 'Eliminar lote completo',
-      danger: true,
-      icon: <DeleteOutlined />,
-    },
-  ]), []);
+  const menuItems = useMemo(
+    () => [
+      {
+        key: 'delete',
+        label: 'Eliminar lote completo',
+        danger: true,
+        icon: <DeleteOutlined />,
+      },
+    ],
+    [],
+  );
 
-  const handleMenuClick = useCallback(({ key }) => {
-    if (key === 'delete') {
-      handleDeleteBatch(group);
-    }
-  }, [group, handleDeleteBatch]);
+  const handleMenuClick = useCallback(
+    ({ key }) => {
+      if (key === 'delete') {
+        handleDeleteBatch(group);
+      }
+    },
+    [group, handleDeleteBatch],
+  );
 
   return (
     <BatchContainer $status={batchStatus}>
       <div className="batch-header">
         <div className="batch-info">
           <div className="batch-number">
-            {group.batchNumberId ? `Lote #${group.batchNumberId}` : 'Sin lote asignado'}
+            {group.batchNumberId
+              ? `Lote #${group.batchNumberId}`
+              : 'Sin lote asignado'}
           </div>
           <div className="batch-meta">
             {group.expirationDate && (
               <span className="meta-item">
                 <CalendarOutlined />
-                Vence: {new Date(group.expirationDate.seconds * 1000).toLocaleDateString()}
+                Vence:{' '}
+                {new Date(
+                  group.expirationDate.seconds * 1000,
+                ).toLocaleDateString()}
               </span>
             )}
             <span className="meta-item">
@@ -184,9 +198,7 @@ const BatchGroup = ({
         </div>
         <BatchActions>
           <Tooltip title={batchStatus.label} placement="left">
-            <div className="batch-total">
-              {formattedTotal} uds
-            </div>
+            <div className="batch-total">{formattedTotal} uds</div>
           </Tooltip>
           <Dropdown
             menu={{ items: menuItems, onClick: handleMenuClick }}

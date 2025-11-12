@@ -128,7 +128,11 @@ export const ProductSummary = ({ product, previewMetrics }) => (
   <SummaryCard>
     <PreviewImage>
       {product?.image ? (
-        <img src={product.image} alt={product?.name || 'Producto'} onError={(event) => (event.currentTarget.src = imgFailed)} />
+        <img
+          src={product.image}
+          alt={product?.name || 'Producto'}
+          onError={(event) => (event.currentTarget.src = imgFailed)}
+        />
       ) : (
         <PreviewPlaceholder>
           <StopOutlined style={{ fontSize: 40 }} />
@@ -142,7 +146,8 @@ export const ProductSummary = ({ product, previewMetrics }) => (
         {product?.name || 'Producto sin nombre'}
       </Title>
       <Text type="secondary">
-        {product?.brand || PRODUCT_BRAND_DEFAULT} · {product?.category || 'Sin categoría'}
+        {product?.brand || PRODUCT_BRAND_DEFAULT} ·{' '}
+        {product?.category || 'Sin categoría'}
       </Text>
       <Space size="small" wrap style={{ marginTop: 8 }}>
         <ModesTag $color={previewMetrics.trackInventory ? 'info' : 'warning'}>

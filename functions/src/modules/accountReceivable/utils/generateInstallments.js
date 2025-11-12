@@ -4,11 +4,14 @@ import { FieldValue, Timestamp } from '../../../core/config/firebase.js';
 
 import { calculatePaymentDates } from './calculatePaymentDates.js';
 
-const round2 = n => Math.round(n * 100) / 100;
+const round2 = (n) => Math.round(n * 100) / 100;
 
 export function generateInstallments({ ar, user }) {
   const { totalInstallments, totalReceivable, paymentFrequency } = ar;
-  const { paymentDates } = calculatePaymentDates(paymentFrequency, totalInstallments);
+  const { paymentDates } = calculatePaymentDates(
+    paymentFrequency,
+    totalInstallments,
+  );
 
   const part = round2(totalReceivable / totalInstallments);
   const diff = round2(totalReceivable - part * totalInstallments);
@@ -27,7 +30,7 @@ export function generateInstallments({ ar, user }) {
       updatedAt: tsNow,
       createdBy: user.uid,
       updatedBy: user.uid,
-      isActive: true
+      isActive: true,
     };
   });
 }

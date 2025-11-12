@@ -62,9 +62,16 @@ const WarehouseCard = ({ warehouse, onSelect }) => {
 
       {/* Information Section */}
       <Section>
-        <p><strong>Number: </strong>{warehouse.number}</p>
-        <p><strong>Owner: </strong> {warehouse.owner}</p>
-        <p><strong>Location: </strong> {warehouse.location}</p>
+        <p>
+          <strong>Number: </strong>
+          {warehouse.number}
+        </p>
+        <p>
+          <strong>Owner: </strong> {warehouse.owner}
+        </p>
+        <p>
+          <strong>Location: </strong> {warehouse.location}
+        </p>
       </Section>
     </Card>
   );

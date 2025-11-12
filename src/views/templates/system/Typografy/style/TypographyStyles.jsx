@@ -1,11 +1,10 @@
-import styled, { css } from "styled-components";
+import styled, { css } from 'styled-components';
 
-import { getFontSize } from "../../../../../helper/styleHelper";
+import { getFontSize } from '../../../../../helper/styleHelper';
 
-import { colors } from "./colors"
-import { fontSize } from "./fontSize"
-import { variants } from "./variants";
-
+import { colors } from './colors';
+import { fontSize } from './fontSize';
+import { variants } from './variants';
 
 const variantToSizeMap = {
   app: {
@@ -41,7 +40,7 @@ const variantToSizeMap = {
     body2: fontSize.web.body2,
     caption: fontSize.web.caption,
     overline: fontSize.web.overline,
-  }
+  },
 };
 
 const generalSize = {
@@ -50,7 +49,7 @@ const generalSize = {
   large: '1.25rem',
   xlarge: '1.5rem',
   xxlarge: '2rem',
-}
+};
 
 const boldScale = {
   small: '500',
@@ -59,14 +58,14 @@ const boldScale = {
   xlarge: '800',
   xxlarge: '900',
   true: 'bold',
-  false: 'normal'
-}
+  false: 'normal',
+};
 
 const baseTypography = css`
+  font-size: ${({ context, variant, size }) =>
+    getFontSize({ context, variant, size, variantToSizeMap, generalSize })};
 
-  font-size: ${({context, variant, size}) => getFontSize({context, variant, size, variantToSizeMap, generalSize})};
-
-  text-align: ${({ align }) => align ? align : 'left'};
+  text-align: ${({ align }) => (align ? align : 'left')};
   /* margin-bottom: ${({ gutterBottom }) => (gutterBottom ? '1rem' : '0')}; */
   ${({ disableMargins }) => disableMargins && 'margin: 0;'}
   /* font-weight: ${({ bold }) => boldScale[String(bold)] || 'normal'}; */
@@ -82,14 +81,15 @@ const baseTypography = css`
   ${({ display }) => display && `display: ${display};`}
 `;
 export const TypographyStyle = styled.div`
-
   ${({ variant }) => variants[variant] || variants.body1}
   ${baseTypography}
   ${({ color }) => colors[color] || colors.dark}
       
   ${({ strikethrough }) => strikethrough && 'text-decoration: line-through;'}
   ${({ textShadow }) => textShadow && `text-shadow: ${textShadow};`}
-  ${({ as }) => as === 'a' && `
+  ${({ as }) =>
+    as === 'a' &&
+    `
     cursor: pointer;
     color: #007bff;
     font-weight: 500;

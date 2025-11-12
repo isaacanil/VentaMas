@@ -1,6 +1,6 @@
 import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd'
+import * as antd from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -8,33 +8,29 @@ import { setAccountPayment } from '../../../../../../../../../../features/accoun
 import { selectClient } from '../../../../../../../../../../features/clientCart/clientCartSlice';
 import { formatPrice } from '../../../../../../../../../../utils/formatPrice';
 
+const { Button } = antd;
 
-const { Button } = antd
-
-export function Payment({
-  installments,
-  balance,
-  isActive,
-  account
-}) {
-  const dispatch = useDispatch()
+export function Payment({ installments, balance, isActive, account }) {
+  const dispatch = useDispatch();
   const client = useSelector(selectClient);
 
   const handleOpenPayment = () => {
-    dispatch(setAccountPayment({
-      isOpen: true,
-      paymentDetails: {
-        clientId: client.id,
-        arId: account.id,
-        paymentScope: 'account',
-        totalAmount: balance,
-      },
-      extra: {
-       ...account
-      }
-    }))
-  }
-  
+    dispatch(
+      setAccountPayment({
+        isOpen: true,
+        paymentDetails: {
+          clientId: client.id,
+          arId: account.id,
+          paymentScope: 'account',
+          totalAmount: balance,
+        },
+        extra: {
+          ...account,
+        },
+      }),
+    );
+  };
+
   const getProgress = () => {
     const paid = account?.paidInstallments?.length || 0;
     return (paid / installments) * 100;
@@ -47,13 +43,13 @@ export function Payment({
           <ProgressFill $percentage={getProgress()} />
         </ProgressBar>
       </PaymentInfo>
-      
+
       <PaymentActions>
         <BalanceAmount $isPaid={balance === 0}>
           {formatPrice(balance)}
         </BalanceAmount>
         <PaymentButton
-          type='primary'
+          type="primary"
           disabled={!isActive}
           onClick={handleOpenPayment}
           icon={<FontAwesomeIcon icon={faMoneyBillWave} />}
@@ -62,7 +58,7 @@ export function Payment({
         </PaymentButton>
       </PaymentActions>
     </PaymentContainer>
-  )
+  );
 }
 
 const PaymentContainer = styled.div`
@@ -117,9 +113,9 @@ const PaymentActions = styled.div`
 const BalanceAmount = styled.div`
   font-size: 16px;
   font-weight: 700;
-  color: ${({ $isPaid }) => $isPaid ? '#2e7d32' : '#cf1322'};
+  color: ${({ $isPaid }) => ($isPaid ? '#2e7d32' : '#cf1322')};
   text-align: right;
-  
+
   @media (max-width: 480px) {
     font-size: 14px;
   }
@@ -132,11 +128,11 @@ const PaymentButton = styled(Button)`
   display: flex;
   align-items: center;
   gap: 6px;
-  
+
   &:disabled {
     opacity: 0.5;
   }
-  
+
   svg {
     font-size: 12px;
   }

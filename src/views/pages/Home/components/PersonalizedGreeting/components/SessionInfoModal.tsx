@@ -28,21 +28,38 @@ type SessionInfoModalProps = {
   business?: SessionBusiness;
 };
 
-export const SessionInfoModal = ({ isOpen, onClose, user, business }: SessionInfoModalProps): JSX.Element => {
+export const SessionInfoModal = ({
+  isOpen,
+  onClose,
+  user,
+  business,
+}: SessionInfoModalProps): JSX.Element => {
   const infoRows = [
-    { label: 'Nombre', value: typeof user?.realName === 'string' ? user.realName : null },
-    { label: 'Usuario', value: typeof user?.username === 'string' ? user.username : null },
-    { label: 'Correo', value: typeof user?.email === 'string' ? user.email : null },
+    {
+      label: 'Nombre',
+      value: typeof user?.realName === 'string' ? user.realName : null,
+    },
+    {
+      label: 'Usuario',
+      value: typeof user?.username === 'string' ? user.username : null,
+    },
+    {
+      label: 'Correo',
+      value: typeof user?.email === 'string' ? user.email : null,
+    },
     { label: 'Rol', value: typeof user?.role === 'string' ? user.role : null },
-    { label: 'Negocio', value: typeof business?.name === 'string' ? business.name : null },
+    {
+      label: 'Negocio',
+      value: typeof business?.name === 'string' ? business.name : null,
+    },
     {
       label: 'RNC',
       value:
         typeof business?.rnc === 'string'
           ? business.rnc
           : typeof business?.taxId === 'string'
-          ? business.taxId
-          : null,
+            ? business.taxId
+            : null,
     },
   ].filter((row): row is InfoRowEntry => Boolean(row.value));
 

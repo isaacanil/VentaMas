@@ -1,4 +1,4 @@
-@import url("../../../styles/variables.css");
+@import url('../../../styles/variables.css');
 .Icon_container {
   width: 1.2em;
   padding: 0.2em;
@@ -8,8 +8,8 @@
   display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
 }
 
 .Icon_container .Icon {

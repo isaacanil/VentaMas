@@ -1,12 +1,34 @@
 /* utils/stockTheme.js */
 export const productColorThemes = {
-  default: { textColor: 'var(--color)', amountColor: '#757575', outlineSelected: '2.9px solid var(--color)' },
-  lowStock: { textColor: '#fb8c00', amountColor: '#fb8c00', outlineSelected: '2.9px solid #fb8c00' },
-  critical: { textColor: '#ff7043', amountColor: '#ff7043', outlineSelected: '2.9px solid #ff7043' },
-  strict: { textColor: '#43a047', amountColor: '#43a047', outlineSelected: '2.9px solid #43a047' },
+  default: {
+    textColor: 'var(--color)',
+    amountColor: '#757575',
+    outlineSelected: '2.9px solid var(--color)',
+  },
+  lowStock: {
+    textColor: '#fb8c00',
+    amountColor: '#fb8c00',
+    outlineSelected: '2.9px solid #fb8c00',
+  },
+  critical: {
+    textColor: '#ff7043',
+    amountColor: '#ff7043',
+    outlineSelected: '2.9px solid #ff7043',
+  },
+  strict: {
+    textColor: '#43a047',
+    amountColor: '#43a047',
+    outlineSelected: '2.9px solid #43a047',
+  },
 };
 
-export const getProductTheme = ({ isOutOfStock, isCriticalStock, isLowStock, hasStrictStock, isSelected }) => {
+export const getProductTheme = ({
+  isOutOfStock,
+  isCriticalStock,
+  isLowStock,
+  hasStrictStock,
+  isSelected,
+}) => {
   if (isOutOfStock) {
     return {
       textColor: isSelected ? '#ef5350' : '#9e9e9e',

@@ -6,7 +6,11 @@ import { db, serverTimestamp } from '../../../core/config/firebase.js';
 const CRON_SCHEDULE = process.env.INVENTORY_SYNC_CRON || '0 3 * * *';
 const CRON_TIMEZONE = process.env.INVENTORY_SYNC_TZ || 'America/Santo_Domingo';
 const CRON_REGION = process.env.INVENTORY_SYNC_REGION || 'us-central1';
-const FILTER_ACTIVE_DEFAULT = /^false$/i.test(process.env.INVENTORY_SYNC_INCLUDE_INACTIVE || '') ? false : true;
+const FILTER_ACTIVE_DEFAULT = /^false$/i.test(
+  process.env.INVENTORY_SYNC_INCLUDE_INACTIVE || '',
+)
+  ? false
+  : true;
 const NEGATIVE_FIX_ACTOR = 'system:inventory-negative-cron';
 const NEGATIVE_FIX_ORIGIN = 'inventory-negative-correction';
 
@@ -15,7 +19,10 @@ const number = (value) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACTIVE_DEFAULT } = {}) {
+async function syncBusinessProductsStock(
+  businessId,
+  { filterActive = FILTER_ACTIVE_DEFAULT } = {},
+) {
   if (!businessId || typeof businessId !== 'string') {
     throw new Error('Invalid businessId');
   }
@@ -28,7 +35,9 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
     stockQuery = stockQuery.where('status', '==', 'active');
   }
 
-  const stockSnap = await stockQuery.select('productId', 'quantity', 'status', 'batchId').get();
+  const stockSnap = await stockQuery
+    .select('productId', 'quantity', 'status', 'batchId')
+    .get();
 
   const totalsByProduct = new Map();
   const invalidStockDocs = [];
@@ -40,7 +49,8 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
   stockSnap.forEach((docSnap) => {
     const data = docSnap.data() || {};
     const productIdRaw = data.productId;
-    const productId = typeof productIdRaw === 'string' ? productIdRaw.trim() : '';
+    const productId =
+      typeof productIdRaw === 'string' ? productIdRaw.trim() : '';
     if (!productId) {
       if (invalidStockDocs.length < 50) {
         invalidStockDocs.push(docSnap.id);
@@ -56,7 +66,12 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
     // Rastrear cantidades por batch
     if (batchId) {
       if (!batchQuantities.has(batchId)) {
-        batchQuantities.set(batchId, { totalQuantity: 0, activeStockCount: 0, inactiveStockCount: 0, stockIds: [] });
+        batchQuantities.set(batchId, {
+          totalQuantity: 0,
+          activeStockCount: 0,
+          inactiveStockCount: 0,
+          stockIds: [],
+        });
       }
       const batchMeta = batchQuantities.get(batchId);
       batchMeta.totalQuantity += quantity;
@@ -80,10 +95,16 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
         shortage,
         previousQuantity: quantity,
       });
-      negativeShortageByProduct.set(productId, (negativeShortageByProduct.get(productId) || 0) + shortage);
+      negativeShortageByProduct.set(
+        productId,
+        (negativeShortageByProduct.get(productId) || 0) + shortage,
+      );
 
       if (batchId) {
-        const current = batchesToDeactivate.get(batchId) || { shortage: 0, stockIds: [] };
+        const current = batchesToDeactivate.get(batchId) || {
+          shortage: 0,
+          stockIds: [],
+        };
         current.shortage += shortage;
         if (current.stockIds.length < 10) {
           current.stockIds.push(docSnap.id);
@@ -94,7 +115,10 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
       return;
     }
 
-    totalsByProduct.set(productId, (totalsByProduct.get(productId) || 0) + quantity);
+    totalsByProduct.set(
+      productId,
+      (totalsByProduct.get(productId) || 0) + quantity,
+    );
   });
 
   const productsSnap = await businessRef
@@ -103,10 +127,12 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
     .get();
 
   // Obtener datos de todos los batches únicos
-  const uniqueBatchIds = Array.from(new Set([
-    ...Array.from(batchQuantities.keys()),
-    ...Array.from(batchesToDeactivate.keys())
-  ])).filter(Boolean);
+  const uniqueBatchIds = Array.from(
+    new Set([
+      ...Array.from(batchQuantities.keys()),
+      ...Array.from(batchesToDeactivate.keys()),
+    ]),
+  ).filter(Boolean);
 
   const batchesMap = new Map();
   const batchesToSync = [];
@@ -126,7 +152,11 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
 
           if (meta) {
             // Caso 1: Batch inactivo pero tiene productStocks activos con cantidad > 0
-            if (batchStatus === 'inactive' && meta.activeStockCount > 0 && meta.totalQuantity > 0) {
+            if (
+              batchStatus === 'inactive' &&
+              meta.activeStockCount > 0 &&
+              meta.totalQuantity > 0
+            ) {
               batchesToSync.push({
                 batchId,
                 ref: batchRef,
@@ -138,7 +168,10 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
               });
             }
             // Caso 2: Batch activo pero sin productStocks activos o cantidad total = 0
-            else if (batchStatus === 'active' && (meta.activeStockCount === 0 || meta.totalQuantity <= 0)) {
+            else if (
+              batchStatus === 'active' &&
+              (meta.activeStockCount === 0 || meta.totalQuantity <= 0)
+            ) {
               batchesToSync.push({
                 batchId,
                 ref: batchRef,
@@ -225,11 +258,7 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
         batchPayload.lastInactiveStockIds = meta.stockIds;
       }
 
-      writer.set(
-        batchRef,
-        batchPayload,
-        { merge: true }
-      );
+      writer.set(batchRef, batchPayload, { merge: true });
     }
   }
 
@@ -272,8 +301,13 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
     invalidStockDocs,
     orphanTotals: [],
     negativeStocksProcessed: negativeStockRecords.length,
-    negativeStockQuantity: negativeStockRecords.reduce((sum, record) => sum + record.shortage, 0),
-    negativeStockDocIds: negativeStockRecords.slice(0, 50).map((record) => record.docId),
+    negativeStockQuantity: negativeStockRecords.reduce(
+      (sum, record) => sum + record.shortage,
+      0,
+    ),
+    negativeStockDocIds: negativeStockRecords
+      .slice(0, 50)
+      .map((record) => record.docId),
     batchesDeactivated: Array.from(batchesToDeactivate.keys()).slice(0, 50),
     batchesSynced: batchesToSync.length,
     batchesSyncDetails: batchesToSync.slice(0, 50).map((task) => ({
@@ -344,7 +378,10 @@ async function syncBusinessProductsStock(businessId, { filterActive = FILTER_ACT
         initialQuantity: totalShortage,
         pendingQuantity: totalShortage,
         status: 'pending',
-        origin: shortageFromNegatives > 0 && shortageFromTotals === 0 ? NEGATIVE_FIX_ORIGIN : 'inventory-sync-cron',
+        origin:
+          shortageFromNegatives > 0 && shortageFromTotals === 0
+            ? NEGATIVE_FIX_ORIGIN
+            : 'inventory-sync-cron',
         createdAt: ts,
         updatedAt: ts,
       };
@@ -444,7 +481,10 @@ export const syncProductsStockCron = onSchedule(
     };
 
     try {
-      const businessSnap = await db.collection('businesses').select('isDeleted').get();
+      const businessSnap = await db
+        .collection('businesses')
+        .select('isDeleted')
+        .get();
 
       for (const docSnap of businessSnap.docs) {
         const businessId = docSnap.id;
@@ -454,12 +494,15 @@ export const syncProductsStockCron = onSchedule(
         if (data?.isDeleted === true) continue;
 
         try {
-          const summary = await syncBusinessProductsStock(businessId, { filterActive: FILTER_ACTIVE_DEFAULT });
+          const summary = await syncBusinessProductsStock(businessId, {
+            filterActive: FILTER_ACTIVE_DEFAULT,
+          });
           result.processedBusinesses += 1;
           result.updatedProducts += summary.updatedProducts;
           result.zeroedProducts += summary.zeroedProducts;
           result.backOrders += summary.backOrders;
-          result.backOrdersFromNegativeStocks += summary.backOrdersFromNegativeStocks;
+          result.backOrdersFromNegativeStocks +=
+            summary.backOrdersFromNegativeStocks;
           result.invalidProducts += summary.invalidProducts;
           result.invalidStockDocs += summary.invalidStockDocs.length;
           result.negativeStockDocs += summary.negativeStocksProcessed;
@@ -468,28 +511,37 @@ export const syncProductsStockCron = onSchedule(
           result.batchesSynced += summary.batchesSynced;
 
           if (summary.invalidStockDocs.length) {
-            logger.warn('[syncProductsStockCron] Inventario con productId inválido', {
-              businessId,
-              sample: summary.invalidStockDocs,
-            });
+            logger.warn(
+              '[syncProductsStockCron] Inventario con productId inválido',
+              {
+                businessId,
+                sample: summary.invalidStockDocs,
+              },
+            );
           }
 
           if (summary.orphanTotals.length) {
-            logger.warn('[syncProductsStockCron] productsStock sin producto asociado', {
-              businessId,
-              sample: summary.orphanTotals,
-            });
+            logger.warn(
+              '[syncProductsStockCron] productsStock sin producto asociado',
+              {
+                businessId,
+                sample: summary.orphanTotals,
+              },
+            );
           }
 
           if (summary.negativeStocksProcessed > 0) {
-            logger.warn('[syncProductsStockCron] Corrección de stocks negativos', {
-              businessId,
-              correctedDocs: summary.negativeStockDocIds,
-              batchesDeactivated: summary.batchesDeactivated,
-              quantity: summary.negativeStockQuantity,
-              backOrdersCreated: summary.backOrdersFromNegativeStocks,
-              orphanNegativeProducts: summary.orphanNegativeProducts,
-            });
+            logger.warn(
+              '[syncProductsStockCron] Corrección de stocks negativos',
+              {
+                businessId,
+                correctedDocs: summary.negativeStockDocIds,
+                batchesDeactivated: summary.batchesDeactivated,
+                quantity: summary.negativeStockQuantity,
+                backOrdersCreated: summary.backOrdersFromNegativeStocks,
+                orphanNegativeProducts: summary.orphanNegativeProducts,
+              },
+            );
           }
 
           if (summary.batchesSynced > 0) {
@@ -521,5 +573,5 @@ export const syncProductsStockCron = onSchedule(
       ...result,
       durationMs,
     });
-  }
+  },
 );

@@ -27,12 +27,12 @@ export function getCurrentTimestamp() {
  */
 export function addDueDate(object, dueDate) {
   if (!dueDate) return object;
-  
+
   const date = millisecondsToTimestamp(dueDate);
-  
+
   return {
     ...object,
     dueDate: date,
-    hasDueDate: true
+    hasDueDate: true,
   };
 }

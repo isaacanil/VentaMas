@@ -40,63 +40,84 @@ export const FilterBar = ({
 }) => {
   const { drawerVisible, openDrawer, closeDrawer } = useDrawerState();
   const { isMobile } = useResponsiveLayout();
-  
+
   // Hook de colapso para desktop
-  const { containerRef, register, visibleCount, hasOverflow } = useFilterCollapse();
-  
+  const { containerRef, register, visibleCount, hasOverflow } =
+    useFilterCollapse();
+
   // Hooks personalizados
   const { clientOptions, clientsLoading } = useClientOptions();
-  const { handlers, handleClearFilters, hasActiveFilters } = useFilterHandlers(filters, onFiltersChange);
-  const sortingProps = useInvoiceSorting(processedInvoices, setProcessedInvoices);
+  const { handlers, handleClearFilters, hasActiveFilters } = useFilterHandlers(
+    filters,
+    onFiltersChange,
+  );
+  const sortingProps = useInvoiceSorting(
+    processedInvoices,
+    setProcessedInvoices,
+  );
 
   // Array ordenado de filtros (orden de prioridad)
-  const filtersArray = useMemo(() => [
-    <DateRangeFilter 
-      key="date"
-      datesSelected={datesSelected}
-      setDatesSelected={setDatesSelected}
-    />,
-    <ClientFilter
-      key="client"
-      value={filters?.clientId}
-      onChange={handlers.clientId}
-      clientOptions={clientOptions}
-      loading={clientsLoading}
-    />,
-    <PaymentMethodFilter
-      key="payment"
-      value={filters?.paymentMethod}
-      onChange={handlers.paymentMethod}
-    />,
-    <AmountRangeFilter
-      key="amount"
-      minAmount={filters?.minAmount}
-      maxAmount={filters?.maxAmount}
-      onMinChange={handlers.minAmount}
-      onMaxChange={handlers.maxAmount}
-    />,
-    <SortControls
-      key="sort"
-      sortCriteria={sortingProps.sortCriteria}
-      sortDirection={sortingProps.sortDirection}
-      onSortChange={sortingProps.handleSortChange}
-      onToggleDirection={sortingProps.toggleSortDirection}
-    />,
-    ...(hasActiveFilters ? [
-      <ClearFiltersButton
-        key="clear"
-        onClear={handleClearFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
-    ] : [])
-  ], [
-    datesSelected, setDatesSelected, filters, handlers, clientOptions, 
-    clientsLoading, sortingProps, handleClearFilters, hasActiveFilters
-  ]);
+  const filtersArray = useMemo(
+    () => [
+      <DateRangeFilter
+        key="date"
+        datesSelected={datesSelected}
+        setDatesSelected={setDatesSelected}
+      />,
+      <ClientFilter
+        key="client"
+        value={filters?.clientId}
+        onChange={handlers.clientId}
+        clientOptions={clientOptions}
+        loading={clientsLoading}
+      />,
+      <PaymentMethodFilter
+        key="payment"
+        value={filters?.paymentMethod}
+        onChange={handlers.paymentMethod}
+      />,
+      <AmountRangeFilter
+        key="amount"
+        minAmount={filters?.minAmount}
+        maxAmount={filters?.maxAmount}
+        onMinChange={handlers.minAmount}
+        onMaxChange={handlers.maxAmount}
+      />,
+      <SortControls
+        key="sort"
+        sortCriteria={sortingProps.sortCriteria}
+        sortDirection={sortingProps.sortDirection}
+        onSortChange={sortingProps.handleSortChange}
+        onToggleDirection={sortingProps.toggleSortDirection}
+      />,
+      ...(hasActiveFilters
+        ? [
+            <ClearFiltersButton
+              key="clear"
+              onClear={handleClearFilters}
+              hasActiveFilters={hasActiveFilters}
+            />,
+          ]
+        : []),
+    ],
+    [
+      datesSelected,
+      setDatesSelected,
+      filters,
+      handlers,
+      clientOptions,
+      clientsLoading,
+      sortingProps,
+      handleClearFilters,
+      hasActiveFilters,
+    ],
+  );
 
   // Dividir filtros visibles y ocultos
   const visibleFilters = useMemo(() => {
-    return visibleCount === Infinity ? filtersArray : filtersArray.slice(0, visibleCount);
+    return visibleCount === Infinity
+      ? filtersArray
+      : filtersArray.slice(0, visibleCount);
   }, [filtersArray, visibleCount]);
 
   const hiddenFilters = useMemo(() => {
@@ -104,35 +125,41 @@ export const FilterBar = ({
   }, [filtersArray, visibleCount]);
 
   // Componente de filtros para desktop (horizontal)
-  const FiltersUIDesktop = useMemo(() => (
-    <Form layout="vertical" style={{ display: 'flex', gap: '1rem' }}>
-      {visibleFilters.map((filter, index) => (
-        <CollapsibleItem key={index} index={index} registerRef={register}>
-          {filter}
-        </CollapsibleItem>
-      ))}
-      
-      {/* Botón "Más filtros" si hay overflow */}
-      {hasOverflow && (
-        <Button
-          icon={<FilterOutlined />}
-          onClick={openDrawer}
-          size="middle"
-          type="text"
-          aria-label={ACCESSIBILITY_CONFIG.ariaLabels.filterButton}
-        >
-          Más
-        </Button>
-      )}
-    </Form>
-  ), [visibleFilters, register, hasOverflow, openDrawer]);
+  const FiltersUIDesktop = useMemo(
+    () => (
+      <Form layout="vertical" style={{ display: 'flex', gap: '1rem' }}>
+        {visibleFilters.map((filter, index) => (
+          <CollapsibleItem key={index} index={index} registerRef={register}>
+            {filter}
+          </CollapsibleItem>
+        ))}
+
+        {/* Botón "Más filtros" si hay overflow */}
+        {hasOverflow && (
+          <Button
+            icon={<FilterOutlined />}
+            onClick={openDrawer}
+            size="middle"
+            type="text"
+            aria-label={ACCESSIBILITY_CONFIG.ariaLabels.filterButton}
+          >
+            Más
+          </Button>
+        )}
+      </Form>
+    ),
+    [visibleFilters, register, hasOverflow, openDrawer],
+  );
 
   // Componente de filtros ocultos para el drawer en desktop
   const HiddenFiltersUI = useMemo(() => {
     if (hiddenFilters.length === 0) return null;
-    
+
     return (
-      <Form layout="vertical" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <Form
+        layout="vertical"
+        style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
+      >
         {hiddenFilters}
       </Form>
     );
@@ -143,8 +170,8 @@ export const FilterBar = ({
     return (
       <MobileWrapper>
         <MobileHeader>
-          <Button 
-            icon={<FilterOutlined />} 
+          <Button
+            icon={<FilterOutlined />}
             onClick={openDrawer}
             aria-label={ACCESSIBILITY_CONFIG.ariaLabels.filterButton}
           >
@@ -161,38 +188,45 @@ export const FilterBar = ({
           height="auto"
         >
           <DrawerContent>
-            <Form layout="vertical" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <DateRangeFilter 
+            <Form
+              layout="vertical"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem',
+              }}
+            >
+              <DateRangeFilter
                 datesSelected={datesSelected}
                 setDatesSelected={setDatesSelected}
               />
-              
+
               <ClientFilter
                 value={filters?.clientId}
                 onChange={handlers.clientId}
                 clientOptions={clientOptions}
                 loading={clientsLoading}
               />
-              
+
               <PaymentMethodFilter
                 value={filters?.paymentMethod}
                 onChange={handlers.paymentMethod}
               />
-              
+
               <AmountRangeFilter
                 minAmount={filters?.minAmount}
                 maxAmount={filters?.maxAmount}
                 onMinChange={handlers.minAmount}
                 onMaxChange={handlers.maxAmount}
               />
-              
+
               <SortControls
                 sortCriteria={sortingProps.sortCriteria}
                 sortDirection={sortingProps.sortDirection}
                 onSortChange={sortingProps.handleSortChange}
                 onToggleDirection={sortingProps.toggleSortDirection}
               />
-              
+
               <ClearFiltersButton
                 onClear={handleClearFilters}
                 hasActiveFilters={hasActiveFilters}
@@ -208,7 +242,7 @@ export const FilterBar = ({
   return (
     <Bar ref={containerRef}>
       {FiltersUIDesktop}
-      
+
       {/* Drawer para filtros ocultos en desktop */}
       {hasOverflow && (
         <Drawer

@@ -62,11 +62,7 @@ const PRIORITY = {
 };
 
 const FiscalReceiptsPanel = ({ data = {} }) => {
-  const {
-    title = 'Comprobantes Fiscales',
-    receipts = [],
-    summary = {},
-  } = data;
+  const { title = 'Comprobantes Fiscales', receipts = [], summary = {} } = data;
 
   const sortedReceipts = useMemo(() => {
     if (!Array.isArray(receipts)) return [];
@@ -74,13 +70,17 @@ const FiscalReceiptsPanel = ({ data = {} }) => {
       const priorityA = PRIORITY[a?.alertLevel] ?? 4;
       const priorityB = PRIORITY[b?.alertLevel] ?? 4;
       if (priorityA !== priorityB) return priorityA - priorityB;
-      const remainingA = typeof a?.remainingNumbers === 'number' ? a.remainingNumbers : 0;
-      const remainingB = typeof b?.remainingNumbers === 'number' ? b.remainingNumbers : 0;
+      const remainingA =
+        typeof a?.remainingNumbers === 'number' ? a.remainingNumbers : 0;
+      const remainingB =
+        typeof b?.remainingNumbers === 'number' ? b.remainingNumbers : 0;
       return remainingA - remainingB;
     });
   }, [receipts]);
 
-  const criticalCount = summary?.criticalReceipts ?? sortedReceipts.filter((item) => item?.alertLevel === 'critical').length;
+  const criticalCount =
+    summary?.criticalReceipts ??
+    sortedReceipts.filter((item) => item?.alertLevel === 'critical').length;
 
   if (sortedReceipts.length === 0) {
     return (
@@ -103,14 +103,13 @@ const FiscalReceiptsPanel = ({ data = {} }) => {
 
   return (
     <PanelCard>
-      <SimplePanelHeader
-        title={title}
-        badgeCount={criticalCount}
-        showMeta
-      />
+      <SimplePanelHeader title={title} badgeCount={criticalCount} showMeta />
       <ScrollArea>
         {sortedReceipts.map((receipt) => (
-          <ReceiptRow key={`${receipt.series}-${receipt.name}`} receipt={receipt} />
+          <ReceiptRow
+            key={`${receipt.series}-${receipt.name}`}
+            receipt={receipt}
+          />
         ))}
       </ScrollArea>
     </PanelCard>
@@ -125,15 +124,27 @@ const ReceiptRow = ({ receipt }) => {
     icon: faReceipt,
   };
 
-  const remaining = typeof receipt?.remainingNumbers === 'number' ? receipt.remainingNumbers : null;
-  const total = typeof receipt?.totalNumbers === 'number' ? receipt.totalNumbers : null;
-  const used = total !== null && remaining !== null ? Math.max(total - remaining, 0) : null;
-  const percentage = typeof receipt?.percentageRemaining === 'number' ? `${receipt.percentageRemaining}%` : null;
+  const remaining =
+    typeof receipt?.remainingNumbers === 'number'
+      ? receipt.remainingNumbers
+      : null;
+  const total =
+    typeof receipt?.totalNumbers === 'number' ? receipt.totalNumbers : null;
+  const used =
+    total !== null && remaining !== null
+      ? Math.max(total - remaining, 0)
+      : null;
+  const percentage =
+    typeof receipt?.percentageRemaining === 'number'
+      ? `${receipt.percentageRemaining}%`
+      : null;
 
   return (
     <PanelRow>
       <RowMain>
-        <ModuleIcon style={{ background: `${status.color}15`, color: status.color }}>
+        <ModuleIcon
+          style={{ background: `${status.color}15`, color: status.color }}
+        >
           <FontAwesomeIcon icon={status.icon} />
         </ModuleIcon>
         <ModuleInfo>
@@ -146,7 +157,9 @@ const ReceiptRow = ({ receipt }) => {
 
       <RowMeta>
         <MetaLabel>Disponibles</MetaLabel>
-        <MetaValue>{remaining !== null ? formatNumber(remaining) : '-'}</MetaValue>
+        <MetaValue>
+          {remaining !== null ? formatNumber(remaining) : '-'}
+        </MetaValue>
       </RowMeta>
 
       <RowMeta>

@@ -1,8 +1,8 @@
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
 const transition = {
   duration: 0.5,
-  ease: "easeInOut",
+  ease: 'easeInOut',
 };
 
 const Variants = {
@@ -12,7 +12,7 @@ const Variants = {
   },
   hidden: {
     opacity: 0.5,
-    
+
     transition,
   },
   exit: {
@@ -21,15 +21,15 @@ const Variants = {
   },
 };
 
-export const Transition = ({children}) => {
+export const Transition = ({ children }) => {
   return (
     <motion.div
-    initial="hidden"
-    animate="visible"
-    exit="exit"
-    variants={Variants}
-  >
-    {children}
-  </motion.div>
-  )
-}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={Variants}
+    >
+      {children}
+    </motion.div>
+  );
+};

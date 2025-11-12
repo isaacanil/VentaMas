@@ -1,4 +1,9 @@
-import { collection, query, where, getCountFromServer,  } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getCountFromServer,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import { db } from '../firebaseconfig';
@@ -9,19 +14,35 @@ export const useClientAccountsReceivableCounts = ({ user, clientId }) => {
   useEffect(() => {
     if (!user?.businessID || !clientId) return;
 
-    const colRef = collection(db, 'businesses', user.businessID, 'accountsReceivable');
+    const colRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'accountsReceivable',
+    );
 
     const fetchCounts = async () => {
       try {
-        const openQ = query(colRef, where('clientId', '==', clientId), where('isActive', '==', true));
-        const closedQ = query(colRef, where('clientId', '==', clientId), where('isActive', '==', false));
+        const openQ = query(
+          colRef,
+          where('clientId', '==', clientId),
+          where('isActive', '==', true),
+        );
+        const closedQ = query(
+          colRef,
+          where('clientId', '==', clientId),
+          where('isActive', '==', false),
+        );
 
         const [openSnap, closedSnap] = await Promise.all([
           getCountFromServer(openQ),
           getCountFromServer(closedQ),
         ]);
 
-        setCounts({ open: openSnap.data().count, closed: closedSnap.data().count });
+        setCounts({
+          open: openSnap.data().count,
+          closed: closedSnap.data().count,
+        });
       } catch (e) {
         console.error('Error fetching AR counts', e);
       }
@@ -31,4 +52,4 @@ export const useClientAccountsReceivableCounts = ({ user, clientId }) => {
   }, [user?.businessID, clientId]);
 
   return counts;
-}; 
+};

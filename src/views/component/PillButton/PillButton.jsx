@@ -35,14 +35,11 @@ const StyledPillButton = styled.button`
 const IconWrapper = styled.span`
   display: flex;
   align-items: center;
-
-`
+`;
 
 const Label = styled.span`
   font-weight: 500;
- 
-`
-
+`;
 
 /**
  * @param {Object} props
@@ -52,19 +49,31 @@ const Label = styled.span`
  * @param {boolean} [props.disabled]
  * @param {function} [props.onClick]
  */
-export const PillButton = ({ icon, children, loading, bg, color, disabled, onClick, badgeCount }) => (
-  
-  <StyledPillButton bg={bg} color={color} disabled={disabled || loading} onClick={onClick}>
-        {icon && <IconWrapper>{icon}</IconWrapper>}
-        <Label>{children}</Label>
-      <Badge
-        count={badgeCount}
-        overflowCount={9999}
-        style={{
-          zIndex: 10,
-        }}
-      >
-  </Badge>
-        {loading && <Spin size="small"/>}
-    </StyledPillButton>
+export const PillButton = ({
+  icon,
+  children,
+  loading,
+  bg,
+  color,
+  disabled,
+  onClick,
+  badgeCount,
+}) => (
+  <StyledPillButton
+    bg={bg}
+    color={color}
+    disabled={disabled || loading}
+    onClick={onClick}
+  >
+    {icon && <IconWrapper>{icon}</IconWrapper>}
+    <Label>{children}</Label>
+    <Badge
+      count={badgeCount}
+      overflowCount={9999}
+      style={{
+        zIndex: 10,
+      }}
+    ></Badge>
+    {loading && <Spin size="small" />}
+  </StyledPillButton>
 );

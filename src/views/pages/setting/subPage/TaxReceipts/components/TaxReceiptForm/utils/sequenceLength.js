@@ -25,7 +25,8 @@ export const createSequenceLengthResolver = ({
       Number.isFinite(customLengthCandidate) && customLengthCandidate > 0
         ? customLengthCandidate
         : null,
-      Number.isFinite(normalizedDigitsCandidate) && normalizedDigitsCandidate > 0
+      Number.isFinite(normalizedDigitsCandidate) &&
+      normalizedDigitsCandidate > 0
         ? normalizedDigitsCandidate
         : null,
     ].filter((value) => Number.isFinite(value) && value > 0);
@@ -33,7 +34,7 @@ export const createSequenceLengthResolver = ({
     if (candidates.length === 0) {
       return Number.isFinite(normalizedDigitsCandidate)
         ? normalizedDigitsCandidate
-        : normalizedCandidates[0] ?? 0;
+        : (normalizedCandidates[0] ?? 0);
     }
 
     return Math.max(...candidates);

@@ -28,13 +28,19 @@ type BusinessInfoPillProps = {
   className?: string;
 };
 
-export const BusinessInfoPill = ({ className }: BusinessInfoPillProps): JSX.Element => {
+export const BusinessInfoPill = ({
+  className,
+}: BusinessInfoPillProps): JSX.Element => {
   const business = useSelector<RootState, BusinessInfo | null>((state) =>
-    typeof state.business?.data === 'object' && state.business.data !== null ? state.business.data : null,
+    typeof state.business?.data === 'object' && state.business.data !== null
+      ? state.business.data
+      : null,
   );
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const businessName = (typeof business?.name === 'string' && business.name.trim()) || 'Tu negocio';
+  const businessName =
+    (typeof business?.name === 'string' && business.name.trim()) ||
+    'Tu negocio';
 
   const handleInteraction = (): void => setModalOpen(true);
 
@@ -59,7 +65,11 @@ export const BusinessInfoPill = ({ className }: BusinessInfoPillProps): JSX.Elem
           <Name title={businessName}>{businessName}</Name>
         </TextGroup>
       </PillButton>
-      <BusinessInfoModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} business={business} />
+      <BusinessInfoModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        business={business}
+      />
     </>
   );
 };
@@ -76,7 +86,10 @@ const PillButton = styled.button`
   min-height: 48px;
   backdrop-filter: blur(12px);
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 
   &:hover {
     transform: translateY(-1px);

@@ -29,9 +29,9 @@ export const CombinedPill = ({
       tabIndex={isInteractive ? 0 : undefined}
       $interactive={isInteractive}
     >
-        <UserRow>
-          <UserName title={userName}>{userName}</UserName>
-        </UserRow>
+      <UserRow>
+        <UserName title={userName}>{userName}</UserName>
+      </UserRow>
     </PillContainer>
   );
 };
@@ -45,10 +45,13 @@ const PillContainer = styled.div<{ $interactive: boolean }>`
   backdrop-filter: blur(18px);
   width: fit-content;
   max-width: 100%;
-    background: rgba(15, 23, 42, 0.2);
-    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
-    color: #fff;
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  background: rgba(15, 23, 42, 0.2);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+  color: #fff;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
   cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'default')};
   outline: none;
 

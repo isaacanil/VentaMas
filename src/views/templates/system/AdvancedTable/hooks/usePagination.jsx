@@ -6,13 +6,22 @@ const scrollToTopOfWrapper = (wrapperRef) => {
   }
 };
 
-export const useTablePagination = (data, sortedData, filteredData, itemsPerPage = 15, wrapperRef) => {
+export const useTablePagination = (
+  data,
+  sortedData,
+  filteredData,
+  itemsPerPage = 15,
+  wrapperRef,
+) => {
   const [currentPage, setCurrentPage] = useState(0);
 
   // Preservar la página actual cuando cambian los datos.
   // Solo ajustar si la página actual queda fuera de rango cuando cambia el total filtrado o el page size.
   useEffect(() => {
-    const newPageCount = Math.max(1, Math.ceil((filteredData?.length || 0) / itemsPerPage));
+    const newPageCount = Math.max(
+      1,
+      Math.ceil((filteredData?.length || 0) / itemsPerPage),
+    );
     setCurrentPage((prev) => {
       if (prev > newPageCount - 1) return newPageCount - 1;
       return prev;
@@ -42,6 +51,13 @@ export const useTablePagination = (data, sortedData, filteredData, itemsPerPage 
     scrollToTopOfWrapper(wrapperRef);
   };
 
-  return { currentData, nextPage, prevPage, firstPage, lastPage, currentPage, pageCount };
+  return {
+    currentData,
+    nextPage,
+    prevPage,
+    firstPage,
+    lastPage,
+    currentPage,
+    pageCount,
+  };
 };
-

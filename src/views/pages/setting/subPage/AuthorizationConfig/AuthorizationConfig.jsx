@@ -1,5 +1,21 @@
-import { KeyOutlined, ReloadOutlined, StopOutlined, ClockCircleOutlined, SafetyOutlined } from '@ant-design/icons';
-import { Button, Table, Tag, Space, Typography, message, Modal, Card, Statistic } from 'antd';
+import {
+  KeyOutlined,
+  ReloadOutlined,
+  StopOutlined,
+  ClockCircleOutlined,
+  SafetyOutlined,
+} from '@ant-design/icons';
+import {
+  Button,
+  Table,
+  Tag,
+  Space,
+  Typography,
+  message,
+  Modal,
+  Card,
+  Statistic,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -8,7 +24,7 @@ import { selectUser } from '../../../../../features/auth/userSlice';
 import {
   fbGetUsersWithPinStatus,
   fbGenerateUserPin,
-  fbDeactivateUserPin
+  fbDeactivateUserPin,
 } from '../../../../../firebase/authorization/pinAuth';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 
@@ -118,7 +134,7 @@ export const AuthorizationConfig = () => {
         } finally {
           setLoading(false);
         }
-      }
+      },
     });
   };
 
@@ -127,16 +143,26 @@ export const AuthorizationConfig = () => {
       return <Tag color="default">Sin PIN</Tag>;
     }
     if (userRecord.pinIsExpired) {
-      return <Tag color="orange" icon={<ClockCircleOutlined />}>Expirado</Tag>;
+      return (
+        <Tag color="orange" icon={<ClockCircleOutlined />}>
+          Expirado
+        </Tag>
+      );
     }
     if (userRecord.pinIsActive) {
-      return <Tag color="green" icon={<SafetyOutlined />}>Activo</Tag>;
+      return (
+        <Tag color="green" icon={<SafetyOutlined />}>
+          Activo
+        </Tag>
+      );
     }
     return <Tag color="red">Inactivo</Tag>;
   };
 
   const renderModuleDetails = (record) => {
-    const entries = record?.moduleDetails ? Object.entries(record.moduleDetails) : [];
+    const entries = record?.moduleDetails
+      ? Object.entries(record.moduleDetails)
+      : [];
     if (!entries.length) {
       return <Text type="secondary">-</Text>;
     }
@@ -149,13 +175,21 @@ export const AuthorizationConfig = () => {
             : detail?.isExpired
               ? 'Expirado'
               : 'Inactivo';
-          const tagColor = detail?.isActive ? 'green' : detail?.isExpired ? 'orange' : 'default';
-          const expiresAt = detail?.expiresAt instanceof Date
-            ? detail.expiresAt.toLocaleString()
-            : null;
+          const tagColor = detail?.isActive
+            ? 'green'
+            : detail?.isExpired
+              ? 'orange'
+              : 'default';
+          const expiresAt =
+            detail?.expiresAt instanceof Date
+              ? detail.expiresAt.toLocaleString()
+              : null;
 
           return (
-            <div key={moduleKey} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div
+              key={moduleKey}
+              style={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Text>{MODULE_LABELS[moduleKey] || moduleKey}</Text>
                 <Tag color={tagColor}>{statusLabel}</Tag>
@@ -267,9 +301,9 @@ export const AuthorizationConfig = () => {
 
   const stats = {
     total: users.length,
-    withPin: users.filter(u => u.hasPin).length,
-    active: users.filter(u => u.pinIsActive).length,
-    expired: users.filter(u => u.pinIsExpired).length,
+    withPin: users.filter((u) => u.hasPin).length,
+    active: users.filter((u) => u.pinIsActive).length,
+    expired: users.filter((u) => u.pinIsExpired).length,
   };
 
   if (!allowed) {
@@ -302,8 +336,9 @@ export const AuthorizationConfig = () => {
         <div style={{ marginBottom: 24 }}>
           <Title level={4}>Gestión de PINs de Autorización</Title>
           <Paragraph type="secondary">
-            Los PINs permiten a los usuarios autorizarse rápidamente sin ingresar su contraseña completa.
-            Los PINs expiran automáticamente cada 24 horas por seguridad.
+            Los PINs permiten a los usuarios autorizarse rápidamente sin
+            ingresar su contraseña completa. Los PINs expiran automáticamente
+            cada 24 horas por seguridad.
           </Paragraph>
         </div>
 
@@ -341,9 +376,22 @@ export const AuthorizationConfig = () => {
         </StatsContainer>
 
         <Card>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Title level={5} style={{ margin: 0 }}>Usuarios</Title>
-            <Button icon={<ReloadOutlined />} onClick={loadUsers} loading={loading}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Title level={5} style={{ margin: 0 }}>
+              Usuarios
+            </Title>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={loadUsers}
+              loading={loading}
+            >
               Actualizar
             </Button>
           </div>

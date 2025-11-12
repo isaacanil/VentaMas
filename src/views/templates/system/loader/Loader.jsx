@@ -1,10 +1,17 @@
-
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
-import { selectLoaderMessage, selectLoaderShow } from '../../../../features/loader/loaderSlice';
+import {
+  selectLoaderMessage,
+  selectLoaderShow,
+} from '../../../../features/loader/loaderSlice';
 
-const Loader = ({ useRedux = true, show: propsShow, message: propsMessage, theme = 'dark'}) => {
+const Loader = ({
+  useRedux = true,
+  show: propsShow,
+  message: propsMessage,
+  theme = 'dark',
+}) => {
   const reduxShow = useSelector(selectLoaderShow);
   const reduxMessage = useSelector(selectLoaderMessage);
 

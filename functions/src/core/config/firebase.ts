@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import admin from 'firebase-admin';
 
 let databaseURL: string | undefined;
 
@@ -7,11 +7,15 @@ if (process.env.FIREBASE_DATABASE_URL) {
 } else if (process.env.FIREBASE_CONFIG) {
   try {
     const parsed = JSON.parse(process.env.FIREBASE_CONFIG);
-    if (parsed && typeof parsed.databaseURL === "string" && parsed.databaseURL.length > 0) {
+    if (
+      parsed &&
+      typeof parsed.databaseURL === 'string' &&
+      parsed.databaseURL.length > 0
+    ) {
       databaseURL = parsed.databaseURL;
     }
   } catch (err) {
-    console.warn("[firebase-config] Invalid FIREBASE_CONFIG JSON:", err);
+    console.warn('[firebase-config] Invalid FIREBASE_CONFIG JSON:', err);
   }
 }
 
@@ -44,7 +48,6 @@ export const serverTimestamp = admin.firestore.FieldValue.serverTimestamp;
 export const increment = admin.firestore.FieldValue.increment;
 export const arrayUnion = admin.firestore.FieldValue.arrayUnion;
 export const arrayRemove = admin.firestore.FieldValue.arrayRemove;
-
 
 export { admin, db, storage, rtdb };
 

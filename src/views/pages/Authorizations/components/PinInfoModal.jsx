@@ -1,4 +1,8 @@
-import { SafetyOutlined, LockOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import {
+  SafetyOutlined,
+  LockOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import { Modal, Typography, Button } from 'antd';
 import styled from 'styled-components';
 
@@ -62,7 +66,8 @@ const Subtitle = styled(Text)`
 
 const SectionCard = styled.div`
   background: ${({ $variant }) => sectionTokens[$variant]?.bg || '#fafafa'};
-  border: 1px solid ${({ $variant }) => sectionTokens[$variant]?.border || '#f0f0f0'};
+  border: 1px solid
+    ${({ $variant }) => sectionTokens[$variant]?.border || '#f0f0f0'};
   border-radius: 20px;
   padding: 22px 24px;
   display: grid;
@@ -130,7 +135,8 @@ const TipBullet = styled.span`
   display: grid;
   place-items: center;
   border-radius: 10px;
-  background: ${({ $variant }) => sectionTokens[$variant]?.bulletBg || '#e6f4ff'};
+  background: ${({ $variant }) =>
+    sectionTokens[$variant]?.bulletBg || '#e6f4ff'};
   color: ${({ $variant }) => sectionTokens[$variant]?.bulletColor || '#1677ff'};
   font-size: 16px;
   flex-shrink: 0;
@@ -148,11 +154,11 @@ const Highlight = styled.span`
 
 export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
   const usageTips = [
-    (
-      <>
-        Ingresa tu <Highlight>usuario</Highlight> y tu <Highlight>PIN de 6 dígitos</Highlight> cada vez que el sistema lo solicite.
-      </>
-    ),
+    <>
+      Ingresa tu <Highlight>usuario</Highlight> y tu{' '}
+      <Highlight>PIN de 6 dígitos</Highlight> cada vez que el sistema lo
+      solicite.
+    </>,
     'Mantén los PINs en privado: cada usuario tiene sus propios códigos temporales.',
     'Los PINs expiran de forma periódica para mantener la seguridad de las operaciones.',
     'Si lo prefieres, siempre puedes usar tu contraseña completa para autorizarte.',
@@ -198,7 +204,8 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
           </IconBadge>
           <HeaderTitle level={4}>Conoce cómo funcionan los PINs</HeaderTitle>
           <Subtitle>
-            Usa códigos temporales para autorizar operaciones de manera ágil, manteniendo la seguridad de tu cuenta.
+            Usa códigos temporales para autorizar operaciones de manera ágil,
+            manteniendo la seguridad de tu cuenta.
           </Subtitle>
         </Header>
 
@@ -209,7 +216,9 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
             </SectionIcon>
             <SectionHeaderTexts>
               <SectionLabel>Uso diario</SectionLabel>
-              <SectionHeading level={5}>Cómo aprovechar los PINs</SectionHeading>
+              <SectionHeading level={5}>
+                Cómo aprovechar los PINs
+              </SectionHeading>
             </SectionHeaderTexts>
           </SectionHeader>
           <TipsList>{renderTips(usageTips, 'usage')}</TipsList>

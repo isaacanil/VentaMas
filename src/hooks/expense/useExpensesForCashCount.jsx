@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { fbLoadExpensesForCashCount } from "../../firebase/cashCount/fbLoadExpensesForCashCount";
+import { selectUser } from '../../features/auth/userSlice';
+import { fbLoadExpensesForCashCount } from '../../firebase/cashCount/fbLoadExpensesForCashCount';
 
 export const useExpensesForCashCount = (cashCountId) => {
   const [state, setState] = useState({
@@ -12,7 +12,7 @@ export const useExpensesForCashCount = (cashCountId) => {
     error: null,
   });
 
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
 
   useEffect(() => {
     if (!user?.businessID || !cashCountId) return;
@@ -26,8 +26,10 @@ export const useExpensesForCashCount = (cashCountId) => {
         const data = await fbLoadExpensesForCashCount(
           user,
           cashCountId,
-          "all",
-          { signal: abort.signal }
+          'all',
+          {
+            signal: abort.signal,
+          },
         );
 
         if (!abort.signal.aborted) setState(data); // ya trae count, invoices, loading:false

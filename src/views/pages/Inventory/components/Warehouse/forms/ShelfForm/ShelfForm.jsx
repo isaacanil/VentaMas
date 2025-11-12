@@ -1,10 +1,20 @@
-import { Form, Input, Button, Modal, Spin, message } from "antd";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { Form, Input, Button, Modal, Spin, message } from 'antd';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { clearShelfForm, closeShelfForm, selectShelfState, setShelfError, setShelfLoading, updateShelfFormData } from "../../../../../../../features/warehouse/shelfModalSlice";
-import { createShelf, updateShelf } from "../../../../../../../firebase/warehouse/shelfService";
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import {
+  clearShelfForm,
+  closeShelfForm,
+  selectShelfState,
+  setShelfError,
+  setShelfLoading,
+  updateShelfFormData,
+} from '../../../../../../../features/warehouse/shelfModalSlice';
+import {
+  createShelf,
+  updateShelf,
+} from '../../../../../../../firebase/warehouse/shelfService';
 
 export function ShelfForm() {
   const dispatch = useDispatch();
@@ -35,9 +45,11 @@ export function ShelfForm() {
         name: values.name?.trim() || '',
         shortName: values.shortName?.trim() || '',
         description: values.description?.trim() || '',
-        rowCapacity: Number.isNaN(parseInt(values.rowCapacity, 10)) ? 0 : parseInt(values.rowCapacity, 10)
+        rowCapacity: Number.isNaN(parseInt(values.rowCapacity, 10))
+          ? 0
+          : parseInt(values.rowCapacity, 10),
       };
-      
+
       const warehouseId = path[0]?.id;
       if (!warehouseId) {
         throw new Error('No se encontró el ID del almacén');
@@ -45,15 +57,15 @@ export function ShelfForm() {
 
       if (formData?.id) {
         await updateShelf(user, warehouseId, newShelf);
-        message.success("Estante actualizado con éxito.");
+        message.success('Estante actualizado con éxito.');
       } else {
         await createShelf(user, warehouseId, newShelf);
-        message.success("Estante creado con éxito.");
+        message.success('Estante creado con éxito.');
       }
       handleClose();
     } catch (error) {
-      console.error("Error al guardar el estante: ", error);
-      message.error(error.message || "Error al guardar el estante.");
+      console.error('Error al guardar el estante: ', error);
+      message.error(error.message || 'Error al guardar el estante.');
       dispatch(setShelfError(error.message || 'Error al guardar el estante.'));
     } finally {
       dispatch(setShelfLoading(false));
@@ -71,13 +83,16 @@ export function ShelfForm() {
 
   return (
     <Modal
-      title={formData?.id ? "Editar Estante" : "Añadir Estante"}
+      title={formData?.id ? 'Editar Estante' : 'Añadir Estante'}
       open={isOpen}
       onCancel={handleClose}
       footer={null} // No mostrar pie de página de botones por defecto
       destroyOnClose
     >
-      <Spin spinning={loading} tip={formData?.id ? "Actualizando estante..." : "Creando estante..."}>
+      <Spin
+        spinning={loading}
+        tip={formData?.id ? 'Actualizando estante...' : 'Creando estante...'}
+      >
         <Form
           form={form}
           layout="vertical"
@@ -88,14 +103,18 @@ export function ShelfForm() {
           <Form.Item
             name="name"
             label="Nombre"
-            rules={[{ required: true, message: "Por favor, ingrese el nombre" }]}
+            rules={[
+              { required: true, message: 'Por favor, ingrese el nombre' },
+            ]}
           >
             <Input disabled={loading} />
           </Form.Item>
           <Form.Item
             name="shortName"
             label="Nombre Corto"
-            rules={[{ required: true, message: "Por favor, ingrese el nombre corto" }]}
+            rules={[
+              { required: true, message: 'Por favor, ingrese el nombre corto' },
+            ]}
           >
             <Input disabled={loading} />
           </Form.Item>
@@ -105,7 +124,12 @@ export function ShelfForm() {
           <Form.Item
             name="rowCapacity"
             label="Capacidad de Fila"
-            rules={[{ required: true, message: "Por favor, ingrese la capacidad de fila" }]}
+            rules={[
+              {
+                required: true,
+                message: 'Por favor, ingrese la capacidad de fila',
+              },
+            ]}
           >
             <Input type="number" min="0" disabled={loading} />
           </Form.Item>

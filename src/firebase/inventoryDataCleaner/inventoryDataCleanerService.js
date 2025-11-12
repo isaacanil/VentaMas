@@ -1,37 +1,36 @@
-
 import { deleteDoc, getDocs, collection, query } from 'firebase/firestore';
 
 import { db } from '../firebaseconfig';
 
 export const cleanInventoryData = async (businessID) => {
-    if (!businessID) throw new Error('BusinessID es requerido');
+  if (!businessID) throw new Error('BusinessID es requerido');
 
-    const collectionsToClean = [
-        'products',
-        'backOrders',
-        'productsStock',
-        'movements',
-        'batches',
-        'categories',
-        'invoices'
-    ];
+  const collectionsToClean = [
+    'products',
+    'backOrders',
+    'productsStock',
+    'movements',
+    'batches',
+    'categories',
+    'invoices',
+  ];
 
-    try {
-        for (const collectionName of collectionsToClean) {
-            const q = query(collection(db, 'businesses', businessID, collectionName));
+  try {
+    for (const collectionName of collectionsToClean) {
+      const q = query(collection(db, 'businesses', businessID, collectionName));
 
-            const querySnapshot = await getDocs(q);
-            
-            const deletePromises = querySnapshot.docs.map(doc => 
-                deleteDoc(doc.ref)
-            );
+      const querySnapshot = await getDocs(q);
 
-            await Promise.all(deletePromises);
-        }
+      const deletePromises = querySnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref),
+      );
 
-        return { success: true, message: 'Datos limpiados exitosamente' };
-    } catch (error) {
-        console.error('Error al limpiar datos:', error);
-        throw error;
+      await Promise.all(deletePromises);
     }
+
+    return { success: true, message: 'Datos limpiados exitosamente' };
+  } catch (error) {
+    console.error('Error al limpiar datos:', error);
+    throw error;
+  }
 };

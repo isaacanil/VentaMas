@@ -30,12 +30,15 @@ export const useAuthorizationPin = ({
     setIsModalOpen(false);
   }, []);
 
-  const handleAuthorized = useCallback((authorizer) => {
-    if (onAuthorized) {
-      onAuthorized(authorizer);
-    }
-    hideModal();
-  }, [onAuthorized, hideModal]);
+  const handleAuthorized = useCallback(
+    (authorizer) => {
+      if (onAuthorized) {
+        onAuthorized(authorizer);
+      }
+      hideModal();
+    },
+    [onAuthorized, hideModal],
+  );
 
   const modalProps = {
     isOpen: isModalOpen,

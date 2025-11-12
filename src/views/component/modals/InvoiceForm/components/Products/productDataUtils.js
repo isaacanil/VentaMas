@@ -6,7 +6,10 @@ export const getCategoryName = (categoryRaw) => {
     return trimmed.length > 0 ? trimmed : null;
   }
 
-  if (typeof categoryRaw === 'object' && typeof categoryRaw?.name === 'string') {
+  if (
+    typeof categoryRaw === 'object' &&
+    typeof categoryRaw?.name === 'string'
+  ) {
     const trimmed = categoryRaw.name.trim();
     return trimmed.length > 0 ? trimmed : null;
   }
@@ -36,7 +39,10 @@ export const getPrimaryActiveIngredient = (activeIngredientRaw) => {
     return trimmed.length > 0 ? trimmed : null;
   }
 
-  if (typeof activeIngredientRaw === 'object' && typeof activeIngredientRaw?.name === 'string') {
+  if (
+    typeof activeIngredientRaw === 'object' &&
+    typeof activeIngredientRaw?.name === 'string'
+  ) {
     const trimmed = activeIngredientRaw.name.trim();
     return trimmed.length > 0 ? trimmed : null;
   }

@@ -76,7 +76,7 @@ const ContentContainer = styled.div`
 const ScrollableContent = styled.div`
   display: flex;
   transition: transform 0.3s ease;
-  transform: translateX(${props => props.offset}px);
+  transform: translateX(${(props) => props.offset}px);
 `;
 
 const PageContainer = styled.div`
@@ -100,7 +100,7 @@ const NotificationSection = ({
   renderPage,
   itemsPerPage = 3,
   data = [],
-  children
+  children,
 }) => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [containerWidth, setContainerWidth] = React.useState(0);
@@ -110,7 +110,7 @@ const NotificationSection = ({
   const finalPages = React.useMemo(() => {
     if (pages.length > 0) return pages;
     if (data.length === 0) return [children];
-    
+
     const chunks = [];
     for (let i = 0; i < data.length; i += itemsPerPage) {
       chunks.push(data.slice(i, i + itemsPerPage));
@@ -152,8 +152,8 @@ const NotificationSection = ({
         <SectionTitle>{title}</SectionTitle>
         {showNavigation && totalPages > 1 && (
           <NavigationContainer>
-            <NavButton 
-              onClick={goToPrevious} 
+            <NavButton
+              onClick={goToPrevious}
               disabled={currentPage === 0}
               title="Anterior"
             >
@@ -162,8 +162,8 @@ const NotificationSection = ({
             <PageIndicator>
               {currentPage + 1} / {totalPages}
             </PageIndicator>
-            <NavButton 
-              onClick={goToNext} 
+            <NavButton
+              onClick={goToNext}
               disabled={currentPage === totalPages - 1}
               title="Siguiente"
             >

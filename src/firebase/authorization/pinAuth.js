@@ -2,10 +2,22 @@ import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '../firebaseconfig.jsx';
 
-const generateModulePinsCallable = httpsCallable(functions, 'generateModulePins');
-const deactivateModulePinsCallable = httpsCallable(functions, 'deactivateModulePins');
-const getUserModulePinStatusCallable = httpsCallable(functions, 'getUserModulePinStatus');
-const getBusinessPinsSummaryCallable = httpsCallable(functions, 'getBusinessPinsSummary');
+const generateModulePinsCallable = httpsCallable(
+  functions,
+  'generateModulePins',
+);
+const deactivateModulePinsCallable = httpsCallable(
+  functions,
+  'deactivateModulePins',
+);
+const getUserModulePinStatusCallable = httpsCallable(
+  functions,
+  'getUserModulePinStatus',
+);
+const getBusinessPinsSummaryCallable = httpsCallable(
+  functions,
+  'getBusinessPinsSummary',
+);
 const validateModulePinCallable = httpsCallable(functions, 'validateModulePin');
 const getUserModulePinsCallable = httpsCallable(functions, 'getUserModulePins');
 
@@ -124,7 +136,11 @@ const normalizeBusinessUsers = (users) => {
   }));
 };
 
-export const fbGenerateUserPin = async (currentUser, targetUserId, modules = []) => {
+export const fbGenerateUserPin = async (
+  currentUser,
+  targetUserId,
+  modules = [],
+) => {
   if (!currentUser?.uid) {
     throw new Error('Sesión inválida. Inicia sesión nuevamente.');
   }
@@ -147,7 +163,11 @@ export const fbGenerateUserPin = async (currentUser, targetUserId, modules = [])
   }
 };
 
-export const fbDeactivateUserPin = async (currentUser, targetUserId, modules = null) => {
+export const fbDeactivateUserPin = async (
+  currentUser,
+  targetUserId,
+  modules = null,
+) => {
   if (!currentUser?.uid) {
     throw new Error('Sesión inválida. Inicia sesión nuevamente.');
   }
@@ -193,11 +213,16 @@ export const fbGetUsersWithPinStatus = async (currentUser) => {
     });
     return normalizeBusinessUsers(response.data?.users);
   } catch (error) {
-    throw new Error(error?.message || 'No se pudo obtener la lista de usuarios.');
+    throw new Error(
+      error?.message || 'No se pudo obtener la lista de usuarios.',
+    );
   }
 };
 
-export const fbValidateUserPin = async (currentUser, { username, pin, module = 'invoices' } = {}) => {
+export const fbValidateUserPin = async (
+  currentUser,
+  { username, pin, module = 'invoices' } = {},
+) => {
   if (!currentUser?.uid) {
     throw new Error('Sesión inválida. Inicia sesión nuevamente.');
   }
@@ -224,7 +249,11 @@ export const fbValidateUserPin = async (currentUser, { username, pin, module = '
   }
 };
 
-export const fbViewUserPins = async (currentUser, targetUserId = null, modules = null) => {
+export const fbViewUserPins = async (
+  currentUser,
+  targetUserId = null,
+  modules = null,
+) => {
   if (!currentUser?.uid) {
     throw new Error('Sesión inválida. Inicia sesión nuevamente.');
   }

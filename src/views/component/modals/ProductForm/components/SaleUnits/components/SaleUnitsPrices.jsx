@@ -1,21 +1,24 @@
-import { Card } from 'antd'
-import React from 'react'
-import { useSelector } from 'react-redux'
-import styled from 'styled-components'
+import { Card } from 'antd';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { selectIsSoldInUnits, selectSelectedSaleUnit } from '../../../../../../../features/updateProduct/updateProductSlice'
+import {
+  selectIsSoldInUnits,
+  selectSelectedSaleUnit,
+} from '../../../../../../../features/updateProduct/updateProductSlice';
 
 const PricesContainer = styled.div`
   margin-top: 20px;
-`
+`;
 
 const SaleUnitsPrices = () => {
-  const selectedSaleUnit = useSelector(selectSelectedSaleUnit)
-  const isSoldInUnits = useSelector(selectIsSoldInUnits)
+  const selectedSaleUnit = useSelector(selectSelectedSaleUnit);
+  const isSoldInUnits = useSelector(selectIsSoldInUnits);
 
-  if (!isSoldInUnits || !selectedSaleUnit) return null
+  if (!isSoldInUnits || !selectedSaleUnit) return null;
 
-  const { pricing } = selectedSaleUnit
+  const { pricing } = selectedSaleUnit;
 
   return (
     <PricesContainer>
@@ -28,7 +31,7 @@ const SaleUnitsPrices = () => {
         <p>Impuesto: {pricing.tax}</p>
       </Card>
     </PricesContainer>
-  )
-}
+  );
+};
 
-export default SaleUnitsPrices
+export default SaleUnitsPrices;

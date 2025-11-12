@@ -1,5 +1,20 @@
-import { CloudUploadOutlined, PlusOutlined, ReloadOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, Row, Select, Switch, Typography } from 'antd';
+import {
+  CloudUploadOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Row,
+  Select,
+  Switch,
+  Typography,
+} from 'antd';
 import styled from 'styled-components';
 
 import { imgFailed } from '../../../../../component/modals/ProductForm/ImageManager/ImageManager';
@@ -102,14 +117,23 @@ export const IdentitySection = ({
         )}
       </PreviewFrame>
       <PreviewActions>
-        <PreviewButton type="primary" icon={<CloudUploadOutlined />} onClick={onOpenImageManager}>
+        <PreviewButton
+          type="primary"
+          icon={<CloudUploadOutlined />}
+          onClick={onOpenImageManager}
+        >
           Agregar
         </PreviewButton>
-        <PreviewButton icon={<ReloadOutlined />} onClick={onResetImage} disabled={!product?.image}>
+        <PreviewButton
+          icon={<ReloadOutlined />}
+          onClick={onResetImage}
+          disabled={!product?.image}
+        >
           Restablecer
         </PreviewButton>
         <Text type="secondary">
-          Usa una imagen cuadrada para que tu producto se vea mejor en catálogos y POS.
+          Usa una imagen cuadrada para que tu producto se vea mejor en catálogos
+          y POS.
         </Text>
       </PreviewActions>
     </ImagePanel>
@@ -169,7 +193,9 @@ export const IdentitySection = ({
               options={brandOptions}
               optionFilterProp="label"
               filterOption={(inputValue, option) =>
-                (option?.label || '').toLowerCase().includes(inputValue.toLowerCase())
+                (option?.label || '')
+                  .toLowerCase()
+                  .includes(inputValue.toLowerCase())
               }
             />
             <Button
@@ -190,7 +216,9 @@ export const IdentitySection = ({
               placeholder="Asigna una categoría"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                (option?.children || '').toLowerCase().includes(input.toLowerCase())
+                (option?.children || '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
               allowClear
             >
@@ -198,7 +226,10 @@ export const IdentitySection = ({
                 Ninguna
               </Option>
               {categories.map(({ category }) => (
-                <Option key={category?.id || category?.name} value={category.name}>
+                <Option
+                  key={category?.id || category?.name}
+                  value={category.name}
+                >
                   {category.name}
                 </Option>
               ))}
@@ -232,7 +263,9 @@ export const IdentitySection = ({
             placeholder="Selecciona el principio activo"
             optionFilterProp="children"
             filterOption={(input, option) =>
-              (option?.children || '').toLowerCase().includes(input.toLowerCase())
+              (option?.children || '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
             }
             allowClear
           >

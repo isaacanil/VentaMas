@@ -10,7 +10,13 @@ import {
   PanelMetaValue,
 } from './PanelPrimitives';
 
-const SimplePanelHeader = ({ icon, title, badgeCount = 0, metaItems = [], showMeta = true }) => (
+const SimplePanelHeader = ({
+  icon,
+  title,
+  badgeCount = 0,
+  metaItems = [],
+  showMeta = true,
+}) => (
   <PanelHeaderContainer>
     <PanelTitle>
       {icon && <FontAwesomeIcon icon={icon} />}

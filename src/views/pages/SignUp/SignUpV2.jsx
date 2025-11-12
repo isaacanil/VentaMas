@@ -7,9 +7,9 @@ const RegistroContainer = styled.div`
   align-items: center;
   padding: 1em;
   form {
-      max-width: 600px;
-        width: 100%;
-        padding: 1em;
+    max-width: 600px;
+    width: 100%;
+    padding: 1em;
   }
   background-color: #f2f2f2;
 `;
@@ -96,14 +96,14 @@ const Registro = () => {
 
     if (!/[A-Z]/.test(password)) {
       setPasswordError(
-        'La contraseña debe contener al menos una letra mayúscula.'
+        'La contraseña debe contener al menos una letra mayúscula.',
       );
       return;
     }
 
     if (!/[a-z]/.test(password)) {
       setPasswordError(
-        'La contraseña debe contener al menos una letra minúscula.'
+        'La contraseña debe contener al menos una letra minúscula.',
       );
       return;
     }

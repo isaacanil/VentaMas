@@ -7,7 +7,7 @@ export const normalizeModules = (modules) => {
   const unique = new Set(
     modules
       .map((m) => (typeof m === 'string' ? m.trim() : ''))
-      .filter((m) => m && ALLOWED_MODULES.has(m))
+      .filter((m) => m && ALLOWED_MODULES.has(m)),
   );
   return Array.from(unique);
 };
@@ -31,14 +31,16 @@ export const toIsoString = (value) => {
 };
 
 export const calcExpiration = (originTimestamp = Timestamp.now()) => {
-  const base = originTimestamp instanceof Timestamp ? originTimestamp : Timestamp.now();
+  const base =
+    originTimestamp instanceof Timestamp ? originTimestamp : Timestamp.now();
   const expiresMs = base.toMillis() + EXPIRATION_HOURS * 60 * 60 * 1000;
   return Timestamp.fromMillis(expiresMs);
 };
 
 export const buildModuleStatus = (moduleKey, payload, nowMillis) => {
   if (!payload) return null;
-  const expiresAtMillis = payload.expiresAt?.toMillis?.() ?? payload.expiresAt ?? 0;
+  const expiresAtMillis =
+    payload.expiresAt?.toMillis?.() ?? payload.expiresAt ?? 0;
   const isExpired = expiresAtMillis > 0 && expiresAtMillis < nowMillis;
   const isActive = Boolean(payload.isActive) && !isExpired;
   const status = isActive ? 'active' : isExpired ? 'expired' : 'inactive';
@@ -61,10 +63,12 @@ export const buildModuleStatus = (moduleKey, payload, nowMillis) => {
 
 export const buildLegacyStatus = (legacyPin, nowMillis) => {
   if (!legacyPin?.pin) return null;
-  const modules = Array.isArray(legacyPin.modules) && legacyPin.modules.length
-    ? legacyPin.modules
-    : ['invoices'];
-  const expiresAtMillis = legacyPin.expiresAt?.toMillis?.() ?? legacyPin.expiresAt ?? 0;
+  const modules =
+    Array.isArray(legacyPin.modules) && legacyPin.modules.length
+      ? legacyPin.modules
+      : ['invoices'];
+  const expiresAtMillis =
+    legacyPin.expiresAt?.toMillis?.() ?? legacyPin.expiresAt ?? 0;
   const isExpired = expiresAtMillis > 0 && expiresAtMillis < nowMillis;
   const isActive = Boolean(legacyPin.isActive) && !isExpired;
   const status = isActive ? 'active' : isExpired ? 'expired' : 'inactive';

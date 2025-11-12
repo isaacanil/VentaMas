@@ -24,11 +24,13 @@ export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
     data?.user?.businessId ||
     null;
 
-  const prefix = typeof data?.prefix === 'string' ? sanitizePrefix(data.prefix) : null;
+  const prefix =
+    typeof data?.prefix === 'string' ? sanitizePrefix(data.prefix) : null;
   const userId = data?.userId || data?.user?.uid || context.auth?.uid || null;
-  const normalizedDigits = typeof data?.normalizedDigits === 'string'
-    ? data.normalizedDigits.trim()
-    : null;
+  const normalizedDigits =
+    typeof data?.normalizedDigits === 'string'
+      ? data.normalizedDigits.trim()
+      : null;
 
   if (!businessId) {
     throw new HttpsError('invalid-argument', 'businessId es requerido');
@@ -42,7 +44,10 @@ export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
     throw new HttpsError('invalid-argument', 'userId es requerido');
   }
 
-  const sequenceNumber = sanitizeNumber(data?.sequenceNumber, Number(normalizedDigits));
+  const sequenceNumber = sanitizeNumber(
+    data?.sequenceNumber,
+    Number(normalizedDigits),
+  );
   if (!Number.isFinite(sequenceNumber) || sequenceNumber < 0) {
     throw new HttpsError('invalid-argument', 'sequenceNumber inválido');
   }
@@ -51,7 +56,10 @@ export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
   const windowBefore = sanitizeNumber(data?.windowBefore, data?.backwardSteps);
   const windowAfter = sanitizeNumber(data?.windowAfter, data?.forwardSteps);
   const quantitySteps = sanitizeNumber(data?.quantitySteps, 0);
-  const sequenceLength = sanitizeNumber(data?.sequenceLength, normalizedDigits?.length ?? 0);
+  const sequenceLength = sanitizeNumber(
+    data?.sequenceLength,
+    normalizedDigits?.length ?? 0,
+  );
 
   const userSnap = await db.doc(`users/${userId}`).get();
   const { hasGlobalAccess } = evaluateLedgerAccess(userSnap, {
@@ -60,7 +68,10 @@ export const getNcfLedgerInsights = onCall(async ({ data }, context) => {
 
   const userBusinessId = resolveUserBusinessId(userSnap);
   if (!hasGlobalAccess && userBusinessId && userBusinessId !== businessId) {
-    throw new HttpsError('permission-denied', 'Usuario no pertenece a este negocio');
+    throw new HttpsError(
+      'permission-denied',
+      'Usuario no pertenece a este negocio',
+    );
   }
 
   const insights = await getLedgerInsights({

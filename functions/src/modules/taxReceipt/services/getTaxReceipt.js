@@ -1,8 +1,7 @@
-
 // src/taxReceipt/utils/taxReceiptQueries.js
-import { https, logger } from "firebase-functions";
+import { https, logger } from 'firebase-functions';
 
-import { db } from "../../../core/config/firebase.js";
+import { db } from '../../../core/config/firebase.js';
 
 /**
  * Construye y ejecuta la consulta para obtener el recibo fiscal
@@ -14,30 +13,30 @@ import { db } from "../../../core/config/firebase.js";
  * @returns {Promise<FirebaseFirestore.DocumentSnapshot>}
  */
 export async function getTaxReceiptDocFromTx(tx, user, taxReceiptName) {
-    if(!user?.businessID || !user?.uid || !taxReceiptName) {
-        throw new https.HttpsError(
-            'invalid-argument',
-            'Parámetros inválidos en getTaxReceiptDocFromTx'
-        );
-    }
+  if (!user?.businessID || !user?.uid || !taxReceiptName) {
+    throw new https.HttpsError(
+      'invalid-argument',
+      'Parámetros inválidos en getTaxReceiptDocFromTx',
+    );
+  }
 
-    const receiptsCol = db
-        .collection('businesses')
-        .doc(user.businessID)
-        .collection('taxReceipts')
-        .where('data.name', '==', taxReceiptName)
-        .limit(1);
+  const receiptsCol = db
+    .collection('businesses')
+    .doc(user.businessID)
+    .collection('taxReceipts')
+    .where('data.name', '==', taxReceiptName)
+    .limit(1);
 
-    const snap = await tx.get(receiptsCol);
+  const snap = await tx.get(receiptsCol);
 
-    if (snap.empty) {
-        logger.error(`Recibo fiscal "${taxReceiptName}" no encontrado.`);
-        throw new https.HttpsError('not-found', 'Recibo fiscal no encontrado');
-    }
-    return snap.docs[0];
+  if (snap.empty) {
+    logger.error(`Recibo fiscal "${taxReceiptName}" no encontrado.`);
+    throw new https.HttpsError('not-found', 'Recibo fiscal no encontrado');
+  }
+  return snap.docs[0];
 }
 
 const getTaxReceipt = {
-    getTaxReceiptDocFromTx,
+  getTaxReceiptDocFromTx,
 };
 export default getTaxReceipt;

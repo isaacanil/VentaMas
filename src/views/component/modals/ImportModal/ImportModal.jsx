@@ -10,15 +10,23 @@ import FieldSelector from './FieldSelector';
 
 const { Button, Upload, Modal, message, Tabs } = antd;
 
-export default function ImportModal({ open, onClose, onImport, onCreateTemplate }) {
+export default function ImportModal({
+  open,
+  onClose,
+  onImport,
+  onCreateTemplate,
+}) {
   const [fileList, setFileList] = useState([]);
   const [isImporting, setIsImporting] = useState(false);
-  const [activeTab, setActiveTab] = useState("import");
+  const [activeTab, setActiveTab] = useState('import');
   const [selectedOptionalFields, setSelectedOptionalFields] = useState([]);
   const [language] = useState('es'); // Por defecto español, podría ser configurable en el futuro
-  
+
   // Obtener los campos disponibles
-  const { essential, optionalGroups } = getAvailableHeaders(productHeaderMappings, language);
+  const { essential, optionalGroups } = getAvailableHeaders(
+    productHeaderMappings,
+    language,
+  );
 
   const handleImportClick = async () => {
     if (fileList.length > 0 && fileList[0].originFileObj) {
@@ -30,7 +38,9 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
         message.success('Datos importados exitosamente');
       } catch (error) {
         console.error('Error al importar datos:', error);
-        message.error('Hubo un problema al importar los datos. Por favor, verifica el archivo e intenta de nuevo.');
+        message.error(
+          'Hubo un problema al importar los datos. Por favor, verifica el archivo e intenta de nuevo.',
+        );
       } finally {
         setIsImporting(false);
       }
@@ -77,7 +87,7 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
       'text/x-csv',
       'application/x-csv',
       'text/comma-separated-values',
-      'text/x-comma-separated-values'
+      'text/x-comma-separated-values',
     ];
 
     if (validTypes.includes(file.type)) {
@@ -86,7 +96,7 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
 
     const validExtensions = ['xlsx', 'csv'];
     const extension = file.name.split('.').pop().toLowerCase();
-    
+
     // Verificar específicamente archivos .xls y mostrar error informativo
     if (extension === 'xls') {
       message.error({
@@ -99,17 +109,18 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
               💡 <strong>Soluciones:</strong>
             </div>
             <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
-              • Guarda el archivo como .xlsx desde Excel<br/>
-              • Exporta como CSV desde Excel<br/>
-              • Usa LibreOffice para convertir a .xlsx
+              • Guarda el archivo como .xlsx desde Excel
+              <br />
+              • Exporta como CSV desde Excel
+              <br />• Usa LibreOffice para convertir a .xlsx
             </div>
           </div>
         ),
-        duration: 8
+        duration: 8,
       });
       return false;
     }
-    
+
     return validExtensions.includes(extension);
   };
 
@@ -138,15 +149,20 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
       label: 'Importar Datos',
       children: (
         <Section>
-          <p>Selecciona un archivo Excel (.xlsx) o CSV para importar datos al sistema.</p>
-          <p>⚠️ <strong>Nota:</strong> Los archivos .xls antiguos no son compatibles. Por favor, guárdalos como .xlsx o CSV desde Excel.</p>
-          <p>Asegúrate de que los datos estén organizados de acuerdo a la plantilla de importación.</p>
+          <p>
+            Selecciona un archivo Excel (.xlsx) o CSV para importar datos al
+            sistema.
+          </p>
+          <p>
+            ⚠️ <strong>Nota:</strong> Los archivos .xls antiguos no son
+            compatibles. Por favor, guárdalos como .xlsx o CSV desde Excel.
+          </p>
+          <p>
+            Asegúrate de que los datos estén organizados de acuerdo a la
+            plantilla de importación.
+          </p>
 
-          <Upload
-            {...uploadProps}
-            onChange={handleFileChange}
-            maxCount={1}
-          >
+          <Upload {...uploadProps} onChange={handleFileChange} maxCount={1}>
             <Button icon={<UploadOutlined />}>Elegir archivo</Button>
           </Upload>
         </Section>
@@ -157,16 +173,19 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
       label: 'Crear Plantilla',
       children: (
         <Section>
-          <p>Crea una plantilla personalizada seleccionando los campos que necesitas.</p>
+          <p>
+            Crea una plantilla personalizada seleccionando los campos que
+            necesitas.
+          </p>
           <p>Los campos esenciales siempre se incluirán en la plantilla.</p>
-          
-          <FieldSelector 
+
+          <FieldSelector
             essentialFields={essential}
             optionalGroups={optionalGroups}
             onFieldsChange={handleFieldsChange}
             language={language}
           />
-          
+
           <Button
             type="primary"
             onClick={handleCreateTemplateClick}
@@ -185,7 +204,7 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
       open={open}
       onCancel={onClose}
       footer={
-        activeTab === 'import' 
+        activeTab === 'import'
           ? [
               <Button key="cancel" onClick={onClose}>
                 Cancelar
@@ -209,11 +228,7 @@ export default function ImportModal({ open, onClose, onImport, onCreateTemplate 
       }
     >
       <Body>
-        <Tabs 
-          activeKey={activeTab} 
-          onChange={setActiveTab}
-          items={items}
-        />
+        <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
       </Body>
     </StyledModal>
   );

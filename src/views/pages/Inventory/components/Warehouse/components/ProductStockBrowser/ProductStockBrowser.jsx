@@ -4,7 +4,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useInventoryProductIds, useListenAllActiveProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
+import {
+  useInventoryProductIds,
+  useListenAllActiveProductsStock,
+} from '../../../../../../../firebase/warehouse/productStockService';
 import { replacePathParams } from '../../../../../../../routes/replacePathParams';
 import ROUTES_PATH from '../../../../../../../routes/routesName';
 import Tree from '../../../../../../component/tree/Tree';
@@ -108,8 +111,10 @@ const ProductStockBrowser = ({
 }) => {
   const navigate = useNavigate();
   const { productId } = useParams();
-  const { data: products = [], loading: stockLoading } = useListenAllActiveProductsStock();
-  const { data: inventoryProductIds, loading: inventoryLoading } = useInventoryProductIds();
+  const { data: products = [], loading: stockLoading } =
+    useListenAllActiveProductsStock();
+  const { data: inventoryProductIds, loading: inventoryLoading } =
+    useInventoryProductIds();
   const { PRODUCT_STOCK } = ROUTES_PATH.INVENTORY_TERM;
   const hasFilters = activeFilters.length > 0;
   const [filtersPopoverOpen, setFiltersPopoverOpen] = useState(false);
@@ -127,7 +132,7 @@ const ProductStockBrowser = ({
         const filter = FILTERS_BY_VALUE[filterKey];
         if (!filter?.test) return true;
         return filter.test(product);
-      })
+      }),
     );
   }, [inventoryProducts, activeFilters, hasFilters]);
 
@@ -144,120 +149,137 @@ const ProductStockBrowser = ({
         hasFilters,
       });
     }
-  }, [onStatsChange, totalProducts, visibleProducts, combinedLoading, hasFilters]);
+  }, [
+    onStatsChange,
+    totalProducts,
+    visibleProducts,
+    combinedLoading,
+    hasFilters,
+  ]);
 
-  const treeData = useMemo(() => (
-    filteredProducts.map((product) => {
-      const lotCount = Number(product.uniqueBatches ?? 0);
-      const productStockCount = Number(product.stockRecords ?? 0);
-      const locationCount = Number(product.uniqueLocations ?? 0);
-      const longLotLabel = `${lotCount} ${lotCount === 1 ? 'lote activo' : 'lotes activos'}`;
-      const longStockLabel = `${productStockCount} ${productStockCount === 1 ? 'registro de stock activo' : 'registros de stock activos'}`;
-      const longLocationLabel = `${locationCount} ${locationCount === 1 ? 'ubicación con stock' : 'ubicaciones con stock'}`;
-      const detailItems = [
-        {
-          text: `${productStockCount} ${productStockCount === 1 ? 'registro de stock' : 'registros de stock'}`,
-          type: productStockCount > 0 ? 'default' : 'actual-empty',
-        },
-      ];
+  const treeData = useMemo(
+    () =>
+      filteredProducts.map((product) => {
+        const lotCount = Number(product.uniqueBatches ?? 0);
+        const productStockCount = Number(product.stockRecords ?? 0);
+        const locationCount = Number(product.uniqueLocations ?? 0);
+        const longLotLabel = `${lotCount} ${lotCount === 1 ? 'lote activo' : 'lotes activos'}`;
+        const longStockLabel = `${productStockCount} ${productStockCount === 1 ? 'registro de stock activo' : 'registros de stock activos'}`;
+        const longLocationLabel = `${locationCount} ${locationCount === 1 ? 'ubicación con stock' : 'ubicaciones con stock'}`;
+        const detailItems = [
+          {
+            text: `${productStockCount} ${productStockCount === 1 ? 'registro de stock' : 'registros de stock'}`,
+            type: productStockCount > 0 ? 'default' : 'actual-empty',
+          },
+        ];
 
-      return {
-        id: product.id,
-        name: `${product.name ?? ''} ${product.barcode ?? ''}`.trim(),
-        extraDetails: detailItems,
-        stockSummary: product.stockSummary,
-        stockSummaryLoading: false,
-        record: product,
-        tooltipDetails: [
-          longLotLabel,
-          longStockLabel,
-          longLocationLabel,
-        ],
-      };
-    })
-  ), [filteredProducts]);
+        return {
+          id: product.id,
+          name: `${product.name ?? ''} ${product.barcode ?? ''}`.trim(),
+          extraDetails: detailItems,
+          stockSummary: product.stockSummary,
+          stockSummaryLoading: false,
+          record: product,
+          tooltipDetails: [longLotLabel, longStockLabel, longLocationLabel],
+        };
+      }),
+    [filteredProducts],
+  );
 
-  const handleFiltersChange = useCallback((values) => {
-    if (typeof onFiltersChange === 'function') {
-      onFiltersChange(values);
-    }
-  }, [onFiltersChange]);
+  const handleFiltersChange = useCallback(
+    (values) => {
+      if (typeof onFiltersChange === 'function') {
+        onFiltersChange(values);
+      }
+    },
+    [onFiltersChange],
+  );
 
   const handleClearFilters = useCallback(() => {
     handleFiltersChange([]);
   }, [handleFiltersChange]);
 
-  const filtersContent = useMemo(() => (
-    <FiltersPopoverContent>
-      <FiltersList>
-        <Checkbox.Group value={activeFilters} onChange={handleFiltersChange}>
-          {filterOptions.map((option) => (
-            <FilterCheckbox key={option.value} value={option.value}>
-              <FilterLabel>{option.label}</FilterLabel>
-              {option.description && (
-                <FilterDescription>{option.description}</FilterDescription>
-              )}
-            </FilterCheckbox>
-          ))}
-        </Checkbox.Group>
-      </FiltersList>
-      <FiltersFooter>
-        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-          {activeFilters.length
-            ? `${activeFilters.length} filtro${activeFilters.length === 1 ? '' : 's'} activo${activeFilters.length === 1 ? '' : 's'}`
-            : 'Sin filtros aplicados'}
-        </span>
-        {activeFilters.length > 0 && (
-          <ClearFiltersButton type="link" onClick={handleClearFilters}>
-            Limpiar
-          </ClearFiltersButton>
-        )}
-      </FiltersFooter>
-    </FiltersPopoverContent>
-  ), [activeFilters, filterOptions, handleFiltersChange, handleClearFilters]);
+  const filtersContent = useMemo(
+    () => (
+      <FiltersPopoverContent>
+        <FiltersList>
+          <Checkbox.Group value={activeFilters} onChange={handleFiltersChange}>
+            {filterOptions.map((option) => (
+              <FilterCheckbox key={option.value} value={option.value}>
+                <FilterLabel>{option.label}</FilterLabel>
+                {option.description && (
+                  <FilterDescription>{option.description}</FilterDescription>
+                )}
+              </FilterCheckbox>
+            ))}
+          </Checkbox.Group>
+        </FiltersList>
+        <FiltersFooter>
+          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            {activeFilters.length
+              ? `${activeFilters.length} filtro${activeFilters.length === 1 ? '' : 's'} activo${activeFilters.length === 1 ? '' : 's'}`
+              : 'Sin filtros aplicados'}
+          </span>
+          {activeFilters.length > 0 && (
+            <ClearFiltersButton type="link" onClick={handleClearFilters}>
+              Limpiar
+            </ClearFiltersButton>
+          )}
+        </FiltersFooter>
+      </FiltersPopoverContent>
+    ),
+    [activeFilters, filterOptions, handleFiltersChange, handleClearFilters],
+  );
 
-  const headerActions = useMemo(() => [
-    {
-      key: 'filters',
-      render: () => (
-        <Popover
-          content={filtersContent}
-          trigger="click"
-          placement="bottomRight"
-          open={filtersPopoverOpen}
-          onOpenChange={setFiltersPopoverOpen}
-        >
-          <Button
-            icon={<FilterOutlined />}
-            type={hasFilters ? 'primary' : 'default'}
-            shape="circle"
-          />
-        </Popover>
-      ),
-    },
-  ], [filtersContent, filtersPopoverOpen, hasFilters]);
+  const headerActions = useMemo(
+    () => [
+      {
+        key: 'filters',
+        render: () => (
+          <Popover
+            content={filtersContent}
+            trigger="click"
+            placement="bottomRight"
+            open={filtersPopoverOpen}
+            onOpenChange={setFiltersPopoverOpen}
+          >
+            <Button
+              icon={<FilterOutlined />}
+              type={hasFilters ? 'primary' : 'default'}
+              shape="circle"
+            />
+          </Popover>
+        ),
+      },
+    ],
+    [filtersContent, filtersPopoverOpen, hasFilters],
+  );
 
-  const summaryFooterNode = useMemo(() => (
-    summaryText ? <SummaryBubble>{summaryText}</SummaryBubble> : null
-  ), [summaryText]);
+  const summaryFooterNode = useMemo(
+    () => (summaryText ? <SummaryBubble>{summaryText}</SummaryBubble> : null),
+    [summaryText],
+  );
 
-  const config = useMemo(() => ({
-    actions: [],
-    headerActions,
-    showToggleAllButton: false,
-    searchPlaceholder: 'Buscar productos por nombre o código...',
-    showInitialVisibleInfoMessage: false,
-    footerPlacement: 'sticky',
-    onNodeClick: (node) => {
-      navigate(replacePathParams(PRODUCT_STOCK, [node.id]));
-    },
-    showMatchedStockCount: false,
-    showLocationStockSummary: true,
-    disableStockSummaryDetails: true,
-    disableStockSummaryTooltip: true,
-    initialVisibleCount: 30,
-    footer: summaryFooterNode,
-  }), [navigate, PRODUCT_STOCK, headerActions, summaryFooterNode]);
+  const config = useMemo(
+    () => ({
+      actions: [],
+      headerActions,
+      showToggleAllButton: false,
+      searchPlaceholder: 'Buscar productos por nombre o código...',
+      showInitialVisibleInfoMessage: false,
+      footerPlacement: 'sticky',
+      onNodeClick: (node) => {
+        navigate(replacePathParams(PRODUCT_STOCK, [node.id]));
+      },
+      showMatchedStockCount: false,
+      showLocationStockSummary: true,
+      disableStockSummaryDetails: true,
+      disableStockSummaryTooltip: true,
+      initialVisibleCount: 30,
+      footer: summaryFooterNode,
+    }),
+    [navigate, PRODUCT_STOCK, headerActions, summaryFooterNode],
+  );
 
   const showEmptyState = !combinedLoading && treeData.length === 0;
 
@@ -265,9 +287,12 @@ const ProductStockBrowser = ({
   if (showEmptyState) {
     listContent = (
       <Centered>
-        <Empty description={hasFilters
-          ? 'No hay productos que coincidan con los filtros seleccionados'
-          : 'No hay productos con stock activo'}
+        <Empty
+          description={
+            hasFilters
+              ? 'No hay productos que coincidan con los filtros seleccionados'
+              : 'No hay productos con stock activo'
+          }
         />
         {summaryFooterNode}
       </Centered>

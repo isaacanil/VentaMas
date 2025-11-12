@@ -71,7 +71,12 @@ const SwitchLabel = styled.span`
 `;
 
 export const SwitchField = ({ label, tooltip, children, ...formItemProps }) => (
-  <Form.Item colon={false} label={null} style={{ marginBottom: 0 }} {...formItemProps}>
+  <Form.Item
+    colon={false}
+    label={null}
+    style={{ marginBottom: 0 }}
+    {...formItemProps}
+  >
     <InlineSwitchRow>
       <SwitchLabel>
         {label}

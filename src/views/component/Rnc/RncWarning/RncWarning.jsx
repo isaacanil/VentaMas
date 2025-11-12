@@ -47,7 +47,7 @@ const WarningBox = styled.div`
     border-radius: 6px;
     font-size: 13px;
     line-height: 1.5;
-    
+
     ${({ $status }) => {
       switch ($status) {
         case 'ACTIVO':
@@ -85,7 +85,7 @@ const WarningBox = styled.div`
       margin-bottom: 4px;
 
       &:before {
-        content: "•";
+        content: '•';
         position: absolute;
         left: 0;
         color: currentColor;
@@ -106,14 +106,16 @@ const Content = styled.div`
 `;
 
 const STATUS_MESSAGES = {
-  'ACTIVO': {
+  ACTIVO: {
     title: 'RNC Activo',
     description: 'Contribuyente habilitado para fines tributarios.',
-    details: 'El contribuyente se encuentra habilitado para realizar todas sus operaciones tributarias y debe mantenerse al día con sus obligaciones.'
+    details:
+      'El contribuyente se encuentra habilitado para realizar todas sus operaciones tributarias y debe mantenerse al día con sus obligaciones.',
   },
-  'SUSPENDIDO': {
+  SUSPENDIDO: {
     title: 'RNC Suspendido',
-    description: 'Contribuyente en incumplimiento prolongado de obligaciones tributarias.',
+    description:
+      'Contribuyente en incumplimiento prolongado de obligaciones tributarias.',
     details: `Restricciones principales:
       • Inhabilitado para nuevos comprobantes fiscales
       • No puede realizar deducciones fiscales
@@ -121,16 +123,16 @@ const STATUS_MESSAGES = {
       
       Para reactivar:
       • Presentar declaraciones de los últimos 3 años
-      • No requiere pago de multa por reactivación`
+      • No requiere pago de multa por reactivación`,
   },
-  'CESE_TEMPORAL': {
+  CESE_TEMPORAL: {
     title: 'RNC en Cese Temporal',
     description: 'Pausa temporal de operaciones comerciales (máximo 3 años).',
     details: `Condiciones actuales:
       • Mantiene acceso a Oficina Virtual
       • No puede emitir comprobantes fiscales
       • Debe presentar declaraciones anuales
-      • Puede gestionar deudas anteriores al cese`
+      • Puede gestionar deudas anteriores al cese`,
   },
   'DADO DE BAJA': {
     title: 'RNC Dado de Baja',
@@ -141,15 +143,15 @@ const STATUS_MESSAGES = {
       • Sin obligaciones tributarias activas
       
       Para reactivar (si la baja fue administrativa):
-      • Presentar declaraciones juradas pendientes`
-  }
+      • Presentar declaraciones juradas pendientes`,
+  },
 };
 
 export const RncWarning = ({ status }) => {
   const statusInfo = STATUS_MESSAGES[status] || {
     title: 'Estado No Especificado',
     description: 'No hay información disponible sobre este estado.',
-    details: ''
+    details: '',
   };
 
   const formatDetails = (details) => {

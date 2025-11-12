@@ -86,7 +86,7 @@ const ProgressBar = styled.div`
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: ${props => props.$error ? '#ff4d4f' : '#4caf50'};
+  background: ${(props) => (props.$error ? '#ff4d4f' : '#4caf50')};
   width: 0%;
 `;
 
@@ -95,12 +95,12 @@ const ProductInfo = styled.div`
   padding: 1rem;
   background: #f5f5f5;
   border-radius: 8px;
-  
+
   h3 {
     margin: 0;
     color: #333;
   }
-  
+
   p {
     margin: 0.5rem 0 0;
     color: #666;

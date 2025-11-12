@@ -21,16 +21,19 @@ async function loadDeps() {
   return depsPromise;
 }
 
-
 export const processInvoiceCompensation = firestore
-  .document('businesses/{businessId}/invoicesV2/{invoiceId}/compensations/{compId}')
+  .document(
+    'businesses/{businessId}/invoicesV2/{invoiceId}/compensations/{compId}',
+  )
   .onCreate(async (snap, context) => {
     const { businessId, invoiceId, compId } = context.params;
     const comp = snap.data() || {};
     const type = comp?.type;
     const status = comp?.status;
     const compRef = snap.ref;
-    const invoiceRef = db.doc(`businesses/${businessId}/invoicesV2/${invoiceId}`);
+    const invoiceRef = db.doc(
+      `businesses/${businessId}/invoicesV2/${invoiceId}`,
+    );
 
     if (status !== 'pending') return null;
 
@@ -56,7 +59,9 @@ export const processInvoiceCompensation = firestore
         const usageId = invoice?.snapshot?.ncf?.usageId;
         let usageSnap = null;
         if (usageId) {
-          const usageRef = db.doc(`businesses/${businessId}/ncfUsage/${usageId}`);
+          const usageRef = db.doc(
+            `businesses/${businessId}/ncfUsage/${usageId}`,
+          );
           usageSnap = await tx.get(usageRef);
         }
 
@@ -65,7 +70,12 @@ export const processInvoiceCompensation = firestore
           return () => {
             if (logged) return;
             logged = true;
-            auditTx(tx, { businessId, invoiceId, event: 'compensation_start', data: { compId, type } });
+            auditTx(tx, {
+              businessId,
+              invoiceId,
+              event: 'compensation_start',
+              data: { compId, type },
+            });
           };
         })();
 
@@ -75,9 +85,17 @@ export const processInvoiceCompensation = firestore
         } else if (type === 'consumeCreditNotes') {
           const creditNotes = cData?.payload?.creditNotes || [];
           const applicationIds = cData?.result?.applicationIds || [];
-          await compensateCreditNotes(tx, { businessId, invoiceId, creditNotes, applicationIds });
+          await compensateCreditNotes(tx, {
+            businessId,
+            invoiceId,
+            creditNotes,
+            applicationIds,
+          });
         } else if (type === 'updateInventory') {
-          logger.warn('Compensacion de inventario marcada para manejo manual', { invoiceId, compId });
+          logger.warn('Compensacion de inventario marcada para manejo manual', {
+            invoiceId,
+            compId,
+          });
         } else if (type === 'setupInsuranceAR') {
           const arId = cData?.result?.arId || null;
           await compensateAR(tx, { businessId, arId });
@@ -87,14 +105,24 @@ export const processInvoiceCompensation = firestore
           const userId = cData?.payload?.userId;
           await detachFromCashCount(tx, { businessId, invoiceId, userId });
         } else if (type === 'closePreorder') {
-          const canonRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
+          const canonRef = db.doc(
+            `businesses/${businessId}/invoices/${invoiceId}`,
+          );
           const canonSnap = await tx.get(canonRef);
           if (canonSnap.exists) {
             ensureCompStart();
             tx.set(
               canonRef,
-              { data: { history: FieldValue.arrayUnion({ type: 'invoice', status: 'reverted', date: Timestamp.now() }) } },
-              { merge: true }
+              {
+                data: {
+                  history: FieldValue.arrayUnion({
+                    type: 'invoice',
+                    status: 'reverted',
+                    date: Timestamp.now(),
+                  }),
+                },
+              },
+              { merge: true },
             );
           }
         }
@@ -119,12 +147,21 @@ export const processInvoiceCompensation = firestore
             attempts: (cData.attempts || 0) + 1,
             updatedAt: FieldValue.serverTimestamp(),
           },
-          { merge: true }
+          { merge: true },
         );
-        auditTx(tx, { businessId, invoiceId, event: 'compensation_done', data: { compId, type } });
+        auditTx(tx, {
+          businessId,
+          invoiceId,
+          event: 'compensation_done',
+          data: { compId, type },
+        });
       });
     } catch (err) {
-      logger.error('processInvoiceCompensation error', { invoiceId, compId, error: err });
+      logger.error('processInvoiceCompensation error', {
+        invoiceId,
+        compId,
+        error: err,
+      });
       try {
         await snap.ref.set(
           {
@@ -133,13 +170,18 @@ export const processInvoiceCompensation = firestore
             attempts: FieldValue.increment(1),
             updatedAt: FieldValue.serverTimestamp(),
           },
-          { merge: true }
+          { merge: true },
         );
-        await auditSafe({ businessId, invoiceId, event: 'compensation_failed', level: 'error', data: { compId, type, error: err?.message || String(err) } });
+        await auditSafe({
+          businessId,
+          invoiceId,
+          event: 'compensation_failed',
+          level: 'error',
+          data: { compId, type, error: err?.message || String(err) },
+        });
       } catch {
         /* suppress audit failures to avoid retries loops */
       }
     }
     return null;
   });
-

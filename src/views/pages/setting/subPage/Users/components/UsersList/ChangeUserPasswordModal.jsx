@@ -24,7 +24,10 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const username = useMemo(() => user?.name ?? user?.username ?? '', [user?.name, user?.username]);
+  const username = useMemo(
+    () => user?.name ?? user?.username ?? '',
+    [user?.name, user?.username],
+  );
   const realName = useMemo(() => user?.realName ?? '', [user?.realName]);
   const displayName = (realName || username || 'Usuario sin nombre').trim();
 
@@ -33,24 +36,27 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
     onClose?.();
   }, [form, onClose]);
 
-  const handleSubmit = useCallback(async ({ password }) => {
-    if (!user?.id) {
-      message.error('No se pudo identificar al usuario seleccionado.');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async ({ password }) => {
+      if (!user?.id) {
+        message.error('No se pudo identificar al usuario seleccionado.');
+        return;
+      }
 
-    setIsSubmitting(true);
+      setIsSubmitting(true);
 
-    try {
-      await fbUpdateUserPassword(user.id, password);
-      message.success('Contraseña actualizada correctamente.');
-      resetAndClose();
-    } catch (error) {
-      message.error(error?.message || 'Error al actualizar la contraseña.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [resetAndClose, user?.id]);
+      try {
+        await fbUpdateUserPassword(user.id, password);
+        message.success('Contraseña actualizada correctamente.');
+        resetAndClose();
+      } catch (error) {
+        message.error(error?.message || 'Error al actualizar la contraseña.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [resetAndClose, user?.id],
+  );
 
   const handleCancel = useCallback(() => {
     if (isSubmitting) return;
@@ -67,19 +73,13 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
       onCancel={handleCancel}
       confirmLoading={isSubmitting}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Typography.Title level={5}>Asignar nueva contraseña</Typography.Title>
         <Form.Item label="Usuario">
           <Input value={username || displayName} disabled />
         </Form.Item>
         {realName && realName !== username && (
-          <Typography.Text type="secondary">
-            Nombre: {realName}
-          </Typography.Text>
+          <Typography.Text type="secondary">Nombre: {realName}</Typography.Text>
         )}
         <Form.Item
           label="Nueva contraseña"
@@ -99,7 +99,9 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
                 if (!value || getFieldValue('password') === value) {
                   return Promise.resolve();
                 }
-                return Promise.reject(new Error('Las contraseñas no coinciden.'));
+                return Promise.reject(
+                  new Error('Las contraseñas no coinciden.'),
+                );
               },
             }),
           ]}

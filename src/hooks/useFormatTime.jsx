@@ -1,11 +1,10 @@
 import { DateTime } from 'luxon';
 
-
 export function getTimeElapsed(timestamp, friendlyLimit = 1440) {
   const now = DateTime.now();
   const diff = now.diff(DateTime.fromMillis(timestamp));
   const elapsedMinutes = Math.floor(diff.as('minutes'));
-  
+
   if (elapsedMinutes < 1) {
     const elapsedSeconds = Math.floor(diff.as('seconds'));
     return `Hace ${elapsedSeconds} segundo${elapsedSeconds !== 1 ? 's' : ''}`;
@@ -17,7 +16,6 @@ export function getTimeElapsed(timestamp, friendlyLimit = 1440) {
   }
 }
 
-
 export function useFormatDate(timestamp) {
   const date = DateTime.fromMillis(timestamp);
   return `${date.toLocaleString(DateTime.DATETIME_SHORT)}`;
@@ -28,7 +26,7 @@ export function useFormatDate(timestamp) {
 //   const elapsedSeconds = Math.floor(diff.as('seconds'));
 //   const elapsedMinutes = Math.floor(diff.as('minutes'));
 //   const elapsedHours = Math.floor(diff.as('hours'));
-  
+
 //   if (elapsedSeconds < 60) {
 //     return truncateString(`Hace ${elapsedSeconds} segundo${elapsedSeconds > 1 ? 's' : ''}`, 12);
 //   } else if (elapsedMinutes < 60) {
@@ -45,8 +43,9 @@ export function useFormatDate(timestamp) {
 
 export const convertMillisToDate = (milliseconds) => {
   if (!milliseconds || typeof milliseconds !== 'number') return null;
-  const dateFormatted = DateTime.fromMillis(milliseconds).toFormat('dd/MM/yyyy');
-  return dateFormatted; 
+  const dateFormatted =
+    DateTime.fromMillis(milliseconds).toFormat('dd/MM/yyyy');
+  return dateFormatted;
   // Aquí puedes definir tus propios formatos personalizados
   // const formats = {
   //   default: DateTime.DATETIME_MED,

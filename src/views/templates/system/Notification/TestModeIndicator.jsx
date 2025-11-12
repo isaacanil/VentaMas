@@ -4,7 +4,10 @@ import { notification } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
-import { selectAppMode, toggleMode } from '../../../../features/appModes/appModeSlice';
+import {
+  selectAppMode,
+  toggleMode,
+} from '../../../../features/appModes/appModeSlice';
 
 export const TestModeIndicator = () => {
   const isTestMode = useSelector(selectAppMode);
@@ -12,11 +15,11 @@ export const TestModeIndicator = () => {
 
   const handleToggleMode = () => {
     dispatch(toggleMode());
-    
+
     // Notificación mejorada con más contexto
     notification.success({
       message: isTestMode ? 'Modo Producción' : 'Modo Prueba',
-      description: isTestMode 
+      description: isTestMode
         ? 'Las facturas ahora se guardarán en la base de datos.'
         : 'Las facturas se procesarán como prueba sin afectar los datos.',
       duration: 4,
@@ -30,12 +33,15 @@ export const TestModeIndicator = () => {
       <IconContainer>
         <FontAwesomeIcon icon={faFlask} />
       </IconContainer>
-      
+
       <ContentSection>
         <Title>Modo de Prueba</Title>
         <Subtitle>Las facturas no se guardan</Subtitle>
-      </ContentSection>      
-      <ActionButton onClick={handleToggleMode} title="Desactivar modo de prueba">
+      </ContentSection>
+      <ActionButton
+        onClick={handleToggleMode}
+        title="Desactivar modo de prueba"
+      >
         <FontAwesomeIcon icon={faTimes} />
       </ActionButton>
     </IndicatorPill>
@@ -67,29 +73,30 @@ const IndicatorPill = styled.div`
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
-  
+
   display: flex;
   align-items: center;
   gap: 12px;
-  
+
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   border: 2px solid #f39c12;
   border-radius: 50px;
   padding: 8px 16px 8px 8px;
-  
-  animation: ${slideDown} 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55),
-             ${pulseGlow} 2s ease-in-out infinite;
-  
-  box-shadow: 
+
+  animation:
+    ${slideDown} 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    ${pulseGlow} 2s ease-in-out infinite;
+
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     0 0 20px rgba(255, 193, 7, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  
+
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateX(-50%) scale(1.01);
-    box-shadow: 
+    box-shadow:
       0 12px 40px rgba(0, 0, 0, 0.4),
       0 0 30px rgba(255, 193, 7, 0.6),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -107,7 +114,7 @@ const IconContainer = styled.div`
   color: white;
   font-size: 16px;
   box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
-  
+
   /* animation: ${pulseGlow} 2s ease-in-out infinite; */
 `;
 
@@ -147,7 +154,7 @@ const ActionButton = styled.button`
   justify-content: center;
   font-size: 12px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background-color: #585858;
   }

@@ -1,4 +1,8 @@
-import { faBan, faTriangleExclamation, faWarehouse } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBan,
+  faTriangleExclamation,
+  faWarehouse,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Form, Input, Modal, Spin, Button, message } from 'antd';
 import { useState } from 'react';
@@ -16,12 +20,15 @@ import { TimeRemainingBadge } from '../TimeRemainingBadge/TimeRemainingBadge';
 import { InvoiceResume } from './components/InvoiceResume';
 
 export const InvoiceInfo = ({ invoice, isEditLocked }) => {
-  const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] = useState(false);
+  const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] =
+    useState(false);
   const [isOpenPaymentInfoModal, setIsOpenPaymentInfoModal] = useState(false);
   const isCancelable = !invoice?.NCF;
 
-  const handleCloseCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(false);
-  const handleOpenCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(true);
+  const handleCloseCancelInvoiceConfirm = () =>
+    setIsOpenCancelInvoiceConfirm(false);
+  const handleOpenCancelInvoiceConfirm = () =>
+    setIsOpenCancelInvoiceConfirm(true);
   const handleOpenPaymentInfoModal = () => {
     if (isEditLocked) {
       message.warning('La información de pago es de solo lectura.');
@@ -64,8 +71,6 @@ export const InvoiceInfo = ({ invoice, isEditLocked }) => {
     </Container>
   );
 };
-
-
 
 const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
   const [form] = Form.useForm();
@@ -122,32 +127,30 @@ const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
               </WarningItem>
               <WarningItem>
                 <ListIcon icon={faWarehouse} />
-                <span>Los productos de esta factura volverán al inventario.</span>
+                <span>
+                  Los productos de esta factura volverán al inventario.
+                </span>
               </WarningItem>
             </WarningList>
           </WarningCard>
 
-          <StyledForm
-            form={form}
-            layout="vertical"
-            onFinish={handleOk}
-          >
+          <StyledForm form={form} layout="vertical" onFinish={handleOk}>
             <StyledFormItem
               label="Motivo de la anulación"
               name="cancellationReason"
               help="Ejemplo: El cliente se arrepintió de la compra"
-              rules={[{ required: true, message: 'Por favor ingrese el motivo de la anulación' }]}
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor ingrese el motivo de la anulación',
+                },
+              ]}
             >
-              <StyledInput
-                type="text"
-                placeholder="Motivo de la anulación"
-              />
+              <StyledInput type="text" placeholder="Motivo de la anulación" />
             </StyledFormItem>
 
             <FormActions>
-              <Button onClick={handleCancel}>
-                Cancelar
-              </Button>
+              <Button onClick={handleCancel}>Cancelar</Button>
               <Button
                 type="primary"
                 danger

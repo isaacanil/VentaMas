@@ -1,4 +1,8 @@
-import { DeleteOutlined, SwapOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  SwapOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -21,7 +25,10 @@ import { useProductFilterOptions } from './hooks/useProductFilterOptions';
 import { useProductsStock } from './hooks/useProductsStock';
 import { Container, MenuItemContent, Title, TitleSection } from './styles';
 import { normalizeToDayjs, toMillis } from './utils/dateUtils';
-import { NO_BATCH_VALUE, getProductFilterKey } from './utils/productFilterUtils';
+import {
+  NO_BATCH_VALUE,
+  getProductFilterKey,
+} from './utils/productFilterUtils';
 
 import type {
   DateRangeValue,
@@ -33,7 +40,6 @@ import type {
   SortMenuItems,
 } from './types';
 
-
 dayjs.extend(customParseFormat);
 
 type AppUser = {
@@ -42,9 +48,8 @@ type AppUser = {
   [key: string]: unknown;
 };
 
-const isAppUser = (value: unknown): value is AppUser => (
-  typeof value === 'object' && value !== null
-);
+const isAppUser = (value: unknown): value is AppUser =>
+  typeof value === 'object' && value !== null;
 
 export const InventoryTable: React.FC<InventoryTableProps> = ({
   currentNode,
@@ -58,7 +63,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   const rawUser: unknown = useSelector(selectUser);
   const user = isAppUser(rawUser) ? rawUser : null;
   const { productsStock, loading } = useProductsStock(location);
-  const { productOptions, productBatchMap } = useProductFilterOptions(productsStock);
+  const { productOptions, productBatchMap } =
+    useProductFilterOptions(productsStock);
   const {
     showOnlyWithExpiration,
     selectedProductFilter,
@@ -79,7 +85,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   });
 
   const [moveModalVisible, setMoveModalVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<ProductStockLike | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductStockLike | null>(null);
   const [dateFilter, setDateFilter] = useState<DateRangeValue>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: null,
@@ -97,15 +104,24 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       },
       {
         label: 'Últimos 7 días',
-        value: [dayjs().subtract(6, 'day').startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
+        value: [
+          dayjs().subtract(6, 'day').startOf('day'),
+          dayjs().endOf('day'),
+        ] as [Dayjs, Dayjs],
       },
       {
         label: 'Este mes',
-        value: [dayjs().startOf('month'), dayjs().endOf('month')] as [Dayjs, Dayjs],
+        value: [dayjs().startOf('month'), dayjs().endOf('month')] as [
+          Dayjs,
+          Dayjs,
+        ],
       },
       {
         label: 'Próximo mes',
-        value: [dayjs().add(1, 'month').startOf('month'), dayjs().add(1, 'month').endOf('month')] as [Dayjs, Dayjs],
+        value: [
+          dayjs().add(1, 'month').startOf('month'),
+          dayjs().add(1, 'month').endOf('month'),
+        ] as [Dayjs, Dayjs],
       },
     ],
     [],
@@ -131,26 +147,31 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     setMoveModalVisible(false);
   }, []);
 
-  const handleDateRangeChange = useCallback((dates: DateRangeValue) => {
-    if (!dates || (!dates[0] && !dates[1])) {
-      setDateFilter(null);
-      setDateRange(null);
-      return;
-    }
+  const handleDateRangeChange = useCallback(
+    (dates: DateRangeValue) => {
+      if (!dates || (!dates[0] && !dates[1])) {
+        setDateFilter(null);
+        setDateRange(null);
+        return;
+      }
 
-    const normalizedDates = Array.isArray(dates)
-      ? dates.map((date) => (date ? normalizeToDayjs(date) : null)) as DateRangeValue
-      : null;
+      const normalizedDates = Array.isArray(dates)
+        ? (dates.map((date) =>
+            date ? normalizeToDayjs(date) : null,
+          ) as DateRangeValue)
+        : null;
 
-    if (!normalizedDates || (!normalizedDates[0] && !normalizedDates[1])) {
-      setDateFilter(null);
-      setDateRange(null);
-      return;
-    }
+      if (!normalizedDates || (!normalizedDates[0] && !normalizedDates[1])) {
+        setDateFilter(null);
+        setDateRange(null);
+        return;
+      }
 
-    setDateFilter(normalizedDates);
-    setDateRange(normalizedDates);
-  }, [setDateRange]);
+      setDateFilter(normalizedDates);
+      setDateRange(normalizedDates);
+    },
+    [setDateRange],
+  );
 
   const handleClearFilters = useCallback(() => {
     setSearchTerm('');
@@ -160,146 +181,169 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     setSortConfig({ field: null, order: null });
   }, [clearAdvancedFilters, setDateRange, setSearchTerm]);
 
-  const handleViewProductStock = useCallback((productId?: string) => {
-    if (!productId) return;
-    navigate(`/inventory/warehouses/products-stock/${productId}`);
-  }, [navigate]);
+  const handleViewProductStock = useCallback(
+    (productId?: string) => {
+      if (!productId) return;
+      navigate(`/inventory/warehouses/products-stock/${productId}`);
+    },
+    [navigate],
+  );
 
-  const handleDeleteBatch = useCallback((record: ProductStockLike) => {
-    dispatch(openDeleteModal({
-      productStockId: record.id,
-      batchId: record.batchId,
-      actionType: 'productStock',
-    }));
-  }, [dispatch]);
+  const handleDeleteBatch = useCallback(
+    (record: ProductStockLike) => {
+      dispatch(
+        openDeleteModal({
+          productStockId: record.id,
+          batchId: record.batchId,
+          actionType: 'productStock',
+        }),
+      );
+    },
+    [dispatch],
+  );
 
-  const handleViewBatch = useCallback(async (batchId?: string | null) => {
-    if (!batchId || !user) return;
-    const batchData = await getBatchById(user, batchId);
-    if (batchData) {
-      setSelectedBatch(batchData);
-      setBatchModalVisible(true);
-    }
-  }, [user]);
+  const handleViewBatch = useCallback(
+    async (batchId?: string | null) => {
+      if (!batchId || !user) return;
+      const batchData = await getBatchById(user, batchId);
+      if (batchData) {
+        setSelectedBatch(batchData);
+        setBatchModalVisible(true);
+      }
+    },
+    [user],
+  );
 
-  const getActionMenu = useCallback<GetActionMenu>((record) => ({
-    items: [
+  const getActionMenu = useCallback<GetActionMenu>(
+    (record) => ({
+      items: [
+        {
+          key: 'view-stock',
+          label: (
+            <MenuItemContent>
+              <UnorderedListOutlined />
+              Ver todas las ubicaciones
+            </MenuItemContent>
+          ),
+          onClick: () => handleViewProductStock(record.productId),
+        },
+        {
+          key: 'move',
+          label: (
+            <MenuItemContent>
+              <SwapOutlined />
+              Mover producto
+            </MenuItemContent>
+          ),
+          onClick: () => handleMove(record),
+        },
+        {
+          key: 'delete',
+          danger: true,
+          label: (
+            <MenuItemContent>
+              <DeleteOutlined />
+              Eliminar batch
+            </MenuItemContent>
+          ),
+          onClick: () => handleDeleteBatch(record),
+        },
+      ],
+    }),
+    [handleDeleteBatch, handleMove, handleViewProductStock],
+  );
+
+  const handleSort = useCallback(
+    (field: SortConfig['field'], order: SortConfig['order']) => {
+      setSortConfig({ field, order });
+    },
+    [],
+  );
+
+  const sortMenuItems: SortMenuItems = useMemo(
+    () => [
       {
-        key: 'view-stock',
-        label: (
-          <MenuItemContent>
-            <UnorderedListOutlined />
-            Ver todas las ubicaciones
-          </MenuItemContent>
-        ),
-        onClick: () => handleViewProductStock(record.productId),
+        key: 'productName-asc',
+        label: 'Nombre de Producto (A-Z)',
+        onClick: () => handleSort('productName', 'asc'),
       },
       {
-        key: 'move',
-        label: (
-          <MenuItemContent>
-            <SwapOutlined />
-            Mover producto
-          </MenuItemContent>
-        ),
-        onClick: () => handleMove(record),
+        key: 'productName-desc',
+        label: 'Nombre de Producto (Z-A)',
+        onClick: () => handleSort('productName', 'desc'),
       },
       {
-        key: 'delete',
-        danger: true,
-        label: (
-          <MenuItemContent>
-            <DeleteOutlined />
-            Eliminar batch
-          </MenuItemContent>
-        ),
-        onClick: () => handleDeleteBatch(record),
+        key: 'batchNumberId-asc',
+        label: 'Número de Lote (Ascendente)',
+        onClick: () => handleSort('batchNumberId', 'asc'),
+      },
+      {
+        key: 'expirationDate-asc',
+        label: 'Fecha de Vencimiento (Próximos)',
+        onClick: () => handleSort('expirationDate', 'asc'),
+      },
+      {
+        key: 'expirationDate-desc',
+        label: 'Fecha de Vencimiento (Lejanos)',
+        onClick: () => handleSort('expirationDate', 'desc'),
+      },
+      {
+        key: 'createdAt-desc',
+        label: 'Más recientes primero',
+        onClick: () => handleSort('createdAt', 'desc'),
+      },
+      {
+        key: 'createdAt-asc',
+        label: 'Más antiguos primero',
+        onClick: () => handleSort('createdAt', 'asc'),
       },
     ],
-  }), [handleDeleteBatch, handleMove, handleViewProductStock]);
+    [handleSort],
+  );
 
-  const handleSort = useCallback((field: SortConfig['field'], order: SortConfig['order']) => {
-    setSortConfig({ field, order });
-  }, []);
+  const getSortedData = useCallback(
+    (data: InventoryRow[]) => {
+      if (!sortConfig.field) return data;
 
-  const sortMenuItems: SortMenuItems = useMemo(() => ([
-    {
-      key: 'productName-asc',
-      label: 'Nombre de Producto (A-Z)',
-      onClick: () => handleSort('productName', 'asc'),
+      const { field, order } = sortConfig;
+      const direction = order === 'desc' ? -1 : 1;
+
+      return [...data].sort((a, b) => {
+        if (field === 'expirationDate') {
+          const aMillis = a.expirationDateMillis ?? Number.POSITIVE_INFINITY;
+          const bMillis = b.expirationDateMillis ?? Number.POSITIVE_INFINITY;
+          return direction * (aMillis - bMillis);
+        }
+
+        if (field === 'createdAt') {
+          const aMillis = toMillis(a.createdAt);
+          const bMillis = toMillis(b.createdAt);
+
+          const aValid = aMillis !== null;
+          const bValid = bMillis !== null;
+
+          if (!aValid && !bValid) return 0;
+          if (!aValid) return 1;
+          if (!bValid) return -1;
+
+          return direction * ((aMillis ?? 0) - (bMillis ?? 0));
+        }
+
+        if (field === 'productName') {
+          return direction * a.productName.localeCompare(b.productName);
+        }
+
+        if (field === 'batchNumberId') {
+          const batchA = a.batch?.batchNumberId ?? '';
+          const batchB = b.batch?.batchNumberId ?? '';
+          return direction * batchA.localeCompare(batchB);
+        }
+
+        return 0;
+      });
     },
-    {
-      key: 'productName-desc',
-      label: 'Nombre de Producto (Z-A)',
-      onClick: () => handleSort('productName', 'desc'),
-    },
-    {
-      key: 'batchNumberId-asc',
-      label: 'Número de Lote (Ascendente)',
-      onClick: () => handleSort('batchNumberId', 'asc'),
-    },
-    {
-      key: 'expirationDate-asc',
-      label: 'Fecha de Vencimiento (Próximos)',
-      onClick: () => handleSort('expirationDate', 'asc'),
-    },
-    {
-      key: 'expirationDate-desc',
-      label: 'Fecha de Vencimiento (Lejanos)',
-      onClick: () => handleSort('expirationDate', 'desc'),
-    },
-    {
-      key: 'createdAt-desc',
-      label: 'Más recientes primero',
-      onClick: () => handleSort('createdAt', 'desc'),
-    },
-    {
-      key: 'createdAt-asc',
-      label: 'Más antiguos primero',
-      onClick: () => handleSort('createdAt', 'asc'),
-    },
-  ]), [handleSort]);
-
-  const getSortedData = useCallback((data: InventoryRow[]) => {
-    if (!sortConfig.field) return data;
-
-    const { field, order } = sortConfig;
-    const direction = order === 'desc' ? -1 : 1;
-
-    return [...data].sort((a, b) => {
-      if (field === 'expirationDate') {
-        const aMillis = a.expirationDateMillis ?? Number.POSITIVE_INFINITY;
-        const bMillis = b.expirationDateMillis ?? Number.POSITIVE_INFINITY;
-        return direction * (aMillis - bMillis);
-      }
-
-      if (field === 'createdAt') {
-        const aMillis = toMillis(a.createdAt);
-        const bMillis = toMillis(b.createdAt);
-
-        const aValid = aMillis !== null;
-        const bValid = bMillis !== null;
-
-        if (!aValid && !bValid) return 0;
-        if (!aValid) return 1;
-        if (!bValid) return -1;
-
-        return direction * ((aMillis ?? 0) - (bMillis ?? 0));
-      }
-
-      if (field === 'productName') {
-        return direction * a.productName.localeCompare(b.productName);
-      }
-
-      if (field === 'batchNumberId') {
-        const batchA = a.batch?.batchNumberId ?? '';
-        const batchB = b.batch?.batchNumberId ?? '';
-        return direction * batchA.localeCompare(batchB);
-      }
-
-      return 0;
-    });
-  }, [sortConfig]);
+    [sortConfig],
+  );
 
   const inventoryData: InventoryRow[] = useMemo(() => {
     const filtered = productsStock
@@ -320,9 +364,14 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           const productName = stock.productName?.toLowerCase() ?? '';
           const batchValue = (() => {
             if (!stock.batch) return '';
-            if (typeof stock.batch === 'string') return stock.batch.toLowerCase();
-            if (typeof stock.batch === 'number') return String(stock.batch).toLowerCase();
-            if ('batchNumberId' in stock.batch && typeof stock.batch.batchNumberId === 'string') {
+            if (typeof stock.batch === 'string')
+              return stock.batch.toLowerCase();
+            if (typeof stock.batch === 'number')
+              return String(stock.batch).toLowerCase();
+            if (
+              'batchNumberId' in stock.batch &&
+              typeof stock.batch.batchNumberId === 'string'
+            ) {
               return stock.batch.batchNumberId.toLowerCase();
             }
             return '';
@@ -345,9 +394,14 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       })
       .map((stock): InventoryRow => {
         const expirationDateMillis = toMillis(stock.expirationDate);
-        const isExpired = expirationDateMillis ? dayjs(expirationDateMillis).isBefore(dayjs(), 'day') : false;
+        const isExpired = expirationDateMillis
+          ? dayjs(expirationDateMillis).isBefore(dayjs(), 'day')
+          : false;
         const expiryDate = expirationDateMillis
-          ? { label: dayjs(expirationDateMillis).format('DD/MM/YYYY'), isExpired }
+          ? {
+              label: dayjs(expirationDateMillis).format('DD/MM/YYYY'),
+              isExpired,
+            }
           : { label: 'N/A', isExpired: false };
 
         return {
@@ -357,7 +411,10 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           productName: stock.productName || 'Producto sin nombre',
           productId: stock.productId || '',
           quantity: stock.quantity ?? 0,
-          batch: { batchNumberId: stock.batchNumberId || 'Sin lote', batchId: stock.batchId ?? null },
+          batch: {
+            batchNumberId: stock.batchNumberId || 'Sin lote',
+            batchId: stock.batchId ?? null,
+          },
           batchId: stock.batchId ?? null,
           actions: stock,
           expirationDateMillis,
@@ -414,23 +471,29 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           onCancel={cancelFilterModal}
           onReset={resetFilterModal}
           onApply={applyFilterModal}
-          onToggleExpiration={(checked) => updateFilterDraft((prev) => ({
-            ...prev,
-            showOnlyWithExpiration: checked,
-          }))}
+          onToggleExpiration={(checked) =>
+            updateFilterDraft((prev) => ({
+              ...prev,
+              showOnlyWithExpiration: checked,
+            }))
+          }
           productOptions={productOptions}
-          onProductChange={(value) => updateFilterDraft((prev) => ({
-            ...prev,
-            product: value,
-            batches: [],
-          }))}
+          onProductChange={(value) =>
+            updateFilterDraft((prev) => ({
+              ...prev,
+              product: value,
+              batches: [],
+            }))
+          }
           draftBatchOptions={draftBatchOptions}
-          onToggleBatch={(batchValue, checked) => updateFilterDraft((prev) => ({
-            ...prev,
-            batches: checked
-              ? [...prev.batches, batchValue]
-              : prev.batches.filter((value) => value !== batchValue),
-          }))}
+          onToggleBatch={(batchValue, checked) =>
+            updateFilterDraft((prev) => ({
+              ...prev,
+              batches: checked
+                ? [...prev.batches, batchValue]
+                : prev.batches.filter((value) => value !== batchValue),
+            }))
+          }
         />
       </Container>
 

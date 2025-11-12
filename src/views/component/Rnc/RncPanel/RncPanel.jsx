@@ -1,4 +1,9 @@
-import { CheckCircleOutlined, WarningOutlined, StopOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  WarningOutlined,
+  StopOutlined,
+  QuestionCircleOutlined,
+} from '@ant-design/icons';
 import { Spin, Button, Modal } from 'antd';
 import { DateTime } from 'luxon';
 import { createElement, useState } from 'react';
@@ -8,7 +13,7 @@ const Panel = styled.div`
   padding: 24px;
   background-color: #fff;
   border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   height: fit-content;
   position: sticky;
   top: 10px;
@@ -130,7 +135,7 @@ const StatusBox = styled.div`
       font-size: 14px;
 
       &:before {
-        content: "•";
+        content: '•';
         position: absolute;
         left: 0;
         opacity: 0.7;
@@ -140,16 +145,16 @@ const StatusBox = styled.div`
 `;
 
 const STATUS_INFO = {
-  'ACTIVO': {
+  ACTIVO: {
     color: 'success',
     title: 'RNC Activo',
     description: 'Contribuyente habilitado para fines tributarios.',
     details: `• Habilitado para todos los servicios de la DGII
       • Puede emitir y recibir comprobantes fiscales
       • Debe mantener sus obligaciones tributarias al día`,
-    icon: CheckCircleOutlined
+    icon: CheckCircleOutlined,
   },
-  'SUSPENDIDO': {
+  SUSPENDIDO: {
     color: 'warning',
     title: 'Estado Suspendido',
     description: 'Contribuyente en incumplimiento prolongado.',
@@ -159,7 +164,7 @@ const STATUS_INFO = {
       • Mantiene acceso a Oficina Virtual
       • Puede reactivarse presentando declaraciones pendientes
       • No requiere pago de multa para reactivación`,
-    icon: WarningOutlined
+    icon: WarningOutlined,
   },
   'DADO DE BAJA': {
     color: 'error',
@@ -169,8 +174,8 @@ const STATUS_INFO = {
       • Comprobantes fiscales inhabilitados
       • Sin obligaciones tributarias activas
       • Debe solicitar reactivación para operar`,
-    icon: StopOutlined
-  }
+    icon: StopOutlined,
+  },
 };
 
 export const RncPanel = ({ rncInfo, loading }) => {
@@ -194,28 +199,35 @@ export const RncPanel = ({ rncInfo, loading }) => {
     title: 'Estado No Especificado',
     description: 'No hay información disponible',
     details: '',
-    icon: QuestionCircleOutlined
+    icon: QuestionCircleOutlined,
   };
 
   const formatDetails = (details) => {
-    return details.split('\n').map((line, index) => {
-      const trimmedLine = line.trim();
-      if (trimmedLine.startsWith('•')) {
-        return <li key={index}>{trimmedLine.substring(1).trim()}</li>;
-      }
-      return null;
-    }).filter(Boolean);
+    return details
+      .split('\n')
+      .map((line, index) => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith('•')) {
+          return <li key={index}>{trimmedLine.substring(1).trim()}</li>;
+        }
+        return null;
+      })
+      .filter(Boolean);
   };
 
   return (
     <Panel>
-      {loading && <LoadingOverlay><Spin tip="Consultando RNC..." /></LoadingOverlay>}
-      
+      {loading && (
+        <LoadingOverlay>
+          <Spin tip="Consultando RNC..." />
+        </LoadingOverlay>
+      )}
+
       <Header>
         <Title>Datos Registrados DGII</Title>
         <Subtitle>Información oficial del contribuyente</Subtitle>
       </Header>
-      
+
       <Info style={{ opacity: loading ? 0.6 : 1 }}>
         <Field>
           <label>Número RNC:</label>
@@ -247,7 +259,11 @@ export const RncPanel = ({ rncInfo, loading }) => {
         </Field>
       </Info>
 
-      <Button type="link"  onClick={() => setStatusModalVisible(true)} style={{ marginTop: '12px' }}>
+      <Button
+        type="link"
+        onClick={() => setStatusModalVisible(true)}
+        style={{ marginTop: '12px' }}
+      >
         Más información
       </Button>
 
@@ -259,7 +275,9 @@ export const RncPanel = ({ rncInfo, loading }) => {
         centered
       >
         <StatusBox $status={status}>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <div
+            style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}
+          >
             <span className="icon" style={{ fontSize: '20px' }}>
               {createElement(statusInfo.icon)}
             </span>
@@ -267,9 +285,7 @@ export const RncPanel = ({ rncInfo, loading }) => {
               <div style={{ fontWeight: 500, marginBottom: '4px' }}>
                 {statusInfo.title}
               </div>
-              <div style={{ fontSize: '14px' }}>
-                {statusInfo.description}
-              </div>
+              <div style={{ fontSize: '14px' }}>{statusInfo.description}</div>
               {statusInfo.details && (
                 <div className="details-section">
                   <ul className="details-list">

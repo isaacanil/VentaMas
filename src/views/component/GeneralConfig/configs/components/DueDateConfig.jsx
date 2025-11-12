@@ -1,4 +1,3 @@
-
 import { Form, Select, Checkbox, InputNumber, Button, message } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -13,11 +12,11 @@ const OptionContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  
+
   .period {
     font-weight: 500;
   }
-  
+
   .description {
     color: rgba(0, 0, 0, 0.45);
     font-size: 0.9em;
@@ -36,7 +35,9 @@ const ConfigGroupItem = styled.div`
 `;
 
 const DueDateConfig = () => {
-  const { billing: { hasDueDate, duePeriod, useCustomConfig } } = useSelector(SelectSettingCart);
+  const {
+    billing: { hasDueDate, duePeriod, useCustomConfig },
+  } = useSelector(SelectSettingCart);
   const user = useSelector(selectUser);
 
   const [months, setMonths] = useState(duePeriod?.months || 0);
@@ -44,7 +45,8 @@ const DueDateConfig = () => {
   const [days, setDays] = useState(duePeriod?.days || 0);
   const [selectedOption, setSelectedOption] = useState('1_week');
 
-  const [loadingSaveCustomDuePeriod, setLoadingSaveCustomDuePeriod] = useState(false);
+  const [loadingSaveCustomDuePeriod, setLoadingSaveCustomDuePeriod] =
+    useState(false);
 
   useEffect(() => {
     if (duePeriod) {
@@ -66,13 +68,13 @@ const DueDateConfig = () => {
   const handlePredefinedChange = async (value) => {
     try {
       setSelectedOption(value);
-      await setBillingSettings(user, { 
-        selectedOption: value, 
-        useCustomConfig: false 
+      await setBillingSettings(user, {
+        selectedOption: value,
+        useCustomConfig: false,
       });
       if (value !== 'custom') {
         const periods = {
-          'immediate': { weeks: 0, days: 0, months: 0 },
+          immediate: { weeks: 0, days: 0, months: 0 },
           '3_days': { weeks: 0, days: 3, months: 0 },
           '1_week': { weeks: 1, days: 0, months: 0 },
           '2_weeks': { weeks: 2, days: 0, months: 0 },
@@ -84,8 +86,8 @@ const DueDateConfig = () => {
           '6_months': { weeks: 0, days: 0, months: 6 },
           '1_year': { weeks: 0, days: 0, months: 12 },
         };
-        await setBillingSettings(user, { 
-          duePeriod: periods[value]
+        await setBillingSettings(user, {
+          duePeriod: periods[value],
         });
         message.success('Configuración de vencimiento actualizada');
       }
@@ -106,8 +108,8 @@ const DueDateConfig = () => {
           duePeriod: {
             months: 0,
             weeks: 1,
-            days: 0
-          }
+            days: 0,
+          },
         });
       }
       message.success('Configuración actualizada');
@@ -119,13 +121,13 @@ const DueDateConfig = () => {
   const handleSaveCustomDuePeriod = async () => {
     setLoadingSaveCustomDuePeriod(true);
     try {
-      await setBillingSettings(user, { 
+      await setBillingSettings(user, {
         duePeriod: {
           months,
           weeks,
-          days
+          days,
         },
-        useCustomConfig: true
+        useCustomConfig: true,
       });
       message.success('Configuración de vencimiento personalizada guardada');
     } catch {
@@ -165,29 +167,59 @@ const DueDateConfig = () => {
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) => {
-                    const label = typeof option?.label === 'object' 
-                      ? option?.label?.props?.children?.[0]?.props?.children 
-                      : option?.label;
+                    const label =
+                      typeof option?.label === 'object'
+                        ? option?.label?.props?.children?.[0]?.props?.children
+                        : option?.label;
                     return label?.toLowerCase().includes(input.toLowerCase());
                   }}
                   placeholder="Buscar período de vencimiento..."
                   options={[
-                    { value: "3_days", label: renderOption("3 días", "72 horas") },
-                    { value: "1_week", label: renderOption("1 semana", "7 días") },
-                    { value: "2_weeks", label: renderOption("2 semanas", "14 días") },
-                    { value: "15_days", label: renderOption("15 días", "Quincenal") },
-                    { value: "1_month", label: renderOption("1 mes", "30 días") },
-                    { value: "45_days", label: renderOption("45 días", "Mes y medio") },
-                    { value: "2_months", label: renderOption("2 meses", "60 días") },
-                    { value: "3_months", label: renderOption("3 meses", "Trimestral") },
-                    { value: "6_months", label: renderOption("6 meses", "Semestral") },
-                    { value: "1_year", label: renderOption("1 año", "Anual") },
+                    {
+                      value: '3_days',
+                      label: renderOption('3 días', '72 horas'),
+                    },
+                    {
+                      value: '1_week',
+                      label: renderOption('1 semana', '7 días'),
+                    },
+                    {
+                      value: '2_weeks',
+                      label: renderOption('2 semanas', '14 días'),
+                    },
+                    {
+                      value: '15_days',
+                      label: renderOption('15 días', 'Quincenal'),
+                    },
+                    {
+                      value: '1_month',
+                      label: renderOption('1 mes', '30 días'),
+                    },
+                    {
+                      value: '45_days',
+                      label: renderOption('45 días', 'Mes y medio'),
+                    },
+                    {
+                      value: '2_months',
+                      label: renderOption('2 meses', '60 días'),
+                    },
+                    {
+                      value: '3_months',
+                      label: renderOption('3 meses', 'Trimestral'),
+                    },
+                    {
+                      value: '6_months',
+                      label: renderOption('6 meses', 'Semestral'),
+                    },
+                    { value: '1_year', label: renderOption('1 año', 'Anual') },
                   ]}
                   disabled={useCustomConfig}
                 />
                 <Checkbox
                   checked={useCustomConfig}
-                  onChange={(e) => handleUseCustomConfigChange(e.target.checked)}
+                  onChange={(e) =>
+                    handleUseCustomConfigChange(e.target.checked)
+                  }
                   style={{ marginLeft: '16px' }}
                 >
                   Personalizado

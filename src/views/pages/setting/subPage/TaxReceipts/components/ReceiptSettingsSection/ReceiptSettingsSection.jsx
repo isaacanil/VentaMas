@@ -9,21 +9,21 @@ import FiscalReceiptsAlertWidget from '../FiscalReceiptsAlertWidget/FiscalReceip
 const { Title, Text } = Typography;
 
 export function ReceiptSettingsSection({ enabled, onToggle }) {
-    return (
-        <Container>
-            <SectionContainer>
-                <Info>
-                    <Title level={4}>Opción para Deshabilitar Comprobantes</Title>
-                    <Text>Activa o desactiva los comprobantes en el punto de venta</Text>
-                </Info>
-                <Switch checked={enabled} onChange={onToggle} />
-            </SectionContainer>
-            
-            <AlertsContainer>
-                <FiscalReceiptsAlertWidget />
-            </AlertsContainer>
-        </Container>
-    );
+  return (
+    <Container>
+      <SectionContainer>
+        <Info>
+          <Title level={4}>Opción para Deshabilitar Comprobantes</Title>
+          <Text>Activa o desactiva los comprobantes en el punto de venta</Text>
+        </Info>
+        <Switch checked={enabled} onChange={onToggle} />
+      </SectionContainer>
+
+      <AlertsContainer>
+        <FiscalReceiptsAlertWidget />
+      </AlertsContainer>
+    </Container>
+  );
 }
 
 const Container = styled.div`

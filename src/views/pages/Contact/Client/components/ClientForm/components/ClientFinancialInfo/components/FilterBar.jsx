@@ -10,7 +10,12 @@ const Bar = styled.div`
   background: var(--White);
 `;
 
-export const FilterBar = ({ filterStatus, setFilterStatus, openAccountsCount = 0, closedAccountsCount = 0 }) => {
+export const FilterBar = ({
+  filterStatus,
+  setFilterStatus,
+  openAccountsCount = 0,
+  closedAccountsCount = 0,
+}) => {
   return (
     <Bar>
       <Button.Group>
@@ -29,4 +34,4 @@ export const FilterBar = ({ filterStatus, setFilterStatus, openAccountsCount = 0
       </Button.Group>
     </Bar>
   );
-}; 
+};

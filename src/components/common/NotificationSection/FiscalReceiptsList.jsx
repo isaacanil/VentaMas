@@ -12,10 +12,19 @@ const ReceiptItem = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: ${props => props.alertLevel === 'critical' ? '#fff2f0' : 
-                        props.alertLevel === 'warning' ? '#fffbe6' : '#f6ffed'};
-  border: 1px solid ${props => props.alertLevel === 'critical' ? '#ffccc7' : 
-                                props.alertLevel === 'warning' ? '#ffe58f' : '#d9f7be'};
+  background: ${(props) =>
+    props.alertLevel === 'critical'
+      ? '#fff2f0'
+      : props.alertLevel === 'warning'
+        ? '#fffbe6'
+        : '#f6ffed'};
+  border: 1px solid
+    ${(props) =>
+      props.alertLevel === 'critical'
+        ? '#ffccc7'
+        : props.alertLevel === 'warning'
+          ? '#ffe58f'
+          : '#d9f7be'};
   border-radius: 6px;
   transition: all 0.2s;
 
@@ -51,8 +60,12 @@ const ReceiptStatus = styled.div`
   gap: 4px;
   font-size: 11px;
   font-weight: 500;
-  color: ${props => props.alertLevel === 'critical' ? '#cf1322' : 
-                   props.alertLevel === 'warning' ? '#d48806' : '#389e0d'};
+  color: ${(props) =>
+    props.alertLevel === 'critical'
+      ? '#cf1322'
+      : props.alertLevel === 'warning'
+        ? '#d48806'
+        : '#389e0d'};
 `;
 
 const StatusIcon = styled.i`
@@ -62,8 +75,12 @@ const StatusIcon = styled.i`
 const RemainingCount = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: ${props => props.alertLevel === 'critical' ? '#cf1322' : 
-                   props.alertLevel === 'warning' ? '#d48806' : '#389e0d'};
+  color: ${(props) =>
+    props.alertLevel === 'critical'
+      ? '#cf1322'
+      : props.alertLevel === 'warning'
+        ? '#d48806'
+        : '#389e0d'};
   text-align: right;
   min-width: 40px;
 `;
@@ -121,7 +138,10 @@ const FiscalReceiptsList = ({ receipts = [], showAll = false }) => {
   return (
     <ReceiptListContainer>
       {displayReceipts.map((receipt, index) => (
-        <ReceiptItem key={`${receipt.name}-${receipt.series}-${index}`} alertLevel={receipt.alertLevel}>
+        <ReceiptItem
+          key={`${receipt.name}-${receipt.series}-${index}`}
+          alertLevel={receipt.alertLevel}
+        >
           <ReceiptInfo>
             <ReceiptName>
               <i className="fas fa-file-invoice" />
@@ -129,7 +149,9 @@ const FiscalReceiptsList = ({ receipts = [], showAll = false }) => {
             </ReceiptName>
             <ReceiptSeries>Serie: {receipt.series}</ReceiptSeries>
             <ReceiptStatus alertLevel={receipt.alertLevel}>
-              <StatusIcon className={`fas ${getStatusIcon(receipt.alertLevel)}`} />
+              <StatusIcon
+                className={`fas ${getStatusIcon(receipt.alertLevel)}`}
+              />
               {getStatusText(receipt.alertLevel, receipt.remainingNumbers)}
             </ReceiptStatus>
           </ReceiptInfo>
@@ -138,12 +160,12 @@ const FiscalReceiptsList = ({ receipts = [], showAll = false }) => {
           </RemainingCount>
         </ReceiptItem>
       ))}
-      
+
       {!showAll && receipts.length > 3 && (
         <EmptyState>
           <div style={{ color: '#1890ff', fontSize: '11px' }}>
-            <i className="fas fa-ellipsis-h" style={{ marginRight: '4px' }} />
-            +{receipts.length - 3} comprobantes más
+            <i className="fas fa-ellipsis-h" style={{ marginRight: '4px' }} />+
+            {receipts.length - 3} comprobantes más
           </div>
         </EmptyState>
       )}

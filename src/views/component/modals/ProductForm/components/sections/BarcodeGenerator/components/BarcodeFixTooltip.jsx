@@ -38,11 +38,16 @@ const { Button, message } = ant;
 const Container = styled.div`
   position: absolute;
   top: 100%;
-  ${(p) => (p.$placement === 'right' ? 'right: 0;' : p.$placement === 'center' ? 'left: 50%; transform: translateX(-50%);' : 'left: 0;')}
+  ${(p) =>
+    p.$placement === 'right'
+      ? 'right: 0;'
+      : p.$placement === 'center'
+        ? 'left: 50%; transform: translateX(-50%);'
+        : 'left: 0;'}
   margin-top: 4px;
   background: #ffffff;
   border: 1px solid #ffd666;
-  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   border-radius: 6px;
   z-index: ${(p) => p.$zIndex || 20};
   padding: 16px;
@@ -73,7 +78,7 @@ const Row = styled.div`
   align-items: center;
   gap: 4px;
   margin-bottom: 16px;
-  font-family: 'JetBrains Mono','Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 18px;
   font-weight: 600;
 `;
@@ -130,7 +135,9 @@ export default function BarcodeFixTooltip({
       message.success('Copiado');
       onCopy?.(suggestion.fixed);
     } catch (error) {
-      message.error(`No se pudo copiar${error?.message ? `: ${error.message}` : ''}`);
+      message.error(
+        `No se pudo copiar${error?.message ? `: ${error.message}` : ''}`,
+      );
     }
   };
 
@@ -145,7 +152,7 @@ export default function BarcodeFixTooltip({
       onMouseDown={stopMouseDown}
     >
       <Title>Sugerencia</Title>
-      
+
       <SuggestionText>Agregar dígito verificador</SuggestionText>
 
       <Row>

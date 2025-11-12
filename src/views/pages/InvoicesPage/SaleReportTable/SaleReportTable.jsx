@@ -15,7 +15,10 @@ import { openInvoicePreviewModal } from '../../../../features/invoice/invoicePre
 import { downloadInvoiceLetterPdf } from '../../../../firebase/quotation/downloadQuotationPDF';
 import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { getTimeElapsed } from '../../../../hooks/useFormatTime';
-import { convertInvoiceDateToMillis, prepareInvoiceForEdit } from '../../../../utils/invoice';
+import {
+  convertInvoiceDateToMillis,
+  prepareInvoiceForEdit,
+} from '../../../../utils/invoice';
 import { getProductsTax, getTotalItems } from '../../../../utils/pricing';
 import { Invoice } from '../../../component/Invoice/components/Invoice/Invoice';
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
@@ -42,23 +45,27 @@ const EditButton = ({ value }) => {
     return elapsedMs >= 48 * 60 * 60 * 1000;
   }, [data?.date]);
 
-  const proceedToEdit = useCallback((authorization) => {
-    const preparedInvoice = prepareInvoiceForEdit(data);
-    if (preparedInvoice) {
-      dispatch(
-        addInvoice({
-          invoice: preparedInvoice,
-          mode: 'edit',
-          authorizationRequest: authorization || null,
-        })
-      );
-    }
-  }, [data, dispatch]);
+  const proceedToEdit = useCallback(
+    (authorization) => {
+      const preparedInvoice = prepareInvoiceForEdit(data);
+      if (preparedInvoice) {
+        dispatch(
+          addInvoice({
+            invoice: preparedInvoice,
+            mode: 'edit',
+            authorizationRequest: authorization || null,
+          }),
+        );
+      }
+    },
+    [data, dispatch],
+  );
 
-  const { handleEdit, authorizationModal, isProcessing } = useInvoiceEditAuthorization({
-    invoice: data,
-    onAuthorized: proceedToEdit,
-  });
+  const { handleEdit, authorizationModal, isProcessing } =
+    useInvoiceEditAuthorization({
+      invoice: data,
+      onAuthorized: proceedToEdit,
+    });
 
   const handleEditClick = useCallback(() => {
     if (isEditDisabled) {
@@ -116,12 +123,13 @@ const EditButton = ({ value }) => {
         onClick={handleEditClick}
         loading={isProcessing}
         disabled={isEditDisabled}
-        title={isEditDisabled ? 'Las facturas solo se pueden editar durante las primeras 48 horas.' : undefined}
+        title={
+          isEditDisabled
+            ? 'Las facturas solo se pueden editar durante las primeras 48 horas.'
+            : undefined
+        }
       />
-      <Button
-        icon={icons.editingActions.show}
-        onClick={handleViewMore}
-      />
+      <Button icon={icons.editingActions.show} onClick={handleViewMore} />
       {authorizationModal}
     </div>
   );
@@ -145,17 +153,9 @@ const columns = [
     min: '150px',
     cell: ({ value }) => {
       if (!value) {
-        return (
-          <Tag>
-            No Disponible
-          </Tag>
-        );
+        return <Tag>No Disponible</Tag>;
       }
-      return (
-        <div>
-          {value}
-        </div>
-      );
+      return <div>{value}</div>;
     },
   },
   {
@@ -220,12 +220,14 @@ const columns = [
 const SaleReportTable = ({ bills = [], searchTerm }) => {
   const data = bills?.map(({ data }) => {
     const invoiceDateMs = convertInvoiceDateToMillis(data?.date);
-    const invoiceDateSeconds = Number.isFinite(invoiceDateMs) ? Math.floor(invoiceDateMs / 1000) : null;
+    const invoiceDateSeconds = Number.isFinite(invoiceDateMs)
+      ? Math.floor(invoiceDateMs / 1000)
+      : null;
 
     return {
       numberID: data?.numberID,
       ncf: data?.NCF,
-      client: data?.client?.name || "Generic Client",
+      client: data?.client?.name || 'Generic Client',
       date: invoiceDateSeconds,
       itbis: getProductsTax(data?.products),
       payment: data?.payment?.value,
@@ -236,8 +238,8 @@ const SaleReportTable = ({ bills = [], searchTerm }) => {
       accion: { data },
       dateGroup: invoiceDateMs
         ? DateTime.fromMillis(invoiceDateMs).toLocaleString(DateTime.DATE_FULL)
-        : 'Fecha no disponible'
-    }
+        : 'Fecha no disponible',
+    };
   });
 
   const total = useMemo(
@@ -245,25 +247,25 @@ const SaleReportTable = ({ bills = [], searchTerm }) => {
       useFormatPrice(
         bills.reduce(
           (total, { data }) => total + Number(data?.totalPurchase?.value || 0),
-          0
-        )
+          0,
+        ),
       ),
-    [bills]
+    [bills],
   );
   return (
     <AdvancedTable
       columns={columns}
       data={data}
       groupBy={'dateGroup'}
-      emptyText='No se encontraron facturas para la fecha seleccionada. Realice ventas y aparecerán en esta sección'
+      emptyText="No se encontraron facturas para la fecha seleccionada. Realice ventas y aparecerán en esta sección"
       footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
       searchTerm={searchTerm}
       elementName={'facturas'}
       tableName={'Facturas'}
       numberOfElementsPerPage={40}
     />
-  )
-}
+  );
+};
 
 const TotalContainer = styled.div`
   display: flex;
@@ -273,6 +275,6 @@ const TotalContainer = styled.div`
   gap: 0.5em;
   font-size: 1em;
   font-weight: 600;
-`
+`;
 
 export default SaleReportTable;

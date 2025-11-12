@@ -11,7 +11,6 @@ function useClock() {
     return () => clearInterval(intervalId);
   }, []);
 
-  
   return time.toLocaleString('es-US', {
     hour: 'numeric',
     minute: 'numeric',
@@ -26,11 +25,7 @@ function useClock() {
 function Clock() {
   const time = useClock();
 
-  return (
-    <div>
-      {time}
-    </div>
-  );
+  return <div>{time}</div>;
 }
 
 export default Clock;

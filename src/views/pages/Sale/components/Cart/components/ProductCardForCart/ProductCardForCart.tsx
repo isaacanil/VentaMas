@@ -1,5 +1,13 @@
-import { MessageOutlined, PercentageOutlined, MoreOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { faCircleCheck, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import {
+  MessageOutlined,
+  PercentageOutlined,
+  MoreOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
+import {
+  faCircleCheck,
+  faCircleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip, Badge, Button, Dropdown } from 'antd';
 import { motion } from 'framer-motion';
@@ -23,7 +31,12 @@ import { extraerPreciosConImpuesto } from './utils/priceUtils';
 
 import type { MenuProps } from 'antd';
 
-type PriceType = 'listPrice' | 'avgPrice' | 'minPrice' | 'cardPrice' | 'offerPrice';
+type PriceType =
+  | 'listPrice'
+  | 'avgPrice'
+  | 'minPrice'
+  | 'cardPrice'
+  | 'offerPrice';
 
 interface PricingInfo {
   listPrice?: number | string;
@@ -164,23 +177,33 @@ export const ProductCardForCart = ({
   const [selectedUnit, setSelectedUnit] = useState<SaleUnit | null>(null);
   const [precios, setPrecios] = useState<PriceOption[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
-  const hasBatchInfo = Boolean(item?.batchInfo || item?.batchId || item?.productStockId);
+  const hasBatchInfo = Boolean(
+    item?.batchInfo || item?.batchId || item?.productStockId,
+  );
   const batchInfo = item.batchInfo ?? null;
-  const expirationTimestamp = normalizeExpirationDate(batchInfo?.expirationDate);
+  const expirationTimestamp = normalizeExpirationDate(
+    batchInfo?.expirationDate,
+  );
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTimestamp = today.getTime();
-  const isExpired = expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
+  const isExpired =
+    expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
   const formattedExpirationDate = expirationTimestamp
     ? new Date(expirationTimestamp).toLocaleDateString()
     : null;
-  const showExpirationIndicator = Boolean(hasBatchInfo && expirationTimestamp !== null);
+  const showExpirationIndicator = Boolean(
+    hasBatchInfo && expirationTimestamp !== null,
+  );
   const expirationTooltip = !showExpirationIndicator
     ? ''
     : `${isExpired ? 'Lote vencido' : 'Lote vigente'}${formattedExpirationDate ? ` · ${formattedExpirationDate}` : ''}`;
 
   const updatePricing = (pricing?: PricingInfo) => {
-    const pricesWithTax = extraerPreciosConImpuesto(pricing, taxReceiptEnabled) as PriceOption[];
+    const pricesWithTax = extraerPreciosConImpuesto(
+      pricing,
+      taxReceiptEnabled,
+    ) as PriceOption[];
     setPrecios(pricesWithTax);
   };
 
@@ -235,10 +258,12 @@ export const ProductCardForCart = ({
     }
 
     if (numericPrice !== null) {
-      dispatch(changeProductPrice({
-        id: item.id,
-        price: numericPrice,
-      }));
+      dispatch(
+        changeProductPrice({
+          id: item.id,
+          price: numericPrice,
+        }),
+      );
     }
 
     setModalVisible(false);
@@ -249,7 +274,9 @@ export const ProductCardForCart = ({
       key: 'discount',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <PercentageOutlined style={{ color: item.discount ? '#52c41a' : '#8c8c8c' }} />
+          <PercentageOutlined
+            style={{ color: item.discount ? '#52c41a' : '#8c8c8c' }}
+          />
           {item.discount ? 'Editar descuento' : 'Aplicar descuento'}
         </span>
       ),
@@ -259,7 +286,9 @@ export const ProductCardForCart = ({
       key: 'comment',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MessageOutlined style={{ color: item.comment ? '#1890ff' : '#8c8c8c' }} />
+          <MessageOutlined
+            style={{ color: item.comment ? '#1890ff' : '#8c8c8c' }}
+          />
           {item.comment ? 'Editar comentario' : 'Agregar comentario'}
         </span>
       ),
@@ -270,7 +299,9 @@ export const ProductCardForCart = ({
           {
             key: 'batch-info',
             label: (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
                 <InfoCircleOutlined style={{ color: '#4096ff' }} />
                 Ver información del lote
               </span>
@@ -290,18 +321,20 @@ export const ProductCardForCart = ({
   const badgeColor = item.comment
     ? '#1890ff'
     : item.discount
-    ? '#52c41a'
-    : hasBatchInfo
-    ? '#4096ff'
-    : '#8c8c8c';
-  const rawBatchNumber = getBatchIdentifier(batchInfo?.batchNumber)
-    ?? getBatchIdentifier(batchInfo?.batchNumberId)
-    ?? getBatchIdentifier(batchInfo?.batchId)
-    ?? getBatchIdentifier(item?.batchNumber)
-    ?? getBatchIdentifier(item?.batchId);
-  const batchNumberLabel = rawBatchNumber != null && rawBatchNumber !== ''
-    ? `Lote ${rawBatchNumber}`
-    : null;
+      ? '#52c41a'
+      : hasBatchInfo
+        ? '#4096ff'
+        : '#8c8c8c';
+  const rawBatchNumber =
+    getBatchIdentifier(batchInfo?.batchNumber) ??
+    getBatchIdentifier(batchInfo?.batchNumberId) ??
+    getBatchIdentifier(batchInfo?.batchId) ??
+    getBatchIdentifier(item?.batchNumber) ??
+    getBatchIdentifier(item?.batchId);
+  const batchNumberLabel =
+    rawBatchNumber != null && rawBatchNumber !== ''
+      ? `Lote ${rawBatchNumber}`
+      : null;
   const batchSummaryParts: string[] = [];
   if (batchNumberLabel) {
     batchSummaryParts.push(batchNumberLabel);
@@ -310,7 +343,9 @@ export const ProductCardForCart = ({
     batchSummaryParts.push(formattedExpirationDate);
   }
   const batchSummaryText = batchSummaryParts.join(' · ');
-  const showBatchSummary = Boolean(hasBatchInfo && batchSummaryParts.length > 0);
+  const showBatchSummary = Boolean(
+    hasBatchInfo && batchSummaryParts.length > 0,
+  );
 
   const handleBatchInfoKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -355,7 +390,9 @@ export const ProductCardForCart = ({
                       <span className="separator"> · </span>
                     )}
                     {formattedExpirationDate && (
-                      <span className="expiration-text">{formattedExpirationDate}</span>
+                      <span className="expiration-text">
+                        {formattedExpirationDate}
+                      </span>
                     )}
                   </span>
                   {showExpirationIndicator && (
@@ -377,7 +414,9 @@ export const ProductCardForCart = ({
                         <StatusIcon
                           icon={isExpired ? faCircleExclamation : faCircleCheck}
                           $expired={isExpired}
-                          aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                          aria-label={
+                            isExpired ? 'Lote vencido' : 'Lote vigente'
+                          }
                         />
                       </Tooltip>
                     )}
@@ -433,7 +472,14 @@ export const ProductCardForCart = ({
                     <Button
                       type="text"
                       size="small"
-                      icon={<MoreOutlined style={{ fontSize: '16px', color: hasActions ? badgeColor : '#8c8c8c' }} />}
+                      icon={
+                        <MoreOutlined
+                          style={{
+                            fontSize: '16px',
+                            color: hasActions ? badgeColor : '#8c8c8c',
+                          }}
+                        />
+                      }
                     />
                   </Dropdown>
                 </Badge>
@@ -474,10 +520,7 @@ export const ProductCardForCart = ({
       )}
       <Row>
         <Group>
-          <PriceEditor
-            item={item}
-            onModalOpen={() => setModalVisible(true)}
-          />
+          <PriceEditor item={item} onModalOpen={() => setModalVisible(true)} />
           {item?.weightDetail?.isSoldByWeight ? (
             <WeightInput item={item} />
           ) : (
@@ -508,27 +551,28 @@ export const ProductCardForCart = ({
 };
 
 const Container = styled(motion.div)<{ $expired: boolean }>`
-    width: 100%;
-    height: min-content;
-    background-color: #ffffff;
-    padding: 0.4em;
-    border: 1px solid ${props => props.$expired ? '#dc2626' : 'rgba(0, 0, 0, 0.1)'};
-    border-radius: 8px;
-    display: grid;
-    gap: 0.2em;
-    position: relative;
+  width: 100%;
+  height: min-content;
+  background-color: #ffffff;
+  padding: 0.4em;
+  border: 1px solid
+    ${(props) => (props.$expired ? '#dc2626' : 'rgba(0, 0, 0, 0.1)')};
+  border-radius: 8px;
+  display: grid;
+  gap: 0.2em;
+  position: relative;
 `;
 
 const Row = styled.div`
-    display: grid;
-    align-items: center;
+  display: grid;
+  align-items: center;
 `;
 
 const Group = styled.div`
-    display: grid;
-    align-items: center;
-    gap: 0.4em;
-    grid-template-columns: 1fr 120px;
+  display: grid;
+  align-items: center;
+  gap: 0.4em;
+  grid-template-columns: 1fr 120px;
 `;
 
 const TitleContainer = styled.div`
@@ -577,7 +621,7 @@ const LeftSlot = styled.div<{ $hasBatch: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: ${props => (props.$hasBatch ? '0' : '2px')};
+  gap: ${(props) => (props.$hasBatch ? '0' : '2px')};
   min-width: 0;
   flex: 1;
 `;
@@ -623,7 +667,7 @@ const BatchSummaryInteractive = styled.span<{ $expired: boolean }>`
   }
 
   .expiration-text {
-    color: ${props => (props.$expired ? '#dc2626' : '#16a34a')};
+    color: ${(props) => (props.$expired ? '#dc2626' : '#16a34a')};
     font-weight: 600;
   }
 `;
@@ -649,25 +693,25 @@ const TopActions = styled.div`
 `;
 
 const TitleLabel = styled.span`
-    font-weight: 500;
-    line-height: 16px;
-    font-size: 14px;
-    color: rgb(71, 71, 71);
-    text-transform: capitalize;
-    word-break: break-word;
+  font-weight: 500;
+  line-height: 16px;
+  font-size: 14px;
+  color: rgb(71, 71, 71);
+  text-transform: capitalize;
+  word-break: break-word;
 `;
 
 const Price = styled.span<{ hasDiscount: boolean }>`
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
-    padding: 0 10px;
-    background-color: var(--White1);
-    color: ${props => props.hasDiscount ? '#52c41a' : 'var(--Gray6)'};
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0 10px;
+  background-color: var(--White1);
+  color: ${(props) => (props.hasDiscount ? '#52c41a' : 'var(--Gray6)')};
 `;
 
 const StatusIcon = styled(FontAwesomeIcon)<{ $expired: boolean }>`
   font-size: 12px;
-  color: ${props => (props.$expired ? '#dc2626' : '#16a34a')};
+  color: ${(props) => (props.$expired ? '#dc2626' : '#16a34a')};
   flex-shrink: 0;
 `;

@@ -1,4 +1,3 @@
-
 import { Spin } from 'antd';
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
@@ -16,11 +15,24 @@ export const RncPanel = ({ rncInfo, loading }) => {
       {rncInfo && (
         <Panel style={{ opacity: loading ? 0.6 : 1 }}>
           <h3>Información del RNC</h3>
-          <p><strong>RNC:</strong> {rncInfo.rnc_number}</p>
-          <p><strong>Nombre:</strong> {rncInfo.full_name}</p>
-          <p><strong>Estado:</strong> {rncInfo.status}</p>
-          <p><strong>Fecha de Registro:</strong> {DateTime.fromISO(rncInfo.registration_date).toLocaleString(DateTime.DATE_MED)}</p>
-          <p><strong>Actividad Económica:</strong> {rncInfo.economic_activity}</p>
+          <p>
+            <strong>RNC:</strong> {rncInfo.rnc_number}
+          </p>
+          <p>
+            <strong>Nombre:</strong> {rncInfo.full_name}
+          </p>
+          <p>
+            <strong>Estado:</strong> {rncInfo.status}
+          </p>
+          <p>
+            <strong>Fecha de Registro:</strong>{' '}
+            {DateTime.fromISO(rncInfo.registration_date).toLocaleString(
+              DateTime.DATE_MED,
+            )}
+          </p>
+          <p>
+            <strong>Actividad Económica:</strong> {rncInfo.economic_activity}
+          </p>
         </Panel>
       )}
     </div>

@@ -5,10 +5,10 @@
 //   try {
 //     const productsRef = collection(db, 'businesses', businessID, 'products');
 //     const productSnapshot = await getDocs(productsRef);
-    
+
 //     const products = {};
 //     const batch = writeBatch(db); // Prepara un batch para operaciones de escritura agrupadas
-    
+
 //     productSnapshot.forEach((doc) => {
 //       const product = doc.data().name; // Asume que cada producto tiene un campo 'name'
 //       if (products[product]) {
@@ -34,12 +34,11 @@ import { collection, getDocs, writeBatch } from 'firebase/firestore'; // Importa
 
 import { db } from '../firebaseconfig';
 
-
 export async function fbCheckDuplicateProducts(businessID) {
   try {
     const productsRef = collection(db, 'businesses', businessID, 'products');
     const productSnapshot = await getDocs(productsRef);
-    
+
     const uniqueProducts = new Map();
     const batch = writeBatch(db);
 
@@ -57,15 +56,19 @@ export async function fbCheckDuplicateProducts(businessID) {
     });
 
     // Verifica si hay documentos para eliminar
-    if (uniqueProducts.size < productSnapshot.size) { // Corregido aquí
+    if (uniqueProducts.size < productSnapshot.size) {
+      // Corregido aquí
       await batch.commit(); // Ejecuta las operaciones en el batch
-              console.info(`Duplicate cleanup completed. Kept ${uniqueProducts.size} unique products.`);
+      console.info(
+        `Duplicate cleanup completed. Kept ${uniqueProducts.size} unique products.`,
+      );
     } else {
-              console.info("No duplicate products found to remove.");
+      console.info('No duplicate products found to remove.');
     }
   } catch (error) {
-    console.error("Error al procesar productos duplicados:", error);
-    throw new Error("Falló la eliminación de productos duplicados debido a un error.");
+    console.error('Error al procesar productos duplicados:', error);
+    throw new Error(
+      'Falló la eliminación de productos duplicados debido a un error.',
+    );
   }
 }
-

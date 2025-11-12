@@ -13,195 +13,191 @@ import Typography from '../../Typografy/Typografy';
 
 import { useMenuOptions } from './useMenuOptions';
 
-
 export const DateRangeFilter = ({ setDates, dates }) => {
-    const [referenceElement, setReferenceElement] = useState(null);
-    const [popperElement, setPopperElement] = useState(null);
-    const [_arrowElement, setArrowElement] = useState(null);
-    const { styles, attributes } = usePopper(referenceElement, popperElement, {
-        modifiers: [{ name: 'arrow' }],
-    });
+  const [referenceElement, setReferenceElement] = useState(null);
+  const [popperElement, setPopperElement] = useState(null);
+  const [_arrowElement, setArrowElement] = useState(null);
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [{ name: 'arrow' }],
+  });
 
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const menuRef = useRef(null);
-    const handleButtonClick = () => setIsMenuOpen(!isMenuOpen);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  const handleButtonClick = () => setIsMenuOpen(!isMenuOpen);
 
-    const handleMenuItemClick = (startDate, endDate) => {
-        setDates({ startDate, endDate });
+  const handleMenuItemClick = (startDate, endDate) => {
+    setDates({ startDate, endDate });
+  };
 
-    };
+  const { menuOptions } = useMenuOptions();
 
-    const { menuOptions } = useMenuOptions();
+  const getActiveOptionByDates = () => {
+    const { startDate, endDate } = dates;
+    const foundOption = menuOptions.find(
+      (option) => option.startDate === startDate && option.endDate === endDate,
+    );
+    return foundOption && `${foundOption.label || 'Personalizado'}`;
+  };
 
-    const getActiveOptionByDates = () => {
-        const { startDate, endDate } = dates;
-        const foundOption = menuOptions.find(option => option.startDate === startDate && option.endDate === endDate);
-        return foundOption && `${foundOption.label || "Personalizado"}`;
+  const activeOptionLabel = useMemo(
+    () => getActiveOptionByDates(),
+    [dates, menuOptions],
+  );
+
+  const groupedOptions = menuOptions.reduce((acc, option) => {
+    const category = option.category || 'general';
+    if (!acc[category]) {
+      acc[category] = [];
     }
+    acc[category].push(option);
+    return acc;
+  }, {});
 
-    const activeOptionLabel = useMemo(() => getActiveOptionByDates(), [dates, menuOptions]);
-
-    const groupedOptions = menuOptions.reduce((acc, option) => {
-        const category = option.category || 'general';
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(option);
-        return acc;
-    }, {});
-
-    useClickOutSide(menuRef, isMenuOpen, () => setIsMenuOpen(false));
-    const sections = Object.keys(groupedOptions);
-    const dateForHuman = (date) => {
-        if (!date) return;
-        if (typeof date !== 'number') return;
-        return DateTime.fromMillis(date).toLocaleString(DateTime.DATE_MED)
+  useClickOutSide(menuRef, isMenuOpen, () => setIsMenuOpen(false));
+  const sections = Object.keys(groupedOptions);
+  const dateForHuman = (date) => {
+    if (!date) return;
+    if (typeof date !== 'number') return;
+    return DateTime.fromMillis(date).toLocaleString(DateTime.DATE_MED);
+  };
+  const vw = useViewportWidth();
+  const truncateOptions = (string = [], length = 4) => {
+    if (vw < 800) {
+      return truncateString(string, length);
     }
-    const vw = useViewportWidth();
-    const truncateOptions = (string = [], length = 4) => {
-        if (vw < 800) {
-            return truncateString(string, length)
-        }
-        if(string.length > 400) return truncateString(string, 4)
-        return string
-    }
-    return (
-        <StyledButton ref={menuRef} >
-            <Button
-                ref={setReferenceElement}
-             
-               icon={<FontAwesomeIcon icon={faCalendar} />}
-                title={truncateOptions(activeOptionLabel, 4) || 'Filtrar Fechas'}
-                onClick={handleButtonClick}
-            >
-            {truncateOptions(activeOptionLabel, 4) || 'Filtrar Fechas'}
-            </Button>
-            {
-                isMenuOpen &&
-                <StyledMenu
-                    ref={setPopperElement}
-                    style={styles.popper}
-                    {...attributes.popper}
-                >
-                    <Header>
-                        <Typography variant='h4' disableMargins>
-                            Rango Seleccionado
-                        </Typography>
-                        <Typography disableMargins>
-                            {activeOptionLabel || `${dateForHuman(dates.startDate)} - ${dateForHuman(dates.endDate)}`} {/* Puedes usar un mensaje por defecto como "Seleccione un rango" */}
-                        </Typography>
-
-                    </Header>
-                    <Body>
-
-                        <Options>
-                            {sections
-                                .map((section, sectionIndex) => (
-                                    <OptionsGroup key={sectionIndex}>
-                                        <h3>{section}</h3>
-                                        <Items>
-
-                                            {groupedOptions[section].map((option, optionIndex) => (
-                                                <StyledMenuItem
-                                                    key={optionIndex}
-                                                    isActive={activeOptionLabel === option.label}
-                                                    onClick={() =>
-                                                        handleMenuItemClick(option.startDate, option.endDate, option.label)
-                                                    }
-                                                >
-                                                    {option.label}
-                                                </StyledMenuItem>
-                                            ))}
-                                        </Items>
-                                    </OptionsGroup>
-                                ))}
-                        </Options>
-                    </Body>
-
-                </StyledMenu>
-            }
-            <div ref={setArrowElement} style={styles.arrow} />
-        </StyledButton>
-    )
+    if (string.length > 400) return truncateString(string, 4);
+    return string;
+  };
+  return (
+    <StyledButton ref={menuRef}>
+      <Button
+        ref={setReferenceElement}
+        icon={<FontAwesomeIcon icon={faCalendar} />}
+        title={truncateOptions(activeOptionLabel, 4) || 'Filtrar Fechas'}
+        onClick={handleButtonClick}
+      >
+        {truncateOptions(activeOptionLabel, 4) || 'Filtrar Fechas'}
+      </Button>
+      {isMenuOpen && (
+        <StyledMenu
+          ref={setPopperElement}
+          style={styles.popper}
+          {...attributes.popper}
+        >
+          <Header>
+            <Typography variant="h4" disableMargins>
+              Rango Seleccionado
+            </Typography>
+            <Typography disableMargins>
+              {activeOptionLabel ||
+                `${dateForHuman(dates.startDate)} - ${dateForHuman(dates.endDate)}`}{' '}
+              {/* Puedes usar un mensaje por defecto como "Seleccione un rango" */}
+            </Typography>
+          </Header>
+          <Body>
+            <Options>
+              {sections.map((section, sectionIndex) => (
+                <OptionsGroup key={sectionIndex}>
+                  <h3>{section}</h3>
+                  <Items>
+                    {groupedOptions[section].map((option, optionIndex) => (
+                      <StyledMenuItem
+                        key={optionIndex}
+                        isActive={activeOptionLabel === option.label}
+                        onClick={() =>
+                          handleMenuItemClick(
+                            option.startDate,
+                            option.endDate,
+                            option.label,
+                          )
+                        }
+                      >
+                        {option.label}
+                      </StyledMenuItem>
+                    ))}
+                  </Items>
+                </OptionsGroup>
+              ))}
+            </Options>
+          </Body>
+        </StyledMenu>
+      )}
+      <div ref={setArrowElement} style={styles.arrow} />
+    </StyledButton>
+  );
 };
 
-
-
 const Header = styled.div`
-    background-color: white;
-    padding: 0.5em 1em ;
-  
-`
-
-const Body = styled.div`
-padding: 1em;
-overflow-y: auto;
-`
-
-const Options = styled.div`
-    display: grid;
-    gap: 2em 1em;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-`
-
-const StyledButton = styled.div`
-    
+  background-color: white;
+  padding: 0.5em 1em;
 `;
 
+const Body = styled.div`
+  padding: 1em;
+  overflow-y: auto;
+`;
+
+const Options = styled.div`
+  display: grid;
+  gap: 2em 1em;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+`;
+
+const StyledButton = styled.div``;
+
 const StyledMenu = styled.ul`
-    max-width: 800px;
-    width: 100%;
-    height: calc(100vh - 12em);
-    align-content: start;
-    overflow-y: scroll;
-    display: flex;
-    flex-direction: column;
-    background-color: #F1F1F1;
-    border: 1px solid #ccc;
-    border-radius: var(--border-radius);
-    padding: 0;
-    list-style: none;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.212);
-    z-index: 100000;
-    transition: opacity 0.2s ease-in-out;
-    overflow-y: hidden;
+  max-width: 800px;
+  width: 100%;
+  height: calc(100vh - 12em);
+  align-content: start;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  padding: 0;
+  list-style: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.212);
+  z-index: 100000;
+  transition: opacity 0.2s ease-in-out;
+  overflow-y: hidden;
 `;
 
 const StyledMenuItem = styled.li`
-    list-style: none;
-    display: flex;
-    align-items: center;
-    padding: 0 1em;
-    height: 2.6em;
-    margin: 0;
-    font-weight: 450;
-    font-size: 14px;
-    border-radius: 6px;
-    background-color: ${props => props.isActive ? '#2772e4' : '#ffffff'}; 
-    color: ${props => props.isActive ? '#ffffff' : '#000000'};
-    text-transform: capitalize;
-    
+  list-style: none;
+  display: flex;
+  align-items: center;
+  padding: 0 1em;
+  height: 2.6em;
+  margin: 0;
+  font-weight: 450;
+  font-size: 14px;
+  border-radius: 6px;
+  background-color: ${(props) => (props.isActive ? '#2772e4' : '#ffffff')};
+  color: ${(props) => (props.isActive ? '#ffffff' : '#000000')};
+  text-transform: capitalize;
 `;
 const OptionsGroup = styled.div`
-    display: grid;
-    align-content: start;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    text-align: left;
-    gap: 0.5em;
-    h3 {
-        font-size: 14px;
-        font-weight: 600;
-        text-transform: uppercase;
-    } 
+  display: grid;
+  align-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  text-align: left;
+  gap: 0.5em;
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
 `;
 
 const Items = styled.div`
-    display: grid;
-    gap: 0.5em;
-    text-align: left;
-    padding: 0;
-    margin: 0;
-    @media (max-width: 800px) {
-        grid-template-columns: 1fr ;
-    }
+  display: grid;
+  gap: 0.5em;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
 `;

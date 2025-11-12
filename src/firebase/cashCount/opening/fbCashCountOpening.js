@@ -1,26 +1,39 @@
-import { Timestamp, doc, setDoc } from 'firebase/firestore'
-import { nanoid } from 'nanoid'
+import { Timestamp, doc, setDoc } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
 
-import { db } from '../../firebaseconfig'
-import { getNextID } from '../../Tools/getNextID'
+import { db } from '../../firebaseconfig';
+import { getNextID } from '../../Tools/getNextID';
 
-export const fbCashCountOpening = async (user, cashCount, employeeID, approvalEmployeeID, openingDate) => {
-
-  if (!user || !user?.businessID) { return null }
+export const fbCashCountOpening = async (
+  user,
+  cashCount,
+  employeeID,
+  approvalEmployeeID,
+  openingDate,
+) => {
+  if (!user || !user?.businessID) {
+    return null;
+  }
 
   const userRefPath = doc(db, 'users', employeeID);
   const approvalEmployeeRefPath = doc(db, `users`, approvalEmployeeID);
 
-  const id = nanoid(10)
+  const id = nanoid(10);
   const incrementNumber = await getNextID(user, 'lastCashCountId');
 
   cashCount = {
     ...cashCount,
     id: id,
     incrementNumber: incrementNumber,
-  }
-  
-  const cashCountRef = doc(db, 'businesses', user?.businessID, 'cashCounts', id)
+  };
+
+  const cashCountRef = doc(
+    db,
+    'businesses',
+    user?.businessID,
+    'cashCounts',
+    id,
+  );
 
   try {
     await setDoc(cashCountRef, {
@@ -34,13 +47,13 @@ export const fbCashCountOpening = async (user, cashCount, employeeID, approvalEm
           employee: userRefPath,
           approvalEmployee: approvalEmployeeRefPath,
           initialized: true,
-          date: Timestamp.fromMillis(openingDate)
-        }
-      }
-    })
-    return 'success'
+          date: Timestamp.fromMillis(openingDate),
+        },
+      },
+    });
+    return 'success';
   } catch (error) {
     console.error('Error writing cash count opening document: ', error);
-    return error
+    return error;
   }
-}
+};

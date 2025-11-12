@@ -13,29 +13,29 @@ import {
   isAccountLocked,
   validateCredentials,
   createLoginResponse,
-  createAuthCheckResponse
+  createAuthCheckResponse,
 } from '../utils/user.util.js';
 
 /* ────────── config runtime ────────── */
 const MAX_ATTEMPTS = Number(process.env.AUTH_MAX_ATTEMPTS) || 5;
-const LOCK_HOURS   = Number(process.env.AUTH_LOCK_HOURS)   || 2;
-const LOCK_MS      = LOCK_HOURS * 60 * 60 * 1_000;
+const LOCK_HOURS = Number(process.env.AUTH_LOCK_HOURS) || 2;
+const LOCK_MS = LOCK_HOURS * 60 * 60 * 1_000;
 
 /* ────────── errores genéricos ────────── */
 const ERR_GENERIC = new HttpsError(
   'unauthenticated',
-  ERROR_MESSAGES.INVALID_CREDENTIALS
+  ERROR_MESSAGES.INVALID_CREDENTIALS,
 );
 const ERR_LOCKED = new HttpsError(
   'failed-precondition',
-  ERROR_MESSAGES.ACCOUNT_LOCKED
+  ERROR_MESSAGES.ACCOUNT_LOCKED,
 );
 
 /* ────────── helper: autenticación común ────────── */
 async function tryAuth(usernameRaw, password, upgrade = false) {
   const uname = normalizeUsername(usernameRaw);
 
-  return db.runTransaction(async tx => {
+  return db.runTransaction(async (tx) => {
     const doc = await findUserByName(tx, uname);
     const userData = doc.data();
     const user = userData.user; // Acceder a la sub-propiedad user
@@ -51,14 +51,14 @@ async function tryAuth(usernameRaw, password, upgrade = false) {
       const shouldLock = attempts >= MAX_ATTEMPTS;
       const failedFields = createFailedLoginFields(
         shouldLock ? MAX_ATTEMPTS : null,
-        shouldLock ? LOCK_MS : null
+        shouldLock ? LOCK_MS : null,
       );
       tx.update(doc.ref, failedFields);
       throw ERR_GENERIC;
-    }    /* login OK → reset contador + hash upgrade opcional */
+    } /* login OK → reset contador + hash upgrade opcional */
     const update = {
       ...createLoginResetFields(),
-      ...(upgrade && newHash && { 'user.password': newHash })
+      ...(upgrade && newHash && { 'user.password': newHash }),
     };
     tx.update(doc.ref, update);
 
@@ -94,7 +94,7 @@ export const authCheck = onCall(async ({ data }) => {
 });
 
 /* ────────── 3. LOGOUT global ────────── */
-export const authLogout = onCall(async req => {
+export const authLogout = onCall(async (req) => {
   const uid = req.auth?.uid || req.data?.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'No autenticado');
 
@@ -105,11 +105,12 @@ export const authLogout = onCall(async req => {
 /* ────────── 4. CRON: revocar cuentas expiradas ────────── */
 export const expireSessions = onSchedule('every 60 minutes', async () => {
   const now = Timestamp.now();
-  let last  = null;
+  let last = null;
   let hasMore = true;
 
   while (hasMore) {
-    let q = db.collection('users')
+    let q = db
+      .collection('users')
       .where('user.expirationDate', '<=', now)
       .where('user.active', '==', true)
       .orderBy('user.expirationDate')
@@ -125,16 +126,18 @@ export const expireSessions = onSchedule('every 60 minutes', async () => {
 
     /* desactivar cuentas en lote */
     const batch = db.batch();
-    snap.docs.forEach(d => batch.update(d.ref, {
-      active            : false,
-      deactivatedAt     : now,
-      deactivatedReason : 'expired'
-    }));
+    snap.docs.forEach((d) =>
+      batch.update(d.ref, {
+        active: false,
+        deactivatedAt: now,
+        deactivatedReason: 'expired',
+      }),
+    );
     await batch.commit();
 
     /* revocar tokens en paralelo (no afectan transacción) */
     await Promise.allSettled(
-      snap.docs.map(d => admin.auth().revokeRefreshTokens(d.id))
+      snap.docs.map((d) => admin.auth().revokeRefreshTokens(d.id)),
     );
 
     last = snap.docs[snap.docs.length - 1];

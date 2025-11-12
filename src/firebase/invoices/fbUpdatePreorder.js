@@ -1,7 +1,7 @@
-import { doc, serverTimestamp, Timestamp, updateDoc } from "firebase/firestore";
+import { doc, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore';
 
-import { sanitizeFirestoreDocument } from "../../utils/firebase/sanitizeFirestoreDocument";
-import { db } from "../firebaseconfig";
+import { sanitizeFirestoreDocument } from '../../utils/firebase/sanitizeFirestoreDocument';
+import { db } from '../firebaseconfig';
 
 const toFirestoreTimestamp = (value) => {
   if (value === undefined || value === null) return value;
@@ -11,32 +11,34 @@ const toFirestoreTimestamp = (value) => {
   return value;
 };
 
-const normalizeHistory = (history = []) => (
-  history
-    .filter(Boolean)
-    .map((entry) => {
-      if (!entry || typeof entry !== 'object') return entry;
-      const normalizedEntry = { ...entry };
-      if (normalizedEntry.date !== undefined && normalizedEntry.date !== null) {
-        const parsedDate = toFirestoreTimestamp(normalizedEntry.date);
-        if (parsedDate) {
-          normalizedEntry.date = parsedDate;
-        }
+const normalizeHistory = (history = []) =>
+  history.filter(Boolean).map((entry) => {
+    if (!entry || typeof entry !== 'object') return entry;
+    const normalizedEntry = { ...entry };
+    if (normalizedEntry.date !== undefined && normalizedEntry.date !== null) {
+      const parsedDate = toFirestoreTimestamp(normalizedEntry.date);
+      if (parsedDate) {
+        normalizedEntry.date = parsedDate;
       }
-      return normalizedEntry;
-    })
-);
+    }
+    return normalizedEntry;
+  });
 
 export const fbUpdatePreOrder = async (user, cartData) => {
   if (!user?.businessID) {
-    throw new Error('El negocio asociado al usuario es requerido para actualizar la preventa.');
+    throw new Error(
+      'El negocio asociado al usuario es requerido para actualizar la preventa.',
+    );
   }
 
   if (!cartData?.id) {
     throw new Error('No se encontró un identificador válido para la preventa.');
   }
 
-  const invoiceRef = doc(db, `businesses/${user.businessID}/invoices/${cartData.id}`);
+  const invoiceRef = doc(
+    db,
+    `businesses/${user.businessID}/invoices/${cartData.id}`,
+  );
 
   const preorderDetails = {
     ...(cartData?.preorderDetails || {}),
@@ -49,7 +51,10 @@ export const fbUpdatePreOrder = async (user, cartData) => {
     preorderDetails.date = serverTimestamp();
   }
 
-  const normalizedSelectedType = preorderDetails?.selectedTaxReceiptType ?? cartData?.selectedTaxReceiptType ?? null;
+  const normalizedSelectedType =
+    preorderDetails?.selectedTaxReceiptType ??
+    cartData?.selectedTaxReceiptType ??
+    null;
 
   const payload = {
     ...cartData,

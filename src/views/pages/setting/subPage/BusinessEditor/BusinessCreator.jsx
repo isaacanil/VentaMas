@@ -38,15 +38,13 @@ const BusinessCreator = () => {
         businessType: values.businessType || 'general',
         invoice: {
           invoiceMessage: values.invoice?.invoiceMessage || '',
-          invoiceType: 'invoiceTemplate1'
-        }
+          invoiceType: 'invoiceTemplate1',
+        },
       };
-
 
       await createBusiness(businessData);
       message.success('Negocio creado exitosamente');
-      navigate(BUSINESSES)
-
+      navigate(BUSINESSES);
     } catch (error) {
       message.error(error.message || 'Error al crear el negocio');
     } finally {
@@ -56,16 +54,23 @@ const BusinessCreator = () => {
 
   return (
     <Wrapper>
-      <MenuApp sectionName={"Crear Nuevo Negocio"} />
+      <MenuApp sectionName={'Crear Nuevo Negocio'} />
       <PageContainer>
         <StyledForm form={form} layout="vertical" onFinish={handleSubmit}>
           <FormSection>
-            <Title level={4}><ShopOutlined /> Información del Negocio</Title>
+            <Title level={4}>
+              <ShopOutlined /> Información del Negocio
+            </Title>
             <Card>
               <Form.Item
                 name="businessType"
                 label="Tipo de Negocio"
-                rules={[{ required: true, message: 'Por favor, selecciona el tipo de negocio' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor, selecciona el tipo de negocio',
+                  },
+                ]}
               >
                 <Select placeholder="Selecciona el tipo de negocio">
                   <Option value="general">General</Option>
@@ -76,33 +81,42 @@ const BusinessCreator = () => {
               <Form.Item
                 name="name"
                 label="Nombre del Negocio"
-                rules={[{ required: true, message: 'Por favor, ingresa el nombre del negocio' }]}>
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor, ingresa el nombre del negocio',
+                  },
+                ]}
+              >
                 <Input placeholder="Nombre del negocio" />
               </Form.Item>
 
-              <Form.Item
-                name="rnc"
-                label="RNC">
+              <Form.Item name="rnc" label="RNC">
                 <Input placeholder="Ingresa el RNC" />
               </Form.Item>
             </Card>
           </FormSection>
 
           <FormSection>
-            <Title level={4}><MailOutlined /> Contacto</Title>
+            <Title level={4}>
+              <MailOutlined /> Contacto
+            </Title>
             <Card>
               <TwoColumns>
-                <Form.Item
-                  name="email"
-                  label="Correo electrónico"
-                >
+                <Form.Item name="email" label="Correo electrónico">
                   <Input placeholder="ejemplo@dominio.com" />
                 </Form.Item>
 
                 <Form.Item
                   name="tel"
                   label="Teléfono"
-                  rules={[{ required: true, message: 'Por favor, ingresa el teléfono' }]}>
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Por favor, ingresa el teléfono',
+                    },
+                  ]}
+                >
                   <Input placeholder="55 1234 5678" />
                 </Form.Item>
               </TwoColumns>
@@ -110,13 +124,17 @@ const BusinessCreator = () => {
           </FormSection>
 
           <FormSection>
-            <Title level={4}><HomeOutlined /> Ubicación</Title>
+            <Title level={4}>
+              <HomeOutlined /> Ubicación
+            </Title>
             <Card>
               <TwoColumns>
                 <Form.Item name="country" label="País">
                   <Select placeholder="Selecciona un país">
-                    {countries.map(country => (
-                      <Option key={country.id} value={country.id}>{country.name}</Option>
+                    {countries.map((country) => (
+                      <Option key={country.id} value={country.id}>
+                        {country.name}
+                      </Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -129,14 +147,23 @@ const BusinessCreator = () => {
               <Form.Item
                 name="address"
                 label="Dirección"
-                rules={[{ required: true, message: 'Por favor, ingresa la dirección' }]}>
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor, ingresa la dirección',
+                  },
+                ]}
+              >
                 <Input placeholder="Calle 123, Colonia, Ciudad, Estado" />
               </Form.Item>
             </Card>
           </FormSection>
 
           <FormActions>
-            <Button onClick={() => navigate('/settings')} style={{ marginRight: 8 }}>
+            <Button
+              onClick={() => navigate('/settings')}
+              style={{ marginRight: 8 }}
+            >
               Cancelar
             </Button>
             <Button type="primary" htmlType="submit" loading={loading}>
@@ -198,7 +225,7 @@ const FormActions = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 24px;
-  
+
   button {
     min-width: 100px;
   }

@@ -1,6 +1,6 @@
-import { faTruck, faMoneyBill } from '@fortawesome/free-solid-svg-icons'
+import { faTruck, faMoneyBill } from '@fortawesome/free-solid-svg-icons';
 
-import { transactionConditions } from '../../../../../constants/orderAndPurchaseState'
+import { transactionConditions } from '../../../../../constants/orderAndPurchaseState';
 
 const createFilterConfig = () => ({
   filters: [
@@ -10,36 +10,36 @@ const createFilterConfig = () => ({
       placeholder: 'Condiciones',
       allowClear: true,
       icon: faMoneyBill,
-      options: transactionConditions.map(c => ({
+      options: transactionConditions.map((c) => ({
         value: c.id,
         label: c.label,
-        icon: c.icon
-      }))
+        icon: c.icon,
+      })),
     },
     {
       type: 'status',
       key: 'status',
       visibleStatus: ['pending', 'completed', 'canceled', 'processing'],
-      placeholder: 'Estado'
+      placeholder: 'Estado',
     },
     {
       type: 'select',
       key: 'providerId',
       placeholder: 'Proveedores',
       icon: faTruck,
-      showSearch: true
-    }
+      showSearch: true,
+    },
   ],
   defaultValues: {
     status: 'pending',
     providerId: null,
-    condition: null
+    condition: null,
   },
   defaultSort: {
-    isAscending: false
+    isAscending: false,
   },
   showSortButton: true,
-  showResetButton: true
-})
+  showResetButton: true,
+});
 
-export default createFilterConfig
+export default createFilterConfig;

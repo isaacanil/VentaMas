@@ -9,12 +9,7 @@ const Bar = styled.div`
   width: 100%;
 `;
 
-export const ActionBar = ({
-  isUpdateMode,
-  submitting,
-  onReset,
-  onSubmit,
-}) => (
+export const ActionBar = ({ isUpdateMode, submitting, onReset, onSubmit }) => (
   <Bar>
     <Space size="middle" wrap>
       <Button icon={<ClearOutlined />} onClick={onReset}>

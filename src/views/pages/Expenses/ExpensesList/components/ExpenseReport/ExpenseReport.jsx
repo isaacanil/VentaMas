@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectExpenseList } from '../../../../../../features/expense/expensesListSlice';
-import { selectExpenseChartModal, toggleExpenseChartModal } from '../../../../../../features/expense/expenseUISlice';
+import {
+  selectExpenseChartModal,
+  toggleExpenseChartModal,
+} from '../../../../../../features/expense/expenseUISlice';
 import { Button } from '../../../../../templates/system/Button/Button';
 import Typography from '../../../../../templates/system/Typografy/Typografy';
 
@@ -12,84 +15,69 @@ import { CategoryExpenseBarChart } from './reports/CategoryExpenseBarChart';
 import { DailyExpenseBarChart } from './reports/DailyExpensesBarChart';
 import { MonthlyAndAccumulatedExpenseCharts } from './reports/MonthlyAndAccumulatedExpenseCharts/MonthlyAndAccumulatedExpenseCharts';
 
-
-
 export const ExpenseChart = () => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-    const { isOpen } = useSelector(selectExpenseChartModal);
-    
-    const handleOpenExpensesChart = () => dispatch(toggleExpenseChartModal());
+  const { isOpen } = useSelector(selectExpenseChartModal);
 
-    const expensesList = useSelector(selectExpenseList);
+  const handleOpenExpensesChart = () => dispatch(toggleExpenseChartModal());
 
-    const componentRef = useRef(null);
+  const expensesList = useSelector(selectExpenseList);
 
-    const variantsBackdrop = {
-        open: { opacity: 1, zIndex: 1 },
-        close: { opacity: 0, zIndex: -1 },
-    }
+  const componentRef = useRef(null);
 
-    const variantsContainer = {
-        open: {
-            opacity: 1,
-            y: 0,
-        },
-        close: {
-            opacity: 0,
-            y: '100vh',
-        }
-    }
+  const variantsBackdrop = {
+    open: { opacity: 1, zIndex: 1 },
+    close: { opacity: 0, zIndex: -1 },
+  };
 
-    //useClickOutSide(componentRef, isOpen, onOpen)
+  const variantsContainer = {
+    open: {
+      opacity: 1,
+      y: 0,
+    },
+    close: {
+      opacity: 0,
+      y: '100vh',
+    },
+  };
 
-    return (
+  //useClickOutSide(componentRef, isOpen, onOpen)
 
-        <AnimatePresence>
-            {isOpen && (
-                <Backdrop
-                    variants={variantsBackdrop}
-                    initial="close"
-                    key='backdrop'
-                    animate={isOpen ? "open" : "close"}
-                    transition={{ duration: 0.5 }}
-                    exit="close"
-                >
-                    <Component
-                        ref={componentRef}
-                        variants={variantsContainer}
-                        initial="close"
-                        animate={isOpen ? "open" : "close"}
-                        transition={{ duration: 0.5 }}
-                        exit="close"
-                    >
-                        <Header>
-                            <Typography variant='h2'>
-                                Reporte de Gastos
-                            </Typography>
-                            <Button
-                                title='Cerrar'
-                                onClick={handleOpenExpensesChart}
-                            />
-                        </Header>
-                        <DailyExpenseBarChart
-                            expenses={expensesList}
-                        />
-                        <CategoryExpenseBarChart
-                            expenses={expensesList}
-                        />
-                        {/* <MonthlyExpenseBarChart 
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <Backdrop
+          variants={variantsBackdrop}
+          initial="close"
+          key="backdrop"
+          animate={isOpen ? 'open' : 'close'}
+          transition={{ duration: 0.5 }}
+          exit="close"
+        >
+          <Component
+            ref={componentRef}
+            variants={variantsContainer}
+            initial="close"
+            animate={isOpen ? 'open' : 'close'}
+            transition={{ duration: 0.5 }}
+            exit="close"
+          >
+            <Header>
+              <Typography variant="h2">Reporte de Gastos</Typography>
+              <Button title="Cerrar" onClick={handleOpenExpensesChart} />
+            </Header>
+            <DailyExpenseBarChart expenses={expensesList} />
+            <CategoryExpenseBarChart expenses={expensesList} />
+            {/* <MonthlyExpenseBarChart 
                                 expenses={expenses}
                             /> */}
-                        <MonthlyAndAccumulatedExpenseCharts
-                            expenses={expensesList}
-                        />
-                    </Component>
-                </Backdrop>
-            )}
-        </AnimatePresence>
-
-    );
+            <MonthlyAndAccumulatedExpenseCharts expenses={expensesList} />
+          </Component>
+        </Backdrop>
+      )}
+    </AnimatePresence>
+  );
 };
 
 const Component = styled(motion.div)`
@@ -102,7 +90,7 @@ const Component = styled(motion.div)`
   border-radius: 0.5em;
   overflow-y: scroll;
   padding: 0 1em;
-  `;
+`;
 
 const Backdrop = styled(motion.div)`
   width: 100%;
@@ -113,7 +101,7 @@ const Backdrop = styled(motion.div)`
   position: absolute;
   overflow: hidden;
   z-index: 30;
-`
+`;
 
 const Header = styled.div`
   display: grid;
@@ -121,7 +109,7 @@ const Header = styled.div`
   align-items: center;
   position: sticky;
   top: 0;
-  padding: 1em 1em 0 ;
+  padding: 1em 1em 0;
   background: white;
   gap: 1em;
-  `
+`;

@@ -36,16 +36,17 @@ const parseMoneyStrict = (v) => {
   if (/(?:,,|\.\.|,\.|\.,|^,|^\.|^-?[,.]$|--)/.test(s)) return null;
 
   const lastComma = s.lastIndexOf(',');
-  const lastDot   = s.lastIndexOf('.');
+  const lastDot = s.lastIndexOf('.');
 
   let decSep = '';
   if (lastComma > lastDot) decSep = ',';
   else if (lastDot > lastComma) decSep = '.';
 
-  let intPart = s, fracPart = '';
+  let intPart = s,
+    fracPart = '';
   if (decSep) {
     const i = s.lastIndexOf(decSep);
-    intPart  = s.slice(0, i);
+    intPart = s.slice(0, i);
     fracPart = s.slice(i + 1);
     if (!/^\d*$/.test(fracPart)) return null; // parte decimal solo dígitos
   }
@@ -67,7 +68,8 @@ const toNumber = (v) => parseMoneyStrict(v);
 const almostEqual = (a, b, eps = 0.005) => Math.abs(a - b) <= eps;
 
 /** Sólo fija cuando listPrice es real y price falta/no es real o difiere más que eps. */
-const shouldFix = (lp, p) => isRealPrice(lp) && (!isRealPrice(p) || !almostEqual(lp, p));
+const shouldFix = (lp, p) =>
+  isRealPrice(lp) && (!isRealPrice(p) || !almostEqual(lp, p));
 
 /* ───────────────────────────── Helpers comunes ───────────────────────────── */
 const resolveProductName = (data) =>
@@ -81,7 +83,12 @@ const csvEscape = (value) => {
 };
 
 /** Construye CSV con BOM UTF-8 (Excel-friendly) y CRLF. */
-const buildCSVFromObjects = (rows, headers, delimiter = ',', withBOM = true) => {
+const buildCSVFromObjects = (
+  rows,
+  headers,
+  delimiter = ',',
+  withBOM = true,
+) => {
   const head = headers.map(csvEscape).join(delimiter);
   const body = rows
     .map((r) => headers.map((h) => csvEscape(r[h])).join(delimiter))
@@ -91,15 +98,19 @@ const buildCSVFromObjects = (rows, headers, delimiter = ',', withBOM = true) => 
 };
 
 const downloadBytes = (bytes, mime, filename) => {
-  const blob = typeof bytes === 'string'
-    ? new Blob([bytes], { type: mime })
-    : new Blob([bytes], { type: mime });
+  const blob =
+    typeof bytes === 'string'
+      ? new Blob([bytes], { type: mime })
+      : new Blob([bytes], { type: mime });
   if (typeof window !== 'undefined') {
-    try { saveAs(blob, filename); }
-    catch {
+    try {
+      saveAs(blob, filename);
+    } catch {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
+      a.href = url;
+      a.download = filename;
+      a.click();
       URL.revokeObjectURL(url);
     }
   }
@@ -125,14 +136,21 @@ export async function fbAuditAllBusinessesPriceVsList(pageSize = 1000) {
       const data = docSnap.data() || {};
       const businessID = docSnap.ref.parent?.parent?.id ?? 'unknown';
       const lp = toNumber(data?.pricing?.listPrice);
-      const p  = toNumber(data?.pricing?.price);
+      const p = toNumber(data?.pricing?.price);
 
-      const entry = resultsMap.get(businessID) || { businessID, total: 0, equal: 0, mismatch: 0, unknown: 0 };
+      const entry = resultsMap.get(businessID) || {
+        businessID,
+        total: 0,
+        equal: 0,
+        mismatch: 0,
+        unknown: 0,
+      };
       if (!isRealPrice(lp) || !isRealPrice(p)) {
         entry.unknown += 1;
       } else {
         entry.total += 1;
-        if (almostEqual(lp, p)) entry.equal += 1; else entry.mismatch += 1;
+        if (almostEqual(lp, p)) entry.equal += 1;
+        else entry.mismatch += 1;
       }
       resultsMap.set(businessID, entry);
     }
@@ -145,9 +163,9 @@ export async function fbAuditAllBusinessesPriceVsList(pageSize = 1000) {
     const audited = r.total + r.unknown || 1;
     return {
       ...r,
-      pctEqual: +(r.equal / audited * 100).toFixed(2),
-      pctMismatch: +(r.mismatch / audited * 100).toFixed(2),
-      pctUnknown: +(r.unknown / audited * 100).toFixed(2),
+      pctEqual: +((r.equal / audited) * 100).toFixed(2),
+      pctMismatch: +((r.mismatch / audited) * 100).toFixed(2),
+      pctUnknown: +((r.unknown / audited) * 100).toFixed(2),
     };
   });
 }
@@ -155,17 +173,28 @@ export async function fbAuditAllBusinessesPriceVsList(pageSize = 1000) {
 /* ╔══════════════════════════╗
    ║  2) ARREGLAR (global)    ║
    ╚══════════════════════════╝ */
-export async function fbFixAllPricesToListPrice(
-  { pageSize = 500, dryRun = true, batchSize = 450, unknownStrategy = 'none', onProgress } = {}
-) {
+export async function fbFixAllPricesToListPrice({
+  pageSize = 500,
+  dryRun = true,
+  batchSize = 450,
+  unknownStrategy = 'none',
+  onProgress,
+} = {}) {
   let cursor = null;
-  let totalScanned = 0, totalUpdated = 0, totalSkipped = 0, totalUnknown = 0;
+  let totalScanned = 0,
+    totalUpdated = 0,
+    totalSkipped = 0,
+    totalUnknown = 0;
 
   let totalCount = null;
   try {
-    const countSnap = await getCountFromServer(query(collectionGroup(db, 'products')));
+    const countSnap = await getCountFromServer(
+      query(collectionGroup(db, 'products')),
+    );
     totalCount = countSnap.data().count;
-  } catch { /* Ignore count errors */ }
+  } catch {
+    /* Ignore count errors */
+  }
 
   const progressStep = 200;
 
@@ -184,40 +213,93 @@ export async function fbFixAllPricesToListPrice(
       totalScanned += 1;
       const data = docSnap.data() || {};
       const lpRaw = data?.pricing?.listPrice;
-      const pRaw  = data?.pricing?.price;
+      const pRaw = data?.pricing?.price;
       const lp = toNumber(lpRaw);
-      const p  = toNumber(pRaw);
-      const basePricing = (data && typeof data.pricing === 'object') ? data.pricing : {};
+      const p = toNumber(pRaw);
+      const basePricing =
+        data && typeof data.pricing === 'object' ? data.pricing : {};
 
       if (!isRealPrice(lp)) {
         totalUnknown += 1;
 
         // Opcional: tratamiento unknown
         if (!dryRun && unknownStrategy === 'mark') {
-          batch.set(docSnap.ref, { pricing: { ...basePricing, needsReview: true } }, { merge: true });
+          batch.set(
+            docSnap.ref,
+            { pricing: { ...basePricing, needsReview: true } },
+            { merge: true },
+          );
           inBatch++;
-        } else if (!dryRun && unknownStrategy === 'copyPriceToList' && isRealPrice(p)) {
-          batch.set(docSnap.ref, { pricing: { ...basePricing, listPrice: p, price: p, syncedFromListAt: serverTimestamp() } }, { merge: true });
-          inBatch++; totalUpdated++;
+        } else if (
+          !dryRun &&
+          unknownStrategy === 'copyPriceToList' &&
+          isRealPrice(p)
+        ) {
+          batch.set(
+            docSnap.ref,
+            {
+              pricing: {
+                ...basePricing,
+                listPrice: p,
+                price: p,
+                syncedFromListAt: serverTimestamp(),
+              },
+            },
+            { merge: true },
+          );
+          inBatch++;
+          totalUpdated++;
         }
 
-        if (!dryRun && inBatch >= batchSize) { await batch.commit(); batch = writeBatch(db); inBatch = 0; }
-        if (onProgress && totalScanned % progressStep === 0) onProgress({ totalScanned, totalUpdated, totalSkipped, totalUnknown, total: totalCount });
+        if (!dryRun && inBatch >= batchSize) {
+          await batch.commit();
+          batch = writeBatch(db);
+          inBatch = 0;
+        }
+        if (onProgress && totalScanned % progressStep === 0)
+          onProgress({
+            totalScanned,
+            totalUpdated,
+            totalSkipped,
+            totalUnknown,
+            total: totalCount,
+          });
         continue;
       }
 
       if (shouldFix(lp, p)) {
         totalUpdated += 1;
         if (!dryRun) {
-          batch.set(docSnap.ref, { pricing: { ...basePricing, price: lp, syncedFromListAt: serverTimestamp() } }, { merge: true });
+          batch.set(
+            docSnap.ref,
+            {
+              pricing: {
+                ...basePricing,
+                price: lp,
+                syncedFromListAt: serverTimestamp(),
+              },
+            },
+            { merge: true },
+          );
           inBatch++;
-          if (inBatch >= batchSize) { await batch.commit(); batch = writeBatch(db); inBatch = 0; }
+          if (inBatch >= batchSize) {
+            await batch.commit();
+            batch = writeBatch(db);
+            inBatch = 0;
+          }
         }
       } else {
         totalSkipped += 1;
       }
 
-      if (onProgress && totalScanned % progressStep === 0) onProgress({ totalScanned, totalUpdated, totalSkipped, totalUnknown, total: totalCount });
+      if (onProgress && totalScanned % progressStep === 0)
+        onProgress({
+          totalScanned,
+          totalUpdated,
+          totalSkipped,
+          totalUnknown,
+          total: totalCount,
+        });
     }
 
     if (!dryRun && inBatch > 0) await batch.commit();
@@ -226,7 +308,14 @@ export async function fbFixAllPricesToListPrice(
     if (snap.size < pageSize) break;
   }
 
-  return { dryRun, totalScanned, totalUpdated, totalSkipped, totalUnknown, total: totalCount };
+  return {
+    dryRun,
+    totalScanned,
+    totalUpdated,
+    totalSkipped,
+    totalUnknown,
+    total: totalCount,
+  };
 }
 
 /* ╔══════════════════════════════════════╗
@@ -234,11 +323,15 @@ export async function fbFixAllPricesToListPrice(
    ╚══════════════════════════════════════╝ */
 export async function fbFixPricesForBusinesses(
   businessIDs = [],
-  { dryRun = true, concurrency = 6, batchSize = 450, onProgress } = {}
+  { dryRun = true, concurrency = 6, batchSize = 450, onProgress } = {},
 ) {
   if (!Array.isArray(businessIDs) || businessIDs.length === 0) return [];
 
-  let totalEstimated = 0, scannedSoFar = 0, updatedSoFar = 0, skippedSoFar = 0, unknownSoFar = 0;
+  let totalEstimated = 0,
+    scannedSoFar = 0,
+    updatedSoFar = 0,
+    skippedSoFar = 0,
+    unknownSoFar = 0;
   const progressStep = 100;
 
   const runBusiness = async (businessID) => {
@@ -246,63 +339,158 @@ export async function fbFixPricesForBusinesses(
       const bizIdStr = String(businessID);
       const bizRef = doc(db, 'businesses', bizIdStr);
       const bizSnap = await getDoc(bizRef);
-      const businessName = bizSnap.exists() ? (bizSnap.data()?.business?.name ?? bizSnap.data()?.name ?? null) : null;
+      const businessName = bizSnap.exists()
+        ? (bizSnap.data()?.business?.name ?? bizSnap.data()?.name ?? null)
+        : null;
 
       const productsRef = collection(db, 'businesses', bizIdStr, 'products');
       const snap = await getDocs(productsRef);
 
       totalEstimated += snap.size;
-      onProgress?.({ scope: 'list', phase: 'scanning', businessID: bizIdStr, businessName, scanned: scannedSoFar, updated: updatedSoFar, skipped: skippedSoFar, unknown: unknownSoFar, total: totalEstimated, dryRun });
+      onProgress?.({
+        scope: 'list',
+        phase: 'scanning',
+        businessID: bizIdStr,
+        businessName,
+        scanned: scannedSoFar,
+        updated: updatedSoFar,
+        skipped: skippedSoFar,
+        unknown: unknownSoFar,
+        total: totalEstimated,
+        dryRun,
+      });
 
-      let scanned = 0, updated = 0, skipped = 0, unknown = 0;
+      let scanned = 0,
+        updated = 0,
+        skipped = 0,
+        unknown = 0;
       let batch = dryRun ? null : writeBatch(db);
       let inBatch = 0;
 
       for (const docSnap of snap.docs) {
-        scanned += 1; scannedSoFar += 1;
+        scanned += 1;
+        scannedSoFar += 1;
         const data = docSnap.data() || {};
         const lp = toNumber(data?.pricing?.listPrice);
-        const p  = toNumber(data?.pricing?.price);
-        const basePricing = (data && typeof data.pricing === 'object') ? data.pricing : {};
+        const p = toNumber(data?.pricing?.price);
+        const basePricing =
+          data && typeof data.pricing === 'object' ? data.pricing : {};
 
         if (!isRealPrice(lp)) {
-          unknown += 1; unknownSoFar += 1;
-          if (onProgress && (scannedSoFar % progressStep === 0)) onProgress({ scope: 'list', phase: 'scanning', businessID: bizIdStr, businessName, scanned: scannedSoFar, updated: updatedSoFar, skipped: skippedSoFar, unknown: unknownSoFar, total: totalEstimated, dryRun });
+          unknown += 1;
+          unknownSoFar += 1;
+          if (onProgress && scannedSoFar % progressStep === 0)
+            onProgress({
+              scope: 'list',
+              phase: 'scanning',
+              businessID: bizIdStr,
+              businessName,
+              scanned: scannedSoFar,
+              updated: updatedSoFar,
+              skipped: skippedSoFar,
+              unknown: unknownSoFar,
+              total: totalEstimated,
+              dryRun,
+            });
           continue;
         }
 
         if (shouldFix(lp, p)) {
-          updated += 1; updatedSoFar += 1;
+          updated += 1;
+          updatedSoFar += 1;
           if (!dryRun) {
-            batch.set(docSnap.ref, { pricing: { ...basePricing, price: lp, syncedFromListAt: serverTimestamp() } }, { merge: true });
+            batch.set(
+              docSnap.ref,
+              {
+                pricing: {
+                  ...basePricing,
+                  price: lp,
+                  syncedFromListAt: serverTimestamp(),
+                },
+              },
+              { merge: true },
+            );
             inBatch += 1;
-            if (inBatch >= batchSize) { await batch.commit(); batch = writeBatch(db); inBatch = 0; }
+            if (inBatch >= batchSize) {
+              await batch.commit();
+              batch = writeBatch(db);
+              inBatch = 0;
+            }
           }
         } else {
-          skipped += 1; skippedSoFar += 1;
+          skipped += 1;
+          skippedSoFar += 1;
         }
 
-        if (onProgress && (scannedSoFar % progressStep === 0)) {
-          onProgress({ scope: 'list', phase: 'scanning', businessID: bizIdStr, businessName, scanned: scannedSoFar, updated: updatedSoFar, skipped: skippedSoFar, unknown: unknownSoFar, total: totalEstimated, dryRun });
+        if (onProgress && scannedSoFar % progressStep === 0) {
+          onProgress({
+            scope: 'list',
+            phase: 'scanning',
+            businessID: bizIdStr,
+            businessName,
+            scanned: scannedSoFar,
+            updated: updatedSoFar,
+            skipped: skippedSoFar,
+            unknown: unknownSoFar,
+            total: totalEstimated,
+            dryRun,
+          });
         }
       }
 
       if (!dryRun && inBatch > 0) await batch.commit();
 
-      onProgress?.({ scope: 'list', phase: 'business-done', businessID: bizIdStr, businessName, scanned: scannedSoFar, updated: updatedSoFar, skipped: skippedSoFar, unknown: unknownSoFar, total: totalEstimated, dryRun });
+      onProgress?.({
+        scope: 'list',
+        phase: 'business-done',
+        businessID: bizIdStr,
+        businessName,
+        scanned: scannedSoFar,
+        updated: updatedSoFar,
+        skipped: skippedSoFar,
+        unknown: unknownSoFar,
+        total: totalEstimated,
+        dryRun,
+      });
 
-      return { businessID: bizIdStr, businessName, scanned, updated, skipped, unknown, dryRun };
+      return {
+        businessID: bizIdStr,
+        businessName,
+        scanned,
+        updated,
+        skipped,
+        unknown,
+        dryRun,
+      };
     } catch (e) {
-      onProgress?.({ scope: 'list', phase: 'error', businessID: String(businessID), error: e?.message });
-      return { businessID: String(businessID), businessName: null, scanned: 0, updated: 0, skipped: 0, unknown: 0, dryRun, error: String(e?.message || e) };
+      onProgress?.({
+        scope: 'list',
+        phase: 'error',
+        businessID: String(businessID),
+        error: e?.message,
+      });
+      return {
+        businessID: String(businessID),
+        businessName: null,
+        scanned: 0,
+        updated: 0,
+        skipped: 0,
+        unknown: 0,
+        dryRun,
+        error: String(e?.message || e),
+      };
     }
   };
 
   const results = [];
   let i = 0;
-  const workers = Array.from({ length: Math.min(concurrency, businessIDs.length) }, async () => {
-    while (i < businessIDs.length) results.push(await runBusiness(businessIDs[i++]));
-  });
+  const workers = Array.from(
+    { length: Math.min(concurrency, businessIDs.length) },
+    async () => {
+      while (i < businessIDs.length)
+        results.push(await runBusiness(businessIDs[i++]));
+    },
+  );
   await Promise.all(workers);
   return results;
 }
@@ -314,16 +502,26 @@ async function getBusinessNameCached(id, cache) {
   if (cache.has(id)) return cache.get(id);
   try {
     const bSnap = await getDoc(doc(db, 'businesses', id));
-    const name = bSnap.exists() ? (bSnap.data()?.business?.name ?? bSnap.data()?.name ?? '') : '';
+    const name = bSnap.exists()
+      ? (bSnap.data()?.business?.name ?? bSnap.data()?.name ?? '')
+      : '';
     cache.set(id, name);
     return name;
-  } catch { cache.set(id, ''); return ''; /* Ignore business name errors */ }
+  } catch {
+    cache.set(id, '');
+    return ''; /* Ignore business name errors */
+  }
 }
 
-async function collectProblemProductsAll({ pageSize = 1000, includeBusinessName = true, onProgress } = {}) {
+async function collectProblemProductsAll({
+  pageSize = 1000,
+  includeBusinessName = true,
+  onProgress,
+} = {}) {
   const businessNameCache = new Map();
   const rows = [];
-  let cursor = null, scanned = 0;
+  let cursor = null,
+    scanned = 0;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -340,22 +538,43 @@ async function collectProblemProductsAll({ pageSize = 1000, includeBusinessName 
       const productName = resolveProductName(data);
 
       const lpRaw = data?.pricing?.listPrice;
-      const pRaw  = data?.pricing?.price;
+      const pRaw = data?.pricing?.price;
       const lp = toNumber(lpRaw);
-      const p  = toNumber(pRaw);
+      const p = toNumber(pRaw);
 
       const businessID = docSnap.ref.parent?.parent?.id ?? '';
 
       if (!isRealPrice(lp)) {
-        const businessName = includeBusinessName ? await getBusinessNameCached(businessID, businessNameCache) : undefined;
-        rows.push({ businessID, businessName, productID, productName, listPrice_raw: lpRaw ?? '', price_raw: pRaw ?? '', status: 'LISTPRICE_UNKNOWN' });
+        const businessName = includeBusinessName
+          ? await getBusinessNameCached(businessID, businessNameCache)
+          : undefined;
+        rows.push({
+          businessID,
+          businessName,
+          productID,
+          productName,
+          listPrice_raw: lpRaw ?? '',
+          price_raw: pRaw ?? '',
+          status: 'LISTPRICE_UNKNOWN',
+        });
         continue;
       }
       if (!isRealPrice(p) || !almostEqual(lp, p)) {
-        const businessName = includeBusinessName ? await getBusinessNameCached(businessID, businessNameCache) : undefined;
-        rows.push({ businessID, businessName, productID, productName, listPrice_raw: lpRaw ?? '', price_raw: pRaw ?? '', status: 'MISMATCH' });
+        const businessName = includeBusinessName
+          ? await getBusinessNameCached(businessID, businessNameCache)
+          : undefined;
+        rows.push({
+          businessID,
+          businessName,
+          productID,
+          productName,
+          listPrice_raw: lpRaw ?? '',
+          price_raw: pRaw ?? '',
+          status: 'MISMATCH',
+        });
       }
-      if (onProgress && scanned % 1000 === 0) onProgress({ scanned, collected: rows.length });
+      if (onProgress && scanned % 1000 === 0)
+        onProgress({ scanned, collected: rows.length });
     }
 
     cursor = snap.docs[snap.docs.length - 1];
@@ -363,8 +582,23 @@ async function collectProblemProductsAll({ pageSize = 1000, includeBusinessName 
   }
 
   const headers = includeBusinessName
-    ? ['businessID', 'businessName', 'productID', 'productName', 'listPrice_raw', 'price_raw', 'status']
-    : ['businessID', 'productID', 'productName', 'listPrice_raw', 'price_raw', 'status'];
+    ? [
+        'businessID',
+        'businessName',
+        'productID',
+        'productName',
+        'listPrice_raw',
+        'price_raw',
+        'status',
+      ]
+    : [
+        'businessID',
+        'productID',
+        'productName',
+        'listPrice_raw',
+        'price_raw',
+        'status',
+      ];
 
   return { rows, headers };
 }
@@ -373,25 +607,35 @@ async function collectProblemProductsAll({ pageSize = 1000, includeBusinessName 
    ║  5) Export: CSV / XLSX / ambos ║
    ╚══════════════════════════════╝ */
 export async function fbExportProblemProductsAll({
-  format = 'xlsx',              // 'csv' | 'xlsx' | 'both'
+  format = 'xlsx', // 'csv' | 'xlsx' | 'both'
   filenameBase = 'problem-products',
   includeBusinessName = true,
   pageSize = 1000,
   onProgress,
 } = {}) {
-  const { rows, headers } = await collectProblemProductsAll({ pageSize, includeBusinessName, onProgress });
+  const { rows, headers } = await collectProblemProductsAll({
+    pageSize,
+    includeBusinessName,
+    onProgress,
+  });
   const exported = {};
 
   if (format === 'csv' || format === 'both') {
     const csv = buildCSVFromObjects(rows, headers);
-    exported.csvBlob = downloadBytes(csv, 'text/csv;charset=utf-8', `${filenameBase}.csv`);
+    exported.csvBlob = downloadBytes(
+      csv,
+      'text/csv;charset=utf-8',
+      `${filenameBase}.csv`,
+    );
   }
 
   if (format === 'xlsx' || format === 'both') {
     const wb = new ExcelJS.Workbook();
     wb.creator = 'VentaMax';
     wb.created = new Date();
-    const ws = wb.addWorksheet('Problem products', { views: [{ state: 'frozen', ySplit: 1 }] });
+    const ws = wb.addWorksheet('Problem products', {
+      views: [{ state: 'frozen', ySplit: 1 }],
+    });
 
     // Columnas con numFmt para columnas numéricas calculadas
     const cols = includeBusinessName
@@ -402,8 +646,18 @@ export async function fbExportProblemProductsAll({
           { header: 'productName', key: 'productName', width: 42 },
           { header: 'listPrice_raw', key: 'listPrice_raw', width: 16 },
           { header: 'price_raw', key: 'price_raw', width: 16 },
-          { header: 'listPrice', key: 'listPrice', width: 14, style: { numFmt: '#,##0.00' } },
-          { header: 'price', key: 'price', width: 14, style: { numFmt: '#,##0.00' } },
+          {
+            header: 'listPrice',
+            key: 'listPrice',
+            width: 14,
+            style: { numFmt: '#,##0.00' },
+          },
+          {
+            header: 'price',
+            key: 'price',
+            width: 14,
+            style: { numFmt: '#,##0.00' },
+          },
           { header: 'status', key: 'status', width: 18 },
         ]
       : [
@@ -412,31 +666,56 @@ export async function fbExportProblemProductsAll({
           { header: 'productName', key: 'productName', width: 42 },
           { header: 'listPrice_raw', key: 'listPrice_raw', width: 16 },
           { header: 'price_raw', key: 'price_raw', width: 16 },
-          { header: 'listPrice', key: 'listPrice', width: 14, style: { numFmt: '#,##0.00' } },
-          { header: 'price', key: 'price', width: 14, style: { numFmt: '#,##0.00' } },
+          {
+            header: 'listPrice',
+            key: 'listPrice',
+            width: 14,
+            style: { numFmt: '#,##0.00' },
+          },
+          {
+            header: 'price',
+            key: 'price',
+            width: 14,
+            style: { numFmt: '#,##0.00' },
+          },
           { header: 'status', key: 'status', width: 18 },
         ];
     ws.columns = cols;
 
     // Encabezado
     ws.getRow(1).font = { bold: true };
-    ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: cols.length } };
+    ws.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: cols.length },
+    };
 
     // Filas + zebra + color por estado
     for (const r of rows) {
       const row = ws.addRow({
         ...r,
         listPrice: toNumber(r.listPrice_raw),
-        price:     toNumber(r.price_raw),
+        price: toNumber(r.price_raw),
       });
       const idx = row.number;
       if (idx % 2 === 0) {
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF7F7F7' } };
+        row.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF7F7F7' },
+        };
       }
       if (r.status === 'MISMATCH') {
-        row.getCell('status').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE5E5' } };
+        row.getCell('status').fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFFFE5E5' },
+        };
       } else {
-        row.getCell('status').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9DB' } };
+        row.getCell('status').fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFFFF9DB' },
+        };
       }
     }
 
@@ -444,7 +723,7 @@ export async function fbExportProblemProductsAll({
     exported.xlsxBlob = downloadBytes(
       buf,
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      `${filenameBase}.xlsx`
+      `${filenameBase}.xlsx`,
     );
   }
 
@@ -462,7 +741,11 @@ export async function fbCSVProblemProductsAll({
   download = false,
   onProgress,
 } = {}) {
-  const { rows, headers } = await collectProblemProductsAll({ pageSize, includeBusinessName, onProgress });
+  const { rows, headers } = await collectProblemProductsAll({
+    pageSize,
+    includeBusinessName,
+    onProgress,
+  });
   const usedHeaders = includeHeaders ? headers : [];
   const csv = buildCSVFromObjects(rows, usedHeaders);
   if (download) downloadBytes(csv, 'text/csv;charset=utf-8', filename);
@@ -474,13 +757,37 @@ export async function fbCSVProblemProductsAll({
    ╚══════════════════════════════════════════╝ */
 export async function fbCSVProblemProductsForBusinesses(
   businessIDs = [],
-  { includeBusinessName = true, includeHeaders = true, filename = 'problem-products-list.csv', download = false, onProgress } = {}
+  {
+    includeBusinessName = true,
+    includeHeaders = true,
+    filename = 'problem-products-list.csv',
+    download = false,
+    onProgress,
+  } = {},
 ) {
   if (!Array.isArray(businessIDs) || businessIDs.length === 0) {
     const headers = includeBusinessName
-      ? ['businessID', 'businessName', 'productID', 'productName', 'listPrice_raw', 'price_raw', 'status']
-      : ['businessID', 'productID', 'productName', 'listPrice_raw', 'price_raw', 'status'];
-    return { csv: includeHeaders ? buildCSVFromObjects([], headers) : '', count: 0 };
+      ? [
+          'businessID',
+          'businessName',
+          'productID',
+          'productName',
+          'listPrice_raw',
+          'price_raw',
+          'status',
+        ]
+      : [
+          'businessID',
+          'productID',
+          'productName',
+          'listPrice_raw',
+          'price_raw',
+          'status',
+        ];
+    return {
+      csv: includeHeaders ? buildCSVFromObjects([], headers) : '',
+      count: 0,
+    };
   }
 
   const rows = [];
@@ -492,8 +799,12 @@ export async function fbCSVProblemProductsForBusinesses(
     if (includeBusinessName) {
       try {
         const bSnap = await getDoc(doc(db, 'businesses', businessID));
-        businessName = bSnap.exists() ? (bSnap.data()?.business?.name ?? bSnap.data()?.name ?? '') : '';
-      } catch { /* Ignore business name fetch errors */ }
+        businessName = bSnap.exists()
+          ? (bSnap.data()?.business?.name ?? bSnap.data()?.name ?? '')
+          : '';
+      } catch {
+        /* Ignore business name fetch errors */
+      }
     }
 
     try {
@@ -507,31 +818,76 @@ export async function fbCSVProblemProductsForBusinesses(
         const productName = resolveProductName(data);
 
         const lpRaw = data?.pricing?.listPrice;
-        const pRaw  = data?.pricing?.price;
+        const pRaw = data?.pricing?.price;
         const lp = toNumber(lpRaw);
-        const p  = toNumber(pRaw);
+        const p = toNumber(pRaw);
 
         if (!isRealPrice(lp)) {
-          rows.push([businessID, businessName, productID, productName, String(lpRaw ?? ''), String(pRaw ?? ''), 'LISTPRICE_UNKNOWN']);
+          rows.push([
+            businessID,
+            businessName,
+            productID,
+            productName,
+            String(lpRaw ?? ''),
+            String(pRaw ?? ''),
+            'LISTPRICE_UNKNOWN',
+          ]);
           continue;
         }
         if (!isRealPrice(p) || !almostEqual(lp, p)) {
-          rows.push([businessID, businessName, productID, productName, String(lpRaw ?? ''), String(pRaw ?? ''), 'MISMATCH']);
+          rows.push([
+            businessID,
+            businessName,
+            productID,
+            productName,
+            String(lpRaw ?? ''),
+            String(pRaw ?? ''),
+            'MISMATCH',
+          ]);
         }
 
-        if (onProgress && scanned % 1000 === 0) onProgress({ scope: 'list-csv', businessID, businessName, scanned, collected: rows.length });
+        if (onProgress && scanned % 1000 === 0)
+          onProgress({
+            scope: 'list-csv',
+            businessID,
+            businessName,
+            scanned,
+            collected: rows.length,
+          });
       }
     } catch (e) {
-      onProgress?.({ scope: 'list-csv', businessID, businessName, error: String(e?.message || e), scanned, collected: rows.length });
+      onProgress?.({
+        scope: 'list-csv',
+        businessID,
+        businessName,
+        error: String(e?.message || e),
+        scanned,
+        collected: rows.length,
+      });
     }
   }
 
   const headers = includeBusinessName
-    ? ['businessID', 'businessName', 'productID', 'productName', 'listPrice_raw', 'price_raw', 'status']
-    : ['businessID', 'productID', 'productName', 'listPrice_raw', 'price_raw', 'status'];
+    ? [
+        'businessID',
+        'businessName',
+        'productID',
+        'productName',
+        'listPrice_raw',
+        'price_raw',
+        'status',
+      ]
+    : [
+        'businessID',
+        'productID',
+        'productName',
+        'listPrice_raw',
+        'price_raw',
+        'status',
+      ];
 
   const csv = buildCSVFromObjects(
-    rows.map(r => ({
+    rows.map((r) => ({
       businessID: r[0],
       businessName: includeBusinessName ? r[1] : undefined,
       productID: includeBusinessName ? r[2] : r[1],
@@ -540,7 +896,7 @@ export async function fbCSVProblemProductsForBusinesses(
       price_raw: includeBusinessName ? r[5] : r[4],
       status: includeBusinessName ? r[6] : r[5],
     })),
-    includeHeaders ? headers : []
+    includeHeaders ? headers : [],
   );
 
   if (download) downloadBytes(csv, 'text/csv;charset=utf-8', filename);
@@ -554,9 +910,9 @@ export async function fbAuditFixAndExport({
   doFix = false,
   dryRun = true,
   includeBusinessName = true,
-  exportFormat = 'xlsx',                // 'csv' | 'xlsx' | 'both' | 'none'
+  exportFormat = 'xlsx', // 'csv' | 'xlsx' | 'both' | 'none'
   beforeFilename = 'problem-products-before',
-  afterFilename  = 'problem-products-after',
+  afterFilename = 'problem-products-after',
 } = {}) {
   // 1) Auditoría ANTES + export (opcional)
   const before = await fbAuditAllBusinessesPriceVsList(1000);

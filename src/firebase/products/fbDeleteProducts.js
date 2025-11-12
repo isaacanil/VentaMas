@@ -1,4 +1,10 @@
-import { collection, query, limit, getDocs, writeBatch } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  limit,
+  getDocs,
+  writeBatch,
+} from 'firebase/firestore';
 
 import { db } from '../firebaseconfig';
 
@@ -7,33 +13,38 @@ import { db } from '../firebaseconfig';
  * @param {string} businessID El ID del negocio cuyos productos se van a eliminar.
  */
 export const fbDeleteProducts = async (user) => {
-    // Crear una referencia a la subcolección de productos
-    const businessID = user?.businessID
-    if(!businessID){
-        return
-    }
-    const productsRef = collection(db, "businesses", "X63aIFwHzk3r0gmT8w6P", "products");
-    
-    // Crear una consulta para obtener los primeros 500 documentos de la colección
-    const q = query(productsRef, limit(25));
+  // Crear una referencia a la subcolección de productos
+  const businessID = user?.businessID;
+  if (!businessID) {
+    return;
+  }
+  const productsRef = collection(
+    db,
+    'businesses',
+    'X63aIFwHzk3r0gmT8w6P',
+    'products',
+  );
 
-    try {
-        // Ejecutar la consulta
-        const querySnapshot = await getDocs(q);
+  // Crear una consulta para obtener los primeros 500 documentos de la colección
+  const q = query(productsRef, limit(25));
 
-        // Crear un lote para realizar operaciones de escritura
-        const batch = writeBatch(db);
+  try {
+    // Ejecutar la consulta
+    const querySnapshot = await getDocs(q);
 
-        // Añadir cada documento a ser eliminado al lote
-        querySnapshot.forEach((doc) => {
-            batch.delete(doc.ref);
-        });
+    // Crear un lote para realizar operaciones de escritura
+    const batch = writeBatch(db);
 
-        // Comprometer (ejecutar) el lote
-        await batch.commit();
+    // Añadir cada documento a ser eliminado al lote
+    querySnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
 
-        console.info(`${querySnapshot.size} products deleted successfully.`);
-    } catch (error) {
-        console.error("Error eliminando documentos: ", error);
-    }
+    // Comprometer (ejecutar) el lote
+    await batch.commit();
+
+    console.info(`${querySnapshot.size} products deleted successfully.`);
+  } catch (error) {
+    console.error('Error eliminando documentos: ', error);
+  }
 };

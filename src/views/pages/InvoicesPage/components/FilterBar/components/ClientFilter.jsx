@@ -5,7 +5,6 @@ import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
 
 import { FilterField } from './FilterField';
 
-
 const { Option } = Select;
 
 export const ClientFilter = ({ value, onChange, clientOptions, loading }) => (
@@ -21,13 +20,13 @@ export const ClientFilter = ({ value, onChange, clientOptions, loading }) => (
       style={{ width: FILTER_CONFIG.client.width }}
       size="middle"
       aria-label={ACCESSIBILITY_CONFIG.ariaLabels.clientSelect}
-      filterOption={(input, option) => 
+      filterOption={(input, option) =>
         option?.searchtext?.includes(input.toLowerCase()) ?? false
       }
     >
       {clientOptions.map((option) => (
-        <Option 
-          key={option.value} 
+        <Option
+          key={option.value}
           value={option.value}
           searchtext={option.searchText}
         >
@@ -36,4 +35,4 @@ export const ClientFilter = ({ value, onChange, clientOptions, loading }) => (
       ))}
     </Select>
   </FilterField>
-); 
+);

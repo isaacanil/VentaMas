@@ -5,10 +5,10 @@ import styled from 'styled-components';
 
 import { useClickOutSide } from '../../../../../../../../../hooks/useClickOutSide';
 
-const WarningPill = ({ message, icon = "⚠️" }) => {
+const WarningPill = ({ message, icon = '⚠️' }) => {
   const [showMessage, setShowMessage] = useState(false);
   const messageRef = useRef(null);
-  
+
   // Fix the issue with infinite updates by passing the correct parameters
   // The second parameter should be a condition to track, not the state itself
   useClickOutSide(messageRef, () => {
@@ -16,10 +16,10 @@ const WarningPill = ({ message, icon = "⚠️" }) => {
       setShowMessage(false);
     }
   });
-  
+
   if (!message) return null;
 
-  const toggleMessage = () => setShowMessage(prev => !prev);
+  const toggleMessage = () => setShowMessage((prev) => !prev);
 
   return (
     <>
@@ -36,7 +36,7 @@ const WarningPill = ({ message, icon = "⚠️" }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             <MessageContent>
               <MessageIcon>{icon}</MessageIcon>
@@ -66,7 +66,9 @@ const FloatingPill = styled.div`
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 2;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 
   &:hover {
     transform: scale(1.1);
@@ -126,7 +128,7 @@ const CloseButton = styled.button`
   align-self: flex-start;
   opacity: 0.6;
   transition: opacity 0.2s;
-  
+
   &:hover {
     opacity: 1;
   }

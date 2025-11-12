@@ -45,7 +45,10 @@ type AppVersionBadgeProps = {
   className?: string;
 };
 
-export const AppVersionBadge = ({ showLabel = true, className }: AppVersionBadgeProps): JSX.Element => {
+export const AppVersionBadge = ({
+  showLabel = true,
+  className,
+}: AppVersionBadgeProps): JSX.Element => {
   const navigate = useNavigate();
   const [appVersion, setAppVersion] = useState<AppVersionDoc>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,10 +81,16 @@ export const AppVersionBadge = ({ showLabel = true, className }: AppVersionBadge
   };
 
   const versionLabel = timestampToVersion(appVersion?.version);
-  const displayLabel = isLoading ? 'Cargando versión…' : versionLabel || 'Versión no disponible';
+  const displayLabel = isLoading
+    ? 'Cargando versión…'
+    : versionLabel || 'Versión no disponible';
 
   return (
-    <BadgeContainer aria-live="polite" className={className} $showLabel={showLabel}>
+    <BadgeContainer
+      aria-live="polite"
+      className={className}
+      $showLabel={showLabel}
+    >
       {showLabel && <BadgeLabel>Estado de la versión</BadgeLabel>}
       <BadgeButton type="button" onClick={handleNavigate} disabled={isLoading}>
         <BadgeDot $active={Boolean(versionLabel)} />
@@ -116,7 +125,10 @@ const BadgeButton = styled.button`
   background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
   cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
   font-size: 0.8rem;
   font-weight: 600;
   color: rgba(15, 23, 42, 0.85);

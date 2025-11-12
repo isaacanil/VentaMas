@@ -1,26 +1,42 @@
 import { PRODUCT_BRAND_DEFAULT } from '../../../../../features/updateProduct/updateProductSlice';
-import { BRAND_DEFAULT_OPTION_VALUE, BRAND_LEGACY_OPTION_VALUE } from '../../../../component/modals/ProductForm/constants/brandOptions';
+import {
+  BRAND_DEFAULT_OPTION_VALUE,
+  BRAND_LEGACY_OPTION_VALUE,
+} from '../../../../component/modals/ProductForm/constants/brandOptions';
 
 export const brandFieldMetaByType = (typeValue) => {
   const normalizedType = (typeValue || '').toLowerCase();
-  if (normalizedType.includes('medic') || normalizedType.includes('farm') || normalizedType.includes('salud')) {
+  if (
+    normalizedType.includes('medic') ||
+    normalizedType.includes('farm') ||
+    normalizedType.includes('salud')
+  ) {
     return {
       label: 'Marca / Laboratorio',
       placeholder: 'Pfizer, Genfar, Laboratorio ACME…',
-      helper: 'Indica la marca comercial o laboratorio responsable del producto.',
+      helper:
+        'Indica la marca comercial o laboratorio responsable del producto.',
     };
   }
-  if (normalizedType.includes('bebida') || normalizedType.includes('alimento') || normalizedType.includes('consumo')) {
+  if (
+    normalizedType.includes('bebida') ||
+    normalizedType.includes('alimento') ||
+    normalizedType.includes('consumo')
+  ) {
     return {
       label: 'Marca / Casa comercial',
       placeholder: 'Coca-Cola, La Costeña, Artesanal…',
       helper: 'Registra la casa comercial o fabricante.',
     };
   }
-  if (normalizedType.includes('cosm') || normalizedType.includes('higiene') || normalizedType.includes('belleza')) {
+  if (
+    normalizedType.includes('cosm') ||
+    normalizedType.includes('higiene') ||
+    normalizedType.includes('belleza')
+  ) {
     return {
       label: 'Marca / Línea',
-      placeholder: 'L\'Oréal, Dove, Genérico…',
+      placeholder: "L'Oréal, Dove, Genérico…",
       helper: 'Define la línea comercial o fabricante.',
     };
   }
@@ -34,11 +50,11 @@ export const brandFieldMetaByType = (typeValue) => {
 export const buildBrandOptions = (productBrands = [], product) => {
   const normalizedBrands = Array.isArray(productBrands)
     ? productBrands
-      .map(({ id, name }) => ({
-        value: id,
-        label: typeof name === 'string' ? name.trim() : '',
-      }))
-      .filter(({ value, label }) => value && label)
+        .map(({ id, name }) => ({
+          value: id,
+          label: typeof name === 'string' ? name.trim() : '',
+        }))
+        .filter(({ value, label }) => value && label)
     : [];
 
   const options = [
@@ -51,8 +67,8 @@ export const buildBrandOptions = (productBrands = [], product) => {
 
   const hasLegacyBrand = Boolean(
     !product?.brandId &&
-    product?.brand &&
-    product.brand !== PRODUCT_BRAND_DEFAULT
+      product?.brand &&
+      product.brand !== PRODUCT_BRAND_DEFAULT,
   );
 
   if (hasLegacyBrand) {

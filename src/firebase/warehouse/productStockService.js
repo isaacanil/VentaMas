@@ -43,8 +43,6 @@ const normalizeToDate = (value) => {
   return null;
 };
 
-
-
 // Obtener referencia de la colección de productos en stock
 export const getProductStockCollectionRef = (businessID) => {
   if (!businessID) {
@@ -59,14 +57,18 @@ export const createProductStock = async (user, productStockData) => {
   const id = nanoid();
 
   try {
-    const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+    const productStockCollectionRef = getProductStockCollectionRef(
+      user.businessID,
+    );
     if (!productStockCollectionRef) return; // If null, do not proceed
 
     const productStockDocRef = doc(productStockCollectionRef, id);
 
     // Asegurarse de que location esté en el formato 'warehouse/shelf/row/segment'
     const { warehouse, shelf, row, segment } = productStockData.location; // Asumiendo que location es un objeto
-    const _locationPath = [warehouse, shelf, row, segment].filter(Boolean).join('/');
+    const _locationPath = [warehouse, shelf, row, segment]
+      .filter(Boolean)
+      .join('/');
 
     await setDoc(productStockDocRef, {
       ...productStockData,
@@ -90,7 +92,9 @@ export const createProductStock = async (user, productStockData) => {
 // Leer todos los productos en stock
 export const getAllProductStocks = async (user) => {
   try {
-    const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+    const productStockCollectionRef = getProductStockCollectionRef(
+      user.businessID,
+    );
     if (!productStockCollectionRef) return []; // If null, return empty array
 
     const querySnapshot = await getDocs(productStockCollectionRef);
@@ -105,7 +109,13 @@ export const getAllProductStocks = async (user) => {
 // Actualizar un producto en stock
 export const updateProductStock = async (user, data) => {
   try {
-    const productStockDocRef = doc(db, 'businesses', user.businessID, 'productsStock', data.id);
+    const productStockDocRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'productsStock',
+      data.id,
+    );
     await updateDoc(productStockDocRef, {
       ...data,
       updatedAt: serverTimestamp(),
@@ -118,22 +128,26 @@ export const updateProductStock = async (user, data) => {
   }
 };
 
-export const deleteAllProductStocksByBatch = async ({ user, batchId, movement }) => {
+export const deleteAllProductStocksByBatch = async ({
+  user,
+  batchId,
+  movement,
+}) => {
   try {
     // 1. Obtener todos los productStock del batch
     const batchStocks = await getProductStockByBatch(user, { batchId });
 
     // 2. Eliminar cada registro con su movimiento asociado
-    const deletionPromises = batchStocks.map(stock =>
+    const deletionPromises = batchStocks.map((stock) =>
       deleteProductStock({
         user,
         productStockId: stock.id,
         movement: {
           ...movement,
           quantity: stock.quantity,
-          notes: `${movement.notes || ''} - Eliminación por batch ${batchId}`
-        }
-      })
+          notes: `${movement.notes || ''} - Eliminación por batch ${batchId}`,
+        },
+      }),
     );
 
     // 3. Ejecutar todas las eliminaciones en paralelo
@@ -142,23 +156,37 @@ export const deleteAllProductStocksByBatch = async ({ user, batchId, movement })
     return {
       batchId,
       deletedItems: results.length,
-      quantity: batchStocks.reduce((sum, stock) => sum + stock.quantity, 0)
+      quantity: batchStocks.reduce((sum, stock) => sum + stock.quantity, 0),
     };
-
   } catch (error) {
-    console.error(`Error eliminando productStocks del batch ${batchId}:`, error);
+    console.error(
+      `Error eliminando productStocks del batch ${batchId}:`,
+      error,
+    );
     throw error;
   }
 };
 
-export const deleteProductStock = async ({ user, productStockId, movement = {} }) => {
+export const deleteProductStock = async ({
+  user,
+  productStockId,
+  movement = {},
+}) => {
   if (!user?.businessID || !productStockId) {
-    throw new Error('Missing required parameters: user.businessID or productStockId');
+    throw new Error(
+      'Missing required parameters: user.businessID or productStockId',
+    );
   }
 
   try {
     const { businessID, uid } = user;
-    const stockRef = doc(db, 'businesses', businessID, 'productsStock', productStockId);
+    const stockRef = doc(
+      db,
+      'businesses',
+      businessID,
+      'productsStock',
+      productStockId,
+    );
 
     // 1. Validate stock document exists
     const stockDoc = await getDoc(stockRef);
@@ -173,12 +201,14 @@ export const deleteProductStock = async ({ user, productStockId, movement = {} }
       location,
       productName,
       batchNumberId,
-      quantity: stockQuantity
+      quantity: stockQuantity,
     } = stockData;
 
     // 2. Validate required data
     if (!batchId || !productId) {
-      throw new Error('Invalid stock record - missing batch or product reference');
+      throw new Error(
+        'Invalid stock record - missing batch or product reference',
+      );
     }
 
     // 3. Get references
@@ -192,17 +222,22 @@ export const deleteProductStock = async ({ user, productStockId, movement = {} }
     }
 
     // 5. Validate quantity
-     const quantityToRemove = movement?.quantity || stockQuantity;
+    const quantityToRemove = movement?.quantity || stockQuantity;
     // if (quantityToRemove <= 0 || quantityToRemove > stockQuantity) {
     //   throw new Error('Cantidad a eliminar inválida');
     // }
 
     // 6. Check if batch will be empty
-    const productStocksRef = collection(db, 'businesses', businessID, 'productsStock');
+    const productStocksRef = collection(
+      db,
+      'businesses',
+      businessID,
+      'productsStock',
+    );
     const stocksQuery = query(
       productStocksRef,
       where('batchId', '==', batchId),
-      where('isDeleted', '==', false)
+      where('isDeleted', '==', false),
     );
     const otherStocksSnap = await getDocs(stocksQuery);
     const willBatchBeEmpty = otherStocksSnap.size <= 1;
@@ -210,12 +245,12 @@ export const deleteProductStock = async ({ user, productStockId, movement = {} }
     // 7. Perform updates (no transacciones: cada operación es individual)
     // 7a. Decrementa stock en el producto
     await updateDoc(productRef, {
-      stock: increment(-quantityToRemove)
+      stock: increment(-quantityToRemove),
     });
 
     // 7b. Decrementa stock en el batch
     await updateDoc(batchRef, {
-      quantity: increment(-quantityToRemove)
+      quantity: increment(-quantityToRemove),
     });
 
     // 7c. Marca el stock actual como eliminado
@@ -223,7 +258,7 @@ export const deleteProductStock = async ({ user, productStockId, movement = {} }
       isDeleted: true,
       quantity: 0,
       deletedAt: serverTimestamp(),
-      deletedBy: uid
+      deletedBy: uid,
     });
 
     // 7d. Si ya no hay stock de ese batch, márcalo como eliminado
@@ -231,16 +266,22 @@ export const deleteProductStock = async ({ user, productStockId, movement = {} }
       await updateDoc(batchRef, {
         isDeleted: true,
         deletedAt: serverTimestamp(),
-        deletedBy: uid
+        deletedBy: uid,
       });
       await updateDoc(productRef, {
-        stock: 0
-      })
+        stock: 0,
+      });
     }
 
     // 8. Create movement record
     const movementId = nanoid();
-    const movementRef = doc(db, 'businesses', businessID, 'movements', movementId);
+    const movementRef = doc(
+      db,
+      'businesses',
+      businessID,
+      'movements',
+      movementId,
+    );
 
     await setDoc(movementRef, {
       id: movementId,
@@ -256,7 +297,7 @@ export const deleteProductStock = async ({ user, productStockId, movement = {} }
       notes: movement?.notes || 'Eliminación de stock',
       createdAt: serverTimestamp(),
       createdBy: uid,
-      isDeleted: false
+      isDeleted: false,
     });
 
     // 9. Retorna el id del stock eliminado
@@ -267,10 +308,9 @@ export const deleteProductStock = async ({ user, productStockId, movement = {} }
   }
 };
 
-
 // Escuchar en tiempo real todos los productos en stock filtrados por productId
 export const listenAllProductStock = (user, productId, callback) => {
-  const noOp = () => { };
+  const noOp = () => {};
 
   if (!user || !productId || !callback) {
     console.warn('Missing required parameters in listenAllProductStock');
@@ -278,7 +318,9 @@ export const listenAllProductStock = (user, productId, callback) => {
   }
 
   try {
-    const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+    const productStockCollectionRef = getProductStockCollectionRef(
+      user.businessID,
+    );
     if (!productStockCollectionRef) {
       console.warn('No collection reference available');
       return noOp;
@@ -288,7 +330,7 @@ export const listenAllProductStock = (user, productId, callback) => {
       productStockCollectionRef,
       where('productId', '==', productId),
       where('status', '==', 'active'),
-      where('isDeleted', '==', false)
+      where('isDeleted', '==', false),
     );
 
     return onSnapshot(
@@ -300,7 +342,7 @@ export const listenAllProductStock = (user, productId, callback) => {
       (error) => {
         console.error('Error al escuchar documentos en tiempo real:', error);
         callback([]);
-      }
+      },
     );
   } catch (error) {
     console.error('Error al configurar listener:', error);
@@ -310,15 +352,19 @@ export const listenAllProductStock = (user, productId, callback) => {
 
 // Escuchar en tiempo real todos los productos en stock por ubicación
 export const listenAllProductStockByLocation = (user, location, callback) => {
-  const noOp = () => { };
+  const noOp = () => {};
 
   if (!user || !location || !callback) {
-    console.warn('Missing required parameters in listenAllProductStockByLocation');
+    console.warn(
+      'Missing required parameters in listenAllProductStockByLocation',
+    );
     return noOp;
   }
 
   try {
-    const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+    const productStockCollectionRef = getProductStockCollectionRef(
+      user.businessID,
+    );
     if (!productStockCollectionRef) {
       console.warn('No collection reference available');
       return noOp;
@@ -328,7 +374,7 @@ export const listenAllProductStockByLocation = (user, location, callback) => {
       productStockCollectionRef,
       where('location', '==', location),
       where('isDeleted', '==', false),
-      where('status', '==', 'active')
+      where('status', '==', 'active'),
     );
 
     return onSnapshot(
@@ -340,7 +386,7 @@ export const listenAllProductStockByLocation = (user, location, callback) => {
       (error) => {
         console.error('Error al escuchar documentos en tiempo real:', error);
         callback([]);
-      }
+      },
     );
   } catch (error) {
     console.error('Error al configurar listener:', error);
@@ -370,7 +416,7 @@ export const useListenProductsStockByLocation = (location = null) => {
       (updatedProducts) => {
         setData(updatedProducts);
         setLoading(false);
-      }
+      },
     );
 
     // Limpiamos el listener al desmontar
@@ -396,15 +442,19 @@ export const useListenProductsStock = (productId = null) => {
 
     setLoading(true);
 
-    const unsubscribe = listenAllProductStock(stableUser, productId, (newData) => {
-      setData((prevData) => {
-        if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
-          return newData;
-        }
-        return prevData;
-      });
-      setLoading(false);
-    });
+    const unsubscribe = listenAllProductStock(
+      stableUser,
+      productId,
+      (newData) => {
+        setData((prevData) => {
+          if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
+            return newData;
+          }
+          return prevData;
+        });
+        setLoading(false);
+      },
+    );
 
     return () => unsubscribe();
   }, [stableUser, productId]);
@@ -418,11 +468,11 @@ export const useListenProductsStock = (productId = null) => {
 
 export const getProductStockByBatch = async (
   user,
-  { productId, batchId, location } = {}
+  { productId, batchId, location } = {},
 ) => {
-  
-
-  const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+  const productStockCollectionRef = getProductStockCollectionRef(
+    user.businessID,
+  );
   if (!productStockCollectionRef) return [];
 
   // Armamos los filtros dinámicamente
@@ -444,27 +494,25 @@ export const getProductStockByBatch = async (
   const q = query(productStockCollectionRef, ...filters);
 
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => doc.data());
+  return snapshot.docs.map((doc) => doc.data());
 };
 
-export const getProductStockByProductId = async (
-  user,
-  { productId } = {}
-) => {
-  
-  const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+export const getProductStockByProductId = async (user, { productId } = {}) => {
+  const productStockCollectionRef = getProductStockCollectionRef(
+    user.businessID,
+  );
   if (!productStockCollectionRef) return [];
 
   const q = query(
     productStockCollectionRef,
     where('isDeleted', '==', false),
     where('productId', '==', productId),
-    where('status', '==', 'active')
+    where('status', '==', 'active'),
   );
 
   const snapshot = await getDocs(q);
-  const data = snapshot.docs.map(doc => doc.data());
-  
+  const data = snapshot.docs.map((doc) => doc.data());
+
   return data;
 };
 
@@ -473,7 +521,13 @@ export const getProductStockById = async (user, productStockId) => {
   if (!productStockId) return null;
 
   try {
-    const productStockDocRef = doc(db, 'businesses', user.businessID, 'productsStock', productStockId);
+    const productStockDocRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'productsStock',
+      productStockId,
+    );
     const snapshot = await getDoc(productStockDocRef);
     if (snapshot.exists()) {
       return snapshot.data();
@@ -506,7 +560,10 @@ const fetchAggregateSnapshot = async (aggregateQuery) => {
       totalLots: data?.totalLots ?? 0,
     };
   } catch (error) {
-    console.error('Error al obtener agregados de stock para la ubicación:', error);
+    console.error(
+      'Error al obtener agregados de stock para la ubicación:',
+      error,
+    );
     return EMPTY_AGGREGATE;
   }
 };
@@ -524,7 +581,7 @@ export const getLocationStockAggregates = async (user, locationPath) => {
     where('location', '>=', bounds.lower),
     where('location', '<', bounds.upper),
     where('isDeleted', '==', false),
-    where('status', '==', 'active')
+    where('status', '==', 'active'),
   );
 
   return fetchAggregateSnapshot(baseQuery);
@@ -542,13 +599,16 @@ export const getLocationDirectStockAggregates = async (user, locationPath) => {
     stockRef,
     where('location', '==', normalized),
     where('isDeleted', '==', false),
-    where('status', '==', 'active')
+    where('status', '==', 'active'),
   );
 
   return fetchAggregateSnapshot(baseQuery);
 };
 
-export const getLocationStockAggregatesDetailed = async (user, locationPath) => {
+export const getLocationStockAggregatesDetailed = async (
+  user,
+  locationPath,
+) => {
   const totals = await getLocationStockAggregates(user, locationPath);
   const direct = await getLocationDirectStockAggregates(user, locationPath);
 
@@ -570,7 +630,7 @@ export const getWarehousesStockAggregates = async (user, warehouseIds = []) => {
     warehouseIds.map(async (id) => ({
       id,
       summary: await getWarehouseStockAggregates(user, id),
-    }))
+    })),
   );
   return summaries.reduce((acc, { id, summary }) => {
     acc[id] = summary;
@@ -578,15 +638,18 @@ export const getWarehousesStockAggregates = async (user, warehouseIds = []) => {
   }, {});
 };
 
-export const getStockAggregatesByLocationPaths = async (user, locationPaths = []) => {
+export const getStockAggregatesByLocationPaths = async (
+  user,
+  locationPaths = [],
+) => {
   if (!Array.isArray(locationPaths) || locationPaths.length === 0) return {};
   const uniquePaths = Array.from(
     new Set(
       locationPaths
         .filter(Boolean)
         .map((path) => String(path).trim())
-        .filter((path) => path.length > 0)
-    )
+        .filter((path) => path.length > 0),
+    ),
   );
 
   if (uniquePaths.length === 0) return {};
@@ -595,7 +658,7 @@ export const getStockAggregatesByLocationPaths = async (user, locationPaths = []
     uniquePaths.map(async (path) => ({
       path,
       summary: await getLocationStockAggregatesDetailed(user, path),
-    }))
+    })),
   );
 
   return summaries.reduce((acc, { path, summary }) => {
@@ -620,7 +683,9 @@ export const useListenAllActiveProductsStock = () => {
     setLoading(true);
 
     try {
-      const productStockCollectionRef = getProductStockCollectionRef(user.businessID);
+      const productStockCollectionRef = getProductStockCollectionRef(
+        user.businessID,
+      );
       if (!productStockCollectionRef) {
         setData([]);
         setLoading(false);
@@ -630,14 +695,14 @@ export const useListenAllActiveProductsStock = () => {
       const q = query(
         productStockCollectionRef,
         where('status', '==', 'active'),
-        where('isDeleted', '==', false)
+        where('isDeleted', '==', false),
       );
 
       const unsubscribe = onSnapshot(
         q,
         (querySnapshot) => {
           const stockItems = querySnapshot.docs.map((doc) => doc.data());
-          
+
           // Agrupar por productId y agregar información
           const groupedByProduct = stockItems.reduce((acc, stock) => {
             const productId = stock.productId;
@@ -667,7 +732,7 @@ export const useListenAllActiveProductsStock = () => {
             if (expirationDate) {
               acc[productId].hasExpiration = true;
             }
-            
+
             // Agregar batchId al Set si existe
             if (stock.batchId) {
               acc[productId].batches.add(stock.batchId);
@@ -677,39 +742,42 @@ export const useListenAllActiveProductsStock = () => {
           }, {});
 
           // Convertir a array, calcular agregados y ordenar por nombre
-          const productsArray = Object.values(groupedByProduct).map(product => {
-            const uniqueLocations = [...new Set(product.locations)];
-            const uniqueBatches = product.batches.size;
-            const stockRecords = product.stockItems.length;
-            
-            return {
-              ...product,
-              batches: undefined, // Remover el Set
-              stockRecords,        // Cantidad de registros de stock
-              uniqueBatches,       // Cantidad de lotes únicos
-              uniqueLocations: uniqueLocations.length, // Cantidad de ubicaciones únicas
-              // Agregar stockSummary compatible con el Tree NodeName
-              hasExpiration: product.hasExpiration,
-              hasExpired: product.hasExpired,
-              stockSummary: {
-                totalLots: uniqueBatches,
-                totalUnits: product.totalStock,
-                directLots: uniqueBatches,
-                directUnits: product.totalStock
-              }
-            };
-          }).sort((a, b) => 
-            (a.name || '').localeCompare(b.name || '')
-          );
+          const productsArray = Object.values(groupedByProduct)
+            .map((product) => {
+              const uniqueLocations = [...new Set(product.locations)];
+              const uniqueBatches = product.batches.size;
+              const stockRecords = product.stockItems.length;
+
+              return {
+                ...product,
+                batches: undefined, // Remover el Set
+                stockRecords, // Cantidad de registros de stock
+                uniqueBatches, // Cantidad de lotes únicos
+                uniqueLocations: uniqueLocations.length, // Cantidad de ubicaciones únicas
+                // Agregar stockSummary compatible con el Tree NodeName
+                hasExpiration: product.hasExpiration,
+                hasExpired: product.hasExpired,
+                stockSummary: {
+                  totalLots: uniqueBatches,
+                  totalUnits: product.totalStock,
+                  directLots: uniqueBatches,
+                  directUnits: product.totalStock,
+                },
+              };
+            })
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
           setData(productsArray);
           setLoading(false);
         },
         (error) => {
-          console.error('Error al escuchar todos los productos en stock:', error);
+          console.error(
+            'Error al escuchar todos los productos en stock:',
+            error,
+          );
           setData([]);
           setLoading(false);
-        }
+        },
       );
 
       return () => unsubscribe();
@@ -738,7 +806,12 @@ export const useInventoryProductIds = () => {
     setLoading(true);
 
     try {
-      const productsRef = collection(db, 'businesses', user.businessID, 'products');
+      const productsRef = collection(
+        db,
+        'businesses',
+        user.businessID,
+        'products',
+      );
       const unsubscribe = onSnapshot(
         productsRef,
         (snapshot) => {
@@ -750,22 +823,37 @@ export const useInventoryProductIds = () => {
               }
 
               const rawTrack = productData.trackInventory;
-              
+
               // Excluir explícitamente si trackInventory es false
-              if (rawTrack === false || rawTrack === 0 || rawTrack === 'false') {
+              if (
+                rawTrack === false ||
+                rawTrack === 0 ||
+                rawTrack === 'false'
+              ) {
                 return acc;
               }
-              
+
               // Incluir solo si trackInventory es explícitamente true
-              const isInventoried = rawTrack === true
-                || rawTrack === 1
-                || (typeof rawTrack === 'string' && ['true', 'True', 'TRUE', 'si', 'Si', 'SI', 'sí', 'Sí'].includes(rawTrack.trim()));
+              const isInventoried =
+                rawTrack === true ||
+                rawTrack === 1 ||
+                (typeof rawTrack === 'string' &&
+                  [
+                    'true',
+                    'True',
+                    'TRUE',
+                    'si',
+                    'Si',
+                    'SI',
+                    'sí',
+                    'Sí',
+                  ].includes(rawTrack.trim()));
 
               if (isInventoried) {
                 acc.push(doc.id);
               }
               return acc;
-            }, [])
+            }, []),
           );
           setData(ids);
           setLoading(false);
@@ -774,12 +862,15 @@ export const useInventoryProductIds = () => {
           console.error('Error al escuchar productos inventariables:', error);
           setData(new Set());
           setLoading(false);
-        }
+        },
       );
 
       return () => unsubscribe();
     } catch (error) {
-      console.error('Error al configurar listener de productos inventariables:', error);
+      console.error(
+        'Error al configurar listener de productos inventariables:',
+        error,
+      );
       setData(new Set());
       setLoading(false);
     }

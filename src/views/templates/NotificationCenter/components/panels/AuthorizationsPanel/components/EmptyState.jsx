@@ -8,7 +8,11 @@ const EmptyState = ({ isAdmin }) => (
     </PanelHeader>
     <EmptyContainer>
       <Empty
-        description={isAdmin ? 'No hay solicitudes pendientes' : 'No tienes solicitudes pendientes'}
+        description={
+          isAdmin
+            ? 'No hay solicitudes pendientes'
+            : 'No tienes solicitudes pendientes'
+        }
         image={Empty.PRESENTED_IMAGE_SIMPLE}
       />
     </EmptyContainer>

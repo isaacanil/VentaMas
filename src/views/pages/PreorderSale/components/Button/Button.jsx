@@ -10,42 +10,44 @@ const StyledButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 
   ${(props) => {
     switch (props.variant) {
       case 'ghost':
         return css`
           background: transparent;
-          color: #1E3A8A;
+          color: #1e3a8a;
           &:hover {
             background-color: rgba(30, 58, 138, 0.1);
           }
         `;
       case 'secondary':
         return css`
-          background-color: #6D28D9;
-          color: #FFFFFF;
+          background-color: #6d28d9;
+          color: #ffffff;
           &:hover {
-            background-color: #5B21B6;
+            background-color: #5b21b6;
           }
         `;
       case 'outline':
         return css`
           background: transparent;
-          border: 1px solid #EF4444;
-          color: #EF4444;
+          border: 1px solid #ef4444;
+          color: #ef4444;
           &:hover {
-            background-color: #EF4444;
-            color: #FFFFFF;
+            background-color: #ef4444;
+            color: #ffffff;
           }
         `;
       default:
         return css`
-          background-color: #3B82F6;
-          color: #FFFFFF;
+          background-color: #3b82f6;
+          color: #ffffff;
           &:hover {
-            background-color: #2563EB;
+            background-color: #2563eb;
           }
         `;
     }
@@ -72,7 +74,13 @@ const StyledButton = styled.button`
   }}
 `;
 
-const Button = ({ variant = 'default', size = 'md', children, onClick, style }) => {
+const Button = ({
+  variant = 'default',
+  size = 'md',
+  children,
+  onClick,
+  style,
+}) => {
   return (
     <StyledButton variant={variant} size={size} onClick={onClick} style={style}>
       {children}

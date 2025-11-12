@@ -5,10 +5,12 @@ import styled from 'styled-components';
 
 import { useListenSaleUnits } from '../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
-import { getListPriceTotal, getTotalPrice } from '../../../../../../utils/pricing';
+import {
+  getListPriceTotal,
+  getTotalPrice,
+} from '../../../../../../utils/pricing';
 
 import { extraerPreciosConImpuesto } from './ProductCardForCart/utils/priceUtils';
-
 
 // Estilos
 const ModalContainer = styled.div`
@@ -26,7 +28,8 @@ const SectionTitle = styled.h3`
 const PriceOption = styled.div`
   padding: 10px;
   cursor: pointer;
-  border: ${({ selected }) => (selected ? '2px solid #1890ff' : '1px solid #ddd')};
+  border: ${({ selected }) =>
+    selected ? '2px solid #1890ff' : '1px solid #ddd'};
   border-radius: 8px;
   background: ${({ selected }) => (selected ? '#e6f7ff' : 'white')};
   display: flex;
@@ -53,7 +56,8 @@ const SaleUnitCard = styled.div`
   padding: 15px;
   cursor: pointer;
   border-radius: 10px;
-  border: ${({ selected }) => (selected ? '2px solid #1890ff' : '1px solid #ddd')};
+  border: ${({ selected }) =>
+    selected ? '2px solid #1890ff' : '1px solid #ddd'};
   background: ${({ selected }) => (selected ? '#e6f7ff' : 'white')};
   transition: background 0.3s ease;
 
@@ -101,10 +105,11 @@ const PriceAndSaleUnitsModal = ({
   onSelectDefaultUnit,
   onSelectUnit,
   prices = [],
-  selectedUnit
+  selectedUnit,
 }) => {
   const productId = item.id;
-  const initialSaleUnitId = selectedUnit?.id || item.defaultSaleUnitId || 'default';
+  const initialSaleUnitId =
+    selectedUnit?.id || item.defaultSaleUnitId || 'default';
   const [selectedUnitId, setSelectedUnitId] = useState(initialSaleUnitId);
   const [combinedPrices, setCombinedPrices] = useState(prices);
   const [selectedPrice, setSelectedPrice] = useState(null);
@@ -121,11 +126,21 @@ const PriceAndSaleUnitsModal = ({
     // Si estamos en la unidad por defecto
     if (selectedUnitId === 'default') {
       const prices = extraerPreciosConImpuesto(item.pricing) || [];
-      const listPriceVal = prices.find(p => p.type === 'listPrice')?.valueWithTax;
-      const avgPriceVal = prices.find(p => p.type === 'avgPrice')?.valueWithTax;
-      const minPriceVal = prices.find(p => p.type === 'minPrice')?.valueWithTax;
-      const cardPriceVal = prices.find(p => p.type === 'cardPrice')?.valueWithTax;
-      const offerPriceVal = prices.find(p => p.type === 'offerPrice')?.valueWithTax;
+      const listPriceVal = prices.find(
+        (p) => p.type === 'listPrice',
+      )?.valueWithTax;
+      const avgPriceVal = prices.find(
+        (p) => p.type === 'avgPrice',
+      )?.valueWithTax;
+      const minPriceVal = prices.find(
+        (p) => p.type === 'minPrice',
+      )?.valueWithTax;
+      const cardPriceVal = prices.find(
+        (p) => p.type === 'cardPrice',
+      )?.valueWithTax;
+      const offerPriceVal = prices.find(
+        (p) => p.type === 'offerPrice',
+      )?.valueWithTax;
       // Calcula el precio actualizado con impuestos
       const currentPrice = getTotalPrice({ pricing: item.pricing });
 
@@ -134,19 +149,31 @@ const PriceAndSaleUnitsModal = ({
       if (currentPrice === minPriceVal) return 'minPrice';
       if (currentPrice === cardPriceVal) return 'cardPrice';
       if (currentPrice === offerPriceVal) return 'offerPrice';
-      
+
       return 'listPrice';
     } else {
       // Si estamos en una unidad de venta específica
-      const selectedUnit = saleUnits?.find(unit => unit.id === selectedUnitId);
+      const selectedUnit = saleUnits?.find(
+        (unit) => unit.id === selectedUnitId,
+      );
       if (!selectedUnit) return 'listPrice';
-      
+
       const prices = extraerPreciosConImpuesto(selectedUnit.pricing) || [];
-      const listPriceVal = prices.find(p => p.type === 'listPrice')?.valueWithTax;
-      const avgPriceVal = prices.find(p => p.type === 'avgPrice')?.valueWithTax;
-      const minPriceVal = prices.find(p => p.type === 'minPrice')?.valueWithTax;
-      const cardPriceVal = prices.find(p => p.type === 'cardPrice')?.valueWithTax;
-      const offerPriceVal = prices.find(p => p.type === 'offerPrice')?.valueWithTax;
+      const listPriceVal = prices.find(
+        (p) => p.type === 'listPrice',
+      )?.valueWithTax;
+      const avgPriceVal = prices.find(
+        (p) => p.type === 'avgPrice',
+      )?.valueWithTax;
+      const minPriceVal = prices.find(
+        (p) => p.type === 'minPrice',
+      )?.valueWithTax;
+      const cardPriceVal = prices.find(
+        (p) => p.type === 'cardPrice',
+      )?.valueWithTax;
+      const offerPriceVal = prices.find(
+        (p) => p.type === 'offerPrice',
+      )?.valueWithTax;
       // Calcula el precio actualizado con impuestos para la unidad
       const currentPrice = getTotalPrice({ pricing: selectedUnit.pricing });
 
@@ -155,7 +182,7 @@ const PriceAndSaleUnitsModal = ({
       if (currentPrice === minPriceVal) return 'minPrice';
       if (currentPrice === cardPriceVal) return 'cardPrice';
       if (currentPrice === offerPriceVal) return 'offerPrice';
-      
+
       return 'listPrice';
     }
   };
@@ -163,14 +190,20 @@ const PriceAndSaleUnitsModal = ({
   const getDefaultPrice = (prices) => {
     // Intentar determinar el tipo de precio actualmente seleccionado
     const currentPriceType = getCurrentProductPrice();
-    
+
     // Buscar ese tipo de precio en los precios disponibles
-    const currentPrice = prices.find(price => price.type === currentPriceType);
-    
+    const currentPrice = prices.find(
+      (price) => price.type === currentPriceType,
+    );
+
     // Si lo encontramos, usarlo; si no, usar listPrice o el primero disponible
-    return currentPrice || prices.find(price => price.type === 'listPrice') || prices[0];
+    return (
+      currentPrice ||
+      prices.find((price) => price.type === 'listPrice') ||
+      prices[0]
+    );
   };
-  
+
   const handleSelectUnit = (unit) => {
     setSelectedUnitId(unit.id);
     onSelectUnit(unit);
@@ -178,7 +211,7 @@ const PriceAndSaleUnitsModal = ({
     if (selectedItemPricing) {
       const pricingOptions = extraerPreciosConImpuesto(selectedItemPricing);
       // Filtrar precios habilitados y con valores válidos (mayor que 0)
-      const enabledPrices = pricingOptions.filter(price => {
+      const enabledPrices = pricingOptions.filter((price) => {
         const value = Number(price?.valueWithTax);
         return price.enabled && Number.isFinite(value) && value > 0;
       });
@@ -199,11 +232,12 @@ const PriceAndSaleUnitsModal = ({
     onSelectDefaultUnit(item);
     const selectedItemPricing = item.pricing;
     if (selectedItemPricing) {
-      const pricingOptions = prices.length > 0
-        ? prices
-        : extraerPreciosConImpuesto(selectedItemPricing);
+      const pricingOptions =
+        prices.length > 0
+          ? prices
+          : extraerPreciosConImpuesto(selectedItemPricing);
       // Filtrar precios habilitados y con valores válidos (mayor que 0)
-      const enabledPrices = pricingOptions.filter(price => {
+      const enabledPrices = pricingOptions.filter((price) => {
         const value = Number(price?.valueWithTax);
         return price.enabled && Number.isFinite(value) && value > 0;
       });
@@ -221,24 +255,31 @@ const PriceAndSaleUnitsModal = ({
 
   useEffect(() => {
     if (!isVisible) return;
-    setSelectedUnitId(selectedUnit ? selectedUnit.id : (item.defaultSaleUnitId || 'default'));
-  }, [isVisible, selectedUnit ? selectedUnit.id : undefined, item.defaultSaleUnitId]);
+    setSelectedUnitId(
+      selectedUnit ? selectedUnit.id : item.defaultSaleUnitId || 'default',
+    );
+  }, [
+    isVisible,
+    selectedUnit ? selectedUnit.id : undefined,
+    item.defaultSaleUnitId,
+  ]);
 
   useEffect(() => {
     if (!isVisible) return;
-    
+
     let pricingOptions = [];
 
     if (selectedUnitId === 'default') {
-      pricingOptions = prices.length > 0
-        ? prices
-        : extraerPreciosConImpuesto(item.pricing);
+      pricingOptions =
+        prices.length > 0 ? prices : extraerPreciosConImpuesto(item.pricing);
     } else {
-      const selectedUnitData = saleUnits?.find(unit => unit.id === selectedUnitId);
+      const selectedUnitData = saleUnits?.find(
+        (unit) => unit.id === selectedUnitId,
+      );
       pricingOptions = extraerPreciosConImpuesto(selectedUnitData?.pricing);
     }
 
-    const enabledPrices = (pricingOptions || []).filter(price => {
+    const enabledPrices = (pricingOptions || []).filter((price) => {
       const value = Number(price?.valueWithTax);
       return price?.enabled && Number.isFinite(value) && value > 0;
     });
@@ -280,11 +321,13 @@ const PriceAndSaleUnitsModal = ({
           >
             <div>
               <p>{item?.name || 'Unidad por defecto'}</p>
-              <p>Precio: {useFormatPrice(getListPriceTotal({ pricing: item?.pricing }))}</p>
+              <p>
+                Precio:{' '}
+                {useFormatPrice(getListPriceTotal({ pricing: item?.pricing }))}
+              </p>
             </div>
           </SaleUnitCard>
         </div>
-
         {/* Unidades de Venta */}
         <div>
           <SectionTitle>Unidades de Venta</SectionTitle>
@@ -298,7 +341,12 @@ const PriceAndSaleUnitsModal = ({
                 >
                   <div>
                     <p>{unit?.unitName}</p>
-                    <p>Precio: {useFormatPrice(getListPriceTotal({ pricing: unit?.pricing }))}</p>
+                    <p>
+                      Precio:{' '}
+                      {useFormatPrice(
+                        getListPriceTotal({ pricing: unit?.pricing }),
+                      )}
+                    </p>
                   </div>
                 </SaleUnitCard>
               ))}
@@ -308,14 +356,18 @@ const PriceAndSaleUnitsModal = ({
               No hay unidades de venta configuradas.
             </EmptySaleUnitsMessage>
           )}
-        </div>        {/* Precios */}        <div>
-          <SectionTitle>Selecciona un Precio</SectionTitle>          {combinedPrices.length === 0 ? (
+        </div>{' '}
+        {/* Precios */}{' '}
+        <div>
+          <SectionTitle>Selecciona un Precio</SectionTitle>{' '}
+          {combinedPrices.length === 0 ? (
             <InfoMessage>
-              📋 No hay precios configurados para esta unidad. Ve a la configuración del producto para establecer los precios.
+              📋 No hay precios configurados para esta unidad. Ve a la
+              configuración del producto para establecer los precios.
               <div className="info-button">
-                <Button 
-                  type="primary" 
-                  size="small" 
+                <Button
+                  type="primary"
+                  size="small"
                   onClick={handleGoToInventory}
                 >
                   Ir a Inventario
@@ -324,8 +376,8 @@ const PriceAndSaleUnitsModal = ({
             </InfoMessage>
           ) : combinedPrices.length === 1 ? (
             <InfoMessage>
-               Solo hay un precio disponible para esta unidad. Para más opciones de precios, ve a la configuración del producto.
-      
+              Solo hay un precio disponible para esta unidad. Para más opciones
+              de precios, ve a la configuración del producto.
             </InfoMessage>
           ) : (
             <PriceOptions>
@@ -335,13 +387,14 @@ const PriceAndSaleUnitsModal = ({
                   selected={isPriceSelected(price)}
                   onClick={() => handleSelectPrice(price)}
                 >
-                  <span>{price.label}: {useFormatPrice(price.valueWithTax)}</span>
+                  <span>
+                    {price.label}: {useFormatPrice(price.valueWithTax)}
+                  </span>
                 </PriceOption>
               ))}
             </PriceOptions>
           )}
         </div>
-   
       </ModalContainer>
     </Modal>
   );

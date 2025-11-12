@@ -25,42 +25,45 @@ const PaymentDetailItem = styled.li`
 `;
 
 const PaymentDetailValue = styled.span`
-
   text-align: end;
 `;
 
-const ProductPaymentDetails = ({ product}) => {
-    const paymentDetails = [
-        {
-          label: `Impuesto ${product?.tax?.ref}`,
-          value: (product) => useFormatPrice(product.cost.unit * product?.tax?.value),
-        },
-        {
-          label: 'Costo',
-          value: (product) => useFormatPrice(product.cost.unit),
-        },
-        {
-          label: 'Costo + Impuestos',
-          value: (product) => useFormatPrice((product.cost.unit * product?.tax?.value) + product.cost.unit),
-        },
-        {
-          label: 'Precio Final',
-          value: (product) => useFormatPrice(product.price.unit),
-        },
-      ];
-      
+const ProductPaymentDetails = ({ product }) => {
+  const paymentDetails = [
+    {
+      label: `Impuesto ${product?.tax?.ref}`,
+      value: (product) =>
+        useFormatPrice(product.cost.unit * product?.tax?.value),
+    },
+    {
+      label: 'Costo',
+      value: (product) => useFormatPrice(product.cost.unit),
+    },
+    {
+      label: 'Costo + Impuestos',
+      value: (product) =>
+        useFormatPrice(
+          product.cost.unit * product?.tax?.value + product.cost.unit,
+        ),
+    },
+    {
+      label: 'Precio Final',
+      value: (product) => useFormatPrice(product.price.unit),
+    },
+  ];
+
   return (
     <PaymentDetailsContainer>
-    <Typography variant='h4'>Resumen</Typography>
-    <PaymentDetailsList>
-      {paymentDetails.map((detail, index) => (
-        <PaymentDetailItem key={index}>
-          <span>{detail.label}: </span>
-          <PaymentDetailValue>{detail.value(product)}</PaymentDetailValue>
-        </PaymentDetailItem>
-      ))}
-    </PaymentDetailsList>
-  </PaymentDetailsContainer>
+      <Typography variant="h4">Resumen</Typography>
+      <PaymentDetailsList>
+        {paymentDetails.map((detail, index) => (
+          <PaymentDetailItem key={index}>
+            <span>{detail.label}: </span>
+            <PaymentDetailValue>{detail.value(product)}</PaymentDetailValue>
+          </PaymentDetailItem>
+        ))}
+      </PaymentDetailsList>
+    </PaymentDetailsContainer>
   );
 };
 

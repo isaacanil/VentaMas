@@ -52,7 +52,7 @@ export const useWarehouseHierarchy = () => {
       (err) => {
         setError(err);
         setWarehousesLoading(false);
-      }
+      },
     );
 
     setWarehouseUnsubscribe(() => unsubscribe);
@@ -84,7 +84,7 @@ export const useWarehouseHierarchy = () => {
         (err) => {
           setError(err);
           setShelvesLoading((prev) => ({ ...prev, [warehouse.id]: false }));
-        }
+        },
       );
 
       newUnsubscribes.push(unsubscribe);
@@ -121,7 +121,7 @@ export const useWarehouseHierarchy = () => {
           (err) => {
             setError(err);
             setRowsLoading((prev) => ({ ...prev, [shelf.id]: false }));
-          }
+          },
         );
 
         newUnsubscribes.push(unsubscribe);
@@ -160,7 +160,7 @@ export const useWarehouseHierarchy = () => {
           (err) => {
             setError(err);
             setSegmentsLoading((prev) => ({ ...prev, [row.id]: false }));
-          }
+          },
         );
 
         newUnsubscribes.push(unsubscribe);
@@ -191,7 +191,7 @@ export const useWarehouseHierarchy = () => {
         (stockData) => {
           setProductStock((prev) => ({ ...prev, [warehouse.id]: stockData }));
         },
-        (err) => setError(err)
+        (err) => setError(err),
       );
       newUnsubscribes.push(unsubscribe);
     });
@@ -205,7 +205,7 @@ export const useWarehouseHierarchy = () => {
           (stockData) => {
             setProductStock((prev) => ({ ...prev, [shelf.id]: stockData }));
           },
-          (err) => setError(err)
+          (err) => setError(err),
         );
         newUnsubscribes.push(unsubscribe);
       });
@@ -252,13 +252,10 @@ export const useWarehouseHierarchy = () => {
     });
   };
 
-  const data = useMemo(() => combineData(), [
-    warehouses,
-    shelves,
-    rows,
-    segments,
-    productStock,
-  ]);
+  const data = useMemo(
+    () => combineData(),
+    [warehouses, shelves, rows, segments, productStock],
+  );
 
   const overallLoading =
     warehousesLoading ||
@@ -278,8 +275,10 @@ const omitKeys = (entity = {}, keys = []) => {
   }, {});
 };
 
-const sanitizeWarehouse = (warehouse) => omitKeys(warehouse, ['shelves', 'rows', 'segments', 'productStock']);
-const sanitizeShelf = (shelf) => omitKeys(shelf, ['rows', 'segments', 'productStock']);
+const sanitizeWarehouse = (warehouse) =>
+  omitKeys(warehouse, ['shelves', 'rows', 'segments', 'productStock']);
+const sanitizeShelf = (shelf) =>
+  omitKeys(shelf, ['rows', 'segments', 'productStock']);
 const sanitizeRow = (row) => omitKeys(row, ['segments', 'productStock']);
 const sanitizeSegment = (segment) => omitKeys(segment, ['productStock']);
 

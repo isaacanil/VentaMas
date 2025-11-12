@@ -1,9 +1,9 @@
-import { 
-  faEdit, 
+import {
+  faEdit,
   faEye,
   faTrash,
   faPrint,
-  faEyeSlash
+  faEyeSlash,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
@@ -22,7 +22,7 @@ import { ImgCell } from '../../../../../../../templates/system/AdvancedTable/com
 
 export const ProductItem = ({ data, taxReceiptEnabled }) => {
   const dispatch = useDispatch();
-  
+
   // Data extraction
   const name = data?.name;
   const image = data?.image;
@@ -38,7 +38,12 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
 
   const handleEdit = () => {
     dispatch(openModalUpdateProd());
-    dispatch(ChangeProductData({ product: data, status: OPERATION_MODES.UPDATE.label }));
+    dispatch(
+      ChangeProductData({
+        product: data,
+        status: OPERATION_MODES.UPDATE.label,
+      }),
+    );
   };
 
   const handlePrintBarcode = () => {
@@ -59,15 +64,20 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
   const getStockIcon = () => {
     const status = getStockStatus();
     switch (status) {
-      case 'out': return '⚠️';
-      case 'low': return '⚡';
-      case 'normal': return '✅';
-      case 'no-track': return '📦';
-      default: return '📦';
+      case 'out':
+        return '⚠️';
+      case 'low':
+        return '⚡';
+      case 'normal':
+        return '✅';
+      case 'no-track':
+        return '📦';
+      default:
+        return '📦';
     }
   };
-   
-    return (
+
+  return (
     <Card onClick={handleEdit}>
       {/* Header con imagen y nombre */}
       <CardHeader>
@@ -98,17 +108,19 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
             <DetailLabel>Costo:</DetailLabel>
             <DetailValue>{useFormatPrice(cost)}</DetailValue>
           </DetailItem>
-          
+
           <DetailItem>
             <DetailLabel>Impuesto:</DetailLabel>
             <DetailValue>{useFormatPrice(tax)}</DetailValue>
           </DetailItem>
-          
+
           <DetailItem>
             <DetailLabel>Stock:</DetailLabel>
             <StockDetailValue $status={getStockStatus()}>
               <StockIcon>{getStockIcon()}</StockIcon>
-              <span>{trackInventory ? useFormatNumber(stock) : 'No rastrea'}</span>
+              <span>
+                {trackInventory ? useFormatNumber(stock) : 'No rastrea'}
+              </span>
             </StockDetailValue>
           </DetailItem>
         </DetailsRow>
@@ -120,7 +132,9 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
           <TotalLabel>Precio de venta:</TotalLabel>
           <TotalValue>
             {isSoldByWeight ? (
-              <span>{useFormatPrice(price)} / {unit}</span>
+              <span>
+                {useFormatPrice(price)} / {unit}
+              </span>
             ) : (
               <span>{useFormatPrice(price)}</span>
             )}
@@ -130,10 +144,18 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
           <ActionButton onClick={handleEdit} variant="edit" title="Editar">
             <FontAwesomeIcon icon={faEdit} />
           </ActionButton>
-          <ActionButton onClick={handlePrintBarcode} variant="print" title="Imprimir código de barras">
+          <ActionButton
+            onClick={handlePrintBarcode}
+            variant="print"
+            title="Imprimir código de barras"
+          >
             <FontAwesomeIcon icon={faPrint} />
           </ActionButton>
-          <ActionButton onClick={handleDelete} variant="delete" title="Eliminar">
+          <ActionButton
+            onClick={handleDelete}
+            variant="delete"
+            title="Eliminar"
+          >
             <FontAwesomeIcon icon={faTrash} />
           </ActionButton>
         </ActionButtons>
@@ -148,13 +170,14 @@ const Card = styled.div`
   padding: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e8e8e8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: all 0.2s ease;
   cursor: pointer;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  
+
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-color: #d9d9d9;
@@ -233,11 +256,14 @@ const VisibilityIndicator = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  
-  ${({ $isVisible }) => $isVisible ? `
+
+  ${({ $isVisible }) =>
+    $isVisible
+      ? `
     background: #f6ffed;
     color: #389e0d;
-  ` : `
+  `
+      : `
     background: #fff2f0;
     color: #cf1322;
   `}
@@ -251,15 +277,20 @@ const StockDetailValue = styled.div`
   font-size: 12px;
   color: ${({ $status }) => {
     switch ($status) {
-      case 'out': return '#ff4d4f';
-      case 'low': return '#faad14';
-      case 'normal': return '#52c41a';
-      case 'no-track': return '#8c8c8c';
-      default: return '#8c8c8c';
+      case 'out':
+        return '#ff4d4f';
+      case 'low':
+        return '#faad14';
+      case 'normal':
+        return '#52c41a';
+      case 'no-track':
+        return '#8c8c8c';
+      default:
+        return '#8c8c8c';
     }
   }};
   font-weight: 600;
-  
+
   span {
     line-height: 1;
   }
@@ -346,9 +377,9 @@ const ActionButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   ${({ variant }) => {
-    switch(variant) {
+    switch (variant) {
       case 'edit':
         return `
           background: #fff;
@@ -388,11 +419,11 @@ const ActionButton = styled.button`
         return '';
     }
   }}
-  
+
   &:active {
     transform: scale(0.95);
   }
-  
+
   svg {
     font-size: 12px;
   }

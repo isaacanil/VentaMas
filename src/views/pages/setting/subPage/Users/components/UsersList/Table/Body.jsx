@@ -1,10 +1,9 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 export const Body = ({ data, Item, colWidth, reverse }) => {
-
   if (!Array.isArray(data)) {
-    console.error("Data is not an array.");
+    console.error('Data is not an array.');
     return null;
   }
 
@@ -14,16 +13,11 @@ export const Body = ({ data, Item, colWidth, reverse }) => {
 
   const finalItems = reverse ? itemsArray.reverse() : itemsArray;
 
-  return (
-    <Container>
-       { finalItems }
-    </Container>
-  )
-}
+  return <Container>{finalItems}</Container>;
+};
 
 const Container = styled.div`
-    height: 100%;
-    width: 100%;
-    background-color: #ffffff;
-
-`
+  height: 100%;
+  width: 100%;
+  background-color: #ffffff;
+`;

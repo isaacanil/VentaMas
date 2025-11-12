@@ -1,19 +1,16 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
 export const Header = ({ data }) => {
-    return (
-        data.map(({ align, name }, index) => (
-            <ITEMS text={align} key={index}>
-                {name}
-            </ITEMS>
-        ))
-
-    )
-}
+  return data.map(({ align, name }, index) => (
+    <ITEMS text={align} key={index}>
+      {name}
+    </ITEMS>
+  ));
+};
 
 const ITEMS = styled.div`
-  h3{
+  h3 {
     text-transform: uppercase;
     font-size: 0.8em;
     font-weight: 500;
@@ -24,17 +21,17 @@ const ITEMS = styled.div`
   text-align: center;
   align-items: center;
   ${(props) => {
-        switch (props.text) {
-            case 'right':
-                return `
+    switch (props.text) {
+      case 'right':
+        return `
           text-align: right;
-        `
-            case 'left':
-                return `
+        `;
+      case 'left':
+        return `
           text-align: left;
-          `
-            default:
-                break;
-        }
-    }}
-`
+          `;
+      default:
+        break;
+    }
+  }}
+`;

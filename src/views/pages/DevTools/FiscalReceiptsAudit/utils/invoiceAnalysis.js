@@ -1,4 +1,9 @@
-import { canonicalizeNcf, looseCanonicalizeNcf, parseInvoiceDate, sanitizeNcf } from './ncfUtils';
+import {
+  canonicalizeNcf,
+  looseCanonicalizeNcf,
+  parseInvoiceDate,
+  sanitizeNcf,
+} from './ncfUtils';
 
 export const analyzeInvoices = (invoices) => {
   let invoicesWithNcf = 0;
@@ -17,14 +22,16 @@ export const analyzeInvoices = (invoices) => {
     const ncf = sanitizeNcf(rawNcfValue);
     const canonical = canonicalizeNcf(rawNcfValue);
     const looseCanonical = looseCanonicalizeNcf(rawNcfValue);
-    const invoiceNumberValue = invoiceData?.numberID
-      ?? invoice?.numberID
-      ?? invoice?.id
-      ?? '';
-    const invoiceNumber = typeof invoiceNumberValue === 'string' || typeof invoiceNumberValue === 'number'
-      ? String(invoiceNumberValue).trim()
-      : '';
-    const invoiceDate = parseInvoiceDate(invoiceData?.date ?? invoice?.date ?? null);
+    const invoiceNumberValue =
+      invoiceData?.numberID ?? invoice?.numberID ?? invoice?.id ?? '';
+    const invoiceNumber =
+      typeof invoiceNumberValue === 'string' ||
+      typeof invoiceNumberValue === 'number'
+        ? String(invoiceNumberValue).trim()
+        : '';
+    const invoiceDate = parseInvoiceDate(
+      invoiceData?.date ?? invoice?.date ?? null,
+    );
     const status = invoiceData?.status ?? invoice?.status ?? '';
 
     const entry = {
@@ -70,12 +77,18 @@ export const analyzeInvoices = (invoices) => {
       duplicateEntry.occurrences.push(entry);
       duplicatesMap.set(ncf, duplicateEntry);
 
-      const normEntry = normalizedMap.get(canonical) || { canonical, occurrences: [] };
+      const normEntry = normalizedMap.get(canonical) || {
+        canonical,
+        occurrences: [],
+      };
       normEntry.occurrences.push({ ...entry, canonical, looseCanonical });
       normalizedMap.set(canonical, normEntry);
 
       if (looseCanonical) {
-        const looseEntry = looseMap.get(looseCanonical) || { looseCanonical, occurrences: [] };
+        const looseEntry = looseMap.get(looseCanonical) || {
+          looseCanonical,
+          occurrences: [],
+        };
         looseEntry.occurrences.push({ ...entry, canonical, looseCanonical });
         looseMap.set(looseCanonical, looseEntry);
       }
@@ -110,7 +123,9 @@ export const analyzeInvoices = (invoices) => {
     previousEntry = entry;
   });
 
-  const ncfLengthStats = Array.from(lengthStatsMap.values()).sort((a, b) => a.length - b.length);
+  const ncfLengthStats = Array.from(lengthStatsMap.values()).sort(
+    (a, b) => a.length - b.length,
+  );
 
   const duplicateList = Array.from(duplicatesMap.values())
     .filter((item) => item.occurrences.length > 1)
@@ -133,7 +148,8 @@ export const analyzeInvoices = (invoices) => {
     .map((item) => ({
       canonical: item.canonical,
       count: item.occurrences.length,
-      distinctNcfs: Array.from(new Set(item.occurrences.map((o) => o.ncf))).length,
+      distinctNcfs: Array.from(new Set(item.occurrences.map((o) => o.ncf)))
+        .length,
       occurrences: item.occurrences.sort((a, b) => {
         if (a.date && b.date) return a.date - b.date;
         if (a.date) return -1;
@@ -141,14 +157,20 @@ export const analyzeInvoices = (invoices) => {
         return (a.invoiceNumber || '').localeCompare(b.invoiceNumber || '');
       }),
     }))
-    .sort((a, b) => b.count - a.count || b.distinctNcfs - a.distinctNcfs || a.canonical.localeCompare(b.canonical));
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        b.distinctNcfs - a.distinctNcfs ||
+        a.canonical.localeCompare(b.canonical),
+    );
 
   const zeroCollapsedDuplicates = Array.from(looseMap.values())
     .filter((item) => item.looseCanonical && item.occurrences.length > 1)
     .map((item) => ({
       looseCanonical: item.looseCanonical,
       count: item.occurrences.length,
-      distinctNcfs: Array.from(new Set(item.occurrences.map((o) => o.ncf))).length,
+      distinctNcfs: Array.from(new Set(item.occurrences.map((o) => o.ncf)))
+        .length,
       occurrences: item.occurrences.sort((a, b) => {
         if (a.date && b.date) return a.date - b.date;
         if (a.date) return -1;
@@ -156,9 +178,16 @@ export const analyzeInvoices = (invoices) => {
         return (a.invoiceNumber || '').localeCompare(b.invoiceNumber || '');
       }),
     }))
-    .sort((a, b) => b.count - a.count || b.distinctNcfs - a.distinctNcfs || a.looseCanonical.localeCompare(b.looseCanonical));
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        b.distinctNcfs - a.distinctNcfs ||
+        a.looseCanonical.localeCompare(b.looseCanonical),
+    );
 
-  const observedLengths = Array.from(lengthStatsMap.keys()).sort((a, b) => a - b);
+  const observedLengths = Array.from(lengthStatsMap.keys()).sort(
+    (a, b) => a - b,
+  );
   const currentLength = timelineEntries.length
     ? timelineEntries[timelineEntries.length - 1].ncf.length
     : null;

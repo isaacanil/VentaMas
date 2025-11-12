@@ -1,28 +1,30 @@
-import { motion } from 'framer-motion'
-import { Fragment, useEffect, useState, Suspense } from 'react'
-import styled from 'styled-components'
+import { motion } from 'framer-motion';
+import { Fragment, useEffect, useState, Suspense } from 'react';
+import styled from 'styled-components';
 
-import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts'
-import { getDateRange } from '../../../utils/date/getDateRange'
-import { lazyWithRetry } from '../../../utils/lazyWithRetry'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
+import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts';
+import { getDateRange } from '../../../utils/date/getDateRange';
+import { lazyWithRetry } from '../../../utils/lazyWithRetry';
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
 
-import { FilterBar } from './components/FilterBar/FilterBar'
-
+import { FilterBar } from './components/FilterBar/FilterBar';
 
 const SaleReportTable = lazyWithRetry(
-    () => import('./SaleReportTable/SaleReportTable'),
-    'SaleReportTable'
+  () => import('./SaleReportTable/SaleReportTable'),
+  'SaleReportTable',
 );
 
 export const ReceivablePaymentReceipt = () => {
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
 
-  const {loading, paymentReceipts} = useAccountsReceivablePaymentReceipts(datesSelected);
+  const { loading, paymentReceipts } =
+    useAccountsReceivablePaymentReceipts(datesSelected);
 
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [processedInvoices, setProcessedInvoices] = useState(paymentReceipts || []);
+  const [processedInvoices, setProcessedInvoices] = useState(
+    paymentReceipts || [],
+  );
 
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
 
@@ -34,10 +36,10 @@ export const ReceivablePaymentReceipt = () => {
     <Fragment>
       <Container
         animate={{ x: 0 }}
-        transition={{ type: "spring", stiffness: 0 }}
+        transition={{ type: 'spring', stiffness: 0 }}
       >
         <MenuApp
-          displayName='Recibos de Pagos por Cobrar'
+          displayName="Recibos de Pagos por Cobrar"
           data={paymentReceipts}
           searchData={searchTerm}
           setSearchData={setSearchTerm}
@@ -49,7 +51,14 @@ export const ReceivablePaymentReceipt = () => {
           datesSelected={datesSelected}
           setDatesSelected={setDatesSelected}
           onReportSaleOpen={onReportSaleOpen}
-        />        <Suspense fallback={<div style={{ padding: '2em', textAlign: 'center' }}>Cargando...</div>}>
+        />{' '}
+        <Suspense
+          fallback={
+            <div style={{ padding: '2em', textAlign: 'center' }}>
+              Cargando...
+            </div>
+          }
+        >
           <SaleReportTable
             bills={processedInvoices}
             searchTerm={searchTerm}
@@ -58,8 +67,8 @@ export const ReceivablePaymentReceipt = () => {
         </Suspense>
       </Container>
     </Fragment>
-  )
-}
+  );
+};
 const Container = styled(motion.div)`
   height: 100%;
   overflow: hidden;
@@ -67,8 +76,4 @@ const Container = styled(motion.div)`
   background-color: var(--color2);
   grid-template-rows: min-content min-content 1fr;
   box-sizing: border-box;
-`
-
-
-
-
+`;

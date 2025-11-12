@@ -21,26 +21,50 @@ type BusinessInfoModalProps = {
   business?: BusinessInfo;
 };
 
-export const BusinessInfoModal = ({ isOpen, onClose, business }: BusinessInfoModalProps): JSX.Element => {
-  const businessName = (typeof business?.name === 'string' && business.name.trim()) || 'Tu negocio';
+export const BusinessInfoModal = ({
+  isOpen,
+  onClose,
+  business,
+}: BusinessInfoModalProps): JSX.Element => {
+  const businessName =
+    (typeof business?.name === 'string' && business.name.trim()) ||
+    'Tu negocio';
   const logoUrl =
-    typeof business?.logoUrl === 'string' && business.logoUrl.trim().length > 0 ? business.logoUrl : null;
+    typeof business?.logoUrl === 'string' && business.logoUrl.trim().length > 0
+      ? business.logoUrl
+      : null;
 
   const infoFields = [
-    { label: 'Nombre comercial', value: typeof business?.name === 'string' ? business.name : null },
-    { label: 'Descripción', value: typeof business?.description === 'string' ? business.description : null },
+    {
+      label: 'Nombre comercial',
+      value: typeof business?.name === 'string' ? business.name : null,
+    },
+    {
+      label: 'Descripción',
+      value:
+        typeof business?.description === 'string' ? business.description : null,
+    },
     {
       label: 'RNC / Tax ID',
       value:
         typeof business?.rnc === 'string'
           ? business.rnc
           : typeof business?.taxId === 'string'
-          ? business.taxId
-          : null,
+            ? business.taxId
+            : null,
     },
-    { label: 'Teléfono', value: typeof business?.phone === 'string' ? business.phone : null },
-    { label: 'Correo', value: typeof business?.email === 'string' ? business.email : null },
-    { label: 'Dirección', value: typeof business?.address === 'string' ? business.address : null },
+    {
+      label: 'Teléfono',
+      value: typeof business?.phone === 'string' ? business.phone : null,
+    },
+    {
+      label: 'Correo',
+      value: typeof business?.email === 'string' ? business.email : null,
+    },
+    {
+      label: 'Dirección',
+      value: typeof business?.address === 'string' ? business.address : null,
+    },
   ].filter((item) => Boolean(item.value));
 
   return (
@@ -63,7 +87,9 @@ export const BusinessInfoModal = ({ isOpen, onClose, business }: BusinessInfoMod
           {logoUrl ? (
             <LogoImage src={logoUrl} alt={`Logo de ${businessName}`} />
           ) : (
-            <LogoPlaceholder aria-hidden="true">{businessName.charAt(0).toUpperCase()}</LogoPlaceholder>
+            <LogoPlaceholder aria-hidden="true">
+              {businessName.charAt(0).toUpperCase()}
+            </LogoPlaceholder>
           )}
         </LogoWrapper>
         {infoFields.length > 0 ? (

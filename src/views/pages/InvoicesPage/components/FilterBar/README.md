@@ -1,6 +1,7 @@
 # FilterBar - Estructura Refactorizada
 
 ## Descripción
+
 El componente `FilterBar` ha sido refactorizado y dividido en múltiples archivos para mejorar la mantenibilidad, legibilidad y reutilización del código.
 
 ## Estructura de Archivos
@@ -30,12 +31,14 @@ src/views/pages/InvoicesPage/components/FilterBar/
 ## Características
 
 ### 1. **Separación de Responsabilidades**
+
 - **Constantes**: Todas las configuraciones y constantes en un archivo separado
 - **Hooks**: Lógica de estado y efectos separada en hooks reutilizables
 - **Componentes**: Cada filtro como componente independiente
 - **Estilos**: Styled-components organizados por separado
 
 ### 2. **Hooks Personalizados**
+
 - `useInvoiceSorting`: Maneja la lógica de ordenamiento
 - `useFilterHandlers`: Maneja los handlers de filtros
 - `useClientOptions`: Maneja las opciones de clientes
@@ -44,6 +47,7 @@ src/views/pages/InvoicesPage/components/FilterBar/
 - `useFilterCollapse`: Maneja el colapso de filtros en desktop
 
 ### 3. **Componentes Modulares**
+
 - `DateRangeFilter`: Filtro de fechas con DatePicker
 - `ClientFilter`: Select de clientes con búsqueda
 - `PaymentMethodFilter`: Select de métodos de pago
@@ -53,12 +57,14 @@ src/views/pages/InvoicesPage/components/FilterBar/
 - `TotalsDisplay`: Display de totales (solo móvil)
 
 ### 4. **Sistema de Colapso Inteligente**
+
 - Mide dinámicamente el ancho disponible
 - Colapsa filtros progresivamente según prioridad
 - Muestra botón "Más" cuando hay overflow
 - Drawer responsive para filtros ocultos
 
 ### 5. **Responsive Design**
+
 - **Móvil (≤ 900px)**: Botón "Filtros" + drawer bottom + totales
 - **Desktop (> 900px)**: Filtros horizontales + colapso progresivo
 
@@ -75,7 +81,7 @@ import { FilterBar } from './components/FilterBar';
   setProcessedInvoices={setProcessedInvoices}
   filters={filters}
   onFiltersChange={onFiltersChange}
-/>
+/>;
 ```
 
 ## Beneficios de la Refactorización
@@ -90,9 +96,9 @@ import { FilterBar } from './components/FilterBar';
 
 1. **DateRangeFilter** - Más importante
 2. **ClientFilter**
-3. **PaymentMethodFilter** 
+3. **PaymentMethodFilter**
 4. **AmountRangeFilter**
 5. **SortControls**
 6. **ClearFiltersButton** - Menos importante
 
-Los filtros se colapsan en orden inverso de prioridad cuando no hay espacio suficiente. 
+Los filtros se colapsan en orden inverso de prioridad cuando no hay espacio suficiente.

@@ -18,7 +18,9 @@ const FETCH_LIMIT = 500;
 
 const hasOnlyUserId = (data) => {
   if (!data || typeof data !== 'object') return false;
-  const presentKeys = Object.keys(data).filter((key) => data[key] !== undefined);
+  const presentKeys = Object.keys(data).filter(
+    (key) => data[key] !== undefined,
+  );
   if (!presentKeys.length) return false;
   return presentKeys.every((key) => key === 'userId');
 };
@@ -47,13 +49,11 @@ export default function SessionTokensCleanup() {
     setScanned(0);
     try {
       const snapshot = await getDocs(
-        query(collection(db, TOKEN_COLLECTION), limit(FETCH_LIMIT))
+        query(collection(db, TOKEN_COLLECTION), limit(FETCH_LIMIT)),
       );
       setScanned(snapshot.size);
 
-      const items = snapshot.docs
-        .map(toResultItem)
-        .filter(Boolean);
+      const items = snapshot.docs.map(toResultItem).filter(Boolean);
 
       setTokens(items);
 
@@ -74,7 +74,7 @@ export default function SessionTokensCleanup() {
     setError(null);
     try {
       const deletions = tokens.map(({ id }) =>
-        deleteDoc(doc(db, TOKEN_COLLECTION, id))
+        deleteDoc(doc(db, TOKEN_COLLECTION, id)),
       );
       const results = await Promise.allSettled(deletions);
       const failed = results.filter((result) => result.status === 'rejected');
@@ -85,9 +85,9 @@ export default function SessionTokensCleanup() {
       }
       if (failed.length) {
         setError(
-          `No se pudieron eliminar ${failed.length} tokens. Revisa la consola para más detalles.`
+          `No se pudieron eliminar ${failed.length} tokens. Revisa la consola para más detalles.`,
         );
-         
+
         console.error('SessionTokensCleanup delete errors:', failed);
       }
       setTokens([]);
@@ -105,9 +105,9 @@ export default function SessionTokensCleanup() {
       <Card title="Depurar sessionTokens incompletos">
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Paragraph>
-            Esta herramienta busca documentos en <Text code>sessionTokens</Text> que sólo
-            contengan el campo <Text code>userId</Text>. Está pensada para limpiar tokens
-            heredados del sistema anterior.
+            Esta herramienta busca documentos en <Text code>sessionTokens</Text>{' '}
+            que sólo contengan el campo <Text code>userId</Text>. Está pensada
+            para limpiar tokens heredados del sistema anterior.
           </Paragraph>
           <Alert
             type="warning"
@@ -116,8 +116,9 @@ export default function SessionTokensCleanup() {
             description={
               <>
                 <Paragraph style={{ marginBottom: 8 }}>
-                  Cada ejecución procesa hasta {FETCH_LIMIT} documentos (sin paginar). Si el
-                  proyecto tiene muchos registros, repite la búsqueda después de cada limpieza.
+                  Cada ejecución procesa hasta {FETCH_LIMIT} documentos (sin
+                  paginar). Si el proyecto tiene muchos registros, repite la
+                  búsqueda después de cada limpieza.
                 </Paragraph>
                 <Paragraph style={{ margin: 0 }}>
                   Verifica que no existan tokens activos antes de eliminar.
@@ -140,8 +141,8 @@ export default function SessionTokensCleanup() {
             </Button>
           </Space>
           <Paragraph type="secondary">
-            Última consulta: se revisaron {scanned} documentos y se detectaron {tokens.length}{' '}
-            tokens incompletos.
+            Última consulta: se revisaron {scanned} documentos y se detectaron{' '}
+            {tokens.length} tokens incompletos.
           </Paragraph>
           {error ? (
             <Alert type="error" showIcon message={error} />

@@ -1,12 +1,11 @@
 import { faCreditCard, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Card, Tag, Tooltip } from "antd";
-import dayjs from "dayjs";
-import React from "react";
-import styled from "styled-components";
+import { Card, Tag, Tooltip } from 'antd';
+import dayjs from 'dayjs';
+import React from 'react';
+import styled from 'styled-components';
 
-import { formatPrice } from "../../../../../utils/formatPrice";
-
+import { formatPrice } from '../../../../../utils/formatPrice';
 
 export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
   if (!creditNotes.length) {
@@ -14,7 +13,10 @@ export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
   }
 
   // Calcular total de notas de crédito generadas
-  const totalCreditNotes = creditNotes.reduce((sum, cn) => sum + (cn.totalAmount || 0), 0);
+  const totalCreditNotes = creditNotes.reduce(
+    (sum, cn) => sum + (cn.totalAmount || 0),
+    0,
+  );
 
   return (
     <StyledCard>
@@ -36,7 +38,10 @@ export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
           <SectionTitle>
             Notas de Crédito de esta Factura
             <Tooltip title="Notas de crédito creadas desde esta factura">
-              <FontAwesomeIcon icon={faCircleInfo} style={{ marginLeft: '4px', color: '#999' }} />
+              <FontAwesomeIcon
+                icon={faCircleInfo}
+                style={{ marginLeft: '4px', color: '#999' }}
+              />
             </Tooltip>
           </SectionTitle>
           <ItemsList>
@@ -50,10 +55,11 @@ export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
                   <ItemDetail>
                     <DetailLabel>Creada:</DetailLabel>
                     <DetailValue>
-                      {cn.createdAt?.seconds 
-                        ? dayjs(new Date(cn.createdAt.seconds * 1000)).format('DD/MM/YYYY HH:mm')
-                        : dayjs(cn.createdAt).format('DD/MM/YYYY HH:mm')
-                      }
+                      {cn.createdAt?.seconds
+                        ? dayjs(new Date(cn.createdAt.seconds * 1000)).format(
+                            'DD/MM/YYYY HH:mm',
+                          )
+                        : dayjs(cn.createdAt).format('DD/MM/YYYY HH:mm')}
                     </DetailValue>
                   </ItemDetail>
                   <ItemDetail>
@@ -137,7 +143,7 @@ const CardContent = styled.div`
 
 const Section = styled.div`
   margin-bottom: 1.5rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -164,7 +170,7 @@ const CreditNoteItem = styled.div`
   padding: 0.75rem;
   background: #f8f9fa;
   margin-bottom: 0.75rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -217,4 +223,4 @@ const DetailValue = styled.span`
   display: flex;
   align-items: center;
   gap: 0.25rem;
-`; 
+`;

@@ -15,28 +15,39 @@ export const fbGetFiscalAlertsConfig = async (user) => {
       return getDefaultConfig();
     }
 
-    const configRef = doc(db, 'users', user.id, 'settings', 'fiscalAlertsConfig');
+    const configRef = doc(
+      db,
+      'users',
+      user.id,
+      'settings',
+      'fiscalAlertsConfig',
+    );
     const docSnap = await getDoc(configRef);
-    
+
     if (docSnap.exists()) {
       const data = docSnap.data();
-      
+
       // Validar estructura de datos
       return {
         alertsEnabled: data.alertsEnabled ?? true,
         globalThresholds: {
-          warning: data.globalThresholds?.warning ?? FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
-          critical: data.globalThresholds?.critical ?? FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD
+          warning:
+            data.globalThresholds?.warning ??
+            FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
+          critical:
+            data.globalThresholds?.critical ??
+            FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
         },
         customThresholds: data.customThresholds ?? {},
         lastUpdated: data.lastUpdated,
-        version: data.version ?? '1.0'
+        version: data.version ?? '1.0',
       };
     } else {
-      console.log('No se encontró configuración guardada, usando valores por defecto');
+      console.log(
+        'No se encontró configuración guardada, usando valores por defecto',
+      );
       return getDefaultConfig();
     }
-    
   } catch (error) {
     console.error('Error al obtener la configuración de alertas:', error);
     return getDefaultConfig();
@@ -51,9 +62,9 @@ const getDefaultConfig = () => ({
   alertsEnabled: true,
   globalThresholds: {
     warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
-    critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD
+    critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
   },
   customThresholds: {},
   lastUpdated: null,
-  version: '1.0'
+  version: '1.0',
 });

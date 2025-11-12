@@ -1,11 +1,11 @@
-import { 
-  faFilter, 
-  faMapMarkerAlt, 
-  faGlobe, 
-  faStoreAlt, 
-  faCalendarAlt, 
-  faSortAmountDown, 
-  faSortAmountUp 
+import {
+  faFilter,
+  faMapMarkerAlt,
+  faGlobe,
+  faStoreAlt,
+  faCalendarAlt,
+  faSortAmountDown,
+  faSortAmountUp,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Drawer, Space, Select, Button, Typography } from 'antd';
@@ -20,16 +20,16 @@ const FilterLabel = styled.div`
   align-items: center;
 `;
 
-const FiltersDrawer = ({ 
-  visible, 
-  onClose, 
-  filters, 
-  handleFilterChange, 
-  resetFilters, 
-  availableProvinces, 
-  availableCountries, 
+const FiltersDrawer = ({
+  visible,
+  onClose,
+  filters,
+  handleFilterChange,
+  resetFilters,
+  availableProvinces,
+  availableCountries,
   availableBusinessTypes,
-  resultsCount
+  resultsCount,
 }) => {
   return (
     <Drawer
@@ -44,20 +44,28 @@ const FiltersDrawer = ({
       open={visible}
       width={360}
       footer={
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <Typography.Text>
-            {resultsCount} {resultsCount === 1 ? 'negocio encontrado' : 'negocios encontrados'}
+            {resultsCount}{' '}
+            {resultsCount === 1 ? 'negocio encontrado' : 'negocios encontrados'}
           </Typography.Text>
-          <Button onClick={resetFilters}>
-            Limpiar Filtros
-          </Button>
+          <Button onClick={resetFilters}>Limpiar Filtros</Button>
         </div>
       }
     >
       <Space direction="vertical" style={{ width: '100%' }} size="large">
         <div>
           <FilterLabel>
-            <FontAwesomeIcon icon={faMapMarkerAlt} style={{ marginRight: '8px' }} />
+            <FontAwesomeIcon
+              icon={faMapMarkerAlt}
+              style={{ marginRight: '8px' }}
+            />
             Provincia
           </FilterLabel>
           <Select
@@ -67,14 +75,14 @@ const FiltersDrawer = ({
             onChange={(value) => handleFilterChange('province', value)}
             allowClear
           >
-            {availableProvinces.map(province => (
+            {availableProvinces.map((province) => (
               <Select.Option key={province} value={province}>
                 {province}
               </Select.Option>
             ))}
           </Select>
         </div>
-        
+
         <div>
           <FilterLabel>
             <FontAwesomeIcon icon={faGlobe} style={{ marginRight: '8px' }} />
@@ -87,17 +95,20 @@ const FiltersDrawer = ({
             onChange={(value) => handleFilterChange('country', value)}
             allowClear
           >
-            {availableCountries.map(country => (
+            {availableCountries.map((country) => (
               <Select.Option key={country} value={country}>
-                {country === 'do' ? 'República Dominicana' : 
-                country === 'co' ? 'Colombia' : 
-                country === 'us' ? 'Estados Unidos' : 
-                country}
+                {country === 'do'
+                  ? 'República Dominicana'
+                  : country === 'co'
+                    ? 'Colombia'
+                    : country === 'us'
+                      ? 'Estados Unidos'
+                      : country}
               </Select.Option>
             ))}
           </Select>
         </div>
-        
+
         <div>
           <FilterLabel>
             <FontAwesomeIcon icon={faStoreAlt} style={{ marginRight: '8px' }} />
@@ -110,20 +121,26 @@ const FiltersDrawer = ({
             onChange={(value) => handleFilterChange('businessType', value)}
             allowClear
           >
-            {availableBusinessTypes.map(type => (
+            {availableBusinessTypes.map((type) => (
               <Select.Option key={type} value={type}>
-                {type === 'general' ? 'General' : 
-                type === 'pharmacy' ? 'Farmacia' : 
-                type === 'restaurant' ? 'Restaurante' : 
-                type}
+                {type === 'general'
+                  ? 'General'
+                  : type === 'pharmacy'
+                    ? 'Farmacia'
+                    : type === 'restaurant'
+                      ? 'Restaurante'
+                      : type}
               </Select.Option>
             ))}
           </Select>
         </div>
-        
+
         <div>
           <FilterLabel>
-            <FontAwesomeIcon icon={faCalendarAlt} style={{ marginRight: '8px' }} />
+            <FontAwesomeIcon
+              icon={faCalendarAlt}
+              style={{ marginRight: '8px' }}
+            />
             Ordenar por Fecha de Creación
           </FilterLabel>
           <Select
@@ -132,13 +149,17 @@ const FiltersDrawer = ({
             onChange={(value) => handleFilterChange('sortBy', value)}
           >
             <Select.Option value="newest">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
                 <FontAwesomeIcon icon={faSortAmountDown} />
                 <span>Más recientes primero</span>
               </div>
             </Select.Option>
             <Select.Option value="oldest">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
                 <FontAwesomeIcon icon={faSortAmountUp} />
                 <span>Más antiguos primero</span>
               </div>

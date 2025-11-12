@@ -7,7 +7,7 @@
  */
 export function generateNewTaxReceipt(localReceipts) {
   // Considerar todas las series existentes, incluso las deshabilitadas
-  const existingSeries = new Set(localReceipts.map(r => r.data.serie));
+  const existingSeries = new Set(localReceipts.map((r) => r.data.serie));
   let counter = 3; // arrancamos en 03
   let newSerie = counter < 10 ? `0${counter}` : `${counter}`;
   while (existingSeries.has(newSerie)) {
@@ -23,8 +23,8 @@ export function generateNewTaxReceipt(localReceipts) {
       sequence: '0000000000',
       increase: 1,
       quantity: 2000,
-      disabled: false // Aseguramos que los nuevos comprobantes estén activos
-    }
+      disabled: false, // Aseguramos que los nuevos comprobantes estén activos
+    },
   };
 }
 
@@ -36,14 +36,14 @@ export function generateNewTaxReceipt(localReceipts) {
  */
 export function filterPredefinedReceipts(newReceipts, localReceipts) {
   // Considerar todas las series y nombres existentes, incluso las de comprobantes deshabilitados
-  const existingSeries = new Set(localReceipts.map(r => r.data.serie));
-  const existingNames = new Set(localReceipts.map(r => r.data.name));
+  const existingSeries = new Set(localReceipts.map((r) => r.data.serie));
+  const existingNames = new Set(localReceipts.map((r) => r.data.name));
 
   const unique = [];
   const duplicateNames = [];
   const duplicateSeries = [];
 
-  newReceipts.forEach(r => {
+  newReceipts.forEach((r) => {
     const { name, serie } = r.data;
     if (existingNames.has(name)) {
       duplicateNames.push(name);
@@ -55,8 +55,8 @@ export function filterPredefinedReceipts(newReceipts, localReceipts) {
         ...r,
         data: {
           ...r.data,
-          disabled: false
-        }
+          disabled: false,
+        },
       };
       unique.push(receiptWithDisabledState);
       existingNames.add(name);

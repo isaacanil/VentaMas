@@ -42,10 +42,13 @@ export const useInventoryFilters = ({
   productBatchMap,
 }: UseInventoryFiltersParams): UseInventoryFiltersResult => {
   const [showOnlyWithExpiration, setShowOnlyWithExpiration] = useState(false);
-  const [selectedProductFilter, setSelectedProductFilter] = useState<string | null>(null);
+  const [selectedProductFilter, setSelectedProductFilter] = useState<
+    string | null
+  >(null);
   const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filterDraft, setFilterDraft] = useState<FilterDraft>(DEFAULT_FILTER_DRAFT);
+  const [filterDraft, setFilterDraft] =
+    useState<FilterDraft>(DEFAULT_FILTER_DRAFT);
 
   useEffect(() => {
     if (!selectedProductFilter) return;
@@ -63,14 +66,21 @@ export const useInventoryFilters = ({
       setSelectedBatches([]);
       return;
     }
-    const validValues = new Set(Array.from(batchesForProduct.values()).map((option) => option.value));
-    const filteredValues = selectedBatches.filter((value) => validValues.has(value));
+    const validValues = new Set(
+      Array.from(batchesForProduct.values()).map((option) => option.value),
+    );
+    const filteredValues = selectedBatches.filter((value) =>
+      validValues.has(value),
+    );
     if (filteredValues.length !== selectedBatches.length) {
       setSelectedBatches(filteredValues);
     }
   }, [selectedProductFilter, selectedBatches, productBatchMap]);
 
-  const hasAdvancedFilters = showOnlyWithExpiration || !!selectedProductFilter || selectedBatches.length > 0;
+  const hasAdvancedFilters =
+    showOnlyWithExpiration ||
+    !!selectedProductFilter ||
+    selectedBatches.length > 0;
 
   const draftBatchOptions: DraftBatchOption[] = useMemo(() => {
     if (!filterDraft.product) return [];
@@ -80,9 +90,8 @@ export const useInventoryFilters = ({
     return Array.from(batchesForProduct.values())
       .map((option) => ({
         ...option,
-        displayLabel: option.label === 'Sin lote'
-          ? 'Sin lote'
-          : `# ${option.label}`,
+        displayLabel:
+          option.label === 'Sin lote' ? 'Sin lote' : `# ${option.label}`,
         expirationText: option.expirationDateMillis
           ? `Vence ${dayjs(option.expirationDateMillis).format('DD/MM/YYYY')}`
           : 'Sin fecha de vencimiento',

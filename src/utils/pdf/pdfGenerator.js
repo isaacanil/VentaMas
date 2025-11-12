@@ -67,23 +67,38 @@ export function generateInvoicePDF({ business, data }) {
     doc.text(`Fecha: ${formatDate(data?.date)}`, rightX, headerRightY);
     headerRightY += 6;
     if (documentIdentity.label && !isPreorderDocument) {
-      doc.text(`${documentIdentity.label}: ${documentIdentity.value || '-'}`, rightX, headerRightY);
+      doc.text(
+        `${documentIdentity.label}: ${documentIdentity.value || '-'}`,
+        rightX,
+        headerRightY,
+      );
       headerRightY += 6;
     }
     const referenceLabel = isPreorderDocument
       ? 'Preventa'
       : documentIdentity.title || 'Factura';
     const referenceValue = isPreorderDocument
-      ? (documentIdentity.value || data?.preorderDetails?.numberID || data?.numberID || '-')
-      : (data?.numberID || '-');
+      ? documentIdentity.value ||
+        data?.preorderDetails?.numberID ||
+        data?.numberID ||
+        '-'
+      : data?.numberID || '-';
     doc.text(`${referenceLabel} # ${referenceValue}`, rightX, headerRightY);
     headerRightY += 6;
     if (data?.preorderDetails?.date) {
-      doc.text(`Fecha de pedido: ${formatDate(data.preorderDetails.date)}`, rightX, headerRightY);
+      doc.text(
+        `Fecha de pedido: ${formatDate(data.preorderDetails.date)}`,
+        rightX,
+        headerRightY,
+      );
       headerRightY += 6;
     }
     if (data?.dueDate) {
-      doc.text(`Fecha que vence: ${formatDate(data.dueDate)}`, rightX, headerRightY);
+      doc.text(
+        `Fecha que vence: ${formatDate(data.dueDate)}`,
+        rightX,
+        headerRightY,
+      );
       headerRightY += 6;
     }
   };
@@ -93,7 +108,12 @@ export function generateInvoicePDF({ business, data }) {
     const footerMarginBottom = 10;
     const footerStartY = pageHeight - footerHeight - footerMarginBottom;
     doc.setLineWidth(0.5);
-    doc.line(marginLeft, footerStartY - 5, pageWidth - marginLeft, footerStartY - 5);
+    doc.line(
+      marginLeft,
+      footerStartY - 5,
+      pageWidth - marginLeft,
+      footerStartY - 5,
+    );
 
     // Grupo de firmas (lado izquierdo)
     let leftX = marginLeft;
@@ -101,10 +121,10 @@ export function generateInvoicePDF({ business, data }) {
     const signatureLineWidth = 70;
     doc.setFontSize(10);
     doc.line(leftX, leftY, leftX + signatureLineWidth, leftY);
-    doc.text("Despachado Por:", leftX, leftY + 5);
+    doc.text('Despachado Por:', leftX, leftY + 5);
     leftY += 20;
     doc.line(leftX, leftY, leftX + signatureLineWidth, leftY);
-    doc.text("Recibido Conforme:", leftX, leftY + 5);
+    doc.text('Recibido Conforme:', leftX, leftY + 5);
 
     // Vendedor y métodos de pago (lado izquierdo, debajo de las firmas)
     let paymentY = footerStartY;
@@ -112,9 +132,9 @@ export function generateInvoicePDF({ business, data }) {
       doc.text(`Vendedor: ${data.seller.name}`, leftX, paymentY - 10);
     }
     if (data?.paymentMethod && data.paymentMethod.length > 0) {
-      doc.setFont(undefined, "bold");
-      doc.text("Métodos de Pago:", leftX, paymentY);
-      doc.setFont(undefined, "normal");
+      doc.setFont(undefined, 'bold');
+      doc.text('Métodos de Pago:', leftX, paymentY);
+      doc.setFont(undefined, 'normal');
       paymentY += 6;
       data.paymentMethod.forEach((method) => {
         if (method?.status) {
@@ -135,7 +155,10 @@ export function generateInvoicePDF({ business, data }) {
     doc.text(data?.copyType || 'COPIA', rightColX, footerStartY - 10);
     const purchaseSubtotal = data?.totalPurchaseWithoutTaxes?.value || 0;
     const discountPercent = data?.discount?.value || 0;
-    const computedDiscount = getTotalDiscount(purchaseSubtotal, discountPercent);
+    const computedDiscount = getTotalDiscount(
+      purchaseSubtotal,
+      discountPercent,
+    );
     const totals = {
       subtotal: formatPrice(purchaseSubtotal),
       discount: `-${formatPrice(computedDiscount)}`,
@@ -146,33 +169,46 @@ export function generateInvoicePDF({ business, data }) {
     let totalsY = footerStartY;
     const rowGap = 6;
     doc.setFontSize(12);
-    doc.text("Sub-Total:", rightColX, totalsY);
-    doc.text(totals.subtotal, pageWidth - marginLeft, totalsY, { align: "right" });
+    doc.text('Sub-Total:', rightColX, totalsY);
+    doc.text(totals.subtotal, pageWidth - marginLeft, totalsY, {
+      align: 'right',
+    });
     totalsY += rowGap;
-    doc.text("ITBIS:", rightColX, totalsY);
-    doc.text(totals.tax, pageWidth - marginLeft, totalsY, { align: "right" });
+    doc.text('ITBIS:', rightColX, totalsY);
+    doc.text(totals.tax, pageWidth - marginLeft, totalsY, { align: 'right' });
     totalsY += rowGap;
     if (discountPercent) {
       doc.text(`Descuento (%${discountPercent}):`, rightColX, totalsY);
-      doc.text(totals.discount, pageWidth - marginLeft, totalsY, { align: "right" });
+      doc.text(totals.discount, pageWidth - marginLeft, totalsY, {
+        align: 'right',
+      });
       totalsY += rowGap;
     }
     if (data?.delivery?.status) {
-      doc.text("Delivery:", rightColX, totalsY);
-      doc.text(totals.delivery, pageWidth - marginLeft, totalsY, { align: "right" });
+      doc.text('Delivery:', rightColX, totalsY);
+      doc.text(totals.delivery, pageWidth - marginLeft, totalsY, {
+        align: 'right',
+      });
       totalsY += rowGap;
     }
-    doc.setFont(undefined, "bold");
-    doc.text("Total:", rightColX, totalsY);
-    doc.text(totals.total, pageWidth - marginLeft, totalsY, { align: "right" });
-    doc.setFont(undefined, "normal");
+    doc.setFont(undefined, 'bold');
+    doc.text('Total:', rightColX, totalsY);
+    doc.text(totals.total, pageWidth - marginLeft, totalsY, { align: 'right' });
+    doc.setFont(undefined, 'normal');
   };
 
   // === Tabla de productos ===
   // Se multiplica cada producto 10 veces para simular una mayor cantidad
-  const tableColumn = ["CANT.", "CODIGO", "DESCRIPCION", "PRECIO", "ITBIS", "TOTAL"];
+  const tableColumn = [
+    'CANT.',
+    'CODIGO',
+    'DESCRIPCION',
+    'PRECIO',
+    'ITBIS',
+    'TOTAL',
+  ];
   const tableRows = [];
-  data?.products.forEach(product => {
+  data?.products.forEach((product) => {
     const price = product.pricing.price;
     const taxAmount = (price * Number(product.pricing.tax)) / 100;
     const total = ((price + taxAmount) * product.amountToBuy).toFixed(2);
@@ -182,7 +218,7 @@ export function generateInvoicePDF({ business, data }) {
       product.name,
       price.toFixed(2),
       taxAmount.toFixed(2),
-      total
+      total,
     ];
     for (let i = 0; i < 10; i++) {
       tableRows.push(productData);
@@ -200,7 +236,7 @@ export function generateInvoicePDF({ business, data }) {
     didDrawPage: function () {
       addHeader();
       addFooter();
-    }
+    },
   });
 
   // Guardar el PDF

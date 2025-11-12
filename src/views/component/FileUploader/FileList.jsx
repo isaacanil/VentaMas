@@ -1,4 +1,10 @@
-import { FileOutlined, DeleteOutlined, EyeOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
+import {
+  FileOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  FileImageOutlined,
+  FilePdfOutlined,
+} from '@ant-design/icons';
 import { Tag, Empty, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
@@ -13,7 +19,7 @@ const FileItem = styled.div`
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #f0f0f0;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }
@@ -30,7 +36,7 @@ const DeleteButton = styled.button`
   color: #ff4d4f;
   cursor: pointer;
   padding: 5px;
-  
+
   &:hover {
     color: #cf1322;
   }
@@ -52,7 +58,7 @@ const PreviewButton = styled.button`
   cursor: pointer;
   padding: 5px;
   margin-right: 8px;
-  
+
   &:hover {
     color: #40a9ff;
   }
@@ -71,7 +77,12 @@ const FileIcon = styled.span`
   align-items: center;
 `;
 
-const FileList = ({ files = [], removeFile, handlePreview, fileTypeLabels = {} }) => {
+const FileList = ({
+  files = [],
+  removeFile,
+  handlePreview,
+  fileTypeLabels = {},
+}) => {
   const getTagColor = (type) => {
     const colors = {
       document: 'default',
@@ -79,7 +90,7 @@ const FileList = ({ files = [], removeFile, handlePreview, fileTypeLabels = {} }
       invoices: 'blue',
       others: 'orange',
       imagen: 'purple',
-      pdf: 'red'
+      pdf: 'red',
     };
     return colors[type?.toLowerCase()] || 'default';
   };
@@ -95,17 +106,19 @@ const FileList = ({ files = [], removeFile, handlePreview, fileTypeLabels = {} }
 
   const groupedFiles = useMemo(() => {
     const groups = {};
-    
-    files?.forEach(file => {
+
+    files?.forEach((file) => {
       const type = file.type?.toLowerCase() || 'document';
-      
+
       if (!groups[type]) {
         groups[type] = {
-          title: fileTypeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1),
-          files: []
+          title:
+            fileTypeLabels[type] ||
+            type.charAt(0).toUpperCase() + type.slice(1),
+          files: [],
         };
       }
-      
+
       groups[type].files.push(file);
     });
 
@@ -124,14 +137,10 @@ const FileList = ({ files = [], removeFile, handlePreview, fileTypeLabels = {} }
         )}
       </FileIcon>
       <FileInfo>
-        <Tooltip title={file.name}>
-          {file.name}
-        </Tooltip>
-        <TypeTag color={getTagColor(file.type)}>
-          {file.type}
-        </TypeTag>
-        <TypeTag color={file.url ? "purple" : "blue"}>
-          {file.url ? "Remoto" : "Local"}
+        <Tooltip title={file.name}>{file.name}</Tooltip>
+        <TypeTag color={getTagColor(file.type)}>{file.type}</TypeTag>
+        <TypeTag color={file.url ? 'purple' : 'blue'}>
+          {file.url ? 'Remoto' : 'Local'}
         </TypeTag>
       </FileInfo>
       <div>
@@ -169,7 +178,7 @@ FileList.defaultProps = {
   files: [],
   removeFile: () => {},
   handlePreview: () => {},
-  fileTypeLabels: {}
+  fileTypeLabels: {},
 };
 
 export default FileList;

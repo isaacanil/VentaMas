@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export const WarrantySignature = ({data}) => {
-  const someProductHaveWarranty = data?.products?.some((product) => product?.warranty?.status)
+export const WarrantySignature = ({ data }) => {
+  const someProductHaveWarranty = data?.products?.some(
+    (product) => product?.warranty?.status,
+  );
   if (someProductHaveWarranty) {
     return (
       <SignatureContainer>
@@ -18,8 +20,6 @@ export const WarrantySignature = ({data}) => {
     );
   }
 };
-
-
 
 const SignatureContainer = styled.div`
   display: grid;

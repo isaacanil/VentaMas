@@ -1,9 +1,9 @@
-import { Table, Input, Button }from 'antd';
-import React from 'react'
-import styled from 'styled-components'
+import { Table, Input, Button } from 'antd';
+import React from 'react';
+import styled from 'styled-components';
 
-import { icons } from '../../../constants/icons/icons'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
+import { icons } from '../../../constants/icons/icons';
+import { useFormatPrice } from '../../../hooks/useFormatPrice';
 
 export const ProductListSelected = ({
   productsSelected,
@@ -15,7 +15,7 @@ export const ProductListSelected = ({
       title: 'Producto',
       dataIndex: 'productName',
       key: 'productName',
-      
+
       width: 250,
     },
     {
@@ -25,9 +25,9 @@ export const ProductListSelected = ({
       width: 150,
       render: (text, record) => (
         <Input
-        type='number'
+          type="number"
           value={text}
-          onChange={e =>
+          onChange={(e) =>
             handleUpdateProduct({
               value: { newStock: Number(e.target.value) },
               productID: record.id,
@@ -43,9 +43,9 @@ export const ProductListSelected = ({
       key: 'initialCost',
       render: (text, record) => (
         <Input
-            type='number'
+          type="number"
           value={text}
-          onChange={e =>
+          onChange={(e) =>
             handleUpdateProduct({
               value: { initialCost: Number(e.target.value) },
               productID: record.id,
@@ -57,7 +57,8 @@ export const ProductListSelected = ({
     {
       title: 'Total',
       key: 'total',
-      render: (_, record) => useFormatPrice(record.initialCost * record.newStock),
+      render: (_, record) =>
+        useFormatPrice(record.initialCost * record.newStock),
     },
     {
       title: 'Acciones',
@@ -65,7 +66,7 @@ export const ProductListSelected = ({
       width: 120,
       align: 'right',
       render: (_, record) => (
-        <Button     
+        <Button
           icon={icons.operationModes.delete}
           onClick={() => handleDeleteProduct(record)}
         />
@@ -76,43 +77,30 @@ export const ProductListSelected = ({
   return (
     <Container>
       <h4>Lista de productos</h4>
-      <Table 
-      dataSource={productsSelected} 
-      bordered
-    
-      columns={columns} 
-      size='small'
-      pagination={{ pageSize: 5 }} 
-      footer={
-        () => (
-          <span>Total: {useFormatPrice(productsSelected.reduce((acc, item) => acc + item.initialCost * item.newStock, 0))}</span>
-        )
-      }
+      <Table
+        dataSource={productsSelected}
+        bordered
+        columns={columns}
+        size="small"
+        pagination={{ pageSize: 5 }}
+        footer={() => (
+          <span>
+            Total:{' '}
+            {useFormatPrice(
+              productsSelected.reduce(
+                (acc, item) => acc + item.initialCost * item.newStock,
+                0,
+              ),
+            )}
+          </span>
+        )}
       />
     </Container>
   );
 };
 const Container = styled.div`
-   display: grid;
-    
-`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  display: grid;
+`;
 
 // export const ProductListSelected = ({ productsSelected, productsTotalPrice, handleDeleteProduct, handleUpdateProduct }) => {
 //     return (
@@ -143,7 +131,7 @@ const Container = styled.div`
 //     border-radius: 6px;
 //     height: 100%;
 //     position: relative;
-    
+
 //     display: grid;
 //     grid-template-rows: min-content 1fr;
 //     overflow: hidden;
@@ -171,6 +159,6 @@ const Container = styled.div`
 // `
 // const Body = styled.div`
 //    padding: 0em;
-    
+
 //     overflow-y: scroll;
 // `

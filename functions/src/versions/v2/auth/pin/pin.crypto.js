@@ -11,7 +11,7 @@ export const ensureEncryptionKey = () => {
   if (!rawKey) {
     throw new HttpsError(
       'failed-precondition',
-      'PIN_ENCRYPTION_KEY is not configured. Set it as a base64-encoded 32-byte value.'
+      'PIN_ENCRYPTION_KEY is not configured. Set it as a base64-encoded 32-byte value.',
     );
   }
   try {
@@ -19,14 +19,17 @@ export const ensureEncryptionKey = () => {
     if (key.length !== 32) {
       throw new HttpsError(
         'failed-precondition',
-        'PIN_ENCRYPTION_KEY must decode to 32 bytes (AES-256 key).'
+        'PIN_ENCRYPTION_KEY must decode to 32 bytes (AES-256 key).',
       );
     }
     cachedEncryptionKey = key;
     return cachedEncryptionKey;
   } catch (error) {
     if (error instanceof HttpsError) throw error;
-    throw new HttpsError('failed-precondition', 'Invalid PIN_ENCRYPTION_KEY configuration.');
+    throw new HttpsError(
+      'failed-precondition',
+      'Invalid PIN_ENCRYPTION_KEY configuration.',
+    );
   }
 };
 
@@ -39,7 +42,10 @@ export const encryptPin = (pin) => {
   const key = ensureEncryptionKey();
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-  const ciphertext = Buffer.concat([cipher.update(pin, 'utf8'), cipher.final()]);
+  const ciphertext = Buffer.concat([
+    cipher.update(pin, 'utf8'),
+    cipher.final(),
+  ]);
   const authTag = cipher.getAuthTag();
 
   return {
@@ -57,7 +63,7 @@ export const decryptPin = (encryptedRecord) => {
     const decipher = crypto.createDecipheriv(
       encryptedRecord.algorithm || 'aes-256-gcm',
       key,
-      Buffer.from(encryptedRecord.iv, 'base64')
+      Buffer.from(encryptedRecord.iv, 'base64'),
     );
     decipher.setAuthTag(Buffer.from(encryptedRecord.authTag, 'base64'));
     const decrypted = Buffer.concat([

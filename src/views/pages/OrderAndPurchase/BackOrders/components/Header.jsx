@@ -23,17 +23,17 @@ const StatBox = styled.div`
   padding: 6px 12px;
   border-radius: 4px;
   min-width: 80px;
-  
+
   &.total {
     background: #fafafa;
     border: 1px solid #f0f0f0;
   }
-  
+
   &.pending {
     background: #fff7e6;
     border: 1px solid #ffd591;
   }
-  
+
   &.reserved {
     background: #e6f7ff;
     border: 1px solid #91d5ff;
@@ -67,7 +67,7 @@ const sortOptions = [
   { value: 'date-desc', label: 'Más recientes' },
   { value: 'date-asc', label: 'Más antiguos' },
   { value: 'progress-desc', label: 'Mayor progreso' },
-  { value: 'progress-asc', label: 'Menor progreso' }
+  { value: 'progress-asc', label: 'Menor progreso' },
 ];
 
 const Header = ({
@@ -80,7 +80,7 @@ const Header = ({
   statusFilter,
   setStatusFilter,
   onExport,
-  exportDisabled
+  exportDisabled,
 }) => {
   const statusOptions = [
     { value: 'all', label: 'Todos los estados' },
@@ -91,15 +91,21 @@ const Header = ({
     <HeaderContainer>
       <HeaderStats>
         <StatBox className="total">
-          <div style={{ fontSize: '16px', fontWeight: '500' }}>{stats.total}</div>
+          <div style={{ fontSize: '16px', fontWeight: '500' }}>
+            {stats.total}
+          </div>
           <div style={{ fontSize: '11px', color: '#8c8c8c' }}>Total</div>
         </StatBox>
         <StatBox className="pending">
-          <div style={{ fontSize: '16px', fontWeight: '500' }}>{stats.pending}</div>
+          <div style={{ fontSize: '16px', fontWeight: '500' }}>
+            {stats.pending}
+          </div>
           <div style={{ fontSize: '11px', color: '#8c8c8c' }}>Pendientes</div>
         </StatBox>
         <StatBox className="reserved">
-          <div style={{ fontSize: '16px', fontWeight: '500' }}>{stats.reserved}</div>
+          <div style={{ fontSize: '16px', fontWeight: '500' }}>
+            {stats.reserved}
+          </div>
           <div style={{ fontSize: '11px', color: '#8c8c8c' }}>Reservados</div>
         </StatBox>
       </HeaderStats>
@@ -111,7 +117,7 @@ const Header = ({
             placeholder="Producto"
             prefix={<SearchOutlined />}
             value={searchText}
-            onChange={e => setSearchText(e.target.value)}
+            onChange={(e) => setSearchText(e.target.value)}
             style={{ width: '180px' }}
           />
         </FilterField>
@@ -133,7 +139,7 @@ const Header = ({
             style={{ width: '160px' }}
             placeholder="Estado"
           >
-            {statusOptions.map(option => (
+            {statusOptions.map((option) => (
               <Option key={option.value} value={option.value}>
                 {option.label}
               </Option>
@@ -150,7 +156,7 @@ const Header = ({
             placeholder="Ordenar por"
             suffixIcon={<SortAscendingOutlined />}
           >
-            {sortOptions.map(option => (
+            {sortOptions.map((option) => (
               <Option key={option.value} value={option.value}>
                 {option.label}
               </Option>
@@ -159,7 +165,12 @@ const Header = ({
         </FilterField>
 
         <div style={{ marginLeft: 'auto' }}>
-          <Button type="default" icon={<DownloadOutlined />} disabled={exportDisabled} onClick={onExport}>
+          <Button
+            type="default"
+            icon={<DownloadOutlined />}
+            disabled={exportDisabled}
+            onClick={onExport}
+          >
             Exportar Excel
           </Button>
         </div>

@@ -3,8 +3,10 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-
-import { selectNotificationCenter, closeNotificationCenter } from '../../../features/notification/notificationCenterSlice';
+import {
+  selectNotificationCenter,
+  closeNotificationCenter,
+} from '../../../features/notification/notificationCenterSlice';
 import { useFiscalReceiptsAlerts } from '../../../hooks/useFiscalReceiptsAlerts';
 
 import ModulesNavigator from './components/ModulesNavigator';
@@ -34,23 +36,24 @@ const notificationVariants = {
 const NotificationCenter = () => {
   const { isOpen } = useSelector(selectNotificationCenter);
   const dispatch = useDispatch();
-  
+
   // Usar el hook personalizado para obtener datos reales de comprobantes fiscales
   const { widgetData: fiscalReceiptsData } = useFiscalReceiptsAlerts();
-
 
   const handleClose = () => dispatch(closeNotificationCenter());
 
   return (
     <>
       <Backdrop isOpen={isOpen} onClick={handleClose} />
-      <Container animate={isOpen ? 'open' : 'closed'} initial='closed' variants={notificationVariants}>
+      <Container
+        animate={isOpen ? 'open' : 'closed'}
+        initial="closed"
+        variants={notificationVariants}
+      >
         <Header>
           <Left>
             <HeaderText>
-              <Title>
-                Centro de Notificaciones
-              </Title>
+              <Title>Centro de Notificaciones</Title>
             </HeaderText>
           </Left>
           <CloseButton onClick={handleClose}>✕</CloseButton>
@@ -72,10 +75,11 @@ const Backdrop = styled.div`
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.35);
   z-index: 9950;
-  visibility: ${props => (props.isOpen ? 'visible' : 'hidden')};
-  opacity: ${props => (props.isOpen ? 1 : 0)};
-  transition: visibility 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-              opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
+  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  transition:
+    visibility 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   backdrop-filter: blur(2px);
   will-change: opacity, visibility;
 `;
@@ -85,14 +89,15 @@ const Container = styled(motion.div)`
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  background-color: #f8fafc84 ;
+  background-color: #f8fafc84;
   position: fixed;
   top: 0;
   right: 0;
   z-index: 9999;
   overflow: hidden;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   border-left: 1px solid #e5e7eb;
   will-change: transform, opacity;
 `;
@@ -124,7 +129,8 @@ const Title = styled.h1`
   margin: 0;
   color: #1f2937;
   font-size: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 `;
 
 const CloseButton = styled.button`

@@ -1,1 +1,1 @@
-export { CreditNoteFilters } from './CreditNoteFilters'; 
+export { CreditNoteFilters } from './CreditNoteFilters';

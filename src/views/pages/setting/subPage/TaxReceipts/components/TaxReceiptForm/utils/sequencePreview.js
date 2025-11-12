@@ -4,9 +4,15 @@ import {
   normalizeDigits,
   resolveIncrement,
   toDigits,
-} from "./ncfUtils";
+} from './ncfUtils';
 
-const EMPTY_PREVIEW = { current: "", next: "", last: "", prefix: "", sequenceLength: 0 };
+const EMPTY_PREVIEW = {
+  current: '',
+  next: '',
+  last: '',
+  prefix: '',
+  sequenceLength: 0,
+};
 
 export const buildSequencePreview = ({
   serieValue,
@@ -18,7 +24,7 @@ export const buildSequencePreview = ({
   resolveSequenceLength,
 } = {}) => {
   const prefix = buildPrefix(serieValue, tipoValue);
-  const digits = toDigits(sequenceValue ?? "");
+  const digits = toDigits(sequenceValue ?? '');
   const quantityNumeric = Number(quantityValue);
 
   if (!prefix && !digits) {
@@ -26,20 +32,21 @@ export const buildSequencePreview = ({
   }
 
   const resolver =
-    typeof resolveSequenceLength === "function"
+    typeof resolveSequenceLength === 'function'
       ? resolveSequenceLength
       : (length) => length;
 
   const normalizedCurrent = normalizeDigits(digits);
-  const baseLengthCandidate = normalizedCurrent.length || Number(sequenceLengthValue) || 0;
+  const baseLengthCandidate =
+    normalizedCurrent.length || Number(sequenceLengthValue) || 0;
   const resolvedLengthBase = resolver(baseLengthCandidate, sequenceLengthValue);
 
   if (!digits) {
     return {
-      current: prefix || "",
-      next: prefix || "",
-      last: "",
-      prefix: prefix || "",
+      current: prefix || '',
+      next: prefix || '',
+      last: '',
+      prefix: prefix || '',
       sequenceLength: resolvedLengthBase || 0,
     };
   }
@@ -48,15 +55,15 @@ export const buildSequencePreview = ({
 
   const fallbackLength = resolvedLengthBase;
   const fallbackCurrent = prefix
-    ? `${prefix}${normalizedCurrent.padStart(fallbackLength, "0")}`
-    : "";
+    ? `${prefix}${normalizedCurrent.padStart(fallbackLength, '0')}`
+    : '';
 
   if (!Number.isFinite(baseNumber)) {
     return {
       current: fallbackCurrent,
       next: fallbackCurrent,
-      last: "",
-      prefix: prefix || "",
+      last: '',
+      prefix: prefix || '',
       sequenceLength: resolvedLengthBase || 0,
     };
   }
@@ -85,24 +92,24 @@ export const buildSequencePreview = ({
     Math.max(
       normalizedCurrent.length,
       nextSequence?.normalizedDigits?.length ?? 0,
-      lastSequence?.normalizedDigits?.length ?? 0
+      lastSequence?.normalizedDigits?.length ?? 0,
     ),
-    sequenceLengthValue
+    sequenceLengthValue,
   );
 
-  const paddedCurrent = normalizedCurrent.padStart(resolvedLength, "0");
+  const paddedCurrent = normalizedCurrent.padStart(resolvedLength, '0');
   const paddedNext = nextSequence?.normalizedDigits
-    ? nextSequence.normalizedDigits.padStart(resolvedLength, "0")
+    ? nextSequence.normalizedDigits.padStart(resolvedLength, '0')
     : paddedCurrent;
   const paddedLast = lastSequence?.normalizedDigits
-    ? lastSequence.normalizedDigits.padStart(resolvedLength, "0")
-    : "";
+    ? lastSequence.normalizedDigits.padStart(resolvedLength, '0')
+    : '';
 
   return {
-    current: prefix ? `${prefix}${paddedCurrent}` : "",
-    next: prefix ? `${prefix}${paddedNext}` : "",
-    last: prefix && paddedLast ? `${prefix}${paddedLast}` : "",
-    prefix: prefix || "",
+    current: prefix ? `${prefix}${paddedCurrent}` : '',
+    next: prefix ? `${prefix}${paddedNext}` : '',
+    last: prefix && paddedLast ? `${prefix}${paddedLast}` : '',
+    prefix: prefix || '',
     sequenceLength: resolvedLength || 0,
   };
 };

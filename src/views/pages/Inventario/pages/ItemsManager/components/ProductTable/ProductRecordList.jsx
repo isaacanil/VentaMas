@@ -37,9 +37,9 @@ export const ProductRecordList = ({ products, searchTerm }) => {
         boxSizing: 'border-box',
       }}
     >
-      <div 
-        style={{ 
-          height: virtualizer.getTotalSize(), 
+      <div
+        style={{
+          height: virtualizer.getTotalSize(),
           width: '100%',
           position: 'relative',
         }}
@@ -54,7 +54,7 @@ export const ProductRecordList = ({ products, searchTerm }) => {
             width: '100%',
           }}
         >
-          {items.map(virtualItem => (
+          {items.map((virtualItem) => (
             <div
               key={virtualItem.key}
               data-index={virtualItem.index}
@@ -65,8 +65,8 @@ export const ProductRecordList = ({ products, searchTerm }) => {
                 boxSizing: 'border-box',
               }}
             >
-              <ProductItem 
-                data={data[virtualItem.index]} 
+              <ProductItem
+                data={data[virtualItem.index]}
                 taxReceiptEnabled={taxReceiptEnabled}
               />
             </div>
@@ -75,4 +75,4 @@ export const ProductRecordList = ({ products, searchTerm }) => {
       </div>
     </div>
   );
-}; 
+};

@@ -4,30 +4,31 @@ import styled from 'styled-components';
 import { SidebarItem } from './SidebarItem';
 
 export const Sidebar = ({ items }) => {
-    const [activeMenuIndex, setActiveMenuIndex] = useState(null);
+  const [activeMenuIndex, setActiveMenuIndex] = useState(null);
 
-    const handleMenuItemClick = (index) => {
-        if (activeMenuIndex === index) {
-            setActiveMenuIndex(null);
-        } else {
-            setActiveMenuIndex(index);
-        }
-    };
+  const handleMenuItemClick = (index) => {
+    if (activeMenuIndex === index) {
+      setActiveMenuIndex(null);
+    } else {
+      setActiveMenuIndex(index);
+    }
+  };
 
-    return (
-        <SidebarContainer>
-            <SidebarMenu>
-        {items && items.map((item, index) => (
-          <SidebarItem 
-            key={item.label + index}
-            item={item}
-            isActive={activeMenuIndex === index}
-            onClick={() => handleMenuItemClick(index)}
-          />
-        ))}
-            </SidebarMenu>
-        </SidebarContainer>
-    )
+  return (
+    <SidebarContainer>
+      <SidebarMenu>
+        {items &&
+          items.map((item, index) => (
+            <SidebarItem
+              key={item.label + index}
+              item={item}
+              isActive={activeMenuIndex === index}
+              onClick={() => handleMenuItemClick(index)}
+            />
+          ))}
+      </SidebarMenu>
+    </SidebarContainer>
+  );
 };
 
 const SidebarContainer = styled.div`
@@ -46,6 +47,6 @@ const SidebarMenu = styled.ul`
   margin: 0;
   padding: 0;
   display: grid;
- 
+
   gap: 1em;
 `;

@@ -2,7 +2,7 @@ const PX_PER_PT = 96 / 72;
 const FONT_FAMILY = 'Roboto, Arial, sans-serif';
 const FONT_WEIGHT_MAP = {
   bold: '700',
-  normal: '400'
+  normal: '400',
 };
 
 let cachedContext = null;
@@ -41,7 +41,7 @@ export const measurePreciseTextBlock = ({
   fontSize = 10,
   lineHeight = 1.15,
   maxWidth,
-  fontWeight = 'normal'
+  fontWeight = 'normal',
 }) => {
   if (!text) {
     return { lines: 0, height: 0 };

@@ -12,7 +12,6 @@ const ModalContainer = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 999;
-  
 `;
 
 const ModalWrapper = styled.div`
@@ -28,7 +27,6 @@ const ModalWrapper = styled.div`
 const ModalHeader = styled.h2`
   font-size: 24px;
   font-weight: 600;
-
 `;
 
 const ModalContent = styled.div`

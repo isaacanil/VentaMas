@@ -16,7 +16,9 @@ const FulfillModal = ({ open, onCancel, onConfirm, group, loading }) => {
 
   return (
     <Modal
-      title={group ? `Cubrir backorders · ${group.productName}` : 'Cubrir backorders'}
+      title={
+        group ? `Cubrir backorders · ${group.productName}` : 'Cubrir backorders'
+      }
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -24,7 +26,9 @@ const FulfillModal = ({ open, onCancel, onConfirm, group, loading }) => {
     >
       {!group ? null : (
         <Space direction="vertical" size={12} style={{ width: '100%' }}>
-          <Text type="secondary">Pendiente total: {pendingTotal} de {group.totalQuantity}</Text>
+          <Text type="secondary">
+            Pendiente total: {pendingTotal} de {group.totalQuantity}
+          </Text>
           <div>
             <Text style={{ marginRight: 8 }}>Cantidad a cubrir:</Text>
             <InputNumber
@@ -34,21 +38,38 @@ const FulfillModal = ({ open, onCancel, onConfirm, group, loading }) => {
               onChange={setAmount}
               disabled={loading}
             />
-            <Button style={{ marginLeft: 8 }} onClick={() => setAmount(max)} disabled={max === 0 || loading}>
+            <Button
+              style={{ marginLeft: 8 }}
+              onClick={() => setAmount(max)}
+              disabled={max === 0 || loading}
+            >
               Cubrir todo
             </Button>
           </div>
-          <Alert type="info" showIcon message="Se aplicará primero a los backorders más antiguos (FIFO)." />
+          <Alert
+            type="info"
+            showIcon
+            message="Se aplicará primero a los backorders más antiguos (FIFO)."
+          />
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <Button onClick={onCancel} disabled={loading}>Cancelar</Button>
-            <Button type="primary" disabled={!isValid || loading} loading={loading} onClick={async () => {
-              try {
-                await onConfirm(Number(amount));
-                setAmount(undefined); // limpiar para permitir nuevas entradas
-              } catch {
-                // no limpiar si falla
-              }
-            }}>Confirmar</Button>
+            <Button onClick={onCancel} disabled={loading}>
+              Cancelar
+            </Button>
+            <Button
+              type="primary"
+              disabled={!isValid || loading}
+              loading={loading}
+              onClick={async () => {
+                try {
+                  await onConfirm(Number(amount));
+                  setAmount(undefined); // limpiar para permitir nuevas entradas
+                } catch {
+                  // no limpiar si falla
+                }
+              }}
+            >
+              Confirmar
+            </Button>
           </div>
         </Space>
       )}

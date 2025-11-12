@@ -8,10 +8,7 @@ import { useState, useEffect, useRef } from 'react';
  * @returns {Object} - Estado del header y referencia del contenedor de scroll
  */
 const useScrollHeader = (options = {}) => {
-  const {
-    threshold = 50,
-    debounceDelay = 10
-  } = options;
+  const { threshold = 50, debounceDelay = 10 } = options;
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollY, setScrollY] = useState(0);
@@ -50,7 +47,7 @@ const useScrollHeader = (options = {}) => {
     isScrolled,
     scrollY,
     scrollContainerRef,
-    progress: Math.min(scrollY / threshold, 1) // Progreso de 0 a 1 para animaciones suaves
+    progress: Math.min(scrollY / threshold, 1), // Progreso de 0 a 1 para animaciones suaves
   };
 };
 

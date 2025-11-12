@@ -7,33 +7,33 @@ import { db } from '../../firebase/firebaseconfig';
 
 const items = [
   {
-      "warehouseId": "53swRgHW-61hnDCFy_rIf"
+    warehouseId: '53swRgHW-61hnDCFy_rIf',
   },
   {
-      "warehouseId": "53swRgHW-61hnDCFy_rIf",
-      "shelfId": "7W2jXNB2NyxxUXZ6QCdGN",
-      "rowShelfId": "dYELrOH0x8Yuh11dteBAr",
-      "segmentId": "O8P727_nkw2_B8WFCZ8hk"
+    warehouseId: '53swRgHW-61hnDCFy_rIf',
+    shelfId: '7W2jXNB2NyxxUXZ6QCdGN',
+    rowShelfId: 'dYELrOH0x8Yuh11dteBAr',
+    segmentId: 'O8P727_nkw2_B8WFCZ8hk',
   },
   {
-      "warehouseId": "VHQn9ErkMcFUetarA8mpa"
+    warehouseId: 'VHQn9ErkMcFUetarA8mpa',
   },
   {
-      "warehouseId": "NFtgFE2jA84sDQNew89Su"
+    warehouseId: 'NFtgFE2jA84sDQNew89Su',
   },
   {
-      "warehouseId": "53swRgHW-61hnDCFy_rIf",
-      "shelfId": "7W2jXNB2NyxxUXZ6QCdGN"
+    warehouseId: '53swRgHW-61hnDCFy_rIf',
+    shelfId: '7W2jXNB2NyxxUXZ6QCdGN',
   },
   {
-      "warehouseId": "53swRgHW-61hnDCFy_rIf",
-      "shelfId": "7W2jXNB2NyxxUXZ6QCdGN",
-      "rowShelfId": "dYELrOH0x8Yuh11dteBAr"
+    warehouseId: '53swRgHW-61hnDCFy_rIf',
+    shelfId: '7W2jXNB2NyxxUXZ6QCdGN',
+    rowShelfId: 'dYELrOH0x8Yuh11dteBAr',
   },
   {
-      "warehouseId": "Uds1FvnWTRbEiZP4diPuM"
-  }
-]
+    warehouseId: 'Uds1FvnWTRbEiZP4diPuM',
+  },
+];
 export const useGetWarehouseData = () => {
   const user = useSelector(selectUser);
   const memoizedUser = useMemo(() => user, [user]);
@@ -64,7 +64,7 @@ export const useGetWarehouseData = () => {
     for (const item of items) {
       try {
         let docPath = `businesses/${user.businessID}/warehouses/${item.warehouseId}`;
-        
+
         if (item.shelfId) {
           docPath += `/shelves/${item.shelfId}`;
           if (item.rowShelfId) {
@@ -86,7 +86,7 @@ export const useGetWarehouseData = () => {
           else if (item.warehouseId) warehouses.push(docData);
         }
       } catch (error) {
-        console.error("Error obteniendo el documento:", error);
+        console.error('Error obteniendo el documento:', error);
         setError(error);
       }
     }

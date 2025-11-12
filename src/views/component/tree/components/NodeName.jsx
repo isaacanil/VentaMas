@@ -41,7 +41,8 @@ const ThemeTag = styled.span`
   border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 600;
-  background-color: ${({ $background }) => $background || 'rgba(22, 119, 255, 0.16)'};
+  background-color: ${({ $background }) =>
+    $background || 'rgba(22, 119, 255, 0.16)'};
   color: ${({ $color }) => $color || '#0f172a'};
   line-height: 1.2;
   margin-top: 2px;
@@ -79,7 +80,7 @@ const NodeName = ({
   renderHighlightedText,
   themeStyles,
   extraDetails = [],
-  tooltipDetails = []
+  tooltipDetails = [],
 }) => {
   const renderContent = () => {
     if (isLoading) {
@@ -103,7 +104,12 @@ const NodeName = ({
 
   const summaryMeta = useMemo(() => {
     if (!config?.showLocationStockSummary) {
-      return { details: [], tooltipLines: [], directLabel: null, directEmpty: false };
+      return {
+        details: [],
+        tooltipLines: [],
+        directLabel: null,
+        directEmpty: false,
+      };
     }
     if (stockSummaryLoading) {
       return {
@@ -114,28 +120,50 @@ const NodeName = ({
       };
     }
     if (!stockSummary) {
-      return { details: [], tooltipLines: [], directLabel: null, directEmpty: false };
+      return {
+        details: [],
+        tooltipLines: [],
+        directLabel: null,
+        directEmpty: false,
+      };
     }
 
-    const totalLots = Number.isFinite(stockSummary.totalLots) ? stockSummary.totalLots : null;
-    const directLots = Number.isFinite(stockSummary.directLots) ? stockSummary.directLots : null;
-    const totalUnits = Number.isFinite(stockSummary.totalUnits) ? stockSummary.totalUnits : null;
-    const directUnits = Number.isFinite(stockSummary.directUnits) ? stockSummary.directUnits : null;
+    const totalLots = Number.isFinite(stockSummary.totalLots)
+      ? stockSummary.totalLots
+      : null;
+    const directLots = Number.isFinite(stockSummary.directLots)
+      ? stockSummary.directLots
+      : null;
+    const totalUnits = Number.isFinite(stockSummary.totalUnits)
+      ? stockSummary.totalUnits
+      : null;
+    const directUnits = Number.isFinite(stockSummary.directUnits)
+      ? stockSummary.directUnits
+      : null;
 
     const childLots =
-      totalLots !== null && directLots !== null ? Math.max(totalLots - directLots, 0) : null;
+      totalLots !== null && directLots !== null
+        ? Math.max(totalLots - directLots, 0)
+        : null;
     const childUnits =
-      totalUnits !== null && directUnits !== null ? Math.max(totalUnits - directUnits, 0) : null;
+      totalUnits !== null && directUnits !== null
+        ? Math.max(totalUnits - directUnits, 0)
+        : null;
 
     // Check if all values are 0
-    const allZero = 
+    const allZero =
       (totalLots === 0 || totalLots === null) &&
       (totalUnits === 0 || totalUnits === null) &&
       (directLots === 0 || directLots === null) &&
       (directUnits === 0 || directUnits === null);
 
     if (allZero) {
-      return { details: [], tooltipLines: [], directLabel: null, directEmpty: false };
+      return {
+        details: [],
+        tooltipLines: [],
+        directLabel: null,
+        directEmpty: false,
+      };
     }
 
     const details = [];
@@ -143,7 +171,8 @@ const NodeName = ({
 
     const buildLine = (label, lotsValue, unitsValue) => {
       const parts = [];
-      if (Number.isFinite(lotsValue) && lotsValue > 0) parts.push(formatLots(lotsValue));
+      if (Number.isFinite(lotsValue) && lotsValue > 0)
+        parts.push(formatLots(lotsValue));
       const unitLabel = formatUnits(unitsValue);
       if (unitLabel && unitsValue > 0) parts.push(unitLabel);
       if (parts.length) return `${label}: ${parts.join(' · ')}`;
@@ -153,14 +182,21 @@ const NodeName = ({
     const totalLine = buildLine('Inventario total', totalLots, totalUnits);
     if (totalLine) tooltipLines.push(totalLine);
 
-    const directLabel = Number.isFinite(directLots) ? formatLots(directLots) : null;
-    const directEmpty = Number.isFinite(directLots) ? (directLots ?? 0) <= 0 : false;
+    const directLabel = Number.isFinite(directLots)
+      ? formatLots(directLots)
+      : null;
+    const directEmpty = Number.isFinite(directLots)
+      ? (directLots ?? 0) <= 0
+      : false;
 
     const directLine = buildLine('Nivel actual', directLots, directUnits);
     if (directLine) tooltipLines.push(directLine);
 
     if (Number.isFinite(childLots) && (childLots ?? 0) > 0) {
-      details.push({ type: 'children', text: `Subniveles: ${formatLots(childLots)}` });
+      details.push({
+        type: 'children',
+        text: `Subniveles: ${formatLots(childLots)}`,
+      });
     }
 
     const childLine = buildLine('Subniveles', childLots, childUnits);
@@ -180,18 +216,25 @@ const NodeName = ({
     config?.disableStockSummaryTooltip,
     config?.showLocationStockSummary,
     stockSummary,
-    stockSummaryLoading
+    stockSummaryLoading,
   ]);
 
   const tooltipDetailsNormalized = useMemo(() => {
     if (!tooltipDetails) return [];
-    const list = Array.isArray(tooltipDetails) ? tooltipDetails : [tooltipDetails];
+    const list = Array.isArray(tooltipDetails)
+      ? tooltipDetails
+      : [tooltipDetails];
     return list
       .map((detail) => {
         if (detail === null || detail === undefined) return null;
         if (typeof detail === 'string') return detail;
-        if (typeof detail === 'number' || typeof detail === 'boolean') return String(detail);
-        if (detail && typeof detail === 'object' && typeof detail.text === 'string') {
+        if (typeof detail === 'number' || typeof detail === 'boolean')
+          return String(detail);
+        if (
+          detail &&
+          typeof detail === 'object' &&
+          typeof detail.text === 'string'
+        ) {
           return detail.text;
         }
         return null;
@@ -210,7 +253,9 @@ const NodeName = ({
         <div key={`${line}-${idx}`}>{line}</div>
       ))}
     </div>
-  ) : title;
+  ) : (
+    title
+  );
 
   const normalizedExtraDetails = useMemo(() => {
     if (!extraDetails) return [];
@@ -235,10 +280,12 @@ const NodeName = ({
       return [{ text: extraDetails, type: 'default' }];
     }
     if (extraDetails && typeof extraDetails === 'object') {
-      return [{
-        text: extraDetails.text,
-        type: extraDetails.type || 'default',
-      }];
+      return [
+        {
+          text: extraDetails.text,
+          type: extraDetails.type || 'default',
+        },
+      ];
     }
     return [];
   }, [extraDetails]);
@@ -307,13 +354,15 @@ NodeName.propTypes = {
     accentColor: PropTypes.string,
   }),
   extraDetails: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.shape({
-        text: PropTypes.string,
-        type: PropTypes.string,
-      }),
-    ])),
+    PropTypes.arrayOf(
+      PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+          text: PropTypes.string,
+          type: PropTypes.string,
+        }),
+      ]),
+    ),
     PropTypes.string,
     PropTypes.shape({
       text: PropTypes.string,
@@ -321,13 +370,15 @@ NodeName.propTypes = {
     }),
   ]),
   tooltipDetails: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-      PropTypes.shape({
-        text: PropTypes.string,
-      }),
-    ])),
+    PropTypes.arrayOf(
+      PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.shape({
+          text: PropTypes.string,
+        }),
+      ]),
+    ),
     PropTypes.string,
     PropTypes.number,
     PropTypes.shape({

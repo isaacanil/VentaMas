@@ -12,11 +12,20 @@ import { getInsurance } from '../../insurance/services/insurance.service.js';
  * @param {string} accountReceivableId
  * @returns {Promise<FirebaseFirestore.DocumentSnapshot>}
  */
-export async function getAccountReceivableDocFromTx(tx, businessID, accountReceivableId) {
-  const ref = db.doc(`businesses/${businessID}/accountsReceivable/${accountReceivableId}`);
+export async function getAccountReceivableDocFromTx(
+  tx,
+  businessID,
+  accountReceivableId,
+) {
+  const ref = db.doc(
+    `businesses/${businessID}/accountsReceivable/${accountReceivableId}`,
+  );
   const snap = await tx.get(ref);
   if (!snap.exists) {
-    throw new https.HttpsError('not-found', `Cuenta por cobrar ${accountReceivableId} no encontrada`);
+    throw new https.HttpsError(
+      'not-found',
+      `Cuenta por cobrar ${accountReceivableId} no encontrada`,
+    );
   }
   return snap;
 }
@@ -28,11 +37,20 @@ export async function getAccountReceivableDocFromTx(tx, businessID, accountRecei
  * @param {string} installmentId
  * @returns {Promise<FirebaseFirestore.DocumentSnapshot>}
  */
-export async function getInstallmentReceivableDocFromTx(tx, businessID, installmentId) {
-  const ref = db.doc(`businesses/${businessID}/accountsReceivableInstallments/${installmentId}`);
+export async function getInstallmentReceivableDocFromTx(
+  tx,
+  businessID,
+  installmentId,
+) {
+  const ref = db.doc(
+    `businesses/${businessID}/accountsReceivableInstallments/${installmentId}`,
+  );
   const snap = await tx.get(ref);
   if (!snap.exists) {
-    throw new https.HttpsError('not-found', `Cuota ${installmentId} no encontrada`);
+    throw new https.HttpsError(
+      'not-found',
+      `Cuota ${installmentId} no encontrada`,
+    );
   }
   return snap;
 }
@@ -53,13 +71,15 @@ export default receivableQueries;
  * @returns {Promise<Array<{ ar:object; arSnap:DocumentSnapshot; installmentSnaps:FirebaseFirestore.DocumentSnapshot[] }>>}
  */
 export async function collectReceivablePrereqs(tx, { user, insuranceId }) {
-
-  const accountReceivableNextIDSnap = await getNextIDTransactionalSnap(tx, user, 'lastAccountReceivableId');
-  const insurance = getInsurance(tx, {user, insuranceId});
+  const accountReceivableNextIDSnap = await getNextIDTransactionalSnap(
+    tx,
+    user,
+    'lastAccountReceivableId',
+  );
+  const insurance = getInsurance(tx, { user, insuranceId });
 
   return {
     accountReceivableNextIDSnap,
     insurance,
-  }
+  };
 }
-

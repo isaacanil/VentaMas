@@ -1,19 +1,35 @@
-import { Button, InputNumber, Form, Modal, Select, message, Spin, Alert, Progress } from "antd";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styled from "styled-components";
+import {
+  Button,
+  InputNumber,
+  Form,
+  Modal,
+  Select,
+  message,
+  Spin,
+  Alert,
+  Progress,
+} from 'antd';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { closeProductStock, selectProductStock, setProductStockClear, updateProductStockFormData, openProductStock } from "../../../../../../../features/productStock/productStockSlice";
-import { selectWarehouse } from "../../../../../../../features/warehouse/warehouseSlice";
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import {
+  closeProductStock,
+  selectProductStock,
+  setProductStockClear,
+  updateProductStockFormData,
+  openProductStock,
+} from '../../../../../../../features/productStock/productStockSlice';
+import { selectWarehouse } from '../../../../../../../features/warehouse/warehouseSlice';
 import {
   createProductStock,
   updateProductStock,
   useListenProductsStock,
-} from "../../../../../../../firebase/warehouse/productStockService";
-import { useGetProductsWithBatch } from "../../../../../../../hooks/products/useGetProductsWithBatch";
-import useListenBatches from "../../../../../../../hooks/products/useListenBatch";
-import { useFormatNumber } from "../../../../../../../hooks/useFormatNumber";
+} from '../../../../../../../firebase/warehouse/productStockService';
+import { useGetProductsWithBatch } from '../../../../../../../hooks/products/useGetProductsWithBatch';
+import useListenBatches from '../../../../../../../hooks/products/useListenBatch';
+import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber';
 
 const { Option } = Select;
 
@@ -33,7 +49,7 @@ const StyledButton = styled(Button)`
 
 const getLocationPath = (warehouseId, shelfId, rowId, segmentId) => {
   if (!warehouseId) {
-    throw new Error("warehouseId is required to determine the location path.");
+    throw new Error('warehouseId is required to determine the location path.');
   }
 
   let path = [warehouseId];
@@ -43,27 +59,49 @@ const getLocationPath = (warehouseId, shelfId, rowId, segmentId) => {
   if (segmentId) path.push(segmentId);
 
   return path.join('/');
-}
+};
 
 export function ProductStockForm() {
   const dispatch = useDispatch();
   const [form] = Form.useForm();
 
   const user = useSelector(selectUser);
-  const { isOpen, formData } = useSelector(selectProductStock)
-  const { selectedWarehouse: warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf, selectedSegment: segment } = useSelector(selectWarehouse);
-  const { warehouseId, shelfId, rowId, segmentId } = { warehouseId: warehouse?.id, shelfId: shelf?.id, rowId: rowShelf?.id, segmentId: segment?.id };
+  const { isOpen, formData } = useSelector(selectProductStock);
+  const {
+    selectedWarehouse: warehouse,
+    selectedShelf: shelf,
+    selectedRowShelf: rowShelf,
+    selectedSegment: segment,
+  } = useSelector(selectWarehouse);
+  const { warehouseId, shelfId, rowId, segmentId } = {
+    warehouseId: warehouse?.id,
+    shelfId: shelf?.id,
+    rowId: rowShelf?.id,
+    segmentId: segment?.id,
+  };
 
   const { productId, batchId, stock: formStock, locationId } = formData;
 
-  const { products, error: productsError, loading: productsLoading } = useGetProductsWithBatch();
-  const { batches, error: batchesError, loading: batchesLoading } = useListenBatches(user, formData?.productId);
+  const {
+    products,
+    error: productsError,
+    loading: productsLoading,
+  } = useGetProductsWithBatch();
+  const {
+    batches,
+    error: batchesError,
+    loading: batchesLoading,
+  } = useListenBatches(user, formData?.productId);
   const { data: productsStock } = useListenProductsStock(productId);
 
   const productsList = Array.isArray(products) ? products : [];
   const batchesList = Array.isArray(batches) ? batches : [];
-  const productsErrorMessage = productsError ? (productsError.message ?? String(productsError)) : null;
-  const batchesErrorMessage = batchesError ? (batchesError.message ?? String(batchesError)) : null;
+  const productsErrorMessage = productsError
+    ? (productsError.message ?? String(productsError))
+    : null;
+  const batchesErrorMessage = batchesError
+    ? (batchesError.message ?? String(batchesError))
+    : null;
 
   const isLoading = productsLoading || batchesLoading;
 
@@ -76,56 +114,74 @@ export function ProductStockForm() {
 
   const stockDifference = (formStock || 0) + totalStockFromProducts;
   const remainingStock = totalStockFromBatches - stockDifference;
-  const isStockAvailable = Boolean(batchId && totalStockFromBatches - totalStockFromProducts > 0);
-  const stockUsagePercent = totalStockFromBatches > 0 ? Number(((stockDifference / totalStockFromBatches) * 100).toFixed(2)) : 0;
+  const isStockAvailable = Boolean(
+    batchId && totalStockFromBatches - totalStockFromProducts > 0,
+  );
+  const stockUsagePercent =
+    totalStockFromBatches > 0
+      ? Number(((stockDifference / totalStockFromBatches) * 100).toFixed(2))
+      : 0;
   const formattedStockDifference = useFormatNumber(stockDifference);
   const formattedTotalStock = useFormatNumber(totalStockFromBatches);
 
   useEffect(() => {
     if (isOpen && warehouseId) {
-      dispatch(updateProductStockFormData({
-        path: getLocationPath(warehouseId, shelfId, rowId, segmentId),
-      }
-      ));
+      dispatch(
+        updateProductStockFormData({
+          path: getLocationPath(warehouseId, shelfId, rowId, segmentId),
+        }),
+      );
     }
   }, [isOpen, warehouseId, shelfId, rowId, segmentId]);
 
   const handleProductChange = (productId) => {
     const product = productsList.find((product) => product.id === productId);
-    dispatch(updateProductStockFormData({
-      productId,
-      productName: product?.name || "",
-      batchId: "",
-    }));
+    dispatch(
+      updateProductStockFormData({
+        productId,
+        productName: product?.name || '',
+        batchId: '',
+      }),
+    );
   };
   const handleBatchChange = (batchId) => {
-    const existingProductStock = productsStock?.find((product) => product.batchId === batchId && product.location.id === locationId);
+    const existingProductStock = productsStock?.find(
+      (product) =>
+        product.batchId === batchId && product.location.id === locationId,
+    );
     if (existingProductStock) {
       Modal.confirm({
-        title: "Este batch ya existe en la ubicación actual",
-        content: "¿Deseas actualizar el stock existente en lugar de agregar uno nuevo?",
-        okText: "Sí, actualizar",
-        cancelText: "No",
+        title: 'Este batch ya existe en la ubicación actual',
+        content:
+          '¿Deseas actualizar el stock existente en lugar de agregar uno nuevo?',
+        okText: 'Sí, actualizar',
+        cancelText: 'No',
         onOk: () => {
           dispatch(openProductStock(existingProductStock));
         },
         onCancel: () => {
-          dispatch(updateProductStockFormData({
-            batchId,
-          }));
+          dispatch(
+            updateProductStockFormData({
+              batchId,
+            }),
+          );
         },
       });
     } else {
-      dispatch(updateProductStockFormData({
-        batchId,
-      }));
+      dispatch(
+        updateProductStockFormData({
+          batchId,
+        }),
+      );
     }
   };
 
   const handleStockChange = (value) => {
-    dispatch(updateProductStockFormData({
-      stock: value,
-    }));
+    dispatch(
+      updateProductStockFormData({
+        stock: value,
+      }),
+    );
   };
 
   const handleSubmit = async () => {
@@ -133,15 +189,15 @@ export function ProductStockForm() {
       await form.validateFields();
 
       if (!formData.productId) {
-        message.error("Por favor, selecciona un producto.");
+        message.error('Por favor, selecciona un producto.');
         return;
       }
       if (batchesList.length > 0 && !formData.batchId) {
-        message.error("Por favor, selecciona un batch.");
+        message.error('Por favor, selecciona un batch.');
         return;
       }
       if (formData.stock <= 0 || isNaN(formData.stock)) {
-        message.error("La cantidad de stock no puede ser negativa o cero.");
+        message.error('La cantidad de stock no puede ser negativa o cero.');
         return;
       }
 
@@ -153,20 +209,20 @@ export function ProductStockForm() {
           stock: updatedStock,
         };
         await updateProductStock(user, updatedData);
-        message.success("Stock actualizado exitosamente.");
+        message.success('Stock actualizado exitosamente.');
       } else {
         // Si no existe, crear un nuevo registro de stock
         const data = {
           ...formData,
         };
         await createProductStock(user, data);
-        message.success("Producto creado exitosamente.");
+        message.success('Producto creado exitosamente.');
       }
 
-      handleClose();// Cerrar el modal después de enviar
+      handleClose(); // Cerrar el modal después de enviar
     } catch (error) {
       console.error(error);
-      message.error("Ocurrió un error al procesar la solicitud.");
+      message.error('Ocurrió un error al procesar la solicitud.');
     }
   };
 
@@ -177,7 +233,11 @@ export function ProductStockForm() {
 
   return (
     <Modal
-      title={formData.id ? "Actualizar Producto en Stock" : "Agregar Producto en Stock"}
+      title={
+        formData.id
+          ? 'Actualizar Producto en Stock'
+          : 'Agregar Producto en Stock'
+      }
       open={isOpen}
       onCancel={handleClose}
       footer={null}
@@ -185,10 +245,22 @@ export function ProductStockForm() {
     >
       <Spin spinning={isLoading}>
         {productsErrorMessage && (
-          <Alert message="Error al cargar productos" description={productsErrorMessage} type="error" showIcon style={{ marginBottom: 16 }} />
+          <Alert
+            message="Error al cargar productos"
+            description={productsErrorMessage}
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
         )}
         {batchesErrorMessage && (
-          <Alert message="Error al cargar lotes" description={batchesErrorMessage} type="error" showIcon style={{ marginBottom: 16 }} />
+          <Alert
+            message="Error al cargar lotes"
+            description={batchesErrorMessage}
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
         )}
         <FormContainer form={form} layout="vertical" onFinish={handleSubmit}>
           {/* Selección de Producto */}
@@ -196,7 +268,9 @@ export function ProductStockForm() {
             label="Producto"
             required
             tooltip="Selecciona el producto correspondiente"
-            rules={[{ required: true, message: 'Por favor selecciona un producto' }]}
+            rules={[
+              { required: true, message: 'Por favor selecciona un producto' },
+            ]}
           >
             <Select
               showSearch
@@ -204,7 +278,9 @@ export function ProductStockForm() {
               optionFilterProp="children"
               onChange={handleProductChange}
               filterOption={(input, option) =>
-                String(option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+                String(option?.children ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
               value={formData.productId || undefined}
               allowClear
@@ -223,7 +299,9 @@ export function ProductStockForm() {
               label="Batch"
               required
               tooltip="Selecciona el batch correspondiente"
-              rules={[{ required: true, message: 'Por favor selecciona un batch' }]}
+              rules={[
+                { required: true, message: 'Por favor selecciona un batch' },
+              ]}
             >
               <Select
                 showSearch
@@ -231,7 +309,9 @@ export function ProductStockForm() {
                 optionFilterProp="children"
                 onChange={handleBatchChange}
                 filterOption={(input, option) =>
-                  String(option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+                  String(option?.children ?? '')
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
                 }
                 value={formData.batchId || undefined}
                 allowClear
@@ -250,23 +330,45 @@ export function ProductStockForm() {
               label="Cantidad de Stock"
               required
               tooltip="Ingresa la cantidad de stock disponible"
-              rules={[{ required: true, message: 'Por favor ingresa la cantidad de stock' }]}
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor ingresa la cantidad de stock',
+                },
+              ]}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: '1em' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '1em' }}
+              >
                 <InputNumber
                   min={0}
-                  max={Math.max(totalStockFromBatches - totalStockFromProducts, 0)}
-                  style={{ width: "100%" }}
+                  max={Math.max(
+                    totalStockFromBatches - totalStockFromProducts,
+                    0,
+                  )}
+                  style={{ width: '100%' }}
                   value={formData.stock}
                   onChange={handleStockChange}
                 />
-                <span style={{ whiteSpace: 'nowrap', color: remainingStock < 0 ? 'red' : 'black' }}>
+                <span
+                  style={{
+                    whiteSpace: 'nowrap',
+                    color: remainingStock < 0 ? 'red' : 'black',
+                  }}
+                >
                   {` (Máximo: ${totalStockFromBatches - totalStockFromProducts})`}
                 </span>
               </div>
             </Form.Item>
-          ) : batchId && (
-            <Alert message="El máximo disponible ha sido alcanzado. Por favor intenta con otro producto o lote." type="warning" showIcon style={{ marginBottom: 16 }} />
+          ) : (
+            batchId && (
+              <Alert
+                message="El máximo disponible ha sido alcanzado. Por favor intenta con otro producto o lote."
+                type="warning"
+                showIcon
+                style={{ marginBottom: 16 }}
+              />
+            )
           )}
 
           {isStockAvailable && (
@@ -275,11 +377,20 @@ export function ProductStockForm() {
               tooltip="Este es el stock total disponible del batch seleccionado y otros productos"
             >
               <div>
-                <Progress percent={Math.max(0, Math.min(100, stockUsagePercent))} status={remainingStock < 0 ? 'exception' : 'normal'} />
-                <span>{formattedStockDifference}</span>/<span>{formattedTotalStock}</span>
+                <Progress
+                  percent={Math.max(0, Math.min(100, stockUsagePercent))}
+                  status={remainingStock < 0 ? 'exception' : 'normal'}
+                />
+                <span>{formattedStockDifference}</span>/
+                <span>{formattedTotalStock}</span>
               </div>
               {remainingStock < 0 && (
-                <Alert message="El stock ingresado excede el total disponible. Por favor ajusta la cantidad." type="error" showIcon style={{ marginTop: 8 }} />
+                <Alert
+                  message="El stock ingresado excede el total disponible. Por favor ajusta la cantidad."
+                  type="error"
+                  showIcon
+                  style={{ marginTop: 8 }}
+                />
               )}
             </Form.Item>
           )}
@@ -290,7 +401,7 @@ export function ProductStockForm() {
             htmlType="submit"
             disabled={isLoading || remainingStock < 0 || !isStockAvailable}
           >
-            {formData.id ? "Actualizar" : "Agregar"}
+            {formData.id ? 'Actualizar' : 'Agregar'}
           </StyledButton>
         </FormContainer>
       </Spin>

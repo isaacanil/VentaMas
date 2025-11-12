@@ -1,8 +1,8 @@
-import { faPlusCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import * as antd from "antd";
-import React, { useState } from "react";
-import styled from "styled-components";
+import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from 'antd';
+import React, { useState } from 'react';
+import styled from 'styled-components';
 
 const { Button, List, Pagination } = antd;
 // Estilos personalizados usando styled-components
@@ -39,7 +39,12 @@ const SectionFooter = styled.div`
   margin-top: 10px;
 `;
 
-export default function SectionContainer({ title, items = [], onAdd, renderItem }) {
+export default function SectionContainer({
+  title,
+  items = [],
+  onAdd,
+  renderItem,
+}) {
   const [currentPage, setCurrentPage] = useState(1); // Página actual
   const pageSize = 5; // Número de elementos por página
 
@@ -48,7 +53,10 @@ export default function SectionContainer({ title, items = [], onAdd, renderItem 
   const totalPages = Math.ceil(totalItems / pageSize);
 
   // Filtrar los elementos que se mostrarán en la página actual
-  const paginatedItems = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedItems = items.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   // Cambiar la página actual
   const handlePageChange = (page) => {
@@ -59,7 +67,11 @@ export default function SectionContainer({ title, items = [], onAdd, renderItem 
     <Container>
       <SectionHeader>
         <SectionTitle>{title}</SectionTitle>
-        <AddButton type="primary" icon={<FontAwesomeIcon icon={faPlusCircle} />} onClick={onAdd}>
+        <AddButton
+          type="primary"
+          icon={<FontAwesomeIcon icon={faPlusCircle} />}
+          onClick={onAdd}
+        >
           Añadir
         </AddButton>
       </SectionHeader>

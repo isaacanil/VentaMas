@@ -6,7 +6,10 @@ import { selectUser } from '../features/auth/userSlice';
 import { selectTaxReceiptEnabled } from '../features/taxReceipt/taxReceiptSlice';
 import { fbGetFiscalAlertsConfig } from '../firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig';
 import { fbGetTaxReceipt } from '../firebase/taxReceipt/fbGetTaxReceipt';
-import { generateFiscalReceiptsWidgetData, processFiscalReceipts } from '../utils/fiscalReceiptsUtils';
+import {
+  generateFiscalReceiptsWidgetData,
+  processFiscalReceipts,
+} from '../utils/fiscalReceiptsUtils';
 
 /**
  * Hook personalizado para manejar las alertas de comprobantes fiscales
@@ -19,7 +22,7 @@ export const useFiscalReceiptsAlerts = () => {
   const [shouldShowNotification, setShouldShowNotification] = useState(false);
   const [alertConfig, setAlertConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
-  
+
   // Use useRef to store lastCheck to avoid circular dependencies
   const lastCheckRef = useRef(null);
 
@@ -38,9 +41,9 @@ export const useFiscalReceiptsAlerts = () => {
             alertsEnabled: true,
             globalThresholds: {
               warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
-              critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD
+              critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
             },
-            customThresholds: {}
+            customThresholds: {},
           });
         } finally {
           setLoadingConfig(false);
@@ -51,9 +54,9 @@ export const useFiscalReceiptsAlerts = () => {
           alertsEnabled: true,
           globalThresholds: {
             warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
-            critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD
+            critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
           },
-          customThresholds: {}
+          customThresholds: {},
         });
         setLoadingConfig(false);
       }
@@ -76,7 +79,7 @@ export const useFiscalReceiptsAlerts = () => {
           message: 'Cargando configuración de alertas...',
           percentage: 0,
           seriesInfo: 'Cargando...',
-          hasIssues: false
+          hasIssues: false,
         },
         analysis: {
           receipts: [],
@@ -88,9 +91,9 @@ export const useFiscalReceiptsAlerts = () => {
             warningReceipts: 0,
             totalRemaining: 0,
             lowestRemaining: null,
-            mostCritical: null
-          }
-        }
+            mostCritical: null,
+          },
+        },
       };
     }
 
@@ -101,10 +104,11 @@ export const useFiscalReceiptsAlerts = () => {
         widgetData: {
           title: 'Comprobantes Fiscales',
           alertType: 'info',
-          message: 'Los comprobantes fiscales están deshabilitados o no configurados.',
+          message:
+            'Los comprobantes fiscales están deshabilitados o no configurados.',
           percentage: 0,
           seriesInfo: 'No configurado',
-          hasIssues: false
+          hasIssues: false,
         },
         analysis: {
           receipts: [],
@@ -116,9 +120,9 @@ export const useFiscalReceiptsAlerts = () => {
             warningReceipts: 0,
             totalRemaining: 0,
             lowestRemaining: null,
-            mostCritical: null
-          }
-        }
+            mostCritical: null,
+          },
+        },
       };
     }
 
@@ -133,7 +137,7 @@ export const useFiscalReceiptsAlerts = () => {
           message: 'Las alertas de comprobantes están desactivadas.',
           percentage: 0,
           seriesInfo: 'Alertas desactivadas',
-          hasIssues: false
+          hasIssues: false,
         },
         analysis: {
           receipts: [],
@@ -145,22 +149,28 @@ export const useFiscalReceiptsAlerts = () => {
             warningReceipts: 0,
             totalRemaining: 0,
             lowestRemaining: null,
-            mostCritical: null
-          }
-        }
+            mostCritical: null,
+          },
+        },
       };
     }
 
     // Procesar con configuración personalizada
     const analysis = processFiscalReceipts(taxReceipt, alertConfig);
-    const widgetData = generateFiscalReceiptsWidgetData(taxReceipt, alertConfig);
+    const widgetData = generateFiscalReceiptsWidgetData(
+      taxReceipt,
+      alertConfig,
+    );
     const hasIssues = analysis.summary.receiptsNeedingAttention > 0;
-    
+
     // Detectar si hay cambios desde la última verificación usando ref
     const currentMostCritical = analysis.summary.mostCritical;
-    const hasChanges = lastCheckRef.current && currentMostCritical && 
-      (lastCheckRef.current.remainingNumbers !== currentMostCritical.remainingNumbers ||
-       lastCheckRef.current.alertLevel !== currentMostCritical.alertLevel);
+    const hasChanges =
+      lastCheckRef.current &&
+      currentMostCritical &&
+      (lastCheckRef.current.remainingNumbers !==
+        currentMostCritical.remainingNumbers ||
+        lastCheckRef.current.alertLevel !== currentMostCritical.alertLevel);
 
     return {
       hasIssues,
@@ -169,15 +179,18 @@ export const useFiscalReceiptsAlerts = () => {
       analysis,
       isEnabled: taxReceiptEnabled,
       isLoading: false,
-      configLoaded: true
+      configLoaded: true,
     };
   }, [taxReceipt, taxReceiptEnabled, isLoading, alertConfig, loadingConfig]); // Removed lastCheck from dependencies
 
   // Efecto para manejar notificaciones automáticas
   useEffect(() => {
-    if (fiscalData.hasIssues && FISCAL_RECEIPTS_ALERT_CONFIG.NOTIFICATIONS.SHOW_POPUP_ON_CRITICAL) {
+    if (
+      fiscalData.hasIssues &&
+      FISCAL_RECEIPTS_ALERT_CONFIG.NOTIFICATIONS.SHOW_POPUP_ON_CRITICAL
+    ) {
       const criticalReceipts = fiscalData.analysis.summary.criticalReceipts;
-      
+
       if (criticalReceipts > 0) {
         setShouldShowNotification(true);
       }
@@ -197,23 +210,23 @@ export const useFiscalReceiptsAlerts = () => {
   };
 
   const getReceiptsByAlertLevel = (level) => {
-    return fiscalData.analysis.receipts.filter(receipt => 
-      receipt.isActive && receipt.alertLevel === level
+    return fiscalData.analysis.receipts.filter(
+      (receipt) => receipt.isActive && receipt.alertLevel === level,
     );
   };
 
   const getMostUrgentReceipt = () => {
     const critical = getReceiptsByAlertLevel('critical');
     if (critical.length > 0) {
-      return critical.reduce((min, receipt) => 
-        receipt.remainingNumbers < min.remainingNumbers ? receipt : min
+      return critical.reduce((min, receipt) =>
+        receipt.remainingNumbers < min.remainingNumbers ? receipt : min,
       );
     }
 
     const warning = getReceiptsByAlertLevel('warning');
     if (warning.length > 0) {
-      return warning.reduce((min, receipt) => 
-        receipt.remainingNumbers < min.remainingNumbers ? receipt : min
+      return warning.reduce((min, receipt) =>
+        receipt.remainingNumbers < min.remainingNumbers ? receipt : min,
       );
     }
 
@@ -222,14 +235,14 @@ export const useFiscalReceiptsAlerts = () => {
 
   const getAlertSummary = () => {
     const { summary } = fiscalData.analysis;
-    
+
     return {
       totalActive: summary.activeReceipts,
       needingAttention: summary.receiptsNeedingAttention,
       critical: summary.criticalReceipts,
       warning: summary.warningReceipts,
       totalRemaining: summary.totalRemaining,
-      hasAnyIssues: fiscalData.hasIssues
+      hasAnyIssues: fiscalData.hasIssues,
     };
   };
 
@@ -244,10 +257,15 @@ export const useFiscalReceiptsAlerts = () => {
       total: receipt.totalNumbers,
       percentage: receipt.percentageRemaining,
       alertLevel: receipt.alertLevel,
-      isUrgent: receipt.remainingNumbers <= (receipt.thresholds?.critical || 50),
+      isUrgent:
+        receipt.remainingNumbers <= (receipt.thresholds?.critical || 50),
       displayText: `${receipt.name} (Serie ${receipt.series}): ${receipt.remainingNumbers} restantes`,
-      statusText: receipt.alertLevel === 'critical' ? 'Crítico' : 
-                  receipt.alertLevel === 'warning' ? 'Advertencia' : 'Normal'
+      statusText:
+        receipt.alertLevel === 'critical'
+          ? 'Crítico'
+          : receipt.alertLevel === 'warning'
+            ? 'Advertencia'
+            : 'Normal',
     };
   };
 
@@ -258,26 +276,26 @@ export const useFiscalReceiptsAlerts = () => {
     hasIssues: fiscalData.hasIssues,
     hasChanges: fiscalData.hasChanges,
     configLoaded: fiscalData.configLoaded,
-    
+
     // Datos para widgets/componentes
     widgetData: fiscalData.widgetData,
     analysis: fiscalData.analysis,
     alertConfig: alertConfig, // Exponer la configuración cargada
-    
+
     // Funciones utilitarias
     getReceiptsByAlertLevel,
     getMostUrgentReceipt,
     getAlertSummary,
     formatReceiptForDisplay,
-    
+
     // Notificaciones
     shouldShowNotification,
     dismissNotification,
-    
+
     // Datos específicos
     criticalReceipts: getReceiptsByAlertLevel('critical'),
     warningReceipts: getReceiptsByAlertLevel('warning'),
     mostUrgent: getMostUrgentReceipt(),
-    alertSummary: getAlertSummary()
+    alertSummary: getAlertSummary(),
   };
 };

@@ -7,7 +7,7 @@ import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCount
 
 import ItemRow from './components/ItemRow';
 
-const columnByWidth =  {
+const columnByWidth = {
   600: 1,
   900: 2,
   1100: 3,
@@ -16,9 +16,7 @@ const columnByWidth =  {
   2100: 6,
   2400: 7,
   2700: 8,
-}
-
-
+};
 
 const getColumns = (width) => {
   const columns = Object.keys(columnByWidth).find((w) => w > width);
@@ -39,7 +37,7 @@ export function ProductControlEfficient({ products }) {
 
 const Container = styled.div`
   height: 100%;
-  background-color: ${props => props.theme.bg.color2}; 
+  background-color: ${(props) => props.theme.bg.color2};
   overflow: hidden;
   border-radius: var(--border-radius-light);
   display: grid;
@@ -47,9 +45,9 @@ const Container = styled.div`
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
-  
+
   position: relative;
-`
+`;
 
 const ProductList = ({ products }) => {
   const parentRef = useRef();
@@ -84,11 +82,7 @@ const ProductList = ({ products }) => {
     estimateSize: () => cellHeight, // Altura estimada de cada "fila"
   });
   return (
-    <ProductsListContainer
-      ref={parentRef}
-      listContainer={listContainerHeight}
-
-    >
+    <ProductsListContainer ref={parentRef} listContainer={listContainerHeight}>
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
@@ -96,27 +90,24 @@ const ProductList = ({ products }) => {
           position: 'relative',
         }}
       >
-        {
-          rowVirtualizer.getVirtualItems()
-            .map(virtualRow => (
-              <ItemRow
-                key={virtualRow.key}
-                columns={columns}
-                top={virtualRow.start}
-                height={cellHeight}
-                products={products}
-                virtualRow={virtualRow}
-              />
-            ))
-        }
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+          <ItemRow
+            key={virtualRow.key}
+            columns={columns}
+            top={virtualRow.start}
+            height={cellHeight}
+            products={products}
+            virtualRow={virtualRow}
+          />
+        ))}
       </div>
     </ProductsListContainer>
-  )
-}
+  );
+};
 
 const ProductsListContainer = styled.div`
-  height:  calc(100vh - 8.41em);
-  @media ( width > 800px){
+  height: calc(100vh - 8.41em);
+  @media (width > 800px) {
     height: calc(100vh - 5.3em);
   }
 
@@ -127,7 +118,7 @@ const ProductsListContainer = styled.div`
   overflow: auto;
   width: 100%;
   background-color: var(--color2);
-`
+`;
 // import { useVirtualizer } from '@tanstack/react-virtual';
 // import { useEffect, useRef, useState } from 'react';
 // import { Product } from '../../../../templates/system/Product/Product/Product';
@@ -149,8 +140,6 @@ const ProductsListContainer = styled.div`
 //   2700: 8,
 // }
 
-
-
 // const getColumns = (width) => {
 //   const columns = Object.keys(columnByWidth).find((w) => w > width);
 //   return columnByWidth[columns];
@@ -170,7 +159,7 @@ const ProductsListContainer = styled.div`
 
 // const Container = styled.div`
 //   height: 100%;
-//   background-color: ${props => props.theme.bg.color2}; 
+//   background-color: ${props => props.theme.bg.color2};
 //   overflow: hidden;
 //   border-radius: var(--border-radius-light);
 //   display: grid;
@@ -178,7 +167,7 @@ const ProductsListContainer = styled.div`
 //   border-top-left-radius: 0;
 //   border-bottom-right-radius: 0;
 //   border-bottom-left-radius: 0;
-  
+
 //   position: relative;
 // `
 

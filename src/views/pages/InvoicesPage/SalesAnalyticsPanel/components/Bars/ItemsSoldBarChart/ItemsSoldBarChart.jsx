@@ -1,6 +1,12 @@
-import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js";
+import {
+  LinearScale,
+  CategoryScale,
+  BarElement,
+  Chart,
+  Tooltip,
+} from 'chart.js';
 import React, { useMemo } from 'react';
-import { Bar } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
@@ -29,7 +35,7 @@ const options = {
 
 const accumulateItemsSoldData = (sales) => {
   return sales.reduce((acc, sale) => {
-    sale.data.products.forEach(product => {
+    sale.data.products.forEach((product) => {
       const category = product.category;
       acc[category] = (acc[category] || 0) + product.amountToBuy.total;
     });
@@ -37,32 +43,37 @@ const accumulateItemsSoldData = (sales) => {
   }, {});
 };
 
-export const ItemsSoldBarChart = ({sales}) => {
+export const ItemsSoldBarChart = ({ sales }) => {
   if (!sales || !Array.isArray(sales)) {
-      return null;  // or some fallback UI
-    }
+    return null; // or some fallback UI
+  }
 
-  const itemsSoldByCategory = useMemo(() => accumulateItemsSoldData(sales), [sales]);
+  const itemsSoldByCategory = useMemo(
+    () => accumulateItemsSoldData(sales),
+    [sales],
+  );
 
   const data = useMemo(() => {
     const labels = Object.keys(itemsSoldByCategory);
-    const dataTotals = labels.map(label => itemsSoldByCategory[label]);
+    const dataTotals = labels.map((label) => itemsSoldByCategory[label]);
 
     return {
       labels,
-      datasets: [{
-        label: 'Ítems Vendidos',
-        data: dataTotals,
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      }]
+      datasets: [
+        {
+          label: 'Ítems Vendidos',
+          data: dataTotals,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+      ],
     };
   }, [itemsSoldByCategory]);
 
   return (
     <Container>
-      <Typography variant='h3'>Ítems Vendidos por Categoría</Typography>
+      <Typography variant="h3">Ítems Vendidos por Categoría</Typography>
       <Bar data={data} options={options} />
     </Container>
   );

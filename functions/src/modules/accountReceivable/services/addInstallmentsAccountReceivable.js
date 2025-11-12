@@ -1,14 +1,20 @@
-import { https, logger } from "firebase-functions";
+import { https, logger } from 'firebase-functions';
 
-import { db, Timestamp } from "../../../core/config/firebase.js";
-import { generateInstallments } from "../utils/generateInstallments.js";
+import { db, Timestamp } from '../../../core/config/firebase.js';
+import { generateInstallments } from '../utils/generateInstallments.js';
 
 export async function addInstallmentReceivable(tx, { user, ar }) {
   if (!user?.businessID || !user?.uid) {
-    throw new https.HttpsError('invalid-argument', 'Usuario no válido o sin businessID');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'Usuario no válido o sin businessID',
+    );
   }
   if (!ar) {
-    throw new https.HttpsError('invalid-argument', 'Datos de cuentas por cobrar requeridos');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'Datos de cuentas por cobrar requeridos',
+    );
   }
 
   const installments = generateInstallments({ ar, user });

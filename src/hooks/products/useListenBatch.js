@@ -8,10 +8,10 @@ export const useListenBatches = (user, productID = null) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!productID){
-        setBatches([]);
-        setLoading(false);
-        return;
+    if (!productID) {
+      setBatches([]);
+      setLoading(false);
+      return;
     }
     if (!user) {
       setBatches([]);

@@ -9,7 +9,6 @@ import DateUtils from '../../../../../utils/date/dateUtils';
 import { formatPrice } from '../../../../../utils/formatPrice';
 import { normalizeText } from '../../../../../utils/text';
 
-
 /*
   Selector de Facturas
   --------------------
@@ -48,7 +47,8 @@ const InvoicesContainer = styled.div`
 
 const InvoiceCard = styled.div`
   background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
-  border: 1px solid ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
+  border: 1px solid
+    ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
   padding: 12px 14px;
   border-radius: 8px;
   cursor: pointer;
@@ -207,20 +207,26 @@ const InvoiceSelector = ({
     ? invoices.filter((inv) =>
         [inv.numberID?.toString(), inv.ncf, inv.NCF]
           .filter(Boolean)
-          .some((field) => normalizeText(field).includes(normalizeText(search)))
+          .some((field) =>
+            normalizeText(field).includes(normalizeText(search)),
+          ),
       )
     : invoices;
 
-  const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedInvoices = filteredInvoices.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   const openDrawer = () => {
     if (!disabled) setVisible(true);
   };
 
   const handleDateRangeChange = (range) => {
-    const finalRange = (!range || !range[0])
-      ? [dayjs().startOf('month'), dayjs().endOf('month')]
-      : range;
+    const finalRange =
+      !range || !range[0]
+        ? [dayjs().startOf('month'), dayjs().endOf('month')]
+        : range;
     onDateRangeChange?.(finalRange);
   };
 
@@ -240,7 +246,11 @@ const InvoiceSelector = ({
   return (
     <SelectorContainer>
       <Label>{label}</Label>
-      <InvoiceInfo onClick={openDrawer} className={!selectedInvoice ? 'empty' : ''} $disabled={disabled}>
+      <InvoiceInfo
+        onClick={openDrawer}
+        className={!selectedInvoice ? 'empty' : ''}
+        $disabled={disabled}
+      >
         {!selectedInvoice ? (
           <>
             <FileTextOutlined style={{ marginRight: 8 }} /> Seleccionar Factura
@@ -251,16 +261,29 @@ const InvoiceSelector = ({
               <span className="invoice-number">
                 <FileTextOutlined /> #{selectedInvoice.numberID}
               </span>
-              {!disabled && <CloseOutlined style={{ color: '#8c8c8c' }} onClick={clearSelection} />}
+              {!disabled && (
+                <CloseOutlined
+                  style={{ color: '#8c8c8c' }}
+                  onClick={clearSelection}
+                />
+              )}
             </div>
 
             <div className="invoice-details">
               <span className="detail-label">Fecha:</span>
-              <span>{selectedInvoice.date ? DateUtils.formatLuxonDate(selectedInvoice.date) : 'N/A'}</span>
+              <span>
+                {selectedInvoice.date
+                  ? DateUtils.formatLuxonDate(selectedInvoice.date)
+                  : 'N/A'}
+              </span>
               <span className="detail-label">NCF:</span>
-              <span className="ncf-value">{selectedInvoice.ncf || selectedInvoice.NCF || 'N/A'}</span>
+              <span className="ncf-value">
+                {selectedInvoice.ncf || selectedInvoice.NCF || 'N/A'}
+              </span>
               <span className="detail-label">Total:</span>
-              <span>{formatPrice(selectedInvoice.totalPurchase?.value || 0)}</span>
+              <span>
+                {formatPrice(selectedInvoice.totalPurchase?.value || 0)}
+              </span>
             </div>
           </>
         )}
@@ -308,25 +331,44 @@ const InvoiceSelector = ({
                   <span className="number">
                     <FileTextOutlined /> #{inv.numberID}
                   </span>
-                  <span className="date">{inv.date ? DateUtils.formatLuxonDate(inv.date) : 'Sin fecha'}</span>
+                  <span className="date">
+                    {inv.date
+                      ? DateUtils.formatLuxonDate(inv.date)
+                      : 'Sin fecha'}
+                  </span>
                 </div>
 
                 <div className="details">
                   <div>
-                    <span className="detail-label">NCF:</span> <span className="ncf">{inv.ncf || inv.NCF || 'N/A'}</span>
+                    <span className="detail-label">NCF:</span>{' '}
+                    <span className="ncf">{inv.ncf || inv.NCF || 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="detail-label">Total:</span> <span className="total">{formatPrice(inv.totalPurchase?.value || 0)}</span>
+                    <span className="detail-label">Total:</span>{' '}
+                    <span className="total">
+                      {formatPrice(inv.totalPurchase?.value || 0)}
+                    </span>
                   </div>
                 </div>
 
-                <Tag color="blue" style={{ marginTop: 8 }}>{inv.products?.length || 0} productos</Tag>
+                <Tag color="blue" style={{ marginTop: 8 }}>
+                  {inv.products?.length || 0} productos
+                </Tag>
               </InvoiceCard>
             ))}
 
             {filteredInvoices.length === 0 && !loading && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#8c8c8c', padding: '1rem' }}>
-                {search ? 'No se encontraron facturas' : 'No hay facturas disponibles'}
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  color: '#8c8c8c',
+                  padding: '1rem',
+                }}
+              >
+                {search
+                  ? 'No se encontraron facturas'
+                  : 'No hay facturas disponibles'}
               </div>
             )}
 
@@ -352,4 +394,4 @@ const InvoiceSelector = ({
   );
 };
 
-export default InvoiceSelector; 
+export default InvoiceSelector;

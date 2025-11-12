@@ -25,7 +25,14 @@ const refreshSessionCallable = httpsCallable(functions, 'clientRefreshSession');
 const logoutCallable = httpsCallable(functions, 'clientLogout');
 
 const EXPIRY_WARNING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
-const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart', 'visibilitychange', 'focus'];
+const ACTIVITY_EVENTS = [
+  'mousedown',
+  'keydown',
+  'scroll',
+  'touchstart',
+  'visibilitychange',
+  'focus',
+];
 
 export function useAutomaticLogin() {
   const dispatch = useDispatch();
@@ -69,7 +76,7 @@ export function useAutomaticLogin() {
         navigate('/login', { replace: true });
       }
     },
-    [dispatch, navigate]
+    [dispatch, navigate],
   );
 
   const showSessionExpiredModal = useCallback(() => {
@@ -106,7 +113,8 @@ export function useAutomaticLogin() {
     openModalOnce('inactivity-warning', (reset) => {
       Modal.confirm({
         title: 'Inactividad prolongada',
-        content: '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
+        content:
+          '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
         okText: 'Sí, mantener activa',
         cancelText: 'Cerrar sesión',
         centered: true,
@@ -131,7 +139,7 @@ export function useAutomaticLogin() {
                 displayName: userData.realName || userData.name,
                 username: userData.name,
                 realName: userData.realName,
-              })
+              }),
             );
             userIdRef.current = userId;
           }
@@ -140,7 +148,7 @@ export function useAutomaticLogin() {
         console.error('user data load error:', error?.message || error);
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const refreshSession = useCallback(
@@ -190,8 +198,14 @@ export function useAutomaticLogin() {
 
         await loadUserData(session.userId);
 
-        const remaining = session.expiresAt ? session.expiresAt - Date.now() : null;
-        if (remaining !== null && remaining > 0 && remaining < EXPIRY_WARNING_WINDOW_MS) {
+        const remaining = session.expiresAt
+          ? session.expiresAt - Date.now()
+          : null;
+        if (
+          remaining !== null &&
+          remaining > 0 &&
+          remaining < EXPIRY_WARNING_WINDOW_MS
+        ) {
           showSessionExpiringWarning();
         }
 
@@ -213,7 +227,12 @@ export function useAutomaticLogin() {
         refreshLockRef.current = false;
       }
     },
-    [handleLogout, loadUserData, showSessionExpiredModal, showSessionExpiringWarning]
+    [
+      handleLogout,
+      loadUserData,
+      showSessionExpiredModal,
+      showSessionExpiringWarning,
+    ],
   );
 
   const handleActivity = useCallback(() => {
@@ -255,7 +274,9 @@ export function useAutomaticLogin() {
         setStatusSafe('ready');
       } catch (err) {
         console.error('initial session check error:', err);
-        setErrorSafe(err instanceof Error ? err : new Error('Error de sesión desconocido'));
+        setErrorSafe(
+          err instanceof Error ? err : new Error('Error de sesión desconocido'),
+        );
         setStatusSafe('ready');
       }
     };

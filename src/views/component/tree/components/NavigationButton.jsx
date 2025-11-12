@@ -10,14 +10,21 @@ const GoBackButton = styled.button`
   padding: 0;
   width: 1.4em;
   justify-content: center;
-  cursor: ${(props) => (props.disabled ? "default" : "pointer")};
+  cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
 
   &:hover {
     color: #0056b3;
   }
 `;
 
-export const NavigationButton = ({ node, isExpanded, isSelected, hasChildren, getNodeIcon, onClick }) => {
+export const NavigationButton = ({
+  node,
+  isExpanded,
+  isSelected,
+  hasChildren,
+  getNodeIcon,
+  onClick,
+}) => {
   const isDisabled = !hasChildren || node.isLoading;
 
   return (

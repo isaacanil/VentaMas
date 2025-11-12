@@ -21,12 +21,12 @@ const CodePart = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 12px 8px;
-  background: ${props => props.color};
-  border: 1px solid ${props => props.border};
+  background: ${(props) => props.color};
+  border: 1px solid ${(props) => props.border};
   border-radius: 4px;
   min-width: 80px;
   position: relative;
-  
+
   .code-value {
     font-size: 14px;
     font-weight: 600;
@@ -34,7 +34,7 @@ const CodePart = styled.div`
     margin-bottom: 4px;
     color: #262626;
   }
-  
+
   .code-label {
     font-size: 10px;
     font-weight: 500;
@@ -82,32 +82,32 @@ export const CodeStructure = ({ selectedConfig }) => {
   if (!selectedConfig || !selectedConfig.companyPrefix) return null;
 
   // Generar el código completo de ejemplo
-  const gs1Prefix = "746";
+  const gs1Prefix = '746';
   const companyPrefix = selectedConfig.companyPrefix;
-  const itemReference = "0".repeat(selectedConfig.itemReferenceLength);
-  const checkDigit = "X";
+  const itemReference = '0'.repeat(selectedConfig.itemReferenceLength);
+  const checkDigit = 'X';
   const fullCode = `${gs1Prefix}${companyPrefix}${itemReference}${checkDigit}`;
 
   return (
     <div>
       <StructureTitle>Ejemplo: {fullCode}</StructureTitle>
-      
+
       <CodeStructureContainer>
         <CodePart color="#f0f8ff" border="#d6e4ff">
           <Text className="code-value">{gs1Prefix}</Text>
           <Text className="code-label">GS1 RD</Text>
         </CodePart>
-        
+
         <CodePart color="#f6ffed" border="#b7eb8f">
           <Text className="code-value">{companyPrefix}</Text>
           <Text className="code-label">Tu Empresa</Text>
         </CodePart>
-        
+
         <CodePart color="#fff7e6" border="#ffd591">
           <Text className="code-value">{itemReference}</Text>
           <Text className="code-label">Productos</Text>
         </CodePart>
-        
+
         <CodePart color="#fff1f0" border="#ffb3b3">
           <Text className="code-value">{checkDigit}</Text>
           <Text className="code-label">Check</Text>
@@ -132,7 +132,9 @@ export const CodeStructure = ({ selectedConfig }) => {
           <InfoValue>1 dígito</InfoValue>
 
           <InfoLabel>Capacidad total:</InfoLabel>
-          <InfoValue>{selectedConfig.maxProducts?.toLocaleString()} códigos</InfoValue>
+          <InfoValue>
+            {selectedConfig.maxProducts?.toLocaleString()} códigos
+          </InfoValue>
         </InfoGrid>
       </InfoSection>
     </div>

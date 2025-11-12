@@ -41,8 +41,12 @@ export const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
     open={open}
     onCancel={onCancel}
     footer={[
-      <Button key="reset" onClick={onReset}>Restablecer</Button>,
-      <Button key="apply" type="primary" onClick={onApply}>Aplicar</Button>,
+      <Button key="reset" onClick={onReset}>
+        Restablecer
+      </Button>,
+      <Button key="apply" type="primary" onClick={onApply}>
+        Aplicar
+      </Button>,
     ]}
   >
     <FilterModalContent>
@@ -55,8 +59,6 @@ export const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
           Solo productos con fecha de vencimiento
         </Checkbox>
       </FilterSection>
-
-
 
       <FilterSection>
         <FilterSectionTitle>Producto</FilterSectionTitle>
@@ -76,7 +78,6 @@ export const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
         )}
       </FilterSection>
 
-
       <FilterSection>
         <FilterSectionTitle>Lotes del producto</FilterSectionTitle>
         {filterDraft.product ? (
@@ -88,7 +89,9 @@ export const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
                   <Checkbox
                     key={option.value}
                     checked={isChecked}
-                    onChange={(event) => onToggleBatch(option.value, event.target.checked)}
+                    onChange={(event) =>
+                      onToggleBatch(option.value, event.target.checked)
+                    }
                   >
                     <div>
                       <span>{option.displayLabel}</span>
@@ -102,7 +105,9 @@ export const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
             <MutedText>No hay lotes disponibles para este producto</MutedText>
           )
         ) : (
-          <MutedText>Selecciona un producto para ver sus lotes disponibles</MutedText>
+          <MutedText>
+            Selecciona un producto para ver sus lotes disponibles
+          </MutedText>
         )}
       </FilterSection>
     </FilterModalContent>

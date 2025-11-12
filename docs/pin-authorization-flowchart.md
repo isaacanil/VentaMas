@@ -507,4 +507,3 @@ Cualquier operación con PIN
 ---
 
 **Este diagrama proporciona una visión completa del sistema de autorización con PIN implementado.**
-

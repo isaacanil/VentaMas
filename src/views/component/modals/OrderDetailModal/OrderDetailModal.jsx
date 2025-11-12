@@ -40,32 +40,32 @@ const CloseButton = styled(Button)`
 `;
 
 export const OrderDetails = ({ order, onClose }) => {
-  const { note }  = order;
+  const { note } = order;
 
   return (
     <ModalWrapper>
-      <ModalContent>         
+      <ModalContent>
         <CloseButton
           title="Cerrar"
           variant="text"
           color="on-gray"
           onClick={onClose}
         />
-        <Header/>
+        <Header />
 
         {/* {Array.isArray(products) && products.length > 0 && products.map(({product})=> (
         
         ))} */}
-     {note && (
-        <NoteSection>
-          <NoteLabel>Nota</NoteLabel>
-          <NoteText>{note}</NoteText>
-        </NoteSection>
-     )}
-     
-          </ModalContent>
-</ModalWrapper>
-  )};
+        {note && (
+          <NoteSection>
+            <NoteLabel>Nota</NoteLabel>
+            <NoteText>{note}</NoteText>
+          </NoteSection>
+        )}
+      </ModalContent>
+    </ModalWrapper>
+  );
+};
 
 const NoteSection = styled.section`
   margin-top: 1rem;

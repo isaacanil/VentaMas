@@ -5,7 +5,13 @@
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Upload, Button, message, Image, Spin, Progress, Empty } from 'antd';
 import imageCompression from 'browser-image-compression';
-import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+  listAll,
+} from 'firebase/storage';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -14,8 +20,8 @@ import { storage } from '../../../firebase/firebaseconfig';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 
 // Parámetros de compresión
-const TARGET_SIZE_MB = 0.4;    // Tamaño máximo deseado en MB (ajustado para mejor calidad)
-const MAX_DIMENSION = 1024;    // Máx. ancho/alto en px
+const TARGET_SIZE_MB = 0.4; // Tamaño máximo deseado en MB (ajustado para mejor calidad)
+const MAX_DIMENSION = 1024; // Máx. ancho/alto en px
 const QUALITY_STEP = 0.1;
 const MIN_QUALITY = 0.1;
 
@@ -59,8 +65,15 @@ const LoginImageConfig = () => {
     let quality = 0.8;
     let compFile = file;
 
-    while (compFile.size / 1024 / 1024 > TARGET_SIZE_MB && quality >= MIN_QUALITY) {
-      const options = { ...baseOptions, maxSizeMB: TARGET_SIZE_MB, initialQuality: quality };
+    while (
+      compFile.size / 1024 / 1024 > TARGET_SIZE_MB &&
+      quality >= MIN_QUALITY
+    ) {
+      const options = {
+        ...baseOptions,
+        maxSizeMB: TARGET_SIZE_MB,
+        initialQuality: quality,
+      };
       compFile = await imageCompression(file, options);
       quality -= QUALITY_STEP;
     }
@@ -82,7 +95,7 @@ const LoginImageConfig = () => {
     setLoadingAction(true);
     try {
       const files = await listAll(loginImageRef);
-      await Promise.all(files.items.map(f => deleteObject(f)));
+      await Promise.all(files.items.map((f) => deleteObject(f)));
       setCurrentImage(null);
       message.success('Imagen eliminada correctamente');
     } catch (error) {
@@ -110,11 +123,14 @@ const LoginImageConfig = () => {
 
       // Eliminar previa en Firebase
       const files = await listAll(loginImageRef);
-      await Promise.all(files.items.map(f => deleteObject(f)));
+      await Promise.all(files.items.map((f) => deleteObject(f)));
 
       // Subir nueva imagen
       const imageRef = ref(loginImageRef, file.name);
-      await uploadBytes(imageRef, compressedFile.size < file.size ? compressedFile : file);
+      await uploadBytes(
+        imageRef,
+        compressedFile.size < file.size ? compressedFile : file,
+      );
 
       // Obtener URL
       const url = await getDownloadURL(imageRef);
@@ -167,7 +183,9 @@ const LoginImageConfig = () => {
             maxCount={1}
             disabled={loadingAction}
           >
-            <Button icon={<UploadOutlined />} size="large">Seleccionar Imagen</Button>
+            <Button icon={<UploadOutlined />} size="large">
+              Seleccionar Imagen
+            </Button>
           </Upload>
 
           {fileList.length > 0 && (
@@ -189,7 +207,14 @@ const LoginImageConfig = () => {
               <Stats>
                 <p>Original: {originalSize} KB</p>
                 <p>Optimizado: {compressedSize} KB</p>
-                <p>Reducción: {(((originalSize - compressedSize) / originalSize) * 100).toFixed(1)}%</p>
+                <p>
+                  Reducción:{' '}
+                  {(
+                    ((originalSize - compressedSize) / originalSize) *
+                    100
+                  ).toFixed(1)}
+                  %
+                </p>
               </Stats>
             )}
           </ProgressBar>
@@ -200,13 +225,58 @@ const LoginImageConfig = () => {
 };
 
 // Styled Components
-const Page = styled.div`min-height:100vh; background:#f0f2f5;`;
-const Content = styled.div`max-width:900px; margin:2rem auto; padding:0 1rem;`;
-const Section = styled.div`display:flex; justify-content:center; align-items:center; min-height:300px; background:#fff; border-radius:8px; margin-bottom:2rem; padding:1rem;`;
-const Actions = styled.div`display:flex; gap:1rem; justify-content:center; margin-bottom:1rem;`;
-const ImageContainer = styled.div`position:relative; .ant-image img{max-height:300px; object-fit:contain;}`;
-const DeleteBtn = styled(Button)`position:absolute; bottom:1rem; right:1rem; background:rgba(0,0,0,0.6); color:#fff; border:none; &:hover{background:rgba(0,0,0,0.8);}`;
-const ProgressBar = styled.div`max-width:600px; margin:0 auto 1rem;`;
-const Stats = styled.div`text-align:center; p{margin:4px 0;}`;
+const Page = styled.div`
+  min-height: 100vh;
+  background: #f0f2f5;
+`;
+const Content = styled.div`
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+`;
+const Section = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  padding: 1rem;
+`;
+const Actions = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+`;
+const ImageContainer = styled.div`
+  position: relative;
+  .ant-image img {
+    max-height: 300px;
+    object-fit: contain;
+  }
+`;
+const DeleteBtn = styled(Button)`
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
+`;
+const ProgressBar = styled.div`
+  max-width: 600px;
+  margin: 0 auto 1rem;
+`;
+const Stats = styled.div`
+  text-align: center;
+  p {
+    margin: 4px 0;
+  }
+`;
 
 export default LoginImageConfig;

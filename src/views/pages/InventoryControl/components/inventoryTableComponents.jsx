@@ -31,7 +31,8 @@ const ExtraEditors = styled.span`
 `;
 
 export function EditorsList({ editors, loading }) {
-  if (loading) return <span style={{ opacity: 0.6, fontSize: 11 }}>Cargando…</span>;
+  if (loading)
+    return <span style={{ opacity: 0.6, fontSize: 11 }}>Cargando…</span>;
   if (!editors?.length) return <span>-</span>;
   const shown = editors.slice(0, 3);
   const extra = editors.length - shown.length;
@@ -43,7 +44,12 @@ export function EditorsList({ editors, loading }) {
         </Tooltip>
       ))}
       {extra > 0 && (
-        <Tooltip title={editors.slice(3).map((editor) => editor.name).join(', ')}>
+        <Tooltip
+          title={editors
+            .slice(3)
+            .map((editor) => editor.name)
+            .join(', ')}
+        >
           <ExtraEditors>+{extra}</ExtraEditors>
         </Tooltip>
       )}

@@ -43,24 +43,28 @@ const GrandTotalItem = styled(TotalItem)`
 const TotalsSummary = ({ replenishments }) => {
   // New calculation logic using purchaseQuantity if available
   const calculateTotals = () => {
-    return replenishments.reduce((acc, item) => {
-      const baseCostTotal = Number(item.baseCost);
-      const taxPercentage = Number(item.taxPercentage) || 0;
-      const itemITBIS = (baseCostTotal * taxPercentage) / 100;
-      const shippingCost = Number(item.freight) || 0;
-      const otherCosts = Number(item.otherCosts) || 0;
-      const multiplier = Number(item.purchaseQuantity || item.quantity);
-      const subTotal = (baseCostTotal + itemITBIS + shippingCost + otherCosts) * multiplier;
-      return {
-        totalProducts: acc.totalProducts + Number(item.quantity),
-        totalBaseCost: acc.totalBaseCost + baseCostTotal,
-        grandTotal: acc.grandTotal + subTotal,
-      };
-    }, {
-      totalProducts: 0,
-      totalBaseCost: 0,
-      grandTotal: 0,
-    });
+    return replenishments.reduce(
+      (acc, item) => {
+        const baseCostTotal = Number(item.baseCost);
+        const taxPercentage = Number(item.taxPercentage) || 0;
+        const itemITBIS = (baseCostTotal * taxPercentage) / 100;
+        const shippingCost = Number(item.freight) || 0;
+        const otherCosts = Number(item.otherCosts) || 0;
+        const multiplier = Number(item.purchaseQuantity || item.quantity);
+        const subTotal =
+          (baseCostTotal + itemITBIS + shippingCost + otherCosts) * multiplier;
+        return {
+          totalProducts: acc.totalProducts + Number(item.quantity),
+          totalBaseCost: acc.totalBaseCost + baseCostTotal,
+          grandTotal: acc.grandTotal + subTotal,
+        };
+      },
+      {
+        totalProducts: 0,
+        totalBaseCost: 0,
+        grandTotal: 0,
+      },
+    );
   };
 
   const totals = calculateTotals();
@@ -68,7 +72,11 @@ const TotalsSummary = ({ replenishments }) => {
   return (
     <StyledCard>
       <Group>
-        <TotalItem title="Total Productos" value={totals.totalProducts} prefix="#" />
+        <TotalItem
+          title="Total Productos"
+          value={totals.totalProducts}
+          prefix="#"
+        />
         <TotalItem
           title="Total Costo Base"
           value={totals.totalBaseCost}

@@ -12,7 +12,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal, Button, Space, Tooltip, Popconfirm } from 'antd';
 import styled from 'styled-components';
 
-import { formatDateTime, getStatusLabel, statusTheme } from '../constants/constants';
+import {
+  formatDateTime,
+  getStatusLabel,
+  statusTheme,
+} from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
 
 import type { AuthorizationRequest } from '../types';
@@ -43,21 +47,21 @@ export const DetailModal = ({
 
   const detailStatus = detailRequest.status ?? 'pending';
   const disableApprove = detailStatus !== 'pending';
-  const disableReject = detailStatus !== 'pending' || detailStatus === 'rejected';
+  const disableReject =
+    detailStatus !== 'pending' || detailStatus === 'rejected';
   const requestedBy = detailRequest.requestedBy || {};
   const moduleMeta = resolveModuleMeta(detailRequest);
   const metadataSource =
-    typeof detailRequest.metadata === 'object' && detailRequest.metadata !== null
-      ? (detailRequest.metadata)
+    typeof detailRequest.metadata === 'object' &&
+    detailRequest.metadata !== null
+      ? detailRequest.metadata
       : {};
   const metadataReference =
     typeof metadataSource?.['reference'] === 'string'
-      ? (metadataSource['reference'])
+      ? metadataSource['reference']
       : '';
   const metadataNote =
-    typeof metadataSource?.['note'] === 'string'
-      ? (metadataSource['note'])
-      : '';
+    typeof metadataSource?.['note'] === 'string' ? metadataSource['note'] : '';
   const reference =
     detailRequest.reference ||
     metadataReference ||
@@ -88,7 +92,13 @@ export const DetailModal = ({
       footer={
         <Space>
           <Button onClick={onClose}>Cerrar</Button>
-          <Tooltip title={actionsDisabled || disableApprove ? 'Acción no disponible' : 'Aprobar'}>
+          <Tooltip
+            title={
+              actionsDisabled || disableApprove
+                ? 'Acción no disponible'
+                : 'Aprobar'
+            }
+          >
             <span>
               <Button
                 type="primary"
@@ -111,7 +121,13 @@ export const DetailModal = ({
             cancelText="No"
             disabled={actionsDisabled || disableReject}
           >
-            <Tooltip title={actionsDisabled || disableReject ? 'Acción no disponible' : 'Rechazar'}>
+            <Tooltip
+              title={
+                actionsDisabled || disableReject
+                  ? 'Acción no disponible'
+                  : 'Rechazar'
+              }
+            >
               <span>
                 <Button
                   danger
@@ -131,12 +147,17 @@ export const DetailModal = ({
         <Header>
           <HeaderIcon icon={moduleMeta.icon || faClipboardList} />
           <HeaderContent>
-            <HeaderTitle>{moduleMeta.title || 'Solicitud de autorización'}</HeaderTitle>
+            <HeaderTitle>
+              {moduleMeta.title || 'Solicitud de autorización'}
+            </HeaderTitle>
             <HeaderSummary>
-              {moduleMeta.summary || 'Revisa la información antes de tomar una acción.'}
+              {moduleMeta.summary ||
+                'Revisa la información antes de tomar una acción.'}
             </HeaderSummary>
           </HeaderContent>
-          <StatusBadge $status={detailStatus}>{getStatusLabel(detailStatus)}</StatusBadge>
+          <StatusBadge $status={detailStatus}>
+            {getStatusLabel(detailStatus)}
+          </StatusBadge>
         </Header>
 
         <InfoGrid>

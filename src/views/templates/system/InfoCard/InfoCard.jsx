@@ -53,4 +53,3 @@ export const InfoCard = ({ title, elements }) => {
     </StyledContainer>
   );
 };
-

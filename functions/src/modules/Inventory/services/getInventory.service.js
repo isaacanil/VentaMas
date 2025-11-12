@@ -1,4 +1,3 @@
-
 // src/inventory/utils/inventoryQueries.js
 import { https } from 'firebase-functions';
 
@@ -15,7 +14,10 @@ export async function getProductStockDocFromTx(tx, businessID, productId) {
   const ref = db.doc(`businesses/${businessID}/products/${productId}`);
   const snap = await tx.get(ref);
   if (!snap.exists) {
-    throw new https.HttpsError('not-found', `Producto ${productId} no encontrado`);
+    throw new https.HttpsError(
+      'not-found',
+      `Producto ${productId} no encontrado`,
+    );
   }
   return snap;
 }
@@ -37,9 +39,9 @@ export async function getBatchDocFromTx(tx, businessID, batchId) {
 }
 
 const getInventory = {
-    getProductStockDocFromTx,
-    getBatchDocFromTx,
-    };
+  getProductStockDocFromTx,
+  getBatchDocFromTx,
+};
 export default getInventory;
 
 /**
@@ -51,12 +53,20 @@ export default getInventory;
  * @param {Array<{ id:string; trackInventory:boolean; productStockId?:string; batchId?:string }>} products
  * @returns {Promise<Array<{ prod:object; stockSnap:DocumentSnapshot; batchSnap:DocumentSnapshot }>>}
  */
-export async function collectInventoryPrereqs(tx, {user, products}) {
+export async function collectInventoryPrereqs(tx, { user, products }) {
   const prereqs = [];
   for (const prod of products) {
     if (prod.trackInventory && prod.productStockId && prod.batchId) {
-      const stockSnap = await getProductStockDocFromTx(tx, user.businessID, prod.id);
-      const batchSnap = await getBatchDocFromTx(tx, user.businessID, prod.batchId);
+      const stockSnap = await getProductStockDocFromTx(
+        tx,
+        user.businessID,
+        prod.id,
+      );
+      const batchSnap = await getBatchDocFromTx(
+        tx,
+        user.businessID,
+        prod.batchId,
+      );
       prereqs.push({ prod, stockSnap, batchSnap });
     }
   }

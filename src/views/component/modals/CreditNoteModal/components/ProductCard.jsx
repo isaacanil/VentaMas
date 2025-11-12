@@ -8,16 +8,16 @@ import { getTotalPrice } from '../../../../../utils/pricing';
 
 const { Text } = Typography;
 
-export const ProductCard = ({ 
-  product, 
-  isSelected, 
-  quantity, 
-  maxQuantity, 
+export const ProductCard = ({
+  product,
+  isSelected,
+  quantity,
+  maxQuantity,
   originalQuantity,
   isView,
   onSelectionChange,
   onQuantityChange,
-  creditedByOthers = 0
+  creditedByOthers = 0,
 }) => {
   const unitPrice = getTotalPrice(product, true, false);
   const tempItem = { ...product, amountToBuy: quantity };
@@ -49,10 +49,14 @@ export const ProductCard = ({
             {isView || !isSelected ? (
               <QuantityDisplay>
                 <span style={{ fontWeight: '500' }}>{quantity}</span>
-                <span style={{ fontSize: '11px', color: '#999' }}>/{originalQuantity}</span>
+                <span style={{ fontSize: '11px', color: '#999' }}>
+                  /{originalQuantity}
+                </span>
               </QuantityDisplay>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
                 <InputNumber
                   min={1}
                   max={maxQuantity}
@@ -61,23 +65,40 @@ export const ProductCard = ({
                   size="small"
                   style={{ width: '60px' }}
                 />
-                <Tooltip 
+                <Tooltip
                   title={
                     <div>
-                      <div><strong>Cálculo de cantidad máxima:</strong></div>
+                      <div>
+                        <strong>Cálculo de cantidad máxima:</strong>
+                      </div>
                       <div>• Factura original: {originalQuantity}</div>
                       <div>• Otras notas de crédito: {creditedByOthers}</div>
-                      <div style={{ borderTop: '1px solid #ddd', paddingTop: '4px', marginTop: '4px' }}>
+                      <div
+                        style={{
+                          borderTop: '1px solid #ddd',
+                          paddingTop: '4px',
+                          marginTop: '4px',
+                        }}
+                      >
                         <strong>Máximo disponible: {maxQuantity}</strong>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
-                        Fórmula: Factura - Otras NC = {originalQuantity} - {creditedByOthers} = {maxQuantity}
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          color: '#999',
+                          marginTop: '4px',
+                        }}
+                      >
+                        Fórmula: Factura - Otras NC = {originalQuantity} -{' '}
+                        {creditedByOthers} = {maxQuantity}
                       </div>
                     </div>
                   }
                   placement="topLeft"
                 >
-                  <span style={{ fontSize: '10px', color: '#999', cursor: 'help' }}>
+                  <span
+                    style={{ fontSize: '10px', color: '#999', cursor: 'help' }}
+                  >
                     /{originalQuantity} <InfoCircleOutlined />
                   </span>
                 </Tooltip>
@@ -105,11 +126,11 @@ const StyledCard = styled(Card)`
   margin-bottom: 0.75rem;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   .ant-card-body {
     padding: 12px;
   }
@@ -134,7 +155,7 @@ const ProductInfo = styled.div`
 const ProductName = styled.div`
   font-weight: 500;
   font-size: 0.9rem;
-  color: ${props => props.theme?.text?.primary || '#333'};
+  color: ${(props) => props.theme?.text?.primary || '#333'};
   margin-bottom: 0.25rem;
   word-break: break-word;
 `;
@@ -157,7 +178,7 @@ const QuantitySection = styled.div`
 
 const QuantityLabel = styled.span`
   font-weight: 500;
-  color: ${props => props.theme?.text?.secondary || '#666'};
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;
 
 const QuantityControls = styled.div`
@@ -176,34 +197,34 @@ const PriceSection = styled.div`
   flex-direction: column;
   gap: 0.25rem;
   padding-top: 0.5rem;
-  border-top: 1px solid ${props => props.theme?.border?.color || '#f0f0f0'};
+  border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
 `;
 
 const PriceRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   &.total {
     font-weight: 600;
     margin-top: 0.25rem;
     padding-top: 0.25rem;
-    border-top: 1px solid ${props => props.theme?.border?.color || '#f0f0f0'};
+    border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
   }
 `;
 
 const PriceLabel = styled.span`
   font-size: 0.85rem;
-  color: ${props => props.theme?.text?.secondary || '#666'};
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;
 
 const PriceValue = styled.span`
   font-size: 0.85rem;
-  color: ${props => props.theme?.text?.primary || '#333'};
+  color: ${(props) => props.theme?.text?.primary || '#333'};
   font-family: monospace;
-  
+
   .total & {
     font-weight: 600;
     font-size: 0.9rem;
   }
-`; 
+`;

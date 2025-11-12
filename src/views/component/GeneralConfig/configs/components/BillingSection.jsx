@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 
-
 const { Title, Paragraph } = Typography;
 
 const Section = styled.div`
@@ -40,11 +39,17 @@ const MotionContent = styled(motion.div)`
   padding: 16px 0;
 `;
 
-const BillingSection = ({ title, description, children, hidden = false, sectionId }) => {
+const BillingSection = ({
+  title,
+  description,
+  children,
+  hidden = false,
+  sectionId,
+}) => {
   if (hidden) return null;
   const [isExpanded, setIsExpanded] = useState(false);
   const sectionRef = useRef(null);
-  
+
   // useClickOutSide(sectionRef, isExpanded, () => setIsExpanded(false));
 
   const sectionAttributes = sectionId
@@ -57,7 +62,7 @@ const BillingSection = ({ title, description, children, hidden = false, sectionI
       {...sectionAttributes}
       data-config-expandable="true"
     >
-      <SectionHeader 
+      <SectionHeader
         data-role="config-section-header"
         data-expanded={isExpanded}
         aria-expanded={isExpanded}
@@ -75,16 +80,16 @@ const BillingSection = ({ title, description, children, hidden = false, sectionI
           <Paragraph>{description}</Paragraph>
         </div>
       </SectionHeader>
-      
+
       <AnimatePresence>
         {isExpanded && (
           <MotionContent
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ 
+            transition={{
               duration: 0.2,
-              ease: "easeInOut"
+              ease: 'easeInOut',
             }}
           >
             {children}

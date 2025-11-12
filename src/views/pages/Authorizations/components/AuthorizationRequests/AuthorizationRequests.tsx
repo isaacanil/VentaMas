@@ -11,7 +11,10 @@ import { selectUser } from '../../../../../features/auth/userSlice';
 import { DetailModal } from './components/DetailModal';
 import { RequestCard } from './components/RequestCard';
 import { ITEMS_PER_PAGE } from './constants/constants';
-import { useAuthorizationRequests, type StatusFilterValue } from './hooks/useAuthorizationRequests';
+import {
+  useAuthorizationRequests,
+  type StatusFilterValue,
+} from './hooks/useAuthorizationRequests';
 
 import type { AppUser, AuthorizationRequestListItem } from './types';
 import type { SelectProps } from 'antd';
@@ -40,10 +43,11 @@ const STATUS_LABELS: Record<StatusFilterValue, string> = {
   all: 'Todas',
 };
 
-const STATUS_OPTIONS: SelectProps<StatusFilterValue>['options'] = STATUS_VALUES.map((value) => ({
-  value,
-  label: STATUS_LABELS[value],
-}));
+const STATUS_OPTIONS: SelectProps<StatusFilterValue>['options'] =
+  STATUS_VALUES.map((value) => ({
+    value,
+    label: STATUS_LABELS[value],
+  }));
 
 const STATUS_VALUE_SET = new Set<StatusFilterValue>(STATUS_VALUES);
 const DEFAULT_STATUS: StatusFilterValue = 'pending';
@@ -51,14 +55,17 @@ const DEFAULT_STATUS: StatusFilterValue = 'pending';
 const isAppUser = (value: unknown): value is AppUser =>
   typeof value === 'object' && value !== null;
 
-export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequestsProps) => {
+export const AuthorizationRequests = ({
+  searchTerm = '',
+}: AuthorizationRequestsProps) => {
   const rawUser: unknown = useSelector(selectUser);
   const user = isAppUser(rawUser) ? rawUser : null;
   const [searchParams, setSearchParams] = useSearchParams();
   const statusParam = searchParams.get('status');
-  const normalizedStatusParam = statusParam && STATUS_VALUE_SET.has(statusParam as StatusFilterValue)
-    ? (statusParam as StatusFilterValue)
-    : null;
+  const normalizedStatusParam =
+    statusParam && STATUS_VALUE_SET.has(statusParam as StatusFilterValue)
+      ? (statusParam as StatusFilterValue)
+      : null;
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
   const {
@@ -121,7 +128,10 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
   const APPROVER_ROLES = ['admin', 'owner', 'dev', 'manager'];
 
   const totalRequests = filteredRequests.length;
-  const totalPages = Math.max(1, Math.ceil((totalRequests || 1) / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil((totalRequests || 1) / ITEMS_PER_PAGE),
+  );
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -149,7 +159,8 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
 
     Modal.confirm({
       title: '¿Confirmar autorización?',
-      content: 'Esta acción aprobará la solicitud y quedará registrada en el historial.',
+      content:
+        'Esta acción aprobará la solicitud y quedará registrada en el historial.',
       okText: 'Autorizar',
       cancelText: 'Cancelar',
       onOk: async () => {
@@ -245,7 +256,6 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
         onApprove={onApprove}
         onReject={handleReject}
       />
-
     </>
   );
 };
@@ -300,7 +310,7 @@ const FilterGroup = styled.div`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-    
+
     > * {
       width: 100% !important;
     }

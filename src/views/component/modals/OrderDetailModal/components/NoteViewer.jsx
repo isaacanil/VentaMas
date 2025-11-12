@@ -2,15 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 export function NoteViewer({ title, content }) {
-
-
   return (
-
     <NotaWrapper>
       {title && <TituloNota>{title}</TituloNota>}
       <ContenidoNota>{content}</ContenidoNota>
     </NotaWrapper>
-
   );
 }
 
@@ -32,6 +28,3 @@ const ContenidoNota = styled.p`
   font-size: 1rem;
   line-height: 1.5;
 `;
-
-
-

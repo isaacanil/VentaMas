@@ -13,7 +13,7 @@ import {
   ArcElement,
   RadialLinearScale,
   TimeScale,
-  TimeSeriesScale
+  TimeSeriesScale,
 } from 'chart.js';
 
 // Register all Chart.js components once
@@ -30,7 +30,7 @@ Chart.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
 export default Chart;

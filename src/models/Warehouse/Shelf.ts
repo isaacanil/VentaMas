@@ -1,12 +1,11 @@
-import type { AuditInfo } from "./AuditInfo";
+import type { AuditInfo } from './AuditInfo';
 
 export interface Shelf {
-    id: string; // auto-generated
-    name: string;
-    description: string;
-    shortName: string;
-    warehouseId: string; // Reference to the Warehouse
-    rowCapacity: number;
-    audit: AuditInfo;
-  }
-  
+  id: string; // auto-generated
+  name: string;
+  description: string;
+  shortName: string;
+  warehouseId: string; // Reference to the Warehouse
+  rowCapacity: number;
+  audit: AuditInfo;
+}

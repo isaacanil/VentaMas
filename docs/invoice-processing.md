@@ -14,11 +14,13 @@ Este documento describe el flujo completo para “hacer la factura” desde el p
 ## InvoicePanel (UI)
 
 Responsable de:
+
 - Recoger forma de pago, CxC (AR), comprobante fiscal (NCF), y datos de impresión.
 - Bloquear/desbloquear tipo de comprobante durante el procesamiento.
 - Ejecutar `processInvoice` y manejar la impresión/limpieza del estado.
 
 Puntos relevantes:
+
 - `handleCancelShipping`: limpia carrito, cierra panel, borra cliente y datos de seguro cuando corresponde.
 - `handleSubmit` (`InvoicePanel.jsx:208`):
   - Bloquea tipo de NCF mientras procesa.
@@ -34,6 +36,7 @@ Puntos relevantes:
 - Efectos al abrir el panel: garantiza al menos un método de pago activo (o 0 si es CxC), inicializa/normaliza valores del formulario de AR y reinicia flags de envío/submit.
 
 Estados/flags importantes:
+
 - `loading`, `submitted`, `pendingPrint` y `isTestMode` controlan la UX y el flujo de impresión.
 - El botón “Facturar” se desactiva si no hay método de pago activo, si hay cambio negativo sin CxC o si ya se envió.
 
@@ -44,11 +47,13 @@ Estados/flags importantes:
 Firma: `export async function processInvoice(params) -> { invoice }` (`invoiceService.js:24`)
 
 Parámetros clave:
+
 - `user`, `cart`, `client`.
 - `accountsReceivable` (CxC), `insuranceAR`, `insuranceAuth`, `insuranceEnabled`.
 - `ncfType`, `taxReceiptEnabled`, `dueDate` (ms), `dispatch`, `isTestMode`.
 
 Flujo principal:
+
 1. Validar carrito: `verifyCartItems` (`invoiceService.js:112`).
 2. Modo prueba (si `isTestMode`): `processTestModeInvoice` (`invoiceService.js:257`) y retornar mock de factura sin persistir.
 3. Validar cuadre de caja: `validateCashReconciliation` (`invoiceService.js:118`). Requiere estado `open` o aborta con estrategia de notificación.
@@ -66,6 +71,7 @@ Flujo principal:
 10. Retorno: `{ invoice }`.
 
 Errores y garantías:
+
 - Lanza errores con mensajes específicos en cada etapa (cuadre de caja, NCF, cliente, inventario, AR, seguros).
 - En modo prueba no hay escrituras a BD; se simula NCF e ID de factura y se logran tiempos de procesamiento realistas.
 
@@ -81,11 +87,13 @@ Errores y garantías:
 ## Precondiciones y postcondiciones
 
 Precondiciones:
+
 - Carrito válido (productos, totales) y, si CxC, formulario de AR completo.
 - Cuadre de caja abierto para ventas reales (no aplica en modo prueba).
 - Si NCF está habilitado, `ncfType` válido y disponible.
 
 Postcondiciones:
+
 - Factura persistida (o simulada en test), inventario actualizado, NCF consumido, AR creada cuando aplica.
 - UI limpia: carrito reiniciado, comprobante restablecido, panel cerrado, notificación de éxito.
 

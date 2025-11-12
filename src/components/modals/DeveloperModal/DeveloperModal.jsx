@@ -5,8 +5,17 @@ import styled from 'styled-components';
 
 // Redux
 import { selectAppMode } from '../../../features/appModes/appModeSlice';
-import { selectUser, selectIsTemporaryMode, selectOriginalBusinessId, selectIsTemporaryRoleMode, selectOriginalRole } from '../../../features/auth/userSlice';
-import { toggleDeveloperModal, SelectDeveloperModal } from '../../../features/modals/modalSlice';
+import {
+  selectUser,
+  selectIsTemporaryMode,
+  selectOriginalBusinessId,
+  selectIsTemporaryRoleMode,
+  selectOriginalRole,
+} from '../../../features/auth/userSlice';
+import {
+  toggleDeveloperModal,
+  SelectDeveloperModal,
+} from '../../../features/modals/modalSlice';
 
 // Componentes
 import CommandProcessor from './components/CommandProcessor';
@@ -21,24 +30,26 @@ import SelectionMode from './components/SelectionMode';
 export const DeveloperModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const modalData = useSelector(SelectDeveloperModal);const user = useSelector(selectUser);
+  const modalData = useSelector(SelectDeveloperModal);
+  const user = useSelector(selectUser);
   const isTestMode = useSelector(selectAppMode);
   const isTemporaryMode = useSelector(selectIsTemporaryMode);
   const originalBusinessId = useSelector(selectOriginalBusinessId);
   const isTemporaryRoleMode = useSelector(selectIsTemporaryRoleMode);
   const originalRole = useSelector(selectOriginalRole);
-    // Estados locales
+  // Estados locales
   const [consoleOutput, setConsoleOutput] = useState([]);
   const [commandInput, setCommandInput] = useState('');
   const [reactScanLoaded, setReactScanLoaded] = useState(false);
   const [businesses, setBusinesses] = useState([]);
   const commandProcessorRef = useRef(null);
-  
+
   // Estados para autocompletado
   const [autoCompleteSuggestions, setAutoCompleteSuggestions] = useState([]);
   const [showAutoComplete, setShowAutoComplete] = useState(false);
-  const [autoCompleteSelectedIndex, setAutoCompleteSelectedIndex] = useState(-1);
-  
+  const [autoCompleteSelectedIndex, setAutoCompleteSelectedIndex] =
+    useState(-1);
+
   // Estado para el modo de selección
   const [selectionMode, setSelectionMode] = useState({
     active: false,
@@ -46,15 +57,15 @@ export const DeveloperModal = () => {
     selectedIndex: 0,
     onSelect: null,
     title: '',
-    command: ''
+    command: '',
   });
-  
+
   // Estado para filtrado en modo selección
   const [originalItems, setOriginalItems] = useState([]);
 
   // Verificar si el usuario es desarrollador
   const isDeveloper = user?.role === 'dev';
-  
+
   // Funciones para agregar salida a la consola
   const addOutput = (content, type = 'result', html = false) => {
     const newLine = {
@@ -63,7 +74,7 @@ export const DeveloperModal = () => {
       type,
       html,
     };
-    setConsoleOutput(prev => [...prev, newLine]);
+    setConsoleOutput((prev) => [...prev, newLine]);
   };
 
   const addCommandEcho = (command) => {
@@ -71,13 +82,13 @@ export const DeveloperModal = () => {
       id: Date.now() + Math.random(),
       content: {
         prompt: 'C:\\VentaMax>',
-        userCommand: command
+        userCommand: command,
       },
       type: 'command',
     };
-    setConsoleOutput(prev => [...prev, commandLine]);
+    setConsoleOutput((prev) => [...prev, commandLine]);
   };
-    // Funciones para el modo de selección
+  // Funciones para el modo de selección
   const enterSelectionMode = (items, title, onSelect, command = '') => {
     setOriginalItems(items); // Guardar items originales
     setSelectionMode({
@@ -86,35 +97,46 @@ export const DeveloperModal = () => {
       selectedIndex: 0,
       onSelect,
       title,
-      command
+      command,
     });
   };
   // Función para filtrar items en modo selección
   const handleFilterSelection = (filterText) => {
     if (!selectionMode.active) return;
-    
+
     console.log('Filtering with text:', filterText);
     console.log('Original items:', originalItems);
-    
+
     if (!filterText.trim()) {
       // Si no hay texto de filtro, mostrar todos los items originales
-      setSelectionMode(prev => ({ ...prev, items: originalItems, selectedIndex: 0 }));
+      setSelectionMode((prev) => ({
+        ...prev,
+        items: originalItems,
+        selectedIndex: 0,
+      }));
       console.log('Showing all items:', originalItems);
     } else {
       // Filtrar items basado en el texto
-      const filtered = originalItems.filter(item => {
-        const itemText = typeof item === 'string' ? item : (item.name || item.title || item.label || String(item));
+      const filtered = originalItems.filter((item) => {
+        const itemText =
+          typeof item === 'string'
+            ? item
+            : item.name || item.title || item.label || String(item);
         return itemText.toLowerCase().includes(filterText.toLowerCase());
       });
-      
-      setSelectionMode(prev => ({ ...prev, items: filtered, selectedIndex: 0 }));
+
+      setSelectionMode((prev) => ({
+        ...prev,
+        items: filtered,
+        selectedIndex: 0,
+      }));
       console.log('Filtered items:', filtered);
     }
   };
 
   // Actualiza la selección al hacer clic en un item
   const updateSelectedIndex = (index) => {
-    setSelectionMode(prev => ({ ...prev, selectedIndex: index }));
+    setSelectionMode((prev) => ({ ...prev, selectedIndex: index }));
   };
 
   const exitSelectionMode = () => {
@@ -124,17 +146,17 @@ export const DeveloperModal = () => {
       selectedIndex: 0,
       onSelect: null,
       title: '',
-      command: ''
+      command: '',
     });
-    
+
     // Limpiar estados de filtro
     setOriginalItems([]);
     setCommandInput(''); // Limpiar el input al salir del modo selección
-    
+
     // Limpiar las funciones globales para evitar memory leaks
     window.selectItem = undefined;
     window.confirmSelection = undefined;
-    
+
     // Enfocar el input después de salir del modo selección
     setTimeout(() => {
       const input = document.querySelector('.console-terminal input');
@@ -142,16 +164,17 @@ export const DeveloperModal = () => {
         input.focus();
       }
     }, 100);
-  };const handleSelectionConfirm = () => {
+  };
+  const handleSelectionConfirm = () => {
     const { items, selectedIndex, onSelect } = selectionMode;
     const selectedItem = items[selectedIndex];
-    
+
     exitSelectionMode();
-    
+
     if (onSelect) {
       onSelect(selectedItem);
     }
-    
+
     // Enfocar el input después de confirmar la selección
     setTimeout(() => {
       const input = document.querySelector('.console-terminal input');
@@ -160,12 +183,13 @@ export const DeveloperModal = () => {
       }
     }, 150);
   };
-  
+
   // Funciones para autocompletado
   const updateAutoComplete = (input) => {
     if (!commandProcessorRef.current) return;
-    
-    const suggestions = commandProcessorRef.current.getCommandSuggestions(input);
+
+    const suggestions =
+      commandProcessorRef.current.getCommandSuggestions(input);
     setAutoCompleteSuggestions(suggestions);
     setShowAutoComplete(suggestions.length > 0 && input.trim().length > 0);
     setAutoCompleteSelectedIndex(-1);
@@ -180,12 +204,12 @@ export const DeveloperModal = () => {
   const handleAutoCompleteSelectedIndexChange = (index) => {
     setAutoCompleteSelectedIndex(index);
   };
-  
+
   // Actualizar autocompletado cuando cambia el input
   useEffect(() => {
     updateAutoComplete(commandInput);
   }, [commandInput]);
-  
+
   // Inicializar CommandProcessor en el primer renderizado
   useEffect(() => {
     commandProcessorRef.current = new CommandProcessor({
@@ -203,15 +227,26 @@ export const DeveloperModal = () => {
       reactScanLoaded,
       setBusinesses,
       businesses,
-      enterSelectionMode
+      enterSelectionMode,
     });
-  }, [dispatch, navigate, user, isTestMode, isTemporaryMode, originalBusinessId, isTemporaryRoleMode, originalRole, reactScanLoaded, businesses]);
-    // Cerrar modal si no es desarrollador
+  }, [
+    dispatch,
+    navigate,
+    user,
+    isTestMode,
+    isTemporaryMode,
+    originalBusinessId,
+    isTemporaryRoleMode,
+    originalRole,
+    reactScanLoaded,
+    businesses,
+  ]);
+  // Cerrar modal si no es desarrollador
   useEffect(() => {
     if (modalData.isOpen && !isDeveloper) {
       dispatch(toggleDeveloperModal());
     }
-  }, [modalData.isOpen, isDeveloper, dispatch]);  // Agregar listener global solo para ESC cuando estamos en modo selección
+  }, [modalData.isOpen, isDeveloper, dispatch]); // Agregar listener global solo para ESC cuando estamos en modo selección
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       // Solo manejar ESC globalmente si el modal está abierto
@@ -235,7 +270,7 @@ export const DeveloperModal = () => {
   // Cerrar el modal
   const handleClose = () => {
     dispatch(toggleDeveloperModal());
-  };  // Manejar entrada de teclado
+  }; // Manejar entrada de teclado
   const handleKeyDown = (e) => {
     // Si estamos en modo de selección, solo manejar ESC para cancelar
     if (selectionMode.active) {
@@ -248,36 +283,45 @@ export const DeveloperModal = () => {
       // Para cualquier otra tecla en modo selección, no hacer nada más
       return;
     }
-    
+
     // Manejar autocompletado
     if (showAutoComplete && autoCompleteSuggestions.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        const newIndex = autoCompleteSelectedIndex < autoCompleteSuggestions.length - 1 
-          ? autoCompleteSelectedIndex + 1 
-          : 0;
+        const newIndex =
+          autoCompleteSelectedIndex < autoCompleteSuggestions.length - 1
+            ? autoCompleteSelectedIndex + 1
+            : 0;
         setAutoCompleteSelectedIndex(newIndex);
         return;
       }
-      
+
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        const newIndex = autoCompleteSelectedIndex > 0 
-          ? autoCompleteSelectedIndex - 1 
-          : autoCompleteSuggestions.length - 1;
+        const newIndex =
+          autoCompleteSelectedIndex > 0
+            ? autoCompleteSelectedIndex - 1
+            : autoCompleteSuggestions.length - 1;
         setAutoCompleteSelectedIndex(newIndex);
         return;
       }
-      
-      if (e.key === 'Tab' || (e.key === 'Enter' && autoCompleteSelectedIndex >= 0)) {
+
+      if (
+        e.key === 'Tab' ||
+        (e.key === 'Enter' && autoCompleteSelectedIndex >= 0)
+      ) {
         e.preventDefault();
-        if (autoCompleteSelectedIndex >= 0 && autoCompleteSelectedIndex < autoCompleteSuggestions.length) {
-          const selectedSuggestion = autoCompleteSuggestions[autoCompleteSelectedIndex];
+        if (
+          autoCompleteSelectedIndex >= 0 &&
+          autoCompleteSelectedIndex < autoCompleteSuggestions.length
+        ) {
+          const selectedSuggestion =
+            autoCompleteSuggestions[autoCompleteSelectedIndex];
           handleAutoCompleteSuggestionSelect(selectedSuggestion);
         }
         return;
       }
-      
+
       if (e.key === 'Escape') {
         e.preventDefault();
         setShowAutoComplete(false);
@@ -285,27 +329,28 @@ export const DeveloperModal = () => {
         return;
       }
     }
-    
+
     // Modo normal de comando
     if (e.key === 'Enter') {
       e.preventDefault();
-      
+
       // Si hay autocompletado visible y ninguna sugerencia seleccionada, ocultarlo
       if (showAutoComplete) {
         setShowAutoComplete(false);
         setAutoCompleteSelectedIndex(-1);
       }
-      
+
       if (commandInput.trim() && commandProcessorRef.current) {
         const executeCommand = async () => {
-          const result = await commandProcessorRef.current.executeCommand(commandInput);
-          
+          const result =
+            await commandProcessorRef.current.executeCommand(commandInput);
+
           // Manejar resultado del comando
           if (result && result.clearConsole) {
             setConsoleOutput([]);
           }
         };
-        
+
         executeCommand();
         setCommandInput('');
       }
@@ -344,7 +389,7 @@ Escriba HELP para ver una lista de comandos disponibles.\n
             setConsoleOutput={setConsoleOutput}
           />
         )}
-          <Console
+        <Console
           consoleOutput={consoleOutput}
           commandInput={commandInput}
           setCommandInput={setCommandInput}
@@ -355,11 +400,14 @@ Escriba HELP para ver una lista de comandos disponibles.\n
           showAutoComplete={showAutoComplete}
           autoCompleteSelectedIndex={autoCompleteSelectedIndex}
           onAutoCompleteSuggestionSelect={handleAutoCompleteSuggestionSelect}
-          onAutoCompleteSelectedIndexChange={handleAutoCompleteSelectedIndexChange}
+          onAutoCompleteSelectedIndexChange={
+            handleAutoCompleteSelectedIndexChange
+          }
           onFilterSelection={handleFilterSelection}
         />
       </ConsoleContainer>
-    </Modal>  );
+    </Modal>
+  );
 };
 
 // Estilos adicionales

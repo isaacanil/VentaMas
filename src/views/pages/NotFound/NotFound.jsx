@@ -11,7 +11,7 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-      height: 100%;
+  height: 100%;
   background-color: #f8f8f8;
 `;
 
@@ -46,13 +46,13 @@ const Button = styled(Link)`
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   &:hover {
-    background-color:var(--color);
+    background-color: var(--color);
     transform: translateY(-2px);
   }
 `;
 
 export const NotFound = () => {
-  const {HOME} = ROUTES_NAME.BASIC_TERM
+  const { HOME } = ROUTES_NAME.BASIC_TERM;
   return (
     <Container>
       <IconWrapper>
@@ -64,5 +64,3 @@ export const NotFound = () => {
     </Container>
   );
 };
-
-

@@ -1,7 +1,13 @@
 import { faImage } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Drawer, Input, message, Pagination, Tooltip } from 'antd';
-import { collection, count, getAggregateFromServer, query, where } from 'firebase/firestore';
+import {
+  collection,
+  count,
+  getAggregateFromServer,
+  query,
+  where,
+} from 'firebase/firestore';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -189,13 +195,16 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
   const [aggregateStatus, setAggregateStatus] = useState('idle');
 
   const inventoryProducts = useMemo(
-    () => (Array.isArray(products) ? products.filter((product) => product?.trackInventory === true) : []),
-    [products]
+    () =>
+      Array.isArray(products)
+        ? products.filter((product) => product?.trackInventory === true)
+        : [],
+    [products],
   );
 
   const filteredProducts = useMemo(
     () => (search ? filterData(inventoryProducts, search) : inventoryProducts),
-    [inventoryProducts, search]
+    [inventoryProducts, search],
   );
 
   const totalFiltered = filteredProducts.length;
@@ -210,7 +219,7 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedProducts = useMemo(
     () => filteredProducts.slice(startIndex, startIndex + pageSize),
-    [filteredProducts, startIndex, pageSize]
+    [filteredProducts, startIndex, pageSize],
   );
 
   useEffect(() => {
@@ -222,14 +231,24 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
       setAggregateStatus('loading');
       try {
         const businessID = String(user.businessID);
-        const productsRef = collection(db, 'businesses', businessID, 'products');
+        const productsRef = collection(
+          db,
+          'businesses',
+          businessID,
+          'products',
+        );
         const inventoryProductsQuery = query(
           productsRef,
           where('isDeleted', '==', false),
-          where('trackInventory', '==', true)
+          where('trackInventory', '==', true),
         );
 
-        const inventorySnapshot = await getAggregateFromServer(inventoryProductsQuery, { total: count() });
+        const inventorySnapshot = await getAggregateFromServer(
+          inventoryProductsQuery,
+          {
+            total: count(),
+          },
+        );
 
         if (!isMounted) return;
 
@@ -238,7 +257,10 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
         });
         setAggregateStatus('success');
       } catch (error) {
-        console.error('[ProductModal] Error al obtener conteos de productos', error);
+        console.error(
+          '[ProductModal] Error al obtener conteos de productos',
+          error,
+        );
         if (!isMounted) return;
         setAggregateCounts({
           inventory: null,
@@ -255,7 +277,8 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
   }, [visible, user?.businessID]);
 
   const pageStart = paginatedProducts.length > 0 ? startIndex + 1 : 0;
-  const pageEnd = paginatedProducts.length > 0 ? startIndex + paginatedProducts.length : 0;
+  const pageEnd =
+    paginatedProducts.length > 0 ? startIndex + paginatedProducts.length : 0;
 
   const formatNumber = useCallback((value) => {
     if (typeof value === 'number' && Number.isFinite(value)) {
@@ -268,9 +291,10 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
   const countsError = aggregateStatus === 'error';
   const countsSuccess = aggregateStatus === 'success';
 
-  const inventoryTotal = countsSuccess && typeof aggregateCounts.inventory === 'number'
-    ? aggregateCounts.inventory
-    : totalFiltered;
+  const inventoryTotal =
+    countsSuccess && typeof aggregateCounts.inventory === 'number'
+      ? aggregateCounts.inventory
+      : totalFiltered;
 
   const readableTotal = Math.max(inventoryTotal || 0, totalFiltered || 0);
 
@@ -284,19 +308,29 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
   const tooltipContent = (
     <TooltipContent>
       {pageStart === 0 && pageEnd === 0 ? (
-        <TooltipRow>No hay productos inventariables que coincidan con tu búsqueda.</TooltipRow>
+        <TooltipRow>
+          No hay productos inventariables que coincidan con tu búsqueda.
+        </TooltipRow>
       ) : (
         <TooltipRow>
-          Estás viendo <TooltipHighlight>{pageStart}-{pageEnd}</TooltipHighlight> de{' '}
-          <TooltipHighlight>{formattedInventoryTotal}</TooltipHighlight> productos inventariables.
+          Estás viendo{' '}
+          <TooltipHighlight>
+            {pageStart}-{pageEnd}
+          </TooltipHighlight>{' '}
+          de <TooltipHighlight>{formattedInventoryTotal}</TooltipHighlight>{' '}
+          productos inventariables.
         </TooltipRow>
       )}
       {countsLoading && (
         <TooltipRow $muted>Calculando totales del catálogo...</TooltipRow>
       )}
-      <TooltipRow $muted>Los productos no inventariables no se listan en este selector.</TooltipRow>
+      <TooltipRow $muted>
+        Los productos no inventariables no se listan en este selector.
+      </TooltipRow>
       {countsError && (
-        <TooltipRow $muted>No se pudo obtener el conteo global. Intenta nuevamente más tarde.</TooltipRow>
+        <TooltipRow $muted>
+          No se pudo obtener el conteo global. Intenta nuevamente más tarde.
+        </TooltipRow>
       )}
     </TooltipContent>
   );
@@ -345,7 +379,11 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
 
           <ProductsContainer>
             {paginatedProducts.map((product) => (
-              <ProductCard key={product.id} type="button" onClick={() => handleSelectProduct(product)}>
+              <ProductCard
+                key={product.id}
+                type="button"
+                onClick={() => handleSelectProduct(product)}
+              >
                 <ImageContainer>
                   {product.image ? (
                     <img src={product.image} alt={product.name} />
@@ -357,20 +395,26 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
                 </ImageContainer>
                 <ProductInfo>
                   <div className="name">{product?.name}</div>
-                  <div className="barcode">{product?.barcode || 'Sin código de barras'}</div>
+                  <div className="barcode">
+                    {product?.barcode || 'Sin código de barras'}
+                  </div>
                 </ProductInfo>
               </ProductCard>
             ))}
             {!loading && paginatedProducts.length === 0 && (
-              <EmptyState>No se encontraron productos inventariables.</EmptyState>
+              <EmptyState>
+                No se encontraron productos inventariables.
+              </EmptyState>
             )}
           </ProductsContainer>
 
           <FooterRow>
-            <Tooltip placement="topLeft" trigger={['hover', 'click']} title={tooltipContent}>
-              <SummaryPill type="button">
-                {pillLabel}
-              </SummaryPill>
+            <Tooltip
+              placement="topLeft"
+              trigger={['hover', 'click']}
+              title={tooltipContent}
+            >
+              <SummaryPill type="button">{pillLabel}</SummaryPill>
             </Tooltip>
             <Pagination
               current={currentPage}

@@ -1,8 +1,8 @@
-import { Table } from "antd";
-import styled from "styled-components";
+import { Table } from 'antd';
+import styled from 'styled-components';
 
-import { PRODUCT_BRAND_DEFAULT } from "../../../../../../../../features/updateProduct/updateProductSlice";
-import { useFormatPrice } from "../../../../../../../../hooks/useFormatPrice";
+import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../../features/updateProduct/updateProductSlice';
+import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
 
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -16,9 +16,9 @@ export default function Content({ data }) {
   const creditNotes = data?.creditNotePayment || [];
   const columns = [
     {
-      title: "CANT.",
-      dataIndex: "amountToBuy",
-      key: "quantity",
+      title: 'CANT.',
+      dataIndex: 'amountToBuy',
+      key: 'quantity',
       render: (value, record) => {
         const quantity = toNumber(value);
         if (quantity > 0) return quantity;
@@ -27,25 +27,28 @@ export default function Content({ data }) {
       },
     },
     {
-      title: "CODIGO",
-      dataIndex: "barcode",
-      key: "code",
-      render: (value, record) => value || record?.sku || "—",
+      title: 'CODIGO',
+      dataIndex: 'barcode',
+      key: 'code',
+      render: (value, record) => value || record?.sku || '—',
     },
     {
-      title: "DESCRIPCION",
-      dataIndex: "name",
-      key: "description",
+      title: 'DESCRIPCION',
+      dataIndex: 'name',
+      key: 'description',
       render: (value, record) => {
-        const name = value || "Producto sin nombre";
-        const rawBrand = typeof record?.brand === "string" ? record.brand.trim() : "";
-        const hasBrand = rawBrand && rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase();
+        const name = value || 'Producto sin nombre';
+        const rawBrand =
+          typeof record?.brand === 'string' ? record.brand.trim() : '';
+        const hasBrand =
+          rawBrand &&
+          rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase();
 
         return (
           <div>
             <div>{name}</div>
             {hasBrand && (
-              <div style={{ fontSize: 11, color: "#555555" }}>
+              <div style={{ fontSize: 11, color: '#555555' }}>
                 Marca: {rawBrand}
               </div>
             )}
@@ -54,20 +57,20 @@ export default function Content({ data }) {
       },
     },
     {
-      title: "PRECIO",
-      dataIndex: "pricing",
-      key: "price",
-      align: "right",
+      title: 'PRECIO',
+      dataIndex: 'pricing',
+      key: 'price',
+      align: 'right',
       render: (_, record) => {
         const pricing = resolvePricing(record);
         return toNumber(pricing?.price).toFixed(2);
       },
     },
     {
-      title: "ITBIS",
-      dataIndex: "pricing",
-      key: "itbis",
-      align: "right",
+      title: 'ITBIS',
+      dataIndex: 'pricing',
+      key: 'itbis',
+      align: 'right',
       render: (_, record) => {
         const pricing = resolvePricing(record);
         const price = toNumber(pricing?.price);
@@ -77,14 +80,16 @@ export default function Content({ data }) {
       },
     },
     {
-      title: "TOTAL",
-      key: "total",
-      align: "right",
+      title: 'TOTAL',
+      key: 'total',
+      align: 'right',
       render: (_, record) => {
         const pricing = resolvePricing(record);
         const price = toNumber(pricing?.price);
         const taxRate = toNumber(pricing?.tax);
-        const quantity = toNumber(record?.amountToBuy || record?.weightDetail?.weight || 0);
+        const quantity = toNumber(
+          record?.amountToBuy || record?.weightDetail?.weight || 0,
+        );
         const tax = price * (taxRate / 100);
         return ((price + tax) * quantity).toFixed(2);
       },
@@ -99,7 +104,11 @@ export default function Content({ data }) {
           columns={columns}
           dataSource={data?.products || []}
           rowKey={(record) =>
-            record?.cid || record?.id || record?.productId || record?.barcode || record?.name
+            record?.cid ||
+            record?.id ||
+            record?.productId ||
+            record?.barcode ||
+            record?.name
           }
           pagination={false}
         />
@@ -112,15 +121,15 @@ export default function Content({ data }) {
               size="small"
               columns={[
                 {
-                  title: "NCF",
-                  dataIndex: "ncf",
-                  key: "ncf",
+                  title: 'NCF',
+                  dataIndex: 'ncf',
+                  key: 'ncf',
                 },
                 {
-                  title: "Monto Aplicado",
-                  dataIndex: "amountUsed",
-                  key: "amountUsed",
-                  align: "right",
+                  title: 'Monto Aplicado',
+                  dataIndex: 'amountUsed',
+                  key: 'amountUsed',
+                  align: 'right',
                   render: (amount) => useFormatPrice(amount),
                 },
               ]}
@@ -139,7 +148,6 @@ const TableContainer = styled.div`
   margin-top: 16px;
   @media print {
     margin-top: 0;
-    
   }
 `;
 const Container = styled.div`
@@ -151,7 +159,7 @@ const CreditNotesSection = styled.div`
   margin-top: 16px;
   border-top: 1px solid #ddd;
   padding-top: 16px;
-  
+
   @media print {
     margin-top: 12px;
     padding-top: 12px;
@@ -170,7 +178,7 @@ const CreditNotesTable = styled.div`
   .ant-table {
     border: 1px solid #ddd;
   }
-  
+
   .ant-table-thead > tr > th {
     background-color: #f5f5f5;
     font-weight: 600;

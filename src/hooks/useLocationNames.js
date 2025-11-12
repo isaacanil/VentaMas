@@ -9,142 +9,151 @@ const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas
 
 // Cargar caché desde localStorage
 const loadCacheFromStorage = () => {
-    try {
-        const stored = localStorage.getItem(CACHE_KEY);
-        if (!stored) return new Map();
-        
-        const parsed = JSON.parse(stored);
-        const now = Date.now();
-        const cache = new Map();
-        
-        Object.entries(parsed).forEach(([key, value]) => {
-            if (value.timestamp && (now - value.timestamp < CACHE_EXPIRY)) {
-                cache.set(key, value.name);
-            }
-        });
-        
-        return cache;
-    } catch (error) {
-        console.error('Error loading location cache:', error);
-        return new Map();
-    }
+  try {
+    const stored = localStorage.getItem(CACHE_KEY);
+    if (!stored) return new Map();
+
+    const parsed = JSON.parse(stored);
+    const now = Date.now();
+    const cache = new Map();
+
+    Object.entries(parsed).forEach(([key, value]) => {
+      if (value.timestamp && now - value.timestamp < CACHE_EXPIRY) {
+        cache.set(key, value.name);
+      }
+    });
+
+    return cache;
+  } catch (error) {
+    console.error('Error loading location cache:', error);
+    return new Map();
+  }
 };
 
 // Guardar caché en localStorage
 const saveCacheToStorage = (cache) => {
-    try {
-        const obj = {};
-        cache.forEach((name, key) => {
-            obj[key] = {
-                name,
-                timestamp: Date.now()
-            };
-        });
-        localStorage.setItem(CACHE_KEY, JSON.stringify(obj));
-    } catch (error) {
-        console.error('Error saving location cache:', error);
-    }
+  try {
+    const obj = {};
+    cache.forEach((name, key) => {
+      obj[key] = {
+        name,
+        timestamp: Date.now(),
+      };
+    });
+    localStorage.setItem(CACHE_KEY, JSON.stringify(obj));
+  } catch (error) {
+    console.error('Error saving location cache:', error);
+  }
 };
 
 const locationCache = loadCacheFromStorage();
 
 export const useLocationNames = () => {
-    const user = useSelector(selectUser);
-    const [locationNames, setLocationNames] = useState(() => {
-        // Inicializar con los valores del caché al montar
-        const cached = {};
-        locationCache.forEach((value, key) => {
-            cached[key] = value;
-        });
-        return cached;
+  const user = useSelector(selectUser);
+  const [locationNames, setLocationNames] = useState(() => {
+    // Inicializar con los valores del caché al montar
+    const cached = {};
+    locationCache.forEach((value, key) => {
+      cached[key] = value;
     });
-    const canFetchLocations = useMemo(() => Boolean(user?.businessID), [user?.businessID]);
-    const pendingLocationsRef = useRef(new Set());
-    const isFetchingRef = useRef(new Set());
+    return cached;
+  });
+  const canFetchLocations = useMemo(
+    () => Boolean(user?.businessID),
+    [user?.businessID],
+  );
+  const pendingLocationsRef = useRef(new Set());
+  const isFetchingRef = useRef(new Set());
 
-    const getLocationNameCached = useCallback(async (locationId) => {
-        if (!locationId) return 'N/A';
+  const getLocationNameCached = useCallback(
+    async (locationId) => {
+      if (!locationId) return 'N/A';
 
-        if (locationCache.has(locationId)) {
-            return locationCache.get(locationId);
+      if (locationCache.has(locationId)) {
+        return locationCache.get(locationId);
+      }
+
+      if (!canFetchLocations) {
+        return null;
+      }
+
+      try {
+        const name = await getLocationName(user, locationId);
+
+        if (name && name !== 'Error al obtener ubicación') {
+          locationCache.set(locationId, name);
+          // Guardar en localStorage
+          saveCacheToStorage(locationCache);
         }
 
-        if (!canFetchLocations) {
-            return null;
+        return name;
+      } catch (error) {
+        console.error('Error fetching location name:', error);
+        return null;
+      }
+    },
+    [canFetchLocations, user],
+  );
+
+  const fetchLocationName = useCallback(
+    async (locationId) => {
+      if (!locationId) {
+        return;
+      }
+
+      // Si ya está en el caché, actualizar el estado inmediatamente
+      if (locationCache.has(locationId)) {
+        const cachedName = locationCache.get(locationId);
+        setLocationNames((prev) => ({
+          ...prev,
+          [locationId]: cachedName,
+        }));
+        return;
+      }
+
+      // Si ya se está obteniendo, no hacer nada
+      if (isFetchingRef.current.has(locationId)) {
+        return;
+      }
+
+      if (!canFetchLocations) {
+        pendingLocationsRef.current.add(locationId);
+        return;
+      }
+
+      // Marcar como en proceso
+      isFetchingRef.current.add(locationId);
+
+      try {
+        const name = await getLocationNameCached(locationId);
+
+        if (name) {
+          setLocationNames((prev) => ({
+            ...prev,
+            [locationId]: name,
+          }));
         }
+      } catch (error) {
+        console.error('Error in fetchLocationName:', error);
+      } finally {
+        // Desmarcar como en proceso
+        isFetchingRef.current.delete(locationId);
+        pendingLocationsRef.current.delete(locationId);
+      }
+    },
+    [canFetchLocations, getLocationNameCached],
+  );
 
-        try {
-            const name = await getLocationName(user, locationId);
+  useEffect(() => {
+    if (!canFetchLocations || pendingLocationsRef.current.size === 0) {
+      return;
+    }
 
-            if (name && name !== 'Error al obtener ubicación') {
-                locationCache.set(locationId, name);
-                // Guardar en localStorage
-                saveCacheToStorage(locationCache);
-            }
+    const pending = Array.from(pendingLocationsRef.current);
+    pending.forEach((locationId) => {
+      fetchLocationName(locationId);
+    });
+  }, [canFetchLocations, fetchLocationName]);
 
-            return name;
-        } catch (error) {
-            console.error('Error fetching location name:', error);
-            return null;
-        }
-    }, [canFetchLocations, user]);
-
-    const fetchLocationName = useCallback(async (locationId) => {
-        if (!locationId) {
-            return;
-        }
-
-        // Si ya está en el caché, actualizar el estado inmediatamente
-        if (locationCache.has(locationId)) {
-            const cachedName = locationCache.get(locationId);
-            setLocationNames(prev => ({
-                ...prev,
-                [locationId]: cachedName
-            }));
-            return;
-        }
-
-        // Si ya se está obteniendo, no hacer nada
-        if (isFetchingRef.current.has(locationId)) {
-            return;
-        }
-
-        if (!canFetchLocations) {
-            pendingLocationsRef.current.add(locationId);
-            return;
-        }
-
-        // Marcar como en proceso
-        isFetchingRef.current.add(locationId);
-
-        try {
-            const name = await getLocationNameCached(locationId);
-            
-            if (name) {
-                setLocationNames(prev => ({
-                    ...prev,
-                    [locationId]: name
-                }));
-            }
-        } catch (error) {
-            console.error('Error in fetchLocationName:', error);
-        } finally {
-            // Desmarcar como en proceso
-            isFetchingRef.current.delete(locationId);
-            pendingLocationsRef.current.delete(locationId);
-        }
-    }, [canFetchLocations, getLocationNameCached]);
-
-    useEffect(() => {
-        if (!canFetchLocations || pendingLocationsRef.current.size === 0) {
-            return;
-        }
-
-        const pending = Array.from(pendingLocationsRef.current);
-        pending.forEach((locationId) => {
-            fetchLocationName(locationId);
-        });
-    }, [canFetchLocations, fetchLocationName]);
-
-    return { locationNames, fetchLocationName };
+  return { locationNames, fetchLocationName };
 };

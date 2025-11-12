@@ -12,17 +12,17 @@ const baseColors = {
     main: '#1A73E8',
     light: '#4A95F0',
     dark: '#0D5FC2',
-    contrast: '#FFFFFF'
+    contrast: '#FFFFFF',
   },
-  
+
   // Colores de estado/alerta
   status: {
     success: '#4CAF50',
     warning: '#FFA500',
     error: '#FF4646',
-    info: '#2196F3'
+    info: '#2196F3',
   },
-  
+
   // Escala de grises
   gray: {
     50: '#FAFAFA',
@@ -34,7 +34,7 @@ const baseColors = {
     600: '#757575',
     700: '#616161',
     800: '#424242',
-    900: '#212121'
+    900: '#212121',
   },
 
   // Colores de fondo
@@ -42,7 +42,7 @@ const baseColors = {
     paper: '#FFFFFF',
     default: '#F5F7FA',
     card: '#FFFFFF',
-    tooltip: '#616161'
+    tooltip: '#616161',
   },
 
   // Colores para texto
@@ -52,28 +52,28 @@ const baseColors = {
     disabled: 'rgba(0, 0, 0, 0.38)',
     hint: 'rgba(0, 0, 0, 0.38)',
     contrast: '#FFFFFF',
-    link: '#1A73E8'
+    link: '#1A73E8',
   },
 
   // Colores para bordes
   border: {
     light: '#EEEEEE',
     main: '#E0E0E0',
-    dark: '#BDBDBD'
+    dark: '#BDBDBD',
   },
 
   // Colores para sombras
-  shadow: 'rgba(0, 0, 0, 0.1)'
+  shadow: 'rgba(0, 0, 0, 0.1)',
 };
 
 // Dimensiones y espaciado
 const spacing = {
-  xs: '0.25rem',    // 4px
-  sm: '0.5rem',     // 8px
-  md: '1rem',       // 16px
-  lg: '1.5rem',     // 24px
-  xl: '2rem',       // 32px
-  xxl: '3rem'       // 48px
+  xs: '0.25rem', // 4px
+  sm: '0.5rem', // 8px
+  md: '1rem', // 16px
+  lg: '1.5rem', // 24px
+  xl: '2rem', // 32px
+  xxl: '3rem', // 48px
 };
 
 // Radios de borde
@@ -84,38 +84,39 @@ const borderRadius = {
   lg: '12px',
   xl: '16px',
   pill: '500px',
-  circle: '50%'
+  circle: '50%',
 };
 
 // Tipografía
 const typography = {
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-  
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+
   // Tamaños de fuente
   fontSize: {
-    xs: '0.75rem',    // 12px
-    sm: '0.875rem',   // 14px
-    md: '1rem',       // 16px
-    lg: '1.125rem',   // 18px
-    xl: '1.25rem',    // 20px
-    xxl: '1.5rem'     // 24px
+    xs: '0.75rem', // 12px
+    sm: '0.875rem', // 14px
+    md: '1rem', // 16px
+    lg: '1.125rem', // 18px
+    xl: '1.25rem', // 20px
+    xxl: '1.5rem', // 24px
   },
-  
+
   // Pesos de fuente
   fontWeight: {
     light: 300,
     regular: 400,
     medium: 500,
     semibold: 600,
-    bold: 700
+    bold: 700,
   },
-  
+
   // Altura de línea
   lineHeight: {
     tight: 1.25,
     normal: 1.5,
-    relaxed: 1.75
-  }
+    relaxed: 1.75,
+  },
 };
 
 // Sombras
@@ -123,14 +124,14 @@ const shadows = {
   sm: '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08)',
   md: '0 4px 6px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)',
   lg: '0 10px 15px rgba(0, 0, 0, 0.12), 0 4px 6px rgba(0, 0, 0, 0.08)',
-  xl: '0 20px 25px rgba(0, 0, 0, 0.12), 0 10px 10px rgba(0, 0, 0, 0.08)'
+  xl: '0 20px 25px rgba(0, 0, 0, 0.12), 0 10px 10px rgba(0, 0, 0, 0.08)',
 };
 
 // Transiciones
 const transitions = {
   quick: 'all 0.2s ease',
   normal: 'all 0.3s ease',
-  slow: 'all 0.5s ease'
+  slow: 'all 0.5s ease',
 };
 
 // Z-index
@@ -140,7 +141,7 @@ const zIndex = {
   dropdown: 1300,
   header: 1200,
   overlay: 1100,
-  base: 1
+  base: 1,
 };
 
 // Paneles específicos
@@ -150,9 +151,9 @@ const panels = {
     icon: '📄',
     borderColor: baseColors.status.warning,
     progressColor: baseColors.status.warning,
-    textColor: baseColors.status.warning
+    textColor: baseColors.status.warning,
   },
-  
+
   // Panel de cuentas por cobrar
   accountsReceivable: {
     icon: '📅',
@@ -161,14 +162,14 @@ const panels = {
     textColor: baseColors.status.error,
     dueSoon: {
       bg: '#FFF6E9',
-      text: baseColors.status.warning
+      text: baseColors.status.warning,
     },
     overdue: {
       bg: '#FFEBEB',
-      text: baseColors.status.error
-    }
+      text: baseColors.status.error,
+    },
   },
-  
+
   // Panel de inventario
   inventory: {
     icon: '📦',
@@ -176,23 +177,23 @@ const panels = {
     status: {
       crítico: {
         bg: '#FFEBEB',
-        text: baseColors.status.error
+        text: baseColors.status.error,
       },
       bajo: {
         bg: '#FFF6E9',
-        text: baseColors.status.warning
-      }
-    }
+        text: baseColors.status.warning,
+      },
+    },
   },
-  
+
   // Panel de ventas
   sales: {
     icon: '📈',
     borderColor: baseColors.status.success,
     progressColor: baseColors.status.success,
-    textColor: baseColors.status.success
+    textColor: baseColors.status.success,
   },
-  
+
   // Panel de sistema
   system: {
     icon: '🔄',
@@ -200,8 +201,8 @@ const panels = {
     buttonBg: baseColors.primary.main,
     buttonHover: baseColors.primary.dark,
     badgeBg: '#E8F0FE',
-    badgeColor: baseColors.primary.main
-  }
+    badgeColor: baseColors.primary.main,
+  },
 };
 
 // Tema completo para el Centro de Notificaciones
@@ -214,11 +215,11 @@ const notificationTheme = {
   transitions,
   zIndex,
   panels,
-  
+
   // Función de ayuda para obtener un tema de panel específico
   getPanelTheme: (panelType) => {
     return panels[panelType] || {};
-  }
+  },
 };
 
 export default notificationTheme;

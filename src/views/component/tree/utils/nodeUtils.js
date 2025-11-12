@@ -1,4 +1,3 @@
-
 export function findPathToNode(nodes, nodeId, path = []) {
   for (const node of nodes) {
     const currentPath = [...path, node.id];

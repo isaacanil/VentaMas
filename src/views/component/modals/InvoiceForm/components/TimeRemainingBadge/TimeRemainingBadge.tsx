@@ -1,4 +1,8 @@
-import { ClockCircleOutlined, InfoCircleOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  ClockCircleOutlined,
+  InfoCircleOutlined,
+  EditOutlined,
+} from '@ant-design/icons';
 import { Popover, Typography } from 'antd';
 import { DateTime, Duration } from 'luxon';
 import { useEffect, useState } from 'react';
@@ -32,7 +36,9 @@ interface TimeBreakdown {
 
 const CANCELATION_WINDOW_DAYS = 2;
 
-const computeFormattedRemainingTime = (secondsRemaining: number): FormattedTime => {
+const computeFormattedRemainingTime = (
+  secondsRemaining: number,
+): FormattedTime => {
   if (secondsRemaining <= 0) {
     return { time: '00:00', unit: 'horas' };
   }
@@ -69,8 +75,11 @@ const computeTimeBreakdown = (secondsRemaining: number): TimeBreakdown => {
   };
 };
 
-export const TimeRemainingBadge: FC<TimeRemainingBadgeProps> = ({ invoice }) => {
-  const [remainingCancelationTime, setRemainingCancelationTime] = useState<number>(0);
+export const TimeRemainingBadge: FC<TimeRemainingBadgeProps> = ({
+  invoice,
+}) => {
+  const [remainingCancelationTime, setRemainingCancelationTime] =
+    useState<number>(0);
   const invoiceDate = typeof invoice?.date === 'number' ? invoice.date : null;
 
   useEffect(() => {
@@ -81,7 +90,9 @@ export const TimeRemainingBadge: FC<TimeRemainingBadgeProps> = ({ invoice }) => 
 
     const updateRemainingTime = () => {
       const now = DateTime.now();
-      const expiryTime = DateTime.fromMillis(invoiceDate).plus({ days: CANCELATION_WINDOW_DAYS });
+      const expiryTime = DateTime.fromMillis(invoiceDate).plus({
+        days: CANCELATION_WINDOW_DAYS,
+      });
       const remaining = expiryTime.diff(now, 'seconds').seconds;
 
       setRemainingCancelationTime(Math.max(0, remaining));
@@ -198,7 +209,10 @@ const BadgeButton = styled.div`
   border: 1px solid rgba(255, 171, 64, 0.4);
   box-shadow: 0 2px 10px rgba(255, 171, 64, 0.15);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
     transform: translateY(-1px);

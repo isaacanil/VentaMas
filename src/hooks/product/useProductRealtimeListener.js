@@ -10,7 +10,11 @@ import { db } from '../../firebase/firebaseconfig.jsx';
  * @param {boolean} enabled - Si debe activar el listener
  * @returns {Object} Estado del producto en tiempo real
  */
-export const useProductRealtimeListener = (businessId, productId, enabled = true) => {
+export const useProductRealtimeListener = (
+  businessId,
+  productId,
+  enabled = true,
+) => {
   const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,7 +35,13 @@ export const useProductRealtimeListener = (businessId, productId, enabled = true
     setError(null);
 
     try {
-      const productRef = doc(db, 'businesses', businessId, 'products', productId);
+      const productRef = doc(
+        db,
+        'businesses',
+        businessId,
+        'products',
+        productId,
+      );
 
       // Crear el listener en tiempo real
       const unsubscribe = onSnapshot(
@@ -52,15 +62,15 @@ export const useProductRealtimeListener = (businessId, productId, enabled = true
               _metadata: {
                 lastUpdated: data.updatedAt || data.createdAt,
                 exists: true,
-                hasPendingWrites: docSnapshot.metadata.hasPendingWrites
-              }
+                hasPendingWrites: docSnapshot.metadata.hasPendingWrites,
+              },
             });
             setError(null);
           } else {
             setProductData(null);
             setError({
               type: 'not_found',
-              message: 'El producto no fue encontrado'
+              message: 'El producto no fue encontrado',
             });
           }
         },
@@ -71,9 +81,9 @@ export const useProductRealtimeListener = (businessId, productId, enabled = true
           setError({
             type: 'listener_error',
             message: 'Error al escuchar cambios del producto',
-            details: error.message
+            details: error.message,
           });
-        }
+        },
       );
 
       // Guardar referencia para cleanup
@@ -86,17 +96,15 @@ export const useProductRealtimeListener = (businessId, productId, enabled = true
           unsubscribeRef.current = null;
         }
       };
-
     } catch (error) {
       console.error('Error al crear listener:', error);
       setLoading(false);
       setError({
         type: 'setup_error',
         message: 'Error al configurar el listener',
-        details: error.message
+        details: error.message,
       });
     }
-
   }, [businessId, productId, enabled]);
 
   // Cleanup cuando el componente se desmonta
@@ -118,7 +126,7 @@ export const useProductRealtimeListener = (businessId, productId, enabled = true
     hasBarcode: productData?.barcode ? true : false,
     currentBarcode: productData?.barcode || null,
     productName: productData?.name || '',
-    isUpdating: productData?._metadata?.hasPendingWrites || false
+    isUpdating: productData?._metadata?.hasPendingWrites || false,
   };
 };
 

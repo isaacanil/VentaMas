@@ -13,7 +13,12 @@ import { reserveNcf } from './ncf.service.js';
  * Crea una factura V2 en estado 'pending' y registra la clave de idempotencia.
  * No aplica efectos laterales aún (inventario, AR, etc.).
  */
-export async function createPendingInvoice({ businessId, userId, payload, idempotencyKey }) {
+export async function createPendingInvoice({
+  businessId,
+  userId,
+  payload,
+  idempotencyKey,
+}) {
   const requestHash = stableHash(payload);
   const cartHash = stableHash(payload?.cart);
 
@@ -26,19 +31,21 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
       return { invoiceId: data.invoiceId, alreadyExists: true };
     }
 
-    const isPreorder =
-      !!(payload?.preorder?.isPreorder || payload?.cart?.preorderDetails?.isOrWasPreorder);
+    const isPreorder = !!(
+      payload?.preorder?.isPreorder ||
+      payload?.cart?.preorderDetails?.isOrWasPreorder
+    );
     const preorderCartId = isPreorder
-      ? (
-        payload?.cart?.id
-        || payload?.cart?.cartId
-        || payload?.cart?.cartIdRef
-        || payload?.cartId
-        || null
-      )
+      ? payload?.cart?.id ||
+        payload?.cart?.cartId ||
+        payload?.cart?.cartIdRef ||
+        payload?.cartId ||
+        null
       : null;
     const newInvoiceId = preorderCartId || nanoid();
-    const invoiceRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}`);
+    const invoiceRef = db.doc(
+      `businesses/${businessId}/invoicesV2/${newInvoiceId}`,
+    );
 
     // Derivar dueDate si no llega y hay configuración en billing
     const billing = payload?.cart?.billing || {};
@@ -82,16 +89,14 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
       idempotencyKey,
       requestHash,
       cartHash,
-      statusTimeline: [
-        { status: 'pending', at: Timestamp.now() },
-      ],
+      statusTimeline: [{ status: 'pending', at: Timestamp.now() }],
       snapshot: {
         ncf: payload?.ncf || null,
         client: payload?.client || null,
         totals: payload?.cart?.payment || null,
         meta: {
           preorder: isPreorder,
-          preorderId: isPreorder ? (preorderCartId || null) : null,
+          preorderId: isPreorder ? preorderCartId || null : null,
         },
         dueDate: derivedDueDate || null,
         invoiceComment: derivedInvoiceComment || null,
@@ -104,7 +109,11 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     let ncfReservation = null;
     if (ncfEnabled) {
       if (!ncfType) {
-        throw new https.HttpsError('invalid-argument', 'ncfType requerido cuando ncf.enabled=true', { reason: 'missing-ncf-type' });
+        throw new https.HttpsError(
+          'invalid-argument',
+          'ncfType requerido cuando ncf.enabled=true',
+          { reason: 'missing-ncf-type' },
+        );
       }
       ncfReservation = await reserveNcf(tx, { businessId, userId, ncfType });
       baseDoc.snapshot.ncf = {
@@ -114,7 +123,10 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
         usageId: ncfReservation.usageId,
         status: 'reserved',
       };
-      baseDoc.statusTimeline.push({ status: 'ncf_reserved', at: Timestamp.now() });
+      baseDoc.statusTimeline.push({
+        status: 'ncf_reserved',
+        at: Timestamp.now(),
+      });
     }
 
     tx.set(invoiceRef, baseDoc);
@@ -127,7 +139,9 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
 
     // Crear tarea de outbox: actualizar inventario (Fase 3)
     const taskId = nanoid();
-    const outboxRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${taskId}`);
+    const outboxRef = db.doc(
+      `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${taskId}`,
+    );
     const products = Array.isArray(payload?.cart?.products)
       ? payload.cart.products.map((p) => ({
           id: p.id,
@@ -161,7 +175,9 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
 
     // Crear tarea de outbox: crear factura canónica (Fase 7)
     const canonTaskId = nanoid();
-    const canonOutboxRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${canonTaskId}`);
+    const canonOutboxRef = db.doc(
+      `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${canonTaskId}`,
+    );
     tx.set(canonOutboxRef, {
       id: canonTaskId,
       type: 'createCanonicalInvoice',
@@ -187,7 +203,9 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
 
     // Crear tarea de outbox: attach a cash count abierto (Fase 7)
     const ccTaskId = nanoid();
-    const ccOutboxRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${ccTaskId}`);
+    const ccOutboxRef = db.doc(
+      `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${ccTaskId}`,
+    );
     tx.set(ccOutboxRef, {
       id: ccTaskId,
       type: 'attachToCashCount',
@@ -210,7 +228,9 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     // Crear tarea de outbox: cerrar preorden (Fase Preorden)
     if (isPreorder) {
       const prTaskId = nanoid();
-      const prOutboxRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${prTaskId}`);
+      const prOutboxRef = db.doc(
+        `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${prTaskId}`,
+      );
       tx.set(prOutboxRef, {
         id: prTaskId,
         type: 'closePreorder',
@@ -236,13 +256,27 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     const arData = payload?.accountsReceivable || null;
     if (isAddedToReceivables) {
       const totalInstallments = Number(arData?.totalInstallments);
-      if (!arData || !Number.isFinite(totalInstallments) || totalInstallments <= 0) {
-        throw new https.HttpsError('invalid-argument', 'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true', { reason: 'invalid-accounts-receivable' });
+      if (
+        !arData ||
+        !Number.isFinite(totalInstallments) ||
+        totalInstallments <= 0
+      ) {
+        throw new https.HttpsError(
+          'invalid-argument',
+          'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true',
+          { reason: 'invalid-accounts-receivable' },
+        );
       }
     }
-    if (isAddedToReceivables && arData && Number(arData?.totalInstallments) > 0) {
+    if (
+      isAddedToReceivables &&
+      arData &&
+      Number(arData?.totalInstallments) > 0
+    ) {
       const arTaskId = nanoid();
-      const arOutboxRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${arTaskId}`);
+      const arOutboxRef = db.doc(
+        `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${arTaskId}`,
+      );
       const nowMs = Date.now();
       tx.set(arOutboxRef, {
         id: arTaskId,
@@ -271,10 +305,14 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     }
 
     // Crear tarea de outbox: consumeCreditNotes (Fase 4)
-    const creditNotes = Array.isArray(payload?.cart?.creditNotePayment) ? payload.cart.creditNotePayment : [];
+    const creditNotes = Array.isArray(payload?.cart?.creditNotePayment)
+      ? payload.cart.creditNotePayment
+      : [];
     if (creditNotes.length > 0) {
       const cnTaskId = nanoid();
-      const cnOutboxRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${cnTaskId}`);
+      const cnOutboxRef = db.doc(
+        `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${cnTaskId}`,
+      );
       tx.set(cnOutboxRef, {
         id: cnTaskId,
         type: 'consumeCreditNotes',
@@ -285,7 +323,7 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
         payload: {
           businessId,
           userId,
-          creditNotes: creditNotes.map(cn => ({
+          creditNotes: creditNotes.map((cn) => ({
             id: cn.id,
             ncf: cn.ncf || null,
             amountUsed: Number(cn.amountUsed) || 0,
@@ -297,7 +335,10 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
         businessId,
         invoiceId: newInvoiceId,
         event: 'task_scheduled',
-        data: { type: 'consumeCreditNotes', creditNotes: { count: creditNotes.length } },
+        data: {
+          type: 'consumeCreditNotes',
+          creditNotes: { count: creditNotes.length },
+        },
       });
     }
 
@@ -305,9 +346,16 @@ export async function createPendingInvoice({ businessId, userId, payload, idempo
     const insuranceEnabled = !!payload?.insuranceEnabled;
     const insuranceAR = payload?.insuranceAR || null;
     const insuranceAuth = payload?.insuranceAuth || null;
-    if (insuranceEnabled && insuranceAR && Number(insuranceAR?.totalInstallments) > 0 && insuranceAuth?.insuranceId) {
+    if (
+      insuranceEnabled &&
+      insuranceAR &&
+      Number(insuranceAR?.totalInstallments) > 0 &&
+      insuranceAuth?.insuranceId
+    ) {
       const insTaskId = nanoid();
-      const insOutboxRef = db.doc(`businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${insTaskId}`);
+      const insOutboxRef = db.doc(
+        `businesses/${businessId}/invoicesV2/${newInvoiceId}/outbox/${insTaskId}`,
+      );
       const nowMs = Date.now();
       tx.set(insOutboxRef, {
         id: insTaskId,

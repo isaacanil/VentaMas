@@ -4,11 +4,11 @@
  */
 
 // Re-exportar todas las funciones desde sus módulos específicos
-export { 
-  GS1_COUNTRY_PREFIXES, 
-  PREFIXES_SORTED, 
-  GTIN_MULTIPLIERS, 
-  UPC_MULTIPLIERS 
+export {
+  GS1_COUNTRY_PREFIXES,
+  PREFIXES_SORTED,
+  GTIN_MULTIPLIERS,
+  UPC_MULTIPLIERS,
 } from './lib/constants';
 
 // Geometría y utilidades GS1
@@ -20,49 +20,40 @@ export {
   getGS1Geometry,
 } from './lib/geometry';
 
-export { 
+export {
   calculateGTIN13CheckDigit,
-  calculateEAN8CheckDigit, 
+  calculateEAN8CheckDigit,
   calculateUPCACheckDigit,
-  calculateGTIN14CheckDigit
+  calculateGTIN14CheckDigit,
 } from './lib/digits';
 
-export { 
-  expandUPCEToUPCA 
-} from './lib/expansion';
+export { expandUPCEToUPCA } from './lib/expansion';
 
-export { 
-  isVariableWeightCode, 
-  analyzeVariableWeightCode 
-} from './lib/weight';
+export { isVariableWeightCode, analyzeVariableWeightCode } from './lib/weight';
 
-export { 
-  identifyCountryByPrefix 
-} from './lib/country';
+export { identifyCountryByPrefix } from './lib/country';
 
-export { 
-  analyzeBarcodeStructure 
-} from './lib/analyzer';
+export { analyzeBarcodeStructure } from './lib/analyzer';
 
-export { 
+export {
   generateCorrectionSuggestions,
   hasCorrectionSuggestions,
-  getBestCorrectionSuggestion
+  getBestCorrectionSuggestion,
 } from './lib/suggestions';
 
-export { 
+export {
   isValidBarcode,
   getBarcodeInfo,
   isGS1RDCode,
   extractCompanyPrefix,
-  extractItemReference
+  extractItemReference,
 } from './lib/info';
 
 // Nuevas funciones de generación
-export { 
-  generateGTIN, 
-  generateGTIN13, 
-  generateGTIN14, 
+export {
+  generateGTIN,
+  generateGTIN13,
+  generateGTIN14,
   generateGTIN13RD,
   generateInternalGTIN,
   generateInternalGTIN13,
@@ -78,5 +69,5 @@ export {
   INTERNAL_MODE_STRUCTURES,
   getRecommendedStructure,
   validateGenerationConfig,
-  generateNextItemReference 
+  generateNextItemReference,
 } from './lib/generator';

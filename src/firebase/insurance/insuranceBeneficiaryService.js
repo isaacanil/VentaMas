@@ -1,8 +1,15 @@
-import { collection, doc, setDoc, onSnapshot, query, where } from "firebase/firestore";
-import { nanoid } from "nanoid";
-import { useState, useEffect } from "react";
+import {
+  collection,
+  doc,
+  setDoc,
+  onSnapshot,
+  query,
+  where,
+} from 'firebase/firestore';
+import { nanoid } from 'nanoid';
+import { useState, useEffect } from 'react';
 
-import { db } from "../firebaseconfig";
+import { db } from '../firebaseconfig';
 
 /**
  * Retorna la referencia a la colección "insuranceBeneficiaries" dentro del negocio.
@@ -13,10 +20,15 @@ import { db } from "../firebaseconfig";
  */
 const getInsuranceBeneficiariesCollection = (user) => {
   if (!user || !user.businessID) {
-    console.warn("Usuario o businessID no disponible aún");
+    console.warn('Usuario o businessID no disponible aún');
     return null;
   }
-  return collection(db, "businesses", user.businessID, "insuranceBeneficiaries");
+  return collection(
+    db,
+    'businesses',
+    user.businessID,
+    'insuranceBeneficiaries',
+  );
 };
 
 /**
@@ -28,13 +40,19 @@ const getInsuranceBeneficiariesCollection = (user) => {
  * @param {string} clientId - The ID of the client to associate with the beneficiary.
  * @returns {Promise<string>} - The generated ID of the newly added beneficiary.
  */
-export const addInsuranceBeneficiary = async (user, beneficiaryData, clientId) => {
+export const addInsuranceBeneficiary = async (
+  user,
+  beneficiaryData,
+  clientId,
+) => {
   try {
     const id = nanoid();
     const createdAt = new Date().toISOString();
     const beneficiariesCollection = getInsuranceBeneficiariesCollection(user);
     if (!beneficiariesCollection) {
-      console.warn("No se pudo agregar beneficiario: datos de usuario no disponibles");
+      console.warn(
+        'No se pudo agregar beneficiario: datos de usuario no disponibles',
+      );
       return null;
     }
     const newDocRef = doc(beneficiariesCollection, id);
@@ -47,12 +65,12 @@ export const addInsuranceBeneficiary = async (user, beneficiaryData, clientId) =
       createdBy: user.uid, // Usamos user.uid directamente
       createdAt,
       updatedAt: createdAt,
-      deleted: false
+      deleted: false,
     });
 
     return id;
   } catch (error) {
-    console.error("Error adding insurance beneficiary:", error);
+    console.error('Error adding insurance beneficiary:', error);
     throw error;
   }
 };
@@ -65,11 +83,17 @@ export const addInsuranceBeneficiary = async (user, beneficiaryData, clientId) =
  * @param {string} beneficiaryId - The ID of the beneficiary to update.
  * @param {object} updatedData - The data fields to update.
  */
-export const updateInsuranceBeneficiary = async (user, beneficiaryId, updatedData) => {
+export const updateInsuranceBeneficiary = async (
+  user,
+  beneficiaryId,
+  updatedData,
+) => {
   try {
     const beneficiariesCollection = getInsuranceBeneficiariesCollection(user);
     if (!beneficiariesCollection) {
-      console.warn("No se pudo actualizar beneficiario: datos de usuario no disponibles");
+      console.warn(
+        'No se pudo actualizar beneficiario: datos de usuario no disponibles',
+      );
       return;
     }
     const beneficiaryDoc = doc(beneficiariesCollection, beneficiaryId);
@@ -80,12 +104,12 @@ export const updateInsuranceBeneficiary = async (user, beneficiaryId, updatedDat
       {
         ...updatedData,
         updatedAt: updateTime,
-        updatedBy: user.uid // Usamos user.uid directamente
+        updatedBy: user.uid, // Usamos user.uid directamente
       },
-      { merge: true }
+      { merge: true },
     );
   } catch (error) {
-    console.error("Error updating insurance beneficiary:", error);
+    console.error('Error updating insurance beneficiary:', error);
     throw error;
   }
 };
@@ -101,7 +125,9 @@ export const softDeleteInsuranceBeneficiary = async (user, beneficiaryId) => {
   try {
     const beneficiariesCollection = getInsuranceBeneficiariesCollection(user);
     if (!beneficiariesCollection) {
-      console.warn("No se pudo eliminar (soft) beneficiario: datos de usuario no disponibles");
+      console.warn(
+        'No se pudo eliminar (soft) beneficiario: datos de usuario no disponibles',
+      );
       return;
     }
     const beneficiaryDoc = doc(beneficiariesCollection, beneficiaryId);
@@ -112,12 +138,12 @@ export const softDeleteInsuranceBeneficiary = async (user, beneficiaryId) => {
       {
         deleted: true,
         deletedAt,
-        deletedBy: user.uid // Usamos user.uid para marcar quien realiza la eliminación
+        deletedBy: user.uid, // Usamos user.uid para marcar quien realiza la eliminación
       },
-      { merge: true }
+      { merge: true },
     );
   } catch (error) {
-    console.error("Error soft deleting insurance beneficiary:", error);
+    console.error('Error soft deleting insurance beneficiary:', error);
     throw error;
   }
 };
@@ -130,26 +156,36 @@ export const softDeleteInsuranceBeneficiary = async (user, beneficiaryId) => {
  * @param {function} errorCallback - (Optional) Function to call if an error occurs.
  * @returns {function} - The unsubscribe function to stop listening.
  */
-export const listenInsuranceBeneficiaries = ({ user, clientId, callback, errorCallback }) => {
+export const listenInsuranceBeneficiaries = ({
+  user,
+  clientId,
+  callback,
+  errorCallback,
+}) => {
   const beneficiariesCollection = getInsuranceBeneficiariesCollection(user);
   if (!beneficiariesCollection) {
-    console.warn("No se pudo escuchar beneficiarios: datos de usuario no disponibles");
+    console.warn(
+      'No se pudo escuchar beneficiarios: datos de usuario no disponibles',
+    );
     // Retornamos una función de no-op para evitar errores en el unsubscribe
-    return () => { };
+    return () => {};
   }
   let queryRef = beneficiariesCollection;
   if (clientId) {
-    queryRef = query(beneficiariesCollection, where("clientId", "==", clientId));
+    queryRef = query(
+      beneficiariesCollection,
+      where('clientId', '==', clientId),
+    );
   }
   return onSnapshot(
     queryRef,
     (querySnapshot) => {
       const beneficiaries = querySnapshot.docs
-        .map(doc => doc.data())
-        .filter(data => !data.deleted); // Filtrar solo los beneficiarios no eliminados
+        .map((doc) => doc.data())
+        .filter((data) => !data.deleted); // Filtrar solo los beneficiarios no eliminados
       callback(beneficiaries);
     },
-    errorCallback
+    errorCallback,
   );
 };
 
@@ -164,16 +200,14 @@ export const useInsuranceBeneficiaries = (user, clientId) => {
 
   useEffect(() => {
     if (!user) return;
-    const unsubscribe = listenInsuranceBeneficiaries(
-      {
-        user,
-        clientId,
-        callback: (data) => setBeneficiaries(data),
-        errorCallback: (error) => {
-          console.error("Error listening to insurance beneficiaries:", error);
-        }
-      }
-    );
+    const unsubscribe = listenInsuranceBeneficiaries({
+      user,
+      clientId,
+      callback: (data) => setBeneficiaries(data),
+      errorCallback: (error) => {
+        console.error('Error listening to insurance beneficiaries:', error);
+      },
+    });
     return () => unsubscribe();
   }, [user, clientId]);
 

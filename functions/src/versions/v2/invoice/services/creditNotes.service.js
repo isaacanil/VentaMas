@@ -4,8 +4,12 @@ import { db, FieldValue } from '../../../../core/config/firebase.js';
  * Consume notas de crédito y crea registros de aplicación en una transacción.
  * creditNotes: [{ id, amountUsed, ncf?, originalAmount? }]
  */
-export async function consumeCreditNotesTx(tx, { businessId, userId, invoiceId, creditNotes = [], invoiceSnapshot = {} }) {
-  if (!Array.isArray(creditNotes) || creditNotes.length === 0) return { applicationIds: [] };
+export async function consumeCreditNotesTx(
+  tx,
+  { businessId, userId, invoiceId, creditNotes = [], invoiceSnapshot = {} },
+) {
+  if (!Array.isArray(creditNotes) || creditNotes.length === 0)
+    return { applicationIds: [] };
 
   const createdApplicationIds = [];
 
@@ -18,10 +22,14 @@ export async function consumeCreditNotesTx(tx, { businessId, userId, invoiceId, 
       throw new Error(`Nota de crédito ${note.id} no encontrada`);
     }
     const cnData = cnSnap.data();
-    const currentAvailable = Number(cnData?.availableAmount ?? cnData?.totalAmount ?? 0);
+    const currentAvailable = Number(
+      cnData?.availableAmount ?? cnData?.totalAmount ?? 0,
+    );
     const amountToConsume = Number(note.amountUsed);
     if (currentAvailable < amountToConsume) {
-      throw new Error(`Saldo insuficiente en nota de crédito ${cnData?.ncf || cnData?.number || note.id}`);
+      throw new Error(
+        `Saldo insuficiente en nota de crédito ${cnData?.ncf || cnData?.number || note.id}`,
+      );
     }
     const newAvailable = currentAvailable - amountToConsume;
 
@@ -44,9 +52,13 @@ export async function consumeCreditNotesTx(tx, { businessId, userId, invoiceId, 
       creditNoteId: note.id,
       creditNoteNcf: note.ncf || cnData?.ncf || null,
       invoiceId,
-      invoiceNcf: invoiceSnapshot?.snapshot?.ncf?.code || invoiceSnapshot?.snapshot?.ncf || null,
+      invoiceNcf:
+        invoiceSnapshot?.snapshot?.ncf?.code ||
+        invoiceSnapshot?.snapshot?.ncf ||
+        null,
       invoiceNumber: invoiceSnapshot?.snapshot?.numberID || null,
-      clientId: invoiceSnapshot?.snapshot?.client?.id || cnData?.client?.id || null,
+      clientId:
+        invoiceSnapshot?.snapshot?.client?.id || cnData?.client?.id || null,
       amountApplied: amountToConsume,
       previousBalance: currentAvailable,
       newBalance: newAvailable,

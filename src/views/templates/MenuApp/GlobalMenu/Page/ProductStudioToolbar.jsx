@@ -1,4 +1,8 @@
-import { faEllipsisV, faSitemap, faFileInvoice } from '@fortawesome/free-solid-svg-icons';
+import {
+  faEllipsisV,
+  faSitemap,
+  faFileInvoice,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown } from 'antd';
 import { useEffect, useState } from 'react';
@@ -51,10 +55,10 @@ export const ProductStudioToolbar = ({
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 1200);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 

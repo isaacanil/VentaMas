@@ -1,21 +1,19 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-import { MenuApp } from '../../../templates/MenuApp/MenuApp'
-import ExpensesForm from '../../Expenses/ExpensesForm/ExpensesForm'
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import ExpensesForm from '../../Expenses/ExpensesForm/ExpensesForm';
 
-import { ExpensesTable } from './components/ExpenseTable/ExpensesTable'
+import { ExpensesTable } from './components/ExpenseTable/ExpensesTable';
 
 export const ExpensesList = () => {
   return (
     <Container>
-      <MenuApp
-        sectionName={'Gastos'}
-      />
+      <MenuApp sectionName={'Gastos'} />
       <ExpensesTable />
       <ExpensesForm />
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
   display: flex;
@@ -23,4 +21,4 @@ const Container = styled.div`
   overflow: hidden;
   width: 100%;
   height: 100%;
-`
+`;

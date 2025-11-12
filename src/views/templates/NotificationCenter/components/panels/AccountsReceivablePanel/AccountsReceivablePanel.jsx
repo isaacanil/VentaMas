@@ -15,14 +15,21 @@ import ErrorState from './components/ErrorState';
 import LoadingState from './components/LoadingState';
 import PanelHeader from './components/PanelHeader';
 
-
 /**
  * Panel para mostrar cuentas por cobrar próximas a vencer
  * Ahora reutiliza la base visual del panel de Autorizaciones
  */
-const AccountsReceivablePanel = ({ showQuickStats = false, daysThreshold = 7 }) => {
-  const { dueSoonAccounts = [], overdueAccounts = [], loading, error, stats = {} } =
-    useDueDatesReceivable(daysThreshold);
+const AccountsReceivablePanel = ({
+  showQuickStats = false,
+  daysThreshold = 7,
+}) => {
+  const {
+    dueSoonAccounts = [],
+    overdueAccounts = [],
+    loading,
+    error,
+    stats = {},
+  } = useDueDatesReceivable(daysThreshold);
 
   const accounts = useMemo(() => {
     const overdueList = Array.isArray(overdueAccounts) ? overdueAccounts : [];
@@ -38,11 +45,23 @@ const AccountsReceivablePanel = ({ showQuickStats = false, daysThreshold = 7 }) 
   }
 
   if (error) {
-    return <ErrorState title="Cuentas por Cobrar" icon={faExclamationTriangle} message="No se pudieron cargar los datos" />;
+    return (
+      <ErrorState
+        title="Cuentas por Cobrar"
+        icon={faExclamationTriangle}
+        message="No se pudieron cargar los datos"
+      />
+    );
   }
 
   if (accounts.length === 0) {
-    return <EmptyState daysThreshold={daysThreshold} title="Cuentas por Cobrar" icon={faCheckCircle} />;
+    return (
+      <EmptyState
+        daysThreshold={daysThreshold}
+        title="Cuentas por Cobrar"
+        icon={faCheckCircle}
+      />
+    );
   }
 
   const totalAlerts = stats.totalAlerts ?? accounts.length;

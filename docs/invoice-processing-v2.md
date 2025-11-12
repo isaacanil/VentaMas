@@ -12,6 +12,7 @@ Este documento propone una versión V2 del proceso de facturación en backend, i
 - Mantener compatibilidad funcional con el flujo actual de frontend (incluyendo modo prueba y preorden).
 
 No objetivos (por ahora):
+
 - Cambiar el modelo de datos de factura existente más allá de los mínimos para estados y auditoría.
 - Implementar impresión en backend (se mantiene en frontend o un servicio aparte de generación de PDFs).
 
@@ -23,6 +24,7 @@ No objetivos (por ahora):
 - Almacenamiento: Firestore (transacciones multi-documento), subcolecciones para outbox/audit.
 
 Componentes:
+
 - Servicio de Orquestación de Facturas (`invoiceOrchestrator`): valida y persiste la operación base en estado `pending` dentro de una transacción, emite un `outbox` con tareas.
 - Procesador de Outbox (`outboxWorker`): ejecuta efectos (inventario, AR, notas de crédito, cerrar preorden) idempotentemente y marca progreso.
 - Servicio NCF (`ncfService`): reserva/consume con control de versiones.
@@ -59,20 +61,24 @@ Componentes:
 
 ## Flujo Transaccional (sincronía base)
 
-1) Validaciones:
+1. Validaciones:
+
 - Carrito válido, cliente (o genérico), reglas de pagos, límites básicos.
 - Cash Count abierto (si aplica, no en testMode).
 
-2) Reserva de NCF (si habilitado):
+2. Reserva de NCF (si habilitado):
+
 - `ncfService.reserve(ncfType)` dentro de la transacción.
 - Marca reserva con versión y TTL (por ejemplo `expiresAt`).
 
-3) Persistencia base (Transacción Firestore):
+3. Persistencia base (Transacción Firestore):
+
 - Crear doc `invoices/{invoiceId}` con estado `pending` y payload mínimo: `NCF`, `client`, `cart snapshot`, `cashCountId`, `dueDate`, `createdAt`, `idempotencyKey`.
 - Crear subcolección `invoices/{invoiceId}/outbox` con tareas: `updateInventory`, `setupAR`, `consumeCreditNotes`, `closePreorder` (según aplique).
 - Registrar `idempotencyKey -> invoiceId` en `idempotency/{key}`.
 
-4) Procesamiento de Outbox (worker asíncrono):
+4. Procesamiento de Outbox (worker asíncrono):
+
 - Marca `committing` y ejecuta tareas en orden con idempotencia (cada tarea mantiene su propio `taskStatus` y `attempts`).
 - Efectos por tarea:
   - Inventario: decremento por producto con verificación de stock; idempotente por `invoiceId`.
@@ -81,7 +87,8 @@ Componentes:
   - Preorden: marcar como facturada/convertida.
 - Si todo ok → marcar factura `committed` y `ncfService.consume(reservationId)`.
 
-5) Errores y Compensación (Saga):
+5. Errores y Compensación (Saga):
+
 - Si una tarea falla de forma permanente:
   - Ejecutar compensaciones en orden inverso a lo aplicado:
     - Preorden: revertir estado si se cambió.
@@ -177,31 +184,39 @@ process(invoiceId):
 
 ## Plan de Implementación (fases)
 
-1) Endpoint + Idempotencia
+1. Endpoint + Idempotencia
+
 - Crear `POST /v2/invoices` con validaciones mínimas y `Idempotency-Key` persistida.
 - Retornar `pending` con `invoiceId`.
 
-2) Reserva NCF + Estados de Factura
+2. Reserva NCF + Estados de Factura
+
 - Transacción para crear factura `pending` + `ncf.reserve`.
 - Añadir campos `status`, `idempotencyKey`, `audit` básico.
 
-3) Outbox + Worker (Inventario primero)
+3. Outbox + Worker (Inventario primero)
+
 - Implementar outbox y worker con una sola tarea: `updateInventory`.
 - Idempotencia por `invoiceId` y locks por producto si aplica.
 
-4) AR y Notas de Crédito
+4. AR y Notas de Crédito
+
 - Añadir tareas `setupAR` y `consumeCreditNotes` con idempotencia.
 
-5) Preorden y Consumo NCF
+5. Preorden y Consumo NCF
+
 - Añadir `closePreorder` y `ncf.consume` al final del worker.
 
-6) Compensaciones + Retries
+6. Compensaciones + Retries
+
 - Implementar compensaciones y política de reintentos exponenciales.
 
-7) Seguridad + Reglas + Observabilidad
+7. Seguridad + Reglas + Observabilidad
+
 - Endurecer reglas de Firestore, métricas y auditoría.
 
-8) Integración Frontend
+8. Integración Frontend
+
 - `InvoicePanel` llama al endpoint con `Idempotency-Key`.
 - Polling o suscripción al `invoice.status` para imprimir solo cuando `committed`.
 

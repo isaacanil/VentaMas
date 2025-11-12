@@ -3,9 +3,9 @@ import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons'
-import { deleteItem } from '../../../../../features/category/categorySlicer'
-import { useMoveScroll } from '../../../../../utils/scroll/moveScroll'
+import { icons } from '../../../../../constants/icons/icons';
+import { deleteItem } from '../../../../../features/category/categorySlicer';
+import { useMoveScroll } from '../../../../../utils/scroll/moveScroll';
 import { categoryColors } from '../../categoryColors';
 
 export const CategoryBar = ({ open, setOpen, items = [] }) => {
@@ -16,14 +16,13 @@ export const CategoryBar = ({ open, setOpen, items = [] }) => {
     return (
       <Container>
         <Button
-
           icon={icons.editingActions.create}
           onClick={() => setOpen(!open)}
         >
           Seleccionar categoría
         </Button>
       </Container>
-    )
+    );
   }
 
   return (
@@ -37,23 +36,19 @@ export const CategoryBar = ({ open, setOpen, items = [] }) => {
         onClick={toLeft}
         onDoubleClick={toStart}
       />
-      <CategoryList
-        ref={categoriesRef}
-      >
-        {
-          (items?.length === 0) ?
-            (<>No elementos</>) :
-            (items.map((item) => (
-              <Category key={item.id} item={item} />
-            )))
-        }
+      <CategoryList ref={categoriesRef}>
+        {items?.length === 0 ? (
+          <>No elementos</>
+        ) : (
+          items.map((item) => <Category key={item.id} item={item} />)
+        )}
       </CategoryList>
       <Button
         onClick={toRight}
         onDoubleClick={toEnd}
         icon={icons.arrows.chevronRight}
       />
-    </Container >
+    </Container>
   );
 };
 const Container = styled.div`
@@ -65,7 +60,6 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: min-content min-content 1fr min-content;
   background-color: #ffffff;
-
 `;
 const Category = ({ item }) => {
   const dispatch = useDispatch();
@@ -75,13 +69,15 @@ const Category = ({ item }) => {
   return (
     <CategoryItem type={item.type}>
       {item.name}
-      <RemoveIcon onClick={handleDeleteCategory} >{icons.editingActions.cancel}</RemoveIcon>
+      <RemoveIcon onClick={handleDeleteCategory}>
+        {icons.editingActions.cancel}
+      </RemoveIcon>
     </CategoryItem>
   );
-}
+};
 
 const CategoryList = styled.div`
-  /* estilos para la lista de categorías */ 
+  /* estilos para la lista de categorías */
   display: flex;
   gap: 0.4em;
   align-items: center;
@@ -95,16 +91,17 @@ const CategoryList = styled.div`
 `;
 
 const CategoryItem = styled.div`
-    /* estilos para cada categoría */
-    padding: 0 0.6em ;
-    height: 2.2em;
-    display: flex;
-    gap: 1em;
-    white-space: nowrap;
-    align-items: center;
-    background-color: ${({type}) => categoryColors[type] || categoryColors.default};
-    border-radius: 0.4em;
-    justify-content: space-between;
+  /* estilos para cada categoría */
+  padding: 0 0.6em;
+  height: 2.2em;
+  display: flex;
+  gap: 1em;
+  white-space: nowrap;
+  align-items: center;
+  background-color: ${({ type }) =>
+    categoryColors[type] || categoryColors.default};
+  border-radius: 0.4em;
+  justify-content: space-between;
 `;
 
 const RemoveIcon = styled.span`
@@ -117,10 +114,9 @@ const RemoveIcon = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  :hover{
+  :hover {
     color: var(--Black5);
     background-color: var(--White5);
     border-radius: 0.4em;
   }
-
 `;

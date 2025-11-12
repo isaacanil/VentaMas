@@ -53,7 +53,7 @@ export const FilterAccountReceivable = ({
     { value: 'balance', label: 'Balance' },
     { value: 'initialAmount', label: 'Monto Inicial' },
   ];
-  
+
   // Agregar opción de ordenamiento por aseguradora si es una farmacia
   if (isPharmacy) {
     sortOptions.splice(4, 0, { value: 'insurance', label: 'Aseguradora' });
@@ -64,9 +64,13 @@ export const FilterAccountReceivable = ({
   return (
     <Container>
       <Row>
-        <DatePicker inputMovilWidth setDates={setDatesSelected} dates={datesSelected} />
+        <DatePicker
+          inputMovilWidth
+          setDates={setDatesSelected}
+          dates={datesSelected}
+        />
         <DateRangeFilter setDates={handleTimeChange} dates={datesSelected} />
-        
+
         {isPharmacy && (
           <CompactClientSelector>
             <Select
@@ -92,7 +96,9 @@ export const FilterAccountReceivable = ({
             />
           </Form.Item>
           <Button
-            icon={sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc}
+            icon={
+              sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc
+            }
             onClick={toggleSortDirection}
             disabled={sortCriteria === 'defaultCriteria'}
           />
@@ -193,5 +199,4 @@ const MoreInfo = styled.div`
 const CompactClientSelector = styled.div`
   display: flex;
   align-items: center;
-
 `;

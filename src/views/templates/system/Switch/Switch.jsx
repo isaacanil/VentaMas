@@ -28,13 +28,18 @@ const Knob = styled(motion.div)`
   background-color: white;
 `;
 
-export const Switch = ({ size = 'medium', checked = false, onChange, name }) => {
+export const Switch = ({
+  size = 'medium',
+  checked = false,
+  onChange,
+  name,
+}) => {
   const switchRef = useRef(null);
   const [knobPosition, setKnobPosition] = useState(null);
 
   const toggleSwitch = useCallback(() => {
     if (onChange) {
-      onChange({ target: { name, checked: !checked, type: "checkbox" } });
+      onChange({ target: { name, checked: !checked, type: 'checkbox' } });
     }
   }, [name, checked, onChange]);
 
@@ -42,14 +47,19 @@ export const Switch = ({ size = 'medium', checked = false, onChange, name }) => 
     if (switchRef.current) {
       const { width } = switchRef.current.getBoundingClientRect();
       const knobWidth = parseFloat(sizeVariants[size].knobSize);
-      const offPosition = 4;  // Margin from the left
+      const offPosition = 4; // Margin from the left
       const onPosition = width - knobWidth - offPosition;
       setKnobPosition(checked ? onPosition : offPosition);
     }
   }, [checked, size]);
 
   return (
-    <SwitchContainer ref={switchRef} onClick={toggleSwitch} isOn={checked} size={size}>
+    <SwitchContainer
+      ref={switchRef}
+      onClick={toggleSwitch}
+      isOn={checked}
+      size={size}
+    >
       <Knob
         initial={false}
         animate={{ x: knobPosition }}

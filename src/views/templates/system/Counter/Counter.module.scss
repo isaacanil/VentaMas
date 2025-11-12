@@ -1,33 +1,33 @@
-.Counter_container{
-  
-    .Couter_button{
-       border: none;
-       outline: none;
-       font-weight: 700;
-       line-height: 10px;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-   
-       max-width: 1.4em;
-       width: 100%;
-       border-radius: 4px;
-       background-color: var(--White);
-       color: var(--Gray6);
-       &:focus{
-         outline: none;
-       }
-    }
-    .CounterDisplay{
-      border: 1px solid rgba(0, 0, 0, 0);
-      width: 2.5em;
-      text-align: center;
-      font-size: 17px;
+.Counter_container {
+  .Couter_button {
+    border: none;
+    outline: none;
+    font-weight: 700;
+    line-height: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    max-width: 1.4em;
+    width: 100%;
+    border-radius: 4px;
+    background-color: var(--White);
+    color: var(--Gray6);
+    &:focus {
       outline: none;
-      background-color: transparent;
-      &::-webkit-inner-spin-button, &::-webkit-outer-spin-button{
-         -webkit-appearance: none;
-         margin: 0;
-     }
     }
- }
+  }
+  .CounterDisplay {
+    border: 1px solid rgba(0, 0, 0, 0);
+    width: 2.5em;
+    text-align: center;
+    font-size: 17px;
+    outline: none;
+    background-color: transparent;
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+}

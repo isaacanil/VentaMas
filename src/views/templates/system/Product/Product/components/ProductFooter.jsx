@@ -37,7 +37,9 @@ const AmountToBuy = styled.div`
   display: flex;
   align-items: center;
   white-space: nowrap;
-  transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+  transition:
+    background-color 0.4s ease-in-out,
+    color 0.4s ease-in-out;
 
   background-color: ${(props) => getAmountBackground(props)};
   color: ${(props) => getAmountColor(props)};
@@ -101,7 +103,8 @@ export const ProductFooter = ({
           isSelected={isProductInCart}
           hasStrictStock={product.restrictSaleWithoutStock}
         >
-          {isProductInCart && `${useFormatNumber(productInCart.amountToBuy)} / `}
+          {isProductInCart &&
+            `${useFormatNumber(productInCart.amountToBuy)} / `}
           {stockValue === 0 ? '-' : formattedStock}
         </AmountToBuy>
       </Group>

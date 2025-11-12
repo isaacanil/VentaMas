@@ -12,36 +12,30 @@ const AccountsReceivableTestPage = () => {
     <TestContainer>
       <TestHeader>
         <h1>Panel de Cuentas por Cobrar - Prueba</h1>
-        <p>Esta página te permite probar el nuevo panel de cuentas por cobrar próximas a vencer.</p>
+        <p>
+          Esta página te permite probar el nuevo panel de cuentas por cobrar
+          próximas a vencer.
+        </p>
       </TestHeader>
-      
+
       <TestSection>
         <h2>Panel sin estadísticas rápidas (7 días)</h2>
         <PanelWrapper>
-          <AccountsReceivablePanel 
-            showQuickStats={false} 
-            daysThreshold={7} 
-          />
+          <AccountsReceivablePanel showQuickStats={false} daysThreshold={7} />
         </PanelWrapper>
       </TestSection>
-      
+
       <TestSection>
         <h2>Panel con estadísticas rápidas (14 días)</h2>
         <PanelWrapper>
-          <AccountsReceivablePanel 
-            showQuickStats={true} 
-            daysThreshold={14} 
-          />
+          <AccountsReceivablePanel showQuickStats={true} daysThreshold={14} />
         </PanelWrapper>
       </TestSection>
-      
+
       <TestSection>
         <h2>Panel con alertas de 30 días</h2>
         <PanelWrapper>
-          <AccountsReceivablePanel 
-            showQuickStats={true} 
-            daysThreshold={30} 
-          />
+          <AccountsReceivablePanel showQuickStats={true} daysThreshold={30} />
         </PanelWrapper>
       </TestSection>
     </TestContainer>
@@ -59,13 +53,13 @@ const TestContainer = styled.div`
 const TestHeader = styled.div`
   text-align: center;
   margin-bottom: 40px;
-  
+
   h1 {
     color: #1e293b;
     font-size: 2rem;
     margin-bottom: 8px;
   }
-  
+
   p {
     color: #64748b;
     font-size: 1rem;
@@ -74,7 +68,7 @@ const TestHeader = styled.div`
 
 const TestSection = styled.div`
   margin-bottom: 40px;
-  
+
   h2 {
     color: #1e293b;
     font-size: 1.25rem;

@@ -17,6 +17,7 @@ Archivo clave: `src/firebase/purchase/fbCompletePurchase.js`
 Función: `fbCompletePurchase({ user, purchase, localFiles, setLoading })`
 
 Acciones principales:
+
 1. Marca inicio de proceso (`setLoading(true)`)
 2. Asegura existencia de un almacén por defecto (`getDefaultWarehouse`)
 3. Gestiona adjuntos (subidas / eliminaciones)
@@ -29,14 +30,14 @@ Acciones principales:
 
 Cada elemento en `purchase.replenishments` representa un producto a ingresar. Campos relevantes:
 
-| Campo | Descripción |
-|-------|-------------|
-| `id` | ID del producto |
-| `name` | Nombre del producto |
-| `purchaseQuantity` | Cantidad total comprometida (incluye backorders) |
-| `quantity` | Cantidad real que entra a stock (si hay backorders, es `purchaseQuantity - suma(backorders)`) |
-| `selectedBackOrders[]` | Backorders asociados (cada uno con `id` y `quantity`) |
-| `expirationDate` | Fecha de expiración (puede ser null) |
+| Campo                  | Descripción                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| `id`                   | ID del producto                                                                               |
+| `name`                 | Nombre del producto                                                                           |
+| `purchaseQuantity`     | Cantidad total comprometida (incluye backorders)                                              |
+| `quantity`             | Cantidad real que entra a stock (si hay backorders, es `purchaseQuantity - suma(backorders)`) |
+| `selectedBackOrders[]` | Backorders asociados (cada uno con `id` y `quantity`)                                         |
+| `expirationDate`       | Fecha de expiración (puede ser null)                                                          |
 
 Durante la finalización, el código utiliza `item.quantity` para sumar existencias del lote / stock.
 
@@ -97,6 +98,7 @@ Archivo: `src/firebase/warehouse/batchService.js`
 Función utilizada: `createBatch(user, batchData)`
 
 Datos base añadidos automáticamente:
+
 ```js
 {
   id: <nanoid>,
@@ -110,6 +112,7 @@ Datos base añadidos automáticamente:
 ```
 
 Campos provenientes del flujo de compra:
+
 ```js
 {
   productId,
@@ -137,6 +140,7 @@ Función: `createProductStock(user, productStockData)`
 Se crea un documento en `productsStock` que representa la **existencia física** del lote en una ubicación:
 
 Campos relevantes añadidos por la función:
+
 ```js
 {
   id: <nanoid>,
@@ -148,6 +152,7 @@ Campos relevantes añadidos por la función:
 ```
 
 Campos que provee el flujo de compra:
+
 ```js
 {
   batchId: batchData.id,
@@ -197,6 +202,7 @@ En `fbAddPurchase` (modo creación) los backorders asociados se marcan como `res
 En `fbCompletePurchase` (dentro de la iteración de batches):
 
 Cada `replenishment` con `selectedBackOrders` provoca la actualización de cada backorder:
+
 ```js
 status: 'completed',
 completedAt: serverTimestamp(),
@@ -226,10 +232,10 @@ Esto cierra el ciclo de reserva → cumplimiento.
 
 ## 10. Diferencias Clave: `purchaseQuantity` vs `quantity`
 
-| Campo | Uso durante la compra | Uso al completar |
-|-------|-----------------------|------------------|
-| `purchaseQuantity` | Cantidad total solicitada (incluye backorders) | Base para validaciones y subtotal |
-| `quantity` | Cantidad neta que se incorpora físicamente (excluye lo que ya estaba comprometido en backorders) | Se suma a inventario (batches / productStock) |
+| Campo              | Uso durante la compra                                                                            | Uso al completar                              |
+| ------------------ | ------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| `purchaseQuantity` | Cantidad total solicitada (incluye backorders)                                                   | Base para validaciones y subtotal             |
+| `quantity`         | Cantidad neta que se incorpora físicamente (excluye lo que ya estaba comprometido en backorders) | Se suma a inventario (batches / productStock) |
 
 Esto asegura que al completar una compra no se “sobredoble” el stock de unidades ya comprometidas mediante backorders previos.
 
@@ -251,15 +257,15 @@ Esto asegura que al completar una compra no se “sobredoble” el stock de unid
 
 ## 12. Referencias de Código
 
-| Concepto | Archivo | Función |
-|----------|---------|---------|
-| Completar compra | `firebase/purchase/fbCompletePurchase.js` | `fbCompletePurchase` |
-| Crear batch | `firebase/warehouse/batchService.js` | `createBatch` |
-| Crear productStock | `firebase/warehouse/productStockService.js` | `createProductStock` |
-| Almacén por defecto | `firebase/warehouse/warehouseService.js` | `getDefaultWarehouse` |
-| Backorders (reservar) | `firebase/purchase/fbAddPurchase.js` | `addPurchase` |
-| Backorders (completar) | `firebase/purchase/fbCompletePurchase.js` | `updatePurchaseWarehouseStock` (loop interno) |
-| Movimiento inventario | `firebase/purchase/fbCompletePurchase.js` | creación directa con `setDoc` |
+| Concepto               | Archivo                                     | Función                                       |
+| ---------------------- | ------------------------------------------- | --------------------------------------------- |
+| Completar compra       | `firebase/purchase/fbCompletePurchase.js`   | `fbCompletePurchase`                          |
+| Crear batch            | `firebase/warehouse/batchService.js`        | `createBatch`                                 |
+| Crear productStock     | `firebase/warehouse/productStockService.js` | `createProductStock`                          |
+| Almacén por defecto    | `firebase/warehouse/warehouseService.js`    | `getDefaultWarehouse`                         |
+| Backorders (reservar)  | `firebase/purchase/fbAddPurchase.js`        | `addPurchase`                                 |
+| Backorders (completar) | `firebase/purchase/fbCompletePurchase.js`   | `updatePurchaseWarehouseStock` (loop interno) |
+| Movimiento inventario  | `firebase/purchase/fbCompletePurchase.js`   | creación directa con `setDoc`                 |
 
 ---
 

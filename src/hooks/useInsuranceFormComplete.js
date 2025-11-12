@@ -14,10 +14,10 @@ const useInsuranceFormComplete = () => {
 
   // Si el seguro no está habilitado, no necesitamos validar
   if (!insuranceEnabled) {
-    return { 
+    return {
       isFormComplete: false,
       insuranceEnabled,
-      shouldDisableButton: false // No deshabilitamos el botón si el seguro no está activo
+      shouldDisableButton: false, // No deshabilitamos el botón si el seguro no está activo
     };
   }
 
@@ -30,11 +30,11 @@ const useInsuranceFormComplete = () => {
     'doctor',
     'specialty',
     'indicationDate',
-    'birthDate'
+    'birthDate',
   ];
 
   // Verificar si todos los campos requeridos tienen valor
-  const isFormComplete = requiredFields.every(field => {
+  const isFormComplete = requiredFields.every((field) => {
     const value = authData[field];
     return value !== undefined && value !== null && value !== '';
   });
@@ -45,7 +45,7 @@ const useInsuranceFormComplete = () => {
   return {
     isFormComplete,
     insuranceEnabled,
-    shouldDisableButton
+    shouldDisableButton,
   };
 };
 

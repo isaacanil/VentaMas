@@ -1,27 +1,31 @@
-import { DateTime } from 'luxon'
-import { useState } from 'react'
-import styled from 'styled-components'
+import { DateTime } from 'luxon';
+import { useState } from 'react';
+import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice'
-import { getProductsTax, getProductsTotalPrice, getTotalItems } from '../../../../../utils/pricing'
-import PreorderModal from '../../../../component/modals/PreorderModal/PreorderModal'
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
+import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import {
+  getProductsTax,
+  getProductsTotalPrice,
+  getTotalItems,
+} from '../../../../../utils/pricing';
+import PreorderModal from '../../../../component/modals/PreorderModal/PreorderModal';
+import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
 
-import { tableConfig } from './tableConfig.jsx'
+import { tableConfig } from './tableConfig.jsx';
 
 export const PreSaleTable = ({ preSales = [], searchTerm }) => {
-  const [selectedPreorder, setSelectedPreorder] = useState(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPreorder, setSelectedPreorder] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleRowClick = (row) => {
     if (row?.accion?.data) {
-      setSelectedPreorder(row.accion.data)
-      setIsModalOpen(true)
+      setSelectedPreorder(row.accion.data);
+      setIsModalOpen(true);
     }
-  }
+  };
 
   const data = preSales?.map(({ data }) => {
-    const nfc = data?.NCF
+    const nfc = data?.NCF;
     return {
       numberID: data?.preorderDetails?.numberID,
       ncf: data?.NCF,
@@ -32,11 +36,18 @@ export const PreSaleTable = ({ preSales = [], searchTerm }) => {
       status: data?.status, // Estatus de la preventa
       total: getProductsTotalPrice(data?.products || [], 0, 0, nfc),
       accion: { data },
-      dateGroup: DateTime.fromMillis(data?.preorderDetails?.date?.seconds * 1000).toLocaleString(DateTime.DATE_FULL)
-    }
-  })
+      dateGroup: DateTime.fromMillis(
+        data?.preorderDetails?.date?.seconds * 1000,
+      ).toLocaleString(DateTime.DATE_FULL),
+    };
+  });
 
-  const total = useFormatPrice((preSales?.reduce((total, { data }) => total + data?.totalPurchase?.value, 0)))
+  const total = useFormatPrice(
+    preSales?.reduce(
+      (total, { data }) => total + data?.totalPurchase?.value,
+      0,
+    ),
+  );
 
   return (
     <>
@@ -44,7 +55,7 @@ export const PreSaleTable = ({ preSales = [], searchTerm }) => {
         columns={tableConfig}
         data={data}
         groupBy={'dateGroup'}
-        emptyText='No se encontraron preventas.'
+        emptyText="No se encontraron preventas."
         footerLeftSide={<TotalContainer>Total: {total} </TotalContainer>}
         searchTerm={searchTerm}
         elementName={'preventas'}
@@ -52,14 +63,14 @@ export const PreSaleTable = ({ preSales = [], searchTerm }) => {
         numberOfElementsPerPage={40}
         onRowClick={handleRowClick}
       />
-      <PreorderModal 
+      <PreorderModal
         preorder={selectedPreorder}
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
       />
     </>
-  )
-}
+  );
+};
 
 const TotalContainer = styled.div`
   display: flex;
@@ -69,4 +80,4 @@ const TotalContainer = styled.div`
   gap: 0.5em;
   font-size: 1em;
   font-weight: 600;
-`
+`;

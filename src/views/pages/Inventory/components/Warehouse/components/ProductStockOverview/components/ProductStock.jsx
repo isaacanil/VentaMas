@@ -8,28 +8,44 @@ import styled from 'styled-components';
 
 import { LocationDisplay } from './LocationDisplay';
 
-const ProductStock = ({ stock, index, getStockStatus, handleDeleteProductStock, handleLocationClick, locationNames }) => {
-  const status = useMemo(() => getStockStatus(stock.quantity), [getStockStatus, stock.quantity]);
+const ProductStock = ({
+  stock,
+  index,
+  getStockStatus,
+  handleDeleteProductStock,
+  handleLocationClick,
+  locationNames,
+}) => {
+  const status = useMemo(
+    () => getStockStatus(stock.quantity),
+    [getStockStatus, stock.quantity],
+  );
   const lifecycleStatus = stock?.status === 'inactive' ? 'inactive' : 'active';
   const lifecycleLabel = lifecycleStatus === 'inactive' ? 'Inactivo' : 'Activo';
   const formattedQuantity = useMemo(
     () => Number(stock.quantity ?? 0).toLocaleString(),
-    [stock.quantity]
+    [stock.quantity],
   );
-  const menuItems = useMemo(() => ([
-    {
-      key: 'delete',
-      label: 'Eliminar stock de esta ubicación',
-      danger: true,
-      icon: <DeleteOutlined />,
-    },
-  ]), []);
+  const menuItems = useMemo(
+    () => [
+      {
+        key: 'delete',
+        label: 'Eliminar stock de esta ubicación',
+        danger: true,
+        icon: <DeleteOutlined />,
+      },
+    ],
+    [],
+  );
 
-  const handleMenuClick = useCallback(({ key }) => {
-    if (key === 'delete') {
-      handleDeleteProductStock(stock);
-    }
-  }, [handleDeleteProductStock, stock]);
+  const handleMenuClick = useCallback(
+    ({ key }) => {
+      if (key === 'delete') {
+        handleDeleteProductStock(stock);
+      }
+    },
+    [handleDeleteProductStock, stock],
+  );
 
   return (
     <StockRow
@@ -105,7 +121,10 @@ const StockRow = styled(motion.div)`
   border-radius: 10px;
   padding: 10px 5px;
   box-shadow: 0 8px 14px -12px rgba(15, 23, 42, 0.18);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
     transform: translateY(-1px);
@@ -172,8 +191,8 @@ const QuantityBadge = styled.div`
   min-width: 108px;
   padding: 0px 14px;
   border-radius: 16px;
-  background: ${props => props.$status.background}18;
-  border: 1px solid ${props => props.$status.color}26;
+  background: ${(props) => props.$status.background}18;
+  border: 1px solid ${(props) => props.$status.color}26;
   color: #0f172a;
   font-weight: 600;
 
@@ -184,7 +203,7 @@ const QuantityBadge = styled.div`
   }
 
   .quantity-icon {
-    color: ${props => props.$status.color};
+    color: ${(props) => props.$status.color};
     font-size: 0.85rem;
   }
 
@@ -204,7 +223,7 @@ const QuantityBadge = styled.div`
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: ${props => props.$status.color};
+    color: ${(props) => props.$status.color};
   }
 `;
 
@@ -214,8 +233,9 @@ const LifecycleBadge = styled.span`
   gap: 6px;
   padding: 3px 10px;
   border-radius: 999px;
-  background: ${props => props.$state === 'inactive' ? '#fee2e2' : '#dcfce7'};
-  color: ${props => props.$state === 'inactive' ? '#b91c1c' : '#047857'};
+  background: ${(props) =>
+    props.$state === 'inactive' ? '#fee2e2' : '#dcfce7'};
+  color: ${(props) => (props.$state === 'inactive' ? '#b91c1c' : '#047857')};
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;

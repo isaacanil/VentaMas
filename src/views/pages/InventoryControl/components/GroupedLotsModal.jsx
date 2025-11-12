@@ -1,10 +1,24 @@
-import { Modal, Button, DatePicker, Tag, InputNumber, Dropdown, message, Tooltip } from 'antd';
+import {
+  Modal,
+  Button,
+  DatePicker,
+  Tag,
+  InputNumber,
+  Dropdown,
+  message,
+  Tooltip,
+} from 'antd';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { EditorsList, SummaryBar } from './inventoryTableComponents.jsx';
-import { formatNumber, formatInputDate, shortenLocationPath, Diff } from './inventoryTableUtils.js';
+import {
+  formatNumber,
+  formatInputDate,
+  shortenLocationPath,
+  Diff,
+} from './inventoryTableUtils.js';
 
 export function GroupedLotsModal({
   open,
@@ -58,11 +72,13 @@ export function GroupedLotsModal({
   const hasChanges = useMemo(() => {
     if (!group?._children) return false;
     for (const child of group._children) {
-      if ((counts[child.key] ?? null) !== (serverCounts[child.key] ?? null)) return true;
+      if ((counts[child.key] ?? null) !== (serverCounts[child.key] ?? null))
+        return true;
       if (Array.isArray(child.sources)) {
         for (const src of child.sources) {
           const skey = src.id || src.key;
-          if (skey && (counts[skey] ?? null) !== (serverCounts[skey] ?? null)) return true;
+          if (skey && (counts[skey] ?? null) !== (serverCounts[skey] ?? null))
+            return true;
         }
       }
     }
@@ -94,7 +110,10 @@ export function GroupedLotsModal({
         await onSave();
         onClose();
       } catch (saveError) {
-        const description = saveError instanceof Error ? saveError.message : 'No se pudo guardar los cambios.';
+        const description =
+          saveError instanceof Error
+            ? saveError.message
+            : 'No se pudo guardar los cambios.';
         message.error(description);
       }
     } else {
@@ -108,12 +127,22 @@ export function GroupedLotsModal({
       open={open}
       onCancel={onClose}
       footer={[
-        <Button key="cancel" onClick={onClose}>Cancelar</Button>,
-        ...(readOnly ? [] : [
-          <Button key="save" type="primary" onClick={handleSaveAndClose} loading={saving} disabled={!hasChanges}>
-            {hasChanges ? 'Guardar y Cerrar' : 'Cerrar'}
-          </Button>
-        ])
+        <Button key="cancel" onClick={onClose}>
+          Cancelar
+        </Button>,
+        ...(readOnly
+          ? []
+          : [
+              <Button
+                key="save"
+                type="primary"
+                onClick={handleSaveAndClose}
+                loading={saving}
+                disabled={!hasChanges}
+              >
+                {hasChanges ? 'Guardar y Cerrar' : 'Cerrar'}
+              </Button>,
+            ]),
       ]}
       width={1200}
       style={{ top: 10 }}
@@ -144,210 +173,484 @@ export function GroupedLotsModal({
                   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
                   return formatInputDate(v) || '';
                 };
-                return children.flatMap(record => {
+                return children.flatMap((record) => {
                   // Conteo real
                   let aggregatedTopCount;
-                  if (group?.canEditAtTop && group?.topKey && counts[group.topKey] !== undefined) aggregatedTopCount = counts[group.topKey];
-                  else if (group?.canEditAtTop && group?.topKey && serverCounts[group.topKey] !== undefined) aggregatedTopCount = serverCounts[group.topKey];
-                  const real = (
-                    counts[record.key] !== undefined ? counts[record.key]
-                      : aggregatedTopCount !== undefined && children.length === 1 ? aggregatedTopCount
-                        : serverCounts[record.key] !== undefined ? serverCounts[record.key]
-                          : record.real
-                  );
+                  if (
+                    group?.canEditAtTop &&
+                    group?.topKey &&
+                    counts[group.topKey] !== undefined
+                  )
+                    aggregatedTopCount = counts[group.topKey];
+                  else if (
+                    group?.canEditAtTop &&
+                    group?.topKey &&
+                    serverCounts[group.topKey] !== undefined
+                  )
+                    aggregatedTopCount = serverCounts[group.topKey];
+                  const real =
+                    counts[record.key] !== undefined
+                      ? counts[record.key]
+                      : aggregatedTopCount !== undefined &&
+                          children.length === 1
+                        ? aggregatedTopCount
+                        : serverCounts[record.key] !== undefined
+                          ? serverCounts[record.key]
+                          : record.real;
                   const diff = Number(real ?? 0) - Number(record.stock ?? 0);
                   const meta = countsMeta[record.key];
                   const editVal = expirationEdits[record.key];
-                  const hasEditState = Object.prototype.hasOwnProperty.call(expirationEdits, record.key);
+                  const hasEditState = Object.prototype.hasOwnProperty.call(
+                    expirationEdits,
+                    record.key,
+                  );
                   const persistedVal = meta?.manualExpirationDate;
-                  const isMarkedForRemoval = editVal === CLEAR_SENTINEL || persistedVal === CLEAR_SENTINEL;
+                  const isMarkedForRemoval =
+                    editVal === CLEAR_SENTINEL ||
+                    persistedVal === CLEAR_SENTINEL;
 
-                  const currentPersistedCount = serverCounts[record.key] !== undefined ? Number(serverCounts[record.key]) : Number(record.stock ?? 0);
-                  const effectiveCount = counts[record.key] !== undefined ? counts[record.key] : currentPersistedCount;
+                  const currentPersistedCount =
+                    serverCounts[record.key] !== undefined
+                      ? Number(serverCounts[record.key])
+                      : Number(record.stock ?? 0);
+                  const effectiveCount =
+                    counts[record.key] !== undefined
+                      ? counts[record.key]
+                      : currentPersistedCount;
                   const baselineCount = baselineCounts[record.key];
-                  const countChangedPersisted = baselineCount !== undefined && Number(effectiveCount) !== Number(baselineCount);
+                  const countChangedPersisted =
+                    baselineCount !== undefined &&
+                    Number(effectiveCount) !== Number(baselineCount);
 
-                  let currentPersistedExp = meta?.manualExpirationDate && meta.manualExpirationDate !== CLEAR_SENTINEL
-                    ? meta.manualExpirationDate
-                    : (record.type === 'batch' ? formatInputDate(record.expirationDate) : '');
+                  let currentPersistedExp =
+                    meta?.manualExpirationDate &&
+                    meta.manualExpirationDate !== CLEAR_SENTINEL
+                      ? meta.manualExpirationDate
+                      : record.type === 'batch'
+                        ? formatInputDate(record.expirationDate)
+                        : '';
                   currentPersistedExp = normDate(currentPersistedExp);
                   const baseExp = baselineExp[record.key];
-                  const expChangedPersisted = baseExp !== undefined && currentPersistedExp !== baseExp;
-                  const hasPendingExpEdit = editVal !== undefined && editVal !== persistedVal;
-                  const rowModified = countChangedPersisted || expChangedPersisted || hasPendingExpEdit;
+                  const expChangedPersisted =
+                    baseExp !== undefined && currentPersistedExp !== baseExp;
+                  const hasPendingExpEdit =
+                    editVal !== undefined && editVal !== persistedVal;
+                  const rowModified =
+                    countChangedPersisted ||
+                    expChangedPersisted ||
+                    hasPendingExpEdit;
 
                   // Date handling
-                  let dateValue = null; let baseStr = '';
+                  let dateValue = null;
+                  let baseStr = '';
                   if (hasEditState) {
                     if (editVal === CLEAR_SENTINEL) baseStr = '';
                     else if (editVal) baseStr = editVal;
                   } else {
-                    if (meta?.manualExpirationDate && meta.manualExpirationDate !== CLEAR_SENTINEL) baseStr = formatInputDate(meta.manualExpirationDate);
-                    else if (record.type === 'batch') baseStr = formatInputDate(record.expirationDate);
+                    if (
+                      meta?.manualExpirationDate &&
+                      meta.manualExpirationDate !== CLEAR_SENTINEL
+                    )
+                      baseStr = formatInputDate(meta.manualExpirationDate);
+                    else if (record.type === 'batch')
+                      baseStr = formatInputDate(record.expirationDate);
                   }
                   if (baseStr) {
-                    const d = dayjs(baseStr); if (d.isValid()) dateValue = d;
+                    const d = dayjs(baseStr);
+                    if (d.isValid()) dateValue = d;
                   }
-                  const originalDateStr = record.type === 'batch' ? formatInputDate(record.expirationDate) : '';
-                  const currentEditStr = isMarkedForRemoval ? CLEAR_SENTINEL : (dateValue ? dateValue.format('YYYY-MM-DD') : '');
-                  const isDifferentFromOriginal = record.type === 'batch' && (
-                    currentEditStr === CLEAR_SENTINEL || (!!originalDateStr && currentEditStr !== originalDateStr) || (!currentEditStr && !!originalDateStr)
-                  );
+                  const originalDateStr =
+                    record.type === 'batch'
+                      ? formatInputDate(record.expirationDate)
+                      : '';
+                  const currentEditStr = isMarkedForRemoval
+                    ? CLEAR_SENTINEL
+                    : dateValue
+                      ? dateValue.format('YYYY-MM-DD')
+                      : '';
+                  const isDifferentFromOriginal =
+                    record.type === 'batch' &&
+                    (currentEditStr === CLEAR_SENTINEL ||
+                      (!!originalDateStr &&
+                        currentEditStr !== originalDateStr) ||
+                      (!currentEditStr && !!originalDateStr));
 
                   // Expand sources if present
-                  if ((record.type === 'batch' || record.type === 'noexp') && (record.sources?.length || 0) > 0) {
-                      return record.sources.map((src, idx) => {
-                      const skey = src.id || src.key || `${record.key}-src-${idx}`;
+                  if (
+                    (record.type === 'batch' || record.type === 'noexp') &&
+                    (record.sources?.length || 0) > 0
+                  ) {
+                    return record.sources.map((src, idx) => {
+                      const skey =
+                        src.id || src.key || `${record.key}-src-${idx}`;
                       // Stock “live” del source
-                      const sourceLive = Number(src.quantity ?? src.stock ?? 0) || 0;
+                      const sourceLive =
+                        Number(src.quantity ?? src.stock ?? 0) || 0;
                       // Si el lote tiene un solo source, usar el stock del lote (congelado) para la columna Stock
-                      const useChildFrozen = ((record.sources?.length || 0) === 1) && Number.isFinite(Number(record.stock));
-                      const stock = useChildFrozen ? Number(record.stock ?? sourceLive) : sourceLive;
+                      const useChildFrozen =
+                        (record.sources?.length || 0) === 1 &&
+                        Number.isFinite(Number(record.stock));
+                      const stock = useChildFrozen
+                        ? Number(record.stock ?? sourceLive)
+                        : sourceLive;
                       // Conteo real por source: prioriza ediciones/persistido; fallback al valor live del source
-                      const sReal = counts[skey] ?? serverCounts[skey] ?? src.real ?? sourceLive;
+                      const sReal =
+                        counts[skey] ??
+                        serverCounts[skey] ??
+                        src.real ??
+                        sourceLive;
                       const sDiff = Number(sReal ?? 0) - stock;
                       const sMeta = countsMeta[skey];
                       const locationRaw = src.location || '—';
-                      const fullLocationLabel = locationNamesMap[locationRaw] || locationRaw;
-                      const tagLocationLabel = shortenLocationPath(fullLocationLabel);
-                      const isLoadingLoc = !locationNamesMap[locationRaw] && !!resolvingLocations[locationRaw];
+                      const fullLocationLabel =
+                        locationNamesMap[locationRaw] || locationRaw;
+                      const tagLocationLabel =
+                        shortenLocationPath(fullLocationLabel);
+                      const isLoadingLoc =
+                        !locationNamesMap[locationRaw] &&
+                        !!resolvingLocations[locationRaw];
                       const srcEditVal = expirationEdits[skey];
                       const srcPersistedVal = sMeta?.manualExpirationDate;
 
-                      const currentSrcPersistedCount = serverCounts[skey] !== undefined ? Number(serverCounts[skey]) : stock;
-                      const srcEffective = counts[skey] !== undefined ? counts[skey] : currentSrcPersistedCount;
+                      const currentSrcPersistedCount =
+                        serverCounts[skey] !== undefined
+                          ? Number(serverCounts[skey])
+                          : stock;
+                      const srcEffective =
+                        counts[skey] !== undefined
+                          ? counts[skey]
+                          : currentSrcPersistedCount;
                       const baseSrcCount = baselineCounts[skey];
-                      const srcCountChangedPersisted = baseSrcCount !== undefined && Number(srcEffective) !== Number(baseSrcCount);
-                      let currentSrcPersistedExp = srcPersistedVal && srcPersistedVal !== CLEAR_SENTINEL ? srcPersistedVal : (src.expirationDate ? formatInputDate(src.expirationDate) : (record.type === 'batch' ? formatInputDate(record.expirationDate) : ''));
+                      const srcCountChangedPersisted =
+                        baseSrcCount !== undefined &&
+                        Number(srcEffective) !== Number(baseSrcCount);
+                      let currentSrcPersistedExp =
+                        srcPersistedVal && srcPersistedVal !== CLEAR_SENTINEL
+                          ? srcPersistedVal
+                          : src.expirationDate
+                            ? formatInputDate(src.expirationDate)
+                            : record.type === 'batch'
+                              ? formatInputDate(record.expirationDate)
+                              : '';
                       currentSrcPersistedExp = normDate(currentSrcPersistedExp);
                       const baseSrcExp = baselineExp[skey];
-                      const srcExpChangedPersisted = baseSrcExp !== undefined && currentSrcPersistedExp !== baseSrcExp;
-                      const srcHasPendingExpEdit = srcEditVal !== undefined && srcEditVal !== srcPersistedVal;
-                      const sourceModified = srcCountChangedPersisted || srcExpChangedPersisted || srcHasPendingExpEdit;
+                      const srcExpChangedPersisted =
+                        baseSrcExp !== undefined &&
+                        currentSrcPersistedExp !== baseSrcExp;
+                      const srcHasPendingExpEdit =
+                        srcEditVal !== undefined &&
+                        srcEditVal !== srcPersistedVal;
+                      const sourceModified =
+                        srcCountChangedPersisted ||
+                        srcExpChangedPersisted ||
+                        srcHasPendingExpEdit;
 
-                      const srcHasEditState = Object.prototype.hasOwnProperty.call(expirationEdits, skey);
-                      let sourceDateValue = null; let srcBaseStr = '';
+                      const srcHasEditState =
+                        Object.prototype.hasOwnProperty.call(
+                          expirationEdits,
+                          skey,
+                        );
+                      let sourceDateValue = null;
+                      let srcBaseStr = '';
                       if (srcHasEditState) {
                         if (srcEditVal === CLEAR_SENTINEL) srcBaseStr = '';
                         else if (srcEditVal) srcBaseStr = srcEditVal;
                       } else {
-                        if (sMeta?.manualExpirationDate && sMeta.manualExpirationDate !== CLEAR_SENTINEL) srcBaseStr = formatInputDate(sMeta.manualExpirationDate);
-                        else if (src.expirationDate) srcBaseStr = formatInputDate(src.expirationDate);
-                        else if (record.type === 'batch' && record.expirationDate) srcBaseStr = formatInputDate(record.expirationDate);
+                        if (
+                          sMeta?.manualExpirationDate &&
+                          sMeta.manualExpirationDate !== CLEAR_SENTINEL
+                        )
+                          srcBaseStr = formatInputDate(
+                            sMeta.manualExpirationDate,
+                          );
+                        else if (src.expirationDate)
+                          srcBaseStr = formatInputDate(src.expirationDate);
+                        else if (
+                          record.type === 'batch' &&
+                          record.expirationDate
+                        )
+                          srcBaseStr = formatInputDate(record.expirationDate);
                       }
-                      if (srcBaseStr) { const d = dayjs(srcBaseStr); if (d.isValid()) sourceDateValue = d; }
+                      if (srcBaseStr) {
+                        const d = dayjs(srcBaseStr);
+                        if (d.isValid()) sourceDateValue = d;
+                      }
 
                       return (
                         <tr key={skey}>
                           <td>
                             <LotCellWrap>
                               <LotNameBlock>
-                                <span style={{ display:'block' }}>Lote {src.batchNumberId || src.batchId || record.batchNumberId || record.batchId || 'x'}</span>
-                                {sourceModified && <Tag color="orange" size="small" style={{ marginTop: 2 }}>Editado</Tag>}
+                                <span style={{ display: 'block' }}>
+                                  Lote{' '}
+                                  {src.batchNumberId ||
+                                    src.batchId ||
+                                    record.batchNumberId ||
+                                    record.batchId ||
+                                    'x'}
+                                </span>
+                                {sourceModified && (
+                                  <Tag
+                                    color="orange"
+                                    size="small"
+                                    style={{ marginTop: 2 }}
+                                  >
+                                    Editado
+                                  </Tag>
+                                )}
                               </LotNameBlock>
                             </LotCellWrap>
                           </td>
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                              }}
+                            >
                               <DatePicker
                                 value={sourceDateValue}
                                 format="DD/MM/YYYY"
                                 allowClear
                                 disabled={readOnly}
-                                placeholder={record.type === 'batch' ? 'Sin fecha' : 'Sin asignar'}
+                                placeholder={
+                                  record.type === 'batch'
+                                    ? 'Sin fecha'
+                                    : 'Sin asignar'
+                                }
                                 onChange={(date) => {
                                   if (!date) {
-                                    const hadExisting = (!!src.expirationDate) || (!!sMeta?.manualExpirationDate) || (!!sourceDateValue);
-                                    if (!hadExisting) { onChangeExpiration && onChangeExpiration(skey, undefined); return; }
+                                    const hadExisting =
+                                      !!src.expirationDate ||
+                                      !!sMeta?.manualExpirationDate ||
+                                      !!sourceDateValue;
+                                    if (!hadExisting) {
+                                      onChangeExpiration &&
+                                        onChangeExpiration(skey, undefined);
+                                      return;
+                                    }
                                     if (record.type === 'batch') {
-                                      const prevVal = sMeta?.manualExpirationDate ? formatInputDate(sMeta.manualExpirationDate) : formatInputDate(src.expirationDate || record.expirationDate);
-                                      onChangeExpiration && onChangeExpiration(skey, undefined);
+                                      const prevVal =
+                                        sMeta?.manualExpirationDate
+                                          ? formatInputDate(
+                                              sMeta.manualExpirationDate,
+                                            )
+                                          : formatInputDate(
+                                              src.expirationDate ||
+                                                record.expirationDate,
+                                            );
+                                      onChangeExpiration &&
+                                        onChangeExpiration(skey, undefined);
                                       Modal.confirm({
                                         title: 'Eliminar fecha de lote',
-                                        content: 'La fecha se quitará de esta partida y todas las partidas del mismo lote. ¿Continuar?',
+                                        content:
+                                          'La fecha se quitará de esta partida y todas las partidas del mismo lote. ¿Continuar?',
                                         okText: 'Sí, eliminar',
                                         cancelText: 'Cancelar',
                                         okButtonProps: { danger: true },
-                                        onOk: () => { onChangeExpiration && onChangeExpiration(skey, CLEAR_SENTINEL); syncSameLotDates(skey, CLEAR_SENTINEL, src); },
-                                        onCancel: () => { if (prevVal) onChangeExpiration && onChangeExpiration(skey, prevVal); }
+                                        onOk: () => {
+                                          onChangeExpiration &&
+                                            onChangeExpiration(
+                                              skey,
+                                              CLEAR_SENTINEL,
+                                            );
+                                          syncSameLotDates(
+                                            skey,
+                                            CLEAR_SENTINEL,
+                                            src,
+                                          );
+                                        },
+                                        onCancel: () => {
+                                          if (prevVal)
+                                            onChangeExpiration &&
+                                              onChangeExpiration(skey, prevVal);
+                                        },
                                       });
                                     } else if (record.type === 'noexp') {
-                                      onChangeExpiration && onChangeExpiration(skey, undefined);
+                                      onChangeExpiration &&
+                                        onChangeExpiration(skey, undefined);
                                     }
                                     return;
                                   }
                                   const iso = date.format('YYYY-MM-DD');
-                                  onChangeExpiration && onChangeExpiration(skey, iso);
+                                  onChangeExpiration &&
+                                    onChangeExpiration(skey, iso);
                                   syncSameLotDates(skey, iso, src);
                                 }}
                               />
                             </div>
                           </td>
                           <td>
-                            <Tooltip title={isLoadingLoc ? 'Resolviendo ubicación…' : fullLocationLabel}>
+                            <Tooltip
+                              title={
+                                isLoadingLoc
+                                  ? 'Resolviendo ubicación…'
+                                  : fullLocationLabel
+                              }
+                            >
                               <Tag>
-                                {isLoadingLoc ? <span style={{ opacity: .6, fontSize:11 }}>Cargando…</span> : shortenLocationPath(tagLocationLabel)}
+                                {isLoadingLoc ? (
+                                  <span style={{ opacity: 0.6, fontSize: 11 }}>
+                                    Cargando…
+                                  </span>
+                                ) : (
+                                  shortenLocationPath(tagLocationLabel)
+                                )}
                               </Tag>
                             </Tooltip>
                           </td>
-                          <td style={{ textAlign: 'right' }}><strong>{formatNumber(stock)}</strong></td>
+                          <td style={{ textAlign: 'right' }}>
+                            <strong>{formatNumber(stock)}</strong>
+                          </td>
                           <td style={{ textAlign: 'right' }}>
                             <InputNumber
                               min={0}
                               value={sReal}
-                              onChange={(val) => onChangeCount(skey, Number(val ?? 0))}
+                              onChange={(val) =>
+                                onChangeCount(skey, Number(val ?? 0))
+                              }
                               style={{ width: 90 }}
                               disabled={readOnly}
                             />
                           </td>
-                          <td style={{ textAlign: 'right' }}><Diff $value={sDiff}>{formatNumber(sDiff)}</Diff></td>
+                          <td style={{ textAlign: 'right' }}>
+                            <Diff $value={sDiff}>{formatNumber(sDiff)}</Diff>
+                          </td>
                           <td>
-                            {sMeta?.updatedBy ? <EditorsList editors={[{ uid: sMeta.updatedBy, name: usersNameCache[sMeta.updatedBy] || sMeta.updatedByName || sMeta.updatedBy, updatedAt: sMeta.updatedAt }]} /> : <span>-</span>}
+                            {sMeta?.updatedBy ? (
+                              <EditorsList
+                                editors={[
+                                  {
+                                    uid: sMeta.updatedBy,
+                                    name:
+                                      usersNameCache[sMeta.updatedBy] ||
+                                      sMeta.updatedByName ||
+                                      sMeta.updatedBy,
+                                    updatedAt: sMeta.updatedAt,
+                                  },
+                                ]}
+                              />
+                            ) : (
+                              <span>-</span>
+                            )}
                           </td>
                           <td style={{ textAlign: 'center' }}>
-                            {!readOnly && (() => {
-                              const menuItems = [];
-                              const originalDate = src.expirationDate || record.expirationDate;
-                              const srcHasChanged = !!(countsMeta[skey]?.manualExpirationDate || expirationEdits[skey] !== undefined || (originalDate && formatInputDate(originalDate) !== (expirationEdits[skey] || countsMeta[skey]?.manualExpirationDate || '')));
-                              if (record.type === 'batch' && originalDate) {
-                                menuItems.push({
-                                  key: 'restore-date',
-                                  label: 'Restablecer fecha de vencimiento original',
-                                  disabled: !srcHasChanged,
-                                  onClick: () => {
-                                    const formattedDate = formatInputDate(originalDate);
-                                    onChangeExpiration && onChangeExpiration(skey, formattedDate);
-                                    syncSameLotDates(skey, formattedDate, src);
-                                  }
-                                });
-                              }
-                              const hasCurrentDate = sourceDateValue || srcBaseStr;
-                              if ((record.type === 'batch' || record.type === 'noexp') && hasCurrentDate) {
-                                if (menuItems.length) menuItems.push({ type: 'divider' });
-                                menuItems.push({
-                                  key: 'clear-date',
-                                  label: 'Borrar fecha de vencimiento',
-                                  onClick: () => { onChangeExpiration && onChangeExpiration(skey, CLEAR_SENTINEL); syncSameLotDates(skey, CLEAR_SENTINEL, src); }
-                                });
-                              }
-                              // Restaurar conteos
-                              const sStockBase = stock;
-                              const persistedSourceCount = serverCounts[skey] !== undefined ? Number(serverCounts[skey]) : sStockBase;
-                              const baselineSourceCount = baselineCounts[skey];
-                              const effectiveSourceVal = counts[skey] !== undefined ? Number(counts[skey]) : persistedSourceCount;
-                              const hasEditedSourceCount = counts[skey] !== undefined && Number(counts[skey]) !== persistedSourceCount;
-                              const canRestoreBaseline = baselineSourceCount !== undefined && Number(baselineSourceCount) !== effectiveSourceVal;
-                              if (hasEditedSourceCount) {
-                                if (menuItems.length) menuItems.push({ type: 'divider' });
-                                menuItems.push({ key: 'restore-count-persisted', label: 'Restablecer conteo guardado', onClick: () => onChangeCount(skey, Number(persistedSourceCount)) });
-                              }
-                              if (canRestoreBaseline) {
-                                if (!hasEditedSourceCount && menuItems.length) menuItems.push({ type: 'divider' });
-                                menuItems.push({ key: 'restore-count-baseline', label: 'Restablecer conteo original', onClick: () => onChangeCount(skey, Number(baselineSourceCount)) });
-                              }
-                              if (!menuItems.length) return null;
-                              return <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button size="small">⋯</Button></Dropdown>;
-                            })()}
+                            {!readOnly &&
+                              (() => {
+                                const menuItems = [];
+                                const originalDate =
+                                  src.expirationDate || record.expirationDate;
+                                const srcHasChanged = !!(
+                                  countsMeta[skey]?.manualExpirationDate ||
+                                  expirationEdits[skey] !== undefined ||
+                                  (originalDate &&
+                                    formatInputDate(originalDate) !==
+                                      (expirationEdits[skey] ||
+                                        countsMeta[skey]
+                                          ?.manualExpirationDate ||
+                                        ''))
+                                );
+                                if (record.type === 'batch' && originalDate) {
+                                  menuItems.push({
+                                    key: 'restore-date',
+                                    label:
+                                      'Restablecer fecha de vencimiento original',
+                                    disabled: !srcHasChanged,
+                                    onClick: () => {
+                                      const formattedDate =
+                                        formatInputDate(originalDate);
+                                      onChangeExpiration &&
+                                        onChangeExpiration(skey, formattedDate);
+                                      syncSameLotDates(
+                                        skey,
+                                        formattedDate,
+                                        src,
+                                      );
+                                    },
+                                  });
+                                }
+                                const hasCurrentDate =
+                                  sourceDateValue || srcBaseStr;
+                                if (
+                                  (record.type === 'batch' ||
+                                    record.type === 'noexp') &&
+                                  hasCurrentDate
+                                ) {
+                                  if (menuItems.length)
+                                    menuItems.push({ type: 'divider' });
+                                  menuItems.push({
+                                    key: 'clear-date',
+                                    label: 'Borrar fecha de vencimiento',
+                                    onClick: () => {
+                                      onChangeExpiration &&
+                                        onChangeExpiration(
+                                          skey,
+                                          CLEAR_SENTINEL,
+                                        );
+                                      syncSameLotDates(
+                                        skey,
+                                        CLEAR_SENTINEL,
+                                        src,
+                                      );
+                                    },
+                                  });
+                                }
+                                // Restaurar conteos
+                                const sStockBase = stock;
+                                const persistedSourceCount =
+                                  serverCounts[skey] !== undefined
+                                    ? Number(serverCounts[skey])
+                                    : sStockBase;
+                                const baselineSourceCount =
+                                  baselineCounts[skey];
+                                const effectiveSourceVal =
+                                  counts[skey] !== undefined
+                                    ? Number(counts[skey])
+                                    : persistedSourceCount;
+                                const hasEditedSourceCount =
+                                  counts[skey] !== undefined &&
+                                  Number(counts[skey]) !== persistedSourceCount;
+                                const canRestoreBaseline =
+                                  baselineSourceCount !== undefined &&
+                                  Number(baselineSourceCount) !==
+                                    effectiveSourceVal;
+                                if (hasEditedSourceCount) {
+                                  if (menuItems.length)
+                                    menuItems.push({ type: 'divider' });
+                                  menuItems.push({
+                                    key: 'restore-count-persisted',
+                                    label: 'Restablecer conteo guardado',
+                                    onClick: () =>
+                                      onChangeCount(
+                                        skey,
+                                        Number(persistedSourceCount),
+                                      ),
+                                  });
+                                }
+                                if (canRestoreBaseline) {
+                                  if (!hasEditedSourceCount && menuItems.length)
+                                    menuItems.push({ type: 'divider' });
+                                  menuItems.push({
+                                    key: 'restore-count-baseline',
+                                    label: 'Restablecer conteo original',
+                                    onClick: () =>
+                                      onChangeCount(
+                                        skey,
+                                        Number(baselineSourceCount),
+                                      ),
+                                  });
+                                }
+                                if (!menuItems.length) return null;
+                                return (
+                                  <Dropdown
+                                    menu={{ items: menuItems }}
+                                    trigger={['click']}
+                                  >
+                                    <Button size="small">⋯</Button>
+                                  </Dropdown>
+                                );
+                              })()}
                           </td>
                         </tr>
                       );
@@ -355,15 +658,37 @@ export function GroupedLotsModal({
                   }
 
                   // Row without sources
-                  return [(
+                  return [
                     <tr key={record.key}>
                       <td>
                         <LotCellWrap>
                           <LotNameBlock>
-                            <span style={{ display:'block' }}>
-                              {record.type === 'noexp' ? <Tag color="default" style={{ marginInlineEnd: 0 }}>Sin vencimiento</Tag> : <>Lote {record.batchNumberId ?? record.batchId ?? 'x'}</>}
+                            <span style={{ display: 'block' }}>
+                              {record.type === 'noexp' ? (
+                                <Tag
+                                  color="default"
+                                  style={{ marginInlineEnd: 0 }}
+                                >
+                                  Sin vencimiento
+                                </Tag>
+                              ) : (
+                                <>
+                                  Lote{' '}
+                                  {record.batchNumberId ??
+                                    record.batchId ??
+                                    'x'}
+                                </>
+                              )}
                             </span>
-                            {rowModified && <Tag color="orange" size="small" style={{ marginTop: 2 }}>Editado</Tag>}
+                            {rowModified && (
+                              <Tag
+                                color="orange"
+                                size="small"
+                                style={{ marginTop: 2 }}
+                              >
+                                Editado
+                              </Tag>
+                            )}
                           </LotNameBlock>
                         </LotCellWrap>
                       </td>
@@ -373,94 +698,255 @@ export function GroupedLotsModal({
                           format="DD/MM/YYYY"
                           allowClear
                           disabled={readOnly}
-                          placeholder={record.type === 'batch' ? 'Sin fecha' : 'Sin asignar'}
+                          placeholder={
+                            record.type === 'batch'
+                              ? 'Sin fecha'
+                              : 'Sin asignar'
+                          }
                           onChange={(date) => {
                             if (!date) {
-                              const hadExisting = (!!record.expirationDate) || (!!meta?.manualExpirationDate) || (!!dateValue);
-                              if (!hadExisting) { onChangeExpiration && onChangeExpiration(record.key, undefined); return; }
+                              const hadExisting =
+                                !!record.expirationDate ||
+                                !!meta?.manualExpirationDate ||
+                                !!dateValue;
+                              if (!hadExisting) {
+                                onChangeExpiration &&
+                                  onChangeExpiration(record.key, undefined);
+                                return;
+                              }
                               if (record.type === 'batch') {
-                                const prevVal = meta?.manualExpirationDate ? formatInputDate(meta.manualExpirationDate) : formatInputDate(record.expirationDate);
-                                onChangeExpiration && onChangeExpiration(record.key, undefined);
+                                const prevVal = meta?.manualExpirationDate
+                                  ? formatInputDate(meta.manualExpirationDate)
+                                  : formatInputDate(record.expirationDate);
+                                onChangeExpiration &&
+                                  onChangeExpiration(record.key, undefined);
                                 Modal.confirm({
                                   title: 'Eliminar fecha de lote',
-                                  content: 'La fecha se quitará de este lote y todos los lotes con el mismo número. ¿Continuar?',
+                                  content:
+                                    'La fecha se quitará de este lote y todos los lotes con el mismo número. ¿Continuar?',
                                   okText: 'Sí, eliminar',
                                   cancelText: 'Cancelar',
                                   okButtonProps: { danger: true },
-                                  onOk: () => { onChangeExpiration && onChangeExpiration(record.key, CLEAR_SENTINEL); syncSameLotRecords(record.key, CLEAR_SENTINEL, record); },
-                                  onCancel: () => { if (prevVal) onChangeExpiration && onChangeExpiration(record.key, prevVal); }
+                                  onOk: () => {
+                                    onChangeExpiration &&
+                                      onChangeExpiration(
+                                        record.key,
+                                        CLEAR_SENTINEL,
+                                      );
+                                    syncSameLotRecords(
+                                      record.key,
+                                      CLEAR_SENTINEL,
+                                      record,
+                                    );
+                                  },
+                                  onCancel: () => {
+                                    if (prevVal)
+                                      onChangeExpiration &&
+                                        onChangeExpiration(record.key, prevVal);
+                                  },
                                 });
                               } else {
-                                onChangeExpiration && onChangeExpiration(record.key, undefined);
+                                onChangeExpiration &&
+                                  onChangeExpiration(record.key, undefined);
                               }
                               return;
                             }
                             const iso = date.format('YYYY-MM-DD');
-                            onChangeExpiration && onChangeExpiration(record.key, iso);
-                            if (record.type === 'batch') syncSameLotRecords(record.key, iso, record);
+                            onChangeExpiration &&
+                              onChangeExpiration(record.key, iso);
+                            if (record.type === 'batch')
+                              syncSameLotRecords(record.key, iso, record);
                           }}
                         />
                       </td>
-                      <td>{record.locations?.length ? (
-                        <TagsWrap>{record.locations.map((l, idx) => {
-                          const raw = l.location || '—';
-                          const full = locationNamesMap[raw] || raw;
-                          const shortened = shortenLocationPath(full);
-                          const isLoadingLoc = !locationNamesMap[raw] && !!resolvingLocations[raw];
-                          return (
-                            <Tooltip key={`${record.key}-loc-${idx}`} title={isLoadingLoc ? 'Resolviendo ubicación…' : full}>
-                              <Tag>{isLoadingLoc ? <span style={{ opacity:.6, fontSize:11 }}>Cargando…</span> : shortenLocationPath(shortened)}</Tag>
-                            </Tooltip>
-                          );
-                        })}</TagsWrap>
-                      ) : <span>-</span>}</td>
-                      <td style={{ textAlign: 'right' }}><strong>{formatNumber(record.stock)}</strong></td>
-                      <td style={{ textAlign: 'right' }}><InputNumber min={0} value={real} onChange={(val) => onChangeCount(record.key, Number(val ?? 0))} style={{ width: 90 }} disabled={readOnly} /></td>
-                      <td style={{ textAlign: 'right' }}><Diff $value={diff}>{formatNumber(diff)}</Diff></td>
-                      <td>{meta?.updatedBy ? <EditorsList editors={[{ uid: meta.updatedBy, name: usersNameCache[meta.updatedBy] || meta.updatedByName || meta.updatedBy, updatedAt: meta.updatedAt }]} /> : <span>-</span>}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        {!readOnly && (() => {
-                          const menuItems = [];
-                          if (record.type === 'batch' && originalDateStr) {
-                            menuItems.push({
-                              key: 'restore-date',
-                              label: 'Restablecer fecha de vencimiento original',
-                              disabled: !isDifferentFromOriginal,
-                              onClick: () => { onChangeExpiration && onChangeExpiration(record.key, originalDateStr); syncSameLotRecords(record.key, originalDateStr, record); }
-                            });
-                          }
-                          const hasCurrentDate = dateValue || baseStr;
-                          if ((record.type === 'batch' || record.type === 'noexp') && hasCurrentDate) {
-                            if (menuItems.length) menuItems.push({ type: 'divider' });
-                            menuItems.push({ key: 'clear-date', label: 'Borrar fecha de vencimiento', onClick: () => { onChangeExpiration && onChangeExpiration(record.key, CLEAR_SENTINEL); if (record.type === 'batch') syncSameLotRecords(record.key, CLEAR_SENTINEL, record); } });
-                          }
-                          if (!(record.sources?.length)) {
-                            const persistedRecordCount = serverCounts[record.key] !== undefined ? Number(serverCounts[record.key]) : Number(record.stock ?? 0);
-                            const hasEditedRecordCount = counts[record.key] !== undefined && Number(counts[record.key]) !== persistedRecordCount;
-                            const baselineRecordCount = baselineCounts[record.key];
-                            const effectiveRecordVal = counts[record.key] !== undefined ? Number(counts[record.key]) : persistedRecordCount;
-                            const canRestoreBaseline = baselineRecordCount !== undefined && Number(baselineRecordCount) !== effectiveRecordVal;
-                            if (hasEditedRecordCount) {
-                              if (menuItems.length) menuItems.push({ type: 'divider' });
-                              menuItems.push({ key: 'restore-count-persisted', label: 'Restablecer conteo guardado', onClick: () => onChangeCount(record.key, Number(persistedRecordCount)) });
-                            }
-                            if (canRestoreBaseline) {
-                              if (!hasEditedRecordCount && menuItems.length) menuItems.push({ type: 'divider' });
-                              menuItems.push({ key: 'restore-count-baseline', label: 'Restablecer conteo original', onClick: () => onChangeCount(record.key, Number(baselineRecordCount)) });
-                            }
-                          }
-                          if (!menuItems.length) return null;
-                          return <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button size="small">⋯</Button></Dropdown>;
-                        })()}
+                      <td>
+                        {record.locations?.length ? (
+                          <TagsWrap>
+                            {record.locations.map((l, idx) => {
+                              const raw = l.location || '—';
+                              const full = locationNamesMap[raw] || raw;
+                              const shortened = shortenLocationPath(full);
+                              const isLoadingLoc =
+                                !locationNamesMap[raw] &&
+                                !!resolvingLocations[raw];
+                              return (
+                                <Tooltip
+                                  key={`${record.key}-loc-${idx}`}
+                                  title={
+                                    isLoadingLoc
+                                      ? 'Resolviendo ubicación…'
+                                      : full
+                                  }
+                                >
+                                  <Tag>
+                                    {isLoadingLoc ? (
+                                      <span
+                                        style={{ opacity: 0.6, fontSize: 11 }}
+                                      >
+                                        Cargando…
+                                      </span>
+                                    ) : (
+                                      shortenLocationPath(shortened)
+                                    )}
+                                  </Tag>
+                                </Tooltip>
+                              );
+                            })}
+                          </TagsWrap>
+                        ) : (
+                          <span>-</span>
+                        )}
                       </td>
-                    </tr>
-                  )];
+                      <td style={{ textAlign: 'right' }}>
+                        <strong>{formatNumber(record.stock)}</strong>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <InputNumber
+                          min={0}
+                          value={real}
+                          onChange={(val) =>
+                            onChangeCount(record.key, Number(val ?? 0))
+                          }
+                          style={{ width: 90 }}
+                          disabled={readOnly}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <Diff $value={diff}>{formatNumber(diff)}</Diff>
+                      </td>
+                      <td>
+                        {meta?.updatedBy ? (
+                          <EditorsList
+                            editors={[
+                              {
+                                uid: meta.updatedBy,
+                                name:
+                                  usersNameCache[meta.updatedBy] ||
+                                  meta.updatedByName ||
+                                  meta.updatedBy,
+                                updatedAt: meta.updatedAt,
+                              },
+                            ]}
+                          />
+                        ) : (
+                          <span>-</span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        {!readOnly &&
+                          (() => {
+                            const menuItems = [];
+                            if (record.type === 'batch' && originalDateStr) {
+                              menuItems.push({
+                                key: 'restore-date',
+                                label:
+                                  'Restablecer fecha de vencimiento original',
+                                disabled: !isDifferentFromOriginal,
+                                onClick: () => {
+                                  onChangeExpiration &&
+                                    onChangeExpiration(
+                                      record.key,
+                                      originalDateStr,
+                                    );
+                                  syncSameLotRecords(
+                                    record.key,
+                                    originalDateStr,
+                                    record,
+                                  );
+                                },
+                              });
+                            }
+                            const hasCurrentDate = dateValue || baseStr;
+                            if (
+                              (record.type === 'batch' ||
+                                record.type === 'noexp') &&
+                              hasCurrentDate
+                            ) {
+                              if (menuItems.length)
+                                menuItems.push({ type: 'divider' });
+                              menuItems.push({
+                                key: 'clear-date',
+                                label: 'Borrar fecha de vencimiento',
+                                onClick: () => {
+                                  onChangeExpiration &&
+                                    onChangeExpiration(
+                                      record.key,
+                                      CLEAR_SENTINEL,
+                                    );
+                                  if (record.type === 'batch')
+                                    syncSameLotRecords(
+                                      record.key,
+                                      CLEAR_SENTINEL,
+                                      record,
+                                    );
+                                },
+                              });
+                            }
+                            if (!record.sources?.length) {
+                              const persistedRecordCount =
+                                serverCounts[record.key] !== undefined
+                                  ? Number(serverCounts[record.key])
+                                  : Number(record.stock ?? 0);
+                              const hasEditedRecordCount =
+                                counts[record.key] !== undefined &&
+                                Number(counts[record.key]) !==
+                                  persistedRecordCount;
+                              const baselineRecordCount =
+                                baselineCounts[record.key];
+                              const effectiveRecordVal =
+                                counts[record.key] !== undefined
+                                  ? Number(counts[record.key])
+                                  : persistedRecordCount;
+                              const canRestoreBaseline =
+                                baselineRecordCount !== undefined &&
+                                Number(baselineRecordCount) !==
+                                  effectiveRecordVal;
+                              if (hasEditedRecordCount) {
+                                if (menuItems.length)
+                                  menuItems.push({ type: 'divider' });
+                                menuItems.push({
+                                  key: 'restore-count-persisted',
+                                  label: 'Restablecer conteo guardado',
+                                  onClick: () =>
+                                    onChangeCount(
+                                      record.key,
+                                      Number(persistedRecordCount),
+                                    ),
+                                });
+                              }
+                              if (canRestoreBaseline) {
+                                if (!hasEditedRecordCount && menuItems.length)
+                                  menuItems.push({ type: 'divider' });
+                                menuItems.push({
+                                  key: 'restore-count-baseline',
+                                  label: 'Restablecer conteo original',
+                                  onClick: () =>
+                                    onChangeCount(
+                                      record.key,
+                                      Number(baselineRecordCount),
+                                    ),
+                                });
+                              }
+                            }
+                            if (!menuItems.length) return null;
+                            return (
+                              <Dropdown
+                                menu={{ items: menuItems }}
+                                trigger={['click']}
+                              >
+                                <Button size="small">⋯</Button>
+                              </Dropdown>
+                            );
+                          })()}
+                      </td>
+                    </tr>,
+                  ];
                 });
               })()}
             </tbody>
           </SimpleTable>
           {(() => {
-                        // Usar los totales precalculados del grupo para mantener consistencia
+            // Usar los totales precalculados del grupo para mantener consistencia
             // con la tabla principal y respetar el stock congelado cuando la sesion esta cerrada.
             const list = group._children || [];
             const totalStock = Number(group.totalStock || 0);
@@ -472,8 +958,18 @@ export function GroupedLotsModal({
                   stats={[
                     { label: 'Lotes', value: list.length },
                     { label: 'Stock total', value: formatNumber(totalStock) },
-                    { label: 'Conteo real total', value: formatNumber(totalReal) },
-                    { label: 'Diferencia', value: <Diff $value={totalDiff}>{formatNumber(totalDiff)}</Diff> },
+                    {
+                      label: 'Conteo real total',
+                      value: formatNumber(totalReal),
+                    },
+                    {
+                      label: 'Diferencia',
+                      value: (
+                        <Diff $value={totalDiff}>
+                          {formatNumber(totalDiff)}
+                        </Diff>
+                      ),
+                    },
                   ]}
                   justify="flex-start"
                 />
@@ -489,8 +985,16 @@ export function GroupedLotsModal({
 const SimpleTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  thead th { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
-  tbody td { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; vertical-align: top; }
+  thead th {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+  }
+  tbody td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f5f5f5;
+    vertical-align: top;
+  }
 `;
 
 const TagsWrap = styled.div`

@@ -12,13 +12,14 @@ const STATUS_MESSAGES = {
 
 export const SessionManager = ({ status, error }) => {
   const location = useLocation();
-  const isPublicRoute = location.pathname === '/login' || location.pathname === '/';
+  const isPublicRoute =
+    location.pathname === '/login' || location.pathname === '/';
   const [shouldRender, setShouldRender] = useState(false);
   const hasShownLoaderRef = useRef(false);
   const initialCheckRef = useRef(true);
 
   const isActive = status === 'checking';
-  
+
   // Verificar si hay una sesión guardada (solo en el montaje inicial)
   const [hasStoredSession] = useState(() => {
     const { sessionToken } = getStoredSession();

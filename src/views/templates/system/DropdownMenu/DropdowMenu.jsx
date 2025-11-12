@@ -8,9 +8,12 @@ import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 
 import { Option } from './Option';
 
-
-
-export const DropdownMenu = ({ title = 'Opciones', options = [], customButton, ...props }) => {
+export const DropdownMenu = ({
+  title = 'Opciones',
+  options = [],
+  customButton,
+  ...props
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const DropDownMenuRef = useRef(null);
 
@@ -35,19 +38,16 @@ export const DropdownMenu = ({ title = 'Opciones', options = [], customButton, .
 
   return (
     <div ref={DropDownMenuRef}>
-      {
-        customButton ? (
-          React.cloneElement(customButton, { onClick: toggleMenu, ref: setReferenceElement })
-        ) : (
-          <AntButton
-            ref={setReferenceElement}
-            onClick={toggleMenu}
-            {...props}
-          >
-            {title}
-          </AntButton>
-        )
-      }
+      {customButton ? (
+        React.cloneElement(customButton, {
+          onClick: toggleMenu,
+          ref: setReferenceElement,
+        })
+      ) : (
+        <AntButton ref={setReferenceElement} onClick={toggleMenu} {...props}>
+          {title}
+        </AntButton>
+      )}
 
       {isOpen && (
         <Container
@@ -71,7 +71,7 @@ const Container = styled.div`
   max-width: 400px;
   background-color: white;
   border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, .3);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 
   z-index: 555;
   overflow: hidden;

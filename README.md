@@ -18,19 +18,19 @@ Aplicación web empresarial para la plataforma VentaMas, construida con React 18
 
 ## Scripts destacados
 
-| Script | Uso |
-| --- | --- |
-| `npm run dev` | Servidor Vite con hot reload. |
-| `npm run build` | Genera `dist/` listo para hosting. |
-| `npm run preview` | Previsualiza el build local. |
-| `npm run lint:web` / `lint:web:fix` | ESLint sobre la app React. |
-| `npm run lint:functions` | ESLint dentro de `functions/`. |
-| `npm run lint:all` | Combina ambos linters. |
+| Script                                   | Uso                                                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                            | Servidor Vite con hot reload.                                                                                       |
+| `npm run build`                          | Genera `dist/` listo para hosting.                                                                                  |
+| `npm run preview`                        | Previsualiza el build local.                                                                                        |
+| `npm run lint:web` / `lint:web:fix`      | ESLint sobre la app React.                                                                                          |
+| `npm run lint:functions`                 | ESLint dentro de `functions/`.                                                                                      |
+| `npm run lint:all`                       | Combina ambos linters.                                                                                              |
 | `npm run check-unused-exports[:saveCsv]` | Ejecuta `tools/check-unused-exports.ps1`; la variante `:saveCsv` guarda el reporte en `reports/unused-exports.csv`. |
-| `npm run pending-updates` | Llama a `tools/check_pending.sh` para mostrar notas pendientes. |
-| `npm run storybook` / `build-storybook` | UI de componentes. |
-| `npm run deploy:*` | Flujo de despliegue Firebase/Vercel (revisar credenciales antes de usar). |
-| `npm run push:alt` | Ejecuta `tools/push-to-alt-as-main.sh` y publica la rama actual como `main` en el remote `alt`. |
+| `npm run pending-updates`                | Llama a `tools/check_pending.sh` para mostrar notas pendientes.                                                     |
+| `npm run storybook` / `build-storybook`  | UI de componentes.                                                                                                  |
+| `npm run deploy:*`                       | Flujo de despliegue Firebase/Vercel (revisar credenciales antes de usar).                                           |
+| `npm run push:alt`                       | Ejecuta `tools/push-to-alt-as-main.sh` y publica la rama actual como `main` en el remote `alt`.                     |
 
 ## Estructura de carpetas
 

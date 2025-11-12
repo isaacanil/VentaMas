@@ -1,23 +1,23 @@
-import React from 'react'
+import React from 'react';
 import styled from 'styled-components';
 
-export const Header = ({data}) => {
-    const numberID = data?.numberID;
-    const client = data?.client || {};
-    const date = data?.date;
-    const formatDate = (seconds) => {
-        if (!seconds) return new Date().toLocaleString();
-        const date = new Date(seconds * 1000);
-        return date.toLocaleString();
-      };
+export const Header = ({ data }) => {
+  const numberID = data?.numberID;
+  const client = data?.client || {};
+  const date = data?.date;
+  const formatDate = (seconds) => {
+    if (!seconds) return new Date().toLocaleString();
+    const date = new Date(seconds * 1000);
+    return date.toLocaleString();
+  };
   return (
     <Container>
-        <Title># {numberID}</Title>
-        <Client>{client?.name}</Client>
-        <Day> {formatDate(date?.seconds)}</Day>
-      </Container>
-  )
-}
+      <Title># {numberID}</Title>
+      <Client>{client?.name}</Client>
+      <Day> {formatDate(date?.seconds)}</Day>
+    </Container>
+  );
+};
 
 const Container = styled.div`
   display: grid;
@@ -26,7 +26,7 @@ const Container = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
-    padding-bottom: 8px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #cfcfcf;
 `;
 const Client = styled.h4`
@@ -44,4 +44,3 @@ const Title = styled.h4`
   margin: 0;
   white-space: nowrap;
 `;
-

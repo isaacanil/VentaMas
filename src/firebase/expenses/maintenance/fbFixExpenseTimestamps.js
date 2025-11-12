@@ -1,8 +1,4 @@
-import {
-  collection,
-  getDocs,
-  writeBatch,
-} from 'firebase/firestore';
+import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
 import { toTimestamp } from '../../../utils/firebase/toTimestamp';
 import { db } from '../../firebaseconfig';
@@ -19,18 +15,19 @@ const TIMESTAMP_PATHS = [
 const MAX_SAMPLE_DETAILS = 20;
 const DEFAULT_BATCH_SIZE = 400;
 
-const getNestedValue = (target, path) => (
-  path.reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), target)
-);
+const getNestedValue = (target, path) =>
+  path.reduce(
+    (acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined),
+    target,
+  );
 
-const ensureNestedObject = (target, path) => (
+const ensureNestedObject = (target, path) =>
   path.reduce((acc, key) => {
     if (!acc[key] || typeof acc[key] !== 'object') {
       acc[key] = {};
     }
     return acc[key];
-  }, target)
-);
+  }, target);
 
 const setNestedValue = (target, path, value) => {
   const lastKey = path[path.length - 1];

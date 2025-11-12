@@ -42,7 +42,10 @@ const resolveStatus = (account) => {
     const overdueDays = Math.abs(Math.round(days ?? 0));
     return {
       label: 'Vencida',
-      description: overdueDays > 0 ? `Hace ${overdueDays} día${overdueDays > 1 ? 's' : ''}` : 'Vencida',
+      description:
+        overdueDays > 0
+          ? `Hace ${overdueDays} día${overdueDays > 1 ? 's' : ''}`
+          : 'Vencida',
       color: '#ef4444',
     };
   }
@@ -55,18 +58,34 @@ const resolveStatus = (account) => {
       return { label: 'Mañana', description: 'Vence mañana', color: '#f59e0b' };
     }
     if (days <= 3) {
-      return { label: `${days} días`, description: `Vence en ${days} días`, color: '#f59e0b' };
+      return {
+        label: `${days} días`,
+        description: `Vence en ${days} días`,
+        color: '#f59e0b',
+      };
     }
-    return { label: `${days} días`, description: `Vence en ${days} días`, color: '#2563eb' };
+    return {
+      label: `${days} días`,
+      description: `Vence en ${days} días`,
+      color: '#2563eb',
+    };
   }
 
-  return { label: 'Al día', description: 'Sin fecha próxima registrada', color: '#10b981' };
+  return {
+    label: 'Al día',
+    description: 'Sin fecha próxima registrada',
+    color: '#10b981',
+  };
 };
 
 const getNextInstallment = (account) => {
-  const installments = Array.isArray(account?.installments) ? account.installments : [];
+  const installments = Array.isArray(account?.installments)
+    ? account.installments
+    : [];
   if (installments.length === 0) return null;
-  const active = installments.filter((installment) => installment?.isActive !== false);
+  const active = installments.filter(
+    (installment) => installment?.isActive !== false,
+  );
   if (active.length === 0) return null;
   return active[0];
 };
@@ -76,7 +95,12 @@ const formatInstallmentDate = (value) => {
   if (typeof value.toFormat === 'function') {
     return value.toFormat('dd/MM/yyyy');
   }
-  const date = typeof value.toDate === 'function' ? value.toDate() : value instanceof Date ? value : new Date(value);
+  const date =
+    typeof value.toDate === 'function'
+      ? value.toDate()
+      : value instanceof Date
+        ? value
+        : new Date(value);
   if (Number.isNaN(date?.getTime?.())) return '';
   return new Intl.DateTimeFormat('es-ES').format(date);
 };
@@ -87,14 +111,21 @@ const AccountRow = ({ account }) => {
   const status = resolveStatus(account);
   const reference = account?.invoiceNumber || account?.invoiceId || '-';
   const nextInstallment = getNextInstallment(account);
-  const nextAmount = typeof nextInstallment?.installmentAmount === 'number' ? nextInstallment.installmentAmount : null;
+  const nextAmount =
+    typeof nextInstallment?.installmentAmount === 'number'
+      ? nextInstallment.installmentAmount
+      : null;
   const nextDate = formatInstallmentDate(nextInstallment?.installmentDate);
-  const nextSummary = nextAmount ? `${formatNumber(nextAmount)}${nextDate ? ` · ${nextDate}` : ''}` : nextDate || '-';
+  const nextSummary = nextAmount
+    ? `${formatNumber(nextAmount)}${nextDate ? ` · ${nextDate}` : ''}`
+    : nextDate || '-';
 
   return (
     <PanelRow>
       <RowMain>
-        <ModuleIcon style={{ background: `${accentColor}15`, color: accentColor }}>
+        <ModuleIcon
+          style={{ background: `${accentColor}15`, color: accentColor }}
+        >
           <FontAwesomeIcon icon={icon || faCalendarAlt} />
         </ModuleIcon>
         <ModuleInfo>
@@ -125,7 +156,9 @@ const AccountRow = ({ account }) => {
 
       <RowStatus>
         <StatusPill $color={status.color}>{status.label}</StatusPill>
-        <MetaValue style={{ color: '#64748b', fontWeight: 400 }}>{status.description}</MetaValue>
+        <MetaValue style={{ color: '#64748b', fontWeight: 400 }}>
+          {status.description}
+        </MetaValue>
       </RowStatus>
     </PanelRow>
   );

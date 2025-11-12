@@ -14,13 +14,15 @@ export const useNavigationTracker = () => {
 
   useEffect(() => {
     // Guardamos la ubicación completa en el historial
-    dispatch(pushHistory({
-      pathname: location.pathname,
-      search: location.search,
-      hash: location.hash,
-      state: location.state,
-      key: location.key
-    }));
+    dispatch(
+      pushHistory({
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+        state: location.state,
+        key: location.key,
+      }),
+    );
   }, [location, dispatch]);
 
   return null;

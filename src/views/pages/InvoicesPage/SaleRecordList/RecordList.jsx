@@ -1,4 +1,9 @@
-import { faFileInvoice, faFilter, faPlus, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faFileInvoice,
+  faFilter,
+  faPlus,
+  faCalendarAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import React, { useRef, useMemo } from 'react';
@@ -10,24 +15,25 @@ import { useMediaQuery } from '../../../../hooks/useMediaQuery';
 import { InvoiceItem } from './InvoiceItem/InvoiceItem';
 import { InvoiceItemWide } from './InvoiceItem/InvoiceItemWide';
 
-
-
 export const SaleRecordList = ({ invoices, searchTerm }) => {
   const parentRef = useRef(null);
-  
+
   // Detectar si la pantalla es >= 600px
   const isWideScreen = useMediaQuery('(min-width: 600px)');
 
   // Memoizar data filtrada para evitar cálculos innecesarios
   const data = useMemo(() => {
-    return filterData(invoices, searchTerm).map(invoice => invoice.data);
+    return filterData(invoices, searchTerm).map((invoice) => invoice.data);
   }, [invoices, searchTerm]);
 
   const count = data.length;
 
   // Memoizar componentes para evitar renders innecesarios
   const MemoInvoiceItem = React.useMemo(() => React.memo(InvoiceItem), []);
-  const MemoInvoiceItemWide = React.useMemo(() => React.memo(InvoiceItemWide), []);
+  const MemoInvoiceItemWide = React.useMemo(
+    () => React.memo(InvoiceItemWide),
+    [],
+  );
 
   // Configuración del virtualizador con tamaño ajustado según el diseño
   const virtualizer = useVirtualizer({
@@ -49,10 +55,9 @@ export const SaleRecordList = ({ invoices, searchTerm }) => {
           </EmptyIcon>
           <EmptyTitle>No se encontraron facturas</EmptyTitle>
           <EmptyDescription>
-            {searchTerm ? 
-              `No hay facturas que coincidan con "${searchTerm}"` : 
-              'No hay facturas para el período seleccionado'
-            }
+            {searchTerm
+              ? `No hay facturas que coincidan con "${searchTerm}"`
+              : 'No hay facturas para el período seleccionado'}
           </EmptyDescription>
           <SuggestionsList>
             <SuggestionItem>
@@ -86,16 +91,14 @@ export const SaleRecordList = ({ invoices, searchTerm }) => {
   }
 
   return (
-    <ListContainer
-      ref={parentRef}
-    >
+    <ListContainer ref={parentRef}>
       <VirtualContent style={{ height: virtualizer.getTotalSize() }}>
         <ItemsContainer
           style={{
             transform: `translateY(${items[0]?.start ?? 0}px)`,
           }}
         >
-          {items.map(virtualItem => (
+          {items.map((virtualItem) => (
             <ItemWrapper
               key={virtualItem.key}
               data-index={virtualItem.index}
@@ -119,21 +122,21 @@ const ListContainer = styled.div`
   overflow-y: auto;
   padding: 8px 12px 24px;
   height: 100%;
-  
+
   /* Scrollbar personalizado para mejor UX */
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 3px;
-    
+
     &:hover {
       background: #a8a8a8;
     }

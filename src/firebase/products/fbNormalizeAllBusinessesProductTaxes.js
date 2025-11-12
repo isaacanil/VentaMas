@@ -1,8 +1,8 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs } from 'firebase/firestore';
 
-import { db } from "../firebaseconfig";
+import { db } from '../firebaseconfig';
 
-import { normalizeProductTaxes } from "./fbNormalizeProductTaxes";
+import { normalizeProductTaxes } from './fbNormalizeProductTaxes';
 
 /**
  * Normaliza el impuesto (`pricing.tax`) de todos los productos en todos los negocios.
@@ -27,7 +27,7 @@ export const normalizeAllBusinessesProductTaxes = async ({
   dryRun = false,
   onProgress,
 } = {}) => {
-  const businessesRef = collection(db, "businesses");
+  const businessesRef = collection(db, 'businesses');
   const businessesSnapshot = await getDocs(businessesRef);
   const total = businessesSnapshot.size;
 
@@ -37,10 +37,7 @@ export const normalizeAllBusinessesProductTaxes = async ({
   for (const docSnap of businessesSnapshot.docs) {
     const businessID = docSnap.id;
     try {
-      const summary = await normalizeProductTaxes(
-        { businessID },
-        { dryRun },
-      );
+      const summary = await normalizeProductTaxes({ businessID }, { dryRun });
       summaries.push({
         businessID,
         success: true,
@@ -54,7 +51,7 @@ export const normalizeAllBusinessesProductTaxes = async ({
       });
     }
     processed += 1;
-    if (typeof onProgress === "function") {
+    if (typeof onProgress === 'function') {
       onProgress({ processed, total, businessID });
     }
   }
@@ -65,4 +62,3 @@ export const normalizeAllBusinessesProductTaxes = async ({
     summaries,
   };
 };
-

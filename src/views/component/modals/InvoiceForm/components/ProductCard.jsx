@@ -1,39 +1,29 @@
-import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Form, InputNumber, Row } from "antd";
-import React from "react";
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, InputNumber, Row } from 'antd';
+import React from 'react';
 
 const ProductCard = ({ quantity, setQuantity }) => {
   const increaseQuantity = () => {
-    setQuantity(prevQuantity => prevQuantity + 1);
+    setQuantity((prevQuantity) => prevQuantity + 1);
   };
 
   const decreaseQuantity = () => {
-    setQuantity(prevQuantity => (prevQuantity > 0 ? prevQuantity - 1 : 0));
+    setQuantity((prevQuantity) => (prevQuantity > 0 ? prevQuantity - 1 : 0));
   };
 
   return (
-    <Card >
+    <Card>
       <Form>
         <Form.Item label="">
           <Row gutter={16}>
             <Col>
-              <Button
-                icon={<MinusOutlined />}
-                onClick={decreaseQuantity}
-              />
+              <Button icon={<MinusOutlined />} onClick={decreaseQuantity} />
             </Col>
             <Col>
-              <InputNumber
-                min={1}
-                value={quantity}
-                onChange={setQuantity}
-              />
+              <InputNumber min={1} value={quantity} onChange={setQuantity} />
             </Col>
             <Col>
-              <Button
-                icon={<PlusOutlined />}
-                onClick={increaseQuantity}
-              />
+              <Button icon={<PlusOutlined />} onClick={increaseQuantity} />
             </Col>
           </Row>
         </Form.Item>

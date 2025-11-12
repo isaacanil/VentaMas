@@ -10,7 +10,6 @@ import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
 import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
 import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
 
-
 const OverlayVariants = {
   open: {
     opacity: 1,
@@ -19,23 +18,25 @@ const OverlayVariants = {
   closed: {
     opacity: 0,
     pointerEvents: 'none',
-  }
-}
+  },
+};
 
 const ContainerVariants = {
   open: { scale: 1 },
-  closed: { scale: 0 }
-}
+  closed: { scale: 0 },
+};
 
 const EmptyCategory = { id: '', name: '' };
-const AddCategoryModal = ({ isOpen, categoryToUpdate,  }) => {
+const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
   const [category, setCategory] = useState(categoryToUpdate || EmptyCategory);
   const dispatch = useDispatch();
 
   const user = useSelector(selectUser);
 
   useEffect(() => {
-    if (categoryToUpdate) {setCategory(categoryToUpdate);}
+    if (categoryToUpdate) {
+      setCategory(categoryToUpdate);
+    }
   }, [categoryToUpdate]);
 
   const onClose = () => {
@@ -46,31 +47,41 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate,  }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (category.name === '') {
-      dispatch(addNotification({
-        message: 'El nombre de la categoría no puede estar vacío',
-        type: 'error',
-      }))
-      return
+      dispatch(
+        addNotification({
+          message: 'El nombre de la categoría no puede estar vacío',
+          type: 'error',
+        }),
+      );
+      return;
     }
 
     if (categoryToUpdate) {
       fbUpdateCategory(category, user)
-        .then(() => { onClose(); })
         .then(() => {
-          dispatch(addNotification({
-            message: 'Categoría actualizada con éxito',
-            type: 'success',
-          }))
-          return
+          onClose();
         })
+        .then(() => {
+          dispatch(
+            addNotification({
+              message: 'Categoría actualizada con éxito',
+              type: 'success',
+            }),
+          );
+          return;
+        });
     } else {
       fbAddCategory(category, user)
-        .then(() => { onClose(); })
         .then(() => {
-          dispatch(addNotification({
-            message: 'Categoría creada con éxito',
-            type: 'success',
-          }))
+          onClose();
+        })
+        .then(() => {
+          dispatch(
+            addNotification({
+              message: 'Categoría creada con éxito',
+              type: 'success',
+            }),
+          );
         });
     }
   };
@@ -79,7 +90,7 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate,  }) => {
     <ModalOverlay
       variants={OverlayVariants}
       initial="closed"
-      animate={isOpen ? "open" : "closed"}
+      animate={isOpen ? 'open' : 'closed'}
       exit="closed"
       transition={{ duration: 0.3 }}
       isOpen={isOpen}
@@ -87,16 +98,16 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate,  }) => {
       <ModalContainer
         variants={ContainerVariants}
         initial="closed"
-        animate={isOpen ? "open" : "closed"}
+        animate={isOpen ? 'open' : 'closed'}
         exit="closed"
       >
         <h2>{categoryToUpdate ? 'Actualizar Categoría' : 'Crear Categoría'}</h2>
         <Form onSubmit={handleSubmit}>
           <InputV4
-            name='name'
-            placeholder='Nombre de la Categoría'
+            name="name"
+            placeholder="Nombre de la Categoría"
             onChange={(e) => setCategory({ ...category, name: e.target.value })}
-            size='medium'
+            size="medium"
             value={category.name}
           />
           <ButtonGroup>
@@ -132,7 +143,6 @@ const ModalOverlay = styled(motion.div)`
   /* opacity: ${(props) => (props.isOpen ? 1 : 0)};
   visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
   transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; */
-
 `;
 
 const ModalContainer = styled(motion.div)`
@@ -141,7 +151,7 @@ const ModalContainer = styled(motion.div)`
   padding: 1em;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  h2{
+  h2 {
     margin-top: 0;
     padding: 0;
     margin: 0;
@@ -154,8 +164,6 @@ const Form = styled.form`
   flex-direction: column;
   gap: 1em;
 `;
-
-
 
 const ButtonGroup = styled.div`
   display: flex;

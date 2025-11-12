@@ -1,17 +1,33 @@
-import { faArrowRight, faBox, faLayerGroup, faTable, faWarehouse } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import styled from "styled-components";
+import {
+  faArrowRight,
+  faBox,
+  faLayerGroup,
+  faTable,
+  faWarehouse,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import styled from 'styled-components';
 
-export const LocationDisplay = ({ location, onClick, locationNames, variant = 'card' }) => {
+export const LocationDisplay = ({
+  location,
+  onClick,
+  locationNames,
+  variant = 'card',
+}) => {
   // Ensure location is a string and provide a default value
   const locationString = String(location || '');
   const getLocationIcon = (type) => {
-    switch(type) {
-      case 'warehouse': return faWarehouse;
-      case 'shelf': return faLayerGroup;
-      case 'row': return faTable;
-      case 'segment': return faBox;
-      default: return faWarehouse;
+    switch (type) {
+      case 'warehouse':
+        return faWarehouse;
+      case 'shelf':
+        return faLayerGroup;
+      case 'row':
+        return faTable;
+      case 'segment':
+        return faBox;
+      default:
+        return faWarehouse;
     }
   };
 
@@ -30,14 +46,22 @@ export const LocationDisplay = ({ location, onClick, locationNames, variant = 'c
         <div className="location-content">
           {variant === 'inline' ? (
             <div className="location-segments">
-              <span className={`segment-chip ${fullLabel ? 'full' : 'fallback'}`}>
-                <FontAwesomeIcon icon={getLocationIcon('segment')} className="icon" />
+              <span
+                className={`segment-chip ${fullLabel ? 'full' : 'fallback'}`}
+              >
+                <FontAwesomeIcon
+                  icon={getLocationIcon('segment')}
+                  className="icon"
+                />
                 <span className="text">{inlineLabel}</span>
               </span>
             </div>
           ) : (
             <div className="location-segment">
-              <FontAwesomeIcon icon={getLocationIcon('segment')} className="icon" />
+              <FontAwesomeIcon
+                icon={getLocationIcon('segment')}
+                className="icon"
+              />
               <span className="location-text">{primaryLabel}</span>
             </div>
           )}
@@ -53,7 +77,7 @@ const LocationPath = styled.div`
   align-items: center;
   gap: 8px;
   width: 100%;
-  flex-wrap: ${props => props.$variant === 'inline' ? 'wrap' : 'nowrap'};
+  flex-wrap: ${(props) => (props.$variant === 'inline' ? 'wrap' : 'nowrap')};
 
   .location-content {
     flex: 1;
@@ -71,7 +95,7 @@ const LocationPath = styled.div`
     border: 1px solid #e2e8f0;
     white-space: normal;
     word-break: break-word;
-    
+
     .icon {
       color: #2563eb;
       margin-right: 6px;
@@ -127,29 +151,37 @@ const LocationPath = styled.div`
     transition: transform 0.2s ease;
     font-size: 0.9rem;
     flex-shrink: 0;
-    display: ${props => props.$variant === 'inline' ? 'none' : 'block'};
+    display: ${(props) => (props.$variant === 'inline' ? 'none' : 'block')};
   }
 `;
 
 const LocationBadge = styled.div`
   position: relative;
-  background: ${props => props.$variant === 'inline' ? 'transparent' : '#ffffff'};
-  padding: ${props => props.$variant === 'inline' ? '6px 0' : '8px'};
+  background: ${(props) =>
+    props.$variant === 'inline' ? 'transparent' : '#ffffff'};
+  padding: ${(props) => (props.$variant === 'inline' ? '6px 0' : '8px')};
   border-radius: 10px;
   font-size: 0.9rem;
   color: #1e293b;
   display: flex;
-  flex-direction: ${props => props.$variant === 'inline' ? 'row' : 'column'};
-  align-items: ${props => props.$variant === 'inline' ? 'center' : 'flex-start'};
-  gap: ${props => props.$variant === 'inline' ? '8px' : '6px'};
+  flex-direction: ${(props) =>
+    props.$variant === 'inline' ? 'row' : 'column'};
+  align-items: ${(props) =>
+    props.$variant === 'inline' ? 'center' : 'flex-start'};
+  gap: ${(props) => (props.$variant === 'inline' ? '8px' : '6px')};
   cursor: pointer;
   transition: all 0.2s ease;
-  border: ${props => props.$variant === 'inline' ? 'none' : '1px solid #e2e8f0'};
-  margin-top: ${props => props.$variant === 'inline' ? '0' : 'auto'};
+  border: ${(props) =>
+    props.$variant === 'inline' ? 'none' : '1px solid #e2e8f0'};
+  margin-top: ${(props) => (props.$variant === 'inline' ? '0' : 'auto')};
 
   &:hover {
-    border-color: ${props => props.$variant === 'inline' ? 'transparent' : '#2563eb'};
-    box-shadow: ${props => props.$variant === 'inline' ? 'none' : '0 4px 12px rgba(37, 99, 235, 0.1)'};
+    border-color: ${(props) =>
+      props.$variant === 'inline' ? 'transparent' : '#2563eb'};
+    box-shadow: ${(props) =>
+      props.$variant === 'inline'
+        ? 'none'
+        : '0 4px 12px rgba(37, 99, 235, 0.1)'};
 
     .navigation-icon {
       transform: translateX(4px);

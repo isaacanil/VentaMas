@@ -12,7 +12,6 @@ import ApprovalLogs from './components/ApprovalLogs/ApprovalLogs';
 import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';
 import { PersonalPinManagement } from './components/PersonalPinManagement';
 
-
 const Container = styled.div`
   display: grid;
   grid-template-rows: min-content 1fr;
@@ -40,10 +39,8 @@ export const AuthorizationsManager = () => {
   const user = useSelector(selectUser);
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const {
-    authorizationFlowEnabled,
-    hasActiveModules,
-  } = useAuthorizationModules();
+  const { authorizationFlowEnabled, hasActiveModules } =
+    useAuthorizationModules();
 
   // Solo admin, owner, dev pueden ver solicitudes
   const canViewRequests = ['admin', 'owner', 'dev'].includes(user?.role);
@@ -129,8 +126,8 @@ export const AuthorizationsManager = () => {
             message="Autorizaciones Desactivadas"
             description={
               !authorizationFlowEnabled
-                ? "El flujo de autorizaciones está desactivado. Ve a Configuración > Flujo de Autorizaciones para activarlo."
-                : "No hay módulos de autorización activos. Ve a Configuración > Flujo de Autorizaciones para activar al menos un módulo."
+                ? 'El flujo de autorizaciones está desactivado. Ve a Configuración > Flujo de Autorizaciones para activarlo.'
+                : 'No hay módulos de autorización activos. Ve a Configuración > Flujo de Autorizaciones para activar al menos un módulo.'
             }
             type="warning"
             showIcon

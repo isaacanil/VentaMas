@@ -10,22 +10,27 @@ import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updat
 /**
  * Modal para mostrar y restaurar comprobantes deshabilitados
  */
-const DisabledReceiptsModal = ({ visible, onCancel, disabledReceipts, onRestore }) => {
+const DisabledReceiptsModal = ({
+  visible,
+  onCancel,
+  disabledReceipts,
+  onRestore,
+}) => {
   const user = useSelector(selectUser);
 
   // Manejar la restauración de un comprobante
   const handleRestore = async (receiptData) => {
     try {
       // Actualizar el documento en Firebase con disabled = false
-      const dataToUpdate = { 
-        id: receiptData.id, 
-        ...receiptData, 
-        disabled: false 
+      const dataToUpdate = {
+        id: receiptData.id,
+        ...receiptData,
+        disabled: false,
       };
-      
+
       await updateTaxReceipt(user, dataToUpdate);
       message.success('Comprobante restaurado correctamente');
-      
+
       // Notificar al componente padre para actualizar la lista
       onRestore(receiptData.id);
     } catch (error) {
@@ -49,16 +54,20 @@ const DisabledReceiptsModal = ({ visible, onCancel, disabledReceipts, onRestore 
       footer={[
         <Button key="close" onClick={onCancel}>
           Cerrar
-        </Button>
+        </Button>,
       ]}
     >
       <Content>
         {disabledReceipts.length > 0 ? (
           <ReceiptsGrid>
-            {disabledReceipts.map((receipt) => (              <CustomReceiptCard key={receipt.id || receipt.data.id}>
+            {disabledReceipts.map((receipt) => (
+              <CustomReceiptCard key={receipt.id || receipt.data.id}>
                 <CardHeaderSection>
                   <ReceiptName>{receipt.data.name}</ReceiptName>
-                  <ReceiptCode>{receipt.data.type}{receipt.data.serie}</ReceiptCode>
+                  <ReceiptCode>
+                    {receipt.data.type}
+                    {receipt.data.serie}
+                  </ReceiptCode>
                 </CardHeaderSection>
                 <CardContent>
                   {/* <DetailRow>
@@ -69,10 +78,9 @@ const DisabledReceiptsModal = ({ visible, onCancel, disabledReceipts, onRestore 
                     <DetailLabel>Secuencia:</DetailLabel>
                     <DetailValue>{receipt.data.sequence}</DetailValue>
                   </DetailRow>
-                </CardContent>                <RestoreButtonContainer>
-                  <RestoreButton
-                    onClick={() => handleRestore(receipt.data)}
-                  >
+                </CardContent>{' '}
+                <RestoreButtonContainer>
+                  <RestoreButton onClick={() => handleRestore(receipt.data)}>
                     <CheckCircleOutlined style={{ fontSize: '12px' }} />
                     <span>Restaurar</span>
                   </RestoreButton>
@@ -95,11 +103,39 @@ const DisabledReceiptsModal = ({ visible, onCancel, disabledReceipts, onRestore 
 
 // Icono de documento vacío personalizado
 const EmptyDocumentIcon = () => (
-  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M48 8H16C13.7909 8 12 9.79086 12 12V52C12 54.2091 13.7909 56 16 56H48C50.2091 56 52 54.2091 52 52V12C52 9.79086 50.2091 8 48 8Z" stroke="#d9d9d9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M36 8V18H44" stroke="#d9d9d9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M24 30H40" stroke="#d9d9d9" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M24 38H40" stroke="#d9d9d9" strokeWidth="2" strokeLinecap="round"/>
+  <svg
+    width="64"
+    height="64"
+    viewBox="0 0 64 64"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M48 8H16C13.7909 8 12 9.79086 12 12V52C12 54.2091 13.7909 56 16 56H48C50.2091 56 52 54.2091 52 52V12C52 9.79086 50.2091 8 48 8Z"
+      stroke="#d9d9d9"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M36 8V18H44"
+      stroke="#d9d9d9"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M24 30H40"
+      stroke="#d9d9d9"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M24 38H40"
+      stroke="#d9d9d9"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
@@ -225,7 +261,7 @@ const RestoreButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   width: 100%;
-  
+
   &:hover {
     background-color: #0958d9;
   }

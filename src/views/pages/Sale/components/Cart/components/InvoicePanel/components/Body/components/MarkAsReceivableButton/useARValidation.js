@@ -19,18 +19,24 @@ export const useARValidation = (cartData, creditLimit) => {
   const { data: activeAccountsReceivableCount = 0 } = useQuery({
     queryKey: ['activeARCount', user.businessID, clientId],
     queryFn: () => fbGetActiveARCount(user.businessID, clientId),
-    enabled: Boolean(creditLimit?.invoice?.status && clientId && user.businessID),
+    enabled: Boolean(
+      creditLimit?.invoice?.status && clientId && user.businessID,
+    ),
     staleTime: 60000,
   });
 
   const isWithinInvoiceCount =
-    !creditLimit?.invoice?.status || activeAccountsReceivableCount < (creditLimit?.invoice?.value || 0);
+    !creditLimit?.invoice?.status ||
+    activeAccountsReceivableCount < (creditLimit?.invoice?.value || 0);
 
   const creditLimitValue =
-    creditLimit?.creditLimit?.status && currentBalance !== null ? currentBalance + -change : 0;
+    creditLimit?.creditLimit?.status && currentBalance !== null
+      ? currentBalance + -change
+      : 0;
 
   const isWithinCreditLimit =
-    !creditLimit?.creditLimit?.status || creditLimitValue <= creditLimit?.creditLimit?.value;
+    !creditLimit?.creditLimit?.status ||
+    creditLimitValue <= creditLimit?.creditLimit?.value;
 
   return {
     isGenericClient,

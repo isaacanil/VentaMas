@@ -5,14 +5,19 @@ import styled from 'styled-components';
 
 import { formatPrice } from '../../../../../../../../../../utils/formatPrice';
 
-
-export const CreditNotesSummary = ({ selectedCreditNotes = [], totalPurchase = 0 }) => {
+export const CreditNotesSummary = ({
+  selectedCreditNotes = [],
+  totalPurchase = 0,
+}) => {
   if (!selectedCreditNotes.length) {
     return null;
   }
 
-  const totalCreditNoteAmount = selectedCreditNotes.reduce((sum, note) => sum + (note.amountUsed || 0), 0);
-  
+  const totalCreditNoteAmount = selectedCreditNotes.reduce(
+    (sum, note) => sum + (note.amountUsed || 0),
+    0,
+  );
+
   return (
     <SummaryCard>
       <CardHeader>
@@ -20,11 +25,9 @@ export const CreditNotesSummary = ({ selectedCreditNotes = [], totalPurchase = 0
           <CreditCardOutlined />
           Notas de Crédito Aplicadas
         </CardTitle>
-        <TotalAmount>
-          {formatPrice(totalCreditNoteAmount)}
-        </TotalAmount>
+        <TotalAmount>{formatPrice(totalCreditNoteAmount)}</TotalAmount>
       </CardHeader>
-      
+
       <CardContent>
         {selectedCreditNotes.map((note, index) => (
           <CreditNoteItem key={note.id || index}>
@@ -34,9 +37,9 @@ export const CreditNotesSummary = ({ selectedCreditNotes = [], totalPurchase = 0
             </ItemInfo>
           </CreditNoteItem>
         ))}
-        
+
         <Divider style={{ margin: '8px 0' }} />
-        
+
         <SummaryInfo>
           <SummaryRow>
             <SummaryLabel>Total Aplicado:</SummaryLabel>
@@ -44,7 +47,9 @@ export const CreditNotesSummary = ({ selectedCreditNotes = [], totalPurchase = 0
           </SummaryRow>
           <SummaryRow>
             <SummaryLabel>Restante a Pagar:</SummaryLabel>
-            <SummaryValue>{formatPrice(Math.max(0, totalPurchase - totalCreditNoteAmount))}</SummaryValue>
+            <SummaryValue>
+              {formatPrice(Math.max(0, totalPurchase - totalCreditNoteAmount))}
+            </SummaryValue>
           </SummaryRow>
         </SummaryInfo>
       </CardContent>
@@ -90,7 +95,7 @@ const CardContent = styled.div`
 
 const CreditNoteItem = styled.div`
   margin-bottom: 8px;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -142,4 +147,4 @@ const SummaryValue = styled.span`
   font-weight: 600;
   color: #333;
   font-family: monospace;
-`; 
+`;

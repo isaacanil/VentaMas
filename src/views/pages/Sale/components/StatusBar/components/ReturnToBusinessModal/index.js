@@ -1,2 +1,2 @@
-export { ReturnToBusinessModal } from './ReturnToBusinessModal'
-export { default } from './ReturnToBusinessModal'
+export { ReturnToBusinessModal } from './ReturnToBusinessModal';
+export { default } from './ReturnToBusinessModal';

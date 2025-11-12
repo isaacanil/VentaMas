@@ -1,15 +1,15 @@
 // src/cashCount/utils/cashCountQueries.js
-import { https } from "firebase-functions";
+import { https } from 'firebase-functions';
 
-import { db } from "../../../core/config/firebase.js";
+import { db } from '../../../core/config/firebase.js';
 
 function buildOpenCashCountQuery(user) {
-    const employeeRef = db.collection("users").doc(user.uid);
-    return db
-        .collection(`businesses/${user.businessID}/cashCounts`)
-        .where("cashCount.state", "in", ["open", "closing"])
-        .where("cashCount.opening.employee", "==", employeeRef)
-        .limit(1);
+  const employeeRef = db.collection('users').doc(user.uid);
+  return db
+    .collection(`businesses/${user.businessID}/cashCounts`)
+    .where('cashCount.state', 'in', ['open', 'closing'])
+    .where('cashCount.opening.employee', '==', employeeRef)
+    .limit(1);
 }
 
 /**
@@ -21,12 +21,15 @@ function buildOpenCashCountQuery(user) {
  * @returns {Promise<FirebaseFirestore.DocumentSnapshot>}
  */
 export async function getOpenCashCountDocFromTx(tx, user) {
-    const q = buildOpenCashCountQuery(user);
-    const snap = await tx.get(q);
-    if (snap.empty) {
-        throw new https.HttpsError("failed-precondition", "No hay cuadre de caja abierto");
-    }
-    return snap.docs[0];
+  const q = buildOpenCashCountQuery(user);
+  const snap = await tx.get(q);
+  if (snap.empty) {
+    throw new https.HttpsError(
+      'failed-precondition',
+      'No hay cuadre de caja abierto',
+    );
+  }
+  return snap.docs[0];
 }
 
 /**
@@ -37,13 +40,16 @@ export async function getOpenCashCountDocFromTx(tx, user) {
  * @returns {Promise<FirebaseFirestore.DocumentSnapshot>}
  */
 export async function getOpenCashCountDoc(user) {
-    const q = buildOpenCashCountQuery(user);
-    const snap = await q.get();
-    if (snap.empty) {
-        throw new https.HttpsError("failed-precondition", "No hay cuadre de caja abierto");
-    }
+  const q = buildOpenCashCountQuery(user);
+  const snap = await q.get();
+  if (snap.empty) {
+    throw new https.HttpsError(
+      'failed-precondition',
+      'No hay cuadre de caja abierto',
+    );
+  }
 
-    return snap.docs[0];
+  return snap.docs[0];
 }
 
 /**
@@ -55,18 +61,21 @@ export async function getOpenCashCountDoc(user) {
  */
 
 export async function getCashCountDocByIdFromTx(tx, user, cashCountId) {
-    const ref = db.doc(`businesses/${user.businessID}/cashCounts/${cashCountId}`);
-    const doc = await tx.get(ref);
-    if (!doc.exists) {
-        throw new https.HttpsError("not-found", `CashCount ${cashCountId} no existe`);
-    }
-    return doc;
+  const ref = db.doc(`businesses/${user.businessID}/cashCounts/${cashCountId}`);
+  const doc = await tx.get(ref);
+  if (!doc.exists) {
+    throw new https.HttpsError(
+      'not-found',
+      `CashCount ${cashCountId} no existe`,
+    );
+  }
+  return doc;
 }
 
 const getCashCount = {
-    getOpenCashCountDoc,
-    getOpenCashCountDocFromTx,
-    getCashCountDocByIdFromTx,
-}
+  getOpenCashCountDoc,
+  getOpenCashCountDocFromTx,
+  getCashCountDocByIdFromTx,
+};
 
 export default getCashCount;

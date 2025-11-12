@@ -1,4 +1,8 @@
-import { CreditCardOutlined, InfoCircleOutlined, CheckOutlined } from '@ant-design/icons';
+import {
+  CreditCardOutlined,
+  InfoCircleOutlined,
+  CheckOutlined,
+} from '@ant-design/icons';
 import { Modal, Skeleton, Alert } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useRef, useState } from 'react';
@@ -6,7 +10,6 @@ import styled from 'styled-components';
 
 import { useFbGetAvailableCreditNotes } from '../../../../../../../../../hooks/creditNote/useFbGetAvailableCreditNotes';
 import { formatPrice } from '../../../../../../../../../utils/formatPrice';
-
 
 /**
  * CreditSelector component
@@ -21,7 +24,8 @@ const CreditSelector = ({
   paymentMethods = [],
   disabled = false,
 }) => {
-  const { creditNotes, loading, totalAvailable } = useFbGetAvailableCreditNotes(clientId);
+  const { creditNotes, loading, totalAvailable } =
+    useFbGetAvailableCreditNotes(clientId);
 
   // Local state
   const [visible, setVisible] = useState(false);
@@ -32,7 +36,7 @@ const CreditSelector = ({
   // Initialise local selections from parent
   useEffect(() => {
     const map = {};
-    selectedCreditNotes.forEach(sel => {
+    selectedCreditNotes.forEach((sel) => {
       map[sel.id] = sel.amountUsed;
     });
     setLocalSelections(map);
@@ -46,18 +50,21 @@ const CreditSelector = ({
   }, [visible]);
 
   // Derived values
-  const totalSelected = Object.values(localSelections).reduce((sum, v) => sum + (v || 0), 0);
+  const totalSelected = Object.values(localSelections).reduce(
+    (sum, v) => sum + (v || 0),
+    0,
+  );
 
   // Calculate remaining amount considering other payment methods
   const totalOtherPayments = paymentMethods
-    .filter(method => method.status && method.method !== 'creditNote')
+    .filter((method) => method.status && method.method !== 'creditNote')
     .reduce((sum, method) => sum + (Number(method.value) || 0), 0);
-  
+
   const remainingToPay = Math.max(0, totalPurchase - totalOtherPayments);
 
   // Filtered credit notes list
   const filteredNotes = search
-    ? creditNotes.filter(note => {
+    ? creditNotes.filter((note) => {
         const term = search.toLowerCase();
         return (
           (note.ncf || '').toLowerCase().includes(term) ||
@@ -77,20 +84,20 @@ const CreditSelector = ({
     setSearch('');
   };
 
-  const propagate = newSelections => {
+  const propagate = (newSelections) => {
     const mapped = Object.entries(newSelections).map(([id, amountToUse]) => {
-      const note = creditNotes.find(cn => cn.id === id);
-      return { 
-        id, 
-        creditNote: note, 
-        amountToUse: amountToUse 
+      const note = creditNotes.find((cn) => cn.id === id);
+      return {
+        id,
+        creditNote: note,
+        amountToUse: amountToUse,
       };
     });
     onCreditNoteSelect(mapped);
   };
 
   const handleAmountChange = (noteId, value) => {
-    const note = creditNotes.find(n => n.id === noteId);
+    const note = creditNotes.find((n) => n.id === noteId);
     if (!note) return;
     const prev = localSelections[noteId] || 0;
     const remaining = remainingToPay - totalSelected + prev;
@@ -105,7 +112,7 @@ const CreditSelector = ({
 
   const handleCheckboxChange = (noteId, checked) => {
     if (checked) {
-      const note = creditNotes.find(n => n.id === noteId);
+      const note = creditNotes.find((n) => n.id === noteId);
       const remaining = remainingToPay - totalSelected;
       const defaultVal = Math.min(note.availableAmount, remaining);
       handleAmountChange(noteId, defaultVal);
@@ -120,7 +127,8 @@ const CreditSelector = ({
 
     if (loading) return <Skeleton active paragraph={false} />;
 
-    if (!creditNotes.length) return <Placeholder>Sin notas de crédito</Placeholder>;
+    if (!creditNotes.length)
+      return <Placeholder>Sin notas de crédito</Placeholder>;
 
     if (remainingToPay <= 0 && totalOtherPayments > 0) {
       return <Placeholder>Compra totalmente pagada</Placeholder>;
@@ -136,7 +144,9 @@ const CreditSelector = ({
           <CountBadge>{creditNotes.length}</CountBadge>
         </RowTop>
         <RowBottom>
-          <span>Disponible: {formatPrice(Math.min(totalAvailable, remainingToPay))}</span>
+          <span>
+            Disponible: {formatPrice(Math.min(totalAvailable, remainingToPay))}
+          </span>
           {totalSelected > 0 && (
             <SelectedBadge>{formatPrice(totalSelected)}</SelectedBadge>
           )}
@@ -167,13 +177,17 @@ const CreditSelector = ({
         ) : loading ? (
           <Skeleton active paragraph={{ rows: 6 }} />
         ) : !creditNotes.length ? (
-          <Alert message="Sin notas de crédito disponibles" type="info" showIcon />
+          <Alert
+            message="Sin notas de crédito disponibles"
+            type="info"
+            showIcon
+          />
         ) : remainingToPay <= 0 ? (
-          <Alert 
-            message="No se pueden aplicar notas de crédito" 
-            description="La compra ya está totalmente pagada con otros métodos de pago." 
-            type="warning" 
-            showIcon 
+          <Alert
+            message="No se pueden aplicar notas de crédito"
+            description="La compra ya está totalmente pagada con otros métodos de pago."
+            type="warning"
+            showIcon
           />
         ) : (
           <>
@@ -181,65 +195,76 @@ const CreditSelector = ({
               ref={searchInputRef}
               placeholder="Buscar NCF o número..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
             />
             <NotesList>
               {filteredNotes.length === 0 ? (
                 <EmptyMessage>No se encontraron notas</EmptyMessage>
               ) : (
-                filteredNotes.map(note => {
-                const selectedAmount = localSelections[note.id] || 0;
-                const prev = localSelections[note.id] || 0;
-                const remaining = remainingToPay - totalSelected + prev;
-                const maxAllowed = Math.min(note.availableAmount, remaining);
+                filteredNotes.map((note) => {
+                  const selectedAmount = localSelections[note.id] || 0;
+                  const prev = localSelections[note.id] || 0;
+                  const remaining = remainingToPay - totalSelected + prev;
+                  const maxAllowed = Math.min(note.availableAmount, remaining);
 
-                return (
-                  <ListItem key={note.id} $selected={selectedAmount > 0}>
-                    <CustomCheckbox
-                      $checked={selectedAmount > 0}
-                      onClick={() => handleCheckboxChange(note.id, !(selectedAmount > 0))}
-                      $disabled={maxAllowed === 0}
-                    >
-                      {selectedAmount > 0 && <CheckOutlined />}
-                    </CustomCheckbox>
-                    <ItemContent>
-                      <div className="info">
-                        <div className="ncf">{note.ncf || note.number}</div>
-                        <div className="date">
-                          {dayjs(
-                            note.createdAt?.seconds
-                              ? new Date(note.createdAt.seconds * 1000)
-                              : note.createdAt,
-                          ).format('DD/MM/YYYY')}
+                  return (
+                    <ListItem key={note.id} $selected={selectedAmount > 0}>
+                      <CustomCheckbox
+                        $checked={selectedAmount > 0}
+                        onClick={() =>
+                          handleCheckboxChange(note.id, !(selectedAmount > 0))
+                        }
+                        $disabled={maxAllowed === 0}
+                      >
+                        {selectedAmount > 0 && <CheckOutlined />}
+                      </CustomCheckbox>
+                      <ItemContent>
+                        <div className="info">
+                          <div className="ncf">{note.ncf || note.number}</div>
+                          <div className="date">
+                            {dayjs(
+                              note.createdAt?.seconds
+                                ? new Date(note.createdAt.seconds * 1000)
+                                : note.createdAt,
+                            ).format('DD/MM/YYYY')}
+                          </div>
                         </div>
-                      </div>
-                    </ItemContent>
-                    <RightSection>
-                      <div className="amount-section">
-                        <AmountLabel>Disponible:</AmountLabel>
-                        <AmountValue>{formatPrice(note.availableAmount)}</AmountValue>
-                      </div>
-                      {selectedAmount > 0 && (
-                        <div className="input-section">
-                          <InputLabel>Usar:</InputLabel>
-                          <InputContainer>
-                            <NumberInput
-                              type="number"
-                              min={0}
-                              max={maxAllowed}
-                              step={0.01}
-                              value={selectedAmount}
-                              onChange={e => handleAmountChange(note.id, parseFloat(e.target.value) || 0)}
-                            />
-                            <InfoIcon title={`Máximo disponible: ${formatPrice(maxAllowed)}`}>
-                              <InfoCircleOutlined />
-                            </InfoIcon>
-                          </InputContainer>
+                      </ItemContent>
+                      <RightSection>
+                        <div className="amount-section">
+                          <AmountLabel>Disponible:</AmountLabel>
+                          <AmountValue>
+                            {formatPrice(note.availableAmount)}
+                          </AmountValue>
                         </div>
-                      )}
-                    </RightSection>
-                  </ListItem>
-                );
+                        {selectedAmount > 0 && (
+                          <div className="input-section">
+                            <InputLabel>Usar:</InputLabel>
+                            <InputContainer>
+                              <NumberInput
+                                type="number"
+                                min={0}
+                                max={maxAllowed}
+                                step={0.01}
+                                value={selectedAmount}
+                                onChange={(e) =>
+                                  handleAmountChange(
+                                    note.id,
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                              />
+                              <InfoIcon
+                                title={`Máximo disponible: ${formatPrice(maxAllowed)}`}
+                              >
+                                <InfoCircleOutlined />
+                              </InfoIcon>
+                            </InputContainer>
+                          </div>
+                        )}
+                      </RightSection>
+                    </ListItem>
+                  );
                 })
               )}
             </NotesList>
@@ -256,12 +281,13 @@ const WidgetCard = styled.div`
   border-radius: 8px;
   padding: 16px;
   background: white;
-  cursor: ${props => (props.$disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
   user-select: none;
 
   &:hover {
-    box-shadow: ${props => (props.$disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.08)')};
+    box-shadow: ${(props) =>
+      props.$disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.08)'};
   }
 `;
 
@@ -277,7 +303,7 @@ const Placeholder = styled.div`
 
 const ListItem = styled.div`
   padding: 8px 12px;
-  border: 1px solid ${props => (props.$selected ? '#495057' : '#f0f0f0')};
+  border: 1px solid ${(props) => (props.$selected ? '#495057' : '#f0f0f0')};
   border-radius: 6px;
   margin-bottom: 8px;
   display: flex;
@@ -381,28 +407,30 @@ const EmptyMessage = styled.div`
 const CustomCheckbox = styled.div`
   width: 20px;
   height: 20px;
-  border: 1px solid ${props => (props.$disabled ? '#d9d9d9' : props.$checked ? '#495057' : '#d9d9d9')};
+  border: 1px solid
+    ${(props) =>
+      props.$disabled ? '#d9d9d9' : props.$checked ? '#495057' : '#d9d9d9'};
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: ${props => (props.$disabled ? 'not-allowed' : 'pointer')};
-  background: ${props => (props.$checked ? '#495057' : 'white')};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
+  background: ${(props) => (props.$checked ? '#495057' : 'white')};
   color: white;
   flex-shrink: 0;
 
   &:hover {
-    border-color: ${props => (props.$disabled ? '#d9d9d9' : '#495057')};
+    border-color: ${(props) => (props.$disabled ? '#d9d9d9' : '#495057')};
   }
 `;
 
 const InfoIcon = styled.div`
   margin-left: 8px;
   cursor: pointer;
-  color: ${props => (props.$disabled ? '#d9d9d9' : '#8c8c8c')};
+  color: ${(props) => (props.$disabled ? '#d9d9d9' : '#8c8c8c')};
 
   &:hover {
-    color: ${props => (props.$disabled ? '#d9d9d9' : '#495057')};
+    color: ${(props) => (props.$disabled ? '#d9d9d9' : '#495057')};
   }
 `;
 
@@ -473,4 +501,4 @@ const RightSection = styled.div`
   }
 `;
 
-export default CreditSelector; 
+export default CreditSelector;

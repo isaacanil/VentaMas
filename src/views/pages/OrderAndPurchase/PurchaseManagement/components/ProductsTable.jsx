@@ -1,10 +1,17 @@
 import { DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Table, Button, Input, Form, InputNumber, DatePicker, Modal } from 'antd';
+import {
+  Table,
+  Button,
+  Input,
+  Form,
+  InputNumber,
+  DatePicker,
+  Modal,
+} from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 
 import { formatMoney, formatPercentage } from '../../../../../utils/formatters';
-
 
 const EditableCell = ({
   editing,
@@ -22,23 +29,27 @@ const EditableCell = ({
 }) => {
   const getInput = () => {
     if (inputType === 'number') {
-      return <InputNumber
-        onPressEnter={(e) => onSave(record, dataIndex, e.target.value)}
-        onBlur={(e) => onSave(record, dataIndex, e.target.value)}
-        autoFocus
-      />;
+      return (
+        <InputNumber
+          onPressEnter={(e) => onSave(record, dataIndex, e.target.value)}
+          onBlur={(e) => onSave(record, dataIndex, e.target.value)}
+          autoFocus
+        />
+      );
     }
     if (inputType === 'date') {
       // En lugar de mostrar el DatePicker directamente, abrimos el modal
       return children;
     }
-    return <Input
-      onPressEnter={(e) => onSave(record, dataIndex, e.target.value)}
-      onBlur={(e) => onSave(record, dataIndex, e.target.value)}
-      autoFocus
-    />;
+    return (
+      <Input
+        onPressEnter={(e) => onSave(record, dataIndex, e.target.value)}
+        onBlur={(e) => onSave(record, dataIndex, e.target.value)}
+        autoFocus
+      />
+    );
   };
-  
+
   const handleClick = () => {
     if (dataIndex === 'quantity' && loadingQuantity === record.key) {
       return; // Disable click while loading
@@ -65,9 +76,11 @@ const EditableCell = ({
           name={dataIndex}
           style={{ margin: 0 }}
           noStyle
-          rules={['freight', 'otherCosts'].includes(dataIndex) ? [] : [
-            { required: true }
-          ]}
+          rules={
+            ['freight', 'otherCosts'].includes(dataIndex)
+              ? []
+              : [{ required: true }]
+          }
         >
           {getInput()}
         </Form.Item>
@@ -79,18 +92,27 @@ const EditableCell = ({
             whiteSpace: 'nowrap',
           }}
         >
-          {dataIndex === 'expirationDate' && record[dataIndex]
-            ? dayjs(record[dataIndex]).format('DD/MM/YY') // Format milliseconds
-            : dataIndex === 'quantity' && loadingQuantity === record.key
-              ? <span><LoadingOutlined spin /> Verificando...</span>
-              : children}
+          {dataIndex === 'expirationDate' && record[dataIndex] ? (
+            dayjs(record[dataIndex]).format('DD/MM/YY') // Format milliseconds
+          ) : dataIndex === 'quantity' && loadingQuantity === record.key ? (
+            <span>
+              <LoadingOutlined spin /> Verificando...
+            </span>
+          ) : (
+            children
+          )}
         </div>
       )}
     </td>
   );
 };
 
-const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick }) => {
+const ProductsTable = ({
+  products,
+  removeProduct,
+  onEditProduct,
+  onQuantityClick,
+}) => {
   const [editingCell, setEditingCell] = useState({ row: '', col: '' });
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -103,28 +125,37 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
   const edit = (record, dataIndex) => {
     const value = record[dataIndex];
     // Convertir timestamp a momento para DatePicker si es necesario
-    const formValue = dataIndex === 'expirationDate' && value
-      ? dayjs(value)
-      : value;
+    const formValue =
+      dataIndex === 'expirationDate' && value ? dayjs(value) : value;
 
     form.setFieldsValue({ [dataIndex]: formValue });
     setEditingCell({ row: record.key, col: dataIndex });
   };
 
   const handleSave = (record, dataIndex, value) => {
-    const finalValue = dataIndex === 'expirationDate'
-      ? (value ? dayjs(value).valueOf() : null)
-      : value;
+    const finalValue =
+      dataIndex === 'expirationDate'
+        ? value
+          ? dayjs(value).valueOf()
+          : null
+        : value;
 
     const newData = { ...record };
     if (dataIndex === 'quantity') {
-      if (!record.selectedBackOrders || record.selectedBackOrders.length === 0) {
+      if (
+        !record.selectedBackOrders ||
+        record.selectedBackOrders.length === 0
+      ) {
         newData.quantity = Number(finalValue) || 0;
         newData.purchaseQuantity = Number(finalValue) || 0;
       } else {
-        const backordersQuantity = record.selectedBackOrders.reduce((sum, bo) => sum + bo.quantity, 0);
+        const backordersQuantity = record.selectedBackOrders.reduce(
+          (sum, bo) => sum + bo.quantity,
+          0,
+        );
         newData.quantity = Number(finalValue) || 0;
-        newData.purchaseQuantity = (Number(finalValue) || 0) + backordersQuantity;
+        newData.purchaseQuantity =
+          (Number(finalValue) || 0) + backordersQuantity;
       }
     } else {
       newData[dataIndex] = finalValue;
@@ -172,15 +203,21 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
         showTitle: true,
       },
       render: (text) => (
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {text}
         </span>
-      )
+      ),
     },
     {
       title: 'F. Expiración',
       dataIndex: 'expirationDate',
-      render: (value) => value ? dayjs(value).format('DD/MM/YY') : '-',
+      render: (value) => (value ? dayjs(value).format('DD/MM/YY') : '-'),
       editable: true,
     },
     {
@@ -198,7 +235,8 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
     {
       title: 'ITBIS',
       dataIndex: 'taxPercentage',
-      render: (value) => !value || value == 0 ? 'Exento' : formatPercentage(value),
+      render: (value) =>
+        !value || value == 0 ? 'Exento' : formatPercentage(value),
       editable: true,
     },
     {
@@ -217,7 +255,6 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
       title: 'Costo Unitario',
       dataIndex: 'unitCost',
       render: (value) => formatMoney(value),
-
     },
     {
       title: 'Subtotal',
@@ -234,7 +271,7 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
           style={{
             width: '100%',
             display: 'flex',
-            justifyContent: 'end'
+            justifyContent: 'end',
           }}
         >
           <Button
@@ -255,8 +292,18 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
       ...col,
       onCell: (record) => ({
         record,
-        inputType: col.dataIndex === 'expirationDate' ? 'date' :
-          ['quantity', 'baseCost', 'taxPercentage', 'freight', 'otherCosts'].includes(col.dataIndex) ? 'number' : 'text',
+        inputType:
+          col.dataIndex === 'expirationDate'
+            ? 'date'
+            : [
+                  'quantity',
+                  'baseCost',
+                  'taxPercentage',
+                  'freight',
+                  'otherCosts',
+                ].includes(col.dataIndex)
+              ? 'number'
+              : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record, col.dataIndex),
@@ -265,8 +312,7 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
         // Para "Cantidad", solo se usa onCellClick que invoca onQuantityClick
         ...(col.dataIndex === 'quantity'
           ? { onCellClick: () => handleQuantityClick(record) }
-          : { onClick: () => edit(record, col.dataIndex) }
-        ),
+          : { onClick: () => edit(record, col.dataIndex) }),
         setDateModalVisible,
         setSelectedRecord,
       }),
@@ -289,7 +335,7 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
             },
           }}
           className="editable-row-table"
-          size='small'
+          size="small"
           scroll={{ x: 1300 }}
           columns={mergedColumns}
           dataSource={dataSource}
@@ -310,7 +356,11 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
         <DatePicker
           style={{ width: '100%' }}
           format="DD/MM/YY"
-          value={selectedRecord?.expirationDate ? dayjs(selectedRecord.expirationDate) : null}
+          value={
+            selectedRecord?.expirationDate
+              ? dayjs(selectedRecord.expirationDate)
+              : null
+          }
           onChange={handleDateModalOk}
         />
       </Modal>

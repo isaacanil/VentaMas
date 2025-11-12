@@ -48,7 +48,8 @@ const MovementsFilterBar = ({
   type,
   onTypeChange,
 }) => {
-  const { data: hierarchy, loading: loadingHierarchy } = useWarehouseHierarchy();
+  const { data: hierarchy, loading: loadingHierarchy } =
+    useWarehouseHierarchy();
 
   // Build Cascader options from warehouse hierarchy
   const options = useMemo(() => {
@@ -86,7 +87,10 @@ const MovementsFilterBar = ({
 
   return (
     <Bar>
-      <Form layout="vertical" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+      <Form
+        layout="vertical"
+        style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}
+      >
         <Form.Item label="Fecha">
           <DatePicker
             dates={dates}

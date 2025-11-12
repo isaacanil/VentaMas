@@ -12,13 +12,18 @@ export const serializeFirestoreData = (obj) => {
   }
 
   // Check if it's a Firestore Timestamp
-  if (obj && typeof obj === 'object' && obj.seconds !== undefined && obj.nanoseconds !== undefined) {
+  if (
+    obj &&
+    typeof obj === 'object' &&
+    obj.seconds !== undefined &&
+    obj.nanoseconds !== undefined
+  ) {
     return DateUtils.convertTimestampToMillis(obj);
   }
 
   // Handle arrays
   if (Array.isArray(obj)) {
-    return obj.map(item => serializeFirestoreData(item));
+    return obj.map((item) => serializeFirestoreData(item));
   }
 
   // Handle objects
@@ -45,6 +50,6 @@ export const serializeFirestoreDocuments = (documents) => {
   if (!Array.isArray(documents)) {
     return documents;
   }
-  
-  return documents.map(doc => serializeFirestoreData(doc));
+
+  return documents.map((doc) => serializeFirestoreData(doc));
 };

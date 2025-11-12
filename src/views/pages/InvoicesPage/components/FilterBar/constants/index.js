@@ -21,38 +21,38 @@ export const BREAKPOINTS = {
 };
 
 export const FILTER_CONFIG = {
-  date: { 
-    label: 'Fechas', 
+  date: {
+    label: 'Fechas',
     width: 'auto',
     type: 'dateRange',
-    required: false 
+    required: false,
   },
-  client: { 
-    label: 'Cliente', 
-    width: 180, 
+  client: {
+    label: 'Cliente',
+    width: 180,
     searchable: true,
     type: 'select',
-    required: false 
+    required: false,
   },
-  paymentMethod: { 
-    label: 'Método', 
-    width: 150, 
+  paymentMethod: {
+    label: 'Método',
+    width: 150,
     options: PAYMENT_METHODS,
     type: 'select',
-    required: false 
+    required: false,
   },
-  amount: { 
-    label: 'Monto', 
+  amount: {
+    label: 'Monto',
     type: 'range',
     inputWidth: 90,
-    required: false 
+    required: false,
   },
-  sort: { 
-    label: 'Ordenar', 
+  sort: {
+    label: 'Ordenar',
     options: SORT_OPTIONS,
     type: 'sort',
     width: 130,
-    required: false 
+    required: false,
   },
 };
 
@@ -71,4 +71,4 @@ export const ACCESSIBILITY_CONFIG = {
     filterBar: 'toolbar',
     filtersForm: 'form',
   },
-}; 
+};

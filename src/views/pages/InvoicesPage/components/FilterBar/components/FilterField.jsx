@@ -11,4 +11,4 @@ export const CollapsibleItem = ({ index, registerRef, children }) => (
   <div ref={registerRef(index)} style={{ display: 'inline-flex' }}>
     {children}
   </div>
-); 
+);

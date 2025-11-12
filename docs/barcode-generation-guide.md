@@ -5,7 +5,11 @@
 ### 1. Generación básica (recomendada)
 
 ```javascript
-import { generateGTIN, generateGTIN13, generateGTIN14 } from './utils/barcode/barcode';
+import {
+  generateGTIN,
+  generateGTIN13,
+  generateGTIN14,
+} from './utils/barcode/barcode';
 
 // Generar GTIN13 para República Dominicana
 const barcode = generateGTIN13('DO', '12345', '67890');
@@ -23,10 +27,10 @@ console.log(gtin14); // 20123456789056
 ### 2. Generación avanzada con configuración
 
 ```javascript
-import { 
-  generateGTIN, 
+import {
+  generateGTIN,
   validateGenerationConfig,
-  getRecommendedStructure 
+  getRecommendedStructure,
 } from './utils/barcode/barcode';
 
 // Configurar para empresa mediana
@@ -34,7 +38,7 @@ const config = {
   country: 'CO', // Colombia
   companyPrefix: '12345',
   itemReference: '6789',
-  format: 'GTIN13'
+  format: 'GTIN13',
 };
 
 // Validar antes de generar
@@ -101,7 +105,7 @@ for (let i = 0; i < 3; i++) {
 import { GS1_PREFIXES } from './utils/barcode/barcode';
 
 // Ver todos los países disponibles
-Object.keys(GS1_PREFIXES).forEach(country => {
+Object.keys(GS1_PREFIXES).forEach((country) => {
   const info = GS1_PREFIXES[country];
   console.log(`${country}: ${info.name} (${info.prefix})`);
 });
@@ -132,21 +136,25 @@ console.log(newWay); // 7461234567894
 ## Ventajas del nuevo sistema
 
 ### ✅ Escalable
+
 - Soporta 50+ países
 - Configuraciones flexibles de empresa
 - Fácil agregar nuevos países
 
 ### ✅ Validado
+
 - Validación previa a generación
 - Mensajes de error claros
 - Configuraciones recomendadas
 
 ### ✅ Modular
+
 - Importaciones individuales (tree-shaking)
 - Arquitectura estilo Firebase v9+
 - Fácil mantenimiento
 
 ### ✅ Compatible
+
 - Funciones obsoletas siguen funcionando
 - Migración gradual posible
 - Sin romper código existente

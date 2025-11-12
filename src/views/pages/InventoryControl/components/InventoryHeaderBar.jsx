@@ -1,6 +1,11 @@
-import { Button, Dropdown, Select } from 'antd'
+import { Button, Dropdown, Select } from 'antd';
 
-import { HeaderBar, Controls, SearchInput, SortButton } from './InventoryControl.styles'
+import {
+  HeaderBar,
+  Controls,
+  SearchInput,
+  SortButton,
+} from './InventoryControl.styles';
 
 export function InventoryHeaderBar({
   search,
@@ -36,13 +41,16 @@ export function InventoryHeaderBar({
         </SortButton>
       </Controls>
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-        <Dropdown menu={{ items: exportMenuItems, onClick: onExportMenuClick }} placement="bottomRight" trigger={['click']}>
+        <Dropdown
+          menu={{ items: exportMenuItems, onClick: onExportMenuClick }}
+          placement="bottomRight"
+          trigger={['click']}
+        >
           <Button type="default">Exportar ⬇️</Button>
         </Dropdown>
       </div>
     </HeaderBar>
-  )
+  );
 }
 
-export default InventoryHeaderBar
-
+export default InventoryHeaderBar;

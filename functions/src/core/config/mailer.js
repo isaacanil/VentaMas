@@ -48,7 +48,9 @@ function paramOrEnv(paramDef, envName) {
       const v = paramDef.value();
       if (v !== undefined && v !== null && String(v).length) return v;
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return process.env[envName];
 }
 
@@ -56,23 +58,33 @@ async function resolveSecrets() {
   // defineSecret().value() retorna un placeholder si no fue proporcionado; aún así lo usamos.
   // Forzamos lectura para garantizar inyección antes de crear el transport.
   let user, pass;
-  try { user = MAIL_USER.value(); } catch { user = process.env.STOCK_ALERT_MAIL_USER; }
-  try { pass = MAIL_PASS.value(); } catch { pass = process.env.STOCK_ALERT_MAIL_PASS; }
+  try {
+    user = MAIL_USER.value();
+  } catch {
+    user = process.env.STOCK_ALERT_MAIL_USER;
+  }
+  try {
+    pass = MAIL_PASS.value();
+  } catch {
+    pass = process.env.STOCK_ALERT_MAIL_PASS;
+  }
   return { user, pass };
 }
 
 async function buildTransport() {
   const { user, pass } = await resolveSecrets();
-  const host       = paramOrEnv(MAIL_HOST, 'STOCK_ALERT_MAIL_HOST');
-  const portStr    = paramOrEnv(MAIL_PORT, 'STOCK_ALERT_MAIL_PORT');
-  const secureStr  = paramOrEnv(MAIL_SECURE, 'STOCK_ALERT_MAIL_SECURE');
-  const service    = paramOrEnv(MAIL_SERVICE, 'STOCK_ALERT_MAIL_SERVICE');
-  const poolStr    = paramOrEnv(MAIL_POOL, 'STOCK_ALERT_MAIL_POOL');
+  const host = paramOrEnv(MAIL_HOST, 'STOCK_ALERT_MAIL_HOST');
+  const portStr = paramOrEnv(MAIL_PORT, 'STOCK_ALERT_MAIL_PORT');
+  const secureStr = paramOrEnv(MAIL_SECURE, 'STOCK_ALERT_MAIL_SECURE');
+  const service = paramOrEnv(MAIL_SERVICE, 'STOCK_ALERT_MAIL_SERVICE');
+  const poolStr = paramOrEnv(MAIL_POOL, 'STOCK_ALERT_MAIL_POOL');
   const maxConnStr = paramOrEnv(MAIL_MAX_CONN, 'STOCK_ALERT_MAIL_MAX_CONN');
-  const maxMsgStr  = paramOrEnv(MAIL_MAX_MSG, 'STOCK_ALERT_MAIL_MAX_MSG');
+  const maxMsgStr = paramOrEnv(MAIL_MAX_MSG, 'STOCK_ALERT_MAIL_MAX_MSG');
 
   if (!user || !pass) {
-    logger.warn('[mailer] Falta MAIL_USER o MAIL_PASS (secrets). Se omite envío.');
+    logger.warn(
+      '[mailer] Falta MAIL_USER o MAIL_PASS (secrets). Se omite envío.',
+    );
     return null;
   }
 
@@ -93,13 +105,18 @@ async function buildTransport() {
     try {
       return nodemailer.createTransport({ service, ...common });
     } catch (err) {
-      logger.error('[mailer] Error creando transport por service', { service, error: String(err?.message || err) });
+      logger.error('[mailer] Error creando transport por service', {
+        service,
+        error: String(err?.message || err),
+      });
       return null;
     }
   }
 
   if (!host) {
-    logger.warn('[mailer] No hay MAIL_HOST ni MAIL_SERVICE definidos. Envío deshabilitado.');
+    logger.warn(
+      '[mailer] No hay MAIL_HOST ni MAIL_SERVICE definidos. Envío deshabilitado.',
+    );
     return null;
   }
 
@@ -114,7 +131,11 @@ async function buildTransport() {
       ...common,
     });
   } catch (err) {
-    logger.error('[mailer] Error creando transport SMTP', { host, port, error: String(err?.message || err) });
+    logger.error('[mailer] Error creando transport SMTP', {
+      host,
+      port,
+      error: String(err?.message || err),
+    });
     return null;
   }
 }
@@ -135,7 +156,14 @@ export async function getTransport() {
  * @param {string} [opts.from]
  * @param {Array<{ filename: string, content: Buffer|string, contentType?: string }>} [opts.attachments]
  */
-export async function sendMail({ to, subject, html, text, from: overrideFrom, attachments }) {
+export async function sendMail({
+  to,
+  subject,
+  html,
+  text,
+  from: overrideFrom,
+  attachments,
+}) {
   const transport = await getTransport();
   if (!transport) {
     logger.warn('[mailer] No se envía correo: transport nulo');
@@ -148,7 +176,9 @@ export async function sendMail({ to, subject, html, text, from: overrideFrom, at
       await transport.verify(); // comprueba resolución DNS, handshake y auth
       logger.info('[mailer] Transport verified OK');
     } catch (err) {
-      logger.warn('[mailer] Transport verify failed, intentando enviar igual', { error: String(err?.message || err) });
+      logger.warn('[mailer] Transport verify failed, intentando enviar igual', {
+        error: String(err?.message || err),
+      });
     } finally {
       transportVerified = true; // evitar reintentos en caliente
     }
@@ -156,22 +186,42 @@ export async function sendMail({ to, subject, html, text, from: overrideFrom, at
 
   // FROM preferimos param MAIL_FROM; fallback env / user
   let fromEnv;
-  try { fromEnv = MAIL_FROM.value(); } catch { fromEnv = process.env.STOCK_ALERT_MAIL_FROM; }
+  try {
+    fromEnv = MAIL_FROM.value();
+  } catch {
+    fromEnv = process.env.STOCK_ALERT_MAIL_FROM;
+  }
   const userEnv = process.env.STOCK_ALERT_MAIL_USER; // ya tenemos user, pero para no exponer secrets nuevamente
 
-  const from = (overrideFrom && overrideFrom.trim()) || fromEnv || (userEnv ? `Stock Alerts <${userEnv}>` : 'Stock Alerts <no-reply@example.com>');
+  const from =
+    (overrideFrom && overrideFrom.trim()) ||
+    fromEnv ||
+    (userEnv
+      ? `Stock Alerts <${userEnv}>`
+      : 'Stock Alerts <no-reply@example.com>');
 
   // Normaliza destinatarios a arreglo limpio
   const list = Array.isArray(to)
     ? to
     : String(to || '')
         .split(',')
-        .map(s => s.trim())
+        .map((s) => s.trim())
         .filter(Boolean);
 
   const finalTo = list.join(',');
 
-  const info = await transport.sendMail({ from, to: finalTo, subject, html, text, attachments });
-  logger.info('[mailer] Correo enviado', { messageId: info.messageId, to: list, subject });
+  const info = await transport.sendMail({
+    from,
+    to: finalTo,
+    subject,
+    html,
+    text,
+    attachments,
+  });
+  logger.info('[mailer] Correo enviado', {
+    messageId: info.messageId,
+    to: list,
+    subject,
+  });
   return info;
 }

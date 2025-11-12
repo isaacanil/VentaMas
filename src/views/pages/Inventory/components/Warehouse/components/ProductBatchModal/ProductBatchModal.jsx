@@ -1,12 +1,26 @@
-import { SearchOutlined, CheckCircleOutlined, CalendarOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
-import { Modal, Button, Input, Empty, Spin } from 'antd'
-import { useState, useEffect, useMemo } from 'react'
+import {
+  SearchOutlined,
+  CheckCircleOutlined,
+  CalendarOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
+import { Modal, Button, Input, Empty, Spin } from 'antd';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-import { addProduct, SelectCartData } from '../../../../../../../features/cart/cartSlice';
-import { DEFAULT_FILTER_CONTEXT, selectStockLocations } from '../../../../../../../features/filterProduct/filterProductsSlice';
-import { selectProductStockSimple, closeProductStockSimple } from '../../../../../../../features/productStock/productStockSimpleSlice';
+import {
+  addProduct,
+  SelectCartData,
+} from '../../../../../../../features/cart/cartSlice';
+import {
+  DEFAULT_FILTER_CONTEXT,
+  selectStockLocations,
+} from '../../../../../../../features/filterProduct/filterProductsSlice';
+import {
+  selectProductStockSimple,
+  closeProductStockSimple,
+} from '../../../../../../../features/productStock/productStockSimpleSlice';
 import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
 import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
 
@@ -26,7 +40,7 @@ const StyledWrapper = styled.div`
       box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
     }
   }
-`
+`;
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -34,12 +48,10 @@ const StyledModal = styled(Modal)`
     overflow: hidden;
   }
 
-
-
   .search-container {
     margin-bottom: 16px;
   }
-`
+`;
 
 const BatchGrid = styled.div`
   display: grid;
@@ -48,21 +60,21 @@ const BatchGrid = styled.div`
   padding: 12px 0;
   max-height: 60vh;
   overflow-y: auto;
-  
+
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f5f9;
     border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #94a3b8;
     border-radius: 4px;
   }
-`
+`;
 
 const LocationBadge = styled.span`
   background: #f1f5f9;
@@ -72,11 +84,11 @@ const LocationBadge = styled.span`
   color: #475569;
   margin-bottom: 4px;
   display: inline-block;
-  
+
   &:hover {
     background: #e2e8f0;
   }
-`
+`;
 
 const BatchCard = styled.div`
   position: relative;
@@ -85,11 +97,12 @@ const BatchCard = styled.div`
   padding: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 2px solid ${({ selected, $expired }) => {
-    if (selected && $expired) return '#dc2626';
-    if (selected) return '#2563eb';
-    return '#e2e8f0';
-  }};
+  border: 2px solid
+    ${({ selected, $expired }) => {
+      if (selected && $expired) return '#dc2626';
+      if (selected) return '#2563eb';
+      return '#e2e8f0';
+    }};
   box-shadow: ${({ selected, $expired }) => {
     if (selected && $expired) return '0 4px 12px rgba(220, 38, 38, 0.2)';
     if (selected) return '0 4px 12px rgba(37, 99, 235, 0.15)';
@@ -170,355 +183,383 @@ const BatchCard = styled.div`
 
   .check-icon {
     color: #2563eb;
-    opacity: ${props => props.selected ? 1 : 0};
-    transform: ${props => props.selected ? 'scale(1)' : 'scale(0.5)'};
+    opacity: ${(props) => (props.selected ? 1 : 0)};
+    transform: ${(props) => (props.selected ? 'scale(1)' : 'scale(0.5)')};
     transition: all 0.2s ease;
     font-size: 18px;
   }
-`
+`;
 
 const StatusBadge = styled.span`
   padding: 0 8px;
   border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 600;
-  background: ${props => props.$expired ? '#fee2e2' : '#dcfce7'};
-  color: ${props => props.$expired ? '#dc2626' : '#15803d'};
-`
+  background: ${(props) => (props.$expired ? '#fee2e2' : '#dcfce7')};
+  color: ${(props) => (props.$expired ? '#dc2626' : '#15803d')};
+`;
 
 export function ProductBatchModal() {
-    const dispatch = useDispatch();
-    const { isOpen, productId, product } = useSelector(selectProductStockSimple);
-    const [selectedBatch, setSelectedBatch] = useState(null);
-    const [searchText, setSearchText] = useState('');
-    const {products} = useSelector(SelectCartData);
-    const inventoryLocations = useSelector((state) => selectStockLocations(state, DEFAULT_FILTER_CONTEXT));
-    const salesLocations = useSelector((state) => selectStockLocations(state, 'sales'));
-    const selectedLocations = salesLocations?.length ? salesLocations : inventoryLocations;
-    
-    // Obtener datos de productStock en tiempo real
-    const { data: productStocks, loading } = useListenProductsStock(productId);
-    const { locationNames, fetchLocationName } = useLocationNames();
+  const dispatch = useDispatch();
+  const { isOpen, productId, product } = useSelector(selectProductStockSimple);
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const { products } = useSelector(SelectCartData);
+  const inventoryLocations = useSelector((state) =>
+    selectStockLocations(state, DEFAULT_FILTER_CONTEXT),
+  );
+  const salesLocations = useSelector((state) =>
+    selectStockLocations(state, 'sales'),
+  );
+  const selectedLocations = salesLocations?.length
+    ? salesLocations
+    : inventoryLocations;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTimestamp = today.getTime();
+  // Obtener datos de productStock en tiempo real
+  const { data: productStocks, loading } = useListenProductsStock(productId);
+  const { locationNames, fetchLocationName } = useLocationNames();
 
-    const filteredBySearch = useMemo(() => {
-        const term = searchText.trim().toLowerCase();
-        if (!term) return productStocks;
-        return productStocks.filter(stock =>
-            stock.batchNumberId?.toString().toLowerCase().includes(term) ||
-            stock.location?.toLowerCase().includes(term)
-        );
-    }, [productStocks, searchText]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTimestamp = today.getTime();
 
-    const normalizeLocationId = (value) => {
-        if (typeof value !== 'string') return '';
-        return value.trim();
-    };
+  const filteredBySearch = useMemo(() => {
+    const term = searchText.trim().toLowerCase();
+    if (!term) return productStocks;
+    return productStocks.filter(
+      (stock) =>
+        stock.batchNumberId?.toString().toLowerCase().includes(term) ||
+        stock.location?.toLowerCase().includes(term),
+    );
+  }, [productStocks, searchText]);
 
-    const isInSelectedLocations = (locationId, selectedList) => {
-        if (!locationId || !Array.isArray(selectedList) || selectedList.length === 0) {
-            return false;
-        }
-        return selectedList.some((rawSelected) => {
-            const selectedId = normalizeLocationId(rawSelected);
-            if (!selectedId) return false;
-            if (locationId === selectedId) return true;
-            return locationId.startsWith(`${selectedId}/`);
-        });
-    };
+  const normalizeLocationId = (value) => {
+    if (typeof value !== 'string') return '';
+    return value.trim();
+  };
 
-    const { prioritizedBatches, otherLocationBatches, hasLocationFilter } = useMemo(() => {
-        const sanitizedSelected = (selectedLocations || [])
-            .map(normalizeLocationId)
-            .filter(Boolean);
-        const filterActive = sanitizedSelected.length > 0;
-        if (!filterActive) {
-            return {
-                prioritizedBatches: filteredBySearch,
-                otherLocationBatches: [],
-                hasLocationFilter: false,
-            };
-        }
-        const preferred = [];
-        const others = [];
-        filteredBySearch.forEach((stock) => {
-            const locationId = normalizeLocationId(stock?.location);
-            if (isInSelectedLocations(locationId, sanitizedSelected)) {
-                preferred.push(stock);
-                return;
-            }
-            others.push(stock);
-        });
+  const isInSelectedLocations = (locationId, selectedList) => {
+    if (
+      !locationId ||
+      !Array.isArray(selectedList) ||
+      selectedList.length === 0
+    ) {
+      return false;
+    }
+    return selectedList.some((rawSelected) => {
+      const selectedId = normalizeLocationId(rawSelected);
+      if (!selectedId) return false;
+      if (locationId === selectedId) return true;
+      return locationId.startsWith(`${selectedId}/`);
+    });
+  };
+
+  const { prioritizedBatches, otherLocationBatches, hasLocationFilter } =
+    useMemo(() => {
+      const sanitizedSelected = (selectedLocations || [])
+        .map(normalizeLocationId)
+        .filter(Boolean);
+      const filterActive = sanitizedSelected.length > 0;
+      if (!filterActive) {
         return {
-            prioritizedBatches: preferred,
-            otherLocationBatches: others,
-            hasLocationFilter: true,
+          prioritizedBatches: filteredBySearch,
+          otherLocationBatches: [],
+          hasLocationFilter: false,
         };
-    }, [filteredBySearch, selectedLocations]);
-    
-    useEffect(() => {
-        const uniqueLocations = [...new Set(filteredBySearch.map(stock => normalizeLocationId(stock.location)).filter(Boolean))];
-        uniqueLocations.forEach(loc => {
-            if (!locationNames[loc]) {
-                fetchLocationName(loc);
-            }
-        });
-    }, [filteredBySearch, locationNames, fetchLocationName]);
-
-    useEffect(() => {
-        if (products.length === 0) {
-            setSelectedBatch(null);
+      }
+      const preferred = [];
+      const others = [];
+      filteredBySearch.forEach((stock) => {
+        const locationId = normalizeLocationId(stock?.location);
+        if (isInSelectedLocations(locationId, sanitizedSelected)) {
+          preferred.push(stock);
+          return;
         }
-    }, [products.length]);
+        others.push(stock);
+      });
+      return {
+        prioritizedBatches: preferred,
+        otherLocationBatches: others,
+        hasLocationFilter: true,
+      };
+    }, [filteredBySearch, selectedLocations]);
 
-    // Modificar la función formatLocation
-    function formatLocation(locationId) {
-        if (!locationId) return '';
-        return locationNames[locationId] || 'Cargando...';
+  useEffect(() => {
+    const uniqueLocations = [
+      ...new Set(
+        filteredBySearch
+          .map((stock) => normalizeLocationId(stock.location))
+          .filter(Boolean),
+      ),
+    ];
+    uniqueLocations.forEach((loc) => {
+      if (!locationNames[loc]) {
+        fetchLocationName(loc);
+      }
+    });
+  }, [filteredBySearch, locationNames, fetchLocationName]);
+
+  useEffect(() => {
+    if (products.length === 0) {
+      setSelectedBatch(null);
+    }
+  }, [products.length]);
+
+  // Modificar la función formatLocation
+  function formatLocation(locationId) {
+    if (!locationId) return '';
+    return locationNames[locationId] || 'Cargando...';
+  }
+
+  const handleBatchToggle = (stock, isExpired) => {
+    if (!stock) return;
+
+    const isCurrentlySelected = selectedBatch === stock.id;
+
+    if (isCurrentlySelected) {
+      setSelectedBatch(null);
+      return;
     }
 
-    const handleBatchToggle = (stock, isExpired) => {
-        if (!stock) return;
+    if (isExpired) {
+      Modal.confirm({
+        title: 'Producto vencido',
+        icon: <ExclamationCircleOutlined style={{ color: '#dc2626' }} />,
+        content: 'El lote seleccionado está vencido. ¿Desea continuar?',
+        okText: 'Continuar',
+        cancelText: 'Cancelar',
+        onOk: () => setSelectedBatch(stock.id),
+      });
+      return;
+    }
 
-        const isCurrentlySelected = selectedBatch === stock.id;
+    setSelectedBatch(stock.id);
+  };
 
-        if (isCurrentlySelected) {
-            setSelectedBatch(null);
-            return;
+  const normalizeExpirationDate = (value) => {
+    if (!value) return null;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = Date.parse(value);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    if (value.seconds !== undefined) {
+      return value.seconds * 1000;
+    }
+    if (typeof value.toDate === 'function') {
+      return value.toDate().getTime();
+    }
+    return null;
+  };
+
+  const handleConfirm = () => {
+    if (selectedBatch) {
+      const chosenStock = productStocks.find((s) => s.id === selectedBatch);
+
+      if (!chosenStock) {
+        return;
+      }
+
+      const batchInfo = {
+        productStockId: chosenStock.id ?? null,
+        batchId: chosenStock.batchId ?? null,
+        batchNumber: chosenStock.batchNumberId ?? null,
+        quantity: chosenStock.quantity ?? null,
+        expirationDate: normalizeExpirationDate(chosenStock.expirationDate),
+        locationId: chosenStock.location ?? null,
+        locationName: chosenStock.location
+          ? formatLocation(chosenStock.location)
+          : null,
+      };
+
+      dispatch(
+        addProduct({
+          ...product,
+          productStockId: batchInfo.productStockId,
+          batchId: batchInfo.batchId,
+          stock: chosenStock.quantity,
+          batchInfo,
+        }),
+      );
+      dispatch(closeProductStockSimple());
+    }
+  };
+
+  return (
+    <StyledWrapper>
+      <StyledModal
+        open={isOpen}
+        onCancel={() => dispatch(closeProductStockSimple())}
+        title="Seleccionar Ubicación del Producto"
+        width={800}
+        style={{ top: 10 }}
+        footer={
+          <Button
+            type="primary"
+            onClick={handleConfirm}
+            disabled={!selectedBatch}
+          >
+            Confirmar
+          </Button>
         }
+      >
+        <div className="search-container">
+          <Input
+            placeholder="Buscar por número de lote o ubicación..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ borderRadius: '8px' }}
+          />
+        </div>
 
-        if (isExpired) {
-            Modal.confirm({
-                title: 'Producto vencido',
-                icon: <ExclamationCircleOutlined style={{ color: '#dc2626' }} />,
-                content: 'El lote seleccionado está vencido. ¿Desea continuar?',
-                okText: 'Continuar',
-                cancelText: 'Cancelar',
-                onOk: () => setSelectedBatch(stock.id),
-            });
-            return;
-        }
-
-        setSelectedBatch(stock.id);
-    };
-
-    const normalizeExpirationDate = (value) => {
-        if (!value) return null;
-        if (typeof value === 'number') return value;
-        if (typeof value === 'string') {
-            const parsed = Date.parse(value);
-            return Number.isNaN(parsed) ? null : parsed;
-        }
-        if (value.seconds !== undefined) {
-            return value.seconds * 1000;
-        }
-        if (typeof value.toDate === 'function') {
-            return value.toDate().getTime();
-        }
-        return null;
-    };
-
-    const handleConfirm = () => {
-        if (selectedBatch) {
-            const chosenStock = productStocks.find(s => s.id === selectedBatch);
-
-            if (!chosenStock) {
-                return;
-            }
-
-            const batchInfo = {
-                productStockId: chosenStock.id ?? null,
-                batchId: chosenStock.batchId ?? null,
-                batchNumber: chosenStock.batchNumberId ?? null,
-                quantity: chosenStock.quantity ?? null,
-                expirationDate: normalizeExpirationDate(chosenStock.expirationDate),
-                locationId: chosenStock.location ?? null,
-                locationName: chosenStock.location ? formatLocation(chosenStock.location) : null,
-            };
-
-            dispatch(addProduct({
-                ...product,
-                productStockId: batchInfo.productStockId,
-                batchId: batchInfo.batchId,
-                stock: chosenStock.quantity,
-                batchInfo,
-            }));
-            dispatch(closeProductStockSimple());
-        }
-    };
-
-    return (
-        <StyledWrapper>
-            <StyledModal
-                open={isOpen}
-                onCancel={() => dispatch(closeProductStockSimple())}
-                title="Seleccionar Ubicación del Producto"
-                width={800}
-                style={{ top: 10 }}
-                footer={
-                    <Button
-                        type="primary"
-                        onClick={handleConfirm}
-                        disabled={!selectedBatch}
-                        
-                    >
-                        Confirmar
-                    </Button>
-                }
-            >
-                <div className="search-container">
-                    <Input
-                        placeholder="Buscar por número de lote o ubicación..."
-                        prefix={<SearchOutlined />}
-                        value={searchText}
-                        onChange={e => setSearchText(e.target.value)}
-                        style={{ borderRadius: '8px' }}
-                    />
-                </div>
-
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: '20px' }}>
-                        <Spin />
-                    </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <Spin />
+          </div>
+        ) : (
+          <>
+            {hasLocationFilter ? (
+              <>
+                {prioritizedBatches.length > 0 ? (
+                  <Section>
+                    <SectionTitle>
+                      Disponibles en ubicaciones filtradas
+                    </SectionTitle>
+                    <BatchGrid>
+                      {prioritizedBatches.map((stock) =>
+                        renderBatchCard({
+                          stock,
+                          selectedBatch,
+                          todayTimestamp,
+                          handleBatchToggle,
+                          normalizeExpirationDate,
+                          formatLocation,
+                          normalizeLocationId,
+                        }),
+                      )}
+                    </BatchGrid>
+                  </Section>
                 ) : (
-                    <>
-                        {hasLocationFilter ? (
-                            <>
-                                {prioritizedBatches.length > 0 ? (
-                                    <Section>
-                                        <SectionTitle>Disponibles en ubicaciones filtradas</SectionTitle>
-                                        <BatchGrid>
-                                            {prioritizedBatches.map((stock) =>
-                                                renderBatchCard({
-                                                    stock,
-                                                    selectedBatch,
-                                                    todayTimestamp,
-                                                    handleBatchToggle,
-                                                    normalizeExpirationDate,
-                                                    formatLocation,
-                                                    normalizeLocationId,
-                                                })
-                                            )}
-                                        </BatchGrid>
-                                    </Section>
-                                ) : (
-                                    <SectionNotice>
-                                        No se encontraron lotes en las ubicaciones seleccionadas.
-                                    </SectionNotice>
-                                )}
-
-                                {otherLocationBatches.length > 0 && (
-                                    <Section>
-                                        <SectionTitle>Disponibles en otras ubicaciones</SectionTitle>
-                                        <BatchGrid>
-                                            {otherLocationBatches.map((stock) =>
-                                                renderBatchCard({
-                                                    stock,
-                                                    selectedBatch,
-                                                    todayTimestamp,
-                                                    handleBatchToggle,
-                                                    normalizeExpirationDate,
-                                                    formatLocation,
-                                                    normalizeLocationId,
-                                                })
-                                            )}
-                                        </BatchGrid>
-                                    </Section>
-                                )}
-
-                                {prioritizedBatches.length === 0 && otherLocationBatches.length === 0 && (
-                                    <Empty
-                                        description="No se encontraron lotes"
-                                        style={{ margin: '40px 0' }}
-                                    />
-                                )}
-                            </>
-                        ) : filteredBySearch.length > 0 ? (
-                            <BatchGrid>
-                            {filteredBySearch.map((stock) =>
-                                renderBatchCard({
-                                    stock,
-                                    selectedBatch,
-                                    todayTimestamp,
-                                    handleBatchToggle,
-                                    normalizeExpirationDate,
-                                    formatLocation,
-                                    normalizeLocationId,
-                                })
-                            )}
-                            </BatchGrid>
-                        ) : (
-                            <Empty
-                                description="No se encontraron lotes"
-                                style={{ margin: '40px 0' }}
-                            />
-                        )}
-                    </>
+                  <SectionNotice>
+                    No se encontraron lotes en las ubicaciones seleccionadas.
+                  </SectionNotice>
                 )}
-            </StyledModal>
-        </StyledWrapper>
-    );
+
+                {otherLocationBatches.length > 0 && (
+                  <Section>
+                    <SectionTitle>
+                      Disponibles en otras ubicaciones
+                    </SectionTitle>
+                    <BatchGrid>
+                      {otherLocationBatches.map((stock) =>
+                        renderBatchCard({
+                          stock,
+                          selectedBatch,
+                          todayTimestamp,
+                          handleBatchToggle,
+                          normalizeExpirationDate,
+                          formatLocation,
+                          normalizeLocationId,
+                        }),
+                      )}
+                    </BatchGrid>
+                  </Section>
+                )}
+
+                {prioritizedBatches.length === 0 &&
+                  otherLocationBatches.length === 0 && (
+                    <Empty
+                      description="No se encontraron lotes"
+                      style={{ margin: '40px 0' }}
+                    />
+                  )}
+              </>
+            ) : filteredBySearch.length > 0 ? (
+              <BatchGrid>
+                {filteredBySearch.map((stock) =>
+                  renderBatchCard({
+                    stock,
+                    selectedBatch,
+                    todayTimestamp,
+                    handleBatchToggle,
+                    normalizeExpirationDate,
+                    formatLocation,
+                    normalizeLocationId,
+                  }),
+                )}
+              </BatchGrid>
+            ) : (
+              <Empty
+                description="No se encontraron lotes"
+                style={{ margin: '40px 0' }}
+              />
+            )}
+          </>
+        )}
+      </StyledModal>
+    </StyledWrapper>
+  );
 }
 
 function renderBatchCard({
-    stock,
-    selectedBatch,
-    todayTimestamp,
-    handleBatchToggle,
-    normalizeExpirationDate,
-    formatLocation,
-    normalizeLocationId,
+  stock,
+  selectedBatch,
+  todayTimestamp,
+  handleBatchToggle,
+  normalizeExpirationDate,
+  formatLocation,
+  normalizeLocationId,
 }) {
-    const expirationTimestamp = normalizeExpirationDate(stock.expirationDate);
-    const isExpired = expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
-    const formattedExpiration = expirationTimestamp
-        ? new Date(expirationTimestamp).toLocaleDateString()
-        : null;
-    const locationId = normalizeLocationId(stock.location);
+  const expirationTimestamp = normalizeExpirationDate(stock.expirationDate);
+  const isExpired =
+    expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
+  const formattedExpiration = expirationTimestamp
+    ? new Date(expirationTimestamp).toLocaleDateString()
+    : null;
+  const locationId = normalizeLocationId(stock.location);
 
-    return (
-        <BatchCard
-            key={stock.id}
-            selected={selectedBatch === stock.id}
-            $expired={isExpired}
-            onClick={() => handleBatchToggle(stock, isExpired)}
-        >
-            <div className="card-header">
-                <div className="batch-number">
-                    Lote #{stock.batchNumberId}
-                    <CheckCircleOutlined className="check-icon" />
-                </div>
+  return (
+    <BatchCard
+      key={stock.id}
+      selected={selectedBatch === stock.id}
+      $expired={isExpired}
+      onClick={() => handleBatchToggle(stock, isExpired)}
+    >
+      <div className="card-header">
+        <div className="batch-number">
+          Lote #{stock.batchNumberId}
+          <CheckCircleOutlined className="check-icon" />
+        </div>
+      </div>
+      <div className="card-content">
+        <div className="locations-column">
+          <LocationBadge>{formatLocation(locationId)}</LocationBadge>
+        </div>
+        <div className="info-column">
+          <div className="info-row quantity">
+            <span className="text">{stock.quantity} unidades</span>
+          </div>
+          <div className="info-row">
+            <CalendarOutlined className="icon" />
+            <div className="date-container">
+              <span
+                className="text"
+                style={{ color: isExpired ? '#dc2626' : undefined }}
+              >
+                {formattedExpiration || 'N/A'}
+              </span>
+              {formattedExpiration && (
+                <StatusBadge $expired={isExpired}>
+                  {isExpired ? 'Vencido' : 'Vigente'}
+                </StatusBadge>
+              )}
             </div>
-            <div className="card-content">
-                <div className="locations-column">
-                    <LocationBadge>
-                        {formatLocation(locationId)}
-                    </LocationBadge>
-                </div>
-                <div className="info-column">
-                    <div className="info-row quantity">
-                        <span className="text">{stock.quantity} unidades</span>
-                    </div>
-                    <div className="info-row">
-                        <CalendarOutlined className="icon" />
-                        <div className="date-container">
-                            <span className="text" style={{ color: isExpired ? '#dc2626' : undefined }}>
-                                {formattedExpiration || 'N/A'}
-                            </span>
-                            {formattedExpiration && (
-                                <StatusBadge $expired={isExpired}>
-                                    {isExpired ? 'Vencido' : 'Vigente'}
-                                </StatusBadge>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </BatchCard>
-    );
+          </div>
+        </div>
+      </div>
+    </BatchCard>
+  );
 }
 
 const Section = styled.div`

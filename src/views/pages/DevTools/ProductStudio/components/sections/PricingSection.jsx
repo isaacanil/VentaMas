@@ -116,7 +116,8 @@ const PRICE_ROWS = [
   {
     key: 'cardPrice',
     label: 'Precio con tarjeta',
-    tooltip: 'Cuando cobras con tarjeta en el POS te preguntaremos si deseas usar este precio preferencial.',
+    tooltip:
+      'Cuando cobras con tarjeta en el POS te preguntaremos si deseas usar este precio preferencial.',
   },
   { key: 'offerPrice', label: 'Precio de oferta' },
 ];
@@ -148,12 +149,14 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
   const priceMatrix = useMemo(() => {
     return PRICE_ROWS.map((row) => {
       const rawValue = pricingValues?.[row.key];
-      const hasAmount = rawValue !== undefined && rawValue !== null && rawValue !== '';
+      const hasAmount =
+        rawValue !== undefined && rawValue !== null && rawValue !== '';
       const amount = hasAmount ? Number(rawValue) : null;
       const taxAmount = hasAmount ? amount * (taxRate / 100) : null;
       const total = hasAmount ? amount + taxAmount : null;
       const margin = hasAmount ? amount - cost : null;
-      const gainPercent = hasAmount && amount > 0 ? ((amount - cost) / amount) * 100 : null;
+      const gainPercent =
+        hasAmount && amount > 0 ? ((amount - cost) / amount) * 100 : null;
 
       return {
         ...row,
@@ -184,14 +187,24 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
             label="Costo"
             rules={[{ required: true, message: 'Registra el costo base.' }]}
           >
-            <InputNumber min={0} prefix="RD$" style={{ width: '100%' }} placeholder="0.00" />
+            <InputNumber
+              min={0}
+              prefix="RD$"
+              style={{ width: '100%' }}
+              placeholder="0.00"
+            />
           </Form.Item>
           <Form.Item
             name={['pricing', 'tax']}
             label="ITBIS %"
             tooltip="Asegúrate de usar siempre el ITBIS vigente."
           >
-            <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="18" />
+            <InputNumber
+              min={0}
+              max={100}
+              style={{ width: '100%' }}
+              placeholder="18"
+            />
           </Form.Item>
         </FieldGrid>
 
@@ -236,9 +249,13 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
                 <GainCell>
                   {hasGainValue(row.margin, row.gainPercent) ? (
                     <>
-                      {formatCurrency(row.margin) !== '—' && <span>{formatCurrency(row.margin)}</span>}
+                      {formatCurrency(row.margin) !== '—' && (
+                        <span>{formatCurrency(row.margin)}</span>
+                      )}
                       {formatPercent(row.gainPercent) !== '—' && (
-                        <span className="percent">{formatPercent(row.gainPercent)}</span>
+                        <span className="percent">
+                          {formatPercent(row.gainPercent)}
+                        </span>
                       )}
                     </>
                   ) : (
@@ -250,11 +267,11 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
             ))}
           </PriceTableWrapper>
           <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-            Completa tus precios para ver cómo varían el ITBIS, la ganancia y el total.
+            Completa tus precios para ver cómo varían el ITBIS, la ganancia y el
+            total.
           </Text>
         </div>
       </Space>
-
     </SectionCard>
   );
 };

@@ -42,7 +42,8 @@ const ClientsContainer = styled.div`
 
 const ClientCard = styled.div`
   background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
-  border: 1px solid ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
+  border: 1px solid
+    ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
   padding: 12px 14px;
   border-radius: 8px;
   cursor: pointer;
@@ -155,7 +156,9 @@ const ClientSelector = ({
     ? clients.filter((c) =>
         [c.name, c.rnc, c.personalID, c.tel]
           .filter(Boolean)
-          .some((field) => normalizeText(field).includes(normalizeText(search)))
+          .some((field) =>
+            normalizeText(field).includes(normalizeText(search)),
+          ),
       )
     : clients;
 
@@ -179,7 +182,11 @@ const ClientSelector = ({
   return (
     <SelectorContainer>
       <Label>{label}</Label>
-      <ClientInfo onClick={openDrawer} className={!selectedClient ? 'empty' : ''} $disabled={disabled}>
+      <ClientInfo
+        onClick={openDrawer}
+        className={!selectedClient ? 'empty' : ''}
+        $disabled={disabled}
+      >
         {!selectedClient ? (
           <>
             <PlusOutlined style={{ marginRight: 8 }} /> Seleccionar Cliente
@@ -189,12 +196,17 @@ const ClientSelector = ({
             <div className="client-header">
               <span className="client-name">{selectedClient.name}</span>
               {!disabled && (
-                <CloseOutlined style={{ color: '#8c8c8c' }} onClick={clearSelection} />
+                <CloseOutlined
+                  style={{ color: '#8c8c8c' }}
+                  onClick={clearSelection}
+                />
               )}
             </div>
             <div className="client-details">
               <span className="detail-label">RNC/Cédula:</span>
-              <span>{selectedClient.rnc || selectedClient.personalID || 'N/A'}</span>
+              <span>
+                {selectedClient.rnc || selectedClient.personalID || 'N/A'}
+              </span>
               <span className="detail-label">Teléfono:</span>
               <span>{selectedClient.tel || 'N/A'}</span>
             </div>
@@ -233,14 +245,25 @@ const ClientSelector = ({
               >
                 <div className="name">{client.name}</div>
                 <div className="details">
-                  <span>RNC/Céd.: {client.rnc || client.personalID || 'N/A'}</span>
+                  <span>
+                    RNC/Céd.: {client.rnc || client.personalID || 'N/A'}
+                  </span>
                   <span>Teléfono: {client.tel || 'N/A'}</span>
                 </div>
               </ClientCard>
             ))}
             {filteredClients.length === 0 && !loading && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#8c8c8c', padding: '1rem' }}>
-                {search ? 'No se encontraron clientes' : 'No hay clientes disponibles'}
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  color: '#8c8c8c',
+                  padding: '1rem',
+                }}
+              >
+                {search
+                  ? 'No se encontraron clientes'
+                  : 'No hay clientes disponibles'}
               </div>
             )}
           </ClientsContainer>
@@ -250,4 +273,4 @@ const ClientSelector = ({
   );
 };
 
-export default ClientSelector; 
+export default ClientSelector;

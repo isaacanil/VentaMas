@@ -1,4 +1,15 @@
-import { Modal, List, Typography, Input, Button, Space, Popconfirm, notification, Switch, Tag } from 'antd';
+import {
+  Modal,
+  List,
+  Typography,
+  Input,
+  Button,
+  Space,
+  Popconfirm,
+  notification,
+  Switch,
+  Tag,
+} from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -15,227 +26,255 @@ const { Title, Text } = Typography;
 const PAGE_SIZE = 8;
 
 const ManageExpenseCategoriesModal = ({ open, onClose, onAddCategory }) => {
-    const { categories } = useFbGetExpensesCategories();
-    const user = useSelector(selectUser);
-    const { setCategory, configureCategoryModal } = useCategoryState();
+  const { categories } = useFbGetExpensesCategories();
+  const user = useSelector(selectUser);
+  const { setCategory, configureCategoryModal } = useCategoryState();
 
-    const [deletingCategoryId, setDeletingCategoryId] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [showArchived, setShowArchived] = useState(false);
-    const [restoringCategoryId, setRestoringCategoryId] = useState(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showArchived, setShowArchived] = useState(false);
+  const [restoringCategoryId, setRestoringCategoryId] = useState(null);
 
-    const expenseCategories = useMemo(() => (
-        categories
-            .map(({ category }) => category ?? {})
-            .filter((category) => Boolean(category?.name))
-            .sort((a, b) => a.name.localeCompare(b.name))
-    ), [categories]);
+  const expenseCategories = useMemo(
+    () =>
+      categories
+        .map(({ category }) => category ?? {})
+        .filter((category) => Boolean(category?.name))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [categories],
+  );
 
-    useEffect(() => {
-        if (!open) {
-            setDeletingCategoryId(null);
-            setSearchTerm('');
-            setCurrentPage(1);
-            setShowArchived(false);
-            setRestoringCategoryId(null);
-        }
-    }, [open]);
+  useEffect(() => {
+    if (!open) {
+      setDeletingCategoryId(null);
+      setSearchTerm('');
+      setCurrentPage(1);
+      setShowArchived(false);
+      setRestoringCategoryId(null);
+    }
+  }, [open]);
 
-    const handleAddCategory = () => {
-        if (typeof onAddCategory === 'function') {
-            onAddCategory();
-        }
-    };
+  const handleAddCategory = () => {
+    if (typeof onAddCategory === 'function') {
+      onAddCategory();
+    }
+  };
 
-    const filteredCategories = useMemo(() => {
-        const dataset = showArchived
-            ? expenseCategories
-            : expenseCategories.filter((category) => !category.isDeleted);
+  const filteredCategories = useMemo(() => {
+    const dataset = showArchived
+      ? expenseCategories
+      : expenseCategories.filter((category) => !category.isDeleted);
 
-        if (!searchTerm) return dataset;
+    if (!searchTerm) return dataset;
 
-        const normalizedTerm = searchTerm.toLowerCase().trim();
-        return dataset.filter((category) =>
-            (category.name ?? '').toLowerCase().includes(normalizedTerm)
-        );
-    }, [expenseCategories, searchTerm, showArchived]);
+    const normalizedTerm = searchTerm.toLowerCase().trim();
+    return dataset.filter((category) =>
+      (category.name ?? '').toLowerCase().includes(normalizedTerm),
+    );
+  }, [expenseCategories, searchTerm, showArchived]);
 
-    useEffect(() => {
-        const maxPage = Math.max(1, Math.ceil(filteredCategories.length / PAGE_SIZE));
-        if (currentPage > maxPage) {
-            setCurrentPage(maxPage);
-        }
-    }, [filteredCategories.length, currentPage]);
+  useEffect(() => {
+    const maxPage = Math.max(
+      1,
+      Math.ceil(filteredCategories.length / PAGE_SIZE),
+    );
+    if (currentPage > maxPage) {
+      setCurrentPage(maxPage);
+    }
+  }, [filteredCategories.length, currentPage]);
 
-    const handleArchive = async (categoryId) => {
-        try {
-            setDeletingCategoryId(categoryId);
-            await fbDeleteExpenseCategory(user, categoryId);
-            notification.success({ message: 'Categoría archivada con éxito.' });
-        } catch (error) {
-            notification.error({
-                message: 'No se pudo archivar la categoría.',
-                description: error?.message,
-            });
-        } finally {
-            setDeletingCategoryId(null);
-        }
-    };
+  const handleArchive = async (categoryId) => {
+    try {
+      setDeletingCategoryId(categoryId);
+      await fbDeleteExpenseCategory(user, categoryId);
+      notification.success({ message: 'Categoría archivada con éxito.' });
+    } catch (error) {
+      notification.error({
+        message: 'No se pudo archivar la categoría.',
+        description: error?.message,
+      });
+    } finally {
+      setDeletingCategoryId(null);
+    }
+  };
 
-    const handleRestore = async (categoryId) => {
-        try {
-            setRestoringCategoryId(categoryId);
-            await fbRestoreExpenseCategory(user, categoryId);
-            notification.success({ message: 'Categoría restaurada con éxito.' });
-        } catch (error) {
-            notification.error({
-                message: 'No se pudo restaurar la categoría.',
-                description: error?.message,
-            });
-        } finally {
-            setRestoringCategoryId(null);
-        }
-    };
+  const handleRestore = async (categoryId) => {
+    try {
+      setRestoringCategoryId(categoryId);
+      await fbRestoreExpenseCategory(user, categoryId);
+      notification.success({ message: 'Categoría restaurada con éxito.' });
+    } catch (error) {
+      notification.error({
+        message: 'No se pudo restaurar la categoría.',
+        description: error?.message,
+      });
+    } finally {
+      setRestoringCategoryId(null);
+    }
+  };
 
-    const handleEdit = (category) => {
-        setCategory(category);
-        configureCategoryModal({
-            isOpen: true,
-            type: 'update',
-            onSubmit: fbUpdateExpenseCategory,
-        });
-    };
+  const handleEdit = (category) => {
+    setCategory(category);
+    configureCategoryModal({
+      isOpen: true,
+      type: 'update',
+      onSubmit: fbUpdateExpenseCategory,
+    });
+  };
 
-    const renderActions = (category) => {
-        const categoryId = category.id;
+  const renderActions = (category) => {
+    const categoryId = category.id;
 
-        if (category.isDeleted) {
-            return (
-                <Button
-                    type="link"
-                    onClick={() => handleRestore(categoryId)}
-                    loading={restoringCategoryId === categoryId}
-                    icon={icons.operationModes.accept}
-                >
-                    Restaurar
-                </Button>
-            );
-        }
-
-        return (
-            <Space>
-                <Button type="link" onClick={() => handleEdit(category)} icon={icons.operationModes.edit}>
-                    Editar
-                </Button>
-                <Popconfirm
-                    title="¿Archivar categoría?"
-                    description="La categoría dejará de estar disponible para nuevos gastos."
-                    okText="Archivar"
-                    okButtonProps={{ danger: true, loading: deletingCategoryId === categoryId }}
-                    cancelText="Cancelar"
-                    onConfirm={() => handleArchive(categoryId)}
-                >
-                    <Button type="link" danger icon={icons.operationModes.delete} loading={deletingCategoryId === categoryId}>
-                        Archivar
-                    </Button>
-                </Popconfirm>
-            </Space>
-        );
-    };
-
-    const formatDate = (value) => {
-        if (!value) return null;
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return null;
-        return date.toLocaleDateString('es-DO', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        });
-    };
+    if (category.isDeleted) {
+      return (
+        <Button
+          type="link"
+          onClick={() => handleRestore(categoryId)}
+          loading={restoringCategoryId === categoryId}
+          icon={icons.operationModes.accept}
+        >
+          Restaurar
+        </Button>
+      );
+    }
 
     return (
-        <Modal
-            open={open}
-            title={<Title level={4}>Administrar categorías de gasto</Title>}
-            onCancel={onClose}
-            footer={null}
-            style={{top:'10px'}}
-            width={560}
-            destroyOnClose
+      <Space>
+        <Button
+          type="link"
+          onClick={() => handleEdit(category)}
+          icon={icons.operationModes.edit}
         >
-            <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-                <Space direction="vertical" size={4}>
-                    <Text strong>Listado</Text>
-                    <Text type="secondary">{filteredCategories.length} categorías</Text>
-                    <Space size={8}>
-                        <Switch
-                            checked={showArchived}
-                            onChange={(checked) => {
-                                setShowArchived(checked);
-                                setCurrentPage(1);
-                            }}
-                            size="small"
-                        />
-                        <Text type="secondary">Mostrar archivadas</Text>
-                    </Space>
-                </Space>
-                <Space>
-                    <Input.Search
-                        placeholder="Buscar categoría"
-                        allowClear
-                        value={searchTerm}
-                        onChange={(event) => {
-                            setSearchTerm(event.target.value);
-                            setCurrentPage(1);
-                        }}
-                        style={{ minWidth: 200 }}
-                    />
-                    <Button type="primary" icon={icons.operationModes.add} onClick={handleAddCategory}>
-                        Nueva categoría
-                    </Button>
-                </Space>
-            </Space>
-
-            <List
-                bordered
-                dataSource={filteredCategories}
-                rowKey={(category) => category.id}
-                locale={{ emptyText: 'Aún no hay categorías registradas.' }}
-                pagination={
-                    filteredCategories.length > PAGE_SIZE
-                        ? {
-                            current: currentPage,
-                            pageSize: PAGE_SIZE,
-                            onChange: setCurrentPage,
-                            showSizeChanger: false,
-                            simple: true,
-                        }
-                        : false
-                }
-                renderItem={(category) => (
-                    <List.Item actions={[renderActions(category)]}>
-                        <Space direction="vertical" size={0}>
-                            <Space size={8}>
-                                <Text>{category.name}</Text>
-                                {category.isDeleted && (
-                                    <Tag color="red" style={{ marginInlineStart: 0 }}>
-                                        Archivada
-                                    </Tag>
-                                )}
-                            </Space>
-                            {category.isDeleted && category.deletedAt && (
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                    Archivada el {formatDate(category.deletedAt)}
-                                </Text>
-                            )}
-                        </Space>
-                    </List.Item>
-                )}
-            />
-        </Modal>
+          Editar
+        </Button>
+        <Popconfirm
+          title="¿Archivar categoría?"
+          description="La categoría dejará de estar disponible para nuevos gastos."
+          okText="Archivar"
+          okButtonProps={{
+            danger: true,
+            loading: deletingCategoryId === categoryId,
+          }}
+          cancelText="Cancelar"
+          onConfirm={() => handleArchive(categoryId)}
+        >
+          <Button
+            type="link"
+            danger
+            icon={icons.operationModes.delete}
+            loading={deletingCategoryId === categoryId}
+          >
+            Archivar
+          </Button>
+        </Popconfirm>
+      </Space>
     );
+  };
+
+  const formatDate = (value) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleDateString('es-DO', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  return (
+    <Modal
+      open={open}
+      title={<Title level={4}>Administrar categorías de gasto</Title>}
+      onCancel={onClose}
+      footer={null}
+      style={{ top: '10px' }}
+      width={560}
+      destroyOnClose
+    >
+      <Space
+        style={{
+          width: '100%',
+          justifyContent: 'space-between',
+          marginBottom: 16,
+        }}
+        wrap
+      >
+        <Space direction="vertical" size={4}>
+          <Text strong>Listado</Text>
+          <Text type="secondary">{filteredCategories.length} categorías</Text>
+          <Space size={8}>
+            <Switch
+              checked={showArchived}
+              onChange={(checked) => {
+                setShowArchived(checked);
+                setCurrentPage(1);
+              }}
+              size="small"
+            />
+            <Text type="secondary">Mostrar archivadas</Text>
+          </Space>
+        </Space>
+        <Space>
+          <Input.Search
+            placeholder="Buscar categoría"
+            allowClear
+            value={searchTerm}
+            onChange={(event) => {
+              setSearchTerm(event.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ minWidth: 200 }}
+          />
+          <Button
+            type="primary"
+            icon={icons.operationModes.add}
+            onClick={handleAddCategory}
+          >
+            Nueva categoría
+          </Button>
+        </Space>
+      </Space>
+
+      <List
+        bordered
+        dataSource={filteredCategories}
+        rowKey={(category) => category.id}
+        locale={{ emptyText: 'Aún no hay categorías registradas.' }}
+        pagination={
+          filteredCategories.length > PAGE_SIZE
+            ? {
+                current: currentPage,
+                pageSize: PAGE_SIZE,
+                onChange: setCurrentPage,
+                showSizeChanger: false,
+                simple: true,
+              }
+            : false
+        }
+        renderItem={(category) => (
+          <List.Item actions={[renderActions(category)]}>
+            <Space direction="vertical" size={0}>
+              <Space size={8}>
+                <Text>{category.name}</Text>
+                {category.isDeleted && (
+                  <Tag color="red" style={{ marginInlineStart: 0 }}>
+                    Archivada
+                  </Tag>
+                )}
+              </Space>
+              {category.isDeleted && category.deletedAt && (
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Archivada el {formatDate(category.deletedAt)}
+                </Text>
+              )}
+            </Space>
+          </List.Item>
+        )}
+      />
+    </Modal>
+  );
 };
 
 export default ManageExpenseCategoriesModal;

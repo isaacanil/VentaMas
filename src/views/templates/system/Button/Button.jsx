@@ -1,93 +1,100 @@
-import { forwardRef } from 'react'
-import styled, { css } from 'styled-components'
+import { forwardRef } from 'react';
+import styled, { css } from 'styled-components';
 
-export const Button = forwardRef(({
-  border,
-  color = "on-gray",
-  title,
-  alignText = 'center',
-  size = 'small',
-  startIcon,
-  endIcon,
-  onClick,
-  width,
-  height,
-  hidden,
-  variant = 'contained',
-  disabled,
-  borderRadius = 'normal',
-  isActivated,
-  isActivatedColors,
-  iconOn,
-  iconOff,
-  iconColor,
-  titlePosition,
-  type = 'button'
-}, ref) => {
-
-  const handleClick = (e) => {
-    e.stopPropagation()
-    onClick()
-  }
-  return (
-    <Container
-      size={size}
-      color={color}
-      onClick={onClick && handleClick}
-      width={width}
-      height={height}
-      variant={variant}
-      disabled={disabled}
-      type={type}
-      borderRadius={borderRadius}
-      isActivated={isActivated}
-      titlePosition={titlePosition}
-      border={border}
-      iconColor={iconColor}
-      isActivatedColors={isActivatedColors}
-      hidden={hidden}
-      alignText={alignText}
-      ref={ref}
-    >
-      {isActivated ? iconOn : iconOff}
-      {startIcon ? startIcon : null}
-      {title ? title : null}
-      {endIcon ? endIcon : null}
-    </Container>
-  )
-});
+export const Button = forwardRef(
+  (
+    {
+      border,
+      color = 'on-gray',
+      title,
+      alignText = 'center',
+      size = 'small',
+      startIcon,
+      endIcon,
+      onClick,
+      width,
+      height,
+      hidden,
+      variant = 'contained',
+      disabled,
+      borderRadius = 'normal',
+      isActivated,
+      isActivatedColors,
+      iconOn,
+      iconOff,
+      iconColor,
+      titlePosition,
+      type = 'button',
+    },
+    ref,
+  ) => {
+    const handleClick = (e) => {
+      e.stopPropagation();
+      onClick();
+    };
+    return (
+      <Container
+        size={size}
+        color={color}
+        onClick={onClick && handleClick}
+        width={width}
+        height={height}
+        variant={variant}
+        disabled={disabled}
+        type={type}
+        borderRadius={borderRadius}
+        isActivated={isActivated}
+        titlePosition={titlePosition}
+        border={border}
+        iconColor={iconColor}
+        isActivatedColors={isActivatedColors}
+        hidden={hidden}
+        alignText={alignText}
+        ref={ref}
+      >
+        {isActivated ? iconOn : iconOff}
+        {startIcon ? startIcon : null}
+        {title ? title : null}
+        {endIcon ? endIcon : null}
+      </Container>
+    );
+  },
+);
 
 Button.displayName = 'Button';
 
 const styleByDefault = css`
   display: flex;
   align-items: center;
-  justify-content: ${props => props.alignText || 'center'};
+  justify-content: ${(props) => props.alignText || 'center'};
   gap: 0.6em;
   font-size: 16px;
   font-weight: 500;
-  text-align: ${props => props.alignText || 'center'};
+  text-align: ${(props) => props.alignText || 'center'};
   text-decoration: none;
-  text-transform: capitalize;   
+  text-transform: capitalize;
   white-space: nowrap;
   border: none;
   outline: none;
   cursor: pointer;
 
-  svg{
+  svg {
     font-size: 1.2em;
     margin: 0;
     display: flex;
     place-items: center;
   }
 
-  transition: border-color 0.25s, background-color 500ms;
+  transition:
+    border-color 0.25s,
+    background-color 500ms;
   pointer-events: all;
 
-  &:focus, &:focus-visible{
+  &:focus,
+  &:focus-visible {
     outline: none;
   }
-`
+`;
 const sizes = {
   small: `
     height: 2em;
@@ -134,7 +141,7 @@ const sizes = {
       font-size: 20px;
     }
   `,
-}
+};
 const borderRadius = {
   normal: `
     border-radius: var(--border-radius);
@@ -148,70 +155,73 @@ const borderRadius = {
   round: `
     border-radius: 100px;
   `,
-}
+};
 
 export const Container = styled.button`
   ${styleByDefault}
-  ${props => props.size ? sizes[props.size] : sizes.medium}
+  ${(props) => (props.size ? sizes[props.size] : sizes.medium)}
   
-  &:hover{
-    ${props => !props.isActivated ? `
+  &:hover {
+    ${(props) =>
+      !props.isActivated
+        ? `
       
        opacity: 0.8;
-    ` : null}
+    `
+        : null}
   }
 
- 
- 
-  ${props => props.borderRadius && borderRadius[props.borderRadius]}
-  ${props => {
+  ${(props) => props.borderRadius && borderRadius[props.borderRadius]}
+  ${(props) => {
     switch (props.variant) {
       case 'contained':
         return `
-        ${props.theme?.colors?.[props.color] && `
-          background-color: ${props.theme?.colors?.[props.color]["bg"]};
-          color: ${props.theme.colors[props.color]["text"]};
+        ${
+          props.theme?.colors?.[props.color] &&
+          `
+          background-color: ${props.theme?.colors?.[props.color]['bg']};
+          color: ${props.theme.colors[props.color]['text']};
           backdrop: blur(10px);
           hover{
-            background-color: ${props.theme.colors[props.color]["bg"]};
-            color: ${props.theme.colors[props.color]["text"]};
+            background-color: ${props.theme.colors[props.color]['bg']};
+            color: ${props.theme.colors[props.color]['text']};
           }
           `
-          }
-        `
+        }
+        `;
       case 'outlined':
         return `
             background-color: transparent;
-            color: ${props.theme.colors[props.color]["bg"]};
-            border: 1px solid ${props.theme.colors[props.color]["bg"]};
-          `
+            color: ${props.theme.colors[props.color]['bg']};
+            border: 1px solid ${props.theme.colors[props.color]['bg']};
+          `;
       case 'text':
         return `
               background-color: transparent;
-              color: ${props.theme.colors[props.color]["bg"]};
-            `
+              color: ${props.theme.colors[props.color]['bg']};
+            `;
       case 'textContained':
         return `
-              background-color: ${props.theme.colors[props.color]["bg"]};
-              color: ${props.theme.colors[props.color]["bg"]};
+              background-color: ${props.theme.colors[props.color]['bg']};
+              color: ${props.theme.colors[props.color]['bg']};
               border: none;
-            `
+            `;
     }
   }}
   ${(props) => {
     switch (props.width) {
-      case "w100":
+      case 'w100':
         return `
         max-width: 100%;
         min-width: 100%;
         width: 100% !important;
         
           `;
-      case "auto":
+      case 'auto':
         return `
               width: auto;
-            `
-      case "icon32":
+            `;
+      case 'icon32':
         return `
           min-width: 32px;
           max-width: 32px;
@@ -223,8 +233,8 @@ export const Container = styled.button`
           padding: 0;
           margin: 0;
           font-size: 18px;
-        `
-      case "icon24":
+        `;
+      case 'icon24':
         return `
           min-width: 27px;
           max-width: 27px;
@@ -234,12 +244,12 @@ export const Container = styled.button`
           align-items: center;
           justify-content: center;
           padding: 0;
-        `
+        `;
     }
   }}
    ${(props) => {
     switch (props.height) {
-      case "small":
+      case 'small':
         return `
            height: 24px;
            display: flex;
@@ -247,7 +257,7 @@ export const Container = styled.button`
            padding: 0 0.4em;
 
           `;
-      case "medium":
+      case 'medium':
         return `  
           height: 30px;
           display: flex;
@@ -255,7 +265,7 @@ export const Container = styled.button`
           font-size: 16px;
           padding: 0 0.8em;
           `;
-      case "large":
+      case 'large':
         return `
           height: 2em;
           display: flex;
@@ -263,17 +273,15 @@ export const Container = styled.button`
           font-size: 16px;
           padding: 0 1.2em;
           `;
-
     }
   }}
    ${(props) => {
     switch (props.border) {
-      case "light":
+      case 'light':
         return `
           border: var(--border-primary);
 
           `;
-
     }
   }}
   ${(props) => {
@@ -294,66 +302,69 @@ export const Container = styled.button`
         switch (props.isActivated) {
           case true:
             return `
-              background-color: ${props.theme.colors[props.color]["bg"]};
-              color: ${props.theme.colors[props.color]["text"]};
+              background-color: ${props.theme.colors[props.color]['bg']};
+              color: ${props.theme.colors[props.color]['text']};
               :hover{
-                background-color: ${props.theme.colors[props.color]["bg"]};
-                color: ${props.theme.colors[props.color]["text"]};
+                background-color: ${props.theme.colors[props.color]['bg']};
+                color: ${props.theme.colors[props.color]['text']};
               }
-            `
+            `;
           case false:
             return `
-              background-color: ${props.theme.colors[props.color]["bg"]};
-              color: ${props.theme.colors[props.color]["text"]};
+              background-color: ${props.theme.colors[props.color]['bg']};
+              color: ${props.theme.colors[props.color]['text']};
               :hover{
-                background-color: ${props.theme.colors[props.color]["bg"]};
-                color: ${props.theme.colors[props.color]["text"]};
+                background-color: ${props.theme.colors[props.color]['bg']};
+                color: ${props.theme.colors[props.color]['text']};
               }
-            `
+            `;
           default:
             break;
         }
         return `
         
-        ${props.isActivated === true ? `
+        ${
+          props.isActivated === true
+            ? `
         background-color: #ffffff;
           color: black;
           :hover{
             background-color: #e9e9e9;
             color: black;
           }
-        ` : `
+        `
+            : `
         background-color: rgba(0, 0, 0, 0.26);
           color: white;
           :hover{
             background-color: #e9e9e94b;
             color: black;
           }
-        `}
-         
         `
+        }
+         
+        `;
       case false:
         return `
           background-color: rgba(0, 0, 0, 0.26);
           color: white;
       
-        `
+        `;
       case props.isActivated:
         return `
           background-color: ${props.isActivated};
-        `
+        `;
       default:
         break;
     }
   }}
 
   @media (max-width: 800px) {
-    display: ${props => props.hidden === true ? 'none' : 'flex'};
+    display: ${(props) => (props.hidden === true ? 'none' : 'flex')};
   }
-`
+`;
 export const ButtonGroup = styled.div`
   display: flex;
   gap: 0.4em;
   align-items: center;
-`
-
+`;

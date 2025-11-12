@@ -1,6 +1,15 @@
-import { faPlus, faPencilAlt, faTrashAlt, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+  faPlus,
+  faPencilAlt,
+  faTrashAlt,
+  faInfoCircle,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button as AntButton, Input as AntInput, Switch as AntSwitch } from 'antd';
+import {
+  Button as AntButton,
+  Input as AntInput,
+  Switch as AntSwitch,
+} from 'antd';
 import { nanoid } from 'nanoid';
 import { useState } from 'react';
 import styled from 'styled-components';
@@ -26,11 +35,11 @@ const Grid = styled.div`
   display: grid;
   gap: 16px;
   grid-template-columns: 1fr;
-  
+
   @media (min-width: 768px) {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   @media (min-width: 1024px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
@@ -69,19 +78,34 @@ const FullWidthButton = styled(AntButton)`
   width: 100%;
 `;
 
-export default function Component() {  const [saleUnits, setSaleUnits] = useState([
+export default function Component() {
+  const [saleUnits, setSaleUnits] = useState([
     {
       id: nanoid(),
       unitName: 'Caja',
       quantity: 30,
-      pricing: { cost: 100, price: 150, listPrice: 160, avgPrice: 155, minPrice: 140, tax: 'IVA' },
+      pricing: {
+        cost: 100,
+        price: 150,
+        listPrice: 160,
+        avgPrice: 155,
+        minPrice: 140,
+        tax: 'IVA',
+      },
       active: true,
     },
     {
       id: nanoid(),
       unitName: 'Pastilla',
       quantity: 1,
-      pricing: { cost: 3, price: 5, listPrice: 5.5, avgPrice: 5.25, minPrice: 4.5, tax: 'IVA' },
+      pricing: {
+        cost: 3,
+        price: 5,
+        listPrice: 5.5,
+        avgPrice: 5.25,
+        minPrice: 4.5,
+        tax: 'IVA',
+      },
       active: true,
     },
   ]);
@@ -93,7 +117,11 @@ export default function Component() {  const [saleUnits, setSaleUnits] = useStat
   };
 
   const updateSaleUnit = (updatedUnit) => {
-    setSaleUnits(saleUnits.map((unit) => (unit.id === updatedUnit.id ? updatedUnit : unit)));
+    setSaleUnits(
+      saleUnits.map((unit) =>
+        unit.id === updatedUnit.id ? updatedUnit : unit,
+      ),
+    );
   };
 
   const deleteSaleUnit = (id) => {
@@ -101,7 +129,11 @@ export default function Component() {  const [saleUnits, setSaleUnits] = useStat
   };
 
   const toggleUnitActive = (id) => {
-    setSaleUnits(saleUnits.map((unit) => (unit.id === id ? { ...unit, active: !unit.active } : unit)));
+    setSaleUnits(
+      saleUnits.map((unit) =>
+        unit.id === id ? { ...unit, active: !unit.active } : unit,
+      ),
+    );
   };
 
   const handleSubmit = (e) => {
@@ -121,7 +153,11 @@ export default function Component() {  const [saleUnits, setSaleUnits] = useStat
     };
 
     if (editingUnit) {
-      updateSaleUnit({ ...newUnit, id: editingUnit.id, active: editingUnit.active });
+      updateSaleUnit({
+        ...newUnit,
+        id: editingUnit.id,
+        active: editingUnit.active,
+      });
     } else {
       addSaleUnit(newUnit);
     }
@@ -136,7 +172,11 @@ export default function Component() {  const [saleUnits, setSaleUnits] = useStat
       <Card>
         <CardHeaderWrapper>
           <h3>Unidades de Venta</h3>
-          <AntButton type="primary" icon={<FontAwesomeIcon icon={faPlus} />} onClick={() => setEditingUnit(null)}>
+          <AntButton
+            type="primary"
+            icon={<FontAwesomeIcon icon={faPlus} />}
+            onClick={() => setEditingUnit(null)}
+          >
             Agregar Unidad
           </AntButton>
         </CardHeaderWrapper>
@@ -145,9 +185,23 @@ export default function Component() {  const [saleUnits, setSaleUnits] = useStat
             {saleUnits.map((unit) => (
               <Card key={unit.id} active={unit.active}>
                 <CardContentWrapper>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{unit.unitName}</h3>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>
+                      {unit.unitName}
+                    </h3>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '8px',
+                        alignItems: 'center',
+                      }}
+                    >
                       <AntSwitch
                         checked={unit.active}
                         onChange={() => toggleUnitActive(unit.id)}
@@ -169,7 +223,13 @@ export default function Component() {  const [saleUnits, setSaleUnits] = useStat
                   </div>
                   <InfoText>Cantidad: {unit.quantity}</InfoText>
                   <InfoText>Precio: ${unit.pricing.price}</InfoText>
-                  <AntButton type="text" size="small" icon={<FontAwesomeIcon icon={faInfoCircle} />}>Más información</AntButton>
+                  <AntButton
+                    type="text"
+                    size="small"
+                    icon={<FontAwesomeIcon icon={faInfoCircle} />}
+                  >
+                    Más información
+                  </AntButton>
                 </CardContentWrapper>
               </Card>
             ))}
@@ -177,47 +237,111 @@ export default function Component() {  const [saleUnits, setSaleUnits] = useStat
         </CardContentWrapper>
       </Card>
       {isDialogOpen && (
-        <div style={{ padding: '24px', background: '#fff', borderRadius: '8px', maxWidth: '425px', margin: '0 auto', marginTop: '24px' }}>
-          <h3>{editingUnit ? 'Editar Unidad de Venta' : 'Agregar Nueva Unidad de Venta'}</h3>
+        <div
+          style={{
+            padding: '24px',
+            background: '#fff',
+            borderRadius: '8px',
+            maxWidth: '425px',
+            margin: '0 auto',
+            marginTop: '24px',
+          }}
+        >
+          <h3>
+            {editingUnit
+              ? 'Editar Unidad de Venta'
+              : 'Agregar Nueva Unidad de Venta'}
+          </h3>
           <Form onSubmit={handleSubmit}>
             <GridForm>
               <div>
                 <label htmlFor="unitName">Nombre de la Unidad</label>
-                <AntInput id="unitName" name="unitName" defaultValue={editingUnit?.unitName} required />
+                <AntInput
+                  id="unitName"
+                  name="unitName"
+                  defaultValue={editingUnit?.unitName}
+                  required
+                />
               </div>
               <div>
                 <label htmlFor="quantity">Cantidad</label>
-                <AntInput id="quantity" name="quantity" type="number" defaultValue={editingUnit?.quantity} required />
+                <AntInput
+                  id="quantity"
+                  name="quantity"
+                  type="number"
+                  defaultValue={editingUnit?.quantity}
+                  required
+                />
               </div>
             </GridForm>
             <GridForm>
               <div>
                 <label htmlFor="cost">Costo</label>
-                <AntInput id="cost" name="cost" type="number" step="0.01" defaultValue={editingUnit?.pricing.cost} required />
+                <AntInput
+                  id="cost"
+                  name="cost"
+                  type="number"
+                  step="0.01"
+                  defaultValue={editingUnit?.pricing.cost}
+                  required
+                />
               </div>
               <div>
                 <label htmlFor="price">Precio</label>
-                <AntInput id="price" name="price" type="number" step="0.01" defaultValue={editingUnit?.pricing.price} required />
+                <AntInput
+                  id="price"
+                  name="price"
+                  type="number"
+                  step="0.01"
+                  defaultValue={editingUnit?.pricing.price}
+                  required
+                />
               </div>
             </GridForm>
             <GridForm>
               <div>
                 <label htmlFor="listPrice">Precio de Lista</label>
-                <AntInput id="listPrice" name="listPrice" type="number" step="0.01" defaultValue={editingUnit?.pricing.listPrice} required />
+                <AntInput
+                  id="listPrice"
+                  name="listPrice"
+                  type="number"
+                  step="0.01"
+                  defaultValue={editingUnit?.pricing.listPrice}
+                  required
+                />
               </div>
               <div>
                 <label htmlFor="avgPrice">Precio Promedio</label>
-                <AntInput id="avgPrice" name="avgPrice" type="number" step="0.01" defaultValue={editingUnit?.pricing.avgPrice} required />
+                <AntInput
+                  id="avgPrice"
+                  name="avgPrice"
+                  type="number"
+                  step="0.01"
+                  defaultValue={editingUnit?.pricing.avgPrice}
+                  required
+                />
               </div>
             </GridForm>
             <GridForm>
               <div>
                 <label htmlFor="minPrice">Precio Mínimo</label>
-                <AntInput id="minPrice" name="minPrice" type="number" step="0.01" defaultValue={editingUnit?.pricing.minPrice} required />
+                <AntInput
+                  id="minPrice"
+                  name="minPrice"
+                  type="number"
+                  step="0.01"
+                  defaultValue={editingUnit?.pricing.minPrice}
+                  required
+                />
               </div>
               <div>
                 <label htmlFor="tax">Impuesto</label>
-                <AntInput id="tax" name="tax" defaultValue={editingUnit?.pricing.tax} required />
+                <AntInput
+                  id="tax"
+                  name="tax"
+                  defaultValue={editingUnit?.pricing.tax}
+                  required
+                />
               </div>
             </GridForm>
             <FullWidthButton type="primary" htmlType="submit">

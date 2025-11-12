@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../../../constants/icons/icons';
@@ -50,12 +50,12 @@ const TableFooter = ({
 
 export default TableFooter;
 const Footer = styled.div`
-   padding: 0 1em;
-    z-index: 1;
-    grid-template-columns: 1fr 1fr 1fr;
-    display: grid;
-    align-items: center;
-    background-color: white;
+  padding: 0 1em;
+  z-index: 1;
+  grid-template-columns: 1fr 1fr 1fr;
+  display: grid;
+  align-items: center;
+  background-color: white;
   height: 3em;
   border-top: var(--border-primary);
 `;
@@ -64,11 +64,11 @@ const FooterLeftSide = styled.div`
   display: flex;
   gap: 1em;
   align-items: center;
-`
+`;
 
 const FooterRightSide = styled.div`
   justify-self: end;
-`
+`;
 const Counter = styled.div`
   display: flex;
   white-space: nowrap;
@@ -79,7 +79,7 @@ const Counter = styled.div`
   font-weight: 600;
   font-size: 0.9em;
   background-color: #d3d3d3;
-`
+`;
 const ElementsName = styled.div`
   font-weight: 600;
   font-size: 1em;
@@ -88,4 +88,4 @@ const ElementsName = styled.div`
   @media (max-width: 1100px) {
     display: none;
   }
-`
+`;

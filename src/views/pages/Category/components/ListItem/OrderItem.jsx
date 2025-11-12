@@ -1,16 +1,14 @@
-import * as antd from 'antd'
-import { useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import styled from 'styled-components'
+import * as antd from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-
-
-import { icons } from '../../../../../constants/icons/icons'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { fbDeleteCategory } from '../../../../../firebase/categories/fbDeleteCategory'
-import { fbUpdateCategory } from '../../../../../firebase/categories/fbUpdateCategory'
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide'
-import { ButtonGroup } from '../../../../templates/system/Button/Button'
+import { icons } from '../../../../../constants/icons/icons';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { fbDeleteCategory } from '../../../../../firebase/categories/fbDeleteCategory';
+import { fbUpdateCategory } from '../../../../../firebase/categories/fbUpdateCategory';
+import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
+import { ButtonGroup } from '../../../../templates/system/Button/Button';
 
 export const OrderItem = ({ cat, Row, Col }) => {
   const user = useSelector(selectUser);
@@ -19,7 +17,7 @@ export const OrderItem = ({ cat, Row, Col }) => {
 
   const [category, setCategory] = useState({
     name: cat.name,
-    id: cat.id
+    id: cat.id,
   });
 
   const [showConfirmBtn, setShowConfirmBtn] = useState(false);
@@ -30,18 +28,18 @@ export const OrderItem = ({ cat, Row, Col }) => {
   const handleClose = () => {
     setShowConfirmBtn(false);
     setMode(null);
-  }
+  };
   useEffect(() => {
     setCategory({
       name: cat.name,
-      id: cat.id
-    })
-  }, [cat])
+      id: cat.id,
+    });
+  }, [cat]);
 
   const handleEdit = () => {
     setCategory({
       name: cat.name,
-      id: cat.id
+      id: cat.id,
     });
     setMode('EDIT');
     setShowConfirmBtn(true);
@@ -52,18 +50,17 @@ export const OrderItem = ({ cat, Row, Col }) => {
   const handleDelete = () => {
     setMode('DELETE');
     setShowConfirmBtn(true);
-    
   };
 
   const handleAccept = () => {
     switch (mode) {
       case 'DELETE':
         fbDeleteCategory(user, cat.id);
-        antd.message.success('Categoría eliminada', 2.5)
+        antd.message.success('Categoría eliminada', 2.5);
         break;
       case 'EDIT':
-        fbUpdateCategory(category, user)
-        antd.message.success('Categoría actualizada', 2.5)
+        fbUpdateCategory(category, user);
+        antd.message.success('Categoría actualizada', 2.5);
         break;
     }
     setMode(null);
@@ -73,13 +70,13 @@ export const OrderItem = ({ cat, Row, Col }) => {
   const handleReject = () => {
     setCategory({
       name: cat.name,
-      id: cat.id
+      id: cat.id,
     });
     setMode(null);
     setShowConfirmBtn(false);
   };
 
-  useClickOutSide(CategoryRef, showConfirmBtn, handleClose)
+  useClickOutSide(CategoryRef, showConfirmBtn, handleClose);
 
   return (
     <Row ref={CategoryRef}>
@@ -93,21 +90,12 @@ export const OrderItem = ({ cat, Row, Col }) => {
       <Col>
         {showConfirmBtn ? (
           <ButtonGroup>
-            <Button
-              icon={icons.operationModes.cancel}
-              onClick={handleReject}
-            />
-            <Button
-              icon={icons.operationModes.accept}
-              onClick={handleAccept}
-            />
+            <Button icon={icons.operationModes.cancel} onClick={handleReject} />
+            <Button icon={icons.operationModes.accept} onClick={handleAccept} />
           </ButtonGroup>
         ) : (
           <ButtonGroup>
-            <Button
-              icon={icons.operationModes.edit}
-              onClick={handleEdit}
-            />
+            <Button icon={icons.operationModes.edit} onClick={handleEdit} />
             <Button
               icon={icons.operationModes.delete}
               onClick={() => handleDelete(cat.id)}
@@ -121,21 +109,21 @@ export const OrderItem = ({ cat, Row, Col }) => {
 };
 
 const Button = styled(antd.Button)`
-font-size: 1.2em;
-display: flex;
-justify-content: center;
-align-items: center;
-`
+  font-size: 1.2em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
 const CategoryName = styled.input`
-margin-left: 1em;
-border: none;
-height: 2em;
+  margin-left: 1em;
+  border: none;
+  height: 2em;
 
-:focus{
-  outline: 2px solid rgba(0, 0, 0, 0.200);
-}
-${props => {
+  :focus {
+    outline: 2px solid rgba(0, 0, 0, 0.2);
+  }
+  ${(props) => {
     switch (props.readOnly) {
       case true:
         return `
@@ -150,7 +138,7 @@ ${props => {
           color: inherit;
         }
         
-        `
+        `;
     }
   }}
-`
+`;

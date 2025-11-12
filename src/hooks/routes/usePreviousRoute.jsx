@@ -15,7 +15,6 @@ function usePreviousRoute() {
     previousPathnameRef.current = currentPathname;
   }, [currentPathname]);
 
-
   return previousPathnameRef.current;
 }
 

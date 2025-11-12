@@ -41,7 +41,11 @@ const UserCard = styled.div`
   gap: 8px;
   padding: 18px 20px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(114, 46, 209, 0.08) 0%, rgba(22, 119, 255, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(114, 46, 209, 0.08) 0%,
+    rgba(22, 119, 255, 0.08) 100%
+  );
   border: 1px solid rgba(114, 46, 209, 0.2);
 `;
 
@@ -121,8 +125,10 @@ export const GeneratePinModal = ({
   const modulesMap = useMemo(() => {
     if (!Array.isArray(availableModules)) return [];
     const descriptions = {
-      invoices: 'Aprueba operaciones vinculadas a la facturación y emisión de comprobantes.',
-      accountsReceivable: 'Autoriza gestiones de cobros, créditos y ajustes en cuentas por cobrar.',
+      invoices:
+        'Aprueba operaciones vinculadas a la facturación y emisión de comprobantes.',
+      accountsReceivable:
+        'Autoriza gestiones de cobros, créditos y ajustes en cuentas por cobrar.',
     };
     return availableModules.map((module) => ({
       ...module,

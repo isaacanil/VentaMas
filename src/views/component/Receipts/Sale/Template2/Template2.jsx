@@ -13,7 +13,6 @@ const Container = styled.div`
 `;
 
 const StyledCard = styled.div`
-
   padding: 2em;
 `;
 
@@ -26,13 +25,12 @@ const HeaderInfo = styled.div`
 const CompanyInfo = styled.div`
   line-height: 1.2;
   font-size: 14px;
-  `;
+`;
 
 const CustomerInfo = styled(CompanyInfo)`
-display: grid;
-grid-template-columns: 1fr 1fr;
-
-`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+`;
 
 const CompanyTitle = styled.h2`
   font-weight: bold;
@@ -49,12 +47,11 @@ const TableContainer = styled.div`
 `;
 
 const FooterSection = styled.div`
-display: grid;
-gap: 2em;
-grid-template-columns: 1fr 0.4fr;
+  display: grid;
+  gap: 2em;
+  grid-template-columns: 1fr 0.4fr;
   margin-top: 32px;
   font-size: 0.875rem;
-
 `;
 
 const TotalsContainer = styled.div`
@@ -68,19 +65,18 @@ const TotalRow = styled.div`
   font-size: 14px;
   gap: 1em;
 
-  span{
+  span {
     white-space: nowrap;
   }
-  
+
   &.bold {
     font-weight: bold;
   }
-  
+
   .value {
     text-align: right;
   }
 `;
-
 
 const columns = [
   {
@@ -156,18 +152,25 @@ function Template2() {
 
   return (
     <Container>
-      <Button type="primary" onClick={handlePrint} style={{ marginBottom: '16px' }}>
+      <Button
+        type="primary"
+        onClick={handlePrint}
+        style={{ marginBottom: '16px' }}
+      >
         Imprimir
       </Button>
       <div ref={componentRef}>
         <StyledCard>
-
           <CompanyTitle>Productos D Salud Integral RV, S.R.L.</CompanyTitle>
           <HeaderInfo>
             <CompanyInfo>
               <p>Carret. Sánchez Km. 2 Canastica 5 C. R.D.</p>
-              <p><FontAwesomeIcon icon={faPhone} /> 809-798-1848 / 809-527-7045</p>
-              <p><FontAwesomeIcon icon={faEnvelope} /> productosdsalud@gmail.com</p>
+              <p>
+                <FontAwesomeIcon icon={faPhone} /> 809-798-1848 / 809-527-7045
+              </p>
+              <p>
+                <FontAwesomeIcon icon={faEnvelope} /> productosdsalud@gmail.com
+              </p>
               <p>RNC: 131041078</p>
             </CompanyInfo>
             <RightAlign>
@@ -177,39 +180,40 @@ function Template2() {
           </HeaderInfo>
 
           <CustomerInfo>
-            
-              <div>
-                <p><strong>Cliente:</strong> Super Mercado Joselito</p>
-                <p>Dirección: San Cristóbal</p>
-                <p>RNC: 131041078</p>
-              </div>
-              <RightAlign>
-                <p>Código: 341</p>
-              </RightAlign>
-
-            
+            <div>
+              <p>
+                <strong>Cliente:</strong> Super Mercado Joselito
+              </p>
+              <p>Dirección: San Cristóbal</p>
+              <p>RNC: 131041078</p>
+            </div>
+            <RightAlign>
+              <p>Código: 341</p>
+            </RightAlign>
           </CustomerInfo>
 
           <TableContainer>
-            <Table size='small' columns={columns} dataSource={dataSource} pagination={false} bordered />
+            <Table
+              size="small"
+              columns={columns}
+              dataSource={dataSource}
+              pagination={false}
+              bordered
+            />
           </TableContainer>
 
           <FooterSection>
             <SignatureGroup>
               <Group>
-                <TextWithUpLine
-                  label={'Despachado Por:'}
-                />
-                <TextWithUpLine
-                  label={'Recibido Conforme:'}
-                />
+                <TextWithUpLine label={'Despachado Por:'} />
+                <TextWithUpLine label={'Recibido Conforme:'} />
               </Group>
               <Group>
                 <div>
                   <p>Vendedor: 1 - VENTAS</p>
                 </div>
                 <div>
-                  <p >COPIA</p>
+                  <p>COPIA</p>
                 </div>
               </Group>
             </SignatureGroup>
@@ -240,20 +244,22 @@ const Group = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 2em;
-`
+`;
 
 const TextWithUpLine = ({ label }) => {
   return (
     <p
       style={{
-        padding: "0.4em",
-        width: "100%",
+        padding: '0.4em',
+        width: '100%',
         marginTop: '1em',
-        borderTop: '1px solid black'
+        borderTop: '1px solid black',
       }}
-    >{label}</p>
-  )
-}
+    >
+      {label}
+    </p>
+  );
+};
 const SignatureGroup = styled.div`
   display: grid;
-`
+`;

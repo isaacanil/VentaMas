@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export const ThankYouMessage = ({message}) => {
-    if(!message){
-        return null
-    }
+export const ThankYouMessage = ({ message }) => {
+  if (!message) {
+    return null;
+  }
 
   return (
     <CenteredContainer>

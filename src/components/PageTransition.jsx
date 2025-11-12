@@ -14,12 +14,12 @@ const pageTransition = {
   exit: {
     opacity: 0,
     // x: 20
-  }
+  },
 };
 
 export const PageTransition = ({ children }) => {
   const location = useLocation();
-  
+
   return (
     <motion.div
       key={location.pathname}

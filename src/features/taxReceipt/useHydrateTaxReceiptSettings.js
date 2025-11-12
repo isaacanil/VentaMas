@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { setTaxReceiptSettingsLoaded, toggleTaxReceiptSettings } from './taxReceiptSlice';
+import {
+  setTaxReceiptSettingsLoaded,
+  toggleTaxReceiptSettings,
+} from './taxReceiptSlice';
 
 // Hidrata el estado taxReceiptEnabled desde localStorage lo antes posible,
 // para evitar valores incorrectos en cargas directas, antes de que Firestore responda.

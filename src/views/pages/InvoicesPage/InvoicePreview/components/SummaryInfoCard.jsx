@@ -1,4 +1,10 @@
-import { faFileInvoice, faShoppingCart, faCalculator, faDollarSign, faTag } from '@fortawesome/free-solid-svg-icons';
+import {
+  faFileInvoice,
+  faShoppingCart,
+  faCalculator,
+  faDollarSign,
+  faTag,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Card, Divider } from 'antd';
 import React from 'react';
@@ -12,7 +18,7 @@ const SummaryInfoCard = ({ summaryData }) => {
     totalShoppingItems,
     totalPurchaseWithoutTaxes,
     totalTaxes,
-    payment
+    payment,
   } = summaryData;
 
   return (
@@ -23,7 +29,7 @@ const SummaryInfoCard = ({ summaryData }) => {
           Resumen
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         <InfoSection>
           <InfoItem>
@@ -33,7 +39,7 @@ const SummaryInfoCard = ({ summaryData }) => {
             </InfoLabel>
             <InfoValue>{sourceOfPurchase || 'N/A'}</InfoValue>
           </InfoItem>
-          
+
           <InfoItem>
             <InfoLabel>
               <FontAwesomeIcon icon={faShoppingCart} />
@@ -41,17 +47,19 @@ const SummaryInfoCard = ({ summaryData }) => {
             </InfoLabel>
             <InfoValue>{totalShoppingItems?.value || 'N/A'}</InfoValue>
           </InfoItem>
-          
+
           <Divider style={{ margin: '12px 0' }} />
-          
+
           <InfoItem>
             <InfoLabel>
               <FontAwesomeIcon icon={faCalculator} />
               Subtotal:
             </InfoLabel>
-            <InfoValue>{useFormatPrice(totalPurchaseWithoutTaxes?.value) || 'N/A'}</InfoValue>
+            <InfoValue>
+              {useFormatPrice(totalPurchaseWithoutTaxes?.value) || 'N/A'}
+            </InfoValue>
           </InfoItem>
-          
+
           <InfoItem>
             <InfoLabel>
               <FontAwesomeIcon icon={faCalculator} />
@@ -59,7 +67,7 @@ const SummaryInfoCard = ({ summaryData }) => {
             </InfoLabel>
             <InfoValue>{useFormatPrice(totalTaxes?.value) || 'N/A'}</InfoValue>
           </InfoItem>
-          
+
           <TotalItem>
             <TotalLabel>
               <FontAwesomeIcon icon={faDollarSign} />
@@ -125,7 +133,7 @@ const InfoValue = styled.span`
   font-size: 0.93rem;
   color: #333;
   font-weight: 500;
-  font-family: ${props => props.theme?.fonts?.mono || 'monospace'};
+  font-family: ${(props) => props.theme?.fonts?.mono || 'monospace'};
 `;
 
 const TotalItem = styled.div`

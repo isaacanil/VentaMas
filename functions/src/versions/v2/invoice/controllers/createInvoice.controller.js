@@ -14,26 +14,35 @@ async function loadDeps() {
       import('../../../../modules/cashCount/utils/cashCountCheck.js'),
       import('../../../../core/config/firebase.js'),
       import('../utils/hash.util.js'),
-    ]).then(([validation, orchestrator, cashCountQueries, cashCountCheck, firebaseConfig, hashUtil]) => {
-      const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
-      const { db } = firebaseConfig;
-      return {
-        validateInvoiceCart: validation.validateInvoiceCart,
-        createPendingInvoice: orchestrator.createPendingInvoice,
-        getOpenCashCountDoc: cashCountHelpers?.getOpenCashCountDoc,
-        checkOpenCashCount: cashCountCheck.checkOpenCashCount,
-        stableHash: hashUtil.stableHash,
-        /** Obtiene snapshot del usuario */
-        getUserSnap: async (userId) => {
-          if (!userId) return null;
+    ]).then(
+      ([
+        validation,
+        orchestrator,
+        cashCountQueries,
+        cashCountCheck,
+        firebaseConfig,
+        hashUtil,
+      ]) => {
+        const cashCountHelpers = cashCountQueries?.default ?? cashCountQueries;
+        const { db } = firebaseConfig;
+        return {
+          validateInvoiceCart: validation.validateInvoiceCart,
+          createPendingInvoice: orchestrator.createPendingInvoice,
+          getOpenCashCountDoc: cashCountHelpers?.getOpenCashCountDoc,
+          checkOpenCashCount: cashCountCheck.checkOpenCashCount,
+          stableHash: hashUtil.stableHash,
+          /** Obtiene snapshot del usuario */
+          getUserSnap: async (userId) => {
+            if (!userId) return null;
             try {
               return await db.doc(`users/${userId}`).get();
             } catch {
               return null;
             }
-        },
-      };
-    });
+          },
+        };
+      },
+    );
   }
   return depsPromise;
 }
@@ -43,14 +52,23 @@ async function loadDeps() {
  * Primera fase: solo garantiza idempotencia y crea la factura en estado 'pending'.
  * Requiere header 'Idempotency-Key' o campo 'idempotencyKey' en el body (data).
  */
-export const createInvoiceV2 = onCall(async ({data}, context) => {
-  const traceId = context.rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ?? nanoid();
+export const createInvoiceV2 = onCall(async ({ data }, context) => {
+  const traceId =
+    context.rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ??
+    nanoid();
   try {
-    const { validateInvoiceCart, createPendingInvoice, getOpenCashCountDoc, checkOpenCashCount, getUserSnap, stableHash } = await loadDeps();
+    const {
+      validateInvoiceCart,
+      createPendingInvoice,
+      getOpenCashCountDoc,
+      checkOpenCashCount,
+      getUserSnap,
+      stableHash,
+    } = await loadDeps();
     const rawRequest = context.rawRequest;
     let idempotencyKey = resolveIdempotencyKey({ rawRequest, data });
     const businessId = data?.businessId || data?.user?.businessID;
-    const userId = data?.userId || data?.user?.uid; 
+    const userId = data?.userId || data?.user?.uid;
 
     // Fallback automático si no se envía Idempotency-Key: usar cartId o hash estable del carrito
     if (!idempotencyKey) {
@@ -65,15 +83,30 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
         }
       }
       if (!idempotencyKey) {
-        logger.warn('Missing Idempotency-Key and cannot derive fallback', { traceId });
-        throw new https.HttpsError('invalid-argument', 'Idempotency-Key es requerido');
+        logger.warn('Missing Idempotency-Key and cannot derive fallback', {
+          traceId,
+        });
+        throw new https.HttpsError(
+          'invalid-argument',
+          'Idempotency-Key es requerido',
+        );
       } else {
-        logger.info('Derived Idempotency-Key fallback', { traceId, idempotencyKey });
+        logger.info('Derived Idempotency-Key fallback', {
+          traceId,
+          idempotencyKey,
+        });
       }
     }
     if (!businessId || !userId) {
-      logger.warn('Missing businessId or userId', { traceId, businessId: !!businessId, userId: !!userId });
-      throw new https.HttpsError('invalid-argument', 'businessId y userId son requeridos');
+      logger.warn('Missing businessId or userId', {
+        traceId,
+        businessId: !!businessId,
+        userId: !!userId,
+      });
+      throw new https.HttpsError(
+        'invalid-argument',
+        'businessId y userId son requeridos',
+      );
     }
 
     // Validación de existencia de usuario y pertenencia al negocio (sin Firebase Auth)
@@ -83,30 +116,52 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
       throw new https.HttpsError('invalid-argument', 'Usuario no existe');
     }
     // El campo puede estar en root (businessID) o anidado (user.businessID) según versiones
-    const userBiz = userSnap.get('businessID') || userSnap.get('user.businessID');
+    const userBiz =
+      userSnap.get('businessID') || userSnap.get('user.businessID');
     if (userBiz && userBiz !== businessId) {
-      logger.warn('User-business mismatch', { traceId, userId, userBiz, businessId });
-      throw new https.HttpsError('permission-denied', 'Usuario no pertenece al negocio');
+      logger.warn('User-business mismatch', {
+        traceId,
+        userId,
+        userBiz,
+        businessId,
+      });
+      throw new https.HttpsError(
+        'permission-denied',
+        'Usuario no pertenece al negocio',
+      );
     }
 
     const ncfEnabled = !!(data?.ncf?.enabled || data?.taxReceiptEnabled);
     const ncfType = data?.ncf?.type || data?.ncfType;
     if (ncfEnabled && !ncfType) {
       logger.warn('NCF enabled but type missing', { traceId });
-      throw new https.HttpsError('invalid-argument', 'ncfType es requerido cuando NCF esta habilitado');
+      throw new https.HttpsError(
+        'invalid-argument',
+        'ncfType es requerido cuando NCF esta habilitado',
+      );
     }
 
     const validation = validateInvoiceCart(data?.cart);
     if (!validation?.isValid) {
-      throw new https.HttpsError('failed-precondition', 'Carrito invalido: ' + (validation?.message || 'error'));
+      throw new https.HttpsError(
+        'failed-precondition',
+        'Carrito invalido: ' + (validation?.message || 'error'),
+      );
     }
 
     const isAddedToReceivables = !!data?.cart?.isAddedToReceivables;
     if (isAddedToReceivables) {
       const arData = data?.accountsReceivable || null;
       const totalInstallments = Number(arData?.totalInstallments);
-      if (!arData || !Number.isFinite(totalInstallments) || totalInstallments <= 0) {
-        throw new https.HttpsError('invalid-argument', 'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true');
+      if (
+        !arData ||
+        !Number.isFinite(totalInstallments) ||
+        totalInstallments <= 0
+      ) {
+        throw new https.HttpsError(
+          'invalid-argument',
+          'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true',
+        );
       }
     }
     try {
@@ -114,8 +169,14 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
       const ccSnap = await getOpenCashCountDoc?.(user);
       await checkOpenCashCount({ cashCountSnap: ccSnap, user });
     } catch (error) {
-      logger.warn('Cash count validation failed', { traceId, reason: error?.message ?? error });
-      throw new https.HttpsError('failed-precondition', 'No hay cuadre de caja abierto');
+      logger.warn('Cash count validation failed', {
+        traceId,
+        reason: error?.message ?? error,
+      });
+      throw new https.HttpsError(
+        'failed-precondition',
+        'No hay cuadre de caja abierto',
+      );
     }
 
     const result = await createPendingInvoice({
@@ -125,7 +186,11 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
       idempotencyKey,
     });
 
-    logger.info('createInvoiceV2 completed', { traceId, invoiceId: result.invoiceId, reused: result.alreadyExists });
+    logger.info('createInvoiceV2 completed', {
+      traceId,
+      invoiceId: result.invoiceId,
+      reused: result.alreadyExists,
+    });
     logger.info('data', { traceId, data: { ...data, cart: 'omitted' } });
     logger.info('idempotencyKey', { traceId, idempotencyKey });
     logger.info('result', { traceId, result });
@@ -151,11 +216,15 @@ export const createInvoiceV2 = onCall(async ({data}, context) => {
       errorInfo = { message: String(err) };
     }
     logger.error('Unhandled error in createInvoiceV2', { traceId, errorInfo });
-    throw new https.HttpsError('internal', 'Error interno al iniciar la factura', {
-      traceId,
-      message: errorInfo.message || String(err),
-      stack: errorInfo.stack,
-      name: errorInfo.name,
-    });
+    throw new https.HttpsError(
+      'internal',
+      'Error interno al iniciar la factura',
+      {
+        traceId,
+        message: errorInfo.message || String(err),
+        stack: errorInfo.stack,
+        name: errorInfo.name,
+      },
+    );
   }
 });

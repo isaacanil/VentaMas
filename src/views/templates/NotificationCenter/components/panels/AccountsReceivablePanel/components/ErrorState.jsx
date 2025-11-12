@@ -8,7 +8,9 @@ const ErrorState = ({ title, icon, message }) => (
   <PanelCard>
     <PanelHeader icon={icon} title={title} badgeCount={0} showMeta={false} />
     <StateContainer>
-      <ErrorMessage>{message || 'No se pudieron cargar los datos'}</ErrorMessage>
+      <ErrorMessage>
+        {message || 'No se pudieron cargar los datos'}
+      </ErrorMessage>
     </StateContainer>
   </PanelCard>
 );

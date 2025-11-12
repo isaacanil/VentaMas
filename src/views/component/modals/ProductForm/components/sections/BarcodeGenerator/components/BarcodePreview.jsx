@@ -14,7 +14,7 @@ const PreviewContainer = styled.div`
   border-radius: 8px;
   text-align: center;
   transition: all 0.3s ease;
-  
+
   &:hover {
     border-color: #1890ff;
     background: #f6f8fa;
@@ -60,8 +60,8 @@ const StatusBadge = styled.span`
   display: inline-flex;
   align-items: center;
   padding: 2px 6px;
-  background: ${props => props.valid ? '#f6ffed' : '#fff2e8'};
-  color: ${props => props.valid ? '#52c41a' : '#fa8c16'};
+  background: ${(props) => (props.valid ? '#f6ffed' : '#fff2e8')};
+  color: ${(props) => (props.valid ? '#52c41a' : '#fa8c16')};
   border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
@@ -88,49 +88,77 @@ const PreviewText = styled.div`
 // Exportar los styled-components para usar en otros componentes
 export { PreviewContainer, PreviewText };
 
-export const BarcodePreview = ({ 
-  autoMode, 
-  selectedConfig, 
+export const BarcodePreview = ({
+  autoMode,
+  selectedConfig,
   livePreview,
   currentBarcode,
   realtimeStatus = {},
   barcodeAnalysis = null,
-  isInternalMode = false
+  isInternalMode = false,
 }) => {
-  const showPreview = livePreview || (autoMode && (selectedConfig?.companyPrefix || isInternalMode));
+  const showPreview =
+    livePreview ||
+    (autoMode && (selectedConfig?.companyPrefix || isInternalMode));
   const { isUpdating, hasRealtimeData, hasManualChanges } = realtimeStatus;
-  
+
   return (
     <div>
       {/* Mostrar código actual si existe */}
       {currentBarcode && (
         <>
-          <Form.Item 
+          <Form.Item
             label={
               <Space>
                 Código Actual
                 {hasRealtimeData && (
                   <Text type="secondary" style={{ fontSize: '11px' }}>
-                
-                    {isUpdating && <span style={{ color: '#1890ff' }}> (Actualizando...)</span>}
-                    {hasManualChanges && <span style={{ color: '#fa8c16' }}> • Cambio manual</span>}
+                    {isUpdating && (
+                      <span style={{ color: '#1890ff' }}>
+                        {' '}
+                        (Actualizando...)
+                      </span>
+                    )}
+                    {hasManualChanges && (
+                      <span style={{ color: '#fa8c16' }}> • Cambio manual</span>
+                    )}
                   </Text>
                 )}
               </Space>
-            } 
+            }
             style={{ marginBottom: 16 }}
           >
-            <CurrentCodeContainer style={{ 
-              borderColor: hasManualChanges ? '#fa8c16' : isUpdating ? '#1890ff' : '#ffd666',
-              background: hasManualChanges ? '#fff7e6' : isUpdating ? '#f0f8ff' : '#fff7e6'
-            }}>
-              <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                <Text style={{ 
-                  fontFamily: 'monospace', 
-                  fontSize: '16px', 
-                  fontWeight: 'bold',
-                  color: hasManualChanges ? '#fa8c16' : isUpdating ? '#1890ff' : 'inherit'
-                }}>
+            <CurrentCodeContainer
+              style={{
+                borderColor: hasManualChanges
+                  ? '#fa8c16'
+                  : isUpdating
+                    ? '#1890ff'
+                    : '#ffd666',
+                background: hasManualChanges
+                  ? '#fff7e6'
+                  : isUpdating
+                    ? '#f0f8ff'
+                    : '#fff7e6',
+              }}
+            >
+              <Space
+                direction="vertical"
+                align="center"
+                style={{ width: '100%' }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: hasManualChanges
+                      ? '#fa8c16'
+                      : isUpdating
+                        ? '#1890ff'
+                        : 'inherit',
+                  }}
+                >
                   {currentBarcode}
                 </Text>
                 <Barcode
@@ -169,7 +197,9 @@ export const BarcodePreview = ({
                 <InfoLabel>Estado:</InfoLabel>
                 <InfoValue>
                   <StatusBadge valid={barcodeAnalysis.checkDigit?.isValid}>
-                    {barcodeAnalysis.checkDigit?.isValid ? 'Válido' : 'Requiere revisión'}
+                    {barcodeAnalysis.checkDigit?.isValid
+                      ? 'Válido'
+                      : 'Requiere revisión'}
                   </StatusBadge>
                 </InfoValue>
 
@@ -187,25 +217,38 @@ export const BarcodePreview = ({
                 <InfoValue>{currentBarcode.length} dígitos</InfoValue>
 
                 {/* Detalles de estructura para códigos GS1 RD o internos */}
-                {barcodeAnalysis.structure && (isGS1RDCode(currentBarcode) || isInternalMode) && (
-                  <>
-                    <InfoLabel>{isInternalMode ? 'Categoría/Depto:' : 'Prefijo empresa:'}</InfoLabel>
-                    <InfoValue>{barcodeAnalysis.structure.companyPrefix || 'N/A'}</InfoValue>
+                {barcodeAnalysis.structure &&
+                  (isGS1RDCode(currentBarcode) || isInternalMode) && (
+                    <>
+                      <InfoLabel>
+                        {isInternalMode
+                          ? 'Categoría/Depto:'
+                          : 'Prefijo empresa:'}
+                      </InfoLabel>
+                      <InfoValue>
+                        {barcodeAnalysis.structure.companyPrefix || 'N/A'}
+                      </InfoValue>
 
-                    <InfoLabel>Referencia:</InfoLabel>
-                    <InfoValue>{barcodeAnalysis.structure.itemReference}</InfoValue>
+                      <InfoLabel>Referencia:</InfoLabel>
+                      <InfoValue>
+                        {barcodeAnalysis.structure.itemReference}
+                      </InfoValue>
 
-                    <InfoLabel>Dígito verificador:</InfoLabel>
-                    <InfoValue>{barcodeAnalysis.structure.checkDigit}</InfoValue>
-                  </>
-                )}
+                      <InfoLabel>Dígito verificador:</InfoLabel>
+                      <InfoValue>
+                        {barcodeAnalysis.structure.checkDigit}
+                      </InfoValue>
+                    </>
+                  )}
 
                 {/* Indicador de modo interno */}
                 {isInternalMode && (
                   <>
                     <InfoLabel>Modo:</InfoLabel>
                     <InfoValue>
-                      <Tag color="orange" size="small">USO INTERNO</Tag>
+                      <Tag color="orange" size="small">
+                        USO INTERNO
+                      </Tag>
                     </InfoValue>
                   </>
                 )}

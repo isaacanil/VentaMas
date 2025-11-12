@@ -1,5 +1,5 @@
-import * as antd from "antd";
-import React from 'react'
+import * as antd from 'antd';
+import React from 'react';
 import styled from 'styled-components';
 
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
@@ -7,18 +7,15 @@ import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 const { Table } = antd;
 
 const Products = ({ products }) => {
-    return (
-        <div>
-            <StyledTitle>Productos</StyledTitle>
-            <ProductTable
-                products={products}
+  return (
+    <div>
+      <StyledTitle>Productos</StyledTitle>
+      <ProductTable products={products} />
+    </div>
+  );
+};
 
-            />
-        </div>
-    )
-}
-
-export default Products
+export default Products;
 
 const StyledTitle = styled.h2`
   font-weight: 600;
@@ -27,42 +24,40 @@ const StyledTitle = styled.h2`
 `;
 
 const ProductTable = ({ products }) => {
-    const columns = [
-        {
-            title: 'Descripción',
-            dataIndex: 'name',
-            key: 'name',
-            render: text => text ?? 'Producto Desconocido',
-        },
-        {
-            title: 'Cantidad',
-            dataIndex: 'amountToBuy',
-            key: 'amountToBuy',
-            render: text => text ?? 'N/A',
-        },
-        {
-            title: 'Precio Unitario',
-            dataIndex: ['pricing', 'price'],
-            key: 'unitPrice',
-            render: price => useFormatPrice(price) ?? 'N/A',
-        },
-        {
-            title: 'Total',
-            dataIndex: ['pricing', 'price'],
-            key: 'total',
-            render: (_, record) => useFormatPrice(record.pricing.price * record.amountToBuy) ?? 'N/A',
-        },
-        // Agrega aquí más columnas si necesitas
-    ];
+  const columns = [
+    {
+      title: 'Descripción',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => text ?? 'Producto Desconocido',
+    },
+    {
+      title: 'Cantidad',
+      dataIndex: 'amountToBuy',
+      key: 'amountToBuy',
+      render: (text) => text ?? 'N/A',
+    },
+    {
+      title: 'Precio Unitario',
+      dataIndex: ['pricing', 'price'],
+      key: 'unitPrice',
+      render: (price) => useFormatPrice(price) ?? 'N/A',
+    },
+    {
+      title: 'Total',
+      dataIndex: ['pricing', 'price'],
+      key: 'total',
+      render: (_, record) =>
+        useFormatPrice(record.pricing.price * record.amountToBuy) ?? 'N/A',
+    },
+    // Agrega aquí más columnas si necesitas
+  ];
 
-    // Transformar datos de productos para cumplir con la estructura esperada por Ant Design Table
-    const dataSource = products.map((product, index) => ({
-        key: index, 
-        ...product,
-    }));
+  // Transformar datos de productos para cumplir con la estructura esperada por Ant Design Table
+  const dataSource = products.map((product, index) => ({
+    key: index,
+    ...product,
+  }));
 
-    return <Table
-        size='small'
-        columns={columns}
-        dataSource={dataSource} />;
+  return <Table size="small" columns={columns} dataSource={dataSource} />;
 };

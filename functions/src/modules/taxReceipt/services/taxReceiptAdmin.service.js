@@ -1,7 +1,7 @@
-import { https, logger } from "firebase-functions";
-import { nanoid } from "nanoid";
+import { https, logger } from 'firebase-functions';
+import { nanoid } from 'nanoid';
 
-import { db, serverTimestamp } from "../../../core/config/firebase.js";
+import { db, serverTimestamp } from '../../../core/config/firebase.js';
 /**
  * Incrementa una secuencia de números según un valor específico
  * @param {string} sequence - Secuencia actual
@@ -15,7 +15,7 @@ export const increaseSequence = (sequence, increase, maxChars = 10) => {
   let result = base + inc;
 
   return result.toString().slice(-maxChars).padStart(maxChars, '0');
-}
+};
 
 /**
  * Genera un código NCF a partir de los datos del recibo fiscal
@@ -24,19 +24,23 @@ export const increaseSequence = (sequence, increase, maxChars = 10) => {
  */
 export const generateNCFCode = (receiptData) => {
   if (!receiptData || typeof receiptData !== 'object') {
-    throw new https.HttpsError('invalid-argument', 'Datos del recibo inválidos');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'Datos del recibo inválidos',
+    );
   }
   const { type, serie, sequence, increase, quantity } = receiptData;
 
   if (
-    !type || !serie ||
+    !type ||
+    !serie ||
     isNaN(Number(sequence)) ||
     isNaN(Number(increase)) ||
     isNaN(Number(quantity))
   ) {
     throw new https.HttpsError(
       'invalid-argument',
-      'Faltan o son inválidos: type, serie, sequence, increase o quantity'
+      'Faltan o son inválidos: type, serie, sequence, increase o quantity',
     );
   }
 
@@ -46,7 +50,7 @@ export const generateNCFCode = (receiptData) => {
   if (qtyBefore < incValue) {
     throw new https.HttpsError(
       'failed-precondition',
-      `Cantidad insuficiente para generar NCF: disponible ${qtyBefore}, requerido ${incValue}`
+      `Cantidad insuficiente para generar NCF: disponible ${qtyBefore}, requerido ${incValue}`,
     );
   }
 
@@ -58,10 +62,10 @@ export const generateNCFCode = (receiptData) => {
     ...receiptData,
     sequence: newSequence,
     quantity: newQuantity,
-  }
+  };
 
   return { updatedData, ncfCode };
-}
+};
 
 /**
  * Obtiene y actualiza un recibo fiscal según el nombre
@@ -69,15 +73,18 @@ export const generateNCFCode = (receiptData) => {
  * @param {string} taxReceiptName - Nombre del tipo de comprobante fiscal
  * @returns {Promise<string|null>} Código NCF generado o null
  */
-export async function getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxReceiptName, taxReceiptSnap }) {
+export async function getAndUpdateTaxReceipt(
+  tx,
+  { user, taxReceiptEnabled, taxReceiptName, taxReceiptSnap },
+) {
   if (!user?.businessID || !user?.uid || !taxReceiptName) {
     throw new https.HttpsError(
       'invalid-argument',
-      'Parámetros inválidos en getAndUpdateTaxReceiptTransactional'
+      'Parámetros inválidos en getAndUpdateTaxReceiptTransactional',
     );
   }
   if (!taxReceiptEnabled) {
-    logger.warn("Recibo fiscal no habilitado", { uid: user.uid });
+    logger.warn('Recibo fiscal no habilitado', { uid: user.uid });
     return null;
   }
 
@@ -104,15 +111,19 @@ export async function getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxR
   const type = taxReceipt.type;
   const serie = taxReceipt.serie;
   const baseSequence = taxReceipt.sequence; // string
-  const inc = taxReceipt.increase;          // number (or numeric string)
+  const inc = taxReceipt.increase; // number (or numeric string)
   const qtyBefore = BigInt(taxReceipt.quantity);
   const incValue = BigInt(inc);
 
   if (qtyBefore < incValue) {
-    throw new https.HttpsError('failed-precondition', `Cantidad insuficiente para generar NCF`);
+    throw new https.HttpsError(
+      'failed-precondition',
+      `Cantidad insuficiente para generar NCF`,
+    );
   }
 
-  const padSeq = (seqStr, max = 10) => seqStr.toString().slice(-max).padStart(max, '0');
+  const padSeq = (seqStr, max = 10) =>
+    seqStr.toString().slice(-max).padStart(max, '0');
   const computeSeq = (baseSeqStr, increase, steps, max = 10) => {
     const base = BigInt(baseSeqStr);
     const stepInc = BigInt(increase) * BigInt(steps);
@@ -136,7 +147,10 @@ export async function getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxR
   }
 
   if (!candidateNCF || !chosenSeq) {
-    throw new https.HttpsError('failed-precondition', 'No se pudo encontrar un NCF no duplicado antes de agotar los intentos');
+    throw new https.HttpsError(
+      'failed-precondition',
+      'No se pudo encontrar un NCF no duplicado antes de agotar los intentos',
+    );
   }
 
   // Only decrement quantity ONCE (for the final selected NCF), even if we skipped duplicates
@@ -147,7 +161,8 @@ export async function getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxR
   };
 
   const usageId = nanoid();
-  const usageRef = db.collection('businesses')
+  const usageRef = db
+    .collection('businesses')
     .doc(businessId)
     .collection('ncfUsage')
     .doc(usageId);
@@ -162,10 +177,15 @@ export async function getAndUpdateTaxReceipt(tx, { user, taxReceiptEnabled, taxR
     taxReceiptName,
     generatedAt: serverTimestamp(),
     userId: user.uid,
-    status: 'pending' // Puede ser 'pending', 'used', 'voided'
+    status: 'pending', // Puede ser 'pending', 'used', 'voided'
   });
 
-  logger.info("Tax receipt code generated", { ncfCode: candidateNCF, usageId, businessId, userId: user.uid });
+  logger.info('Tax receipt code generated', {
+    ncfCode: candidateNCF,
+    usageId,
+    businessId,
+    userId: user.uid,
+  });
 
   return candidateNCF;
 }

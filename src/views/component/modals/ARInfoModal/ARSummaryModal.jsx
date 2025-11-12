@@ -1,5 +1,5 @@
 // ARSummaryModal.js
-import { DownloadOutlined, CalendarOutlined } from "@ant-design/icons";
+import { DownloadOutlined, CalendarOutlined } from '@ant-design/icons';
 import {
   Modal,
   Card,
@@ -13,12 +13,12 @@ import {
   Spin,
   Alert,
   Space,
-} from "antd";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styled from "styled-components";
+} from 'antd';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
 import {
   fetchAccountReceivableDetails,
@@ -27,9 +27,9 @@ import {
   selectARError,
   resetAR,
   selectARDetailsModal,
-  setARDetailsModal
+  setARDetailsModal,
 } from '../../../../features/accountsReceivable/accountsReceivableSlice'; // Ajusta la ruta según tu estructura
-import { selectUser } from "../../../../features/auth/userSlice";
+import { selectUser } from '../../../../features/auth/userSlice';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -61,7 +61,6 @@ const StyledDescriptions = styled.div`
 `;
 
 const StyledInvoiceInfo = styled(StyledDescriptions)`
- 
   background: #f0f5ff;
 `;
 
@@ -74,9 +73,10 @@ const StyledSummaryContainer = styled.div`
 
 const InfoCard = styled.div`
   padding: 16px;
-  background: ${props => props.variant === 'invoice' ? '#f0f5ff' : '#fafafa'};
+  background: ${(props) =>
+    props.variant === 'invoice' ? '#f0f5ff' : '#fafafa'};
   border-radius: 8px;
-  
+
   .header {
     display: flex;
     justify-content: space-between;
@@ -92,13 +92,13 @@ const InfoCard = styled.div`
   .info-item {
     display: flex;
     flex-direction: column;
-    
+
     .label {
       color: #666;
       font-size: 12px;
       margin-bottom: 4px;
     }
-    
+
     .value {
       font-size: 14px;
       font-weight: 500;
@@ -107,7 +107,8 @@ const InfoCard = styled.div`
 `;
 
 const StatusTag = styled.span`
-  color: ${props => props.isPaid ? '#52c41a' : props.isLate ? '#f5222d' : '#1890ff'};
+  color: ${(props) =>
+    props.isPaid ? '#52c41a' : props.isLate ? '#f5222d' : '#1890ff'};
   font-size: 12px;
   margin-left: 8px;
 `;
@@ -116,12 +117,12 @@ const InfoValue = styled.span`
   display: flex;
   align-items: baseline;
   gap: 4px;
-  
+
   .amount {
     font-size: 16px;
     font-weight: 600;
   }
-  
+
   .label {
     font-size: 12px;
     color: #8c8c8c;
@@ -137,33 +138,33 @@ export default function ARSummaryModal() {
   const error = useSelector(selectARError);
   const user = useSelector(selectUser);
 
-  const [activeTab, setActiveTab] = useState("summary");
+  const [activeTab, setActiveTab] = useState('summary');
 
   // Funciones auxiliares seguras
   const formatCurrency = (value) => {
-    return typeof value === 'number' ? `$${value.toFixed(2)}` : "N/A";
+    return typeof value === 'number' ? `$${value.toFixed(2)}` : 'N/A';
   };
 
   // Actualizar formatDate para manejar timestamps de Firestore
   const formatDate = (timestamp) => {
-    if (!timestamp) return "N/A";
+    if (!timestamp) return 'N/A';
     try {
       // Si es timestamp de Firestore
       if (timestamp?.seconds) {
-        return new Date(timestamp.seconds * 1000).toLocaleDateString("es-ES", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
+        return new Date(timestamp.seconds * 1000).toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
         });
       }
       // Si es timestamp normal
-      return new Date(timestamp).toLocaleDateString("es-ES", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+      return new Date(timestamp).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
     } catch {
-      return "N/A";
+      return 'N/A';
     }
   };
 
@@ -176,32 +177,32 @@ export default function ARSummaryModal() {
   // Configuración segura de columnas
   const installmentsColumns = [
     {
-      title: "Nº Cuota",
-      dataIndex: "index",
-      render: (_, __, index) => (index + 1).toString()
+      title: 'Nº Cuota',
+      dataIndex: 'index',
+      render: (_, __, index) => (index + 1).toString(),
     },
     {
-      title: "Fecha de Vencimiento",
-      dataIndex: "installmentDate",
-      render: (date) => formatDate(date)
+      title: 'Fecha de Vencimiento',
+      dataIndex: 'installmentDate',
+      render: (date) => formatDate(date),
     },
     {
-      title: "Monto",
-      dataIndex: "installmentAmount",
-      render: (amount) => formatCurrency(amount)
+      title: 'Monto',
+      dataIndex: 'installmentAmount',
+      render: (amount) => formatCurrency(amount),
     },
     {
-      title: "Saldo",
-      dataIndex: "installmentBalance",
-      render: (balance) => formatCurrency(balance)
+      title: 'Saldo',
+      dataIndex: 'installmentBalance',
+      render: (balance) => formatCurrency(balance),
     },
     {
-      title: "Estado",
-      dataIndex: "isActive",
+      title: 'Estado',
+      dataIndex: 'isActive',
       render: (isActive) => (
         <Badge
-          status={isActive ? "processing" : "default"}
-          text={isActive ? "Activa" : "Pagada"}
+          status={isActive ? 'processing' : 'default'}
+          text={isActive ? 'Activa' : 'Pagada'}
         />
       ),
     },
@@ -210,45 +211,50 @@ export default function ARSummaryModal() {
   // Añadir configuración de columnas para la tabla de pagos
   const paymentsColumns = [
     {
-      title: "Fecha",
-      dataIndex: "createdAt",
+      title: 'Fecha',
+      dataIndex: 'createdAt',
       render: (date) => formatDate(date),
     },
     {
-      title: "Cuota",
-      dataIndex: "installmentNumber",
+      title: 'Cuota',
+      dataIndex: 'installmentNumber',
     },
     {
-      title: "Monto",
-      dataIndex: "amount",
-      render: (_, record) => formatCurrency(record.paymentDetails?.totalPaid || record.paymentAmount),
+      title: 'Monto',
+      dataIndex: 'amount',
+      render: (_, record) =>
+        formatCurrency(
+          record.paymentDetails?.totalPaid || record.paymentAmount,
+        ),
     },
     {
-      title: "Método de Pago",
-      dataIndex: "paymentMethods",
+      title: 'Método de Pago',
+      dataIndex: 'paymentMethods',
       render: (_, record) => {
         const methods = record.paymentDetails?.paymentMethods || [];
         return methods
-          .filter(m => m.status && m.value > 0)
-          .map(m => `${m.method}: ${formatCurrency(m.value)}`)
+          .filter((m) => m.status && m.value > 0)
+          .map((m) => `${m.method}: ${formatCurrency(m.value)}`)
           .join(', ');
       },
     },
     {
-      title: "Usuario",
-      dataIndex: "user",
+      title: 'Usuario',
+      dataIndex: 'user',
       render: (_, record) => record.user?.displayName || record.createdBy,
     },
     {
-      title: "Comentarios",
-      dataIndex: "comments",
+      title: 'Comentarios',
+      dataIndex: 'comments',
       ellipsis: true,
     },
   ];
 
   useEffect(() => {
     if (user?.businessID && arId) {
-      dispatch(fetchAccountReceivableDetails({ arId, businessID: user.businessID }));
+      dispatch(
+        fetchAccountReceivableDetails({ arId, businessID: user.businessID }),
+      );
     }
   }, [arId, user]);
 
@@ -265,7 +271,7 @@ export default function ARSummaryModal() {
     return (
       <StyledDescriptions>
         <Title level={5}>Información del Cliente</Title>
-     
+
         <div className="info-row">
           <span className="info-label">Teléfono:</span>
           <span className="info-value">
@@ -275,12 +281,9 @@ export default function ARSummaryModal() {
         </div>
         <div className="info-row">
           <span className="info-label">RNC/Cédula:</span>
-          <span className="info-value">
-            {data.client.personalID}
-          
-          </span>
+          <span className="info-value">{data.client.personalID}</span>
         </div>
-        
+
         <div className="info-row">
           <span className="info-label">Dirección:</span>
           <span className="info-value">{data.client.address}</span>
@@ -317,13 +320,16 @@ export default function ARSummaryModal() {
         </div>
         <div className="info-row">
           <span className="info-label">Total:</span>
-          <span className="info-value">{formatCurrency(data.invoice.totalPurchase?.value)}</span>
+          <span className="info-value">
+            {formatCurrency(data.invoice.totalPurchase?.value)}
+          </span>
         </div>
         <div className="info-row">
           <span className="info-label">Items:</span>
-          <span className="info-value">{data.invoice.totalShoppingItems?.value}</span>
+          <span className="info-value">
+            {data.invoice.totalShoppingItems?.value}
+          </span>
         </div>
-
       </StyledInvoiceInfo>
     );
   };
@@ -333,13 +339,14 @@ export default function ARSummaryModal() {
     if (!data?.installments || !data?.ar) return { date: null, status: 'N/A' };
 
     // Ordenar instalments por fecha
-    const sortedInstallments = [...data.installments].sort((a, b) =>
-      (a.installmentDate?.seconds || 0) - (b.installmentDate?.seconds || 0)
+    const sortedInstallments = [...data.installments].sort(
+      (a, b) =>
+        (a.installmentDate?.seconds || 0) - (b.installmentDate?.seconds || 0),
     );
 
     // Encontrar la próxima cuota pendiente
-    const nextPendingInstallment = sortedInstallments.find(inst =>
-      inst.installmentBalance > 0
+    const nextPendingInstallment = sortedInstallments.find(
+      (inst) => inst.installmentBalance > 0,
     );
 
     // Si no hay cuotas pendientes
@@ -349,11 +356,13 @@ export default function ARSummaryModal() {
         isPaid: true,
         isLate: false,
         status: 'COMPLETADO',
-        installmentNumber: null
+        installmentNumber: null,
       };
     }
 
-    const nextPaymentDate = new Date(nextPendingInstallment.installmentDate.seconds * 1000);
+    const nextPaymentDate = new Date(
+      nextPendingInstallment.installmentDate.seconds * 1000,
+    );
     const today = new Date();
     const isLate = nextPaymentDate < today;
 
@@ -361,17 +370,18 @@ export default function ARSummaryModal() {
       date: nextPaymentDate,
       isPaid: false,
       isLate,
-    
+
       status: isLate ? 'ATRASADO' : 'PENDIENTE',
       installmentNumber: nextPendingInstallment.installmentNumber,
-      amount: nextPendingInstallment.installmentAmount
+      amount: nextPendingInstallment.installmentAmount,
     };
   };
 
   const renderSummaryInfo = () => {
     const nextPayment = getNextPaymentInfo();
     const totalAmount = data?.ar?.totalReceivable || 0;
-    const initialPaidAmount = data.invoice.totalPurchase?.value - data.ar.totalReceivable;
+    const initialPaidAmount =
+      data.invoice.totalPurchase?.value - data.ar.totalReceivable;
     const remainingAmount = data?.ar?.arBalance || 0;
     const paidAmount = totalAmount - remainingAmount;
 
@@ -383,11 +393,12 @@ export default function ARSummaryModal() {
             <Progress type="circle" percent={calculateProgress()} width={40} />
           </div>
           <div className="content">
-          <div className="info-item">
+            <div className="info-item">
               <span className="label">Monto Inicial</span>
               <InfoValue>
-                <span className="amount">{formatCurrency(initialPaidAmount)}</span>
-           
+                <span className="amount">
+                  {formatCurrency(initialPaidAmount)}
+                </span>
               </InfoValue>
             </div>
             <div className="info-item">
@@ -399,7 +410,9 @@ export default function ARSummaryModal() {
             <div className="info-item">
               <span className="label">Balance Actual</span>
               <InfoValue>
-                <span className="amount">{formatCurrency(remainingAmount)}</span>
+                <span className="amount">
+                  {formatCurrency(remainingAmount)}
+                </span>
                 {paidAmount > 0 && (
                   <span className="label">
                     (Pagado: {formatCurrency(paidAmount)})
@@ -418,11 +431,15 @@ export default function ARSummaryModal() {
           <div className="content">
             <div className="info-item">
               <span className="label">Frecuencia</span>
-              <span className="value">{data?.ar?.paymentFrequency || 'N/A'}</span>
+              <span className="value">
+                {data?.ar?.paymentFrequency || 'N/A'}
+              </span>
             </div>
             <div className="info-item">
               <span className="label">
-                {nextPayment.status === 'COMPLETADO' ? 'Estado' : 'Próximo Pago'}
+                {nextPayment.status === 'COMPLETADO'
+                  ? 'Estado'
+                  : 'Próximo Pago'}
               </span>
               <span className="value">
                 {nextPayment.date ? (
@@ -441,16 +458,16 @@ export default function ARSummaryModal() {
                     </StatusTag>
                   </>
                 ) : (
-                  <StatusTag isPaid={true}>
-                    {nextPayment.status}
-                  </StatusTag>
+                  <StatusTag isPaid={true}>{nextPayment.status}</StatusTag>
                 )}
               </span>
             </div>
             {nextPayment.amount && (
               <div className="info-item">
                 <span className="label">Monto de Cuota</span>
-                <span className="value">{formatCurrency(nextPayment.amount)}</span>
+                <span className="value">
+                  {formatCurrency(nextPayment.amount)}
+                </span>
               </div>
             )}
           </div>
@@ -473,13 +490,13 @@ export default function ARSummaryModal() {
 
     // Título
     doc.setFontSize(16);
-    addText("Resumen de Cuenta por Cobrar");
+    addText('Resumen de Cuenta por Cobrar');
     yPos += 5;
 
     // Información del Cliente
     doc.setFontSize(12);
     doc.setTextColor(100);
-    addText("Información del Cliente");
+    addText('Información del Cliente');
     doc.setTextColor(0);
     doc.setFontSize(10);
     addText(`Nombre: ${data?.client?.name || 'N/A'}`, indent);
@@ -491,24 +508,36 @@ export default function ARSummaryModal() {
     // Información de la Factura
     doc.setFontSize(12);
     doc.setTextColor(100);
-    addText("Información de la Factura");
+    addText('Información de la Factura');
     doc.setTextColor(0);
     doc.setFontSize(10);
     addText(`Número: #${data?.invoice?.numberID || 'N/A'}`, indent);
     addText(`NCF: ${data?.invoice?.NCF || 'N/A'}`, indent);
     addText(`Fecha: ${formatDate(data?.invoice?.date)}`, indent);
-    addText(`Total: ${formatCurrency(data?.invoice?.totalPurchase?.value)}`, indent);
+    addText(
+      `Total: ${formatCurrency(data?.invoice?.totalPurchase?.value)}`,
+      indent,
+    );
     yPos += 5;
 
     // Información de la Cuenta
     doc.setFontSize(12);
     doc.setTextColor(100);
-    addText("Detalles de la Cuenta");
+    addText('Detalles de la Cuenta');
     doc.setTextColor(0);
     doc.setFontSize(10);
-    addText(`Total por Cobrar: ${formatCurrency(data?.ar?.totalReceivable)}`, indent);
-    addText(`Saldo Actual: ${formatCurrency(data?.ar?.currentBalance)}`, indent);
-    addText(`Frecuencia de Pago: ${data?.ar?.paymentFrequency || 'N/A'}`, indent);
+    addText(
+      `Total por Cobrar: ${formatCurrency(data?.ar?.totalReceivable)}`,
+      indent,
+    );
+    addText(
+      `Saldo Actual: ${formatCurrency(data?.ar?.currentBalance)}`,
+      indent,
+    );
+    addText(
+      `Frecuencia de Pago: ${data?.ar?.paymentFrequency || 'N/A'}`,
+      indent,
+    );
     addText(`Próximo Pago: ${formatDate(data?.ar?.paymentDate)}`, indent);
     yPos += 5;
 
@@ -516,37 +545,41 @@ export default function ARSummaryModal() {
     doc.autoTable({
       startY: yPos,
       head: [['Nº', 'Vencimiento', 'Monto', 'Saldo', 'Estado']],
-      body: data?.installments?.map((item, index) => [
-        index + 1,
-        formatDate(item.installmentDate),
-        formatCurrency(item.installmentAmount),
-        formatCurrency(item.installmentBalance),
-        item.isActive ? 'Activa' : 'Pagada'
-      ]) || [],
+      body:
+        data?.installments?.map((item, index) => [
+          index + 1,
+          formatDate(item.installmentDate),
+          formatCurrency(item.installmentAmount),
+          formatCurrency(item.installmentBalance),
+          item.isActive ? 'Activa' : 'Pagada',
+        ]) || [],
       theme: 'striped',
       headStyles: { fillColor: [71, 85, 105] },
       styles: { fontSize: 8 },
-      margin: { top: 15, right: margin, left: margin }
+      margin: { top: 15, right: margin, left: margin },
     });
 
     // Tabla de Pagos
     doc.autoTable({
       startY: doc.lastAutoTable.finalY + 10,
       head: [['Fecha', 'Cuota', 'Monto', 'Método de Pago', 'Usuario']],
-      body: data?.payments?.map(payment => [
-        formatDate(payment.createdAt),
-        payment.installmentNumber,
-        formatCurrency(payment.paymentDetails?.totalPaid || payment.paymentAmount),
-        payment.paymentDetails?.paymentMethods
-          ?.filter(m => m.status && m.value > 0)
-          .map(m => `${m.method}: ${formatCurrency(m.value)}`)
-          .join(', '),
-        payment.user?.displayName || payment.createdBy
-      ]) || [],
+      body:
+        data?.payments?.map((payment) => [
+          formatDate(payment.createdAt),
+          payment.installmentNumber,
+          formatCurrency(
+            payment.paymentDetails?.totalPaid || payment.paymentAmount,
+          ),
+          payment.paymentDetails?.paymentMethods
+            ?.filter((m) => m.status && m.value > 0)
+            .map((m) => `${m.method}: ${formatCurrency(m.value)}`)
+            .join(', '),
+          payment.user?.displayName || payment.createdBy,
+        ]) || [],
       theme: 'striped',
       headStyles: { fillColor: [71, 85, 105] },
       styles: { fontSize: 8 },
-      margin: { top: 15, right: margin, left: margin }
+      margin: { top: 15, right: margin, left: margin },
     });
 
     // Pie de página
@@ -559,28 +592,33 @@ export default function ARSummaryModal() {
         `Página ${i} de ${pageCount}`,
         doc.internal.pageSize.width / 2,
         doc.internal.pageSize.height - 10,
-        { align: 'center' }
+        { align: 'center' },
       );
     }
 
-    doc.save(`CxC_${data?.client?.name || 'Cliente'}_${data?.invoice?.numberID || 'NA'}.pdf`);
+    doc.save(
+      `CxC_${data?.client?.name || 'Cliente'}_${data?.invoice?.numberID || 'NA'}.pdf`,
+    );
   };
 
   // Modificar la tabla de cuotas para ordenarlas por fecha
   const sortedInstallments = React.useMemo(() => {
     if (!data?.installments) return [];
 
-    return [...data.installments].sort((a, b) =>
-      (a.installmentDate?.seconds || 0) - (b.installmentDate?.seconds || 0)
-    ).map((item, index) => ({
-      key: item?.id || index,
-      installmentDate: item?.installmentDate?.seconds * 1000,
-      installmentAmount: item?.installmentAmount,
-      installmentBalance: item?.installmentBalance,
-      isActive: item?.isActive,
-      payments: item?.payments || []
-    }));
-}, [data?.installments]);
+    return [...data.installments]
+      .sort(
+        (a, b) =>
+          (a.installmentDate?.seconds || 0) - (b.installmentDate?.seconds || 0),
+      )
+      .map((item, index) => ({
+        key: item?.id || index,
+        installmentDate: item?.installmentDate?.seconds * 1000,
+        installmentAmount: item?.installmentAmount,
+        installmentBalance: item?.installmentBalance,
+        isActive: item?.isActive,
+        payments: item?.payments || [],
+      }));
+  }, [data?.installments]);
 
   return (
     <>
@@ -603,19 +641,19 @@ export default function ARSummaryModal() {
               <Space>
                 {data?.client?.name || 'Cliente no disponible'}
                 <Badge
-                  status={data?.ar?.isActive ? "success" : "error"}
-                  text={data?.ar?.isActive ? "Activa" : "Inactiva"}
+                  status={data?.ar?.isActive ? 'success' : 'error'}
+                  text={data?.ar?.isActive ? 'Activa' : 'Inactiva'}
                 />
               </Space>
             }
           >
             <Tabs activeKey={activeTab} onChange={setActiveTab}>
               <TabPane tab="Resumen" key="summary">
-              <InfoGrid>
+                <InfoGrid>
                   {renderClientInfo()}
                   {renderInvoiceInfo()}
                 </InfoGrid>
-           
+
                 {renderSummaryInfo()}
               </TabPane>
               <TabPane tab="Cuotas" key="installments">
@@ -628,10 +666,12 @@ export default function ARSummaryModal() {
               <TabPane tab="Pagos" key="payments">
                 <Table
                   columns={paymentsColumns}
-                  dataSource={data?.payments?.map(payment => ({
-                    key: payment.id || payment.paymentId,
-                    ...payment,
-                  })) || []}
+                  dataSource={
+                    data?.payments?.map((payment) => ({
+                      key: payment.id || payment.paymentId,
+                      ...payment,
+                    })) || []
+                  }
                   pagination={false}
                   scroll={{ x: 'max-content' }}
                 />
@@ -646,7 +686,14 @@ export default function ARSummaryModal() {
             showIcon
           />
         )}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '8px',
+            marginTop: '16px',
+          }}
+        >
           {/* <Tooltip title="Imprimir resumen">
             <Button icon={<PrinterOutlined />} onClick={() => window.print()} />
           </Tooltip> */}

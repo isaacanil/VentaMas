@@ -10,19 +10,35 @@ import { setBillingSettings } from '../../../../../firebase/billing/billingSetti
 import { ROUTES } from '../../../../../routes/routesName';
 
 const AVAILABLE_MODULES = [
-  { key: 'invoices', label: 'Facturación', description: 'Requiere autorización para editar facturas y aplicar descuentos' },
-  { key: 'accountsReceivable', label: 'Cuadre de Caja', description: 'Requiere autorización para apertura y cierre de caja' },
+  {
+    key: 'invoices',
+    label: 'Facturación',
+    description:
+      'Requiere autorización para editar facturas y aplicar descuentos',
+  },
+  {
+    key: 'accountsReceivable',
+    label: 'Cuadre de Caja',
+    description: 'Requiere autorización para apertura y cierre de caja',
+  },
 ];
 
-const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-overview' }) => {
+const AuthorizationFlowSettingsSection = ({
+  sectionId = 'authorization-flow-overview',
+}) => {
   const user = useSelector(selectUser);
   const settings = useSelector(SelectSettingCart) || {};
-  const authorizationFlowEnabled = !!settings?.billing?.authorizationFlowEnabled;
+  const authorizationFlowEnabled =
+    !!settings?.billing?.authorizationFlowEnabled;
 
-  const rawEnabledModules = settings?.billing?.enabledAuthorizationModules || {};
+  const rawEnabledModules =
+    settings?.billing?.enabledAuthorizationModules || {};
   const enabledModules = {
     invoices: rawEnabledModules.invoices ?? true,
-    accountsReceivable: rawEnabledModules.accountsReceivable ?? rawEnabledModules.cashRegister ?? true,
+    accountsReceivable:
+      rawEnabledModules.accountsReceivable ??
+      rawEnabledModules.cashRegister ??
+      true,
   };
   const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
@@ -30,7 +46,9 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
 
   const handleToggle = async (nextValue) => {
     if (!user?.businessID) {
-      messageApi.error('No se pudo actualizar la configuración de autorizaciones.');
+      messageApi.error(
+        'No se pudo actualizar la configuración de autorizaciones.',
+      );
       return;
     }
 
@@ -39,17 +57,21 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
       // Si se desactiva, no importa los módulos
       // Si se activa, verificar que al menos un módulo esté activo
       if (nextValue) {
-        const hasActiveModule = Object.values(enabledModules).some(v => v === true);
+        const hasActiveModule = Object.values(enabledModules).some(
+          (v) => v === true,
+        );
         if (!hasActiveModule) {
-          messageApi.warning('Debes activar al menos un módulo de autorización.');
+          messageApi.warning(
+            'Debes activar al menos un módulo de autorización.',
+          );
           setIsUpdating(false);
           return;
         }
       }
-      
+
       await setBillingSettings(user, { authorizationFlowEnabled: nextValue });
       messageApi.success(
-        `Flujo de autorizaciones ${nextValue ? 'habilitado' : 'deshabilitado'}`
+        `Flujo de autorizaciones ${nextValue ? 'habilitado' : 'deshabilitado'}`,
       );
     } catch {
       messageApi.error('Error al guardar la configuración.');
@@ -67,9 +89,12 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
     // Verificar que al menos un módulo quede activo
     const newModules = {
       invoices: moduleKey === 'invoices' ? checked : enabledModules.invoices,
-      accountsReceivable: moduleKey === 'accountsReceivable' ? checked : enabledModules.accountsReceivable,
+      accountsReceivable:
+        moduleKey === 'accountsReceivable'
+          ? checked
+          : enabledModules.accountsReceivable,
     };
-    const hasActiveModule = Object.values(newModules).some(v => v === true);
+    const hasActiveModule = Object.values(newModules).some((v) => v === true);
 
     if (!hasActiveModule) {
       messageApi.warning('Debes mantener al menos un módulo activo.');
@@ -123,15 +148,18 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
         <ModulesSection>
           <ModulesTitle>Módulos de Autorización Activos</ModulesTitle>
           <ModulesDescription>
-            Selecciona qué áreas del sistema requieren autorización con PIN. Al menos un módulo debe estar activo.
+            Selecciona qué áreas del sistema requieren autorización con PIN. Al
+            menos un módulo debe estar activo.
           </ModulesDescription>
           <ModulesGrid>
-            {AVAILABLE_MODULES.map(module => (
+            {AVAILABLE_MODULES.map((module) => (
               <ModuleCard key={module.key}>
                 <ModuleHeader>
                   <Checkbox
                     checked={enabledModules[module.key] !== false}
-                    onChange={(e) => handleModuleToggle(module.key, e.target.checked)}
+                    onChange={(e) =>
+                      handleModuleToggle(module.key, e.target.checked)
+                    }
                     disabled={isUpdating}
                   >
                     <ModuleLabel>{module.label}</ModuleLabel>
@@ -152,9 +180,11 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
               <StatusTitle $type="info">Autorizaciones activadas</StatusTitle>
             </StatusHeader>
             <StatusDescription>
-              Los cajeros deberán solicitar la aprobación de un supervisor con PIN para acciones protegidas.
+              Los cajeros deberán solicitar la aprobación de un supervisor con
+              PIN para acciones protegidas.
               {enabledModules.invoices && ' Activo en Facturación.'}
-              {enabledModules.accountsReceivable && ' Activo en Cuadre de Caja.'}
+              {enabledModules.accountsReceivable &&
+                ' Activo en Cuadre de Caja.'}
             </StatusDescription>
             <HistoryLink type="button" onClick={handleGoToAuthorizations}>
               Ver historial de autorizaciones
@@ -164,10 +194,13 @@ const AuthorizationFlowSettingsSection = ({ sectionId = 'authorization-flow-over
           <StatusCard $type="warning">
             <StatusHeader>
               <StatusIndicator $type="warning" />
-              <StatusTitle $type="warning">Autorizaciones desactivadas</StatusTitle>
+              <StatusTitle $type="warning">
+                Autorizaciones desactivadas
+              </StatusTitle>
             </StatusHeader>
             <StatusDescription>
-              El flujo de autorizaciones está deshabilitado. Las acciones protegidas se podrán realizar sin solicitar PIN.
+              El flujo de autorizaciones está deshabilitado. Las acciones
+              protegidas se podrán realizar sin solicitar PIN.
             </StatusDescription>
           </StatusCard>
         )}
@@ -247,9 +280,7 @@ const ToggleThumb = styled.span`
   transition: left 0.2s ease;
 `;
 
-const StatusContainer = styled.div`
-
-`;
+const StatusContainer = styled.div``;
 
 const StatusCard = styled.div`
   display: flex;
@@ -260,7 +291,10 @@ const StatusCard = styled.div`
   background-color: ${({ $type }) =>
     $type === 'info' ? 'rgba(42, 191, 136, 0.12)' : 'rgba(245, 158, 11, 0.15)'};
   border: 1px solid
-    ${({ $type }) => ($type === 'info' ? 'rgba(42, 191, 136, 0.35)' : 'rgba(245, 158, 11, 0.35)')};
+    ${({ $type }) =>
+      $type === 'info'
+        ? 'rgba(42, 191, 136, 0.35)'
+        : 'rgba(245, 158, 11, 0.35)'};
 `;
 
 const StatusHeader = styled.div`
@@ -273,7 +307,8 @@ const StatusIndicator = styled.span`
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: ${({ $type }) => ($type === 'info' ? '#2abf88' : '#f59e0b')};
+  background-color: ${({ $type }) =>
+    $type === 'info' ? '#2abf88' : '#f59e0b'};
 `;
 
 const StatusTitle = styled.span`

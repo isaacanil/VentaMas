@@ -1,44 +1,47 @@
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useRef } from 'react'
-import styled from 'styled-components'
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useRef } from 'react';
+import styled from 'styled-components';
 
-export const Input = ({data, onChange, fn}) => {
-  const ref = useRef()
+export const Input = ({ data, onChange, fn }) => {
+  const ref = useRef();
   const handleDeleteText = () => {
-    fn()
-    ref.current.value = ''
-
-  }
+    fn();
+    ref.current.value = '';
+  };
   return (
     <Container>
-        <input type="text" ref={ref} onChange={onChange} placeholder={`Buscar ${data.name}`}/>
-        <div onClick={handleDeleteText}>
-          <FontAwesomeIcon icon={faTimes}/>
-        </div>
+      <input
+        type="text"
+        ref={ref}
+        onChange={onChange}
+        placeholder={`Buscar ${data.name}`}
+      />
+      <div onClick={handleDeleteText}>
+        <FontAwesomeIcon icon={faTimes} />
+      </div>
     </Container>
-  )
-}
+  );
+};
 const Container = styled.div`
-    width: 100%;
+  width: 100%;
+  display: flex;
+  height: 2em;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  padding: 0 1em;
+  border-radius: 6px;
+  input {
+    border: none;
+    outline: none;
+  }
+  div {
+    height: 1.2em;
+    width: 1.2em;
     display: flex;
-    height: 2em;
     align-items: center;
-    justify-content: space-between;
-    background-color: white;
-    padding: 0 1em;
-    border-radius: 6px;
-    input{
-        border: none;
-        outline: none;
-    }
-    div{
-      
-      height: 1.2em;
-      width: 1.2em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: var(--White2);
-    }
-`
+    justify-content: center;
+    background-color: var(--White2);
+  }
+`;

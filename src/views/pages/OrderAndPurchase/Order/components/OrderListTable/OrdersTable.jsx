@@ -1,14 +1,18 @@
-import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable';
 import { calculateOrderTotals } from '../../../OrderManagement/utils/orderCalculationsUtil';
 
-import { calculatePaymentDate, calculateTotalNewStockFromReplenishments } from './orderTableUtils'
-import { columns } from './tableConfig.jsx'
+import {
+  calculatePaymentDate,
+  calculateTotalNewStockFromReplenishments,
+} from './orderTableUtils';
+import { columns } from './tableConfig.jsx';
 
 export const OrdersTable = ({ orders = [], loading = true }) => {
-
   const data = orders.map((data) => {
     const createdAt = data?.createdAt || null;
-    const paymentDate = createdAt ? calculatePaymentDate(createdAt, data?.condition) : null;
+    const paymentDate = createdAt
+      ? calculatePaymentDate(createdAt, data?.condition)
+      : null;
     const { grandTotal } = calculateOrderTotals(data.replenishments);
 
     return {
@@ -23,9 +27,9 @@ export const OrdersTable = ({ orders = [], loading = true }) => {
       deliveryDate: data?.deliveryDate,
       fileList: data?.attachmentUrls || [],
       total: grandTotal,
-      action: data
-    }
-  })
+      action: data,
+    };
+  });
 
   return (
     <AdvancedTable
@@ -34,5 +38,5 @@ export const OrdersTable = ({ orders = [], loading = true }) => {
       data={data}
       loading={loading}
     />
-  )
-}
+  );
+};

@@ -1,8 +1,8 @@
 import {
-    SaveOutlined,
-    DeleteOutlined,
-    ExclamationCircleOutlined,
-    CloseOutlined
+  SaveOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import { Modal, Button, Input, Card, Tooltip } from 'antd';
 import React, { useState } from 'react';
@@ -10,9 +10,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import {
-    addInvoiceComment,
-    deleteInvoiceComment,
-    SelectInvoiceComment
+  addInvoiceComment,
+  deleteInvoiceComment,
+  SelectInvoiceComment,
 } from '../../../../../../../../../../../features/cart/cartSlice';
 
 const { TextArea } = Input;
@@ -28,119 +28,121 @@ const { confirm } = Modal;
  * ---------------------------------------------------------------------------
  */
 export const InvoiceComment = () => {
-    const dispatch = useDispatch();
-    const currentComment = useSelector(SelectInvoiceComment) || '';
+  const dispatch = useDispatch();
+  const currentComment = useSelector(SelectInvoiceComment) || '';
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [comment, setComment] = useState(currentComment);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [comment, setComment] = useState(currentComment);
 
-    /* --------------------------- handlers UI --------------------------- */
-    const showModal = () => {
-        setComment(currentComment);
-        setIsModalOpen(true);
-    };
+  /* --------------------------- handlers UI --------------------------- */
+  const showModal = () => {
+    setComment(currentComment);
+    setIsModalOpen(true);
+  };
 
-    const handleClose = () => setIsModalOpen(false);
+  const handleClose = () => setIsModalOpen(false);
 
-    const handleSave = () => {
-        dispatch(addInvoiceComment(comment.trim()));
+  const handleSave = () => {
+    dispatch(addInvoiceComment(comment.trim()));
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = () => {
+    confirm({
+      title: '¿Eliminar comentario?',
+      icon: <ExclamationCircleOutlined />,
+      content:
+        '¿Estás seguro que deseas eliminar este comentario de la factura?',
+      okText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      okButtonProps: { danger: true },
+      onOk: () => {
+        dispatch(deleteInvoiceComment());
+        setComment('');
         setIsModalOpen(false);
-    };
+      },
+    });
+  };
 
-    const handleDelete = () => {
-        confirm({
-            title: '¿Eliminar comentario?',
-            icon: <ExclamationCircleOutlined />,
-            content: '¿Estás seguro que deseas eliminar este comentario de la factura?',
-            okText: 'Sí, eliminar',
-            cancelText: 'Cancelar',
-            okButtonProps: { danger: true },
-            onOk: () => {
-                dispatch(deleteInvoiceComment());
-                setComment('');
-                setIsModalOpen(false);
-            }
-        });
-    };
+  /* ------------------------------ render ----------------------------- */
+  return (
+    <>
+      <Container>
+        <Card
+          title="Comentario"
+          extra={
+            <Button type="link" onClick={showModal}>
+              {currentComment ? 'Editar' : 'Agregar'}
+            </Button>
+          }
+          size="small"
+        >
+          {currentComment ? (
+            <CommentContent>{currentComment}</CommentContent>
+          ) : (
+            <EmptyComment>No hay comentario para esta factura</EmptyComment>
+          )}
+        </Card>
+      </Container>
 
-    /* ------------------------------ render ----------------------------- */
-    return (
-        <>
-            <Container>
-                <Card
-                    title="Comentario"
-                    extra={
-                        <Button 
-                       type='link'
-                        onClick={showModal}
-                        >
-                            {currentComment ? 'Editar' : 'Agregar'}
-                        </Button>
-                    }
-                    size="small"
-                >
-                    {currentComment ? (
-                        <CommentContent>{currentComment}</CommentContent>
-                    ) : (
-                        <EmptyComment>No hay comentario para esta factura</EmptyComment>
-                    )}
-                </Card>
-            </Container>
-
-            <StyledModal
-                open={isModalOpen}
-                onCancel={handleClose}
-                centered
-                closeIcon={null}
-                footer={null}
-                width={600}
-            >
-                <ModalContainer>
-                     <Header>
+      <StyledModal
+        open={isModalOpen}
+        onCancel={handleClose}
+        centered
+        closeIcon={null}
+        footer={null}
+        width={600}
+      >
+        <ModalContainer>
+          <Header>
             <InvoiceName>Comentario para la Factura</InvoiceName>
             <CloseButton onClick={handleClose} aria-label="Cerrar">
               <CloseOutlined />
             </CloseButton>
           </Header>
-                    <ContentArea>
-                        <EditorArea>
-                            <TextArea
-                                value={comment}
-                                onChange={e => setComment(e.target.value)}
-                                placeholder="Agregar un comentario a la factura..."
-                                autoSize={{ minRows: 5, maxRows: 14 }}
-                                maxLength={600}
-                            />
-                            <CharCount>{comment.length}/600</CharCount>
-                        </EditorArea>
+          <ContentArea>
+            <EditorArea>
+              <TextArea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Agregar un comentario a la factura..."
+                autoSize={{ minRows: 5, maxRows: 14 }}
+                maxLength={600}
+              />
+              <CharCount>{comment.length}/600</CharCount>
+            </EditorArea>
 
-                        <ToolbarContainer>
-                            <ToolbarLabel>Herramientas del comentario</ToolbarLabel>
-                            <ToolbarActions>
-                                {comment && (
-                                    <Tooltip title="Eliminar comentario">
-                                        <IconButton
-                                            onClick={handleDelete}
-                                            danger
-                                            icon={<DeleteOutlined />}
-                                        />
-                                    </Tooltip>
-                                )}
-                            </ToolbarActions>
-                        </ToolbarContainer>
-                    </ContentArea>
+            <ToolbarContainer>
+              <ToolbarLabel>Herramientas del comentario</ToolbarLabel>
+              <ToolbarActions>
+                {comment && (
+                  <Tooltip title="Eliminar comentario">
+                    <IconButton
+                      onClick={handleDelete}
+                      danger
+                      icon={<DeleteOutlined />}
+                    />
+                  </Tooltip>
+                )}
+              </ToolbarActions>
+            </ToolbarContainer>
+          </ContentArea>
 
-                    <Actions>
-                        <ButtonGroup>
-                            <SaveButton onClick={handleSave} type="primary" icon={<SaveOutlined />}>
-                                Guardar
-                            </SaveButton>
-                        </ButtonGroup>
-                    </Actions>
-                </ModalContainer>
-            </StyledModal>
-        </>
-    );
+          <Actions>
+            <ButtonGroup>
+              <SaveButton
+                onClick={handleSave}
+                type="primary"
+                icon={<SaveOutlined />}
+              >
+                Guardar
+              </SaveButton>
+            </ButtonGroup>
+          </Actions>
+        </ModalContainer>
+      </StyledModal>
+    </>
+  );
 };
 
 /* -------------------------------------------------------------------------- */

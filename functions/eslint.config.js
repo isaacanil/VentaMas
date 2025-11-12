@@ -1,5 +1,5 @@
-import { FlatCompat } from "@eslint/eslintrc";
-import js from "@eslint/js";
+import { FlatCompat } from '@eslint/eslintrc';
+import js from '@eslint/js';
 
 const compat = new FlatCompat({
   baseDirectory: import.meta.dirname,
@@ -8,35 +8,27 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: [
-      "lib/**",
-      "generated/**",
-      "node_modules/**",
-      "eslint.config.js",
-    ],
+    ignores: ['lib/**', 'generated/**', 'node_modules/**', 'eslint.config.js'],
   },
   ...compat.config({
     env: { es2021: true, node: true },
-    parser: "@typescript-eslint/parser",
+    parser: '@typescript-eslint/parser',
     parserOptions: {
-      project: ["tsconfig.json"],
-      sourceType: "module",
+      project: ['tsconfig.json'],
+      sourceType: 'module',
     },
     extends: [
-      "eslint:recommended",
-      "plugin:import/errors",
-      "plugin:import/warnings",
-      "plugin:import/typescript",
-      "plugin:@typescript-eslint/recommended",
+      'eslint:recommended',
+      'plugin:import/errors',
+      'plugin:import/warnings',
+      'plugin:import/typescript',
+      'plugin:@typescript-eslint/recommended',
     ],
-    plugins: [
-      "@typescript-eslint",
-      "import",
-    ],
+    plugins: ['@typescript-eslint', 'import'],
     rules: {
-      quotes: ["error", "double"],
-      "import/no-unresolved": "off",
-      indent: ["error", 2],
+      quotes: ['error', 'double'],
+      'import/no-unresolved': 'off',
+      indent: ['error', 2],
     },
   }),
 ];

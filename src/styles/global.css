@@ -5,35 +5,35 @@
     width: auto !important;
     max-width: calc(100vw - 20px) !important;
   }
-  
+
   /* Ocultar el segundo panel (mes) en dispositivos móviles */
   .ant-picker-dropdown .ant-picker-panels .ant-picker-panel:last-child {
     display: none !important;
   }
-  
+
   /* Centrar el panel único */
   .ant-picker-dropdown .ant-picker-panels {
     justify-content: center !important;
     width: auto !important;
   }
-  
+
   /* Ajustar el ancho del panel único */
   .ant-picker-dropdown .ant-picker-panel {
     width: 100% !important;
     max-width: 300px !important;
     margin: 0 auto !important;
   }
-  
+
   /* Ajustar el contenedor del popup para evitar overflow */
   .ant-picker-dropdown {
     max-width: calc(100vw - 10px) !important;
   }
-  
+
   /* Mejorar la visualización de los presets en móviles */
   .ant-picker-dropdown .ant-picker-presets {
     max-width: 280px !important;
   }
-  
+
   .ant-picker-dropdown .ant-picker-presets ul {
     max-height: 150px;
     overflow-y: auto;

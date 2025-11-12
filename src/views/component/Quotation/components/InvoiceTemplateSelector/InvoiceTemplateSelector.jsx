@@ -5,29 +5,32 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
-
 const { Option } = Select;
 
 const invoiceTemplates = [
   {
     id: 'template1',
     name: 'Plantilla Térmica',
-    description: 'Diseño compacto ideal para impresoras térmicas'
+    description: 'Diseño compacto ideal para impresoras térmicas',
   },
   {
     id: 'template2',
     name: 'Plantilla Carta',
-    description: 'Diseño profesional para formato carta'
+    description: 'Diseño profesional para formato carta',
   },
-
 ];
 
-const InvoiceTemplateSelector = ({ onSave, onPreview, template, hidePreviewButton }) => {
+const InvoiceTemplateSelector = ({
+  onSave,
+  onPreview,
+  template,
+  hidePreviewButton,
+}) => {
   const user = useSelector(selectUser);
 
   const handleTemplateChange = async (value) => {
     try {
-      await setBillingSettings(user, {invoiceType: value});
+      await setBillingSettings(user, { invoiceType: value });
       onSave && onSave(value);
       message.success('Plantilla de factura actualizada');
     } catch {
@@ -39,7 +42,10 @@ const InvoiceTemplateSelector = ({ onSave, onPreview, template, hidePreviewButto
     <div>
       <Form layout="vertical">
         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-          <Form.Item label="Seleccionar Plantilla de Factura" style={{ flex: 1,  }}>
+          <Form.Item
+            label="Seleccionar Plantilla de Factura"
+            style={{ flex: 1 }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
               <Select
                 value={template}

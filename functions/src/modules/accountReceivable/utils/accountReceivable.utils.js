@@ -1,5 +1,5 @@
 // src/utils/accountsReceivableUtils.js
-import { format as formatDateFn } from 'date-fns'
+import { format as formatDateFn } from 'date-fns';
 
 /**
  * Formatea un timestamp a string local.
@@ -9,8 +9,8 @@ import { format as formatDateFn } from 'date-fns'
  * @returns {string}
  */
 export function formatPaymentDate(timestamp, fmt = 'dd/MM/yyyy') {
-  if (!timestamp) return ''
-  return formatDateFn(new Date(timestamp), fmt)
+  if (!timestamp) return '';
+  return formatDateFn(new Date(timestamp), fmt);
 }
 
 /**
@@ -22,6 +22,6 @@ export function formatPaymentDate(timestamp, fmt = 'dd/MM/yyyy') {
  */
 export function getFormattedDates(dates, fmt = 'dd/MM/yyyy') {
   return Array.isArray(dates)
-    ? dates.map(ts => formatPaymentDate(ts, fmt))
-    : []
+    ? dates.map((ts) => formatPaymentDate(ts, fmt))
+    : [];
 }

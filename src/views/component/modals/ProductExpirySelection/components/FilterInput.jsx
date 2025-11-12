@@ -19,7 +19,13 @@ const StyledInput = styled.input`
   max-width: 300px;
 `;
 
-const FilterInput = ({ filtro, setFiltro, toggleOrden, ordenPor, ordenAscendente }) => {
+const FilterInput = ({
+  filtro,
+  setFiltro,
+  toggleOrden,
+  ordenPor,
+  ordenAscendente,
+}) => {
   return (
     <StyledInputContainer>
       <StyledInput
@@ -29,15 +35,16 @@ const FilterInput = ({ filtro, setFiltro, toggleOrden, ordenPor, ordenAscendente
         onChange={(e) => setFiltro(e.target.value)}
       />
       <div>
-      <Button onClick={() => toggleOrden('almacen')} type="default">
-  Almacén {ordenPor === 'almacen' && (ordenAscendente ? '↑' : '↓')}
-</Button>
-<Button onClick={() => toggleOrden('fechaExpiracion')} type="default">
-  Fecha Exp. {ordenPor === 'fechaExpiracion' && (ordenAscendente ? '↑' : '↓')}
-</Button>
-<Button onClick={() => toggleOrden('stock')} type="default">
-  Stock {ordenPor === 'stock' && (ordenAscendente ? '↑' : '↓')}
-</Button>
+        <Button onClick={() => toggleOrden('almacen')} type="default">
+          Almacén {ordenPor === 'almacen' && (ordenAscendente ? '↑' : '↓')}
+        </Button>
+        <Button onClick={() => toggleOrden('fechaExpiracion')} type="default">
+          Fecha Exp.{' '}
+          {ordenPor === 'fechaExpiracion' && (ordenAscendente ? '↑' : '↓')}
+        </Button>
+        <Button onClick={() => toggleOrden('stock')} type="default">
+          Stock {ordenPor === 'stock' && (ordenAscendente ? '↑' : '↓')}
+        </Button>
       </div>
     </StyledInputContainer>
   );

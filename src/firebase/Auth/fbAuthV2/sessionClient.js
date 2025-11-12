@@ -41,7 +41,8 @@ export const ensureDeviceId = () => {
 
 const detectDeviceLabel = () => {
   if (typeof navigator === 'undefined') return 'unknown-device';
-  const platform = navigator.userAgentData?.platform || navigator.platform || 'web';
+  const platform =
+    navigator.userAgentData?.platform || navigator.platform || 'web';
   const brand = navigator.userAgentData?.brands?.[0]?.brand;
   const language = navigator.language || navigator.languages?.[0];
   const parts = [platform, brand, language].filter(Boolean);
@@ -76,11 +77,16 @@ export const buildSessionInfo = (overrides = {}) => {
   };
 };
 
-export const storeSessionLocally = ({ sessionToken, sessionExpiresAt, sessionId }) => {
+export const storeSessionLocally = ({
+  sessionToken,
+  sessionExpiresAt,
+  sessionId,
+}) => {
   const storage = safeLocalStorage();
   if (!storage) return;
   if (sessionToken) storage.setItem(TOKEN_KEY, sessionToken);
-  if (sessionExpiresAt) storage.setItem(EXPIRES_KEY, sessionExpiresAt.toString());
+  if (sessionExpiresAt)
+    storage.setItem(EXPIRES_KEY, sessionExpiresAt.toString());
   if (sessionId) storage.setItem(SESSION_ID_KEY, sessionId);
 };
 

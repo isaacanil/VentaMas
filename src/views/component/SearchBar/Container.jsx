@@ -1,5 +1,3 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-export const SearchBar = styled('div')`
-    
-`
+export const SearchBar = styled('div')``;

@@ -1,5 +1,20 @@
-import { PlusOutlined, LoadingOutlined, ShopOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
-import { Form, Input, Button, Select, message, Upload, Card, Typography } from 'antd';
+import {
+  PlusOutlined,
+  LoadingOutlined,
+  ShopOutlined,
+  MailOutlined,
+  HomeOutlined,
+} from '@ant-design/icons';
+import {
+  Form,
+  Input,
+  Button,
+  Select,
+  message,
+  Upload,
+  Card,
+  Typography,
+} from 'antd';
 import imageCompression from 'browser-image-compression';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -7,11 +22,12 @@ import styled from 'styled-components';
 
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { fbUpdateBusinessInfo, fbUpdateBusinessLogo } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
+import {
+  fbUpdateBusinessInfo,
+  fbUpdateBusinessLogo,
+} from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 
 import { countries } from './countries.json';
-
-
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -28,7 +44,7 @@ const BusinessProfileEditor = () => {
       setImageUrl(business.logoUrl);
       form.setFieldsValue({
         ...business,
-        logo: business.logoUrl
+        logo: business.logoUrl,
       });
     }
   }, [business, form]);
@@ -93,7 +109,10 @@ const BusinessProfileEditor = () => {
 
     if (info.file.status === 'done') {
       try {
-        const downloadURL = await fbUpdateBusinessLogo(user, info.file.originFileObj);
+        const downloadURL = await fbUpdateBusinessLogo(
+          user,
+          info.file.originFileObj,
+        );
         setLoading(false);
         setImageUrl(downloadURL);
         form.setFieldsValue({ logo: downloadURL });
@@ -147,12 +166,19 @@ const BusinessProfileEditor = () => {
   const formContent = (
     <StyledForm form={form} layout="vertical" onFinish={handleSubmit}>
       <FormSection>
-        <Title level={4}><ShopOutlined /> Información General</Title>
+        <Title level={4}>
+          <ShopOutlined /> Información General
+        </Title>
         <Card>
           <Form.Item
             name="businessType"
             label="Tipo de Negocio"
-            rules={[{ required: true, message: 'Por favor, selecciona el tipo de negocio' }]}
+            rules={[
+              {
+                required: true,
+                message: 'Por favor, selecciona el tipo de negocio',
+              },
+            ]}
           >
             <Select placeholder="Selecciona el tipo de negocio">
               <Option value="general">General</Option>
@@ -164,7 +190,8 @@ const BusinessProfileEditor = () => {
             <Form.Item
               name="logo"
               label="Logo del negocio"
-              extra="Formato: JPG/PNG. Tamaño máximo: 2MB. Dimensiones recomendadas: 400x200px">
+              extra="Formato: JPG/PNG. Tamaño máximo: 2MB. Dimensiones recomendadas: 400x200px"
+            >
               <Upload
                 name="avatar"
                 listType="picture-card"
@@ -172,7 +199,9 @@ const BusinessProfileEditor = () => {
                 showUploadList={false}
                 beforeUpload={beforeUpload}
                 onChange={handleChange}
-                customRequest={({ onSuccess }) => setTimeout(() => onSuccess("ok"), 0)}
+                customRequest={({ onSuccess }) =>
+                  setTimeout(() => onSuccess('ok'), 0)
+                }
               >
                 {imageUrl ? (
                   <PreviewContainer>
@@ -188,26 +217,37 @@ const BusinessProfileEditor = () => {
           <Form.Item
             name="name"
             label="Nombre"
-            rules={[{ required: true, message: 'Por favor, ingresa el nombre del negocio' }]}>
+            rules={[
+              {
+                required: true,
+                message: 'Por favor, ingresa el nombre del negocio',
+              },
+            ]}
+          >
             <Input placeholder="Nombre del negocio" />
           </Form.Item>
 
-          <Form.Item
-            name="rnc"
-            label="RNC">
+          <Form.Item name="rnc" label="RNC">
             <Input placeholder="Ingresa el RNC" />
           </Form.Item>
         </Card>
       </FormSection>
 
       <FormSection>
-        <Title level={4}><MailOutlined /> Contacto</Title>
+        <Title level={4}>
+          <MailOutlined /> Contacto
+        </Title>
         <Card>
           <TwoColumns>
             <Form.Item
               name="email"
               label="Correo electrónico"
-              rules={[{ type: 'email', message: 'Ingresa un correo electrónico válido' }]}
+              rules={[
+                {
+                  type: 'email',
+                  message: 'Ingresa un correo electrónico válido',
+                },
+              ]}
             >
               <Input placeholder="ejemplo@dominio.com" />
             </Form.Item>
@@ -215,7 +255,10 @@ const BusinessProfileEditor = () => {
             <Form.Item
               name="tel"
               label="Teléfono"
-              rules={[{ required: true, message: 'Por favor, ingresa el teléfono' }]}>
+              rules={[
+                { required: true, message: 'Por favor, ingresa el teléfono' },
+              ]}
+            >
               <Input placeholder="55 1234 5678" />
             </Form.Item>
           </TwoColumns>
@@ -223,24 +266,22 @@ const BusinessProfileEditor = () => {
       </FormSection>
 
       <FormSection>
-        <Title level={4}><HomeOutlined /> Ubicación</Title>
+        <Title level={4}>
+          <HomeOutlined /> Ubicación
+        </Title>
         <Card>
           <TwoColumns>
-            <Form.Item
-              name="country"
-              label="País"
-            >
+            <Form.Item name="country" label="País">
               <Select placeholder="Selecciona un país">
-                {countries.map(country => (
-                  <Option key={country.id} value={country.id}>{country.name}</Option>
+                {countries.map((country) => (
+                  <Option key={country.id} value={country.id}>
+                    {country.name}
+                  </Option>
                 ))}
               </Select>
             </Form.Item>
 
-            <Form.Item
-              name="province"
-              label="Provincia/Estado"
-            >
+            <Form.Item name="province" label="Provincia/Estado">
               <Input placeholder="Provincia o Estado" />
             </Form.Item>
           </TwoColumns>
@@ -248,7 +289,10 @@ const BusinessProfileEditor = () => {
           <Form.Item
             name="address"
             label="Dirección"
-            rules={[{ required: true, message: 'Por favor, ingresa la dirección' }]}>
+            rules={[
+              { required: true, message: 'Por favor, ingresa la dirección' },
+            ]}
+          >
             <Input placeholder="Calle 123, Colonia, Ciudad, Estado" />
           </Form.Item>
         </Card>
@@ -264,9 +308,7 @@ const BusinessProfileEditor = () => {
 
   return (
     <Wrapper>
-      <PageContainer>
-        {formContent}
-      </PageContainer>
+      <PageContainer>{formContent}</PageContainer>
     </Wrapper>
   );
 };
@@ -275,18 +317,17 @@ export default BusinessProfileEditor;
 
 const Wrapper = styled.div`
   display: grid;
-
 `;
 
 const PageContainer = styled.div`
   padding: 24px;
   width: 100%;
   overflow-y: auto;
-  `;
+`;
 
 const StyledForm = styled(Form)`
-max-width: 900px;
-margin: 0 auto;
+  max-width: 900px;
+  margin: 0 auto;
   background: transparent;
 `;
 
@@ -340,7 +381,7 @@ const PreviewContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   img {
     max-width: 100%;
     max-height: 100%;
@@ -353,7 +394,7 @@ const FormActions = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 24px;
-  
+
   button {
     min-width: 150px;
   }

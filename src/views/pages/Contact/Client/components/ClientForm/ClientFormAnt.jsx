@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { OPERATION_MODES } from '../../../../../../constants/modes';
 import { selectUser } from '../../../../../../features/auth/userSlice';
-import { addClient, setClientMode } from '../../../../../../features/clientCart/clientCartSlice';
+import {
+  addClient,
+  setClientMode,
+} from '../../../../../../features/clientCart/clientCartSlice';
 import { CLIENT_MODE_BAR } from '../../../../../../features/clientCart/clientMode';
 import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
 import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
@@ -17,201 +20,202 @@ const { Modal, Form, Button, Tabs, notification, message } = ant;
 /**
  *
  *
- * @param {*} { 
- *     visible, 
- *     onCreate, 
- *     onUpdate, 
- *     onCancel, 
- *     customerData, 
+ * @param {*} {
+ *     visible,
+ *     onCreate,
+ *     onUpdate,
+ *     onCancel,
+ *     customerData,
  *     isUpdating = false
  * }
- * @return {*} 
+ * @return {*}
  */
 const ClientFormAnt = ({
-    isOpen,
-    mode,
-    data,
-    addClientToCart = false,
-    //isUpdating = false
+  isOpen,
+  mode,
+  data,
+  addClientToCart = false,
+  //isUpdating = false
 }) => {
-    const update = OPERATION_MODES.UPDATE.id;
-    const create = OPERATION_MODES.CREATE.id;
-    const isUpdating = mode === update;
-    const [form] = Form.useForm();
-    const [creditLimitForm] = Form.useForm();
-    const [loading, setLoading] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
-    const clientData = form.getFieldsValue();
-    const dispatch = useDispatch();
-    const user = useSelector(selectUser);
-    
-    const customerData = {
-        name: '',
-        address: '',
-        tel: '',
-        personalID: '',
-        tel2: '',
-        numberId: 0,
-        province: '',
-        sector: '',
-        delivery: {
-            status: false,
-            value: ''
-        },
-        ...data
+  const update = OPERATION_MODES.UPDATE.id;
+  const create = OPERATION_MODES.CREATE.id;
+  const isUpdating = mode === update;
+  const [form] = Form.useForm();
+  const [creditLimitForm] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const clientData = form.getFieldsValue();
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+
+  const customerData = {
+    name: '',
+    address: '',
+    tel: '',
+    personalID: '',
+    tel2: '',
+    numberId: 0,
+    province: '',
+    sector: '',
+    delivery: {
+      status: false,
+      value: '',
+    },
+    ...data,
+  };
+  const client = {
+    ...customerData,
+    ...data,
+    ...clientData,
+  };
+  useEffect(() => {
+    if (mode === update && data) {
+      form.setFieldsValue(data);
     }
-    const client = {
+    if (mode === create && !data) {
+      form.resetFields();
+    }
+  }, [mode, data]);
+
+  // useEffect(() => {
+  //     if (isUpdating && customerData) {
+  //         form.setFieldsValue(customerData);
+  //     } else {
+  //         setTimeout(() => {
+  //         form.resetFields();
+  //         creditLimitForm.resetFields();
+  //         }, 10000);
+  //     }
+  // }, [customerData, isUpdating]);
+
+  const handleSubmit = async () => {
+    // Evitar submissions múltiples
+    if (loading || submitted) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setSubmitted(true); // Marcar como enviado
+      let clientCreated = null;
+      const values = await form.validateFields();
+      // const creditLimitData = await creditLimitForm.validateFields(); // Ya no necesario aquí
+
+      delete values.clear;
+
+      const client = {
         ...customerData,
-        ...data,
-        ...clientData
+        ...values,
+      };
+
+      if (isUpdating) {
+        await fbUpdateClient(user, client);
+        // fbUpsertCreditLimit se maneja ahora en CreditLimitModal
+        notification.success({
+          message: 'Cliente Actualizado',
+          description:
+            'La información del cliente ha sido actualizada con éxito.',
+        });
+      } else {
+        clientCreated = await fbAddClient(user, client);
+        message.success({
+          message: 'Cliente Creado',
+          description: 'Se ha añadido un nuevo cliente con éxito.',
+        });
+      }
+      if (addClientToCart && clientCreated) {
+        dispatch(setClientMode(CLIENT_MODE_BAR.UPDATE.id));
+        dispatch(addClient(clientCreated));
+      }
+
+      // Ensure the form is reset only when the modal is still open
+
+      form.resetFields();
+      creditLimitForm.resetFields();
+
+      dispatch(toggleClientModal({ mode: create }));
+    } catch {
+      notification.error({
+        message: 'Error al Procesar',
+        description:
+          'Hubo un error al procesar el formulario. Por favor, inténtelo de nuevo.',
+      });
+    } finally {
+      setLoading(false);
+      // Resetear el estado submitted después de un breve delay
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 2000); // 2 segundos de cooldown
     }
-    useEffect(() => {
-        if (mode === update && data) {
-            form.setFieldsValue(data);
-        }
-        if (mode === create && !data) {
-            form.resetFields();
-        }
-    }, [mode, data])
+  };
+  const handleOpenModal = () => dispatch(toggleClientModal({ mode: create }));
 
-    // useEffect(() => {
-    //     if (isUpdating && customerData) {
-    //         form.setFieldsValue(customerData);
-    //     } else {
-    //         setTimeout(() => {
-    //         form.resetFields();
-    //         creditLimitForm.resetFields();
-    //         }, 10000);
-    //     }
-    // }, [customerData, isUpdating]);
+  const handleCancel = () => handleOpenModal();
 
-    const handleSubmit = async () => {
-        // Evitar submissions múltiples
-        if (loading || submitted) {
-            return;
-        }
+  const items = [
+    {
+      key: '1',
+      label: 'Info. General',
+      children: (
+        <ClientGeneralInfo
+          form={form}
+          creditLimitForm={creditLimitForm}
+          customerData={customerData}
+          isUpdating={isUpdating}
+          handleSubmit={handleSubmit}
+          loading={loading}
+          submitted={submitted}
+        />
+      ),
+    },
+    {
+      key: '2',
+      label: 'Info. Financiera',
+      children: (
+        <ClientFinancialInfo
+          creditLimitForm={creditLimitForm}
+          client={client}
+        />
+      ),
+      disabled: !isUpdating,
+    },
+  ];
 
-        try {
-            setLoading(true);
-            setSubmitted(true); // Marcar como enviado
-            let clientCreated = null;
-            const values = await form.validateFields();
-            // const creditLimitData = await creditLimitForm.validateFields(); // Ya no necesario aquí
-
-            delete values.clear;
-
-            const client = {
-                ...customerData,
-                ...values,
-            }
-
-            if (isUpdating) {
-                await fbUpdateClient(user, client)
-                // fbUpsertCreditLimit se maneja ahora en CreditLimitModal
-                notification.success({
-                    message: 'Cliente Actualizado',
-                    description: 'La información del cliente ha sido actualizada con éxito.'
-                });
-            } else {
-                clientCreated = await fbAddClient(user, client)
-                message.success({
-                    message: 'Cliente Creado',
-                    description: 'Se ha añadido un nuevo cliente con éxito.'
-                });
-            }
-            if (addClientToCart && clientCreated) {
-                dispatch(setClientMode(CLIENT_MODE_BAR.UPDATE.id))
-                dispatch(addClient(clientCreated))
-            }
-
-            // Ensure the form is reset only when the modal is still open
-
-            form.resetFields();
-            creditLimitForm.resetFields();
-
-
-            dispatch(toggleClientModal({ mode: create }))
-        } catch {
-            notification.error({
-                message: 'Error al Procesar',
-                description: 'Hubo un error al procesar el formulario. Por favor, inténtelo de nuevo.'
-            });
-        } finally {
-            setLoading(false);
-            // Resetear el estado submitted después de un breve delay
-            setTimeout(() => {
-                setSubmitted(false);
-            }, 2000); // 2 segundos de cooldown
-        }
-    };
-    const handleOpenModal = () => dispatch(toggleClientModal({ mode: create }));
-
-    const handleCancel = () => handleOpenModal();
-
-    const items = [
-        {
-            key: '1',
-            label: 'Info. General',
-            children: (
-                <ClientGeneralInfo
-                    form={form}
-                    creditLimitForm={creditLimitForm}
-                    customerData={customerData}
-                    isUpdating={isUpdating}
-                    handleSubmit={handleSubmit}
-                    loading={loading}
-                    submitted={submitted}
-                />
-            ),
+  return (
+    <Modal
+      style={{ top: 10 }}
+      open={isOpen}
+      title={isUpdating ? 'Editar Cliente' : 'Nuevo Cliente'}
+      cancelText="Cerrar"
+      width={1000}
+      styles={{
+        content: {
+          padding: '1.2em',
         },
-        {
-            key: '2',
-            label: 'Info. Financiera',
-            children: (
-                <ClientFinancialInfo
-                    creditLimitForm={creditLimitForm}
-                    client={client}
-                />
-            ),
-            disabled: !isUpdating
-        },
-    ];
-
-    return (
-        <Modal
-            style={{ top: 10 }}
-            open={isOpen}
-            title={isUpdating ? "Editar Cliente" : "Nuevo Cliente"}
-            cancelText="Cerrar"
-            width={1000}
-            styles={{
-                content: {
-                    padding: "1.2em"
-                }
-            }}
-            onCancel={handleCancel}
-            footer={[
-                <Button key="cancel" onClick={handleCancel}>
-                    Cerrar
-                </Button>,
-                // Solo mostrar el botón crear cuando no está actualizando
-                !isUpdating && (
-                    <Button 
-                        key="create" 
-                        type="primary" 
-                        loading={loading || submitted}
-                        disabled={loading || submitted}
-                        onClick={handleSubmit}
-                    >
-                        Crear
-                    </Button>
-                )
-            ]}
-        >
-            <Tabs defaultActiveKey="1" items={items} />
-            <br />
-        </Modal>
-    );
+      }}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="cancel" onClick={handleCancel}>
+          Cerrar
+        </Button>,
+        // Solo mostrar el botón crear cuando no está actualizando
+        !isUpdating && (
+          <Button
+            key="create"
+            type="primary"
+            loading={loading || submitted}
+            disabled={loading || submitted}
+            onClick={handleSubmit}
+          >
+            Crear
+          </Button>
+        ),
+      ]}
+    >
+      <Tabs defaultActiveKey="1" items={items} />
+      <br />
+    </Modal>
+  );
 };
 
 export default ClientFormAnt;

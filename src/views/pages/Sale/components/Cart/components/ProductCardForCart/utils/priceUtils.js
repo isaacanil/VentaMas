@@ -3,11 +3,12 @@ import {
   getAvgPriceTotal,
   getMinPriceTotal,
   getCardPriceTotal,
-  getOfferPriceTotal
+  getOfferPriceTotal,
 } from '../../../../../../../../utils/pricing';
 
 export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
-  const { listPrice, avgPrice, minPrice, cardPrice, offerPrice } = pricing || {};
+  const { listPrice, avgPrice, minPrice, cardPrice, offerPrice } =
+    pricing || {};
 
   const preciosConImpuesto = [
     {
@@ -16,7 +17,7 @@ export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
       valueWithTax: getListPriceTotal({ pricing }, taxReceiptEnabled),
       pricing,
       type: 'listPrice',
-      enabled: pricing?.listPriceEnabled ?? true
+      enabled: pricing?.listPriceEnabled ?? true,
     },
     {
       label: 'Precio Promedio',
@@ -24,7 +25,7 @@ export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
       valueWithTax: getAvgPriceTotal({ pricing }, taxReceiptEnabled),
       type: 'avgPrice',
       pricing,
-      enabled: pricing?.avgPriceEnabled ?? true
+      enabled: pricing?.avgPriceEnabled ?? true,
     },
     {
       label: 'Precio Mínimo',
@@ -32,7 +33,7 @@ export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
       valueWithTax: getMinPriceTotal({ pricing }, taxReceiptEnabled),
       type: 'minPrice',
       pricing,
-      enabled: pricing?.minPriceEnabled ?? true
+      enabled: pricing?.minPriceEnabled ?? true,
     },
     {
       label: 'Precio Tarjeta',
@@ -40,7 +41,7 @@ export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
       valueWithTax: getCardPriceTotal({ pricing }, taxReceiptEnabled),
       type: 'cardPrice',
       pricing,
-      enabled: true
+      enabled: true,
     },
     {
       label: 'Precio Oferta',
@@ -48,8 +49,8 @@ export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
       valueWithTax: getOfferPriceTotal({ pricing }, taxReceiptEnabled),
       type: 'offerPrice',
       pricing,
-      enabled: true
-    }
+      enabled: true,
+    },
   ];
   return preciosConImpuesto;
 }

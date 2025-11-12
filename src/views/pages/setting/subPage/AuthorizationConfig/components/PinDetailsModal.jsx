@@ -1,4 +1,10 @@
-import { SafetyOutlined, CopyOutlined, PrinterOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import {
+  SafetyOutlined,
+  CopyOutlined,
+  PrinterOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+} from '@ant-design/icons';
 import { Modal, Typography, Button } from 'antd';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
@@ -153,7 +159,6 @@ const PrintButton = styled(Button)`
   }
 `;
 
-
 const ActionBar = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -165,10 +170,13 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
   const [visiblePins, setVisiblePins] = useState({});
   const [copiedModules, setCopiedModules] = useState({});
 
-  const moduleNames = useMemo(() => ({
-    invoices: 'Facturación',
-    accountsReceivable: 'Cuadre de Caja',
-  }), []);
+  const moduleNames = useMemo(
+    () => ({
+      invoices: 'Facturación',
+      accountsReceivable: 'Cuadre de Caja',
+    }),
+    [],
+  );
 
   const pinEntries = useMemo(() => {
     if (!pinData?.pins || !Array.isArray(pinData.pins)) return [];
@@ -176,24 +184,34 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
       module: entry.module,
       moduleName: moduleNames[entry.module] || entry.module,
       pin: entry.pin || '',
-      createdAt: entry.createdAt instanceof Date ? entry.createdAt : entry.createdAt ? new Date(entry.createdAt) : null,
-      expiresAt: entry.expiresAt instanceof Date ? entry.expiresAt : entry.expiresAt ? new Date(entry.expiresAt) : null,
+      createdAt:
+        entry.createdAt instanceof Date
+          ? entry.createdAt
+          : entry.createdAt
+            ? new Date(entry.createdAt)
+            : null,
+      expiresAt:
+        entry.expiresAt instanceof Date
+          ? entry.expiresAt
+          : entry.expiresAt
+            ? new Date(entry.expiresAt)
+            : null,
     }));
   }, [pinData?.pins, moduleNames]);
 
   const togglePinVisibility = (moduleKey) => {
-    setVisiblePins(prev => ({
+    setVisiblePins((prev) => ({
       ...prev,
-      [moduleKey]: !prev[moduleKey]
+      [moduleKey]: !prev[moduleKey],
     }));
   };
 
   const handleCopyModule = (moduleKey, pin) => {
     if (!pin) return;
     navigator.clipboard.writeText(pin);
-    setCopiedModules(prev => ({ ...prev, [moduleKey]: true }));
+    setCopiedModules((prev) => ({ ...prev, [moduleKey]: true }));
     setTimeout(() => {
-      setCopiedModules(prev => ({ ...prev, [moduleKey]: false }));
+      setCopiedModules((prev) => ({ ...prev, [moduleKey]: false }));
     }, 2000);
   };
 
@@ -222,8 +240,13 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
             </tr>
           `;
 
-  const pinCount = pinEntries.length;
-  const pinCountLabel = pinCount === 0 ? 'Sin PIN registrado' : pinCount === 1 ? '1 PIN activo' : `${pinCount} PINs activos`;
+    const pinCount = pinEntries.length;
+    const pinCountLabel =
+      pinCount === 0
+        ? 'Sin PIN registrado'
+        : pinCount === 1
+          ? '1 PIN activo'
+          : `${pinCount} PINs activos`;
     const generatedAt = new Date().toLocaleString();
 
     const printContent = `
@@ -426,14 +449,20 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
                 <ModuleHeader>
                   <ModuleLabel>{entry.moduleName}</ModuleLabel>
                   <ModuleActions>
-                    <ModuleButton 
-                      icon={visiblePins[entry.module] ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                    <ModuleButton
+                      icon={
+                        visiblePins[entry.module] ? (
+                          <EyeInvisibleOutlined />
+                        ) : (
+                          <EyeOutlined />
+                        )
+                      }
                       onClick={() => togglePinVisibility(entry.module)}
                       size="small"
                     >
                       {visiblePins[entry.module] ? 'Ocultar' : 'Ver PIN'}
                     </ModuleButton>
-                    <ModuleButton 
+                    <ModuleButton
                       icon={<CopyOutlined />}
                       onClick={() => handleCopyModule(entry.module, entry.pin)}
                       disabled={!entry.pin}
@@ -449,7 +478,10 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
                   <PinPlaceholder>••••••</PinPlaceholder>
                 )}
                 <ModuleMeta>
-                  Expira: {entry.expiresAt ? entry.expiresAt.toLocaleString() : 'Sin expiración'}
+                  Expira:{' '}
+                  {entry.expiresAt
+                    ? entry.expiresAt.toLocaleString()
+                    : 'Sin expiración'}
                 </ModuleMeta>
               </ModulePinRow>
             ))}

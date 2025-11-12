@@ -1,20 +1,20 @@
-import { DollarOutlined, EyeOutlined } from '@ant-design/icons'
-import { Button } from 'antd'
-import { useDispatch } from 'react-redux'
+import { DollarOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+import { useDispatch } from 'react-redux';
 
-import { setAccountPayment } from '../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice'
-import { setARDetailsModal } from '../../../../../../../features/accountsReceivable/accountsReceivableSlice'
+import { setAccountPayment } from '../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
+import { setARDetailsModal } from '../../../../../../../features/accountsReceivable/accountsReceivableSlice';
 
 const AccountActionsCell = ({ value }) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const handleOpenDetail = () => {
-    dispatch(setARDetailsModal({ isOpen: true, arId: value.account.id }))
-  }
+    dispatch(setARDetailsModal({ isOpen: true, arId: value.account.id }));
+  };
 
   const handleOpenPayment = () => {
-    const account = value.account
-    const client = value.account.client
+    const account = value.account;
+    const client = value.account.client;
     const result = {
       isOpen: true,
       paymentDetails: {
@@ -26,17 +26,17 @@ const AccountActionsCell = ({ value }) => {
       extra: {
         ...account?.account,
       },
-    }
+    };
 
-    dispatch(setAccountPayment(result))
-  }
+    dispatch(setAccountPayment(result));
+  };
 
   return (
     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
       <Button icon={<EyeOutlined />} onClick={handleOpenDetail} />
       <Button icon={<DollarOutlined />} onClick={handleOpenPayment} />
     </div>
-  )
-}
+  );
+};
 
-export default AccountActionsCell
+export default AccountActionsCell;

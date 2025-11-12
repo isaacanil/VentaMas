@@ -19,7 +19,11 @@ const Button = styled.button`
   }
 `;
 
-const UploadButton = ({ onFileInput, buttonText = 'Cargar', acceptedFileTypes = null }) => (
+const UploadButton = ({
+  onFileInput,
+  buttonText = 'Cargar',
+  acceptedFileTypes = null,
+}) => (
   <>
     <Button onClick={() => document.getElementById('fileInput').click()}>
       <InboxOutlined />

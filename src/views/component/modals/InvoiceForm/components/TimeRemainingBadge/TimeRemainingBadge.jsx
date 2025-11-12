@@ -1,4 +1,8 @@
-import { ClockCircleOutlined, InfoCircleOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  ClockCircleOutlined,
+  InfoCircleOutlined,
+  EditOutlined,
+} from '@ant-design/icons';
 import { Popover, Typography } from 'antd';
 import { DateTime, Duration } from 'luxon';
 import { useEffect, useState } from 'react';
@@ -31,16 +35,16 @@ export const TimeRemainingBadge = ({ invoice }) => {
     const duration = Duration.fromObject({ seconds: remainingCancelationTime });
     const hours = Math.floor(duration.as('hours'));
     const minutes = Math.floor(duration.as('minutes') % 60);
-    
+
     if (hours > 0) {
-      return { 
-        time: `${hours}h ${minutes}m`, 
-        unit: hours === 1 ? 'hora' : 'horas' 
+      return {
+        time: `${hours}h ${minutes}m`,
+        unit: hours === 1 ? 'hora' : 'horas',
       };
     } else {
-      return { 
-        time: `${minutes}m`, 
-        unit: minutes === 1 ? 'minuto' : 'minutos' 
+      return {
+        time: `${minutes}m`,
+        unit: minutes === 1 ? 'minuto' : 'minutos',
       };
     }
   };
@@ -54,12 +58,14 @@ export const TimeRemainingBadge = ({ invoice }) => {
       days: Math.floor(duration.as('days')),
       hours: Math.floor(duration.as('hours') % 24),
       minutes: Math.floor(duration.as('minutes') % 60),
-      seconds: Math.floor(duration.as('seconds') % 60)
+      seconds: Math.floor(duration.as('seconds') % 60),
     };
   };
 
   const getExpiryDate = () => {
-    return DateTime.fromMillis(invoice.date).plus({ days: 2 }).toFormat('dd/MM/yyyy HH:mm:ss');
+    return DateTime.fromMillis(invoice.date)
+      .plus({ days: 2 })
+      .toFormat('dd/MM/yyyy HH:mm:ss');
   };
 
   if (remainingCancelationTime <= 0) {
@@ -163,7 +169,10 @@ const BadgeButton = styled.div`
   border: 1px solid rgba(255, 171, 64, 0.4);
   box-shadow: 0 2px 10px rgba(255, 171, 64, 0.15);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
     transform: translateY(-1px);

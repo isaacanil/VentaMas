@@ -75,7 +75,9 @@ const isApprovalLogsUser = (value: unknown): value is ApprovalLogsUser => {
   const role = candidate.role;
 
   const isValidBusinessId =
-    businessID === undefined || businessID === null || typeof businessID === 'string';
+    businessID === undefined ||
+    businessID === null ||
+    typeof businessID === 'string';
   const isValidUid = uid === undefined || typeof uid === 'string';
   const isValidRole = role === undefined || typeof role === 'string';
 
@@ -88,7 +90,10 @@ const isDateRangeResult = (value: unknown): value is DateRangeResult => {
   }
 
   const candidate = value as { startDate?: unknown; endDate?: unknown };
-  return typeof candidate.startDate === 'number' && typeof candidate.endDate === 'number';
+  return (
+    typeof candidate.startDate === 'number' &&
+    typeof candidate.endDate === 'number'
+  );
 };
 
 const getDefaultDatePickerValue = (): RangeValue | null => {
@@ -305,11 +310,17 @@ const isCashRegisterEntry = (entry: ApprovalLogEntry) => {
   const action = entry.action || '';
   const targetType = entry.target?.type || '';
   const metadataModule =
-    entry.metadata && typeof entry.metadata === 'object' && typeof entry.metadata.module === 'string'
+    entry.metadata &&
+    typeof entry.metadata === 'object' &&
+    typeof entry.metadata.module === 'string'
       ? entry.metadata.module
       : '';
 
-  return action.startsWith('cash-register') || targetType === 'cashCount' || metadataModule === 'cashRegister';
+  return (
+    action.startsWith('cash-register') ||
+    targetType === 'cashCount' ||
+    metadataModule === 'cashRegister'
+  );
 };
 
 const resolveName = (user?: UserSnapshot | null) =>
@@ -332,7 +343,8 @@ const resolveTargetUserSummary = (entry: ApprovalLogEntry) => {
     return targetSummary;
   }
 
-  const samePrincipal = resolveName(entry.requestedBy) === resolveName(entry.targetUser);
+  const samePrincipal =
+    resolveName(entry.requestedBy) === resolveName(entry.targetUser);
   return samePrincipal ? `${targetSummary} • Mismo solicitante` : targetSummary;
 };
 
@@ -365,15 +377,13 @@ const buildSearchIndex = (entry: ApprovalLogEntry) => {
     parts.push(JSON.stringify(entry.metadata).toLowerCase());
   }
 
-  return parts
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
+  return parts.filter(Boolean).join(' ').toLowerCase();
 };
 
 const PAGE_SIZE = 15;
 
-const resolveModuleLabel = (module: string) => MODULE_LABELS[module] || module || 'General';
+const resolveModuleLabel = (module: string) =>
+  MODULE_LABELS[module] || module || 'General';
 
 const resolveModuleLabelForEntry = (entry: ApprovalLogEntry) => {
   if (isCashRegisterEntry(entry)) {
@@ -389,12 +399,18 @@ const resolveModuleColorForEntry = (entry: ApprovalLogEntry) => {
   return MODULE_COLORS[entry.module] || MODULE_COLORS.generic;
 };
 
-const resolveActionLabel = (action: string) => ACTION_LABELS[action] || action || 'Acción';
+const resolveActionLabel = (action: string) =>
+  ACTION_LABELS[action] || action || 'Acción';
 
-const resolveActionColor = (action: string) => ACTION_COLORS[action] || '#0ea5e9';
+const resolveActionColor = (action: string) =>
+  ACTION_COLORS[action] || '#0ea5e9';
 
 const safeString = (value: unknown): string | null => {
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
     return String(value);
   }
   return null;
@@ -402,7 +418,7 @@ const safeString = (value: unknown): string | null => {
 
 const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   const target = entry.target;
-  const metadata = (entry.metadata || {});
+  const metadata = entry.metadata || {};
 
   const pieces: string[] = [];
 
@@ -416,15 +432,15 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
 
   const targetDetails =
     target?.details && typeof target.details === 'object'
-      ? (target.details)
+      ? target.details
       : null;
 
   const authorizationType =
-    typeof (metadata).authorizationType === 'string'
-      ? String((metadata).authorizationType)
+    typeof metadata.authorizationType === 'string'
+      ? String(metadata.authorizationType)
       : targetDetails && typeof targetDetails.authorizationType === 'string'
-      ? String(targetDetails.authorizationType)
-      : null;
+        ? String(targetDetails.authorizationType)
+        : null;
 
   if (authorizationType === 'invoice-edit') {
     pieces.push('Edición de factura');
@@ -434,7 +450,8 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   if (reference) {
     pieces.push(`Ref. ${reference}`);
   } else {
-    const invoiceRef = safeString(metadata.invoiceNumber) ?? safeString(metadata.invoiceId);
+    const invoiceRef =
+      safeString(metadata.invoiceNumber) ?? safeString(metadata.invoiceId);
     if (invoiceRef) {
       pieces.push(`Factura ${invoiceRef}`);
     } else {
@@ -448,14 +465,23 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
   if (target?.details && typeof target.details === 'object') {
     const details = target.details;
     if (typeof details.stage === 'string') {
-      pieces.push(details.stage === 'opening' ? 'Apertura' : details.stage === 'closing' ? 'Cierre' : details.stage);
+      pieces.push(
+        details.stage === 'opening'
+          ? 'Apertura'
+          : details.stage === 'closing'
+            ? 'Cierre'
+            : details.stage,
+      );
     }
   }
 
   return pieces.length ? pieces.join(' • ') : '—';
 };
 
-const matchesModuleFilter = (entry: ApprovalLogEntry, moduleFilter?: string) => {
+const matchesModuleFilter = (
+  entry: ApprovalLogEntry,
+  moduleFilter?: string,
+) => {
   if (!moduleFilter) return true;
   if (moduleFilter === 'cashRegister') {
     return isCashRegisterEntry(entry);
@@ -471,8 +497,8 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
   const [moduleFilter, setModuleFilter] = useState<string | undefined>();
   const [loadError, setLoadError] = useState<string>('');
   const [page, setPage] = useState<number>(1);
-  const [datePickerValue, setDatePickerValue] = useState<RangeValue | null>(() =>
-    getDefaultDatePickerValue()
+  const [datePickerValue, setDatePickerValue] = useState<RangeValue | null>(
+    () => getDefaultDatePickerValue(),
   );
 
   const startDateFilter = datePickerValue?.[0]
@@ -497,7 +523,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
 
       setDatePickerValue([value, value]);
     },
-    []
+    [],
   );
 
   const loadLogs = useCallback(async () => {
@@ -524,7 +550,10 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
       }
       setLoadError('');
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Error cargando el historial de autorizaciones.';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Error cargando el historial de autorizaciones.';
       setLoadError(errorMessage);
     } finally {
       setLoading(false);
@@ -561,15 +590,12 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
         value: module,
         label: resolveModuleLabel(module),
       })),
-    [modulesAvailable]
+    [modulesAvailable],
   );
 
-  const handleModuleFilterChange = useCallback(
-    (value: string | undefined) => {
-      setModuleFilter(value && value.length ? value : undefined);
-    },
-    []
-  );
+  const handleModuleFilterChange = useCallback((value: string | undefined) => {
+    setModuleFilter(value && value.length ? value : undefined);
+  }, []);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
@@ -593,7 +619,7 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
         id: entry.id,
         entry,
       })),
-    [filteredLogs]
+    [filteredLogs],
   );
 
   const totalPages = Math.max(1, Math.ceil(tableRows.length / PAGE_SIZE));
@@ -606,11 +632,17 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
 
   useEffect(() => {
     setPage(1);
-  }, [moduleFilter, normalizedSearch, filteredLogs.length, startDateFilter, endDateFilter]);
+  }, [
+    moduleFilter,
+    normalizedSearch,
+    filteredLogs.length,
+    startDateFilter,
+    endDateFilter,
+  ]);
 
   const paginatedRows = useMemo(
     () => tableRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [tableRows, page]
+    [tableRows, page],
   );
 
   return (
@@ -641,14 +673,14 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
           />
         </FilterGroup>
 
-          <Button
-            type="primary"
-            icon={<ReloadOutlined />}
-            onClick={() => {
-              void loadLogs();
-            }}
-            loading={loading}
-          >
+        <Button
+          type="primary"
+          icon={<ReloadOutlined />}
+          onClick={() => {
+            void loadLogs();
+          }}
+          loading={loading}
+        >
           Actualizar
         </Button>
       </Controls>
@@ -696,9 +728,15 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
                         <Text>{formatDateTime(entry.createdAt)}</Text>
                       </TableCell>
                       <TableCell>
-                        <TagPill $color={moduleColor}>{resolveModuleLabelForEntry(entry)}</TagPill>
-                        <TagPill $color={resolveActionColor(entry.action)}>{resolveActionLabel(entry.action)}</TagPill>
-                        {entry.sameUser && <TagPill $color="#f59e0b">Mismo usuario</TagPill>}
+                        <TagPill $color={moduleColor}>
+                          {resolveModuleLabelForEntry(entry)}
+                        </TagPill>
+                        <TagPill $color={resolveActionColor(entry.action)}>
+                          {resolveActionLabel(entry.action)}
+                        </TagPill>
+                        {entry.sameUser && (
+                          <TagPill $color="#f59e0b">Mismo usuario</TagPill>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Text>{entry.description || 'Sin descripción'}</Text>
@@ -723,14 +761,19 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
 
             {totalPages > 1 && (
               <PaginationControls>
-                <PaginationButton onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={page === 1}>
+                <PaginationButton
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={page === 1}
+                >
                   Anterior
                 </PaginationButton>
                 <PaginationInfo>
                   Página {page} de {totalPages}
                 </PaginationInfo>
                 <PaginationButton
-                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  onClick={() =>
+                    setPage((prev) => Math.min(totalPages, prev + 1))
+                  }
                   disabled={page === totalPages}
                 >
                   Siguiente

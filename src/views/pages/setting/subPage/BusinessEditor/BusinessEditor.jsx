@@ -2,13 +2,10 @@ import React, { Fragment } from 'react';
 
 import BusinessProfileEditor from './BusinessEditorProfile';
 
-
-
 const BusinessEditor = () => {
   return (
     <Fragment>
-
-      < BusinessProfileEditor />
+      <BusinessProfileEditor />
     </Fragment>
   );
 };

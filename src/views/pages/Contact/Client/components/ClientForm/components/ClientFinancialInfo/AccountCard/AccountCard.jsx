@@ -1,17 +1,22 @@
-import {
-  faCalendarAlt,
-  faReceipt
-} from '@fortawesome/free-solid-svg-icons';
+import { faCalendarAlt, faReceipt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 import { formatDate } from '../../../../../../../../../utils/formatDate';
-import { formatPrice } from '../../../../../../../../../utils/formatPrice'
+import { formatPrice } from '../../../../../../../../../utils/formatPrice';
 
 import { Payment } from './components/Payment';
 
-
-export const AccountCard = ({ account, frequency, balance, installments, installmentAmount, lastPayment, lastPaymentDate, isActive }) => {
+export const AccountCard = ({
+  account,
+  frequency,
+  balance,
+  installments,
+  installmentAmount,
+  lastPayment,
+  lastPaymentDate,
+  isActive,
+}) => {
   // const formatDate = (dateValue) => {
   //   console.log(dateValue)
   //   if (!dateValue) return 'N/A';
@@ -51,7 +56,6 @@ export const AccountCard = ({ account, frequency, balance, installments, install
         </AccountInfo>
         <HeaderMeta>
           <FrequencyTag frequency={frequency}>{frequency}</FrequencyTag>
-     
         </HeaderMeta>
       </CardHeader>
 
@@ -77,10 +81,9 @@ export const AccountCard = ({ account, frequency, balance, installments, install
               <GroupItem>
                 <GroupLabel>Último Pago:</GroupLabel>
                 <GroupValue>
-                  {account?.lastPaymentDate 
+                  {account?.lastPaymentDate
                     ? `${formatPrice(account.lastPayment)} - ${formatDate(account.lastPaymentDate)}`
-                    : 'N/A'
-                  }
+                    : 'N/A'}
                 </GroupValue>
               </GroupItem>
             </GroupContent>
@@ -106,12 +109,13 @@ export const AccountCard = ({ account, frequency, balance, installments, install
 const Card = styled.div`
   background: #ffffff;
   border-radius: 8px;
-  padding: 8px ;
+  padding: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e8e8e8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: all 0.2s ease;
-  
+
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-color: #d9d9d9;
@@ -124,7 +128,6 @@ const CardHeader = styled.div`
   align-items: center;
   gap: 16px;
   margin-bottom: 8px;
-
 `;
 
 const AccountInfo = styled.div`
@@ -140,7 +143,7 @@ const AccountNumber = styled.div`
   font-weight: 600;
   font-size: 15px;
   color: #1a1a1a;
-  
+
   svg {
     font-size: 12px;
     color: #666;
@@ -153,7 +156,7 @@ const AccountDate = styled.div`
   gap: 6px;
   font-size: 13px;
   color: #666;
-  
+
   svg {
     font-size: 11px;
     color: #999;
@@ -176,9 +179,7 @@ const FrequencyTag = styled.div`
   color: #666;
 `;
 
-const FinancialDetails = styled.div`
-
-`;
+const FinancialDetails = styled.div``;
 
 const DetailsRow = styled.div`
   display: grid;
@@ -196,7 +197,7 @@ const DetailGroup = styled.div`
   background: #fafafa;
   border-radius: 6px;
   border: 1px solid #f0f0f0;
-  
+
   justify-content: flex-start;
 `;
 
@@ -222,26 +223,22 @@ const GroupLabel = styled.span`
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-
 `;
 
 const GroupValue = styled.span`
   font-size: 14px;
   color: #333;
   font-weight: 600;
-  
-  ${({ $isBalance, $isPaid }) => $isBalance && `
+
+  ${({ $isBalance, $isPaid }) =>
+    $isBalance &&
+    `
     color: ${$isPaid ? '#2e7d32' : '#cf1322'};
     font-weight: 700;
     font-size: 16px;
   `}
 `;
 
-const ActionBar = styled.div`
+const ActionBar = styled.div``;
 
-`;
-
-export const Payments = styled.div`
- 
-`;
-
+export const Payments = styled.div``;

@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { fetchUserFilterPreferences, saveUserFilterPreferences } from '../../firebase/settings/filterPreferences';
+import {
+  fetchUserFilterPreferences,
+  saveUserFilterPreferences,
+} from '../../firebase/settings/filterPreferences';
 
 export const DEFAULT_FILTERS = {
   criterio: 'nombre',
@@ -186,7 +189,9 @@ export const loadFilterPreferences = createAsyncThunk(
       const contexts = data?.contexts || data || {};
       return { contexts, userId };
     } catch (error) {
-      return rejectWithValue(error?.message || 'No se pudieron cargar los filtros');
+      return rejectWithValue(
+        error?.message || 'No se pudieron cargar los filtros',
+      );
     }
   },
 );
@@ -202,7 +207,9 @@ export const persistFilterPreferences = createAsyncThunk(
       await saveUserFilterPreferences(userId, contexts);
       return { userId, context };
     } catch (error) {
-      return rejectWithValue(error?.message || 'No se pudieron guardar los filtros');
+      return rejectWithValue(
+        error?.message || 'No se pudieron guardar los filtros',
+      );
     }
   },
 );
@@ -412,10 +419,8 @@ export const {
 
 export default filterProductsSlice.reducer;
 
-const selectContextFilters = (
-  state,
-  context = DEFAULT_FILTER_CONTEXT,
-) => state.filterProducts.contexts?.[context] ?? DEFAULT_FILTERS;
+const selectContextFilters = (state, context = DEFAULT_FILTER_CONTEXT) =>
+  state.filterProducts.contexts?.[context] ?? DEFAULT_FILTERS;
 
 export const selectFiltersByContext = (state, context) =>
   selectContextFilters(state, context);

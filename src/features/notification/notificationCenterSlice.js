@@ -14,14 +14,13 @@ export const notificationCenterSlice = createSlice({
     closeNotificationCenter: (state) => {
       state.isOpen = false;
     },
-
   },
 });
 
-export const { 
-  openNotificationCenter, 
-  closeNotificationCenter, 
-  setActiveModule 
+export const {
+  openNotificationCenter,
+  closeNotificationCenter,
+  setActiveModule,
 } = notificationCenterSlice.actions;
 
 export const selectNotificationCenter = (state) => state.notificationCenter;

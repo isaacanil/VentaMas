@@ -1,12 +1,18 @@
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { validateUser } from "../../utils/userValidation";
-import { db } from "../firebaseconfig";
+import { selectUser } from '../../features/auth/userSlice';
+import { validateUser } from '../../utils/userValidation';
+import { db } from '../firebaseconfig';
 
-export const fbGetInvoices = ( time) => {
+export const fbGetInvoices = (time) => {
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState([]);
   const user = useSelector(selectUser);
@@ -30,7 +36,12 @@ export const fbGetInvoices = ( time) => {
         const end = new Date(time.endDate);
         const restrictionStartDate = new Date('2024-01-21T14:41:00');
 
-        const invoicesRef = collection(db, "businesses", businessID, "invoices");
+        const invoicesRef = collection(
+          db,
+          'businesses',
+          businessID,
+          'invoices',
+        );
 
         let q;
         if (new Date() >= restrictionStartDate) {
@@ -39,27 +50,27 @@ export const fbGetInvoices = ( time) => {
             // Si el usuario es admin y la fecha actual es posterior al 21/02/2024
             q = query(
               invoicesRef,
-              where("data.date", ">=", start),
-              where("data.date", "<=", end),
-              orderBy("data.date", "desc"),
+              where('data.date', '>=', start),
+              where('data.date', '<=', end),
+              orderBy('data.date', 'desc'),
             );
           } else {
             // Si el usuario no es admin y la fecha actual es posterior al 21/02/2024
             q = query(
               invoicesRef,
-              where("data.date", ">=", start),
-              where("data.date", "<=", end),
-              where("data.userID", "==", uid),
-              orderBy("data.date", "desc"),
+              where('data.date', '>=', start),
+              where('data.date', '<=', end),
+              where('data.userID', '==', uid),
+              orderBy('data.date', 'desc'),
             );
           }
         } else {
           // Si la fecha actual es anterior al 21/02/2024, aplicar lógica anterior (sin restricciones basadas en el rol)
           q = query(
             invoicesRef,
-            where("data.date", ">=", start),
-            where("data.date", "<=", end),
-            orderBy("data.date", "desc"),
+            where('data.date', '>=', start),
+            where('data.date', '<=', end),
+            orderBy('data.date', 'desc'),
           );
         }
 
@@ -70,8 +81,8 @@ export const fbGetInvoices = ( time) => {
             return;
           }
           const data = snapshot.docs
-            .map(item => item.data())
-            .filter(item => item.data.status !== 'cancelled');
+            .map((item) => item.data())
+            .filter((item) => item.data.status !== 'cancelled');
 
           setInvoices(data);
           setLoading(false);
@@ -79,7 +90,7 @@ export const fbGetInvoices = ( time) => {
 
         return unsubscribe;
       } catch (error) {
-        console.error("Error fetching invoices:", error);
+        console.error('Error fetching invoices:', error);
         setInvoices([]);
         setLoading(false);
         return undefined;
@@ -94,13 +105,7 @@ export const fbGetInvoices = ( time) => {
         unsubscribe();
       }
     };
-  }, [
-    time?.startDate,
-    time?.endDate,
-    user?.businessID,
-    user?.uid,
-    user?.role,
-  ]);
+  }, [time?.startDate, time?.endDate, user?.businessID, user?.uid, user?.role]);
 
   return { invoices, loading };
 };

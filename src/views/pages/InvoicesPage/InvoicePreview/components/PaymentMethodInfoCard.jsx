@@ -5,31 +5,35 @@ import styled from 'styled-components';
 
 import { formatPrice } from '../../../../../utils/formatPrice';
 
-
 const paymentmethodLabel = {
-    cash: 'Efectivo',
-    card: 'Tarjeta',
-    transfer: 'Transferencia',
-    creditNote: 'Nota de Crédito'
+  cash: 'Efectivo',
+  card: 'Tarjeta',
+  transfer: 'Transferencia',
+  creditNote: 'Nota de Crédito',
 };
 
-export const PaymentMethodInfoCard = ({ paymentMethod, creditNoteApplications = [] }) => {
-  const activePaymentMethods = paymentMethod.filter(method => method.status);
-  
+export const PaymentMethodInfoCard = ({
+  paymentMethod,
+  creditNoteApplications = [],
+}) => {
+  const activePaymentMethods = paymentMethod.filter((method) => method.status);
+
   return (
     <StyledCard>
       <CardHeader>
         <CardTitle>Método de Pago</CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         {activePaymentMethods.map((method, index) => (
           <PaymentMethodSection key={index}>
             <MethodHeader>
-              <MethodName>{paymentmethodLabel[method.method] || method.method}</MethodName>
+              <MethodName>
+                {paymentmethodLabel[method.method] || method.method}
+              </MethodName>
               <MethodAmount>{formatPrice(method.value || 0)}</MethodAmount>
             </MethodHeader>
-            
+
             {/* Mostrar detalles adicionales para métodos que lo requieran */}
             {method.reference && (
               <MethodDetail>
@@ -39,7 +43,7 @@ export const PaymentMethodInfoCard = ({ paymentMethod, creditNoteApplications = 
             )}
           </PaymentMethodSection>
         ))}
-        
+
         {/* Sección detallada para notas de crédito */}
         {creditNoteApplications.length > 0 && (
           <>
@@ -49,31 +53,35 @@ export const PaymentMethodInfoCard = ({ paymentMethod, creditNoteApplications = 
               <CreditNoteSection key={app.id || index}>
                 <CreditNoteHeader>
                   <CreditNoteNCF>{app.creditNoteNcf || 'N/A'}</CreditNoteNCF>
-                  <CreditNoteAmount>{formatPrice(app.amountApplied || 0)}</CreditNoteAmount>
+                  <CreditNoteAmount>
+                    {formatPrice(app.amountApplied || 0)}
+                  </CreditNoteAmount>
                 </CreditNoteHeader>
-                
+
                 <CreditNoteDetails>
                   <CreditNoteDetail>
                     <DetailLabel>Aplicado:</DetailLabel>
                     <DetailValue>
-                      {app.appliedAt?.seconds 
-                        ? dayjs(new Date(app.appliedAt.seconds * 1000)).format('DD/MM/YYYY HH:mm')
-                        : dayjs(app.appliedAt).format('DD/MM/YYYY HH:mm')
-                      }
+                      {app.appliedAt?.seconds
+                        ? dayjs(new Date(app.appliedAt.seconds * 1000)).format(
+                            'DD/MM/YYYY HH:mm',
+                          )
+                        : dayjs(app.appliedAt).format('DD/MM/YYYY HH:mm')}
                     </DetailValue>
                   </CreditNoteDetail>
-                  
+
                   {app.appliedBy?.displayName && (
                     <CreditNoteDetail>
                       <DetailLabel>Por:</DetailLabel>
                       <DetailValue>{app.appliedBy.displayName}</DetailValue>
                     </CreditNoteDetail>
                   )}
-                  
+
                   <CreditNoteDetail>
                     <DetailLabel>Saldo:</DetailLabel>
                     <DetailValue>
-                      {formatPrice(app.previousBalance)} → {formatPrice(app.newBalance)}
+                      {formatPrice(app.previousBalance)} →{' '}
+                      {formatPrice(app.newBalance)}
                     </DetailValue>
                   </CreditNoteDetail>
                 </CreditNoteDetails>
@@ -111,7 +119,6 @@ const CardContent = styled.div`
 
 const PaymentMethodSection = styled.div`
   border-radius: 6px;
-
 `;
 
 const MethodHeader = styled.div`
@@ -124,13 +131,13 @@ const MethodHeader = styled.div`
 const MethodName = styled.span`
   font-weight: 600;
   color: #333;
-  font-size: 0.800rem;
+  font-size: 0.8rem;
 `;
 
 const MethodAmount = styled.span`
   font-weight: 600;
   font-family: monospace;
-  font-size: 0.800rem;
+  font-size: 0.8rem;
 `;
 
 const MethodDetail = styled.div`
@@ -153,7 +160,7 @@ const CreditNoteSection = styled.div`
   border: 1px solid #d9d9d9;
   border-radius: 6px;
   background: #f8f9fa;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -205,5 +212,3 @@ const DetailValue = styled.span`
   align-items: center;
   gap: 0.25rem;
 `;
-
-

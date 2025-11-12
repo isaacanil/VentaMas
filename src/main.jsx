@@ -57,5 +57,5 @@ root.render(
         </HelmetProvider>
       </AntApp>
     </Provider>
-  </StrictMode>
-)
+  </StrictMode>,
+);

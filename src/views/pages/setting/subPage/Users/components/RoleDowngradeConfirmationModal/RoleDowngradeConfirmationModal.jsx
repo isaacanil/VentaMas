@@ -1,35 +1,40 @@
-import { 
-  faExclamationTriangle, 
-  faArrowDown
+import {
+  faExclamationTriangle,
+  faArrowDown,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal } from 'antd';
 import styled from 'styled-components';
 
-const RoleDowngradeConfirmationModal = ({ 
-  isOpen, 
-  currentRole, 
-  newRole, 
-  userName, 
-  onConfirm, 
-  onCancel 
+const RoleDowngradeConfirmationModal = ({
+  isOpen,
+  currentRole,
+  newRole,
+  userName,
+  onConfirm,
+  onCancel,
 }) => {
-  return (    <StyledModal
+  return (
+    <StyledModal
       open={isOpen}
       onCancel={onCancel}
       footer={null}
       width={500}
       centered
       closable={false}
-    >      <Container>
+    >
+      {' '}
+      <Container>
         <IconContainer>
           <FontAwesomeIcon icon={faExclamationTriangle} />
         </IconContainer>
-        
+
         <Content>
           <Title>Cambiar Rol de Usuario</Title>
-          <Subtitle>Se reducirán los privilegios de <strong>{userName}</strong></Subtitle>
-          
+          <Subtitle>
+            Se reducirán los privilegios de <strong>{userName}</strong>
+          </Subtitle>
+
           <RoleChange>
             <Role>
               <RoleLabel>Actual</RoleLabel>
@@ -43,19 +48,13 @@ const RoleDowngradeConfirmationModal = ({
               <RoleName>{newRole}</RoleName>
             </Role>
           </RoleChange>
-          
-          <Warning>
-            Esta acción no se puede deshacer automáticamente
-          </Warning>
+
+          <Warning>Esta acción no se puede deshacer automáticamente</Warning>
         </Content>
 
         <Actions>
-          <CancelButton onClick={onCancel}>
-            Cancelar
-          </CancelButton>
-          <ConfirmButton onClick={onConfirm}>
-            Confirmar
-          </ConfirmButton>
+          <CancelButton onClick={onCancel}>Cancelar</CancelButton>
+          <ConfirmButton onClick={onConfirm}>Confirmar</ConfirmButton>
         </Actions>
       </Container>
     </StyledModal>
@@ -73,7 +72,7 @@ const StyledModal = styled(Modal)`
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
     animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  
+
   @keyframes modalSlideIn {
     from {
       opacity: 0;
@@ -114,7 +113,7 @@ const Subtitle = styled.p`
   font-size: 13px;
   color: #86868b;
   line-height: 1.38;
-  
+
   strong {
     color: #1d1d1f;
     font-weight: 600;
@@ -180,15 +179,15 @@ const Button = styled.button`
   font-size: 17px;
   cursor: pointer;
   transition: background-color 0.15s ease;
-  
+
   &:not(:last-child) {
     border-right: 0.5px solid #d2d2d7;
   }
-  
+
   &:hover {
     background: rgba(0, 0, 0, 0.04);
   }
-  
+
   &:active {
     background: rgba(0, 0, 0, 0.08);
   }

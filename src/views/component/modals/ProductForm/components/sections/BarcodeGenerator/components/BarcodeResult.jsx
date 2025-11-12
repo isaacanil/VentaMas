@@ -8,8 +8,8 @@ export const BarcodeResult = ({ generatedCode, isCurrentCode = false }) => {
   if (!generatedCode) return null;
 
   return (
-    <Card 
-      title={isCurrentCode ? "Código Actual" : "Código Generado"} 
+    <Card
+      title={isCurrentCode ? 'Código Actual' : 'Código Generado'}
       type="inner"
     >
       <Space direction="vertical" align="center" style={{ width: '100%' }}>
@@ -23,8 +23,10 @@ export const BarcodeResult = ({ generatedCode, isCurrentCode = false }) => {
           displayValue={true}
           fontSize={16}
         />
-        <Text type={isCurrentCode ? "warning" : "success"}>
-          {isCurrentCode ? "📋 Este es el código actual del producto" : "✓ Código válido GTIN-13"}
+        <Text type={isCurrentCode ? 'warning' : 'success'}>
+          {isCurrentCode
+            ? '📋 Este es el código actual del producto'
+            : '✓ Código válido GTIN-13'}
         </Text>
       </Space>
     </Card>

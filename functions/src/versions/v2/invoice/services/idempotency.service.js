@@ -10,7 +10,13 @@ export async function getIdempotency(businessId, key) {
   return snap.exists ? { id: snap.id, ...snap.data() } : null;
 }
 
-export async function upsertIdempotency({ businessId, key, invoiceId, payloadHash, status = 'pending' }) {
+export async function upsertIdempotency({
+  businessId,
+  key,
+  invoiceId,
+  payloadHash,
+  status = 'pending',
+}) {
   const ref = idempotencyDocRef(businessId, key);
   await ref.set(
     {
@@ -21,7 +27,7 @@ export async function upsertIdempotency({ businessId, key, invoiceId, payloadHas
       updatedAt: FieldValue.serverTimestamp(),
       createdAt: FieldValue.serverTimestamp(),
     },
-    { merge: true }
+    { merge: true },
   );
   return { key, invoiceId, status };
 }
@@ -29,4 +35,3 @@ export async function upsertIdempotency({ businessId, key, invoiceId, payloadHas
 export function getIdempotencyRef(businessId, key) {
   return idempotencyDocRef(businessId, key);
 }
-

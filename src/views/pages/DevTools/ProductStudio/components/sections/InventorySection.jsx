@@ -72,7 +72,8 @@ export const InventorySection = ({ domId }) => (
       <Form.Item
         noStyle
         shouldUpdate={(prev, curr) =>
-          prev?.weightDetail?.isSoldByWeight !== curr?.weightDetail?.isSoldByWeight
+          prev?.weightDetail?.isSoldByWeight !==
+          curr?.weightDetail?.isSoldByWeight
         }
       >
         {({ getFieldValue }) =>
@@ -82,12 +83,13 @@ export const InventorySection = ({ domId }) => (
                 name={['weightDetail', 'weight']}
                 label="Peso promedio"
               >
-                <InputNumber min={0} style={{ width: '100%' }} placeholder="0.00" />
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  placeholder="0.00"
+                />
               </Form.Item>
-              <Form.Item
-                name={['weightDetail', 'weightUnit']}
-                label="Unidad"
-              >
+              <Form.Item name={['weightDetail', 'weightUnit']} label="Unidad">
                 <Select placeholder="Selecciona unidad">
                   {unitsOfMeasure.map((unit) => (
                     <Select.Option key={unit.unit} value={unit.unit}>

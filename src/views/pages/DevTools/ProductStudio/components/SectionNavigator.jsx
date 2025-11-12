@@ -46,7 +46,10 @@ const NavButton = styled.button`
   background: ${({ $active }) => ($active ? '#1d4ed8' : '#f8fafc')};
   color: ${({ $active }) => ($active ? '#ffffff' : '#0f172a')};
   font-weight: 600;
-  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
   font-family: inherit;
   text-align: left;
 

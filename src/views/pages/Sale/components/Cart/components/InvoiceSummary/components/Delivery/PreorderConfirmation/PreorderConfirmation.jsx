@@ -1,8 +1,17 @@
 import { useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-export const PreorderConfirmation = ({ open, onConfirm, onCancel, preorder, loading }) => {
-  const preorderNumber = preorder?.data?.preorderDetails?.numberID || preorder?.data?.numberID || 'N/A';
+export const PreorderConfirmation = ({
+  open,
+  onConfirm,
+  onCancel,
+  preorder,
+  loading,
+}) => {
+  const preorderNumber =
+    preorder?.data?.preorderDetails?.numberID ||
+    preorder?.data?.numberID ||
+    'N/A';
   const clientName = preorder?.data?.client?.name || 'N/A';
 
   const dialogRef = useRef(null);
@@ -59,19 +68,32 @@ export const PreorderConfirmation = ({ open, onConfirm, onCancel, preorder, load
       >
         <Header>
           <Title id="preorder-confirmation-title">Confirmar preventa</Title>
-          <CloseButton type="button" onClick={handleCancel} disabled={loading} aria-label="Cerrar">
+          <CloseButton
+            type="button"
+            onClick={handleCancel}
+            disabled={loading}
+            aria-label="Cerrar"
+          >
             ×
           </CloseButton>
         </Header>
         <Body id="preorder-confirmation-description">
-          ¿Deseas completar la preventa <strong>{preorderNumber}</strong> para el cliente{' '}
-          <strong>{clientName}</strong>?
+          ¿Deseas completar la preventa <strong>{preorderNumber}</strong> para
+          el cliente <strong>{clientName}</strong>?
         </Body>
         <Footer>
-          <SecondaryButton type="button" onClick={handleCancel} disabled={loading}>
+          <SecondaryButton
+            type="button"
+            onClick={handleCancel}
+            disabled={loading}
+          >
             Cancelar
           </SecondaryButton>
-          <PrimaryButton type="button" onClick={handleConfirm} disabled={loading}>
+          <PrimaryButton
+            type="button"
+            onClick={handleConfirm}
+            disabled={loading}
+          >
             {loading ? 'Guardando...' : 'Completar'}
           </PrimaryButton>
         </Footer>
@@ -178,7 +200,10 @@ const BaseButton = styled.button`
   font-size: 0.95rem;
   font-weight: 600;
   border: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.2s ease;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   opacity: ${({ disabled }) => (disabled ? 0.65 : 1)};
 `;
@@ -189,8 +214,12 @@ const PrimaryButton = styled(BaseButton)`
   box-shadow: 0 12px 22px rgba(37, 99, 235, 0.25);
 
   &:hover {
-    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(-1px) scale(1.01)')};
-    box-shadow: ${({ disabled }) => (disabled ? '0 12px 22px rgba(37, 99, 235, 0.25)' : '0 16px 28px rgba(37, 99, 235, 0.3)')};
+    transform: ${({ disabled }) =>
+      disabled ? 'none' : 'translateY(-1px) scale(1.01)'};
+    box-shadow: ${({ disabled }) =>
+      disabled
+        ? '0 12px 22px rgba(37, 99, 235, 0.25)'
+        : '0 16px 28px rgba(37, 99, 235, 0.3)'};
   }
 `;
 

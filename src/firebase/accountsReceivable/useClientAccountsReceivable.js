@@ -1,4 +1,10 @@
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import { db } from '../firebaseconfig';
@@ -31,7 +37,7 @@ export const useClientAccountsReceivable = ({
       db,
       'businesses',
       user.businessID,
-      'accountsReceivable'
+      'accountsReceivable',
     );
 
     const clauses = [where('clientId', '==', clientId)];
@@ -55,11 +61,11 @@ export const useClientAccountsReceivable = ({
       (err) => {
         console.error('useClientAccountsReceivable error:', err);
         setLoading(false);
-      }
+      },
     );
 
     return unsubscribe;
   }, [user?.businessID, clientId, isActive, orderField, orderDirection]);
 
   return { accounts, loading };
-}; 
+};

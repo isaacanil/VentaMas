@@ -1,7 +1,7 @@
 // AnimatedDigit.js
-import { motion } from 'framer-motion'
-import React from 'react'
-import styled from 'styled-components'
+import { motion } from 'framer-motion';
+import React from 'react';
+import styled from 'styled-components';
 
 const AnimatedDigit = ({ digit }) => {
   return (
@@ -13,14 +13,14 @@ const AnimatedDigit = ({ digit }) => {
     >
       {digit}
     </Digit>
-  )
-}
+  );
+};
 
 const Digit = styled(motion.span)`
   font-weight: 600;
 
   display: flex;
   align-items: center;
-`
+`;
 
-export default AnimatedDigit
+export default AnimatedDigit;

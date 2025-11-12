@@ -1,4 +1,8 @@
-import { InboxOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
+import {
+  InboxOutlined,
+  FileImageOutlined,
+  FilePdfOutlined,
+} from '@ant-design/icons';
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
@@ -25,8 +29,8 @@ const DragOverlayContainer = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  visibility: ${props => props.isDragging ? 'visible' : 'hidden'};
-  opacity: ${props => props.isDragging ? 1 : 0};
+  visibility: ${(props) => (props.isDragging ? 'visible' : 'hidden')};
+  opacity: ${(props) => (props.isDragging ? 1 : 0)};
   transition: all 0.3s ease-in-out;
   animation: ${fadeIn} 0.3s ease-in-out;
 `;
@@ -37,7 +41,7 @@ const DropMessage = styled.div`
   border-radius: 16px;
   text-align: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  transform: scale(${props => props.isDragging ? '1.02' : '1'});
+  transform: scale(${(props) => (props.isDragging ? '1.02' : '1')});
   transition: transform 0.2s ease-in-out;
 
   .icon-wrapper {
@@ -60,7 +64,7 @@ const DropMessage = styled.div`
 `;
 
 const getFileIcon = (fileType) => {
-  switch(fileType.toLowerCase()) {
+  switch (fileType.toLowerCase()) {
     case 'imagen':
       return <FileImageOutlined style={{ fontSize: 56, color: '#1890ff' }} />;
     case 'pdf':
@@ -70,7 +74,13 @@ const getFileIcon = (fileType) => {
   }
 };
 
-const DragOverlay = ({ isDragging, onDrop, onDragOver, onDragLeave, fileType }) => (
+const DragOverlay = ({
+  isDragging,
+  onDrop,
+  onDragOver,
+  onDragLeave,
+  fileType,
+}) => (
   <DragOverlayContainer
     isDragging={isDragging}
     onDrop={onDrop}
@@ -78,9 +88,7 @@ const DragOverlay = ({ isDragging, onDrop, onDragOver, onDragLeave, fileType }) 
     onDragLeave={onDragLeave}
   >
     <DropMessage isDragging={isDragging}>
-      <div className="icon-wrapper">
-        {getFileIcon(fileType)}
-      </div>
+      <div className="icon-wrapper">{getFileIcon(fileType)}</div>
       <h3>Arrastra y suelta tus archivos aquí</h3>
       <p>Suelta los archivos para agregarlos como {fileType}</p>
     </DropMessage>

@@ -9,119 +9,120 @@ import { toggleDeveloperModal } from '../features/modals/modalSlice';
  * Permite abrir el modal de desarrollador con secuencias de teclas específicas
  */
 export const useDeveloperCommands = () => {
-    const dispatch = useDispatch();
-    const user = useSelector(selectUser);
-    
-    const isDeveloper = user?.role === 'dev';
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
 
-    useEffect(() => {
-        if (!isDeveloper) return;
+  const isDeveloper = user?.role === 'dev';
 
-        let sequence = '';
-        let sequenceTimer = null;
+  useEffect(() => {
+    if (!isDeveloper) return;
 
-        const handleKeyDown = (event) => {
-            // Ignorar si el usuario está escribiendo en un input o textarea
-            const activeElement = document.activeElement;
-            if (activeElement && (
-                activeElement.tagName === 'INPUT' || 
-                activeElement.tagName === 'TEXTAREA' ||
-                activeElement.contentEditable === 'true'
-            )) {
-                return;
-            }
+    let sequence = '';
+    let sequenceTimer = null;
 
-            // Limpiar el timer anterior
-            if (sequenceTimer) {
-                clearTimeout(sequenceTimer);
-            }
+    const handleKeyDown = (event) => {
+      // Ignorar si el usuario está escribiendo en un input o textarea
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === 'INPUT' ||
+          activeElement.tagName === 'TEXTAREA' ||
+          activeElement.contentEditable === 'true')
+      ) {
+        return;
+      }
 
-            // Añadir la tecla a la secuencia
-            sequence += event.key.toLowerCase();
+      // Limpiar el timer anterior
+      if (sequenceTimer) {
+        clearTimeout(sequenceTimer);
+      }
 
-            // Comandos disponibles:
-            // "dev" - abre el modal de desarrollador
-            // "devconsole" - abre el modal en la pestaña de consola
-            // "devdebug" - abre el modal en la pestaña de debug
-            // "devinfo" - abre el modal en la pestaña de info
+      // Añadir la tecla a la secuencia
+      sequence += event.key.toLowerCase();
 
-            // Verificar comandos
-            if (sequence.includes('dev')) {
-                event.preventDefault();
-                
-                if (sequence.includes('devconsole')) {
-                    dispatch(toggleDeveloperModal({ activeTab: 'console' }));
-                    sequence = '';
-                    return;
-                } else if (sequence.includes('devdebug')) {
-                    dispatch(toggleDeveloperModal({ activeTab: 'debug' }));
-                    sequence = '';
-                    return;
-                } else if (sequence.includes('devinfo')) {
-                    dispatch(toggleDeveloperModal({ activeTab: 'info' }));
-                    sequence = '';
-                    return;
-                } else if (sequence.endsWith('dev')) {
-                    dispatch(toggleDeveloperModal());
-                    sequence = '';
-                    return;
-                }
-            }
+      // Comandos disponibles:
+      // "dev" - abre el modal de desarrollador
+      // "devconsole" - abre el modal en la pestaña de consola
+      // "devdebug" - abre el modal en la pestaña de debug
+      // "devinfo" - abre el modal en la pestaña de info
 
-            // Comando alternativo con Ctrl+Shift+D
-            if (event.ctrlKey && event.shiftKey && event.key === 'D') {
-                event.preventDefault();
-                dispatch(toggleDeveloperModal());
-                sequence = '';
-                return;
-            }
+      // Verificar comandos
+      if (sequence.includes('dev')) {
+        event.preventDefault();
 
-            // Comando alternativo con triple click en Escape
-            if (event.key === 'Escape') {
-                if (sequence.includes('escape')) {
-                    const escapeCount = (sequence.match(/escape/g) || []).length;
-                    if (escapeCount >= 2) {
-                        dispatch(toggleDeveloperModal());
-                        sequence = '';
-                        return;
-                    }
-                }
-            }
-
-            // Limpiar la secuencia después de 2 segundos de inactividad
-            sequenceTimer = setTimeout(() => {
-                sequence = '';
-            }, 2000);
-
-            // Limitar la longitud de la secuencia para evitar memoria excesiva
-            if (sequence.length > 20) {
-                sequence = sequence.slice(-20);
-            }
-        };
-
-        // Añadir el listener
-        document.addEventListener('keydown', handleKeyDown);
-
-        // Limpiar el listener al desmontar
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-            if (sequenceTimer) {
-                clearTimeout(sequenceTimer);
-            }
-        };
-    }, [isDeveloper, dispatch]);
-
-    // Función para abrir el modal programáticamente
-    const openDeveloperModal = (activeTab = 'console') => {
-        if (isDeveloper) {
-            dispatch(toggleDeveloperModal({ activeTab }));
+        if (sequence.includes('devconsole')) {
+          dispatch(toggleDeveloperModal({ activeTab: 'console' }));
+          sequence = '';
+          return;
+        } else if (sequence.includes('devdebug')) {
+          dispatch(toggleDeveloperModal({ activeTab: 'debug' }));
+          sequence = '';
+          return;
+        } else if (sequence.includes('devinfo')) {
+          dispatch(toggleDeveloperModal({ activeTab: 'info' }));
+          sequence = '';
+          return;
+        } else if (sequence.endsWith('dev')) {
+          dispatch(toggleDeveloperModal());
+          sequence = '';
+          return;
         }
+      }
+
+      // Comando alternativo con Ctrl+Shift+D
+      if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+        event.preventDefault();
+        dispatch(toggleDeveloperModal());
+        sequence = '';
+        return;
+      }
+
+      // Comando alternativo con triple click en Escape
+      if (event.key === 'Escape') {
+        if (sequence.includes('escape')) {
+          const escapeCount = (sequence.match(/escape/g) || []).length;
+          if (escapeCount >= 2) {
+            dispatch(toggleDeveloperModal());
+            sequence = '';
+            return;
+          }
+        }
+      }
+
+      // Limpiar la secuencia después de 2 segundos de inactividad
+      sequenceTimer = setTimeout(() => {
+        sequence = '';
+      }, 2000);
+
+      // Limitar la longitud de la secuencia para evitar memoria excesiva
+      if (sequence.length > 20) {
+        sequence = sequence.slice(-20);
+      }
     };
 
-    return {
-        openDeveloperModal,
-        isDeveloper
+    // Añadir el listener
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Limpiar el listener al desmontar
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (sequenceTimer) {
+        clearTimeout(sequenceTimer);
+      }
     };
+  }, [isDeveloper, dispatch]);
+
+  // Función para abrir el modal programáticamente
+  const openDeveloperModal = (activeTab = 'console') => {
+    if (isDeveloper) {
+      dispatch(toggleDeveloperModal({ activeTab }));
+    }
+  };
+
+  return {
+    openDeveloperModal,
+    isDeveloper,
+  };
 };
 
 export default useDeveloperCommands;

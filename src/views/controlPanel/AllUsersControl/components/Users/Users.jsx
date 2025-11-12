@@ -1,98 +1,108 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { fbGetUsers } from '../../../../../firebase/Auth/fbGetUser'
-import { fbGetBusinessesList } from '../../../../../firebase/dev/businesses/fbGetBusinessesList'
+import { fbGetUsers } from '../../../../../firebase/Auth/fbGetUser';
+import { fbGetBusinessesList } from '../../../../../firebase/dev/businesses/fbGetBusinessesList';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 
-import { TableUser } from './TableUser'
-import { UsersFilterBar } from './UsersFilterBar'
+import { TableUser } from './TableUser';
+import { UsersFilterBar } from './UsersFilterBar';
 
 export const Users = () => {
-  const [users, setUsers] = useState([])
-  const [businesses, setBusinesses] = useState([])
-  const [filters, setFilters] = useState({ search: '', businessID: '', role: '' })
+  const [users, setUsers] = useState([]);
+  const [businesses, setBusinesses] = useState([]);
+  const [filters, setFilters] = useState({
+    search: '',
+    businessID: '',
+    role: '',
+  });
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const loadUsers = async () => {
       try {
         const [usersResponse, businessesResponse] = await Promise.all([
           fbGetUsers(),
           fbGetBusinessesList(),
-        ])
+        ]);
 
         if (isMounted) {
-          setUsers(Array.isArray(usersResponse) ? usersResponse : [])
-          setBusinesses(Array.isArray(businessesResponse) ? businessesResponse : [])
+          setUsers(Array.isArray(usersResponse) ? usersResponse : []);
+          setBusinesses(
+            Array.isArray(businessesResponse) ? businessesResponse : [],
+          );
         }
       } catch (error) {
-        console.error('Error fetching users:', error)
+        console.error('Error fetching users:', error);
         if (isMounted) {
-          setUsers([])
-          setBusinesses([])
+          setUsers([]);
+          setBusinesses([]);
         }
       }
-    }
+    };
 
-    loadUsers()
+    loadUsers();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
   const businessNameMap = useMemo(() => {
     return businesses.reduce((map, businessDoc) => {
-      const businessId = businessDoc?.id
+      const businessId = businessDoc?.id;
       if (!businessId) {
-        return map
+        return map;
       }
 
-      const name = businessDoc?.business?.name || businessDoc?.name || ''
-      map.set(String(businessId), name)
-      return map
-    }, new Map())
-  }, [businesses])
+      const name = businessDoc?.business?.name || businessDoc?.name || '';
+      map.set(String(businessId), name);
+      return map;
+    }, new Map());
+  }, [businesses]);
 
   const businessOptions = useMemo(() => {
     return businesses.map((businessDoc) => {
-      const value = String(businessDoc?.id ?? '')
-      const name = businessDoc?.business?.name || businessDoc?.name || value
+      const value = String(businessDoc?.id ?? '');
+      const name = businessDoc?.business?.name || businessDoc?.name || value;
 
       return {
         value,
         id: value,
         name,
         searchText: `${name ?? ''} ${value}`.trim().toLowerCase(),
-      }
-    })
-  }, [businesses])
+      };
+    });
+  }, [businesses]);
 
   const roleOptions = useMemo(() => {
-    const set = new Set()
+    const set = new Set();
 
     users.forEach((item) => {
-      const role = item?.user?.role
+      const role = item?.user?.role;
       if (role) {
-        set.add(String(role))
+        set.add(String(role));
       }
-    })
+    });
 
     return Array.from(set).map((value) => ({
       value,
       label: value,
       searchText: value.toLowerCase(),
-    }))
-  }, [users])
+    }));
+  }, [users]);
 
   const filteredUsers = useMemo(() => {
-    const term = filters.search.trim().toLowerCase()
+    const term = filters.search.trim().toLowerCase();
 
     return users.filter((item) => {
-      const info = item?.user || {}
+      const info = item?.user || {};
 
-      const matchesBusiness = filters.businessID ? String(info.businessID) === filters.businessID : true
-      const matchesRole = filters.role ? String(info.role) === filters.role : true
+      const matchesBusiness = filters.businessID
+        ? String(info.businessID) === filters.businessID
+        : true;
+      const matchesRole = filters.role
+        ? String(info.role) === filters.role
+        : true;
       const matchesSearch = term
         ? [
             info.id,
@@ -103,21 +113,21 @@ export const Users = () => {
           ]
             .filter(Boolean)
             .some((value) => String(value).toLowerCase().includes(term))
-        : true
+        : true;
 
-      return matchesBusiness && matchesRole && matchesSearch
-    })
-  }, [filters, users, businessNameMap])
+      return matchesBusiness && matchesRole && matchesSearch;
+    });
+  }, [filters, users, businessNameMap]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-    }))
-  }
+    }));
+  };
   return (
     <div>
-      <MenuApp sectionName={"Usuarios"} />
+      <MenuApp sectionName={'Usuarios'} />
       <UsersFilterBar
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -126,5 +136,5 @@ export const Users = () => {
       />
       <TableUser users={filteredUsers} />
     </div>
-  )
-}
+  );
+};

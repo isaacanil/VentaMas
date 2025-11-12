@@ -4,7 +4,10 @@ import { functions } from '../../firebaseconfig';
 
 import { buildSessionInfo, getStoredSession } from './sessionClient';
 
-const listSessionLogsCallable = httpsCallable(functions, 'clientListSessionLogs');
+const listSessionLogsCallable = httpsCallable(
+  functions,
+  'clientListSessionLogs',
+);
 
 /**
  * Obtiene los registros de sesiones del usuario actual o de un usuario objetivo (si se permiten privilegios).
@@ -34,7 +37,9 @@ export const fbGetSessionLogs = async ({ userId = null, limit = 100 } = {}) => {
   const data = response?.data || {};
 
   if (!data.ok) {
-    throw new Error(data?.message || 'No se pudo obtener el historial de sesiones.');
+    throw new Error(
+      data?.message || 'No se pudo obtener el historial de sesiones.',
+    );
   }
 
   return Array.isArray(data.logs) ? data.logs : [];

@@ -1,16 +1,26 @@
 import { useMemo } from 'react';
 
 import { toMillis } from '../utils/dateUtils';
-import { NO_BATCH_VALUE, getProductFilterKey, getProductFilterLabel } from '../utils/productFilterUtils';
+import {
+  NO_BATCH_VALUE,
+  getProductFilterKey,
+  getProductFilterLabel,
+} from '../utils/productFilterUtils';
 
-import type { ProductBatchMap, ProductOption, ProductStockLike } from '../types';
+import type {
+  ProductBatchMap,
+  ProductOption,
+  ProductStockLike,
+} from '../types';
 
 interface UseProductFilterOptionsResult {
   productOptions: ProductOption[];
   productBatchMap: ProductBatchMap;
 }
 
-export const useProductFilterOptions = (productsStock: ProductStockLike[]): UseProductFilterOptionsResult => (
+export const useProductFilterOptions = (
+  productsStock: ProductStockLike[],
+): UseProductFilterOptionsResult =>
   useMemo(() => {
     const productMap = new Map<string, string>();
     const batchesByProduct: ProductBatchMap = new Map();
@@ -60,5 +70,4 @@ export const useProductFilterOptions = (productsStock: ProductStockLike[]): UseP
       productOptions,
       productBatchMap: batchesByProduct,
     };
-  }, [productsStock])
-);
+  }, [productsStock]);

@@ -41,11 +41,21 @@ const WarningWrapper = styled.div`
  * @param {boolean} isSelected - Estado de selección (cambia degradado)
  * @param {boolean} show       - Control de visibilidad
  * @param {'outOfStock'|'lowStock'|'criticalStock'} variant - Tipo de advertencia
-*/
-export const StockWarning = ({ message, position = 'top', isSelected = false, show = false, variant = 'outOfStock' }) => {
+ */
+export const StockWarning = ({
+  message,
+  position = 'top',
+  isSelected = false,
+  show = false,
+  variant = 'outOfStock',
+}) => {
   if (!show) return null;
   return (
-    <WarningWrapper position={position} isSelected={isSelected} variant={variant}>
+    <WarningWrapper
+      position={position}
+      isSelected={isSelected}
+      variant={variant}
+    >
       {message}
     </WarningWrapper>
   );

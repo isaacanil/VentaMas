@@ -7,45 +7,52 @@ El **Modo de Uso Interno** permite a las empresas generar códigos de barras max
 ### ¿Cuál es la diferencia?
 
 #### Modo Estándar GS1
+
 ```
 746 | 1234 | 56789 | 0
  ↑     ↑      ↑     ↑
 País  Company Item   Check
       Prefix  Ref    Digit
 ```
+
 - **Company Prefix**: 4-7 dígitos (asignados por GS1)
 - **Item Reference**: 2-5 dígitos para productos
 - **Limitación**: Máximo 99,999 productos con Company Prefix de 4 dígitos
 
 #### Modo Uso Interno
+
 ```
 746 | 00 | 1234567 | 0
  ↑     ↑      ↑      ↑
 País  Cat   Item     Check
-      
+
 O sin categorías:
 746 | 123456789 | 0
  ↑        ↑       ↑
 País    Item     Check
 ```
+
 - **Sin Company Prefix**: Todos los dígitos para productos
 - **Máximo**: 999,999,999 productos (999 millones)
 
 ## Estructuras Disponibles
 
 ### 1. Uso Interno Estándar
+
 - **Categorías**: 0 dígitos
 - **Productos**: 9 dígitos
 - **Capacidad**: 999,999,999 productos
 - **Ejemplo**: `7461234567890`
 
 ### 2. Uso Interno con Categorías
+
 - **Categorías**: 2 dígitos (00-99)
 - **Productos**: 7 dígitos por categoría
 - **Capacidad**: 99 categorías × 9,999,999 productos = 999M productos
 - **Ejemplo**: `74601123456789` (Categoría 01, Producto 1234567)
 
 ### 3. Uso Interno Básico
+
 - **Categorías**: 3 dígitos (000-999)
 - **Productos**: 6 dígitos por categoría
 - **Capacidad**: 999 categorías × 999,999 productos = 999M productos
@@ -54,6 +61,7 @@ País    Item     Check
 ## Casos de Uso
 
 ### Para E-commerce con Muchos Productos
+
 ```javascript
 // Estructura: Sin categorías, máxima capacidad
 generateInternalGTIN13RD('', '000000001'); // 7460000000018
@@ -62,6 +70,7 @@ generateInternalGTIN13RD('', '000000003'); // 7460000000032
 ```
 
 ### Para Tienda con Departamentos
+
 ```javascript
 // Estructura: 2 dígitos categoría + 7 dígitos producto
 generateInternalGTIN13RD('01', '0000001'); // Electrónicos
@@ -70,6 +79,7 @@ generateInternalGTIN13RD('03', '0000001'); // Hogar
 ```
 
 ### Para Manufactura con Líneas de Productos
+
 ```javascript
 // Estructura: 3 dígitos línea + 6 dígitos producto
 generateInternalGTIN13RD('001', '000001'); // Línea premium
@@ -94,12 +104,14 @@ generateInternalGTIN13RD('999', '999999'); // Último producto posible
 ## ¿Cuándo Usar Cada Modo?
 
 ### Usa Modo Estándar GS1 si:
+
 - Vendes en tiendas físicas externas
 - Necesitas intercambio con proveedores/distribuidores
 - Requieres compatibilidad global
 - Tienes pocos productos (< 99,999)
 
 ### Usa Modo Interno si:
+
 - Vendes solo online o en tus propias tiendas
 - Tienes muchos productos (> 100,000)
 - Quieres ahorrar costos de membresía GS1

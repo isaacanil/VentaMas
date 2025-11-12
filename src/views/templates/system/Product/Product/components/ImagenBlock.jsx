@@ -67,31 +67,37 @@ const LoadingOverlay = styled.div`
  * @param {object} props.productState - Local state for image loading/visibility
  * @param {function} props.setProductState - Setter for productState
  */
-export const ProductImage = React.memo(({ product, productState, setProductState, isFirebaseLoading }) => {
-  const isConnected = useCheckForInternetConnection();
-  const [imageFallback] = useImageFallback(product?.image, noImg);
+export const ProductImage = React.memo(
+  ({ product, productState, setProductState, isFirebaseLoading }) => {
+    const isConnected = useCheckForInternetConnection();
+    const [imageFallback] = useImageFallback(product?.image, noImg);
 
-  return (
-    <ImageWrapper imageHiddenRef={productState.imageHidden}>
-      <ImageContainer imageHiddenRef={productState.imageHidden}>
-        {!productState.isImageLoaded && <Spin />}
-        <img
-          src={(isConnected && imageFallback) || noImg}
-          alt={product.name}
-          onLoad={() =>
-            setProductState((prev) => ({ ...prev, isImageLoaded: true }))
-          }
-          style={{ visibility: productState.isImageLoaded ? 'visible' : 'hidden' }}
-        />
-      </ImageContainer>
-      {isFirebaseLoading && (
-        <LoadingOverlay>
-          <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
-        </LoadingOverlay>
-      )}
-    </ImageWrapper>
-  );
-});
+    return (
+      <ImageWrapper imageHiddenRef={productState.imageHidden}>
+        <ImageContainer imageHiddenRef={productState.imageHidden}>
+          {!productState.isImageLoaded && <Spin />}
+          <img
+            src={(isConnected && imageFallback) || noImg}
+            alt={product.name}
+            onLoad={() =>
+              setProductState((prev) => ({ ...prev, isImageLoaded: true }))
+            }
+            style={{
+              visibility: productState.isImageLoaded ? 'visible' : 'hidden',
+            }}
+          />
+        </ImageContainer>
+        {isFirebaseLoading && (
+          <LoadingOverlay>
+            <Spin
+              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+            />
+          </LoadingOverlay>
+        )}
+      </ImageWrapper>
+    );
+  },
+);
 
 ProductImage.displayName = 'ProductImage';
 

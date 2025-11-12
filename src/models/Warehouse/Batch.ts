@@ -1,4 +1,4 @@
-import type { AuditInfo } from "./AuditInfo";
+import type { AuditInfo } from './AuditInfo';
 
 export enum BatchStatus {
   Active = 'active',

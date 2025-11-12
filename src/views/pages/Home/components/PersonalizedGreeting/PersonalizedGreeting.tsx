@@ -24,21 +24,27 @@ interface RootState {
 }
 
 const PersonalizedGreeting = (): JSX.Element => {
-  const user = useSelector<RootState, UserInfo | null>((state) => (
+  const user = useSelector<RootState, UserInfo | null>((state) =>
     typeof state.user?.user === 'object' && state.user.user !== null
       ? state.user.user
-      : null
-  ));
-  const business = useSelector<RootState, BusinessInfo | null>((state) => (
+      : null,
+  );
+  const business = useSelector<RootState, BusinessInfo | null>((state) =>
     typeof state.business?.data === 'object' && state.business.data !== null
       ? state.business.data
-      : null
-  ));
+      : null,
+  );
   const [isSessionModalOpen, setSessionModalOpen] = useState(false);
 
-  const realName = user?.realName && typeof user.realName === 'string' ? user.realName.trim() : '';
-  const username = user?.username && typeof user.username === 'string' ? user.username.trim() : '';
-  const nameToDisplay = (realName || username || 'Usuario');
+  const realName =
+    user?.realName && typeof user.realName === 'string'
+      ? user.realName.trim()
+      : '';
+  const username =
+    user?.username && typeof user.username === 'string'
+      ? user.username.trim()
+      : '';
+  const nameToDisplay = realName || username || 'Usuario';
 
   return (
     <>

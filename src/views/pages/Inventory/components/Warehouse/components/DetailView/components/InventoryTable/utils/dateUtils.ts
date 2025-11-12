@@ -25,12 +25,15 @@ export const normalizeToDayjs = (value: unknown): Dayjs | null => {
 
     if (maybeValue) {
       if (typeof maybeValue.seconds === 'number') {
-        const millis = (maybeValue.seconds * 1000) + ((maybeValue.nanoseconds || 0) / 1_000_000);
+        const millis =
+          maybeValue.seconds * 1000 + (maybeValue.nanoseconds || 0) / 1_000_000;
         return dayjs(millis);
       }
 
       if (typeof maybeValue._seconds === 'number') {
-        const millis = (maybeValue._seconds * 1000) + ((maybeValue._nanoseconds || 0) / 1_000_000);
+        const millis =
+          maybeValue._seconds * 1000 +
+          (maybeValue._nanoseconds || 0) / 1_000_000;
         return dayjs(millis);
       }
 
@@ -55,7 +58,11 @@ export const normalizeToDayjs = (value: unknown): Dayjs | null => {
     const directParse = dayjs(trimmed);
     if (directParse.isValid()) return directParse;
 
-    const customParse = dayjs(trimmed, ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD', 'YYYY/MM/DD'], true);
+    const customParse = dayjs(
+      trimmed,
+      ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD', 'YYYY/MM/DD'],
+      true,
+    );
     if (customParse.isValid()) return customParse;
 
     return null;

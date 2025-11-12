@@ -1,25 +1,33 @@
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Form, Input, InputNumber, DatePicker, Statistic, Button, message, Tooltip } from 'antd';
+import {
+  Form,
+  Input,
+  InputNumber,
+  DatePicker,
+  Statistic,
+  Button,
+  message,
+  Tooltip,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { 
-  SelectProduct, 
-  SelectProductSelected, 
+import {
+  SelectProduct,
+  SelectProductSelected,
   setSelectedBackOrders,
-  setPurchaseQuantity, 
-  clearSelectedBackOrders 
+  setPurchaseQuantity,
+  clearSelectedBackOrders,
 } from '../../../../../features/purchase/addPurchaseSlice';
 import { getBackOrdersByProduct } from '../../../../../firebase/warehouse/backOrderService';
 import { formatMoney } from '../../../../../utils/formatters';
 import ProductModal from '../../shared/ProductModal';
 
 import BackOrdersModal from './BackOrdersModal';
-
 
 function AddProductForm({ onSave, onClear }) {
   const dispatch = useDispatch();
@@ -43,7 +51,7 @@ function AddProductForm({ onSave, onClear }) {
     dispatch(SelectProduct(product));
     // Reset checked state when selecting a new product
     if (!product?.id) {
-        setCheckedProducts(new Set());
+      setCheckedProducts(new Set());
     }
   };
 
@@ -53,16 +61,17 @@ function AddProductForm({ onSave, onClear }) {
     const taxPercent = Number(values.taxPercentage) || 0;
     const freight = Number(values.freight) || 0;
     const otherCosts = Number(values.otherCosts) || 0;
-    
+
     const calculatedTax = (baseCost * taxPercent) / 100;
     setCalculatedITBIS(calculatedTax);
-    
+
     const newUnitCost = baseCost + calculatedTax + freight + otherCosts;
     setUnitCost(newUnitCost);
-    
-    const quantitySource = typeof overrideQuantity === 'number' && Number.isFinite(overrideQuantity)
-      ? overrideQuantity
-      : selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity ?? 0;
+
+    const quantitySource =
+      typeof overrideQuantity === 'number' && Number.isFinite(overrideQuantity)
+        ? overrideQuantity
+        : (selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity ?? 0);
     const effectiveQuantity = Math.max(0, Number(quantitySource) || 0);
     setSubtotal(newUnitCost * effectiveQuantity);
   };
@@ -72,15 +81,17 @@ function AddProductForm({ onSave, onClear }) {
       const values = await form.validateFields();
       onSave({
         ...values,
-        expirationDate: values.expirationDate ? values.expirationDate.valueOf() : null,
+        expirationDate: values.expirationDate
+          ? values.expirationDate.valueOf()
+          : null,
         unitCost,
         subtotal,
         calculatedITBIS,
         purchaseQuantity: selectedProduct.purchaseQuantity,
         selectedBackOrders: selectedProduct.selectedBackOrders,
-        quantity: selectedProduct.quantity
+        quantity: selectedProduct.quantity,
       });
-      
+
       form.resetFields();
       dispatch(clearSelectedBackOrders());
       // Clear checked products after saving
@@ -104,29 +115,31 @@ function AddProductForm({ onSave, onClear }) {
     setCheckedProducts(new Set());
   };
 
-
   const handleQuantityClick = async () => {
     if (!selectedProduct?.id || !user?.businessID) return;
-    
+
     // If we've already checked this product and found no back orders, don't check again
     if (checkedProducts.has(selectedProduct.id)) {
-        return;
+      return;
     }
 
     setIsLoadingBackOrders(true);
     try {
-        const data = await getBackOrdersByProduct(user.businessID, selectedProduct.id);
-        if (data?.length > 0) {
-            setProductBackOrders(data);
-            setTempSelectedProduct(selectedProduct);
-            setIsBackOrderModalVisible(true);
-        } else {
-            dispatch(clearSelectedBackOrders());
-            // Add this product to the checked set since it has no back orders
-            setCheckedProducts(new Set([...checkedProducts, selectedProduct.id]));
-        }
+      const data = await getBackOrdersByProduct(
+        user.businessID,
+        selectedProduct.id,
+      );
+      if (data?.length > 0) {
+        setProductBackOrders(data);
+        setTempSelectedProduct(selectedProduct);
+        setIsBackOrderModalVisible(true);
+      } else {
+        dispatch(clearSelectedBackOrders());
+        // Add this product to the checked set since it has no back orders
+        setCheckedProducts(new Set([...checkedProducts, selectedProduct.id]));
+      }
     } finally {
-        setIsLoadingBackOrders(false);
+      setIsLoadingBackOrders(false);
     }
   };
 
@@ -153,29 +166,29 @@ function AddProductForm({ onSave, onClear }) {
   };
 
   useEffect(() => {
-    form.validateFields().then(calculateCosts).catch(() => {});
+    form
+      .validateFields()
+      .then(calculateCosts)
+      .catch(() => {});
   }, [form]);
 
   useEffect(() => {
     if (selectedProduct) {
       form.setFieldsValue({
         name: selectedProduct.name,
-        quantity: selectedProduct.purchaseQuantity ?? selectedProduct.quantity, 
+        quantity: selectedProduct.purchaseQuantity ?? selectedProduct.quantity,
       });
-      calculateCosts(selectedProduct.purchaseQuantity ?? selectedProduct.quantity ?? 0);
+      calculateCosts(
+        selectedProduct.purchaseQuantity ?? selectedProduct.quantity ?? 0,
+      );
     }
-
   }, [selectedProduct]);
-
 
   return (
     <RowContainer>
-      <Form
-        form={form}
-        layout="vertical"
-      >
+      <Form form={form} layout="vertical">
         <FieldsRow>
-          <Tooltip title='Nombre del Producto'>
+          <Tooltip title="Nombre del Producto">
             <StyledFormItem
               name="name"
               label="Producto"
@@ -188,20 +201,17 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Fecha de Expiración'>
-            <StyledFormItem
-              name="expirationDate"
-              label="F. Expiración"
-            >
+          <Tooltip title="Fecha de Expiración">
+            <StyledFormItem name="expirationDate" label="F. Expiración">
               <DatePicker
-                format='DD/MM/YY'
+                format="DD/MM/YY"
                 disabled={!isProductSelected}
                 placeholder="Fecha. Exp"
               />
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Cantidad'>
+          <Tooltip title="Cantidad">
             <StyledFormItem
               name="quantity"
               label="Cantidad"
@@ -211,35 +221,41 @@ function AddProductForm({ onSave, onClear }) {
                 controls={false}
                 disabled={!isProductSelected || isLoadingBackOrders}
                 placeholder="Cantidad"
-                value={selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity}
+                value={
+                  selectedProduct?.purchaseQuantity ?? selectedProduct?.quantity
+                }
                 onChange={handleQuantityChange}
                 onClick={handleQuantityClick}
-                style={{ cursor: isProductSelected && !isLoadingBackOrders ? 'pointer' : 'not-allowed' }}
-                addonAfter={isLoadingBackOrders && (
-                  <FontAwesomeIcon 
-                    icon={faSpinner} 
-                    spin 
-                    style={{ color: '#1890ff' }}
-                  />
-                )}
+                style={{
+                  cursor:
+                    isProductSelected && !isLoadingBackOrders
+                      ? 'pointer'
+                      : 'not-allowed',
+                }}
+                addonAfter={
+                  isLoadingBackOrders && (
+                    <FontAwesomeIcon
+                      icon={faSpinner}
+                      spin
+                      style={{ color: '#1890ff' }}
+                    />
+                  )
+                }
               />
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Unidad de Medida'>
+          <Tooltip title="Unidad de Medida">
             <StyledFormItem
               name="unitMeasurement"
               label="Unid. Medida"
               rules={[{ required: isProductSelected }]}
             >
-              <Input
-                placeholder="Unidad"
-                disabled={!isProductSelected}
-              />
+              <Input placeholder="Unidad" disabled={!isProductSelected} />
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Costo Base'>
+          <Tooltip title="Costo Base">
             <StyledFormItem
               name="baseCost"
               label="Costo Base"
@@ -256,11 +272,8 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='ITBIS'>
-            <StyledFormItem
-              name="taxPercentage"
-              label="ITBIS (%)"
-            >
+          <Tooltip title="ITBIS">
+            <StyledFormItem name="taxPercentage" label="ITBIS (%)">
               <InputNumber
                 disabled={!isProductSelected}
                 controls={false}
@@ -270,11 +283,8 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Flete'>
-            <StyledFormItem
-              name="freight"
-              label="Flete"
-            >
+          <Tooltip title="Flete">
+            <StyledFormItem name="freight" label="Flete">
               <InputNumber
                 disabled={!isProductSelected}
                 controls={false}
@@ -284,7 +294,7 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Otros Costos'>
+          <Tooltip title="Otros Costos">
             <StyledFormItem name="otherCosts" label="Otros">
               <InputNumber
                 controls={false}
@@ -295,7 +305,7 @@ function AddProductForm({ onSave, onClear }) {
             </StyledFormItem>
           </Tooltip>
 
-          <Tooltip title='Costo Unitario'>
+          <Tooltip title="Costo Unitario">
             <TotalItem
               title="Costo Unitario"
               value={unitCost}
@@ -303,7 +313,7 @@ function AddProductForm({ onSave, onClear }) {
             />
           </Tooltip>
 
-          <Tooltip title='Subtotal'>
+          <Tooltip title="Subtotal">
             <TotalItem
               title="Subtotal"
               value={subtotal}
@@ -312,14 +322,14 @@ function AddProductForm({ onSave, onClear }) {
           </Tooltip>
 
           <ActionContainer>
-            <Tooltip title='Borrar'>
+            <Tooltip title="Borrar">
               <Button
                 icon={icons.operationModes.close}
                 onClick={handleDelete}
                 disabled={!isProductSelected}
               />
             </Tooltip>
-            <Tooltip title='Agregar Producto'>
+            <Tooltip title="Agregar Producto">
               <Button
                 type="primary"
                 icon={icons.operationModes.add}
@@ -336,13 +346,13 @@ function AddProductForm({ onSave, onClear }) {
         onCancel={handleBackOrderModalCancel}
         onConfirm={handleBackOrderModalConfirm}
         initialSelectedBackOrders={selectedProduct.selectedBackOrders} // nuevo
-        initialPurchaseQuantity={selectedProduct.purchaseQuantity}         // nuevo
-        productId={selectedProduct.id}  // nuevo: pasar el id para cargar backorders
+        initialPurchaseQuantity={selectedProduct.purchaseQuantity} // nuevo
+        productId={selectedProduct.id} // nuevo: pasar el id para cargar backorders
         backOrders={productBackOrders}
       />
     </RowContainer>
   );
-};
+}
 
 export default AddProductForm;
 
@@ -354,17 +364,17 @@ const RowContainer = styled.div`
 
 const FieldsRow = styled.div`
   display: grid;
-  grid-template-columns: 
-    1.2fr 
-    100px 
-    min-content 
-    120px 
-    105px 
-    min-content  
-    min-content 
-    min-content 
-    0.8fr 
-    1fr 
+  grid-template-columns:
+    1.2fr
+    100px
+    min-content
+    120px
+    105px
+    min-content
+    min-content
+    min-content
+    0.8fr
+    1fr
     min-content;
   gap: 8px;
 `;
@@ -402,7 +412,7 @@ const StyledFormItem = styled(Form.Item)`
   .ant-form-item-explain {
     display: none;
   }
-  
+
   .ant-form-item-label {
     display: flex;
     align-items: flex-start;

@@ -12,7 +12,10 @@ import type { JSX } from 'react';
 const isFeatureCardData = (card: unknown): card is FeatureCardData => {
   if (!card || typeof card !== 'object') return false;
   const candidate = card as Partial<FeatureCardData>;
-  return typeof candidate.title === 'string' && typeof candidate.category === 'string';
+  return (
+    typeof candidate.title === 'string' &&
+    typeof candidate.category === 'string'
+  );
 };
 
 const normalizeCardData = (data: unknown): FeatureCardData[] => {
@@ -31,20 +34,23 @@ export const DashboardShortcuts = (): JSX.Element => {
   return (
     <ShortcutsSection>
       {abilities?.can('developerAccess', 'all') && (
-        <FeatureCardList title="Funciones de desarrollador" cardData={developer} />
+        <FeatureCardList
+          title="Funciones de desarrollador"
+          cardData={developer}
+        />
       )}
       <FeatureCardList title="Atajos" cardData={cardData} />
     </ShortcutsSection>
   );
 };
 const ShortcutsSection = styled.div`
-    display: grid;
-    gap: 1em;
-    max-width: 1440px;
-    width: 100%;
-    margin: 0 auto;
+  display: grid;
+  gap: 1em;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
 
-    @media (max-width: 768px) {
-        gap: 0.8em;
-    }
-`
+  @media (max-width: 768px) {
+    gap: 0.8em;
+  }
+`;

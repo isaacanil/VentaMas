@@ -7,7 +7,10 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
-import { useEnrichedBackOrders, updateBackOrder } from '../../../../firebase/warehouse/backOrderService';
+import {
+  useEnrichedBackOrders,
+  updateBackOrder,
+} from '../../../../firebase/warehouse/backOrderService';
 import InventoryMenu from '../../../pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 
@@ -45,15 +48,18 @@ const BackOrders = () => {
   const { data: backorders, loading } = useEnrichedBackOrders();
   const user = useSelector(selectUser);
 
-  const stats = useMemo(() => ({
-    total: backorders.length,
-    pending: backorders.filter(b => b.status === 'pending').length,
-    reserved: backorders.filter(b => b.status === 'reserved').length,
-    completed: backorders.filter(b => b.status === 'completed').length
-  }), [backorders]);
+  const stats = useMemo(
+    () => ({
+      total: backorders.length,
+      pending: backorders.filter((b) => b.status === 'pending').length,
+      reserved: backorders.filter((b) => b.status === 'reserved').length,
+      completed: backorders.filter((b) => b.status === 'completed').length,
+    }),
+    [backorders],
+  );
 
   const filteredBackorders = useMemo(() => {
-    return backorders.filter(item => {
+    return backorders.filter((item) => {
       const matchesSearch = searchText
         ? item.productName.toLowerCase().includes(searchText.toLowerCase())
         : true;
@@ -62,12 +68,17 @@ const BackOrders = () => {
       let matchesDate = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
         const createdMs = new Date(item.createdAt).getTime();
-        const startMs = dateRange[0]?.startOf?.('day')?.valueOf?.() ?? new Date(dateRange[0]).setHours(0, 0, 0, 0);
-        const endMs = dateRange[1]?.endOf?.('day')?.valueOf?.() ?? new Date(dateRange[1]).setHours(23, 59, 59, 999);
+        const startMs =
+          dateRange[0]?.startOf?.('day')?.valueOf?.() ??
+          new Date(dateRange[0]).setHours(0, 0, 0, 0);
+        const endMs =
+          dateRange[1]?.endOf?.('day')?.valueOf?.() ??
+          new Date(dateRange[1]).setHours(23, 59, 59, 999);
         matchesDate = createdMs >= startMs && createdMs <= endMs;
       }
 
-      const matchesStatus = statusFilter === 'all' ? true : item.status === statusFilter;
+      const matchesStatus =
+        statusFilter === 'all' ? true : item.status === statusFilter;
 
       return matchesSearch && matchesDate && matchesStatus;
     });
@@ -92,14 +103,18 @@ const BackOrders = () => {
 
       const toEs = (s) => {
         switch ((s || '').toLowerCase()) {
-          case 'pending': return 'Pendiente';
-          case 'reserved': return 'Reservado';
-          case 'completed': return 'Completado';
-          default: return s;
+          case 'pending':
+            return 'Pendiente';
+          case 'reserved':
+            return 'Reservado';
+          case 'completed':
+            return 'Completado';
+          default:
+            return s;
         }
       };
 
-      const rows = filteredBackorders.map(r => ({
+      const rows = filteredBackorders.map((r) => ({
         productName: r.productName,
         status: toEs(r.status),
         initialQuantity: r.initialQuantity ?? 0,
@@ -113,17 +128,24 @@ const BackOrders = () => {
 
       if (rows.length > 0) {
         const totalRow = ws.addRow([
-          'TOTAL', '',
+          'TOTAL',
+          '',
           { formula: `SUM(C2:C${rows.length + 1})` },
           { formula: `SUM(D2:D${rows.length + 1})` },
-          '', ''
+          '',
+          '',
         ]);
         totalRow.font = { bold: true };
       }
 
       const buf = await wb.xlsx.writeBuffer();
-      const stamp = new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
-      saveAs(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `backorders_${stamp}.xlsx`);
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+      saveAs(
+        new Blob([buf], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        }),
+        `backorders_${stamp}.xlsx`,
+      );
     } catch (err) {
       console.error(err);
       message.error('No se pudo exportar a Excel');
@@ -132,7 +154,7 @@ const BackOrders = () => {
 
   const groupedBackorders = useMemo(() => {
     // Filtrar backorders
-    const filtered = backorders.filter(item => {
+    const filtered = backorders.filter((item) => {
       const matchesSearch = searchText
         ? item.productName.toLowerCase().includes(searchText.toLowerCase())
         : true;
@@ -141,12 +163,17 @@ const BackOrders = () => {
       let matchesDate = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
         const createdMs = new Date(item.createdAt).getTime();
-        const startMs = dateRange[0]?.startOf?.('day')?.valueOf?.() ?? new Date(dateRange[0]).setHours(0, 0, 0, 0);
-        const endMs = dateRange[1]?.endOf?.('day')?.valueOf?.() ?? new Date(dateRange[1]).setHours(23, 59, 59, 999);
+        const startMs =
+          dateRange[0]?.startOf?.('day')?.valueOf?.() ??
+          new Date(dateRange[0]).setHours(0, 0, 0, 0);
+        const endMs =
+          dateRange[1]?.endOf?.('day')?.valueOf?.() ??
+          new Date(dateRange[1]).setHours(23, 59, 59, 999);
         matchesDate = createdMs >= startMs && createdMs <= endMs;
       }
 
-      const matchesStatus = statusFilter === 'all' ? true : item.status === statusFilter;
+      const matchesStatus =
+        statusFilter === 'all' ? true : item.status === statusFilter;
 
       return matchesSearch && matchesDate && matchesStatus;
     });
@@ -155,7 +182,7 @@ const BackOrders = () => {
     const groups = filtered.reduce((acc, item) => {
       const key = item.productId;
       const dateKey = new Date(item.createdAt).toLocaleDateString();
-      
+
       if (!acc[key]) {
         acc[key] = {
           productId: key,
@@ -166,7 +193,7 @@ const BackOrders = () => {
           directPendingQuantity: 0,
           lastUpdate: item.updatedAt,
           progress: 0,
-          dateGroups: {}
+          dateGroups: {},
         };
       }
 
@@ -175,14 +202,14 @@ const BackOrders = () => {
           date: new Date(item.createdAt),
           items: [],
           totalQuantity: 0,
-          pendingQuantity: 0
+          pendingQuantity: 0,
         };
       }
 
       acc[key].dateGroups[dateKey].items.push(item);
       acc[key].dateGroups[dateKey].totalQuantity += item.initialQuantity || 0;
       acc[key].dateGroups[dateKey].pendingQuantity += item.pendingQuantity || 0;
-      
+
       acc[key].totalQuantity += item.initialQuantity || 0;
       acc[key].pendingQuantity += item.pendingQuantity || 0;
       if (item.status === 'reserved') {
@@ -190,8 +217,14 @@ const BackOrders = () => {
       } else if (item.status === 'pending') {
         acc[key].directPendingQuantity += item.pendingQuantity || 0;
       }
-      acc[key].lastUpdate = new Date(Math.max(new Date(acc[key].lastUpdate), new Date(item.updatedAt)));
-      acc[key].progress = Math.round(((acc[key].totalQuantity - acc[key].pendingQuantity) / acc[key].totalQuantity) * 100);
+      acc[key].lastUpdate = new Date(
+        Math.max(new Date(acc[key].lastUpdate), new Date(item.updatedAt)),
+      );
+      acc[key].progress = Math.round(
+        ((acc[key].totalQuantity - acc[key].pendingQuantity) /
+          acc[key].totalQuantity) *
+          100,
+      );
       return acc;
     }, {});
 
@@ -199,9 +232,21 @@ const BackOrders = () => {
     return Object.values(groups).sort((a, b) => {
       switch (sortBy) {
         case 'name-asc':
-          return (a.productName || '').localeCompare((b.productName || ''), 'es', { sensitivity: 'base' });
+          return (a.productName || '').localeCompare(
+            b.productName || '',
+            'es',
+            {
+              sensitivity: 'base',
+            },
+          );
         case 'name-desc':
-          return (b.productName || '').localeCompare((a.productName || ''), 'es', { sensitivity: 'base' });
+          return (b.productName || '').localeCompare(
+            a.productName || '',
+            'es',
+            {
+              sensitivity: 'base',
+            },
+          );
         case 'pending-desc':
           return b.pendingQuantity - a.pendingQuantity;
         case 'pending-asc':
@@ -231,7 +276,7 @@ const BackOrders = () => {
       />
       <InventoryMenu />
       <Content>
-        <Header 
+        <Header
           stats={stats}
           searchText={searchText}
           setSearchText={setSearchText}
@@ -246,7 +291,13 @@ const BackOrders = () => {
         />
 
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              padding: '24px',
+            }}
+          >
             <Spin />
           </div>
         ) : groupedBackorders.length === 0 ? (
@@ -258,7 +309,10 @@ const BackOrders = () => {
                 <ProductGroup
                   key={group.productId}
                   group={group}
-                  onFulfill={(g) => { setSelectedGroup(g); setFulfillOpen(true); }}
+                  onFulfill={(g) => {
+                    setSelectedGroup(g);
+                    setFulfillOpen(true);
+                  }}
                 />
               ))}
             </ProductGroupsContainer>
@@ -270,7 +324,12 @@ const BackOrders = () => {
         open={fulfillOpen}
         group={selectedGroup}
         loading={submitting}
-        onCancel={() => { if (!submitting) { setFulfillOpen(false); setSelectedGroup(null); } }}
+        onCancel={() => {
+          if (!submitting) {
+            setFulfillOpen(false);
+            setSelectedGroup(null);
+          }
+        }}
         onConfirm={async (amount) => {
           if (!selectedGroup || !user?.businessID) return;
           try {
@@ -279,7 +338,12 @@ const BackOrders = () => {
 
             // Tomar items actuales del store por productId (más seguro que snapshot de selección)
             const items = backorders
-              .filter(it => it.productId === selectedGroup.productId && it.status === 'pending' && (it?.pendingQuantity ?? 0) > 0)
+              .filter(
+                (it) =>
+                  it.productId === selectedGroup.productId &&
+                  it.status === 'pending' &&
+                  (it?.pendingQuantity ?? 0) > 0,
+              )
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
             for (const it of items) {
@@ -289,7 +353,7 @@ const BackOrders = () => {
               const newPending = Math.max(0, (it.pendingQuantity || 0) - alloc);
               await updateBackOrder(user.businessID, it.id, {
                 pendingQuantity: newPending,
-                status: newPending === 0 ? 'completed' : it.status
+                status: newPending === 0 ? 'completed' : it.status,
               });
               remaining -= alloc;
             }
@@ -299,24 +363,40 @@ const BackOrders = () => {
             if (applied <= 0) {
               message.info('No había pendientes para cubrir.');
             } else if (remaining > 0) {
-              message.warning(`Sobraron ${remaining} sin aplicar por falta de pendientes.`);
+              message.warning(
+                `Sobraron ${remaining} sin aplicar por falta de pendientes.`,
+              );
             } else {
               message.success('Cobertura aplicada correctamente.');
             }
 
             // Calcular nuevo pendiente local y cerrar si terminó (llegó a 0)
-            const newPendingLocal = Math.max(0, (selectedGroup.pendingQuantity || 0) - applied);
-            const newDirectPendingLocal = Math.max(0, (selectedGroup.directPendingQuantity || 0) - applied);
+            const newPendingLocal = Math.max(
+              0,
+              (selectedGroup.pendingQuantity || 0) - applied,
+            );
+            const newDirectPendingLocal = Math.max(
+              0,
+              (selectedGroup.directPendingQuantity || 0) - applied,
+            );
             if (newDirectPendingLocal <= 0) {
               setFulfillOpen(false);
               setSelectedGroup(null);
             } else {
               // Actualizar vista del modal para reflejar nuevo pendiente sin cerrar
-              setSelectedGroup(prev => {
+              setSelectedGroup((prev) => {
                 if (!prev) return prev;
                 const total = prev.totalQuantity || 0;
-                const newProgress = total > 0 ? Math.round(((total - newPendingLocal) / total) * 100) : 0;
-                return { ...prev, pendingQuantity: newPendingLocal, directPendingQuantity: newDirectPendingLocal, progress: newProgress };
+                const newProgress =
+                  total > 0
+                    ? Math.round(((total - newPendingLocal) / total) * 100)
+                    : 0;
+                return {
+                  ...prev,
+                  pendingQuantity: newPendingLocal,
+                  directPendingQuantity: newDirectPendingLocal,
+                  progress: newProgress,
+                };
               });
             }
           } catch (err) {

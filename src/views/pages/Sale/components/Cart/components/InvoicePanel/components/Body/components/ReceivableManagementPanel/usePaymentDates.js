@@ -1,11 +1,11 @@
-import { DateTime } from "luxon";
-import { useState, useLayoutEffect } from "react";
+import { DateTime } from 'luxon';
+import { useState, useLayoutEffect } from 'react';
 
 export default function usePaymentDates(
-  frequency = "monthly",
+  frequency = 'monthly',
   installments = 1,
   userStartDate = null,
-  forceRecalculate = false
+  forceRecalculate = false,
 ) {
   const [paymentDates, setPaymentDates] = useState([]);
   const [nextPaymentDate, setNextPaymentDate] = useState(null);
@@ -17,16 +17,17 @@ export default function usePaymentDates(
       return;
     }
 
-    const baseDate = forceRecalculate || !userStartDate
-      ? DateTime.now().startOf("day")
-      : DateTime.fromMillis(userStartDate).startOf("day");
+    const baseDate =
+      forceRecalculate || !userStartDate
+        ? DateTime.now().startOf('day')
+        : DateTime.fromMillis(userStartDate).startOf('day');
 
     const dates = [];
     for (let i = 0; i < installments; i++) {
       let installmentDate;
-      if (frequency === "weekly") {
+      if (frequency === 'weekly') {
         installmentDate = baseDate.plus({ days: 7 * (i + 1) });
-      } else if (frequency === "annual") {
+      } else if (frequency === 'annual') {
         installmentDate = baseDate.plus({ years: i + 1 });
       } else {
         installmentDate = baseDate.plus({ months: i + 1 });

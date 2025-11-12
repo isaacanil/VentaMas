@@ -12,49 +12,53 @@ export const ActionMenu = ({ options = [], disabled }) => {
 
   useClickOutSide(menuRef, visible, () => setVisible(false));
 
-return (
+  return (
     <>
-        <Container>
-            <MenuButton onClick={() => setVisible(!visible)} disabled={disabled}>
-                <DotsIcon disabled={disabled}>⋮</DotsIcon>
-            </MenuButton>
-        </Container>
-        <AnimatePresence>
-            {visible && (
-                <MenuWrapper
-                    ref={menuRef}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
+      <Container>
+        <MenuButton onClick={() => setVisible(!visible)} disabled={disabled}>
+          <DotsIcon disabled={disabled}>⋮</DotsIcon>
+        </MenuButton>
+      </Container>
+      <AnimatePresence>
+        {visible && (
+          <MenuWrapper
+            ref={menuRef}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <MenuHeader>
+              <HeaderTitle>Más Acciones</HeaderTitle>
+              <CloseButton onClick={() => setVisible(false)}>
+                <FontAwesomeIcon icon={faTimes} />
+              </CloseButton>
+            </MenuHeader>
+            <MenuContainer>
+              {options.map((option, index) => (
+                <MenuItem
+                  key={index}
+                  onClick={() => {
+                    option.action();
+                    setVisible(false);
+                  }}
+                  disabled={option.disabled}
+                  $theme={option.theme}
                 >
-                    <MenuHeader>
-                        <HeaderTitle>Más Acciones</HeaderTitle>
-                        <CloseButton onClick={() => setVisible(false)}>
-                            <FontAwesomeIcon icon={faTimes} />
-                        </CloseButton>
-                    </MenuHeader>
-                    <MenuContainer>
-                        {options.map((option, index) => (
-                            <MenuItem 
-                                key={index}
-                                onClick={() => {
-                                    option.action();
-                                    setVisible(false);
-                                }}
-                                disabled={option.disabled}
-                                $theme={option.theme}
-                            >
-                                {option.icon && <IconWrapper $theme={option.theme}>{option.icon}</IconWrapper>}
-                                {option.text}
-                            </MenuItem>
-                        ))}
-                    </MenuContainer>
-                </MenuWrapper>
-            )}
-        </AnimatePresence>
+                  {option.icon && (
+                    <IconWrapper $theme={option.theme}>
+                      {option.icon}
+                    </IconWrapper>
+                  )}
+                  {option.text}
+                </MenuItem>
+              ))}
+            </MenuContainer>
+          </MenuWrapper>
+        )}
+      </AnimatePresence>
     </>
-);
+  );
 };
 
 const Container = styled.div`
@@ -69,14 +73,14 @@ const MenuButton = styled.button`
   place-items: center;
   height: 32px;
   width: 32px;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  opacity: ${props => props.disabled ? 0.6 : 1};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
 `;
 
 const DotsIcon = styled.span`
   font-size: 22px;
   line-height: 0;
-  color: ${props => props.disabled ? '#94a3b8' : '#1e293b'};
+  color: ${(props) => (props.disabled ? '#94a3b8' : '#1e293b')};
   font-weight: 600;
 `;
 
@@ -114,33 +118,33 @@ const HeaderTitle = styled.h3`
 const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 4px; 
+  padding: 4px;
   gap: 0.2em;
 `;
 
 const MenuItem = styled.button`
   display: flex;
   align-items: center;
-  gap: 8px; 
-  padding: 10px;  
+  gap: 8px;
+  padding: 10px;
   border: none;
-  background: ${props => props.$theme?.background || '#ffffff'};
-  border-radius: 6px; 
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  opacity: ${props => props.disabled ? 0.6 : 1};
+  background: ${(props) => props.$theme?.background || '#ffffff'};
+  border-radius: 6px;
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
   width: 100%;
   text-align: left;
   font-size: 15px;
   font-weight: 500;
-  color: ${props => props.$theme?.color || '#475569'};
+  color: ${(props) => props.$theme?.color || '#475569'};
   transition: all 0.2s;
-  
+
   &:hover {
-    background: ${props => {
+    background: ${(props) => {
       if (props.disabled) return props.$theme?.background || '#ffffff';
       return props.$theme?.backgroundHover || '#f0f0f0';
     }};
-    color: ${props => {
+    color: ${(props) => {
       if (props.disabled) return props.$theme?.color || '#475569';
       return props.$theme?.colorHover || '#0f172a';
     }};
@@ -151,7 +155,7 @@ const IconWrapper = styled.span`
   display: flex;
   align-items: center;
   font-size: 16px;
-  color: ${props => props.$theme?.iconColor || '#64748b'};
+  color: ${(props) => props.$theme?.iconColor || '#64748b'};
 `;
 
 const CloseButton = styled.button`
@@ -166,7 +170,7 @@ const CloseButton = styled.button`
   color: #64748b;
   font-weight: 500;
   border-radius: 4px;
-  
+
   &:hover {
     background: #f0f0f0;
     color: #0f172a;

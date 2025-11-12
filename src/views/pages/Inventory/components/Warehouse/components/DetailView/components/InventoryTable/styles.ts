@@ -64,7 +64,7 @@ export const ClearButton = styled(Button)`
   ${iconButtonStyles};
   background: #f5f5f5;
   border: 1px solid #d9d9d9;
-  
+
   &:hover {
     background: #e8e8e8;
     border-color: #d9d9d9;
@@ -89,7 +89,7 @@ export const ActionContainer = styled.div`
 export const ActionButton = styled(Button)`
   &.ant-btn {
     padding: 4px 8px;
-    
+
     &:hover {
       background-color: #f5f5f5;
     }
@@ -101,7 +101,7 @@ export const MenuItemContent = styled.div`
   align-items: center;
   gap: 8px;
   padding: 2px 0;
-  
+
   .anticon {
     font-size: 14px;
   }

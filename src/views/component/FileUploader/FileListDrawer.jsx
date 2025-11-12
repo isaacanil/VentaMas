@@ -7,14 +7,14 @@ import FileList from './FileList';
  * Componente para mostrar la lista de archivos en un drawer
  * para el modo compacto del FileUploader
  */
-const FileListDrawer = ({ 
-  open, 
-  onClose, 
-  files, 
-  removeFile, 
+const FileListDrawer = ({
+  open,
+  onClose,
+  files,
+  removeFile,
   handlePreview,
   fileTypeLabels,
-  title = "Archivos adjuntos"
+  title = 'Archivos adjuntos',
 }) => {
   return (
     <Drawer

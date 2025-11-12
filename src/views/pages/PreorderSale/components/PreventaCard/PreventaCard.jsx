@@ -4,7 +4,7 @@ import {
   faDollarSign,
   faUserCircle,
   faTimes,
-  faCheck
+  faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as antd from 'antd';
@@ -15,7 +15,7 @@ const { Button, Card, Tag } = antd;
 
 const StyledCard = styled(Card)`
   transition: box-shadow 0.3s;
-  
+
   &:hover {
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
   }
@@ -38,7 +38,7 @@ const StyledTag = styled(Tag)`
 
 const IDText = styled.span`
   font-size: 0.75rem; /* text-xs */
-  color: #9CA3AF; /* text-muted-foreground */
+  color: #9ca3af; /* text-muted-foreground */
 `;
 
 const TitleSection = styled.div`
@@ -76,7 +76,7 @@ const Icon = styled(FontAwesomeIcon)`
 const Articles = styled.span`
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 `;
@@ -86,7 +86,7 @@ const Price = styled.div`
   align-items: center;
   font-size: 1.125rem; /* text-lg */
   font-weight: 700; /* font-bold */
-  color: #1E3A8A; /* text-primary */
+  color: #1e3a8a; /* text-primary */
 `;
 
 const PreventaCard = ({ preventa, onCancel, onComplete }) => {
@@ -116,16 +116,17 @@ const PreventaCard = ({ preventa, onCancel, onComplete }) => {
       <Card.Meta
         title={
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <StyledTag status={preventa.estado}>
-              {preventa.estado}
-            </StyledTag>
+            <StyledTag status={preventa.estado}>{preventa.estado}</StyledTag>
             <IDText>ID: {preventa.id}</IDText>
           </div>
         }
         description={
           <>
             <TitleSection>
-              <FontAwesomeIcon icon={faUserCircle} style={{ height: '1.25rem', width: '1.25rem' }} />
+              <FontAwesomeIcon
+                icon={faUserCircle}
+                style={{ height: '1.25rem', width: '1.25rem' }}
+              />
               <Title>{preventa.cliente}</Title>
             </TitleSection>
             <ContentSection>
@@ -134,11 +135,26 @@ const PreventaCard = ({ preventa, onCancel, onComplete }) => {
                 <span>{preventa.fecha}</span>
               </ContentItem>
               <ContentItem>
-                <FontAwesomeIcon icon={faBox} style={{ marginRight: '0.5rem', height: '1rem', width: '1rem', marginTop: '0.25rem' }} />
-                <Articles>{preventa.articulos.join(", ")}</Articles>
+                <FontAwesomeIcon
+                  icon={faBox}
+                  style={{
+                    marginRight: '0.5rem',
+                    height: '1rem',
+                    width: '1rem',
+                    marginTop: '0.25rem',
+                  }}
+                />
+                <Articles>{preventa.articulos.join(', ')}</Articles>
               </ContentItem>
               <Price>
-                <FontAwesomeIcon icon={faDollarSign} style={{ marginRight: '0.5rem', height: '1.25rem', width: '1.25rem' }} />
+                <FontAwesomeIcon
+                  icon={faDollarSign}
+                  style={{
+                    marginRight: '0.5rem',
+                    height: '1.25rem',
+                    width: '1.25rem',
+                  }}
+                />
                 <span>{preventa.total.toFixed(2)}</span>
               </Price>
             </ContentSection>

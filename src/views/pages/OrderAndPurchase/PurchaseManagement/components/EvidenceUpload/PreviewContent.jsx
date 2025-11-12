@@ -12,7 +12,7 @@ const PDFContainer = styled.div`
   margin: 0;
   padding: 0;
   width: 100%;
-  
+
   embed {
     width: 100%;
     height: 100%;
@@ -39,7 +39,12 @@ const AccessibleStatus = styled.div`
   border: 0;
 `;
 
-const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPreviewFile }) => {
+const PreviewContent = ({
+  previewFile,
+  previewVisible,
+  setPreviewVisible,
+  setPreviewFile,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pdfLoadAttempts, setPdfLoadAttempts] = useState(0);
@@ -52,26 +57,35 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
 
   const handlePdfError = useCallback(() => {
     if (pdfLoadAttempts < 2) {
-      setPdfLoadAttempts(prev => prev + 1);
+      setPdfLoadAttempts((prev) => prev + 1);
       // Reintento con un pequeño delay
       setTimeout(() => setIsLoading(true), 1000);
     } else {
       setIsLoading(false);
-      setError('No se pudo cargar el PDF. Por favor, verifique su conexión o intente abrirlo en una nueva pestaña.');
+      setError(
+        'No se pudo cargar el PDF. Por favor, verifique su conexión o intente abrirlo en una nueva pestaña.',
+      );
     }
   }, [pdfLoadAttempts]);
 
   const renderPreview = () => {
     if (!previewFile) return null;
-    
+
     const extension = previewFile.name.split('.').pop().toLowerCase();
-    const fileUrl = previewFile.url || previewFile.preview || (previewFile.file && URL.createObjectURL(previewFile.file));
-    
+    const fileUrl =
+      previewFile.url ||
+      previewFile.preview ||
+      (previewFile.file && URL.createObjectURL(previewFile.file));
+
     if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
       return (
         <>
           <AccessibleStatus role="status" aria-live="polite">
-            {isLoading ? 'Cargando imagen...' : error ? error : 'Imagen cargada'}
+            {isLoading
+              ? 'Cargando imagen...'
+              : error
+                ? error
+                : 'Imagen cargada'}
           </AccessibleStatus>
           <Image
             src={fileUrl}
@@ -82,12 +96,16 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
                 <Spin size="large" tip="Cargando imagen..." />
               </LoadingContainer>
             }
-            onError={() => setError('No se pudo cargar la imagen. Verifique su conexión o permisos de acceso.')}
+            onError={() =>
+              setError(
+                'No se pudo cargar la imagen. Verifique su conexión o permisos de acceso.',
+              )
+            }
           />
         </>
       );
     }
-    
+
     if (extension === 'pdf') {
       return (
         <PDFContainer>
@@ -96,7 +114,10 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
           </AccessibleStatus>
           {isLoading && (
             <LoadingContainer>
-              <Spin size="large" tip={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`} />
+              <Spin
+                size="large"
+                tip={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`}
+              />
             </LoadingContainer>
           )}
           <embed
@@ -134,12 +155,12 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
     if (previewFile) {
       setIsLoading(true);
       setError(null);
-      
+
       if (previewFile.file instanceof File) {
         localUrl = URL.createObjectURL(previewFile.file);
       }
     }
-    
+
     return () => {
       if (localUrl) URL.revokeObjectURL(localUrl);
       setError(null);
@@ -177,27 +198,25 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
         setPdfLoadAttempts(0);
       }}
       width={window.innerWidth <= 768 ? '100%' : '80%'}
-      height='100%'
+      height="100%"
       title={previewFile?.name}
-      placement={window.innerWidth <= 768 ? "right" : "bottom"}
+      placement={window.innerWidth <= 768 ? 'right' : 'bottom'}
       footer={null}
       styles={{
         content: {
           height: '100%',
           padding: 0,
-          margin: 0
+          margin: 0,
         },
         body: {
           padding: '0',
           margin: '0',
           height: '100%',
           overflow: 'hidden',
-        }
+        },
       }}
     >
-      <PreviewContainer>
-        {renderPreview()}
-      </PreviewContainer>
+      <PreviewContainer>{renderPreview()}</PreviewContainer>
     </Drawer>
   );
 };

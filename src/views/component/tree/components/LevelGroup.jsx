@@ -13,13 +13,14 @@ const LevelIndicator = styled.div`
   display: inline-block;
 `;
 
-
 const LevelGroup = ({ level }) => {
   return (
     <LevelContainer>
-      {Array(level).fill(null).map((_, index) => (
-        <LevelIndicator key={index} />
-      ))}
+      {Array(level)
+        .fill(null)
+        .map((_, index) => (
+          <LevelIndicator key={index} />
+        ))}
     </LevelContainer>
   );
 };

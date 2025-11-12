@@ -21,12 +21,18 @@ import {
 import { ProductFilterToolbar } from './ProductFilterToolbar';
 import { StyledProductTable } from './ProductTables.styles';
 
-export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, isReadOnly = false }) => {
+export const ProductListModal = ({
+  isVisible,
+  onClose,
+  products,
+  onAddProduct,
+  isReadOnly = false,
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  
+
   useEffect(() => {
     if (isReadOnly && isVisible) {
       onClose();
@@ -46,7 +52,9 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
 
   useEffect(() => {
     if (categoryFilter === 'all') return;
-    const hasSelectedCategory = categoryStats.entries.some((entry) => entry.name === categoryFilter);
+    const hasSelectedCategory = categoryStats.entries.some(
+      (entry) => entry.name === categoryFilter,
+    );
     if (!hasSelectedCategory) {
       setCategoryFilter('all');
     }
@@ -63,9 +71,12 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
         })
       : [...list];
 
-    const filtered = categoryFilter === 'all'
-      ? filteredBySearch
-      : filteredBySearch.filter((product) => getCategoryName(product?.category) === categoryFilter);
+    const filtered =
+      categoryFilter === 'all'
+        ? filteredBySearch
+        : filteredBySearch.filter(
+            (product) => getCategoryName(product?.category) === categoryFilter,
+          );
 
     const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
 
@@ -74,10 +85,12 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
         case 'price':
           return (getTotalPrice(a) - getTotalPrice(b)) * directionMultiplier;
         case 'stock':
-          return (((a?.stock ?? 0) - (b?.stock ?? 0)) * directionMultiplier);
+          return ((a?.stock ?? 0) - (b?.stock ?? 0)) * directionMultiplier;
         case 'name':
         default:
-          return ((a?.name ?? '').localeCompare(b?.name ?? '')) * directionMultiplier;
+          return (
+            (a?.name ?? '').localeCompare(b?.name ?? '') * directionMultiplier
+          );
       }
     });
 
@@ -94,17 +107,25 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
       sorter: (a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''),
       render: (text, record) => {
         const category = getCategoryName(record?.category);
-        const activeIngredient = getPrimaryActiveIngredient(record?.activeIngredients);
+        const activeIngredient = getPrimaryActiveIngredient(
+          record?.activeIngredients,
+        );
         const hasMeta = Boolean(category || activeIngredient);
 
         return (
           <ProductName>
-            <ProductPrimaryText title={record.name}>{record.name}</ProductPrimaryText>
+            <ProductPrimaryText title={record.name}>
+              {record.name}
+            </ProductPrimaryText>
             {hasMeta && (
               <ProductMeta>
-                {category ? <CategoryPill title={category}>{category}</CategoryPill> : null}
+                {category ? (
+                  <CategoryPill title={category}>{category}</CategoryPill>
+                ) : null}
                 {activeIngredient ? (
-                  <ActiveIngredientPill title={activeIngredient}>{activeIngredient}</ActiveIngredientPill>
+                  <ActiveIngredientPill title={activeIngredient}>
+                    {activeIngredient}
+                  </ActiveIngredientPill>
                 ) : null}
               </ProductMeta>
             )}
@@ -142,7 +163,7 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
             type="button"
             onClick={() => {
               if (isReadOnly) return;
-              onAddProduct(record)
+              onAddProduct(record);
             }}
             aria-label={`Agregar ${record.name}`}
             disabled={isReadOnly}
@@ -189,7 +210,9 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
           sortOptions={sortOptions}
           onSortFieldChange={setSortField}
           sortDirection={sortDirection}
-          onToggleSortDirection={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+          onToggleSortDirection={() =>
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+          }
         />
 
         <StyledProductTable
@@ -367,13 +390,18 @@ const ActionButton = styled.button`
   border-radius: 999px;
   background: #f3f4f6;
   border: none;
-  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${props => (props.disabled ? 0.5 : 1)};
-  transition: background 0.2s ease, transform 0.2s ease;
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
   padding: 0;
 
   &:hover {
-    ${props => props.disabled ? '' : `
+    ${(props) =>
+      props.disabled
+        ? ''
+        : `
     background: #e5e7eb;
     transform: translateY(-1px);
     `}
@@ -385,7 +413,7 @@ const ActionButton = styled.button`
   }
 
   &:active {
-    ${props => props.disabled ? '' : 'transform: translateY(0);'}
+    ${(props) => (props.disabled ? '' : 'transform: translateY(0);')}
   }
 `;
 

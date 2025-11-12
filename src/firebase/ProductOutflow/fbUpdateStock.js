@@ -1,32 +1,33 @@
 import { doc, increment, writeBatch } from 'firebase/firestore';
 
-import { db } from "../firebaseconfig";
+import { db } from '../firebaseconfig';
 
 export const fbUpdateStock = async (user, updates) => {
-    if (!user?.businessID || !Array.isArray(updates) || updates.length === 0) return;
+  if (!user?.businessID || !Array.isArray(updates) || updates.length === 0)
+    return;
 
-    // Usando writeBatch para optimizar las escrituras en Firestore
-    const batch = writeBatch(db);
+  // Usando writeBatch para optimizar las escrituras en Firestore
+  const batch = writeBatch(db);
 
-    updates.forEach((update) => {
-        const id = update?.product?.id;
-        if (!id) return; // Continúa con el siguiente si no hay ID
+  updates.forEach((update) => {
+    const id = update?.product?.id;
+    if (!id) return; // Continúa con el siguiente si no hay ID
 
-        const miDocRef = doc(db, "businesses", user.businessID, "products", id);
-        const quantity = update?.quantityRemoved;
-        // Updating stock quantity
-        if (quantity) {
-            // Aquí suponemos que `increment` es una función válida previamente definida/importada
-            // que correctamente crea un objeto de incremento para Firestore.
-            batch.update(miDocRef, { "stock": increment(Number(quantity)) });
-        }
-    });
-
-    // Ejecuta todas las actualizaciones en batch
-    try {
-        await batch.commit();
-        console.info('All inventory updates applied successfully');
-    } catch (error) {
-        console.error('Error al actualizar el inventario:', error);
+    const miDocRef = doc(db, 'businesses', user.businessID, 'products', id);
+    const quantity = update?.quantityRemoved;
+    // Updating stock quantity
+    if (quantity) {
+      // Aquí suponemos que `increment` es una función válida previamente definida/importada
+      // que correctamente crea un objeto de incremento para Firestore.
+      batch.update(miDocRef, { stock: increment(Number(quantity)) });
     }
-}
+  });
+
+  // Ejecuta todas las actualizaciones en batch
+  try {
+    await batch.commit();
+    console.info('All inventory updates applied successfully');
+  } catch (error) {
+    console.error('Error al actualizar el inventario:', error);
+  }
+};

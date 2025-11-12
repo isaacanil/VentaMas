@@ -1,5 +1,9 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { faTimesCircle, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+  faTimesCircle,
+  faExclamationTriangle,
+  faCheckCircle,
+} from '@fortawesome/free-solid-svg-icons';
 import { Input, Empty, Spin, Segmented } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -14,7 +18,6 @@ import useStockAlertThresholds from '../../../../../../../hooks/useStockAlertThr
 import BatchGroup from './components/BatchGroup';
 import ProductStockTable from './components/ProductStockTable';
 import StockSummary from './components/StockSummary';
-
 
 const Container = styled.div`
   padding: 16px;
@@ -68,7 +71,8 @@ const SearchBar = styled(Input)`
     font-size: 1rem;
   }
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     border-color: #cbd5e1;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
   }
@@ -85,7 +89,7 @@ const ControlsBar = styled.div`
 const SearchWrapper = styled.div`
   width: 400px;
   max-width: 100%;
-  
+
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -171,7 +175,7 @@ function ProductStockOverview() {
   React.useEffect(() => {
     const handleResize = () => {
       const isSmallScreen = window.innerWidth < 1024;
-      setViewMode(prev => {
+      setViewMode((prev) => {
         // Si estamos en pantalla pequeña y la vista es tabla, cambiar a lotes
         if (isSmallScreen && prev === 'table') return 'batches';
         // Si estamos en pantalla grande y la vista es lotes, cambiar a tabla
@@ -188,32 +192,38 @@ function ProductStockOverview() {
     if (!stockData) return [];
     const normalizedQuery = searchText.trim().toLowerCase();
     if (!normalizedQuery) return stockData;
-    return stockData.filter(stock => {
+    return stockData.filter((stock) => {
       const locationStr = String(stock.location || '').toLowerCase();
       const batchStr = String(stock.batchNumberId || '').toLowerCase();
-      return locationStr.includes(normalizedQuery) || batchStr.includes(normalizedQuery);
+      return (
+        locationStr.includes(normalizedQuery) ||
+        batchStr.includes(normalizedQuery)
+      );
     });
   }, [stockData, searchText]);
 
-  const handleLocationClick = React.useCallback((locationPath) => {
-    const [warehouseId, shelfId, rowId, segmentId] = locationPath.split('/');
-    let navigationPath = `/inventory/warehouses/warehouse/${warehouseId}`;
-    if (shelfId) {
-      navigationPath += `/shelf/${shelfId}`;
-      if (rowId) {
-        navigationPath += `/row/${rowId}`;
-        if (segmentId) {
-          navigationPath += `/segment/${segmentId}`;
+  const handleLocationClick = React.useCallback(
+    (locationPath) => {
+      const [warehouseId, shelfId, rowId, segmentId] = locationPath.split('/');
+      let navigationPath = `/inventory/warehouses/warehouse/${warehouseId}`;
+      if (shelfId) {
+        navigationPath += `/shelf/${shelfId}`;
+        if (rowId) {
+          navigationPath += `/row/${rowId}`;
+          if (segmentId) {
+            navigationPath += `/segment/${segmentId}`;
+          }
         }
       }
-    }
-    navigate(navigationPath);
-  }, [navigate]);
+      navigate(navigationPath);
+    },
+    [navigate],
+  );
 
   React.useEffect(() => {
     if (!stockData?.length) return;
     const locations = new Set();
-    stockData.forEach(stock => {
+    stockData.forEach((stock) => {
       if (stock.location) {
         locations.add(stock.location);
       }
@@ -235,7 +245,7 @@ function ProductStockOverview() {
           expirationDate: stock.expirationDate,
           productName: stock.productName,
           items: [],
-          total: 0
+          total: 0,
         };
       }
       groups[batchKey].items.push(stock);
@@ -246,57 +256,64 @@ function ProductStockOverview() {
 
   const groupedStock = React.useMemo(
     () => groupStockByBatch(filteredStock),
-    [filteredStock, groupStockByBatch]
+    [filteredStock, groupStockByBatch],
   );
 
-  const getStockStatus = React.useCallback((quantity) => {
-    const parsed = Number(quantity) || 0;
-    if (parsed <= 0) {
+  const getStockStatus = React.useCallback(
+    (quantity) => {
+      const parsed = Number(quantity) || 0;
+      if (parsed <= 0) {
+        return {
+          icon: faTimesCircle,
+          color: '#dc2626',
+          background: '#fee2e2',
+          label: 'Sin stock',
+        };
+      }
+      if (parsed <= criticalThreshold) {
+        return {
+          icon: faExclamationTriangle,
+          color: '#dc2626',
+          background: '#fee2e2',
+          label: 'Stock crítico',
+        };
+      }
+      if (parsed <= lowThreshold) {
+        return {
+          icon: faExclamationTriangle,
+          color: '#ea580c',
+          background: '#ffedd5',
+          label: 'Stock bajo',
+        };
+      }
       return {
-        icon: faTimesCircle,
-        color: '#dc2626',
-        background: '#fee2e2',
-        label: 'Sin stock',
+        icon: faCheckCircle,
+        color: '#059669',
+        background: '#dcfce7',
+        label: 'Stock OK',
       };
-    }
-    if (parsed <= criticalThreshold) {
-      return {
-        icon: faExclamationTriangle,
-        color: '#dc2626',
-        background: '#fee2e2',
-        label: 'Stock crítico',
-      };
-    }
-    if (parsed <= lowThreshold) {
-      return {
-        icon: faExclamationTriangle,
-        color: '#ea580c',
-        background: '#ffedd5',
-        label: 'Stock bajo',
-      };
-    }
-    return {
-      icon: faCheckCircle,
-      color: '#059669',
-      background: '#dcfce7',
-      label: 'Stock OK',
-    };
-  }, [criticalThreshold, lowThreshold]);
+    },
+    [criticalThreshold, lowThreshold],
+  );
 
   const handleDeleteBatch = (group) => {
-    dispatch(openDeleteModal({
-      productStockId: null,
-      batchId: group.batchId,
-      actionType: 'batch',
-    }));
+    dispatch(
+      openDeleteModal({
+        productStockId: null,
+        batchId: group.batchId,
+        actionType: 'batch',
+      }),
+    );
   };
 
   const handleDeleteProductStock = (stock) => {
-    dispatch(openDeleteModal({
-      productStockId: stock.id,
-      batchId: stock.batchId,
-      actionType: 'productStock',
-    }));
+    dispatch(
+      openDeleteModal({
+        productStockId: stock.id,
+        batchId: stock.batchId,
+        actionType: 'productStock',
+      }),
+    );
   };
 
   if (!productId) {
@@ -329,7 +346,7 @@ function ProductStockOverview() {
               placeholder="Buscar por ubicación o número de lote..."
               prefix={<SearchOutlined />}
               value={searchText}
-              onChange={e => setSearchText(e.target.value)}
+              onChange={(e) => setSearchText(e.target.value)}
             />
           </SearchWrapper>
           <ViewModeToggle
@@ -377,10 +394,8 @@ function ProductStockOverview() {
           </div>
         )}
       </MainContent>
-      
-      <SideContent>
-        {/* BackOrderList se moverá a StockSummary */}
-      </SideContent>
+
+      <SideContent>{/* BackOrderList se moverá a StockSummary */}</SideContent>
     </Container>
   );
 }

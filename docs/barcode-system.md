@@ -24,12 +24,14 @@ El sistema ahora guarda automáticamente la configuración de códigos de barras
 ### 3. Componentes Mejorados
 
 #### BarcodeGenerator.jsx
+
 - **Modo automático**: Genera códigos sin necesidad de ingresar manualmente el Item Reference
 - **Modo manual**: Permite ingresar manualmente tanto Company Prefix como Item Reference
 - **Pestañas**: Separación clara entre generación y configuración
 - **Validación**: Validación en tiempo real de los códigos generados
 
 #### BarCode.jsx
+
 - **Integración completa**: Botón para abrir el generador directamente desde el formulario de productos
 - **Estado inteligente**: Muestra "Configurar" o "Generar" dependiendo del estado de configuración
 - **Notificaciones**: Feedback visual cuando se genera un código
@@ -37,12 +39,14 @@ El sistema ahora guarda automáticamente la configuración de códigos de barras
 ### 4. Servicios Firebase
 
 #### barcodeSettings.js
+
 - `setBarcodeSettings(user, settings)`: Guarda configuración
 - `getBarcodeSettings(user)`: Obtiene configuración
 - `updateCompanyPrefix(user, companyPrefix)`: Actualiza solo el prefijo
 - `initializeBarcodeSettings(user, config)`: Inicializa configuración por defecto
 
 #### barcodeGeneration.js
+
 - `generateNextItemReference(user)`: Genera el próximo Item Reference
 - `generateAutoBarcode(user, companyPrefix)`: Genera código completo automáticamente
 - `validateItemReference(user, itemReference)`: Valida formato
@@ -51,6 +55,7 @@ El sistema ahora guarda automáticamente la configuración de códigos de barras
 ### 5. Hook Personalizado
 
 #### useBarcodeSettings.js
+
 - Estado de configuración
 - Funciones para guardar/cargar configuración
 - Generación automática de códigos
@@ -59,12 +64,14 @@ El sistema ahora guarda automáticamente la configuración de códigos de barras
 ## Flujo de Uso
 
 ### Primera Configuración
+
 1. El usuario abre el generador de códigos
 2. Selecciona el rango de productos esperados
 3. Ingresa su Company Prefix asignado por GS1 RD
 4. Guarda la configuración (se almacena en Firebase)
 
 ### Generación de Códigos
+
 1. **Modo Automático** (Recomendado):
    - El sistema genera automáticamente el Item Reference
    - Utiliza el Company Prefix guardado
@@ -75,11 +82,13 @@ El sistema ahora guarda automáticamente la configuración de códigos de barras
    - Útil para casos especiales o migración de datos
 
 ### Estructura del Código GTIN-13
+
 ```
 746 + [Company Prefix] + [Item Reference] + [Check Digit]
 ```
 
 Ejemplo: `7460123456001`
+
 - `746`: Prefijo GS1 República Dominicana
 - `012345`: Company Prefix (6 dígitos)
 - `600`: Item Reference (3 dígitos)

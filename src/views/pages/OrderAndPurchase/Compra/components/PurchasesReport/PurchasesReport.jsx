@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectPurchaseList } from '../../../../../../features/purchase/purchasesSlice';
-import { selectPurchaseChartModal, togglePurchaseChartModal } from '../../../../../../features/purchase/purchaseUISlice';
+import {
+  selectPurchaseChartModal,
+  togglePurchaseChartModal,
+} from '../../../../../../features/purchase/purchaseUISlice';
 import { Button } from '../../../../../templates/system/Button/Button';
 import Typography from '../../../../../templates/system/Typografy/Typografy';
 
@@ -14,78 +17,65 @@ import { MonthlyAndAccumulatedPurchaseCharts } from './reports/MonthlyAndAccumul
 import { ProviderPurchasesBarChart } from './reports/ProvidersPurchasesBarChart';
 
 const variantsBackdrop = {
-    open: { opacity: 1, zIndex: 1 },
-    close: { opacity: 0, zIndex: -1 },
-}
+  open: { opacity: 1, zIndex: 1 },
+  close: { opacity: 0, zIndex: -1 },
+};
 const variantsContainer = {
-    open: {
-        opacity: 1,
-        y: 0,
-    },
-    close: {
-        opacity: 0,
-        y: '100vh',
-    }
-}
+  open: {
+    opacity: 1,
+    y: 0,
+  },
+  close: {
+    opacity: 0,
+    y: '100vh',
+  },
+};
 
 export const PurchasesReport = () => {
-    const dispatch = useDispatch();
-    const purchases = useSelector(selectPurchaseList);
-    const {isOpen} = useSelector(selectPurchaseChartModal);
-    const handleOpenPurchaseChart = () => dispatch(togglePurchaseChartModal());
-    const componentRef = useRef(null);
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <Backdrop
-                    variants={variantsBackdrop}
-                    initial="close"
-                    key='backdrop'
-                    animate={isOpen ? "open" : "close"}
-                    transition={{ duration: 0.5 }}
-                    exit="close"
-                >
-                    <Component
-                        ref={componentRef}
-                        variants={variantsContainer}
-                        initial="close"
-                        animate={isOpen ? "open" : "close"}
-                        transition={{ duration: 0.5 }}
-                        exit="close"
-                    >
-                        <Header>
-                            <Typography variant='h2'>
-                                Reporte de compras
-                            </Typography>
-                            <Button
-                                title='Cerrar'
-                                onClick={handleOpenPurchaseChart}
-                            />
-                        </Header>
-                        <DailyPurchasesBarChart
-                            purchases={purchases}
-                        />
-                        <ProviderPurchasesBarChart 
-                            purchases={purchases}
-                        />
-                        <CategoryPurchasesBarChart
-                            purchases={purchases}
-                        />
-                        <MonthlyAndAccumulatedPurchaseCharts
-                            purchases={purchases}
-                        />
-                        {/* <CategoryExpenseBarChart
+  const dispatch = useDispatch();
+  const purchases = useSelector(selectPurchaseList);
+  const { isOpen } = useSelector(selectPurchaseChartModal);
+  const handleOpenPurchaseChart = () => dispatch(togglePurchaseChartModal());
+  const componentRef = useRef(null);
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <Backdrop
+          variants={variantsBackdrop}
+          initial="close"
+          key="backdrop"
+          animate={isOpen ? 'open' : 'close'}
+          transition={{ duration: 0.5 }}
+          exit="close"
+        >
+          <Component
+            ref={componentRef}
+            variants={variantsContainer}
+            initial="close"
+            animate={isOpen ? 'open' : 'close'}
+            transition={{ duration: 0.5 }}
+            exit="close"
+          >
+            <Header>
+              <Typography variant="h2">Reporte de compras</Typography>
+              <Button title="Cerrar" onClick={handleOpenPurchaseChart} />
+            </Header>
+            <DailyPurchasesBarChart purchases={purchases} />
+            <ProviderPurchasesBarChart purchases={purchases} />
+            <CategoryPurchasesBarChart purchases={purchases} />
+            <MonthlyAndAccumulatedPurchaseCharts purchases={purchases} />
+            {/* <CategoryExpenseBarChart
                             expenses={expensesList}
                         />
                         <MonthlyAndAccumulatedExpenseCharts
                             expenses={expensesList}
                         /> */}
-                    </Component>
-                </Backdrop>
-            )}
-        </AnimatePresence>
-    )
-}
+          </Component>
+        </Backdrop>
+      )}
+    </AnimatePresence>
+  );
+};
 const Component = styled(motion.div)`
   width: 98vw;
   display: grid;
@@ -97,7 +87,7 @@ const Component = styled(motion.div)`
   border-radius: 0.5em;
   overflow-y: scroll;
   padding: 0 1em;
-  `;
+`;
 
 const Backdrop = styled(motion.div)`
   width: 100%;
@@ -108,7 +98,7 @@ const Backdrop = styled(motion.div)`
   position: absolute;
   overflow: hidden;
   z-index: 30;
-`
+`;
 
 const Header = styled.div`
   display: grid;
@@ -116,7 +106,7 @@ const Header = styled.div`
   align-items: center;
   position: sticky;
   top: 0;
-  padding: 1em 1em 0 ;
+  padding: 1em 1em 0;
   background: white;
   gap: 1em;
-  `
+`;

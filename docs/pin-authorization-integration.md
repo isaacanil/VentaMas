@@ -53,7 +53,10 @@ function MiComponente() {
     module: 'accountsReceivable', // o 'invoices'
     description: 'Se requiere autorización para modificar el monto.',
     allowedRoles: ['admin', 'owner', 'manager'],
-    reasonList: ['Monto superior al límite permitido', 'Cliente tiene deuda vencida'],
+    reasonList: [
+      'Monto superior al límite permitido',
+      'Cliente tiene deuda vencida',
+    ],
   });
 
   const handleDeleteAccount = () => {
@@ -119,9 +122,7 @@ function MiComponente() {
 
   return (
     <>
-      <Button onClick={() => setIsModalOpen(true)}>
-        Anular Cuenta
-      </Button>
+      <Button onClick={() => setIsModalOpen(true)}>Anular Cuenta</Button>
 
       <PinAuthorizationModal
         isOpen={isModalOpen}
@@ -164,12 +165,10 @@ export const AccountReceivableActions = ({ account }) => {
       await performCancellation(authorizer);
     },
     module: 'accountsReceivable',
-    description: 'Se requiere autorización de un supervisor para anular esta cuenta.',
+    description:
+      'Se requiere autorización de un supervisor para anular esta cuenta.',
     allowedRoles: ['admin', 'owner', 'manager'],
-    reasonList: [
-      'Cuenta con balance pendiente',
-      'Operación irreversible'
-    ],
+    reasonList: ['Cuenta con balance pendiente', 'Operación irreversible'],
   });
 
   const performCancellation = async (authorizer) => {
@@ -197,11 +196,7 @@ export const AccountReceivableActions = ({ account }) => {
 
   return (
     <>
-      <Button
-        danger
-        onClick={handleCancelAccount}
-        loading={loading}
-      >
+      <Button danger onClick={handleCancelAccount} loading={loading}>
         Anular Cuenta
       </Button>
 
@@ -215,16 +210,16 @@ export const AccountReceivableActions = ({ account }) => {
 
 ### PinAuthorizationModal
 
-| Prop | Tipo | Requerido | Default | Descripción |
-|------|------|-----------|---------|-------------|
-| `isOpen` | `boolean` | Sí | - | Controla la visibilidad del modal |
-| `setIsOpen` | `function` | Sí | - | Función para cambiar la visibilidad |
-| `onAuthorized` | `function` | Sí | - | Callback cuando la autorización es exitosa. Recibe el usuario autorizador como parámetro |
-| `module` | `string` | No | `'invoices'` | Módulo a autorizar: `'invoices'` o `'accountsReceivable'` |
-| `description` | `string` | No | `'Se requiere autorización...'` | Descripción de por qué se requiere autorización |
-| `allowedRoles` | `array` | No | `['admin','owner','dev']` | Roles permitidos para autorizar |
-| `reasonList` | `array` | No | `[]` | Lista de razones específicas para mostrar al usuario |
-| `allowPasswordFallback` | `boolean` | No | `true` | Permitir usar contraseña si no hay PIN |
+| Prop                    | Tipo       | Requerido | Default                         | Descripción                                                                              |
+| ----------------------- | ---------- | --------- | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| `isOpen`                | `boolean`  | Sí        | -                               | Controla la visibilidad del modal                                                        |
+| `setIsOpen`             | `function` | Sí        | -                               | Función para cambiar la visibilidad                                                      |
+| `onAuthorized`          | `function` | Sí        | -                               | Callback cuando la autorización es exitosa. Recibe el usuario autorizador como parámetro |
+| `module`                | `string`   | No        | `'invoices'`                    | Módulo a autorizar: `'invoices'` o `'accountsReceivable'`                                |
+| `description`           | `string`   | No        | `'Se requiere autorización...'` | Descripción de por qué se requiere autorización                                          |
+| `allowedRoles`          | `array`    | No        | `['admin','owner','dev']`       | Roles permitidos para autorizar                                                          |
+| `reasonList`            | `array`    | No        | `[]`                            | Lista de razones específicas para mostrar al usuario                                     |
+| `allowPasswordFallback` | `boolean`  | No        | `true`                          | Permitir usar contraseña si no hay PIN                                                   |
 
 ## Hook useAuthorizationPin
 
@@ -250,11 +245,10 @@ Recibe un objeto de configuración con las mismas props que el modal (excepto `i
 ```javascript
 import { fbGenerateUserPin } from '../firebase/authorization/pinAuth';
 
-const result = await fbGenerateUserPin(
-  currentUser,
-  targetUserId,
-  ['invoices', 'accountsReceivable']
-);
+const result = await fbGenerateUserPin(currentUser, targetUserId, [
+  'invoices',
+  'accountsReceivable',
+]);
 
 console.log('PIN generado:', result.pin);
 console.log('Expira:', result.expiresAt);
@@ -269,7 +263,7 @@ const result = await fbValidateUserPin(
   currentUser,
   'nombre_usuario',
   '123456',
-  'accountsReceivable'
+  'accountsReceivable',
 );
 
 if (result.valid) {
@@ -300,6 +294,7 @@ businesses/{businessID}/pinAuthLogs/{logId}
 ```
 
 Esto incluye:
+
 - Generación de PINs
 - Validaciones exitosas
 - Intentos fallidos

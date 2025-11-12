@@ -1,9 +1,9 @@
-import { getDiscount, money } from "../utils/formatters.js";
+import { getDiscount, money } from '../utils/formatters.js';
 
 const PAYMENT_METHODS = {
-  cash:        "Efectivo",
-  transfer:    "Transferencia",
-  card:        "Tarjeta",
+  cash: 'Efectivo',
+  transfer: 'Transferencia',
+  card: 'Tarjeta',
 };
 
 // ---------- Firma (línea + texto [+ opcional ‘COPIA’]) -------------------
@@ -11,13 +11,13 @@ function signatureBlock(label, extraLine) {
   return {
     stack: [
       {
-        canvas: [{ type: "line", x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 1 }],
-        margin: [0, 0, 0, 8],                // espacio bajo la línea
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 1 }],
+        margin: [0, 0, 0, 8], // espacio bajo la línea
       },
       { text: label },
       extraLine && {
         text: extraLine,
-        alignment: "center",
+        alignment: 'center',
         margin: [0, 4, 0, 0],
       },
     ].filter(Boolean),
@@ -26,49 +26,61 @@ function signatureBlock(label, extraLine) {
 
 // -------------------------------------------------------------------------
 export function buildFooter(biz, d) {
-  const paymentStack =
-    d.paymentMethod?.length
-      ? [
-          // ⚫ Ahora sí en negrita
-          { text: "Métodos de Pago:", bold: true, margin: [0, 0, 0, 4] },
-          ...d.paymentMethod
-            .filter((m) => m?.status)
-            .map((m) => ({
-              text:
-                `${PAYMENT_METHODS[m.method?.toLowerCase()] || m.method}: ` +
-                money(m.value || 0) +
-                (m.reference ? ` - Ref: ${m.reference}` : ""),
-              margin: [0, 0, 0, 0],
-            })),
-        ]
-      : [];
+  const paymentStack = d.paymentMethod?.length
+    ? [
+        // ⚫ Ahora sí en negrita
+        { text: 'Métodos de Pago:', bold: true, margin: [0, 0, 0, 4] },
+        ...d.paymentMethod
+          .filter((m) => m?.status)
+          .map((m) => ({
+            text:
+              `${PAYMENT_METHODS[m.method?.toLowerCase()] || m.method}: ` +
+              money(m.value || 0) +
+              (m.reference ? ` - Ref: ${m.reference}` : ''),
+            margin: [0, 0, 0, 0],
+          })),
+      ]
+    : [];
 
   // ---------- Tabla de totales ------------------------------------------
   const totalsBody = [
     [
-      "Sub-Total:",
-      { text: money(d.totalPurchaseWithoutTaxes.value), style: "totalsValue", margin: [0, 2] },
+      'Sub-Total:',
+      {
+        text: money(d.totalPurchaseWithoutTaxes.value),
+        style: 'totalsValue',
+        margin: [0, 2],
+      },
     ],
     [
-      "ITBIS:",
-      { text: money(d.totalTaxes.value), style: "totalsValue", margin: [0, 2] },
+      'ITBIS:',
+      { text: money(d.totalTaxes.value), style: 'totalsValue', margin: [0, 2] },
     ],
     d.discount?.value && [
-      "Descuento:",
-      { text: `-${money(getDiscount(d))}`, style: "totalsValue", margin: [0, 2] },
+      'Descuento:',
+      {
+        text: `-${money(getDiscount(d))}`,
+        style: 'totalsValue',
+        margin: [0, 2],
+      },
     ],
     d.delivery?.status && [
-      "Delivery:",
-      { text: money(d.delivery.value), style: "totalsValue", margin: [0, 2] },
+      'Delivery:',
+      { text: money(d.delivery.value), style: 'totalsValue', margin: [0, 2] },
     ],
     // ⚫ Total en negrita
     [
-      { text: "Total:", bold: true, margin: [0, 4, 0, 2] },
-      { text: money(d.totalPurchase.value), style: "totalsValue", bold: true, margin: [0, 4, 0, 2] },
+      { text: 'Total:', bold: true, margin: [0, 4, 0, 2] },
+      {
+        text: money(d.totalPurchase.value),
+        style: 'totalsValue',
+        bold: true,
+        margin: [0, 4, 0, 2],
+      },
     ],
   ].filter(Boolean);
 
- return () => ({
+  return () => ({
     margin: [40, 0, 40, 0],
     // en lugar de columns directo, usamos stack
     stack: [
@@ -77,21 +89,23 @@ export function buildFooter(biz, d) {
         columnGap: 25,
         columns: [
           {
-            width: "*",
-            stack: [signatureBlock("Despachado Por:"), ...paymentStack],
+            width: '*',
+            stack: [signatureBlock('Despachado Por:'), ...paymentStack],
           },
           {
-            width: "*",
-            stack: [signatureBlock("Recibido Conforme:", d.copyType || "COPIA")],
+            width: '*',
+            stack: [
+              signatureBlock('Recibido Conforme:', d.copyType || 'COPIA'),
+            ],
           },
           {
-            width: "*",
+            width: '*',
             margin: [0, 8, 0, 0],
             table: {
-              widths: ["*", "*"],
+              widths: ['*', '*'],
               body: totalsBody,
             },
-            layout: "noBorders",
+            layout: 'noBorders',
           },
         ],
       },

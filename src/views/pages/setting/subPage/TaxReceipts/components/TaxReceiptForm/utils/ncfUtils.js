@@ -1,16 +1,17 @@
 export const MAX_IN_QUERY_VALUES = 10;
 export const MAX_VARIATIONS = 30;
 
-export const sanitizePart = (value) => (value ?? "").toString().trim();
+export const sanitizePart = (value) => (value ?? '').toString().trim();
 
-export const collapseWhitespace = (value) => sanitizePart(value).replace(/\s+/g, "");
+export const collapseWhitespace = (value) =>
+  sanitizePart(value).replace(/\s+/g, '');
 
-export const toDigits = (value) => collapseWhitespace(value).replace(/\D/g, "");
+export const toDigits = (value) => collapseWhitespace(value).replace(/\D/g, '');
 
 export const normalizeDigits = (digits) => {
-  if (!digits) return "";
-  const trimmed = digits.replace(/^0+/, "");
-  return trimmed.length ? trimmed : "0";
+  if (!digits) return '';
+  const trimmed = digits.replace(/^0+/, '');
+  return trimmed.length ? trimmed : '0';
 };
 
 export const resolveIncrement = (value) => {
@@ -27,7 +28,7 @@ export const buildPrefix = (type, serie) => {
   const firstPart = sanitizePart(type).toUpperCase();
   const secondPart = sanitizePart(serie).toUpperCase();
 
-  if (!firstPart && !secondPart) return "";
+  if (!firstPart && !secondPart) return '';
 
   const firstIsNumeric = isNumericSerie(firstPart);
   const secondIsNumeric = isNumericSerie(secondPart);
@@ -36,7 +37,7 @@ export const buildPrefix = (type, serie) => {
   const seriePart = firstIsNumeric && !secondIsNumeric ? firstPart : secondPart;
 
   const normalizedSerie = isNumericSerie(seriePart)
-    ? seriePart.padStart(2, "0")
+    ? seriePart.padStart(2, '0')
     : seriePart;
 
   const prefix = `${typePart}${normalizedSerie}`;
@@ -54,11 +55,11 @@ export const chunkArray = (array, size) => {
 };
 
 export const canonicalizeInvoiceNcf = (ncf, prefix) => {
-  if (typeof ncf !== "string" || !prefix) return null;
+  if (typeof ncf !== 'string' || !prefix) return null;
   const sanitized = collapseWhitespace(ncf).toUpperCase();
   if (!sanitized.startsWith(prefix)) return null;
-  const sequenceDigits = sanitized.slice(prefix.length).replace(/\D/g, "");
-  if (!sequenceDigits) return { prefix, sequence: "" };
+  const sequenceDigits = sanitized.slice(prefix.length).replace(/\D/g, '');
+  if (!sequenceDigits) return { prefix, sequence: '' };
   return { prefix, sequence: normalizeDigits(sequenceDigits) };
 };
 
@@ -73,7 +74,7 @@ export const buildCandidateCodes = ({
   const codes = new Set();
   const addWithLength = (length) => {
     if (!Number.isFinite(length) || length <= 0) return;
-    const padded = normalizedDigits.padStart(length, "0");
+    const padded = normalizedDigits.padStart(length, '0');
     codes.add(prefix + padded);
   };
 
@@ -85,7 +86,11 @@ export const buildCandidateCodes = ({
     ? Math.max(minLength, sequenceLengthEstimate)
     : Math.max(minLength, rawDigits.length);
 
-  for (let length = minLength; length <= targetLength && codes.size < MAX_VARIATIONS; length += 1) {
+  for (
+    let length = minLength;
+    length <= targetLength && codes.size < MAX_VARIATIONS;
+    length += 1
+  ) {
     addWithLength(length);
   }
 
@@ -99,8 +104,12 @@ export const buildCandidateCodes = ({
   return Array.from(codes);
 };
 
-export const calculateSequenceNumber = ({ digits, increment = 1, steps = 0 }) => {
-  const normalizedDigits = normalizeDigits(toDigits(digits ?? ""));
+export const calculateSequenceNumber = ({
+  digits,
+  increment = 1,
+  steps = 0,
+}) => {
+  const normalizedDigits = normalizeDigits(toDigits(digits ?? ''));
   const baseNumber = Number(normalizedDigits);
   if (!Number.isFinite(baseNumber)) return null;
 

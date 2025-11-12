@@ -1,15 +1,15 @@
-import { faSpinner, faCircle } from "@fortawesome/free-solid-svg-icons";
-import React, { useCallback, useMemo } from "react";
-import styled from "styled-components";
+import { faSpinner, faCircle } from '@fortawesome/free-solid-svg-icons';
+import React, { useCallback, useMemo } from 'react';
+import styled from 'styled-components';
 
-import { selectNode } from "../helpers/nodeHelper";
+import { selectNode } from '../helpers/nodeHelper';
 
-import ActionButtons from "./ActionButtons";
-import LevelGroup from "./LevelGroup";
-import { LoadingIndicator } from "./LoadingIndicator";
-import { NavigationButton } from "./NavigationButton";
-import NodeName from "./NodeName";
-import { formatLots } from "./nodeName.helpers";
+import ActionButtons from './ActionButtons';
+import LevelGroup from './LevelGroup';
+import { LoadingIndicator } from './LoadingIndicator';
+import { NavigationButton } from './NavigationButton';
+import NodeName from './NodeName';
+import { formatLots } from './nodeName.helpers';
 
 // Estilos con styled-components
 const NodeContainer = styled.div`
@@ -19,7 +19,8 @@ const NodeContainer = styled.div`
   margin: 0;
   padding: ${({ $hasLabel }) => ($hasLabel ? '6px 0.2em' : '0 0.2em')};
   border-radius: 6px;
-  background-color: ${(props) => (props.isSelected ? "#e9e9e9" : "transparent")};
+  background-color: ${(props) =>
+    props.isSelected ? '#e9e9e9' : 'transparent'};
   cursor: pointer; // Replace the 'not-allowed' logic
   opacity: 1; // Remove the disabled opacity
   min-height: ${({ $hasLabel }) => ($hasLabel ? '48px' : '40px')};
@@ -30,7 +31,7 @@ const NodeContainer = styled.div`
 
   &:hover {
     background-color: ${(props) =>
-      !props.disabled && (props.isSelected ? "#f0f0f0" : "#f0f0f0")};
+      !props.disabled && (props.isSelected ? '#f0f0f0' : '#f0f0f0')};
   }
 `;
 
@@ -43,7 +44,8 @@ const CountPill = styled.span`
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
-  background-color: ${({ $empty }) => ($empty ? 'rgba(148, 163, 184, 0.18)' : 'rgba(22, 119, 255, 0.15)')};
+  background-color: ${({ $empty }) =>
+    $empty ? 'rgba(148, 163, 184, 0.18)' : 'rgba(22, 119, 255, 0.15)'};
   color: ${({ $empty }) => ($empty ? '#6b7280' : '#1677ff')};
 `;
 
@@ -78,13 +80,14 @@ const TreeNode = ({
     return null;
   }, [config, node, level, isSelected, isExpanded]);
 
-  const match = useMemo(() => 
-    node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (node.productStock &&
-      node.productStock.some((stock) =>
-        stock.productName.toLowerCase().includes(searchTerm.toLowerCase())
-      )),
-    [node.name, node.productStock, searchTerm]
+  const match = useMemo(
+    () =>
+      node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (node.productStock &&
+        node.productStock.some((stock) =>
+          stock.productName.toLowerCase().includes(searchTerm.toLowerCase()),
+        )),
+    [node.name, node.productStock, searchTerm],
   );
 
   const getNodeIcon = useCallback(() => {
@@ -93,15 +96,21 @@ const TreeNode = ({
     return null;
   }, [node.isLoading, hasChildren]);
 
-  const handleToggle = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (hasChildren && !node.isLoading) {
-      onToggleNode(node.id);
-    }
-  }, [hasChildren, node.id, node.isLoading, onToggleNode]);
+  const handleToggle = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (hasChildren && !node.isLoading) {
+        onToggleNode(node.id);
+      }
+    },
+    [hasChildren, node.id, node.isLoading, onToggleNode],
+  );
 
-  const currentPath = useMemo(() => ([...(path || []), node.id]), [path, node.id]);
+  const currentPath = useMemo(
+    () => [...(path || []), node.id],
+    [path, node.id],
+  );
 
   const showSummary = Boolean(config?.showLocationStockSummary);
   const directLots = node?.stockSummary?.directLots;
@@ -138,8 +147,15 @@ const TreeNode = ({
         }
       >
         <LevelGroup level={level} />
-
-        <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0, gap: 6 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            flex: 1,
+            minWidth: 0,
+            gap: 6,
+          }}
+        >
           <NavigationButton
             getNodeIcon={getNodeIcon}
             isExpanded={isExpanded}
@@ -165,16 +181,20 @@ const TreeNode = ({
           />
           <LoadingIndicator isLoading={node.isLoading} />
         </div>
-
         <ActionsSlot>
-          {pillLabel && (
-            <CountPill $empty={pillEmpty}>{pillLabel}</CountPill>
-          )}
-          <ActionButtons node={node} actions={config.actions} level={level} path={currentPath} />
-        </ActionsSlot> {/* Usar 'path' prop */}
+          {pillLabel && <CountPill $empty={pillEmpty}>{pillLabel}</CountPill>}
+          <ActionButtons
+            node={node}
+            actions={config.actions}
+            level={level}
+            path={currentPath}
+          />
+        </ActionsSlot>{' '}
+        {/* Usar 'path' prop */}
       </NodeContainer>
 
-      {isExpanded && hasChildren && (
+      {isExpanded &&
+        hasChildren &&
         node.children.map((child) => (
           <TreeNode
             key={child.id}
@@ -191,8 +211,7 @@ const TreeNode = ({
             path={currentPath}
             onToggleNode={onToggleNode} // Ensure onToggleNode is passed to children
           />
-        ))
-      )}
+        ))}
     </div>
   );
 };

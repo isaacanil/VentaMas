@@ -1,4 +1,4 @@
-@import url("../../../styles/variables.css");
+@import url('../../../styles/variables.css');
 .Component_container {
   height: 2em;
   display: -webkit-box;
@@ -6,8 +6,8 @@
   display: flex;
   width: auto;
   -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
   gap: 0.5em;
   background-color: #383838;
   padding: 0.2em 0.8em 0.2em 0.3em;
@@ -28,7 +28,7 @@
   min-width: 12em;
   border: 1px solid rgba(0, 0, 0, 0.1);
   -webkit-box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
-          box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.322);
   z-index: 99;
 }
 
@@ -46,8 +46,8 @@
   display: -ms-flexbox;
   display: flex;
   -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
 }
 
 .AccountMenu .Items .Item .Item_Link {

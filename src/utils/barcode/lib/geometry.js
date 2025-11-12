@@ -13,13 +13,16 @@ export const GS1_STANDARDS = {
 
 export const QUIET_ZONE_MULTIPLIER = 10;
 
-export const mmToPixels = (mm, dpi = PRINT_DPI) => Math.round((mm / 25.4) * dpi);
+export const mmToPixels = (mm, dpi = PRINT_DPI) =>
+  Math.round((mm / 25.4) * dpi);
 
 // Devuelve geometría calculada para un tipo GS1 específico
 export function getGS1Geometry(dpi = PRINT_DPI, barcodeType) {
   const normalizedType =
     barcodeType && typeof barcodeType === 'string'
-      ? (barcodeType.startsWith('GTIN-13') ? 'EAN-13' : barcodeType)
+      ? barcodeType.startsWith('GTIN-13')
+        ? 'EAN-13'
+        : barcodeType
       : undefined;
   const standards = GS1_STANDARDS[normalizedType] || GS1_STANDARDS['Code-128'];
 
@@ -32,5 +35,3 @@ export function getGS1Geometry(dpi = PRINT_DPI, barcodeType) {
     standards,
   };
 }
-
-

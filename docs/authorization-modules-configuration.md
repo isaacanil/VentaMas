@@ -18,6 +18,7 @@ El sistema ahora soporta dos módulos de autorización que pueden activarse/desa
 **Ubicación**: `Configuración > Flujo de Autorizaciones`
 
 La pantalla de configuración ahora incluye:
+
 - Toggle principal para habilitar/deshabilitar todo el flujo de autorizaciones
 - Sección de "Módulos de Autorización Activos" (visible solo cuando el flujo está activado)
 - Checkboxes para cada módulo con descripción de su función
@@ -32,20 +33,24 @@ La pantalla de configuración ahora incluye:
 ### 4. Comportamiento por Módulo
 
 #### Módulo de Facturación Activo
+
 - Las ediciones de facturas requieren autorización con PIN
 - Los descuentos y cambios críticos solicitan PIN de supervisor
 - Aparece en la pantalla de Autorizaciones
 
 #### Módulo de Facturación Desactivado
+
 - Las acciones de facturación no requieren autorización especial
 - No aparecen solicitudes relacionadas en la pantalla de Autorizaciones
 
 #### Módulo de Cuadre de Caja Activo
+
 - Apertura y cierre de caja requieren autorización con PIN
 - Usa el modal moderno `PinAuthorizationModal`
 - Permite PIN de 6 dígitos o contraseña completa como fallback
 
 #### Módulo de Cuadre de Caja Desactivado
+
 - Apertura y cierre de caja usan autenticación clásica con contraseña
 - Usa el modal tradicional `PeerReviewAuthorization`
 - Solo requiere usuario y contraseña (no PIN)
@@ -55,20 +60,24 @@ La pantalla de configuración ahora incluye:
 ### Configuración y Settings
 
 **`src/views/component/GeneralConfig/configs/components/AuthorizationFlowSettingsSection.jsx`**
+
 - Agregada interfaz de selección de módulos
 - Validación de al menos un módulo activo
 - Handlers para toggle de módulos individuales
 - Estilos para las tarjetas de módulos
 
 **`src/firebase/billing/useInitializeBillingSettings.jsx`**
+
 - Inicialización de `enabledAuthorizationModules` con ambos módulos activos por defecto
 
 **`src/features/cart/default/default.js`**
+
 - Agregado `enabledAuthorizationModules` al estado por defecto
 
 ### Hook de Utilidad
 
 **`src/hooks/useAuthorizationModules.js`** (NUEVO)
+
 - Hook reutilizable para verificar estado de módulos
 - Funciones:
   - `isModuleEnabled(moduleName)`: Verifica si un módulo está activo
@@ -79,24 +88,28 @@ La pantalla de configuración ahora incluye:
 ### Componentes de Cuadre de Caja
 
 **`src/views/pages/CashReconciliation/page/CashRegisterOpening/CashRegisterOpening.jsx`**
+
 - Integración del hook `useAuthorizationModules`
 - Lógica condicional para usar PIN o contraseña según configuración
 - Importación de `PeerReviewAuthorization` como fallback
 - Handler `handleOpenAuthorization()` que decide qué modal mostrar
 
 **`src/views/pages/CashReconciliation/page/CashRegisterClosure/CashRegisterClosure.jsx`**
+
 - Mismas modificaciones que CashRegisterOpening
 - Soporte para ambos tipos de autorización según configuración
 
 ### Pantalla de Autorizaciones
 
 **`src/views/pages/Authorizations/AuthorizationsManager.jsx`**
+
 - Integración del hook `useAuthorizationModules`
 - Alertas informativas cuando módulos están desactivados
 - Oculta tabs cuando no hay módulos activos
 - Mensajes contextuales según estado de cada módulo
 
 **`src/views/pages/Authorizations/components/PersonalPinManagement.jsx`** ⭐ ACTUALIZADO
+
 - Filtra y muestra solo los módulos activos según configuración
 - Oculta módulos desactivados de la lista de PINs del usuario
 - Deshabilita botones de generar/solicitar PIN si no hay módulos activos
@@ -144,7 +157,7 @@ import { useAuthorizationModules } from '../hooks/useAuthorizationModules';
 
 function MiComponente() {
   const { isModuleEnabled, shouldUsePinForModule } = useAuthorizationModules();
-  
+
   if (shouldUsePinForModule('cashRegister')) {
     // Usar PinAuthorizationModal
   } else {
@@ -156,10 +169,8 @@ function MiComponente() {
 #### Acceso directo a módulos específicos
 
 ```javascript
-const { 
-  isInvoicesModuleEnabled, 
-  isCashRegisterModuleEnabled 
-} = useAuthorizationModules();
+const { isInvoicesModuleEnabled, isCashRegisterModuleEnabled } =
+  useAuthorizationModules();
 
 if (isInvoicesModuleEnabled) {
   // Lógica para facturación con PIN
@@ -214,6 +225,7 @@ Cuando módulos están desactivados, se muestran alertas informativas:
 El sistema de descuentos en el carrito también depende del módulo de facturación:
 
 **`src/views/pages/Sale/components/Cart/components/InvoiceSummary/InvoiceSummary.jsx`**
+
 - Usa `useAuthorizationModules()` para verificar si requiere PIN
 - Solo cajeros necesitan PIN cuando el módulo de facturación está activo
 - Administradores y managers pueden aplicar descuentos sin restricción
@@ -222,7 +234,8 @@ El sistema de descuentos en el carrito también depende del módulo de facturaci
 
 ```javascript
 const { shouldUsePinForModule } = useAuthorizationModules();
-const shouldRequirePinForDiscount = shouldUsePinForModule('invoices') && isCashier;
+const shouldRequirePinForDiscount =
+  shouldUsePinForModule('invoices') && isCashier;
 ```
 
 ## �🐛 Debugging
@@ -230,16 +243,19 @@ const shouldRequirePinForDiscount = shouldUsePinForModule('invoices') && isCashi
 Si los módulos no se comportan como esperado:
 
 1. Verificar configuración en Firestore:
+
    ```
    businesses/{businessID}/settings/billing
    ```
 
 2. Verificar que el hook retorne valores correctos:
+
    ```javascript
    console.log(useAuthorizationModules());
    ```
 
 3. Verificar Redux store:
+
    ```javascript
    const settings = useSelector(SelectSettingCart);
    console.log(settings?.billing?.enabledAuthorizationModules);
@@ -247,7 +263,8 @@ Si los módulos no se comportan como esperado:
 
 4. Verificar en descuentos:
    ```javascript
-   const { shouldUsePinForModule, isInvoicesModuleEnabled } = useAuthorizationModules();
+   const { shouldUsePinForModule, isInvoicesModuleEnabled } =
+     useAuthorizationModules();
    console.log('PIN para invoices:', shouldUsePinForModule('invoices'));
    console.log('Módulo facturación activo:', isInvoicesModuleEnabled);
    ```
@@ -262,26 +279,31 @@ Si los módulos no se comportan como esperado:
 ## 🎯 Casos de Uso
 
 ### Caso 1: Solo Facturación
+
 - Activar: ✅ Facturación
 - Desactivar: ❌ Cuadre de Caja
 - Resultado: Facturación con PIN, Cuadre de caja con contraseña clásica
 
 ### Caso 2: Solo Cuadre de Caja
+
 - Activar: ✅ Cuadre de Caja
 - Desactivar: ❌ Facturación
 - Resultado: Cuadre de caja con PIN, Facturación sin restricciones especiales
 
 ### Caso 3: Ambos Módulos
+
 - Activar: ✅ Facturación, ✅ Cuadre de Caja
 - Resultado: Todo el flujo de autorizaciones funciona con PIN
 
 ### Caso 4: Flujo Desactivado
+
 - Desactivar flujo principal
 - Resultado: Ni facturación ni cuadre de caja requieren autorizaciones especiales
 
 ## 🔄 Migración
 
 Para sistemas existentes, la migración es automática:
+
 - Si no existe `enabledAuthorizationModules`, se inicializa con ambos módulos activos
 - Los usuarios existentes no verán cambios en el comportamiento por defecto
 - Los administradores pueden configurar módulos después de la actualización

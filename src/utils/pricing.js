@@ -26,7 +26,7 @@ function getPricingDetails(product, useAmountToBuy = true) {
   const pricing = product?.selectedSaleUnit?.pricing || product?.pricing || {};
   const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
   const weight = product?.weightDetail?.weight || 1;
-  const amountToBuy = useAmountToBuy ? (product?.amountToBuy || 1) : 1;
+  const amountToBuy = useAmountToBuy ? product?.amountToBuy || 1 : 1;
   const price = pricing.price || 0;
   const taxPercentage = Number(pricing.tax) || 0;
   const discountPercentage = product?.promotion?.discount || 0;
@@ -38,13 +38,17 @@ function getPricingDetails(product, useAmountToBuy = true) {
     amountToBuy,
     price,
     taxPercentage,
-    discountPercentage
+    discountPercentage,
   };
 }
 
-export function getPriceWithoutTax(priceWithTax, taxPercentage, taxReceiptEnabled = true) {
+export function getPriceWithoutTax(
+  priceWithTax,
+  taxPercentage,
+  taxReceiptEnabled = true,
+) {
   if (!taxReceiptEnabled) {
-    taxPercentage = 0
+    taxPercentage = 0;
   }
   return priceWithTax / (1 + taxPercentage / 100);
 }
@@ -56,12 +60,18 @@ export function getDiscount(product) {
   return limit(result * (discountPercentage / 100));
 }
 
-export function getTotalPrice(product, taxReceiptEnabled = true, useAmountToBuy = true) {
+export function getTotalPrice(
+  product,
+  taxReceiptEnabled = true,
+  useAmountToBuy = true,
+) {
   if (!product) return 0;
-  const { price, isSoldByWeight,  } = getPricingDetails(product, useAmountToBuy);
+  const { price, isSoldByWeight } = getPricingDetails(product, useAmountToBuy);
   if (!isValidNumber(price)) return 0;
 
-  const result = isSoldByWeight ? getWeight(product, useAmountToBuy) : getTotal(product, useAmountToBuy);
+  const result = isSoldByWeight
+    ? getWeight(product, useAmountToBuy)
+    : getTotal(product, useAmountToBuy);
   const tax = getTax(product, taxReceiptEnabled);
   const discount = getDiscount(product);
 
@@ -75,24 +85,27 @@ function getWeight(product, useAmountToBuy = true) {
 }
 
 export function resetAmountToBuyForProduct(product) {
- 
   return {
     ...product, // Conservar todas las propiedades del producto
     amountToBuy: 1,
     weightDetail: {
       ...product.weightDetail,
-      weight: 1
-    }
+      weight: 1,
+    },
   };
 }
 
-function getPriceTotalByType(product, priceType = 'price', taxReceiptEnabled = true) {
+function getPriceTotalByType(
+  product,
+  priceType = 'price',
+  taxReceiptEnabled = true,
+) {
   const { isSoldByWeight, weight, pricing } = getPricingDetails(product);
   let price = pricing[priceType] || 0;
   if (isSoldByWeight) {
     price *= weight;
   }
-  let tax = taxReceiptEnabled ? (pricing.tax / 100) || 0 : 0;
+  let tax = taxReceiptEnabled ? pricing.tax / 100 || 0 : 0;
   let taxAmount = price * tax;
   return limit(price + taxAmount);
 }
@@ -100,7 +113,7 @@ function getPriceTotalByType(product, priceType = 'price', taxReceiptEnabled = t
 export function getTotal(product, useAmountToBuy = true) {
   const { price, amountToBuy } = getPricingDetails(product, useAmountToBuy);
   const quantity = useAmountToBuy ? amountToBuy : 1;
-  
+
   // Aplicar descuento individual si existe
   let finalPrice = price * quantity;
   if (product.discount && product.discount.value > 0) {
@@ -111,16 +124,16 @@ export function getTotal(product, useAmountToBuy = true) {
       finalPrice = Math.max(0, finalPrice - product.discount.value);
     }
   }
-  
+
   return finalPrice;
 }
 
 export function getListPriceTotal(product, taxReceiptEnabled = true) {
-return getPriceTotalByType(product, 'listPrice', taxReceiptEnabled);
+  return getPriceTotalByType(product, 'listPrice', taxReceiptEnabled);
 }
 
-export  function getPriceTotal (product, taxReceiptEnabled = true) {
- return getPriceTotalByType(product, 'price', taxReceiptEnabled);
+export function getPriceTotal(product, taxReceiptEnabled = true) {
+  return getPriceTotalByType(product, 'price', taxReceiptEnabled);
 }
 
 export function getAvgPriceTotal(product, taxReceiptEnabled = true) {
@@ -141,9 +154,10 @@ export function getOfferPriceTotal(product, taxReceiptEnabled = true) {
 
 export function getProductsPrice(products = []) {
   return products.reduce((acc, product) => {
-    const { isSoldByWeight, weight, amountToBuy, price } = getPricingDetails(product);
+    const { isSoldByWeight, weight, amountToBuy, price } =
+      getPricingDetails(product);
     const quantity = isSoldByWeight ? weight : amountToBuy;
-    
+
     // Aplicar descuento individual si existe
     let finalPrice = price * quantity;
     if (product.discount && product.discount.value > 0) {
@@ -154,13 +168,16 @@ export function getProductsPrice(products = []) {
         finalPrice = Math.max(0, finalPrice - product.discount.value);
       }
     }
-    
+
     return acc + finalPrice;
   }, 0);
 }
 
 export function getProductsTax(products = [], taxReceiptEnabled = true) {
-  return products.reduce((acc, product) => acc + getTax(product, taxReceiptEnabled), 0);
+  return products.reduce(
+    (acc, product) => acc + getTax(product, taxReceiptEnabled),
+    0,
+  );
 }
 
 export function getProductsDiscount(products = []) {
@@ -170,11 +187,12 @@ export function getProductsDiscount(products = []) {
 export function getProductsIndividualDiscounts(products = []) {
   return products.reduce((acc, product) => {
     if (!product.discount || product.discount.value <= 0) return acc;
-    
-    const { price, isSoldByWeight, weight, amountToBuy } = getPricingDetails(product);
+
+    const { price, isSoldByWeight, weight, amountToBuy } =
+      getPricingDetails(product);
     const quantity = isSoldByWeight ? weight : amountToBuy;
     const subtotalBeforeDiscount = price * quantity;
-    
+
     let discountAmount = 0;
     if (product.discount.type === 'percentage') {
       discountAmount = subtotalBeforeDiscount * (product.discount.value / 100);
@@ -182,18 +200,19 @@ export function getProductsIndividualDiscounts(products = []) {
       // Para monto fijo
       discountAmount = Math.min(product.discount.value, subtotalBeforeDiscount);
     }
-    
+
     return acc + discountAmount;
   }, 0);
 }
 
 export function getProductIndividualDiscount(product) {
   if (!product.discount || product.discount.value <= 0) return 0;
-  
-  const { price, isSoldByWeight, weight, amountToBuy } = getPricingDetails(product);
+
+  const { price, isSoldByWeight, weight, amountToBuy } =
+    getPricingDetails(product);
   const quantity = isSoldByWeight ? weight : amountToBuy;
   const subtotalBeforeDiscount = price * quantity;
-  
+
   if (product.discount.type === 'percentage') {
     return subtotalBeforeDiscount * (product.discount.value / 100);
   } else {
@@ -204,28 +223,38 @@ export function getProductIndividualDiscount(product) {
 
 export function getTotalItems(products = []) {
   // Sum amountToBuy, defaulting each product to 1; avoid precedence pitfalls
-  return products.reduce((acc, product) => acc + (product?.amountToBuy ?? 1), 0);
+  return products.reduce(
+    (acc, product) => acc + (product?.amountToBuy ?? 1),
+    0,
+  );
 }
 
-export function getProductsTotalPrice(products = [], totalDiscountPercentage = 0, totalDelivery = 0, taxReceiptEnabled = true) {
+export function getProductsTotalPrice(
+  products = [],
+  totalDiscountPercentage = 0,
+  totalDelivery = 0,
+  taxReceiptEnabled = true,
+) {
   if (!isValidNumber(totalDelivery)) {
     totalDelivery = 0;
   }
-  
+
   // Verificar si hay productos con descuentos individuales
-  const hasIndividualDiscounts = products.some(product => 
-    product.discount && product.discount.value > 0
+  const hasIndividualDiscounts = products.some(
+    (product) => product.discount && product.discount.value > 0,
   );
-  
+
   let subtotal = getProductsPrice(products);
   let itbis = getProductsTax(products, taxReceiptEnabled);
-  let productsDiscount = getProductsDiscount(products)
+  let productsDiscount = getProductsDiscount(products);
   let totalBeforeDiscount = subtotal - productsDiscount;
 
   // Solo aplicar descuento general si no hay descuentos individuales
-  let totalDiscount = hasIndividualDiscounts ? 0 : getTotalDiscount(totalBeforeDiscount, totalDiscountPercentage);
+  let totalDiscount = hasIndividualDiscounts
+    ? 0
+    : getTotalDiscount(totalBeforeDiscount, totalDiscountPercentage);
 
-  let total = (totalBeforeDiscount - totalDiscount + totalDelivery + itbis)
+  let total = totalBeforeDiscount - totalDiscount + totalDelivery + itbis;
 
   return limit(total);
 }
@@ -245,20 +274,30 @@ export function getTotalInvoice(invoice) {
       subtotal: getProductsPrice(invoice.products),
       tax: getProductsTax(invoice.products),
       discount: getProductsDiscount(invoice.products),
-      total: getProductsTotalPrice(invoice.products, 0, invoice?.delivery?.value)
-    }
+      total: getProductsTotalPrice(
+        invoice.products,
+        0,
+        invoice?.delivery?.value,
+      ),
+    },
   };
 }
 
-export const getTotalDiscount = (totalBeforeDiscount = 0, totalDiscountPercentage = 0) => {
-  if (!isValidNumber(totalBeforeDiscount) || !isValidNumber(totalDiscountPercentage)) {
+export const getTotalDiscount = (
+  totalBeforeDiscount = 0,
+  totalDiscountPercentage = 0,
+) => {
+  if (
+    !isValidNumber(totalBeforeDiscount) ||
+    !isValidNumber(totalDiscountPercentage)
+  ) {
     return 0;
   }
   return totalBeforeDiscount * (totalDiscountPercentage / 100);
 };
 
 export const getProducts = (products = [], taxReceiptEnabled) => {
-  return products.map(product => {
+  return products.map((product) => {
     return {
       ...product,
       pricing: {
@@ -266,11 +305,11 @@ export const getProducts = (products = [], taxReceiptEnabled) => {
         avgPrice: getAvgPriceTotal(product, taxReceiptEnabled),
         listPrice: getListPriceTotal(product, taxReceiptEnabled),
         minPrice: getMinPriceTotal(product, taxReceiptEnabled),
-        price: getTotalPrice(product, taxReceiptEnabled)
-      }
+        price: getTotalPrice(product, taxReceiptEnabled),
+      },
     };
   });
-}
+};
 
 //crear uan funcion que se encargue de cambiar la presiciond e un desimal por defercto podria ser 2
 
@@ -280,17 +319,18 @@ export const setNumPrecision = (value, precision = 2) => {
     return 0;
   }
   return Number(num.toFixed(precision));
-}
+};
 
 export function getInsuranceExtra(product) {
   const ins = product.insurance || { mode: null, value: 0 };
   if (!ins.value) return 0;
   // Use getPricingDetails to obtain price and quantity.
-  const { price, isSoldByWeight, weight, amountToBuy } = getPricingDetails(product);
+  const { price, isSoldByWeight, weight, amountToBuy } =
+    getPricingDetails(product);
   const quantity = isSoldByWeight ? weight : amountToBuy;
   return ins.mode === 'porcentaje'
-      ? price * quantity * (ins.value / 100)
-      : ins.value * quantity;
+    ? price * quantity * (ins.value / 100)
+    : ins.value * quantity;
 }
 
 export function getProductsInsuranceExtra(products = []) {

@@ -7,7 +7,6 @@ import styled from 'styled-components';
 import BarcodeItem from './BarcodeItem';
 import QuantitySelector from './QuantitySelector';
 
-
 const BarcodeGrid = styled.div`
   /* Pantalla: 1 columna (sin columnas visuales) */
   display: grid;
@@ -25,8 +24,12 @@ const BarcodeGrid = styled.div`
     page-break-inside: avoid;
     margin: 0;
     padding: 5px;
-    & > .barcode-item { margin-bottom: 7mm; }
-    & > .barcode-item:last-child { margin-bottom: 0; }
+    & > .barcode-item {
+      margin-bottom: 7mm;
+    }
+    & > .barcode-item:last-child {
+      margin-bottom: 0;
+    }
   }
 `;
 
@@ -183,8 +186,17 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
               type="info"
               showIcon
               style={{ marginBottom: 16 }}
-              message={<div><strong>Producto:</strong> {selectedBarcode.name || 'Sin nombre'}</div>}
-              description={<div><strong>Código:</strong> {selectedBarcode.number}</div>}
+              message={
+                <div>
+                  <strong>Producto:</strong>{' '}
+                  {selectedBarcode.name || 'Sin nombre'}
+                </div>
+              }
+              description={
+                <div>
+                  <strong>Código:</strong> {selectedBarcode.number}
+                </div>
+              }
             />
           )}
 
@@ -198,8 +210,6 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
                 disabled={isLoading}
               />
             </Form.Item>
-
-   
 
             <Form.Item label="Tipo de código">
               <Select

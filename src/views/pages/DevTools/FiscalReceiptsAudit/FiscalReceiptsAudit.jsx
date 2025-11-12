@@ -10,7 +10,15 @@ import {
   Typography,
   message,
 } from 'antd';
-import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,7 +44,9 @@ export const FiscalReceiptsAudit = () => {
   const [selectedPreset, setSelectedPreset] = useState('last_90_days');
   const [results, setResults] = useState([]);
   const [errors, setErrors] = useState([]);
-  const businessesWithDuplicates = results.filter((item) => item.duplicates && item.duplicates.length > 0);
+  const businessesWithDuplicates = results.filter(
+    (item) => item.duplicates && item.duplicates.length > 0,
+  );
 
   useEffect(() => {
     if (!loading) {
@@ -79,16 +89,25 @@ export const FiscalReceiptsAudit = () => {
       const issues = [];
 
       for (const business of businesses) {
-        const businessName = business?.business?.name
-          || business?.business?.fantasyName
-          || business?.name
-          || business?.id;
+        const businessName =
+          business?.business?.name ||
+          business?.business?.fantasyName ||
+          business?.name ||
+          business?.id;
 
         try {
           setCurrentBusiness(businessName);
-          const taxSettingsRef = doc(db, 'businesses', business.id, 'settings', 'taxReceipt');
+          const taxSettingsRef = doc(
+            db,
+            'businesses',
+            business.id,
+            'settings',
+            'taxReceipt',
+          );
           const taxSettingsSnap = await getDoc(taxSettingsRef);
-          const taxEnabled = taxSettingsSnap.exists() && !!taxSettingsSnap.data()?.taxReceiptEnabled;
+          const taxEnabled =
+            taxSettingsSnap.exists() &&
+            !!taxSettingsSnap.data()?.taxReceiptEnabled;
 
           if (!taxEnabled) {
             aggregated.push({
@@ -110,7 +129,12 @@ export const FiscalReceiptsAudit = () => {
             continue;
           }
 
-          const invoicesRef = collection(db, 'businesses', business.id, 'invoices');
+          const invoicesRef = collection(
+            db,
+            'businesses',
+            business.id,
+            'invoices',
+          );
           let invoicesQuery;
           if (startDate && endDate) {
             invoicesQuery = query(
@@ -120,10 +144,7 @@ export const FiscalReceiptsAudit = () => {
               orderBy('data.date', 'asc'),
             );
           } else {
-            invoicesQuery = query(
-              invoicesRef,
-              orderBy('data.date', 'asc'),
-            );
+            invoicesQuery = query(invoicesRef, orderBy('data.date', 'asc'));
           }
 
           const invoicesSnapshot = await getDocs(invoicesQuery);
@@ -162,7 +183,10 @@ export const FiscalReceiptsAudit = () => {
             ...analysis,
           });
         } catch (businessError) {
-          console.error(`Error analizando negocio ${business?.id}`, businessError);
+          console.error(
+            `Error analizando negocio ${business?.id}`,
+            businessError,
+          );
           issues.push({
             businessId: business.id,
             businessName,
@@ -187,16 +211,26 @@ export const FiscalReceiptsAudit = () => {
       setErrors(issues);
 
       if (!aggregated.length && !issues.length) {
-        message.info('No se encontraron negocios con comprobante habilitado en el rango seleccionado.');
+        message.info(
+          'No se encontraron negocios con comprobante habilitado en el rango seleccionado.',
+        );
       }
 
       if (issues.length) {
-        message.warning(`Algunos negocios no se pudieron analizar (${issues.length}). Revisa los avisos.`);
+        message.warning(
+          `Algunos negocios no se pudieron analizar (${issues.length}). Revisa los avisos.`,
+        );
       }
     } catch (error) {
       console.error('Error general al analizar comprobantes', error);
       message.error('Ocurrió un error al generar el análisis.');
-      setErrors([{ businessId: 'general', businessName: 'General', message: toFriendlyFirestoreError(error) }]);
+      setErrors([
+        {
+          businessId: 'general',
+          businessName: 'General',
+          message: toFriendlyFirestoreError(error),
+        },
+      ]);
       setResults([]);
     } finally {
       setProcessing(false);
@@ -206,7 +240,9 @@ export const FiscalReceiptsAudit = () => {
 
   const handleExportBusiness = async (businessResult) => {
     if (!businessResult?.duplicates?.length) {
-      message.info('Este negocio no tiene comprobantes duplicados para exportar.');
+      message.info(
+        'Este negocio no tiene comprobantes duplicados para exportar.',
+      );
       return;
     }
 
@@ -248,7 +284,8 @@ export const FiscalReceiptsAudit = () => {
           Analisis de comprobantes fiscales
         </Typography.Title>
         <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          Ejecuta una revision de comprobantes en todos los negocios con la configuracion activa para detectar cambios de longitud y duplicados.
+          Ejecuta una revision de comprobantes en todos los negocios con la
+          configuracion activa para detectar cambios de longitud y duplicados.
         </Typography.Paragraph>
 
         <Space size="small" wrap style={{ marginBottom: 16 }}>
@@ -279,7 +316,9 @@ export const FiscalReceiptsAudit = () => {
           <div style={{ marginTop: 16 }}>
             <Space direction="vertical" style={{ width: '100%' }}>
               <div>
-                <Typography.Text strong>Analizando comprobantes...</Typography.Text>
+                <Typography.Text strong>
+                  Analizando comprobantes...
+                </Typography.Text>
                 {currentBusiness ? (
                   <Typography.Text style={{ marginLeft: 8 }} type="secondary">
                     {currentBusiness}
@@ -287,7 +326,11 @@ export const FiscalReceiptsAudit = () => {
                 ) : null}
               </div>
               <Progress
-                percent={progressTotal ? Math.round((progressDone / progressTotal) * 100) : 0}
+                percent={
+                  progressTotal
+                    ? Math.round((progressDone / progressTotal) * 100)
+                    : 0
+                }
                 status="active"
               />
             </Space>
@@ -298,9 +341,11 @@ export const FiscalReceiptsAudit = () => {
           <Empty description="Ejecuta el analisis para ver resultados." />
         )}
 
-        {!processing && results.length > 0 && !businessesWithDuplicates.length && (
-          <Empty description="No se detectaron negocios con comprobantes duplicados en el rango seleccionado." />
-        )}
+        {!processing &&
+          results.length > 0 &&
+          !businessesWithDuplicates.length && (
+            <Empty description="No se detectaron negocios con comprobantes duplicados en el rango seleccionado." />
+          )}
 
         {exporting && (
           <Alert
@@ -310,7 +355,8 @@ export const FiscalReceiptsAudit = () => {
             message={
               exportingBusiness ? (
                 <span>
-                  Exportando reporte de <strong>{exportingBusiness.name}</strong>...
+                  Exportando reporte de{' '}
+                  <strong>{exportingBusiness.name}</strong>...
                 </span>
               ) : (
                 'Generando reporte...'
@@ -324,7 +370,8 @@ export const FiscalReceiptsAudit = () => {
             itemLayout="horizontal"
             dataSource={businessesWithDuplicates}
             renderItem={(result) => {
-              const isExportingThis = exporting && exportingBusiness?.id === result.businessId;
+              const isExportingThis =
+                exporting && exportingBusiness?.id === result.businessId;
               return (
                 <List.Item
                   key={result.businessId}
@@ -343,14 +390,17 @@ export const FiscalReceiptsAudit = () => {
                   <List.Item.Meta
                     title={
                       <Space size={8} wrap>
-                        <Typography.Text strong>{result.businessName}</Typography.Text>
+                        <Typography.Text strong>
+                          {result.businessName}
+                        </Typography.Text>
                         <Tag>{result.businessId}</Tag>
                       </Space>
                     }
                     description={
                       <Space size={8} wrap>
                         <Tag color="red">{`${result.duplicates.length} NCF duplicados`}</Tag>
-                        {result.duplicatesNormalized && result.duplicatesNormalized.length ? (
+                        {result.duplicatesNormalized &&
+                        result.duplicatesNormalized.length ? (
                           <Tag color="volcano">{`${result.duplicatesNormalized.length} claves normalizadas`}</Tag>
                         ) : null}
                         <Typography.Text type="secondary">

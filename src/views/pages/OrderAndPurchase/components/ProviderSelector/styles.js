@@ -13,8 +13,10 @@ export const Header = styled.div`
   gap: 8px;
   align-items: center;
   padding: 0 1em;
-  
-  .search-container { flex: 1; }
+
+  .search-container {
+    flex: 1;
+  }
 `;
 
 export const ProvidersContainer = styled.div`
@@ -27,14 +29,16 @@ export const ProvidersContainer = styled.div`
 `;
 
 export const ProviderCard = styled.div`
-  background-color: ${props => props.$isSelected ? '#e6f7ff' : 'white'};
-  border: 1px solid ${props => props.$isSelected ? '#1890ff' : '#e8e8e8'};
+  background-color: ${(props) => (props.$isSelected ? '#e6f7ff' : 'white')};
+  border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#e8e8e8')};
   padding: 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 
   .card-header {
     display: flex;
@@ -47,7 +51,7 @@ export const ProviderCard = styled.div`
     color: #8c8c8c;
     padding: 4px;
     border-radius: 4px;
-    
+
     &:hover {
       background-color: rgba(0, 0, 0, 0.04);
     }

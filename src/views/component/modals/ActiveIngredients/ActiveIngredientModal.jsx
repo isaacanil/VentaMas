@@ -2,9 +2,15 @@ import { Modal, Input, message, Form } from 'antd';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { closeModal, selectActiveIngredientModal } from '../../../../features/activeIngredients/activeIngredientsSlice';
+import {
+  closeModal,
+  selectActiveIngredientModal,
+} from '../../../../features/activeIngredients/activeIngredientsSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
-import {fbAddActiveIngredient, fbUpdateActiveIngredient} from '../../../../firebase/products/activeIngredient/activeIngredients';
+import {
+  fbAddActiveIngredient,
+  fbUpdateActiveIngredient,
+} from '../../../../firebase/products/activeIngredient/activeIngredients';
 
 const ActiveIngredientModal = () => {
   const dispatch = useDispatch();
@@ -27,42 +33,45 @@ const ActiveIngredientModal = () => {
       form.resetFields();
     }
   }, [isOpen, initialValues, form]);
-const handleClose = () => {
+  const handleClose = () => {
     dispatch(closeModal());
-  
-}
+  };
   const handleOk = async () => {
     try {
       // Validar los campos del formulario
       const values = await form.validateFields();
-  
+
       if (isUpdate) {
         // Actualizar el principio activo
-        await fbUpdateActiveIngredient(user, { id: initialValues.id, name: values.name });
+        await fbUpdateActiveIngredient(user, {
+          id: initialValues.id,
+          name: values.name,
+        });
         message.success('Principio activo actualizado con éxito.');
       } else {
         // Añadir un nuevo principio activo
         await fbAddActiveIngredient(user, { name: values.name });
         message.success('Principio activo creado con éxito.');
       }
-  
+
       // Cerrar el modal
       handleClose();
     } catch (error) {
       // Manejar errores de validación o de las operaciones asíncronas
-              console.error('Active ingredient validation failed:', error);
+      console.error('Active ingredient validation failed:', error);
       // Opcionalmente, puedes mostrar un mensaje de error al usuario
       message.error('Hubo un error al procesar la solicitud.');
     }
   };
-  
 
   const handleCancel = () => {
     dispatch(closeModal());
   };
   return (
     <Modal
-      title={isUpdate ? 'Actualizar Principio Activo' : 'Crear Principio Activo'}
+      title={
+        isUpdate ? 'Actualizar Principio Activo' : 'Crear Principio Activo'
+      }
       open={isOpen}
       onOk={handleOk}
       width={400}
@@ -70,20 +79,18 @@ const handleClose = () => {
       okText={isUpdate ? 'Actualizar' : 'Crear'}
       cancelText="Cancelar"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        name="active_ingredient_form"
-      >
+      <Form form={form} layout="vertical" name="active_ingredient_form">
         <Form.Item
           name="name"
           label="Nombre del Principio Activo"
-          rules={[{ required: true, message: 'Por favor ingrese el nombre del principio activo' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Por favor ingrese el nombre del principio activo',
+            },
+          ]}
         >
-          <Input
-            placeholder="Nombre del Principio Activo"
-            autoFocus
-          />
+          <Input placeholder="Nombre del Principio Activo" autoFocus />
         </Form.Item>
         {/* Puedes agregar más campos aquí si es necesario */}
       </Form>

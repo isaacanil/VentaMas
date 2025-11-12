@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
-import { expandMatchingNodes } from "../utils/expandUtils";
-import { traverse } from "../utils/traverseUtils";
+import { expandMatchingNodes } from '../utils/expandUtils';
+import { traverse } from '../utils/traverseUtils';
 
 const useSearchTerm = (data, manuallyClosedNodes, setSearchExpandedNodes) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!searchTerm) {
@@ -20,7 +20,7 @@ const useSearchTerm = (data, manuallyClosedNodes, setSearchExpandedNodes) => {
           }
           return acc;
         }, {});
-        
+
         setSearchExpandedNodes({ ...filtered });
       });
     }, 300); // Debounce para evitar múltiples actualizaciones

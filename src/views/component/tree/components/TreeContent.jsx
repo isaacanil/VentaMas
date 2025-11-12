@@ -42,7 +42,7 @@ const StickyFooter = styled.div`
   }
 
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: -12px 0 auto;
     height: 32px;
@@ -66,7 +66,7 @@ const TreeContent = ({
   filteredData,
   selectedId,
   loading = false,
-  loadingText = "Cargando...",
+  loadingText = 'Cargando...',
   footerPlacement,
   footerContent,
 }) => {
@@ -82,13 +82,13 @@ const TreeContent = ({
     return (
       <Items>
         {children}
-        {footerPlacement === "sticky" && footerContent ? (
+        {footerPlacement === 'sticky' && footerContent ? (
           <StickyFooter>{footerContent}</StickyFooter>
         ) : null}
       </Items>
     );
   }
-  
+
   return selectedId ? (
     <Empty description="Sin selección" />
   ) : (

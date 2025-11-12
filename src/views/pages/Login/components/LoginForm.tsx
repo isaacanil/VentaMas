@@ -1,6 +1,11 @@
-import { faEye, faEyeSlash, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Form, notification } from "antd";
+import {
+  faEye,
+  faEyeSlash,
+  faLock,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Form, notification } from 'antd';
 import {
   forwardRef,
   useCallback,
@@ -11,19 +16,23 @@ import {
   type InputHTMLAttributes,
   type KeyboardEvent,
   type ReactNode,
-} from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+} from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled, { keyframes } from 'styled-components';
 
-import { fbSignIn, updateAppState, type FbSignInResult, type FbSignInUser } from "@/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn";
-import ROUTES_PATH from "@/routes/routesName";
+import {
+  fbSignIn,
+  updateAppState,
+  type FbSignInResult,
+  type FbSignInUser,
+} from '@/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
+import ROUTES_PATH from '@/routes/routesName';
 
-import { LogoContainer } from "./Header/LogoContainer";
+import { LogoContainer } from './Header/LogoContainer';
 
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import type { FormProps } from "antd";
-
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import type { FormProps } from 'antd';
 
 type LoginFormValues = {
   username: string;
@@ -34,19 +43,19 @@ type LoginFormProps = {
   setLoading?: (value: boolean) => void;
 };
 
-const ACCENT_COLOR = "#54c0a8";
+const ACCENT_COLOR = '#54c0a8';
 
 const isSignInUser = (value: unknown): value is FbSignInUser => {
-  if (!value || typeof value !== "object") {
+  if (!value || typeof value !== 'object') {
     return false;
   }
 
   const record = value as Record<string, unknown>;
-  return typeof record.id === "string" && record.id.length > 0;
+  return typeof record.id === 'string' && record.id.length > 0;
 };
 
 const isValidSignInResult = (value: unknown): value is FbSignInResult => {
-  if (!value || typeof value !== "object") {
+  if (!value || typeof value !== 'object') {
     return false;
   }
 
@@ -54,9 +63,11 @@ const isValidSignInResult = (value: unknown): value is FbSignInResult => {
   return isSignInUser(record.user);
 };
 
-function assertIsValidSignInResult(value: unknown): asserts value is FbSignInResult {
+function assertIsValidSignInResult(
+  value: unknown,
+): asserts value is FbSignInResult {
   if (!isValidSignInResult(value)) {
-    throw new Error("Respuesta inválida del servicio de autenticación.");
+    throw new Error('Respuesta inválida del servicio de autenticación.');
   }
 }
 
@@ -69,14 +80,13 @@ const Container = styled.div`
   justify-content: center;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  
+
   @media (min-height: 980px) {
     padding: 3rem 1.5rem;
     padding-top: 4rem;
     align-items: center;
     align-content: center;
   }
-
 `;
 
 const Wrapper = styled.div`
@@ -97,7 +107,9 @@ const Body = styled.div`
 const StyledIcon = styled(FontAwesomeIcon)`
   color: rgba(255, 255, 255, 0.7);
   font-size: 1rem;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 `;
 
 const InputElement = styled.input`
@@ -132,7 +144,10 @@ const IconInputWrapper = styled.div`
   border-radius: 999px;
   background: rgba(15, 19, 35, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 
   &:focus-within {
     border-color: ${ACCENT_COLOR};
@@ -155,15 +170,17 @@ type IconInputProps = {
   endSlot?: ReactNode;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-const IconInput = forwardRef<HTMLInputElement, IconInputProps>(({ icon, endSlot, ...inputProps }, ref) => (
-  <IconInputWrapper>
-    <StyledIcon icon={icon} />
-    <InputElement ref={ref} {...inputProps} />
-    {endSlot}
-  </IconInputWrapper>
-));
+const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
+  ({ icon, endSlot, ...inputProps }, ref) => (
+    <IconInputWrapper>
+      <StyledIcon icon={icon} />
+      <InputElement ref={ref} {...inputProps} />
+      {endSlot}
+    </IconInputWrapper>
+  ),
+);
 
-IconInput.displayName = "IconInput";
+IconInput.displayName = 'IconInput';
 
 const TogglePasswordButton = styled.button`
   border: none;
@@ -176,7 +193,9 @@ const TogglePasswordButton = styled.button`
   padding: 0;
   font-size: 1rem;
   line-height: 1;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     color: #ffffff;
@@ -211,7 +230,10 @@ const SubmitButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 
   &:hover {
     transform: translateY(-1px);
@@ -242,13 +264,17 @@ const LoadingSpinner = styled.span`
   animation: ${spin} 0.6s linear infinite;
 `;
 
-type StyledLoginFormProps = Omit<FormProps<LoginFormValues>, "children"> & {
+type StyledLoginFormProps = Omit<FormProps<LoginFormValues>, 'children'> & {
   children?: ReactNode;
 };
 
-const BaseLoginForm = (props: StyledLoginFormProps) => <Form<LoginFormValues> {...props} />;
+const BaseLoginForm = (props: StyledLoginFormProps) => (
+  <Form<LoginFormValues> {...props} />
+);
 
-type OnFinishFailedInfo = Parameters<NonNullable<FormProps<LoginFormValues>["onFinishFailed"]>>[0];
+type OnFinishFailedInfo = Parameters<
+  NonNullable<FormProps<LoginFormValues>['onFinishFailed']>
+>[0];
 
 const StyledForm = styled(BaseLoginForm)`
   display: flex;
@@ -305,12 +331,15 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
     usernameInputRef.current?.focus();
   }, []);
 
-  const handleUsernameKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      passwordInputRef.current?.focus();
-    }
-  }, []);
+  const handleUsernameKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        passwordInputRef.current?.focus();
+      }
+    },
+    [],
+  );
 
   const handleFinish = useCallback(
     async ({ username, password }: LoginFormValues) => {
@@ -335,19 +364,19 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
         navigate(ROUTES_PATH.BASIC_TERM.HOME);
 
         notification.success({
-          message: "Inicio de sesión exitoso",
-          description: "¡Bienvenido!",
+          message: 'Inicio de sesión exitoso',
+          description: '¡Bienvenido!',
         });
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error && error.message
             ? error.message
-            : "No se pudo iniciar sesión. Inténtalo de nuevo.";
+            : 'No se pudo iniciar sesión. Inténtalo de nuevo.';
 
         setFormError(errorMessage);
 
         notification.error({
-          message: "Error",
+          message: 'Error',
           description: errorMessage,
         });
       } finally {
@@ -360,14 +389,16 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
 
   const handleFinishFailed = useCallback(
     (errorInfo: OnFinishFailedInfo) => {
-      const messages = errorInfo.errorFields.flatMap(({ errors }) => errors).filter(Boolean);
+      const messages = errorInfo.errorFields
+        .flatMap(({ errors }) => errors)
+        .filter(Boolean);
 
       if (messages.length > 0) {
-        setFormError(messages.join(" "));
+        setFormError(messages.join(' '));
         return;
       }
 
-      setFormError("Por favor revisa los campos marcados en rojo.");
+      setFormError('Por favor revisa los campos marcados en rojo.');
     },
     [setFormError],
   );
@@ -389,8 +420,12 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
             <Form.Item<LoginFormValues>
               name="username"
               label="Usuario"
-              normalize={(value: string) => (typeof value === "string" ? value.toLowerCase() : value)}
-              rules={[{ required: true, message: "Ingresa el nombre de usuario." }]}
+              normalize={(value: string) =>
+                typeof value === 'string' ? value.toLowerCase() : value
+              }
+              rules={[
+                { required: true, message: 'Ingresa el nombre de usuario.' },
+              ]}
             >
               <IconInput
                 icon={faUser}
@@ -405,27 +440,37 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
             <Form.Item<LoginFormValues>
               name="password"
               label="Contraseña"
-              rules={[{ required: true, message: "Ingresa la contraseña." }]}
+              rules={[{ required: true, message: 'Ingresa la contraseña.' }]}
             >
               <IconInput
                 icon={faLock}
-                type={isPasswordVisible ? "text" : "password"}
+                type={isPasswordVisible ? 'text' : 'password'}
                 autoComplete="current-password"
                 placeholder="Contraseña"
                 ref={passwordInputRef}
-                endSlot={(
+                endSlot={
                   <TogglePasswordButton
                     type="button"
                     onClick={() => {
                       setIsPasswordVisible((prev) => !prev);
                       passwordInputRef.current?.focus();
                     }}
-                    aria-label={isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-                    title={isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    aria-label={
+                      isPasswordVisible
+                        ? 'Ocultar contraseña'
+                        : 'Mostrar contraseña'
+                    }
+                    title={
+                      isPasswordVisible
+                        ? 'Ocultar contraseña'
+                        : 'Mostrar contraseña'
+                    }
                   >
-                    <FontAwesomeIcon icon={isPasswordVisible ? faEyeSlash : faEye} />
+                    <FontAwesomeIcon
+                      icon={isPasswordVisible ? faEyeSlash : faEye}
+                    />
                   </TogglePasswordButton>
-                )}
+                }
               />
             </Form.Item>
           </Body>
@@ -436,14 +481,18 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
             </FormErrorMessage>
           ) : null}
 
-          <SubmitButton type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+          <SubmitButton
+            type="submit"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+          >
             {isSubmitting ? (
               <>
                 <LoadingSpinner />
                 Iniciando...
               </>
             ) : (
-              "Iniciar sesión"
+              'Iniciar sesión'
             )}
           </SubmitButton>
         </StyledForm>

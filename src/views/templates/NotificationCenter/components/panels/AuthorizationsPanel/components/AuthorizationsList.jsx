@@ -2,7 +2,13 @@ import styled from 'styled-components';
 
 import AuthorizationRow from './AuthorizationRow';
 
-const AuthorizationsList = ({ authorizations, isAdmin, processingId, onApprove, onReject }) => (
+const AuthorizationsList = ({
+  authorizations,
+  isAdmin,
+  processingId,
+  onApprove,
+  onReject,
+}) => (
   <AuthorizationsListContainer>
     {authorizations.map((authorization) => (
       <AuthorizationRow

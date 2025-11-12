@@ -7,7 +7,10 @@ import { changeProductPrice } from '../../../../../../../../../features/cart/car
 import { selectTaxReceiptEnabled } from '../../../../../../../../../features/taxReceipt/taxReceiptSlice';
 import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
 import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
-import { getPriceTotal, getPriceWithoutTax } from '../../../../../../../../../utils/pricing';
+import {
+  getPriceTotal,
+  getPriceWithoutTax,
+} from '../../../../../../../../../utils/pricing';
 
 export const PriceEditor = ({ item, onModalOpen }) => {
   const dispatch = useDispatch();
@@ -15,10 +18,12 @@ export const PriceEditor = ({ item, onModalOpen }) => {
   const canModifyPrice = abilities.can('modify', 'Price');
   const canReadPriceList = abilities.can('read', 'PriceList');
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-  
-  const [inputPrice, setInputPrice] = useState(getPriceTotal(item, taxReceiptEnabled));
+
+  const [inputPrice, setInputPrice] = useState(
+    getPriceTotal(item, taxReceiptEnabled),
+  );
   const [isEditingPrice, setIsEditingPrice] = useState(false);
-  
+
   useEffect(() => {
     setInputPrice(getPriceTotal(item, taxReceiptEnabled));
   }, [item, taxReceiptEnabled]);
@@ -31,13 +36,19 @@ export const PriceEditor = ({ item, onModalOpen }) => {
   const handlePriceBlur = () => {
     if (isEditingPrice && canModifyPrice) {
       // Convertir el precio con impuesto a precio sin impuesto
-      const priceWithoutTax = getPriceWithoutTax(parseFloat(inputPrice), item.pricing.tax, taxReceiptEnabled);
+      const priceWithoutTax = getPriceWithoutTax(
+        parseFloat(inputPrice),
+        item.pricing.tax,
+        taxReceiptEnabled,
+      );
 
       // Despachar el cambio al estado con el precio sin impuesto
-      dispatch(changeProductPrice({
-        id: item.id,
-        price: priceWithoutTax
-      }));
+      dispatch(
+        changeProductPrice({
+          id: item.id,
+          price: priceWithoutTax,
+        }),
+      );
 
       setIsEditingPrice(false);
     }
@@ -59,19 +70,21 @@ export const PriceEditor = ({ item, onModalOpen }) => {
   if (loading) {
     return (
       <PriceContainer>
-        <div style={{ padding: '8px', textAlign: 'center' }}>
-          Cargando...
-        </div>
+        <div style={{ padding: '8px', textAlign: 'center' }}>Cargando...</div>
       </PriceContainer>
     );
   }
 
   return (
     <PriceContainer>
-      <DropdownButton 
+      <DropdownButton
         onClick={handleModalOpen}
         disabled={!canReadPriceList}
-        title={!canReadPriceList ? "No tienes permisos para ver la lista de precios" : "Ver lista de precios"}
+        title={
+          !canReadPriceList
+            ? 'No tienes permisos para ver la lista de precios'
+            : 'Ver lista de precios'
+        }
       >
         <CaretIcon>{icons.arrows.caretDown}</CaretIcon>
       </DropdownButton>
@@ -83,7 +96,9 @@ export const PriceEditor = ({ item, onModalOpen }) => {
         onBlur={handlePriceBlur}
         onFocus={handlePriceFocus}
         readOnly={!canModifyPrice || item?.weightDetail?.isSoldByWeight}
-        title={!canModifyPrice ? "No tienes permisos para modificar precios" : ""}
+        title={
+          !canModifyPrice ? 'No tienes permisos para modificar precios' : ''
+        }
       />
     </PriceContainer>
   );
@@ -108,12 +123,12 @@ const DropdownButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  opacity: ${props => props.disabled ? 0.5 : 1};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
   transition: background-color 0.2s;
-  
+
   &:hover {
-    background-color: ${props => props.disabled ? '#f5f5f5' : '#eaeaea'};
+    background-color: ${(props) => (props.disabled ? '#f5f5f5' : '#eaeaea')};
   }
 `;
 
@@ -122,7 +137,7 @@ const CaretIcon = styled.div`
   align-items: center;
   justify-content: center;
   color: #555;
-  
+
   svg {
     width: 12px;
     height: 12px;
@@ -139,7 +154,7 @@ const PriceInput = styled.input`
   font-weight: 500;
   color: #333;
   outline: none;
-  
+
   &:disabled {
     background-color: #f9f9f9;
     color: #999;

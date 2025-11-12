@@ -1,11 +1,10 @@
-import React from 'react'
+import React from 'react';
 
-import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable';
 
-import { tableConfig } from './tableConfig'
+import { tableConfig } from './tableConfig';
 
 export const ClientsListTable = ({ clients = [] }) => {
-  
   const { columns, filterConfig } = tableConfig();
   const data = clients.map(({ client }) => {
     return {
@@ -14,16 +13,16 @@ export const ClientsListTable = ({ clients = [] }) => {
       phone: client.tel,
       rnc: client.personalID,
       address: client.address,
-      actions: client
-    }
-  })
+      actions: client,
+    };
+  });
 
   return (
-      <AdvancedTable
-        data={data}
-        columns={columns}
-        filterUI
-        filterConfig={filterConfig}
-      /> 
-      )
-    }
+    <AdvancedTable
+      data={data}
+      columns={columns}
+      filterUI
+      filterConfig={filterConfig}
+    />
+  );
+};

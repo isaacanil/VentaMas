@@ -8,7 +8,6 @@ import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { Invoice } from '../Invoice/Invoice';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 
-
 const TEMPLATES_CONFIG = {
   template1: {
     format: 'THERMAL',
@@ -26,18 +25,18 @@ const TEMPLATES_CONFIG = {
     format: '80mm',
     width: '80mm',
     height: 'auto',
-    padding: '0mm', 
-  }
+    padding: '0mm',
+  },
 };
 
 const InvoiceContainer = styled.div`
-  width: ${props => TEMPLATES_CONFIG[props.template]?.width};
-  height: ${props => TEMPLATES_CONFIG[props.template]?.height};
-  padding: ${props => TEMPLATES_CONFIG[props.template]?.padding};
+  width: ${(props) => TEMPLATES_CONFIG[props.template]?.width};
+  height: ${(props) => TEMPLATES_CONFIG[props.template]?.height};
+  padding: ${(props) => TEMPLATES_CONFIG[props.template]?.padding};
   background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin: 20px auto;
-  
+
   @media print {
     box-shadow: none;
     margin: 0;
@@ -52,11 +51,15 @@ const PreviewContainer = styled.div`
   background: #f0f0f0;
   padding: 0px;
   min-height: 50vh;
-  
 `;
 
-export default function InvoiceTemplates({ previewInModal = true, hidePreviewButton = false }) {
-  const { billing: { invoiceType } } = useSelector(SelectSettingCart);
+export default function InvoiceTemplates({
+  previewInModal = true,
+  hidePreviewButton = false,
+}) {
+  const {
+    billing: { invoiceType },
+  } = useSelector(SelectSettingCart);
   const [selectedTemplate, setSelectedTemplate] = useState('template1');
   const componentRef = useRef();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -79,7 +82,6 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
   });
 
   const handlePreview = () => {
-    
     setIsModalVisible(true);
   };
 
@@ -131,7 +133,6 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
           }}
         >
           {renderInvoice(componentRef)}
-
         </div>
       </Modal>
 

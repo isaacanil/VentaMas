@@ -1,5 +1,5 @@
-import type { MatchConfig } from '../types/types'
-import type { PathPattern } from 'react-router-dom'
+import type { MatchConfig } from '../types/types';
+import type { PathPattern } from 'react-router-dom';
 
 /**
  * Normalizes a match configuration into a PathPattern
@@ -8,12 +8,12 @@ import type { PathPattern } from 'react-router-dom'
  */
 export const normalizeMatch = (match: MatchConfig): PathPattern => {
   if (typeof match === 'string') {
-    return { path: match, end: true }
+    return { path: match, end: true };
   }
 
   if (match && typeof match === 'object' && 'path' in match) {
-    return { ...match, end: match.end ?? true }
+    return { ...match, end: match.end ?? true };
   }
 
-  throw new Error('Invalid toolbar match configuration')
-}
+  throw new Error('Invalid toolbar match configuration');
+};

@@ -14,155 +14,187 @@ const ProductStockTable = ({
   handleDeleteProductStock,
   locationNames,
 }) => {
-  const tableData = useMemo(() => (
-    stocks.map((stock, index) => {
-      const expirationDateMs = stock?.expirationDate?.seconds
-        ? stock.expirationDate.seconds * 1000
-        : null;
+  const tableData = useMemo(
+    () =>
+      stocks.map((stock, index) => {
+        const expirationDateMs = stock?.expirationDate?.seconds
+          ? stock.expirationDate.seconds * 1000
+          : null;
 
-      return {
-        id: stock.id ?? `${stock.batchId || 'stock'}-${index}`,
-        ...stock,
-        raw: stock,
-        expirationDateMs,
-        quantityNumber: Number(stock.quantity ?? 0),
-      };
-    })
-  ), [stocks]);
+        return {
+          id: stock.id ?? `${stock.batchId || 'stock'}-${index}`,
+          ...stock,
+          raw: stock,
+          expirationDateMs,
+          quantityNumber: Number(stock.quantity ?? 0),
+        };
+      }),
+    [stocks],
+  );
 
-  const menuItems = useMemo(() => ([
-    {
-      key: 'view',
-      label: 'Ver esta ubicación',
-      icon: <FontAwesomeIcon icon={faLocationArrow} />,
-    },
-    {
-      key: 'delete',
-      label: 'Eliminar stock de esta ubicación',
-      danger: true,
-      icon: <DeleteOutlined />,
-    },
-  ]), []);
-
-  const handleMenuClick = useCallback((record) => ({ key }) => {
-    if (key === 'view') {
-      handleLocationClick(record.raw.location);
-    } else if (key === 'delete') {
-      handleDeleteProductStock(record.raw);
-    }
-  }, [handleDeleteProductStock, handleLocationClick]);
-
-  const columns = useMemo(() => ([
-    {
-      Header: 'Ubicación',
-      accessor: 'location',
-      minWidth: '300px',
-      maxWidth: '1fr',
-      sortable: true,
-      cell: ({ value }) => {
-        return (
-          <Tooltip
-            title={locationNames?.[value] || value || 'Ubicación no disponible'}
-            placement="topLeft"
-          >
-            <LocationButton
-              type="button"
-              onClick={() => handleLocationClick(value)}
-            >
-              <FontAwesomeIcon icon={faLocationArrow} className="location-icon" />
-              <LocationText>
-                {locationNames?.[value] || value || 'Ubicación no disponible'}
-              </LocationText>
-            </LocationButton>
-          </Tooltip>
-        );
+  const menuItems = useMemo(
+    () => [
+      {
+        key: 'view',
+        label: 'Ver esta ubicación',
+        icon: <FontAwesomeIcon icon={faLocationArrow} />,
       },
-    },
-    {
-      Header: 'Lote',
-      accessor: 'batchNumberId',
-      minWidth: '120px',
-      maxWidth: '100px',
-      sortable: true,
-      cell: ({ value }) => (
-        <BatchBadge $empty={!value}>
-          {value ? `#${value}` : 'Sin lote'}
-        </BatchBadge>
-      ),
-    },
-    {
-      Header: 'Vencimiento',
-      accessor: 'expirationDateMs',
-      minWidth: '140px',
-      maxWidth: '140px',
-      sortable: true,
-      cell: ({ value }) => (
-        <ExpirationBadge $empty={!value}>
-          {value ? new Date(value).toLocaleDateString() : 'Sin fecha'}
-        </ExpirationBadge>
-      ),
-    },
-    {
-      Header: 'Cantidad',
-      accessor: 'quantityNumber',
-      minWidth: '160px',
-      maxWidth: '160px',
-      sortable: true,
-      cell: ({ value }) => {
-        const record = tableData.find(item => item.quantityNumber === value);
-        const status = getStockStatus(record?.quantity);
-        const formattedQuantity = Number(record?.quantity ?? 0).toLocaleString();
-        return (
-          <Tooltip title={status.label}>
-            <QuantityBadge $status={status}>
-              <div className="quantity-main">
-                <span className="quantity-value">{formattedQuantity}</span>
-                <span className="quantity-unit">uds</span>
-              </div>
-              <span className="quantity-status">{status.label}</span>
-            </QuantityBadge>
-          </Tooltip>
-        );
+      {
+        key: 'delete',
+        label: 'Eliminar stock de esta ubicación',
+        danger: true,
+        icon: <DeleteOutlined />,
       },
-    },
-    {
-      Header: '',
-      accessor: 'actions',
-      minWidth: '40px',
-      maxWidth: '40px',
-      align: 'right',
-      sortable: false,
-      clickable: false,
-      cell: ({ value }) => {
-        const record = tableData.find(item => item.id === value);
-        return (
-          <ActionCluster>
-            <Dropdown
-              menu={{ items: menuItems, onClick: handleMenuClick(record || {}) }}
-              trigger={['click']}
-              placement="bottomRight"
+    ],
+    [],
+  );
+
+  const handleMenuClick = useCallback(
+    (record) =>
+      ({ key }) => {
+        if (key === 'view') {
+          handleLocationClick(record.raw.location);
+        } else if (key === 'delete') {
+          handleDeleteProductStock(record.raw);
+        }
+      },
+    [handleDeleteProductStock, handleLocationClick],
+  );
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Ubicación',
+        accessor: 'location',
+        minWidth: '300px',
+        maxWidth: '1fr',
+        sortable: true,
+        cell: ({ value }) => {
+          return (
+            <Tooltip
+              title={
+                locationNames?.[value] || value || 'Ubicación no disponible'
+              }
+              placement="topLeft"
             >
-              <MenuButton
+              <LocationButton
                 type="button"
-                aria-label="Acciones de la ubicación"
-                onClick={(e) => e.preventDefault()}
+                onClick={() => handleLocationClick(value)}
               >
-                <EllipsisOutlined />
-              </MenuButton>
-            </Dropdown>
-          </ActionCluster>
-        );
+                <FontAwesomeIcon
+                  icon={faLocationArrow}
+                  className="location-icon"
+                />
+                <LocationText>
+                  {locationNames?.[value] || value || 'Ubicación no disponible'}
+                </LocationText>
+              </LocationButton>
+            </Tooltip>
+          );
+        },
       },
-    },
-  ]), [getStockStatus, handleLocationClick, handleMenuClick, locationNames, menuItems, tableData]);
+      {
+        Header: 'Lote',
+        accessor: 'batchNumberId',
+        minWidth: '120px',
+        maxWidth: '100px',
+        sortable: true,
+        cell: ({ value }) => (
+          <BatchBadge $empty={!value}>
+            {value ? `#${value}` : 'Sin lote'}
+          </BatchBadge>
+        ),
+      },
+      {
+        Header: 'Vencimiento',
+        accessor: 'expirationDateMs',
+        minWidth: '140px',
+        maxWidth: '140px',
+        sortable: true,
+        cell: ({ value }) => (
+          <ExpirationBadge $empty={!value}>
+            {value ? new Date(value).toLocaleDateString() : 'Sin fecha'}
+          </ExpirationBadge>
+        ),
+      },
+      {
+        Header: 'Cantidad',
+        accessor: 'quantityNumber',
+        minWidth: '160px',
+        maxWidth: '160px',
+        sortable: true,
+        cell: ({ value }) => {
+          const record = tableData.find(
+            (item) => item.quantityNumber === value,
+          );
+          const status = getStockStatus(record?.quantity);
+          const formattedQuantity = Number(
+            record?.quantity ?? 0,
+          ).toLocaleString();
+          return (
+            <Tooltip title={status.label}>
+              <QuantityBadge $status={status}>
+                <div className="quantity-main">
+                  <span className="quantity-value">{formattedQuantity}</span>
+                  <span className="quantity-unit">uds</span>
+                </div>
+                <span className="quantity-status">{status.label}</span>
+              </QuantityBadge>
+            </Tooltip>
+          );
+        },
+      },
+      {
+        Header: '',
+        accessor: 'actions',
+        minWidth: '40px',
+        maxWidth: '40px',
+        align: 'right',
+        sortable: false,
+        clickable: false,
+        cell: ({ value }) => {
+          const record = tableData.find((item) => item.id === value);
+          return (
+            <ActionCluster>
+              <Dropdown
+                menu={{
+                  items: menuItems,
+                  onClick: handleMenuClick(record || {}),
+                }}
+                trigger={['click']}
+                placement="bottomRight"
+              >
+                <MenuButton
+                  type="button"
+                  aria-label="Acciones de la ubicación"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <EllipsisOutlined />
+                </MenuButton>
+              </Dropdown>
+            </ActionCluster>
+          );
+        },
+      },
+    ],
+    [
+      getStockStatus,
+      handleLocationClick,
+      handleMenuClick,
+      locationNames,
+      menuItems,
+      tableData,
+    ],
+  );
 
   // Añadir el id de acciones a cada fila para el render
-  const enrichedData = useMemo(() => 
-    tableData.map(item => ({
-      ...item,
-      actions: item.id
-    })),
-    [tableData]
+  const enrichedData = useMemo(
+    () =>
+      tableData.map((item) => ({
+        ...item,
+        actions: item.id,
+      })),
+    [tableData],
   );
 
   return (
@@ -192,8 +224,8 @@ const QuantityBadge = styled.div`
   min-width: 108px;
   padding: 2px 2px;
   border-radius: 16px;
-  background: ${props => props.$status.background}1f;
-  border: 1px solid ${props => props.$status.color}30;
+  background: ${(props) => props.$status.background}1f;
+  border: 1px solid ${(props) => props.$status.color}30;
   color: #0f172a;
   font-weight: 600;
 
@@ -204,7 +236,7 @@ const QuantityBadge = styled.div`
   }
 
   .quantity-icon {
-    color: ${props => props.$status.color};
+    color: ${(props) => props.$status.color};
     font-size: 0.85rem;
   }
 
@@ -224,7 +256,7 @@ const QuantityBadge = styled.div`
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: ${props => props.$status.color};
+    color: ${(props) => props.$status.color};
   }
 `;
 
@@ -232,8 +264,8 @@ const BatchBadge = styled.span`
   display: inline-block;
   padding: 6px 12px;
   border-radius: 999px;
-  background: ${props => props.$empty ? '#f1f5f9' : '#dbeafe'};
-  color: ${props => props.$empty ? '#64748b' : '#1d4ed8'};
+  background: ${(props) => (props.$empty ? '#f1f5f9' : '#dbeafe')};
+  color: ${(props) => (props.$empty ? '#64748b' : '#1d4ed8')};
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -244,8 +276,8 @@ const ExpirationBadge = styled.span`
   display: inline-block;
   padding: 6px 10px;
   border-radius: 10px;
-  background: ${props => props.$empty ? '#f8fafc' : '#ecfccb'};
-  color: ${props => props.$empty ? '#94a3b8' : '#4d7c0f'};
+  background: ${(props) => (props.$empty ? '#f8fafc' : '#ecfccb')};
+  color: ${(props) => (props.$empty ? '#94a3b8' : '#4d7c0f')};
   font-weight: 600;
   font-size: 0.78rem;
 `;

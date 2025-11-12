@@ -1,4 +1,8 @@
-import { ShopOutlined, ArrowRightOutlined, CloseOutlined } from '@ant-design/icons';
+import {
+  ShopOutlined,
+  ArrowRightOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
 import { Modal } from 'antd';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -35,7 +39,7 @@ const Total = styled.div`
   font-size: 40px;
   font-weight: 600;
   margin: 32px 0;
-  font-feature-settings: "tnum";
+  font-feature-settings: 'tnum';
   color: var(--primary-color, #1677ff);
 `;
 
@@ -86,7 +90,7 @@ const ActionButton = styled(motion.button)`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  
+
   &:hover {
     background: var(--primary-color, #1677ff);
   }
@@ -107,20 +111,28 @@ const ActionButton = styled(motion.button)`
   }
 `;
 
-export default function PurchaseCompletionSummary({ visible, onClose, purchase }) {
+export default function PurchaseCompletionSummary({
+  visible,
+  onClose,
+  purchase,
+}) {
   const navigate = useNavigate();
-  const total = purchase?.replenishments?.reduce((sum, item) => 
-    sum + (item.subtotal || 0), 0) || 0;
-  const destinationWarehouseId = purchase?.destinationWarehouseId || purchase?.warehouse?.id;
+  const total =
+    purchase?.replenishments?.reduce(
+      (sum, item) => sum + (item.subtotal || 0),
+      0,
+    ) || 0;
+  const destinationWarehouseId =
+    purchase?.destinationWarehouseId || purchase?.warehouse?.id;
   const warehouseNavigationPath = destinationWarehouseId
     ? `/inventory/warehouses/warehouse/${destinationWarehouseId}`
     : null;
 
   const formatProductsList = (products) => {
     if (!products?.length) return '';
-    return products.map(item => 
-      `• ${item.quantity} × ${item.name} · $${item.unitCost}`
-    ).join('\n');
+    return products
+      .map((item) => `• ${item.quantity} × ${item.name} · $${item.unitCost}`)
+      .join('\n');
   };
 
   return (
@@ -142,11 +154,13 @@ export default function PurchaseCompletionSummary({ visible, onClose, purchase }
         </IconWrapper>
 
         <Title>¡Compra Completada!</Title>
-        
+
         {purchase?.replenishments?.length > 0 && (
           <>
             <ProductSummary>
-              <ReactMarkdown>{formatProductsList(purchase.replenishments)}</ReactMarkdown>
+              <ReactMarkdown>
+                {formatProductsList(purchase.replenishments)}
+              </ReactMarkdown>
             </ProductSummary>
             <ProductCount>
               {purchase.replenishments.length} productos agregados

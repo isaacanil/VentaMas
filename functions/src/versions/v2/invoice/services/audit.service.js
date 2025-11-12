@@ -1,10 +1,15 @@
 import { db, FieldValue } from '../../../../core/config/firebase.js';
 
 function auditCollectionRef(businessId, invoiceId) {
-  return db.collection(`businesses/${businessId}/invoicesV2/${invoiceId}/audit`);
+  return db.collection(
+    `businesses/${businessId}/invoicesV2/${invoiceId}/audit`,
+  );
 }
 
-export function auditTx(tx, { businessId, invoiceId, event, level = 'info', data = {} }) {
+export function auditTx(
+  tx,
+  { businessId, invoiceId, event, level = 'info', data = {} },
+) {
   try {
     const col = auditCollectionRef(businessId, invoiceId);
     const ref = col.doc();
@@ -20,7 +25,13 @@ export function auditTx(tx, { businessId, invoiceId, event, level = 'info', data
   }
 }
 
-export async function auditSafe({ businessId, invoiceId, event, level = 'info', data = {} }) {
+export async function auditSafe({
+  businessId,
+  invoiceId,
+  event,
+  level = 'info',
+  data = {},
+}) {
   try {
     const col = auditCollectionRef(businessId, invoiceId);
     const ref = col.doc();
@@ -51,4 +62,3 @@ function sanitize(obj) {
     return { note: 'unable to sanitize' };
   }
 }
-

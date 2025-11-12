@@ -1,18 +1,30 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app';
 //TODO ***AUTH**************************************
-import { getAuth } from "firebase/auth";
+import { getAuth } from 'firebase/auth';
 //TODO ***FIRESTORE***********************************
-import { getDatabase } from "firebase/database";
-import { collection, doc, getDocs, query, updateDoc, where, arrayUnion, arrayRemove, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
-import { getFunctions } from 'firebase/functions'
+import { getDatabase } from 'firebase/database';
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+  arrayUnion,
+  arrayRemove,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+} from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 //TODO ***STORAGE***********************************
-import { getStorage, } from "firebase/storage"
-import { getVertexAI, getGenerativeModel } from "firebase/vertexai";
+import { getStorage } from 'firebase/storage';
+import { getVertexAI, getGenerativeModel } from 'firebase/vertexai';
 
-
-const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL
-  || (import.meta.env.VITE_FIREBASE_PROJECT_ID
+const databaseURL =
+  import.meta.env.VITE_FIREBASE_DATABASE_URL ||
+  (import.meta.env.VITE_FIREBASE_PROJECT_ID
     ? `https://${import.meta.env.VITE_FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`
     : undefined);
 
@@ -24,30 +36,32 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-}
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+};
 
 const app = initializeApp(firebaseConfig);
 
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentSingleTabManager() })
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager(),
+  }),
 });
 // export const db = getFirestore(app);
 
 export const storage = getStorage(app);
-export const auth = getAuth(app)
+export const auth = getAuth(app);
 export const functions = getFunctions(app);
 export const realtimeDB = getDatabase(app);
 export const vertexAI = getVertexAI(app);
 
 export const listFirst5UserNames = async () => {
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("user.name", "==", "dev#3407"));
+  const usersRef = collection(db, 'users');
+  const q = query(usersRef, where('user.name', '==', 'dev#3407'));
   const snap = await getDocs(q);
 
   return snap.docs
-    .map(doc => doc.data())      // {name, email, …}
-    .map(user => user.user.name);     // solo el nombre
+    .map((doc) => doc.data()) // {name, email, …}
+    .map((user) => user.user.name); // solo el nombre
 };
 
 // function servicesEmulator() {
@@ -80,11 +94,8 @@ export const listFirst5UserNames = async () => {
 // servicesEmulator();
 
 export const generativeModel = getGenerativeModel(vertexAI, {
-  model: "gemini-2.5-flash-preview-04-17",
+  model: 'gemini-2.5-flash-preview-04-17',
 });
-
-
-
 
 // export const getTaxes = async (setTaxes) => {
 //   const taxesRef = collection(db, "taxes")
@@ -94,24 +105,23 @@ export const generativeModel = getGenerativeModel(vertexAI, {
 //   if (taxesArray.length > 0) return setTaxes(taxesArray)
 // }
 export const addIngredientTypePizza = async (ingredient) => {
-  const IngredientRef = doc(db, "products", "6dssod");
+  const IngredientRef = doc(db, 'products', '6dssod');
   // Atomically add a new region to the "regions" array field.
   try {
     await updateDoc(IngredientRef, {
-      ingredientList: arrayUnion(ingredient)
+      ingredientList: arrayUnion(ingredient),
     });
   } catch (error) {
     console.error('Error adding ingredient:', error);
   }
-
-}
+};
 export const deleteIngredientTypePizza = async (ingredient) => {
-  const IngredientRef = doc(db, "products", "6dssod");
+  const IngredientRef = doc(db, 'products', '6dssod');
   try {
     await updateDoc(IngredientRef, {
-      ingredientList: arrayRemove(ingredient)
+      ingredientList: arrayRemove(ingredient),
     });
   } catch (error) {
     console.error('Error deleting ingredient:', error);
   }
-}
+};

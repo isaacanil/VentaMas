@@ -1,31 +1,30 @@
-import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import * as antd from 'antd'
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
+import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from 'antd';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { useDialog } from '../../../Context/Dialog'
-import { selectBusinessData } from '../../../features/auth/businessSlice'
-import { logout, selectUser } from '../../../features/auth/userSlice'
-import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
+import { useDialog } from '../../../Context/Dialog';
+import { selectBusinessData } from '../../../features/auth/businessSlice';
+import { logout, selectUser } from '../../../features/auth/userSlice';
+import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
 
-
-const { Tag } = antd
+const { Tag } = antd;
 
 export const UserSection = () => {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { onClose, setDialogConfirm } = useDialog();
   const business = useSelector(selectBusinessData);
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
 
   const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
     navigate('/login', { replace: true });
-  }
+  };
 
   const logoutOfApp = () => {
     // dispatch to the store with the logout action
@@ -35,19 +34,21 @@ export const UserSection = () => {
       type: 'warning',
       message: '¿Está seguro que desea cerrar sesión?',
       onConfirm: () => {
-        handleLogout()
-        onClose()
-      }
-    })
-  }
+        handleLogout();
+        onClose();
+      },
+    });
+  };
   const getDisplayName = (user) => {
-    return user?.displayName && user.displayName.trim() !== '' ? user.displayName : user?.username
-  }
+    return user?.displayName && user.displayName.trim() !== ''
+      ? user.displayName
+      : user?.username;
+  };
 
   const getInitial = (name) => {
-    const n = (name || '').trim()
-    return n ? n.charAt(0).toUpperCase() : 'U'
-  }
+    const n = (name || '').trim();
+    return n ? n.charAt(0).toUpperCase() : 'U';
+  };
 
   return (
     <Container role="group" aria-label="Usuario">
@@ -75,10 +76,8 @@ export const UserSection = () => {
         </IconButton>
       </Action>
     </Container>
-  )
-}
-
-
+  );
+};
 
 const Container = styled.div`
   display: flex;
@@ -89,22 +88,22 @@ const Container = styled.div`
   border-radius: var(--border-radius);
   background: #fff;
   border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-`
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+`;
 
 const Left = styled.div`
   display: flex;
   align-items: center;
   gap: 0.8em;
   min-width: 0; /* enable text truncation */
-`
+`;
 
 const Info = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.25em;
   min-width: 0;
-`
+`;
 
 const Username = styled.div`
   font-weight: 600;
@@ -114,7 +113,7 @@ const Username = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`
+`;
 
 const AvatarCircle = styled.div`
   width: 2rem;
@@ -125,10 +124,10 @@ const AvatarCircle = styled.div`
   justify-content: center;
   font-weight: 600;
   color: #ffffff;
-  background: linear-gradient(135deg, #7C4DFF 0%, #8E2DE2 100%);
+  background: linear-gradient(135deg, #7c4dff 0%, #8e2de2 100%);
   flex: none;
   user-select: none;
-`
+`;
 
 const BusinessPill = styled(Tag)`
   white-space: nowrap;
@@ -146,13 +145,13 @@ const BusinessPill = styled(Tag)`
     overflow: hidden;
     text-overflow: ellipsis;
   }
-`
+`;
 
 const Action = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const IconButton = styled.button`
   display: inline-flex;
@@ -177,7 +176,7 @@ const IconButton = styled.button`
   }
 
   &:focus-visible {
-    outline: 2px solid #7C4DFF;
+    outline: 2px solid #7c4dff;
     outline-offset: 2px;
   }
-`
+`;

@@ -1,9 +1,7 @@
-import React from 'react'
+import React from 'react';
 
-import { CategorySelector } from '../CategorySelector/CategorySelector'
+import { CategorySelector } from '../CategorySelector/CategorySelector';
 
 export const ProductCategoryBar = () => {
-  return (
-    <CategorySelector  />
-  )
-}
+  return <CategorySelector />;
+};

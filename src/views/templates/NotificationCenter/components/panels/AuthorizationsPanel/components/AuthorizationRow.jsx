@@ -44,7 +44,8 @@ const STATUS_CONFIG = {
   },
 };
 
-const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+const getStatusConfig = (status) =>
+  STATUS_CONFIG[status] || STATUS_CONFIG.pending;
 
 const toMillis = (value) => {
   if (!value) return 0;
@@ -71,7 +72,10 @@ const formatTimeAgo = (timestamp) => {
 
 const resolveReference = (auth) => {
   if (!auth) return '-';
-  const metadata = typeof auth.metadata === 'object' && auth.metadata !== null ? auth.metadata : {};
+  const metadata =
+    typeof auth.metadata === 'object' && auth.metadata !== null
+      ? auth.metadata
+      : {};
   return (
     auth.reference ||
     metadata.reference ||
@@ -88,7 +92,13 @@ const resolvePersonName = (person) => {
   return person.displayName || person.name || person.email || '';
 };
 
-const AuthorizationRow = ({ auth, isAdmin, processingId, onApprove, onReject }) => {
+const AuthorizationRow = ({
+  auth,
+  isAdmin,
+  processingId,
+  onApprove,
+  onReject,
+}) => {
   const statusConfig = getStatusConfig(auth.status);
   const isPending = auth.status === 'pending';
   const isProcessing = processingId === auth.id;
@@ -158,7 +168,10 @@ const AuthorizationRowContainer = styled.div`
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #f8fafc;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     background: #ffffff;

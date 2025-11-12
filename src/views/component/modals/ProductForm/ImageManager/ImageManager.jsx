@@ -1,17 +1,24 @@
-import { ArrowLeftOutlined, DeleteOutlined, InboxOutlined, PictureOutlined } from "@ant-design/icons";
-import { Button, Image, Upload, Typography, message, Progress } from "antd";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styled from "styled-components";
+import {
+  ArrowLeftOutlined,
+  DeleteOutlined,
+  InboxOutlined,
+  PictureOutlined,
+} from '@ant-design/icons';
+import { Button, Image, Upload, Typography, message, Progress } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { selectUser } from "../../../../../features/auth/userSlice";
-import { ChangeProductImage, selectUpdateProductData } from "../../../../../features/updateProduct/updateProductSlice";
-import { fbAddProductImg } from "../../../../../firebase/products/productsImg/fbAddProductImg";
-import { fbAddProductImgData } from "../../../../../firebase/products/productsImg/fbAddProductImgData";
-import { fbGetProductsImg } from "../../../../../firebase/products/productsImg/fbGetProductsImg";
+import { selectUser } from '../../../../../features/auth/userSlice';
+import {
+  ChangeProductImage,
+  selectUpdateProductData,
+} from '../../../../../features/updateProduct/updateProductSlice';
+import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg';
+import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData';
+import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg';
 
-import { Gallery } from "./components/Gallery";
-
+import { Gallery } from './components/Gallery';
 
 const Container = styled.div`
   display: flex;
@@ -29,7 +36,7 @@ const Header = styled.div`
   justify-content: space-between;
   padding-bottom: 12px;
   border-bottom: 1px solid #e5e7eb;
-  
+
   margin: -20px -20px 0 -20px;
   padding: 16px 20px 12px 20px;
   border-radius: 8px 8px 0 0;
@@ -41,7 +48,7 @@ const MainContent = styled.div`
   gap: 24px;
   flex: 1;
   min-height: 0;
-  
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -64,7 +71,7 @@ const SectionTitle = styled.h3`
   gap: 8px;
   padding: 8px 0;
   border-bottom: 1px solid #f3f4f6;
-  
+
   .anticon {
     color: #6b7280;
     font-size: 16px;
@@ -78,35 +85,35 @@ const UploadContainer = styled.div`
   border: 2px dashed #d1d5db;
   transition: all 0.2s ease;
   position: relative;
-  
+
   &:hover {
     border-color: #3b82f6;
     background: #f8faff;
   }
-  
+
   .ant-upload-drag {
     border: none !important;
     background: transparent !important;
     padding: 24px 16px !important;
   }
-  
+
   .ant-upload-drag:hover {
     background: transparent !important;
   }
-  
+
   .ant-upload-drag-icon {
     font-size: 36px !important;
     color: #6b7280 !important;
     margin-bottom: 8px !important;
   }
-  
+
   .ant-upload-text {
     font-size: 14px !important;
     color: #374151 !important;
     font-weight: 500 !important;
     margin-bottom: 4px !important;
   }
-  
+
   .ant-upload-hint {
     color: #6b7280 !important;
     font-size: 12px !important;
@@ -154,14 +161,14 @@ const ImagePreview = styled.div`
   justify-content: center;
   border: 1px solid #e5e7eb;
   margin-bottom: 12px;
-  
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
   }
-  
+
   .no-image {
     color: #9ca3af;
     font-size: 36px;
@@ -209,12 +216,19 @@ const ImageManager = ({ hideImageManager }) => {
   const dispatch = useDispatch();
 
   const updateFileListWithProgress = (file, progress) => {
-    setFileList(prevFileList => prevFileList.map(f => {
-      if (f.uid === file.uid) {
-        return { ...f, percent: progress, name: file.name, status: 'uploading' };
-      }
-      return f;
-    }));
+    setFileList((prevFileList) =>
+      prevFileList.map((f) => {
+        if (f.uid === file.uid) {
+          return {
+            ...f,
+            percent: progress,
+            name: file.name,
+            status: 'uploading',
+          };
+        }
+        return f;
+      }),
+    );
   };
 
   const uploadProps = {
@@ -282,7 +296,6 @@ const ImageManager = ({ hideImageManager }) => {
         >
           Volver
         </Button>
-   
       </Header>
 
       <MainContent>
@@ -291,27 +304,30 @@ const ImageManager = ({ hideImageManager }) => {
             <InboxOutlined />
             Cargar Imagen
           </SectionTitle>
-          
+
           <UploadContainer>
             <Upload.Dragger {...uploadProps}>
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>
-              <p className="ant-upload-text">
-                Seleccionar imagen del producto
-              </p>
-              <p className="ant-upload-hint">
-                JPG, PNG o GIF • Máximo 5MB
-              </p>
+              <p className="ant-upload-text">Seleccionar imagen del producto</p>
+              <p className="ant-upload-hint">JPG, PNG o GIF • Máximo 5MB</p>
             </Upload.Dragger>
-            
+
             {isUploading && (
               <ProgressContainer>
-                <Typography.Text strong style={{ marginBottom: 16, color: '#374151', textAlign: 'center' }}>
+                <Typography.Text
+                  strong
+                  style={{
+                    marginBottom: 16,
+                    color: '#374151',
+                    textAlign: 'center',
+                  }}
+                >
                   Cargando imagen...
                 </Typography.Text>
-                <Progress 
-                  percent={Math.round(uploadProgress)} 
+                <Progress
+                  percent={Math.round(uploadProgress)}
                   status="active"
                   strokeColor={{
                     '0%': '#3b82f6',
@@ -329,7 +345,7 @@ const ImageManager = ({ hideImageManager }) => {
             <PictureOutlined />
             Vista Previa
           </SectionTitle>
-          
+
           <PreviewCard>
             <ImagePreview>
               {productImg ? (
@@ -345,7 +361,7 @@ const ImageManager = ({ hideImageManager }) => {
                 <PictureOutlined className="no-image" />
               )}
             </ImagePreview>
-            
+
             <ButtonGroup>
               <Button
                 disabled={!productImg}
@@ -367,7 +383,7 @@ const ImageManager = ({ hideImageManager }) => {
           <PictureOutlined />
           Imágenes Disponibles
         </SectionTitle>
-        
+
         <GalleryContainer>
           <HelpText>
             💡 Selecciona una imagen de la galería para asignarla al producto
@@ -381,5 +397,5 @@ const ImageManager = ({ hideImageManager }) => {
 
 export default ImageManager;
 
-
-export const imgFailed = "data:image/png;base64,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"
+export const imgFailed =
+  'data:image/png;base64,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';

@@ -1,10 +1,15 @@
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import { fbGetClient } from '../client/fbGetClient';
 import { db } from '../firebaseconfig';
 import { fbGetInvoice } from '../invoices/fbGetInvoice';
-
 
 export const useListenAccountsReceivable = (user, dateRange = null) => {
   const [accountsReceivable, setAccountsReceivable] = useState([]);
@@ -15,14 +20,22 @@ export const useListenAccountsReceivable = (user, dateRange = null) => {
       return;
     }
 
-    const accountsReceivableCollection = collection(db, 'businesses', user.businessID, 'accountsReceivable');
-    
-    let constraints = [where('isActive', '==', true), orderBy('createdAt', 'desc')];
-    
+    const accountsReceivableCollection = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'accountsReceivable',
+    );
+
+    let constraints = [
+      where('isActive', '==', true),
+      orderBy('createdAt', 'desc'),
+    ];
+
     if (dateRange && dateRange.startDate && dateRange.endDate) {
       constraints.push(
         where('createdAt', '>=', new Date(dateRange.startDate)),
-        where('createdAt', '<=', new Date(dateRange.endDate))
+        where('createdAt', '<=', new Date(dateRange.endDate)),
       );
     }
 
@@ -48,7 +61,10 @@ export const useListenAccountsReceivable = (user, dateRange = null) => {
           ? Promise.resolve(cacheInvoices[invoiceId])
           : fbGetInvoice(user.businessID, invoiceId);
 
-        const [clientData, invoiceData] = await Promise.all([clientDataPromise, invoiceDataPromise]);
+        const [clientData, invoiceData] = await Promise.all([
+          clientDataPromise,
+          invoiceDataPromise,
+        ]);
 
         cacheClients[clientId] = clientData;
         cacheInvoices[invoiceId] = invoiceData;
@@ -65,8 +81,9 @@ export const useListenAccountsReceivable = (user, dateRange = null) => {
         });
       }
 
-      setAccountsReceivable(prevAccounts => {
-        const isEqual = JSON.stringify(prevAccounts) === JSON.stringify(accounts);
+      setAccountsReceivable((prevAccounts) => {
+        const isEqual =
+          JSON.stringify(prevAccounts) === JSON.stringify(accounts);
         if (!isEqual) {
           return accounts;
         }

@@ -1,4 +1,8 @@
-import { faBoxes, faClock, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBoxes,
+  faClock,
+  faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Spin, Modal, Button, Progress, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
@@ -7,9 +11,6 @@ import styled from 'styled-components';
 
 import { useBackOrdersByProduct } from '../../../../../../../../firebase/warehouse/backOrderService';
 
-
-
-
 const Widget = styled.div`
   display: flex;
   flex-direction: column;
@@ -17,7 +18,7 @@ const Widget = styled.div`
   padding: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: #f8fafc;
     border-radius: 8px;
@@ -26,14 +27,14 @@ const Widget = styled.div`
       opacity: 1;
     }
   }
-  
+
   .header {
     display: flex;
     align-items: center;
     gap: 8px;
     color: #64748b;
     font-size: 0.9rem;
-    
+
     .icon {
       color: #94a3b8;
     }
@@ -44,7 +45,7 @@ const OrdersBar = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  
+
   .bar {
     flex: 1;
     height: 24px;
@@ -59,7 +60,7 @@ const OrdersBar = styled.div`
     background: #0ea5e9;
     transition: width 0.3s ease;
   }
-  
+
   .total {
     min-width: 70px;
     text-align: right;
@@ -111,19 +112,27 @@ const StatusPill = styled.span`
 const BackOrderList = ({ productId }) => {
   // Agregar mapeo de estados para la interfaz en español
   const statusMapping = {
-    pending: "Pendiente",
-    reserved: "Reservado"
+    pending: 'Pendiente',
+    reserved: 'Reservado',
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { backOrders, loading, error } = useBackOrdersByProduct( productId);
+  const { backOrders, loading, error } = useBackOrdersByProduct(productId);
 
   if (loading) return <Spin size="small" />;
   if (error || !backOrders?.length) return null;
 
-  const totalInitial = backOrders.reduce((sum, order) => sum + order.initialQuantity, 0);
-  const totalPending = backOrders.reduce((sum, order) => sum + order.pendingQuantity, 0);
-  const progress = Math.round(((totalInitial - totalPending) / totalInitial) * 100);
+  const totalInitial = backOrders.reduce(
+    (sum, order) => sum + order.initialQuantity,
+    0,
+  );
+  const totalPending = backOrders.reduce(
+    (sum, order) => sum + order.pendingQuantity,
+    0,
+  );
+  const progress = Math.round(
+    ((totalInitial - totalPending) / totalInitial) * 100,
+  );
 
   return (
     <>
@@ -131,17 +140,17 @@ const BackOrderList = ({ productId }) => {
         <div className="header">
           <FontAwesomeIcon icon={faBoxes} className="icon" />
           <span>Reservas por Abonar ({backOrders.length})</span>
-          <Button 
-            type="link" 
+          <Button
+            type="link"
             size="small"
             className="view-more"
-            style={{ 
-              marginLeft: 'auto', 
+            style={{
+              marginLeft: 'auto',
               opacity: 0,
               padding: '4px 8px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '4px',
             }}
           >
             Ver detalles
@@ -150,12 +159,11 @@ const BackOrderList = ({ productId }) => {
         </div>
         <OrdersBar>
           <div className="bar">
-            <div 
-              className="progress" 
-              style={{ width: `${progress}%` }} 
-            />
+            <div className="progress" style={{ width: `${progress}%` }} />
           </div>
-          <span className="total">{totalPending}/{totalInitial}</span>
+          <span className="total">
+            {totalPending}/{totalInitial}
+          </span>
         </OrdersBar>
       </Widget>
 
@@ -167,21 +175,34 @@ const BackOrderList = ({ productId }) => {
         width={600}
       >
         <DetailsList>
-          {backOrders.map(order => {
-            const orderProgress = Math.round(((order.initialQuantity - order.pendingQuantity) / order.initialQuantity) * 100);
+          {backOrders.map((order) => {
+            const orderProgress = Math.round(
+              ((order.initialQuantity - order.pendingQuantity) /
+                order.initialQuantity) *
+                100,
+            );
             return (
               <DetailItem key={order.id}>
                 <div className="top-info">
                   <Tooltip title="Cantidad pendiente/inicial">
-                    <span className="quantities">{order.pendingQuantity}/{order.initialQuantity} unidades</span>
+                    <span className="quantities">
+                      {order.pendingQuantity}/{order.initialQuantity} unidades
+                    </span>
                   </Tooltip>
                 </div>
                 <div className="date">
-                  <FontAwesomeIcon icon={faClock} style={{ marginRight: '8px' }} />
-                  {DateTime.fromJSDate(order.createdAt).setLocale('es').toLocaleString(DateTime.DATETIME_MED)}
-                  <StatusPill>{statusMapping[order.status] || order.status}</StatusPill>
+                  <FontAwesomeIcon
+                    icon={faClock}
+                    style={{ marginRight: '8px' }}
+                  />
+                  {DateTime.fromJSDate(order.createdAt)
+                    .setLocale('es')
+                    .toLocaleString(DateTime.DATETIME_MED)}
+                  <StatusPill>
+                    {statusMapping[order.status] || order.status}
+                  </StatusPill>
                 </div>
-                <Progress 
+                <Progress
                   percent={orderProgress}
                   size="small"
                   strokeColor="#0ea5e9"

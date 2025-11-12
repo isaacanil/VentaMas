@@ -49,7 +49,9 @@ export const formatDateTime = (value: unknown): string => {
         return timestampValue.toLocaleString();
       }
       const coercedDate = new Date(timestampValue);
-      return Number.isNaN(coercedDate.getTime()) ? '-' : coercedDate.toLocaleString();
+      return Number.isNaN(coercedDate.getTime())
+        ? '-'
+        : coercedDate.toLocaleString();
     }
 
     if (value instanceof Date) {
@@ -67,7 +69,9 @@ export const formatDateTime = (value: unknown): string => {
   return '-';
 };
 
-export const getStatusLabel = (status: AuthorizationStatus | undefined): string => {
+export const getStatusLabel = (
+  status: AuthorizationStatus | undefined,
+): string => {
   if (!status) return '-';
   return statusLabels[status] || status;
 };

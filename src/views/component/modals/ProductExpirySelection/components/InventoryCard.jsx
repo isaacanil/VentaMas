@@ -1,5 +1,10 @@
 // InventoryCard.js
-import { faWarehouse, faBox, faCalendarAlt, faChartBar } from '@fortawesome/free-solid-svg-icons';
+import {
+  faWarehouse,
+  faBox,
+  faCalendarAlt,
+  faChartBar,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal } from 'antd';
 import React from 'react';
@@ -7,8 +12,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { addProduct } from '../../../../../features/cart/cartSlice';
-import { clearProductExpirySelector, selectProduct } from '../../../../../features/warehouse/productExpirySelectionSlice';
-
+import {
+  clearProductExpirySelector,
+  selectProduct,
+} from '../../../../../features/warehouse/productExpirySelectionSlice';
 
 const StyledCard = styled.div`
   background: #fff;
@@ -41,7 +48,8 @@ const StyledIconWrapper = styled.div`
 `;
 
 const StyledBadge = styled.span`
-  background-color: ${({ variant }) => (variant === 'default' ? '#1890ff' : '#faad14')};
+  background-color: ${({ variant }) =>
+    variant === 'default' ? '#1890ff' : '#faad14'};
   color: #fff;
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
@@ -77,86 +85,101 @@ const StyledProgress = styled.div`
 `;
 
 const InventoryCard = ({ item }) => {
-    const dispatch = useDispatch();
-    const product = useSelector(selectProduct);
-    const getDateIsoFromTimestamp = (timestamp) => {
-        const milliseconds = timestamp?.seconds * 1000;
-        const dateObject = new Date(milliseconds);
-        return dateObject.toISOString().split('T')[0];
-    };
-    const { productStock, batch } = item;
-    const handleSelect = () => {
-        try{
-            Modal.confirm({
-                title: 'Confirmación',
-                content: `¿Está seguro que desea seleccionar el producto?`,
-                okText: 'Sí',
-                cancelText: 'No',
-                onOk: () => {
-                  const newItem = {
-                    ...product,
-                    productStock,
-                    batch
-                  };
-                  
-                  dispatch(addProduct(newItem));
-                  dispatch(clearProductExpirySelector());
-                },
-                onCancel: () => {
-                  // Opcional: manejar acción si se cancela
-                },
-              });
-            }catch(err){
-            console.error('Error selecting inventory product', err);
-        }
+  const dispatch = useDispatch();
+  const product = useSelector(selectProduct);
+  const getDateIsoFromTimestamp = (timestamp) => {
+    const milliseconds = timestamp?.seconds * 1000;
+    const dateObject = new Date(milliseconds);
+    return dateObject.toISOString().split('T')[0];
+  };
+  const { productStock, batch } = item;
+  const handleSelect = () => {
+    try {
+      Modal.confirm({
+        title: 'Confirmación',
+        content: `¿Está seguro que desea seleccionar el producto?`,
+        okText: 'Sí',
+        cancelText: 'No',
+        onOk: () => {
+          const newItem = {
+            ...product,
+            productStock,
+            batch,
+          };
+
+          dispatch(addProduct(newItem));
+          dispatch(clearProductExpirySelector());
+        },
+        onCancel: () => {
+          // Opcional: manejar acción si se cancela
+        },
+      });
+    } catch (err) {
+      console.error('Error selecting inventory product', err);
     }
+  };
 
-
-    return (
-        <StyledCard onClick={handleSelect}>
-            <StyledCardContent>
-                <StyledCardHeader>
-                    <StyledCardInfo>
-                        <StyledIconWrapper size="1rem" marginRight="0.5rem" color="#1890ff">
-                            <FontAwesomeIcon icon={faWarehouse} />
-                        </StyledIconWrapper>
-                        <span style={{ fontWeight: 'bold', fontSize: '0.875rem' }}>{item.warehouse}</span>
-                    </StyledCardInfo>
-                    <StyledBadge variant={item.stock > 50 ? "default" : "secondary"}>
-                        {item?.productStock?.stock}
-                    </StyledBadge>
-                </StyledCardHeader>
-                <StyledCardDetails>
-                    <StyledCardInfo>
-                        <StyledIconWrapper size="0.75rem" marginRight="0.25rem" color="#52c41a">
-                            <FontAwesomeIcon icon={faBox} />
-                        </StyledIconWrapper>
-                        {item.shortName ? item.shortName : ''}
-                        {item.shelf ? `-${item.shelf}` : ''}
-                        {item.row ? `-${item.row}` : ''}
-                        {item.segment ? `-${item.segment}` : ''}
-                    </StyledCardInfo>
-                    {item?.batch?.expirationDate && (
-                        <StyledCardInfo>
-                            <StyledIconWrapper size="0.75rem" marginRight="0.25rem" color="#ff4d4f">
-                                <FontAwesomeIcon icon={faCalendarAlt} />
-                            </StyledIconWrapper>
-                            <span>{getDateIsoFromTimestamp(item?.batch?.expirationDate)}</span>
-                        </StyledCardInfo>
-                    )}
-                    <StyledLoteDetails>
-                        <StyledIconWrapper size="0.75rem" marginRight="0.25rem" color="#faad14">
-                            <FontAwesomeIcon icon={faChartBar} />
-                        </StyledIconWrapper>
-                        <span>Lote: {item?.batch?.shortName}</span>
-                    </StyledLoteDetails>
-                </StyledCardDetails>
-                <StyledProgressBar>
-                    <StyledProgress width={Math.min(item.productStock.stock, 100)} />
-                </StyledProgressBar>
-            </StyledCardContent>
-        </StyledCard>
-    );
+  return (
+    <StyledCard onClick={handleSelect}>
+      <StyledCardContent>
+        <StyledCardHeader>
+          <StyledCardInfo>
+            <StyledIconWrapper size="1rem" marginRight="0.5rem" color="#1890ff">
+              <FontAwesomeIcon icon={faWarehouse} />
+            </StyledIconWrapper>
+            <span style={{ fontWeight: 'bold', fontSize: '0.875rem' }}>
+              {item.warehouse}
+            </span>
+          </StyledCardInfo>
+          <StyledBadge variant={item.stock > 50 ? 'default' : 'secondary'}>
+            {item?.productStock?.stock}
+          </StyledBadge>
+        </StyledCardHeader>
+        <StyledCardDetails>
+          <StyledCardInfo>
+            <StyledIconWrapper
+              size="0.75rem"
+              marginRight="0.25rem"
+              color="#52c41a"
+            >
+              <FontAwesomeIcon icon={faBox} />
+            </StyledIconWrapper>
+            {item.shortName ? item.shortName : ''}
+            {item.shelf ? `-${item.shelf}` : ''}
+            {item.row ? `-${item.row}` : ''}
+            {item.segment ? `-${item.segment}` : ''}
+          </StyledCardInfo>
+          {item?.batch?.expirationDate && (
+            <StyledCardInfo>
+              <StyledIconWrapper
+                size="0.75rem"
+                marginRight="0.25rem"
+                color="#ff4d4f"
+              >
+                <FontAwesomeIcon icon={faCalendarAlt} />
+              </StyledIconWrapper>
+              <span>
+                {getDateIsoFromTimestamp(item?.batch?.expirationDate)}
+              </span>
+            </StyledCardInfo>
+          )}
+          <StyledLoteDetails>
+            <StyledIconWrapper
+              size="0.75rem"
+              marginRight="0.25rem"
+              color="#faad14"
+            >
+              <FontAwesomeIcon icon={faChartBar} />
+            </StyledIconWrapper>
+            <span>Lote: {item?.batch?.shortName}</span>
+          </StyledLoteDetails>
+        </StyledCardDetails>
+        <StyledProgressBar>
+          <StyledProgress width={Math.min(item.productStock.stock, 100)} />
+        </StyledProgressBar>
+      </StyledCardContent>
+    </StyledCard>
+  );
 };
 
 export default InventoryCard;

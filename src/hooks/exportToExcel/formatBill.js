@@ -1,4 +1,4 @@
-import useFormatTimestamp from "../useFormatTimeStamp";
+import useFormatTimestamp from '../useFormatTimeStamp';
 
 const unwrapInvoice = (raw) => raw?.data ?? raw?.ver?.data ?? raw ?? {};
 
@@ -8,43 +8,44 @@ const ensureNumber = (value) => {
 };
 
 const translatePaymentMethod = (method) => {
-  if (!method || method === "N/A") return "N/A";
-  
+  if (!method || method === 'N/A') return 'N/A';
+
   const translations = {
-    'cash': 'Efectivo',
-    'card': 'Tarjeta',
-    'transfer': 'Transferencia',
-    'efectivo': 'Efectivo',
-    'tarjeta': 'Tarjeta',
-    'transferencia': 'Transferencia',
-    'credit': 'Crédito',
-    'debit': 'Débito',
-    'credito': 'Crédito',
-    'debito': 'Débito'
+    cash: 'Efectivo',
+    card: 'Tarjeta',
+    transfer: 'Transferencia',
+    efectivo: 'Efectivo',
+    tarjeta: 'Tarjeta',
+    transferencia: 'Transferencia',
+    credit: 'Crédito',
+    debit: 'Débito',
+    credito: 'Crédito',
+    debito: 'Débito',
   };
-  
+
   // Convertir a minúsculas para buscar
   const methodLower = method.toLowerCase().trim();
-  
+
   // Buscar traducción exacta
   if (translations[methodLower]) {
     return translations[methodLower];
   }
-  
+
   // Si no encuentra traducción, capitalizar la primera letra
   return method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
 };
 
 const getPrimaryPaymentMethod = (paymentMethod = []) => {
-  const method = (paymentMethod.find((pm) => pm.status) || {}).method ?? "N/A";
+  const method = (paymentMethod.find((pm) => pm.status) || {}).method ?? 'N/A';
   return translatePaymentMethod(method);
 };
 
 const getPrimaryPaymentValue = (paymentMethod = [], fallbackPayment) => {
-  if (fallbackPayment?.value != null) return ensureNumber(fallbackPayment.value);
+  if (fallbackPayment?.value != null)
+    return ensureNumber(fallbackPayment.value);
   const pm = paymentMethod.find((pm) => pm.status);
   return pm ? ensureNumber(pm.value) : 0;
-}
+};
 const formatBillResumen = (data) => {
   const {
     date,
@@ -57,7 +58,7 @@ const formatBillResumen = (data) => {
     payment,
     change = {},
     delivery = {},
-    totalPurchase = {}
+    totalPurchase = {},
   } = data;
   return {
     ['Fecha']: useFormatTimestamp(date),
@@ -73,8 +74,8 @@ const formatBillResumen = (data) => {
     ['Delivery']: ensureNumber(delivery.value),
     ['Cambio']: ensureNumber(change.value),
     ['Total']: ensureNumber(totalPurchase.value),
-  }
-}
+  };
+};
 const formatBillDetailed = (facturas) => {
   const resultados = [];
 
@@ -89,30 +90,31 @@ const formatBillDetailed = (facturas) => {
       totalPurchase = {},
     } = factura;
 
-    products.forEach((product) => {      resultados.push({
+    products.forEach((product) => {
+      resultados.push({
         Fecha: useFormatTimestamp(date),
         Comprobante: NCF,
-        Cliente: client.name || "Cliente Genérico",
+        Cliente: client.name || 'Cliente Genérico',
         Producto: product.name,
         Categoría: product.category,
         Tipo: product.type,
         Precio: ensureNumber(product.pricing?.price),
-        "Cantidad Facturada": ensureNumber(product.amountToBuy),
+        'Cantidad Facturada': ensureNumber(product.amountToBuy),
         Total: ensureNumber(totalPurchase.value),
       });
     });
   });
 
   return resultados;
-}
+};
 
 export const formatBill = ({ type, data }) => {
   switch (type) {
-    case "Resumen":
+    case 'Resumen':
       return formatBillResumen(data);
-    case "Detailed":
+    case 'Detailed':
       return formatBillDetailed(data);
     default:
       return [];
   }
-}
+};

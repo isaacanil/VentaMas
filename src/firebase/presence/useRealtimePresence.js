@@ -1,7 +1,19 @@
-import { goOffline, goOnline, onDisconnect, onValue, ref, serverTimestamp, set, update } from 'firebase/database';
+import {
+  goOffline,
+  goOnline,
+  onDisconnect,
+  onValue,
+  ref,
+  serverTimestamp,
+  set,
+  update,
+} from 'firebase/database';
 import { useEffect, useRef } from 'react';
 
-import { ensureDeviceId, getStoredSession } from '../Auth/fbAuthV2/sessionClient.js';
+import {
+  ensureDeviceId,
+  getStoredSession,
+} from '../Auth/fbAuthV2/sessionClient.js';
 import { realtimeDB } from '../firebaseconfig.jsx';
 
 const PRESENCE_BASE_PATH = 'presence';
@@ -38,9 +50,10 @@ export const useRealtimePresence = (user) => {
         const storageKey = `${PRESENCE_BASE_PATH}:${user.uid}`;
         let storedId = storage?.getItem(storageKey);
         if (!storedId) {
-          const randomPart = typeof crypto !== 'undefined' && crypto.randomUUID
-            ? crypto.randomUUID()
-            : Math.random().toString(36).slice(2);
+          const randomPart =
+            typeof crypto !== 'undefined' && crypto.randomUUID
+              ? crypto.randomUUID()
+              : Math.random().toString(36).slice(2);
           storedId = `${baseId}-${randomPart}`;
           storage?.setItem(storageKey, storedId);
         }
@@ -52,7 +65,10 @@ export const useRealtimePresence = (user) => {
 
     const connectionId = resolveConnectionId();
 
-    const presenceRef = ref(realtimeDB, `${PRESENCE_BASE_PATH}/${user.uid}/${connectionId}`);
+    const presenceRef = ref(
+      realtimeDB,
+      `${PRESENCE_BASE_PATH}/${user.uid}/${connectionId}`,
+    );
     const connectedRef = ref(realtimeDB, '.info/connected');
 
     const unsubscribe = onValue(connectedRef, async (snapshot) => {
@@ -70,10 +86,12 @@ export const useRealtimePresence = (user) => {
         const disconnectHandler = onDisconnect(presenceRef);
         disconnectHandlerRef.current = disconnectHandler;
 
-        await disconnectHandler.set({
-          state: 'offline',
-          updatedAt: serverTimestamp(),
-        }).catch(() => {});
+        await disconnectHandler
+          .set({
+            state: 'offline',
+            updatedAt: serverTimestamp(),
+          })
+          .catch(() => {});
 
         const payload = {
           state: 'online',
@@ -118,7 +136,9 @@ export const useRealtimePresence = (user) => {
     return () => {
       try {
         unsubscribe && unsubscribe();
-      } catch { /* Ignore unsubscribe errors */ }
+      } catch {
+        /* Ignore unsubscribe errors */
+      }
 
       stopHeartbeat();
       const disconnectHandler = disconnectHandlerRef.current;

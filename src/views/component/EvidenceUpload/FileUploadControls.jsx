@@ -22,11 +22,12 @@ const FileUploadControls = ({ fileType, setFileType, handleFileInput }) => {
         <Select
           value={fileType}
           style={{ width: 120 }}
-          onChange={value => setFileType(value)}
-          
+          onChange={(value) => setFileType(value)}
         >
-          {fileTypeOptions.map(option => (
-            <Option key={option.value} value={option.value}>{option.label}</Option>
+          {fileTypeOptions.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
+            </Option>
           ))}
         </Select>
       </Form.Item>

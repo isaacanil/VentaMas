@@ -42,40 +42,46 @@ const GrandTotalItem = styled(TotalItem)`
 const TotalsSummary = ({ replenishments }) => {
   const calculateTotals = () => {
     return replenishments.reduce(
-        (acc, item) => {
-            const baseCostTotal = Number(item.baseCost) ;
-            const taxPercentage = Number(item.taxPercentage) || 0; // Use provided tax percentage
-            const itemITBIS = (baseCostTotal * taxPercentage) / 100; // Calculate ITBIS (tax)
-            const shippingCost = Number(item.freight) || 0; // Use provided freight or default to 0
-            const otherCosts = Number(item.otherCosts) || 0; // Use provided other costs or default to 0
-            const subTotal = (baseCostTotal + itemITBIS + shippingCost + otherCosts) * Number(item?.purchaseQuantity || item?.quantity);
+      (acc, item) => {
+        const baseCostTotal = Number(item.baseCost);
+        const taxPercentage = Number(item.taxPercentage) || 0; // Use provided tax percentage
+        const itemITBIS = (baseCostTotal * taxPercentage) / 100; // Calculate ITBIS (tax)
+        const shippingCost = Number(item.freight) || 0; // Use provided freight or default to 0
+        const otherCosts = Number(item.otherCosts) || 0; // Use provided other costs or default to 0
+        const subTotal =
+          (baseCostTotal + itemITBIS + shippingCost + otherCosts) *
+          Number(item?.purchaseQuantity || item?.quantity);
 
-            return {
-                totalProducts: acc.totalProducts + Number(item.quantity),
-                totalBaseCost: acc.totalBaseCost + baseCostTotal,
-                totalItbis: acc.totalItbis + itemITBIS,
-                totalShipping: acc.totalShipping + shippingCost,
-                totalOtherCosts: acc.totalOtherCosts + otherCosts,
-                grandTotal: acc.grandTotal + subTotal,
-            };
-        },
-        {
-            totalProducts: 0,
-            totalBaseCost: 0,
-            totalItbis: 0,
-            totalShipping: 0,
-            totalOtherCosts: 0,
-            grandTotal: 0,
-        }
+        return {
+          totalProducts: acc.totalProducts + Number(item.quantity),
+          totalBaseCost: acc.totalBaseCost + baseCostTotal,
+          totalItbis: acc.totalItbis + itemITBIS,
+          totalShipping: acc.totalShipping + shippingCost,
+          totalOtherCosts: acc.totalOtherCosts + otherCosts,
+          grandTotal: acc.grandTotal + subTotal,
+        };
+      },
+      {
+        totalProducts: 0,
+        totalBaseCost: 0,
+        totalItbis: 0,
+        totalShipping: 0,
+        totalOtherCosts: 0,
+        grandTotal: 0,
+      },
     );
-};
+  };
 
   const totals = calculateTotals();
 
   return (
     <StyledCard>
       <Group>
-        <TotalItem title="Total Productos" value={totals.totalProducts} prefix="#" />
+        <TotalItem
+          title="Total Productos"
+          value={totals.totalProducts}
+          prefix="#"
+        />
         <TotalItem
           title="Total Costo Base"
           value={totals.totalBaseCost}

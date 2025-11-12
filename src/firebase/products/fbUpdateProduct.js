@@ -1,13 +1,12 @@
-import { doc, updateDoc } from "firebase/firestore"
+import { doc, updateDoc } from 'firebase/firestore';
 
-import { db } from "../firebaseconfig"
+import { db } from '../firebaseconfig';
 
 export const fbUpdateProduct = async (data, user) => {
-    const product = {
-        ...data,
-    }
-    const { businessID } = user
-    const productRef = doc(db, "businesses", businessID, "products", product.id)
-    await updateDoc(productRef,  product )
-
-}
+  const product = {
+    ...data,
+  };
+  const { businessID } = user;
+  const productRef = doc(db, 'businesses', businessID, 'products', product.id);
+  await updateDoc(productRef, product);
+};

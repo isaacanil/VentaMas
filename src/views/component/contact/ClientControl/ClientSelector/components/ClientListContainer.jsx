@@ -1,8 +1,8 @@
-import { Spin } from 'antd'
-import { memo } from 'react'
-import styled from 'styled-components'
+import { Spin } from 'antd';
+import { memo } from 'react';
+import styled from 'styled-components';
 
-import { Client } from '../../../../../templates/system/client/Client'
+import { Client } from '../../../../../templates/system/client/Client';
 
 const Body = styled.div`
   z-index: 1;
@@ -16,7 +16,7 @@ const Body = styled.div`
     color: #333;
     text-align: center;
   }
-`
+`;
 
 const LoadingContainer = styled.div`
   display: flex;
@@ -25,14 +25,14 @@ const LoadingContainer = styled.div`
   height: 100%;
   flex-direction: column;
   gap: 1rem;
-  
+
   .ant-spin {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
   }
-`
+`;
 
 const ClientsList = styled.div`
   display: grid;
@@ -40,7 +40,7 @@ const ClientsList = styled.div`
   overflow-y: auto;
   gap: 0.4em;
   align-content: start;
-`
+`;
 
 const ClientListContainerComponent = ({
   paginatedClients,
@@ -49,7 +49,7 @@ const ClientListContainerComponent = ({
   openUpdateClientModal,
   handleDeleteClient,
   onClose,
-  searchTerm
+  searchTerm,
 }) => {
   return (
     <Body>
@@ -79,8 +79,8 @@ const ClientListContainerComponent = ({
         </ClientsList>
       )}
     </Body>
-  )
-}
+  );
+};
 
-export const ClientListContainer = memo(ClientListContainerComponent)
-ClientListContainer.displayName = 'ClientListContainer'
+export const ClientListContainer = memo(ClientListContainerComponent);
+ClientListContainer.displayName = 'ClientListContainer';

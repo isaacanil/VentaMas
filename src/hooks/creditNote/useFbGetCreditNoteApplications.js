@@ -1,9 +1,15 @@
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { db } from "../../firebase/firebaseconfig";
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../../firebase/firebaseconfig';
 
 /**
  * Hook para obtener aplicaciones de notas de crédito
@@ -42,24 +48,29 @@ export const useFbGetCreditNoteApplications = (filters = {}) => {
 
     setLoading(true);
 
-    const applicationsRef = collection(db, "businesses", user.businessID, "creditNoteApplications");
-    
+    const applicationsRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'creditNoteApplications',
+    );
+
     // Construir la consulta con filtros dinámicos
-    let queryConstraints = [orderBy("appliedAt", "desc")];
+    let queryConstraints = [orderBy('appliedAt', 'desc')];
 
     // Filtro por nota de crédito
     if (filters.creditNoteId) {
-      queryConstraints.push(where("creditNoteId", "==", filters.creditNoteId));
+      queryConstraints.push(where('creditNoteId', '==', filters.creditNoteId));
     }
 
     // Filtro por factura
     if (filters.invoiceId) {
-      queryConstraints.push(where("invoiceId", "==", filters.invoiceId));
+      queryConstraints.push(where('invoiceId', '==', filters.invoiceId));
     }
 
     // Filtro por cliente
     if (filters.clientId) {
-      queryConstraints.push(where("clientId", "==", filters.clientId));
+      queryConstraints.push(where('clientId', '==', filters.clientId));
     }
 
     const q = query(applicationsRef, ...queryConstraints);
@@ -69,19 +80,24 @@ export const useFbGetCreditNoteApplications = (filters = {}) => {
       (snapshot) => {
         const list = snapshot.docs.map((doc) => ({
           ...doc.data(),
-          id: doc.id
+          id: doc.id,
         }));
         setApplications(list);
         setLoading(false);
       },
       (error) => {
-        console.error("Error fetching credit note applications:", error);
+        console.error('Error fetching credit note applications:', error);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
-  }, [user?.businessID, filters.creditNoteId, filters.invoiceId, filters.clientId]);
+  }, [
+    user?.businessID,
+    filters.creditNoteId,
+    filters.invoiceId,
+    filters.clientId,
+  ]);
 
   return { applications, loading };
-}; 
+};

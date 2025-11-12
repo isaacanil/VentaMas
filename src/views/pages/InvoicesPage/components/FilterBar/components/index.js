@@ -5,4 +5,4 @@ export { PaymentMethodFilter } from './PaymentMethodFilter';
 export { AmountRangeFilter } from './AmountRangeFilter';
 export { SortControls } from './SortControls';
 export { ClearFiltersButton } from './ClearFiltersButton';
-export { TotalsDisplay } from './TotalsDisplay'; 
+export { TotalsDisplay } from './TotalsDisplay';

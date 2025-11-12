@@ -14,7 +14,6 @@ import { useProductHandling } from './hooks/useProductHandling';
 import { getContainerOutline } from './utils/stockTheme';
 import { containerVariants } from './utils/variants';
 
-
 const Container = styled(motion.li)`
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.02);
   width: 100%;
@@ -26,7 +25,7 @@ const Container = styled(motion.li)`
   position: relative;
   transition: outline 0.4s ease-in-out;
   height: ${({ imageHiddenRef }) => (imageHiddenRef ? '60px' : '80px')};
-  
+
   /* El outline sólo depende de si está seleccionado o no */
   outline: ${(props) => getContainerOutline(props)};
 
@@ -47,7 +46,7 @@ const Content = styled.div`
 const ProductComponent = memo(({ product }) => {
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const settingsCart = useSelector(SelectSettingCart) || {};
-  const alertsEnabled = !!(settingsCart.billing?.stockAlertsEnabled);
+  const alertsEnabled = !!settingsCart.billing?.stockAlertsEnabled;
 
   const {
     productState,
@@ -107,7 +106,9 @@ const ProductComponent = memo(({ product }) => {
           message="Stock bajo"
           position="bottom"
           isSelected={isProductInCart}
-          show={alertsEnabled && isLowStock && !isOutOfStock && !isCriticalStock}
+          show={
+            alertsEnabled && isLowStock && !isOutOfStock && !isCriticalStock
+          }
           variant="lowStock"
         />
 
@@ -121,12 +122,12 @@ const ProductComponent = memo(({ product }) => {
             productState={productState}
             productInCart={productInCart}
             product={product}
-          price={price}
-          isProductInCart={isProductInCart}
-          isLowStock={isLowStock}
-          isCriticalStock={isCriticalStock}
-          isOutOfStock={isOutOfStock}
-        />
+            price={price}
+            isProductInCart={isProductInCart}
+            isLowStock={isLowStock}
+            isCriticalStock={isCriticalStock}
+            isOutOfStock={isOutOfStock}
+          />
         </Content>
       </Container>
     </Fragment>

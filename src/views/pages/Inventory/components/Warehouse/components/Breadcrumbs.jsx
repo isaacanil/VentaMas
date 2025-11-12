@@ -1,6 +1,6 @@
 // components/Breadcrumbs.jsx
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 const BreadcrumbContainer = styled.nav`
   display: flex;

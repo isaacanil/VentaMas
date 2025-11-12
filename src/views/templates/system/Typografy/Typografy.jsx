@@ -37,9 +37,9 @@ const variantToComponentMap = {
  * @param {string} [props.textTransform='none'] - La propiedad CSS `text-transform` del elemento de texto.
  * @param {boolean} [props.disableMargins=false] - Indica si se deben deshabilitar los márgenes del elemento de texto.
  * @param {boolean} [props.bold=false] - Indica si el texto debe ser negrita.
- * @param {boolean} [props.underline=false] - Indica si el texto debe ser subrayado.  
+ * @param {boolean} [props.underline=false] - Indica si el texto debe ser subrayado.
  * @param {string} [props.variant='body1'] - El estilo de tipografía deseado.
- * 
+ *
  * @param {string} [props.align='left'] - La alineación del texto.
  * @param {string} [props.display='initial'] - La propiedad CSS `display` del elemento.
  * @param {boolean} [props.gutterBottom=false] - Indica si se debe agregar un margen inferior al elemento de texto.
@@ -60,16 +60,15 @@ const Typography = ({
   noWrap = false,
   component: ComponentProp,
   className,
-  size = 'medium', 
+  size = 'medium',
   italic = false,
   strikethrough = false,
   textShadow = null,
   children,
-  bold = false, 
-  underline = false, 
+  bold = false,
+  underline = false,
   ...rest
 }) => {
-
   const Component = ComponentProp || variantToComponentMap[variant] || 'span';
   return (
     <TypographyStyle
@@ -93,7 +92,6 @@ const Typography = ({
     >
       {children}
     </TypographyStyle>
-  
   );
 };
 

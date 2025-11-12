@@ -6,10 +6,9 @@ import styled from 'styled-components';
 
 import Button from '../Button/Button';
 
-
 const NavBarContainer = styled.nav`
-  background-color: #1E3A8A; /* bg-primary */
-  color: #FFFFFF; /* text-primary-foreground */
+  background-color: #1e3a8a; /* bg-primary */
+  color: #ffffff; /* text-primary-foreground */
   padding: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
@@ -39,13 +38,27 @@ const NavBar = () => {
       <NavBarWrapper>
         <LeftSection>
           <Button variant="ghost" style={{ padding: '0.5rem' }}>
-            <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '0.5rem', height: '1.25rem', width: '1.25rem' }} />
+            <FontAwesomeIcon
+              icon={faArrowLeft}
+              style={{
+                marginRight: '0.5rem',
+                height: '1.25rem',
+                width: '1.25rem',
+              }}
+            />
             Volver
           </Button>
           <Title>Gestión de Preventas</Title>
         </LeftSection>
         <Button variant="secondary">
-          <FontAwesomeIcon icon={faFileAlt} style={{ marginRight: '0.5rem', height: '1.25rem', width: '1.25rem' }} />
+          <FontAwesomeIcon
+            icon={faFileAlt}
+            style={{
+              marginRight: '0.5rem',
+              height: '1.25rem',
+              width: '1.25rem',
+            }}
+          />
           Ir a Facturas
         </Button>
       </NavBarWrapper>

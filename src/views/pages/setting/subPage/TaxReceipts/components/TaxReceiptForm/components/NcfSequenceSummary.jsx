@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 const SummaryContainer = styled.div`
   /* Tokens ligeros y compactos (solo claro) */
@@ -6,7 +6,7 @@ const SummaryContainer = styled.div`
   --pad-x: 14px;
   --gap: 8px;
   --radius: 10px;
-  --outline-variant: #e0e3eb;   /* gris suave (light) */
+  --outline-variant: #e0e3eb; /* gris suave (light) */
   --on-surface: #1f1f1f;
   --on-surface-variant: #5f6368; /* gris Google */
   --surface: #ffffff;
@@ -20,7 +20,7 @@ const SummaryContainer = styled.div`
   margin-bottom: 16px;
 
   /* Densidad aún más compacta si se desea: <SummaryContainer data-density="compact" /> */
-  &[data-density="compact"] {
+  &[data-density='compact'] {
     --pad-y: 10px;
     --pad-x: 12px;
     --gap: 6px;
@@ -43,16 +43,19 @@ const SummaryCard = styled.div`
   gap: var(--gap);
   width: 100%;
   min-height: 100%;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-  transition: box-shadow 120ms ease, transform 120ms ease, border-color 120ms ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease,
+    border-color 120ms ease;
 
   &:hover {
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     transform: translateY(-1px);
   }
 
   &:focus-within {
-    outline: 2px solid rgba(26,115,232,0.25);
+    outline: 2px solid rgba(26, 115, 232, 0.25);
     outline-offset: 2px;
   }
 
@@ -76,7 +79,7 @@ const SummaryValue = styled.span`
   color: var(--on-surface);
   line-height: 1.15;
   word-break: break-word;
-  font-family: "Roboto Mono", "Fira Code", Menlo, Consolas, monospace;
+  font-family: 'Roboto Mono', 'Fira Code', Menlo, Consolas, monospace;
   letter-spacing: 0.02em;
 `;
 
@@ -108,7 +111,7 @@ const SummaryBadge = styled.span`
 `;
 
 const resolveDisplayValue = (value, fallback) => {
-  if (value === null || value === undefined || value === "") return fallback;
+  if (value === null || value === undefined || value === '') return fallback;
   return value;
 };
 
@@ -118,7 +121,7 @@ export default function NcfSequenceSummary({
   last,
   quantity,
   increment,
-  density = "compact", // "compact" | "regular"
+  density = 'compact', // "compact" | "regular"
 }) {
   const safeQuantity = Number(quantity);
   const safeIncrement = Number(increment);
@@ -135,30 +138,30 @@ export default function NcfSequenceSummary({
 
   const items = [
     {
-      key: "current",
-      label: "NCF actual (almacenado)",
-      value: resolveDisplayValue(current, "Sin datos aún"),
+      key: 'current',
+      label: 'NCF actual (almacenado)',
+      value: resolveDisplayValue(current, 'Sin datos aún'),
       hint: current
-        ? "Este es el comprobante configurado actualmente."
-        : "Completa serie, tipo y secuencia para visualizarlo.",
+        ? 'Este es el comprobante configurado actualmente.'
+        : 'Completa serie, tipo y secuencia para visualizarlo.',
     },
     {
-      key: "next",
-      label: "Próximo NCF (siguiente factura)",
-      value: resolveDisplayValue(next, "Pendiente de cálculo"),
+      key: 'next',
+      label: 'Próximo NCF (siguiente factura)',
+      value: resolveDisplayValue(next, 'Pendiente de cálculo'),
       hint: next
-        ? "Así se generará el próximo comprobante disponible."
-        : "Calculamos el próximo NCF cuando completes la configuración.",
+        ? 'Así se generará el próximo comprobante disponible.'
+        : 'Calculamos el próximo NCF cuando completes la configuración.',
     },
     {
-      key: "last",
-      label: "Último NCF proyectado",
-      value: resolveDisplayValue(last, "Necesitamos cantidad válida"),
+      key: 'last',
+      label: 'Último NCF proyectado',
+      value: resolveDisplayValue(last, 'Necesitamos cantidad válida'),
       hint: last
         ? quantityLabel
           ? `Se alcanzará tras emitir ${quantityLabel}.`
-          : "Corresponde al tope de esta configuración."
-        : "Indica una cantidad y verificaremos el límite generado.",
+          : 'Corresponde al tope de esta configuración.'
+        : 'Indica una cantidad y verificaremos el límite generado.',
       footer: [quantityLabel, incrementLabel].filter(Boolean),
     },
   ];

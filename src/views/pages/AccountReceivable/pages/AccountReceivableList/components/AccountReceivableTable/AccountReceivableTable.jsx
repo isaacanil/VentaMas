@@ -1,26 +1,25 @@
-import React from 'react'
+import React from 'react';
 
 import useBusiness from '../../../../../../../hooks/useBusiness';
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
 
 import { getColumns } from './columns';
 
 export const AccountReceivableTable = ({
-  data = [], 
-  searchTerm="", 
+  data = [],
+  searchTerm = '',
   totalBalance,
-  showInsuranceColumn // Nueva prop para controlar la visibilidad de la columna de aseguradora
+  showInsuranceColumn, // Nueva prop para controlar la visibilidad de la columna de aseguradora
 }) => {
   const { isPharmacy } = useBusiness();
-  
+
   // Si showInsuranceColumn está definido, lo usamos, de lo contrario depende de si es farmacia
   // Esto permite sobreescribir la lógica desde el componente padre
-  const shouldShowInsuranceColumn = showInsuranceColumn !== undefined 
-    ? showInsuranceColumn 
-    : isPharmacy;
-  
+  const shouldShowInsuranceColumn =
+    showInsuranceColumn !== undefined ? showInsuranceColumn : isPharmacy;
+
   return (
-    <AdvancedTable 
+    <AdvancedTable
       columns={getColumns(shouldShowInsuranceColumn)}
       data={data}
       tableName="accountsReceivable-list"
@@ -29,5 +28,5 @@ export const AccountReceivableTable = ({
       footerLeftSide={`Total: ${totalBalance}`}
       emptyText="No hay cuentas por cobrar para mostrar"
     />
-  )
-}
+  );
+};

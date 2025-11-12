@@ -1,52 +1,66 @@
-import { collection, getDocs, writeBatch, doc, Timestamp, limit as firebaseLimit, query } from "firebase/firestore";
-import { nanoid } from "nanoid";
+import {
+  collection,
+  getDocs,
+  writeBatch,
+  doc,
+  Timestamp,
+  limit as firebaseLimit,
+  query,
+} from 'firebase/firestore';
+import { nanoid } from 'nanoid';
 
-import { db } from "../firebaseconfig";
+import { db } from '../firebaseconfig';
 
 export const transferProducts = async (businessIdA, businessIdB, limit = 0) => {
-    const productsBusinessA = collection(db, `businesses/${businessIdA}/products`);
-    const productsBusinessB = collection(db, `businesses/${businessIdB}/products`);
+  const productsBusinessA = collection(
+    db,
+    `businesses/${businessIdA}/products`,
+  );
+  const productsBusinessB = collection(
+    db,
+    `businesses/${businessIdB}/products`,
+  );
 
-    let q = productsBusinessA ;
-    
-    if(limit) {
-        q = query(productsBusinessA, firebaseLimit(limit));      
-    }
+  let q = productsBusinessA;
 
-    const querySnapshot = await getDocs(q);
+  if (limit) {
+    q = query(productsBusinessA, firebaseLimit(limit));
+  }
 
-    let totalProducts = querySnapshot.docs.length;
+  const querySnapshot = await getDocs(q);
 
-    console.info(`Found ${totalProducts} products to transfer`);
+  let totalProducts = querySnapshot.docs.length;
 
-    if (limit > 0 && limit < totalProducts) {
-        totalProducts = limit;
-    }
+  console.info(`Found ${totalProducts} products to transfer`);
 
-    // Processing product transfer
+  if (limit > 0 && limit < totalProducts) {
+    totalProducts = limit;
+  }
 
-    const batchSize = 500;
-    let _batchCount = 0;
-    for (let i = 0; i < totalProducts; i += batchSize) {
-        const batch = writeBatch(db);
-        querySnapshot.docs.slice(i, i + batchSize).forEach(item => {
-            const product = item.data();
-            const id = nanoid(12);
-            const changeProduct = {
-                ...product,
-                stock: 0,
-                createdAt: Timestamp.now(),
-                image: "",
-                id: id
-            };
-            const newProductRef = doc(productsBusinessB, id);
-            batch.set(newProductRef, changeProduct);
-        });
+  // Processing product transfer
 
-        await batch.commit();
-        _batchCount++;
-        // Batch processed
-    }
+  const batchSize = 500;
+  let _batchCount = 0;
+  for (let i = 0; i < totalProducts; i += batchSize) {
+    const batch = writeBatch(db);
+    querySnapshot.docs.slice(i, i + batchSize).forEach((item) => {
+      const product = item.data();
+      const id = nanoid(12);
+      const changeProduct = {
+        ...product,
+        stock: 0,
+        createdAt: Timestamp.now(),
+        image: '',
+        id: id,
+      };
+      const newProductRef = doc(productsBusinessB, id);
+      batch.set(newProductRef, changeProduct);
+    });
 
-    console.info("Product transfer completed successfully");
+    await batch.commit();
+    _batchCount++;
+    // Batch processed
+  }
+
+  console.info('Product transfer completed successfully');
 };

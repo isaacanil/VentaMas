@@ -14,7 +14,8 @@ const ENTRY_ID_PAD = 18;
 
 export const sanitizePart = (value) => (value ?? '').toString().trim();
 
-export const collapseWhitespace = (value) => sanitizePart(value).replace(/\s+/g, '');
+export const collapseWhitespace = (value) =>
+  sanitizePart(value).replace(/\s+/g, '');
 
 export const toDigits = (value) => collapseWhitespace(value).replace(/\D/g, '');
 
@@ -102,7 +103,10 @@ export const isActiveInvoiceRecord = (record) => {
 
 export const countActiveInvoices = (records) => {
   if (!Array.isArray(records)) return 0;
-  return records.reduce((count, record) => count + (isActiveInvoiceRecord(record) ? 1 : 0), 0);
+  return records.reduce(
+    (count, record) => count + (isActiveInvoiceRecord(record) ? 1 : 0),
+    0,
+  );
 };
 
 export const compareBigInts = (a, b) => {

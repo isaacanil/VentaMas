@@ -13,33 +13,39 @@ const { Option } = Select;
  * @param {Function} props.onInsuranceFilterChange - Función para manejar cambio de filtro de aseguradora
  * @param {Function} props.onDateRangeChange - Función para manejar cambio de rango de fechas
  */
-const FilterBar = ({ 
-  insuranceFilter, 
-  insuranceOptions, 
-  onInsuranceFilterChange, 
-  onDateRangeChange 
+const FilterBar = ({
+  insuranceFilter,
+  insuranceOptions,
+  onInsuranceFilterChange,
+  onDateRangeChange,
 }) => {
   return (
     <FilterRow>
       <FilterGroup>
-        <Text strong style={{ marginRight: '8px' }}>Aseguradora:</Text>
-        <Select 
-          style={{ width: '200px' }} 
+        <Text strong style={{ marginRight: '8px' }}>
+          Aseguradora:
+        </Text>
+        <Select
+          style={{ width: '200px' }}
           value={insuranceFilter}
           onChange={onInsuranceFilterChange}
           placeholder="Seleccionar aseguradora"
         >
-          {insuranceOptions.map(option => (
-            <Option key={option.id} value={option.id}>{option.name}</Option>
+          {insuranceOptions.map((option) => (
+            <Option key={option.id} value={option.id}>
+              {option.name}
+            </Option>
           ))}
         </Select>
       </FilterGroup>
-      
+
       <FilterGroup>
-        <Text strong style={{ marginRight: '8px' }}>Fecha:</Text>
-        <DatePicker.RangePicker 
+        <Text strong style={{ marginRight: '8px' }}>
+          Fecha:
+        </Text>
+        <DatePicker.RangePicker
           style={{ width: '280px' }}
-          onChange={onDateRangeChange} 
+          onChange={onDateRangeChange}
           format="DD/MM/YYYY"
         />
       </FilterGroup>

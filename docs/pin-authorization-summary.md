@@ -9,6 +9,7 @@ Implementar un sistema de autorización híbrido que permite a los usuarios auto
 ### Frontend
 
 #### Pantalla de Configuración
+
 - [src/views/pages/setting/subPage/AuthorizationConfig/AuthorizationConfig.jsx](../src/views/pages/setting/subPage/AuthorizationConfig/AuthorizationConfig.jsx)
   - Pantalla principal de configuración de PINs
   - Lista de usuarios con estado de PIN
@@ -25,6 +26,7 @@ Implementar un sistema de autorización híbrido que permite a los usuarios auto
   - Información de expiración
 
 #### Modal de Autorización
+
 - [src/views/component/modals/PinAuthorizationModal/PinAuthorizationModal.jsx](../src/views/component/modals/PinAuthorizationModal/PinAuthorizationModal.jsx)
   - Modal reutilizable para solicitar autorización con PIN
   - Fallback a contraseña completa
@@ -32,6 +34,7 @@ Implementar un sistema de autorización híbrido que permite a los usuarios auto
   - Soporte para múltiples módulos
 
 #### Hook Personalizado
+
 - [src/hooks/useAuthorizationPin.js](../src/hooks/useAuthorizationPin.js)
   - Hook para simplificar la integración de autorización con PIN
   - Manejo de estado del modal
@@ -40,6 +43,7 @@ Implementar un sistema de autorización híbrido que permite a los usuarios auto
 ### Backend (Firebase)
 
 #### Servicios
+
 - [src/firebase/authorization/pinAuth.js](../src/firebase/authorization/pinAuth.js)
   - `fbGenerateUserPin()` - Genera PIN para un usuario
   - `fbDeactivateUserPin()` - Desactiva PIN de un usuario
@@ -50,6 +54,7 @@ Implementar un sistema de autorización híbrido que permite a los usuarios auto
   - Funciones internas de logging automático
 
 ### Documentación
+
 - [docs/pin-authorization-integration.md](./pin-authorization-integration.md)
   - Guía completa de integración
   - Ejemplos de código
@@ -63,6 +68,7 @@ Implementar un sistema de autorización híbrido que permite a los usuarios auto
 ## 🔧 Archivos Modificados
 
 ### Rutas y Navegación
+
 - [src/routes/routesName.js](../src/routes/routesName.js)
   - Agregado `AUTHORIZATION_CONFIG` a `SETTING_TERM`
   - Agregado `AUTHORIZATION_CONFIG` a `AUTHORIZATIONS_TERM`
@@ -76,6 +82,7 @@ Implementar un sistema de autorización híbrido que permite a los usuarios auto
   - Agregada opción "Configuración de Autorización" al menú de settings
 
 ### Integración con Módulos Existentes
+
 - [src/views/pages/Authorizations/InvoiceEditAuthorizations.jsx](../src/views/pages/Authorizations/InvoiceEditAuthorizations.jsx)
   - Integrado `PinAuthorizationModal`
   - Agregado hook `useAuthorizationPin`
@@ -225,6 +232,7 @@ businesses/{businessID}/pinAuthLogs/{logId}/
 ## 🎨 UI/UX Implementado
 
 ### Pantalla de Configuración
+
 - Dashboard con estadísticas (Total usuarios, PINs activos, expirados)
 - Tabla con todos los usuarios y su estado de PIN
 - Indicadores visuales:
@@ -234,11 +242,13 @@ businesses/{businessID}/pinAuthLogs/{logId}/
   - 🔴 Rojo: PIN inactivo
 
 ### Modal de Generación
+
 - Selección de módulos con checkboxes
 - Advertencia al regenerar PIN existente
 - Información de seguridad
 
 ### Modal de Detalles del PIN
+
 - Diseño visual atractivo (gradiente morado/azul)
 - PIN en fuente grande y monoespaciada
 - Botón de copiar al portapapeles
@@ -247,6 +257,7 @@ businesses/{businessID}/pinAuthLogs/{logId}/
 - Instrucciones de uso
 
 ### Modal de Autorización
+
 - Toggle entre PIN y contraseña
 - Input de 6 dígitos con máscara visual
 - Validación en tiempo real
@@ -284,6 +295,7 @@ function MiComponente() {
 ## 🚀 Próximos Pasos (Opcional)
 
 ### Backend Cloud Functions (Recomendado pero no crítico)
+
 Actualmente la validación se hace client-side con servicios Firebase. Para mayor seguridad, se puede implementar:
 
 ```
@@ -294,17 +306,20 @@ functions/src/versions/v2/auth/pin/
 ```
 
 Esto agregaría:
+
 - Validación adicional server-side
 - Rate limiting robusto
 - Prevención de ataques de fuerza bruta
 - Validación de integridad de datos
 
 ### Notificaciones (Nice to have)
+
 - Notificación cuando PIN está por expirar (< 6 horas)
 - Notificación cuando se genera un nuevo PIN
 - Alertas de intentos fallidos múltiples
 
 ### Dashboard de Analytics (Futuro)
+
 - Estadísticas de uso de PINs por usuario
 - Gráficas de autorizaciones por módulo
 - Alertas de seguridad
@@ -312,6 +327,7 @@ Esto agregaría:
 ## ✅ Checklist de Implementación
 
 ### Frontend
+
 - [x] Servicios Firebase (pinAuth.js)
 - [x] Pantalla de configuración (AuthorizationConfig)
 - [x] Modal de generación de PIN
@@ -323,6 +339,7 @@ Esto agregaría:
 - [x] Documentación
 
 ### Backend
+
 - [x] Estructura de datos en Firestore (definida)
 - [x] Funciones de generación de PIN
 - [x] Funciones de validación de PIN
@@ -330,6 +347,7 @@ Esto agregaría:
 - [ ] Cloud Functions (opcional, para mayor seguridad)
 
 ### Testing
+
 - [ ] Pruebas de generación de PIN
 - [ ] Pruebas de validación de PIN
 - [ ] Pruebas de expiración
@@ -337,6 +355,7 @@ Esto agregaría:
 - [ ] Pruebas de integración
 
 ### Documentación
+
 - [x] Guía de integración
 - [x] Ejemplos de código
 - [x] Mejores prácticas

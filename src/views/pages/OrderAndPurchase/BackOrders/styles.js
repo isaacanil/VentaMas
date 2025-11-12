@@ -13,7 +13,7 @@ export const Content = styled.div`
   padding: 1em 24px 24px;
   background: #f9fafb;
   overflow-y: auto;
-  
+
   --color-bg-main: #f9fafb;
   --color-bg-card: #ffffff;
   --color-text-primary: #111827;
@@ -23,8 +23,8 @@ export const Content = styled.div`
   --color-pending: #4b5563;
   --color-reserved: #1f2937;
   --color-completed: #111827;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.05);
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
@@ -50,17 +50,17 @@ export const StatBox = styled.div`
   padding: 16px;
   border-radius: 8px;
   border: 1px solid var(--color-border);
-  
+
   .stat-label {
     font-size: 12px;
     color: var(--color-text-secondary);
     margin-bottom: 4px;
   }
-  
+
   .stat-value {
     font-size: 20px;
     font-weight: 600;
-    color: ${props => props.color || 'var(--color-text-primary)'};
+    color: ${(props) => props.color || 'var(--color-text-primary)'};
   }
 `;
 
@@ -80,7 +80,6 @@ export const ProductGroupsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
   gap: 0.6em;
-
 `;
 
 export const ProductGroup = styled(motion.div)`
@@ -89,21 +88,21 @@ export const ProductGroup = styled(motion.div)`
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   /* height: fit-content; */
-  height: ${props => props.isCollapsed ? 'fit-content' : 'auto'};
+  height: ${(props) => (props.isCollapsed ? 'fit-content' : 'auto')};
 `;
 
 export const ProductGroupHeader = styled.div`
   padding: 0em;
   border-bottom: 1px solid var(--color-border);
   background-color: #fff;
-  
+
   h2 {
     font-size: 15px;
     font-weight: 600;
     color: var(--color-text-primary);
     margin: 0;
   }
-  
+
   .subtitle {
     font-size: 13px;
     color: var(--color-text-secondary);
@@ -117,14 +116,13 @@ export const Grid = styled(motion.div)`
   gap: 0.4em;
   padding: 16px;
   background: #fff;
-
 `;
 
 export const BackorderCard = styled(motion.div)`
   background: #ffffff;
   transition: all 0.2s ease;
   border: 1px solid var(--color-border);
-  
+
   &:hover {
     background: #fafafa;
     transform: translateY(-1px);
@@ -156,15 +154,25 @@ export const StatusBadge = styled.div`
   align-items: center;
   justify-content: center;
   min-width: 70px;
-  background: ${props => 
-    props.status === 'pending' ? '#fff7e6' :
-    props.status === 'reserved' ? '#e6f7ff' : '#f6ffed'};
-  border: 1px solid ${props => 
-    props.status === 'pending' ? '#ffd591' :
-    props.status === 'reserved' ? '#91d5ff' : '#b7eb8f'};
-  color: ${props => 
-    props.status === 'pending' ? '#d46b08' :
-    props.status === 'reserved' ? '#1890ff' : '#52c41a'};
+  background: ${(props) =>
+    props.status === 'pending'
+      ? '#fff7e6'
+      : props.status === 'reserved'
+        ? '#e6f7ff'
+        : '#f6ffed'};
+  border: 1px solid
+    ${(props) =>
+      props.status === 'pending'
+        ? '#ffd591'
+        : props.status === 'reserved'
+          ? '#91d5ff'
+          : '#b7eb8f'};
+  color: ${(props) =>
+    props.status === 'pending'
+      ? '#d46b08'
+      : props.status === 'reserved'
+        ? '#1890ff'
+        : '#52c41a'};
   white-space: nowrap;
 `;
 
@@ -198,7 +206,7 @@ export const QuantityBox = styled.div`
   background: #ffffff;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
-  
+
   .label {
     font-size: 11px;
     color: var(--color-text-tertiary);
@@ -207,11 +215,12 @@ export const QuantityBox = styled.div`
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .value {
     font-size: 16px;
     font-weight: 600;
-    color: ${props => props.highlight ? 'var(--color-pending)' : 'var(--color-text-primary)'};
+    color: ${(props) =>
+      props.highlight ? 'var(--color-pending)' : 'var(--color-text-primary)'};
     letter-spacing: -0.5px;
   }
 `;
@@ -221,15 +230,16 @@ export const ProgressBar = styled.div`
   background: #f3f4f6;
   border-radius: 2px;
   overflow: hidden;
-  
+
   .fill {
     height: 100%;
-    background: ${props => 
-      props.progress >= 80 ? '#22c55e' :
-      props.progress >= 50 ? '#f59e0b' :
-      '#d1d5db'
-    };
-    width: ${props => props.progress}%;
+    background: ${(props) =>
+      props.progress >= 80
+        ? '#22c55e'
+        : props.progress >= 50
+          ? '#f59e0b'
+          : '#d1d5db'};
+    width: ${(props) => props.progress}%;
     transition: all 0.3s ease;
   }
 `;
@@ -243,13 +253,13 @@ export const CardFooter = styled.div`
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid var(--color-border);
-  
+
   .action {
     color: var(--color-text-secondary);
     font-weight: 500;
     cursor: pointer;
     transition: color 0.2s ease;
-    
+
     &:hover {
       color: var(--color-text-primary);
     }
@@ -257,15 +267,19 @@ export const CardFooter = styled.div`
 `;
 
 export const LoadingPlaceholder = styled.div`
-  height: ${props => props.height || '20px'};
+  height: ${(props) => props.height || '20px'};
   background: linear-gradient(90deg, #f5f5f5 0%, #eeeeee 50%, #f5f5f5 100%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: var(--radius-sm);
-  
+
   @keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 `;
 
@@ -274,11 +288,21 @@ export const GroupProgress = styled.div`
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background: ${props => props.progress >= 80 ? '#f0fdf4' : props.progress >= 50 ? '#fefce8' : '#fff'};
+  background: ${(props) =>
+    props.progress >= 80
+      ? '#f0fdf4'
+      : props.progress >= 50
+        ? '#fefce8'
+        : '#fff'};
   border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 500;
-  color: ${props => props.progress >= 80 ? '#166534' : props.progress >= 50 ? '#854d0e' : 'var(--color-text-secondary)'};
+  color: ${(props) =>
+    props.progress >= 80
+      ? '#166534'
+      : props.progress >= 50
+        ? '#854d0e'
+        : 'var(--color-text-secondary)'};
 `;
 
 export const TrendIndicator = styled.div`
@@ -287,8 +311,14 @@ export const TrendIndicator = styled.div`
   gap: 4px;
   font-size: 12px;
   font-weight: 500;
-  
-  &.positive { color: #16a34a; }
-  &.negative { color: #dc2626; }
-  &.neutral { color: var(--color-text-tertiary); }
+
+  &.positive {
+    color: #16a34a;
+  }
+  &.negative {
+    color: #dc2626;
+  }
+  &.neutral {
+    color: var(--color-text-tertiary);
+  }
 `;

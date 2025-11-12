@@ -6,18 +6,20 @@ import { changeProductWeight } from '../../../../../../../../../features/cart/ca
 
 export const WeightInput = ({ item }) => {
   const dispatch = useDispatch();
-  
+
   const handleWeightChange = (e) => {
-    dispatch(changeProductWeight({ 
-      id: item.cid, 
-      weight: e.target.value 
-    }));
+    dispatch(
+      changeProductWeight({
+        id: item.cid,
+        weight: e.target.value,
+      }),
+    );
   };
-  
+
   return (
     <WeightContainer>
       <Input
-        value={`${(item?.weightDetail?.weight)}`}
+        value={`${item?.weightDetail?.weight}`}
         onChange={handleWeightChange}
       />
       <UnitLabel>{item?.weightDetail?.weightUnit}</UnitLabel>

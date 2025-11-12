@@ -12,7 +12,7 @@ export function defineAbilitiesForManager() {
     INVENTORY_TERM,
     PURCHASE_TERM,
     CASH_RECONCILIATION_TERM,
-    CREDIT_NOTE_TERM
+    CREDIT_NOTE_TERM,
   } = routesName;
 
   const { CLIENTS } = CONTACT_TERM;
@@ -20,7 +20,7 @@ export function defineAbilitiesForManager() {
   const {
     CASH_RECONCILIATION_CLOSURE,
     CASH_RECONCILIATION_LIST,
-    CASH_RECONCILIATION_OPENING
+    CASH_RECONCILIATION_OPENING,
   } = CASH_RECONCILIATION_TERM;
 
   const { SALES, BILLS } = SALES_TERM;
@@ -39,7 +39,7 @@ export function defineAbilitiesForManager() {
   can(['read', 'create', 'update'], 'Client');
   can(['read', 'create', 'update'], 'Provider');
   can(['read', 'create', 'update'], 'Category');
-  
+
   can('access', HOME);
   can('access', CASH_RECONCILIATION_OPENING);
   can('access', CASH_RECONCILIATION_CLOSURE);

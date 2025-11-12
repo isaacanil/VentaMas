@@ -9,7 +9,7 @@ export interface Sale {
     rowShelfId: string; // Reference to the Row
     segmentId: string; // Reference to the Segment
     locationCode: string;
-  }
+  };
   status: 'pending' | 'paid' | 'delivered' | 'cancelled';
   isPaid: boolean;
   customerId: string;

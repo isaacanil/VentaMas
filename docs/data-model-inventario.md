@@ -8,6 +8,7 @@ Este documento describe la estructura de las colecciones clave en Firestore para
 - `businesses/{businessID}/movements/{movementId}`
 
 Campos de auditoría comunes que se usan en varias colecciones:
+
 - `createdAt: Timestamp`
 - `createdBy: string`
 - `updatedAt?: Timestamp`
@@ -19,9 +20,11 @@ Campos de auditoría comunes que se usan en varias colecciones:
 ---
 
 ## Products
+
 Ruta: `businesses/{businessID}/products/{productId}`
 
 Campos principales (según `src/models/Products/Product.ts` y usos actuales):
+
 - `id: string` – Identificador del producto.
 - `name: string` | `productName: string` – Nombre. En la app se usa `name` en la mayoría de flujos; `productName` existe en datos antiguos o utilidades.
 - `productImageURL?: string` – URL de imagen.
@@ -43,6 +46,7 @@ Campos principales (según `src/models/Products/Product.ts` y usos actuales):
 - `hasExpDate: boolean` – Si controla fecha de expiración.
 
 Ejemplo:
+
 ```json
 {
   "id": "PRD123",
@@ -59,9 +63,11 @@ Ejemplo:
 ---
 
 ## Batches (Lotes)
+
 Ruta: `businesses/{businessID}/batches/{batchId}`
 
 Campos principales (según `src/models/Warehouse/Batch.ts` y creación en `fbCompletePurchase.js` / `batchService`):
+
 - `id: string`
 - `productId: string` – Referencia al producto.
 - `productName?: string` – Desnormalizado en algunos flujos.
@@ -79,6 +85,7 @@ Campos principales (según `src/models/Warehouse/Batch.ts` y creación en `fbCom
 - Auditoría común (`createdAt`, `createdBy`, …, `isDeleted`).
 
 Ejemplo:
+
 ```json
 {
   "id": "BAT_abc123",
@@ -97,11 +104,13 @@ Ejemplo:
 ---
 
 ## ProductsStock (Stock físico por ubicación)
+
 Ruta: `businesses/{businessID}/productsStock/{productStockId}`
 
 Representa la existencia física de un producto–lote en una ubicación específica.
 
 Campos principales (según `src/models/Warehouse/ProductStock.ts` y `productStockService`):
+
 - `id: string`
 - `productId: string`
 - `productName?: string` – Desnormalizado en algunos flujos.
@@ -116,6 +125,7 @@ Campos principales (según `src/models/Warehouse/ProductStock.ts` y `productStoc
 - Auditoría común (`createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`).
 
 Ejemplo:
+
 ```json
 {
   "id": "PS_1a2b3c",
@@ -133,15 +143,18 @@ Ejemplo:
 ---
 
 ## Movements (Movimientos de inventario)
+
 Ruta: `businesses/{businessID}/movements/{movementId}`
 
 Eventos que registran entradas/salidas y transferencias.
 
 Enums (ver `src/models/Warehouse/Movement.ts`):
+
 - `movementType: 'in' | 'out'`
 - `movementReason: 'sale' | 'purchase' | 'adjustment' | 'return' | 'initial_stock' | 'damaged' | 'expired' | 'lost' | 'transfer' | 'backorder'`
 
 Campos principales (según `productMovementService`, `fbCompletePurchase.js` y funciones de inventario):
+
 - `id: string`
 - `productId: string`
 - `productName: string`
@@ -161,6 +174,7 @@ Campos principales (según `productMovementService`, `fbCompletePurchase.js` y f
 Ejemplos:
 
 Entrada por compra:
+
 ```json
 {
   "id": "MV_001",
@@ -177,6 +191,7 @@ Entrada por compra:
 ```
 
 Salida por venta:
+
 ```json
 {
   "id": "MV_002",
@@ -196,6 +211,7 @@ Salida por venta:
 ---
 
 ## Relaciones entre colecciones
+
 - Un `batch` pertenece a un `product` vía `productId`.
 - Un `productsStock` referencia un `product` (`productId`) y un `batch` (`batchId`).
 - Un `movement` referencia siempre un `product` y opcionalmente un `batch` y/o `productStock`.
@@ -203,6 +219,7 @@ Salida por venta:
 ---
 
 ## Notas de implementación
+
 - `location` actualmente se maneja como string. Hay funciones que aceptan `{ warehouse, shelf, row, segment }` y construyen un path; unificar este formato evitaría ambigüedades.
 - `pricing.tax` puede venir como `number` o `string` según flujo; estandarizar a `number` simplifica cálculos.
 - Algunos flujos rellenan campos desnormalizados (`productName`, `batchNumberId`) para facilitar consultas y reportes.
@@ -210,6 +227,7 @@ Salida por venta:
 ---
 
 ## Sesiones de inventario (`inventorySessions`)
+
 - Ruta: `businesses/{businessID}/inventorySessions/{sessionId}`
 - Estados soportados: `open` | `processing` | `closed`.
   - `open`: edición normal (conteos, fechas, etc.).

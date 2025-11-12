@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { useMemo } from 'react';
 
-
 export const useCompareArrays = (array1, array2) => {
   return useMemo(() => {
     // Si los arreglos tienen longitudes diferentes, no son iguales
@@ -14,4 +13,4 @@ export const useCompareArrays = (array1, array2) => {
 
     return true;
   }, [array1, array2]); // Recalculará solo si alguno de los arreglos cambia
-}
+};

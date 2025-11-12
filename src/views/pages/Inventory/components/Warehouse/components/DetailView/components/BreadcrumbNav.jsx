@@ -22,10 +22,8 @@ export const BreadcrumbNav = ({ breadcrumbs }) => {
       <BreadcrumbLink onClick={() => dispatch(navigateToBreadcrumb(index))}>
         {item.title}
       </BreadcrumbLink>
-    )
+    ),
   }));
 
-  return breadcrumbs.length > 0 ? (
-    <StyledBreadcrumb items={items} />
-  ) : null;
+  return breadcrumbs.length > 0 ? <StyledBreadcrumb items={items} /> : null;
 };

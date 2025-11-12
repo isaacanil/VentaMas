@@ -1,4 +1,10 @@
-import { FileOutlined, DeleteOutlined, EyeOutlined, FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
+import {
+  FileOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  FileImageOutlined,
+  FilePdfOutlined,
+} from '@ant-design/icons';
 import { Tag, Empty, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
@@ -13,7 +19,7 @@ const FileItem = styled.div`
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #f0f0f0;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }
@@ -30,7 +36,7 @@ const DeleteButton = styled.button`
   color: #ff4d4f;
   cursor: pointer;
   padding: 5px;
-  
+
   &:hover {
     color: #cf1322;
   }
@@ -52,7 +58,7 @@ const PreviewButton = styled.button`
   cursor: pointer;
   padding: 5px;
   margin-right: 8px;
-  
+
   &:hover {
     color: #40a9ff;
   }
@@ -97,13 +103,15 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
       others: { title: 'Otros Documentos', files: [] },
     };
 
-    files?.forEach(file => {
+    files?.forEach((file) => {
       const type = file.type?.toLowerCase() || 'others';
       const targetGroup = groups[type] || groups.others;
       targetGroup.files.push(file);
     });
 
-    return Object.entries(groups).filter(([_, group]) => group.files.length > 0);
+    return Object.entries(groups).filter(
+      ([_, group]) => group.files.length > 0,
+    );
   }, [files]);
 
   const renderFileItem = (file) => (
@@ -118,14 +126,10 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
         )}
       </FileIcon>
       <FileInfo>
-        <Tooltip title={file.name}>
-          {file.name}
-        </Tooltip>
-        <TypeTag color={getTagColor(file.type)}>
-          {file.type}
-        </TypeTag>
-        <TypeTag color={file.url ? "purple" : "blue"}>
-          {file.url ? "Remoto" : "Local"}
+        <Tooltip title={file.name}>{file.name}</Tooltip>
+        <TypeTag color={getTagColor(file.type)}>{file.type}</TypeTag>
+        <TypeTag color={file.url ? 'purple' : 'blue'}>
+          {file.url ? 'Remoto' : 'Local'}
         </TypeTag>
       </FileInfo>
       <div>
@@ -162,7 +166,7 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
 FileList.defaultProps = {
   files: [],
   removeFile: () => {},
-  handlePreview: () => {}
+  handlePreview: () => {},
 };
 
 export default FileList;

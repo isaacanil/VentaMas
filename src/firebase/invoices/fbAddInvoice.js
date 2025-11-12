@@ -1,18 +1,18 @@
-import { doc, serverTimestamp } from "firebase/firestore";
-import { nanoid } from "nanoid";
+import { doc, serverTimestamp } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
 
-import { fbAddBillToOpenCashCount } from "../cashCount/fbAddBillToOpenCashCount";
-import { db } from "../firebaseconfig";
-import { fbSetDoc } from "../firebaseOperations";
-import { getNextID } from "../Tools/getNextID";
+import { fbAddBillToOpenCashCount } from '../cashCount/fbAddBillToOpenCashCount';
+import { db } from '../firebaseconfig';
+import { fbSetDoc } from '../firebaseOperations';
+import { getNextID } from '../Tools/getNextID';
 
-import { fbGetInvoice } from "./fbGetInvoice";
+import { fbGetInvoice } from './fbGetInvoice';
 
 export const fbAddInvoice = async (data, user) => {
-  if (!user || !user.businessID) return
+  if (!user || !user.businessID) return;
 
   try {
-    const userRef = doc(db, "users", user.uid);
+    const userRef = doc(db, 'users', user.uid);
     const nextNumberId = await getNextID(user, 'lastInvoiceId');
 
     let bill = {
@@ -21,10 +21,10 @@ export const fbAddInvoice = async (data, user) => {
       date: serverTimestamp(),
       numberID: nextNumberId,
       userID: user.uid,
-      user: userRef
-    }
+      user: userRef,
+    };
 
-    const billRef = doc(db, 'businesses', user.businessID, "invoices", bill.id);
+    const billRef = doc(db, 'businesses', user.businessID, 'invoices', bill.id);
 
     await fbSetDoc(billRef, { data: bill });
 
@@ -34,6 +34,6 @@ export const fbAddInvoice = async (data, user) => {
 
     return invoice.data;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};

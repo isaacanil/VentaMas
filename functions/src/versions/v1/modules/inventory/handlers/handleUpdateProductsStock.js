@@ -1,16 +1,19 @@
-import { logger } from "firebase-functions";
-import { HttpsError } from "firebase-functions/https";
-import { nanoid } from "nanoid";
+import { logger } from 'firebase-functions';
+import { HttpsError } from 'firebase-functions/https';
+import { nanoid } from 'nanoid';
 
-import { db, FieldValue } from "../../../../../core/config/firebase.js";
-import { updateBatchStatusForProductStock } from "../../batch/services/batch.service.js";
-import { MovementReason, MovementType } from "../../inventoryMovements/types/inventoryMovements.js";
-
+import { db, FieldValue } from '../../../../../core/config/firebase.js';
+import { updateBatchStatusForProductStock } from '../../batch/services/batch.service.js';
+import {
+  MovementReason,
+  MovementType,
+} from '../../inventoryMovements/types/inventoryMovements.js';
 
 // Divide un array en subarrays de tamaño máximo `size`
 function chunkArray(array, size) {
   const out = [];
-  for (let i = 0; i < array.length; i += size)  out.push(array.slice(i, i + size));
+  for (let i = 0; i < array.length; i += size)
+    out.push(array.slice(i, i + size));
   return out;
 }
 
@@ -32,9 +35,11 @@ export async function executeBatchesWithConcurrency(batches, limit = 5) {
   await Promise.all(pool);
 }
 
-
-
-export async function handleUpdateProductsStock({ businessID, products, sale }) {
+export async function handleUpdateProductsStock({
+  businessID,
+  products,
+  sale,
+}) {
   logger.info('[handleUpdateProductsStock] sale completo:', sale);
   logger.info('[handleUpdateProductsStock] sale.userID:', sale.userID);
   logger.info('Actualizando stock', JSON.stringify({ saleId: sale.id }));
@@ -43,18 +48,24 @@ export async function handleUpdateProductsStock({ businessID, products, sale }) 
   if (!sale.userID) {
     throw new HttpsError(
       'failed-precondition',
-      `Falta userID en invoice ${sale.id}`
+      `Falta userID en invoice ${sale.id}`,
     );
   }
   if (!businessID || !Array.isArray(products) || !products.length) {
-    throw new HttpsError('invalid-argument', 'Parámetros inválidos para actualizar stock');
+    throw new HttpsError(
+      'invalid-argument',
+      'Parámetros inválidos para actualizar stock',
+    );
   }
   if (products.some((p) => !p.id || typeof p.amountToBuy !== 'number')) {
-    throw new HttpsError('invalid-argument', `Producto inválido en invoice ${sale.id}`);
+    throw new HttpsError(
+      'invalid-argument',
+      `Producto inválido en invoice ${sale.id}`,
+    );
   }
 
-  const BATCH_LIMIT = 500;        // Firestore WriteBatch limit
-  const CONCURRENCY_LIMIT = 5;    // commits paralelos
+  const BATCH_LIMIT = 500; // Firestore WriteBatch limit
+  const CONCURRENCY_LIMIT = 5; // commits paralelos
   const productChunks = chunkArray(products, Math.floor(BATCH_LIMIT / 4)); // ≈4 writes/prod
 
   /** almacena meta-info para movements sin lecturas extra */
@@ -66,7 +77,14 @@ export async function handleUpdateProductsStock({ businessID, products, sale }) 
     products.map((product) => ({
       commit: () =>
         db.runTransaction(async (tx) => {
-          if (!(product.trackInventory && product.productStockId && product.batchId)) return;
+          if (
+            !(
+              product.trackInventory &&
+              product.productStockId &&
+              product.batchId
+            )
+          )
+            return;
 
           const stockRef = db
             .collection('businesses')
@@ -84,7 +102,10 @@ export async function handleUpdateProductsStock({ businessID, products, sale }) 
             .collection('products')
             .doc(product.id);
 
-          const [stockSnap, batchSnap] = await Promise.all([tx.get(stockRef), tx.get(batchRef)]);
+          const [stockSnap, batchSnap] = await Promise.all([
+            tx.get(stockRef),
+            tx.get(batchRef),
+          ]);
 
           const amount = Number(product.amountToBuy || 0);
           const currentStock = stockSnap.data()?.quantity ?? 0;
@@ -180,10 +201,16 @@ export async function handleUpdateProductsStock({ businessID, products, sale }) 
   await executeBatchesWithConcurrency(batches, CONCURRENCY_LIMIT);
 
   /***************** 3️⃣ – update Batch status una sola vez por batchId *****************/
-  const uniqueBatchIds = [...new Set(products.map((p) => p.batchId).filter(Boolean))];
+  const uniqueBatchIds = [
+    ...new Set(products.map((p) => p.batchId).filter(Boolean)),
+  ];
   await Promise.all(
     uniqueBatchIds.map((batchId) =>
-      updateBatchStatusForProductStock(businessID, batchId, null /* productId no necesario */),
+      updateBatchStatusForProductStock(
+        businessID,
+        batchId,
+        null /* productId no necesario */,
+      ),
     ),
   );
 

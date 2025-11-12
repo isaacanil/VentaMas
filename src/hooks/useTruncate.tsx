@@ -10,7 +10,7 @@ interface UseTruncateResult {
 const useTruncate = (
   text: string | null | undefined,
   containerRef: RefObject<HTMLElement>,
-  useTooltip: boolean = true
+  useTooltip: boolean = true,
 ): UseTruncateResult => {
   const [isTruncated, setIsTruncated] = useState(false);
   const [truncatedText, setTruncatedText] = useState<string>(text || '');
@@ -43,7 +43,9 @@ const useTruncate = (
       frameId = requestAnimationFrame(() => {
         const style = window.getComputedStyle(containerElement);
         const containerWidth = containerElement.clientWidth;
-        const fontShorthand = style.font || `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        const fontShorthand =
+          style.font ||
+          `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
         context.font = fontShorthand.trim();
 
         const textFits = context.measureText(text).width <= containerWidth;
@@ -77,9 +79,11 @@ const useTruncate = (
     };
 
     scheduleMeasurement();
-    void document.fonts?.ready?.then(() => scheduleMeasurement()).catch(() => {
-      /* swallow */
-    });
+    void document.fonts?.ready
+      ?.then(() => scheduleMeasurement())
+      .catch(() => {
+        /* swallow */
+      });
 
     const resizeObserver = new ResizeObserver(scheduleMeasurement);
     resizeObserver.observe(containerElement);

@@ -16,10 +16,14 @@ import {
   selectInsuranceModal,
   closeModal,
   fetchInsuranceAuthByClientId,
-  updateAuthField
+  updateAuthField,
 } from '../../../../../../../../features/insurance/insuranceAuthSlice';
 import { useFbGetDoctors } from '../../../../../../../../firebase/doctors/useFbGetDoctors';
-import { createClientInsurance, updateClientInsurance, getClientInsuranceByClientId } from '../../../../../../../../firebase/insurance/clientInsuranceService';
+import {
+  createClientInsurance,
+  updateClientInsurance,
+  getClientInsuranceByClientId,
+} from '../../../../../../../../firebase/insurance/clientInsuranceService';
 import { useListenInsuranceConfig } from '../../../../../../../../firebase/insurance/insuranceService';
 import useInsuranceEnabled from '../../../../../../../../hooks/useInsuranceEnabled';
 import FileUploader from '../../../../../../../component/FileUploader/FileUploader';
@@ -46,7 +50,7 @@ const ClientInfoWidget = styled.div`
   /* border-bottom: 1px solid #eaeaea; */
   display: flex;
   align-items: center;
-  
+
   .icon-container {
     width: 32px;
     height: 32px;
@@ -57,17 +61,17 @@ const ClientInfoWidget = styled.div`
     justify-content: center;
     margin-right: 12px;
   }
-  
+
   .icon {
     font-size: 16px;
     color: #666;
   }
-  
+
   .client-info {
     display: flex;
     flex-direction: column;
   }
-  
+
   .label {
     font-size: 12px;
     color: #8c8c8c;
@@ -75,7 +79,7 @@ const ClientInfoWidget = styled.div`
     letter-spacing: 0.5px;
     margin-bottom: 2px;
   }
-  
+
   .client-name {
     font-size: 16px;
     font-weight: 500;
@@ -125,15 +129,19 @@ export const InsuranceAuthModal = () => {
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   // Escuchamos la configuración de seguros (aseguradoras + tipos)
-  const { data: insuranceConfigData, loading: configLoading } = useListenInsuranceConfig();
+  const { data: insuranceConfigData, loading: configLoading } =
+    useListenInsuranceConfig();
   // Escuchamos los médicos disponibles
   const { doctors } = useFbGetDoctors();
 
   // Función para encontrar una aseguradora por ID
-  const findInsuranceById = useCallback((id) => {
-    if (!insuranceConfigData || !id) return null;
-    return insuranceConfigData.find(ins => ins.id === id) || null;
-  }, [insuranceConfigData]);
+  const findInsuranceById = useCallback(
+    (id) => {
+      if (!insuranceConfigData || !id) return null;
+      return insuranceConfigData.find((ins) => ins.id === id) || null;
+    },
+    [insuranceConfigData],
+  );
 
   // Actualizar el objeto de aseguradora seleccionada cuando cambie el ID
   useEffect(() => {
@@ -153,7 +161,7 @@ export const InsuranceAuthModal = () => {
     setSelectedInsurance(value);
     // Reseteamos el tipo de seguro
     form.setFieldValue('insuranceType', undefined);
-    
+
     // Solo actualizar Redux, no guardar inmediatamente
     dispatch(updateAuthField({ field: 'insuranceId', value }));
   };
@@ -168,39 +176,43 @@ export const InsuranceAuthModal = () => {
   const handleBirthDateChange = (date) => {
     if (date) {
       // Solo actualizar Redux, no guardar inmediatamente
-      dispatch(updateAuthField({ field: 'birthDate', value: date.toISOString() }));
+      dispatch(
+        updateAuthField({ field: 'birthDate', value: date.toISOString() }),
+      );
     }
   };
 
   // Handler para cambio de médico
   const handleDoctorChange = (doctor) => {
     setSelectedDoctor(doctor);
-    
+
     // Actualizar los campos en el formulario
     if (doctor) {
       form.setFieldsValue({
         doctorId: doctor.id,
         doctor: doctor.name,
-        specialty: doctor.specialty
+        specialty: doctor.specialty,
       });
-      
+
       // Actualizar Redux
       dispatch(updateAuthField({ field: 'doctorId', value: doctor.id }));
       dispatch(updateAuthField({ field: 'doctor', value: doctor.name }));
-      dispatch(updateAuthField({ field: 'specialty', value: doctor.specialty }));
+      dispatch(
+        updateAuthField({ field: 'specialty', value: doctor.specialty }),
+      );
     } else {
       form.setFieldsValue({
         doctorId: undefined,
         doctor: undefined,
-        specialty: undefined
+        specialty: undefined,
       });
-      
+
       // Limpiar Redux
       dispatch(updateAuthField({ field: 'doctorId', value: null }));
       dispatch(updateAuthField({ field: 'doctor', value: null }));
       dispatch(updateAuthField({ field: 'specialty', value: null }));
     }
-    
+
     // Validar completitud
     validateFormCompletion();
   };
@@ -216,7 +228,7 @@ export const InsuranceAuthModal = () => {
     try {
       // Obtener los valores actuales del formulario
       const values = form.getFieldsValue();
-      
+
       // Lista de campos requeridos
       const requiredFields = [
         'insuranceId',
@@ -225,16 +237,16 @@ export const InsuranceAuthModal = () => {
         'authNumber',
         // Eliminamos birthDate e indicationDate de los campos requeridos
       ];
-      
+
       // Verificar si todos los campos requeridos tienen valor
-      const allFieldsComplete = requiredFields.every(field => {
+      const allFieldsComplete = requiredFields.every((field) => {
         const value = values[field];
         return value !== undefined && value !== null && value !== '';
       });
-      
+
       // También verificar que el médico esté seleccionado
       const doctorSelected = selectedDoctor !== null;
-      
+
       const isComplete = allFieldsComplete && doctorSelected;
       setFormComplete(isComplete);
       return isComplete;
@@ -243,12 +255,12 @@ export const InsuranceAuthModal = () => {
       return false;
     }
   }, [form, insuranceEnabled, selectedDoctor]);
-  
+
   // Esta función será llamada automáticamente cuando cambie cualquier valor del formulario
   const handleFormValuesChange = useCallback(() => {
     validateFormCompletion();
   }, [validateFormCompletion]);
-  
+
   // También validamos al cargar los datos iniciales
   useEffect(() => {
     if (authData) {
@@ -260,10 +272,12 @@ export const InsuranceAuthModal = () => {
   useEffect(() => {
     if (open && client?.id && user && !authData?.clientId) {
       console.log('🔍 Cargando datos de seguro para cliente:', client.id);
-      dispatch(fetchInsuranceAuthByClientId({
-        user,
-        clientId: client.id
-      }));
+      dispatch(
+        fetchInsuranceAuthByClientId({
+          user,
+          clientId: client.id,
+        }),
+      );
     }
   }, [open, client?.id, user, authData?.clientId, dispatch]);
 
@@ -279,7 +293,7 @@ export const InsuranceAuthModal = () => {
 
       // Set selected doctor if available
       if (formValues.doctorId) {
-        const doctor = doctors.find(d => d.id === formValues.doctorId);
+        const doctor = doctors.find((d) => d.id === formValues.doctorId);
         if (doctor) {
           setSelectedDoctor(doctor);
         }
@@ -287,10 +301,13 @@ export const InsuranceAuthModal = () => {
 
       // Convert ISO date strings to dayjs objects for DatePicker
       const formattedValues = { ...formValues };
-      
+
       // Properly format dates for the form
       if (formattedValues.birthDate) {
-        console.log('📅 Fecha de nacimiento encontrada:', formattedValues.birthDate);
+        console.log(
+          '📅 Fecha de nacimiento encontrada:',
+          formattedValues.birthDate,
+        );
         formattedValues.birthDate = dayjs(formattedValues.birthDate);
       } else {
         console.log('❌ No se encontró fecha de nacimiento');
@@ -303,14 +320,21 @@ export const InsuranceAuthModal = () => {
       // Configuramos los valores del formulario SOLO en la carga inicial
       form.setFieldsValue(formattedValues);
       setHasDependent(formValues.hasDependent || false);
-      
+
       // Marcar que los datos iniciales ya fueron cargados
       setInitialDataLoaded(true);
-      
+
       // Validar completitud después de cargar datos
       setTimeout(() => validateFormCompletion(), 300);
     }
-  }, [open, authData, doctors, initialDataLoaded, form, validateFormCompletion]);
+  }, [
+    open,
+    authData,
+    doctors,
+    initialDataLoaded,
+    form,
+    validateFormCompletion,
+  ]);
 
   // Reset initialDataLoaded when modal closes
   useEffect(() => {
@@ -322,20 +346,27 @@ export const InsuranceAuthModal = () => {
       setSelectedInsuranceData(null);
       setPrescriptionFiles([]);
       setHasDependent(false);
-      
+
       // También resetear el formulario cuando se cierra el modal
       form.resetFields();
     }
   }, [open, form]);
-  
+
   // Reset form when authData is cleared (after invoice completion or cancellation)
   useEffect(() => {
     // Si authData es null o tiene valores iniciales (significa que se limpió), resetear formulario
-    if (open && authData && (
-      authData.clientId === null || 
-      (authData.insuranceId === null && authData.birthDate === null && authData.affiliateNumber === '')
-    )) {
-      console.log('🧹 Limpiando formulario porque authData se reseteo:', authData);
+    if (
+      open &&
+      authData &&
+      (authData.clientId === null ||
+        (authData.insuranceId === null &&
+          authData.birthDate === null &&
+          authData.affiliateNumber === ''))
+    ) {
+      console.log(
+        '🧹 Limpiando formulario porque authData se reseteo:',
+        authData,
+      );
       form.resetFields();
       setSelectedDoctor(null);
       setSelectedInsurance(null);
@@ -354,40 +385,44 @@ export const InsuranceAuthModal = () => {
   // Función para manejar la adición de archivos de receta
   const handleAddPrescriptionFiles = (newFiles) => {
     // Guardar los archivos en el estado local
-    setPrescriptionFiles(prev => [...prev, ...newFiles]);
-    
+    setPrescriptionFiles((prev) => [...prev, ...newFiles]);
+
     // También actualizar el campo en el formulario para mantener la consistencia
     const currentFiles = form.getFieldValue('prescription') || [];
     form.setFieldValue('prescription', [...currentFiles, ...newFiles]);
-    
+
     validateFormCompletion();
   };
 
   // Función para manejar la eliminación de archivos de receta
   const handleRemovePrescriptionFile = (fileId) => {
-    setPrescriptionFiles(prev => prev.filter(file => file.id !== fileId));
-    
+    setPrescriptionFiles((prev) => prev.filter((file) => file.id !== fileId));
+
     const currentFiles = form.getFieldValue('prescription') || [];
-    form.setFieldValue('prescription', currentFiles.filter(file => file.id !== fileId));
-    
+    form.setFieldValue(
+      'prescription',
+      currentFiles.filter((file) => file.id !== fileId),
+    );
+
     validateFormCompletion();
   };
 
   // Cargar los archivos de prescripción cuando se abra el modal
   useEffect(() => {
     if (open && authData?.prescription) {
-      const files = Array.isArray(authData.prescription) 
-        ? authData.prescription 
+      const files = Array.isArray(authData.prescription)
+        ? authData.prescription
         : [authData.prescription];
-      
+
       setPrescriptionFiles(
-        files.map(file => ({
+        files.map((file) => ({
           ...file,
           // Asegurarnos de que cada archivo tenga un ID
           id: file.id || Math.random().toString(36).substr(2, 9),
           // Si el archivo es un objeto File, necesitamos extraer su nombre
-          name: file.name || (file.file && file.file.name) || 'Archivo de receta'
-        }))
+          name:
+            file.name || (file.file && file.file.name) || 'Archivo de receta',
+        })),
       );
     } else {
       setPrescriptionFiles([]);
@@ -402,10 +437,10 @@ export const InsuranceAuthModal = () => {
     setPrescriptionFiles([]);
     setHasDependent(false);
     setInitialDataLoaded(false);
-    
+
     // Resetear el formulario explícitamente
     form.resetFields();
-    
+
     // Cerrar el modal
     dispatch(closeModal());
   };
@@ -419,46 +454,53 @@ export const InsuranceAuthModal = () => {
       const formattedValues = {
         ...values,
         birthDate: values.birthDate ? values.birthDate.toISOString() : null,
-        indicationDate: values.indicationDate ? values.indicationDate.toISOString() : null,
+        indicationDate: values.indicationDate
+          ? values.indicationDate.toISOString()
+          : null,
         // Incluimos los archivos de receta
         prescription: prescriptionFiles,
         // Incluimos la información del médico seleccionado
         doctorId: selectedDoctor?.id || null,
         doctor: selectedDoctor?.name || null,
-        specialty: selectedDoctor?.specialty || null
+        specialty: selectedDoctor?.specialty || null,
       };
 
       // Guardamos en el estado de Redux
       dispatch(setAuthData(formattedValues));
-      
+
       // Guardamos en Firebase si tenemos un cliente seleccionado
       if (client?.id) {
         try {
           // Obtenemos los datos de seguro existentes para este cliente
-          const existingInsurance = await getClientInsuranceByClientId(user, client.id);
-          
+          const existingInsurance = await getClientInsuranceByClientId(
+            user,
+            client.id,
+          );
+
           // Extraemos solo los campos específicos que queremos guardar
           const specificInsuranceData = {
             clientId: client.id,
             insuranceId: formattedValues.insuranceId,
             insuranceType: formattedValues.insuranceType,
-            birthDate: formattedValues.birthDate
+            birthDate: formattedValues.birthDate,
           };
-          
+
           let success = false;
-          
+
           if (existingInsurance) {
             // Si ya existe un registro, verificamos si hay cambios en alguno de los campos específicos
-            const hasChanges = 
-              existingInsurance.insuranceId !== specificInsuranceData.insuranceId ||
-              existingInsurance.insuranceType !== specificInsuranceData.insuranceType ||
+            const hasChanges =
+              existingInsurance.insuranceId !==
+                specificInsuranceData.insuranceId ||
+              existingInsurance.insuranceType !==
+                specificInsuranceData.insuranceType ||
               existingInsurance.birthDate !== specificInsuranceData.birthDate;
-            
+
             if (hasChanges) {
               // Actualizamos solo si hay cambios
               success = await updateClientInsurance(user, {
                 id: existingInsurance.id,
-                ...specificInsuranceData
+                ...specificInsuranceData,
               });
             } else {
               // No hay cambios que guardar
@@ -468,7 +510,7 @@ export const InsuranceAuthModal = () => {
             // Si no existe, creamos un nuevo registro
             success = await createClientInsurance(user, specificInsuranceData);
           }
-          
+
           if (success) {
             message.success('Datos de seguro guardados exitosamente');
           } else {
@@ -476,15 +518,18 @@ export const InsuranceAuthModal = () => {
             setSubmitting(false);
             return;
           }
-          
         } catch (error) {
-          console.error("Error al guardar datos de seguro:", error);
-          message.error(error.message || 'Error al guardar los datos de seguro');
+          console.error('Error al guardar datos de seguro:', error);
+          message.error(
+            error.message || 'Error al guardar los datos de seguro',
+          );
           setSubmitting(false);
           return;
         }
       } else {
-        message.warning('No se puede guardar la autorización sin un cliente seleccionado');
+        message.warning(
+          'No se puede guardar la autorización sin un cliente seleccionado',
+        );
       }
 
       dispatch(closeModal());
@@ -502,7 +547,8 @@ export const InsuranceAuthModal = () => {
   // Para el botón OK, debe estar deshabilitado cuando:
   // 1. El seguro no esté habilitado
   // 2. El formulario no esté completo (pero solo si el seguro está habilitado)
-  const isOkButtonDisabled = !insuranceEnabled || (insuranceEnabled && !formComplete);
+  const isOkButtonDisabled =
+    !insuranceEnabled || (insuranceEnabled && !formComplete);
 
   return (
     <Modal
@@ -510,9 +556,9 @@ export const InsuranceAuthModal = () => {
       open={open}
       onCancel={handleCancel}
       onOk={handleOk}
-      okButtonProps={{ 
+      okButtonProps={{
         loading: submitting,
-        disabled: isOkButtonDisabled
+        disabled: isOkButtonDisabled,
       }}
       style={{ top: 20 }}
       width={800}
@@ -525,13 +571,24 @@ export const InsuranceAuthModal = () => {
         </div>
         <div className="client-info">
           <span className="label">Cliente</span>
-          <span className="client-name">{client?.name || 'Sin cliente seleccionado'}</span>
+          <span className="client-name">
+            {client?.name || 'Sin cliente seleccionado'}
+          </span>
         </div>
       </ClientInfoWidget>
 
       {!insuranceEnabled && (
-        <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '4px' }}>
-          <strong>Seguro no disponible:</strong> El seguro no está habilitado. Verifique su tipo de negocio o active el seguro en la configuración.
+        <div
+          style={{
+            marginBottom: '20px',
+            padding: '10px',
+            backgroundColor: '#fffbe6',
+            border: '1px solid #ffe58f',
+            borderRadius: '4px',
+          }}
+        >
+          <strong>Seguro no disponible:</strong> El seguro no está habilitado.
+          Verifique su tipo de negocio o active el seguro en la configuración.
         </div>
       )}
 
@@ -540,22 +597,27 @@ export const InsuranceAuthModal = () => {
           <Spin tip="Cargando datos de autorización..." />
         </LoadingContainer>
       ) : (
-        <Form 
-          form={form} 
-          layout="vertical" 
+        <Form
+          form={form}
+          layout="vertical"
           disabled={isFormDisabled}
           onValuesChange={handleFormValuesChange}
         >
           {/* SECCIÓN 1: INFORMACIÓN DEL SEGURO */}
           <SectionHeader>Información del Seguro</SectionHeader>
-          
+
           {/* Grupo de información de seguro */}
           <Row>
             <Col>
               <Form.Item
                 name="insuranceId"
                 label="Aseguradora"
-                rules={[{ required: true, message: 'Por favor seleccione la aseguradora' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor seleccione la aseguradora',
+                  },
+                ]}
               >
                 <Select
                   placeholder="Seleccione la aseguradora"
@@ -579,7 +641,12 @@ export const InsuranceAuthModal = () => {
               <Form.Item
                 name="insuranceType"
                 label="Tipo de Seguro"
-                rules={[{ required: true, message: 'Por favor seleccione el tipo de seguro' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor seleccione el tipo de seguro',
+                  },
+                ]}
               >
                 <Select
                   placeholder="Seleccione el tipo de seguro"
@@ -607,18 +674,34 @@ export const InsuranceAuthModal = () => {
               <Form.Item
                 name="affiliateNumber"
                 label="Número de Afiliado"
-                rules={[{ required: true, message: 'Por favor ingrese el número de afiliado' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor ingrese el número de afiliado',
+                  },
+                ]}
               >
-                <Input placeholder="Ingrese el número de afiliado" autoComplete="off" />
+                <Input
+                  placeholder="Ingrese el número de afiliado"
+                  autoComplete="off"
+                />
               </Form.Item>
             </Col>
             <Col>
               <Form.Item
                 name="authNumber"
                 label="Número de Autorización"
-                rules={[{ required: true, message: 'Por favor ingrese el número de autorización' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor ingrese el número de autorización',
+                  },
+                ]}
               >
-                <Input placeholder="Número de autorización" autoComplete="off" />
+                <Input
+                  placeholder="Número de autorización"
+                  autoComplete="off"
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -631,8 +714,14 @@ export const InsuranceAuthModal = () => {
                   doctors={doctors}
                   selectedDoctor={selectedDoctor}
                   onSelectDoctor={handleDoctorChange}
-                  validateStatus={!selectedDoctor && insuranceEnabled ? 'error' : ''}
-                  help={!selectedDoctor && insuranceEnabled ? 'Por favor seleccione un médico' : ''}
+                  validateStatus={
+                    !selectedDoctor && insuranceEnabled ? 'error' : ''
+                  }
+                  help={
+                    !selectedDoctor && insuranceEnabled
+                      ? 'Por favor seleccione un médico'
+                      : ''
+                  }
                 />
               </Form.Item>
             </Col>
@@ -657,23 +746,27 @@ export const InsuranceAuthModal = () => {
             </Col>
             <Col>
               {/* Reemplazamos el Upload por el FileUploader con modo compacto y en una línea */}
-             
             </Col>
           </Row>
           <Row>
-          <Col>
-          <Form.Item name="prescription" label="Receta">
-                <FileUploader 
+            <Col>
+              <Form.Item name="prescription" label="Receta">
+                <FileUploader
                   files={prescriptionFiles}
                   onAddFiles={handleAddPrescriptionFiles}
                   onRemoveFiles={handleRemovePrescriptionFile}
                   defaultFileType="prescription"
-                  fileTypes={["prescription", "document", "identification", "insurance"]}
+                  fileTypes={[
+                    'prescription',
+                    'document',
+                    'identification',
+                    'insurance',
+                  ]}
                   fileTypeLabels={{
-                    prescription: "Receta", 
-                    document: "Documento",
-                    identification: "Identificación",
-                    insurance: "Seguro"
+                    prescription: 'Receta',
+                    document: 'Documento',
+                    identification: 'Identificación',
+                    insurance: 'Seguro',
                   }}
                   acceptedFileTypes=".pdf,.jpg,.jpeg,.png"
                   uploaderTitle="cargar"
@@ -690,7 +783,7 @@ export const InsuranceAuthModal = () => {
 
           {/* SECCIÓN 2: INFORMACIÓN DEL CLIENTE */}
           <SectionHeader>Información del Cliente</SectionHeader>
-          
+
           {/* Solo fecha de nacimiento en la sección del cliente */}
           <Row>
             <Col>
@@ -713,14 +806,14 @@ export const InsuranceAuthModal = () => {
 
           {/* SECCIÓN 3: INFORMACIÓN DEL DEPENDIENTE */}
           <SectionHeader>Información del Dependiente (opcional)</SectionHeader>
-          <Dependent 
-            form={form} 
-            hasDependent={hasDependent} 
-            onDependentChange={setHasDependent} 
+          <Dependent
+            form={form}
+            hasDependent={hasDependent}
+            onDependentChange={setHasDependent}
           />
         </Form>
       )}
-      
+
       {/* Modal para agregar/editar médicos */}
       <DoctorModal />
     </Modal>

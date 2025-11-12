@@ -1,12 +1,11 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import { useFbGetCategories } from '../../../../../firebase/categories/useFbGetCategories'
-import { filterData } from '../../../../../hooks/search/useSearch'
-import { OrderItem } from '../ListItem/OrderItem'
+import { useFbGetCategories } from '../../../../../firebase/categories/useFbGetCategories';
+import { filterData } from '../../../../../hooks/search/useSearch';
+import { OrderItem } from '../ListItem/OrderItem';
 
-export const CategoriesTable = ({searchTerm}) => {
-
+export const CategoriesTable = ({ searchTerm }) => {
   const { categories } = useFbGetCategories();
   const filterCategories = filterData(categories, searchTerm);
 
@@ -18,94 +17,80 @@ export const CategoriesTable = ({searchTerm}) => {
         </TitleContainer>
         <Table>
           <TableBody>
-            {
-              filterCategories.length > 0 ? (
-                filterCategories.map(({ category }, index) => (
-                  <OrderItem
-                    key={index}
-                    Row={Row}
-                    Col={Col}
-                    cat={category}
-                  />
+            {filterCategories.length > 0
+              ? filterCategories.map(({ category }, index) => (
+                  <OrderItem key={index} Row={Row} Col={Col} cat={category} />
                 ))
-              ) : null
-            }
+              : null}
           </TableBody>
         </Table>
       </Body>
     </Container>
-
-  )
-}
+  );
+};
 const Container = styled.div`
-    width: 100%;
-    padding: 0 1em;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-     padding: 1em;
-`
+  width: 100%;
+  padding: 0 1em;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  padding: 1em;
+`;
 const Body = styled.header`
-    justify-self: center;
-    border: 1px solid rgba(0, 0, 0, 0.100);
-    border-radius: 10px;
-    position: relative;
-    overflow: hidden;
-    //max-height: 400px;
-    width: 100%;
-    max-width: 1000px;
-    
-    display: grid;
-    grid-template-rows: min-content 1fr; 
-    background-color: #ffffff;
-    @media (max-width: 800px){
-      max-height: 100%;
-      
+  justify-self: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  //max-height: 400px;
+  width: 100%;
+  max-width: 1000px;
+
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  background-color: #ffffff;
+  @media (max-width: 800px) {
+    max-height: 100%;
   }
-`
+`;
 const Table = styled.div`
   position: relative;
   width: 100%;
   overflow: hidden;
   display: grid;
-  grid-template-rows:  1fr; 
-  
-  `
+  grid-template-rows: 1fr;
+`;
 const TableBody = styled.div`
-
   display: grid;
   align-content: start;
-  grid-template-columns:  repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   overflow-y: scroll;
   color: var(--Gray10);
   font-size: 15px;
-
-`
+`;
 const TitleContainer = styled.div`
   display: grid;
   align-items: center;
   justify-content: center;
   background: #3f3f3f;
   height: 2em;
- 
-    color: white;
-   
+
+  color: white;
+
   font-weight: 600;
   text-align: center;
-`
+`;
 const Row = styled.div`
   display: grid;
   align-items: center;
   height: 3em;
   gap: 0.6em;
-  grid-template-columns: 
-  minmax(100px, 1fr) //Nombre
-  minmax(100px, min-content); // accion
-  border-right: 1px solid rgba(16, 16, 16, 0.200);
-  border-bottom: 1px solid rgba(16, 16, 16, 0.200);
+  grid-template-columns: minmax(100px, 1fr) //Nombre
+    minmax(100px, min-content); // accion
+  border-right: 1px solid rgba(16, 16, 16, 0.2);
+  border-bottom: 1px solid rgba(16, 16, 16, 0.2);
 
-
-  @media (max-width: 800px){
+  @media (max-width: 800px) {
     gap: 0;
   }
   ${(props) => {
@@ -122,12 +107,11 @@ const Row = styled.div`
         }
       }
       
-      `
+      `;
       default:
-
     }
   }}
-    ${(props) => {
+  ${(props) => {
     switch (props.border) {
       case 'border-bottom':
         return `
@@ -135,7 +119,7 @@ const Row = styled.div`
               &:last-child{
                 border-bottom: none;
               }
-              `
+              `;
       default:
     }
   }}
@@ -144,11 +128,11 @@ const Row = styled.div`
       case 'header':
         return `
         background-color: #9c0e0e;
-        `
+        `;
       case 'item':
         return `
         background-color: #ebebeb;
-        `
+        `;
       default:
     }
   }}
@@ -159,16 +143,16 @@ const Row = styled.div`
           padding-right: 16px;
           height: 2em;
           background-color: var(--White1);
-        `
+        `;
 
       default:
         break;
     }
   }}
-`
+`;
 const Col = styled.div`
   padding: 0 0.6em;
-  ${props => {
+  ${(props) => {
     switch (props.position) {
       case 'right':
         return `
@@ -191,10 +175,10 @@ const Col = styled.div`
           //white-space: nowrap;
           text-overflow: ellipsis;
           overflow: hidden;
-          `
+          `;
 
       default:
         break;
     }
   }}
-`
+`;

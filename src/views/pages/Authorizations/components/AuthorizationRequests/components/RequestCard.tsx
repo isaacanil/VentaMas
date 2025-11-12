@@ -31,7 +31,12 @@ interface RequestCardProps {
   onOpenDetails: DetailHandler;
 }
 
-export const RequestCard = ({ item, onApprove, onReject, onOpenDetails }: RequestCardProps) => {
+export const RequestCard = ({
+  item,
+  onApprove,
+  onReject,
+  onOpenDetails,
+}: RequestCardProps) => {
   const {
     key,
     moduleMeta,
@@ -174,7 +179,10 @@ const Card = styled.article`
   border: 1px solid #e4eaf5;
   background-color: #ffffff;
   box-shadow: 0 6px 18px rgba(15, 37, 68, 0.06);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
   cursor: pointer;
 
   &:hover {

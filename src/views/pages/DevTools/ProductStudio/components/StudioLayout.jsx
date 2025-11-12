@@ -11,7 +11,8 @@ export const PageContainer = styled.div`
 
 export const Workspace = styled.div`
   display: grid;
-  grid-template-columns: ${({ $showNavigator }) => ($showNavigator ? '200px 1fr' : '1fr')};
+  grid-template-columns: ${({ $showNavigator }) =>
+    $showNavigator ? '200px 1fr' : '1fr'};
   min-height: 0;
   height: 100%;
   background: #fff;
@@ -39,7 +40,8 @@ export const StudioWrapper = styled.div`
 
 export const StudioGrid = styled.div`
   display: grid;
-  grid-template-columns: ${({ $showSummary }) => ($showSummary ? 'minmax(0, 1fr) minmax(320px, min-content)' : '1fr')};
+  grid-template-columns: ${({ $showSummary }) =>
+    $showSummary ? 'minmax(0, 1fr) minmax(320px, min-content)' : '1fr'};
   gap: 24px;
   width: 100%;
 

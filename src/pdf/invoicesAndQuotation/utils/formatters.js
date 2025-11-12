@@ -6,8 +6,10 @@ export function money(n) {
 
 export function formatDate(ts) {
   const millis =
-    ts instanceof Date ? ts.getTime()
-      : ts?.seconds ? ts.seconds * 1000
+    ts instanceof Date
+      ? ts.getTime()
+      : ts?.seconds
+        ? ts.seconds * 1000
         : Number(ts);
 
   return DateTime.fromMillis(millis).toFormat('dd/MM/yyyy');

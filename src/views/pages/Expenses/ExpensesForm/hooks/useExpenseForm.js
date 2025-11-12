@@ -4,8 +4,15 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { selectExpense, resetExpense, setExpense } from '../../../../../features/expense/expenseManagementSlice';
-import { closeExpenseFormModal, selectExpenseFormModal } from '../../../../../features/expense/expenseUISlice';
+import {
+  selectExpense,
+  resetExpense,
+  setExpense,
+} from '../../../../../features/expense/expenseManagementSlice';
+import {
+  closeExpenseFormModal,
+  selectExpenseFormModal,
+} from '../../../../../features/expense/expenseUISlice';
 import { fbAddExpense } from '../../../../../firebase/expenses/Items/fbAddExpense';
 import { fbUpdateExpense } from '../../../../../firebase/expenses/Items/fbUpdateExpense';
 import { validateExpense } from '../../../../../validates/expenseValidate';
@@ -28,7 +35,9 @@ export default function useExpensesForm(dispatch) {
   const openCashRegisters = useOpenCashRegisters(user?.businessID, isOpen);
 
   // Calcular propiedades derivadas
-  const showBank = ['credit_card', 'check', 'bank_transfer'].includes(expense?.payment?.method);
+  const showBank = ['credit_card', 'check', 'bank_transfer'].includes(
+    expense?.payment?.method,
+  );
   const showCashRegister = expense?.payment?.method === 'open_cash';
 
   // Cargar los archivos adjuntos existentes
@@ -39,8 +48,11 @@ export default function useExpensesForm(dispatch) {
     }
 
     const remotes = expense.attachments
-      .filter(att => att.url)
-      .map(att => ({ ...att, url: typeof att.url === 'string' ? att.url : att.url.url }));
+      .filter((att) => att.url)
+      .map((att) => ({
+        ...att,
+        url: typeof att.url === 'string' ? att.url : att.url.url,
+      }));
 
     setUrls(remotes);
   }, [expense?.attachments]);
@@ -54,15 +66,17 @@ export default function useExpensesForm(dispatch) {
       if (!section) {
         dispatch(setExpense({ [field]: safeValue }));
       } else {
-        dispatch(setExpense({
-          [section]: {
-            ...expense[section],
-            [field]: safeValue
-          }
-        }));
+        dispatch(
+          setExpense({
+            [section]: {
+              ...expense[section],
+              [field]: safeValue,
+            },
+          }),
+        );
       }
     },
-    [dispatch, expense]
+    [dispatch, expense],
   );
 
   // Resetear formulario
@@ -89,7 +103,7 @@ export default function useExpensesForm(dispatch) {
           user,
           setLoading,
           { ...expense, attachments: attachmentUrls },
-          files
+          files,
         );
       } else {
         await fbUpdateExpense(
@@ -97,35 +111,48 @@ export default function useExpensesForm(dispatch) {
           setLoading,
           { ...expense, attachments: attachmentUrls },
           files,
-          removedAttachments
+          removedAttachments,
         );
       }
       handleReset();
     } catch (err) {
-      console.error("Error saving expense:", err);
+      console.error('Error saving expense:', err);
       message.error('Error al guardar el gasto. Inténtelo de nuevo más tarde.');
     }
-  }, [expense, files, isAddMode, handleReset, removedAttachments, attachmentUrls, user]);
+  }, [
+    expense,
+    files,
+    isAddMode,
+    handleReset,
+    removedAttachments,
+    attachmentUrls,
+    user,
+  ]);
 
   // Manejar archivos adjuntos
   const handleAddFiles = useCallback((newFiles) => {
-    setFiles(prev => [...prev, ...newFiles]);
+    setFiles((prev) => [...prev, ...newFiles]);
   }, []);
 
-  const handleRemoveFiles = useCallback((fileId) => {
-    if (files.some(file => file.id === fileId)) {
-      setFiles(prev => prev.filter(file => file.id !== fileId));
-    } else {
-      const removedFile = attachmentUrls.find(file => file.id === fileId);
-      if (removedFile) {
-        const isFirebaseUrl = removedFile.url.includes('firebasestorage.googleapis.com');
-        if (isFirebaseUrl) {
-          setRemoved(prev => [...prev, removedFile]);
+  const handleRemoveFiles = useCallback(
+    (fileId) => {
+      if (files.some((file) => file.id === fileId)) {
+        setFiles((prev) => prev.filter((file) => file.id !== fileId));
+      } else {
+        const removedFile = attachmentUrls.find((file) => file.id === fileId);
+        if (removedFile) {
+          const isFirebaseUrl = removedFile.url.includes(
+            'firebasestorage.googleapis.com',
+          );
+          if (isFirebaseUrl) {
+            setRemoved((prev) => [...prev, removedFile]);
+          }
         }
+        setUrls((prev) => prev.filter((file) => file.id !== fileId));
       }
-      setUrls(prev => prev.filter(file => file.id !== fileId));
-    }
-  }, [files, attachmentUrls]);
+    },
+    [files, attachmentUrls],
+  );
 
   return {
     // Estados

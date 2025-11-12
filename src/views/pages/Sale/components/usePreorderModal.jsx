@@ -6,7 +6,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
-import { SelectSettingCart, loadCart, selectCart, setCartId } from '../../../../features/cart/cartSlice';
+import {
+  SelectSettingCart,
+  loadCart,
+  selectCart,
+  setCartId,
+} from '../../../../features/cart/cartSlice';
 import { selectClientWithAuth } from '../../../../features/clientCart/clientCartSlice';
 import { selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { fbGetPreorders } from '../../../../firebase/invoices/fbGetPreorders';
@@ -148,7 +153,9 @@ const PrimaryAction = styled.button`
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:hover {
     transform: translateY(-1px) scale(1.01);
@@ -210,7 +217,8 @@ export const usePreorderModal = () => {
   const businessID = user?.businessID;
   const navigate = useNavigate();
   const location = useLocation();
-  const isDeferredBillingEnabled = cartSettings?.billing?.billingMode === 'deferred';
+  const isDeferredBillingEnabled =
+    cartSettings?.billing?.billingMode === 'deferred';
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -241,7 +249,8 @@ export const usePreorderModal = () => {
         setIsLoading(false);
         notification.error({
           message: 'No se pudieron cargar las preventas',
-          description: error?.message || 'Verifica tu conexión e intenta de nuevo.'
+          description:
+            error?.message || 'Verifica tu conexión e intenta de nuevo.',
         });
       }
     };
@@ -261,7 +270,8 @@ export const usePreorderModal = () => {
     if (!businessID) {
       notification.warning({
         message: 'Acción no disponible',
-        description: 'Debes seleccionar un negocio válido antes de cargar preventas.'
+        description:
+          'Debes seleccionar un negocio válido antes de cargar preventas.',
       });
       return;
     }
@@ -334,32 +344,41 @@ export const usePreorderModal = () => {
     });
   }, [entries]);
 
-  const selectorOptions = useMemo(() => (
-    entries.map((item) => ({
-      value: item.key,
-      label: `#${item.number} · ${item.client} · ${formatPrice(item.total)}`,
-      data: item,
-    }))
-  ), [entries, formatPrice]);
+  const selectorOptions = useMemo(
+    () =>
+      entries.map((item) => ({
+        value: item.key,
+        label: `#${item.number} · ${item.client} · ${formatPrice(item.total)}`,
+        data: item,
+      })),
+    [entries, formatPrice],
+  );
 
-  const selectedEntry = useMemo(() => (
-    entries.find((entry) => entry.key === selectedPreorderKey) || null
-  ), [entries, selectedPreorderKey]);
+  const selectedEntry = useMemo(
+    () => entries.find((entry) => entry.key === selectedPreorderKey) || null,
+    [entries, selectedPreorderKey],
+  );
 
   const convertTimestampsToMillis = (obj) => {
     if (!obj || typeof obj !== 'object') return obj;
-    
+
     if (Array.isArray(obj)) {
-      return obj.map(item => convertTimestampsToMillis(item));
+      return obj.map((item) => convertTimestampsToMillis(item));
     }
-    
+
     const converted = {};
     for (const key in obj) {
       const value = obj[key];
-      
+
       // Check if it's a Firestore Timestamp
-      if (value && typeof value === 'object' && value.seconds !== undefined && value.nanoseconds !== undefined) {
-        converted[key] = value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
+      if (
+        value &&
+        typeof value === 'object' &&
+        value.seconds !== undefined &&
+        value.nanoseconds !== undefined
+      ) {
+        converted[key] =
+          value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
       } else if (value && typeof value === 'object') {
         converted[key] = convertTimestampsToMillis(value);
       } else {
@@ -377,7 +396,7 @@ export const usePreorderModal = () => {
     if (!isValid) {
       notification.warning({
         message: 'No se pudo cargar la preventa',
-        description: message || 'Verifica el contenido antes de continuar.'
+        description: message || 'Verifica el contenido antes de continuar.',
       });
       return;
     }
@@ -387,7 +406,8 @@ export const usePreorderModal = () => {
 
     dispatch(loadCart(serializedPreorder));
     dispatch(setCartId());
-    const storedTaxReceiptType = resolvePreorderTaxReceiptType(serializedPreorder);
+    const storedTaxReceiptType =
+      resolvePreorderTaxReceiptType(serializedPreorder);
     if (storedTaxReceiptType) {
       dispatch(selectTaxReceiptType(storedTaxReceiptType));
     }
@@ -403,11 +423,17 @@ export const usePreorderModal = () => {
       params.delete('preorderId');
     }
     params.set('preserveCart', '1');
-    navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
+    navigate(
+      {
+        pathname: location.pathname,
+        search: params.toString() ? `?${params.toString()}` : '',
+      },
+      { replace: true },
+    );
 
     notification.success({
       message: 'Preventa cargada',
-      description: `Se cargó la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} del cliente ${serializedPreorder?.client?.name || 'sin nombre'}.`
+      description: `Se cargó la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} del cliente ${serializedPreorder?.client?.name || 'sin nombre'}.`,
     });
     setIsOpen(false);
   };
@@ -418,9 +444,19 @@ export const usePreorderModal = () => {
     const mode = params.get('mode');
     const preorderIdParam = params.get('preorderId');
 
-    if (mode === 'preorder' && preorderIdParam && cart?.data?.type !== 'preorder') {
+    if (
+      mode === 'preorder' &&
+      preorderIdParam &&
+      cart?.data?.type !== 'preorder'
+    ) {
       params.delete('preorderId');
-      navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
+      navigate(
+        {
+          pathname: location.pathname,
+          search: params.toString() ? `?${params.toString()}` : '',
+        },
+        { replace: true },
+      );
     }
   }, [cart?.data?.type, location.pathname, location.search, navigate]);
 
@@ -457,17 +493,27 @@ export const usePreorderModal = () => {
             ) : entries.length === 0 ? (
               <EmptyState>
                 <EmptyTitle>Sin preventas pendientes</EmptyTitle>
-                <EmptyDescription>Cuando tengas preventas activas aparecerán aquí.</EmptyDescription>
+                <EmptyDescription>
+                  Cuando tengas preventas activas aparecerán aquí.
+                </EmptyDescription>
               </EmptyState>
             ) : (
               <>
                 <SelectorRow>
                   {lastUpdatedAt && (
                     <HeaderNote>
-                      Actualizado {new Date(lastUpdatedAt).toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })}
+                      Actualizado{' '}
+                      {new Date(lastUpdatedAt).toLocaleTimeString('es-DO', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </HeaderNote>
                   )}
-                  <IconButton type="button" onClick={handleRetry} disabled={isLoading}>
+                  <IconButton
+                    type="button"
+                    onClick={handleRetry}
+                    disabled={isLoading}
+                  >
                     <ReloadOutlined />
                     Actualizar
                   </IconButton>
@@ -484,69 +530,89 @@ export const usePreorderModal = () => {
                     onChange={(value) => setSelectedPreorderKey(value)}
                     options={selectorOptions}
                     filterOption={(input, option) =>
-                      (option?.label || '').toLowerCase().includes(input.toLowerCase())
+                      (option?.label || '')
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
                     }
                     optionRender={(option) => {
                       const data = option.data?.data;
                       if (!data) return option.label;
                       return (
-                        <div style={{ 
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '4px',
-                          minWidth: 0
-                        }}>
-                          <div style={{ 
+                        <div
+                          style={{
                             display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '8px',
-                            alignItems: 'center'
-                          }}>
-                            <span style={{ 
-                              fontWeight: 600,
-                              fontSize: '0.9rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              flex: 1,
-                              minWidth: 0
-                            }}>
+                            flexDirection: 'column',
+                            gap: '4px',
+                            minWidth: 0,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              gap: '8px',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                flex: 1,
+                                minWidth: 0,
+                              }}
+                            >
                               Preventa #{data.number}
                             </span>
-                            <span style={{ 
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              color: '#0f172a',
-                              flexShrink: 0
-                            }}>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                fontSize: '0.85rem',
+                                color: '#0f172a',
+                                flexShrink: 0,
+                              }}
+                            >
                               {formatPrice(data.total)}
                             </span>
                           </div>
-                          <div style={{ 
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '8px',
-                            alignItems: 'center',
-                            minWidth: 0
-                          }}>
-                            <span style={{ 
-                              fontSize: '0.8rem',
-                              color: '#64748b',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              flex: 1,
-                              minWidth: 0
-                            }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              gap: '8px',
+                              alignItems: 'center',
+                              minWidth: 0,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: '0.8rem',
+                                color: '#64748b',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                flex: 1,
+                                minWidth: 0,
+                              }}
+                            >
                               {data.client}
                             </span>
                             {data.createdAt && (
-                              <span style={{ 
-                                fontSize: '0.75rem',
-                                color: '#94a3b8',
-                                flexShrink: 0
-                              }}>
-                                {data.createdAt.toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              <span
+                                style={{
+                                  fontSize: '0.75rem',
+                                  color: '#94a3b8',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {data.createdAt.toLocaleDateString('es-DO', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                })}
                               </span>
                             )}
                           </div>
@@ -561,7 +627,8 @@ export const usePreorderModal = () => {
                     <SummaryRow>
                       <ItemTitle>Preventa #{selectedEntry.number}</ItemTitle>
                       <StatusPill $tone={STATUS_TONES[selectedEntry.status]}>
-                        {STATUS_LABELS[selectedEntry.status] || selectedEntry.status}
+                        {STATUS_LABELS[selectedEntry.status] ||
+                          selectedEntry.status}
                       </StatusPill>
                     </SummaryRow>
                     <SummaryRow>
@@ -570,7 +637,10 @@ export const usePreorderModal = () => {
                     <SummaryRow>
                       {selectedEntry.createdAt ? (
                         <TimestampLabel>
-                          {selectedEntry.createdAt.toLocaleString('es-DO', { dateStyle: 'medium', timeStyle: 'short' })}
+                          {selectedEntry.createdAt.toLocaleString('es-DO', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          })}
                         </TimestampLabel>
                       ) : (
                         <span />
@@ -582,7 +652,9 @@ export const usePreorderModal = () => {
 
                 <PrimaryAction
                   type="button"
-                  onClick={() => selectedEntry && handleLoadPreorder(selectedEntry.raw)}
+                  onClick={() =>
+                    selectedEntry && handleLoadPreorder(selectedEntry.raw)
+                  }
                   disabled={!selectedEntry}
                 >
                   Cargar
@@ -592,6 +664,6 @@ export const usePreorderModal = () => {
           </ModalBody>
         </ModalCard>
       </Modal>
-    )
+    ),
   };
 };

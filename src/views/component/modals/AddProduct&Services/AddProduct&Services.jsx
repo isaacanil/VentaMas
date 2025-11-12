@@ -82,7 +82,12 @@ const ModalToggleButton = styled.button`
     `}
 `;
 
-export const AddProductAndServicesModal = ({ title, children, onClose, onSave }) => {
+export const AddProductAndServicesModal = ({
+  title,
+  children,
+  onClose,
+  onSave,
+}) => {
   const [isProductSelected, setIsProductSelected] = useState(true);
 
   const handleProductToggle = () => {
@@ -101,10 +106,16 @@ export const AddProductAndServicesModal = ({ title, children, onClose, onSave })
           <ModalCloseButton onClick={onClose}>X</ModalCloseButton>
         </ModalHeader>
         <div>
-          <ModalToggleButton active={isProductSelected} onClick={handleProductToggle}>
+          <ModalToggleButton
+            active={isProductSelected}
+            onClick={handleProductToggle}
+          >
             Producto
           </ModalToggleButton>
-          <ModalToggleButton active={!isProductSelected} onClick={handleServiceToggle}>
+          <ModalToggleButton
+            active={!isProductSelected}
+            onClick={handleServiceToggle}
+          >
             Servicio
           </ModalToggleButton>
         </div>
@@ -116,5 +127,3 @@ export const AddProductAndServicesModal = ({ title, children, onClose, onSave })
     </ModalWrapper>
   );
 };
-
-

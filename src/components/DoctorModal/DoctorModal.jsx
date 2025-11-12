@@ -5,152 +5,162 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import {
-    selectDoctorsModal,
-    selectSelectedDoctor,
-    selectDoctorsError,
-    closeModal,
-    addDoctor,
-    updateDoctor,
-    clearError
+  selectDoctorsModal,
+  selectSelectedDoctor,
+  selectDoctorsError,
+  closeModal,
+  addDoctor,
+  updateDoctor,
+  clearError,
 } from '../../features/doctors/doctorsSlice';
 
 const DoctorModal = () => {
-    const [form] = Form.useForm();
-    const dispatch = useDispatch();
-    
-    const user = useSelector(selectUser);
-    const modal = useSelector(selectDoctorsModal);
-    const selectedDoctor = useSelector(selectSelectedDoctor);
-    const error = useSelector(selectDoctorsError);
+  const [form] = Form.useForm();
+  const dispatch = useDispatch();
 
-    const isEditMode = modal.mode === 'edit';
+  const user = useSelector(selectUser);
+  const modal = useSelector(selectDoctorsModal);
+  const selectedDoctor = useSelector(selectSelectedDoctor);
+  const error = useSelector(selectDoctorsError);
 
-    // Clear error when modal opens/closes
-    useEffect(() => {
-        if (modal.open) {
-            dispatch(clearError());
-        }
-    }, [modal.open, dispatch]);
+  const isEditMode = modal.mode === 'edit';
 
-    // Set form values when editing
-    useEffect(() => {
-        if (modal.open && selectedDoctor && isEditMode) {
-            form.setFieldsValue({
-                name: selectedDoctor.name,
-                specialty: selectedDoctor.specialty
-            });
-        } else if (modal.open && !isEditMode) {
-            form.resetFields();
-        }
-    }, [modal.open, selectedDoctor, isEditMode, form]);
+  // Clear error when modal opens/closes
+  useEffect(() => {
+    if (modal.open) {
+      dispatch(clearError());
+    }
+  }, [modal.open, dispatch]);
 
-    // Show error messages
-    useEffect(() => {
-        if (error) {
-            message.error(error);
-        }
-    }, [error]);
+  // Set form values when editing
+  useEffect(() => {
+    if (modal.open && selectedDoctor && isEditMode) {
+      form.setFieldsValue({
+        name: selectedDoctor.name,
+        specialty: selectedDoctor.specialty,
+      });
+    } else if (modal.open && !isEditMode) {
+      form.resetFields();
+    }
+  }, [modal.open, selectedDoctor, isEditMode, form]);
 
-    const handleCancel = () => {
-        form.resetFields();
-        dispatch(closeModal());
-    };
+  // Show error messages
+  useEffect(() => {
+    if (error) {
+      message.error(error);
+    }
+  }, [error]);
 
-    const handleSubmit = async () => {
-        try {
-            const values = await form.validateFields();
-            
-            if (isEditMode) {
-                await dispatch(updateDoctor({
-                    doctor: {
-                        ...selectedDoctor,
-                        ...values
-                    },
-                    user
-                })).unwrap();
-                
-                message.success('Médico actualizado exitosamente');
-            } else {
-                await dispatch(addDoctor({
-                    doctor: values,
-                    user
-                })).unwrap();
-                
-                message.success('Médico agregado exitosamente');
-            }
-            
-            form.resetFields();
-        } catch {
-            // Error already handled by Redux and shown via useEffect
-        }
-    };
+  const handleCancel = () => {
+    form.resetFields();
+    dispatch(closeModal());
+  };
 
-    return (
-        <Modal
-            title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <MedicineBoxOutlined />
-                    {isEditMode ? 'Editar Médico' : 'Agregar Médico'}
-                </div>
-            }
-            open={modal.open}
-            onCancel={handleCancel}
-            footer={[
-                <Button key="cancel" onClick={handleCancel}>
-                    Cancelar
-                </Button>,
-                <Button
-                    key="submit"
-                    type="primary"
-                    loading={modal.loading}
-                    onClick={handleSubmit}
-                >
-                    {isEditMode ? 'Actualizar' : 'Agregar'}
-                </Button>
-            ]}
-            destroyOnClose
-            width={500}
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+
+      if (isEditMode) {
+        await dispatch(
+          updateDoctor({
+            doctor: {
+              ...selectedDoctor,
+              ...values,
+            },
+            user,
+          }),
+        ).unwrap();
+
+        message.success('Médico actualizado exitosamente');
+      } else {
+        await dispatch(
+          addDoctor({
+            doctor: values,
+            user,
+          }),
+        ).unwrap();
+
+        message.success('Médico agregado exitosamente');
+      }
+
+      form.resetFields();
+    } catch {
+      // Error already handled by Redux and shown via useEffect
+    }
+  };
+
+  return (
+    <Modal
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <MedicineBoxOutlined />
+          {isEditMode ? 'Editar Médico' : 'Agregar Médico'}
+        </div>
+      }
+      open={modal.open}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="cancel" onClick={handleCancel}>
+          Cancelar
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          loading={modal.loading}
+          onClick={handleSubmit}
         >
-            <Form
-                form={form}
-                layout="vertical"
-                requiredMark={false}
-                disabled={modal.loading}
-            >
-                <Form.Item
-                    name="name"
-                    label="Nombre del Médico"
-                    rules={[
-                        { required: true, message: 'El nombre del médico es requerido' },
-                        { min: 2, message: 'El nombre debe tener al menos 2 caracteres' },
-                        { max: 100, message: 'El nombre no puede exceder 100 caracteres' }
-                    ]}
-                >
-                    <Input
-                        prefix={<UserOutlined />}
-                        placeholder="Ingrese el nombre del médico"
-                        autoComplete="off"
-                    />
-                </Form.Item>
+          {isEditMode ? 'Actualizar' : 'Agregar'}
+        </Button>,
+      ]}
+      destroyOnClose
+      width={500}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        requiredMark={false}
+        disabled={modal.loading}
+      >
+        <Form.Item
+          name="name"
+          label="Nombre del Médico"
+          rules={[
+            { required: true, message: 'El nombre del médico es requerido' },
+            { min: 2, message: 'El nombre debe tener al menos 2 caracteres' },
+            { max: 100, message: 'El nombre no puede exceder 100 caracteres' },
+          ]}
+        >
+          <Input
+            prefix={<UserOutlined />}
+            placeholder="Ingrese el nombre del médico"
+            autoComplete="off"
+          />
+        </Form.Item>
 
-                <Form.Item
-                    name="specialty"
-                    label="Especialidad"
-                    rules={[
-                        { required: true, message: 'La especialidad es requerida' },
-                        { min: 2, message: 'La especialidad debe tener al menos 2 caracteres' },
-                        { max: 100, message: 'La especialidad no puede exceder 100 caracteres' }
-                    ]}
-                >
-                    <Input
-                        prefix={<MedicineBoxOutlined />}
-                        placeholder="Ingrese la especialidad del médico"
-                        autoComplete="off"
-                    />
-                </Form.Item>
-            </Form>
-        </Modal>
-    );
+        <Form.Item
+          name="specialty"
+          label="Especialidad"
+          rules={[
+            { required: true, message: 'La especialidad es requerida' },
+            {
+              min: 2,
+              message: 'La especialidad debe tener al menos 2 caracteres',
+            },
+            {
+              max: 100,
+              message: 'La especialidad no puede exceder 100 caracteres',
+            },
+          ]}
+        >
+          <Input
+            prefix={<MedicineBoxOutlined />}
+            placeholder="Ingrese la especialidad del médico"
+            autoComplete="off"
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
 };
 
-export default DoctorModal; 
+export default DoctorModal;

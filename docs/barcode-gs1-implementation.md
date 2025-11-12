@@ -18,29 +18,33 @@
 ### 🔧 **Mejoras Técnicas Implementadas**
 
 #### **1. Cálculos de DPI Correctos**
+
 ```javascript
-const mmToPixels = (mm, dpi = 203) => Math.round((mm / 25.4) * dpi)
-const xDimension = mmToPixels(0.33) // X-dimension GS1
-const minHeight = mmToPixels(22.85) // Altura mínima GS1
+const mmToPixels = (mm, dpi = 203) => Math.round((mm / 25.4) * dpi);
+const xDimension = mmToPixels(0.33); // X-dimension GS1
+const minHeight = mmToPixels(22.85); // Altura mínima GS1
 ```
 
 #### **2. Quiet Zones Obligatorias**
+
 ```javascript
-const quietZone = GS1_X_DIMENSION_MM * 10 // ≥10X mínimo
+const quietZone = GS1_X_DIMENSION_MM * 10; // ≥10X mínimo
 ```
 
 #### **3. Validación de Longitud por Tipo**
+
 ```javascript
 const BARCODE_LENGTH_LIMITS = {
   'UPC-A': 12,
   'EAN-13': 13,
   'EAN-8': 8,
   'GTIN-14': 14,
-  'Code-128': 48
-}
+  'Code-128': 48,
+};
 ```
 
 #### **4. Configuración de Página Dinámica**
+
 ```css
 @page {
     size: ${labelConfig.width}in ${labelConfig.height}in;
@@ -51,18 +55,21 @@ const BARCODE_LENGTH_LIMITS = {
 ### 🎯 **Características Mejoradas**
 
 #### **Accesibilidad**
+
 - Labels explícitos con `aria-label`
 - Validación visual en tiempo real
 - Mensajes de error descriptivos
 - IDs únicos para `aria-describedby`
 
 #### **UX/UI Mejorada**
+
 - Selector de tamaño de etiqueta
 - Validación de longitud dinámica
 - Información técnica en tiempo real
 - Estado visual de validación
 
 #### **Rendimiento**
+
 - `useMemo` para cálculos de renderizado
 - Una sola fuente de verdad para estado
 - Cálculos de dimensiones optimizados
@@ -83,6 +90,7 @@ const BARCODE_LENGTH_LIMITS = {
 ### 🔍 **Validaciones Técnicas**
 
 #### **Entrada de Datos**
+
 ```javascript
 // Límite dinámico según tipo detectado
 maxLength={getMaxLength()}
@@ -99,45 +107,48 @@ className={!isValidLength() ? 'invalid-length' : ''}
 ```
 
 #### **Renderizado de Códigos**
+
 ```javascript
 // Dimensiones calculadas según GS1
 const getBarcodeRenderProps = useMemo(() => {
-    const xDimension = mmToPixels(GS1_X_DIMENSION_MM)
-    const minHeight = mmToPixels(GS1_MIN_HEIGHT_MM)
-    const quietZone = GS1_X_DIMENSION_MM * QUIET_ZONE_MULTIPLIER
-    
-    return {
-        width: xDimension / PRINT_DPI * 96,
-        height: Math.max(minHeight / PRINT_DPI * 96, 35),
-        quietZone
-    }
-}, [])
+  const xDimension = mmToPixels(GS1_X_DIMENSION_MM);
+  const minHeight = mmToPixels(GS1_MIN_HEIGHT_MM);
+  const quietZone = GS1_X_DIMENSION_MM * QUIET_ZONE_MULTIPLIER;
+
+  return {
+    width: (xDimension / PRINT_DPI) * 96,
+    height: Math.max((minHeight / PRINT_DPI) * 96, 35),
+    quietZone,
+  };
+}, []);
 ```
 
 ### 🖨️ **Configuración de Impresión Avanzada**
 
 #### **CSS Print Media Optimizado**
+
 ```css
 @media print {
-    body {
-        margin: 0;
-        padding: 0;
-        -webkit-print-color-adjust: exact;
-        color-adjust: exact;
-    }
-    * {
-        print-color-adjust: exact;
-    }
+  body {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  * {
+    print-color-adjust: exact;
+  }
 }
 
 @media screen {
-    .print-container {
-        display: none;
-    }
+  .print-container {
+    display: none;
+  }
 }
 ```
 
 #### **Page Breaks Controlados**
+
 ```css
 page-break-after: always;
 page-break-inside: avoid;
@@ -146,6 +157,7 @@ page-break-inside: avoid;
 ### 📊 **Información Técnica en Dialog**
 
 El modal de impresión ahora muestra:
+
 - **Estándares GS1**: Quiet zones y altura mínima
 - **Compatibilidad**: Zebra, DYMO, Brother
 - **DPI optimizado**: 203 DPI térmicas

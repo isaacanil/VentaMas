@@ -1,16 +1,22 @@
-import { Typography, InputNumber, message } from "antd";
-import React, { useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
-import styled from "styled-components";
+import { Typography, InputNumber, message } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
-import { addDiscount } from "../../../../features/cart/cartSlice";
-import { quitarCeros } from "../../../../hooks/quitarCeros";
-import { useClickOutSide } from "../../../../hooks/useClickOutSide";
-import { useFormatPrice } from "../../../../hooks/useFormatPrice";
+import { addDiscount } from '../../../../features/cart/cartSlice';
+import { quitarCeros } from '../../../../hooks/quitarCeros';
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 
 const { Title, Paragraph } = Typography;
 
-const CustomInput = ({ options, value, discount, disabled = false, onRequestAccess }) => {
+const CustomInput = ({
+  options,
+  value,
+  discount,
+  disabled = false,
+  onRequestAccess,
+}) => {
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch();
   const inputRef = useRef(null);
@@ -62,18 +68,14 @@ const CustomInput = ({ options, value, discount, disabled = false, onRequestAcce
   useEffect(() => {
     if (value < 0) message.error('El descuento no puede ser negativo');
     if (value > 100) message.error('El descuento no puede ser mayor a 100');
-  }, [value])
+  }, [value]);
 
   return (
     <Container ref={inputRef}>
       {showMenu && (
         <StyledMenu>
-          <Title level={5}>
-            Descuentos
-          </Title>
-          <Paragraph>
-            Selecciona un descuento
-          </Paragraph>
+          <Title level={5}>Descuentos</Title>
+          <Paragraph>Selecciona un descuento</Paragraph>
           <MenuOptions>
             {options.map((option) => (
               <StyledMenuItem key={option} onClick={() => handleSelect(option)}>
@@ -89,7 +91,7 @@ const CustomInput = ({ options, value, discount, disabled = false, onRequestAcce
           onChange={handleChange}
           placeholder="%"
           prefix="%"
-          addonAfter={"-" + useFormatPrice(discount)}
+          addonAfter={'-' + useFormatPrice(discount)}
           style={{ width: '170px' }}
           min={0}
           max={100}
@@ -110,11 +112,11 @@ export default CustomInput;
 
 const Container = styled.div`
   position: relative;
-`
+`;
 const Wrapper = styled.div`
-    position: relative;
-    label{
-        height: 12px;
+  position: relative;
+  label {
+    height: 12px;
     box-sizing: border-box;
     margin: 0;
     padding: 0 0.4em;
@@ -127,8 +129,8 @@ const Wrapper = styled.div`
     font-weight: 600;
     border-radius: 3px;
     font-size: 11px;
-    }
-`
+  }
+`;
 
 const MenuOptions = styled.ul`
   display: grid;
@@ -136,7 +138,7 @@ const MenuOptions = styled.ul`
   grid-template-columns: repeat(6, 1fr);
   list-style: none;
   padding: 0;
-`
+`;
 const StyledMenu = styled.div`
   border: 1px solid #ccc;
   padding: 10px;
@@ -150,9 +152,7 @@ const StyledMenu = styled.div`
   margin: -80px 0;
   right: 0;
   top: -58px;
- 
 `;
-
 
 const StyledMenuItem = styled.li`
   padding: 5px 5px;

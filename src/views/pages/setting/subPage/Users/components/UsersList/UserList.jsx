@@ -12,7 +12,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { getRoleLabelById, userRoles } from '../../../../../../../abilities/roles';
+import {
+  getRoleLabelById,
+  userRoles,
+} from '../../../../../../../abilities/roles';
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice';
 import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice';
@@ -33,11 +36,11 @@ const Role = styled.div`
   text-transform: capitalize;
   align-items: center;
   padding: 0 1em;
-  color: ${props => props.primaryColor};
-  background-color: ${props => props.secondaryColor};
-  border: 2px solid ${props => props.primaryColor};
+  color: ${(props) => props.primaryColor};
+  background-color: ${(props) => props.secondaryColor};
+  border: 2px solid ${(props) => props.primaryColor};
   font-weight: 600;
-`
+`;
 
 const IndexBadge = styled.div`
   width: 2.5em;
@@ -46,16 +49,17 @@ const IndexBadge = styled.div`
   place-items: center;
   font-weight: 600;
   border-radius: 12px;
-  background: ${({ theme }) => (theme?.bg?.tertiary ?? 'rgba(15, 23, 42, 0.08)')};
-  color: ${({ theme }) => (theme?.text?.secondary ?? '#344054')};
-  border: 1px solid ${({ theme }) => (theme?.border?.primary ?? 'rgba(15, 23, 42, 0.08)')};
-`
+  background: ${({ theme }) => theme?.bg?.tertiary ?? 'rgba(15, 23, 42, 0.08)'};
+  color: ${({ theme }) => theme?.text?.secondary ?? '#344054'};
+  border: 1px solid
+    ${({ theme }) => theme?.border?.primary ?? 'rgba(15, 23, 42, 0.08)'};
+`;
 
 const NameCell = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75em;
-`
+`;
 
 const NameContent = styled.div`
   display: flex;
@@ -64,14 +68,14 @@ const NameContent = styled.div`
 
   .name {
     font-weight: 500;
-    color: ${({ theme }) => (theme?.text?.primary ?? '#111827')};
+    color: ${({ theme }) => theme?.text?.primary ?? '#111827'};
   }
 
   .meta {
     font-size: 0.75rem;
-    color: ${({ theme }) => (theme?.text?.secondary ?? '#6B7280')};
+    color: ${({ theme }) => theme?.text?.secondary ?? '#6B7280'};
   }
-`
+`;
 
 const DateCell = styled.div`
   display: flex;
@@ -80,9 +84,9 @@ const DateCell = styled.div`
 
   .date {
     font-weight: 500;
-    color: ${({ theme }) => (theme?.text?.primary ?? '#111827')};
+    color: ${({ theme }) => theme?.text?.primary ?? '#111827'};
   }
-`
+`;
 
 const StatusPill = styled.span`
   display: inline-flex;
@@ -93,10 +97,13 @@ const StatusPill = styled.span`
   font-size: 0.8rem;
   font-weight: 600;
   color: ${({ $active }) => ($active ? '#0F5132' : '#4F6275')};
-  background: ${({ $active }) => ($active ? 'rgba(25, 135, 84, 0.12)' : 'rgba(148, 163, 184, 0.18)')};
-  border: 1px solid ${({ $active }) => ($active ? 'rgba(25, 135, 84, 0.35)' : 'rgba(148, 163, 184, 0.35)')};
+  background: ${({ $active }) =>
+    $active ? 'rgba(25, 135, 84, 0.12)' : 'rgba(148, 163, 184, 0.18)'};
+  border: 1px solid
+    ${({ $active }) =>
+      $active ? 'rgba(25, 135, 84, 0.35)' : 'rgba(148, 163, 184, 0.35)'};
   text-transform: capitalize;
-`
+`;
 
 export const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -114,40 +121,50 @@ export const UserList = () => {
     fbGetUsers(currentUser, setUsers);
   }, [currentUser]);
 
-  const data = useMemo(() => users.map(({ user }) => {
-    const name = user?.name || 'Usuario sin nombre';
-    const email = user?.email || user?.username || '';
-    const isActive = Boolean(user?.active);
-    const statusLabel = isActive ? 'Activo' : 'Inactivo';
+  const data = useMemo(
+    () =>
+      users.map(({ user }) => {
+        const name = user?.name || 'Usuario sin nombre';
+        const email = user?.email || user?.username || '';
+        const isActive = Boolean(user?.active);
+        const statusLabel = isActive ? 'Activo' : 'Inactivo';
 
-    return {
-      number: user?.number,
-      name: {
-        displayName: name,
-        email,
-      },
-      createAt: user?.createAt,
-      role: user?.role,
-      status: {
-        active: isActive,
-        label: statusLabel,
-      },
-      user,
-      searchText: `${name} ${email} ${statusLabel} ${getRoleLabelById(user?.role) ?? ''}`.toLowerCase(),
-    };
-  }), [users]);
+        return {
+          number: user?.number,
+          name: {
+            displayName: name,
+            email,
+          },
+          createAt: user?.createAt,
+          role: user?.role,
+          status: {
+            active: isActive,
+            label: statusLabel,
+          },
+          user,
+          searchText:
+            `${name} ${email} ${statusLabel} ${getRoleLabelById(user?.role) ?? ''}`.toLowerCase(),
+        };
+      }),
+    [users],
+  );
 
-  const handleEditUser = useCallback((user) => {
-    // Solo permitir editar si tiene permisos
-    if (abilities.can('manage', 'User')) {
-      dispatch(updateUser(user));
-      dispatch(toggleSignUpUser({
-        isOpen: true,
-        data: user,
-        businessID: user?.businessID,
-      }));
-    }
-  }, [abilities, dispatch]);
+  const handleEditUser = useCallback(
+    (user) => {
+      // Solo permitir editar si tiene permisos
+      if (abilities.can('manage', 'User')) {
+        dispatch(updateUser(user));
+        dispatch(
+          toggleSignUpUser({
+            isOpen: true,
+            data: user,
+            businessID: user?.businessID,
+          }),
+        );
+      }
+    },
+    [abilities, dispatch],
+  );
 
   const openPasswordModal = useCallback((user) => {
     setSelectedUser(user);
@@ -159,11 +176,14 @@ export const UserList = () => {
     setIsStatusModalOpen(true);
   }, []);
 
-  const openPermissionsModal = useCallback((user) => {
-    if (!canManageDynamicPermissions) return;
-    setSelectedUser(user);
-    setIsPermissionsModalOpen(true);
-  }, [canManageDynamicPermissions]);
+  const openPermissionsModal = useCallback(
+    (user) => {
+      if (!canManageDynamicPermissions) return;
+      setSelectedUser(user);
+      setIsPermissionsModalOpen(true);
+    },
+    [canManageDynamicPermissions],
+  );
 
   const closePasswordModal = useCallback(() => {
     setIsPasswordModalOpen(false);
@@ -188,11 +208,7 @@ export const UserList = () => {
         align: 'left',
         maxWidth: '0.2fr',
         minWidth: '60px',
-        cell: ({ value }) => (
-          <IndexBadge>
-            {value ?? '--'}
-          </IndexBadge>
-        ),
+        cell: ({ value }) => <IndexBadge>{value ?? '--'}</IndexBadge>,
       },
       {
         Header: 'Nombre',
@@ -203,7 +219,9 @@ export const UserList = () => {
         cell: ({ value }) => (
           <NameCell>
             <NameContent>
-              <span className="name">{value?.displayName ?? 'Usuario sin nombre'}</span>
+              <span className="name">
+                {value?.displayName ?? 'Usuario sin nombre'}
+              </span>
               {value?.email && <span className="meta">{value.email}</span>}
             </NameContent>
           </NameCell>
@@ -223,7 +241,9 @@ export const UserList = () => {
 
           return (
             <DateCell>
-              <span className="date">{dateObject.toLocaleString(DateTime.DATE_SHORT)}</span>
+              <span className="date">
+                {dateObject.toLocaleString(DateTime.DATE_SHORT)}
+              </span>
             </DateCell>
           );
         },
@@ -233,7 +253,7 @@ export const UserList = () => {
         accessor: 'role',
         align: 'left',
         cell: ({ value }) => {
-          const role = userRoles.find(r => r.id === value) || {};
+          const role = userRoles.find((r) => r.id === value) || {};
 
           return (
             <Role
@@ -285,7 +305,14 @@ export const UserList = () => {
     }
 
     return baseColumns;
-  }, [abilities, canManageDynamicPermissions, handleEditUser, openPasswordModal, openPermissionsModal, openStatusModal]);
+  }, [
+    abilities,
+    canManageDynamicPermissions,
+    handleEditUser,
+    openPasswordModal,
+    openPermissionsModal,
+    openStatusModal,
+  ]);
 
   // Solo mostrar la tabla si tiene permisos para ver usuarios
   if (!abilities.can('read', 'User') && !abilities.can('manage', 'User')) {
@@ -310,7 +337,11 @@ export const UserList = () => {
             />
           </SearchBar>
         }
-        onRowClick={abilities.can('manage', 'User') ? (row) => handleEditUser(row.user) : undefined}
+        onRowClick={
+          abilities.can('manage', 'User')
+            ? (row) => handleEditUser(row.user)
+            : undefined
+        }
       />
 
       <ChangeUserPasswordModal
@@ -328,7 +359,11 @@ export const UserList = () => {
       {canManageDynamicPermissions && (
         <DynamicPermissionsManager
           userId={selectedUser?.id}
-          userName={selectedUser?.name || selectedUser?.realName || selectedUser?.username}
+          userName={
+            selectedUser?.name ||
+            selectedUser?.realName ||
+            selectedUser?.username
+          }
           userRole={selectedUser?.role}
           isOpen={isPermissionsModalOpen}
           onClose={closePermissionsModal}
@@ -348,9 +383,10 @@ const ActionMenu = ({
 }) => {
   const isActive = Boolean(user?.active);
 
-  const hasDynamicPermissions = useMemo(() => (
-    getAvailablePermissionsForRole(user?.role)?.length > 0
-  ), [user?.role]);
+  const hasDynamicPermissions = useMemo(
+    () => getAvailablePermissionsForRole(user?.role)?.length > 0,
+    [user?.role],
+  );
 
   const items = useMemo(() => {
     const menuItems = [
@@ -408,11 +444,7 @@ const ActionMenu = ({
   ]);
 
   return (
-    <Dropdown
-      menu={{ items }}
-      trigger={['click']}
-      placement="bottomRight"
-    >
+    <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
       <ActionButton
         type="text"
         shape="circle"
@@ -429,7 +461,7 @@ const ActionMenu = ({
 
 const SearchBar = styled.div`
   padding: 0.5em 1em;
-  background-color: ${props => props.theme.bg.primary};
+  background-color: ${(props) => props.theme.bg.primary};
   border-bottom: var(--border-primary);
 
   & .ant-input-affix-wrapper,

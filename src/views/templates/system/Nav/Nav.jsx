@@ -1,15 +1,20 @@
-import { faChevronRight, faAngleLeft, faAngleRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChevronRight,
+  faAngleLeft,
+  faAngleRight,
+  faChevronDown,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, Fragment, useEffect, useMemo } from 'react'; // Add Fragment
 import styled from 'styled-components';
 
 const Sidebar = styled.div`
   display: none;
-  width: ${props => props.collapsed ? '60px' : '270px'};
+  width: ${(props) => (props.collapsed ? '60px' : '270px')};
   background: #fff;
   padding: 0.6em;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: width 0.3s ease;
   position: relative;
 
@@ -27,7 +32,7 @@ const SidebarTitle = styled.div`
   height: 36px;
   display: flex;
   align-items: center;
-  opacity: ${props => props.collapsed ? 0 : 1};
+  opacity: ${(props) => (props.collapsed ? 0 : 1)};
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -57,7 +62,7 @@ const CollapseButton = styled.button`
 
   svg {
     font-size: 16px;
-    transform: rotate(${props => props.collapsed ? '0deg' : '180deg'});
+    transform: rotate(${(props) => (props.collapsed ? '0deg' : '180deg')});
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 `;
@@ -77,19 +82,18 @@ const GroupLabel = styled.div`
   text-transform: uppercase; /* Uppercase text */
   padding: 10px 12px 4px 12px; /* Padding: more top/bottom, less bottom */
   margin-top: 8px; /* Add some space above the label */
-  opacity: ${props => props.collapsed ? 0 : 1};
+  opacity: ${(props) => (props.collapsed ? 0 : 1)};
   transition: opacity 0.2s ease;
-  display: ${props => props.collapsed ? 'none' : 'block'};
+  display: ${(props) => (props.collapsed ? 'none' : 'block')};
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
   /* Add margin only if not the very first item */
   &:not(:first-child) {
-     margin-top: 16px;
+    margin-top: 16px;
   }
 `;
-
 
 const SidebarRow = styled.div`
   padding: 10px 12px;
@@ -112,7 +116,9 @@ const SidebarRow = styled.div`
   }
 
   /* Active state styling (only applies if props.active is true) */
-  ${props => props.active && `
+  ${(props) =>
+    props.active &&
+    `
     background: #e6f7ff;
     color: #1890ff;
     font-weight: 500;
@@ -131,13 +137,13 @@ const SidebarRow = styled.div`
     font-size: 16px;
     text-align: center;
     /* Icon color based on active state */
-    color: ${props => props.active ? '#1890ff' : '#666'};
+    color: ${(props) => (props.active ? '#1890ff' : '#666')};
   }
 
   .row-label {
-    opacity: ${props => props.collapsed ? 0 : 1};
+    opacity: ${(props) => (props.collapsed ? 0 : 1)};
     transition: opacity 0.2s ease;
-    display: ${props => props.collapsed ? 'none' : 'inline'};
+    display: ${(props) => (props.collapsed ? 'none' : 'inline')};
     overflow: hidden;
     text-overflow: ellipsis;
     /* Removed max-width, rely on flex overflow */
@@ -145,8 +151,9 @@ const SidebarRow = styled.div`
 
   .row-arrow {
     /* Only display arrow if it's a group and not collapsed */
-    display: ${props => props.isGroup && !props.collapsed ? 'inline-block' : 'none'};
-    transform: rotate(${props => props.isOpen ? '180deg' : '0deg'});
+    display: ${(props) =>
+      props.isGroup && !props.collapsed ? 'inline-block' : 'none'};
+    transform: rotate(${(props) => (props.isOpen ? '180deg' : '0deg')});
     transition: transform 0.3s ease;
     color: #666; /* Default arrow color */
     margin-left: auto; /* Push arrow to the right */
@@ -155,8 +162,9 @@ const SidebarRow = styled.div`
 `;
 
 const MenuGroupItems = styled.div`
-  margin-left: ${props => props.collapsed ? '0' : '12px'}; /* Keep indentation for group items */
-  display: ${props => props.isOpen ? 'flex' : 'none'};
+  margin-left: ${(props) =>
+    props.collapsed ? '0' : '12px'}; /* Keep indentation for group items */
+  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
   flex-direction: column;
   gap: 2px;
   margin-top: 2px;
@@ -181,7 +189,7 @@ const MobileButton = styled.button`
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  
+
   span {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -192,7 +200,7 @@ const MobileButton = styled.button`
 `;
 
 const Backdrop = styled.div`
-  display: ${props => props.isOpen ? 'block' : 'none'};
+  display: ${(props) => (props.isOpen ? 'block' : 'none')};
   position: fixed;
   top: 0;
   left: 0;
@@ -208,12 +216,12 @@ const MobileMenu = styled.div`
   left: 0;
   right: 0;
   background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 999;
-  opacity: ${props => props.isOpen ? '1' : '0'};
-  pointer-events: ${props => props.isOpen ? 'all' : 'none'};
+  opacity: ${(props) => (props.isOpen ? '1' : '0')};
+  pointer-events: ${(props) => (props.isOpen ? 'all' : 'none')};
   transition: all 0.3s ease;
-  transform: translateY(${props => props.isOpen ? '0' : '-100%'});
+  transform: translateY(${(props) => (props.isOpen ? '0' : '-100%')});
   border-radius: 0 0 12px 12px;
 `;
 
@@ -224,7 +232,6 @@ const MobileMenuContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-
 `;
 
 const MobileMenuItem = styled.div`
@@ -241,7 +248,9 @@ const MobileMenuItem = styled.div`
     background: #f5f5f5;
   }
 
-  ${props => props.active && `
+  ${(props) =>
+    props.active &&
+    `
     background: #e6f7ff;
     color: #1890ff;
     font-weight: 500;
@@ -279,7 +288,7 @@ const MobileMenuGroupHeader = styled.div`
   font-size: 14px;
   font-weight: 500;
   color: #666;
-  
+
   &:hover {
     background: #f5f5f5;
   }
@@ -297,14 +306,14 @@ const MobileMenuGroupHeader = styled.div`
   }
 
   .group-arrow {
-    transform: rotate(${props => props.isOpen ? '180deg' : '0deg'});
+    transform: rotate(${(props) => (props.isOpen ? '180deg' : '0deg')});
     transition: transform 0.3s ease;
   }
 `;
 
 const MobileMenuGroupItems = styled.div`
   margin-left: 12px;
-  display: ${props => props.isOpen ? 'flex' : 'none'};
+  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
   flex-direction: column;
   gap: 8px;
   margin-top: 2px;
@@ -328,7 +337,7 @@ const MainLayout = styled.div`
   padding: 0 0.4em;
   height: calc(100vh - 64px);
   overflow: hidden;
-  
+
   @media (max-width: 768px) {
     padding: 0.4em;
   }
@@ -339,7 +348,7 @@ const PageContainer = styled.div`
   gap: 0.4em;
   flex: 1;
   overflow: hidden;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 0.4em;
@@ -368,7 +377,7 @@ const Content = styled.div`
   padding: 0.2em 0.4em;
   width: 100%;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex: 1;
   overflow-y: auto;
 
@@ -390,33 +399,43 @@ const Content = styled.div`
   }
 `;
 
-export function Nav({ menuItems, activeTab, onTabChange, header, children, title }) {
+export function Nav({
+  menuItems,
+  activeTab,
+  onTabChange,
+  header,
+  children,
+  title,
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
-  const groupedItemsByGroupKey = useMemo(() => menuItems.reduce((acc, item) => {
-    if (!item.group) {
-      return acc;
-    }
+  const groupedItemsByGroupKey = useMemo(
+    () =>
+      menuItems.reduce((acc, item) => {
+        if (!item.group) {
+          return acc;
+        }
 
-    const groupKey = item.group;
-    if (!acc[groupKey]) {
-      acc[groupKey] = {
-        type: item.groupType || 'collapsible',
-        items: [],
-      };
-    }
+        const groupKey = item.group;
+        if (!acc[groupKey]) {
+          acc[groupKey] = {
+            type: item.groupType || 'collapsible',
+            items: [],
+          };
+        }
 
-    acc[groupKey].items.push(item.key);
-    return acc;
-  }, {}), [menuItems]);
-
+        acc[groupKey].items.push(item.key);
+        return acc;
+      }, {}),
+    [menuItems],
+  );
 
   const toggleGroup = (groupKey, event) => {
     event.stopPropagation();
-    setOpenGroups(prev => ({
+    setOpenGroups((prev) => ({
       ...prev,
-      [groupKey]: !prev[groupKey]
+      [groupKey]: !prev[groupKey],
     }));
   };
 
@@ -425,7 +444,6 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
     setIsMenuOpen(false); // Close mobile menu if open
   };
 
-
   // Update grouping logic to include groupType
   const groupedMenuItems = menuItems.reduce((acc, item) => {
     if (!item.group) {
@@ -433,22 +451,26 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
       return acc;
     }
 
-    const existingGroupIndex = acc.findIndex(g => g.isGroup && g.key === item.group);
+    const existingGroupIndex = acc.findIndex(
+      (g) => g.isGroup && g.key === item.group,
+    );
 
     if (existingGroupIndex === -1) {
-      const relatedItems = menuItems.filter(relItem => relItem.group === item.group);
+      const relatedItems = menuItems.filter(
+        (relItem) => relItem.group === item.group,
+      );
       // Determine groupType from the first item (assume consistency)
       const groupType = relatedItems[0]?.groupType || 'collapsible'; // Default to collapsible
 
       // Only group if more than one item OR if it's a labelled group (labels make sense even for one item)
       if (relatedItems.length > 1 || groupType === 'labelled') {
-         acc.push({
+        acc.push({
           isGroup: true,
           key: item.group,
           label: item.groupLabel || item.group,
           icon: item.groupIcon, // Icon might only be used by collapsible
           groupType: groupType, // Store the type
-          items: [item] // Start with the current item
+          items: [item], // Start with the current item
         });
       } else {
         // Single item, not labelled type -> treat as non-grouped
@@ -494,13 +516,10 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
             {group.icon && <div className="row-icon">{group.icon}</div>}
             <span className="row-label">{group.label}</span>
           </div>
-          <FontAwesomeIcon
-            icon={faChevronDown}
-            className="row-arrow"
-          />
+          <FontAwesomeIcon icon={faChevronDown} className="row-arrow" />
         </SidebarRow>
         <MenuGroupItems isOpen={isOpen} collapsed={collapsed}>
-          {group.items.map(item => renderSidebarItem(item, collapsed, true))}
+          {group.items.map((item) => renderSidebarItem(item, collapsed, true))}
         </MenuGroupItems>
       </MenuGroupContainer>
     );
@@ -530,10 +549,7 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
             {group.icon && <span className="group-icon">{group.icon}</span>}
             <span>{group.label}</span>
           </div>
-          <FontAwesomeIcon
-            icon={faChevronDown}
-            className="group-arrow"
-          />
+          <FontAwesomeIcon icon={faChevronDown} className="group-arrow" />
         </MobileMenuGroupHeader>
         <MobileMenuGroupItems isOpen={isOpen}>
           {group.items.map(renderMobileMenuItem)}
@@ -543,8 +559,8 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
   };
 
   useEffect(() => {
-    const groupEntry = Object.entries(groupedItemsByGroupKey).find(([, group]) =>
-      group.items.includes(activeTab)
+    const groupEntry = Object.entries(groupedItemsByGroupKey).find(
+      ([, group]) => group.items.includes(activeTab),
     );
 
     if (!groupEntry) {
@@ -557,7 +573,7 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
       return;
     }
 
-    setOpenGroups(prev => {
+    setOpenGroups((prev) => {
       if (prev[groupKey]) {
         return prev;
       }
@@ -579,13 +595,12 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
             collapsed={isCollapsed}
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
-            <FontAwesomeIcon
-              icon={isCollapsed ? faAngleRight : faAngleLeft}
-            />
+            <FontAwesomeIcon icon={isCollapsed ? faAngleRight : faAngleLeft} />
           </CollapseButton>
 
-          {title && <SidebarTitle collapsed={isCollapsed}>{title}</SidebarTitle>}
-
+          {title && (
+            <SidebarTitle collapsed={isCollapsed}>{title}</SidebarTitle>
+          )}
 
           {/* Updated Main rendering loop */}
           {groupedMenuItems.map((item) => {
@@ -596,10 +611,12 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
                 return (
                   // Use Fragment to group label and items without extra div
                   <Fragment key={item.key}>
-                    <GroupLabel collapsed={isCollapsed} >
+                    <GroupLabel collapsed={isCollapsed}>
                       {item.label}
                     </GroupLabel>
-                    {item.items.map(subItem => renderSidebarItem(subItem, isCollapsed, true))}
+                    {item.items.map((subItem) =>
+                      renderSidebarItem(subItem, isCollapsed, true),
+                    )}
                   </Fragment>
                 );
               } else {
@@ -618,27 +635,30 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
           <MobileWrapper>
             <MobileSelector>
               <MobileButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                <span>{menuItems.find(item => item.key === activeTab)?.label}</span>
+                <span>
+                  {menuItems.find((item) => item.key === activeTab)?.label}
+                </span>
                 <FontAwesomeIcon
                   icon={faChevronRight}
                   style={{
                     transform: `rotate(${isMenuOpen ? '90deg' : '0deg'})`,
                     transition: 'transform 0.3s ease',
-                    color: '#444'
+                    color: '#444',
                   }}
                 />
               </MobileButton>
-              <Backdrop isOpen={isMenuOpen} onClick={() => setIsMenuOpen(false)} />
+              <Backdrop
+                isOpen={isMenuOpen}
+                onClick={() => setIsMenuOpen(false)}
+              />
               <MobileMenu isOpen={isMenuOpen}>
                 <MobileMenuContent>
-                  {title && (
-                    <MobileMenuTitle>{title}</MobileMenuTitle>
-                  )}
+                  {title && <MobileMenuTitle>{title}</MobileMenuTitle>}
                   {/* Mobile view currently doesn't differentiate group types */}
-                  {groupedMenuItems.map(item =>
+                  {groupedMenuItems.map((item) =>
                     item.isGroup
                       ? renderMobileGroup(item)
-                      : renderMobileMenuItem(item)
+                      : renderMobileMenuItem(item),
                   )}
                 </MobileMenuContent>
               </MobileMenu>
@@ -646,9 +666,7 @@ export function Nav({ menuItems, activeTab, onTabChange, header, children, title
           </MobileWrapper>
 
           <ContentWrapper>
-            <Content>
-              {children}
-            </Content>
+            <Content>{children}</Content>
           </ContentWrapper>
         </PageContainer>
       </MainLayout>

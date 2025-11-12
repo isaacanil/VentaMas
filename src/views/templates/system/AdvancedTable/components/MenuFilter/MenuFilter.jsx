@@ -1,12 +1,17 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons'
-import { Button } from '../../../Button/Button'
+import { icons } from '../../../../../../constants/icons/icons';
+import { Button } from '../../../Button/Button';
 
-import { Item } from './Item'
+import { Item } from './Item';
 
-export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, setDefaultFilter }) => {
-
+export const FilterUI = ({
+  filterConfig = [],
+  setFilter,
+  filter,
+  defaultFilter,
+  setDefaultFilter,
+}) => {
   const clearFilter = (accessor) => {
     const newFilter = { ...filter };
     if (newFilter[accessor] && defaultFilter[accessor]) {
@@ -20,7 +25,9 @@ export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, 
   };
 
   const isDefaultFilter = () => {
-    return Object.keys(filter).every(key => filter[key] === defaultFilter[key]);
+    return Object.keys(filter).every(
+      (key) => filter[key] === defaultFilter[key],
+    );
   };
 
   return (
@@ -37,7 +44,9 @@ export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, 
               label={filterItem.label}
               filterOptions={filterItem.options}
               format={filterItem.format}
-              onChange={(e) => setFilter({ ...filter, [filterItem.accessor]: e.target.value })}
+              onChange={(e) =>
+                setFilter({ ...filter, [filterItem.accessor]: e.target.value })
+              }
               onClear={() => clearFilter(filterItem.accessor)}
               selectedValue={filter[filterItem.accessor]}
             />
@@ -47,34 +56,34 @@ export const FilterUI = ({ filterConfig = [], setFilter, filter, defaultFilter, 
         onClick={setDefaultFilter}
         disabled={isDefaultFilter()}
         endIcon={icons.operationModes.cancel}
-        title='Limpiar Filtros'
+        title="Limpiar Filtros"
       />
     </Container>
-  )
-}
+  );
+};
 
 const FilterLabel = styled.div`
- display: flex;
- gap: 0.5em;
- span > svg{
-        font-size: 1.2em;
-        color: #696969cc;
- }
-  div{
-    @media (max-width: 1000px ){
+  display: flex;
+  gap: 0.5em;
+  span > svg {
+    font-size: 1.2em;
+    color: #696969cc;
+  }
+  div {
+    @media (max-width: 1000px) {
       display: none;
     }
-  } 
-`
+  }
+`;
 const Filters = styled.div`
   display: flex;
   gap: 0.6em;
   align-items: center;
-`
+`;
 const Container = styled.div`
   display: flex;
   align-items: center;
   padding: 0 1em;
   gap: 2em;
   height: 2.5em;
-`
+`;

@@ -1,7 +1,13 @@
 import { AnimatePresence } from 'framer-motion';
 import { Fragment, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux'
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 import { scan } from 'react-scan'; // import this BEFORE react
 
 //importando componentes de react-router-dom
@@ -11,7 +17,7 @@ import { scan } from 'react-scan'; // import this BEFORE react
 import DeveloperSessionHelper from './components/devtools/DeveloperSessionHelper';
 import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';
 import { useBusinessDataConfig } from './features/auth/useBusinessDataConfig';
-import { selectUser } from './features/auth/userSlice'
+import { selectUser } from './features/auth/userSlice';
 import { ReloadImageHiddenSetting } from './features/setting/settingSlice';
 import { useHydrateTaxReceiptSettings } from './features/taxReceipt/useHydrateTaxReceiptSettings';
 import { useAutomaticLogin } from './firebase/Auth/fbAuthV2/fbSignIn/checkSession';
@@ -23,7 +29,10 @@ import { useRealtimePresence } from './firebase/presence/useRealtimePresence';
 import { useFixTaxReceiptWithoutId } from './firebase/Settings/taxReceipt/fbFixTaxReceiptWithoutId';
 import { useFbTaxReceiptToggleStatus } from './firebase/Settings/taxReceipt/fbGetTaxReceiptToggleStatus';
 import { useAutoCreateDefaultTaxReceipt } from './firebase/taxReceipt/fbAutoCreateDefaultReceipt';
-import { useAbilities, useLoadUserAbilities } from './hooks/abilities/useAbilities';
+import {
+  useAbilities,
+  useLoadUserAbilities,
+} from './hooks/abilities/useAbilities';
 import { useNavigationTracker } from './hooks/routes/useNavigationTracker';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';
@@ -54,7 +63,7 @@ function App() {
         </ViewportContainer>
       </Router>
     </Fragment>
-  )
+  );
 }
 
 const BootstrapManager = () => {
@@ -68,8 +77,10 @@ const AppShell = ({ bootStatus, bootError }) => {
   const navigate = useNavigate();
 
   const isChecking = bootStatus === 'checking';
-  const isPublicRoute = location.pathname === '/' || location.pathname === '/login';
-  const shouldRedirectToHome = !isChecking && bootStatus === 'ready' && user && isPublicRoute;
+  const isPublicRoute =
+    location.pathname === '/' || location.pathname === '/login';
+  const shouldRedirectToHome =
+    !isChecking && bootStatus === 'ready' && user && isPublicRoute;
 
   useEffect(() => {
     if (shouldRedirectToHome) {
@@ -95,7 +106,9 @@ const AppContent = () => {
   useEffect(() => {
     const isDev = user?.role === 'dev';
     document.body.style.userSelect = isDev ? 'auto' : 'none';
-    return () => { document.body.style.userSelect = ''; };
+    return () => {
+      document.body.style.userSelect = '';
+    };
   }, [user?.role]);
 
   useTaxReceiptsFix();
@@ -120,21 +133,21 @@ const AppContent = () => {
 
   useRealtimePresence(user);
 
-  useCurrentCashDrawer();// obtiene el cajón actual
+  useCurrentCashDrawer(); // obtiene el cajón actual
 
-  useAbilities()// establece la abilidad que puede usar el usuario actual
-  useAutoCreateDefaultTaxReceipt();// crea el comprobante fiscal por defecto
+  useAbilities(); // establece la abilidad que puede usar el usuario actual
+  useAutoCreateDefaultTaxReceipt(); // crea el comprobante fiscal por defecto
 
   // Hidratar taxReceiptEnabled desde localStorage tan pronto como sea posible.
   useHydrateTaxReceiptSettings();
 
-  useFbTaxReceiptToggleStatus()// obtiene el estado del comprobante fiscal
+  useFbTaxReceiptToggleStatus(); // obtiene el estado del comprobante fiscal
 
   useFixTaxReceiptWithoutId();
 
-  useBusinessDataConfig()// obtiene la configuración de la empresa
+  useBusinessDataConfig(); // obtiene la configuración de la empresa
 
-  useCheckForInternetConnection()// verifica la conexión a internet
+  useCheckForInternetConnection(); // verifica la conexión a internet
 
   return (
     <>
@@ -145,13 +158,14 @@ const AppContent = () => {
         <Routes>
           {routes.map((route, index) => (
             <Route key={index} path={route.path} element={route.element}>
-              {route.children && route.children.map((childRoute, childIndex) => (
-                <Route
-                  key={childIndex}
-                  path={childRoute?.path}
-                  element={childRoute?.element}
-                />
-              ))}
+              {route.children &&
+                route.children.map((childRoute, childIndex) => (
+                  <Route
+                    key={childIndex}
+                    path={childRoute?.path}
+                    element={childRoute?.element}
+                  />
+                ))}
             </Route>
           ))}
         </Routes>

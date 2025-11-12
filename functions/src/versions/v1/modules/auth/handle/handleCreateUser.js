@@ -6,7 +6,7 @@ import { db } from '../../../../../core/config/firebase.js';
 import { nextSeq } from '../../../../../core/utils/getNextID.js';
 import {
   ensureUniqueUsername,
-  prepareUserCreationData
+  prepareUserCreationData,
 } from '../utils/auth.util.js';
 
 /**
@@ -20,7 +20,7 @@ export const handleCreateUser = onCall(async (req) => {
 
   // Validar y preparar datos
   const processedData = await prepareUserCreationData(userData, actor);
-  
+
   const usersCol = db.collection('users');
   const id = nanoid(10);
   /* ──────────────── transacción ──────────────── */
@@ -36,13 +36,12 @@ export const handleCreateUser = onCall(async (req) => {
       user: {
         ...processedData.user,
         name: normName,
-        number: seq
-      }
+        number: seq,
+      },
     };
 
     tx.set(usersCol.doc(id), {
-    
-      ...finalData
+      ...finalData,
     });
   });
 

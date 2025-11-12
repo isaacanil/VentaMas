@@ -1,4 +1,4 @@
-@import url("../../../styles/variables.css");
+@import url('../../../styles/variables.css');
 .Container {
   background-color: #464646;
   overflow: hidden;
@@ -15,11 +15,11 @@
   display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
   -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
   gap: 1em;
 }
 
@@ -32,11 +32,11 @@
   display: -ms-flexbox;
   display: flex;
   -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
   -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
   font-weight: bold;
   font-size: 1.5em;
   color: #fff;
@@ -48,8 +48,8 @@
   display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
   background-color: #d6d6d6;
   border: none;
 }
@@ -72,18 +72,18 @@
     display: -ms-grid;
     display: grid;
     overflow-y: auto;
-    -ms-grid-columns: (minmax(100px, 150px))[3];
-        grid-template-columns: repeat(3, minmax(100px, 150px));
-    -ms-grid-rows: (minmax(100px, 150px))[5];
-        grid-template-rows: repeat(5, minmax(100px, 150px));
+    -ms-grid-columns: (minmax(100px, 150px)) [3];
+    grid-template-columns: repeat(3, minmax(100px, 150px));
+    -ms-grid-rows: (minmax(100px, 150px)) [5];
+    grid-template-rows: repeat(5, minmax(100px, 150px));
     -ms-flex-line-pack: center;
-        align-content: center;
+    align-content: center;
     -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
     -webkit-box-pack: center;
-        -ms-flex-pack: center;
-            justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
     justify-items: center;
     gap: 1em;
   }
@@ -96,11 +96,11 @@
     display: -ms-flexbox;
     display: flex;
     -webkit-box-pack: center;
-        -ms-flex-pack: center;
-            justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
     -webkit-box-align: center;
-        -ms-flex-align: center;
-            align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
     font-weight: bold;
     font-size: 3em;
     color: #fff;

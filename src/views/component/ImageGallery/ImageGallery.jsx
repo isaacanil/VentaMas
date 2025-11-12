@@ -1,8 +1,8 @@
-import { EyeOutlined, FullscreenOutlined } from '@ant-design/icons'
-import { Spin, Modal } from 'antd'
-import { motion, AnimatePresence } from 'framer-motion'
-import React, { useState, useCallback } from 'react'
-import styled from 'styled-components'
+import { EyeOutlined, FullscreenOutlined } from '@ant-design/icons';
+import { Spin, Modal } from 'antd';
+import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useCallback } from 'react';
+import styled from 'styled-components';
 
 export const ImageGallery = ({ images = [], loading = false }) => {
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -17,15 +17,15 @@ export const ImageGallery = ({ images = [], loading = false }) => {
   }, []);
 
   const handleImageLoad = useCallback((index) => {
-    setImageLoading(prev => ({ ...prev, [index]: false }));
+    setImageLoading((prev) => ({ ...prev, [index]: false }));
   }, []);
 
   const handleImageError = useCallback((index) => {
-    setImageLoading(prev => ({ ...prev, [index]: false }));
+    setImageLoading((prev) => ({ ...prev, [index]: false }));
   }, []);
 
   const handleImageStart = useCallback((index) => {
-    setImageLoading(prev => ({ ...prev, [index]: true }));
+    setImageLoading((prev) => ({ ...prev, [index]: true }));
   }, []);
 
   if (loading) {
@@ -53,7 +53,7 @@ export const ImageGallery = ({ images = [], loading = false }) => {
       <GalleryContainer
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
       >
         <AnimatePresence>
           {images.map((image, index) => (
@@ -62,15 +62,15 @@ export const ImageGallery = ({ images = [], loading = false }) => {
               initial={{ opacity: 0, scale: 0.8, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: -30 }}
-              transition={{ 
-                duration: 0.5, 
+              transition={{
+                duration: 0.5,
                 delay: index * 0.1,
-                ease: "easeOut"
+                ease: 'easeOut',
               }}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.03,
                 y: -5,
-                transition: { duration: 0.2 }
+                transition: { duration: 0.2 },
               }}
               whileTap={{ scale: 0.98 }}
             >
@@ -126,7 +126,8 @@ export const ImageGallery = ({ images = [], loading = false }) => {
       <Modal
         open={previewVisible}
         title={previewTitle}
-        footer={null}        onCancel={() => setPreviewVisible(false)}
+        footer={null}
+        onCancel={() => setPreviewVisible(false)}
         width="80%"
         style={{ top: 20 }}
         destroyOnHidden
@@ -189,14 +190,14 @@ const ImageWrapper = styled(motion.div)`
   overflow: hidden;
   border-radius: 16px;
   background: #ffffff;
-  box-shadow: 
+  box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 
+    box-shadow:
       0 20px 25px -5px rgba(0, 0, 0, 0.1),
       0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }

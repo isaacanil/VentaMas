@@ -30,6 +30,7 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
 ## 🎯 Funcionalidades por Rol
 
 ### 👤 Cajeros
+
 - **Ver sus propias solicitudes** de autorización
 - **Estados visibles**:
   - ⏳ Pendiente (amarillo)
@@ -46,6 +47,7 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
   - Quién aprobó/rechazó (si aplica)
 
 ### 👨‍💼 Administradores
+
 - **Ver todas las solicitudes pendientes** de todos los usuarios
 - **Acciones disponibles**:
   - ✅ Aprobar autorización
@@ -62,6 +64,7 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
 ### Nuevos Archivos
 
 1. **`AuthorizationsPanel.jsx`**
+
    ```
    src/views/templates/NotificationCenter/components/panels/AuthorizationsPanel/
    ├── AuthorizationsPanel.jsx
@@ -103,6 +106,7 @@ Se ha implementado un sistema completo de autorizaciones en el Centro de Notific
 Listener en tiempo real para autorizaciones.
 
 **Parámetros:**
+
 - `businessID` (string): ID del negocio
 - `status` (string|null): Estado a filtrar ('pending', 'approved', etc.) o null para todos
 - `userId` (string|null): ID del usuario para filtrar sus solicitudes, o null para todas
@@ -110,20 +114,22 @@ Listener en tiempo real para autorizaciones.
 - `onError` (Function): Callback para errores
 
 **Retorna:**
+
 - `Function`: Función para cancelar el listener
 
 **Ejemplo de uso:**
+
 ```javascript
 const unsubscribe = listenToAuthorizationsByStatus(
   businessID,
-  'pending',  // Solo pendientes
-  null,       // Todas las solicitudes (admin)
+  'pending', // Solo pendientes
+  null, // Todas las solicitudes (admin)
   (authorizations) => {
     console.log('Autorizaciones actualizadas:', authorizations);
   },
   (error) => {
     console.error('Error:', error);
-  }
+  },
 );
 
 // Cancelar listener cuando el componente se desmonte
@@ -135,6 +141,7 @@ return () => unsubscribe();
 ## 🎨 Diseño y UX
 
 ### Colores por Estado
+
 - **Pendiente**: Naranja (`#ffa940`, fondo `#fffbf5`)
 - **Aprobada**: Verde (`#059669`)
 - **Rechazada**: Rojo (`#dc2626`)
@@ -142,6 +149,7 @@ return () => unsubscribe();
 - **Expirada**: Gris
 
 ### Características de Diseño
+
 - Cards con hover effect
 - Badges para conteo de pendientes (admins)
 - Iconos intuitivos por estado
@@ -178,11 +186,13 @@ return () => unsubscribe();
 ## 📱 Capturas de Funcionalidad
 
 ### Vista Cajero
+
 - Lista de sus propias solicitudes
 - Estados claros y visibles
 - Sin acciones (solo lectura)
 
 ### Vista Admin
+
 - Todas las solicitudes pendientes destacadas
 - Botones de Aprobar/Rechazar
 - Badge con conteo de pendientes
@@ -195,11 +205,13 @@ return () => unsubscribe();
 Si las autorizaciones no aparecen:
 
 1. **Verificar rol del usuario:**
+
    ```javascript
    console.log('User role:', user?.role);
    ```
 
 2. **Verificar businessID:**
+
    ```javascript
    console.log('BusinessID:', user?.businessID);
    ```
@@ -222,6 +234,7 @@ Si las autorizaciones no aparecen:
 ## 📞 Soporte
 
 Para dudas o problemas con el sistema de autorizaciones, revisar:
+
 - `/docs/authorization-modules-configuration.md`
 - `/docs/authorizations-unified-screen.md`
 - Console logs en el navegador

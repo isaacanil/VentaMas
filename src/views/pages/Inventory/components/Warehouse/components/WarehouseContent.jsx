@@ -1,21 +1,27 @@
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import * as antd from "antd";
-import React, { useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
-import styled from "styled-components";
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from 'antd';
+import React, { useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { icons } from "../../../../../../constants/icons/icons";
-import { selectUser } from "../../../../../../features/auth/userSlice";
-import { openShelfForm, setShelfLoading } from "../../../../../../features/warehouse/shelfModalSlice";
-import { navigateWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-import { deleteShelf, useListenShelves } from "../../../../../../firebase/warehouse/shelfService";
-import { useListenWarehouse } from "../../../../../../firebase/warehouse/warehouseService";
-import { WarehouseForm } from "../forms/WarehouseForm/WarehouseForm";
+import { icons } from '../../../../../../constants/icons/icons';
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import {
+  openShelfForm,
+  setShelfLoading,
+} from '../../../../../../features/warehouse/shelfModalSlice';
+import { navigateWarehouse } from '../../../../../../features/warehouse/warehouseSlice';
+import {
+  deleteShelf,
+  useListenShelves,
+} from '../../../../../../firebase/warehouse/shelfService';
+import { useListenWarehouse } from '../../../../../../firebase/warehouse/warehouseService';
+import { WarehouseForm } from '../forms/WarehouseForm/WarehouseForm';
 
-import { ProductsSection } from "./ProductsSection";
-import SectionContainer from "./SectionContainer";
+import { ProductsSection } from './ProductsSection';
+import SectionContainer from './SectionContainer';
 
 const { Modal, Button, List, message, Tag } = antd;
 
@@ -27,7 +33,7 @@ const Container = styled.div`
 `;
 const WarehouseInfo = styled.div`
   padding: 20px;
- 
+
   background-color: #f5f5f5;
   border-radius: 8px;
 `;
@@ -35,25 +41,22 @@ const WarehouseInfo = styled.div`
 const SectionTitle = styled.h3`
   font-size: 1.5em;
   color: #333;
-  
 `;
 
 export const DetailContainer = styled.div`
   display: grid;
   gap: 0em 0.6em;
- 
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 `;
 export const DetailItem = styled.p`
   margin: 8px 0;
   font-size: 14px;
   color: #333;
 
-
   & > strong {
     font-weight: 600;
- /* Color distintivo para los títulos de los detalles */
+    /* Color distintivo para los títulos de los detalles */
   }
 `;
 const InfoHeader = styled.div`
@@ -62,7 +65,6 @@ const InfoHeader = styled.div`
   align-items: center;
   margin-bottom: 10px;
 `;
-
 
 const Body = styled.div`
   display: grid;
@@ -77,8 +79,12 @@ export default function WarehouseContent() {
   const user = useSelector(selectUser);
 
   const { warehouseId } = useParams();
-  const location = useMemo(() => ({ id: warehouseId, type: "Warehouse" }), [warehouseId])
-  const { data: warehouse, loading: warehouseLoading } = useListenWarehouse(warehouseId);
+  const location = useMemo(
+    () => ({ id: warehouseId, type: 'Warehouse' }),
+    [warehouseId],
+  );
+  const { data: warehouse, loading: warehouseLoading } =
+    useListenWarehouse(warehouseId);
   const { data: shelves } = useListenShelves(warehouse?.id);
 
   const [isFormOpen, setIsFormOpen] = useState(false); // Estado para el modal de almacén
@@ -89,7 +95,7 @@ export default function WarehouseContent() {
 
   const onNavigate = (shelf) => {
     navigate(`shelf/${shelf.id}`);
-    dispatch(navigateWarehouse({ view: "shelf", data: shelf }));
+    dispatch(navigateWarehouse({ view: 'shelf', data: shelf }));
   };
 
   if (warehouseLoading) {
@@ -98,10 +104,10 @@ export default function WarehouseContent() {
   const handleUpdateShelf = async (data) => {
     dispatch(setShelfLoading(true));
     dispatch(openShelfForm(data));
-  }
+  };
   const handleAddShelf = async () => {
     dispatch(openShelfForm());
-  }
+  };
 
   return (
     <Container>
@@ -118,22 +124,39 @@ export default function WarehouseContent() {
         </InfoHeader>
         {warehouse && (
           <DetailContainer>
-            <p><strong>#:</strong> {warehouse.number}</p>
-            <p><strong>Nombre:</strong> {warehouse.name}</p>
-            <p><strong>Nombre Corto:</strong> {warehouse.shortName}</p>
-            <p><strong>Descripción:</strong> {warehouse.description}</p>
-            <p><strong>Propietario:</strong> {warehouse.owner}</p>
-            <p><strong>Ubicación:</strong> {warehouse.location}</p>
-            <p><strong>Dirección:</strong> {warehouse.address}</p>
-            <p><strong>Dimensiones:</strong> {`Largo: ${warehouse.dimension.length} m, Ancho: ${warehouse.dimension.width} m, Altura: ${warehouse.dimension.height} m`}</p>
-            <p><strong>Capacidad:</strong> <Tag>{warehouse.capacity}</Tag></p>
+            <p>
+              <strong>#:</strong> {warehouse.number}
+            </p>
+            <p>
+              <strong>Nombre:</strong> {warehouse.name}
+            </p>
+            <p>
+              <strong>Nombre Corto:</strong> {warehouse.shortName}
+            </p>
+            <p>
+              <strong>Descripción:</strong> {warehouse.description}
+            </p>
+            <p>
+              <strong>Propietario:</strong> {warehouse.owner}
+            </p>
+            <p>
+              <strong>Ubicación:</strong> {warehouse.location}
+            </p>
+            <p>
+              <strong>Dirección:</strong> {warehouse.address}
+            </p>
+            <p>
+              <strong>Dimensiones:</strong>{' '}
+              {`Largo: ${warehouse.dimension.length} m, Ancho: ${warehouse.dimension.width} m, Altura: ${warehouse.dimension.height} m`}
+            </p>
+            <p>
+              <strong>Capacidad:</strong> <Tag>{warehouse.capacity}</Tag>
+            </p>
           </DetailContainer>
         )}
       </WarehouseInfo>
       <Body>
-        <ProductsSection
-          location={location}
-        />
+        <ProductsSection location={location} />
         <SectionContainer
           title="Estantes"
           items={shelves}
@@ -149,8 +172,7 @@ export default function WarehouseContent() {
                     e.stopPropagation();
                     handleUpdateShelf(shelf);
                   }}
-                >
-                </Button>,
+                ></Button>,
                 <Button
                   key="delete-shelf"
                   icon={icons.editingActions.delete}
@@ -158,31 +180,32 @@ export default function WarehouseContent() {
                   onClick={(e) => {
                     e.stopPropagation();
                     Modal.confirm({
-                      title: "Eliminar Estante",
-                      content: "¿Estás seguro de eliminar este estante?",
-                      okText: "Eliminar",
-                      okType: "danger",
-                      cancelText: "Cancelar",
+                      title: 'Eliminar Estante',
+                      content: '¿Estás seguro de eliminar este estante?',
+                      okText: 'Eliminar',
+                      okType: 'danger',
+                      cancelText: 'Cancelar',
                       onOk: async () => {
                         try {
                           await deleteShelf(user, warehouse.id, shelf.id);
-                          message.success("Estante eliminado correctamente");
+                          message.success('Estante eliminado correctamente');
                         } catch (error) {
-                          console.error("Error al eliminar el estante: ", error);
-                          message.error("Error al eliminar el estante");
+                          console.error(
+                            'Error al eliminar el estante: ',
+                            error,
+                          );
+                          message.error('Error al eliminar el estante');
                         }
                       },
                     });
                   }}
-                >
-                </Button>,
+                ></Button>,
               ]}
               onClick={() => onNavigate(shelf)}
             >
               <List.Item.Meta
                 title={shelf.name}
                 description={`Capacidad de Fila: ${shelf.rowCapacity}`}
-
               />
             </List.Item>
           )}

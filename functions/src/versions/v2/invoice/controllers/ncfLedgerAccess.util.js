@@ -28,7 +28,7 @@ const resolveUserData = (userSnap) => {
 const resolveUserRoles = (userData) => {
   const { raw, nested } = userData;
   const roles = new Set();
-  toArray(raw.role).forEach((r) => roles.add(r.toLowerCase())) ;
+  toArray(raw.role).forEach((r) => roles.add(r.toLowerCase()));
   toArray(raw.roles).forEach((r) => roles.add(r.toLowerCase()));
   toArray(nested.role).forEach((r) => roles.add(r.toLowerCase()));
   toArray(nested.roles).forEach((r) => roles.add(r.toLowerCase()));
@@ -70,16 +70,22 @@ export const evaluateLedgerAccess = (userSnap, { errorMessage } = {}) => {
   const roles = resolveUserRoles(userData);
   const permissions = resolveUserPermissions(userData);
 
-  const hasAllowedRole = Array.from(roles).some((role) => LEDGER_ALLOWED_ROLES.has(role));
-  const hasAllowedPermission = Array.from(permissions).some((perm) => LEDGER_ALLOWED_PERMISSIONS.has(perm));
+  const hasAllowedRole = Array.from(roles).some((role) =>
+    LEDGER_ALLOWED_ROLES.has(role),
+  );
+  const hasAllowedPermission = Array.from(permissions).some((perm) =>
+    LEDGER_ALLOWED_PERMISSIONS.has(perm),
+  );
 
   const hasLedgerAccess = hasAllowedRole || hasAllowedPermission;
-  const hasGlobalAccess = Array.from(roles).some((role) => GLOBAL_ROLES.has(role)) || permissions.has('admin.all');
+  const hasGlobalAccess =
+    Array.from(roles).some((role) => GLOBAL_ROLES.has(role)) ||
+    permissions.has('admin.all');
 
   if (!hasLedgerAccess) {
     throw new HttpsError(
       'permission-denied',
-      errorMessage || 'No tienes permisos para operar el ledger de NCF.'
+      errorMessage || 'No tienes permisos para operar el ledger de NCF.',
     );
   }
 

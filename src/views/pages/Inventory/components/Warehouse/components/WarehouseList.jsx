@@ -1,15 +1,15 @@
-import React, { useState, useMemo } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import React, { useState, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { MenuApp } from "@templates/MenuApp/MenuApp";
+import { MenuApp } from '@templates/MenuApp/MenuApp';
 
-import { navigateWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-import { useListenWarehouses } from "../../../../../../firebase/warehouse/warehouseService";
-import { filterData } from "../../../../../../hooks/search/useSearch";
+import { navigateWarehouse } from '../../../../../../features/warehouse/warehouseSlice';
+import { useListenWarehouses } from '../../../../../../firebase/warehouse/warehouseService';
+import { filterData } from '../../../../../../hooks/search/useSearch';
 
-import WarehouseCard from "./WarehouseCard";
+import WarehouseCard from './WarehouseCard';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -23,14 +23,17 @@ const WarehouseGrid = styled.div`
   gap: 24px;
 `;
 
-const Wrapper = styled.div`
-`
+const Wrapper = styled.div``;
 
 export default function WarehouseList() {
   const dispatch = useDispatch();
   const navigation = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const { data: warehouses, loading: _loading, error: _error } = useListenWarehouses(); // Escucha los cambios en los almacenes
+  const {
+    data: warehouses,
+    loading: _loading,
+    error: _error,
+  } = useListenWarehouses(); // Escucha los cambios en los almacenes
 
   const filteredWarehouses = useMemo(() => {
     return filterData(warehouses, searchTerm);
@@ -38,7 +41,7 @@ export default function WarehouseList() {
 
   const handleSelectWarehouse = (warehouse) => {
     navigation(`/inventory/warehouse/${warehouse.id}`);
-    dispatch(navigateWarehouse({ view: "warehouse", data: warehouse })); // Actualiza el estado global de Redux
+    dispatch(navigateWarehouse({ view: 'warehouse', data: warehouse })); // Actualiza el estado global de Redux
   };
 
   return (

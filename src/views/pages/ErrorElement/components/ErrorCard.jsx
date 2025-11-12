@@ -3,22 +3,18 @@ import React from 'react';
 import styled from 'styled-components';
 
 export const ErrorCard = ({ children }) => {
-    return (
-        <StyledCard>
-            {children}
-        </StyledCard>
-    );
+  return <StyledCard>{children}</StyledCard>;
 };
 
 ErrorCard.propTypes = {
-    children: PropTypes.node.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
 const StyledCard = styled.div`
-    max-width: 600px;
-    width: 100%;
-    border-radius: 8px;
-    padding: 2rem;
-    height: 100%;
-    max-height: none;
+  max-width: 600px;
+  width: 100%;
+  border-radius: 8px;
+  padding: 2rem;
+  height: 100%;
+  max-height: none;
 `;

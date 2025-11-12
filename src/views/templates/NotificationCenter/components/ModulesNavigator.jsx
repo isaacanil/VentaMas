@@ -1,4 +1,8 @@
-import { CheckCircleOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  FileTextOutlined,
+  DollarOutlined,
+} from '@ant-design/icons';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -16,7 +20,7 @@ import FiscalReceiptsPanel from './panels/FiscalReceiptsPanel/FiscalReceiptsPane
 const ModulesNavigator = ({ fiscalReceiptsData }) => {
   const user = useSelector(selectUser);
   const [activeModule, setActiveModule] = useState('authorizations');
-  
+
   const isAdmin = user?.role === 'admin' || user?.role === 'dev';
 
   // Configuración de módulos según rol
@@ -42,7 +46,9 @@ const ModulesNavigator = ({ fiscalReceiptsData }) => {
         key: 'accounts-receivable',
         label: 'Cuentas por Cobrar',
         icon: <DollarOutlined />,
-        component: <AccountsReceivablePanel showQuickStats={false} daysThreshold={7} />,
+        component: (
+          <AccountsReceivablePanel showQuickStats={false} daysThreshold={7} />
+        ),
       });
     }
 
@@ -50,7 +56,7 @@ const ModulesNavigator = ({ fiscalReceiptsData }) => {
   };
 
   const modules = getModulesConfig();
-  const activeModuleData = modules.find(m => m.key === activeModule);
+  const activeModuleData = modules.find((m) => m.key === activeModule);
 
   return (
     <Container>
@@ -67,9 +73,7 @@ const ModulesNavigator = ({ fiscalReceiptsData }) => {
         ))}
       </ModulesBar>
 
-      <ContentWrapper>
-        {activeModuleData?.component}
-      </ContentWrapper>
+      <ContentWrapper>{activeModuleData?.component}</ContentWrapper>
     </Container>
   );
 };
@@ -101,28 +105,34 @@ const ModuleTab = styled.button`
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: ${props => props.$active ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)' : '#ffffff'};
-  color: ${props => props.$active ? '#ffffff' : '#6b7280'};
-  border: 1px solid ${props => props.$active ? '#1890ff' : '#e5e7eb'};
+  background: ${(props) =>
+    props.$active
+      ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
+      : '#ffffff'};
+  color: ${(props) => (props.$active ? '#ffffff' : '#6b7280')};
+  border: 1px solid ${(props) => (props.$active ? '#1890ff' : '#e5e7eb')};
   border-radius: 12px;
   font-size: 14px;
-  font-weight: ${props => props.$active ? '600' : '500'};
+  font-weight: ${(props) => (props.$active ? '600' : '500')};
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: ${props => props.$active 
-    ? '0 4px 12px rgba(24, 144, 255, 0.25), 0 2px 6px rgba(24, 144, 255, 0.15)' 
-    : '0 1px 2px rgba(0, 0, 0, 0.05)'};
-  
+  box-shadow: ${(props) =>
+    props.$active
+      ? '0 4px 12px rgba(24, 144, 255, 0.25), 0 2px 6px rgba(24, 144, 255, 0.15)'
+      : '0 1px 2px rgba(0, 0, 0, 0.05)'};
+
   &:hover {
-    background: ${props => props.$active 
-      ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)' 
-      : '#f8fafc'};
-    border-color: ${props => props.$active ? '#1890ff' : '#cbd5e1'};
-    color: ${props => props.$active ? '#ffffff' : '#374151'};
+    background: ${(props) =>
+      props.$active
+        ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
+        : '#f8fafc'};
+    border-color: ${(props) => (props.$active ? '#1890ff' : '#cbd5e1')};
+    color: ${(props) => (props.$active ? '#ffffff' : '#374151')};
     transform: translateY(-1px);
-    box-shadow: ${props => props.$active 
-      ? '0 6px 16px rgba(24, 144, 255, 0.3), 0 3px 8px rgba(24, 144, 255, 0.2)' 
-      : '0 2px 8px rgba(0, 0, 0, 0.08)'};
+    box-shadow: ${(props) =>
+      props.$active
+        ? '0 6px 16px rgba(24, 144, 255, 0.3), 0 3px 8px rgba(24, 144, 255, 0.2)'
+        : '0 2px 8px rgba(0, 0, 0, 0.08)'};
   }
 
   &:active {
